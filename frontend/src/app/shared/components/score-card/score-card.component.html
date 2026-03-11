@@ -1,0 +1,12 @@
+<div class="score-card" [ngClass]="colorClass">
+  <div class="score-header">
+    <span class="score-title">{{ title }}</span>
+  </div>
+  <div class="score-number">{{ score }}</div>
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="percentage"></div>
+    </div>
+    <p class="progress-label">{{ percentage.toFixed(0) }}% Complete</p>
+  </div>
+</div>

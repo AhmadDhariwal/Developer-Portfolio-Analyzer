@@ -1,0 +1,50 @@
+<nav class="navbar">
+  <div class="navbar-left">
+    <button class="menu-toggle" (click)="onToggleSidebar()" title="Toggle navigation sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="navbar-center">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" placeholder="Search..." />
+    </div>
+  </div>
+
+  <div class="navbar-right">
+    <div class="notification-box">
+      <button class="notification-bell">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notification-badge" *ngIf="notifications > 0">{{ notifications }}</span>
+      </button>
+    </div>
+
+    <div class="user-menu">
+      <button class="user-avatar">
+        <span>D</span>
+      </button>
+      <div class="user-dropdown">
+        <div class="user-info">
+          <p class="user-name">{{ userName }}</p>
+          <p class="user-email">developer@example.com</p>
+        </div>
+        <hr />
+        <a routerLink="/profile" class="dropdown-item">Profile</a>
+        <a routerLink="/settings" class="dropdown-item">Settings</a>
+        <hr />
+        <button (click)="logout()" class="dropdown-item danger">Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>

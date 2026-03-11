@@ -1,0 +1,11 @@
+<div class="chart-container">
+  <div class="chart-header">
+    <div>
+      <h3>{{ title }}</h3>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+  </div>
+  <div class="chart-body" [style.height]="height">
+    <ng-content></ng-content>
+  </div>
+</div>

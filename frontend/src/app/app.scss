@@ -1,0 +1,130 @@
+/* ==========================================================================
+   DevInsight AI Design System - Dark Theme
+   ========================================================================== */
+
+:root {
+  /* Primary Colors */
+  --color-primary: #6366F1;       /* Indigo */
+  --color-primary-dark: #4F46E5;
+  --color-primary-light: #818CF8;
+  
+  --color-secondary: #8B5CF6;     /* Purple */
+  --color-accent: #22C55E;        /* Green */
+  
+  /* Background */
+  --bg-main: #0F172A;             /* Dark navy */
+  --bg-card: #1E293B;             /* Card background */
+  --bg-hover: #334155;            /* Hover state */
+  
+  /* Text Colors */
+  --text-primary: #F8FAFC;        /* White text */
+  --text-secondary: #94A3B8;      /* Gray text */
+  --text-muted: #64748B;          /* Muted gray */
+  
+  /* Status Colors */
+  --color-success: #22C55E;
+  --color-success-dark: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
+  
+  /* Borders */
+  --border-color: #334155;
+  --border-light: #475569;
+  
+  /* Shadows (Soft glassmorphism) */
+  --shadow-sm: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0px 16px 32px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0px 24px 48px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0px 0px 20px rgba(99, 102, 241, 0.2);
+  
+  /* Layout */
+  --sidebar-width: 280px;
+  --navbar-height: 70px;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-base: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
+}
+
+/* Global Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+
+  &:hover {
+    background: var(--text-muted);
+  }
+}
+
+/* Utility Classes */
+.space-x {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.space-y {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}

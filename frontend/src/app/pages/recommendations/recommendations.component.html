@@ -1,0 +1,267 @@
+<div class="rec-page">
+
+  <!-- ── Page Header ──────────────────────────────────────────── -->
+  <div class="rec-header">
+    <div class="rec-header__text">
+      <h1>Recommendations</h1>
+      <p>Personalized AI-powered career growth suggestions</p>
+    </div>
+    <button class="btn-filter" *ngIf="result">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filter
+    </button>
+  </div>
+
+  <!-- ── Search Bar ────────────────────────────────────────────── -->
+  <div class="rec-search-card">
+    <div class="rec-search-card__inner">
+      <div class="rec-search-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
+                   c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
+                   5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0
+                   C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77
+                   a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7
+                   A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+      </div>
+      <div class="rec-search-card__fields">
+        <h3>GitHub Username</h3>
+        <input
+          type="text"
+          [(ngModel)]="username"
+          placeholder="Enter GitHub username (e.g., torvalds)"
+          (keyup.enter)="analyze()"
+          [disabled]="isLoading"
+        />
+      </div>
+      <button class="btn-analyze" (click)="analyze()" [disabled]="isLoading || !username.trim()">
+        <span *ngIf="!isLoading">Get Recommendations</span>
+        <span *ngIf="isLoading" class="spinner-wrap">
+          <span class="spinner"></span>Generating…
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Error ─────────────────────────────────────────────────── -->
+  <div class="rec-error" *ngIf="errorMessage">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ── Results ───────────────────────────────────────────────── -->
+  <ng-container *ngIf="result">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button
+        *ngFor="let tab of tabs"
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab === tab"
+        (click)="setTab(tab)">
+        {{ tab }}
+      </button>
+    </div>
+
+    <!-- ── Recommended Projects ──────────────────────────────── -->
+    <ng-container *ngIf="showProjects()">
+      <div class="section-header">
+        <div class="section-header__icon section-header__icon--blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <h2>Recommended Projects</h2>
+        <span class="section-count">{{ result.projects.length }}</span>
+      </div>
+
+      <div class="projects-grid">
+        <div class="project-card" *ngFor="let proj of result.projects; trackBy: trackById">
+          <div class="project-card__top">
+            <div class="project-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <span class="difficulty-badge" [ngClass]="getDifficultyClass(proj.difficulty)">
+              {{ proj.difficulty }}
+            </span>
+          </div>
+
+          <h3 class="project-card__title">{{ proj.title }}</h3>
+          <p class="project-card__desc">{{ proj.description }}</p>
+
+          <div class="tech-tags">
+            <span class="tech-tag" *ngFor="let t of proj.tech">{{ t }}</span>
+          </div>
+
+          <div class="project-card__footer">
+            <span class="project-meta">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ proj.estimatedWeeks }}
+            </span>
+            <span class="project-meta impact">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+              {{ proj.impact }}% impact
+            </span>
+            <a href="#" class="project-start-link">
+              Start
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Recommended Technologies ─────────────────────────── -->
+    <ng-container *ngIf="showTechnologies()">
+      <div class="section-header">
+        <div class="section-header__icon section-header__icon--purple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          </svg>
+        </div>
+        <h2>Recommended Technologies</h2>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-row" *ngFor="let tech of result.technologies; trackBy: trackByName">
+          <div class="tech-row__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <div class="tech-row__info">
+            <div class="tech-row__name-line">
+              <span class="tech-row__name">{{ tech.name }}</span>
+              <span class="priority-badge" [ngClass]="getPriorityClass(tech.priorityRaw)">
+                {{ tech.priority }}
+              </span>
+            </div>
+            <span class="tech-row__desc">{{ tech.description }}</span>
+          </div>
+          <div class="tech-row__demand">
+            <span class="demand-pct">{{ tech.jobDemand }}%</span>
+            <div class="demand-bar-wrap">
+              <div class="demand-bar" [ngClass]="getPriorityClass(tech.priorityRaw)"
+                   [style.width]="barWidth(tech.jobDemand)">
+              </div>
+            </div>
+            <span class="demand-label">job demand</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Career Path Suggestions ───────────────────────────── -->
+    <ng-container *ngIf="showCareerPaths()">
+      <div class="section-header">
+        <div class="section-header__icon section-header__icon--green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h2>Career Path Suggestions</h2>
+      </div>
+
+      <div class="career-grid">
+        <div class="career-card" *ngFor="let path of result.careerPaths; trackBy: trackById">
+          <div class="career-card__top">
+            <div class="career-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              </svg>
+            </div>
+            <span class="match-pct" [ngClass]="getMatchClass(path.match)">
+              {{ path.match }}%<br><small>match</small>
+            </span>
+          </div>
+
+          <h3 class="career-card__title">{{ path.title }}</h3>
+          <p class="career-card__salary">{{ path.salaryRange }}</p>
+          <p class="career-card__desc">{{ path.description }}</p>
+
+          <div class="career-companies">
+            <span class="company-chip" *ngFor="let co of path.hiringCompanies">{{ co }}</span>
+          </div>
+
+          <div class="career-actions">
+            <p class="actions-label">Action Items</p>
+            <ul class="actions-list">
+              <li *ngFor="let item of path.actionItems">
+                <span class="action-dot"></span>{{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="career-card__footer">
+            <span class="timeline-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ path.timeline }}
+            </span>
+            <a href="#" class="explore-link">
+              Explore
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </ng-container>
+
+  <!-- ── Empty state ───────────────────────────────────────────── -->
+  <div class="rec-empty" *ngIf="!result && !isLoading && !errorMessage">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <h3>Enter a GitHub username to get personalized recommendations</h3>
+    <p>We'll analyze your skills and suggest projects, technologies, and career paths tailored to you.</p>
+  </div>
+
+</div>

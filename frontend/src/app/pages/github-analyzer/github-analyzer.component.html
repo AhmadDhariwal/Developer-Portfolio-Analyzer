@@ -1,0 +1,267 @@
+<div class="analyzer-page">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">GitHub Analyzer</h2>
+      <p class="page-subtitle">Deep analysis of your GitHub repositories and contributions</p>
+    </div>
+  </div>
+
+  <!-- ── Search Bar ───────────────────────────────────────────────────────── -->
+  <div class="search-card">
+    <div class="search-inner">
+      <div class="search-input-wrap">
+        <svg class="search-prefix-icon" viewBox="0 0 24 24" width="16" height="16"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
+                   c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
+                   5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38
+                   0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5
+                   4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37
+                   3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        <span class="search-prefix-text">github.com/</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="alexdev"
+          [(ngModel)]="username"
+          [disabled]="isAnalyzing"
+          (keyup.enter)="analyze()"
+        />
+      </div>
+
+      <button
+        class="analyze-btn"
+        (click)="analyze()"
+        [disabled]="!username.trim() || isAnalyzing"
+      >
+        <svg *ngIf="!isAnalyzing" viewBox="0 0 24 24" width="16" height="16"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span class="spinner" *ngIf="isAnalyzing"></span>
+        {{ isAnalyzing ? 'Analyzing…' : 'Analyze Profile' }}
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-banner" *ngIf="errorMessage">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- ── Results ───────────────────────────────────────────────────────────── -->
+  <ng-container *ngIf="analysisReady && result">
+
+    <!-- Stat Cards Row -->
+    <div class="stats-row">
+
+      <!-- Repositories -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--purple">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h18v18H3zM3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">Repositories</p>
+          <p class="stat-value">{{ formatNumber(result.repoCount) }}</p>
+        </div>
+      </div>
+
+      <!-- Total Stars -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--yellow">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#F59E0B" stroke="#F59E0B" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">Total Stars</p>
+          <p class="stat-value">{{ formatNumber(result.totalStars) }}</p>
+        </div>
+      </div>
+
+      <!-- Total Forks -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--blue">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="6" y1="3" x2="6" y2="15"/>
+            <circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+            <path d="M18 9a9 9 0 0 1-9 9"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">Total Forks</p>
+          <p class="stat-value">{{ formatNumber(result.totalForks) }}</p>
+        </div>
+      </div>
+
+      <!-- Activity Score -->
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--green">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">Activity Score</p>
+          <p class="stat-value">{{ result.activityScore }}/100</p>
+        </div>
+      </div>
+
+    </div><!-- /stats-row -->
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+
+      <!-- Language Distribution (Donut) -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h4 class="chart-title">Language Distribution</h4>
+            <p class="chart-subtitle">Primary languages across repositories</p>
+          </div>
+        </div>
+        <div class="chart-body donut-body">
+          <div class="donut-wrap">
+            <canvas #donutCanvas></canvas>
+          </div>
+          <ul class="lang-legend">
+            <li *ngFor="let lang of result.languageDistribution; let i = index" class="legend-item">
+              <span class="legend-dot" [style.background]="getLangColour(i)"></span>
+              <span class="legend-name">{{ lang.language }}</span>
+              <span class="legend-pct">{{ lang.percentage }}%</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Repository Activity (Horizontal Bar) -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h4 class="chart-title">Repository Activity</h4>
+            <p class="chart-subtitle">Commit count per repository</p>
+          </div>
+        </div>
+        <div class="chart-body bar-body">
+          <canvas #barCanvas></canvas>
+        </div>
+      </div>
+
+    </div><!-- /charts-row -->
+
+    <!-- Repository Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div>
+          <h4 class="chart-title">Repository List</h4>
+          <p class="chart-subtitle">All repositories with analysis metrics</p>
+        </div>
+        <span class="repo-count-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          {{ result.repoCount }} repos analyzed
+        </span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="repo-table">
+          <thead>
+            <tr>
+              <th>REPOSITORY</th>
+              <th>LANGUAGE</th>
+              <th>STARS</th>
+              <th>FORKS</th>
+              <th>ACTIVITY SCORE</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let repo of result.repositories">
+              <td class="repo-name-cell">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                     stroke="currentColor" stroke-width="2" class="repo-icon">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
+                           c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
+                           5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38
+                           0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5
+                           4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7
+                           A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                {{ repo.name }}
+              </td>
+              <td>
+                <span class="lang-badge" *ngIf="repo.language !== 'Unknown'">{{ repo.language }}</span>
+                <span class="lang-badge lang-badge--unknown" *ngIf="repo.language === 'Unknown'">—</span>
+              </td>
+              <td class="star-cell">
+                <svg viewBox="0 0 24 24" width="13" height="13"
+                     fill="#F59E0B" stroke="#F59E0B" stroke-width="1">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                {{ formatNumber(repo.stars) }}
+              </td>
+              <td class="fork-cell">
+                <svg viewBox="0 0 24 24" width="13" height="13"
+                     fill="none" stroke="#94A3B8" stroke-width="2">
+                  <line x1="6" y1="3" x2="6" y2="15"/>
+                  <circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+                  <path d="M18 9a9 9 0 0 1-9 9"/>
+                </svg>
+                {{ formatNumber(repo.forks) }}
+              </td>
+              <td class="score-cell">
+                <div class="score-bar-wrap">
+                  <div class="score-bar-bg">
+                    <div class="score-bar-fill"
+                         [ngClass]="getScoreClass(repo.activityScore)"
+                         [style.width]="getScoreBarWidth(repo.activityScore)">
+                    </div>
+                  </div>
+                  <span class="score-num" [ngClass]="getScoreClass(repo.activityScore)">
+                    {{ repo.activityScore }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <a [href]="'https://github.com/' + username + '/' + repo.name"
+                   target="_blank" rel="noopener noreferrer" class="ext-link">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /table-card -->
+
+  </ng-container>
+
+  <!-- Empty state when nothing analyzed yet -->
+  <div class="empty-state" *ngIf="!analysisReady && !isAnalyzing && !errorMessage">
+    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
+               c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
+               5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0
+               C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0
+               0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+    </svg>
+    <p>Enter a GitHub username above and click <strong>Analyze Profile</strong> to get started.</p>
+  </div>
+
+</div>

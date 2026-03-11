@@ -1,0 +1,137 @@
+.score-card {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-base);
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 10px 15px rgba(168, 85, 247, 0.15);
+  }
+
+  .score-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+
+    .score-title {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  }
+
+  .score-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1;
+  }
+
+  .progress-container {
+    margin-bottom: 0;
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: var(--spacing-md);
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease-out;
+      }
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+  }
+
+  // Color variants
+  &.score-purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(139, 92, 246, 0.05));
+    border-color: rgba(139, 92, 246, 0.2);
+
+    .score-number {
+      color: #8b5cf6;
+    }
+
+    .progress-fill {
+      background: #8b5cf6;
+    }
+
+    &:hover {
+      border-color: #8b5cf6;
+      box-shadow: 0 10px 15px rgba(139, 92, 246, 0.15);
+    }
+  }
+
+  &.score-pink {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(236, 72, 153, 0.05));
+    border-color: rgba(236, 72, 153, 0.2);
+
+    .score-number {
+      color: #ec4899;
+    }
+
+    .progress-fill {
+      background: #ec4899;
+    }
+
+    &:hover {
+      border-color: #ec4899;
+      box-shadow: 0 10px 15px rgba(236, 72, 153, 0.15);
+    }
+  }
+
+  &.score-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.05));
+    border-color: rgba(16, 185, 129, 0.2);
+
+    .score-number {
+      color: #10b981;
+    }
+
+    .progress-fill {
+      background: #10b981;
+    }
+
+    &:hover {
+      border-color: #10b981;
+      box-shadow: 0 10px 15px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  &.score-amber {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.05));
+    border-color: rgba(245, 158, 11, 0.2);
+
+    .score-number {
+      color: #f59e0b;
+    }
+
+    .progress-fill {
+      background: #f59e0b;
+    }
+
+    &:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 10px 15px rgba(245, 158, 11, 0.15);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .score-card {
+    .score-number {
+      font-size: 2rem;
+    }
+  }
+}

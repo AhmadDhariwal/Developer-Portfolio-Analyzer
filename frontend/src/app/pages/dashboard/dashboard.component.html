@@ -1,0 +1,239 @@
+<!-- ════════════════════════════════════════════
+     DASHBOARD OVERVIEW HEADER
+     ════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="header-text">
+    <h2>Dashboard Overview</h2>
+    <p class="header-sub">Last analyzed: {{ lastAnalyzed }} · GitHub: {{ githubHandle }}</p>
+  </div>
+  <button class="reanalyze-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="23 4 23 10 17 10"></polyline>
+      <polyline points="1 20 1 14 7 14"></polyline>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+    </svg>
+    Re-analyze
+  </button>
+</div>
+
+<!-- Rate limit / no-username warnings -->
+<div *ngIf="rateLimitWarning" class="alert-banner alert-warning">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>GitHub API rate limit reached. Showing cached data. Add a <code>GITHUB_TOKEN</code> to your <code>.env</code> for higher limits.</span>
+</div>
+<div *ngIf="noGithubUsername && !isLoading" class="alert-banner alert-info">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your GitHub handle to load real data.</span>
+</div>
+
+<!-- ════════════════════════════════════════════
+     ROW 1: SCORE CARD + 4 STAT CARDS
+     ════════════════════════════════════════════ -->
+<div class="row-top">
+
+  <!-- Developer Readiness Score -->
+  <div class="card score-card">
+    <div class="card-header-row">
+      <div class="status-dot"></div>
+      <span class="card-label">Developer Readiness Score</span>
+    </div>
+    <div class="score-body">
+      <app-score-meter [score]="developerScore" [maxScore]="100" size="lg"></app-score-meter>
+      <div class="score-trend">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>
+        +12 from last month
+      </div>
+      <p class="percentile-note">You're in the <span>top 25%</span> of developers</p>
+    </div>
+  </div>
+
+  <!-- 4 Mini stat cards -->
+  <div class="mini-stats-grid">
+    <div class="card stat-card" *ngFor="let card of statCards">
+      <div class="stat-top">
+        <div [class]="'stat-icon ' + card.iconType" [innerHTML]="getStatIcon(card.iconType)"></div>
+        <div class="trend-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-value">{{ card.value | number }}</div>
+      <div class="stat-label">{{ card.label }}</div>
+      <div class="stat-growth">{{ card.growth }}</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     ROW 2: CONTRIBUTION ACTIVITY + LANGUAGE DISTRIBUTION
+     ════════════════════════════════════════════ -->
+<div class="row-middle">
+
+  <!-- Contribution Activity Line Chart -->
+  <div class="card activity-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Contribution Activity</h3>
+        <p>Commits over the last 6 months</p>
+      </div>
+      <div class="activity-badge">&lt;/&gt; {{ totalActivity }} total</div>
+    </div>
+    <div class="chart-wrap activity-wrap">
+      <canvas #activityChart></canvas>
+    </div>
+  </div>
+
+  <!-- Language Distribution Donut -->
+  <div class="card language-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Language Distribution</h3>
+        <p>Across all repositories</p>
+      </div>
+    </div>
+    <div class="chart-wrap donut-wrap">
+      <canvas #languageChart></canvas>
+    </div>
+    <div class="lang-legend">
+      <div class="legend-row" *ngFor="let lang of languageLegend">
+        <div class="legend-left">
+          <span class="legend-dot" [style.background]="lang.color"></span>
+          <span class="legend-name">{{ lang.label }}</span>
+        </div>
+        <span class="legend-pct">{{ lang.percentage }}%</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     ROW 3: SKILLS RADAR + SKILL GAP OVERVIEW
+     ════════════════════════════════════════════ -->
+<div class="row-bottom">
+
+  <!-- Radar Chart -->
+  <div class="card radar-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Skills Radar</h3>
+        <p>Proficiency across key domains</p>
+      </div>
+    </div>
+    <div class="chart-wrap radar-wrap">
+      <canvas #skillRadar></canvas>
+    </div>
+  </div>
+
+  <!-- Skill Gap Overview -->
+  <div class="card gap-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Skill Gap Overview</h3>
+        <p>Detected vs missing skills</p>
+      </div>
+      <a class="view-all-link" [routerLink]="['/app/skill-gap']">
+        View All
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="7" y1="17" x2="17" y2="7"></line>
+          <polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <div class="gap-body">
+      <!-- Your Skills -->
+      <div class="skills-group">
+        <div class="group-title">
+          <span class="group-dot success"></span>
+          Your Skills ({{ topSkills.length }})
+        </div>
+        <div class="tags-wrap">
+          <app-ui-badge *ngFor="let skill of topSkills" variant="success" size="sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {{ skill }}
+          </app-ui-badge>
+        </div>
+      </div>
+
+      <!-- Missing Skills -->
+      <div class="skills-group">
+        <div class="group-title danger-title">
+          <span class="group-dot danger"></span>
+          Missing Skills ({{ missingSkills.length }})
+        </div>
+        <div class="tags-wrap">
+          <app-ui-badge *ngFor="let skill of missingSkills" variant="danger" size="sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            {{ skill }}
+          </app-ui-badge>
+        </div>
+      </div>
+
+      <!-- Coverage Bar -->
+      <div class="coverage-box">
+        <div class="cov-head">
+          <span class="cov-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Skill Coverage
+          </span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
+        </div>
+        <div class="cov-footer">
+          <span>{{ coveragePercentage }}% coverage vs industry</span>
+          <span class="cov-score">{{ coveragePercentage }}/100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     ROW 4: AI RECOMMENDATIONS
+     ════════════════════════════════════════════ -->
+<div class="recommendations-section">
+  <div class="rec-section-head">
+    <div>
+      <h3>AI Recommendations</h3>
+      <p>Personalized actions to boost your score</p>
+    </div>
+    <a class="view-all-link" [routerLink]="['/app/recommendations']">
+      View All
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="7" y1="17" x2="17" y2="7"></line>
+        <polyline points="7 7 17 7 17 17"></polyline>
+      </svg>
+    </a>
+  </div>
+
+  <div class="rec-grid">
+    <div class="card rec-card" *ngFor="let rec of recommendations">
+      <div class="rec-top">
+        <div class="rec-icon" [innerHTML]="getRecIcon(rec.icon)"></div>
+        <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
+      </div>
+      <p class="rec-title">{{ rec.title }}</p>
+      <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
+    </div>
+  </div>
+</div>

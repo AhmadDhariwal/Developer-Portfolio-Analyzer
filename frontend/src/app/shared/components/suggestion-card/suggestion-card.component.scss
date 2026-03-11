@@ -1,0 +1,111 @@
+.suggestion-card {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  transition: all var(--transition-base);
+  background-color: rgba(255, 255, 255, 0.03);
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .suggestion-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .suggestion-content {
+    flex: 1;
+    min-width: 0;
+
+    .suggestion-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+      margin: 0 0 var(--spacing-xs) 0;
+    }
+
+    .suggestion-description {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin: 0;
+    }
+  }
+
+  // Color variants
+  &.suggestion-red {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.08);
+
+    .suggestion-icon {
+      color: #ef4444;
+    }
+  }
+
+  &.suggestion-orange {
+    border-color: rgba(249, 115, 22, 0.3);
+    background: rgba(249, 115, 22, 0.08);
+
+    .suggestion-icon {
+      color: #f97316;
+    }
+  }
+
+  &.suggestion-blue {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.08);
+
+    .suggestion-icon {
+      color: #3b82f6;
+    }
+  }
+
+  &.suggestion-purple {
+    border-color: rgba(168, 85, 247, 0.3);
+    background: rgba(168, 85, 247, 0.08);
+
+    .suggestion-icon {
+      color: #a855f7;
+    }
+  }
+
+  &.suggestion-cyan {
+    border-color: rgba(6, 182, 212, 0.3);
+    background: rgba(6, 182, 212, 0.08);
+
+    .suggestion-icon {
+      color: #06b6d4;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .suggestion-card {
+    padding: var(--spacing-md);
+
+    .suggestion-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 0.9rem;
+    }
+
+    .suggestion-content .suggestion-title {
+      font-size: 0.85rem;
+    }
+
+    .suggestion-content .suggestion-description {
+      font-size: 0.7rem;
+    }
+  }
+}

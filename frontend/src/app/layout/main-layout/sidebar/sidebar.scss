@@ -1,0 +1,202 @@
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #111827;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-base), width var(--transition-base);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    transform: translateX(-100%);
+    &.open { transform: translateX(0); }
+  }
+
+  /* ─── Logo ─── */
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 20px 18px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    min-height: 70px;
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        color: #fff;
+        stroke: #fff;
+      }
+    }
+
+    .logo-text {
+      font-size: 1.125rem;
+      font-weight: 800;
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-primary);
+      white-space: nowrap;
+
+      .ai-tag {
+        background: linear-gradient(135deg, #6366F1, #8B5CF6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+
+    .collapse-btn {
+      margin-left: auto;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  /* ─── Nav ─── */
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { width: 0; }
+  }
+
+  .nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    li { width: 100%; }
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    position: relative;
+    white-space: nowrap;
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0.7;
+
+      svg, ::ng-deep svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    &:hover {
+      background: rgba(99, 102, 241, 0.08);
+      color: var(--text-primary);
+
+      .nav-icon { opacity: 1; }
+    }
+
+    &.active {
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--color-primary-light);
+
+      .nav-icon { opacity: 1; }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 22px;
+        background: linear-gradient(180deg, #6366F1, #8B5CF6);
+        border-radius: 0 3px 3px 0;
+      }
+    }
+  }
+
+  /* ─── Footer / Logout ─── */
+  .sidebar-footer {
+    padding: 12px 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: var(--color-danger);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      svg { width: 18px; height: 18px; }
+    }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+}

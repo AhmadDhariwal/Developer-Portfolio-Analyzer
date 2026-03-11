@@ -1,0 +1,137 @@
+/* ==========================================================================
+   DevInsight AI Design System
+   ========================================================================== */
+
+:root {
+  /* Primary Colors */
+  --color-primary: #6366F1;       /* Indigo */
+  --color-primary-dark: #4F46E5;
+  --color-primary-light: #818CF8;
+  
+  --color-secondary: #8B5CF6;     /* Purple */
+  --color-accent: #22C55E;        /* Green */
+  
+  /* Background */
+  --bg-main: #0F172A;             /* Dark navy */
+  --bg-card: #1E293B;             /* Card background */
+  --bg-hover: #334155;            /* Hover state */
+  
+  /* Text Colors */
+  --text-primary: #F8FAFC;        /* White text */
+  --text-secondary: #94A3B8;      /* Gray text */
+  --text-muted: #64748B;          /* Muted gray */
+  
+  /* Status Colors */
+  --color-success: #22C55E;
+  --color-success-dark: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
+  
+  /* Borders */
+  --border-color: #334155;
+  --border-light: #475569;
+  
+  /* Shadows */
+  --shadow-sm: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0px 16px 32px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0px 0px 20px rgba(99, 102, 241, 0.2);
+  
+  /* Layout */
+  --sidebar-width: 280px;
+  --navbar-height: 70px;
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 1rem;     /* 16px */
+  --spacing-md: 1.5rem;   /* 24px */
+  --spacing-lg: 2rem;     /* 32px */
+  --spacing-xl: 3rem;     /* 48px */
+  --spacing-2xl: 2.5rem;  /* 40px */
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-base: 0.3s ease-in-out;
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+code, pre, .mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary-light);
+  transition: color var(--transition-fast);
+  
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+  &:hover {
+    background: var(--text-muted);
+  }
+}
+
+/* Utility Classes */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

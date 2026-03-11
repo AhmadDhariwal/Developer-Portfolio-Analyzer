@@ -1,0 +1,107 @@
+.footer {
+  background: var(--bg-surface);
+  padding: 5rem 3rem 3rem 3rem;
+  margin-top: 5rem;
+  border-top: 1px solid var(--color-slate-200);
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4rem;
+    margin-bottom: 4rem;
+
+    .brand {
+      flex: 1;
+      min-width: 280px;
+      
+      h3 {
+        font-size: 1.75rem;
+        font-family: 'Outfit', sans-serif;
+        margin: 0 0 1rem 0;
+        font-weight: 800;
+        color: var(--color-slate-800);
+        
+        span {
+           background: linear-gradient(90deg, var(--color-primary-600), var(--color-primary-500));
+           background-clip: text;
+           -webkit-background-clip: text;
+           -webkit-text-fill-color: transparent;
+        }
+      }
+      
+      p {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        margin: 0;
+        max-width: 320px;
+        font-size: 1.05rem;
+      }
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 5rem;
+      
+      .link-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        
+        h4 {
+          margin: 0 0 0.75rem 0;
+          color: var(--text-primary);
+          font-weight: 700;
+          font-size: 1.15rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        a {
+          color: var(--text-secondary);
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.2s, transform 0.2s;
+          display: inline-block;
+          
+          &:hover {
+            color: var(--color-primary-600);
+            transform: translateX(3px);
+          }
+        }
+      }
+    }
+  }
+
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--color-slate-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    
+    p { margin: 0; font-weight: 500; }
+    
+    .legal-links {
+      display: flex;
+      gap: 2rem;
+      
+      a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+        font-weight: 500;
+        
+        &:hover {
+          color: var(--text-secondary);
+        }
+      }
+    }
+  }
+}

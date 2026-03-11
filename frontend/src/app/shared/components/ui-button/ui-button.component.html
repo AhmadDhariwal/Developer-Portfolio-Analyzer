@@ -1,0 +1,8 @@
+<button title="button"
+  [class]="'ui-btn ' + variant + ' ' + size + (fullWidth ? ' full-width' : '') + (loading ? ' loading' : '')"
+  [disabled]="disabled || loading"
+  (click)="clicked.emit($event)"
+  [title]="disabled ? 'Button disabled' : 'Click to perform action'">
+  <span *ngIf="loading" class="spinner"></span>
+  <ng-content></ng-content>
+</button>

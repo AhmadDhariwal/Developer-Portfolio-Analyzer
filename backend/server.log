@@ -1,0 +1,4 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+Server running on port 5000
+✅  GitHub token detected — using authenticated API (5000 req/hour)
+MongoDB Connected: localhost

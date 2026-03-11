@@ -1,0 +1,39 @@
+<div [class]="'score-meter size-' + size">
+  <svg viewBox="0 0 200 200" class="score-svg">
+    <defs>
+      <filter [attr.id]="'glow-' + size">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Track -->
+    <circle
+      [attr.cx]="cx"
+      [attr.cy]="cy"
+      [attr.r]="radius"
+      class="track"
+    ></circle>
+
+    <!-- Progress arc -->
+    <circle
+      [attr.cx]="cx"
+      [attr.cy]="cy"
+      [attr.r]="radius"
+      class="progress-arc"
+      [style.stroke]="scoreColor"
+      [style.strokeDasharray]="circumference"
+      [style.strokeDashoffset]="dashOffset"
+      [style.filter]="'drop-shadow(0 0 8px ' + glowColor + ')'"
+    ></circle>
+  </svg>
+
+  <!-- Center label -->
+  <div class="score-label">
+    <span class="score-value" [style.color]="scoreColor">{{ score }}</span>
+    <span class="score-out">out of {{ maxScore }}</span>
+  </div>
+</div>
