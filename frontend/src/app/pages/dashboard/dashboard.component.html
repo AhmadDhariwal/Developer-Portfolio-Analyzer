@@ -6,14 +6,25 @@
     <h2>Dashboard Overview</h2>
     <p class="header-sub">Last analyzed: {{ lastAnalyzed }} · GitHub: {{ githubHandle }}</p>
   </div>
-  <button class="reanalyze-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="23 4 23 10 17 10"></polyline>
-      <polyline points="1 20 1 14 7 14"></polyline>
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-    </svg>
-    Re-analyze
-  </button>
+  
+  <div class="header-actions">
+    <!-- Role Selection Dropdown -->
+    <div class="role-selector">
+      <span class="role-label">Target Role:</span>
+      <select [ngModel]="selectedRole" (ngModelChange)="onRoleChange($event)" class="role-dropdown">
+        <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+      </select>
+    </div>
+
+    <button class="reanalyze-btn" (click)="reanalyze()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </svg>
+      Re-analyze
+    </button>
+  </div>
 </div>
 
 <!-- Rate limit / no-username warnings -->
@@ -152,55 +163,68 @@
     </div>
 
     <div class="gap-body">
-      <!-- Your Skills -->
-      <div class="skills-group">
-        <div class="group-title">
-          <span class="group-dot success"></span>
-          Your Skills ({{ topSkills.length }})
-        </div>
-        <div class="tags-wrap">
-          <app-ui-badge *ngFor="let skill of topSkills" variant="success" size="sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            {{ skill }}
-          </app-ui-badge>
-        </div>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Loading skill gap analysis...</p>
       </div>
 
-      <!-- Missing Skills -->
-      <div class="skills-group">
-        <div class="group-title danger-title">
-          <span class="group-dot danger"></span>
-          Missing Skills ({{ missingSkills.length }})
-        </div>
-        <div class="tags-wrap">
-          <app-ui-badge *ngFor="let skill of missingSkills" variant="danger" size="sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            {{ skill }}
-          </app-ui-badge>
-        </div>
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0" class="empty-state">
+        <p>No skill data available. Please ensure your GitHub profile is analyzed.</p>
       </div>
 
-      <!-- Coverage Bar -->
-      <div class="coverage-box">
-        <div class="cov-head">
-          <span class="cov-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            Skill Coverage
-          </span>
+      <!-- Skills Content -->
+      <div *ngIf="!isLoading && (topSkills.length > 0 || missingSkills.length > 0)">
+        <!-- Your Skills -->
+        <div class="skills-group">
+          <div class="group-title">
+            <span class="group-dot success"></span>
+            Your Skills ({{ topSkills.length }})
+          </div>
+          <div class="tags-wrap">
+            <app-ui-badge *ngFor="let skill of topSkills" variant="success" size="sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              {{ skill }}
+            </app-ui-badge>
+          </div>
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
+
+        <!-- Missing Skills -->
+        <div class="skills-group">
+          <div class="group-title danger-title">
+            <span class="group-dot danger"></span>
+            Missing Skills ({{ missingSkills.length }})
+          </div>
+          <div class="tags-wrap">
+            <app-ui-badge *ngFor="let skill of missingSkills" variant="danger" size="sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              {{ skill }}
+            </app-ui-badge>
+          </div>
         </div>
-        <div class="cov-footer">
-          <span>{{ coveragePercentage }}% coverage vs industry</span>
-          <span class="cov-score">{{ coveragePercentage }}/100</span>
+
+        <!-- Coverage Bar -->
+        <div class="coverage-box">
+          <div class="cov-head">
+            <span class="cov-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Skill Coverage
+            </span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
+          </div>
+          <div class="cov-footer">
+            <span>{{ coveragePercentage }}% coverage vs industry</span>
+            <span class="cov-score">{{ coveragePercentage }}/100</span>
+          </div>
         </div>
       </div>
     </div>

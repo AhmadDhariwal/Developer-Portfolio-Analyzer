@@ -31,7 +31,7 @@ app.use('/api/github',    githubroute);
 app.use('/api/resume',    resumroute);
 app.use('/api/analysis',        analysisroute);
 app.use('/api/dashboard',       dashboardroute);
-app.use('/api/analysis',        skillgaproute);
+app.use('/api/skillgap',        skillgaproute);
 app.use('/api/recommendations', recommendationsroute);
 app.use('/api/profile',         profileroute);
 

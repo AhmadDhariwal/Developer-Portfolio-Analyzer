@@ -1,10 +1,14 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../shared/services/api.service';
+import { RoleService, TargetRole } from '../../shared/services/role.service';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
@@ -32,7 +36,7 @@ export interface LanguageLegendItem {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ScoreMeterComponent, UiBadgeComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ScoreMeterComponent, UiBadgeComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -49,11 +53,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   rateLimitWarning = false;
   noGithubUsername = false;
 
+  availableRoles: TargetRole[] = [];
+  selectedRole: TargetRole = 'Full Stack Developer';
+
   statCards: StatCard[] = [
-    { label: 'Repositories', value: 0, growth: '', iconType: 'repos'     },
-    { label: 'Total Stars',  value: 0, growth: '', iconType: 'stars'     },
-    { label: 'Total Forks',  value: 0, growth: '', iconType: 'forks'     },
-    { label: 'Followers',    value: 0, growth: '', iconType: 'followers' },
+    { label: 'Repositories', value: 0, growth: '', iconType: 'repos',     },
+    { label: 'Total Stars',  value: 0, growth: '', iconType: 'stars',     },
+    { label: 'Total Forks',  value: 0, growth: '', iconType: 'forks',     },
+    { label: 'Followers',    value: 0, growth: '', iconType: 'followers', },
   ];
 
   totalActivity = 0;
@@ -63,74 +70,203 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   missingSkills: string[] = [];
 
   languageLegend: LanguageLegendItem[] = [];
-
   recommendations: RecommendationItem[] = [];
+  aiBreakdown: any = null;
 
   private radarInstance: Chart | null = null;
-  private viewInitialized = false;   // tracks whether ngAfterViewInit has fired
+  private viewInitialized = false;
   private activityInstance: Chart | null = null;
   private languageInstance: Chart | null = null;
 
-  constructor(private readonly apiService: ApiService) {}
+  private pendingActivityData: { month: string; count: number }[] | null = null;
+  private pendingLanguageData: Record<string, number> | null = null;
+  private subscriptions: Subscription = new Subscription();
+
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly roleService: RoleService,
+    private readonly cdr: ChangeDetectorRef
+  ) {
+    this.availableRoles = this.roleService.getRoles();
+    this.selectedRole = this.roleService.getCurrentRole();
+  }
 
   ngOnInit() {
-    this.isLoading = true;
+    this.subscriptions.add(
+        this.roleService.targetRole$.subscribe(role => {
+            this.selectedRole = role;
+            this.loadDashboardData();
+        })
+    );
+  }
 
+  onRoleChange(newRole: TargetRole) {
+    this.roleService.setRole(newRole);
+  }
+
+  reanalyze() {
+    this.loadDashboardData(true);
+  }
+
+  loadDashboardData(forceRefresh = false) {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
+    // 1. Fetch Basic Dashboard Stats
     this.apiService.getDashboardSummary().subscribe({
       next: (data: any) => {
-        this.developerScore = data.score || 0;
-        this.statCards[0].value = data.repositories || 0;
-        this.statCards[1].value = data.stars || 0;
-        this.statCards[2].value = data.forks || 0;
-        this.statCards[3].value = data.followers || 0;
-        this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
-        this.lastAnalyzed = 'Just now';
-        this.rateLimitWarning = data.rateLimited === true;
-        this.noGithubUsername = data.noUsername === true;
-        this.isLoading = false;
+        this.githubHandle     = data.githubHandle ? `@${data.githubHandle}` : '';
+        this.lastAnalyzed     = 'Just now';
+        this.rateLimitWarning = data.rateLimited  === true;
+        this.noGithubUsername = data.noUsername   === true;
+
+        this.statCards = [
+          { label: 'Repositories', value: data.repositories || 0, growth: '', iconType: 'repos'     },
+          { label: 'Total Stars',  value: data.stars        || 0, growth: '', iconType: 'stars'     },
+          { label: 'Total Forks',  value: data.forks        || 0, growth: '', iconType: 'forks'     },
+          { label: 'Followers',    value: data.followers    || 0, growth: '', iconType: 'followers' },
+        ];
+        
+        // After summary, we might need resume analysis for next steps
+        this.fetchAiAnalysis(data.githubHandle);
       },
       error: () => {
         this.isLoading = false;
-        this.lastAnalyzed = 'Unable to load';
+        this.cdr.detectChanges();
       }
     });
 
-    this.apiService.getDashboardSkills().subscribe({
-      next: (data: any) => {
-        // Normalize skills: backend may return string[] or object[]{name,...}
-        const toStrings = (arr: any[]): string[] =>
-          (arr || []).map(s => (typeof s === 'string' ? s : s.name || String(s)));
+    this.loadActivityAndLanguage();
+  }
 
-        if (data.topSkills) this.topSkills = toStrings(data.topSkills);
-        if (data.missingSkills) {
-          this.missingSkills = toStrings(data.missingSkills);
-          const total = this.topSkills.length + this.missingSkills.length;
-          this.coveragePercentage = total > 0
-            ? Math.round((this.topSkills.length / total) * 100) : 0;
-        }
-        // Re-render radar chart now that real skill labels are available
-        if (this.viewInitialized) {
-          setTimeout(() => this.initRadarChart(), 0);
-        }
-      },
-      error: () => {}
-    });
+  fetchAiAnalysis(username: string) {
+    if (!username) {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        return;
+    }
 
-    this.apiService.getDashboardRecommendations().subscribe({
-      next: (data: any) => {
-        if (Array.isArray(data) && data.length > 0) this.recommendations = data;
-      },
-      error: () => {}
+    // Parallel fetch: Resume Analysis + AI Skill Gap
+    forkJoin({
+        resume: this.apiService.getResumeAnalysis().pipe(
+            // If resume fails, return empty object instead of failing the whole request
+            catchError(() => of({}))
+        ),
+        skillGap: this.apiService.getSkillGap(username, this.selectedRole)
+    }).subscribe({
+        next: (results: any) => {
+            const gapData = results.skillGap;
+            const resumeData = results.resume;
+
+            console.log('=== SKILL GAP API RESPONSE ===');
+            console.log('Full Gap Data:', JSON.stringify(gapData, null, 2));
+            console.log('yourSkills:', gapData.yourSkills);
+            console.log('missingSkills:', gapData.missingSkills);
+            console.log('coverage:', gapData.coverage);
+            
+            // Handle different possible formats with better fallbacks
+            if (gapData.yourSkills && Array.isArray(gapData.yourSkills)) {
+                this.topSkills = gapData.yourSkills.map((s: any) => {
+                    if (typeof s === 'string') return s;
+                    if (s.name) return s.name;
+                    if (s.skill) return s.skill;
+                    return String(s);
+                });
+            } else {
+                console.warn('yourSkills is not an array or is missing');
+                this.topSkills = [];
+            }
+            
+            if (gapData.missingSkills && Array.isArray(gapData.missingSkills)) {
+                this.missingSkills = gapData.missingSkills.map((s: any) => {
+                    if (typeof s === 'string') return s;
+                    if (s.name) return s.name;
+                    if (s.skill) return s.skill;
+                    return String(s);
+                });
+            } else {
+                console.warn('missingSkills is not an array or is missing');
+                this.missingSkills = [];
+            }
+
+            console.log('=== PROCESSED SKILLS ===');
+            console.log('Top Skills:', this.topSkills);
+            console.log('Missing Skills:', this.missingSkills);
+
+            const total = this.topSkills.length + this.missingSkills.length;
+            this.coveragePercentage = gapData.coverage !== undefined 
+                ? Number(gapData.coverage) 
+                : (total > 0 ? Math.round((this.topSkills.length / total) * 100) : 0);
+            
+            console.log('Coverage Percentage:', this.coveragePercentage);
+
+            this.apiService.getPortfolioScore(username, this.selectedRole, resumeData, gapData.githubStats).subscribe({
+                next: (scoreResult) => {
+                    this.developerScore = scoreResult.overallScore || 0;
+                    
+                    // Store breakdown for radar chart
+                    if (scoreResult.breakdown) {
+                        this.aiBreakdown = scoreResult.breakdown;
+                    }
+                    
+                    if (this.viewInitialized) this.initRadarChart();
+                    this.cdr.detectChanges();
+                },
+                error: (err) => {
+                    console.error('Portfolio score error:', err);
+                    this.cdr.detectChanges();
+                }
+            });
+
+            this.apiService.getRecommendations(username, this.selectedRole, this.missingSkills).subscribe({
+                next: (recResult) => {
+                    this.recommendations = (recResult.projects || []).slice(0, 3).map((p: any) => ({
+                        title: p.title,
+                        priority: 'High',
+                        category: (p.tech || []).slice(0, 2).join(', '),
+                        priorityType: 'high',
+                        icon: 'technology'
+                    }));
+                    this.cdr.detectChanges();
+                },
+                error: (err) => {
+                    console.error('Recommendations error:', err);
+                    this.cdr.detectChanges();
+                }
+            });
+
+            this.isLoading = false;
+            this.cdr.detectChanges();
+        },
+        error: (err) => {
+            console.error('=== SKILL GAP ERROR ===');
+            console.error('Error:', err);
+            console.error('Error message:', err.message);
+            console.error('Error status:', err.status);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+        }
     });
   }
 
   ngAfterViewInit() {
     this.viewInitialized = true;
-    // Fetch contributions + languages (they call their own API)
     this.loadActivityAndLanguage();
-    // Radar uses skills which may not be loaded yet; render placeholder now,
-    // will be replaced when getDashboardSkills() resolves above
-    setTimeout(() => this.initRadarChart(), 100);
+
+    // If skills already loaded (API was faster than view init), draw radar now
+    setTimeout(() => {
+      this.initRadarChart();
+      // Flush any pending chart data that arrived before the canvas was ready
+      if (this.pendingActivityData) {
+        this.initActivityChart(this.pendingActivityData);
+        this.pendingActivityData = null;
+      }
+      if (this.pendingLanguageData) {
+        this.initLanguageChart(this.pendingLanguageData);
+        this.pendingLanguageData = null;
+      }
+      this.cdr.detectChanges();
+    }, 50);
   }
 
   ngOnDestroy() {
@@ -143,7 +279,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.apiService.getDashboardContributions().subscribe({
       next: (data: any) => {
         if (Array.isArray(data) && data.length > 0) {
-          this.initActivityChart(data);
+          if (this.viewInitialized && this.activityChart?.nativeElement) {
+            this.initActivityChart(data);
+          } else {
+            this.pendingActivityData = data;
+          }
         }
       },
       error: () => {}
@@ -152,7 +292,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.apiService.getDashboardLanguages().subscribe({
       next: (data: any) => {
         if (data && Object.keys(data).length > 0) {
-          this.initLanguageChart(data);
+          if (this.viewInitialized && this.languageChart?.nativeElement) {
+            this.initLanguageChart(data);
+          } else {
+            this.pendingLanguageData = data;
+          }
         }
       },
       error: () => {}
@@ -164,11 +308,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.skillRadar?.nativeElement) return;
     this.radarInstance?.destroy();
 
-    // Use real skills data — take up to 6 from topSkills with estimated proficiency
-    const categories = this.topSkills.length > 0
-      ? this.topSkills.slice(0, 6)
-      : ['Frontend', 'Backend', 'DevOps', 'Testing', 'System Design', 'Open Source'];
-    const dataPoints = categories.map(() => Math.round(40 + Math.random() * 50));
+    let categories = ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'];
+    let dataPoints = [70, 70, 70, 70]; // Default fallbacks
+
+    if (this.aiBreakdown) {
+        dataPoints = [
+            this.aiBreakdown.codeQuality || 70,
+            this.aiBreakdown.skillCoverage || 70,
+            this.aiBreakdown.industryReadiness || 70,
+            this.aiBreakdown.projectImpact || 70
+        ];
+    } else if (this.topSkills.length > 0) {
+        // Fallback to top skills if AI breakdown hasn't arrived yet
+        categories = this.topSkills.slice(0, 6);
+        dataPoints = categories.map(() => Math.round(50 + Math.random() * 40));
+    }
 
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',

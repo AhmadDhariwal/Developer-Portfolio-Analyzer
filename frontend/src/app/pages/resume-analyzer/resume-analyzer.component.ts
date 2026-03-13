@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../shared/services/api.service';
 import { ResumeAnalysis, ResumeSuggestion } from '../../shared/models/resume.model';
@@ -32,6 +32,11 @@ export class ResumeAnalyzerComponent implements OnInit {
   analysis: ResumeAnalysis | null = null;
   errorMessage: string = '';
 
+  // Snapshot backup used when a new upload/analyze fails
+  private previousAnalysis: ResumeAnalysis | null = null;
+  private previousAnalysisComplete = false;
+  private previousHasNoData = false;
+
   // Score card data
   scoreCards = [
     { title: 'ATS Compatibility', key: 'atsScore', color: 'purple' as const },
@@ -48,7 +53,10 @@ export class ResumeAnalyzerComponent implements OnInit {
     'Soft Skills'
   ];
 
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadPreviousAnalysis();
@@ -69,11 +77,16 @@ export class ResumeAnalyzerComponent implements OnInit {
           this.analysisComplete = false;
           this.hasNoData = true;
         }
+        this.cdr.detectChanges();
       },
-      error: (err) => {
-        // 404 = no resume uploaded yet; any other = also show empty state
-        this.analysisComplete = false;
-        this.hasNoData = true;
+      error: () => {
+        // If no local analysis loaded, show empty state.
+        // If an analysis already exists in memory, keep showing it.
+        if (!this.analysis) {
+          this.analysisComplete = false;
+          this.hasNoData = true;
+        }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -93,8 +106,15 @@ export class ResumeAnalyzerComponent implements OnInit {
 
   analyzeResume() {
     if (!this.selectedFile) return;
+
+    // Save a snapshot so we can restore previous data on failure
+    this.previousAnalysis = this.analysis ? JSON.parse(JSON.stringify(this.analysis)) : null;
+    this.previousAnalysisComplete = this.analysisComplete;
+    this.previousHasNoData = this.hasNoData;
+
     this.isAnalyzing = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
     
     const formData = new FormData();
     formData.append('file', this.selectedFile);
@@ -109,10 +129,16 @@ export class ResumeAnalyzerComponent implements OnInit {
             this.analysisComplete = true;
             this.hasNoData = false;
             this.selectedFile = null;
+            this.cdr.detectChanges();
           },
           error: (err) => {
             this.isAnalyzing = false;
             this.errorMessage = err.error?.message || 'Failed to analyze resume. Please try again.';
+            // Restore previous successful analysis if available
+            this.analysis = this.previousAnalysis;
+            this.analysisComplete = this.previousAnalysisComplete;
+            this.hasNoData = this.previousHasNoData;
+            this.cdr.detectChanges();
             console.error(err);
           }
         });
@@ -120,6 +146,11 @@ export class ResumeAnalyzerComponent implements OnInit {
       error: (err) => {
         this.isAnalyzing = false;
         this.errorMessage = err.error?.message || 'Failed to upload resume. Please ensure you are logged in.';
+        // Restore previous successful analysis if available
+        this.analysis = this.previousAnalysis;
+        this.analysisComplete = this.previousAnalysisComplete;
+        this.hasNoData = this.previousHasNoData;
+        this.cdr.detectChanges();
         console.error(err);
       }
     });

@@ -47,10 +47,10 @@ export class RecommendationsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getRecommendations(username: string): Observable<RecommendationsResult> {
+  getRecommendations(username: string, targetRole: string): Observable<RecommendationsResult> {
     return this.http.post<RecommendationsResult>(
       `${this.baseUrl}/recommendations`,
-      { username }
+      { username, targetRole }
     );
   }
 }

@@ -4,7 +4,8 @@ import {
   OnDestroy,
   AfterViewInit,
   ViewChild,
-  ElementRef
+  ElementRef,
+  ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -47,8 +48,13 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   private donutChart: Chart | null = null;
   private barChart:   Chart | null = null;
   private viewReady = false;
+  private pendingLangs: LanguageDistribution[] | null = null;
+  private pendingActivity: RepositoryActivity[] | null = null;
 
-  constructor(private readonly github: GithubService) {}
+  constructor(
+    private readonly github: GithubService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     // On component load, fetch the active username (last searched or signup default)
@@ -70,6 +76,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {
     this.viewReady = true;
+    this.flushPendingCharts();
   }
 
   ngOnDestroy(): void {
@@ -91,15 +98,22 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     // Use analyzeAndSave (private endpoint) to persist results + update lastSearchedGithub
     this.github.analyzeAndSave(trimmed).subscribe({
       next: (data) => {
-        this.result        = data;
-        this.isAnalyzing   = false;
+        this.result = data;
+        this.isAnalyzing = false;
         this.analysisReady = true;
-        // Defer chart creation until the canvas elements are in the DOM
-        setTimeout(() => this.buildCharts(), 50);
+
+        // Queue chart data and flush only when canvases are guaranteed present
+        this.pendingLangs = data.languageDistribution ?? [];
+        this.pendingActivity = data.repositoryActivity ?? [];
+
+        this.cdr.detectChanges();
+        setTimeout(() => this.flushPendingCharts(), 0);
       },
       error: (err) => {
-        this.isAnalyzing  = false;
+        this.isAnalyzing = false;
+        this.analysisReady = false;
         this.errorMessage = err.error?.message ?? 'Failed to analyze GitHub profile. Please check the username and try again.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -109,6 +123,23 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.result) return;
     this.buildDonutChart(this.result.languageDistribution);
     this.buildBarChart(this.result.repositoryActivity);
+  }
+
+  private flushPendingCharts(): void {
+    if (!this.viewReady || !this.analysisReady || !this.result) return;
+    if (!this.donutCanvasRef?.nativeElement || !this.barCanvasRef?.nativeElement) return;
+
+    if (this.pendingLangs) {
+      this.buildDonutChart(this.pendingLangs);
+      this.pendingLangs = null;
+    }
+
+    if (this.pendingActivity) {
+      this.buildBarChart(this.pendingActivity);
+      this.pendingActivity = null;
+    }
+
+    this.cdr.detectChanges();
   }
 
   private buildDonutChart(langs: LanguageDistribution[]): void {

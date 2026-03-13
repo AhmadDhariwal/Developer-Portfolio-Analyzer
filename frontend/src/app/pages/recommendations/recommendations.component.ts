@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,6 +9,8 @@ import {
   CareerPath,
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
+import { RoleService, TargetRole } from '../../shared/services/role.service';
+import { Subscription } from 'rxjs';
 
 type Tab = 'All' | 'Projects' | 'Technologies' | 'Career Paths';
 
@@ -19,50 +21,80 @@ type Tab = 'All' | 'Projects' | 'Technologies' | 'Career Paths';
   templateUrl: './recommendations.component.html',
   styleUrl: './recommendations.component.scss',
 })
-export class RecommendationsComponent implements OnInit {
+export class RecommendationsComponent implements OnInit, OnDestroy {
   username   = '';
+  selectedRole: TargetRole = 'Full Stack Developer';
   isLoading  = false;
   errorMessage = '';
   result: RecommendationsResult | null = null;
+  private subscriptions: Subscription = new Subscription();
 
   activeTab: Tab = 'All';
   readonly tabs: Tab[] = ['All', 'Projects', 'Technologies', 'Career Paths'];
 
   constructor(
     private readonly recService: RecommendationsService,
-    private readonly githubService: GithubService
+    private readonly githubService: GithubService,
+    private readonly roleService: RoleService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // Auto-load with the last-searched GitHub username, same as Skill Gap
+    // 1. Subscribe to Global Role
+    this.subscriptions.add(
+      this.roleService.targetRole$.subscribe(role => {
+        this.selectedRole = role;
+        if (this.username) this.analyze();
+      })
+    );
+
+    // 2. Auto-load with the last-searched GitHub username
     this.githubService.getActiveUsername().subscribe({
       next: (res: { username: string; isDefault?: boolean } | null) => {
         if (res?.username) {
           this.username = res.username;
           this.analyze();
         }
+        this.cdr.detectChanges();
       },
-      error: () => { /* No saved username yet — user can type manually */ }
+      error: () => {
+        this.cdr.detectChanges();
+      }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   analyze(): void {
     const user = this.username.trim();
     if (!user) return;
 
-    this.isLoading   = true;
+    this.isLoading = true;
     this.errorMessage = '';
-    this.result      = null;
+    this.result = null;
+    this.cdr.detectChanges();
 
-    this.recService.getRecommendations(user).subscribe({
+    this.recService.getRecommendations(user, this.selectedRole).subscribe({
       next: (data) => {
-        this.result    = data;
+        const normalized: RecommendationsResult = {
+          username: data?.username || user,
+          projects: Array.isArray(data?.projects) ? data.projects : [],
+          technologies: Array.isArray(data?.technologies) ? data.technologies : [],
+          careerPaths: Array.isArray(data?.careerPaths) ? data.careerPaths : []
+        };
+
+        this.result = normalized;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMessage =
           err?.error?.message || 'Failed to fetch recommendations. Please try again.';
         this.isLoading = false;
+        this.result = null;
+        this.cdr.detectChanges();
       },
     });
   }

@@ -100,6 +100,52 @@
     }
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+  }
+
+  .role-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 10px;
+
+    .role-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .role-dropdown {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding-right: 20px;
+      cursor: pointer;
+      outline: none;
+
+      option {
+        background: #1F2937;
+        color: #fff;
+      }
+    }
+  }
+
   .reanalyze-btn {
     display: flex;
     align-items: center;
@@ -112,14 +158,22 @@
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
 
     svg {
       width: 16px;
       height: 16px;
     }
 
-    &:hover { opacity: 0.85; }
+    &:hover { 
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 
@@ -382,6 +436,21 @@
 .gap-card {
   .gap-body {
     padding: 16px 24px 24px;
+
+    .loading-state,
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .loading-state {
+      p::after {
+        content: '...';
+        animation: dots 1.5s steps(4, end) infinite;
+      }
+    }
   }
 
   .skills-group {
@@ -570,4 +639,14 @@
     &.medium { color: #22C55E; }
     &.low    { color: #F59E0B; }
   }
+}
+
+
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────── */
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
 }

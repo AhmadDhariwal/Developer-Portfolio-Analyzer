@@ -74,7 +74,13 @@ const updateProfile = async (req, res) => {
     if (twitter     !== undefined) user.twitter     = twitter;
     if (linkedin    !== undefined) user.linkedin    = linkedin;
     if (notifications !== undefined) {
-      user.notifications = { ...user.notifications?.toObject?.() ?? {}, ...notifications };
+      // Merge only valid notification keys, fallback to defaults if missing
+      user.notifications = {
+        weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
+        skillTrendAlerts:  notifications.skillTrendAlerts  ?? user.notifications.skillTrendAlerts  ?? true,
+        newRecommendations:notifications.newRecommendations?? user.notifications.newRecommendations?? false,
+        jobMatchAlerts:    notifications.jobMatchAlerts    ?? user.notifications.jobMatchAlerts    ?? true
+      };
     }
 
     const updated = await user.save();

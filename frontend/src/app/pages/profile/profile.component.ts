@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -45,10 +45,23 @@ export class ProfileComponent implements OnInit {
   // ── Password form ──────────────────────────────────────────────────────
   passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
+  private snapshot: UserProfile = {
+    _id: '', name: '', email: '', githubUsername: '',
+    avatar: '', jobTitle: '', location: '', bio: '',
+    website: '', twitter: '', linkedin: '',
+    notifications: {
+      weeklyScoreReport:  true,
+      skillTrendAlerts:   true,
+      newRecommendations: false,
+      jobMatchAlerts:     true,
+    },
+    stats: { developerScore: 0, reposAnalyzed: 0, skillsDetected: 0, memberSince: '' },
+  };
   constructor(
     private readonly profileService: ProfileService,
     private readonly authService: AuthService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -60,8 +73,10 @@ export class ProfileComponent implements OnInit {
     this.isLoading = true;
     this.profileService.getProfile().subscribe({
       next: (data) => {
-        this.profile   = data;
+        this.profile = this.normalizeProfile(data);
+        this.snapshot = { ...this.profile };
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         const cached = this.authService.getCurrentUser();
@@ -72,6 +87,7 @@ export class ProfileComponent implements OnInit {
         }
         this.errorMessage = err?.error?.message || 'Could not load profile from server.';
         this.isLoading    = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -97,13 +113,45 @@ export class ProfileComponent implements OnInit {
       next: () => {
         this.successMessage = 'Profile saved successfully!';
         this.isSaving       = false;
+        this.loadProfile(); // reload profile from backend for real-time sync
+        this.cdr.detectChanges();
         setTimeout(() => { this.successMessage = ''; }, 3000);
       },
       error: (err) => {
         this.errorMessage = err?.error?.message || 'Failed to save profile.';
         this.isSaving     = false;
+        this.cdr.detectChanges();
       },
     });
+  }
+  // Defensive normalization: always return object with expected keys
+  normalizeProfile(data: any): UserProfile {
+    if (!data || typeof data !== 'object') return { ...this.snapshot };
+    return {
+      _id: data._id || '',
+      name: data.name || '',
+      email: data.email || '',
+      githubUsername: data.githubUsername || '',
+      avatar: data.avatar || '',
+      jobTitle: data.jobTitle || '',
+      location: data.location || '',
+      bio: data.bio || '',
+      website: data.website || '',
+      twitter: data.twitter || '',
+      linkedin: data.linkedin || '',
+      notifications: {
+        weeklyScoreReport:  data.notifications?.weeklyScoreReport ?? true,
+        skillTrendAlerts:   data.notifications?.skillTrendAlerts ?? true,
+        newRecommendations: data.notifications?.newRecommendations ?? false,
+        jobMatchAlerts:     data.notifications?.jobMatchAlerts ?? true,
+      },
+      stats: {
+        developerScore: data.stats?.developerScore ?? 0,
+        reposAnalyzed:  data.stats?.reposAnalyzed ?? 0,
+        skillsDetected: data.stats?.skillsDetected ?? 0,
+        memberSince:    data.stats?.memberSince ?? '',
+      },
+    };
   }
 
   // ── Change password ────────────────────────────────────────────────────

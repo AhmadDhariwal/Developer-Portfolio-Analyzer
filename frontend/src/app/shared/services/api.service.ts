@@ -36,15 +36,22 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/resume/result`);
   }
 
-  getResumeAnalysisByUserId(userId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/resume/result/${userId}`);
+  // New AI Role-Based Methods
+  getSkillGap(username: string, targetRole: string, resumeText?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, { username, targetRole, resumeText });
   }
 
-  getAnalysis(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/analysis`);
+  getRecommendations(username: string, targetRole: string, missingSkills: string[], resumeText?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recommendations`, { username, targetRole, missingSkills, resumeText });
   }
 
-  /* ── Dashboard ── */
+  getPortfolioScore(username: string, targetRole: string, resumeAnalysis: any, githubAnalysis: any, resumeText?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, { 
+      username, targetRole, resumeAnalysis, githubAnalysis, resumeText 
+    });
+  }
+
+  /* ── Dashboard (Simplified for AI integration) ── */
   getDashboardSummary(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard/summary`);
   }
@@ -55,13 +62,5 @@ export class ApiService {
 
   getDashboardLanguages(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard/languages`);
-  }
-
-  getDashboardSkills(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/skills`);
-  }
-
-  getDashboardRecommendations(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/recommendations`);
   }
 }

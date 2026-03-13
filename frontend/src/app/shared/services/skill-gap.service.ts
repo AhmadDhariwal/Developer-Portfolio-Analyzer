@@ -42,10 +42,10 @@ export class SkillGapService {
 
   constructor(private readonly http: HttpClient) {}
 
-  analyze(username: string): Observable<SkillGapResult> {
+  analyze(username: string, targetRole: string): Observable<SkillGapResult> {
     return this.http.post<SkillGapResult>(
-      `${this.baseUrl}/analysis/skill-gap`,
-      { username }
+      `${this.baseUrl}/skillgap/skill-gap`,
+      { username, targetRole }
     );
   }
 }

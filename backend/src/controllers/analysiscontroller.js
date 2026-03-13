@@ -1,49 +1,88 @@
-const Analysis = require('../models/analysis');
-const { calculateDeveloperScore } = require('../utils/scorecalculator');
-const { detectSkillGaps } = require('../utils/skilldetector');
-const { generateRecommendations } = require('../services/analysisservice');
+const aiService = require('../services/aiservice');
+const { getPortfolioScorePrompt } = require('../prompts/portfolioScorePrompt');
+const AnalysisCache = require('../models/analysisCache');
+const crypto = require('crypto');
 
-// @desc    Get complete developer analysis and score
-// @route   GET /api/analysis
-// @access  Private
-const getAnalysis = async (req, res) => {
-    try {
-        let analysis = await Analysis.findOne({ userId: req.user._id });
+/**
+ * @desc  Get overall portfolio strength score (Readiness Score)
+ * @route POST /api/analysis/portfolio-score
+ */
+const getPortfolioReadiness = async (req, res) => {
+  try {
+    let { username, targetRole, resumeAnalysis, githubAnalysis, resumeText } = req.body;
 
-        if (!analysis) {
-            return res.status(404).json({ message: 'No analysis found. Please analyze GitHub and upload Resume first.' });
+    if (!username || !targetRole) {
+      return res.status(400).json({ message: 'Username and Target Role are required.' });
+    }
+
+    // Try to recover missing analysis data
+    if (!resumeAnalysis || !githubAnalysis) {
+        // 1. Check Cache first
+        const existing = await AnalysisCache.findOne({ githubUsername: username, targetRole });
+        if (existing && existing.analysisData.portfolioScore) {
+            return res.json({ ...existing.analysisData.portfolioScore, fromCache: true });
         }
 
-        // Combine GitHub score and Skill score into Readiness Score (50/50 weighting)
-        const githubScore = analysis.githubScore || 0;
-        const skillScore = analysis.skillScore || 0;
-
-        analysis.readinessScore = Math.round((githubScore * 0.5) + (skillScore * 0.5));
-
-        // Detect missing skills using an assumed current skillset (since PRD model didn't store current user skills)
-        // For demo accuracy, we will pass empty if they have no skillScore, or some mock data
-        const currentSkills = skillScore > 0 ? ['JavaScript', 'HTML', 'CSS'] : []; // Placeholder
-        const { missingSkills } = detectSkillGaps(currentSkills);
-
-        analysis.missingSkills = missingSkills;
-        analysis.recommendations = generateRecommendations(missingSkills, analysis.readinessScore);
-
-        await analysis.save();
-
-        res.json({
-            githubScore: analysis.githubScore,
-            skillScore: analysis.skillScore,
-            readinessScore: analysis.readinessScore,
-            missingSkills: analysis.missingSkills,
-            recommendations: analysis.recommendations,
-            githubStats: analysis.githubStats,
-            languageDistribution: analysis.languageDistribution,
-            contributionActivity: analysis.contributionActivity
-        });
-    } catch (error) {
-        console.error('Analysis Engine Error:', error);
-        res.status(500).json({ message: 'Server Error generating analysis' });
+        // 2. Fetch fresh data if needed
+        const { analyzeGitHubProfile } = require('../services/githubservice');
+        const resumeService = require('../services/resumeservice');
+        
+        if (!githubAnalysis) {
+            githubAnalysis = await analyzeGitHubProfile(username.trim());
+        }
+        
+        if (!resumeAnalysis) {
+            // Find the user's latest resume analysis
+            if (req.user) {
+                const analysisDoc = await require('../models/analysis').findOne({ userId: req.user._id });
+                if (analysisDoc) {
+                    resumeAnalysis = {
+                        skills: Array.from(analysisDoc.languageDistribution?.keys() || []),
+                        strengths: ["Detailed experience"], // Fallback traits
+                        weaknesses: []
+                    };
+                }
+            }
+            // If still no resume, use an empty placeholder
+            resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
+        }
     }
+
+    // Cache lookup
+    const cleanResume = (resumeText || "").trim();
+    const resumeHash = crypto.createHash('sha256').update(cleanResume).digest('hex');
+    const cacheKey = { githubUsername: username, targetRole, resumeHash };
+
+    const cached = await AnalysisCache.findOne(cacheKey);
+    if (cached && cached.analysisData.portfolioScore) {
+        return res.json({ ...cached.analysisData.portfolioScore, fromCache: true });
+    }
+
+    // AI Score Generation
+    const prompt = getPortfolioScorePrompt(resumeAnalysis, githubAnalysis, targetRole);
+    const fallback = {
+        overallScore: 70,
+        breakdown: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
+        summary: "Solid portfolio with room for improvement in niche areas."
+    };
+
+    const aiResult = await aiService.runAIAnalysis(prompt, fallback);
+
+    // Update Cache
+    if (req.user) {
+        await AnalysisCache.findOneAndUpdate(
+            cacheKey,
+            { $set: { "analysisData.portfolioScore": aiResult } },
+            { upsert: true }
+        );
+    }
+
+    res.json(aiResult);
+
+  } catch (error) {
+    console.error('Portfolio Score Error:', error.message);
+    res.status(500).json({ message: 'Failed to calculate portfolio score.' });
+  }
 };
 
-module.exports = { getAnalysis };
+module.exports = { getPortfolioReadiness };
