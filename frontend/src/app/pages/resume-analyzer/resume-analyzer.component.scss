@@ -270,10 +270,15 @@
 /* CTA Section */
 .cta-section {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   padding: var(--spacing-2xl) 0;
 
   .cta-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: var(--spacing-lg) var(--spacing-2xl);
     font-size: 0.95rem;
     font-weight: 600;
@@ -284,11 +289,34 @@
     cursor: pointer;
     transition: all var(--transition-base);
 
-    &:hover {
+    &:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 15px rgba(99, 102, 241, 0.2);
     }
+
+    &:disabled,
+    &.loading {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      animation: spin 0.9s linear infinite;
+      flex-shrink: 0;
+    }
   }
+
+  .cta-hint {
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #64748b);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Responsive */

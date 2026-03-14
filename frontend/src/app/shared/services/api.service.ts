@@ -36,6 +36,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/resume/result`);
   }
 
+  downloadResumeGuide(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/resume/guide`, { responseType: 'blob' });
+  }
+
   // New AI Role-Based Methods
   getSkillGap(username: string, targetRole: string, resumeText?: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, { username, targetRole, resumeText });

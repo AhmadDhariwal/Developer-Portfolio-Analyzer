@@ -1,4 +1,5 @@
 const { extractTextFromPDF, analyzeResume } = require('../services/resumeservice');
+const { generateResumeGuide } = require('../services/resumeGuideService');
 const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -13,7 +14,6 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ message: 'No resume file uploaded' });
     }
 
-    // Create ResumeFile record
     const resumeFile = new ResumeFile({
       userId: req.user._id,
       fileName: req.file.originalname,
@@ -47,24 +47,23 @@ const analyzeResumeFile = async (req, res) => {
       return res.status(400).json({ message: 'fileId is required' });
     }
 
-    // Get the resume file
     const resumeFile = await ResumeFile.findById(fileId);
     if (!resumeFile) {
       return res.status(404).json({ message: 'Resume file not found' });
     }
 
-    // Verify user owns this file
     if (resumeFile.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
     // Extract text from PDF
     const text = await extractTextFromPDF(resumeFile.fileUrl);
+    console.log(`[Resume] Extracted ${text.length} chars from "${resumeFile.fileName}"`);
 
-    // Analyze resume
-    const analysis = analyzeResume(text, resumeFile.fileName, resumeFile.fileSize);
+    // AI analysis
+    const analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize);
 
-    // Save analysis to database
+    // Persist to DB
     const resumeAnalysis = new ResumeAnalysis({
       userId: req.user._id,
       fileId: resumeFile._id,
@@ -75,6 +74,11 @@ const analyzeResumeFile = async (req, res) => {
       formatScore: analysis.formatScore,
       contentQuality: analysis.contentQuality,
       skills: new Map(Object.entries(analysis.skills)),
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
       suggestions: analysis.suggestions,
       uploadDate: resumeFile.uploadDate,
       analyzedAt: new Date()
@@ -82,11 +86,9 @@ const analyzeResumeFile = async (req, res) => {
 
     await resumeAnalysis.save();
 
-    // Mark file as analyzed
     resumeFile.isAnalyzed = true;
     await resumeFile.save();
 
-    // Return analysis
     res.json({
       message: 'Resume analyzed successfully',
       atsScore: analysis.atsScore,
@@ -94,6 +96,11 @@ const analyzeResumeFile = async (req, res) => {
       formatScore: analysis.formatScore,
       contentQuality: analysis.contentQuality,
       skills: analysis.skills,
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
       suggestions: analysis.suggestions,
       fileName: analysis.fileName,
       fileSize: analysis.fileSize,
@@ -103,6 +110,16 @@ const analyzeResumeFile = async (req, res) => {
     console.error('Resume Analysis Error:', error);
     res.status(500).json({ message: error.message || 'Server Error' });
   }
+};
+
+/** Convert a Mongoose Map or plain object to a plain JS object */
+const mapToObj = (skills) => {
+  if (skills instanceof Map) {
+    const obj = {};
+    skills.forEach((value, key) => { obj[key] = value; });
+    return obj;
+  }
+  return Object.assign({}, skills);
 };
 
 // @desc    Get resume analysis for current user
@@ -117,22 +134,17 @@ const getResumeAnalysis = async (req, res) => {
       return res.status(404).json({ message: 'No analysis found' });
     }
 
-    // Convert Map to Object
-    const skillsObj = {};
-    if (analysis.skills instanceof Map) {
-      analysis.skills.forEach((value, key) => {
-        skillsObj[key] = value;
-      });
-    } else {
-      Object.assign(skillsObj, analysis.skills);
-    }
-
     res.json({
       atsScore: analysis.atsScore,
       keywordDensity: analysis.keywordDensity,
       formatScore: analysis.formatScore,
       contentQuality: analysis.contentQuality,
-      skills: skillsObj,
+      skills: mapToObj(analysis.skills),
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
       suggestions: analysis.suggestions,
       fileName: analysis.fileName,
       fileSize: analysis.fileSize,
@@ -158,22 +170,17 @@ const getResumeAnalysisByUserId = async (req, res) => {
       return res.status(404).json({ message: 'No analysis found for this user' });
     }
 
-    // Convert Map to Object
-    const skillsObj = {};
-    if (analysis.skills instanceof Map) {
-      analysis.skills.forEach((value, key) => {
-        skillsObj[key] = value;
-      });
-    } else {
-      Object.assign(skillsObj, analysis.skills);
-    }
-
     res.json({
       atsScore: analysis.atsScore,
       keywordDensity: analysis.keywordDensity,
       formatScore: analysis.formatScore,
       contentQuality: analysis.contentQuality,
-      skills: skillsObj,
+      skills: mapToObj(analysis.skills),
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
       suggestions: analysis.suggestions,
       fileName: analysis.fileName,
       fileSize: analysis.fileSize,
@@ -185,9 +192,41 @@ const getResumeAnalysisByUserId = async (req, res) => {
   }
 };
 
+// @desc    Generate and download a personalised AI resume improvement guide
+// @route   GET /api/resume/guide
+// @access  Private
+const downloadResumeGuide = async (req, res) => {
+  try {
+    const analysis = await ResumeAnalysis.findOne({ userId: req.user._id })
+      .sort({ analyzedAt: -1 });
+
+    if (!analysis) {
+      return res.status(404).json({
+        message: 'No resume analysis found. Please upload and analyze your resume first.'
+      });
+    }
+
+    const htmlContent = await generateResumeGuide(analysis);
+
+    const safeName = (analysis.fileName || 'resume')
+      .replace(/\.pdf$/i, '')
+      .replace(/[^a-z0-9_-]/gi, '-')
+      .toLowerCase();
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="resume-guide-${safeName}.html"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.send(htmlContent);
+  } catch (error) {
+    console.error('Resume Guide Error:', error);
+    res.status(500).json({ message: error.message || 'Failed to generate resume guide' });
+  }
+};
+
 module.exports = {
   uploadResume,
   analyzeResumeFile,
   getResumeAnalysis,
-  getResumeAnalysisByUserId
+  getResumeAnalysisByUserId,
+  downloadResumeGuide
 };

@@ -1,8 +1,8 @@
 const express = require('express');
 const router  = express.Router();
 const { analyzeSkillGap } = require('../controllers/skillgapcontroller');
+const { protect } = require('../middleware/authmiddleware');
 
-// Public — analyze skill gap for any GitHub username
-router.post('/skill-gap', analyzeSkillGap);
+router.post('/skill-gap', protect, analyzeSkillGap);
 
 module.exports = router;

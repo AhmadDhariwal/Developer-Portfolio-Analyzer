@@ -59,7 +59,30 @@ const resumeAnalysisSchema = new mongoose.Schema({
     of: [String],
     default: new Map()
   },
+  experienceYears: {
+    type: Number,
+    default: 0
+  },
+  experienceLevel: {
+    type: String,
+    enum: ['Junior', 'Intermediate', 'Senior'],
+    default: 'Junior'
+  },
+  certifications: {
+    type: [String],
+    default: []
+  },
+  keyAchievements: {
+    type: [String],
+    default: []
+  },
   suggestions: [suggestionSchema],
+  scoreBreakdown: {
+    atsScore:       { type: String, default: '' },
+    keywordDensity: { type: String, default: '' },
+    formatScore:    { type: String, default: '' },
+    contentQuality: { type: String, default: '' }
+  },
   uploadDate: {
     type: Date,
     default: Date.now

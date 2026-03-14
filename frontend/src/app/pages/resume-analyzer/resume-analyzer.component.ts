@@ -25,6 +25,7 @@ import { SuggestionCardComponent } from '../../shared/components/suggestion-card
 export class ResumeAnalyzerComponent implements OnInit {
   selectedFile: File | null = null;
   isAnalyzing: boolean = false;
+  isDownloading: boolean = false;
   analysisComplete: boolean = false;
   hasNoData: boolean = false;        // true when backend confirmed no resume yet
 
@@ -214,5 +215,34 @@ export class ResumeAnalyzerComponent implements OnInit {
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  }
+
+  downloadGuide() {
+    if (!this.analysisComplete || this.isDownloading) return;
+
+    this.isDownloading = true;
+    this.errorMessage = '';
+    this.cdr.detectChanges();
+
+    this.apiService.downloadResumeGuide().subscribe({
+      next: (blob: Blob) => {
+        const url  = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href  = url;
+        link.download = `resume-guide.html`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.isDownloading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isDownloading = false;
+        this.errorMessage = err.error?.message || 'Failed to generate resume guide. Please try again.';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.errorMessage = ''; this.cdr.detectChanges(); }, 6000);
+      }
+    });
   }
 }

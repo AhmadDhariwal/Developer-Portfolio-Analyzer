@@ -14,7 +14,7 @@ import { publicGuard } from './guards/public.guard';
 
 export const routes: Routes = [
   // Landing page (public) — default route
-  { path: '', component: LandingPageComponent },
+  { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
 
   // Authentication pages (public) - only accessible when NOT logged in

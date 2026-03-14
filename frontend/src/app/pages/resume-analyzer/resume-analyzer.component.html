@@ -151,6 +151,27 @@
 
   <!-- CTA Button -->
   <div *ngIf="analysisComplete" class="cta-section">
-    <button class="cta-button">Download Improved Resume Guide →</button>
+    <button
+      class="cta-button"
+      (click)="downloadGuide()"
+      [disabled]="isDownloading"
+      [class.loading]="isDownloading">
+
+      <!-- Spinner shown while generating -->
+      <svg *ngIf="isDownloading" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+        <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
+      </svg>
+
+      <!-- Download icon shown when idle -->
+      <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+
+      {{ isDownloading ? 'Generating Guide…' : 'Download Improved Resume Guide' }}
+    </button>
+    <p class="cta-hint">AI generates a personalised HTML guide — open in browser and print to PDF</p>
   </div>
 </div>
