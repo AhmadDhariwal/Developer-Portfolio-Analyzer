@@ -1,0 +1,186 @@
+// ─── Course Filters Panel ────────────────────────────────────────────────────
+
+:host {
+  display: block;
+}
+
+.filters-panel {
+  background:    #1f2937;
+  border:        1px solid #374151;
+  border-radius: 12px;
+  overflow:      hidden;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.filters-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         14px 16px;
+  border-bottom:   1px solid #374151;
+  gap:             8px;
+}
+
+.header-left {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+
+  svg {
+    width:  16px;
+    height: 16px;
+    color:  #6366f1;
+    flex-shrink: 0;
+  }
+}
+
+.header-title {
+  font-size:   0.875rem;
+  font-weight: 600;
+  color:       #f9fafb;
+}
+
+.active-dot {
+  width:        7px;
+  height:       7px;
+  border-radius: 50%;
+  background:   #6366f1;
+  display:      inline-block;
+}
+
+.header-actions {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+}
+
+.btn-reset {
+  font-size:   0.72rem;
+  color:       #6366f1;
+  background:  transparent;
+  border:      none;
+  cursor:      pointer;
+  padding:     2px 6px;
+  border-radius: 4px;
+  transition:  background 0.15s;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.1);
+  }
+}
+
+.btn-collapse {
+  background:  transparent;
+  border:      none;
+  cursor:      pointer;
+  padding:     4px;
+  color:       #6b7280;
+  border-radius: 4px;
+  transition:  color 0.15s;
+  display:     flex;
+  align-items: center;
+
+  svg {
+    width:      14px;
+    height:     14px;
+    transition: transform 0.25s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:hover {
+    color: #f9fafb;
+  }
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+
+.filters-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Filter group ──────────────────────────────────────────────────────────────
+
+.filter-group {
+  display:        flex;
+  flex-direction: column;
+  gap:            10px;
+}
+
+.filter-label {
+  font-size:      0.72rem;
+  font-weight:    600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color:          #9ca3af;
+}
+
+.filter-options {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       6px;
+}
+
+.filter-opt-btn {
+  padding:       5px 12px;
+  border-radius: 20px;
+  font-size:     0.75rem;
+  font-weight:   500;
+  border:        1px solid #374151;
+  background:    transparent;
+  color:         #9ca3af;
+  cursor:        pointer;
+  transition:    all 0.15s ease;
+  white-space:   nowrap;
+
+  &:hover {
+    border-color: #6366f1;
+    color:        #c7d2fe;
+  }
+
+  &.active {
+    background:   rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+    color:        #a5b4fc;
+    font-weight:  600;
+  }
+}
+
+// ── Topic pills ───────────────────────────────────────────────────────────────
+
+.topic-grid {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       6px;
+}
+
+.topic-pill {
+  padding:       4px 10px;
+  border-radius: 6px;
+  font-size:     0.72rem;
+  font-weight:   500;
+  border:        1px solid #374151;
+  background:    #111827;
+  color:         #6b7280;
+  cursor:        pointer;
+  transition:    all 0.15s ease;
+
+  &:hover {
+    border-color: #6366f1;
+    color:        #c7d2fe;
+    background:   rgba(99, 102, 241, 0.08);
+  }
+
+  &.active {
+    background:   rgba(99, 102, 241, 0.18);
+    border-color: #6366f1;
+    color:        #a5b4fc;
+    font-weight:  600;
+  }
+}

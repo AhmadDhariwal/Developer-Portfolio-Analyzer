@@ -1,0 +1,77 @@
+<article class="course-card" (click)="openCourse()" role="button" tabindex="0" (keydown.enter)="openCourse()">
+
+  <!-- Thumbnail -->
+  <div class="card-thumb">
+    <img
+      *ngIf="course.thumbnail && !thumbnailError"
+      [src]="course.thumbnail"
+      [alt]="course.title"
+      (error)="onThumbnailError()"
+      loading="lazy"
+    />
+    <!-- Fallback gradient banner with platform initials -->
+    <div
+      *ngIf="!course.thumbnail || thumbnailError"
+      class="thumb-fallback"
+      [style.background]="'linear-gradient(135deg, ' + platformColors.bg + 'cc, ' + platformColors.accent + ')'"
+    >
+      <span class="thumb-initial">{{ course.platform.charAt(0) }}</span>
+      <span class="thumb-platform-name">{{ course.platform }}</span>
+    </div>
+
+    <!-- Level badge overlay -->
+    <span class="level-badge" [ngClass]="levelClass">{{ course.level }}</span>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+
+    <!-- Platform chip -->
+    <div class="platform-row">
+      <span class="platform-chip" [ngClass]="platformClass">{{ course.platform }}</span>
+      <span class="duration-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        {{ course.duration }}
+      </span>
+    </div>
+
+    <!-- Title -->
+    <h3 class="course-title" [title]="course.title">{{ course.title }}</h3>
+
+    <!-- Instructor -->
+    <p class="instructor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      {{ course.instructor }}
+    </p>
+
+    <!-- Description -->
+    <p class="description">{{ course.description }}</p>
+
+    <!-- Topics -->
+    <div class="topics" *ngIf="course.topics.length">
+      <span class="topic-tag" *ngFor="let t of course.topics.slice(0, 3)">{{ t }}</span>
+    </div>
+
+    <!-- Footer: rating + button -->
+    <div class="card-footer">
+
+      <div class="rating-block">
+        <span class="rating-value">{{ course.rating.toFixed(1) }}</span>
+        <span class="stars">
+          <span
+            *ngFor="let s of starsArray; let i = index"
+            class="star"
+            [ngClass]="getStarClass(i)"
+          ></span>
+        </span>
+        <span class="review-count">({{ formatReviews(course.reviewCount) }})</span>
+      </div>
+
+      <button class="btn-view" (click)="$event.stopPropagation(); openCourse()">
+        View Course
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+
+    </div>
+  </div>
+</article>

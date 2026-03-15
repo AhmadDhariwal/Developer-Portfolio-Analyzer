@@ -1,0 +1,102 @@
+<aside class="filters-panel" [class.collapsed]="isCollapsed">
+
+  <!-- Header -->
+  <div class="filters-header">
+    <div class="header-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <span class="header-title">Filters</span>
+      <span class="active-dot" *ngIf="hasActiveFilters"></span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-reset" *ngIf="hasActiveFilters" (click)="resetFilters()">Clear all</button>
+      <button class="btn-collapse" (click)="toggleCollapse()" [title]="isCollapsed ? 'Expand filters' : 'Collapse filters'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="isCollapsed">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter groups (hidden when collapsed) -->
+  <div class="filters-body" *ngIf="!isCollapsed">
+
+    <!-- Platform -->
+    <div class="filter-group">
+      <label class="filter-label">Platform</label>
+      <div class="filter-options">
+        <button
+          *ngFor="let opt of platformOptions"
+          class="filter-opt-btn"
+          [class.active]="filters.platform === opt.value"
+          (click)="filters.platform = opt.value; onFilterChange()"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="filter-group">
+      <label class="filter-label">Minimum Rating</label>
+      <div class="filter-options">
+        <button
+          *ngFor="let opt of ratingOptions"
+          class="filter-opt-btn"
+          [class.active]="filters.rating === opt.value"
+          (click)="filters.rating = opt.value; onFilterChange()"
+        >
+          <span *ngIf="opt.value">★ </span>{{ opt.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Level -->
+    <div class="filter-group">
+      <label class="filter-label">Level</label>
+      <div class="filter-options">
+        <button
+          *ngFor="let opt of levelOptions"
+          class="filter-opt-btn"
+          [class.active]="filters.level === opt.value"
+          (click)="filters.level = opt.value; onFilterChange()"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Duration -->
+    <div class="filter-group">
+      <label class="filter-label">Duration</label>
+      <div class="filter-options">
+        <button
+          *ngFor="let opt of durationOptions"
+          class="filter-opt-btn"
+          [class.active]="filters.duration === opt.value"
+          (click)="filters.duration = opt.value; onFilterChange()"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Topic -->
+    <div class="filter-group">
+      <label class="filter-label">Topic</label>
+      <div class="topic-grid">
+        <button
+          *ngFor="let topic of topicOptions"
+          class="topic-pill"
+          [class.active]="filters.topic === topic"
+          (click)="selectTopic(topic)"
+        >
+          {{ topic }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</aside>

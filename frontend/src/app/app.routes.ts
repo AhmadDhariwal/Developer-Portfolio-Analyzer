@@ -6,6 +6,7 @@ import { ResumeAnalyzerComponent } from './pages/resume-analyzer/resume-analyzer
 import { SkillGapComponent } from './pages/skill-gap/skill-gap.component';
 import { RecommendationsComponent } from './pages/recommendations/recommendations.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { CoursesComponent } from './pages/courses/courses.component';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
@@ -33,7 +34,8 @@ export const routes: Routes = [
       { path: 'resume-analyzer', component: ResumeAnalyzerComponent },
       { path: 'skill-gap', component: SkillGapComponent },
       { path: 'recommendations', component: RecommendationsComponent },
-      { path: 'profile', component: ProfileComponent }
+      { path: 'courses',         component: CoursesComponent },
+      { path: 'profile',         component: ProfileComponent }
     ]
   },
 

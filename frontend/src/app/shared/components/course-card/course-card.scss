@@ -1,0 +1,277 @@
+// ─── Course Card ─────────────────────────────────────────────────────────────
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.course-card {
+  background:    #1f2937;
+  border:        1px solid #374151;
+  border-radius: 12px;
+  overflow:      hidden;
+  display:       flex;
+  flex-direction: column;
+  height:        100%;
+  cursor:        pointer;
+  transition:    transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  outline:       none;
+
+  &:hover,
+  &:focus-visible {
+    transform:   translateY(-4px);
+    box-shadow:  0 12px 40px rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+
+    .btn-view {
+      background: #4f46e5;
+    }
+  }
+}
+
+// ── Thumbnail ───────────────────────────────────────────────────────────────
+
+.card-thumb {
+  position: relative;
+  width:    100%;
+  height:   165px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width:      100%;
+    height:     100%;
+    object-fit: cover;
+    display:    block;
+  }
+}
+
+.thumb-fallback {
+  width:           100%;
+  height:          100%;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             6px;
+}
+
+.thumb-initial {
+  font-size:   2.5rem;
+  font-weight: 800;
+  color:       rgba(255, 255, 255, 0.9);
+  line-height: 1;
+}
+
+.thumb-platform-name {
+  font-size:      0.75rem;
+  font-weight:    600;
+  color:          rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.level-badge {
+  position:      absolute;
+  top:           10px;
+  right:         10px;
+  padding:       3px 10px;
+  border-radius: 20px;
+  font-size:     0.7rem;
+  font-weight:   600;
+  backdrop-filter: blur(6px);
+
+  &.level-beginner     { background: rgba(16, 185, 129, 0.85); color: #fff; }
+  &.level-intermediate { background: rgba(245, 158, 11, 0.85);  color: #fff; }
+  &.level-advanced     { background: rgba(239, 68, 68, 0.85);   color: #fff; }
+  &.level-all          { background: rgba(99, 102, 241, 0.85);  color: #fff; }
+}
+
+// ── Body ────────────────────────────────────────────────────────────────────
+
+.card-body {
+  padding:        16px;
+  display:        flex;
+  flex-direction: column;
+  flex:           1;
+  gap:            10px;
+}
+
+// ── Platform row ─────────────────────────────────────────────────────────────
+
+.platform-row {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  flex-wrap:   wrap;
+}
+
+.platform-chip {
+  font-size:     0.68rem;
+  font-weight:   700;
+  padding:       3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+
+  &.platform-udemy        { background: rgba(164, 53, 240, 0.2); color: #c084fc; border: 1px solid rgba(164, 53, 240, 0.3); }
+  &.platform-coursera     { background: rgba(0, 86, 210, 0.2);   color: #60a5fa; border: 1px solid rgba(0, 86, 210, 0.3); }
+  &.platform-youtube      { background: rgba(255, 0, 0, 0.15);   color: #f87171; border: 1px solid rgba(255, 0, 0, 0.25); }
+  &.platform-edx          { background: rgba(2, 38, 43, 0.6);    color: #5eead4; border: 1px solid rgba(94, 234, 212, 0.2); }
+  &.platform-freecodecamp { background: rgba(0, 100, 0, 0.25);   color: #86efac; border: 1px solid rgba(134, 239, 172, 0.25); }
+}
+
+.duration-chip {
+  display:     flex;
+  align-items: center;
+  gap:         4px;
+  font-size:   0.72rem;
+  color:       #9ca3af;
+  margin-left: auto;
+
+  svg {
+    width:  13px;
+    height: 13px;
+  }
+}
+
+// ── Title ─────────────────────────────────────────────────────────────────────
+
+.course-title {
+  font-size:     0.9rem;
+  font-weight:   600;
+  color:         #f9fafb;
+  line-height:   1.4;
+  margin:        0;
+  // Clamp to 2 lines
+  display:       -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:      hidden;
+}
+
+// ── Instructor ───────────────────────────────────────────────────────────────
+
+.instructor {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   0.75rem;
+  color:       #9ca3af;
+  margin:      0;
+
+  svg {
+    width:     13px;
+    height:    13px;
+    flex-shrink: 0;
+  }
+}
+
+// ── Description ──────────────────────────────────────────────────────────────
+
+.description {
+  font-size:   0.75rem;
+  color:       #6b7280;
+  line-height: 1.5;
+  margin:      0;
+  display:     -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:    hidden;
+  flex-shrink: 0;
+}
+
+// ── Topics ───────────────────────────────────────────────────────────────────
+
+.topics {
+  display:   flex;
+  gap:       6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.topic-tag {
+  font-size:     0.65rem;
+  padding:       2px 8px;
+  background:    #374151;
+  color:         #d1d5db;
+  border-radius: 20px;
+  white-space:   nowrap;
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────────
+
+.card-footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             8px;
+  padding-top:     8px;
+  border-top:      1px solid #374151;
+  margin-top:      auto;
+}
+
+.rating-block {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+}
+
+.rating-value {
+  font-size:   0.85rem;
+  font-weight: 700;
+  color:       #fbbf24;
+}
+
+.stars {
+  display: flex;
+  gap:     2px;
+}
+
+.star {
+  width:    12px;
+  height:   12px;
+  position: relative;
+  display:  inline-block;
+
+  &::before {
+    content:  '★';
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  &.star-full  { color: #fbbf24; }
+  &.star-half  { color: #fbbf24; opacity: 0.6; }
+  &.star-empty { color: #4b5563; }
+}
+
+.review-count {
+  font-size: 0.7rem;
+  color:     #6b7280;
+}
+
+.btn-view {
+  display:         flex;
+  align-items:     center;
+  gap:             5px;
+  padding:         7px 14px;
+  background:      #6366f1;
+  color:           #fff;
+  border:          none;
+  border-radius:   8px;
+  font-size:       0.75rem;
+  font-weight:     600;
+  cursor:          pointer;
+  transition:      background 0.2s ease;
+  white-space:     nowrap;
+  flex-shrink:     0;
+
+  svg {
+    width:  13px;
+    height: 13px;
+  }
+
+  &:hover {
+    background: #4f46e5;
+  }
+}

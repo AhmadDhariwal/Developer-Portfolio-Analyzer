@@ -10,6 +10,7 @@ const dashboardroute = require('./src/routes/dashboard.routes');
 const skillgaproute          = require('./src/routes/skillgap.routes');
 const recommendationsroute   = require('./src/routes/recommendations.routes');
 const profileroute           = require('./src/routes/profile.routes');
+const courseroute            = require('./src/routes/courseRoutes');
 
 // Connect to database
 connectDB();
@@ -34,6 +35,7 @@ app.use('/api/dashboard',       dashboardroute);
 app.use('/api/skillgap',        skillgaproute);
 app.use('/api/recommendations', recommendationsroute);
 app.use('/api/profile',         profileroute);
+app.use('/api/courses',         courseroute);
 
 const PORT = process.env.PORT || 5000;
 

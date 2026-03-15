@@ -1,0 +1,209 @@
+<div class="courses-page">
+
+  <!-- ── Page Header ───────────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <span class="title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </span>
+          Learning Hub
+        </h1>
+        <p class="page-subtitle">
+          Courses curated for your
+          <span class="highlight">{{ currentCareerStack }}</span> stack ·
+          <span class="highlight">{{ currentExperienceLevel }}</span> level
+        </p>
+      </div>
+
+      <!-- Stats chips -->
+      <div class="header-stats" *ngIf="!isLoading && totalCourses > 0">
+        <div class="stat-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span>{{ totalCourses }} Courses</span>
+        </div>
+        <div class="stat-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+        <div class="stat-chip active-filters" *ngIf="hasActiveFilters">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          <span>Filtered</span>
+        </div>
+      </div>
+
+      <!-- Mobile filter toggle -->
+      <button class="btn-mobile-filters" (click)="toggleMobileFilters()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filters
+        <span class="filter-badge" *ngIf="hasActiveFilters">•</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Body Layout ────────────────────────────────────────────────────────── -->
+  <div class="courses-layout">
+
+    <!-- ── Sidebar Filters ───────────────────────────────────────────────── -->
+    <div class="filters-column" [class.mobile-open]="isMobileFiltersOpen">
+      <div class="filters-overlay" (click)="toggleMobileFilters()"></div>
+      <div class="filters-inner">
+        <app-course-filters
+          [initialFilters]="activeFilters"
+          (filtersChange)="onFiltersChange($event)"
+          (filtersReset)="onFiltersReset()"
+        ></app-course-filters>
+      </div>
+    </div>
+
+    <!-- ── Course Content ────────────────────────────────────────────────── -->
+    <div class="courses-content">
+
+      <!-- ── Loading Skeleton ────────────────────────────────────────────── -->
+      <ng-container *ngIf="isLoading">
+        <div class="shimmer-title"></div>
+        <div class="courses-grid">
+          <div class="skeleton-card" *ngFor="let s of skeletonItems">
+            <div class="sk-thumb"></div>
+            <div class="sk-body">
+              <div class="sk-line sk-short"></div>
+              <div class="sk-line sk-long"></div>
+              <div class="sk-line sk-medium"></div>
+              <div class="sk-line sk-short"></div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── Error state ─────────────────────────────────────────────────── -->
+      <div class="error-state" *ngIf="!isLoading && errorMessage">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3>Failed to load courses</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-retry" (click)="retryLoad()">Try Again</button>
+      </div>
+
+      <!-- ── Empty state ─────────────────────────────────────────────────── -->
+      <div class="empty-state" *ngIf="!isLoading && !errorMessage && allCourses.length === 0 && currentPage > 0">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </div>
+        <h3>No courses found</h3>
+        <p>Try adjusting your filters or clearing them to see all courses.</p>
+        <button class="btn-retry" (click)="onFiltersReset()">Clear Filters</button>
+      </div>
+
+      <!-- ── Course grid ─────────────────────────────────────────────────── -->
+      <ng-container *ngIf="!isLoading && !errorMessage && displayedCourses.length > 0">
+
+        <!-- Section header with progress -->
+        <div class="section-header">
+          <div class="section-header-left">
+            <h2 class="section-title">Recommended for you</h2>
+            <span class="count-badge">Showing {{ displayedCourses.length }} of {{ totalCourses }}</span>
+          </div>
+          <p class="section-sub" *ngIf="hasActiveFilters">Filtered results</p>
+        </div>
+
+        <!-- Phase indicator bar -->
+        <div class="phase-bar" *ngIf="allCourses.length > 0">
+          <div class="phase-bar-fill"
+            [style.width.%]="(displayedCourses.length / totalCourses) * 100">
+          </div>
+        </div>
+
+        <!-- Courses grid -->
+        <div class="courses-grid">
+          <app-course-card
+            *ngFor="let course of displayedCourses; trackBy: trackById"
+            [course]="course"
+          ></app-course-card>
+        </div>
+
+        <!-- Load More button: Phase 1 – reveal hidden, Phase 2 – fetch next page -->
+        <div class="load-more-row" *ngIf="canShowLoadMore || isLoadingMore">
+
+          <button
+            class="btn-load-more"
+            [class.phase-reveal]="hasHiddenCourses"
+            [class.phase-fetch]="hasMorePages"
+            (click)="loadMore()"
+            [disabled]="isLoadingMore"
+          >
+            <!-- Spinner while loading more from backend -->
+            <ng-container *ngIf="isLoadingMore">
+              <span class="spinner"></span>
+              <span>Fetching courses…</span>
+            </ng-container>
+
+            <!-- Phase 1: reveal already-fetched hidden courses -->
+            <ng-container *ngIf="!isLoadingMore && hasHiddenCourses">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              <span>Show {{ hiddenCount }} more</span>
+            </ng-container>
+
+            <!-- Phase 2: fetch next page from backend -->
+            <ng-container *ngIf="!isLoadingMore && hasMorePages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              <span>Load more courses</span>
+            </ng-container>
+          </button>
+
+          <p class="load-more-hint">
+            {{ displayedCourses.length }} shown · {{ totalCourses }} total · page {{ currentPage }}/{{ totalPages }}
+          </p>
+
+        </div>
+
+        <!-- All loaded indicator -->
+        <div class="all-loaded"
+          *ngIf="!canShowLoadMore && !isLoadingMore && currentPage > 0 && displayedCourses.length >= PAGE_SIZE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          All courses loaded
+        </div>
+
+      </ng-container>
+
+      <!-- Loading more indicator (appended below existing cards) -->
+      <div class="loading-more-grid" *ngIf="isLoadingMore">
+        <div class="skeleton-card" *ngFor="let s of skeletonItems">
+          <div class="sk-thumb"></div>
+          <div class="sk-body">
+            <div class="sk-line sk-short"></div>
+            <div class="sk-line sk-long"></div>
+            <div class="sk-line sk-medium"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
