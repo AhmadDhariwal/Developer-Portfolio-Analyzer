@@ -9,6 +9,13 @@ import {
   UpdateProfilePayload,
 } from '../../shared/services/profile.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { CareerProfileService } from '../../shared/services/career-profile.service';
+import {
+  CAREER_STACKS,
+  EXPERIENCE_LEVELS,
+  CareerStack,
+  ExperienceLevel,
+} from '../../shared/models/career-profile.model';
 
 @Component({
   selector: 'app-profile',
@@ -18,21 +25,31 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent implements OnInit {
+  // ── Constants for template selects ────────────────────────────────────
+  readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
+  readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
+
   // ── State ──────────────────────────────────────────────────────────────
   isLoading         = true;
   isSaving          = false;
+  isSavingCareer    = false;
   isChangingPwd     = false;
   showDeleteConfirm = false;
   successMessage    = '';
   errorMessage      = '';
   pwdError          = '';
   pwdSuccess        = '';
+  careerSuccess     = '';
 
   // ── Profile data (bound to form) ───────────────────────────────────────
   profile: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
+    careerStack:     'Full Stack',
+    experienceLevel: 'Student',
+    careerGoal:      '',
+    isConfigured:    false,
     notifications: {
       weeklyScoreReport:  true,
       skillTrendAlerts:   true,
@@ -49,6 +66,10 @@ export class ProfileComponent implements OnInit {
     _id: '', name: '', email: '', githubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
+    careerStack:     'Full Stack',
+    experienceLevel: 'Student',
+    careerGoal:      '',
+    isConfigured:    false,
     notifications: {
       weeklyScoreReport:  true,
       skillTrendAlerts:   true,
@@ -57,11 +78,13 @@ export class ProfileComponent implements OnInit {
     },
     stats: { developerScore: 0, reposAnalyzed: 0, skillsDetected: 0, memberSince: '' },
   };
+
   constructor(
-    private readonly profileService: ProfileService,
-    private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
+    private readonly profileService:      ProfileService,
+    private readonly authService:         AuthService,
+    private readonly careerProfileService: CareerProfileService,
+    private readonly router:              Router,
+    private readonly cdr:                 ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -139,6 +162,10 @@ export class ProfileComponent implements OnInit {
       website: data.website || '',
       twitter: data.twitter || '',
       linkedin: data.linkedin || '',
+      careerStack:     data.careerStack     || 'Full Stack',
+      experienceLevel: data.experienceLevel || 'Student',
+      careerGoal:      data.careerGoal      || '',
+      isConfigured:    data.isConfigured    ?? false,
       notifications: {
         weeklyScoreReport:  data.notifications?.weeklyScoreReport ?? true,
         skillTrendAlerts:   data.notifications?.skillTrendAlerts ?? true,
@@ -152,6 +179,31 @@ export class ProfileComponent implements OnInit {
         memberSince:    data.stats?.memberSince ?? '',
       },
     };
+  }
+
+  // ── Save career profile ────────────────────────────────────────────────
+  saveCareerProfile(): void {
+    this.isSavingCareer = true;
+    this.careerSuccess  = '';
+
+    this.careerProfileService.saveCareerProfile(
+      this.profile.careerStack,
+      this.profile.experienceLevel,
+      this.profile.careerGoal
+    ).subscribe({
+      next: () => {
+        this.isSavingCareer = true;
+        this.careerSuccess  = 'Career profile saved!';
+        this.isSavingCareer = false;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.careerSuccess = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err) => {
+        this.errorMessage   = err?.error?.message || 'Failed to save career profile.';
+        this.isSavingCareer = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // ── Change password ────────────────────────────────────────────────────

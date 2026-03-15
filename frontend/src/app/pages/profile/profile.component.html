@@ -234,6 +234,57 @@
         </div>
       </div>
 
+      <!-- Career Profile ─────────────────────────────────────── -->
+      <div class="prof-card">
+        <div class="section-head">
+          <div class="section-head__icon section-head__icon--purple">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Career Profile</h2>
+            <p>Tailor AI analysis to your target role and experience level</p>
+          </div>
+        </div>
+
+        <div class="career-success" *ngIf="careerSuccess">{{ careerSuccess }}</div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Career Stack</label>
+            <select [(ngModel)]="profile.careerStack">
+              <option *ngFor="let s of careerStacks" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Experience Level</label>
+            <select [(ngModel)]="profile.experienceLevel">
+              <option *ngFor="let l of experienceLevels" [value]="l">{{ l }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label>Career Goal</label>
+          <select [(ngModel)]="profile.careerGoal">
+            <option value="">-- Select a goal --</option>
+            <option value="Get first job">Get first job</option>
+            <option value="Improve portfolio">Improve portfolio</option>
+            <option value="Prepare for interviews">Prepare for interviews</option>
+            <option value="Switch tech stack">Switch tech stack</option>
+          </select>
+        </div>
+
+        <div class="career-actions">
+          <button class="btn-save" (click)="saveCareerProfile()" [disabled]="isSavingCareer">
+            {{ isSavingCareer ? 'Saving…' : 'Save Career Profile' }}
+          </button>
+        </div>
+      </div>
+
       <!-- Notification Preferences ───────────────────────────── -->
       <div class="prof-card">
         <div class="section-head">

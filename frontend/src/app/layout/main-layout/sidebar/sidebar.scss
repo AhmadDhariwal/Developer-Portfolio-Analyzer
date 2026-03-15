@@ -12,6 +12,10 @@
   transition: transform var(--transition-base), width var(--transition-base);
   overflow: hidden;
 
+  &.closed {
+    transform: translateX(-100%);
+  }
+
   @media (max-width: 768px) {
     transform: translateX(-100%);
     &.open { transform: translateX(0); }

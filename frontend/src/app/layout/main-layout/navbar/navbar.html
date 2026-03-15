@@ -1,4 +1,4 @@
-<nav class="navbar">
+<nav class="navbar" [class.sidebar-closed]="!sidebarOpen">
   <!-- Left: hamburger toggle -->
   <div class="navbar-left">
     <button class="menu-toggle" (click)="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
@@ -14,7 +14,44 @@
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" placeholder="Search repositories, skills..." autocomplete="off" />
+      <input
+        type="text"
+        placeholder="Search repositories, skills..."
+        autocomplete="off"
+        [value]="searchQuery"
+        (input)="onSearchInput($event)"
+        (blur)="closeSearch()"
+        (focus)="showSuggestions = suggestions.length > 0"
+      />
+      <!-- Suggestions dropdown -->
+      <div class="search-suggestions" *ngIf="showSuggestions">
+        <div
+          *ngFor="let s of suggestions"
+          class="suggestion-item"
+          [class.suggestion-page]="s.type === 'page'"
+          [class.suggestion-repo]="s.type === 'repo'"
+          [class.suggestion-skill]="s.type === 'skill'"
+          (mousedown)="selectSuggestion(s)"
+        >
+          <span class="suggestion-icon">
+            <svg *ngIf="s.type === 'page'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <svg *ngIf="s.type === 'repo'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            <svg *ngIf="s.type === 'skill'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </span>
+          <span class="suggestion-text">
+            <span class="suggestion-label">{{ s.label }}</span>
+            <span class="suggestion-sub" *ngIf="s.sublabel">{{ s.sublabel }}</span>
+          </span>
+          <span class="suggestion-badge">{{ s.type }}</span>
+        </div>
+      </div>
     </div>
   </div>
 

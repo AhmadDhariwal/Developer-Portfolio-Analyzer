@@ -15,6 +15,10 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: left var(--transition-base);
 
+  &.sidebar-closed {
+    left: 0;
+  }
+
   /* ─── Left ─── */
   .navbar-left {
     display: flex;
@@ -74,6 +78,113 @@
           border-color: rgba(99, 102, 241, 0.5);
           background: rgba(99, 102, 241, 0.04);
           width: 320px;
+        }
+      }
+
+      .search-suggestions {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 360px;
+        background: rgba(17, 24, 39, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        animation: slideDown 0.15s ease-out;
+        overflow: hidden;
+
+        .suggestion-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 14px;
+          cursor: pointer;
+          transition: background var(--transition-fast);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+          &:last-child { border-bottom: none; }
+
+          &:hover {
+            background: rgba(99, 102, 241, 0.1);
+          }
+
+          .suggestion-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            svg { width: 16px; height: 16px; }
+          }
+
+          &.suggestion-page .suggestion-icon {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+          }
+
+          &.suggestion-repo .suggestion-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+          }
+
+          .suggestion-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+
+            .suggestion-label {
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: var(--text-primary);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .suggestion-sub {
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+
+          .suggestion-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 7px;
+            border-radius: 6px;
+            flex-shrink: 0;
+          }
+
+          &.suggestion-page .suggestion-badge {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+          }
+
+          &.suggestion-repo .suggestion-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+          }
+
+          &.suggestion-skill .suggestion-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+          }
+
+          &.suggestion-skill .suggestion-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+          }
         }
       }
     }

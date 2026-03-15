@@ -9,8 +9,9 @@ import {
   CareerPath,
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
-import { RoleService, TargetRole } from '../../shared/services/role.service';
+import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { Subscription } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 type Tab = 'All' | 'Projects' | 'Technologies' | 'Career Paths';
 
@@ -22,9 +23,8 @@ type Tab = 'All' | 'Projects' | 'Technologies' | 'Career Paths';
   styleUrl: './recommendations.component.scss',
 })
 export class RecommendationsComponent implements OnInit, OnDestroy {
-  username   = '';
-  selectedRole: TargetRole = 'Full Stack Developer';
-  isLoading  = false;
+  username     = '';
+  isLoading    = false;
   errorMessage = '';
   result: RecommendationsResult | null = null;
   private subscriptions: Subscription = new Subscription();
@@ -33,22 +33,25 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   readonly tabs: Tab[] = ['All', 'Projects', 'Technologies', 'Career Paths'];
 
   constructor(
-    private readonly recService: RecommendationsService,
-    private readonly githubService: GithubService,
-    private readonly roleService: RoleService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly recService:           RecommendationsService,
+    private readonly githubService:        GithubService,
+    private readonly careerProfileService: CareerProfileService,
+    private readonly cdr:                  ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // 1. Subscribe to Global Role
+    // Subscribe to career profile changes — re-analyze whenever stack or level changes
     this.subscriptions.add(
-      this.roleService.targetRole$.subscribe(role => {
-        this.selectedRole = role;
+      this.careerProfileService.careerProfile$.pipe(
+        distinctUntilChanged((a, b) =>
+          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
+        )
+      ).subscribe(() => {
         if (this.username) this.analyze();
       })
     );
 
-    // 2. Auto-load with the last-searched GitHub username
+    // Auto-load with the last-searched GitHub username
     this.githubService.getActiveUsername().subscribe({
       next: (res: { username: string; isDefault?: boolean } | null) => {
         if (res?.username) {
@@ -76,13 +79,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     this.result = null;
     this.cdr.detectChanges();
 
-    this.recService.getRecommendations(user, this.selectedRole).subscribe({
+    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+
+    this.recService.getRecommendations(user, careerStack, experienceLevel).subscribe({
       next: (data) => {
         const normalized: RecommendationsResult = {
-          username: data?.username || user,
-          projects: Array.isArray(data?.projects) ? data.projects : [],
-          technologies: Array.isArray(data?.technologies) ? data.technologies : [],
-          careerPaths: Array.isArray(data?.careerPaths) ? data.careerPaths : []
+          username:        data?.username        || user,
+          careerStack:     data?.careerStack     || careerStack,
+          experienceLevel: data?.experienceLevel || experienceLevel,
+          projects:        Array.isArray(data?.projects)     ? data.projects     : [],
+          technologies:    Array.isArray(data?.technologies) ? data.technologies : [],
+          careerPaths:     Array.isArray(data?.careerPaths)  ? data.careerPaths  : []
         };
 
         this.result = normalized;
@@ -99,13 +106,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /* ── Helpers ────────────────────────────────────────────── */
+
+  get currentCareerStack(): string    { return this.careerProfileService.careerStack; }
+  get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
+
   setTab(tab: Tab): void { this.activeTab = tab; }
 
   showProjects():     boolean { return this.activeTab === 'All' || this.activeTab === 'Projects'; }
   showTechnologies(): boolean { return this.activeTab === 'All' || this.activeTab === 'Technologies'; }
   showCareerPaths():  boolean { return this.activeTab === 'All' || this.activeTab === 'Career Paths'; }
 
-  /** CSS class for difficulty badge */
   getDifficultyClass(d: RecommendedProject['difficulty']): string {
     switch (d) {
       case 'Advanced':     return 'badge-advanced';
@@ -114,7 +125,6 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** CSS class for technology priority badge */
   getPriorityClass(raw: RecommendedTechnology['priorityRaw']): string {
     switch (raw) {
       case 'High':   return 'priority-must';
@@ -123,22 +133,20 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** CSS class for career match percentage */
   getMatchClass(match: number): string {
     if (match >= 75) return 'match-green';
     if (match >= 50) return 'match-purple';
     return 'match-blue';
   }
 
-  /** Width string for progress bar */
   barWidth(pct: number): string {
     return `${Math.min(100, Math.max(0, pct))}%`;
   }
 
-  /** Track-by helpers */
   trackById(_: number, item: RecommendedProject | CareerPath): string {
     return item.id;
   }
+
   trackByName(_: number, item: RecommendedTechnology): string {
     return item.name;
   }

@@ -3,37 +3,42 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface CurrentSkill {
-  name: string;
-  category: string;
-  proficiency: number;   // 0–100
+  name:           string;
+  category:       string;
+  proficiency:    number;   // 0–100
+  isFoundational: boolean;  // true if core to the career stack
 }
 
 export interface MissingSkill {
-  name: string;
-  category: string;
-  priority: 'High' | 'Medium' | 'Low';
-  jobDemand: number;     // percentage
+  name:           string;
+  category:       string;
+  priority:       'High' | 'Medium' | 'Low';
+  jobDemand:      number;   // percentage
+  levelRelevance: 'Current' | 'Next Level' | 'Advanced';
 }
 
 export interface RoadmapPhase {
-  phase: string;         // "Phase 1"
-  duration: string;      // "2-4 weeks"
-  title: string;
+  phase:       string;
+  duration:    string;
+  title:       string;
   description: string;
-  skills: string[];
-  resources: string[];
-  color: 'purple' | 'blue' | 'green' | 'orange';
-  topSkill: string;
+  skills:      string[];
+  resources:   string[];
+  color:       'purple' | 'blue' | 'green' | 'orange';
+  topSkill:    string;
 }
 
 export interface SkillGapResult {
-  username: string;
-  coverage: number;       // percent covered
-  missing: number;        // percent missing
-  yourSkills: CurrentSkill[];
-  missingSkills: MissingSkill[];
-  roadmap: RoadmapPhase[];
-  totalWeeks: string;
+  username:        string;
+  careerStack:     string;
+  experienceLevel: string;
+  coverage:        number;
+  missing:         number;
+  yourSkills:      CurrentSkill[];
+  missingSkills:   MissingSkill[];
+  levelAssessment: string;
+  roadmap:         RoadmapPhase[];
+  totalWeeks:      string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,10 +47,14 @@ export class SkillGapService {
 
   constructor(private readonly http: HttpClient) {}
 
-  analyze(username: string, targetRole: string): Observable<SkillGapResult> {
+  analyze(
+    username:        string,
+    careerStack:     string,
+    experienceLevel: string
+  ): Observable<SkillGapResult> {
     return this.http.post<SkillGapResult>(
       `${this.baseUrl}/skillgap/skill-gap`,
-      { username, targetRole }
+      { username, careerStack, experienceLevel }
     );
   }
 }

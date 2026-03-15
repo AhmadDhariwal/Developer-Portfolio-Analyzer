@@ -19,6 +19,11 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/auth/login`, credentials);
   }
 
+  /* ── Career Profile ── */
+  updateCareerProfile(careerStack: string, experienceLevel: string, careerGoal?: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal });
+  }
+
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/github/analyze`, { username });
@@ -40,22 +45,44 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/resume/guide`, { responseType: 'blob' });
   }
 
-  // New AI Role-Based Methods
-  getSkillGap(username: string, targetRole: string, resumeText?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, { username, targetRole, resumeText });
-  }
-
-  getRecommendations(username: string, targetRole: string, missingSkills: string[], resumeText?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recommendations`, { username, targetRole, missingSkills, resumeText });
-  }
-
-  getPortfolioScore(username: string, targetRole: string, resumeAnalysis: any, githubAnalysis: any, resumeText?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, { 
-      username, targetRole, resumeAnalysis, githubAnalysis, resumeText 
+  /* ── AI Analysis (career-profile-aware) ── */
+  getSkillGap(
+    username:        string,
+    careerStack:     string,
+    experienceLevel: string,
+    resumeText?:     string
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, {
+      username, careerStack, experienceLevel, resumeText
     });
   }
 
-  /* ── Dashboard (Simplified for AI integration) ── */
+  getRecommendations(
+    username:        string,
+    careerStack:     string,
+    experienceLevel: string,
+    knownSkills?:    string[],
+    missingSkills?:  string[]
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recommendations`, {
+      username, careerStack, experienceLevel, knownSkills, missingSkills
+    });
+  }
+
+  getPortfolioScore(
+    username:        string,
+    careerStack:     string,
+    experienceLevel: string,
+    resumeAnalysis:  any,
+    githubAnalysis:  any,
+    resumeText?:     string
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, {
+      username, careerStack, experienceLevel, resumeAnalysis, githubAnalysis, resumeText
+    });
+  }
+
+  /* ── Dashboard ── */
   getDashboardSummary(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard/summary`);
   }

@@ -9,83 +9,98 @@ const crypto = require('crypto');
  */
 const getRecommendations = async (req, res) => {
   try {
-    let { username, targetRole, missingSkills, resumeText } = req.body;
+    let { username, missingSkills, knownSkills, resumeText } = req.body;
 
-    if (!username || !targetRole) {
-      return res.status(400).json({ message: 'Username and Target Role are required.' });
+    // Career profile: prefer the authenticated user's saved profile, allow body override
+    const careerStack     = req.user?.careerStack     || req.body.careerStack     || 'Full Stack';
+    const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
+
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required.' });
     }
 
-    // Try to recover missingSkills and resumeText if not provided (e.g. direct page access)
-    if (!missingSkills) {
-        // 1. Check Cache first
-        const existing = await AnalysisCache.findOne({ githubUsername: username, targetRole });
-        if (existing && existing.analysisData.missingSkills) {
-            missingSkills = existing.analysisData.missingSkills;
-            resumeText = resumeText || existing.resumeHash;
-        } else {
-            // 2. If no cache, perform a quick on-the-fly gap analysis to get the 'missingSkills'
-            const { analyzeGitHubProfile } = require('../services/githubservice');
-            const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
-            
-            const githubData = await analyzeGitHubProfile(username.trim());
-            const detectedSkills = {
-                github: githubData.repositories.map(r => `${r.name} (${r.language})`),
-                repoQuality: githubData.scores
-            };
-            const gapPrompt = getSkillGapPrompt(targetRole, detectedSkills);
-            
-            // Minimal fallback for the gap sub-call
-            const gapFallback = { missingSkills: ["Docker", "Testing", "Cloud"] };
-            const gapResult = await aiService.runAIAnalysis(gapPrompt, gapFallback);
-            missingSkills = gapResult.missingSkills || [];
-        }
+    // Resolve missingSkills and knownSkills if not supplied by the client
+    if (!missingSkills || !knownSkills) {
+      const { analyzeGitHubProfile } = require('../services/githubservice');
+      const { getSkillGapPrompt }    = require('../prompts/skillGapPrompt');
+
+      const cleanResume = (resumeText || '').trim();
+      const lookupHash  = resumeText
+        ? crypto.createHash('sha256').update(cleanResume).digest('hex')
+        : 'no-resume';
+
+      // Check cache for an existing skill gap result first
+      const cachedGap = await AnalysisCache.findOne({
+        githubUsername: username, careerStack, experienceLevel, resumeHash: lookupHash
+      });
+
+      if (cachedGap?.analysisData?.missingSkills) {
+        missingSkills = missingSkills || cachedGap.analysisData.missingSkills.map(s => s.name || s);
+        knownSkills   = knownSkills   || (cachedGap.analysisData.yourSkills?.map(s => s.name || s) ?? []);
+      } else {
+        // Run an on-the-fly gap analysis to get both lists
+        const githubData     = await analyzeGitHubProfile(username.trim());
+        const detectedSkills = {
+          github:      githubData.repositories.map(r => `${r.name} (${r.language})`),
+          repoQuality: githubData.scores
+        };
+        const gapPrompt = getSkillGapPrompt(careerStack, experienceLevel, detectedSkills);
+        const gapResult = await aiService.runAIAnalysis(gapPrompt, { missingSkills: [], yourSkills: [] });
+
+        missingSkills = missingSkills || (gapResult.missingSkills?.map(s => s.name || s) ?? []);
+        knownSkills   = knownSkills   || (gapResult.yourSkills?.map(s => s.name || s)   ?? []);
+      }
     }
 
-    // Cache lookup for recommendations specifically
-    const cleanResume = (resumeText || "").trim();
-    const resumeHash = resumeText ? crypto.createHash('sha256').update(cleanResume).digest('hex') : "no-resume";
-    const cacheKey = { githubUsername: username, targetRole, resumeHash };
+    const cleanResume = (resumeText || '').trim();
+    const resumeHash  = resumeText
+      ? crypto.createHash('sha256').update(cleanResume).digest('hex')
+      : 'no-resume';
+    const cacheKey = { githubUsername: username, careerStack, experienceLevel, resumeHash };
 
+    // Check cache for existing recommendations
     const cached = await AnalysisCache.findOne(cacheKey);
-    if (cached && cached.analysisData.projects) {
-        return res.json({ ...cached.analysisData, fromCache: true });
+    if (cached?.analysisData?.projects) {
+      return res.json({ ...cached.analysisData, fromCache: true });
     }
 
-    // AI Generation
-    const prompt = getRecommendationPrompt(targetRole, missingSkills);
+    // AI generation — pass both known and missing skills so the prompt enforces rules
+    const prompt = getRecommendationPrompt(careerStack, experienceLevel, knownSkills, missingSkills);
     const fallback = {
-        projects: [
-            { id: "1", title: "Personal Portfolio", description: "Build a modern portfolio", tech: ["HTML", "CSS"], difficulty: "Beginner", impact: 80 }
-        ],
-        technologies: [
-            { name: "Git", category: "Version Control", priority: "Must Learn", priorityRaw: "High", jobDemand: 95, description: "Essential for collaboration" }
-        ],
-        careerPaths: [
-            { id: "c1", title: targetRole, match: 70, salaryRange: "$50k - $80k", description: "Your target career path" }
-        ]
+      projects: [{
+        id: '1', title: 'Personal Portfolio', description: 'Build a modern portfolio',
+        tech: ['HTML', 'CSS', 'JavaScript'], newTech: [], difficulty: 'Beginner',
+        impact: 80, estimatedWeeks: '2-3 weeks',
+        whyThisProject: 'Great starting point to showcase skills.'
+      }],
+      technologies: [{
+        name: 'Git', category: 'Version Control', priority: 'Must Learn',
+        priorityRaw: 'High', jobDemand: 95, description: 'Essential for collaboration'
+      }],
+      careerPaths: [{
+        id: 'c1', title: careerStack, match: 70, salaryRange: 'Varies',
+        description: 'Your target career path', timeline: '6-12 months',
+        hiringCompanies: [], actionItems: []
+      }]
     };
 
     const aiResult = await aiService.runAIAnalysis(prompt, fallback);
 
-    const fullResult = {
-        username,
-        targetRole,
-        ...aiResult
-    };
+    const fullResult = { username, careerStack, experienceLevel, ...aiResult };
 
-    // Update Cache (Merge with existing gap analysis if any)
     if (req.user) {
-        await AnalysisCache.findOneAndUpdate(
-            cacheKey,
-            { 
-                $set: { 
-                    "analysisData.projects": aiResult.projects, 
-                    "analysisData.technologies": aiResult.technologies,
-                    "analysisData.careerPaths": aiResult.careerPaths
-                } 
-            },
-            { upsert: true }
-        );
+      await AnalysisCache.findOneAndUpdate(
+        cacheKey,
+        {
+          $set: {
+            'analysisData.projects':     aiResult.projects,
+            'analysisData.technologies': aiResult.technologies,
+            'analysisData.careerPaths':  aiResult.careerPaths,
+            userId:                      req.user._id
+          }
+        },
+        { upsert: true }
+      );
     }
 
     res.json(fullResult);

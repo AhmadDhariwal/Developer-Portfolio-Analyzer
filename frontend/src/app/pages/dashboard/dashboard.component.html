@@ -8,11 +8,17 @@
   </div>
   
   <div class="header-actions">
-    <!-- Role Selection Dropdown -->
+    <!-- Career Stack + Experience Level Dropdowns -->
     <div class="role-selector">
-      <span class="role-label">Target Role:</span>
-      <select [ngModel]="selectedRole" (ngModelChange)="onRoleChange($event)" class="role-dropdown">
-        <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+      <span class="role-label">Career Stack:</span>
+      <select [ngModel]="selectedCareerStack" (ngModelChange)="onCareerStackChange($event)" class="role-dropdown">
+        <option *ngFor="let stack of careerStacks" [value]="stack">{{ stack }}</option>
+      </select>
+    </div>
+    <div class="role-selector">
+      <span class="role-label">Experience:</span>
+      <select [ngModel]="selectedExperienceLevel" (ngModelChange)="onExperienceLevelChange($event)" class="role-dropdown">
+        <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
       </select>
     </div>
 

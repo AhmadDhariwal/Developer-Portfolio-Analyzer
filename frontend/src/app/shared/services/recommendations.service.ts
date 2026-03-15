@@ -3,42 +3,46 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface RecommendedProject {
-  id: string;
-  title: string;
-  description: string;
-  tech: string[];
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  id:             string;
+  title:          string;
+  description:    string;
+  tech:           string[];
+  newTech:        string[];   // subset of tech[] that are new to the user
+  difficulty:     'Beginner' | 'Intermediate' | 'Advanced';
   estimatedWeeks: string;
-  impact: number;
-  triggerSkills: string[];
+  impact:         number;
+  whyThisProject: string;     // explanation of level fit
+  triggerSkills:  string[];
 }
 
 export interface RecommendedTechnology {
-  name: string;
-  category: string;
-  priority: string;       // "Must Learn" | "High Priority" | "Recommended"
+  name:        string;
+  category:    string;
+  priority:    string;
   priorityRaw: 'High' | 'Medium' | 'Low';
-  jobDemand: number;      // 0-100
+  jobDemand:   number;
   description: string;
 }
 
 export interface CareerPath {
-  id: string;
-  title: string;
-  salaryRange: string;
-  timeline: string;
-  description: string;
+  id:              string;
+  title:           string;
+  salaryRange:     string;
+  timeline:        string;
+  description:     string;
   hiringCompanies: string[];
-  actionItems: string[];
-  boostSkills: string[];
-  match: number;          // 0-100
+  actionItems:     string[];
+  boostSkills:     string[];
+  match:           number;
 }
 
 export interface RecommendationsResult {
-  username: string;
-  projects: RecommendedProject[];
-  technologies: RecommendedTechnology[];
-  careerPaths: CareerPath[];
+  username:        string;
+  careerStack:     string;
+  experienceLevel: string;
+  projects:        RecommendedProject[];
+  technologies:    RecommendedTechnology[];
+  careerPaths:     CareerPath[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -47,10 +51,16 @@ export class RecommendationsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getRecommendations(username: string, targetRole: string): Observable<RecommendationsResult> {
+  getRecommendations(
+    username:        string,
+    careerStack:     string,
+    experienceLevel: string,
+    knownSkills?:    string[],
+    missingSkills?:  string[]
+  ): Observable<RecommendationsResult> {
     return this.http.post<RecommendationsResult>(
       `${this.baseUrl}/recommendations`,
-      { username, targetRole }
+      { username, careerStack, experienceLevel, knownSkills, missingSkills }
     );
   }
 }

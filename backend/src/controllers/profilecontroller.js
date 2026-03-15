@@ -27,23 +27,28 @@ const getProfile = async (req, res) => {
     };
 
     res.json({
-      _id:           user._id,
-      name:          user.name,
-      email:         user.email,
-      githubUsername:user.githubUsername,
-      avatar:        user.avatar,
-      jobTitle:      user.jobTitle   || '',
-      location:      user.location   || '',
-      bio:           user.bio        || '',
-      website:       user.website    || '',
-      twitter:       user.twitter    || '',
-      linkedin:      user.linkedin   || '',
-      notifications: user.notifications || {
+      _id:               user._id,
+      name:              user.name,
+      email:             user.email,
+      githubUsername:    user.githubUsername,
+      avatar:            user.avatar,
+      jobTitle:          user.jobTitle   || '',
+      location:          user.location   || '',
+      bio:               user.bio        || '',
+      website:           user.website    || '',
+      twitter:           user.twitter    || '',
+      linkedin:          user.linkedin   || '',
+      notifications:     user.notifications || {
         weeklyScoreReport: true,
         skillTrendAlerts:  true,
         newRecommendations:false,
         jobMatchAlerts:    true,
       },
+      careerStack:        user.careerStack        || 'Full Stack',
+      experienceLevel:    user.experienceLevel    || 'Student',
+      careerGoal:         user.careerGoal         || '',
+      careerProfileSetAt: user.careerProfileSetAt || null,
+      isConfigured:       !!user.careerProfileSetAt,
       stats,
     });
   } catch (error) {
@@ -151,4 +156,52 @@ const deleteAccount = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, updatePassword, deleteAccount };
+// @desc  Save career stack, experience level, and career goal
+// @route PUT /api/profile/career
+// @access Private
+const updateCareerProfile = async (req, res) => {
+  try {
+    const { careerStack, experienceLevel, careerGoal } = req.body;
+
+    const validStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+    const validLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+    const validGoals  = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
+
+    if (!careerStack || !validStacks.includes(careerStack)) {
+      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
+    }
+    if (!experienceLevel || !validLevels.includes(experienceLevel)) {
+      return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
+    }
+    if (careerGoal !== undefined && !validGoals.includes(careerGoal)) {
+      return res.status(400).json({ message: 'Invalid careerGoal.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    user.careerStack     = careerStack;
+    user.experienceLevel = experienceLevel;
+    if (careerGoal !== undefined) user.careerGoal = careerGoal;
+
+    // Mark profile as configured on first save
+    if (!user.careerProfileSetAt) {
+      user.careerProfileSetAt = new Date();
+    }
+
+    await user.save();
+
+    res.json({
+      careerStack:        user.careerStack,
+      experienceLevel:    user.experienceLevel,
+      careerGoal:         user.careerGoal,
+      careerProfileSetAt: user.careerProfileSetAt,
+      isConfigured:       !!user.careerProfileSetAt
+    });
+  } catch (error) {
+    console.error('Career profile update error:', error.message);
+    res.status(500).json({ message: 'Server error updating career profile.' });
+  }
+};
+
+module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile };

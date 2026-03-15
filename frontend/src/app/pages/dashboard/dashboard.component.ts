@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../shared/services/api.service';
-import { RoleService, TargetRole } from '../../shared/services/role.service';
+import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { Subscription, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, distinctUntilChanged } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
@@ -45,7 +46,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('activityChart') activityChart!: ElementRef;
   @ViewChild('languageChart') languageChart!: ElementRef;
 
-  /* ── State ── */
+  /* State */
   developerScore = 0;
   lastAnalyzed = 'Loading...';
   githubHandle = '';
@@ -53,8 +54,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   rateLimitWarning = false;
   noGithubUsername = false;
 
-  availableRoles: TargetRole[] = [];
-  selectedRole: TargetRole = 'Full Stack Developer';
+  readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
+  readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
 
   statCards: StatCard[] = [
     { label: 'Repositories', value: 0, growth: '', iconType: 'repos',     },
@@ -83,25 +84,38 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   constructor(
-    private readonly apiService: ApiService,
-    private readonly roleService: RoleService,
-    private readonly cdr: ChangeDetectorRef
-  ) {
-    this.availableRoles = this.roleService.getRoles();
-    this.selectedRole = this.roleService.getCurrentRole();
-  }
+    private readonly apiService:           ApiService,
+    private readonly careerProfileService: CareerProfileService,
+    private readonly cdr:                  ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.subscriptions.add(
-        this.roleService.targetRole$.subscribe(role => {
-            this.selectedRole = role;
-            this.loadDashboardData();
-        })
+      this.careerProfileService.careerProfile$.pipe(
+        distinctUntilChanged((a, b) =>
+          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
+        )
+      ).subscribe(() => {
+        this.loadDashboardData();
+      })
     );
   }
 
-  onRoleChange(newRole: TargetRole) {
-    this.roleService.setRole(newRole);
+  get selectedCareerStack(): CareerStack       { return this.careerProfileService.careerStack; }
+  get selectedExperienceLevel(): ExperienceLevel { return this.careerProfileService.experienceLevel; }
+
+  onCareerStackChange(stack: CareerStack): void {
+    this.careerProfileService.saveCareerProfile(
+      stack,
+      this.careerProfileService.experienceLevel
+    ).subscribe();
+  }
+
+  onExperienceLevelChange(level: ExperienceLevel): void {
+    this.careerProfileService.saveCareerProfile(
+      this.careerProfileService.careerStack,
+      level
+    ).subscribe();
   }
 
   reanalyze() {
@@ -146,69 +160,52 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
     }
 
+    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+
     // Parallel fetch: Resume Analysis + AI Skill Gap
     forkJoin({
         resume: this.apiService.getResumeAnalysis().pipe(
-            // If resume fails, return empty object instead of failing the whole request
             catchError(() => of({}))
         ),
-        skillGap: this.apiService.getSkillGap(username, this.selectedRole)
+        skillGap: this.apiService.getSkillGap(username, careerStack, experienceLevel)
     }).subscribe({
         next: (results: any) => {
-            const gapData = results.skillGap;
+            const gapData    = results.skillGap;
             const resumeData = results.resume;
 
-            console.log('=== SKILL GAP API RESPONSE ===');
-            console.log('Full Gap Data:', JSON.stringify(gapData, null, 2));
-            console.log('yourSkills:', gapData.yourSkills);
-            console.log('missingSkills:', gapData.missingSkills);
-            console.log('coverage:', gapData.coverage);
-            
-            // Handle different possible formats with better fallbacks
             if (gapData.yourSkills && Array.isArray(gapData.yourSkills)) {
                 this.topSkills = gapData.yourSkills.map((s: any) => {
                     if (typeof s === 'string') return s;
-                    if (s.name) return s.name;
+                    if (s.name)  return s.name;
                     if (s.skill) return s.skill;
                     return String(s);
                 });
             } else {
-                console.warn('yourSkills is not an array or is missing');
                 this.topSkills = [];
             }
-            
+
             if (gapData.missingSkills && Array.isArray(gapData.missingSkills)) {
                 this.missingSkills = gapData.missingSkills.map((s: any) => {
                     if (typeof s === 'string') return s;
-                    if (s.name) return s.name;
+                    if (s.name)  return s.name;
                     if (s.skill) return s.skill;
                     return String(s);
                 });
             } else {
-                console.warn('missingSkills is not an array or is missing');
                 this.missingSkills = [];
             }
 
-            console.log('=== PROCESSED SKILLS ===');
-            console.log('Top Skills:', this.topSkills);
-            console.log('Missing Skills:', this.missingSkills);
-
             const total = this.topSkills.length + this.missingSkills.length;
-            this.coveragePercentage = gapData.coverage !== undefined 
-                ? Number(gapData.coverage) 
+            this.coveragePercentage = gapData.coverage !== undefined
+                ? Number(gapData.coverage)
                 : (total > 0 ? Math.round((this.topSkills.length / total) * 100) : 0);
-            
-            console.log('Coverage Percentage:', this.coveragePercentage);
 
-            this.apiService.getPortfolioScore(username, this.selectedRole, resumeData, gapData.githubStats).subscribe({
+            this.apiService.getPortfolioScore(username, careerStack, experienceLevel, resumeData, gapData.githubStats).subscribe({
                 next: (scoreResult) => {
                     this.developerScore = scoreResult.overallScore || 0;
-                    
-                    // Store breakdown for radar chart
                     if (scoreResult.breakdown) {
                         this.aiBreakdown = scoreResult.breakdown;
                     }
-                    
                     if (this.viewInitialized) this.initRadarChart();
                     this.cdr.detectChanges();
                 },
@@ -218,14 +215,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
             });
 
-            this.apiService.getRecommendations(username, this.selectedRole, this.missingSkills).subscribe({
+            this.apiService.getRecommendations(username, careerStack, experienceLevel, this.topSkills, this.missingSkills).subscribe({
                 next: (recResult) => {
                     this.recommendations = (recResult.projects || []).slice(0, 3).map((p: any) => ({
-                        title: p.title,
-                        priority: 'High',
-                        category: (p.tech || []).slice(0, 2).join(', '),
+                        title:        p.title,
+                        priority:     'High',
+                        category:     (p.tech || []).slice(0, 2).join(', '),
                         priorityType: 'high',
-                        icon: 'technology'
+                        icon:         'technology'
                     }));
                     this.cdr.detectChanges();
                 },
@@ -239,10 +236,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             this.cdr.detectChanges();
         },
         error: (err) => {
-            console.error('=== SKILL GAP ERROR ===');
-            console.error('Error:', err);
-            console.error('Error message:', err.message);
-            console.error('Error status:', err.status);
+            console.error('Skill gap error:', err);
             this.isLoading = false;
             this.cdr.detectChanges();
         }
@@ -270,6 +264,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.subscriptions.unsubscribe();
     this.radarInstance?.destroy();
     this.activityInstance?.destroy();
     this.languageInstance?.destroy();

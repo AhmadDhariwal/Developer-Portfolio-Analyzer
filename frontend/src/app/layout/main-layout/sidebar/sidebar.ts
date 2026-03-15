@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -12,6 +12,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 })
 export class Sidebar {
   @Input() isOpen: boolean = true;
+  @Output() collapse = new EventEmitter<void>();
 
   navItems = [
     {

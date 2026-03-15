@@ -1,8 +1,8 @@
 <div class="dashboard-shell">
-  <app-sidebar [isOpen]="sidebarOpen()"></app-sidebar>
-  
+  <app-sidebar [isOpen]="sidebarOpen()" (collapse)="toggleSidebar()"></app-sidebar>
+
   <div class="shell-body" [class.sidebar-closed]="!sidebarOpen()">
-    <app-navbar (toggleSidebar)="toggleSidebar()"></app-navbar>
+    <app-navbar [sidebarOpen]="sidebarOpen()" (sidebarToggle)="toggleSidebar()"></app-navbar>
     <main class="main-content">
       <router-outlet></router-outlet>
     </main>

@@ -9,72 +9,56 @@ const crypto = require('crypto');
  */
 const getPortfolioReadiness = async (req, res) => {
   try {
-    let { username, targetRole, resumeAnalysis, githubAnalysis, resumeText } = req.body;
+    let { username, resumeAnalysis, githubAnalysis, resumeText } = req.body;
 
-    if (!username || !targetRole) {
-      return res.status(400).json({ message: 'Username and Target Role are required.' });
+    // Career profile: prefer the authenticated user's saved profile, allow body override
+    const careerStack     = req.user?.careerStack     || req.body.careerStack     || 'Full Stack';
+    const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
+
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required.' });
     }
 
-    // Try to recover missing analysis data
-    if (!resumeAnalysis || !githubAnalysis) {
-        // 1. Check Cache first
-        const existing = await AnalysisCache.findOne({ githubUsername: username, targetRole });
-        if (existing && existing.analysisData.portfolioScore) {
-            return res.json({ ...existing.analysisData.portfolioScore, fromCache: true });
-        }
+    const cleanResume = (resumeText || '').trim();
+    const resumeHash  = crypto.createHash('sha256').update(cleanResume).digest('hex');
+    const cacheKey    = { githubUsername: username, careerStack, experienceLevel, resumeHash };
 
-        // 2. Fetch fresh data if needed
-        const { analyzeGitHubProfile } = require('../services/githubservice');
-        const resumeService = require('../services/resumeservice');
-        
-        if (!githubAnalysis) {
-            githubAnalysis = await analyzeGitHubProfile(username.trim());
-        }
-        
-        if (!resumeAnalysis) {
-            // Find the user's latest resume analysis
-            if (req.user) {
-                const analysisDoc = await require('../models/analysis').findOne({ userId: req.user._id });
-                if (analysisDoc) {
-                    resumeAnalysis = {
-                        skills: Array.from(analysisDoc.languageDistribution?.keys() || []),
-                        strengths: ["Detailed experience"], // Fallback traits
-                        weaknesses: []
-                    };
-                }
-            }
-            // If still no resume, use an empty placeholder
-            resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
-        }
-    }
-
-    // Cache lookup
-    const cleanResume = (resumeText || "").trim();
-    const resumeHash = crypto.createHash('sha256').update(cleanResume).digest('hex');
-    const cacheKey = { githubUsername: username, targetRole, resumeHash };
-
+    // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);
-    if (cached && cached.analysisData.portfolioScore) {
-        return res.json({ ...cached.analysisData.portfolioScore, fromCache: true });
+    if (cached?.analysisData?.portfolioScore) {
+      return res.json({ ...cached.analysisData.portfolioScore, fromCache: true });
     }
+
+    // Fetch missing analysis data if not provided by client
+    if (!githubAnalysis) {
+      const { analyzeGitHubProfile } = require('../services/githubservice');
+      githubAnalysis = await analyzeGitHubProfile(username.trim());
+    }
+
+    if (!resumeAnalysis && req.user) {
+      const analysisDoc = await require('../models/analysis').findOne({ userId: req.user._id });
+      resumeAnalysis = analysisDoc
+        ? { skills: Array.from(analysisDoc.languageDistribution?.keys() || []), strengths: [], weaknesses: [] }
+        : { skills: [], strengths: [], weaknesses: [] };
+    }
+    resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
 
     // AI Score Generation
-    const prompt = getPortfolioScorePrompt(resumeAnalysis, githubAnalysis, targetRole);
+    const prompt = getPortfolioScorePrompt(resumeAnalysis, githubAnalysis, careerStack, experienceLevel);
     const fallback = {
-        overallScore: 70,
-        breakdown: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
-        summary: "Solid portfolio with room for improvement in niche areas."
+      overallScore: 70,
+      breakdown: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
+      summary: 'Solid portfolio with room for improvement in niche areas.'
     };
 
     const aiResult = await aiService.runAIAnalysis(prompt, fallback);
 
-    // Update Cache
     if (req.user) {
-        await AnalysisCache.findOneAndUpdate(
-            cacheKey,
-            { $set: { "analysisData.portfolioScore": aiResult } },
-            { upsert: true }
-        );
+      await AnalysisCache.findOneAndUpdate(
+        cacheKey,
+        { $set: { 'analysisData.portfolioScore': aiResult, userId: req.user._id } },
+        { upsert: true }
+      );
     }
 
     res.json(aiResult);

@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { CareerProfileService } from './career-profile.service';
+import { CareerStack, ExperienceLevel, CareerGoal } from '../models/career-profile.model';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────
 
@@ -21,19 +23,23 @@ export interface AccountStats {
 }
 
 export interface UserProfile {
-  _id:           string;
-  name:          string;
-  email:         string;
-  githubUsername:string;
-  avatar:        string;
-  jobTitle:      string;
-  location:      string;
-  bio:           string;
-  website:       string;
-  twitter:       string;
-  linkedin:      string;
-  notifications: NotificationPrefs;
-  stats:         AccountStats;
+  _id:                string;
+  name:               string;
+  email:              string;
+  githubUsername:     string;
+  avatar:             string;
+  jobTitle:           string;
+  location:           string;
+  bio:                string;
+  website:            string;
+  twitter:            string;
+  linkedin:           string;
+  notifications:      NotificationPrefs;
+  careerStack:        CareerStack;
+  experienceLevel:    ExperienceLevel;
+  careerGoal:         CareerGoal;
+  isConfigured:       boolean;
+  stats:              AccountStats;
 }
 
 export interface UpdateProfilePayload {
@@ -59,13 +65,24 @@ export class ProfileService {
   private readonly baseUrl = 'http://localhost:5000/api/profile';
 
   constructor(
-    private readonly http: HttpClient,
-    private readonly authService: AuthService,
+    private readonly http:                HttpClient,
+    private readonly authService:         AuthService,
+    private readonly careerProfileService: CareerProfileService,
   ) {}
 
   // ── Fetch profile + stats from backend ────────────────────────────────
   getProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.baseUrl}/me`);
+    return this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
+      tap(profile => {
+        // Keep CareerProfileService in sync with the server truth on every profile load
+        this.careerProfileService.hydrateFromServer({
+          careerStack:     profile.careerStack     ?? 'Full Stack',
+          experienceLevel: profile.experienceLevel ?? 'Student',
+          careerGoal:      profile.careerGoal      ?? '',
+          isConfigured:    profile.isConfigured    ?? false
+        });
+      })
+    );
   }
 
   // ── Save profile fields + notification prefs ──────────────────────────
