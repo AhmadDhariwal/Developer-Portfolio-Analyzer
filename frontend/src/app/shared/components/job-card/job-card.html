@@ -1,0 +1,93 @@
+<article class="job-card">
+
+  <!-- Header: Logo + Title + Platform Badge -->
+  <div class="job-card-header">
+    <div class="company-logo-wrap">
+      <img
+        *ngIf="!logoError && logoUrl"
+        [src]="logoUrl"
+        [alt]="job.company"
+        class="company-logo"
+        (error)="onLogoError()"
+      />
+      <div class="logo-fallback" *ngIf="logoError || !logoUrl">
+        {{ logoFallback }}
+      </div>
+    </div>
+
+    <div class="job-title-block">
+      <h3 class="job-title">{{ job.title }}</h3>
+      <p class="job-company">{{ job.company }}</p>
+    </div>
+
+    <span
+      class="platform-badge"
+      [style.background]="platformColor.bg"
+      [style.color]="platformColor.text"
+    >{{ job.platform }}</span>
+  </div>
+
+  <!-- Meta row: Location · Salary · Type · Posted -->
+  <div class="job-meta-row">
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-icon">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      <span>{{ job.location }}</span>
+    </div>
+
+    <div class="meta-item" *ngIf="job.salary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-icon">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      <span>{{ job.salary }}</span>
+    </div>
+
+    <span class="job-type-badge" [ngClass]="jobTypeClass">{{ job.jobType }}</span>
+
+    <div class="meta-item posted-date">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-icon">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8"  y1="2" x2="8"  y2="6"></line>
+        <line x1="3"  y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>{{ postedLabel }}</span>
+    </div>
+  </div>
+
+  <!-- Experience level badge -->
+  <div class="exp-row" *ngIf="job.experienceLevel">
+    <span class="exp-badge">{{ job.experienceLevel }}</span>
+  </div>
+
+  <!-- Description -->
+  <p class="job-description">{{ job.description }}</p>
+
+  <!-- Skills -->
+  <div class="skills-row" *ngIf="job.skills?.length">
+    <span class="skill-chip" *ngFor="let skill of job.skills.slice(0, 6)">{{ skill }}</span>
+  </div>
+
+  <!-- Actions -->
+  <div class="job-actions">
+    <button class="btn-view" (click)="viewJob()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      View Job
+    </button>
+    <button class="btn-apply" (click)="applyNow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+      Apply Now
+    </button>
+  </div>
+
+</article>

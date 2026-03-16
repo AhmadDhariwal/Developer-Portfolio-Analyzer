@@ -1,0 +1,91 @@
+<div class="filters-panel" [class.collapsed]="isCollapsed">
+
+  <!-- Panel Header -->
+  <div class="filters-header">
+    <div class="header-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="filter-icon">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+      </svg>
+      <h3 class="filters-title">Filters</h3>
+      <span class="active-dot" *ngIf="hasActiveFilters">{{ activeCount }}</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-clear" *ngIf="hasActiveFilters" (click)="resetFilters()">Clear all</button>
+      <button class="btn-collapse" (click)="toggleCollapse()" [attr.aria-label]="isCollapsed ? 'Expand filters' : 'Collapse filters'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="isCollapsed">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter body -->
+  <div class="filters-body" *ngIf="!isCollapsed">
+
+    <!-- Platform -->
+    <div class="filter-group">
+      <label class="group-label">Platform</label>
+      <div class="btn-group">
+        <button
+          *ngFor="let opt of platformOptions"
+          class="filter-btn"
+          [class.active]="filters.platform === opt.value"
+          (click)="filters.platform = opt.value; onFilterChange()"
+        >{{ opt.label }}</button>
+      </div>
+    </div>
+
+    <!-- Experience Level -->
+    <div class="filter-group">
+      <label class="group-label">Experience Level</label>
+      <div class="btn-group">
+        <button
+          *ngFor="let opt of experienceOptions"
+          class="filter-btn"
+          [class.active]="filters.experienceLevel === opt.value"
+          (click)="filters.experienceLevel = opt.value; onFilterChange()"
+        >{{ opt.label }}</button>
+      </div>
+    </div>
+
+    <!-- Job Type -->
+    <div class="filter-group">
+      <label class="group-label">Job Type</label>
+      <div class="btn-group">
+        <button
+          *ngFor="let opt of jobTypeOptions"
+          class="filter-btn"
+          [class.active]="filters.jobType === opt.value"
+          (click)="filters.jobType = opt.value; onFilterChange()"
+        >{{ opt.label }}</button>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="filter-group">
+      <label class="group-label">Location</label>
+      <div class="btn-group">
+        <button
+          *ngFor="let opt of locationOptions"
+          class="filter-btn"
+          [class.active]="filters.location === opt.value"
+          (click)="filters.location = opt.value; onFilterChange()"
+        >{{ opt.label }}</button>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="filter-group">
+      <label class="group-label">Skills</label>
+      <div class="skill-pills">
+        <button
+          *ngFor="let skill of skillOptions"
+          class="skill-pill"
+          [class.active]="filters.skills === skill"
+          (click)="selectSkill(skill)"
+        >{{ skill }}</button>
+      </div>
+    </div>
+
+  </div>
+</div>

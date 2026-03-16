@@ -11,6 +11,7 @@ const skillgaproute          = require('./src/routes/skillgap.routes');
 const recommendationsroute   = require('./src/routes/recommendations.routes');
 const profileroute           = require('./src/routes/profile.routes');
 const courseroute            = require('./src/routes/courseRoutes');
+const jobroute               = require('./src/routes/jobRoutes');
 
 // Connect to database
 connectDB();
@@ -36,6 +37,7 @@ app.use('/api/skillgap',        skillgaproute);
 app.use('/api/recommendations', recommendationsroute);
 app.use('/api/profile',         profileroute);
 app.use('/api/courses',         courseroute);
+app.use('/api/jobs',            jobroute);
 
 const PORT = process.env.PORT || 5000;
 

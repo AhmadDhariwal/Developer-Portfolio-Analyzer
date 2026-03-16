@@ -1,0 +1,199 @@
+<div class="jobs-page">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="title-icon">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+        Job Opportunities
+      </h1>
+      <p class="page-subtitle">Personalized job recommendations based on your career profile and skills</p>
+    </div>
+
+    <!-- Stats chips -->
+    <div class="header-stats" *ngIf="!isLoading && totalJobs > 0">
+      <span class="stat-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ totalJobs }} jobs found
+      </span>
+      <span class="stat-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        {{ displayedJobs.length }} showing
+      </span>
+    </div>
+
+    <!-- Mobile filter toggle -->
+    <button class="btn-mobile-filters" (click)="toggleMobileFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+      </svg>
+      Filters
+    </button>
+  </div>
+
+  <!-- ── Main layout ──────────────────────────────────────────────────── -->
+  <div class="jobs-layout">
+
+    <!-- Sidebar Filters -->
+    <aside class="filters-sidebar" [class.mobile-open]="isMobileFiltersOpen">
+      <!-- Mobile overlay -->
+      <div class="mobile-overlay" *ngIf="isMobileFiltersOpen" (click)="toggleMobileFilters()"></div>
+      <div class="filters-sidebar-inner">
+        <app-job-filters
+          [initialFilters]="activeFilters"
+          (filtersChange)="onFiltersChange($event)"
+          (filtersReset)="onFiltersReset()"
+        ></app-job-filters>
+      </div>
+    </aside>
+
+    <!-- Jobs Content -->
+    <main class="jobs-content">
+
+      <!-- ── Loading State ──────────────────────────────────────────── -->
+      <div class="loading-grid" *ngIf="isLoading">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="skeleton-header">
+            <div class="skeleton-logo"></div>
+            <div class="skeleton-title-block">
+              <div class="skeleton-line wide"></div>
+              <div class="skeleton-line medium"></div>
+            </div>
+            <div class="skeleton-badge"></div>
+          </div>
+          <div class="skeleton-meta">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+          <div class="skeleton-desc">
+            <div class="skeleton-line full"></div>
+            <div class="skeleton-line full"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-skills">
+            <div class="skeleton-chip" *ngFor="let s of [1,2,3,4]"></div>
+          </div>
+          <div class="skeleton-actions">
+            <div class="skeleton-btn"></div>
+            <div class="skeleton-btn"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Error State ────────────────────────────────────────────── -->
+      <div class="error-state" *ngIf="!isLoading && errorMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-icon">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <h3>Failed to Load Jobs</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-retry" (click)="retry()">Try Again</button>
+      </div>
+
+      <!-- ── Empty State ────────────────────────────────────────────── -->
+      <div class="empty-state" *ngIf="!isLoading && !errorMessage && allJobs.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="empty-icon">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+        <h3>No Jobs Found</h3>
+        <p>No job postings match your current filters. Try adjusting your criteria.</p>
+      </div>
+
+      <!-- ── Jobs Grid ──────────────────────────────────────────────── -->
+      <div class="jobs-grid" *ngIf="!isLoading && !errorMessage && displayedJobs.length > 0">
+        <app-job-card
+          *ngFor="let job of displayedJobs; trackBy: trackById"
+          [job]="job"
+        ></app-job-card>
+      </div>
+
+      <!-- ── Load-More Skeleton (Phase 2) ────────────────────────────── -->
+      <div class="loading-more-grid" *ngIf="isLoadingMore">
+        <div class="skeleton-card mini" *ngFor="let i of [1,2,3,4]">
+          <div class="skeleton-header">
+            <div class="skeleton-logo"></div>
+            <div class="skeleton-title-block">
+              <div class="skeleton-line wide"></div>
+              <div class="skeleton-line medium"></div>
+            </div>
+          </div>
+          <div class="skeleton-desc">
+            <div class="skeleton-line full"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Progress + Load More ────────────────────────────────────── -->
+      <div class="load-more-section" *ngIf="!isLoading && !errorMessage && (canShowLoadMore || (allJobs.length > 0))">
+
+        <!-- Progress bar -->
+        <div class="progress-wrap" *ngIf="totalJobs > 0">
+          <div class="progress-label">
+            <span>{{ displayedJobs.length }} of {{ totalJobs }} jobs</span>
+            <span>{{ ((displayedJobs.length / totalJobs) * 100) | number:'1.0-0' }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="(displayedJobs.length / totalJobs) * 100"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Load More button -->
+        <div class="load-more-wrap" *ngIf="canShowLoadMore">
+          <button
+            class="btn-load-more"
+            [class.phase-reveal]="hasHiddenJobs"
+            [class.phase-fetch]="hasMorePages"
+            [disabled]="isLoadingMore"
+            (click)="loadMore()"
+          >
+            <!-- Phase 1: reveal hidden jobs -->
+            <ng-container *ngIf="hasHiddenJobs && !isLoadingMore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+              Show {{ hiddenCount }} more job{{ hiddenCount !== 1 ? 's' : '' }}
+            </ng-container>
+
+            <!-- Phase 2: fetch next page -->
+            <ng-container *ngIf="hasMorePages && !isLoadingMore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              Load More Jobs
+            </ng-container>
+
+            <!-- Loading spinner -->
+            <ng-container *ngIf="isLoadingMore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              Loading...
+            </ng-container>
+          </button>
+        </div>
+
+        <!-- All jobs loaded -->
+        <div class="all-loaded" *ngIf="!canShowLoadMore && allJobs.length > 0 && !isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          All {{ totalJobs }} jobs loaded
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>

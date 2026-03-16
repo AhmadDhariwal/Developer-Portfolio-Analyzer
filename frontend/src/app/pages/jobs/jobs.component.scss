@@ -1,0 +1,318 @@
+// ─── Base ─────────────────────────────────────────────────────────────────────
+.jobs-page {
+  padding:        24px;
+  min-height:     100vh;
+  background:     #111827;
+  color:          #e5e7eb;
+  display:        flex;
+  flex-direction: column;
+  gap:            24px;
+}
+
+// ─── Page Header ──────────────────────────────────────────────────────────────
+.page-header {
+  display:        flex;
+  flex-wrap:      wrap;
+  align-items:    center;
+  gap:            16px;
+  justify-content: space-between;
+}
+
+.header-content { flex: 1; min-width: 0; }
+
+.page-title {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  font-size:   1.65rem;
+  font-weight: 700;
+  color:       #f9fafb;
+  margin:      0 0 6px;
+
+  .title-icon {
+    width:  28px;
+    height: 28px;
+    color:  #6366f1;
+  }
+}
+
+.page-subtitle {
+  font-size: 0.88rem;
+  color:     #9ca3af;
+  margin:    0;
+}
+
+.header-stats {
+  display:     flex;
+  flex-wrap:   wrap;
+  gap:         8px;
+  align-items: center;
+}
+
+.stat-chip {
+  display:       flex;
+  align-items:   center;
+  gap:           5px;
+  font-size:     0.78rem;
+  font-weight:   500;
+  color:         #9ca3af;
+  background:    #1f2937;
+  border:        1px solid #374151;
+  padding:       5px 12px;
+  border-radius: 20px;
+
+  svg { width: 12px; height: 12px; color: #6366f1; }
+}
+
+.btn-mobile-filters {
+  display:       none;
+  align-items:   center;
+  gap:           6px;
+  background:    #1f2937;
+  border:        1px solid #374151;
+  color:         #d1d5db;
+  font-size:     0.82rem;
+  font-weight:   600;
+  padding:       8px 14px;
+  border-radius: 8px;
+  cursor:        pointer;
+  transition:    background 0.2s;
+
+  svg { width: 15px; height: 15px; }
+  &:hover { background: #374151; }
+
+  @media (max-width: 768px) { display: flex; }
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+.jobs-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap:     24px;
+  align-items: start;
+
+  @media (max-width: 1024px) { grid-template-columns: 220px 1fr; }
+  @media (max-width: 768px)  { grid-template-columns: 1fr; }
+}
+
+// ─── Filters Sidebar ─────────────────────────────────────────────────────────
+.filters-sidebar {
+  position:   sticky;
+  top:        20px;
+  height:     fit-content;
+
+  @media (max-width: 768px) {
+    display: none;
+    &.mobile-open { display: block; position: fixed; inset: 0; z-index: 200; padding: 16px; overflow-y: auto; background: rgba(0,0,0,0.7); }
+  }
+}
+
+.mobile-overlay {
+  position: fixed;
+  inset:    0;
+  z-index:  -1;
+}
+
+.filters-sidebar-inner {
+  @media (max-width: 768px) {
+    position: relative;
+    max-width: 320px;
+    margin: auto;
+  }
+}
+
+// ─── Jobs Content ─────────────────────────────────────────────────────────────
+.jobs-content {
+  display:        flex;
+  flex-direction: column;
+  gap:            24px;
+  min-width:      0;
+}
+
+// ─── Jobs Grid ────────────────────────────────────────────────────────────────
+.jobs-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap:                   18px;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+// ─── Loading Skeleton ─────────────────────────────────────────────────────────
+.loading-grid,
+.loading-more-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap:                   18px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+%skeleton-base {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-card {
+  background:    #1f2937;
+  border:        1px solid #374151;
+  border-radius: 12px;
+  padding:       20px;
+  display:       flex;
+  flex-direction: column;
+  gap:           14px;
+
+  &.mini { gap: 10px; padding: 16px; }
+}
+
+.skeleton-header {
+  display: flex; align-items: flex-start; gap: 12px;
+}
+
+.skeleton-logo {
+  @extend %skeleton-base;
+  width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0;
+}
+
+.skeleton-title-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.skeleton-badge       { @extend %skeleton-base; width: 70px; height: 22px; border-radius: 20px; }
+.skeleton-meta        { display: flex; flex-wrap: wrap; gap: 8px; }
+.skeleton-desc        { display: flex; flex-direction: column; gap: 8px; }
+.skeleton-skills      { display: flex; gap: 8px; }
+.skeleton-actions     { display: flex; gap: 10px; }
+
+.skeleton-line {
+  @extend %skeleton-base;
+  height: 12px;
+  &.full   { width: 100%; }
+  &.wide   { width: 80%; }
+  &.medium { width: 60%; }
+  &.short  { width: 35%; }
+}
+
+.skeleton-chip { @extend %skeleton-base; width: 70px; height: 26px; border-radius: 20px; }
+.skeleton-btn  { @extend %skeleton-base; flex: 1; height: 38px; border-radius: 8px; }
+
+// ─── Error State ──────────────────────────────────────────────────────────────
+.error-state {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content: center;
+  padding:        60px 24px;
+  text-align:     center;
+  gap:            14px;
+
+  .error-icon { width: 48px; height: 48px; color: #ef4444; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #f9fafb; margin: 0; }
+  p  { font-size: 0.88rem; color: #9ca3af; margin: 0; max-width: 400px; }
+}
+
+.btn-retry {
+  background:    #6366f1;
+  border:        none;
+  color:         #fff;
+  font-size:     0.85rem;
+  font-weight:   600;
+  padding:       10px 24px;
+  border-radius: 8px;
+  cursor:        pointer;
+  transition:    background 0.2s;
+  &:hover { background: #4f46e5; }
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+.empty-state {
+  @extend .error-state;
+  .empty-icon { color: #4b5563; }
+}
+
+// ─── Load More Section ────────────────────────────────────────────────────────
+.load-more-section {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            18px;
+  padding-top:    8px;
+}
+
+.progress-wrap {
+  width:     100%;
+  max-width: 480px;
+}
+
+.progress-label {
+  display:         flex;
+  justify-content: space-between;
+  font-size:       0.75rem;
+  color:           #6b7280;
+  margin-bottom:   6px;
+}
+
+.progress-bar {
+  height:        6px;
+  background:    #374151;
+  border-radius: 3px;
+  overflow:      hidden;
+}
+
+.progress-fill {
+  height:     100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.load-more-wrap { display: flex; justify-content: center; }
+
+.btn-load-more {
+  display:       flex;
+  align-items:   center;
+  gap:           8px;
+  padding:       12px 32px;
+  border-radius: 10px;
+  font-size:     0.9rem;
+  font-weight:   600;
+  cursor:        pointer;
+  border:        2px solid transparent;
+  transition:    all 0.2s ease;
+
+  svg { width: 18px; height: 18px; }
+
+  &:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  &.phase-reveal {
+    background:    transparent;
+    border-color:  #10b981;
+    color:         #10b981;
+    &:hover:not(:disabled) { background: rgba(16,185,129,0.1); }
+  }
+
+  &.phase-fetch {
+    background:    #6366f1;
+    border-color:  #6366f1;
+    color:         #ffffff;
+    &:hover:not(:disabled) { background: #4f46e5; border-color: #4f46e5; }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.9s linear infinite; }
+
+.all-loaded {
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+  font-size:   0.82rem;
+  color:       #6b7280;
+
+  svg { width: 15px; height: 15px; color: #10b981; }
+}
