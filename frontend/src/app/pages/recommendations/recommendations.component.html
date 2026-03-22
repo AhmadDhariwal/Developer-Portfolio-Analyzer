@@ -125,7 +125,11 @@
               </svg>
               {{ proj.impact }}% impact
             </span>
-            <a href="#" class="project-start-link">
+            <a
+              [href]="getProjectStartUrl(proj)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="project-start-link">
               Start
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
@@ -237,7 +241,11 @@
               </svg>
               {{ path.timeline }}
             </span>
-            <a href="#" class="explore-link">
+            <a
+              [href]="getCareerExploreUrl(path)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="explore-link">
               Explore
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">

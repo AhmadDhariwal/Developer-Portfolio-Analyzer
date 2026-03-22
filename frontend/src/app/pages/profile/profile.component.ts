@@ -40,16 +40,20 @@ export class ProfileComponent implements OnInit {
   pwdError          = '';
   pwdSuccess        = '';
   careerSuccess     = '';
+  isUploadingAvatar = false;
 
   // ── Profile data (bound to form) ───────────────────────────────────────
   profile: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
+    activeGithubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
     careerStack:     'Full Stack',
     experienceLevel: 'Student',
     careerGoal:      '',
     isConfigured:    false,
+    defaultResume: null,
+    activeResume: null,
     notifications: {
       weeklyScoreReport:  true,
       skillTrendAlerts:   true,
@@ -64,12 +68,15 @@ export class ProfileComponent implements OnInit {
 
   private snapshot: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
+    activeGithubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
     careerStack:     'Full Stack',
     experienceLevel: 'Student',
     careerGoal:      '',
     isConfigured:    false,
+    defaultResume: null,
+    activeResume: null,
     notifications: {
       weeklyScoreReport:  true,
       skillTrendAlerts:   true,
@@ -123,6 +130,7 @@ export class ProfileComponent implements OnInit {
 
     const payload: UpdateProfilePayload = {
       name:          this.profile.name,
+      githubUsername: this.profile.githubUsername,
       jobTitle:      this.profile.jobTitle,
       location:      this.profile.location,
       bio:           this.profile.bio,
@@ -155,6 +163,7 @@ export class ProfileComponent implements OnInit {
       name: data.name || '',
       email: data.email || '',
       githubUsername: data.githubUsername || '',
+      activeGithubUsername: data.activeGithubUsername || data.githubUsername || '',
       avatar: data.avatar || '',
       jobTitle: data.jobTitle || '',
       location: data.location || '',
@@ -164,8 +173,12 @@ export class ProfileComponent implements OnInit {
       linkedin: data.linkedin || '',
       careerStack:     data.careerStack     || 'Full Stack',
       experienceLevel: data.experienceLevel || 'Student',
+      activeCareerStack: data.activeCareerStack || data.careerStack || 'Full Stack',
+      activeExperienceLevel: data.activeExperienceLevel || data.experienceLevel || 'Student',
       careerGoal:      data.careerGoal      || '',
       isConfigured:    data.isConfigured    ?? false,
+      defaultResume: data.defaultResume || null,
+      activeResume: data.activeResume || null,
       notifications: {
         weeklyScoreReport:  data.notifications?.weeklyScoreReport ?? true,
         skillTrendAlerts:   data.notifications?.skillTrendAlerts ?? true,
@@ -270,5 +283,41 @@ export class ProfileComponent implements OnInit {
 
   toggleNotification(key: keyof NotificationPrefs): void {
     this.profile.notifications[key] = !this.profile.notifications[key];
+  }
+
+  onAvatarFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const isImage = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+    if (!isImage) {
+      this.errorMessage = 'Only JPG, PNG, and WEBP files are allowed.';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage = 'Avatar must be 2MB or smaller.';
+      return;
+    }
+
+    this.isUploadingAvatar = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.cdr.detectChanges();
+
+    this.profileService.uploadAvatar(file).subscribe({
+      next: (res) => {
+        this.profile.avatar = res.avatar;
+        this.snapshot = { ...this.profile };
+        this.isUploadingAvatar = false;
+        this.successMessage = 'Profile photo updated successfully.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isUploadingAvatar = false;
+        this.errorMessage = err?.error?.message || 'Failed to upload profile photo.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

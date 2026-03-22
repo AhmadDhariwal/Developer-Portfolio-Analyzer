@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
+const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
 
 @Injectable({
   providedIn: 'root'
@@ -57,6 +58,13 @@ export class AuthService {
   private storeSession(response: any): void {
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response));
+    const careerProfile = {
+      careerStack: response.activeCareerStack || response.careerStack || 'Full Stack',
+      experienceLevel: response.activeExperienceLevel || response.experienceLevel || 'Student',
+      careerGoal: response.careerGoal || '',
+      isConfigured: true
+    };
+    localStorage.setItem(CAREER_PROFILE_STORAGE_KEY, JSON.stringify(careerProfile));
     localStorage.setItem('loginExpiry', String(Date.now() + SESSION_DURATION_MS));
     this.isLoggedInSubject.next(true);
     this.scheduleAutoLogout();
@@ -78,12 +86,18 @@ export class AuthService {
     );
   }
 
+  completeExternalLogin(authPayload: any): void {
+    if (!authPayload?.token) return;
+    this.storeSession(authPayload);
+  }
+
   logout(): void {
     if (this.autoLogoutTimer) {
       clearTimeout(this.autoLogoutTimer);
       this.autoLogoutTimer = null;
     }
     this.clearStorage();
+    localStorage.removeItem(CAREER_PROFILE_STORAGE_KEY);
     this.isLoggedInSubject.next(false);
   }
 

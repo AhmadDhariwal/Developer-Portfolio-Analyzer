@@ -1,0 +1,14 @@
+<div class="settings-page">
+  <div class="page-header">
+    <h2>Settings</h2>
+    <p>Admin-only controls for platform governance and configuration.</p>
+  </div>
+
+  <div class="settings-grid">
+    <a class="settings-card" *ngFor="let section of sections" [routerLink]="section.route">
+      <h3>{{ section.title }}</h3>
+      <p>{{ section.description }}</p>
+      <span class="open-link">Open Section</span>
+    </a>
+  </div>
+</div>

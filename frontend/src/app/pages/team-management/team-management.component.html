@@ -1,0 +1,180 @@
+<div class="page">
+  <div class="page-header">
+    <h2>User Management</h2>
+    <p>Manage organizations, teams, invitations, and role-based access from one workspace.</p>
+    <div class="role-chip" *ngIf="currentOrgRole" [ngClass]="roleBadgeClass(currentOrgRole)">
+      Your role: {{ currentOrgRole }}
+    </div>
+  </div>
+
+  <div class="status" *ngIf="status">{{ status }}</div>
+
+  <div class="grid two">
+    <div class="card panel-highlight">
+      <h3>Create Organization</h3>
+      <p class="card-subtitle">Start a new workspace and assign your initial structure.</p>
+      <input [(ngModel)]="orgForm.name" placeholder="Organization name" />
+      <textarea [(ngModel)]="orgForm.description" rows="3" placeholder="Description (optional)"></textarea>
+      <button (click)="createOrganization()">Create Organization</button>
+    </div>
+
+    <div class="card">
+      <h3>Select Organization</h3>
+      <p class="card-subtitle">Pick the active organization context for teams and invitations.</p>
+      <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Select organization">
+        <option value="">Choose organization</option>
+        <option *ngFor="let org of organizations" [value]="org._id">
+          {{ org.name }} ({{ org.myRole }})
+        </option>
+      </select>
+
+      <div class="org-quick-select" *ngIf="organizations.length > 0">
+        <span>Available organizations:</span>
+        <button
+          class="ghost"
+          type="button"
+          *ngFor="let org of organizations"
+          (click)="selectOrganization(org._id)">
+          {{ org.name }}
+        </button>
+      </div>
+
+      <div class="inline" *ngIf="selectedOrganizationId && canCreateTeam">
+        <input [(ngModel)]="teamForm.name" placeholder="New team name" />
+        <button (click)="createTeam()">Create Team</button>
+      </div>
+      <textarea *ngIf="canCreateTeam" [(ngModel)]="teamForm.description" rows="2" placeholder="Team description (optional)"></textarea>
+      <div class="empty" *ngIf="selectedOrganizationId && !canCreateTeam">Only admin/manager can create teams.</div>
+    </div>
+  </div>
+
+  <div class="empty org-hint" *ngIf="!selectedOrganizationId">
+    Select organization from dropdown to load users, teams, invitations, and analytics.
+  </div>
+
+  <div class="grid two" *ngIf="selectedOrganizationId">
+    <div class="card" *ngIf="canInvite; else inviteLocked">
+      <h3>Invite Member</h3>
+      <p class="card-subtitle">Email-based invites include automatic retry if delivery fails.</p>
+      <input [(ngModel)]="inviteForm.email" placeholder="user@email.com" />
+      <select [(ngModel)]="inviteForm.role" title="Select invite role">
+        <option *ngFor="let role of roleOptions" [value]="role" [disabled]="!canAssignRole(role)">{{ role }}</option>
+      </select>
+      <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Select team scope">
+        <option value="">Organization level</option>
+        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+      </select>
+      <button (click)="inviteMember()">Send Email Invitation</button>
+
+      <!-- Manual share link when no email provider is configured -->
+      <div class="invite-link-box" *ngIf="invitationLink">
+        <label>Share this invitation link manually:</label>
+        <div class="link-row">
+          <input [value]="invitationLink" readonly />
+          <button class="ghost" type="button" (click)="copyInviteLink()">Copy</button>
+        </div>
+      </div>
+
+      <h4>Pending Invitations</h4>
+      <div class="empty" *ngIf="invitations.length === 0">No pending invitations.</div>
+      <div class="chip-row" *ngFor="let invitation of invitations">
+        <span>{{ invitation.email }}</span>
+        <span>{{ invitation.role }}</span>
+        <span>{{ invitation.expiresAt | date:'shortDate' }}</span>
+        <span>Email delivery pending</span>
+        <button class="ghost" (click)="revokeInvitation(invitation._id)">Withdraw</button>
+      </div>
+    </div>
+
+    <ng-template #inviteLocked>
+      <div class="card">
+        <h3>Invite Member</h3>
+        <p class="card-subtitle">Invitations are permission-gated.</p>
+        <div class="empty">Only admin/manager can invite users.</div>
+      </div>
+    </ng-template>
+
+    <div class="card">
+      <h3>Organization Members</h3>
+      <p class="card-subtitle">Review org-level role assignment and adjust access safely.</p>
+      <div class="empty" *ngIf="members.length === 0">No members found.</div>
+      <div class="table-wrap" *ngIf="members.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Org Role</th>
+            <th>Assign</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of members">
+            <td>{{ member.user.name }}</td>
+            <td>{{ member.user.email }}</td>
+            <td><span class="role-pill" [class]="roleBadgeClass(member.orgRole)">{{ member.orgRole }}</span></td>
+            <td>
+              <select [ngModel]="member.orgRole" (ngModelChange)="updateOrgRole(member, $event)" title="Assign organization role">
+                <option *ngFor="let role of roleOptions" [value]="role" [disabled]="!canAssignRole(role)">{{ role }}</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two" *ngIf="selectedTeamId">
+    <div class="card">
+      <h3>Team Members</h3>
+      <p class="card-subtitle">Assign team-scoped role permissions.</p>
+      <div class="empty" *ngIf="teamMembers.length === 0">No team members found.</div>
+      <div class="table-wrap" *ngIf="teamMembers.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Assign</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of teamMembers">
+            <td>{{ member.userId.name }}</td>
+            <td>{{ member.userId.email }}</td>
+            <td><span class="role-pill" [class]="roleBadgeClass(member.role)">{{ member.role }}</span></td>
+            <td>
+              <select [ngModel]="member.role" (ngModelChange)="updateTeamRole(member._id, $event)" title="Assign team role">
+                <option *ngFor="let role of roleOptions" [value]="role" [disabled]="!canAssignRole(role)">{{ role }}</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Team Analytics</h3>
+      <p class="card-subtitle">Quick operational snapshot for readiness and repository metrics.</p>
+      <div *ngIf="!teamAnalytics" class="empty">Select a team to view analytics.</div>
+      <div *ngIf="teamAnalytics" class="stats">
+        <div>Total Members: {{ teamAnalytics.totalMembers }}</div>
+        <div>Avg Readiness: {{ teamAnalytics.averageReadinessScore }}</div>
+        <div>Repositories: {{ teamAnalytics.totals.repositories }}</div>
+        <div>Stars: {{ teamAnalytics.totals.stars }}</div>
+        <div>Forks: {{ teamAnalytics.totals.forks }}</div>
+      </div>
+
+      <h4>Shared Dashboard Snapshot</h4>
+      <div class="empty" *ngIf="teamDashboardMembers.length === 0">No shared dashboard data yet.</div>
+      <div class="snapshot" *ngFor="let item of teamDashboardMembers">
+        <strong>{{ item.user.name }}</strong>
+        <span>{{ item.role }}</span>
+        <span>Readiness {{ item.readinessScore }}</span>
+      </div>
+    </div>
+  </div>
+</div>

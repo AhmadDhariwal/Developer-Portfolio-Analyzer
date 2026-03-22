@@ -27,6 +27,10 @@ const analysisCacheSchema = new mongoose.Schema({
         required: true,
         enum: ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years']
     },
+    analysisVersion: {
+        type: String,
+        default: 'v1'
+    },
     resumeHash: {
         type: String,
         required: true // SHA-256 hash of the extracted resume text
@@ -43,6 +47,6 @@ const analysisCacheSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // All 4 fields required for a correct cache hit
-analysisCacheSchema.index({ githubUsername: 1, careerStack: 1, experienceLevel: 1, resumeHash: 1 });
+analysisCacheSchema.index({ githubUsername: 1, careerStack: 1, experienceLevel: 1, analysisVersion: 1, resumeHash: 1 });
 
 module.exports = mongoose.model('AnalysisCache', analysisCacheSchema);

@@ -1,6 +1,10 @@
 const User     = require('../models/user');
 const Analysis = require('../models/analysis');
+const ResumeFile = require('../models/resumeFile');
+const ResumeAnalysis = require('../models/resumeAnalysis');
 const bcrypt   = require('bcryptjs');
+const fs = require('node:fs');
+const { createNotification } = require('../services/notificationService');
 
 // ─── Helper: format member-since date ─────────────────────────────────────
 const formatMemberSince = (date) => {
@@ -16,21 +20,85 @@ const getProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    // Pull stats from latest analysis (optional — zero-out if none exists)
-    const analysis = await Analysis.findOne({ userId: req.user._id });
+    const activeGithubUsername = user.activeGithubUsername || user.githubUsername;
+
+    if (!user.defaultResumeFileId) {
+      const latestAnalyzed = await ResumeFile.findOne({ userId: user._id, isAnalyzed: true }).sort({ uploadDate: -1 }).lean();
+      const latestAny = latestAnalyzed || await ResumeFile.findOne({ userId: user._id }).sort({ uploadDate: -1 }).lean();
+      if (latestAny) {
+        user.defaultResumeFileId = latestAny._id;
+        user.activeResumeFileId = latestAny._id;
+        await user.save();
+      }
+    } else if (!user.activeResumeFileId) {
+      user.activeResumeFileId = user.defaultResumeFileId;
+      await user.save();
+    }
+
+    const [defaultResumeFile, activeResumeFile] = await Promise.all([
+      user.defaultResumeFileId ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id }).lean() : null,
+      user.activeResumeFileId ? ResumeFile.findOne({ _id: user.activeResumeFileId, userId: user._id }).lean() : null
+    ]);
+    const resolvedActiveResumeFile = activeResumeFile || defaultResumeFile;
+
+    // Pull stats from latest analyses
+    const [analysis, latestResumeAnalysis] = await Promise.all([
+      Analysis.findOne({ userId: req.user._id }).sort({ updatedAt: -1 }),
+      ResumeAnalysis.findOne({ userId: req.user._id }).sort({ analyzedAt: -1 }).lean()
+    ]);
+
+    const githubScore = Number(analysis?.githubScore || 0);
+    const resumeScore = latestResumeAnalysis
+      ? Math.round((
+        Number(latestResumeAnalysis.atsScore || 0)
+        + Number(latestResumeAnalysis.keywordDensity || 0)
+        + Number(latestResumeAnalysis.formatScore || 0)
+        + Number(latestResumeAnalysis.contentQuality || 0)
+      ) / 4)
+      : 0;
+
+    const scoreInputs = [githubScore, resumeScore].filter((s) => Number.isFinite(s) && s > 0);
+    const developerScore = scoreInputs.length
+      ? Math.round(scoreInputs.reduce((sum, v) => sum + v, 0) / scoreInputs.length)
+      : 0;
+
+    const resumeSkills = latestResumeAnalysis?.skills
+      ? (latestResumeAnalysis.skills instanceof Map
+        ? Array.from(latestResumeAnalysis.skills.values()).flat()
+        : Object.values(latestResumeAnalysis.skills).flat())
+      : [];
+
+    const githubSkills = analysis?.languageDistribution
+      ? Object.keys(analysis.languageDistribution instanceof Map
+        ? Object.fromEntries(analysis.languageDistribution)
+        : analysis.languageDistribution)
+      : [];
+
+    const skillsDetected = new Set(
+      [...resumeSkills, ...githubSkills]
+        .map((s) => String(s || '').trim().toLowerCase())
+        .filter(Boolean)
+    ).size;
 
     const stats = {
-      developerScore:  analysis?.readinessScore ?? user.score ?? 0,
+      developerScore,
       reposAnalyzed:   analysis?.githubStats?.repos ?? 0,
-      skillsDetected:  analysis?.githubStats?.stars  ?? 0,   // using stars as proxy until skills count stored
+      skillsDetected,
       memberSince:     formatMemberSince(user.createdAt),
     };
+
+    if (!user.activeCareerStack) user.activeCareerStack = user.careerStack || 'Full Stack';
+    if (!user.activeExperienceLevel) user.activeExperienceLevel = user.experienceLevel || 'Student';
+    if (user.isModified('activeCareerStack') || user.isModified('activeExperienceLevel')) {
+      await user.save();
+    }
 
     res.json({
       _id:               user._id,
       name:              user.name,
       email:             user.email,
       githubUsername:    user.githubUsername,
+      activeGithubUsername,
       avatar:            user.avatar,
       jobTitle:          user.jobTitle   || '',
       location:          user.location   || '',
@@ -46,9 +114,23 @@ const getProfile = async (req, res) => {
       },
       careerStack:        user.careerStack        || 'Full Stack',
       experienceLevel:    user.experienceLevel    || 'Student',
+      activeCareerStack:  user.activeCareerStack  || user.careerStack || 'Full Stack',
+      activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel || 'Student',
       careerGoal:         user.careerGoal         || '',
       careerProfileSetAt: user.careerProfileSetAt || null,
       isConfigured:       !!user.careerProfileSetAt,
+      defaultResume: defaultResumeFile ? {
+        fileId: defaultResumeFile._id,
+        fileName: defaultResumeFile.fileName,
+        uploadDate: defaultResumeFile.uploadDate,
+        isAnalyzed: defaultResumeFile.isAnalyzed
+      } : null,
+      activeResume: resolvedActiveResumeFile ? {
+        fileId: resolvedActiveResumeFile._id,
+        fileName: resolvedActiveResumeFile.fileName,
+        uploadDate: resolvedActiveResumeFile.uploadDate,
+        isAnalyzed: resolvedActiveResumeFile.isAnalyzed
+      } : null,
       stats,
     });
   } catch (error) {
@@ -63,7 +145,8 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const {
-      name, jobTitle, location, bio,
+      name, githubUsername, defaultResumeFileId,
+      jobTitle, location, bio,
       website, twitter, linkedin,
       notifications,
     } = req.body;
@@ -72,6 +155,30 @@ const updateProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     if (name        !== undefined) user.name        = name;
+    if (githubUsername !== undefined) {
+      const normalizedGithub = String(githubUsername || '').trim();
+      if (!normalizedGithub) {
+        return res.status(400).json({ message: 'GitHub username cannot be empty.' });
+      }
+      user.githubUsername = normalizedGithub;
+      user.activeGithubUsername = normalizedGithub;
+      user.lastSearchedGithub = '';
+    }
+
+    if (defaultResumeFileId !== undefined) {
+      if (!defaultResumeFileId) {
+        user.defaultResumeFileId = null;
+        user.activeResumeFileId = null;
+      } else {
+        const resumeFile = await ResumeFile.findOne({ _id: defaultResumeFileId, userId: user._id });
+        if (!resumeFile) {
+          return res.status(400).json({ message: 'Selected default resume file is invalid.' });
+        }
+        user.defaultResumeFileId = resumeFile._id;
+        user.activeResumeFileId = resumeFile._id;
+      }
+    }
+
     if (jobTitle    !== undefined) user.jobTitle    = jobTitle;
     if (location    !== undefined) user.location    = location;
     if (bio         !== undefined) user.bio         = bio;
@@ -90,11 +197,42 @@ const updateProfile = async (req, res) => {
 
     const updated = await user.save();
 
+    await createNotification({
+      userId: updated._id,
+      type: 'profile_update',
+      title: 'Profile Updated',
+      message: 'Your profile settings were updated successfully.',
+      dedupeKey: `profile_update:${updated._id}`,
+      dedupeWindowHours: 1
+    });
+
+    const [defaultResume, activeResume] = await Promise.all([
+      updated.defaultResumeFileId
+        ? ResumeFile.findOne({ _id: updated.defaultResumeFileId, userId: updated._id }).lean()
+        : null,
+      updated.activeResumeFileId
+        ? ResumeFile.findOne({ _id: updated.activeResumeFileId, userId: updated._id }).lean()
+        : null
+    ]);
+
     res.json({
       _id:           updated._id,
       name:          updated.name,
       email:         updated.email,
       githubUsername:updated.githubUsername,
+      activeGithubUsername: updated.activeGithubUsername || updated.githubUsername,
+      defaultResume: defaultResume ? {
+        fileId: defaultResume._id,
+        fileName: defaultResume.fileName,
+        uploadDate: defaultResume.uploadDate,
+        isAnalyzed: defaultResume.isAnalyzed
+      } : null,
+      activeResume: activeResume ? {
+        fileId: activeResume._id,
+        fileName: activeResume.fileName,
+        uploadDate: activeResume.uploadDate,
+        isAnalyzed: activeResume.isAnalyzed
+      } : null,
       jobTitle:      updated.jobTitle,
       location:      updated.location,
       bio:           updated.bio,
@@ -134,6 +272,15 @@ const updatePassword = async (req, res) => {
     const salt           = await bcrypt.genSalt(10);
     user.password        = await bcrypt.hash(newPassword, salt);
     await user.save();
+
+    await createNotification({
+      userId: user._id,
+      type: 'career_update',
+      title: 'Career Defaults Updated',
+      message: `Default career profile set to ${user.careerStack} (${user.experienceLevel}).`,
+      dedupeKey: `career_default:${user._id}:${user.careerStack}:${user.experienceLevel}`,
+      dedupeWindowHours: 2
+    });
 
     res.json({ message: 'Password updated successfully.' });
   } catch (error) {
@@ -182,6 +329,8 @@ const updateCareerProfile = async (req, res) => {
 
     user.careerStack     = careerStack;
     user.experienceLevel = experienceLevel;
+    user.activeCareerStack = careerStack;
+    user.activeExperienceLevel = experienceLevel;
     if (careerGoal !== undefined) user.careerGoal = careerGoal;
 
     // Mark profile as configured on first save
@@ -194,6 +343,8 @@ const updateCareerProfile = async (req, res) => {
     res.json({
       careerStack:        user.careerStack,
       experienceLevel:    user.experienceLevel,
+      activeCareerStack:  user.activeCareerStack,
+      activeExperienceLevel: user.activeExperienceLevel,
       careerGoal:         user.careerGoal,
       careerProfileSetAt: user.careerProfileSetAt,
       isConfigured:       !!user.careerProfileSetAt
@@ -204,4 +355,99 @@ const updateCareerProfile = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile };
+// @desc  Update active (session-level) career stack + level only
+// @route PUT /api/profile/career/active
+// @access Private
+const updateActiveCareerProfile = async (req, res) => {
+  try {
+    const { careerStack, experienceLevel } = req.body;
+
+    const validStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+    const validLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+
+    if (!careerStack || !validStacks.includes(careerStack)) {
+      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
+    }
+    if (!experienceLevel || !validLevels.includes(experienceLevel)) {
+      return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    user.activeCareerStack = careerStack;
+    user.activeExperienceLevel = experienceLevel;
+    await user.save();
+
+    await createNotification({
+      userId: user._id,
+      type: 'career_update',
+      title: 'Session Career Filter Changed',
+      message: `Active career filter switched to ${user.activeCareerStack} (${user.activeExperienceLevel}).`,
+      dedupeKey: `career_active:${user._id}:${user.activeCareerStack}:${user.activeExperienceLevel}`,
+      dedupeWindowHours: 2
+    });
+
+    return res.json({
+      careerStack: user.activeCareerStack,
+      experienceLevel: user.activeExperienceLevel,
+      isConfigured: !!user.careerProfileSetAt
+    });
+  } catch (error) {
+    console.error('Active career profile update error:', error.message);
+    return res.status(500).json({ message: 'Server error updating active career profile.' });
+  }
+};
+
+// @desc  Upload or replace avatar image
+// @route POST /api/profile/avatar
+// @access Private
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Avatar file is required.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const nextAvatarPath = `/uploads/avatars/${req.file.filename}`;
+
+    // Best-effort cleanup of previous local avatar file.
+    if (user.avatar?.includes('/uploads/avatars/')) {
+      const previous = user.avatar.split('/uploads/avatars/')[1];
+      if (previous) {
+        const absoluteOldPath = `uploads/avatars/${previous}`;
+        if (fs.existsSync(absoluteOldPath)) {
+          fs.unlinkSync(absoluteOldPath);
+        }
+      }
+    }
+
+    const host = req.get('host');
+    const protocol = req.protocol;
+    user.avatar = `${protocol}://${host}${nextAvatarPath}`;
+    await user.save();
+
+    await createNotification({
+      userId: user._id,
+      type: 'profile_update',
+      title: 'Profile Photo Updated',
+      message: 'Your profile photo has been updated.',
+      dedupeKey: `profile_avatar:${user._id}`,
+      dedupeWindowHours: 1
+    });
+
+    return res.json({
+      message: 'Avatar updated successfully.',
+      avatar: user.avatar
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error.message);
+    return res.status(500).json({ message: 'Server error uploading avatar.' });
+  }
+};
+
+module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar };

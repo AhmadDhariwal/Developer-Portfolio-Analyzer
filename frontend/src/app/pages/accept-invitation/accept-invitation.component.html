@@ -1,0 +1,37 @@
+<div class="invite-page">
+  <div class="card" *ngIf="loading">
+    <h2>Loading Invitation...</h2>
+    <p>We are validating your invitation and activating your membership.</p>
+  </div>
+
+  <div class="card" *ngIf="!loading && !accepted && needsOnboarding && !error">
+    <h2>Complete Invitation Setup</h2>
+    <p *ngIf="details">
+      Join {{ details.organizationName }}<span *ngIf="details.teamName"> / {{ details.teamName }}</span> as {{ details.role }}.
+    </p>
+    <p *ngIf="details">Invitation email: {{ details.email }}</p>
+
+    <input [(ngModel)]="form.name" placeholder="Full name" />
+    <input [(ngModel)]="form.githubUsername" placeholder="GitHub username" />
+    <input [(ngModel)]="form.password" type="password" placeholder="Set password" />
+
+    <div class="actions">
+      <button (click)="completeOnboarding()" [disabled]="processing">{{ processing ? 'Processing...' : 'Complete Setup' }}</button>
+    </div>
+  </div>
+
+  <div class="card success" *ngIf="!loading && accepted">
+    <h2>Invitation Accepted</h2>
+    <p>You have joined the organization successfully.</p>
+    <div class="actions">
+      <button (click)="goToTeamManagement()">Open User Management</button>
+      <a routerLink="/app/dashboard">Go to Dashboard</a>
+    </div>
+  </div>
+
+  <div class="card error" *ngIf="!loading && error">
+    <h2>Unable To Join</h2>
+    <p>{{ error }}</p>
+    <a routerLink="/app/settings/user-management">Back to User Management</a>
+  </div>
+</div>

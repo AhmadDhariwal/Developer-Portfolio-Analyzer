@@ -2,6 +2,7 @@ const Repository = require('../models/repository');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
 const { analyzeGitHubProfile } = require('../services/githubservice');
+const { createNotification } = require('../services/notificationService');
 
 // @desc    Publicly analyze any GitHub username
 // @route   POST /api/github/analyze
@@ -37,7 +38,7 @@ const analyzeGitHub = async (req, res) => {
 // @access  Private
 const analyzeAndSaveGitHubProfile = async (req, res) => {
     try {
-        const githubUsername = req.body.username || req.user?.githubUsername;
+        const githubUsername = req.body.username || req.user?.activeGithubUsername || req.user?.githubUsername;
 
         if (!githubUsername) {
             return res.status(400).json({ message: 'GitHub username is required.' });
@@ -80,8 +81,21 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
 
         await analysis.save();
 
-        // Save last searched username on the user
-        await User.findByIdAndUpdate(req.user._id, { lastSearchedGithub: githubUsername.trim() });
+        // Save active username on the user context
+        await User.findByIdAndUpdate(req.user._id, {
+            activeGithubUsername: githubUsername.trim(),
+            lastSearchedGithub: githubUsername.trim()
+        });
+
+        await createNotification({
+            userId: req.user._id,
+            type: 'github_update',
+            title: 'GitHub Profile Updated',
+            message: `GitHub analysis refreshed for @${githubUsername.trim()}.`,
+            dedupeKey: `github_update:${githubUsername.trim().toLowerCase()}`,
+            meta: { username: githubUsername.trim() },
+            dedupeWindowHours: 1
+        });
 
         res.json(data);
     } catch (error) {
@@ -105,9 +119,9 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
 // @access  Private
 const getActiveUsername = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('githubUsername lastSearchedGithub');
-        const activeUsername = user.lastSearchedGithub || user.githubUsername;
-        res.json({ username: activeUsername, isDefault: !user.lastSearchedGithub });
+        const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
+        const activeUsername = user.activeGithubUsername || user.githubUsername;
+        res.json({ username: activeUsername, isDefault: activeUsername === user.githubUsername });
     } catch (error) {
         res.status(500).json({ message: 'Failed to get active username' });
     }

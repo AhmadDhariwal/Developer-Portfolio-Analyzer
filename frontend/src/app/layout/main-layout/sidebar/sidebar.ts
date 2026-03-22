@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../shared/services/auth.service';
+import { TenantContextService } from '../../../shared/services/tenant-context.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,6 +20,11 @@ export class Sidebar {
       label: 'Dashboard',
       route: '/app/dashboard',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`
+    },
+    {
+      label: 'Activity Logs',
+      route: '/app/activity-logs',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`
     },
     {
       label: 'GitHub Analyzer',
@@ -46,7 +52,7 @@ export class Sidebar {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`
     },
     {
-      label: 'Jobs',
+      label: 'Jobs Hub',
       route: '/app/jobs',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`
     },
@@ -54,10 +60,27 @@ export class Sidebar {
       label: 'Profile',
       route: '/app/profile',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
+    },
+    {
+      label: 'Settings',
+      route: '/app/settings',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>`
     }
   ];
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly tenantContext: TenantContextService
+  ) {}
+
+  get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
+    const role = this.tenantContext.snapshot.myRole;
+    if (role === 'admin') {
+      return this.navItems;
+    }
+    return this.navItems.filter((item) => item.route !== '/app/settings');
+  }
 
   logout() {
     this.authService.logout();

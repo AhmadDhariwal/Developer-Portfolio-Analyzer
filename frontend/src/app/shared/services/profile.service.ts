@@ -22,11 +22,19 @@ export interface AccountStats {
   memberSince:    string;
 }
 
+export interface ResumeContextFile {
+  fileId: string;
+  fileName: string;
+  uploadDate: string;
+  isAnalyzed: boolean;
+}
+
 export interface UserProfile {
   _id:                string;
   name:               string;
   email:              string;
   githubUsername:     string;
+  activeGithubUsername?: string;
   avatar:             string;
   jobTitle:           string;
   location:           string;
@@ -37,13 +45,19 @@ export interface UserProfile {
   notifications:      NotificationPrefs;
   careerStack:        CareerStack;
   experienceLevel:    ExperienceLevel;
+  activeCareerStack?: CareerStack;
+  activeExperienceLevel?: ExperienceLevel;
   careerGoal:         CareerGoal;
   isConfigured:       boolean;
+  defaultResume?:     ResumeContextFile | null;
+  activeResume?:      ResumeContextFile | null;
   stats:              AccountStats;
 }
 
 export interface UpdateProfilePayload {
   name?:          string;
+  githubUsername?: string;
+  defaultResumeFileId?: string | null;
   jobTitle?:      string;
   location?:      string;
   bio?:           string;
@@ -56,6 +70,11 @@ export interface UpdateProfilePayload {
 export interface PasswordPayload {
   currentPassword: string;
   newPassword:     string;
+}
+
+export interface AvatarUploadResponse {
+  message: string;
+  avatar: string;
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────
@@ -78,6 +97,8 @@ export class ProfileService {
         this.careerProfileService.hydrateFromServer({
           careerStack:     profile.careerStack     ?? 'Full Stack',
           experienceLevel: profile.experienceLevel ?? 'Student',
+          activeCareerStack: profile.activeCareerStack ?? profile.careerStack ?? 'Full Stack',
+          activeExperienceLevel: profile.activeExperienceLevel ?? profile.experienceLevel ?? 'Student',
           careerGoal:      profile.careerGoal      ?? '',
           isConfigured:    profile.isConfigured    ?? false
         });
@@ -102,6 +123,21 @@ export class ProfileService {
   // ── Change password ────────────────────────────────────────────────────
   updatePassword(payload: PasswordPayload): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.baseUrl}/password`, payload);
+  }
+
+  uploadAvatar(file: File): Observable<AvatarUploadResponse> {
+    const form = new FormData();
+    form.append('avatar', file);
+
+    return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
+      tap((res) => {
+        const stored = this.authService.getCurrentUser();
+        if (stored) {
+          const merged = { ...stored, avatar: res.avatar };
+          localStorage.setItem('user', JSON.stringify(merged));
+        }
+      })
+    );
   }
 
   // ── Delete account ─────────────────────────────────────────────────────

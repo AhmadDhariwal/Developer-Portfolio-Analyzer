@@ -20,7 +20,7 @@ import {
 import { CourseCardComponent }    from '../../shared/components/course-card/course-card';
 import { CourseFiltersComponent } from '../../shared/components/course-filters/course-filters';
 
-const INITIAL_DISPLAY = 6;    // courses shown before the first Load More
+const INITIAL_DISPLAY = 10;   // courses shown before the first Load More
 const PAGE_SIZE       = 10;   // courses per backend page
 
 @Component({
@@ -53,8 +53,8 @@ export class CoursesComponent implements OnInit, OnDestroy {
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
   readonly PAGE_SIZE        = PAGE_SIZE;
 
-  private subscriptions = new Subscription();
-  private filterChanges = new Subject<CourseFilters>();
+  private readonly subscriptions = new Subscription();
+  private readonly filterChanges = new Subject<CourseFilters>();
 
   // ── Computed properties ────────────────────────────────────────────────────
 

@@ -1,24 +1,13 @@
 const axios     = require('axios');
-const aiService = require('./aiservice');
-const { getCoursePrompt } = require('../prompts/coursePrompt');
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
-// AI pool sizes (total courses generated per platform mode, covers 2 full pages)
-const AI_POOL_SIZE = {
-  All:      20,   // 7 Udemy + 5 Coursera + 5 edX + 3 freeCodeCamp
-  Udemy:    20,
-  Coursera: 20,
-  YouTube:   0,   // YouTube-only → no AI courses
-  Other:    20    // 10 edX + 10 freeCodeCamp
-};
-
 // YouTube fetch targets
 const YT_POOL_SIZE = {
-  All:      6,   // Mixed pool: fetch 6 YouTube videos
-  YouTube: 20    // YouTube-only: fetch 20 long videos
+  All:     30,
+  YouTube: 40
 };
 
 const PLATFORM_COLORS = {
@@ -35,10 +24,10 @@ const PLATFORM_COLORS = {
  * Fetches real YouTube tutorial videos via Data API v3.
  * Runs two parallel searches (long + medium duration) and merges results.
  */
-async function fetchYouTubeCourses(query, maxResults = 6) {
+async function fetchYouTubeCourses(query, maxResults = 20) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey || apiKey === 'your_youtube_api_key') {
-    console.warn('[CourseService] YOUTUBE_API_KEY not set — YouTube courses skipped.');
+    console.warn('[CourseService] YOUTUBE_API_KEY not set. Skipping YouTube source.');
     return [];
   }
 
@@ -46,11 +35,11 @@ async function fetchYouTubeCourses(query, maxResults = 6) {
     // Two parallel searches for better coverage
     const [longRes, mediumRes] = await Promise.allSettled([
       axios.get(`${YOUTUBE_API_BASE}/search`, {
-        params: { part:'snippet', type:'video', q:`${query} full course tutorial`, maxResults: Math.min(25, maxResults + 10), relevanceLanguage:'en', videoDuration:'long', key: apiKey },
+        params: { part:'snippet', type:'video', q:`${query} full course tutorial`, maxResults: Math.min(50, maxResults + 20), relevanceLanguage:'en', videoDuration:'long', key: apiKey },
         timeout: 10000
       }),
       axios.get(`${YOUTUBE_API_BASE}/search`, {
-        params: { part:'snippet', type:'video', q:`${query} tutorial crash course guide`, maxResults: Math.min(15, maxResults + 5), relevanceLanguage:'en', videoDuration:'medium', key: apiKey },
+        params: { part:'snippet', type:'video', q:`${query} tutorial crash course guide`, maxResults: Math.min(50, maxResults + 15), relevanceLanguage:'en', videoDuration:'medium', key: apiKey },
         timeout: 10000
       })
     ]);
@@ -70,7 +59,7 @@ async function fetchYouTubeCourses(query, maxResults = 6) {
 
     // Fetch video details: duration, views, likes
     const detailsRes = await axios.get(`${YOUTUBE_API_BASE}/videos`, {
-      params: { part:'snippet,contentDetails,statistics', id: videoIds.join(','), key: apiKey },
+      params: { part:'snippet,contentDetails,statistics', id: videoIds.slice(0, 50).join(','), key: apiKey },
       timeout: 10000
     });
 
@@ -148,36 +137,6 @@ function extractTopics(title) {
   return known.filter(t => title.toLowerCase().includes(t.toLowerCase())).slice(0, 4);
 }
 
-// ─── AI Course Generator ──────────────────────────────────────────────────────
-
-async function generateAICourses({ careerStack, experienceLevel, skillGaps, knownSkills, platform, topic, count }) {
-  const prompt   = getCoursePrompt({ careerStack, experienceLevel, skillGaps, knownSkills, platform, topic, totalCount: count });
-  const fallback = { courses: buildFallbackPool(platform, count) };
-
-  let result;
-  try { result = await aiService.runAIAnalysis(prompt, fallback); }
-  catch { result = fallback; }
-
-  const raw = Array.isArray(result?.courses) ? result.courses : [];
-
-  return raw.map((c, i) => ({
-    id:           String(c.id || `ai_${Date.now()}_${i}`),
-    title:        String(c.title       || 'Untitled Course'),
-    description:  String(c.description || ''),
-    platform:     normalisePlatform(c.platform),
-    instructor:   String(c.instructor  || 'Instructor'),
-    rating:       clamp(parseFloat(c.rating) || 4.3, 1, 5),
-    reviewCount:  Math.max(0, parseInt(c.reviewCount) || 1000),
-    duration:     String(c.duration    || 'N/A'),
-    durationHours: Math.max(0, parseFloat(c.durationHours) || 0),
-    level:        normaliseLevel(c.level),
-    thumbnail:    String(c.thumbnail   || ''),
-    url:          String(c.url         || '#'),
-    topics:       Array.isArray(c.topics) ? c.topics.map(String) : [],
-    popularity:   clamp(parseInt(c.popularity) || 50, 0, 100)
-  }));
-}
-
 // ─── Hard-coded fallback pool (20 courses across all platforms) ────────────────
 
 function buildFallbackPool(platform = 'All', count = 20) {
@@ -207,7 +166,9 @@ function buildFallbackPool(platform = 'All', count = 20) {
 
   // Filter to requested platform
   let pool = all;
-  if (platform && platform !== 'All' && platform !== 'YouTube') {
+  if (platform === 'Other') {
+    pool = all.filter(c => c.platform === 'edX' || c.platform === 'freeCodeCamp');
+  } else if (platform && platform !== 'All' && platform !== 'YouTube') {
     const norm = normalisePlatform(platform);
     const filtered = all.filter(c => c.platform === norm);
     pool = filtered.length ? filtered : all;
@@ -224,9 +185,10 @@ function normalisePlatform(raw) {
   const p = (raw || '').toLowerCase();
   if (p.includes('udemy'))                                    return 'Udemy';
   if (p.includes('coursera'))                                 return 'Coursera';
-  if (p.includes('edx') || p.includes('edx'))                return 'edX';
+  if (p.includes('edx'))                                      return 'edX';
   if (p.includes('freecodecamp') || p.includes('free code')) return 'freeCodeCamp';
   if (p.includes('youtube'))                                  return 'YouTube';
+  if (p.includes('other'))                                    return 'Other';
   return 'Udemy';
 }
 
@@ -281,6 +243,81 @@ function matchesDuration(course, f) {
   return true;
 }
 
+function toMixBucket(course) {
+  if (course.platform === 'Udemy') return 'Udemy';
+  if (course.platform === 'YouTube') return 'YouTube';
+  if (course.platform === 'Coursera') return 'Coursera';
+  return 'Other';
+}
+
+function blendDefaultPlatformPages(courses) {
+  const quotas = {
+    Udemy: 3,
+    YouTube: 3,
+    Coursera: 2,
+    Other: 2
+  };
+
+  const buckets = {
+    Udemy: [],
+    YouTube: [],
+    Coursera: [],
+    Other: []
+  };
+
+  for (const course of courses) {
+    buckets[toMixBucket(course)].push(course);
+  }
+
+  const takeFromBucket = (bucketName, count) => {
+    const out = [];
+    while (out.length < count && buckets[bucketName].length) {
+      out.push(buckets[bucketName].shift());
+    }
+    return out;
+  };
+
+  const takeBestRemaining = () => {
+    const names = ['Udemy', 'YouTube', 'Coursera', 'Other'];
+    let bestName = null;
+    let bestScore = -Infinity;
+
+    for (const name of names) {
+      const top = buckets[name][0];
+      if (!top) continue;
+      const score = Number(top.finalScore || 0);
+      if (score > bestScore) {
+        bestScore = score;
+        bestName = name;
+      }
+    }
+
+    if (!bestName) return null;
+    return buckets[bestName].shift();
+  };
+
+  const mixed = [];
+  while (mixed.length < courses.length) {
+    const page = [
+      ...takeFromBucket('Udemy', quotas.Udemy),
+      ...takeFromBucket('YouTube', quotas.YouTube),
+      ...takeFromBucket('Coursera', quotas.Coursera),
+      ...takeFromBucket('Other', quotas.Other)
+    ];
+
+    while (page.length < 10) {
+      const fill = takeBestRemaining();
+      if (!fill) break;
+      page.push(fill);
+    }
+
+    if (!page.length) break;
+    mixed.push(...page);
+  }
+
+  return mixed;
+}
+
 // ─── Main: Build full course pool (no pagination — controller paginates) ───────
 
 /**
@@ -293,9 +330,7 @@ function matchesDuration(course, f) {
 async function buildCoursePool(options = {}) {
   const {
     careerStack     = 'Full Stack',
-    experienceLevel = 'Intermediate',
     skillGaps       = [],
-    knownSkills     = [],
     platform        = 'All',
     rating          = '',
     level           = '',
@@ -307,17 +342,17 @@ async function buildCoursePool(options = {}) {
     ? `${topic} ${careerStack}`
     : `${careerStack} ${(skillGaps || []).slice(0, 3).join(' ')} programming`;
 
-  const aiCount = AI_POOL_SIZE[platform] ?? AI_POOL_SIZE.All;
   const ytCount = YT_POOL_SIZE[platform] ?? 0;
+  const curatedCount = platform === 'YouTube' ? 0 : 80;
 
-  // Fetch AI courses and YouTube in parallel
-  const [aiCourses, ytCourses] = await Promise.all([
-    aiCount > 0 ? generateAICourses({ careerStack, experienceLevel, skillGaps, knownSkills, platform, topic, count: aiCount }) : Promise.resolve([]),
-    ytCount > 0 ? fetchYouTubeCourses(query, ytCount) : Promise.resolve([])
+  // Learning Hub should prioritize real courses: YouTube + curated catalog.
+  const [ytCourses, curatedCourses] = await Promise.all([
+    ytCount > 0 ? fetchYouTubeCourses(query, ytCount) : Promise.resolve([]),
+    Promise.resolve(buildFallbackPool(platform, curatedCount))
   ]);
 
   // Merge + de-duplicate
-  let pool = [...aiCourses, ...ytCourses];
+  let pool = [...ytCourses, ...curatedCourses];
   const seen = new Set();
   pool = pool.filter(c => {
     const key = (c.url || c.id || '').toLowerCase();
@@ -325,6 +360,15 @@ async function buildCoursePool(options = {}) {
     seen.add(key);
     return true;
   });
+
+  if (platform === 'YouTube') {
+    pool = pool.filter(c => c.platform === 'YouTube');
+  } else if (platform === 'Other') {
+    pool = pool.filter(c => c.platform === 'edX' || c.platform === 'freeCodeCamp');
+  } else if (platform && platform !== 'All') {
+    const wanted = normalisePlatform(platform);
+    pool = pool.filter(c => c.platform === wanted);
+  }
 
   // Apply filters
   if (rating) {
@@ -346,13 +390,18 @@ async function buildCoursePool(options = {}) {
     pool = pool.filter(c => matchesDuration(c, duration));
   }
 
-  // If AI+YouTube returned nothing (all filtered out) → use fallback pool
+  // If sources return nothing (or filters remove all), use platform-aware fallback.
   if (!pool.length) {
-    pool = buildFallbackPool(platform, 20);
+    pool = platform === 'YouTube'
+      ? await fetchYouTubeCourses(query, 20)
+      : buildFallbackPool(platform, 40);
   }
 
   // Rank + attach platform colours
   pool = scoreAndRank(pool, skillGaps, careerStack);
+  if (platform === 'All') {
+    pool = blendDefaultPlatformPages(pool);
+  }
   pool = pool.map(c => ({
     ...c,
     platformColor: PLATFORM_COLORS[c.platform] || PLATFORM_COLORS.Udemy

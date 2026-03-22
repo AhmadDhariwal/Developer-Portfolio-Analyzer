@@ -27,6 +27,22 @@
   <!-- Upload Card -->
   <app-ui-card class="upload-card">
     <div class="upload-content">
+      <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName">
+        <p>Default Resume: <strong>{{ defaultResumeFileName || 'Not set' }}</strong></p>
+        <p>Active Resume: <strong>{{ activeResumeFileName || 'Not set' }}</strong></p>
+      </div>
+
+      <div class="resume-switcher" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
+        <label class="sr-only" for="resume-file-selector">Resume selector</label>
+        <select id="resume-file-selector" [(ngModel)]="selectedResumeFileId" title="Select active resume">
+          <option *ngFor="let file of resumeFiles" [value]="file.fileId">
+            {{ file.fileName }}{{ file.isDefault ? ' (default)' : '' }}{{ file.isActive ? ' (active)' : '' }}
+          </option>
+        </select>
+        <button class="file-input-label" (click)="useSelectedResume(false)">Use Selected</button>
+        <button class="file-input-label" (click)="useSelectedResume(true)">Set as Default</button>
+      </div>
+
       <svg *ngIf="!analysisComplete" class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
         <polyline points="17 8 12 3 7 8"></polyline>
@@ -78,7 +94,7 @@
   <!-- Re-upload button when analysis is complete -->
   <div *ngIf="analysisComplete" class="reupload-row">
     <label for="reuploadInput" class="reupload-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reupload-icon">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
@@ -164,7 +180,7 @@
       </svg>
 
       <!-- Download icon shown when idle -->
-      <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+      <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>

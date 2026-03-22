@@ -63,6 +63,18 @@ export class CareerProfileService {
       .pipe(tap(response => this.applyAndPersist(response)));
   }
 
+  setActiveCareerProfile(
+    careerStack: CareerStack,
+    experienceLevel: ExperienceLevel
+  ): Observable<CareerProfile> {
+    return this.http
+      .put<CareerProfile>(`${this.baseUrl}/profile/career/active`, {
+        careerStack,
+        experienceLevel
+      })
+      .pipe(tap(response => this.applyAndPersist(response)));
+  }
+
   // ── Hydration ────────────────────────────────────────────────────────────
 
   /**
@@ -72,6 +84,8 @@ export class CareerProfileService {
   hydrateFromServer(serverProfile: {
     careerStack?: CareerStack;
     experienceLevel?: ExperienceLevel;
+    activeCareerStack?: CareerStack;
+    activeExperienceLevel?: ExperienceLevel;
     careerGoal?: CareerGoal;
     isConfigured?: boolean;
   }): void {
@@ -100,10 +114,14 @@ export class CareerProfileService {
   // ── Private helpers ──────────────────────────────────────────────────────
 
   private applyAndPersist(data: Partial<CareerProfile>): void {
+    const incoming = data as Partial<CareerProfile> & {
+      activeCareerStack?: CareerStack;
+      activeExperienceLevel?: ExperienceLevel;
+    };
     const current = this.profileSubject.value;
     const next: CareerProfile = {
-      careerStack:     data.careerStack     ?? current.careerStack,
-      experienceLevel: data.experienceLevel ?? current.experienceLevel,
+      careerStack:     incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
+      experienceLevel: incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
       careerGoal:      data.careerGoal      ?? current.careerGoal,
       isConfigured:    data.isConfigured    ?? current.isConfigured
     };

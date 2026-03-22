@@ -13,7 +13,7 @@ import { Job, JobFilters, DEFAULT_JOB_FILTERS } from '../../shared/models/job.mo
 import { JobCardComponent }     from '../../shared/components/job-card/job-card';
 import { JobFiltersComponent }  from '../../shared/components/job-filters/job-filters';
 
-const INITIAL_DISPLAY = 6;
+const INITIAL_DISPLAY = 10;
 const PAGE_SIZE       = 10;
 
 @Component({
@@ -47,8 +47,8 @@ export class JobsComponent implements OnInit, OnDestroy {
   get canShowLoadMore():  boolean  { return !this.isLoading && (this.hasHiddenJobs || this.hasMorePages); }
   get hiddenCount():      number   { return Math.max(0, this.allJobs.length - this.displayCount); }
 
-  private subscriptions = new Subscription();
-  private filterChanges = new Subject<JobFilters>();
+  private readonly subscriptions = new Subscription();
+  private readonly filterChanges = new Subject<JobFilters>();
 
   constructor(
     private readonly jobService:           JobService,

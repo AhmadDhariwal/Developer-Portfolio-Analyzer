@@ -4,20 +4,21 @@
 <div class="page-header">
   <div class="header-text">
     <h2>Dashboard Overview</h2>
-    <p class="header-sub">Last analyzed: {{ lastAnalyzed }} · GitHub: {{ githubHandle }}</p>
+    <p class="header-sub">{{ dashboardIdentityLine }}</p>
+    <p class="header-sub">{{ dashboardScoreLine }}</p>
   </div>
   
   <div class="header-actions">
     <!-- Career Stack + Experience Level Dropdowns -->
     <div class="role-selector">
       <span class="role-label">Career Stack:</span>
-      <select [ngModel]="selectedCareerStack" (ngModelChange)="onCareerStackChange($event)" class="role-dropdown">
+      <select [ngModel]="selectedCareerStack" (ngModelChange)="onCareerStackChange($event)" class="role-dropdown" title="Career stack filter">
         <option *ngFor="let stack of careerStacks" [value]="stack">{{ stack }}</option>
       </select>
     </div>
     <div class="role-selector">
       <span class="role-label">Experience:</span>
-      <select [ngModel]="selectedExperienceLevel" (ngModelChange)="onExperienceLevelChange($event)" class="role-dropdown">
+      <select [ngModel]="selectedExperienceLevel" (ngModelChange)="onExperienceLevelChange($event)" class="role-dropdown" title="Experience level filter">
         <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
       </select>
     </div>
@@ -31,6 +32,12 @@
       Re-analyze
     </button>
   </div>
+</div>
+
+<div class="alert-banner alert-info" *ngIf="tenantTeamAnalytics && tenantTeamName">
+  <span>
+    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} | Team Avg Readiness: {{ tenantTeamAnalytics.averageReadinessScore }}
+  </span>
 </div>
 
 <!-- Rate limit / no-username warnings -->
@@ -264,6 +271,51 @@
       </div>
       <p class="rec-title">{{ rec.title }}</p>
       <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     ROW 5: DATA INSIGHTS
+     ════════════════════════════════════════════ -->
+<div class="insights-grid">
+  <div class="card insights-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>AI Score Breakdown</h3>
+        <p>Derived from portfolio analysis</p>
+      </div>
+    </div>
+    <div class="insight-rows">
+      <div class="insight-row" *ngFor="let row of scoreBreakdownRows">
+        <div class="insight-row__head">
+          <span>{{ row.label }}</span>
+          <span>{{ row.value }}%</span>
+        </div>
+        <div class="insight-bar">
+          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card insights-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>GitHub + Resume Signals</h3>
+        <p>Combined profile quality indicators</p>
+      </div>
+    </div>
+    <div class="insight-rows">
+      <div class="insight-row" *ngFor="let row of profileSignalRows">
+        <div class="insight-row__head">
+          <span>{{ row.label }}</span>
+          <span>{{ row.value }}%</span>
+        </div>
+        <div class="insight-bar is-alt">
+          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

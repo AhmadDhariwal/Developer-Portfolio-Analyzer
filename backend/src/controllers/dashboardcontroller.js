@@ -1,8 +1,10 @@
 const Analysis = require('../models/analysis');
 const User     = require('../models/user');
 const Repository = require('../models/repository');
+const AnalysisCache = require('../models/analysisCache');
 const { analyzeGitHubProfile, fetchGitHubUser } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
+const { createNotification } = require('../services/notificationService');
 
 // ── Helper: detect GitHub rate-limit errors ───────────────────────────────
 const isRateLimitError = (err) => {
@@ -51,18 +53,29 @@ const ensureAnalysis = async (userId, githubUsername) => {
     data.languageDistribution.forEach(l => { langMap[l.language] = l.percentage; });
     analysis.languageDistribution = langMap;
 
-    // Contribution activity from repo commits (approximate monthly distribution)
+    // Contribution activity based on repository update timestamps for last 6 months
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const now = new Date();
-    const activity = [];
-    const totalCommits = data.repositoryActivity.reduce((s, r) => s + r.commits, 0);
+    const activityMap = new Map();
+
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthLabel = months[d.getMonth()];
-      const base = Math.round(totalCommits / 6);
-      const jitter = Math.round((Math.random() - 0.5) * base * 0.6);
-      activity.push({ month: monthLabel, count: Math.max(0, base + jitter) });
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      activityMap.set(key, { month: monthLabel, count: 0 });
     }
+
+    data.repositories.forEach((repo) => {
+      const sourceDate = repo.pushedAt || repo.updatedAt || repo.createdAt;
+      if (!sourceDate) return;
+      const d = new Date(sourceDate);
+      if (Number.isNaN(d.getTime())) return;
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (!activityMap.has(key)) return;
+      activityMap.get(key).count += 1;
+    });
+
+    const activity = Array.from(activityMap.values());
     analysis.contributionActivity = activity;
 
     // Persist repos
@@ -100,16 +113,39 @@ const getDashboardSummary = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const { analysis, rateLimited, noUsername } = await ensureAnalysis(user._id, user.githubUsername);
+    const activeGithubUsername = user.activeGithubUsername || user.githubUsername;
+    const { analysis, rateLimited, noUsername } = await ensureAnalysis(user._id, activeGithubUsername);
+
+    const latestReadiness = await AnalysisCache.findOne({
+      userId: user._id,
+      'analysisData.portfolioScore.overallScore': { $exists: true }
+    }).sort({ updatedAt: -1 }).lean();
+
+    const readinessScore = latestReadiness?.analysisData?.portfolioScore?.overallScore || analysis.readinessScore || analysis.githubScore || 0;
+    const lastAnalyzedAt = latestReadiness?.updatedAt || analysis.updatedAt || analysis.createdAt || null;
+
+    if (Number(readinessScore) > 0 && Number(readinessScore) < 60) {
+      await createNotification({
+        userId: user._id,
+        type: 'low_score',
+        title: 'Low Readiness Score Alert',
+        message: `Your current readiness score is ${Math.round(Number(readinessScore))}%. Consider improving missing skills and resume quality.`,
+        dedupeKey: `low_score:${user._id}`,
+        dedupeWindowHours: 24,
+        meta: { readinessScore }
+      });
+    }
 
     res.json({
       score:        analysis.githubScore || 0,
+      readinessScore,
       repositories: analysis.githubStats?.repos     || 0,
       stars:        analysis.githubStats?.stars      || 0,
       forks:        analysis.githubStats?.forks      || 0,
       followers:    analysis.githubStats?.followers  || 0,
       userName:     user.name,
-      githubHandle: user.githubUsername,
+      githubHandle: activeGithubUsername,
+      lastAnalyzedAt,
       rateLimited:  rateLimited || false,
       noUsername:   noUsername  || false
     });
@@ -124,8 +160,8 @@ const getDashboardSummary = async (req, res) => {
    ───────────────────────────────────────────── */
 const getDashboardContributions = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.githubUsername);
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
+    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
 
     if (analysis?.contributionActivity?.length > 0) {
       return res.json(analysis.contributionActivity);
@@ -142,8 +178,8 @@ const getDashboardContributions = async (req, res) => {
    ───────────────────────────────────────────── */
 const getDashboardLanguages = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.githubUsername);
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
+    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
 
     if (analysis?.languageDistribution) {
       const dist = analysis.languageDistribution instanceof Map
@@ -163,8 +199,8 @@ const getDashboardLanguages = async (req, res) => {
    ───────────────────────────────────────────── */
 const getDashboardSkills = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.githubUsername);
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
+    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
 
     // Derive skills from language distribution
     const langDist = analysis.languageDistribution instanceof Map
@@ -186,8 +222,8 @@ const getDashboardSkills = async (req, res) => {
    ───────────────────────────────────────────── */
 const getDashboardRecommendations = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.githubUsername);
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
+    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
 
     // Derive skills and build recommendations based on real gaps
     const langDist = analysis.languageDistribution instanceof Map

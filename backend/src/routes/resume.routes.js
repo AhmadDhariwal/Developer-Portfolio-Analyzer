@@ -5,7 +5,10 @@ const {
   analyzeResumeFile,
   getResumeAnalysis,
   getResumeAnalysisByUserId,
-  downloadResumeGuide
+  downloadResumeGuide,
+  getResumeFiles,
+  getActiveResumeContext,
+  setActiveResume
 } = require('../controllers/resumecontoller');
 const { protect } = require('../middleware/authmiddleware');
 const upload = require('../middleware/uploadmiddleware');
@@ -18,6 +21,15 @@ router.post('/analyze', protect, analyzeResumeFile);
 
 // Get current user's resume analysis
 router.get('/result', protect, getResumeAnalysis);
+
+// List current user's uploaded resumes with active/default flags
+router.get('/files', protect, getResumeFiles);
+
+// Get active/default resume context
+router.get('/active', protect, getActiveResumeContext);
+
+// Set active resume (optionally default)
+router.put('/active', protect, setActiveResume);
 
 // Get specific user's resume analysis
 router.get('/result/:userId', protect, getResumeAnalysisByUserId);

@@ -26,10 +26,11 @@
       <div class="prof-card avatar-card">
         <div class="avatar-wrap">
           <div class="avatar-circle">
-            <img *ngIf="profile.avatar" [src]="profile.avatar" [alt]="profile.name" />
+            <img *ngIf="profile.avatar" [src]="profile.avatar" [alt]="profile.name || 'User'" title="Profile image" />
             <span *ngIf="!profile.avatar">{{ getInitials() }}</span>
           </div>
-          <button class="avatar-cam" title="Change photo">
+          <input #avatarInput id="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onAvatarFileSelected($event)" hidden />
+          <button class="avatar-cam" type="button" title="Change photo" [disabled]="isUploadingAvatar" (click)="avatarInput.click()">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -120,55 +121,56 @@
 
         <div class="form-grid">
           <div class="form-field">
-            <label>Full Name</label>
+            <label for="profile-full-name">Full Name</label>
             <div class="input-wrap">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <input type="text" [(ngModel)]="profile.name" placeholder="Alex Johnson" />
+              <input id="profile-full-name" type="text" [(ngModel)]="profile.name" placeholder="Alex Johnson" title="Full name" />
             </div>
           </div>
           <div class="form-field">
-            <label>Email Address</label>
+            <label for="profile-email">Email Address</label>
             <div class="input-wrap">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
-              <input type="email" [(ngModel)]="profile.email" placeholder="alex@example.com" readonly />
+              <input id="profile-email" type="email" [(ngModel)]="profile.email" placeholder="alex@example.com" readonly title="Email address" />
             </div>
           </div>
           <div class="form-field">
-            <label>Job Title</label>
+            <label for="profile-job-title">Job Title</label>
             <div class="input-wrap">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="7" width="20" height="14" rx="2"/>
                 <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
               </svg>
-              <input type="text" [(ngModel)]="profile.jobTitle" placeholder="Full Stack Engineer" />
+              <input id="profile-job-title" type="text" [(ngModel)]="profile.jobTitle" placeholder="Full Stack Engineer" title="Job title" />
             </div>
           </div>
           <div class="form-field">
-            <label>Location</label>
+            <label for="profile-location">Location</label>
             <div class="input-wrap">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                 <circle cx="12" cy="10" r="3"/>
               </svg>
-              <input type="text" [(ngModel)]="profile.location" placeholder="San Francisco, CA" />
+              <input id="profile-location" type="text" [(ngModel)]="profile.location" placeholder="San Francisco, CA" title="Location" />
             </div>
           </div>
         </div>
 
         <div class="form-field form-field--full">
-          <label>Bio</label>
-          <textarea [(ngModel)]="profile.bio"
+          <label for="profile-bio">Bio</label>
+          <textarea id="profile-bio" [(ngModel)]="profile.bio"
                     placeholder="Passionate full-stack developer…"
+                    title="Bio"
                     rows="3"></textarea>
         </div>
       </div>
@@ -190,14 +192,19 @@
         </div>
 
         <div class="form-field">
-          <label>GitHub Username</label>
+          <label for="profile-github-username">GitHub Username</label>
           <div class="input-wrap input-prefix">
             <span class="prefix-text">github.com/</span>
-            <input type="text" [(ngModel)]="profile.githubUsername" placeholder="alexdev" />
+            <input id="profile-github-username" type="text" [(ngModel)]="profile.githubUsername" placeholder="alexdev" title="GitHub username" />
           </div>
+          <small class="field-hint">Active analyzer context: &#64;{{ profile.activeGithubUsername || profile.githubUsername }}</small>
+        </div>
+
+        <div class="form-field" *ngIf="profile.activeResume">
+          <small class="field-hint">Active resume: {{ profile.activeResume.fileName }} (change in Resume Analyzer)</small>
         </div>
         <div class="form-field">
-          <label>Personal Website</label>
+          <label for="profile-website">Personal Website</label>
           <div class="input-wrap input-prefix">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
@@ -205,22 +212,22 @@
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
             </svg>
             <span class="prefix-text">https://</span>
-            <input type="text" [(ngModel)]="profile.website" placeholder="alexjohnson.dev" />
+            <input id="profile-website" type="text" [(ngModel)]="profile.website" placeholder="alexjohnson.dev" title="Website" />
           </div>
         </div>
         <div class="form-field">
-          <label>Twitter</label>
+          <label for="profile-twitter">Twitter</label>
           <div class="input-wrap input-prefix">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
             </svg>
             <span class="prefix-text">&#64;</span>
-            <input type="text" [(ngModel)]="profile.twitter" placeholder="alexdevjs" />
+            <input id="profile-twitter" type="text" [(ngModel)]="profile.twitter" placeholder="alexdevjs" title="Twitter username" />
           </div>
         </div>
         <div class="form-field">
-          <label>LinkedIn</label>
+          <label for="profile-linkedin">LinkedIn</label>
           <div class="input-wrap input-prefix">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
@@ -229,7 +236,7 @@
               <circle cx="4" cy="4" r="2"/>
             </svg>
             <span class="prefix-text">linkedin.com/</span>
-            <input type="text" [(ngModel)]="profile.linkedin" placeholder="in/alexjohnson" />
+            <input id="profile-linkedin" type="text" [(ngModel)]="profile.linkedin" placeholder="in/alexjohnson" title="LinkedIn profile" />
           </div>
         </div>
       </div>
@@ -254,22 +261,22 @@
 
         <div class="form-grid">
           <div class="form-field">
-            <label>Career Stack</label>
-            <select [(ngModel)]="profile.careerStack">
+            <label for="profile-career-stack">Career Stack</label>
+            <select id="profile-career-stack" [(ngModel)]="profile.careerStack" title="Career stack">
               <option *ngFor="let s of careerStacks" [value]="s">{{ s }}</option>
             </select>
           </div>
           <div class="form-field">
-            <label>Experience Level</label>
-            <select [(ngModel)]="profile.experienceLevel">
+            <label for="profile-experience-level">Experience Level</label>
+            <select id="profile-experience-level" [(ngModel)]="profile.experienceLevel" title="Experience level">
               <option *ngFor="let l of experienceLevels" [value]="l">{{ l }}</option>
             </select>
           </div>
         </div>
 
         <div class="form-field form-field--full">
-          <label>Career Goal</label>
-          <select [(ngModel)]="profile.careerGoal">
+          <label for="profile-career-goal">Career Goal</label>
+          <select id="profile-career-goal" [(ngModel)]="profile.careerGoal" title="Career goal">
             <option value="">-- Select a goal --</option>
             <option value="Get first job">Get first job</option>
             <option value="Improve portfolio">Improve portfolio</option>
@@ -308,6 +315,8 @@
           </div>
           <button class="toggle-btn"
                   [class.toggle-btn--on]="profile.notifications.weeklyScoreReport"
+              title="Toggle weekly score report"
+              [attr.aria-label]="'Toggle weekly score report'"
                   (click)="toggleNotification('weeklyScoreReport')">
             <span class="toggle-knob"></span>
           </button>
@@ -319,6 +328,8 @@
           </div>
           <button class="toggle-btn"
                   [class.toggle-btn--on]="profile.notifications.skillTrendAlerts"
+              title="Toggle skill trend alerts"
+              [attr.aria-label]="'Toggle skill trend alerts'"
                   (click)="toggleNotification('skillTrendAlerts')">
             <span class="toggle-knob"></span>
           </button>
@@ -330,6 +341,8 @@
           </div>
           <button class="toggle-btn"
                   [class.toggle-btn--on]="profile.notifications.newRecommendations"
+              title="Toggle new recommendations"
+              [attr.aria-label]="'Toggle new recommendations'"
                   (click)="toggleNotification('newRecommendations')">
             <span class="toggle-knob"></span>
           </button>
@@ -341,6 +354,8 @@
           </div>
           <button class="toggle-btn"
                   [class.toggle-btn--on]="profile.notifications.jobMatchAlerts"
+                  title="Toggle job match alerts"
+                  [attr.aria-label]="'Toggle job match alerts'"
                   (click)="toggleNotification('jobMatchAlerts')">
             <span class="toggle-knob"></span>
           </button>
@@ -363,7 +378,7 @@
         </div>
 
         <!-- Change password row -->
-        <div class="security-row" (click)="toggleChangePassword()">
+        <button type="button" class="security-row" (click)="toggleChangePassword()" title="Change password">
           <div class="security-row__left">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
@@ -377,23 +392,23 @@
                [style.transform]="isChangingPwd ? 'rotate(90deg)' : 'none'">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
-        </div>
+        </button>
 
         <!-- Password form (expandable) -->
         <div class="pwd-form" *ngIf="isChangingPwd">
           <div class="pwd-error"   *ngIf="pwdError">{{ pwdError }}</div>
           <div class="pwd-success" *ngIf="pwdSuccess">{{ pwdSuccess }}</div>
           <div class="form-field">
-            <label>Current Password</label>
-            <input type="password" [(ngModel)]="passwordForm.currentPassword" placeholder="••••••••" />
+            <label for="profile-current-password">Current Password</label>
+            <input id="profile-current-password" type="password" [(ngModel)]="passwordForm.currentPassword" placeholder="••••••••" title="Current password" />
           </div>
           <div class="form-field">
-            <label>New Password</label>
-            <input type="password" [(ngModel)]="passwordForm.newPassword" placeholder="••••••••" />
+            <label for="profile-new-password">New Password</label>
+            <input id="profile-new-password" type="password" [(ngModel)]="passwordForm.newPassword" placeholder="••••••••" title="New password" />
           </div>
           <div class="form-field">
-            <label>Confirm New Password</label>
-            <input type="password" [(ngModel)]="passwordForm.confirmPassword" placeholder="••••••••" />
+            <label for="profile-confirm-password">Confirm New Password</label>
+            <input id="profile-confirm-password" type="password" [(ngModel)]="passwordForm.confirmPassword" placeholder="••••••••" title="Confirm new password" />
           </div>
           <div class="pwd-actions">
             <button class="btn-save" (click)="submitPasswordChange()">Update Password</button>
@@ -402,7 +417,7 @@
         </div>
 
         <!-- Delete account row -->
-        <div class="security-row security-row--danger" (click)="showDeleteConfirm = true">
+        <button type="button" class="security-row security-row--danger" (click)="showDeleteConfirm = true" title="Delete account">
           <div class="security-row__left">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
@@ -415,7 +430,7 @@
                fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
-        </div>
+        </button>
       </div>
 
     </div><!-- /.prof-main -->
@@ -436,15 +451,15 @@
   </div>
 
   <!-- ── Delete confirm modal ─────────────────────────────────── -->
-  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="showDeleteConfirm = false">
-    <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showDeleteConfirm">
+    <dialog class="modal" open aria-label="Delete account confirmation dialog">
       <h3>Delete Account</h3>
       <p>This will permanently delete your account and all analysis data. This action cannot be undone.</p>
       <div class="modal-actions">
         <button class="btn-delete-confirm" (click)="confirmDelete()">Yes, Delete Account</button>
         <button class="btn-cancel" (click)="showDeleteConfirm = false">Cancel</button>
       </div>
-    </div>
+    </dialog>
   </div>
 
 </div>

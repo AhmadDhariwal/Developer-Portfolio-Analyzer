@@ -11,6 +11,9 @@ const { rankJobs }     = require('../utils/jobRanker');
 const RAPIDAPI_KEY  = process.env.RAPIDAPI_KEY || '';
 const JSEARCH_HOST  = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE  = 'https://jsearch.p.rapidapi.com/search';
+const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '15000', 10);
+const JSEARCH_RETRIES = Number.parseInt(process.env.JSEARCH_RETRIES || '2', 10);
+const JSEARCH_PRIMARY_MIN = Number.parseInt(process.env.JSEARCH_PRIMARY_MIN || '30', 10);
 
 // Platform colour map attached to each job object
 const PLATFORM_COLORS = {
@@ -24,11 +27,11 @@ const PLATFORM_COLORS = {
 
 // ─── Hardcoded fallback pool (20 jobs) ───────────────────────────────────────
 
-function buildFallbackPool(options = {}) {
+function buildFallbackPool(count = 20) {
   const today = new Date();
   const daysAgo = (n) => new Date(today - n * 86400000).toISOString().split('T')[0];
 
-  return [
+  const base = [
     { id: 'fb_001', title: 'Senior Full Stack Developer', company: 'Arbisoft', companyLogo: '', location: 'Lahore, Pakistan', salary: 'PKR 300,000 - 450,000/month', jobType: 'Full Time', skills: ['Node.js', 'React', 'MongoDB', 'TypeScript', 'AWS'], postedDate: daysAgo(2), description: 'Arbisoft is seeking a senior full stack developer to build scalable SaaS products. You will own features end-to-end, from database design to pixel-perfect UI delivery. Join a team of 700+ engineers working on global products.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100001', experienceLevel: '3-5 years' },
     { id: 'fb_002', title: 'Frontend Engineer (Angular)', company: 'Systems Limited', companyLogo: '', location: 'Karachi, Pakistan', salary: 'PKR 200,000 - 320,000/month', jobType: 'Full Time', skills: ['Angular', 'TypeScript', 'RxJS', 'SCSS', 'REST APIs'], postedDate: daysAgo(5), description: 'Systems Limited is hiring a frontend engineer to develop enterprise-grade Angular applications for banking and telecom clients. You will collaborate with cross-functional teams to deliver high-quality user experiences.', platform: 'Rozee', url: 'https://rozee.pk/job/frontend-angular-sl', experienceLevel: '1-2 years' },
     { id: 'fb_003', title: 'Node.js Backend Developer', company: 'Netsol Technologies', companyLogo: '', location: 'Islamabad, Pakistan', salary: 'PKR 250,000 - 380,000/month', jobType: 'Full Time', skills: ['Node.js', 'Express', 'PostgreSQL', 'Docker', 'REST APIs'], postedDate: daysAgo(3), description: 'Netsol Technologies is looking for a Node.js developer to build microservices for its global fleet financing platform. You will work on high-volume APIs processing millions of transactions daily.', platform: 'Indeed', url: 'https://pk.indeed.com/job/nodejs-netsol-001', experienceLevel: '3-5 years' },
@@ -49,64 +52,129 @@ function buildFallbackPool(options = {}) {
     { id: 'fb_018', title: 'Data Engineer – Python & Spark', company: 'Amazon', companyLogo: '', location: 'Remote', salary: '$9,000 - $14,000/month', jobType: 'Full Time', skills: ['Python', 'Apache Spark', 'AWS', 'SQL', 'Airflow'], postedDate: daysAgo(2), description: "Amazon's AWS Data Platform team is hiring a data engineer to build pipelines that power ML models serving AWS customers. Work with Petabyte-scale data sets and world-class distributed infrastructure.", platform: 'Glassdoor', url: 'https://glassdoor.com/job-listing/data-amazon-001', experienceLevel: '5+ years' },
     { id: 'fb_019', title: 'Mobile Developer – React Native', company: 'Careem', companyLogo: '', location: 'Karachi, Pakistan', salary: 'PKR 350,000 - 500,000/month', jobType: 'Full Time', skills: ['React Native', 'TypeScript', 'Redux', 'REST APIs', 'Firebase'], postedDate: daysAgo(7), description: 'Careem, a subsidiary of Uber, is hiring a React Native developer for its Super App team. Work on an app used by 50M+ customers across 15 countries, shipping new features every two weeks.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100019', experienceLevel: '3-5 years' },
     { id: 'fb_020', title: 'Software Engineer II – Frontend', company: 'Microsoft', companyLogo: '', location: 'Remote', salary: '$8,000 - $13,000/month', jobType: 'Full Time', skills: ['React', 'TypeScript', 'Azure DevOps', 'GraphQL', 'Unit Testing'], postedDate: daysAgo(3), description: "Microsoft Azure's developer tools team is looking for a passionate frontend engineer to build the next generation of cloud development tools. Shape the workflow of millions of developers using Azure every day.", platform: 'Indeed', url: 'https://pk.indeed.com/job/swe-microsoft-001', experienceLevel: '5+ years' }
-  ].map(j => ({ ...j, platformColor: PLATFORM_COLORS[j.platform] || PLATFORM_COLORS.Other }));
+  ];
+
+  const expanded = [];
+  let cycle = 0;
+  while (expanded.length < count) {
+    for (const job of base) {
+      if (expanded.length >= count) break;
+      expanded.push({
+        ...job,
+        id: `${job.id}_c${cycle}`,
+        company: cycle === 0 ? job.company : `${job.company} (${cycle + 1})`,
+        url: cycle === 0 ? job.url : `${job.url}${job.url.includes('?') ? '&' : '?'}variant=${cycle}`
+      });
+    }
+    cycle += 1;
+  }
+
+  return expanded.map(j => ({ ...j, source: 'Fallback', platformColor: PLATFORM_COLORS[j.platform] || PLATFORM_COLORS.Other }));
 }
 
 // ─── JSearch (RapidAPI) integration ──────────────────────────────────────────
 
-async function fetchJSearchJobs(query, maxResults = 20) {
-  if (!RAPIDAPI_KEY || RAPIDAPI_KEY === 'your_rapidapi_key') return [];
-  try {
-    const response = await axios.get(JSEARCH_BASE, {
-      params: { query, num_pages: Math.ceil(maxResults / 10), page: 1 },
-      headers: { 'X-RapidAPI-Key': RAPIDAPI_KEY, 'X-RapidAPI-Host': JSEARCH_HOST },
-      timeout: 8000
-    });
-    const data = response.data?.data || [];
-    return data.slice(0, maxResults).map((j, idx) => {
-      const applyLink = j.job_apply_link || '';
-      let platform = 'Other';
-      if (applyLink.includes('linkedin.com'))  platform = 'LinkedIn';
-      else if (applyLink.includes('indeed.com')) platform = 'Indeed';
-      else if (applyLink.includes('glassdoor.com')) platform = 'Glassdoor';
-      else if (applyLink.includes('remoteok.com')) platform = 'RemoteOK';
-      else if (applyLink.includes('rozee.pk'))    platform = 'Rozee';
+function mapExperienceMonthsToLabel(months) {
+  if (months < 12) return 'Entry';
+  if (months < 36) return '1-2 years';
+  if (months < 60) return '3-5 years';
+  return '5+ years';
+}
 
-      return {
-        id: `jsearch_${idx}_${Date.now()}`,
-        title: j.job_title || 'Software Engineer',
-        company: j.employer_name || 'Tech Company',
-        companyLogo: j.employer_logo || '',
-        location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ') || 'Remote',
-        salary: j.job_min_salary && j.job_max_salary
-          ? `$${j.job_min_salary}-$${j.job_max_salary}/${j.job_salary_period || 'year'}`
-          : 'Competitive',
-        jobType: (j.job_employment_type || 'FULLTIME').replace('_', ' ').replace('FULLTIME', 'Full Time').replace('CONTRACTOR', 'Contract').replace('PARTTIME', 'Part Time').replace('INTERN', 'Internship'),
-        skills: (j.job_required_skills || []).slice(0, 7),
-        postedDate: j.job_posted_at_datetime_utc
-          ? j.job_posted_at_datetime_utc.split('T')[0]
-          : new Date().toISOString().split('T')[0],
-        description: (j.job_description || '').substring(0, 250).replace(/\n/g, ' ').trim(),
-        platform,
-        url: applyLink || 'https://linkedin.com/jobs',
-        experienceLevel: j.job_required_experience?.required_experience_in_months
-          ? (j.job_required_experience.required_experience_in_months < 12 ? 'Entry'
-            : j.job_required_experience.required_experience_in_months < 36 ? '1-2 years'
-            : j.job_required_experience.required_experience_in_months < 60 ? '3-5 years' : '5+ years')
-          : 'Entry'
-      };
-    });
-  } catch (err) {
-    console.warn('[JobService] JSearch fetch failed:', err.message);
+function mapJSearchJob(j, idx) {
+  const applyLink = j.job_apply_link || '';
+  let platform = 'Other';
+  if (applyLink.includes('linkedin.com')) platform = 'LinkedIn';
+  else if (applyLink.includes('indeed.com')) platform = 'Indeed';
+  else if (applyLink.includes('glassdoor.com')) platform = 'Glassdoor';
+  else if (applyLink.includes('remoteok.com')) platform = 'RemoteOK';
+  else if (applyLink.includes('rozee.pk')) platform = 'Rozee';
+
+  const months = j.job_required_experience?.required_experience_in_months;
+  const experienceLevel = typeof months === 'number' ? mapExperienceMonthsToLabel(months) : 'Entry';
+
+  return {
+    id: `jsearch_${idx}_${Date.now()}`,
+    title: j.job_title || 'Software Engineer',
+    company: j.employer_name || 'Tech Company',
+    companyLogo: j.employer_logo || '',
+    location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ') || 'Remote',
+    salary: j.job_min_salary && j.job_max_salary
+      ? `$${j.job_min_salary}-$${j.job_max_salary}/${j.job_salary_period || 'year'}`
+      : 'Competitive',
+    jobType: (j.job_employment_type || 'FULLTIME').replace('_', ' ').replace('FULLTIME', 'Full Time').replace('CONTRACTOR', 'Contract').replace('PARTTIME', 'Part Time').replace('INTERN', 'Internship'),
+    skills: (j.job_required_skills || []).slice(0, 7),
+    postedDate: j.job_posted_at_datetime_utc
+      ? j.job_posted_at_datetime_utc.split('T')[0]
+      : new Date().toISOString().split('T')[0],
+    description: (j.job_description || '').substring(0, 250).replaceAll('\n', ' ').trim(),
+    platform,
+    url: applyLink || 'https://linkedin.com/jobs',
+    experienceLevel,
+    source: 'JSearch'
+  };
+}
+
+async function fetchJSearchJobs(query, maxResults = 80) {
+  if (!RAPIDAPI_KEY || RAPIDAPI_KEY === 'your_rapidapi_key') {
+    console.warn('[JobService] JSearch disabled: RAPIDAPI_KEY is missing or placeholder.');
     return [];
   }
+  const headers = {
+    'X-RapidAPI-Key': RAPIDAPI_KEY,
+    'X-RapidAPI-Host': JSEARCH_HOST,
+    'User-Agent': 'Developer-Portfolio-Analyzer/1.0'
+  };
+
+  for (let attempt = 0; attempt <= JSEARCH_RETRIES; attempt++) {
+    const reducedQuery = attempt > 0 ? `${query} developer` : query;
+    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt > 0 ? 2 : 4));
+
+    try {
+      const aggregated = [];
+
+      for (let page = 1; page <= maxPages; page++) {
+        const response = await axios.get(JSEARCH_BASE, {
+          params: { query: reducedQuery, page, num_pages: 1 },
+          headers,
+          timeout: JSEARCH_TIMEOUT_MS
+        });
+
+        const pageData = response.data?.data || [];
+        if (!pageData.length) break;
+        aggregated.push(...pageData);
+
+        if (aggregated.length >= maxResults) break;
+      }
+
+      if (aggregated.length) {
+        return aggregated.slice(0, maxResults).map((j, idx) => mapJSearchJob(j, idx));
+      }
+    } catch (err) {
+      const status = err?.response?.status;
+      const message = err?.response?.data?.message || err.message;
+      const statusText = status ? ` (status ${status})` : '';
+      console.warn(`[JobService] JSearch attempt ${attempt + 1} failed${statusText}: ${message}`);
+
+      if (status === 401 || status === 403) break;
+      if (status === 429) {
+        await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
+        continue;
+      }
+      if (attempt < JSEARCH_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
+      }
+    }
+  }
+
+  return [];
 }
 
 // ─── AI job generation (Gemini) ──────────────────────────────────────────────
 
 async function generateAIJobs(options = {}) {
-  const prompt   = getJobPrompt({ ...options, totalCount: options.aiCount || 20 });
-  const fallback = JSON.stringify(buildFallbackPool().slice(0, options.aiCount || 20));
+  const prompt   = getJobPrompt({ ...options, totalCount: options.aiCount || 40 });
+  const fallback = JSON.stringify(buildFallbackPool(options.aiCount || 40));
   try {
     const raw = await aiService.runAIAnalysis(prompt, fallback);
     let parsed;
@@ -135,7 +203,8 @@ async function generateAIJobs(options = {}) {
         description:      String(j.description || '').trim(),
         platform:         String(j.platform || 'LinkedIn').trim(),
         url:              String(j.url || '').trim(),
-        experienceLevel:  String(j.experienceLevel || 'Entry').trim()
+        experienceLevel:  String(j.experienceLevel || 'Entry').trim(),
+        source:           'AI'
       }));
   } catch (err) {
     console.warn('[JobService] AI generation failed:', err.message);
@@ -192,13 +261,29 @@ async function buildJobPool(options = {}) {
     experience      = 'All'   // filter-level experience override
   } = options;
 
-  const query = `${careerStack} developer ${knownSkills.slice(0, 3).join(' ')} ${skills}`.trim();
+  const queryParts = [careerStack, 'developer', knownSkills.slice(0, 2).join(' '), skills]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean);
+  const query = queryParts.join(' ').slice(0, 80);
 
-  // Fetch in parallel: JSearch real jobs + AI-generated jobs
-  const [jsearchJobs, aiJobs] = await Promise.allSettled([
-    fetchJSearchJobs(query, 15),
-    generateAIJobs({ careerStack, experienceLevel, skillGaps, knownSkills, platform, location, jobType, skills, aiCount: 20 })
-  ]).then(results => results.map(r => r.status === 'fulfilled' ? r.value : []));
+  // Primary source is JSearch. AI is used only when JSearch is insufficient.
+  const jsearchJobs = await fetchJSearchJobs(query, 40);
+  let aiJobs = [];
+
+  if (jsearchJobs.length < JSEARCH_PRIMARY_MIN) {
+    const aiNeeded = Math.max(20, 60 - jsearchJobs.length);
+    aiJobs = await generateAIJobs({
+      careerStack,
+      experienceLevel,
+      skillGaps,
+      knownSkills,
+      platform,
+      location,
+      jobType,
+      skills,
+      aiCount: aiNeeded
+    });
+  }
 
   // Merge and deduplicate by title+company
   const seen = new Set();
@@ -209,7 +294,7 @@ async function buildJobPool(options = {}) {
     return true;
   });
 
-  let pool = merged.length >= 5 ? merged : buildFallbackPool();
+  let pool = merged.length >= 5 ? merged : buildFallbackPool(80);
 
   // Apply client filters
   const filterExperience = experience !== 'All' ? experience : null;

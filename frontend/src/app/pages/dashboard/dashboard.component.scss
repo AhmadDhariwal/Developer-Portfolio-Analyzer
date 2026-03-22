@@ -641,6 +641,64 @@
   }
 }
 
+/* ─────────────────────────────────────────────
+   INSIGHTS GRID
+   ───────────────────────────────────────────── */
+.insights-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.insights-card {
+  .insight-rows {
+    padding: 12px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .insight-row {
+    .insight-row__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+
+      span:last-child {
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+    }
+  }
+
+  .insight-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+
+    .insight-bar__fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6366F1, #22C55E);
+      transition: width 0.35s ease;
+    }
+
+    &.is-alt .insight-bar__fill {
+      background: linear-gradient(90deg, #0EA5E9, #6366F1);
+    }
+  }
+}
+
 
 /* ─────────────────────────────────────────────
    ANIMATIONS

@@ -137,7 +137,10 @@ const analyzeGitHubProfile = async (username) => {
         name: r.name,
         language: r.language || 'Unknown',
         stars: r.stargazers_count,
-        forks: r.forks_count
+        forks: r.forks_count,
+        updatedAt: r.updated_at || null,
+        pushedAt: r.pushed_at || null,
+        createdAt: r.created_at || null
     }))
   };
 };

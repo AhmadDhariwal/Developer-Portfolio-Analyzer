@@ -2,6 +2,21 @@ const aiService = require('../services/aiservice');
 const { getPortfolioScorePrompt } = require('../prompts/portfolioScorePrompt');
 const AnalysisCache = require('../models/analysisCache');
 const crypto = require('crypto');
+const { createVersion } = require('../services/aiVersionService');
+
+const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
+  if (!req.user?._id || !output || typeof output !== 'object') return;
+  try {
+    await createVersion({
+      userId: req.user._id,
+      source,
+      outputJson: output,
+      metadata
+    });
+  } catch (error) {
+    console.error('Portfolio score AI snapshot error:', error.message);
+  }
+};
 
 /**
  * @desc  Get overall portfolio strength score (Readiness Score)
@@ -10,6 +25,7 @@ const crypto = require('crypto');
 const getPortfolioReadiness = async (req, res) => {
   try {
     let { username, resumeAnalysis, githubAnalysis, resumeText } = req.body;
+    username = username || req.user?.activeGithubUsername || req.user?.githubUsername;
 
     // Career profile: prefer the authenticated user's saved profile, allow body override
     const careerStack     = req.user?.careerStack     || req.body.careerStack     || 'Full Stack';
@@ -26,7 +42,14 @@ const getPortfolioReadiness = async (req, res) => {
     // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);
     if (cached?.analysisData?.portfolioScore) {
-      return res.json({ ...cached.analysisData.portfolioScore, fromCache: true });
+      const cachedResult = { ...cached.analysisData.portfolioScore, fromCache: true };
+      await saveAIVersionSnapshot({
+        req,
+        source: 'portfolio_score',
+        output: cachedResult,
+        metadata: { fromCache: true, username, careerStack, experienceLevel }
+      });
+      return res.json(cachedResult);
     }
 
     // Fetch missing analysis data if not provided by client
@@ -60,6 +83,13 @@ const getPortfolioReadiness = async (req, res) => {
         { upsert: true }
       );
     }
+
+    await saveAIVersionSnapshot({
+      req,
+      source: 'portfolio_score',
+      output: aiResult,
+      metadata: { fromCache: false, username, careerStack, experienceLevel }
+    });
 
     res.json(aiResult);
 

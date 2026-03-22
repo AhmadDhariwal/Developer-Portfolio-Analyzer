@@ -26,7 +26,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   isInitLoading = true;
   errorMessage = '';
   result: SkillGapResult | null = null;
-  private subscriptions: Subscription = new Subscription();
+  private readonly subscriptions: Subscription = new Subscription();
 
   constructor(
     private readonly skillGapService:    SkillGapService,
@@ -95,6 +95,18 @@ export class SkillGapComponent implements OnInit, OnDestroy {
           totalWeeks:      raw?.totalWeeks || 'N/A'
         };
 
+        const yourCount = Array.isArray(normalized.yourSkills) ? normalized.yourSkills.length : 0;
+        const missingCount = Array.isArray(normalized.missingSkills) ? normalized.missingSkills.length : 0;
+        const denom = yourCount + missingCount;
+        const derivedCoverage = denom > 0 ? Math.round((yourCount / denom) * 100) : 0;
+
+        const validCoverage = Number.isFinite(Number(normalized.coverage))
+          ? Math.max(0, Math.min(100, Math.round(Number(normalized.coverage))))
+          : derivedCoverage;
+
+        normalized.coverage = validCoverage;
+        normalized.missing = Math.max(0, Math.min(100, 100 - validCoverage));
+
         this.result = normalized;
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -134,6 +146,22 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   coverageWidth(pct: number): string {
     return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  getResourceTitle(resource: { title?: string; url?: string } | string): string {
+    if (typeof resource === 'string') return resource;
+    return String(resource?.title || 'Open resource');
+  }
+
+  getResourceUrl(resource: { title?: string; url?: string } | string): string {
+    if (typeof resource === 'string') {
+      return /^https?:\/\//i.test(resource)
+        ? resource
+        : `https://www.google.com/search?q=${encodeURIComponent(resource)}`;
+    }
+    const url = String(resource?.url || '').trim();
+    if (/^https?:\/\//i.test(url)) return url;
+    return `https://www.google.com/search?q=${encodeURIComponent(this.getResourceTitle(resource))}`;
   }
 
   trackByName(_: number, item: CurrentSkill | MissingSkill): string {

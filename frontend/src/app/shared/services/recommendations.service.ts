@@ -13,6 +13,7 @@ export interface RecommendedProject {
   impact:         number;
   whyThisProject: string;     // explanation of level fit
   triggerSkills:  string[];
+  startUrl?:      string;
 }
 
 export interface RecommendedTechnology {
@@ -34,6 +35,7 @@ export interface CareerPath {
   actionItems:     string[];
   boostSkills:     string[];
   match:           number;
+  exploreUrl?:     string;
 }
 
 export interface RecommendationsResult {

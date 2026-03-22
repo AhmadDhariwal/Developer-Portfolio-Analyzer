@@ -18,9 +18,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  activeGithubUsername: {
+    type: String,
+    default: ''
+  },
   lastSearchedGithub: {
     type: String,
     default: ''
+  },
+  defaultResumeFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ResumeFile',
+    default: null
+  },
+  activeResumeFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ResumeFile',
+    default: null
   },
   lastSearchedSkillGap: {
     type: String,
@@ -69,7 +83,17 @@ const userSchema = new mongoose.Schema({
     enum: ['Frontend', 'Backend', 'Full Stack', 'AI/ML'],
     default: 'Full Stack'
   },
+  activeCareerStack: {
+    type: String,
+    enum: ['Frontend', 'Backend', 'Full Stack', 'AI/ML'],
+    default: 'Full Stack'
+  },
   experienceLevel: {
+    type: String,
+    enum: ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'],
+    default: 'Student'
+  },
+  activeExperienceLevel: {
     type: String,
     enum: ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'],
     default: 'Student'

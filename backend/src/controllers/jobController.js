@@ -1,6 +1,22 @@
 const { buildJobPool } = require('../services/jobService');
 const AnalysisCache   = require('../models/analysisCache');
-const crypto          = require('crypto');
+const crypto          = require('node:crypto');
+
+const hasJSearchConfig = () => {
+  const key = String(process.env.RAPIDAPI_KEY || '').trim();
+  return !!key && key !== 'your_rapidapi_key';
+};
+
+const inferJobSource = (job = {}) => {
+  if (job.source) return job.source;
+  const url = String(job.url || '').toLowerCase();
+  if (url.includes('linkedin.com') || url.includes('indeed.com') || url.includes('glassdoor.com') || url.includes('jsearch')) {
+    return 'JSearch';
+  }
+  if (String(job.id || '').startsWith('fb_')) return 'Fallback';
+  if (String(job.id || '').startsWith('ai_')) return 'AI';
+  return 'Unknown';
+};
 
 /**
  * @desc  Get AI-ranked job recommendations with pool caching.
@@ -33,8 +49,8 @@ const fetchJobs = async (req, res) => {
     const skills          = String(req.query.skills     || '');
     const jobType         = String(req.query.jobType    || 'All');
     const experience      = String(req.query.expLevel   || 'All');   // filter-level exp
-    const page            = Math.max(1,  parseInt(req.query.page)  || 1);
-    const limit           = Math.min(20, parseInt(req.query.limit) || 10);
+    const page            = Math.max(1,  Number.parseInt(req.query.page, 10)  || 1);
+    const limit           = Math.min(20, Number.parseInt(req.query.limit, 10) || 10);
 
     // 3. SHA-256 cache key — filter params only (NOT page / limit)
     const poolKey  = JSON.stringify({
@@ -52,6 +68,10 @@ const fetchJobs = async (req, res) => {
       allJobs = cached.analysisData.allJobs;
     }
 
+    if (Array.isArray(allJobs)) {
+      allJobs = allJobs.map((job) => ({ ...job, source: inferJobSource(job) }));
+    }
+
     // 5. On cache miss — build pool then persist
     if (!allJobs) {
       allJobs = await buildJobPool({
@@ -63,7 +83,7 @@ const fetchJobs = async (req, res) => {
         { githubUsername: cacheKey },
         { $set: { userId: req.user?._id, careerStack, experienceLevel, analysisData: { allJobs } } },
         { upsert: true }
-      ).catch(err => console.warn('[JobController] Cache write failed:', err.message));
+      ).catch(() => null);
     }
 
     // 6. Paginate from pool
@@ -73,6 +93,25 @@ const fetchJobs = async (req, res) => {
     const start      = (safePage - 1) * limit;
     const jobs       = allJobs.slice(start, start + limit);
 
+    const sourceSummary = allJobs.reduce((acc, job) => {
+      const source = String(job?.source || 'Unknown');
+      acc[source] = (acc[source] || 0) + 1;
+      return acc;
+    }, {});
+
+    const primarySource = Object.entries(sourceSummary)
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Unknown';
+
+    const jsearchConfigured = hasJSearchConfig();
+    const jsearchCount = Number(sourceSummary.JSearch || 0);
+    let sourceMessage = 'JSearch is configured but returned no jobs for current filters. AI/fallback sources are used.';
+
+    if (jsearchConfigured === false) {
+      sourceMessage = 'JSearch is disabled because RAPIDAPI_KEY is missing in backend/.env.';
+    } else if (jsearchCount > 0) {
+      sourceMessage = `JSearch is active with ${jsearchCount} jobs in the current pool.`;
+    }
+
     // 7. Respond
     res.json({
       jobs,
@@ -80,7 +119,11 @@ const fetchJobs = async (req, res) => {
       page:       safePage,
       totalPages,
       hasMore:    safePage < totalPages,
-      fromCache:  !!cached
+      fromCache:  !!cached,
+      primarySource,
+      sourceSummary,
+      jsearchConfigured,
+      sourceMessage
     });
 
   } catch (error) {

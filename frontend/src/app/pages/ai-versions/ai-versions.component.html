@@ -1,0 +1,66 @@
+<div class="page">
+  <div class="page-header">
+    <h2>AI Version History</h2>
+    <p>Track generated AI outputs, compare versions, and rollback to a previous snapshot.</p>
+  </div>
+
+  <div class="toolbar card">
+    <input [(ngModel)]="source" (keyup.enter)="searchVersions()" placeholder="source filter e.g. portfolio_score" />
+    <button (click)="searchVersions()">Search</button>
+    <button class="ghost" (click)="clearSearch()" [disabled]="!source && !appliedSource">Clear</button>
+  </div>
+
+  <div class="status" *ngIf="statusMessage">{{ statusMessage }}</div>
+  <div class="status" *ngIf="appliedSource && !loading">Active source: {{ appliedSource }}</div>
+
+  <div *ngIf="loading" class="state">Loading versions...</div>
+  <div *ngIf="!loading && versions.length === 0" class="state">
+    No versions found yet. Run Skill Gap, Recommendations, or Portfolio Score analysis to generate AI snapshots automatically.
+  </div>
+
+  <div class="main-grid" *ngIf="!loading && versions.length > 0">
+    <div class="card list-card">
+      <h3>Version History</h3>
+      <div class="version-item" *ngFor="let v of versions">
+        <div class="meta">
+          <strong>{{ v.source }} v{{ v.version }}</strong>
+          <span>{{ v.createdAt | date:'medium' }}</span>
+        </div>
+        <div class="actions">
+          <button class="ghost" (click)="selectedBaseId = v._id">Set Base</button>
+          <button class="ghost" (click)="selectedTargetId = v._id">Set Target</button>
+          <button (click)="rollback(v._id, v.source)">Rollback</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card diff-card">
+      <h3>Diff Viewer</h3>
+      <div class="selectors">
+        <select [(ngModel)]="selectedBaseId" title="Base version selector">
+          <option value="">Select base</option>
+          <option *ngFor="let v of versions" [value]="v._id">{{ v.source }} v{{ v.version }}</option>
+        </select>
+        <select [(ngModel)]="selectedTargetId" title="Target version selector">
+          <option value="">Select target</option>
+          <option *ngFor="let v of versions" [value]="v._id">{{ v.source }} v{{ v.version }}</option>
+        </select>
+        <button (click)="compare()">Compare</button>
+      </div>
+
+      <div *ngIf="diff.length === 0" class="state">No diff loaded.</div>
+      <div class="diff-table" *ngIf="diff.length > 0">
+        <div class="row header">
+          <span>Line</span>
+          <span>Base</span>
+          <span>Target</span>
+        </div>
+        <div class="row" *ngFor="let line of diff">
+          <span>{{ line.line }}</span>
+          <pre>{{ line.left }}</pre>
+          <pre>{{ line.right }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

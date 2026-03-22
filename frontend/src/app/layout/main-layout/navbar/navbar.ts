@@ -2,10 +2,14 @@ import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject } fr
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NotificationService, AppNotification, NotificationResponse } from '../../../shared/services/notification.service';
+import { TenantContextService } from '../../../shared/services/tenant-context.service';
+import { ApiService } from '../../../shared/services/api.service';
 
 interface SearchSuggestion {
   type: 'page' | 'repo' | 'skill';
@@ -18,7 +22,7 @@ interface SearchSuggestion {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
 })
@@ -31,15 +35,25 @@ export class Navbar implements OnInit {
   userHandle = 'developer';
   userInitial = 'D';
   showUserMenu = false;
+  showNotifications = false;
+  unreadNotifications = 0;
+  notifications: AppNotification[] = [];
 
   searchQuery = '';
   suggestions: SearchSuggestion[] = [];
   showSuggestions = false;
+  organizations: Array<{ _id: string; name: string; myRole: 'admin' | 'manager' | 'member' }> = [];
+  teams: Array<{ _id: string; name: string }> = [];
+  selectedOrganizationId = '';
+  selectedTeamId = '';
+  selectedRole: 'admin' | 'manager' | 'member' | '' = '';
 
   private cachedRepos: any[] = [];
   private cachedSkills: SearchSuggestion[] = [];
   private readonly searchSubject = new Subject<string>();
   private readonly destroyRef = inject(DestroyRef);
+  private notificationStream: EventSource | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly navPages: SearchSuggestion[] = [
     { type: 'page', label: 'Dashboard', sublabel: 'Portfolio overview', route: '/app/dashboard' },
@@ -47,13 +61,29 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'Resume Analyzer', sublabel: 'Analyze your resume', route: '/app/resume-analyzer' },
     { type: 'page', label: 'Skill Gap Analysis', sublabel: 'Find skills to learn', route: '/app/skill-gap' },
     { type: 'page', label: 'Recommendations', sublabel: 'Personalized career advice', route: '/app/recommendations' },
+    { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/activity-logs' },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
+    { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },
+    { type: 'page', label: 'User Management', sublabel: 'Organizations and teams', route: '/app/settings/user-management' },
+    { type: 'page', label: 'AI Versions', sublabel: 'Versioning and rollback controls', route: '/app/settings/ai-versions' },
   ];
+
+  private get searchablePages(): SearchSuggestion[] {
+    const role = this.selectedRole;
+    if (role === 'admin') {
+      return this.navPages;
+    }
+
+    return this.navPages.filter((page) => !String(page.route || '').startsWith('/app/settings'));
+  }
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly notificationService: NotificationService,
+    private readonly tenantContext: TenantContextService,
+    private readonly apiService: ApiService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
@@ -61,6 +91,13 @@ export class Navbar implements OnInit {
       debounceTime(250),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(query => this.runSearch(query));
+
+    this.destroyRef.onDestroy(() => {
+      this.closeNotificationStream();
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+      }
+    });
   }
 
   ngOnInit() {
@@ -74,8 +111,131 @@ export class Navbar implements OnInit {
         if (user.githubUsername) {
           this.loadGithubRepos(user.githubUsername);
         }
+        this.loadNotifications();
+        this.connectNotificationStream();
+        this.loadOrganizations();
       } catch { /* fallback */ }
     }
+
+    this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
+      this.selectedOrganizationId = ctx.organizationId;
+      this.selectedTeamId = ctx.teamId;
+      this.selectedRole = ctx.myRole;
+      if (ctx.organizationId) {
+        this.loadTeams(ctx.organizationId);
+      }
+    });
+  }
+
+  loadOrganizations(): void {
+    this.apiService.getOrganizations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+        if (this.selectedOrganizationId && !this.organizations.some((org) => org._id === this.selectedOrganizationId)) {
+          this.selectedOrganizationId = '';
+          this.selectedRole = '';
+          this.selectedTeamId = '';
+          this.teams = [];
+          this.tenantContext.clearAll();
+        }
+      },
+      error: () => {
+        this.organizations = [];
+      }
+    });
+  }
+
+  loadTeams(organizationId: string): void {
+    if (!organizationId) {
+      this.teams = [];
+      return;
+    }
+
+    this.apiService.getTeams(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.teams = Array.isArray(res?.teams) ? res.teams : [];
+        if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
+          this.selectedTeamId = '';
+          this.tenantContext.clearTeam();
+        }
+      },
+      error: () => {
+        this.teams = [];
+      }
+    });
+  }
+
+  onOrganizationSwitch(orgId: string): void {
+    this.selectedOrganizationId = orgId;
+    const selectedOrg = this.organizations.find((org) => org._id === orgId);
+    this.selectedRole = selectedOrg?.myRole || '';
+    this.selectedTeamId = '';
+
+    if (!selectedOrg) {
+      this.tenantContext.clearAll();
+      return;
+    }
+
+    this.tenantContext.setOrganization({
+      id: selectedOrg._id,
+      name: selectedOrg.name,
+      myRole: selectedOrg.myRole
+    });
+
+    this.loadTeams(orgId);
+  }
+
+  onTeamSwitch(teamId: string): void {
+    this.selectedTeamId = teamId;
+    if (!teamId) {
+      this.tenantContext.clearTeam();
+      return;
+    }
+
+    const selectedTeam = this.teams.find((team) => team._id === teamId);
+    this.tenantContext.setTeam({ id: teamId, name: selectedTeam?.name || '' });
+  }
+
+  private connectNotificationStream(): void {
+    if (!this.authService.isLoggedIn()) return;
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    this.closeNotificationStream();
+    this.notificationStream = this.notificationService.createStream(token);
+
+    this.notificationStream.addEventListener('notification', () => {
+      this.loadNotifications();
+    });
+
+    this.notificationStream.onerror = () => {
+      this.closeNotificationStream();
+      if (!this.authService.isLoggedIn()) return;
+      if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = setTimeout(() => this.connectNotificationStream(), 10000);
+    };
+  }
+
+  private closeNotificationStream(): void {
+    if (this.notificationStream) {
+      this.notificationStream.close();
+      this.notificationStream = null;
+    }
+  }
+
+  loadNotifications(): void {
+    this.notificationService.getNotifications(20)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: NotificationResponse) => {
+          this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
+          this.unreadNotifications = Number(res?.unreadCount || 0);
+        },
+        error: () => {
+          this.notifications = [];
+          this.unreadNotifications = 0;
+        }
+      });
   }
 
   private loadGithubRepos(username: string): void {
@@ -115,7 +275,7 @@ export class Navbar implements OnInit {
     const results: SearchSuggestion[] = [];
 
     // Pages
-    this.navPages
+    this.searchablePages
       .filter(p => p.label.toLowerCase().includes(q) || p.sublabel?.toLowerCase().includes(q))
       .forEach(p => results.push(p));
 
@@ -161,6 +321,45 @@ export class Navbar implements OnInit {
 
   toggleUserMenu() {
     this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) this.showNotifications = false;
+  }
+
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
+    if (this.showNotifications) {
+      this.showUserMenu = false;
+      this.loadNotifications();
+    }
+  }
+
+  markNotificationRead(notification: AppNotification): void {
+    if (notification.isRead) return;
+    this.notificationService.markAsRead(notification._id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.loadNotifications(),
+        error: () => null
+      });
+  }
+
+  markAllNotificationsRead(): void {
+    this.notificationService.markAllAsRead()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.loadNotifications(),
+        error: () => null
+      });
+  }
+
+  formatNotificationTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'just now';
+    const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
   closeUserMenu() {
@@ -168,6 +367,7 @@ export class Navbar implements OnInit {
   }
 
   logout() {
+    this.closeNotificationStream();
     this.authService.logout();
     this.showUserMenu = false;
     this.router.navigate(['/']);

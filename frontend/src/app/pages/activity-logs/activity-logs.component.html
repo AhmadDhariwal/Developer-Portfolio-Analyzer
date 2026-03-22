@@ -1,0 +1,118 @@
+<div class="page">
+  <div class="page-header">
+    <h2>Activity Log Dashboard</h2>
+    <p>Track all API mutations (POST/PUT/DELETE) with user, action, and payload snapshots.</p>
+  </div>
+
+  <div class="filters card">
+    <div class="row">
+      <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization filter">
+        <option value="">My activity only</option>
+        <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+      </select>
+      <select *ngIf="hasOrgScopedActorOptions" [(ngModel)]="actor" title="Actor filter">
+        <option value="">All allowed users</option>
+        <option *ngFor="let option of actorOptions" [value]="option._id">
+          {{ fmtActorOption(option) }}
+        </option>
+      </select>
+      <input *ngIf="!hasOrgScopedActorOptions" [(ngModel)]="actor" placeholder="Filter by name, email, or github" />
+      <input [(ngModel)]="action" placeholder="Filter by action" />
+      <input [(ngModel)]="from" type="date" title="From date" />
+      <input [(ngModel)]="to" type="date" title="To date" />
+      <button (click)="applyFilters()">Apply</button>
+      <button class="ghost" (click)="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="card table-card">
+      <div class="table-head">
+        <strong>Logs</strong>
+        <span>{{ total }} records</span>
+      </div>
+
+      <div *ngIf="loading && logs.length === 0" class="state">
+        Loading logs...
+      </div>
+      <div *ngIf="!loading && logs.length === 0" class="state">
+        No logs found yet. Audit entries are created after successful POST, PUT, or DELETE API actions.
+      </div>
+
+      <div *ngIf="logs.length > 0" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Provider</th>
+              <th>Delivery</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let log of logs"
+              (click)="openDetail(log)"
+              (keydown.enter)="openDetail(log)"
+              (keydown.space)="openDetail(log)"
+              [class.active]="selectedLog?._id === log._id"
+              tabindex="0"
+            >
+              <td>{{ log.timestamp | date:'MMM d, y HH:mm:ss' }}</td>
+              <td>{{ fmtActor(log.actor) }}</td>
+              <td>{{ log.action }}</td>
+              <td>{{ getEmailDeliveryDetails(log)?.provider || '-' }}</td>
+              <td>
+                <span
+                  *ngIf="getEmailDeliveryDetails(log) as delivery"
+                  class="delivery-badge"
+                  [ngClass]="deliveryBadgeClass(delivery.deliveryStatus)"
+                >
+                  {{ formatDeliveryLabel(delivery.deliveryStatus) }}
+                </span>
+                <span *ngIf="!getEmailDeliveryDetails(log)">-</span>
+              </td>
+              <td>{{ log.statusCode }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <button [disabled]="page <= 1" (click)="fetchLogs(page - 1)">Previous</button>
+        <span>Page {{ page }} / {{ totalPages }}</span>
+        <button [disabled]="page >= totalPages" (click)="fetchLogs(page + 1)">Next</button>
+      </div>
+    </div>
+
+    <div class="card detail-card" *ngIf="selectedLog as log">
+      <div class="detail-head">
+        <strong>{{ log.action }}</strong>
+        <span>{{ log.timestamp | date:'medium' }}</span>
+      </div>
+
+      <div class="meta">
+        <div><span class="meta-label">User:</span> {{ fmtActor(log.actor) }}</div>
+        <div><span class="meta-label">Route:</span> {{ log.route }}</div>
+        <div><span class="meta-label">Status:</span> {{ log.statusCode }}</div>
+        <div *ngIf="getEmailDeliveryDetails(log) as delivery">
+          <span class="meta-label">Email Provider:</span> {{ delivery.provider || 'Not configured' }}
+        </div>
+        <div *ngIf="getEmailDeliveryDetails(log) as delivery">
+          <span class="meta-label">Delivery:</span>
+          <span class="delivery-badge" [ngClass]="deliveryBadgeClass(delivery.deliveryStatus)">
+            {{ formatDeliveryLabel(delivery.deliveryStatus) }}
+          </span>
+        </div>
+      </div>
+
+      <h4>Before</h4>
+      <pre>{{ toJson(log.before) }}</pre>
+
+      <h4>After</h4>
+      <pre>{{ toJson(log.after) }}</pre>
+    </div>
+  </div>
+</div>

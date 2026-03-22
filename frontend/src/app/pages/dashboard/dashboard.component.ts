@@ -10,6 +10,7 @@ import { ScoreMeterComponent } from '../../shared/components/score-meter/score-m
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError, distinctUntilChanged } from 'rxjs/operators';
+import { TenantContextService } from '../../shared/services/tenant-context.service';
 
 Chart.register(...registerables);
 
@@ -48,7 +49,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /* State */
   developerScore = 0;
+  githubScore = 0;
   lastAnalyzed = 'Loading...';
+  lastAnalyzedAt: string | null = null;
   githubHandle = '';
   isLoading = true;
   rateLimitWarning = false;
@@ -73,6 +76,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   languageLegend: LanguageLegendItem[] = [];
   recommendations: RecommendationItem[] = [];
   aiBreakdown: any = null;
+  tenantOrgName = '';
+  tenantTeamName = '';
+  tenantTeamAnalytics: { totalMembers: number; averageReadinessScore: number } | null = null;
+  resumeMetrics = {
+    atsScore: 0,
+    keywordDensity: 0,
+    formatScore: 0,
+    contentQuality: 0
+  };
 
   private radarInstance: Chart | null = null;
   private viewInitialized = false;
@@ -81,12 +93,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private pendingActivityData: { month: string; count: number }[] | null = null;
   private pendingLanguageData: Record<string, number> | null = null;
-  private subscriptions: Subscription = new Subscription();
+  private readonly subscriptions: Subscription = new Subscription();
 
   constructor(
     private readonly apiService:           ApiService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly cdr:                  ChangeDetectorRef
+    private readonly cdr:                  ChangeDetectorRef,
+    private readonly tenantContext:        TenantContextService
   ) {}
 
   ngOnInit() {
@@ -99,20 +112,46 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadDashboardData();
       })
     );
+
+    this.subscriptions.add(
+      this.tenantContext.state$.pipe(
+        distinctUntilChanged((a, b) =>
+          a.organizationId === b.organizationId && a.teamId === b.teamId && a.organizationName === b.organizationName && a.teamName === b.teamName
+        )
+      ).subscribe((ctx) => {
+        this.tenantOrgName = ctx.organizationName || '';
+        this.tenantTeamName = ctx.teamName || '';
+
+        if (ctx.teamId) {
+          this.apiService.getTeamAnalytics(ctx.teamId).pipe(catchError(() => of(null))).subscribe((res: any) => {
+            this.tenantTeamAnalytics = res
+              ? {
+                  totalMembers: Number(res.totalMembers || 0),
+                  averageReadinessScore: Number(res.averageReadinessScore || 0)
+                }
+              : null;
+            this.cdr.detectChanges();
+          });
+        } else {
+          this.tenantTeamAnalytics = null;
+          this.cdr.detectChanges();
+        }
+      })
+    );
   }
 
   get selectedCareerStack(): CareerStack       { return this.careerProfileService.careerStack; }
   get selectedExperienceLevel(): ExperienceLevel { return this.careerProfileService.experienceLevel; }
 
   onCareerStackChange(stack: CareerStack): void {
-    this.careerProfileService.saveCareerProfile(
+    this.careerProfileService.setActiveCareerProfile(
       stack,
       this.careerProfileService.experienceLevel
     ).subscribe();
   }
 
   onExperienceLevelChange(level: ExperienceLevel): void {
-    this.careerProfileService.saveCareerProfile(
+    this.careerProfileService.setActiveCareerProfile(
       this.careerProfileService.careerStack,
       level
     ).subscribe();
@@ -130,9 +169,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.apiService.getDashboardSummary().subscribe({
       next: (data: any) => {
         this.githubHandle     = data.githubHandle ? `@${data.githubHandle}` : '';
-        this.lastAnalyzed     = 'Just now';
+        this.lastAnalyzedAt   = data.lastAnalyzedAt || null;
+        this.lastAnalyzed     = this.formatLastAnalyzed(this.lastAnalyzedAt);
         this.rateLimitWarning = data.rateLimited  === true;
         this.noGithubUsername = data.noUsername   === true;
+        this.githubScore = Number(data.score || 0);
+
+        const summaryReadiness = Number(data.readinessScore || 0);
+        if (summaryReadiness > 0 && this.developerScore === 0) {
+          this.developerScore = summaryReadiness;
+        }
 
         this.statCards = [
           { label: 'Repositories', value: data.repositories || 0, growth: '', iconType: 'repos'     },
@@ -173,6 +219,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             const gapData    = results.skillGap;
             const resumeData = results.resume;
 
+            this.resumeMetrics = {
+              atsScore: Number(resumeData?.atsScore || 0),
+              keywordDensity: Number(resumeData?.keywordDensity || 0),
+              formatScore: Number(resumeData?.formatScore || 0),
+              contentQuality: Number(resumeData?.contentQuality || 0)
+            };
+
             if (gapData.yourSkills && Array.isArray(gapData.yourSkills)) {
                 this.topSkills = gapData.yourSkills.map((s: any) => {
                     if (typeof s === 'string') return s;
@@ -196,13 +249,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             }
 
             const total = this.topSkills.length + this.missingSkills.length;
-            this.coveragePercentage = gapData.coverage !== undefined
-                ? Number(gapData.coverage)
-                : (total > 0 ? Math.round((this.topSkills.length / total) * 100) : 0);
+            const hasCoverage = gapData.coverage !== undefined;
+            const derivedCoverage = total > 0 ? Math.round((this.topSkills.length / total) * 100) : 0;
+            this.coveragePercentage = hasCoverage
+              ? Math.max(0, Math.min(100, Number(gapData.coverage)))
+              : derivedCoverage;
 
             this.apiService.getPortfolioScore(username, careerStack, experienceLevel, resumeData, gapData.githubStats).subscribe({
                 next: (scoreResult) => {
-                    this.developerScore = scoreResult.overallScore || 0;
+                  this.developerScore = Number(scoreResult.overallScore || this.developerScore || 0);
                     if (scoreResult.breakdown) {
                         this.aiBreakdown = scoreResult.breakdown;
                     }
@@ -303,8 +358,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.skillRadar?.nativeElement) return;
     this.radarInstance?.destroy();
 
-    let categories = ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'];
-    let dataPoints = [70, 70, 70, 70]; // Default fallbacks
+    const categories = ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'];
+    let dataPoints = [
+      Math.max(0, Math.min(100, this.githubScore || 0)),
+      Math.max(0, Math.min(100, this.coveragePercentage || 0)),
+      Math.max(0, Math.min(100, Math.round((this.resumeMetrics.atsScore + this.resumeMetrics.keywordDensity + this.resumeMetrics.contentQuality) / 3) || this.developerScore || 0)),
+      Math.max(0, Math.min(100, Math.round((this.statCards[1]?.value > 0 ? 70 : 50) + (this.statCards[0]?.value > 0 ? 10 : 0))))
+    ];
 
     if (this.aiBreakdown) {
         dataPoints = [
@@ -313,10 +373,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             this.aiBreakdown.industryReadiness || 70,
             this.aiBreakdown.projectImpact || 70
         ];
-    } else if (this.topSkills.length > 0) {
-        // Fallback to top skills if AI breakdown hasn't arrived yet
-        categories = this.topSkills.slice(0, 6);
-        dataPoints = categories.map(() => Math.round(50 + Math.random() * 40));
     }
 
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
@@ -355,6 +411,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
+  }
+
+  get scoreBreakdownRows(): { label: string; value: number }[] {
+    const src = this.aiBreakdown || {};
+    return [
+      { label: 'Code Quality', value: Math.max(0, Math.min(100, Number(src.codeQuality ?? this.githubScore ?? 0))) },
+      { label: 'Skill Coverage', value: Math.max(0, Math.min(100, Number(src.skillCoverage ?? this.coveragePercentage ?? 0))) },
+      { label: 'Industry Readiness', value: Math.max(0, Math.min(100, Number(src.industryReadiness ?? this.developerScore ?? 0))) },
+      { label: 'Project Impact', value: Math.max(0, Math.min(100, Number(src.projectImpact ?? this.developerScore ?? 0))) }
+    ];
+  }
+
+  get profileSignalRows(): { label: string; value: number }[] {
+    return [
+      { label: 'GitHub Strength', value: Math.max(0, Math.min(100, Number(this.githubScore || 0))) },
+      { label: 'Resume ATS', value: Math.max(0, Math.min(100, Number(this.resumeMetrics.atsScore || 0))) },
+      { label: 'Keyword Density', value: Math.max(0, Math.min(100, Number(this.resumeMetrics.keywordDensity || 0))) },
+      { label: 'Skill Coverage', value: Math.max(0, Math.min(100, Number(this.coveragePercentage || 0))) }
+    ];
+  }
+
+  get dashboardIdentityLine(): string {
+    const handle = this.githubHandle || 'Not connected';
+    const orgPart = this.tenantOrgName ? ` | Org: ${this.tenantOrgName}` : '';
+    const teamPart = this.tenantTeamName ? ` | Team: ${this.tenantTeamName}` : '';
+    return `Last analyzed: ${this.lastAnalyzed} | GitHub: ${handle}${orgPart}${teamPart}`;
+  }
+
+  get dashboardScoreLine(): string {
+    return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)}`;
+  }
+
+  private formatLastAnalyzed(value: string | null): string {
+    if (!value) return 'Not available';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not available';
+
+    const diffMs = Date.now() - date.getTime();
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return 'Just now';
+    if (min < 60) return `${min} min ago`;
+    const hrs = Math.floor(min / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   initActivityChart(activityData: { month: string; count: number }[]) {

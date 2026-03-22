@@ -64,13 +64,10 @@ const fetchCourses = async (req, res) => {
     const cached = await AnalysisCache.findOne({ githubUsername: cacheKey }).lean();
     if (cached?.analysisData?.allCourses && Array.isArray(cached.analysisData.allCourses)) {
       allCourses = cached.analysisData.allCourses;
-      console.log(`[CourseController] Cache HIT  – pool size: ${allCourses.length}`);
     }
 
     // ── 5. Generate pool on cache miss ─────────────────────────────────────────
     if (!allCourses) {
-      console.log('[CourseController] Cache MISS – generating course pool …');
-
       allCourses = await buildCoursePool({
         careerStack,
         experienceLevel,
@@ -82,8 +79,6 @@ const fetchCourses = async (req, res) => {
         topic,
         duration
       });
-
-      console.log(`[CourseController] Pool generated – ${allCourses.length} courses`);
 
       // Persist the full pool (TTL index on AnalysisCache handles eviction)
       await AnalysisCache.findOneAndUpdate(
@@ -97,7 +92,7 @@ const fetchCourses = async (req, res) => {
           }
         },
         { upsert: true }
-      ).catch(err => console.warn('[CourseController] Cache write failed:', err.message));
+      ).catch(() => null);
     }
 
     // ── 6. Paginate from pool ──────────────────────────────────────────────────

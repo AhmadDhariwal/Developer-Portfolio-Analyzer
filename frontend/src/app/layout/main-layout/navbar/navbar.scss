@@ -188,6 +188,65 @@
         }
       }
     }
+
+    .team-switcher {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(30, 41, 59, 0.45));
+
+      .switcher-group {
+        display: grid;
+        gap: 4px;
+
+        label {
+          font-size: 0.66rem;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          color: #99f6e4;
+          font-weight: 700;
+        }
+      }
+
+      .switch-select {
+        height: 32px;
+        border-radius: 9px;
+        border: 1px solid rgba(45, 212, 191, 0.45);
+        background: rgba(15, 23, 42, 0.7);
+        color: #f8fafc;
+        padding: 0 10px;
+        min-width: 140px;
+        font-size: 0.78rem;
+
+        &:focus {
+          outline: none;
+          border-color: rgba(45, 212, 191, 0.9);
+        }
+
+        option {
+          background: #ffffff;
+          color: #0f172a;
+        }
+      }
+
+      .role-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(20, 184, 166, 0.24);
+        color: #99f6e4;
+      }
+
+      @media (max-width: 1320px) {
+        display: none;
+      }
+    }
   }
 
   /* ─── Right ─── */
@@ -195,6 +254,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    position: relative;
 
     .icon-btn {
       position: relative;
@@ -223,9 +283,115 @@
         border: 2px solid #111827;
       }
 
+      .notif-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ef4444;
+        color: #fff;
+      }
+
       &:hover {
         background: rgba(255, 255, 255, 0.06);
         color: var(--text-primary);
+      }
+    }
+
+    .notifications-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 58px;
+      width: 340px;
+      max-height: 420px;
+      overflow: hidden;
+      background: rgba(17, 24, 39, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      z-index: 1200;
+
+      .notif-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+        h4 {
+          margin: 0;
+          font-size: 0.86rem;
+          color: var(--text-primary);
+        }
+
+        .mark-all-btn {
+          border: none;
+          background: transparent;
+          color: #93c5fd;
+          font-size: 0.76rem;
+          cursor: pointer;
+
+          &:disabled {
+            color: var(--text-muted);
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .notif-list {
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .notif-item {
+        width: 100%;
+        border: none;
+        background: transparent;
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(99, 102, 241, 0.08);
+        }
+
+        &--unread {
+          background: rgba(99, 102, 241, 0.12);
+        }
+
+        &__title {
+          color: var(--text-primary);
+          font-size: 0.82rem;
+          font-weight: 600;
+          margin-bottom: 3px;
+        }
+
+        &__message {
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          line-height: 1.35;
+          margin-bottom: 4px;
+        }
+
+        &__time {
+          color: var(--text-muted);
+          font-size: 0.7rem;
+        }
+      }
+
+      .notif-empty {
+        padding: 14px;
+        color: var(--text-muted);
+        font-size: 0.8rem;
       }
     }
 

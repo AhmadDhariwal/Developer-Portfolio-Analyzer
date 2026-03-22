@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
 import { ResumeAnalysis, ResumeSuggestion } from '../../shared/models/resume.model';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
@@ -13,6 +14,7 @@ import { SuggestionCardComponent } from '../../shared/components/suggestion-card
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     UiCardComponent,
     UiBadgeComponent,
     ScoreCardComponent,
@@ -28,6 +30,10 @@ export class ResumeAnalyzerComponent implements OnInit {
   isDownloading: boolean = false;
   analysisComplete: boolean = false;
   hasNoData: boolean = false;        // true when backend confirmed no resume yet
+  resumeFiles: Array<{ fileId: string; fileName: string; uploadDate: string; isAnalyzed: boolean; isDefault: boolean; isActive: boolean }> = [];
+  defaultResumeFileName = '';
+  activeResumeFileName = '';
+  selectedResumeFileId = '';
 
   // Resume analysis data
   analysis: ResumeAnalysis | null = null;
@@ -60,7 +66,52 @@ export class ResumeAnalyzerComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadResumeContext();
     this.loadPreviousAnalysis();
+  }
+
+  loadResumeContext() {
+    this.apiService.getActiveResumeContext().subscribe({
+      next: (ctx) => {
+        this.defaultResumeFileName = ctx?.defaultResume?.fileName || '';
+        this.activeResumeFileName = ctx?.activeResume?.fileName || '';
+        this.selectedResumeFileId = ctx?.activeResume?.fileId || '';
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.defaultResumeFileName = '';
+        this.activeResumeFileName = '';
+        this.cdr.detectChanges();
+      }
+    });
+
+    this.apiService.getResumeFiles().subscribe({
+      next: (res) => {
+        this.resumeFiles = Array.isArray(res?.files) ? res.files : [];
+        if (!this.selectedResumeFileId) {
+          this.selectedResumeFileId = this.resumeFiles.find((f) => f.isActive)?.fileId || '';
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.resumeFiles = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  useSelectedResume(setAsDefault = false) {
+    if (!this.selectedResumeFileId) return;
+    this.apiService.setActiveResume(this.selectedResumeFileId, setAsDefault).subscribe({
+      next: () => {
+        this.loadResumeContext();
+        this.loadPreviousAnalysis();
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Failed to switch resume context.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   /**
@@ -130,6 +181,7 @@ export class ResumeAnalyzerComponent implements OnInit {
             this.analysisComplete = true;
             this.hasNoData = false;
             this.selectedFile = null;
+            this.loadResumeContext();
             this.cdr.detectChanges();
           },
           error: (err) => {

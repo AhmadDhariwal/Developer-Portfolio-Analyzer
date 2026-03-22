@@ -304,6 +304,11 @@
   }
 
   textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  .field-hint {
+    font-size: .74rem;
+    color: rgba(255,255,255,.42);
+  }
 }
 
 /* ── Career profile card extras ───────────────────────────────── */
@@ -414,6 +419,10 @@
 
 /* ── Security card ────────────────────────────────────────────── */
 .security-row {
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -560,6 +569,7 @@
 }
 
 .modal {
+  margin: 0;
   background: #1a2236;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 16px;

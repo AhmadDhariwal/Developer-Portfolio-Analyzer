@@ -1,4 +1,5 @@
 export interface ResumeAnalysis {
+  fileId?: string;
   atsScore: number;
   keywordDensity: number;
   formatScore: number;

@@ -1,0 +1,171 @@
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.page-header p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+}
+
+.card {
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+input,
+select,
+button {
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 8px 10px;
+}
+
+button {
+  cursor: pointer;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+button.ghost {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+}
+
+.table-head,
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+.table-wrap {
+  max-height: 420px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+tr {
+  cursor: pointer;
+}
+
+tr.active,
+tr:hover {
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.state {
+  color: #94a3b8;
+  padding: 12px 0;
+}
+
+.pager {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+.meta {
+  display: grid;
+  gap: 6px;
+  color: #cbd5e1;
+  margin-bottom: 12px;
+}
+
+.delivery-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.delivery-delivered {
+  background: #064e3b;
+  color: #d1fae5;
+}
+
+.delivery-failed {
+  background: #7f1d1d;
+  color: #fee2e2;
+}
+
+.delivery-provider-not-configured {
+  background: #78350f;
+  color: #fef3c7;
+}
+
+.meta-label {
+  color: #94a3b8;
+}
+
+h4 {
+  margin: 10px 0 6px;
+  color: #f8fafc;
+}
+
+pre {
+  max-height: 220px;
+  overflow: auto;
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 1100px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}

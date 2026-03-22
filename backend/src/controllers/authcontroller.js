@@ -37,6 +37,9 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             githubUsername,
+            activeGithubUsername: githubUsername,
+            activeCareerStack: 'Full Stack',
+            activeExperienceLevel: 'Student'
         });
 
         if (user) {
@@ -45,6 +48,11 @@ const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 githubUsername: user.githubUsername,
+                activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+                careerStack: user.careerStack,
+                experienceLevel: user.experienceLevel,
+                activeCareerStack: user.activeCareerStack || user.careerStack,
+                activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
                 token: generateToken(user._id),
             });
         } else {
@@ -66,11 +74,22 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            user.activeGithubUsername = user.githubUsername;
+            user.activeResumeFileId = user.defaultResumeFileId || null;
+            user.activeCareerStack = user.careerStack || 'Full Stack';
+            user.activeExperienceLevel = user.experienceLevel || 'Student';
+            await user.save();
+
             res.json({
                 _id: user.id,
                 name: user.name,
                 email: user.email,
                 githubUsername: user.githubUsername,
+                activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+                careerStack: user.careerStack,
+                experienceLevel: user.experienceLevel,
+                activeCareerStack: user.activeCareerStack || user.careerStack,
+                activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
                 token: generateToken(user._id),
             });
         } else {

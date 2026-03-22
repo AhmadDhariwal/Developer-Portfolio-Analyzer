@@ -6,7 +6,8 @@
       <img
         *ngIf="!logoError && logoUrl"
         [src]="logoUrl"
-        [alt]="job.company"
+        alt="Company logo"
+        title="Company logo"
         class="company-logo"
         (error)="onLogoError()"
       />
@@ -67,7 +68,7 @@
   <p class="job-description">{{ job.description }}</p>
 
   <!-- Skills -->
-  <div class="skills-row" *ngIf="job.skills?.length">
+  <div class="skills-row" *ngIf="job.skills.length">
     <span class="skill-chip" *ngFor="let skill of job.skills.slice(0, 6)">{{ skill }}</span>
   </div>
 

@@ -23,7 +23,7 @@ export interface RoadmapPhase {
   title:       string;
   description: string;
   skills:      string[];
-  resources:   string[];
+  resources:   Array<{ title: string; url: string } | string>;
   color:       'purple' | 'blue' | 'green' | 'orange';
   topSkill:    string;
 }

@@ -27,7 +27,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   isLoading    = false;
   errorMessage = '';
   result: RecommendationsResult | null = null;
-  private subscriptions: Subscription = new Subscription();
+  private readonly subscriptions: Subscription = new Subscription();
 
   activeTab: Tab = 'All';
   readonly tabs: Tab[] = ['All', 'Projects', 'Technologies', 'Career Paths'];
@@ -141,6 +141,20 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   barWidth(pct: number): string {
     return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  getProjectStartUrl(project: RecommendedProject): string {
+    const url = String(project?.startUrl || '').trim();
+    if (/^https?:\/\//i.test(url)) return url;
+    const query = `${project?.title || 'software project'} tutorial`;
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  getCareerExploreUrl(path: CareerPath): string {
+    const url = String(path?.exploreUrl || '').trim();
+    if (/^https?:\/\//i.test(url)) return url;
+    const query = `${path?.title || 'software engineer'} career path`;
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   }
 
   trackById(_: number, item: RecommendedProject | CareerPath): string {
