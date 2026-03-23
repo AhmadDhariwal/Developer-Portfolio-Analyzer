@@ -1,11 +1,15 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { registerAuthFailure, clearAuthFailures } = require('../middleware/securityMiddleware');
 
 // Generate JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '20h',
+        expiresIn: process.env.JWT_EXPIRES_IN || '20h',
+        algorithm: 'HS256',
+        issuer: process.env.JWT_ISSUER || 'devinsight-api',
+        audience: process.env.JWT_AUDIENCE || 'devinsight-web'
     });
 };
 
@@ -79,6 +83,7 @@ const loginUser = async (req, res) => {
             user.activeCareerStack = user.careerStack || 'Full Stack';
             user.activeExperienceLevel = user.experienceLevel || 'Student';
             await user.save();
+            clearAuthFailures(req);
 
             res.json({
                 _id: user.id,
@@ -93,6 +98,7 @@ const loginUser = async (req, res) => {
                 token: generateToken(user._id),
             });
         } else {
+            registerAuthFailure(req);
             res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {

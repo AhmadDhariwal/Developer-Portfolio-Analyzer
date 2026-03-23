@@ -1,0 +1,191 @@
+.integrations-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0 0 0.35rem;
+    color: #f8fafc;
+    font-size: 1.9rem;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(248, 250, 252, 0.65);
+  }
+}
+
+.score-pill {
+  align-self: center;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.14);
+  color: #86efac;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.error-banner {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fda4af;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+}
+
+.loading-state {
+  color: rgba(248, 250, 252, 0.72);
+  padding: 1rem 0;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.integration-card {
+  background: linear-gradient(165deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+
+  h3 {
+    margin: 0;
+    color: #f8fafc;
+  }
+}
+
+.category-pill {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 999px;
+  padding: 0.18rem 0.52rem;
+}
+
+.status-pill {
+  align-self: flex-start;
+  text-transform: capitalize;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.58rem;
+
+  &.connected {
+    color: #86efac;
+    background: rgba(34, 197, 94, 0.2);
+  }
+
+  &.disconnected {
+    color: #fcd34d;
+    background: rgba(245, 158, 11, 0.2);
+  }
+
+  &.error {
+    color: #fda4af;
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+.description {
+  margin: 0;
+  color: rgba(248, 250, 252, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.auth-mode {
+  font-size: 0.72rem;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.14);
+  border-radius: 999px;
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.18rem 0.58rem;
+}
+
+.manual-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+
+  input {
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.75);
+    color: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    padding: 0.42rem 0.6rem;
+    outline: none;
+
+    &:focus {
+      border-color: rgba(96, 165, 250, 0.65);
+    }
+  }
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: rgba(248, 250, 252, 0.58);
+  font-size: 0.73rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, #3b82f6, #2563eb);
+  color: #eff6ff;
+}
+
+.btn-secondary {
+  background: rgba(37, 99, 235, 0.17);
+  color: #bfdbfe;
+  border-color: rgba(59, 130, 246, 0.32);
+}
+
+.btn-danger {
+  background: rgba(220, 38, 38, 0.16);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.32);
+}

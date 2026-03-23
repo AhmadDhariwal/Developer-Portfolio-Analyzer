@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const User = require('../models/user');
 const { createVersion } = require('../services/aiVersionService');
+const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/skillGraphService');
 
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
@@ -316,6 +317,14 @@ const analyzeSkillGap = async (req, res) => {
       resumeInsights,
       githubStats: githubData
     };
+
+    const skillGraph = buildSkillGraph({
+      currentSkills: fullResult.yourSkills,
+      missingSkills: fullResult.missingSkills
+    });
+
+    fullResult.skillGraph = skillGraph;
+    fullResult.weeklyRoadmap = generateWeeklyLearningRoadmap(skillGraph, 8);
 
     if (req.user) {
       await AnalysisCache.findOneAndUpdate(

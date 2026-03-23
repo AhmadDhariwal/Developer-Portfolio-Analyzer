@@ -354,6 +354,156 @@
   &.badge-low    { background: rgba(59,130,246,.15);  color: #60a5fa; }
 }
 
+/* ── Graph card ────────────────────────────────────────────── */
+.graph-card {
+  &__header {
+    margin-bottom: 1rem;
+    h2 {
+      font-size: 1.15rem;
+      color: #fff;
+      margin: 0 0 .3rem;
+    }
+    p {
+      font-size: .82rem;
+      color: rgba(255,255,255,.55);
+      margin: 0;
+    }
+  }
+}
+
+.graph-canvas {
+  position: relative;
+  min-height: 380px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 20% 20%, rgba(129,140,248,.08), transparent 45%),
+              radial-gradient(circle at 80% 80%, rgba(16,185,129,.08), transparent 45%),
+              rgba(8,12,24,.55);
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+
+.graph-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  line {
+    stroke-width: .45;
+    opacity: .8;
+  }
+
+  .edge-prerequisite { stroke: rgba(251,191,36,.7); }
+  .edge-related { stroke: rgba(96,165,250,.45); }
+  .edge-dependency { stroke: rgba(167,139,250,.55); }
+}
+
+.graph-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 128px;
+  max-width: 156px;
+  border-radius: 10px;
+  padding: .45rem .55rem;
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(3px);
+}
+
+.node-current {
+  background: rgba(16,185,129,.2);
+  border-color: rgba(16,185,129,.45);
+}
+
+.node-missing {
+  background: rgba(245,158,11,.16);
+  border-color: rgba(245,158,11,.42);
+}
+
+.node-title {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.node-meta {
+  font-size: .68rem;
+  color: rgba(255,255,255,.65);
+}
+
+/* ── Weekly roadmap card ───────────────────────────────────── */
+.weekly-card {
+  &__header {
+    margin-bottom: 1rem;
+    h2 {
+      font-size: 1.15rem;
+      color: #fff;
+      margin: 0 0 .3rem;
+    }
+    p {
+      font-size: .82rem;
+      color: rgba(255,255,255,.55);
+      margin: 0;
+    }
+  }
+}
+
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 650px) { grid-template-columns: 1fr; }
+}
+
+.weekly-item {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  border-radius: 10px;
+  padding: .8rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .45rem;
+  }
+}
+
+.week-label {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #a5b4fc;
+}
+
+.week-count {
+  font-size: .68rem;
+  color: rgba(255,255,255,.55);
+}
+
+.week-reason {
+  font-size: .74rem;
+  line-height: 1.45;
+  color: rgba(255,255,255,.7);
+  margin: 0 0 .5rem;
+}
+
+.week-skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.week-skill {
+  font-size: .7rem;
+  color: #93c5fd;
+  background: rgba(59,130,246,.14);
+  border-radius: 999px;
+  padding: .18rem .52rem;
+}
+
 /* ── Roadmap card ─────────────────────────────────────────────── */
 .roadmap-card {
   &__header {

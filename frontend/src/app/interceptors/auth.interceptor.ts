@@ -3,10 +3,10 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../shared/services/auth.service';
 
-const BACKEND_ORIGIN = 'http://localhost:5000';
+const BACKEND_ORIGINS = ['http://localhost:5000', 'http://localhost:3000'];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const isBackend = req.url.startsWith(BACKEND_ORIGIN);
+  const isBackend = req.url.startsWith('/api') || BACKEND_ORIGINS.some((origin) => req.url.startsWith(origin));
   const authService = inject(AuthService);
   const token = localStorage.getItem('token');
 

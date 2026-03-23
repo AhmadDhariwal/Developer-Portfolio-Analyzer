@@ -127,6 +127,58 @@
       </div>
     </div>
 
+    <!-- Skill Graph Visualization ─────────────────────────── -->
+    <div class="sg-card graph-card" *ngIf="graphLayout.length">
+      <div class="graph-card__header">
+        <h2>Skill Dependency Graph</h2>
+        <p>Green nodes are current strengths, orange nodes are high-impact skills to learn next.</p>
+      </div>
+
+      <div class="graph-canvas">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="graph-lines">
+          <line
+            *ngFor="let edge of graphEdges"
+            [attr.x1]="findNode(edge.from)?.x"
+            [attr.y1]="findNode(edge.from)?.y"
+            [attr.x2]="findNode(edge.to)?.x"
+            [attr.y2]="findNode(edge.to)?.y"
+            [attr.class]="'edge-' + edge.type"
+          ></line>
+        </svg>
+
+        <div
+          class="graph-node"
+          *ngFor="let node of graphLayout"
+          [style.left.%]="node.x"
+          [style.top.%]="node.y"
+          [ngClass]="node.kind === 'current' ? 'node-current' : 'node-missing'"
+        >
+          <div class="node-title">{{ node.name }}</div>
+          <div class="node-meta">Demand {{ node.demandScore }}%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Roadmap Engine Output ─────────────────────── -->
+    <div class="sg-card weekly-card" *ngIf="result.weeklyRoadmap?.length">
+      <div class="weekly-card__header">
+        <h2>Weekly Learning Roadmap</h2>
+        <p>Engine-generated milestones based on prerequisites and demand score.</p>
+      </div>
+      <div class="weekly-grid">
+        <div class="weekly-item" *ngFor="let week of result.weeklyRoadmap; trackBy: trackByWeek">
+          <div class="weekly-item__head">
+            <span class="week-label">Week {{ week.week }}</span>
+            <span class="week-count">{{ week.focusSkills.length }} focus skill(s)</span>
+          </div>
+          <p class="week-reason">{{ week.reason }}</p>
+          <div class="week-skill-list">
+            <span class="week-skill" *ngFor="let skill of week.focusSkills">{{ skill }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Learning Roadmap ────────────────────────────────── -->
     <div class="sg-card roadmap-card">
       <div class="roadmap-card__header">

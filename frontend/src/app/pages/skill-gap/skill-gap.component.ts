@@ -7,6 +7,9 @@ import {
   CurrentSkill,
   MissingSkill,
   RoadmapPhase,
+  SkillGraphNode,
+  SkillGraphEdge,
+  WeeklyRoadmapWeek
 } from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -26,6 +29,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   isInitLoading = true;
   errorMessage = '';
   result: SkillGapResult | null = null;
+  graphLayout: Array<SkillGraphNode & { x: number; y: number }> = [];
+  graphEdges: SkillGraphEdge[] = [];
   private readonly subscriptions: Subscription = new Subscription();
 
   constructor(
@@ -92,6 +97,10 @@ export class SkillGapComponent implements OnInit, OnDestroy {
           missingSkills:   Array.isArray(raw?.missingSkills) ? raw.missingSkills : [],
           levelAssessment: raw?.levelAssessment || '',
           roadmap:         Array.isArray(raw?.roadmap) ? raw.roadmap : [],
+          skillGraph:      raw?.skillGraph?.nodes && raw?.skillGraph?.edges
+            ? raw.skillGraph
+            : { nodes: [], edges: [] },
+          weeklyRoadmap:   Array.isArray(raw?.weeklyRoadmap) ? raw.weeklyRoadmap : [],
           totalWeeks:      raw?.totalWeeks || 'N/A'
         };
 
@@ -108,6 +117,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         normalized.missing = Math.max(0, Math.min(100, 100 - validCoverage));
 
         this.result = normalized;
+        this.refreshGraphLayout();
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -115,6 +125,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         this.errorMessage = err?.error?.message || 'Failed to analyze skill gap. Please try again.';
         this.isLoading = false;
         this.result = null;
+        this.graphLayout = [];
+        this.graphEdges = [];
         this.cdr.detectChanges();
       }
     });
@@ -170,5 +182,49 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   trackByPhase(_: number, item: RoadmapPhase): string {
     return item.phase;
+  }
+
+  trackByWeek(_: number, item: WeeklyRoadmapWeek): number {
+    return item.week;
+  }
+
+  private refreshGraphLayout(): void {
+    const nodes = this.result?.skillGraph?.nodes || [];
+    const edges = this.result?.skillGraph?.edges || [];
+    const limitedNodes = nodes.slice(0, 16);
+
+    const currentNodes = limitedNodes.filter((n) => n.kind === 'current');
+    const missingNodes = limitedNodes.filter((n) => n.kind === 'missing');
+    const allRows = Math.max(currentNodes.length, missingNodes.length, 1);
+
+    const placeNodes = (
+      list: SkillGraphNode[],
+      x: number
+    ): Array<SkillGraphNode & { x: number; y: number }> => {
+      const step = 100 / (Math.max(list.length, 1) + 1);
+      return list.map((node, index) => ({
+        ...node,
+        x,
+        y: Math.round((index + 1) * step)
+      }));
+    };
+
+    const left = placeNodes(currentNodes, 22);
+    const right = placeNodes(missingNodes, 78);
+    const fallbackCenter = limitedNodes.length && (!left.length || !right.length)
+      ? limitedNodes.map((node, index) => ({
+          ...node,
+          x: 50 + (node.kind === 'current' ? -22 : 22),
+          y: Math.round(((index % allRows) + 1) * (100 / (allRows + 1)))
+        }))
+      : [];
+
+    this.graphLayout = left.length && right.length ? [...left, ...right] : fallbackCenter;
+    const visibleIds = new Set(this.graphLayout.map((node) => node.id));
+    this.graphEdges = edges.filter((edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to));
+  }
+
+  findNode(id: string): (SkillGraphNode & { x: number; y: number }) | undefined {
+    return this.graphLayout.find((node) => node.id === id);
   }
 }

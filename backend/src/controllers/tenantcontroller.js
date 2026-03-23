@@ -33,7 +33,16 @@ const validate = (req, res) => {
 
 const roleRank = { member: 1, manager: 2, admin: 3 };
 const higherRole = (a, b) => (roleRank[a] >= roleRank[b] ? a : b);
-const generateAuthToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: TOKEN_TTL });
+const generateAuthToken = (id) => jwt.sign(
+  { id },
+  process.env.JWT_SECRET,
+  {
+    expiresIn: TOKEN_TTL,
+    algorithm: 'HS256',
+    issuer: process.env.JWT_ISSUER || 'devinsight-api',
+    audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+  }
+);
 
 const loadValidPendingInvitationByToken = async (token) => {
   const invitation = await Invitation.findOne({ token }).lean();
@@ -411,7 +420,7 @@ const activateInvitationForUser = async ({ invitation, userId }) => {
     },
     {
       upsert: true,
-      new: true,
+      returnDocument: 'after',
       setDefaultsOnInsert: true
     }
   );
@@ -711,7 +720,7 @@ const updateMembershipRole = async (req, res) => {
     const updated = await Membership.findByIdAndUpdate(
       membership._id,
       { $set: { role: targetRole } },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean();
 
     return res.json({ membership: updated });

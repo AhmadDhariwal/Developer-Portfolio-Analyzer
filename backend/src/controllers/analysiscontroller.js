@@ -1,8 +1,13 @@
 const aiService = require('../services/aiservice');
 const { getPortfolioScorePrompt } = require('../prompts/portfolioScorePrompt');
 const AnalysisCache = require('../models/analysisCache');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const { createVersion } = require('../services/aiVersionService');
+const {
+  calculateTransparentScore,
+  normalizeTransparentScorePayload
+} = require('../services/transparentScoringService');
+const { getIntegrationInsight } = require('../services/integrationInsightService');
 
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
   if (!req.user?._id || !output || typeof output !== 'object') return;
@@ -42,7 +47,10 @@ const getPortfolioReadiness = async (req, res) => {
     // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);
     if (cached?.analysisData?.portfolioScore) {
-      const cachedResult = { ...cached.analysisData.portfolioScore, fromCache: true };
+      const cachedResult = {
+        ...normalizeTransparentScorePayload(cached.analysisData.portfolioScore),
+        fromCache: true
+      };
       await saveAIVersionSnapshot({
         req,
         source: 'portfolio_score',
@@ -75,11 +83,39 @@ const getPortfolioReadiness = async (req, res) => {
     };
 
     const aiResult = await aiService.runAIAnalysis(prompt, fallback);
+    const integrationInsight = req.user?._id
+      ? await getIntegrationInsight(req.user._id)
+      : { integrationScore: 0 };
+
+    const transparentResult = calculateTransparentScore({
+      githubAnalysis,
+      resumeAnalysis,
+      skillGapAnalysis: {
+        coverage: githubAnalysis?.scores?.skillCoverage || 0,
+        yourSkills: resumeAnalysis?.skills || [],
+        missingSkills: []
+      },
+      integrationInsight,
+      aiBreakdown: aiResult?.breakdown || {},
+      aiOverallScore: aiResult?.overallScore || 0,
+      careerStack
+    });
+
+    const scoredResult = normalizeTransparentScorePayload({
+      ...aiResult,
+      overallScore: transparentResult.overallScore,
+      weightedScore: transparentResult.weightedScore,
+      confidenceScore: transparentResult.confidenceScore,
+      breakdown: transparentResult.breakdown,
+      reasons: transparentResult.reasons,
+      explainabilityBreakdown: transparentResult.explainabilityBreakdown,
+      summary: aiResult?.summary || 'Weighted score generated with confidence and explainability.'
+    });
 
     if (req.user) {
       await AnalysisCache.findOneAndUpdate(
         cacheKey,
-        { $set: { 'analysisData.portfolioScore': aiResult, userId: req.user._id } },
+        { $set: { 'analysisData.portfolioScore': scoredResult, userId: req.user._id } },
         { upsert: true }
       );
     }
@@ -87,11 +123,11 @@ const getPortfolioReadiness = async (req, res) => {
     await saveAIVersionSnapshot({
       req,
       source: 'portfolio_score',
-      output: aiResult,
+      output: scoredResult,
       metadata: { fromCache: false, username, careerStack, experienceLevel }
     });
 
-    res.json(aiResult);
+    res.json(scoredResult);
 
   } catch (error) {
     console.error('Portfolio Score Error:', error.message);

@@ -1,0 +1,20 @@
+{
+  "title": "Developer Portfolio Analyzer API",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Request Rate",
+      "targets": [{ "expr": "sum(rate(dpa_http_requests_total[5m])) by (route)" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "P95 Latency",
+      "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(dpa_http_request_duration_ms_bucket[5m])) by (le, route))" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx Error Rate",
+      "targets": [{ "expr": "sum(rate(dpa_http_errors_total[5m])) / sum(rate(dpa_http_requests_total[5m]))" }]
+    }
+  ]
+}

@@ -33,7 +33,7 @@ const enqueueInvitationRetry = async ({ invitationId, to, payload, maxAttempts =
       }
     },
     {
-      new: true,
+      returnDocument: 'after',
       upsert: true
     }
   ).lean();
@@ -48,7 +48,7 @@ const markJobInProgress = async (jobId) => {
     {
       $set: { status: 'processing' }
     },
-    { new: true }
+    { returnDocument: 'after' }
   ).lean();
 
   return updated;

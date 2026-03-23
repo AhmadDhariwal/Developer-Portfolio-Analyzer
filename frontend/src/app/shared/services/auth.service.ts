@@ -12,7 +12,7 @@ const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
 })
 export class AuthService {
   private readonly baseUrl = 'http://localhost:5000/api';
-  private isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
+  private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -25,8 +25,40 @@ export class AuthService {
   private checkToken(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
+
+    // Reject legacy/malformed tokens early so stale sessions do not keep reconnecting SSE.
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      this.clearStorage();
+      return false;
+    }
+
+    try {
+      const normalized = parts[1].replaceAll('-', '+').replaceAll('_', '/');
+      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+      const payloadRaw = atob(padded);
+      const payload = JSON.parse(payloadRaw) as { exp?: number; iss?: string; aud?: string | string[] };
+
+      const expectedIssuer = 'devinsight-api';
+      const expectedAudience = 'devinsight-web';
+      const audList = Array.isArray(payload.aud) ? payload.aud : [payload.aud].filter(Boolean);
+
+      if (!payload.exp || payload.exp * 1000 <= Date.now()) {
+        this.clearStorage();
+        return false;
+      }
+
+      if (payload.iss !== expectedIssuer || !audList.includes(expectedAudience)) {
+        this.clearStorage();
+        return false;
+      }
+    } catch {
+      this.clearStorage();
+      return false;
+    }
+
     const expiry = localStorage.getItem('loginExpiry');
-    if (expiry && Date.now() > parseInt(expiry, 10)) {
+    if (expiry && Date.now() > Number.parseInt(expiry, 10)) {
       this.clearStorage();
       return false;
     }
@@ -42,7 +74,7 @@ export class AuthService {
   private scheduleAutoLogout(): void {
     const expiry = localStorage.getItem('loginExpiry');
     if (!expiry) return;
-    const remaining = parseInt(expiry, 10) - Date.now();
+    const remaining = Number.parseInt(expiry, 10) - Date.now();
     if (remaining <= 0) {
       this.logout();
       this.router.navigate(['/auth/login']);
@@ -110,7 +142,7 @@ export class AuthService {
     if (userStr) {
       try {
         return JSON.parse(userStr);
-      } catch (e) {
+      } catch {
         return null;
       }
     }

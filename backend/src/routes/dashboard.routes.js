@@ -5,7 +5,8 @@ const {
   getDashboardContributions,
   getDashboardLanguages,
   getDashboardSkills,
-  getDashboardRecommendations
+  getDashboardRecommendations,
+  getDashboardIntegrationAnalytics
 } = require('../controllers/dashboardcontroller');
 const { protect } = require('../middleware/authmiddleware');
 
@@ -15,5 +16,6 @@ router.get('/contributions',   protect, getDashboardContributions);
 router.get('/languages',       protect, getDashboardLanguages);
 router.get('/skills',          protect, getDashboardSkills);
 router.get('/recommendations', protect, getDashboardRecommendations);
+router.get('/integration-analytics', protect, getDashboardIntegrationAnalytics);
 
 module.exports = router;

@@ -97,7 +97,21 @@ const getRecommendations = async (req, res) => {
     const { analyzeGitHubProfile } = require('../services/githubservice');
     const { getSkillGapPrompt }    = require('../prompts/skillGapPrompt');
 
-    const githubData = await analyzeGitHubProfile(username.trim());
+    let githubData;
+    try {
+      githubData = await analyzeGitHubProfile(username.trim());
+    } catch (githubError) {
+      console.warn('Recommendations GitHub fallback:', githubError.message);
+      githubData = {
+        repoCount: 0,
+        developerLevel: 'Unknown',
+        strengths: [],
+        weakAreas: [],
+        languageDistribution: [],
+        scores: {},
+        repositories: []
+      };
+    }
     let latestResumeAnalysis = null;
     if (req.user?._id) {
       const userContext = await User.findById(req.user._id).select('activeResumeFileId defaultResumeFileId').lean();

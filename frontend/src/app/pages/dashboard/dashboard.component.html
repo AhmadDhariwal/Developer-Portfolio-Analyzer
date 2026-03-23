@@ -318,4 +318,51 @@
       </div>
     </div>
   </div>
+
+  <div class="card insights-card explain-card">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Transparent Scoring Model</h3>
+        <p>Weighted score, confidence, and explainability reasons</p>
+      </div>
+      <span class="confidence-pill">{{ confidenceScore }}% confidence</span>
+    </div>
+    <div class="insight-rows">
+      <div class="insight-row" *ngFor="let row of explainabilityRows">
+        <div class="insight-row__head">
+          <span>{{ row.label }} ({{ row.weight }}%)</span>
+          <span>{{ row.value }}%</span>
+        </div>
+        <div class="insight-bar">
+          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+        </div>
+      </div>
+      <ul class="reason-list" *ngIf="scoreReasons.length">
+        <li *ngFor="let reason of scoreReasons">{{ reason }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card insights-card integration-card" *ngIf="integrationAnalyticsCards.length > 0">
+    <div class="card-head">
+      <div class="head-text">
+        <h3>Integration Provider Trends</h3>
+        <p>Last 7 days sync performance by provider</p>
+      </div>
+    </div>
+    <div class="integration-rows">
+      <div class="integration-row" *ngFor="let card of integrationAnalyticsCards">
+        <div class="integration-row__top">
+          <span class="provider-name">{{ providerName(card.provider) }}</span>
+          <span class="provider-delta" [class.negative]="card.trendDelta < 0">{{ card.trendDelta >= 0 ? '+' : '' }}{{ card.trendDelta }} trend</span>
+        </div>
+        <div class="integration-metrics">
+          <span>Activity {{ card.activityScore }}%</span>
+          <span>Profile {{ card.profileScore }}%</span>
+          <span>Confidence {{ card.confidence }}%</span>
+          <span>Success {{ card.successRate }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

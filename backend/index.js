@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const connectDB = require('./src/config/db');
+const { validateEnv } = require('./src/config/env');
+const logger = require('./src/utils/logger');
 const authroute      = require('./src/routes/auth.routes');
 const githubroute    = require('./src/routes/github.routes');
 const resumroute     = require('./src/routes/resume.routes');
@@ -17,8 +20,18 @@ const auditroute             = require('./src/routes/audit.routes');
 const workflowroute          = require('./src/routes/workflow.routes');
 const aiversionsroute        = require('./src/routes/aiversions.routes');
 const tenantroute            = require('./src/routes/tenant.routes');
+const skillgraphroute        = require('./src/routes/skillgraph.routes');
+const integrationsroute      = require('./src/routes/integrations.routes');
+const scenarioroute          = require('./src/routes/scenarioSimulator.routes');
 const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
+const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
+const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
+const { metricsMiddleware, metricsHandler } = require('./src/services/metricsService');
+const { initTracing, shutdownTracing } = require('./src/services/tracingService');
 const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
+const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
+
+const env = validateEnv();
 
 // Connect to database
 connectDB();
@@ -26,10 +39,35 @@ connectDB();
 const app = express();
 
 // Middleware
+app.use(helmet({
+    contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+            defaultSrc: ["'self'"],
+            connectSrc: ["'self'", 'http://localhost:4200', 'http://localhost:3000', 'http://localhost:5000'],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            frameAncestors: ["'none'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
+}));
 app.use(cors());
+app.use(globalRateLimiter);
+app.use(requestContextMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
+app.use(metricsMiddleware);
+app.use((req, _res, next) => {
+    logger.info('request', {
+        requestId: req.requestId,
+        method: req.method,
+        path: req.originalUrl
+    });
+    next();
+});
 app.use(auditLogMiddleware);
 
 // Basic route
@@ -52,20 +90,32 @@ app.use('/api/audit-logs',      auditroute);
 app.use('/api/workflows',       workflowroute);
 app.use('/api/ai-versions',     aiversionsroute);
 app.use('/api/tenant',          tenantroute);
+app.use('/api/skill-graph',     skillgraphroute);
+app.use('/api/integrations',    integrationsroute);
+app.use('/api/simulator',       scenarioroute);
+app.get('/metrics', metricsHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT || process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info('server started', { port: PORT });
     startEmailRetryWorker();
+    startIntegrationSyncWorker();
+    initTracing();
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;
     if (!ghToken || ghToken === 'your_github_personal_access_token') {
-        console.warn('\n⚠️  WARNING: GITHUB_TOKEN is not set in .env');
-        console.warn('   Anonymous GitHub API calls are limited to 60 requests/hour.');
-        console.warn('   Create a token at https://github.com/settings/tokens and add it to backend/.env\n');
+        logger.warn('GITHUB_TOKEN is not configured; authenticated quota unavailable.');
     } else {
-        console.log('✅  GitHub token detected — using authenticated API (5000 req/hour)');
+        logger.info('GitHub token detected; using authenticated API quota.');
     }
+});
+
+process.on('SIGTERM', () => {
+    shutdownTracing();
+});
+
+process.on('SIGINT', () => {
+    shutdownTracing();
 });

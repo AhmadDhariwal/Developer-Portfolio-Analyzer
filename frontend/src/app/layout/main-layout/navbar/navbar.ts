@@ -61,6 +61,8 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'Resume Analyzer', sublabel: 'Analyze your resume', route: '/app/resume-analyzer' },
     { type: 'page', label: 'Skill Gap Analysis', sublabel: 'Find skills to learn', route: '/app/skill-gap' },
     { type: 'page', label: 'Recommendations', sublabel: 'Personalized career advice', route: '/app/recommendations' },
+    { type: 'page', label: 'Integrations', sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle', route: '/app/integrations' },
+    { type: 'page', label: 'Scenario Simulator', sublabel: 'What-if score and job match simulator', route: '/app/scenario-simulator' },
     { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/activity-logs' },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
     { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },

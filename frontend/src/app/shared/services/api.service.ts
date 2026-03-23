@@ -107,6 +107,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/dashboard/languages`);
   }
 
+  getDashboardIntegrationAnalytics(days = 7): Observable<any> {
+    return this.http.get(`${this.baseUrl}/dashboard/integration-analytics?days=${encodeURIComponent(String(days))}`);
+  }
+
   /* ── Audit Logs ── */
   getAuditLogs(params: {
     actor?: string;
@@ -237,5 +241,18 @@ export class ApiService {
 
   getTeamAnalytics(teamId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/tenant/teams/${teamId}/analytics`);
+  }
+
+  triggerIntegrationSync(provider?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {});
+  }
+
+  runWhatIfSimulation(payload: {
+    baselineHiringScore: number;
+    baselineJobMatch: number;
+    skills: string[];
+    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 }

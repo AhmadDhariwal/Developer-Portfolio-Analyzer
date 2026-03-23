@@ -59,7 +59,6 @@ export class ActivityLogsComponent implements OnInit {
   totalPages = 1;
   total = 0;
   loading = false;
-  isInitialLoad = true; 
 
   actor = '';
   action = '';
@@ -72,10 +71,16 @@ export class ActivityLogsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const today = new Date();
-    this.from = this.toDateString(today);
-    this.to = this.toDateString(today);
+    this.ensureDefaultDateRange();
     this.loadOrganizations();
+  }
+
+  private ensureDefaultDateRange(): void {
+    if (this.from && this.to) return;
+    const today = new Date();
+    const todayText = this.toDateString(today);
+    if (!this.from) this.from = todayText;
+    if (!this.to) this.to = todayText;
   }
 
   get hasOrgScopedActorOptions(): boolean {
@@ -102,6 +107,7 @@ export class ActivityLogsComponent implements OnInit {
   }
 
   fetchLogs(page = this.page): void {
+    this.ensureDefaultDateRange();
     this.loading = true;
     this.page = page;
 
@@ -121,7 +127,6 @@ export class ActivityLogsComponent implements OnInit {
       limit: 20
     };
 
-    if (!this.isInitialLoad) {
     if (this.from) {
       params.from = this.toStartOfDayIso(this.from);
     }
@@ -129,12 +134,6 @@ export class ActivityLogsComponent implements OnInit {
     if (this.to) {
       params.to = this.toEndOfDayIso(this.to);
     }
-  } else {
-    // ✅ Default: today range
-    const today = new Date();
-    params.from = this.toStartOfDayIso(this.toDateString(today));
-    params.to = this.toEndOfDayIso(this.toDateString(today));
-  }
 
     this.apiService.getAuditLogs(params).subscribe({
       next: (res) => {
@@ -144,7 +143,6 @@ export class ActivityLogsComponent implements OnInit {
         this.actorOptions = Array.isArray(res?.actorOptions) ? res.actorOptions : [];
         this.selectedLog = this.logs[0] || null;
         this.loading = false;
-        this.isInitialLoad = false;
       },
       error: () => {
         this.logs = [];
@@ -158,6 +156,7 @@ export class ActivityLogsComponent implements OnInit {
   loadOrganizations(): void {
     this.apiService.getOrganizations().subscribe({
       next: (res) => {
+        this.ensureDefaultDateRange();
         this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
         const savedOrgId = this.tenantContext.snapshot.organizationId;
         if (savedOrgId && this.organizations.some((org) => org._id === savedOrgId)) {
@@ -166,6 +165,7 @@ export class ActivityLogsComponent implements OnInit {
         this.fetchLogs();
       },
       error: () => {
+        this.ensureDefaultDateRange();
         this.organizations = [];
         this.fetchLogs();
       }

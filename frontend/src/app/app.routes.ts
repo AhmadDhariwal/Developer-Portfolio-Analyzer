@@ -13,6 +13,9 @@ import { AiVersionsComponent } from './pages/ai-versions/ai-versions.component';
 import { TeamManagementComponent } from './pages/team-management/team-management.component';
 import { AcceptInvitationComponent } from './pages/accept-invitation/accept-invitation.component';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
+import { IntegrationsMarketplaceComponent } from './pages/integrations-marketplace/integrations-marketplace.component';
+import { ScenarioSimulatorComponent } from './pages/scenario-simulator/scenario-simulator.component';
+import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.component';
 import { SettingsPageComponent } from './settings/settings-page.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
@@ -23,6 +26,7 @@ import { adminSettingsGuard } from './guards/admin-settings.guard';
 export const routes: Routes = [
   // Landing page (public) — default route
   { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
+  { path: 'privacy', component: PrivacyPolicyComponent },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
 
   // Authentication pages (public) - only accessible when NOT logged in
@@ -45,6 +49,8 @@ export const routes: Routes = [
       { path: 'recommendations', component: RecommendationsComponent },
       { path: 'courses',         component: CoursesComponent },
       { path: 'jobs',            component: JobsComponent },
+      { path: 'integrations',    component: IntegrationsMarketplaceComponent },
+      { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
       { path: 'profile',         component: ProfileComponent },
       { path: 'activity-logs',   component: ActivityLogsComponent },
       { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },

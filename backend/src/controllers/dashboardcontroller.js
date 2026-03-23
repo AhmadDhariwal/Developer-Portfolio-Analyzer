@@ -5,6 +5,9 @@ const AnalysisCache = require('../models/analysisCache');
 const { analyzeGitHubProfile, fetchGitHubUser } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
+const { getIntegrationInsight } = require('../services/integrationInsightService');
+const IntegrationSyncLog = require('../models/integrationSyncLog');
+const IntegrationConnection = require('../models/integrationConnection');
 
 // ── Helper: detect GitHub rate-limit errors ───────────────────────────────
 const isRateLimitError = (err) => {
@@ -14,6 +17,66 @@ const isRateLimitError = (err) => {
     err?.response?.status === 429 ||
     msg.includes('rate limit') ||
     msg.includes('api rate limit')
+  );
+};
+
+const getOrCreateAnalysis = (analysis, userId) => analysis || new Analysis({ userId });
+
+const fetchGitHubUserSafe = async (githubUsername) => {
+  try {
+    return await fetchGitHubUser(githubUsername);
+  } catch {
+    return {};
+  }
+};
+
+const toLanguageMap = (languageDistribution = []) => {
+  const langMap = {};
+  languageDistribution.forEach((item) => {
+    langMap[item.language] = item.percentage;
+  });
+  return langMap;
+};
+
+const buildContributionActivity = (repositories = []) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const now = new Date();
+  const activityMap = new Map();
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthLabel = months[d.getMonth()];
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    activityMap.set(key, { month: monthLabel, count: 0 });
+  }
+
+  repositories.forEach((repo) => {
+    const sourceDate = repo.pushedAt || repo.updatedAt || repo.createdAt;
+    if (!sourceDate) return;
+    const d = new Date(sourceDate);
+    if (Number.isNaN(d.getTime())) return;
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (!activityMap.has(key)) return;
+    activityMap.get(key).count += 1;
+  });
+
+  return Array.from(activityMap.values());
+};
+
+const persistRepositories = async (userId, repositories = []) => {
+  await Repository.deleteMany({ ownerId: userId });
+  if (repositories.length === 0) return;
+
+  await Repository.insertMany(
+    repositories.map((repo) => ({
+      repoName: repo.name,
+      language: repo.language,
+      stars: repo.stars,
+      forks: repo.forks,
+      commits: 0,
+      lastUpdated: new Date(),
+      ownerId: userId
+    }))
   );
 };
 
@@ -29,16 +92,15 @@ const ensureAnalysis = async (userId, githubUsername) => {
   // No cached data — try to fetch from GitHub
   if (!githubUsername) {
     // No username configured — return empty shell
-    if (!analysis) analysis = new Analysis({ userId });
+    analysis = getOrCreateAnalysis(analysis, userId);
     return { analysis, rateLimited: false, noUsername: true };
   }
 
   try {
     const data = await analyzeGitHubProfile(githubUsername);
-    let userData;
-    try { userData = await fetchGitHubUser(githubUsername); } catch { userData = {}; }
+    const userData = await fetchGitHubUserSafe(githubUsername);
 
-    if (!analysis) analysis = new Analysis({ userId });
+    analysis = getOrCreateAnalysis(analysis, userId);
 
     analysis.githubScore = data.activityScore;
     analysis.githubStats = {
@@ -48,47 +110,10 @@ const ensureAnalysis = async (userId, githubUsername) => {
       followers: userData.followers || 0
     };
 
-    // Language distribution
-    const langMap = {};
-    data.languageDistribution.forEach(l => { langMap[l.language] = l.percentage; });
-    analysis.languageDistribution = langMap;
+    analysis.languageDistribution = toLanguageMap(data.languageDistribution);
+    analysis.contributionActivity = buildContributionActivity(data.repositories);
 
-    // Contribution activity based on repository update timestamps for last 6 months
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const now = new Date();
-    const activityMap = new Map();
-
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthLabel = months[d.getMonth()];
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      activityMap.set(key, { month: monthLabel, count: 0 });
-    }
-
-    data.repositories.forEach((repo) => {
-      const sourceDate = repo.pushedAt || repo.updatedAt || repo.createdAt;
-      if (!sourceDate) return;
-      const d = new Date(sourceDate);
-      if (Number.isNaN(d.getTime())) return;
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      if (!activityMap.has(key)) return;
-      activityMap.get(key).count += 1;
-    });
-
-    const activity = Array.from(activityMap.values());
-    analysis.contributionActivity = activity;
-
-    // Persist repos
-    await Repository.deleteMany({ ownerId: userId });
-    if (data.repositories.length > 0) {
-      await Repository.insertMany(
-        data.repositories.map(r => ({
-          repoName: r.name, language: r.language,
-          stars: r.stars, forks: r.forks, commits: 0,
-          lastUpdated: new Date(), ownerId: userId
-        }))
-      );
-    }
+    await persistRepositories(userId, data.repositories);
 
     await analysis.save();
     return { analysis, rateLimited: false };
@@ -96,11 +121,11 @@ const ensureAnalysis = async (userId, githubUsername) => {
     console.warn('GitHub fetch failed:', err.message);
     // If rate-limited but we have some cached analysis, use it
     if (isRateLimitError(err)) {
-      if (!analysis) analysis = new Analysis({ userId });
+      analysis = getOrCreateAnalysis(analysis, userId);
       return { analysis, rateLimited: true };
     }
     // Other error — return empty shell gracefully
-    if (!analysis) analysis = new Analysis({ userId });
+    analysis = getOrCreateAnalysis(analysis, userId);
     return { analysis, rateLimited: false, fetchError: err.message };
   }
 };
@@ -121,7 +146,12 @@ const getDashboardSummary = async (req, res) => {
       'analysisData.portfolioScore.overallScore': { $exists: true }
     }).sort({ updatedAt: -1 }).lean();
 
-    const readinessScore = latestReadiness?.analysisData?.portfolioScore?.overallScore || analysis.readinessScore || analysis.githubScore || 0;
+    const baseReadiness = latestReadiness?.analysisData?.portfolioScore?.overallScore || analysis.readinessScore || analysis.githubScore || 0;
+    const integrationInsight = await getIntegrationInsight(user._id);
+    const integrationScore = Number(integrationInsight.integrationScore || 0);
+    const readinessScore = integrationScore > 0
+      ? Math.round((Number(baseReadiness || 0) * 0.85) + (integrationScore * 0.15))
+      : Number(baseReadiness || 0);
     const lastAnalyzedAt = latestReadiness?.updatedAt || analysis.updatedAt || analysis.createdAt || null;
 
     if (Number(readinessScore) > 0 && Number(readinessScore) < 60) {
@@ -146,6 +176,17 @@ const getDashboardSummary = async (req, res) => {
       userName:     user.name,
       githubHandle: activeGithubUsername,
       lastAnalyzedAt,
+      integration: {
+        score: integrationScore,
+        providers: (integrationInsight.providers || []).map((p) => ({
+          provider: p.provider,
+          profileScore: p.profileScore,
+          activityScore: p.activityScore,
+          syncedAt: p.syncedAt
+        })),
+        mergedSkills: integrationInsight.mergedSkills || [],
+        updatedAt: integrationInsight.updatedAt || null
+      },
       rateLimited:  rateLimited || false,
       noUsername:   noUsername  || false
     });
@@ -207,7 +248,10 @@ const getDashboardSkills = async (req, res) => {
       ? Object.fromEntries(analysis.languageDistribution)
       : (analysis.languageDistribution || {});
 
-    const topSkills = Object.keys(langDist).filter(k => langDist[k] > 0);
+    const integrationInsight = await getIntegrationInsight(req.user._id);
+    const topSkills = Object.keys(langDist)
+      .filter(k => langDist[k] > 0)
+      .concat(integrationInsight.mergedSkills || []);
     const { missingSkills } = detectSkillGaps(topSkills);
 
     res.json({ topSkills, missingSkills });
@@ -229,7 +273,10 @@ const getDashboardRecommendations = async (req, res) => {
     const langDist = analysis.languageDistribution instanceof Map
       ? Object.fromEntries(analysis.languageDistribution)
       : (analysis.languageDistribution || {});
-    const topSkills = Object.keys(langDist).filter(k => langDist[k] > 0);
+    const integrationInsight = await getIntegrationInsight(req.user._id);
+    const topSkills = Object.keys(langDist)
+      .filter(k => langDist[k] > 0)
+      .concat(integrationInsight.mergedSkills || []);
     const { missingSkills } = detectSkillGaps(topSkills);
 
     const iconTypes = ['project', 'certification', 'opensource', 'technology'];
@@ -253,10 +300,110 @@ const getDashboardRecommendations = async (req, res) => {
   }
 };
 
+/* ─────────────────────────────────────────────
+   GET /api/dashboard/integration-analytics
+   ───────────────────────────────────────────── */
+const getDashboardIntegrationAnalytics = async (req, res) => {
+  try {
+    const days = Math.max(1, Math.min(30, Number.parseInt(String(req.query.days || '7'), 10)));
+    const since = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
+
+    const logs = await IntegrationSyncLog.find({
+      userId: req.user._id,
+      createdAt: { $gte: since }
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const map = new Map();
+    logs.forEach((log) => {
+      const key = log.provider;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(log);
+    });
+
+    const persistedInsight = await getIntegrationInsight(req.user._id);
+    const insightByProvider = new Map(
+      (persistedInsight.providers || []).map((p) => [
+        p.provider,
+        {
+          profileScore: Number(p.profileScore || 0),
+          activityScore: Number(p.activityScore || 0),
+          confidence: Number(p.confidence || 0),
+          syncedAt: p.syncedAt || null
+        }
+      ])
+    );
+
+    const connections = await IntegrationConnection.find({ userId: req.user._id, status: 'connected' })
+      .select('provider lastSyncedAt metadata')
+      .lean();
+
+    const providerSet = new Set([
+      ...Array.from(map.keys()),
+      ...Array.from(insightByProvider.keys()),
+      ...connections.map((connection) => connection.provider)
+    ]);
+
+    const cards = Array.from(providerSet.values()).map((provider) => {
+      const providerLogs = map.get(provider) || [];
+      const latest = providerLogs[0] || null;
+      const previous = providerLogs[1] || null;
+      const insight = insightByProvider.get(provider) || null;
+      const connection = connections.find((item) => item.provider === provider) || null;
+
+      const activityScore = latest
+        ? Number(latest.activityScore || 0)
+        : Number(insight?.activityScore || connection?.metadata?.activityScore || 0);
+      const profileScore = latest
+        ? Number(latest.profileScore || 0)
+        : Number(insight?.profileScore || connection?.metadata?.profileScore || 0);
+      const hasDetectedSkills = Boolean(connection?.metadata?.totalSkillsDetected);
+      const connectionConfidence = hasDetectedSkills ? 65 : 45;
+      let fallbackConfidence = Number(connectionConfidence);
+      if (insight?.confidence) {
+        fallbackConfidence = Number(insight.confidence);
+      }
+      const confidence = latest
+        ? Number(latest.confidence || 0)
+        : fallbackConfidence;
+      const delta = latest && previous
+        ? Number((Number(latest.activityScore || 0) - Number(previous.activityScore || 0)).toFixed(2))
+        : 0;
+
+      const success = providerLogs.filter((item) => item.status === 'success').length;
+      const successRate = providerLogs.length > 0
+        ? Number(((success / providerLogs.length) * 100).toFixed(1))
+        : 0;
+
+      return {
+        provider,
+        activityScore,
+        profileScore,
+        confidence,
+        trendDelta: delta,
+        successRate,
+        syncCount: providerLogs.length,
+        lastSyncedAt: latest?.createdAt || insight?.syncedAt || connection?.lastSyncedAt || null
+      };
+    }).sort((a, b) => {
+      const aTs = a.lastSyncedAt ? new Date(a.lastSyncedAt).getTime() : 0;
+      const bTs = b.lastSyncedAt ? new Date(b.lastSyncedAt).getTime() : 0;
+      return bTs - aTs;
+    });
+
+    res.json({ days, cards });
+  } catch (error) {
+    console.error('Dashboard integration analytics error:', error.message);
+    res.status(500).json({ message: 'Failed to load integration analytics' });
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getDashboardContributions,
   getDashboardLanguages,
   getDashboardSkills,
-  getDashboardRecommendations
+  getDashboardRecommendations,
+  getDashboardIntegrationAnalytics
 };

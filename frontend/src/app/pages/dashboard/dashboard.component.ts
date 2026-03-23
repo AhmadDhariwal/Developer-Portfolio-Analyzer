@@ -35,6 +35,17 @@ export interface LanguageLegendItem {
   color: string;
 }
 
+export interface IntegrationAnalyticsCard {
+  provider: string;
+  activityScore: number;
+  profileScore: number;
+  confidence: number;
+  trendDelta: number;
+  successRate: number;
+  syncCount: number;
+  lastSyncedAt: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -76,6 +87,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   languageLegend: LanguageLegendItem[] = [];
   recommendations: RecommendationItem[] = [];
   aiBreakdown: any = null;
+  confidenceScore = 0;
+  scoreReasons: string[] = [];
+  explainabilityBreakdown: any = null;
+  integrationScore = 0;
+  integrationAnalyticsCards: IntegrationAnalyticsCard[] = [];
   tenantOrgName = '';
   tenantTeamName = '';
   tenantTeamAnalytics: { totalMembers: number; averageReadinessScore: number } | null = null;
@@ -176,6 +192,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.githubScore = Number(data.score || 0);
 
         const summaryReadiness = Number(data.readinessScore || 0);
+        this.integrationScore = Number(data?.integration?.score || 0);
         if (summaryReadiness > 0 && this.developerScore === 0) {
           this.developerScore = summaryReadiness;
         }
@@ -197,6 +214,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.loadActivityAndLanguage();
+    this.loadIntegrationAnalytics();
   }
 
   fetchAiAnalysis(username: string) {
@@ -261,6 +279,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                     if (scoreResult.breakdown) {
                         this.aiBreakdown = scoreResult.breakdown;
                     }
+                    this.confidenceScore = Math.max(0, Math.min(100, Number(scoreResult.confidenceScore || 0)));
+                    this.scoreReasons = Array.isArray(scoreResult.reasons) ? scoreResult.reasons : [];
+                    this.explainabilityBreakdown = scoreResult.explainabilityBreakdown || null;
                     if (this.viewInitialized) this.initRadarChart();
                     this.cdr.detectChanges();
                 },
@@ -353,6 +374,40 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  loadIntegrationAnalytics() {
+    this.apiService.getDashboardIntegrationAnalytics(7).subscribe({
+      next: (payload) => {
+        this.integrationAnalyticsCards = Array.isArray(payload?.cards)
+          ? payload.cards.map((card: any) => ({
+              provider: String(card.provider || '').toLowerCase(),
+              activityScore: Number(card.activityScore || 0),
+              profileScore: Number(card.profileScore || 0),
+              confidence: Number(card.confidence || 0),
+              trendDelta: Number(card.trendDelta || 0),
+              successRate: Number(card.successRate || 0),
+              syncCount: Number(card.syncCount || 0),
+              lastSyncedAt: String(card.lastSyncedAt || '')
+            }))
+          : [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.integrationAnalyticsCards = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  providerName(provider: string): string {
+    const map: Record<string, string> = {
+      github: 'GitHub',
+      linkedin: 'LinkedIn',
+      leetcode: 'LeetCode',
+      kaggle: 'Kaggle'
+    };
+    return map[String(provider || '').toLowerCase()] || provider;
+  }
+
   /* ── Charts ── */
   initRadarChart() {
     if (!this.skillRadar?.nativeElement) return;
@@ -432,6 +487,24 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
   }
 
+  get explainabilityRows(): { label: string; value: number; weight: number }[] {
+    const scores = this.explainabilityBreakdown?.featureScores || this.aiBreakdown || {};
+    const weights = this.explainabilityBreakdown?.weights || {};
+
+    const shape = [
+      { key: 'codeQuality', label: 'Code Quality' },
+      { key: 'skillCoverage', label: 'Skill Coverage' },
+      { key: 'industryReadiness', label: 'Industry Readiness' },
+      { key: 'projectImpact', label: 'Project Impact' }
+    ];
+
+    return shape.map((item) => ({
+      label: item.label,
+      value: Math.max(0, Math.min(100, Number(scores[item.key] ?? 0))),
+      weight: Math.round(Number(weights[item.key] ?? 0) * 100)
+    }));
+  }
+
   get dashboardIdentityLine(): string {
     const handle = this.githubHandle || 'Not connected';
     const orgPart = this.tenantOrgName ? ` | Org: ${this.tenantOrgName}` : '';
@@ -440,7 +513,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get dashboardScoreLine(): string {
-    return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)}`;
+    return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)} | Integration Score: ${Math.round(this.integrationScore)}`;
   }
 
   private formatLastAnalyzed(value: string | null): string {

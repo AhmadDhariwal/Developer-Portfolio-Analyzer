@@ -29,7 +29,7 @@ const markNotificationRead = async (req, res) => {
     const notification = await Notification.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       { $set: { isRead: true } },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean();
 
     if (!notification) {
@@ -70,7 +70,11 @@ const streamNotifications = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized, no token' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ['HS256'],
+      issuer: process.env.JWT_ISSUER || 'devinsight-api',
+      audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+    });
     const userId = String(decoded.id || '');
     if (!userId) {
       return res.status(401).json({ message: 'Not authorized, invalid token' });
@@ -89,7 +93,7 @@ const streamNotifications = async (req, res) => {
     sendEvent('connected', { ok: true, timestamp: new Date().toISOString() });
 
     const onChanged = (payload) => {
-      if (!payload || payload.userId !== userId) return;
+      if (payload?.userId !== userId) return;
       sendEvent('notification', payload);
     };
 
@@ -106,7 +110,7 @@ const streamNotifications = async (req, res) => {
     });
   } catch (error) {
     if (heartbeat) clearInterval(heartbeat);
-    console.error('Notification stream error:', error.message);
+    console.error('Notification stream auth error:', error.message);
     res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };

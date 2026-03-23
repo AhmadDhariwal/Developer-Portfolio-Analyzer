@@ -38,7 +38,36 @@ export interface SkillGapResult {
   missingSkills:   MissingSkill[];
   levelAssessment: string;
   roadmap:         RoadmapPhase[];
+  skillGraph?: {
+    nodes: SkillGraphNode[];
+    edges: SkillGraphEdge[];
+  };
+  weeklyRoadmap?: WeeklyRoadmapWeek[];
   totalWeeks:      string;
+}
+
+export interface SkillGraphNode {
+  id: string;
+  name: string;
+  category: string;
+  demandScore: number;
+  proficiency: number;
+  kind: 'current' | 'missing';
+  relatedSkills: string[];
+}
+
+export interface SkillGraphEdge {
+  from: string;
+  to: string;
+  type: 'prerequisite' | 'dependency' | 'related';
+  weight: number;
+}
+
+export interface WeeklyRoadmapWeek {
+  week: number;
+  focusSkills: string[];
+  reason: string;
+  outcomes: string[];
 }
 
 @Injectable({ providedIn: 'root' })

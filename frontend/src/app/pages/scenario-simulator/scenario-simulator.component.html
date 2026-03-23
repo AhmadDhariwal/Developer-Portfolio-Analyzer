@@ -1,0 +1,190 @@
+<section class="sim-page">
+  <header class="sim-header">
+    <p class="eyebrow">Career What-If Studio</p>
+    <h1>Scenario Simulator</h1>
+    <p>
+      Test how new skills and portfolio projects can change your hiring score and job match.
+      Every section below explains exactly what it controls.
+    </p>
+  </header>
+
+  <div class="sim-grid">
+    <article class="sim-card inputs">
+      <div class="card-title-row">
+        <h2>Simulation Inputs</h2>
+        <span class="purpose-badge">Block A</span>
+      </div>
+      <p class="purpose-copy">This block defines your starting point and planned improvements.</p>
+
+      <section class="input-section">
+        <div class="section-head">
+          <h3>1) Baseline Scores</h3>
+          <span>What you have right now</span>
+        </div>
+
+        <div class="two-col">
+          <label>
+            Current Hiring Score
+            <input type="number" min="0" max="100" [(ngModel)]="baselineHiringScore" />
+          </label>
+
+          <label>
+            Current Job Match
+            <input type="number" min="0" max="100" [(ngModel)]="baselineJobMatch" />
+          </label>
+        </div>
+
+        <p class="hint">Source: your existing dashboard/analysis score before any new changes.</p>
+      </section>
+
+      <section class="input-section">
+        <div class="section-head">
+          <h3>2) Skills to Add</h3>
+          <span>Skill-driven uplift</span>
+        </div>
+
+        <div class="skill-entry">
+          <input
+            type="text"
+            placeholder="e.g. System Design"
+            [(ngModel)]="skillInput"
+            (keyup.enter)="addSkill()"
+          />
+          <button type="button" (click)="addSkill()">Add Skill</button>
+        </div>
+
+        <div class="skill-list" *ngIf="skills.length">
+          <span class="skill-chip" *ngFor="let skill of skills">
+            {{ skill }}
+            <button type="button" (click)="removeSkill(skill)">x</button>
+          </span>
+        </div>
+        <p class="hint">Source: each skill contributes to score improvement as skill impact.</p>
+      </section>
+
+      <section class="input-section">
+        <div class="section-head">
+          <h3>3) Projects to Add</h3>
+          <span>Portfolio-driven uplift</span>
+        </div>
+
+        <div class="projects-block">
+          <div class="project-head">
+            <p>Impact + complexity + duration determine project impact points.</p>
+            <button type="button" (click)="addProject()">Add Project</button>
+          </div>
+
+          <div class="project-row" *ngFor="let project of projects; let i = index">
+            <input type="text" placeholder="Project name" [(ngModel)]="project.name" />
+            <input type="number" min="0" max="100" placeholder="Impact" [(ngModel)]="project.impact" />
+            <select [(ngModel)]="project.complexity" aria-label="Project complexity" title="Project complexity">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <input type="number" min="1" max="24" placeholder="Weeks" [(ngModel)]="project.weeks" />
+            <button type="button" class="danger" (click)="removeProject(i)">Remove</button>
+          </div>
+        </div>
+      </section>
+
+      <button type="button" class="run-btn" (click)="simulate()" [disabled]="isRunning">
+        {{ isRunning ? 'Running Scenario...' : 'Run Scenario Simulation' }}
+      </button>
+
+      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </article>
+
+    <article class="sim-card results" *ngIf="simulation">
+      <div class="card-title-row">
+        <h2>Predicted Outcome</h2>
+        <span class="purpose-badge">Block B</span>
+      </div>
+      <p class="purpose-copy">This block shows the final simulated score and where improvements came from.</p>
+
+      <div class="result-grid">
+        <div>
+          <span class="k">Predicted Hiring Score</span>
+          <strong>{{ simulation.predicted?.hiringScore }}%</strong>
+        </div>
+        <div>
+          <span class="k">Predicted Job Match</span>
+          <strong>{{ simulation.predicted?.jobMatch }}%</strong>
+        </div>
+        <div>
+          <span class="k">Hiring Score Improvement</span>
+          <strong>+{{ simulation.improvements?.hiringScore }}%</strong>
+        </div>
+        <div>
+          <span class="k">Job Match Improvement</span>
+          <strong>+{{ simulation.improvements?.jobMatch }}%</strong>
+        </div>
+      </div>
+
+      <h3>Impact Breakdown</h3>
+      <ul>
+        <li>Skill Impact: {{ simulation.improvements?.skillImpact }} points</li>
+        <li>Project Impact: {{ simulation.improvements?.projectImpact }} points</li>
+        <li>Synergy Boost: {{ simulation.improvements?.synergyBoost }} points</li>
+      </ul>
+
+      <div class="equation-card">
+        <h4>How this result is computed</h4>
+        <p>
+          Predicted Hiring Score = Baseline Hiring Score + Skill Impact + Project Impact + Synergy Boost
+        </p>
+        <p>
+          Predicted Job Match = Baseline Job Match + weighted scenario improvements
+        </p>
+      </div>
+    </article>
+
+    <article class="sim-card explainer">
+      <div class="card-title-row">
+        <h2>Score Source Map</h2>
+        <span class="purpose-badge">Block C</span>
+      </div>
+      <p class="purpose-copy">Clear mapping of what data feeds each score.</p>
+
+      <div class="source-grid">
+        <div class="source-item">
+          <h4>Baseline Scores</h4>
+          <p>
+            You set these manually from your current profile/dashboard standing.
+            Current values: Hiring {{ baselineHiringScore }}%, Job Match {{ baselineJobMatch }}%.
+          </p>
+        </div>
+
+        <div class="source-item">
+          <h4>Skill Contribution</h4>
+          <p>
+            Skills entered: {{ skills.length }}.
+            Each skill increases readiness and raises the projected hiring score.
+          </p>
+        </div>
+
+        <div class="source-item">
+          <h4>Project Contribution</h4>
+          <p>
+            Valid projects: {{ validProjects.length }}.
+            Average impact: {{ averageProjectImpact }}.
+            Average duration: {{ averageProjectDuration }} week(s).
+          </p>
+        </div>
+
+        <div class="source-item">
+          <h4>Synergy Boost</h4>
+          <p>
+            Extra uplift appears when skills and projects are both present,
+            representing stronger real-world proof of capability.
+          </p>
+        </div>
+      </div>
+
+      <p class="hint strong">
+        After you click "Run Scenario Simulation", the backend simulator returns predicted scores and a breakdown.
+        This page displays that response directly.
+      </p>
+    </article>
+  </div>
+</section>
