@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../shared/services/api.service';
+import { IntegrationsService, ProviderName } from '../../shared/services/integrations.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
@@ -44,6 +45,32 @@ export interface IntegrationAnalyticsCard {
   successRate: number;
   syncCount: number;
   lastSyncedAt: string;
+}
+
+interface IntegrationInsightProvider {
+  provider: ProviderName | string;
+  profileScore: number;
+  activityScore: number;
+  confidence: number;
+  inferredSkills: string[];
+  normalized?: {
+    profile?: {
+      username?: string;
+      name?: string;
+      ranking?: number;
+      reputation?: number;
+      solvedProblems?: number;
+    };
+    activity?: {
+      easy?: number;
+      medium?: number;
+      hard?: number;
+      profileCompleteness?: number;
+      accountTrust?: number;
+      accountActivityProxy?: number;
+    };
+  };
+  syncedAt?: string | null;
 }
 
 @Component({
@@ -92,6 +119,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   explainabilityBreakdown: any = null;
   integrationScore = 0;
   integrationAnalyticsCards: IntegrationAnalyticsCard[] = [];
+  integrationInsightsByProvider: Record<string, IntegrationInsightProvider> = {};
   tenantOrgName = '';
   tenantTeamName = '';
   tenantTeamAnalytics: { totalMembers: number; averageReadinessScore: number } | null = null;
@@ -115,7 +143,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly apiService:           ApiService,
     private readonly careerProfileService: CareerProfileService,
     private readonly cdr:                  ChangeDetectorRef,
-    private readonly tenantContext:        TenantContextService
+    private readonly tenantContext:        TenantContextService,
+    private readonly integrationsService:  IntegrationsService
   ) {}
 
   ngOnInit() {
@@ -215,6 +244,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.loadActivityAndLanguage();
     this.loadIntegrationAnalytics();
+    this.loadIntegrationInsights();
   }
 
   fetchAiAnalysis(username: string) {
@@ -398,6 +428,34 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  loadIntegrationInsights(): void {
+    this.integrationsService.getInsights().subscribe({
+      next: (payload) => {
+        const providers = Array.isArray(payload?.providers) ? payload.providers : [];
+        const mapped: Record<string, IntegrationInsightProvider> = {};
+        providers.forEach((provider) => {
+          const key = String(provider?.provider || '').toLowerCase();
+          if (!key) return;
+          mapped[key] = {
+            provider: provider.provider,
+            profileScore: Number(provider.profileScore || 0),
+            activityScore: Number(provider.activityScore || 0),
+            confidence: Number(provider.confidence || 0),
+            inferredSkills: Array.isArray(provider.inferredSkills) ? provider.inferredSkills : [],
+            normalized: provider.normalized || {},
+            syncedAt: provider.syncedAt || null
+          };
+        });
+        this.integrationInsightsByProvider = mapped;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.integrationInsightsByProvider = {};
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   providerName(provider: string): string {
     const map: Record<string, string> = {
       github: 'GitHub',
@@ -406,6 +464,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       kaggle: 'Kaggle'
     };
     return map[String(provider || '').toLowerCase()] || provider;
+  }
+
+  integrationInsight(provider: string): IntegrationInsightProvider | null {
+    const key = String(provider || '').toLowerCase();
+    return this.integrationInsightsByProvider[key] || null;
   }
 
   /* ── Charts ── */
@@ -514,6 +577,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get dashboardScoreLine(): string {
     return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)} | Integration Score: ${Math.round(this.integrationScore)}`;
+  }
+
+  formatIntegrationDate(value: string | null): string {
+    if (!value) return 'Not synced yet';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not synced yet';
+
+    const diffMs = Date.now() - date.getTime();
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return 'Just now';
+    if (min < 60) return `${min} min ago`;
+    const hrs = Math.floor(min / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   private formatLastAnalyzed(value: string | null): string {

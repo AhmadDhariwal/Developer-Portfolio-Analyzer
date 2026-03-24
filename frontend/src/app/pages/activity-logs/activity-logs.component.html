@@ -25,6 +25,8 @@
     </div>
   </div>
 
+  <div class="status" *ngIf="statusMessage">{{ statusMessage }}</div>
+
   <div class="content-grid">
     <div class="card table-card">
       <div class="table-head">
@@ -91,6 +93,7 @@
       <div class="detail-head">
         <strong>{{ log.action }}</strong>
         <span>{{ log.timestamp | date:'medium' }}</span>
+        <button class="ghost" (click)="deleteLog(log)">Delete</button>
       </div>
 
       <div class="meta">

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../shared/services/api.service';
 import { TenantContextService } from '../../shared/services/tenant-context.service';
 
@@ -59,11 +60,14 @@ export class ActivityLogsComponent implements OnInit {
   totalPages = 1;
   total = 0;
   loading = false;
+  statusMessage = '';
 
   actor = '';
   action = '';
   from = '';
   to = '';
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private readonly apiService: ApiService,
@@ -72,7 +76,18 @@ export class ActivityLogsComponent implements OnInit {
 
   ngOnInit(): void {
     this.ensureDefaultDateRange();
+    const ctx = this.tenantContext.snapshot;
+    this.selectedOrganizationId = ctx.organizationId || '';
     this.loadOrganizations();
+
+    this.tenantContext.state$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        if (state.organizationId && state.organizationId !== this.selectedOrganizationId) {
+          this.selectedOrganizationId = state.organizationId;
+          this.fetchLogs(1);
+        }
+      });
   }
 
   private ensureDefaultDateRange(): void {
@@ -109,6 +124,7 @@ export class ActivityLogsComponent implements OnInit {
   fetchLogs(page = this.page): void {
     this.ensureDefaultDateRange();
     this.loading = true;
+    this.cdr.markForCheck();
     this.page = page;
 
     const params: {
@@ -135,7 +151,9 @@ export class ActivityLogsComponent implements OnInit {
       params.to = this.toEndOfDayIso(this.to);
     }
 
-    this.apiService.getAuditLogs(params).subscribe({
+    this.apiService.getAuditLogs(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.logs = Array.isArray(res?.logs) ? res.logs : [];
         this.total = Number(res?.total || 0);
@@ -143,30 +161,46 @@ export class ActivityLogsComponent implements OnInit {
         this.actorOptions = Array.isArray(res?.actorOptions) ? res.actorOptions : [];
         this.selectedLog = this.logs[0] || null;
         this.loading = false;
+        this.cdr.markForCheck();
+        this.statusMessage = '';
       },
       error: () => {
         this.logs = [];
         this.actorOptions = [];
         this.selectedLog = null;
         this.loading = false;
+        this.cdr.markForCheck();
+        this.statusMessage = 'Failed to load activity logs.';
       }
     });
   }
 
   loadOrganizations(): void {
-    this.apiService.getOrganizations().subscribe({
+    this.apiService.getOrganizations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.ensureDefaultDateRange();
         this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+        if (!this.selectedOrganizationId && this.organizations.length > 0) {
+          this.selectedOrganizationId = this.organizations[0]._id;
+          this.tenantContext.setOrganization({
+            id: this.organizations[0]._id,
+            name: this.organizations[0].name,
+            myRole: this.organizations[0].myRole
+          });
+        }
         const savedOrgId = this.tenantContext.snapshot.organizationId;
         if (savedOrgId && this.organizations.some((org) => org._id === savedOrgId)) {
           this.selectedOrganizationId = savedOrgId;
         }
+        this.cdr.markForCheck();
         this.fetchLogs();
       },
       error: () => {
         this.ensureDefaultDateRange();
         this.organizations = [];
+        this.cdr.markForCheck();
         this.fetchLogs();
       }
     });
@@ -193,6 +227,33 @@ export class ActivityLogsComponent implements OnInit {
 
   openDetail(log: AuditLogItem): void {
     this.selectedLog = log;
+  }
+
+  deleteLog(log: AuditLogItem): void {
+    if (!log?._id) return;
+    const confirmed = globalThis.confirm('Delete this activity log?');
+    if (!confirmed) return;
+
+    this.apiService.deleteAuditLog(log._id, {
+      organizationId: this.selectedOrganizationId || undefined
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+      next: () => {
+        this.logs = this.logs.filter((item) => item._id !== log._id);
+        if (this.selectedLog?._id === log._id) {
+          this.selectedLog = this.logs[0] || null;
+        }
+        this.cdr.markForCheck();
+        if (this.logs.length === 0 && this.page > 1) {
+          this.fetchLogs(this.page - 1);
+        }
+      },
+      error: () => {
+        this.statusMessage = 'Failed to delete log.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   fmtActor(actor: AuditActor | null): string {

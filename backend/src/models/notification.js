@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['profile_update', 'resume_upload', 'github_update', 'low_score', 'career_update', 'system']
+    enum: ['profile_update', 'resume_upload', 'github_update', 'low_score', 'career_update', 'system', 'info', 'warning', 'success', 'error']
   },
   title: {
     type: String,

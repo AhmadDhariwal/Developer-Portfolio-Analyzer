@@ -21,6 +21,24 @@ export interface IntegrationInsightsResponse {
     profileScore: number;
     activityScore: number;
     confidence: number;
+    inferredSkills?: string[];
+    normalized?: {
+      profile?: {
+        username?: string;
+        name?: string;
+        ranking?: number;
+        reputation?: number;
+        solvedProblems?: number;
+      };
+      activity?: {
+        easy?: number;
+        medium?: number;
+        hard?: number;
+        profileCompleteness?: number;
+        accountTrust?: number;
+        accountActivityProxy?: number;
+      };
+    };
     syncedAt?: string;
   }>;
   mergedSkills: string[];

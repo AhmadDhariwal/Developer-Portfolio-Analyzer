@@ -22,9 +22,9 @@ export class Sidebar {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`
     },
     {
-      label: 'Activity Logs',
-      route: '/app/activity-logs',
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`
+      label: 'Notifications',
+      route: '/app/notifications',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`
     },
     {
       label: 'GitHub Analyzer',
@@ -86,7 +86,9 @@ export class Sidebar {
 
   get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
     const role = this.tenantContext.snapshot.myRole;
-    if (role === 'admin') {
+    const storedUser = this.authService.getCurrentUser();
+    const isAdmin = role === 'admin' || storedUser?.role === 'admin';
+    if (isAdmin) {
       return this.navItems;
     }
     return this.navItems.filter((item) => item.route !== '/app/settings');

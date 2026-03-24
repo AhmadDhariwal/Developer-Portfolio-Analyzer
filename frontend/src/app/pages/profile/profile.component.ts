@@ -124,6 +124,11 @@ export class ProfileComponent implements OnInit {
 
   // ── Save profile + notifications ───────────────────────────────────────
   saveChanges(): void {
+    if (!this.hasProfileChanges()) {
+      this.errorMessage = 'No changes detected to save.';
+      this.successMessage = '';
+      return;
+    }
     this.isSaving       = true;
     this.successMessage = '';
     this.errorMessage   = '';
@@ -154,6 +159,25 @@ export class ProfileComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private hasProfileChanges(): boolean {
+    const current = this.profile;
+    const snapshot = this.snapshot;
+    const fields: Array<keyof UserProfile> = [
+      'name',
+      'githubUsername',
+      'jobTitle',
+      'location',
+      'bio',
+      'website',
+      'twitter',
+      'linkedin'
+    ];
+
+    const fieldChanged = fields.some((key) => current[key] !== snapshot[key]);
+    const notificationsChanged = JSON.stringify(current.notifications || {}) !== JSON.stringify(snapshot.notifications || {});
+    return fieldChanged || notificationsChanged;
   }
   // Defensive normalization: always return object with expected keys
   normalizeProfile(data: any): UserProfile {

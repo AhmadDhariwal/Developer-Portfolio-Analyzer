@@ -772,6 +772,54 @@
     color: #94a3b8;
     font-size: 0.72rem;
   }
+
+  .wide {
+    grid-column: span 2;
+  }
+}
+
+.integration-details {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  color: #cbd5f5;
+  font-weight: 600;
+}
+
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  background: rgba(99, 102, 241, 0.12);
+  color: #f8fafc;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+
+  span {
+    color: #94a3b8;
+    font-size: 0.72rem;
+  }
 }
 
 

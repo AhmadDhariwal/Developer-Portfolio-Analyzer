@@ -132,4 +132,63 @@ const getAuditLogs = async (req, res) => {
   }
 };
 
-module.exports = { getAuditLogs };
+const deleteAuditLog = async (req, res) => {
+  try {
+    const log = await AuditLog.findById(req.params.id).lean();
+    if (!log) {
+      return res.status(404).json({ message: 'Audit log not found.' });
+    }
+
+    const organizationId = String(req.query.organizationId || '').trim();
+    const requesterId = String(req.user._id);
+    const actorId = log.actor ? String(log.actor) : '';
+
+    if (!organizationId) {
+      if (!actorId || actorId !== requesterId) {
+        return res.status(403).json({ message: 'You can only delete your own activity logs.' });
+      }
+    } else {
+      if (!mongoose.Types.ObjectId.isValid(organizationId)) {
+        return res.status(400).json({ message: 'organizationId is invalid.' });
+      }
+
+      const myRole = await resolveOrganizationRole(req.user._id, organizationId);
+      if (!myRole) {
+        return res.status(403).json({ message: 'You do not have access to this organization logs.' });
+      }
+
+      if (myRole === 'member') {
+        if (!actorId || actorId !== requesterId) {
+          return res.status(403).json({ message: 'You can only delete your own activity logs.' });
+        }
+      } else {
+        if (!actorId) {
+          if (myRole !== 'admin') {
+            return res.status(403).json({ message: 'Only admins can delete system activity logs.' });
+          }
+        }
+        const membership = await Membership.findOne({
+          organizationId,
+          userId: actorId,
+          status: 'active'
+        }).select('role').lean();
+
+        if (!membership && actorId) {
+          return res.status(403).json({ message: 'Actor does not belong to this organization.' });
+        }
+
+        if (myRole === 'manager' && membership.role === 'admin' && actorId !== requesterId) {
+          return res.status(403).json({ message: 'Managers cannot delete admin activity logs.' });
+        }
+      }
+    }
+
+    await AuditLog.deleteOne({ _id: req.params.id });
+    return res.json({ message: 'Audit log deleted.' });
+  } catch (error) {
+    console.error('Delete audit log error:', error.message);
+    return res.status(500).json({ message: 'Failed to delete audit log.' });
+  }
+};
+
+module.exports = { getAuditLogs, deleteAuditLog };

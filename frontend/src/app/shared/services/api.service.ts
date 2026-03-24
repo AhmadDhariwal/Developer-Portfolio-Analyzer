@@ -132,6 +132,14 @@ export class ApiService {
     return this.http.get(endpoint);
   }
 
+  deleteAuditLog(id: string, params: { organizationId?: string } = {}): Observable<any> {
+    const query = new URLSearchParams();
+    if (params.organizationId) query.set('organizationId', params.organizationId);
+    const suffix = query.toString();
+    const endpoint = suffix ? `${this.baseUrl}/audit-logs/${id}?${suffix}` : `${this.baseUrl}/audit-logs/${id}`;
+    return this.http.delete(endpoint);
+  }
+
   /* ── Workflow Engine ── */
   startWorkflow(payload: {
     pipeline: 'github_only' | 'resume_only' | 'combined' | 'deep_scan';
@@ -156,11 +164,12 @@ export class ApiService {
   }
 
   /* ── AI Versions ── */
-  getAiVersions(options: { source?: string; includeOutput?: boolean; limit?: number } = {}): Observable<any> {
+  getAiVersions(options: { source?: string; includeOutput?: boolean; limit?: number; page?: number } = {}): Observable<any> {
     const query = new URLSearchParams();
     if (options.source) query.set('source', options.source);
     if (options.includeOutput) query.set('includeOutput', 'true');
     if (options.limit) query.set('limit', String(options.limit));
+    if (options.page) query.set('page', String(options.page));
     const suffix = query.toString();
     const endpoint = suffix ? `${this.baseUrl}/ai-versions?${suffix}` : `${this.baseUrl}/ai-versions`;
     return this.http.get(endpoint);
@@ -176,6 +185,10 @@ export class ApiService {
 
   rollbackAiVersion(id: string, source = ''): Observable<any> {
     return this.http.post(`${this.baseUrl}/ai-versions/${id}/rollback`, { source });
+  }
+
+  deleteAiVersion(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/ai-versions/${id}`);
   }
 
   /* ── Multi-Tenant Teams ── */

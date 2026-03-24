@@ -17,6 +17,7 @@ import { IntegrationsMarketplaceComponent } from './pages/integrations-marketpla
 import { ScenarioSimulatorComponent } from './pages/scenario-simulator/scenario-simulator.component';
 import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.component';
 import { SettingsPageComponent } from './settings/settings-page.component';
+import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
 import { authGuard } from './guards/auth.guard';
@@ -27,6 +28,7 @@ export const routes: Routes = [
   // Landing page (public) — default route
   { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
   { path: 'privacy', component: PrivacyPolicyComponent },
+  { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
 
   // Authentication pages (public) - only accessible when NOT logged in
@@ -52,7 +54,7 @@ export const routes: Routes = [
       { path: 'integrations',    component: IntegrationsMarketplaceComponent },
       { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
       { path: 'profile',         component: ProfileComponent },
-      { path: 'activity-logs',   component: ActivityLogsComponent },
+  { path: 'notifications', component: NotificationsComponent },
       { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },
       {
         path: 'settings',
@@ -60,7 +62,8 @@ export const routes: Routes = [
         children: [
           { path: '', component: SettingsPageComponent },
           { path: 'ai-versions', component: AiVersionsComponent },
-          { path: 'user-management', component: TeamManagementComponent }
+          { path: 'user-management', component: TeamManagementComponent },
+          { path: 'activity-logs', component: ActivityLogsComponent }
         ]
       }
     ]

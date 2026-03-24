@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { TenantContextService } from './tenant-context.service';
 
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
 const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
@@ -16,9 +17,14 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly http: HttpClient, private readonly router: Router) {
+  constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService) {
     if (this.checkToken()) {
       this.scheduleAutoLogout();
+      // Restore role from stored user on page refresh
+      const user = this.getCurrentUser();
+      if (user?.role === 'admin') {
+        this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
+      }
     }
   }
 
@@ -98,6 +104,12 @@ export class AuthService {
     };
     localStorage.setItem(CAREER_PROFILE_STORAGE_KEY, JSON.stringify(careerProfile));
     localStorage.setItem('loginExpiry', String(Date.now() + SESSION_DURATION_MS));
+    // Set role in tenant context so sidebar and guards work correctly
+    if (response.role === 'admin') {
+      this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
+    } else {
+      this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'member' });
+    }
     this.isLoggedInSubject.next(true);
     this.scheduleAutoLogout();
   }

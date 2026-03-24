@@ -37,6 +37,7 @@ const env = validateEnv();
 connectDB();
 
 const app = express();
+const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
 
 // Middleware
 app.use(helmet({
@@ -60,14 +61,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 app.use(metricsMiddleware);
-app.use((req, _res, next) => {
-    logger.info('request', {
-        requestId: req.requestId,
-        method: req.method,
-        path: req.originalUrl
+if (shouldLogRequests) {
+    app.use((req, _res, next) => {
+        logger.info('request', {
+            requestId: req.requestId,
+            method: req.method,
+            path: req.originalUrl
+        });
+        next();
     });
-    next();
-});
+}
 app.use(auditLogMiddleware);
 
 // Basic route

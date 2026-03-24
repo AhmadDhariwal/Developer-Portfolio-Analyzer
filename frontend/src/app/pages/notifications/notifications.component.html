@@ -1,0 +1,78 @@
+<div class="page">
+  <div class="page-header">
+    <h2>Notifications & Activities</h2>
+    <p>Search, filter, and manage your activity notifications.</p>
+  </div>
+
+  <div class="filters card">
+    <div class="row">
+      <input [(ngModel)]="search" placeholder="Search title or description" />
+      <input [(ngModel)]="from" type="date" title="From date" />
+      <input [(ngModel)]="to" type="date" title="To date" />
+      <select [(ngModel)]="typeFilter" title="Activity type">
+        <option *ngFor="let option of typeOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="unreadOnly" />
+        Unread only
+      </label>
+    </div>
+    <div class="row">
+      <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization">
+        <option value="">All organizations</option>
+        <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+      </select>
+      <select *ngIf="teams.length" [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team">
+        <option value="">All teams</option>
+        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+      </select>
+      <select *ngIf="canFilterRole" [(ngModel)]="roleFilter" title="Role filter">
+        <option value="">All roles</option>
+        <option value="admin">Admins</option>
+        <option value="manager">Managers</option>
+        <option value="member">Members</option>
+      </select>
+      <select *ngIf="canFilterUsers" [(ngModel)]="selectedUserId" title="User filter">
+        <option value="">All users</option>
+        <option *ngFor="let user of userOptions" [value]="user._id">{{ fmtUser(user) }}</option>
+      </select>
+      <button (click)="applyFilters()">Apply</button>
+      <button class="ghost" (click)="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <div class="status" *ngIf="statusMessage">{{ statusMessage }}</div>
+
+  <div class="card table-card">
+    <div class="table-head">
+      <strong>All Notifications</strong>
+      <span>{{ unreadCount }} unread • {{ total }} total</span>
+    </div>
+
+    <div *ngIf="loading" class="state">Loading notifications...</div>
+
+    <div class="notification-list" *ngIf="!loading && notifications.length > 0">
+      <div class="notification-item" *ngFor="let notification of notifications" [class.unread]="!notification.isRead">
+        <button type="button" class="notification-main" (click)="markAsRead(notification)">
+          <div class="notification-title">{{ notification.title }}</div>
+          <div class="notification-message">{{ notification.message }}</div>
+          <div class="notification-meta">
+            <span>{{ formatTime(notification.createdAt) }}</span>
+            <span class="pill" [class.unread-pill]="!notification.isRead">{{ notification.isRead ? 'Read' : 'Unread' }}</span>
+          </div>
+        </button>
+        <button class="ghost" (click)="deleteNotification(notification)">Delete</button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && notifications.length === 0" class="state">
+      No notifications found for the selected filters.
+    </div>
+
+    <div class="pager">
+      <button [disabled]="page <= 1" (click)="fetchNotifications(page - 1)">Previous</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="fetchNotifications(page + 1)">Next</button>
+    </div>
+  </div>
+</div>

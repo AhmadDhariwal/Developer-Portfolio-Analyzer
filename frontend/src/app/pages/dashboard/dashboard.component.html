@@ -351,9 +351,9 @@
       </div>
     </div>
     <div class="integration-rows">
-      <div class="integration-row" *ngFor="let card of integrationAnalyticsCards">
+      <div class="integration-row" *ngFor="let card of integrationAnalyticsCards; let index = index">
         <div class="integration-row__top">
-          <span class="provider-name">{{ providerName(card.provider) }}</span>
+          <span class="provider-name">#{{ index + 1 }} {{ providerName(card.provider) }}</span>
           <span class="provider-delta" [class.negative]="card.trendDelta < 0">{{ card.trendDelta >= 0 ? '+' : '' }}{{ card.trendDelta }} trend</span>
         </div>
         <div class="integration-metrics">
@@ -361,6 +361,39 @@
           <span>Profile {{ card.profileScore }}%</span>
           <span>Confidence {{ card.confidence }}%</span>
           <span>Success {{ card.successRate }}%</span>
+          <span>Syncs {{ card.syncCount }}</span>
+          <span class="wide">Last synced {{ formatIntegrationDate(card.lastSyncedAt) }}</span>
+        </div>
+
+        <div class="integration-details" *ngIf="integrationInsight(card.provider) as insight">
+          <div class="detail-section" *ngIf="(insight.inferredSkills || []).length">
+            <span class="detail-label">Inferred skills</span>
+            <div class="skill-chips">
+              <span class="chip" *ngFor="let skill of insight.inferredSkills">{{ skill }}</span>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="card.provider === 'leetcode' && insight.normalized">
+            <span class="detail-label">LeetCode stats</span>
+            <div class="detail-grid">
+              <span>Ranking {{ insight.normalized.profile?.ranking || 0 }}</span>
+              <span>Solved {{ insight.normalized.profile?.solvedProblems || 0 }}</span>
+              <span>Easy {{ insight.normalized.activity?.easy || 0 }}</span>
+              <span>Medium {{ insight.normalized.activity?.medium || 0 }}</span>
+              <span>Hard {{ insight.normalized.activity?.hard || 0 }}</span>
+              <span>Reputation {{ insight.normalized.profile?.reputation || 0 }}</span>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="card.provider === 'linkedin' && insight.normalized">
+            <span class="detail-label">LinkedIn signals</span>
+            <div class="detail-grid">
+              <span>Name {{ insight.normalized.profile?.name || '—' }}</span>
+              <span>Profile completeness {{ insight.normalized.activity?.profileCompleteness || 0 }}%</span>
+              <span>Account trust {{ insight.normalized.activity?.accountTrust || 0 }}%</span>
+              <span>Activity proxy {{ insight.normalized.activity?.accountActivityProxy || 0 }}%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

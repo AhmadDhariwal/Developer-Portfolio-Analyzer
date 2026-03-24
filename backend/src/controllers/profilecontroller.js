@@ -154,45 +154,86 @@ const updateProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    if (name        !== undefined) user.name        = name;
+    let hasChanges = false;
+
+    if (name !== undefined && name !== user.name) {
+      user.name = name;
+      hasChanges = true;
+    }
     if (githubUsername !== undefined) {
       const normalizedGithub = String(githubUsername || '').trim();
       if (!normalizedGithub) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
-      user.githubUsername = normalizedGithub;
-      user.activeGithubUsername = normalizedGithub;
-      user.lastSearchedGithub = '';
+      if (normalizedGithub !== user.githubUsername) {
+        user.githubUsername = normalizedGithub;
+        user.activeGithubUsername = normalizedGithub;
+        user.lastSearchedGithub = '';
+        hasChanges = true;
+      }
     }
 
     if (defaultResumeFileId !== undefined) {
       if (!defaultResumeFileId) {
-        user.defaultResumeFileId = null;
-        user.activeResumeFileId = null;
+        if (user.defaultResumeFileId || user.activeResumeFileId) {
+          user.defaultResumeFileId = null;
+          user.activeResumeFileId = null;
+          hasChanges = true;
+        }
       } else {
         const resumeFile = await ResumeFile.findOne({ _id: defaultResumeFileId, userId: user._id });
         if (!resumeFile) {
           return res.status(400).json({ message: 'Selected default resume file is invalid.' });
         }
-        user.defaultResumeFileId = resumeFile._id;
-        user.activeResumeFileId = resumeFile._id;
+        if (String(user.defaultResumeFileId || '') !== String(resumeFile._id)) {
+          user.defaultResumeFileId = resumeFile._id;
+          user.activeResumeFileId = resumeFile._id;
+          hasChanges = true;
+        }
       }
     }
 
-    if (jobTitle    !== undefined) user.jobTitle    = jobTitle;
-    if (location    !== undefined) user.location    = location;
-    if (bio         !== undefined) user.bio         = bio;
-    if (website     !== undefined) user.website     = website;
-    if (twitter     !== undefined) user.twitter     = twitter;
-    if (linkedin    !== undefined) user.linkedin    = linkedin;
+    if (jobTitle !== undefined && jobTitle !== user.jobTitle) {
+      user.jobTitle = jobTitle;
+      hasChanges = true;
+    }
+    if (location !== undefined && location !== user.location) {
+      user.location = location;
+      hasChanges = true;
+    }
+    if (bio !== undefined && bio !== user.bio) {
+      user.bio = bio;
+      hasChanges = true;
+    }
+    if (website !== undefined && website !== user.website) {
+      user.website = website;
+      hasChanges = true;
+    }
+    if (twitter !== undefined && twitter !== user.twitter) {
+      user.twitter = twitter;
+      hasChanges = true;
+    }
+    if (linkedin !== undefined && linkedin !== user.linkedin) {
+      user.linkedin = linkedin;
+      hasChanges = true;
+    }
     if (notifications !== undefined) {
       // Merge only valid notification keys, fallback to defaults if missing
-      user.notifications = {
+      const nextNotifications = {
         weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
         skillTrendAlerts:  notifications.skillTrendAlerts  ?? user.notifications.skillTrendAlerts  ?? true,
         newRecommendations:notifications.newRecommendations?? user.notifications.newRecommendations?? false,
         jobMatchAlerts:    notifications.jobMatchAlerts    ?? user.notifications.jobMatchAlerts    ?? true
       };
+
+      if (JSON.stringify(nextNotifications) !== JSON.stringify(user.notifications || {})) {
+        user.notifications = nextNotifications;
+        hasChanges = true;
+      }
+    }
+
+    if (!hasChanges) {
+      return res.json({ message: 'No changes detected.' });
     }
 
     const updated = await user.save();
@@ -201,9 +242,7 @@ const updateProfile = async (req, res) => {
       userId: updated._id,
       type: 'profile_update',
       title: 'Profile Updated',
-      message: 'Your profile settings were updated successfully.',
-      dedupeKey: `profile_update:${updated._id}`,
-      dedupeWindowHours: 1
+      message: 'Your profile settings were updated successfully.'
     });
 
     const [defaultResume, activeResume] = await Promise.all([

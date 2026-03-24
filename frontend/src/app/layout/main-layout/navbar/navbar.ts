@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -30,6 +30,9 @@ export class Navbar implements OnInit {
   @Input() sidebarOpen: boolean = true;
   @Output() sidebarToggle = new EventEmitter<void>();
 
+  @ViewChild('notificationButton') notificationButton?: ElementRef<HTMLElement>;
+  @ViewChild('notificationDropdown') notificationDropdown?: ElementRef<HTMLElement>;
+
   isLoggedIn$: Observable<boolean>;
   userName = 'Developer';
   userHandle = 'developer';
@@ -38,6 +41,7 @@ export class Navbar implements OnInit {
   showNotifications = false;
   unreadNotifications = 0;
   notifications: AppNotification[] = [];
+  totalNotifications = 0;
 
   searchQuery = '';
   suggestions: SearchSuggestion[] = [];
@@ -63,7 +67,7 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'Recommendations', sublabel: 'Personalized career advice', route: '/app/recommendations' },
     { type: 'page', label: 'Integrations', sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle', route: '/app/integrations' },
     { type: 'page', label: 'Scenario Simulator', sublabel: 'What-if score and job match simulator', route: '/app/scenario-simulator' },
-    { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/activity-logs' },
+  { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/settings/activity-logs' },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
     { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },
     { type: 'page', label: 'User Management', sublabel: 'Organizations and teams', route: '/app/settings/user-management' },
@@ -113,10 +117,13 @@ export class Navbar implements OnInit {
         if (user.githubUsername) {
           this.loadGithubRepos(user.githubUsername);
         }
-        this.loadNotifications();
-        this.connectNotificationStream();
-        this.loadOrganizations();
       } catch { /* fallback */ }
+    }
+
+    if (this.authService.isLoggedIn()) {
+      this.loadNotifications();
+      this.connectNotificationStream();
+      this.loadOrganizations();
     }
 
     this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
@@ -133,12 +140,27 @@ export class Navbar implements OnInit {
     this.apiService.getOrganizations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+        if (!this.selectedOrganizationId && this.organizations.length > 0) {
+          const first = this.organizations[0];
+          this.selectedOrganizationId = first._id;
+          this.selectedRole = first.myRole;
+          this.tenantContext.setOrganization({
+            id: first._id,
+            name: first.name,
+            myRole: first.myRole
+          });
+        }
+
         if (this.selectedOrganizationId && !this.organizations.some((org) => org._id === this.selectedOrganizationId)) {
           this.selectedOrganizationId = '';
           this.selectedRole = '';
           this.selectedTeamId = '';
           this.teams = [];
           this.tenantContext.clearAll();
+        }
+
+        if (this.selectedOrganizationId) {
+          this.loadTeams(this.selectedOrganizationId);
         }
       },
       error: () => {
@@ -226,16 +248,18 @@ export class Navbar implements OnInit {
   }
 
   loadNotifications(): void {
-    this.notificationService.getNotifications(20)
+    this.notificationService.getNotifications({ limit: 5, page: 1 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: NotificationResponse) => {
           this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
           this.unreadNotifications = Number(res?.unreadCount || 0);
+          this.totalNotifications = Number(res?.total || this.notifications.length || 0);
         },
         error: () => {
           this.notifications = [];
           this.unreadNotifications = 0;
+          this.totalNotifications = 0;
         }
       });
   }
@@ -334,6 +358,10 @@ export class Navbar implements OnInit {
     }
   }
 
+  closeNotifications(): void {
+    this.showNotifications = false;
+  }
+
   markNotificationRead(notification: AppNotification): void {
     if (notification.isRead) return;
     this.notificationService.markAsRead(notification._id)
@@ -342,6 +370,7 @@ export class Navbar implements OnInit {
         next: () => this.loadNotifications(),
         error: () => null
       });
+    this.closeNotifications();
   }
 
   markAllNotificationsRead(): void {
@@ -351,6 +380,7 @@ export class Navbar implements OnInit {
         next: () => this.loadNotifications(),
         error: () => null
       });
+    this.closeNotifications();
   }
 
   formatNotificationTime(value: string): string {
@@ -373,5 +403,22 @@ export class Navbar implements OnInit {
     this.authService.logout();
     this.showUserMenu = false;
     this.router.navigate(['/']);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.showNotifications) return;
+    const target = event.target as Node | null;
+    if (!target) {
+      this.closeNotifications();
+      return;
+    }
+
+    const clickedButton = this.notificationButton?.nativeElement.contains(target) ?? false;
+    const clickedDropdown = this.notificationDropdown?.nativeElement.contains(target) ?? false;
+
+    if (!clickedButton && !clickedDropdown) {
+      this.closeNotifications();
+    }
   }
 }

@@ -56,8 +56,9 @@
 
     <div class="team-switcher" *ngIf="organizations.length > 0">
       <div class="switcher-group">
-        <label>Organization</label>
+        <label for="organization-switch">Organization</label>
         <select
+          id="organization-switch"
           class="switch-select"
           title="Select organization context"
           [ngModel]="selectedOrganizationId"
@@ -68,8 +69,9 @@
       </div>
 
       <div class="switcher-group">
-        <label>Team</label>
+        <label for="team-switch">Team</label>
         <select
+          id="team-switch"
           class="switch-select"
           title="Select team context"
           [ngModel]="selectedTeamId"
@@ -86,7 +88,7 @@
   <!-- Right: actions + avatar -->
   <div class="navbar-right">
     <!-- Notification Bell -->
-    <button class="icon-btn" title="Notifications" aria-label="Notifications" (click)="toggleNotifications()">
+  <button #notificationButton class="icon-btn" title="Notifications" aria-label="Notifications" (click)="toggleNotifications()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -95,7 +97,7 @@
       <span class="notif-count" *ngIf="unreadNotifications > 0">{{ unreadNotifications > 9 ? '9+' : unreadNotifications }}</span>
     </button>
 
-    <div class="notifications-dropdown" *ngIf="showNotifications">
+  <div #notificationDropdown class="notifications-dropdown" *ngIf="showNotifications">
       <div class="notif-header">
         <h4>Notifications</h4>
         <button type="button" class="mark-all-btn" (click)="markAllNotificationsRead()" [disabled]="unreadNotifications === 0">
@@ -115,6 +117,14 @@
           <div class="notif-item__time">{{ formatNotificationTime(n.createdAt) }}</div>
         </button>
       </div>
+
+      <a
+        *ngIf="totalNotifications > notifications.length"
+        class="view-all-btn"
+        routerLink="/notifications"
+        (click)="closeNotifications()">
+        View All Activities
+      </a>
 
       <ng-template #noNotif>
         <div class="notif-empty">No notifications yet.</div>
