@@ -15,6 +15,8 @@ export class Sidebar {
   @Input() isOpen: boolean = true;
   @Output() collapse = new EventEmitter<void>();
 
+  openGroups = new Set<string>(['Interviews & Reports']);
+
   navItems = [
     {
       label: 'Dashboard',
@@ -78,6 +80,41 @@ export class Sidebar {
     }
   ];
 
+  navGroups = [
+    {
+      label: 'Interviews & Reports',
+      route: '/app/interviews-reports',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 8h10"></path><path d="M7 12h6"></path></svg>`,
+      items: [
+        {
+          label: 'Overview',
+          route: '/app/interviews-reports',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"></path><path d="M8 10h8"></path><path d="M8 14h6"></path></svg>`
+        },
+        {
+          label: 'Public Portfolio',
+          route: '/app/portfolio',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18v16H3z"></path><path d="M7 8h10"></path><path d="M7 12h6"></path></svg>`
+        },
+        {
+          label: 'Weekly Reports',
+          route: '/app/weekly-reports',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 8h10"></path><path d="M7 12h6"></path><path d="M7 16h8"></path></svg>`
+        },
+        {
+          label: 'Interview Prep',
+          route: '/app/interview-prep',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4z"></path><path d="M8 20h8"></path><path d="M12 16v4"></path></svg>`
+        },
+        {
+          label: 'Career Sprint',
+          route: '/app/career-sprint',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"></path><path d="M12 3v18"></path><path d="M7 7h10v10H7z"></path></svg>`
+        }
+      ]
+    }
+  ];
+
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
@@ -92,6 +129,22 @@ export class Sidebar {
       return this.navItems;
     }
     return this.navItems.filter((item) => item.route !== '/app/settings');
+  }
+
+  get visibleNavGroups(): Array<{ label: string; route: string; icon: string; items: Array<{ label: string; route: string; icon: string }> }> {
+    return this.navGroups;
+  }
+
+  toggleGroup(label: string): void {
+    if (this.openGroups.has(label)) {
+      this.openGroups.delete(label);
+    } else {
+      this.openGroups.add(label);
+    }
+  }
+
+  isGroupOpen(label: string): boolean {
+    return this.openGroups.has(label);
   }
 
   logout() {

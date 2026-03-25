@@ -1,0 +1,92 @@
+<div class="portfolio-settings">
+  <div class="page-header">
+    <div>
+      <h2>Public Portfolio Settings</h2>
+      <p>Customize your shareable portfolio page and track analytics.</p>
+    </div>
+    <button class="primary-btn" (click)="saveProfile()" [disabled]="isSaving || !profile">
+      {{ isSaving ? 'Saving...' : 'Save Changes' }}
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Loading profile settings...</div>
+  <div *ngIf="message" class="alert-banner">{{ message }}</div>
+
+  <ng-container *ngIf="!isLoading && profile">
+    <section class="card">
+      <h3>Shareable Link</h3>
+      <div class="link-row">
+  <input class="share-input" [value]="shareUrl" readonly title="Shareable link" />
+        <span class="status" [class.active]="profile.isPublic">{{ profile.isPublic ? 'Public' : 'Private' }}</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" [(ngModel)]="profile.isPublic" />
+        <span>Enable public portfolio</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h3>Portfolio Content</h3>
+      <div class="form-grid">
+        <label>
+          Headline
+          <input [(ngModel)]="profile.headline" placeholder="e.g. Full Stack Developer" />
+        </label>
+        <label>
+          Slug
+          <input [(ngModel)]="profile.slug" placeholder="your-name" />
+        </label>
+        <label class="full">
+          Summary
+          <textarea [(ngModel)]="profile.summary" rows="4" placeholder="Share your story..."></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>SEO Optimization</h3>
+      <div class="form-grid">
+        <label>
+          SEO Title
+          <input [(ngModel)]="profile.seoTitle" placeholder="Portfolio | Name" />
+        </label>
+        <label class="full">
+          SEO Description
+          <textarea [(ngModel)]="profile.seoDescription" rows="3" placeholder="Short search snippet"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h3>Skill Scores</h3>
+        <button class="secondary-btn" (click)="addSkill()">Add Skill</button>
+      </div>
+      <div class="skills-list">
+        <div class="skill-row" *ngFor="let skill of profile.skills; let i = index">
+          <input [(ngModel)]="skill.name" placeholder="Skill" />
+          <input type="number" min="0" max="100" [(ngModel)]="skill.score" title="Skill score" />
+          <button class="ghost-btn" (click)="removeSkill(i)">Remove</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Analytics</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total views</span>
+          <strong>{{ analytics?.totalViews || profile.analytics.totalViews }}</strong>
+        </div>
+        <div class="stat-card">
+          <span>Unique viewers</span>
+          <strong>{{ analytics?.uniqueViews || profile.analytics.uniqueViews }}</strong>
+        </div>
+        <div class="stat-card">
+          <span>Last viewed</span>
+          <strong>{{ analytics?.lastViewedAt || profile.analytics.lastViewedAt || 'N/A' }}</strong>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</div>

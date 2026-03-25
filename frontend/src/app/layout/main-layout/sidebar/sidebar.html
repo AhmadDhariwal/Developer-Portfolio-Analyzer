@@ -22,6 +22,28 @@
           <span class="nav-label">{{ item.label }}</span>
         </a>
       </li>
+
+      <li *ngFor="let group of visibleNavGroups" class="nav-group">
+        <div class="nav-group-header">
+          <a [routerLink]="group.route" routerLinkActive="active" class="nav-link nav-group-link">
+            <span class="nav-icon" [innerHTML]="group.icon"></span>
+            <span class="nav-label">{{ group.label }}</span>
+          </a>
+          <button class="group-toggle" (click)="toggleGroup(group.label)" [attr.aria-expanded]="isGroupOpen(group.label)" title="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+        <ul class="nav-submenu" [class.collapsed]="!isGroupOpen(group.label)">
+          <li *ngFor="let item of group.items">
+            <a [routerLink]="item.route" routerLinkActive="active" class="nav-link nav-sublink">
+              <span class="nav-icon" [innerHTML]="item.icon"></span>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </li>
     </ul>
   </nav>
 

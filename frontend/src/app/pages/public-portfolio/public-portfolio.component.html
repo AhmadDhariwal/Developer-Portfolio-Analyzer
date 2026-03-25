@@ -1,0 +1,56 @@
+<div class="public-portfolio">
+  <div *ngIf="isLoading" class="loading-state">Loading portfolio...</div>
+  <div *ngIf="!isLoading && errorMessage" class="alert-banner alert-warning">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="!isLoading && profile">
+    <header class="hero">
+      <div class="hero-text">
+        <h1>{{ profile.user.name }}</h1>
+        <p class="headline">{{ profile.headline || profile.user.jobTitle }}</p>
+        <p class="meta">{{ profile.user.location }}</p>
+        <p class="summary">{{ profile.summary }}</p>
+      </div>
+      <div class="hero-card">
+        <img *ngIf="profile.user.avatar" [src]="profile.user.avatar" alt="Profile photo" class="avatar" />
+        <div class="link-row">
+          <span class="label">Shareable link</span>
+          <input class="share-input" [value]="shareUrl" readonly title="Shareable link" placeholder="Shareable link" />
+        </div>
+        <div class="social-links">
+          <a *ngIf="profile.socialLinks.linkedin" [href]="profile.socialLinks.linkedin" target="_blank" rel="noopener">LinkedIn</a>
+          <a *ngIf="profile.socialLinks.twitter" [href]="profile.socialLinks.twitter" target="_blank" rel="noopener">Twitter</a>
+          <a *ngIf="profile.socialLinks.website" [href]="profile.socialLinks.website" target="_blank" rel="noopener">Website</a>
+          <a *ngIf="profile.user.githubUsername" [href]="'https://github.com/' + profile.user.githubUsername" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>Skill Scores</h2>
+      <div class="skills-grid">
+        <div class="skill-card" *ngFor="let skill of profile.skills">
+          <div class="skill-name">{{ skill.name }}</div>
+          <div class="skill-score">{{ skill.score }}%</div>
+          <div class="skill-bar">
+            <span [style.width.%]="skill.score"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Highlighted Projects</h2>
+      <div class="projects-grid">
+        <div class="project-card" *ngFor="let project of profile.projects">
+          <h3>{{ project.title }}</h3>
+          <p>{{ project.description }}</p>
+          <div class="project-tech">
+            <span *ngFor="let tech of project.tech">{{ tech }}</span>
+          </div>
+          <a *ngIf="project.url" [href]="project.url" target="_blank" rel="noopener">View project</a>
+        </div>
+  <div *ngIf="!profile.projects.length" class="empty-state">No projects added yet.</div>
+      </div>
+    </section>
+  </ng-container>
+</div>

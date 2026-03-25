@@ -1,0 +1,69 @@
+<div class="recruiter-dashboard">
+  <div class="page-header">
+    <div>
+      <h2>Recruiter Dashboard</h2>
+      <p>Search candidates, filter by skill score, and shortlist quickly.</p>
+    </div>
+  </div>
+
+  <div class="filters card">
+    <label>
+      Search
+      <input [(ngModel)]="searchTerm" placeholder="Name, role, or GitHub" title="Search candidates" />
+    </label>
+    <label>
+      Minimum Score
+      <input type="number" min="0" max="100" [(ngModel)]="minScore" title="Minimum skill score" />
+    </label>
+    <label>
+      Skills (comma separated)
+      <input [(ngModel)]="skillFilter" placeholder="React, Node" title="Skills filter" />
+    </label>
+    <button class="primary-btn" (click)="loadCandidates()">Apply Filters</button>
+  </div>
+
+  <div class="card">
+    <div *ngIf="isLoading" class="loading-state">Loading candidates...</div>
+    <table class="candidates-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Score</th>
+          <th>Top Skills</th>
+          <th>Profile</th>
+          <th>Shortlist</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let candidate of candidates">
+          <td>
+            <div class="candidate-info">
+              <img *ngIf="candidate.avatar" [src]="candidate.avatar" class="avatar" />
+              <div>
+                <strong>{{ candidate.name }}</strong>
+                <p>{{ candidate.jobTitle }}</p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="score">{{ candidate.score }}</div>
+            <small>GitHub {{ candidate.githubScore }} · Resume {{ candidate.resumeScore }}</small>
+          </td>
+          <td>
+            <span class="skill-tag" *ngFor="let skill of candidate.skillScores">{{ skill.name }}</span>
+          </td>
+          <td>
+            <a *ngIf="candidate.publicProfileSlug" [href]="'/p/' + candidate.publicProfileSlug" target="_blank" rel="noopener">View</a>
+            <span *ngIf="!candidate.publicProfileSlug">N/A</span>
+          </td>
+          <td>
+            <button class="secondary-btn" (click)="toggleShortlist(candidate)">
+              {{ isShortlisted(candidate) ? 'Shortlisted' : 'Shortlist' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!isLoading && candidates.length === 0" class="empty-state">No candidates found.</div>
+  </div>
+</div>

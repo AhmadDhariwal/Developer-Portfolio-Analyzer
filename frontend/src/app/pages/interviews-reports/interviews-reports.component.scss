@@ -1,0 +1,44 @@
+.interviews-reports {
+  padding: var(--spacing-lg);
+  color: var(--text-primary);
+
+  .page-header {
+    margin-bottom: var(--spacing-md);
+
+    p {
+      color: var(--text-secondary);
+    }
+  }
+
+  .cards-grid {
+    display: grid;
+    gap: var(--spacing-md);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    display: grid;
+    gap: 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+    span {
+      color: var(--color-primary-light);
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text-secondary);
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+}

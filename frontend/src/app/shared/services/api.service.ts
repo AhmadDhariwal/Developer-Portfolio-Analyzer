@@ -268,4 +268,75 @@ export class ApiService {
   }): Observable<any> {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
+
+  /* ── Public Profiles ── */
+  getPublicProfile(slug: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}`);
+  }
+
+  getMyPublicProfile(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/public-profiles/me`);
+  }
+
+  updateMyPublicProfile(payload: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/public-profiles/me`, payload);
+  }
+
+  getPublicProfileAnalytics(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/public-profiles/me/analytics`);
+  }
+
+  /* ── Recruiter Dashboard ── */
+  getRecruiterCandidates(params: { search?: string; minScore?: number; skills?: string[]; limit?: number } = {}): Observable<any> {
+    const query = new URLSearchParams();
+    if (params.search) query.set('search', params.search);
+    if (params.minScore !== undefined) query.set('minScore', String(params.minScore));
+    if (params.skills?.length) query.set('skills', params.skills.join(','));
+    if (params.limit) query.set('limit', String(params.limit));
+    const suffix = query.toString();
+    return this.http.get(`${this.baseUrl}/recruiter/candidates${suffix ? `?${suffix}` : ''}`);
+  }
+
+  /* ── Weekly AI Reports ── */
+  generateWeeklyReport(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/weekly-reports/generate`, {});
+  }
+
+  getWeeklyReportLatest(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/weekly-reports/latest`);
+  }
+
+  getWeeklyReportHistory(limit = 6): Observable<any> {
+    return this.http.get(`${this.baseUrl}/weekly-reports/history?limit=${encodeURIComponent(String(limit))}`);
+  }
+
+  /* ── Interview Prep ── */
+  generateInterviewPrep(payload: { skillGaps: string[]; careerStack?: string; experienceLevel?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/interview-prep`, payload);
+  }
+
+  getInterviewPrepHistory(limit = 5): Observable<any> {
+    return this.http.get(`${this.baseUrl}/interview-prep/history?limit=${encodeURIComponent(String(limit))}`);
+  }
+
+  /* ── Career Sprint ── */
+  getCurrentCareerSprint(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/career-sprints/current`);
+  }
+
+  createCareerSprint(payload: { title?: string; weeklyGoal?: number; tasks?: Array<{ title: string; description?: string; points?: number }> }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints`, payload);
+  }
+
+  addCareerSprintTask(sprintId: string, payload: { title: string; description?: string; points?: number }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/tasks`, payload);
+  }
+
+  updateCareerSprintTask(sprintId: string, taskId: string, isCompleted: boolean): Observable<any> {
+    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted });
+  }
+
+  getCareerSprintHistory(limit = 6): Observable<any> {
+    return this.http.get(`${this.baseUrl}/career-sprints/history?limit=${encodeURIComponent(String(limit))}`);
+  }
 }

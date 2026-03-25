@@ -1,0 +1,111 @@
+.recruiter-dashboard {
+  padding: var(--spacing-lg);
+  color: var(--text-primary);
+
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .filters {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: end;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    input {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.35);
+      color: var(--text-primary);
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  .primary-btn {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-weight: 600;
+  }
+
+  .secondary-btn {
+    background: var(--bg-hover);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    color: var(--text-primary);
+  }
+
+  .candidates-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+  }
+
+  .candidate-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .score {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-primary-light);
+  }
+
+  .skill-tag {
+    display: inline-block;
+    margin: 4px 6px 4px 0;
+    padding: 4px 8px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-info);
+    border-radius: 999px;
+    font-size: 0.75rem;
+  }
+
+  .empty-state {
+    color: var(--text-muted);
+  }
+}

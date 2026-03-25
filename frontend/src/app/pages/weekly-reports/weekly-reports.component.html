@@ -1,0 +1,44 @@
+<div class="weekly-reports">
+  <div class="page-header">
+    <div>
+      <h2>Weekly AI Coach Reports</h2>
+      <p>Review your progress summary and action steps.</p>
+    </div>
+    <button class="primary-btn" (click)="generateReport()" [disabled]="isGenerating">
+      {{ isGenerating ? 'Generating...' : 'Generate New Report' }}
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Loading reports...</div>
+
+  <section class="card" *ngIf="latestReport">
+    <h3>Latest Report</h3>
+    <p class="summary">{{ latestReport.progressSummary }}</p>
+    <div class="grid">
+      <div>
+        <h4>Insights</h4>
+        <ul>
+          <li *ngFor="let insight of latestReport.insights">{{ insight }}</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Recommendations</h4>
+        <ul>
+          <li *ngFor="let rec of latestReport.recommendations">{{ rec }}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Report History</h3>
+    <div class="history-grid">
+      <div class="history-card" *ngFor="let report of history">
+        <strong>{{ report.weekEndDate | date: 'mediumDate' }}</strong>
+        <p>{{ report.progressSummary }}</p>
+        <span class="score">Score: {{ report.score }}</span>
+      </div>
+      <div *ngIf="history.length === 0" class="empty-state">No reports yet.</div>
+    </div>
+  </section>
+</div>

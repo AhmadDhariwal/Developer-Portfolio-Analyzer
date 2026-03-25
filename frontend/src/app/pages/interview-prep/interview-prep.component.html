@@ -1,0 +1,34 @@
+<div class="interview-prep">
+  <div class="page-header">
+    <div>
+      <h2>Interview Prep Generator</h2>
+      <p>Enter skill gaps to generate practice questions and answers.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>
+      Skill gaps (comma separated)
+      <input [(ngModel)]="skillGapsInput" placeholder="System Design, React" title="Skill gaps" />
+    </label>
+    <button class="primary-btn" (click)="generatePrep()" [disabled]="isLoading">
+      {{ isLoading ? 'Generating...' : 'Generate Questions' }}
+    </button>
+  </div>
+
+  <div class="card" *ngIf="session">
+    <h3>Practice Panel</h3>
+    <div class="qa-list">
+      <div class="qa-card" *ngFor="let item of session.questions; let i = index; trackBy: trackByQuestion">
+        <div class="qa-header">
+          <strong>{{ item.question }}</strong>
+          <span class="badge">{{ item.difficulty }}</span>
+        </div>
+        <button class="ghost-btn" (click)="toggleAnswer(i)">
+          {{ isAnswerOpen(i) ? 'Hide Answer' : 'Show Answer' }}
+        </button>
+        <p *ngIf="isAnswerOpen(i)" class="answer">{{ item.answer }}</p>
+      </div>
+    </div>
+  </div>
+</div>

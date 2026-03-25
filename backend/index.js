@@ -23,6 +23,11 @@ const tenantroute            = require('./src/routes/tenant.routes');
 const skillgraphroute        = require('./src/routes/skillgraph.routes');
 const integrationsroute      = require('./src/routes/integrations.routes');
 const scenarioroute          = require('./src/routes/scenarioSimulator.routes');
+const publicProfileroute     = require('./src/routes/publicProfile.routes');
+const recruiterroute         = require('./src/routes/recruiter.routes');
+const weeklyReportroute      = require('./src/routes/weeklyReport.routes');
+const interviewPreproute     = require('./src/routes/interviewPrep.routes');
+const careerSprintroute      = require('./src/routes/careerSprint.routes');
 const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
 const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
 const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
@@ -30,6 +35,7 @@ const { metricsMiddleware, metricsHandler } = require('./src/services/metricsSer
 const { initTracing, shutdownTracing } = require('./src/services/tracingService');
 const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
 const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
+const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
 
 const env = validateEnv();
 
@@ -96,6 +102,11 @@ app.use('/api/tenant',          tenantroute);
 app.use('/api/skill-graph',     skillgraphroute);
 app.use('/api/integrations',    integrationsroute);
 app.use('/api/simulator',       scenarioroute);
+app.use('/api/public-profiles', publicProfileroute);
+app.use('/api/recruiter',       recruiterroute);
+app.use('/api/weekly-reports',  weeklyReportroute);
+app.use('/api/interview-prep',  interviewPreproute);
+app.use('/api/career-sprints',  careerSprintroute);
 app.get('/metrics', metricsHandler);
 
 const PORT = env.PORT || process.env.PORT || 5000;
@@ -105,6 +116,7 @@ app.listen(PORT, () => {
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     initTracing();
+    startWeeklyReportScheduler();
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;

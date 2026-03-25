@@ -18,6 +18,13 @@ import { ScenarioSimulatorComponent } from './pages/scenario-simulator/scenario-
 import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.component';
 import { SettingsPageComponent } from './settings/settings-page.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { PublicPortfolioComponent } from './pages/public-portfolio/public-portfolio.component';
+import { PortfolioSettingsComponent } from './pages/portfolio-settings/portfolio-settings.component';
+import { RecruiterDashboardComponent } from './pages/recruiter-dashboard/recruiter-dashboard.component';
+import { WeeklyReportsComponent } from './pages/weekly-reports/weekly-reports.component';
+import { InterviewPrepComponent } from './pages/interview-prep/interview-prep.component';
+import { CareerSprintComponent } from './pages/career-sprint/career-sprint.component';
+import { InterviewsReportsComponent } from './pages/interviews-reports/interviews-reports.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
 import { authGuard } from './guards/auth.guard';
@@ -28,6 +35,7 @@ export const routes: Routes = [
   // Landing page (public) — default route
   { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
   { path: 'privacy', component: PrivacyPolicyComponent },
+  { path: 'p/:slug', component: PublicPortfolioComponent },
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
 
@@ -54,6 +62,12 @@ export const routes: Routes = [
       { path: 'integrations',    component: IntegrationsMarketplaceComponent },
       { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
       { path: 'profile',         component: ProfileComponent },
+  { path: 'interviews-reports', component: InterviewsReportsComponent },
+    { path: 'portfolio',       component: PortfolioSettingsComponent },
+    { path: 'recruiter-dashboard', component: RecruiterDashboardComponent },
+    { path: 'weekly-reports',  component: WeeklyReportsComponent },
+    { path: 'interview-prep',  component: InterviewPrepComponent },
+    { path: 'career-sprint',   component: CareerSprintComponent },
   { path: 'notifications', component: NotificationsComponent },
       { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },
       {

@@ -1,0 +1,57 @@
+<div class="career-sprint">
+  <div class="page-header">
+    <div>
+      <h2>Career Sprint</h2>
+      <p>Track weekly goals, tasks, and streaks.</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Loading sprint...</div>
+
+  <div class="card" *ngIf="sprint">
+    <div class="summary">
+      <div>
+        <h3>{{ sprint.title }}</h3>
+        <p>{{ sprint.weekStartDate | date: 'mediumDate' }} - {{ sprint.weekEndDate | date: 'mediumDate' }}</p>
+      </div>
+      <div class="streaks">
+        <div>
+          <span>Current streak</span>
+          <strong>{{ sprint.streak }}</strong>
+        </div>
+        <div>
+          <span>Longest streak</span>
+          <strong>{{ sprint.longestStreak }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-bar">
+        <span [style.width.%]="progressPercent"></span>
+      </div>
+      <div class="progress-meta">
+        {{ completedCount }} / {{ sprint.weeklyGoal }} tasks completed
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="sprint">
+    <h3>Tasks</h3>
+    <div class="task-list">
+      <div class="task-row" *ngFor="let task of sprint.tasks">
+        <label>
+          <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" />
+          <span [class.completed]="task.isCompleted">{{ task.title }}</span>
+        </label>
+        <span class="points">{{ task.points }} pts</span>
+      </div>
+    </div>
+
+    <div class="add-task">
+      <input [(ngModel)]="newTaskTitle" placeholder="New task title" title="New task title" />
+      <input type="number" min="1" max="10" [(ngModel)]="newTaskPoints" title="Task points" />
+      <button class="primary-btn" (click)="addTask()">Add Task</button>
+    </div>
+  </div>
+</div>
