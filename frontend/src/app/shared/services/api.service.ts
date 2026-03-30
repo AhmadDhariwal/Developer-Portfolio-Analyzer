@@ -315,6 +315,31 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/interview-prep`, payload);
   }
 
+  getInterviewPrepQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<any> {
+    const query = new URLSearchParams();
+    query.set('skill', params.skill);
+    query.set('page', String(params.page ?? 1));
+    query.set('limit', String(params.limit ?? 20));
+    if (params.difficulty) query.set('difficulty', params.difficulty);
+    if (params.tags?.length) query.set('tags', params.tags.join(','));
+    return this.http.get(`${this.baseUrl}/interview-prep/questions?${query.toString()}`);
+  }
+
+  searchInterviewPrepQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[] }): Observable<any> {
+    const query = new URLSearchParams();
+    query.set('q', params.q);
+    query.set('page', String(params.page ?? 1));
+    query.set('limit', String(params.limit ?? 20));
+    if (params.skill) query.set('skill', params.skill);
+    if (params.difficulty) query.set('difficulty', params.difficulty);
+    if (params.tags?.length) query.set('tags', params.tags.join(','));
+    return this.http.get(`${this.baseUrl}/interview-prep/search?${query.toString()}`);
+  }
+
+  generateInterviewPrepQuestions(payload: { skill: string; query?: string; page?: number; limit?: number }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
+  }
+
   getInterviewPrepHistory(limit = 5): Observable<any> {
     return this.http.get(`${this.baseUrl}/interview-prep/history?limit=${encodeURIComponent(String(limit))}`);
   }

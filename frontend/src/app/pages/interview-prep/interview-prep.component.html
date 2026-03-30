@@ -1,34 +1,108 @@
 <div class="interview-prep">
   <div class="page-header">
     <div>
-      <h2>Interview Prep Generator</h2>
-      <p>Enter skill gaps to generate practice questions and answers.</p>
+      <h2>Interview Preparation Hub</h2>
+      <p>Use top questions, smart search, and AI generation while prioritizing the built-in knowledge base first.</p>
     </div>
   </div>
 
   <div class="card">
-    <label>
-      Skill gaps (comma separated)
-      <input [(ngModel)]="skillGapsInput" placeholder="System Design, React" title="Skill gaps" />
-    </label>
-    <button class="primary-btn" (click)="generatePrep()" [disabled]="isLoading">
-      {{ isLoading ? 'Generating...' : 'Generate Questions' }}
+    <div class="tabs">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === tab.id"
+        (click)="onTabChange(tab.id)">
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div class="controls-grid">
+      <label>
+        Skill
+        <select [(ngModel)]="selectedSkill" (ngModelChange)="onSkillChange()" title="Skill">
+          <option *ngFor="let skill of skills" [value]="skill">{{ skill | titlecase }}</option>
+        </select>
+      </label>
+
+      <label>
+        Difficulty
+        <select [(ngModel)]="selectedDifficulty" (ngModelChange)="applyFilters()" title="Difficulty">
+          <option value="">All</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </label>
+
+      <label>
+        Tags (comma separated)
+        <input [(ngModel)]="tagsInput" (change)="applyFilters()" placeholder="async, hooks" title="Tags" />
+      </label>
+    </div>
+
+    <div class="actions-row">
+      <button class="ghost-btn" type="button" (click)="clearFilters()">Clear Filters</button>
+    </div>
+
+    <div class="search-row" *ngIf="activeTab === 'search'">
+      <label>
+        Search questions
+        <input
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchQueryChange($event)"
+          placeholder="Type at least 2 characters"
+          title="Search" />
+      </label>
+    </div>
+
+    <div class="ai-row" *ngIf="activeTab === 'ai'">
+      <label>
+        AI focus query (optional)
+        <input [(ngModel)]="aiPromptQuery" placeholder="e.g. hooks performance" title="AI focus" />
+      </label>
+      <button class="primary-btn" type="button" (click)="generateAIQuestions()" [disabled]="isGeneratingAI">
+        {{ isGeneratingAI ? 'Generating...' : 'Generate / Refresh AI Questions' }}
+      </button>
+      <p class="meta" *ngIf="currentSource">Source: {{ currentSource }} | New AI added: {{ aiGeneratedCount }}</p>
+    </div>
+
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </div>
+
+  <div class="card" *ngIf="isLoading">
+    <h3>Loading questions...</h3>
+    <div class="qa-list">
+      <div class="qa-card skeleton" *ngFor="let item of skeletonItems"></div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="!isLoading && hasQuestions">
+    <h3>Practice Panel</h3>
+    <p class="meta">Showing {{ questions.length }} of {{ total }} questions</p>
+    <div class="qa-list">
+      <div class="qa-card" *ngFor="let item of questions; let i = index; trackBy: trackByQuestion">
+        <div class="qa-header">
+          <strong [innerHTML]="getHighlightedText(item.question)"></strong>
+          <span class="badge">{{ item.difficulty | titlecase }}</span>
+        </div>
+        <div class="tag-row" *ngIf="item.tags.length">
+          <span class="tag" *ngFor="let tag of item.tags">{{ tag }}</span>
+        </div>
+        <button class="ghost-btn" type="button" (click)="toggleAnswer(i)">
+          {{ isAnswerOpen(i) ? 'Hide Answer' : 'Show Answer' }}
+        </button>
+        <p *ngIf="isAnswerOpen(i)" class="answer" [innerHTML]="getHighlightedText(item.answer)"></p>
+      </div>
+    </div>
+
+    <button class="primary-btn" type="button" (click)="loadMore()" [disabled]="!canLoadMore || isLoadingMore">
+      {{ isLoadingMore ? 'Loading...' : 'Load More' }}
     </button>
   </div>
 
-  <div class="card" *ngIf="session">
-    <h3>Practice Panel</h3>
-    <div class="qa-list">
-      <div class="qa-card" *ngFor="let item of session.questions; let i = index; trackBy: trackByQuestion">
-        <div class="qa-header">
-          <strong>{{ item.question }}</strong>
-          <span class="badge">{{ item.difficulty }}</span>
-        </div>
-        <button class="ghost-btn" (click)="toggleAnswer(i)">
-          {{ isAnswerOpen(i) ? 'Hide Answer' : 'Show Answer' }}
-        </button>
-        <p *ngIf="isAnswerOpen(i)" class="answer">{{ item.answer }}</p>
-      </div>
-    </div>
+  <div class="card" *ngIf="!isLoading && !hasQuestions && !errorMessage">
+    <p class="meta">No questions found for current selection.</p>
   </div>
 </div>

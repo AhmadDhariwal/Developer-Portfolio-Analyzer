@@ -20,6 +20,34 @@
     gap: 12px;
   }
 
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tab-btn.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
   label {
     display: flex;
     flex-direction: column;
@@ -29,6 +57,14 @@
   }
 
   input {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    background: rgba(15, 23, 42, 0.35);
+    color: var(--text-primary);
+  }
+
+  select {
     padding: 8px 10px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
@@ -48,6 +84,12 @@
     padding: 10px 14px;
     font-weight: 600;
     width: fit-content;
+    cursor: pointer;
+  }
+
+  .primary-btn:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
   }
 
   .ghost-btn {
@@ -57,6 +99,19 @@
     border-radius: var(--radius-sm);
     width: fit-content;
     color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .search-row,
+  .ai-row {
+    display: grid;
+    gap: 10px;
   }
 
   .qa-list {
@@ -70,6 +125,13 @@
     padding: 14px;
     display: grid;
     gap: 8px;
+  }
+
+  .qa-card.skeleton {
+    min-height: 96px;
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.5) 25%, rgba(51, 65, 85, 0.7) 37%, rgba(30, 41, 59, 0.5) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
   }
 
   .qa-header {
@@ -86,7 +148,47 @@
     font-size: 0.75rem;
   }
 
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+
   .answer {
     color: var(--text-primary);
+  }
+
+  .meta {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .error {
+    margin: 0;
+    color: var(--color-danger, #f87171);
+  }
+
+  mark {
+    background: rgba(245, 158, 11, 0.26);
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0 0;
+    }
   }
 }

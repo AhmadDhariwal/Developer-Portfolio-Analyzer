@@ -36,6 +36,8 @@ const { initTracing, shutdownTracing } = require('./src/services/tracingService'
 const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
 const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
+const { initRedisCache } = require('./src/services/redisCacheService');
+const { startInterviewQuestionIngestionScheduler } = require('./src/services/interviewQuestionIngestionService');
 
 const env = validateEnv();
 
@@ -113,10 +115,12 @@ const PORT = env.PORT || process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     logger.info('server started', { port: PORT });
+    initRedisCache();
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     initTracing();
     startWeeklyReportScheduler();
+    startInterviewQuestionIngestionScheduler();
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;

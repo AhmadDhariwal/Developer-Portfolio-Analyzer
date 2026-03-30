@@ -3,17 +3,26 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 export interface InterviewQuestion {
+  _id?: string;
+  skill?: string;
   question: string;
   answer: string;
-  difficulty: string;
+  difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
+  source?: 'prebuilt' | 'ai' | 'scraped';
+  popularity?: number;
+  createdAt?: string;
 }
 
-export interface InterviewPrepSession {
-  _id: string;
-  skillGaps: string[];
+export interface InterviewQuestionListResponse {
   questions: InterviewQuestion[];
-  createdAt: string;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  source?: string;
+  aiGeneratedCount?: number;
+  fromCache?: boolean;
 }
 
 @Injectable({
@@ -22,11 +31,15 @@ export interface InterviewPrepSession {
 export class InterviewPrepService {
   constructor(private readonly api: ApiService) {}
 
-  generateSession(payload: { skillGaps: string[]; careerStack?: string; experienceLevel?: string }): Observable<InterviewPrepSession> {
-    return this.api.generateInterviewPrep(payload);
+  getTopQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
+    return this.api.getInterviewPrepQuestions(params);
   }
 
-  getHistory(limit = 5): Observable<{ sessions: InterviewPrepSession[] }> {
-    return this.api.getInterviewPrepHistory(limit);
+  searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
+    return this.api.searchInterviewPrepQuestions(params);
+  }
+
+  generateQuestions(payload: { skill: string; query?: string; page?: number; limit?: number }): Observable<InterviewQuestionListResponse> {
+    return this.api.generateInterviewPrepQuestions(payload);
   }
 }
