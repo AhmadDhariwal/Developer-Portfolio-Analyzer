@@ -221,9 +221,9 @@ function applyFilters(jobs, { platform, location, skills, jobType, experienceLev
       const loc = (job.location || '').toLowerCase();
       const filter = location.toLowerCase();
       if (filter === 'remote' && !loc.includes('remote')) return false;
-      if (filter === 'pakistan' && !loc.includes('pakistan') && !loc.includes('lahore') && !loc.includes('karachi') && !loc.includes('islamabad') && !loc.includes('rawalpindi') && !loc.includes('remote')) return false;
-      if (filter === 'usa' && !loc.includes('usa') && !loc.includes('united states') && !loc.includes('new york') && !loc.includes('san francisco') && !loc.includes('remote')) return false;
-      if (filter === 'europe' && !loc.includes('europe') && !loc.includes('uk') && !loc.includes('germany') && !loc.includes('remote')) return false;
+      if (filter === 'pakistan' && !loc.includes('pakistan') && !loc.includes('lahore') && !loc.includes('karachi') && !loc.includes('islamabad') && !loc.includes('rawalpindi')) return false;
+      if (filter === 'usa' && !loc.includes('usa') && !loc.includes('united states') && !loc.includes('new york') && !loc.includes('san francisco')) return false;
+      if (filter === 'europe' && !loc.includes('europe') && !loc.includes('uk') && !loc.includes('germany')) return false;
     }
     if (skills && skills.trim()) {
       const s = skills.toLowerCase();
@@ -299,7 +299,10 @@ async function buildJobPool(options = {}) {
   // Apply client filters
   const filterExperience = experience !== 'All' ? experience : null;
   const filtered = applyFilters(pool, { platform, location, skills, jobType, experienceLevel: filterExperience });
-  pool = filtered.length >= 3 ? filtered : pool;
+  const hasActiveFilters = [platform, location, jobType, filterExperience]
+    .some((value) => String(value || '').trim() && String(value || '').trim() !== 'All')
+    || Boolean(String(skills || '').trim());
+  pool = hasActiveFilters ? filtered : pool;
 
   // Attach platform colours
   pool = pool.map(job => ({

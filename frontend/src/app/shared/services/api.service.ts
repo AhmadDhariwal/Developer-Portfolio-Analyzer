@@ -294,7 +294,10 @@ export class ApiService {
     if (params.skills?.length) query.set('skills', params.skills.join(','));
     if (params.limit) query.set('limit', String(params.limit));
     const suffix = query.toString();
-    return this.http.get(`${this.baseUrl}/recruiter/candidates${suffix ? `?${suffix}` : ''}`);
+    const path = suffix
+      ? `${this.baseUrl}/recruiter/candidates?${suffix}`
+      : `${this.baseUrl}/recruiter/candidates`;
+    return this.http.get(path);
   }
 
   /* ── Weekly AI Reports ── */
@@ -338,6 +341,18 @@ export class ApiService {
 
   generateInterviewPrepQuestions(payload: { skill: string; query?: string; page?: number; limit?: number }): Observable<any> {
     return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
+  }
+
+  askInterviewPrepQuestion(payload: {
+    question: string;
+    skill?: string;
+    topic?: string;
+    stack?: string;
+    technology?: string;
+    language?: string;
+    framework?: string;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/interview-prep/ask-question`, payload);
   }
 
   getInterviewPrepHistory(limit = 5): Observable<any> {

@@ -11,7 +11,7 @@
     </div>
     <div class="header-actions">
       <button class="btn-clear" *ngIf="hasActiveFilters" (click)="resetFilters()">Clear all</button>
-      <button class="btn-collapse" (click)="toggleCollapse()" [attr.aria-label]="isCollapsed ? 'Expand filters' : 'Collapse filters'">
+      <button title="collapsetotal" class="btn-collapse" (click)="toggleCollapse()" [attr.aria-label]="isCollapsed ? 'Expand filters' : 'Collapse filters'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="isCollapsed">
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>

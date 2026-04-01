@@ -1,137 +1,89 @@
-const axios = require('axios');
 const cron = require('node-cron');
-const InterviewQuestionBank = require('../models/interviewQuestionBank');
+const logger = require('../utils/logger');
 const { invalidateInterviewPrepCache } = require('./redisCacheService');
+const { normalizeTopicInput, listImportantTopics } = require('./interviewTopicNormalizer');
+const { scrapeQuestionsForTopic } = require('./providers/interviewScraperProvider');
+const { upsertQuestions } = require('../repositories/interviewQuestionRepository');
+const {
+  computeConfidenceScore,
+  normalizeComparableText,
+  normalizeQuestionText,
+  normalizeAnswerText,
+  sanitizeDifficulty,
+  sanitizeTags,
+  isQualityQuestionAnswer
+} = require('./interviewQuestionQualityService');
 
 const INGEST_CRON_EXPR = process.env.INTERVIEW_QUESTION_INGEST_CRON || '0 */6 * * *';
 
-const SKILL_CONFIG = [
-  { skill: 'javascript', devToTag: 'javascript', githubQuery: 'javascript interview question' },
-  { skill: 'react', devToTag: 'react', githubQuery: 'react interview question' },
-  { skill: 'mern', devToTag: 'nodejs', githubQuery: 'mern interview question' }
-];
-
-const inferDifficulty = (text = '') => {
-  const lower = String(text || '').toLowerCase();
-  if (/architecture|scalability|distributed|consistency|tradeoff/.test(lower)) return 'hard';
-  if (/debug|performance|optimi|state|async|design/.test(lower)) return 'medium';
-  return 'easy';
-};
-
-const normalizeQuestionFromTitle = (title = '') => {
-  const clean = String(title || '').replace(/\s+/g, ' ').trim();
-  if (!clean) return '';
-  return clean.endsWith('?') ? clean : `${clean}?`;
-};
-
-const normalizeAnswer = (description = '', fallbackSkill = '') => {
-  const clean = String(description || '').replace(/\s+/g, ' ').trim();
-  if (clean.length >= 25) {
-    return clean.slice(0, 260);
+const normalizeTopicRecord = (item = {}, topic = {}) => {
+  const question = normalizeQuestionText(item.question || '');
+  const answer = normalizeAnswerText(item.answer || '');
+  if (!isQualityQuestionAnswer({ question, answer })) {
+    return null;
   }
-  return `Review the core ${fallbackSkill} concept, explain tradeoffs, and demonstrate a practical implementation example.`;
-};
 
-const fetchDevToArticles = async (tag) => {
-  const response = await axios.get('https://dev.to/api/articles', {
-    params: { tag, per_page: 10 },
-    timeout: 10000
-  });
-  return Array.isArray(response.data) ? response.data : [];
-};
-
-const fetchGitHubIssues = async (query) => {
-  const response = await axios.get('https://api.github.com/search/issues', {
-    params: { q: query, per_page: 10, sort: 'updated', order: 'desc' },
-    headers: {
-      Accept: 'application/vnd.github+json'
+  return {
+    topicKey: topic.topicKey,
+    topicType: topic.topicType,
+    topicDimensions: topic.topicDimensions,
+    skill: topic.skill,
+    question,
+    answer,
+    normalizedQuestion: normalizeComparableText(question),
+    normalizedAnswer: normalizeComparableText(answer),
+    difficulty: sanitizeDifficulty(item.difficulty),
+    tags: sanitizeTags([...(item.tags || []), topic.topicKey, topic.topicType, 'scraped']),
+    source: 'scraped',
+    sourceType: 'scraped',
+    sourceMeta: {
+      channel: 'scheduled-ingestion',
+      ingestedAt: new Date().toISOString()
     },
-    timeout: 10000
-  });
-
-  const items = response.data?.items;
-  return Array.isArray(items) ? items : [];
+    confidenceScore: computeConfidenceScore({ sourceType: 'scraped', question, answer }),
+    qualityState: 'approved',
+    popularity: 15,
+    usageCount: 0,
+    lastUsedAt: null
+  };
 };
 
-const normalizeScrapedItems = ({ skill, devToItems = [], githubItems = [] }) => {
-  const normalized = [];
-
-  for (const item of devToItems) {
-    const question = normalizeQuestionFromTitle(item?.title || '');
-    if (!question) continue;
-    normalized.push({
-      skill,
-      question,
-      answer: normalizeAnswer(item?.description || item?.body_markdown || '', skill),
-      difficulty: inferDifficulty(`${item?.title || ''} ${item?.description || ''}`),
-      tags: [skill, 'scraped', 'devto'],
-      source: 'scraped',
-      popularity: 15
-    });
+const resolveIngestionTopics = () => {
+  const envValue = String(process.env.INTERVIEW_QUESTION_INGEST_TOPICS || '').trim();
+  if (envValue) {
+    return envValue
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 
-  for (const item of githubItems) {
-    const question = normalizeQuestionFromTitle(item?.title || '');
-    if (!question) continue;
-    normalized.push({
-      skill,
-      question,
-      answer: normalizeAnswer(item?.body || '', skill),
-      difficulty: inferDifficulty(`${item?.title || ''} ${item?.body || ''}`),
-      tags: [skill, 'scraped', 'github'],
-      source: 'scraped',
-      popularity: 15
-    });
-  }
-
-  return normalized;
-};
-
-const upsertScrapedQuestions = async (records = []) => {
-  if (!Array.isArray(records) || records.length === 0) {
-    return 0;
-  }
-
-  const operations = records.map((record) => ({
-    updateOne: {
-      filter: {
-        skill: record.skill,
-        question: record.question
-      },
-      update: {
-        $setOnInsert: {
-          ...record,
-          createdAt: new Date()
-        }
-      },
-      upsert: true
-    }
-  }));
-
-  const result = await InterviewQuestionBank.bulkWrite(operations, { ordered: false });
-  return Number(result.upsertedCount || 0);
+  return listImportantTopics().slice(0, 10).map((topic) => topic.key);
 };
 
 const runInterviewQuestionIngestion = async () => {
   let totalInserted = 0;
+  const topics = resolveIngestionTopics();
 
-  for (const config of SKILL_CONFIG) {
+  for (const topicInput of topics) {
     try {
-      const [devToItems, githubItems] = await Promise.all([
-        fetchDevToArticles(config.devToTag),
-        fetchGitHubIssues(config.githubQuery)
-      ]);
-
-      const normalized = normalizeScrapedItems({
-        skill: config.skill,
-        devToItems,
-        githubItems
+      const topic = normalizeTopicInput({ topic: topicInput });
+      const scraped = await scrapeQuestionsForTopic({
+        topicKey: topic.topicKey,
+        topicType: topic.topicType,
+        count: 10
       });
 
-      const inserted = await upsertScrapedQuestions(normalized);
-      totalInserted += inserted;
+      const records = scraped
+        .map((item) => normalizeTopicRecord(item, topic))
+        .filter(Boolean);
+
+      const result = await upsertQuestions(records);
+      totalInserted += Number(result.insertedCount || 0);
     } catch (error) {
-      console.error(`[interview-ingestion] failed for ${config.skill}:`, error.message);
+      logger.warn('interview-ingestion topic failed', {
+        topic: topicInput,
+        message: error.message
+      });
     }
   }
 
@@ -146,13 +98,13 @@ const startInterviewQuestionIngestionScheduler = () => {
   cron.schedule(INGEST_CRON_EXPR, async () => {
     try {
       const inserted = await runInterviewQuestionIngestion();
-      console.log(`[interview-ingestion] completed. inserted=${inserted}`);
+      logger.info('interview-ingestion completed', { inserted });
     } catch (error) {
-      console.error('[interview-ingestion] cron error:', error.message);
+      logger.error('interview-ingestion cron error', { message: error.message });
     }
   });
 
-  console.log(`[interview-ingestion] scheduler started with cron: ${INGEST_CRON_EXPR}`);
+  logger.info('interview-ingestion scheduler started', { cron: INGEST_CRON_EXPR });
 };
 
 module.exports = {

@@ -22,7 +22,7 @@
       <label>
         Skill
         <select [(ngModel)]="selectedSkill" (ngModelChange)="onSkillChange()" title="Skill">
-          <option *ngFor="let skill of skills" [value]="skill">{{ skill | titlecase }}</option>
+          <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
         </select>
       </label>
 

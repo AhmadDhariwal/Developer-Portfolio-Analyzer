@@ -5,6 +5,7 @@ const {
   getInterviewPrepQuestions,
   searchInterviewPrepQuestions,
   generateInterviewPrepQuestions,
+  askInterviewPrepQuestion,
   generateInterviewPrepSession,
   getInterviewPrepHistory
 } = require('../controllers/interviewPrepController');
@@ -12,6 +13,7 @@ const {
 router.get('/questions', protect, getInterviewPrepQuestions);
 router.get('/search', protect, searchInterviewPrepQuestions);
 router.post('/generate', protect, generateInterviewPrepQuestions);
+router.post('/ask-question', protect, askInterviewPrepQuestion);
 router.post('/', protect, generateInterviewPrepSession);
 router.get('/history', protect, getInterviewPrepHistory);
 

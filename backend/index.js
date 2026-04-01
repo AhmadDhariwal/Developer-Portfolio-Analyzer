@@ -38,6 +38,7 @@ const { startIntegrationSyncWorker } = require('./src/services/integrationSyncSe
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
 const { initRedisCache } = require('./src/services/redisCacheService');
 const { startInterviewQuestionIngestionScheduler } = require('./src/services/interviewQuestionIngestionService');
+const { startInterviewQuestionMaintenanceScheduler } = require('./src/services/interviewQuestionMaintenanceService');
 
 const env = validateEnv();
 
@@ -121,6 +122,7 @@ app.listen(PORT, () => {
     initTracing();
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
+    startInterviewQuestionMaintenanceScheduler();
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;

@@ -17,13 +17,54 @@ type InterviewTab = 'top' | 'search' | 'ai';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InterviewPrepComponent implements OnInit, OnDestroy {
-  readonly pageSize = 20;
-  readonly skills = ['javascript', 'react', 'mern'];
+  readonly pageSize = 10;
+  readonly skills = [
+    'javascript',
+    'typescript',
+    'python',
+    'java',
+    'cpp',
+    'angular',
+    'react',
+    'nodejs',
+    'expressjs',
+    'nextjs',
+    'mongodb',
+    'mysql',
+    'postgresql',
+    'redis',
+    'rest-apis',
+    'graphql',
+    'mern',
+    'mean',
+    'full-stack-web-development'
+  ];
   readonly tabs: Array<{ id: InterviewTab; label: string }> = [
     { id: 'top', label: 'Top Questions' },
     { id: 'search', label: 'Search Questions' },
     { id: 'ai', label: 'AI Generated' }
   ];
+  readonly skillLabels: Record<string, string> = {
+    javascript: 'JavaScript',
+    typescript: 'TypeScript',
+    python: 'Python',
+    java: 'Java',
+    cpp: 'C++',
+    angular: 'Angular',
+    react: 'React',
+    nodejs: 'Node.js',
+    expressjs: 'Express.js',
+    nextjs: 'Next.js',
+    mongodb: 'MongoDB',
+    mysql: 'MySQL',
+    postgresql: 'PostgreSQL',
+    redis: 'Redis',
+    'rest-apis': 'REST APIs',
+    graphql: 'GraphQL',
+    mern: 'MERN',
+    mean: 'MEAN',
+    'full-stack-web-development': 'Full Stack Web Development'
+  };
 
   activeTab: InterviewTab = 'top';
   selectedSkill = 'javascript';
@@ -44,6 +85,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   aiGeneratedCount = 0;
   currentSource = '';
+  allowEnrichmentLoadMore = true;
 
   openAnswers = new Set<number>();
   skeletonItems = Array.from({ length: 6 });
@@ -84,7 +126,10 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   get canLoadMore(): boolean {
-    return !this.isLoadingMore && !this.isLoading && this.currentPage < this.totalPages;
+    if (this.isLoadingMore || this.isLoading) return false;
+    if (this.activeTab !== 'top' && this.activeTab !== 'search') return false;
+    if (this.currentPage < this.totalPages) return true;
+    return this.allowEnrichmentLoadMore && this.hasQuestions;
   }
 
   get hasQuestions(): boolean {
@@ -251,12 +296,27 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   private consumeResponse(response: InterviewQuestionListResponse, reset: boolean): void {
+    const previousCount = this.questions.length;
+    const previousTotalPages = this.totalPages;
     const incoming = Array.isArray(response.questions) ? response.questions : [];
     this.questions = reset ? incoming : [...this.questions, ...incoming];
     this.total = Number(response.total || this.questions.length);
     this.currentPage = Number(response.page || 1);
     this.totalPages = Number(response.totalPages || 1);
     this.currentSource = String(response.source || this.currentSource || 'db');
+
+    if (reset) {
+      this.allowEnrichmentLoadMore = true;
+    } else {
+      const grewByCount = this.questions.length > previousCount;
+      const grewByPages = this.totalPages > previousTotalPages;
+      if (grewByCount || grewByPages) {
+        this.allowEnrichmentLoadMore = true;
+      } else if (this.currentPage >= this.totalPages) {
+        this.allowEnrichmentLoadMore = false;
+      }
+    }
+
     this.isLoading = false;
     this.isLoadingMore = false;
     this.cdr.markForCheck();
@@ -311,5 +371,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   trackByQuestion(_index: number, item: InterviewQuestion): string {
     return item._id || item.question;
+  }
+
+  getSkillLabel(skill: string): string {
+    return this.skillLabels[skill] || skill;
   }
 }

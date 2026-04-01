@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic_Report.v1 | Resume Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#192540",
+                        "secondary-container": "#00687a",
+                        "on-error-container": "#ffb2b9",
+                        "surface-container-lowest": "#000000",
+                        "error-container": "#a70138",
+                        "inverse-surface": "#faf8ff",
+                        "outline": "#6d758c",
+                        "surface-container-high": "#141f38",
+                        "error": "#ff6e84",
+                        "secondary-fixed-dim": "#48d4f3",
+                        "surface-dim": "#060e20",
+                        "on-error": "#490013",
+                        "on-background": "#dee5ff",
+                        "tertiary-fixed": "#69f6b8",
+                        "primary-fixed": "#9396ff",
+                        "on-primary-fixed": "#000000",
+                        "primary-container": "#9396ff",
+                        "on-tertiary-container": "#005a3c",
+                        "on-surface-variant": "#a3aac4",
+                        "background": "#060e20",
+                        "on-secondary-fixed": "#003a45",
+                        "on-primary": "#0f00a4",
+                        "inverse-on-surface": "#4d556b",
+                        "primary-dim": "#6063ee",
+                        "on-primary-fixed-variant": "#0e009d",
+                        "surface-tint": "#a3a6ff",
+                        "surface-variant": "#192540",
+                        "outline-variant": "#40485d",
+                        "surface": "#060e20",
+                        "on-tertiary": "#006443",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "tertiary": "#9bffce",
+                        "on-primary-container": "#0a0081",
+                        "secondary-dim": "#40ceed",
+                        "surface-container": "#0f1930",
+                        "on-secondary": "#004b58",
+                        "tertiary-dim": "#58e7ab",
+                        "on-secondary-container": "#ecfaff",
+                        "secondary": "#53ddfc",
+                        "on-tertiary-fixed": "#00452d",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "error-dim": "#d73357",
+                        "surface-bright": "#1f2b49",
+                        "inverse-primary": "#494bd7",
+                        "surface-container-low": "#091328",
+                        "primary-fixed-dim": "#8387ff",
+                        "on-surface": "#dee5ff",
+                        "secondary-fixed": "#65e1ff",
+                        "primary": "#a3a6ff",
+                        "on-secondary-fixed-variant": "#005969",
+                        "tertiary-container": "#69f6b8"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #060e20; }
+        ::-webkit-scrollbar-thumb { background: #192540; border-radius: 10px; }
+        .glass-panel {
+            background: rgba(31, 43, 73, 0.6);
+            backdrop-filter: blur(24px);
+        }
+        .shimmer-line {
+            background: linear-gradient(90deg, transparent, #a3a6ff, transparent);
+            background-size: 200% 100%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 max-w-none bg-[#060e20]/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(163,166,255,0.08)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a3a6ff]" data-icon="terminal">terminal</span>
+<span class="font-['Space_Grotesk'] font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#a3a6ff] to-[#9396ff] text-2xl tracking-tighter">Kinetic_Report.v1</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-['Inter'] text-sm text-[#a3a6ff] border-b-2 border-[#53ddfc] transition-colors duration-300" href="#">Dashboard</a>
+<a class="font-['Inter'] text-sm text-[#dee5ff]/60 hover:text-[#53ddfc] transition-colors duration-300" href="#">Audit Logs</a>
+<a class="font-['Inter'] text-sm text-[#dee5ff]/60 hover:text-[#53ddfc] transition-colors duration-300" href="#">Action Plan</a>
+<a class="font-['Inter'] text-sm text-[#dee5ff]/60 hover:text-[#53ddfc] transition-colors duration-300" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="minimalist user avatar with tech-themed accessories and professional appearance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz-rTG1JELv8Oj2CHMefpv9hTrfxsy5GaAMULfOVj26s_M8RBF8GyNUUhaUGnI13StDLK8BeD3XVgymWXufDqW1mB-uFzVUXlKsrfInTkVd3JZVNN8uA-bu8oBmWCgFPu_umE5z4-jTw9PqR73hcmRg7pstXfwqngXGBOM0q51oOwKLjYkFTgYGWSbN2LdiNDdIOYBH8XVSihpNgJc5Uv0yhBl3oe6_1mqgjwT-LSvsicNAlerIDTebDABw9LmBDjpLmcgeIPFIH8"/>
+</div>
+</div>
+</header>
+<!-- Sidebar (NavigationDrawer) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 border-r border-[#ffffff]/10 bg-[#000000] z-40 pt-24 pb-8">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<div>
+<p class="font-headline text-xs tracking-widest uppercase text-on-surface-variant">Resume_Engineer</p>
+<p class="text-[10px] text-primary-dim">v2.0.4</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 text-[#53ddfc] bg-[#192540] rounded-r-full translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-headline tracking-widest uppercase text-xs">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#dee5ff]/40 hover:bg-[#0f1930] hover:text-[#dee5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-headline tracking-widest uppercase text-xs">Audit Logs</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#dee5ff]/40 hover:bg-[#0f1930] hover:text-[#dee5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="checklist">checklist</span>
+<span class="font-headline tracking-widest uppercase text-xs">Action Plan</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#dee5ff]/40 hover:bg-[#0f1930] hover:text-[#dee5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-headline tracking-widest uppercase text-xs">Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<div class="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+<p class="text-[10px] font-mono text-secondary mb-2 uppercase tracking-tighter">System Status</p>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></div>
+<p class="text-[11px] text-on-surface-variant font-mono">Evaluation Stable</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:pl-64 pt-24 pb-32 min-h-screen">
+<div class="max-w-7xl mx-auto px-6 space-y-12">
+<!-- Hero Evaluation Header -->
+<section class="relative bg-surface-container-low p-8 rounded-2xl overflow-hidden border border-outline-variant/10">
+<div class="absolute top-0 right-0 p-8">
+<div class="w-32 h-32 rounded-full flex items-center justify-center border-4 border-dashed border-primary/20 relative group">
+<div class="absolute inset-2 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all"></div>
+<span class="font-headline text-5xl font-bold text-primary relative">B</span>
+</div>
+</div>
+<div class="space-y-4 max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest border border-outline-variant/20 rounded-full">
+<span class="material-symbols-outlined text-xs text-secondary" data-icon="description">description</span>
+<span class="text-xs font-mono text-on-surface-variant">Jane_Doe_Resume_2026.pdf</span>
+</div>
+<h1 class="font-headline text-5xl font-bold tracking-tighter text-on-surface leading-tight">
+                        Evaluation <span class="text-secondary">Summary</span>
+</h1>
+<div class="flex items-center gap-6 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-dim" data-icon="work_history">work_history</span>
+<span class="font-mono text-sm">Experience: 5.2 Yrs</span>
+</div>
+<div class="flex items-center gap-2 border-l border-outline-variant/30 pl-6">
+<span class="material-symbols-outlined text-primary-dim" data-icon="history">history</span>
+<span class="font-mono text-sm">Last Update: 2m ago</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 2x2 KPI Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-xs font-headline tracking-widest uppercase text-on-surface-variant">ATS Score</p>
+<span class="material-symbols-outlined text-secondary" data-icon="shield_check">shield</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="font-headline text-4xl font-bold">82%</span>
+<span class="text-xs text-tertiary">+4% expected</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[82%] shadow-[0_0_8px_#53ddfc]"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-xs font-headline tracking-widest uppercase text-on-surface-variant">Keyword Density</p>
+<span class="material-symbols-outlined text-primary" data-icon="key_visualizer">key_visualizer</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="font-headline text-4xl font-bold">74%</span>
+<span class="text-xs text-error">-12% gap</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[74%] shadow-[0_0_8px_#a3a6ff]"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-xs font-headline tracking-widest uppercase text-on-surface-variant">Format Score</p>
+<span class="material-symbols-outlined text-tertiary" data-icon="grid_view">grid_view</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="font-headline text-4xl font-bold">91%</span>
+<span class="text-xs text-tertiary">Optimal</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[91%] shadow-[0_0_8px_#9bffce]"></div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 hover:border-primary/20 transition-all group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-xs font-headline tracking-widest uppercase text-on-surface-variant">Content Quality</p>
+<span class="material-symbols-outlined text-error" data-icon="rate_review">rate_review</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="font-headline text-4xl font-bold">68%</span>
+<span class="text-xs text-error-dim">Critique Req.</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error w-[68%] shadow-[0_0_8px_#ff6e84]"></div>
+</div>
+</div>
+</section>
+<!-- High Impact Improvement Section -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline text-2xl font-bold">High-Impact <span class="text-primary">Adjustments</span></h2>
+<div class="h-[1px] flex-1 mx-8 shimmer-line opacity-20"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Adjustment Card 1 -->
+<div class="bg-surface-container-high/40 rounded-3xl p-8 border border-outline-variant/10 hover:bg-surface-container-high transition-colors">
+<div class="flex items-start justify-between mb-8">
+<div class="flex gap-4 items-center">
+<span class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-headline font-bold text-secondary">01</span>
+<div>
+<h3 class="font-headline text-lg font-bold">Weak Action Verbs</h3>
+<p class="text-xs font-mono text-on-surface-variant">Impact: Structural Integrity</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-error-container text-on-error-container text-[10px] font-mono rounded-full uppercase tracking-widest">Needs Fix</span>
+</div>
+<div class="space-y-6">
+<div class="p-4 bg-surface-container-lowest/50 rounded-xl border-l-4 border-error">
+<p class="text-xs text-on-surface-variant mb-2">Issue Identified:</p>
+<p class="text-sm font-body leading-relaxed">Passive language like "Responsible for" or "Helped with" dilutes impact of lead projects.</p>
+</div>
+<div class="space-y-3">
+<p class="text-xs uppercase tracking-widest text-secondary font-headline">Actionable Rewrite</p>
+<div class="grid grid-cols-1 gap-2">
+<div class="p-3 bg-error/5 rounded-lg border border-error/20 flex items-center gap-3">
+<span class="material-symbols-outlined text-error text-sm" data-icon="close">close</span>
+<p class="text-xs font-mono line-through opacity-50">Responsible for managing a team of 5 developers.</p>
+</div>
+<div class="p-3 bg-tertiary/5 rounded-lg border border-tertiary/20 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check">check</span>
+<p class="text-xs font-mono">Spearheaded cross-functional team of 5, delivering V2.0 2 weeks early.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Adjustment Card 2 -->
+<div class="bg-surface-container-high/40 rounded-3xl p-8 border border-outline-variant/10 hover:bg-surface-container-high transition-colors">
+<div class="flex items-start justify-between mb-8">
+<div class="flex gap-4 items-center">
+<span class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-headline font-bold text-secondary">02</span>
+<div>
+<h3 class="font-headline text-lg font-bold">Value Quantification</h3>
+<p class="text-xs font-mono text-on-surface-variant">Impact: Recruiter ROI</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-error-container text-on-error-container text-[10px] font-mono rounded-full uppercase tracking-widest">Needs Fix</span>
+</div>
+<div class="space-y-6">
+<div class="p-4 bg-surface-container-lowest/50 rounded-xl border-l-4 border-error">
+<p class="text-xs text-on-surface-variant mb-2">Issue Identified:</p>
+<p class="text-sm font-body leading-relaxed">Resume lists duties instead of achievements. 0 instances of % or $ found in experience section.</p>
+</div>
+<div class="space-y-3">
+<p class="text-xs uppercase tracking-widest text-secondary font-headline">Actionable Rewrite</p>
+<div class="grid grid-cols-1 gap-2">
+<div class="p-3 bg-error/5 rounded-lg border border-error/20 flex items-center gap-3">
+<span class="material-symbols-outlined text-error text-sm" data-icon="close">close</span>
+<p class="text-xs font-mono line-through opacity-50">Worked on optimizing database performance.</p>
+</div>
+<div class="p-3 bg-tertiary/5 rounded-lg border border-tertiary/20 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check">check</span>
+<p class="text-xs font-mono">Optimized SQL queries reducing latency by 45% for 10M+ users.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Split Skills & Wins Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Skills to Add -->
+<div class="bg-surface-container p-8 rounded-3xl border border-outline-variant/10 relative overflow-hidden group">
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full group-hover:bg-primary/20 transition-all"></div>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="extension">extension</span>
+<h3 class="font-headline text-xl font-bold tracking-tight">Skills To Add</h3>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">Cloud Native</span>
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">K8s</span>
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">GraphQL</span>
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">CI/CD Design</span>
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">Rust</span>
+<span class="px-3 py-1 bg-surface-container-highest border border-outline-variant/30 rounded-full text-xs font-mono hover:border-primary/60 transition-colors cursor-pointer">Kafka</span>
+</div>
+</div>
+<!-- Quick Wins -->
+<div class="bg-surface-container p-8 rounded-3xl border border-outline-variant/10 relative overflow-hidden group">
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-secondary/10 blur-[60px] rounded-full group-hover:bg-secondary/20 transition-all"></div>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" data-icon="bolt">bolt</span>
+<h3 class="font-headline text-xl font-bold tracking-tight">Quick Wins</h3>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-lg" data-icon="check_circle">check_circle</span>
+                            Remove physical home address (City, State only)
+                        </li>
+<li class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-lg" data-icon="check_circle">check_circle</span>
+                            Hyperlink LinkedIn &amp; GitHub profiles
+                        </li>
+<li class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-lg" data-icon="check_circle">check_circle</span>
+                            Shorten education to 2 lines max
+                        </li>
+</ul>
+</div>
+</section>
+<!-- 30-Day Execution Plan -->
+<section class="space-y-8">
+<div class="flex items-center gap-4">
+<h2 class="font-headline text-2xl font-bold">30-Day Execution <span class="text-secondary">Plan</span></h2>
+<div class="px-3 py-1 bg-surface-container-highest rounded-lg border border-outline-variant/20 text-[10px] font-mono uppercase tracking-widest text-primary">Sprint V1.0</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Week 1 -->
+<div class="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-6 relative">
+<div class="flex items-center justify-between mb-4">
+<p class="font-headline text-xs tracking-widest text-secondary font-bold">WEEK 01</p>
+<span class="material-symbols-outlined text-xs opacity-40" data-icon="schedule">schedule</span>
+</div>
+<h4 class="text-sm font-bold mb-4">Content Audit</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed mb-4">Rewrite all bullet points using the [Action Verb] + [Result] formula.</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full"></div>
+</div>
+<!-- Week 2 -->
+<div class="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-6 opacity-60">
+<div class="flex items-center justify-between mb-4">
+<p class="font-headline text-xs tracking-widest text-on-surface-variant font-bold">WEEK 02</p>
+<span class="material-symbols-outlined text-xs opacity-40" data-icon="lock">lock</span>
+</div>
+<h4 class="text-sm font-bold mb-4">Keyword Injection</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed mb-4">Target 5 specific JD's and map missing technical keywords into summary.</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full"></div>
+</div>
+<!-- Week 3 -->
+<div class="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-6 opacity-40">
+<div class="flex items-center justify-between mb-4">
+<p class="font-headline text-xs tracking-widest text-on-surface-variant font-bold">WEEK 03</p>
+<span class="material-symbols-outlined text-xs opacity-40" data-icon="lock">lock</span>
+</div>
+<h4 class="text-sm font-bold mb-4">Visual Polish</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed mb-4">Standardize margins, fonts, and ensure 100% ATS readability.</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full"></div>
+</div>
+<!-- Week 4 -->
+<div class="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-6 opacity-20">
+<div class="flex items-center justify-between mb-4">
+<p class="font-headline text-xs tracking-widest text-on-surface-variant font-bold">WEEK 04</p>
+<span class="material-symbols-outlined text-xs opacity-40" data-icon="lock">lock</span>
+</div>
+<h4 class="text-sm font-bold mb-4">Launch Phase</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed mb-4">Update LinkedIn, GitHub, and begin targeted job distribution.</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full"></div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#060e20]/90 backdrop-blur-2xl shadow-[0_-8px_32px_rgba(0,0,0,0.5)] rounded-t-3xl border-t border-[#ffffff]/5">
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#a3a6ff] to-[#9396ff] text-[#060e20] rounded-xl px-4 py-1.5 scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-['Inter'] text-[10px] font-medium">Report</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#dee5ff]/50 px-4 py-2 hover:text-[#53ddfc] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+<span class="font-['Inter'] text-[10px] font-medium">Skills</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#dee5ff]/50 px-4 py-2 hover:text-[#53ddfc] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="event_repeat">event_repeat</span>
+<span class="font-['Inter'] text-[10px] font-medium">Timeline</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#dee5ff]/50 px-4 py-2 hover:text-[#53ddfc] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+<!-- Visual Decor Elements -->
+<div class="fixed top-0 left-0 w-full h-[1px] shimmer-line opacity-30 z-50"></div>
+<div class="fixed top-1/2 -left-32 w-64 h-64 bg-primary/10 blur-[120px] pointer-events-none rounded-full"></div>
+<div class="fixed bottom-1/4 -right-32 w-96 h-96 bg-secondary/5 blur-[160px] pointer-events-none rounded-full"></div>
+</body></html>
