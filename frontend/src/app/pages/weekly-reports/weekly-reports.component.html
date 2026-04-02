@@ -1,44 +1,136 @@
-<div class="weekly-reports">
-  <div class="page-header">
-    <div>
-      <h2>Weekly AI Coach Reports</h2>
-      <p>Review your progress summary and action steps.</p>
+<div class="weekly-reports-container">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1 class="title">Weekly Performance</h1>
+      <p class="subtitle">AI-powered insights for your career acceleration.</p>
     </div>
-    <button class="primary-btn" (click)="generateReport()" [disabled]="isGenerating">
-      {{ isGenerating ? 'Generating...' : 'Generate New Report' }}
-    </button>
+    <div class="header-actions">
+      <button class="generate-btn" (click)="generateReport()" [disabled]="isGenerating">
+        <span class="btn-glow"></span>
+        <span class="btn-text">{{ isGenerating ? 'Analyzing...' : 'Generate New Insight' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loader"></div>
+    <p>Retrieving your latest insights...</p>
   </div>
 
-  <div *ngIf="isLoading" class="loading-state">Loading reports...</div>
-
-  <section class="card" *ngIf="latestReport">
-    <h3>Latest Report</h3>
-    <p class="summary">{{ latestReport.progressSummary }}</p>
-    <div class="grid">
-      <div>
-        <h4>Insights</h4>
-        <ul>
-          <li *ngFor="let insight of latestReport.insights">{{ insight }}</li>
-        </ul>
+  <div class="content-grid" *ngIf="!isLoading && latestReport">
+    <!-- Hero Score Card -->
+    <section class="hero-score-card">
+      <div class="score-display">
+        <div class="score-value">{{ latestReport.score }}<span class="percent">%</span></div>
+        <div class="score-label">Growth Score</div>
       </div>
-      <div>
-        <h4>Recommendations</h4>
-        <ul>
-          <li *ngFor="let rec of latestReport.recommendations">{{ rec }}</li>
-        </ul>
+      <div class="score-meta">
+        <p class="score-description">Your overall momentum based on GitHub activity and resume evolution this week.</p>
+      </div>
+    </section>
+
+    <!-- Career Momentum Cards -->
+    <div class="momentum-grid">
+      <div class="momentum-card github">
+        <div class="card-header">
+          <span class="icon">󰊤</span>
+          <span class="label">GitHub Activity</span>
+        </div>
+        <div class="value">{{ latestReport.meta?.githubScore || 0 }}%</div>
+        <div class="trend" [class.up]="(latestReport.meta?.githubScore || 0) > 70">
+          {{ (latestReport.meta?.githubScore || 0) > 70 ? 'High Velocity' : 'Stable' }}
+        </div>
+      </div>
+      <div class="momentum-card resume">
+        <div class="card-header">
+          <span class="icon">󰈙</span>
+          <span class="label">Resume Health</span>
+        </div>
+        <div class="value">{{ latestReport.meta?.resumeScore || 0 }}%</div>
+        <div class="trend" [class.up]="(latestReport.meta?.resumeScore || 0) > 75">
+          {{ (latestReport.meta?.resumeScore || 0) > 75 ? 'Premium' : 'Improving' }}
+        </div>
       </div>
     </div>
-  </section>
 
-  <section class="card">
-    <h3>Report History</h3>
+    <!-- AI Summary Section -->
+    <section class="summary-section glass-card">
+      <div class="section-badge">Executive Summary</div>
+      <p class="summary-text">{{ latestReport.progressSummary }}</p>
+    </section>
+
+    <!-- Insights & Recommendations -->
+    <div class="detail-grid">
+      <section class="detail-card insights">
+        <h3>Strategic Insights</h3>
+        <ul class="detail-list">
+          <li *ngFor="let insight of latestReport.insights">
+            <span class="bullet"></span>
+            {{ insight }}
+          </li>
+        </ul>
+      </section>
+
+      <section class="detail-card recommendations">
+        <h3>Next Steps</h3>
+        <ul class="detail-list accented">
+          <li *ngFor="let rec of latestReport.recommendations">
+            <span class="bullet">→</span>
+            {{ rec }}
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="bonus-grid">
+      <section class="bonus-card achievements">
+        <h3>Top 3 Achievements</h3>
+        <ol class="achievement-list" *ngIf="(latestReport.topAchievements ?? []).length > 0; else emptyAchievements">
+          <li *ngFor="let achievement of latestReport.topAchievements">{{ achievement }}</li>
+        </ol>
+        <ng-template #emptyAchievements>
+          <p class="placeholder">No achievements generated for this period yet.</p>
+        </ng-template>
+      </section>
+
+      <section class="bonus-card risk">
+        <h3>Biggest Risk Area</h3>
+        <p class="risk-text">{{ getRiskArea(latestReport) }}</p>
+      </section>
+
+      <section class="bonus-card readiness" *ngIf="latestReport.predictedHiringReadiness as readiness">
+        <h3>Predicted Hiring Readiness Next Week</h3>
+        <div class="readiness-score" [ngClass]="getReadinessClass(getReadinessScore(latestReport))">
+          <span class="value">{{ getReadinessScore(latestReport) }}%</span>
+          <span class="label">{{ getReadinessTone(getReadinessScore(latestReport)) }}</span>
+        </div>
+        <p class="readiness-reason">{{ readiness.reason }}</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- History Section -->
+  <section class="history-section" *ngIf="!isLoading && history.length > 0">
+    <div class="section-header">
+      <h2>Momentum History</h2>
+      <p>Your performance over the last 6 weeks.</p>
+    </div>
     <div class="history-grid">
-      <div class="history-card" *ngFor="let report of history">
-        <strong>{{ report.weekEndDate | date: 'mediumDate' }}</strong>
-        <p>{{ report.progressSummary }}</p>
-        <span class="score">Score: {{ report.score }}</span>
+      <div class="history-item" *ngFor="let report of history" [class.latest]="report._id === latestReport?._id">
+        <div class="history-date">{{ report.weekEndDate | date: 'MMM dd' }}</div>
+        <div class="history-score">{{ report.score }}%</div>
+        <div class="history-bar-container">
+          <div class="history-bar" [style.width.%]="report.score"></div>
+        </div>
       </div>
-      <div *ngIf="history.length === 0" class="empty-state">No reports yet.</div>
     </div>
   </section>
+
+  <div class="empty-state" *ngIf="!isLoading && !latestReport">
+    <div class="empty-icon">󰭻</div>
+    <h3>No Reports Generated</h3>
+    <p>Start your first weekly analysis to see your career momentum.</p>
+    <button class="primary-btn" (click)="generateReport()">Generate First Report</button>
+  </div>
 </div>

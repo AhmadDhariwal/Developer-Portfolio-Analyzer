@@ -68,4 +68,26 @@ export class WeeklyReportsComponent implements OnInit {
       }
     });
   }
+
+  getReadinessScore(report: WeeklyReport | null): number {
+    if (!report?.predictedHiringReadiness) return 0;
+    const score = Number(report.predictedHiringReadiness.score || 0);
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }
+
+  getReadinessTone(score: number): string {
+    if (score >= 80) return 'Strong';
+    if (score >= 65) return 'Promising';
+    return 'Needs Focus';
+  }
+
+  getReadinessClass(score: number): string {
+    if (score >= 80) return 'high';
+    if (score >= 65) return 'medium';
+    return 'low';
+  }
+
+  getRiskArea(report: WeeklyReport | null): string {
+    return report?.biggestRiskArea || 'No major risk identified for this period.';
+  }
 }

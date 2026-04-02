@@ -10,6 +10,9 @@ const getPublicProfile = async (req, res) => {
   try {
     const profile = await getPublicProfileBySlug(req.params.slug, req);
     if (!profile) return res.status(404).json({ message: 'Public profile not found.' });
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.json(profile);
   } catch (error) {
     console.error('Public profile fetch error:', error.message);
@@ -21,6 +24,7 @@ const getPublicProfile = async (req, res) => {
 const getMyPublicProfile = async (req, res) => {
   try {
     const profile = await getPublicProfileForOwner(req.user._id);
+    res.set('Cache-Control', 'no-store');
     res.json(profile);
   } catch (error) {
     console.error('Public profile owner fetch error:', error.message);
@@ -31,7 +35,20 @@ const getMyPublicProfile = async (req, res) => {
 // PUT /api/public-profiles/me
 const updateMyPublicProfile = async (req, res) => {
   try {
+    console.info('public-profile update request', {
+      userId: String(req.user?._id || ''),
+      fields: Object.keys(req.body || {}),
+      headline: String(req.body?.headline || '')
+    });
+
     const profile = await updatePublicProfile(req.user._id, req.body || {});
+
+    console.info('public-profile updated', {
+      userId: String(req.user?._id || ''),
+      slug: profile?.slug,
+      headline: profile?.headline
+    });
+
     res.json(profile);
   } catch (error) {
     console.error('Public profile update error:', error.message);

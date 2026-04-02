@@ -1,56 +1,300 @@
-<div class="public-portfolio">
-  <div *ngIf="isLoading" class="loading-state">Loading portfolio...</div>
-  <div *ngIf="!isLoading && errorMessage" class="alert-banner alert-warning">{{ errorMessage }}</div>
+<div class="portfolio-wrapper" *ngIf="!isLoading && profile; else fallback">
+  <!-- Background Effects -->
+  <div class="bg-gradient"></div>
+  <div class="bg-glow top-glow"></div>
+  <div class="bg-glow bottom-glow"></div>
 
-  <ng-container *ngIf="!isLoading && profile">
-    <header class="hero">
-      <div class="hero-text">
-        <h1>{{ profile.user.name }}</h1>
-        <p class="headline">{{ profile.headline || profile.user.jobTitle }}</p>
-        <p class="meta">{{ profile.user.location }}</p>
-        <p class="summary">{{ profile.summary }}</p>
+  <!-- Navbar - Figma exact style -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <svg class="logo-z" viewBox="0 0 40 40" fill="none">
+          <path d="M8 12 L20 12 L8 28 L8 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M20 12 L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </svg>
       </div>
-      <div class="hero-card">
-        <img *ngIf="profile.user.avatar" [src]="profile.user.avatar" alt="Profile photo" class="avatar" />
-        <div class="link-row">
-          <span class="label">Shareable link</span>
-          <input class="share-input" [value]="shareUrl" readonly title="Shareable link" placeholder="Shareable link" />
-        </div>
-        <div class="social-links">
-          <a *ngIf="profile.socialLinks.linkedin" [href]="profile.socialLinks.linkedin" target="_blank" rel="noopener">LinkedIn</a>
-          <a *ngIf="profile.socialLinks.twitter" [href]="profile.socialLinks.twitter" target="_blank" rel="noopener">Twitter</a>
-          <a *ngIf="profile.socialLinks.website" [href]="profile.socialLinks.website" target="_blank" rel="noopener">Website</a>
-          <a *ngIf="profile.user.githubUsername" [href]="'https://github.com/' + profile.user.githubUsername" target="_blank" rel="noopener">GitHub</a>
-        </div>
+      <div class="nav-links">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#contact" class="nav-link">Contact</a>
       </div>
-    </header>
+    </div>
+  </nav>
 
-    <section class="section">
-      <h2>Skill Scores</h2>
-      <div class="skills-grid">
-        <div class="skill-card" *ngFor="let skill of profile.skills">
-          <div class="skill-name">{{ skill.name }}</div>
-          <div class="skill-score">{{ skill.score }}%</div>
-          <div class="skill-bar">
-            <span [style.width.%]="skill.score"></span>
+  <!-- Hero Section - Figma exact style -->
+  <section class="hero-section" id="home">
+    <div class="hero-container">
+      <!-- Left side with avatar -->
+      <div class="hero-left">
+        <!-- Greeting text with arrow -->
+        <div class="greeting-wrapper">
+          <span class="greeting-text">{{ profile.sections.hero.greetingLabel }} <span class="name-purple">{{ profile.user.name }}</span></span>
+          <svg class="greeting-arrow" viewBox="0 0 30 40" fill="none">
+            <path d="M15 5 L15 30 M8 23 L15 30 L22 23" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        
+        <!-- Avatar with laptop -->
+        <div class="avatar-container">
+          <div class="avatar-glow"></div>
+          <img title="Profile Avatar" [src]="getUserAvatar()" [alt]="profile.user.name" class="avatar-image">
+          <div class="laptop-overlay">
+            <div class="laptop-screen"></div>
+            <div class="apple-logo">
+              <i class="mdi mdi-apple"></i>
+            </div>
           </div>
         </div>
       </div>
-    </section>
-
-    <section class="section">
-      <h2>Highlighted Projects</h2>
-      <div class="projects-grid">
-        <div class="project-card" *ngFor="let project of profile.projects">
-          <h3>{{ project.title }}</h3>
-          <p>{{ project.description }}</p>
-          <div class="project-tech">
-            <span *ngFor="let tech of project.tech">{{ tech }}</span>
-          </div>
-          <a *ngIf="project.url" [href]="project.url" target="_blank" rel="noopener">View project</a>
-        </div>
-  <div *ngIf="!profile.projects.length" class="empty-state">No projects added yet.</div>
+      
+      <!-- Right side with text -->
+      <div class="hero-right">
+        <p class="hero-subtitle-small">{{ profile.headline || profile.sections.hero.roleLabel }}</p>
+        <h1 class="hero-title">
+          {{ profile.sections.hero.titleLineOne }}<br>
+          {{ profile.sections.hero.titleLineTwo }} <span class="cover-word">{{ profile.sections.hero.titleHighlight }}</span>{{ profile.sections.hero.titleLineSuffix }}
+        </h1>
+        <p class="hero-tagline">{{ profile.sections.hero.tagline }}</p>
       </div>
-    </section>
-  </ng-container>
+    </div>
+  </section>
+
+  <!-- Bio Section -->
+  <section class="bio-section" id="about">
+    <div class="bio-container">
+      <h2 class="bio-title">I'm a {{ getProfileLabel() }}.<span class="cursor">|</span></h2>
+      <p class="bio-company">
+        Currently, I'm a {{ profile.user.jobTitle || 'Software Engineer' }} at
+        <span class="company-link">
+          <i class="mdi mdi-github"></i>
+          <span class="company-name">{{ getCurrentCompany() }}</span>
+        </span>,
+      </p>
+      <div class="bio-description">
+        <p>{{ getSummaryText() }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section with Orbital Design -->
+  <section class="skills-section">
+    <div class="skills-container">
+      <!-- Section Header -->
+      <div class="skills-header">
+        <h2 class="skills-title">
+          {{ profile.sections.skills.headline }} <span class="highlight-purple">{{ profile.sections.skills.highlight }}</span> {{ profile.sections.skills.headlineSuffix }}
+        </h2>
+        <p class="skills-subtitle">{{ profile.sections.skills.subheadline }}</p>
+      </div>
+
+      <!-- Top Row Skills Icons -->
+      <div class="skills-row top-row">
+        <div 
+          class="skill-icon-circle" 
+          *ngFor="let skill of getTopSkillIcons(); let i = index"
+          [style.animation-delay]="i * 0.1 + 's'">
+          <div class="icon-bg" [style.background]="skill.color + '15'">
+            <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
+          </div>
+          <div class="connector-line" [style.--line-angle]="getLineAngle(i, 7)"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Row Skills Icons -->
+      <div class="skills-row bottom-row">
+        <div 
+          class="skill-icon-circle" 
+          *ngFor="let skill of getBottomSkillIcons().slice(0, 6); let i = index"
+          [style.animation-delay]="(i + 7) * 0.1 + 's'">
+          <div class="icon-bg" [style.background]="skill.color + '15'">
+            <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
+          </div>
+          <div class="connector-line bottom" [style.--line-angle]="getLineAngle(i, 6)"></div>
+        </div>
+      </div>
+
+      <!-- Central Orb with Logo -->
+      <div class="central-orb-container">
+        <div class="orb-glow-outer"></div>
+        <div class="orb-glow-inner"></div>
+        <div class="central-orb">
+          <svg class="orb-logo" viewBox="0 0 60 60" fill="none">
+            <path d="M12 18 L30 18 L12 42 L12 48" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M30 18 L30 42" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M30 42 L48 42 L30 18" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Orbit Rings -->
+        <div class="orbit orbit-1">
+          <div class="orbit-icon orbit-pos-0">
+            <i class="mdi mdi-linkedin"></i>
+          </div>
+        </div>
+        <div class="orbit orbit-2">
+          <div class="orbit-icon orbit-pos-45">
+            <i class="mdi mdi-google"></i>
+          </div>
+          <div class="orbit-icon orbit-pos-180">
+            <i class="mdi mdi-code-tags"></i>
+          </div>
+        </div>
+        <div class="orbit orbit-3">
+          <div class="orbit-icon orbit-pos-90">
+            <i class="mdi mdi-react"></i>
+          </div>
+          <div class="orbit-icon orbit-pos-270">
+            <i class="mdi mdi-language-javascript"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work Experience Section -->
+  <section class="work-section">
+    <div class="work-container">
+      <h2 class="section-title">Work Experience</h2>
+      
+      <div class="experience-grid">
+        <div 
+          class="experience-card" 
+          *ngFor="let exp of getWorkExperiences(); let i = index"
+          [class.card-1]="i === 0"
+          [class.card-2]="i === 1"
+          [class.card-3]="i === 2"
+          [class.card-4]="i === 3">
+          <div class="card-top-border"></div>
+          <div class="card-content">
+            <div class="card-icon">
+              <div class="icon-3d" [class]="'icon-style-' + (i + 1)">
+                <i class="mdi" [ngClass]="exp.icon"></i>
+              </div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title">{{ exp.title }}</h3>
+              <p class="card-description">{{ exp.description }}</p>
+              <a
+                class="learn-more-btn"
+                [href]="toExternalLink(exp.ctaUrl)"
+                [class.disabled]="!exp.ctaUrl"
+                [attr.aria-disabled]="!exp.ctaUrl"
+                target="_blank"
+                rel="noopener"
+                (click)="!exp.ctaUrl && $event.preventDefault()"
+              >{{ exp.ctaLabel || 'LEARN MORE' }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Projects Section -->
+  <section class="projects-section" id="projects" *ngIf="profile.projects && profile.projects.length > 0">
+    <div class="projects-container">
+      <div 
+        class="project-item" 
+        *ngFor="let project of profile.projects; let even = even; let i = index"
+        [class.reverse]="!even">
+        
+        <div class="project-content" [class.content-left]="even" [class.content-right]="!even">
+          <span class="project-label">Featured Project</span>
+          <h3 class="project-title">{{ project.title }}</h3>
+          
+          <div class="project-description-card">
+            <p>{{ project.description }}</p>
+          </div>
+
+          <div class="project-tech" *ngIf="project.tech.length">
+            <span class="project-tech-chip" *ngFor="let tech of project.tech">{{ tech }}</span>
+          </div>
+          
+          <div class="project-links">
+            <a *ngIf="getProjectPrimaryLink(project)" [href]="getProjectPrimaryLink(project)" target="_blank" rel="noopener" class="project-link">
+              <i class="mdi mdi-open-in-new"></i>
+            </a>
+            <a *ngIf="getProjectRepositoryLink(project)" [href]="getProjectRepositoryLink(project)" target="_blank" rel="noopener" class="project-link">
+              <i class="mdi mdi-github"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="project-preview" [class.preview-right]="even" [class.preview-left]="!even">
+          <div class="preview-frame">
+            <img title="projectpreview" [src]="getProjectPreview(project)" [alt]="project.title" class="preview-image">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Footer Section -->
+  <footer class="contact-section" id="contact">
+    <div class="contact-container">
+      <h2 class="contact-title">{{ profile.sections.contact.heading }}</h2>
+      
+      <p class="contact-message">{{ profile.sections.contact.message }}</p>
+      
+      <a [href]="'mailto:' + getContactEmail()" class="contact-email">{{ getContactEmail() }}</a>
+      
+      <div class="social-icons">
+        <a
+          *ngIf="profile.socialLinks.website"
+          [href]="toExternalLink(profile.socialLinks.website)"
+          target="_blank"
+          rel="noopener"
+          class="social-link"
+        >
+          <i class="mdi mdi-web"></i>
+        </a>
+        <a 
+          *ngIf="profile.socialLinks.twitter" 
+          [href]="toExternalLink(profile.socialLinks.twitter)" 
+          target="_blank" 
+          rel="noopener"
+          class="social-link">
+          <i class="mdi mdi-twitter"></i>
+        </a>
+        <a 
+          *ngIf="profile.socialLinks.linkedin" 
+          [href]="toExternalLink(profile.socialLinks.linkedin)" 
+          target="_blank" 
+          rel="noopener"
+          class="social-link">
+          <i class="mdi mdi-linkedin"></i>
+        </a>
+        <a 
+          *ngIf="profile.user.githubUsername" 
+          [href]="'https://github.com/' + profile.user.githubUsername" 
+          target="_blank" 
+          rel="noopener"
+          class="social-link">
+          <i class="mdi mdi-github"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
 </div>
+
+<!-- Loading & Error States -->
+<ng-template #fallback>
+  <div class="fallback-wrapper">
+    <div class="loading-spinner" *ngIf="isLoading">
+      <div class="spinner-orb">
+        <div class="spinner-glow"></div>
+      </div>
+      <p class="loading-text">Loading portfolio...</p>
+    </div>
+    
+    <div class="error-container" *ngIf="!isLoading && errorMessage">
+      <i class="mdi mdi-alert-circle error-icon"></i>
+      <h2 class="error-title">Unable to Load Portfolio</h2>
+      <p class="error-message">{{ errorMessage }}</p>
+      <a routerLink="/" class="back-link">
+        <i class="mdi mdi-arrow-left"></i> Back to Home
+      </a>
+    </div>
+  </div>
+</ng-template>

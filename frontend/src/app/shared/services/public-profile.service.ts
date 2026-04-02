@@ -7,11 +7,60 @@ export interface PublicProfileSkill {
   score: number;
 }
 
+export interface PublicProfileProject {
+  title: string;
+  description: string;
+  url: string;
+  repoUrl?: string;
+  imageUrl?: string;
+  tech: string[];
+}
+
+export interface PublicProfileWorkExperience {
+  title: string;
+  description: string;
+  icon: string;
+  ctaLabel: string;
+  ctaUrl: string;
+}
+
+export interface PublicProfileSections {
+  hero: {
+    greetingLabel: string;
+    roleLabel: string;
+    titleLineOne: string;
+    titleLineTwo: string;
+    titleHighlight: string;
+    titleLineSuffix: string;
+    tagline: string;
+  };
+  skills: {
+    headline: string;
+    highlight: string;
+    headlineSuffix: string;
+    subheadline: string;
+  };
+  contact: {
+    heading: string;
+    message: string;
+    email: string;
+  };
+}
+
 export interface PublicProfileAnalytics {
   totalViews: number;
   uniqueViews: number;
+  uniqueViewRate?: number;
   lastViewedAt: string | null;
   last7Days?: Array<{ date: string; count: number }>;
+}
+
+export interface PublicProfileMomentum {
+  weekEndDate: string;
+  score: number;
+  summary: string;
+  topAchievements: string[];
+  biggestRiskArea: string;
 }
 
 export interface PublicProfilePayload {
@@ -22,10 +71,14 @@ export interface PublicProfilePayload {
   seoTitle: string;
   seoDescription: string;
   skills: PublicProfileSkill[];
-  projects: Array<{ title: string; description: string; url: string; tech: string[] }>;
+  projects: PublicProfileProject[];
+  workExperiences: PublicProfileWorkExperience[];
+  sections: PublicProfileSections;
   socialLinks: { website?: string; twitter?: string; linkedin?: string; github?: string };
   analytics: PublicProfileAnalytics;
-  user: { name: string; jobTitle: string; location: string; avatar: string; githubUsername: string };
+  profileStrengthScore?: number;
+  momentum?: PublicProfileMomentum | null;
+  user: { name: string; jobTitle: string; location: string; avatar: string; githubUsername: string; email?: string };
 }
 
 @Injectable({

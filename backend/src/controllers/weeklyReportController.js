@@ -1,11 +1,22 @@
 const WeeklyReport = require('../models/weeklyReport');
-const { generateWeeklyReport } = require('../services/weeklyReportService');
+const User = require('../models/user');
+const { generateWeeklyReport, sendWeeklyReportEmail } = require('../services/weeklyReportService');
 
 // POST /api/weekly-reports/generate
 const generateReport = async (req, res) => {
   try {
-    const report = await generateWeeklyReport(req.user._id);
+    const report = await generateWeeklyReport(req.user._id, { forceRegenerate: true });
     if (!report) return res.status(404).json({ message: 'User not found.' });
+
+    try {
+      const user = await User.findById(req.user._id).select('name email notifications').lean();
+      if (user?.email && user?.notifications?.weeklyScoreReport !== false) {
+        await sendWeeklyReportEmail(report, user);
+      }
+    } catch (emailError) {
+      console.error('Weekly report email send error:', emailError.message);
+    }
+
     res.json(report);
   } catch (error) {
     console.error('Weekly report generate error:', error.message);

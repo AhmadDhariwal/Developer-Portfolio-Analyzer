@@ -1,92 +1,397 @@
-<div class="portfolio-settings">
-  <div class="page-header">
-    <div>
-      <h2>Public Portfolio Settings</h2>
-      <p>Customize your shareable portfolio page and track analytics.</p>
+<main class="portfolio-settings-container kinetic-terminal">
+  <header class="settings-header">
+    <div class="header-content">
+      <h1 class="page-title">Portfolio Workspace</h1>
+      <p class="page-subtitle">Configure your public presence and track engagement metrics.</p>
     </div>
-    <button class="primary-btn" (click)="saveProfile()" [disabled]="isSaving || !profile">
-      {{ isSaving ? 'Saving...' : 'Save Changes' }}
-    </button>
+    <div class="header-actions">
+      <button class="preview-btn" (click)="openPublicPreview()">
+        <i class="mdi mdi-eye-outline"></i> Preview
+      </button>
+      <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving || !profile">
+        <i class="mdi" [ngClass]="isSaving ? 'mdi-loading mdi-spin' : 'mdi-check-all'"></i>
+        {{ isSaving ? 'Saving...' : 'Deploy Changes' }}
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="message" class="system-message" [class.error]="message.toLowerCase().includes('failed')">
+    <i class="mdi" [ngClass]="message.toLowerCase().includes('success') ? 'mdi-check-circle' : 'mdi-alert-circle'"></i>
+    {{ message }}
   </div>
 
-  <div *ngIf="isLoading" class="loading-state">Loading profile settings...</div>
-  <div *ngIf="message" class="alert-banner">{{ message }}</div>
-
-  <ng-container *ngIf="!isLoading && profile">
-    <section class="card">
-      <h3>Shareable Link</h3>
-      <div class="link-row">
-  <input class="share-input" [value]="shareUrl" readonly title="Shareable link" />
-        <span class="status" [class.active]="profile.isPublic">{{ profile.isPublic ? 'Public' : 'Private' }}</span>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" [(ngModel)]="profile.isPublic" />
-        <span>Enable public portfolio</span>
-      </label>
-    </section>
-
-    <section class="card">
-      <h3>Portfolio Content</h3>
-      <div class="form-grid">
-        <label>
-          Headline
-          <input [(ngModel)]="profile.headline" placeholder="e.g. Full Stack Developer" />
-        </label>
-        <label>
-          Slug
-          <input [(ngModel)]="profile.slug" placeholder="your-name" />
-        </label>
-        <label class="full">
-          Summary
-          <textarea [(ngModel)]="profile.summary" rows="4" placeholder="Share your story..."></textarea>
-        </label>
-      </div>
-    </section>
-
-    <section class="card">
-      <h3>SEO Optimization</h3>
-      <div class="form-grid">
-        <label>
-          SEO Title
-          <input [(ngModel)]="profile.seoTitle" placeholder="Portfolio | Name" />
-        </label>
-        <label class="full">
-          SEO Description
-          <textarea [(ngModel)]="profile.seoDescription" rows="3" placeholder="Short search snippet"></textarea>
-        </label>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <h3>Skill Scores</h3>
-        <button class="secondary-btn" (click)="addSkill()">Add Skill</button>
-      </div>
-      <div class="skills-list">
-        <div class="skill-row" *ngFor="let skill of profile.skills; let i = index">
-          <input [(ngModel)]="skill.name" placeholder="Skill" />
-          <input type="number" min="0" max="100" [(ngModel)]="skill.score" title="Skill score" />
-          <button class="ghost-btn" (click)="removeSkill(i)">Remove</button>
+  <div class="settings-grid" *ngIf="!isLoading && profile; else loadingState">
+    <!-- Left Column: Configuration -->
+    <div class="config-column">
+      <!-- Section: Visibility & Identity -->
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-shield-check-outline"></i>
+          <h3>Identity & Visibility</h3>
         </div>
-      </div>
-    </section>
+        <div class="card-content">
+          <div class="visibility-toggle-box" [class.is-public]="profile.isPublic">
+            <div class="toggle-info">
+              <span class="status-label">{{ profile.isPublic ? 'Publicly Searchable' : 'Private Workspace' }}</span>
+              <p class="status-desc">Toggle your portfolio visibility to recruiters and the public.</p>
+            </div>
+            <label class="switch" for="visibility-toggle" aria-label="Toggle portfolio visibility">
+              <input id="visibility-toggle" type="checkbox" [(ngModel)]="profile.isPublic" title="Toggle visibility" />
+              <span class="slider"></span>
+            </label>
+          </div>
 
-    <section class="card">
-      <h3>Analytics</h3>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span>Total views</span>
-          <strong>{{ analytics?.totalViews || profile.analytics.totalViews }}</strong>
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="share-url">Shareable URL</label>
+              <div class="slug-input-wrapper">
+                <input id="share-url" [value]="shareUrl" readonly />
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="share-copy">Copy Link</label>
+              <button id="share-copy" class="ghost-add-btn full-width" (click)="copyShareUrl()">Copy Public URL</button>
+              <small *ngIf="copyFeedback" class="input-hint">{{ copyFeedback }}</small>
+            </div>
+          </div>
+
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="headline-input">Professional Headline</label>
+              <input id="headline-input" [(ngModel)]="profile.headline" placeholder="e.g. Senior Full Stack Engineer" />
+            </div>
+            <div class="input-group">
+              <label for="slug-input">Personal URL Slug</label>
+              <div class="slug-input-wrapper">
+                <span class="prefix">/p/</span>
+                <input id="slug-input" [(ngModel)]="profile.slug" (blur)="normalizeSlug()" placeholder="your-identity" />
+              </div>
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label for="summary-input">Executive Summary</label>
+            <textarea id="summary-input" [(ngModel)]="profile.summary" rows="4" placeholder="Tell your professional story, focusing on impact and growth..."></textarea>
+          </div>
         </div>
-        <div class="stat-card">
-          <span>Unique viewers</span>
-          <strong>{{ analytics?.uniqueViews || profile.analytics.uniqueViews }}</strong>
+      </section>
+
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-text-box-multiple-outline"></i>
+          <h3>Portfolio Copy Sections</h3>
         </div>
-        <div class="stat-card">
-          <span>Last viewed</span>
-          <strong>{{ analytics?.lastViewedAt || profile.analytics.lastViewedAt || 'N/A' }}</strong>
+        <div class="card-content">
+          <h4 class="subsection-title">Hero</h4>
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label for="hero-greeting">Greeting Label</label>
+              <input id="hero-greeting" [(ngModel)]="profile.sections.hero.greetingLabel" placeholder="Hello! I Am" />
+            </div>
+            <div class="input-group">
+              <label for="hero-role">Role Label</label>
+              <input id="hero-role" [(ngModel)]="profile.sections.hero.roleLabel" placeholder="A Developer who" />
+            </div>
+            <div class="input-group">
+              <label for="hero-suffix">Title Suffix</label>
+              <input id="hero-suffix" [(ngModel)]="profile.sections.hero.titleLineSuffix" placeholder="..." />
+            </div>
+          </div>
+
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="hero-line-one">Hero Title Line 1</label>
+              <input id="hero-line-one" [(ngModel)]="profile.sections.hero.titleLineOne" placeholder="Judges a book" />
+            </div>
+            <div class="input-group">
+              <label for="hero-line-two">Hero Title Line 2</label>
+              <input id="hero-line-two" [(ngModel)]="profile.sections.hero.titleLineTwo" placeholder="by its" />
+            </div>
+          </div>
+
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="hero-highlight">Hero Highlight Word</label>
+              <input id="hero-highlight" [(ngModel)]="profile.sections.hero.titleHighlight" placeholder="cover" />
+            </div>
+            <div class="input-group">
+              <label for="hero-tagline">Hero Tagline</label>
+              <input id="hero-tagline" [(ngModel)]="profile.sections.hero.tagline" placeholder="Because if the cover does not impress..." />
+            </div>
+          </div>
+
+          <h4 class="subsection-title">Skills Section Copy</h4>
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label for="skills-headline">Headline Prefix</label>
+              <input id="skills-headline" [(ngModel)]="profile.sections.skills.headline" placeholder="I'm currently looking to join a" />
+            </div>
+            <div class="input-group">
+              <label for="skills-highlight">Highlight Word</label>
+              <input id="skills-highlight" [(ngModel)]="profile.sections.skills.highlight" placeholder="cross-functional" />
+            </div>
+            <div class="input-group">
+              <label for="skills-suffix">Headline Suffix</label>
+              <input id="skills-suffix" [(ngModel)]="profile.sections.skills.headlineSuffix" placeholder="team" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="skills-subheadline">Skills Subheadline</label>
+            <textarea id="skills-subheadline" [(ngModel)]="profile.sections.skills.subheadline" rows="2" placeholder="that values improving people's lives through accessible design"></textarea>
+          </div>
+
+          <h4 class="subsection-title">Contact Section Copy</h4>
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="contact-heading">Contact Heading</label>
+              <input id="contact-heading" [(ngModel)]="profile.sections.contact.heading" placeholder="Contact" />
+            </div>
+            <div class="input-group">
+              <label for="contact-email">Contact Email</label>
+              <input id="contact-email" [(ngModel)]="profile.sections.contact.email" placeholder="you@example.com" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="contact-message">Contact Message</label>
+            <textarea id="contact-message" [(ngModel)]="profile.sections.contact.message" rows="3" placeholder="Let's connect."></textarea>
+          </div>
         </div>
-      </div>
-    </section>
-  </ng-container>
-</div>
+      </section>
+
+      <!-- Section: Skill Matrix -->
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-matrix"></i>
+          <h3>Competency Matrix</h3>
+          <button class="ghost-add-btn" (click)="addSkill()">+ Add Capability</button>
+        </div>
+        <div class="card-content">
+          <div class="matrix-list">
+            <div class="matrix-row" *ngFor="let skill of profile.skills; let i = index">
+              <div class="skill-input-group">
+                <input [id]="'skill-name-' + i" [(ngModel)]="skill.name" placeholder="Technology/Skill" class="skill-name" />
+                <div class="score-input-box">
+                  <input [id]="'skill-score-' + i" type="number" min="0" max="100" [(ngModel)]="skill.score" title="Proficiency percentage" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <button class="remove-trigger" (click)="removeSkill(i)" title="Remove skill">
+                <i class="mdi mdi-close"></i>
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!profile.skills.length">
+            Add skills to showcase your technical proficiency.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Projects -->
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-folder-star-outline"></i>
+          <h3>Evidence & Proof</h3>
+          <button class="ghost-add-btn" (click)="addProject()">+ Add Project</button>
+        </div>
+        <div class="card-content">
+          <div class="projects-stack">
+            <div class="project-entry" *ngFor="let project of profile.projects; let projectIndex = index">
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'project-title-' + projectIndex">Project Title</label>
+                  <input [id]="'project-title-' + projectIndex" [(ngModel)]="project.title" placeholder="Project name" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'project-url-' + projectIndex">Live URL</label>
+                  <input [id]="'project-url-' + projectIndex" [(ngModel)]="project.url" placeholder="https://..." />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'project-repo-' + projectIndex">Repository URL</label>
+                  <input [id]="'project-repo-' + projectIndex" [(ngModel)]="project.repoUrl" placeholder="https://github.com/..." />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'project-image-' + projectIndex">Preview Image URL</label>
+                  <input [id]="'project-image-' + projectIndex" [(ngModel)]="project.imageUrl" placeholder="https://.../preview.png" />
+                </div>
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'project-description-' + projectIndex">Impact Description</label>
+                <textarea [id]="'project-description-' + projectIndex" [(ngModel)]="project.description" rows="3" placeholder="What was the measurable outcome?"></textarea>
+              </div>
+              <div class="tech-stack-manager">
+                <div class="manager-head">
+                  <label [attr.for]="'project-tech-' + projectIndex">Technologies Used</label>
+                  <button class="tiny-add" (click)="addProjectTech(projectIndex)">+ Add</button>
+                </div>
+                <div class="tech-tags-input">
+                  <div class="tech-tag-chip" *ngFor="let tech of project.tech; let techIndex = index">
+                    <input [id]="'project-tech-' + projectIndex + '-' + techIndex" [(ngModel)]="project.tech[techIndex]" placeholder="Tech" />
+                    <button title="remove project " (click)="removeProjectTech(projectIndex, techIndex)"><i class="mdi mdi-close"></i></button>
+                  </div>
+                </div>
+              </div>
+              <button class="remove-project-btn" (click)="removeProject(projectIndex)">
+                <i class="mdi mdi-trash-can-outline"></i> Delete Project
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!profile.projects.length">
+            Document your best work to provide evidence of your skills.
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-briefcase-outline"></i>
+          <h3>Work Experience Cards</h3>
+          <button class="ghost-add-btn" (click)="addWorkExperience()">+ Add Experience</button>
+        </div>
+        <div class="card-content">
+          <div class="projects-stack">
+            <div class="project-entry" *ngFor="let experience of profile.workExperiences; let experienceIndex = index">
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'experience-title-' + experienceIndex">Card Title</label>
+                  <input [id]="'experience-title-' + experienceIndex" [(ngModel)]="experience.title" placeholder="CIB on the Mobile" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'experience-icon-' + experienceIndex">MDI Icon</label>
+                  <input [id]="'experience-icon-' + experienceIndex" [(ngModel)]="experience.icon" placeholder="mdi-rocket-launch" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'experience-cta-label-' + experienceIndex">Button Label</label>
+                  <input [id]="'experience-cta-label-' + experienceIndex" [(ngModel)]="experience.ctaLabel" placeholder="LEARN MORE" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'experience-cta-url-' + experienceIndex">Button URL</label>
+                  <input [id]="'experience-cta-url-' + experienceIndex" [(ngModel)]="experience.ctaUrl" placeholder="https://..." />
+                </div>
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'experience-description-' + experienceIndex">Description</label>
+                <textarea [id]="'experience-description-' + experienceIndex" [(ngModel)]="experience.description" rows="3" placeholder="Describe your experience and impact."></textarea>
+              </div>
+              <button class="remove-project-btn" (click)="removeWorkExperience(experienceIndex)">
+                <i class="mdi mdi-trash-can-outline"></i> Delete Experience
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!profile.workExperiences.length">
+            Add at least 2-4 cards to match the work experience section in your public portfolio layout.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Social & SEO -->
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-earth"></i>
+          <h3>Social & Discovery</h3>
+        </div>
+        <div class="card-content">
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label for="social-linkedin">LinkedIn</label>
+              <input id="social-linkedin" [(ngModel)]="profile.socialLinks.linkedin" placeholder="profile-url" />
+            </div>
+            <div class="input-group">
+              <label for="social-github">GitHub</label>
+              <input id="social-github" [(ngModel)]="profile.socialLinks.github" placeholder="username" />
+            </div>
+            <div class="input-group">
+              <label for="social-twitter">Twitter/X</label>
+              <input id="social-twitter" [(ngModel)]="profile.socialLinks.twitter" placeholder="username" />
+            </div>
+          </div>
+
+          <div class="seo-compartment">
+            <div class="input-group">
+              <label for="seo-title">SEO Meta Title</label>
+              <input id="seo-title" [(ngModel)]="profile.seoTitle" placeholder="Page title for search engines" />
+            </div>
+            <div class="input-group">
+              <label for="seo-description">SEO Meta Description</label>
+              <textarea id="seo-description" [(ngModel)]="profile.seoDescription" rows="2" placeholder="Brief summary for search results..."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column: Stats & Meta -->
+    <aside class="meta-column">
+      <!-- Section: Engagement Analytics -->
+      <section class="settings-card analytics-card">
+        <div class="card-header">
+          <i class="mdi mdi-chart-timeline-variant"></i>
+          <h3>Discovery Analytics</h3>
+        </div>
+        <div class="card-content">
+          <div class="analytics-hero">
+            <div class="hero-stat">
+              <span class="label">Total Views</span>
+              <span class="value">{{ analytics?.totalViews || 0 }}</span>
+            </div>
+            <div class="hero-stat">
+              <span class="label">Retention</span>
+              <span class="value">{{ analytics?.uniqueViewRate || 0 }}%</span>
+            </div>
+          </div>
+          
+          <div class="mini-stats-list">
+            <div class="mini-stat">
+              <span class="label">Unique Viewers</span>
+              <span class="value">{{ analytics?.uniqueViews || 0 }}</span>
+            </div>
+            <div class="mini-stat">
+              <span class="label">Last Interaction</span>
+              <span class="value">{{ (analytics?.lastViewedAt | date:'shortDate') || 'No activity' }}</span>
+            </div>
+          </div>
+
+          <div class="discovery-trend">
+            <h4 class="trend-title">Last 7 Days</h4>
+            <div class="trend-steps">
+              <div class="trend-step" *ngFor="let day of analytics?.last7Days">
+                <div class="step-bar" [style.height.%]="(day.count / ((analytics?.totalViews || 1) + 1)) * 100 + 10"></div>
+                <span class="step-label">{{ day.date | date:'EEE' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Strength Indicator -->
+      <section class="settings-card strength-card">
+        <div class="card-header">
+          <i class="mdi mdi-gauge"></i>
+          <h3>Profile Strength</h3>
+        </div>
+        <div class="card-content">
+          <div class="strength-meter">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+              <path class="circle" [style.stroke-dasharray]="(profile.profileStrengthScore || 0) + ', 100'" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+              <text x="18" y="20.35" class="percentage">{{ profile.profileStrengthScore || 0 }}%</text>
+            </svg>
+          </div>
+          <p class="strength-tip">
+            {{ getStrengthTip(profile.profileStrengthScore ?? 0) }}
+          </p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<ng-template #loadingState>
+  <div class="loading-workspace">
+    <div class="work-loader"></div>
+    <p>Authenticating Workspace...</p>
+  </div>
+</ng-template>

@@ -9,7 +9,46 @@ const publicProjectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, default: '' },
   url: { type: String, default: '' },
+  repoUrl: { type: String, default: '' },
+  imageUrl: { type: String, default: '' },
   tech: [{ type: String }]
+}, { _id: false });
+
+const publicWorkExperienceSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  icon: { type: String, default: '' },
+  ctaLabel: { type: String, default: '' },
+  ctaUrl: { type: String, default: '' }
+}, { _id: false });
+
+const publicHeroSectionSchema = new mongoose.Schema({
+  greetingLabel: { type: String, default: '' },
+  roleLabel: { type: String, default: '' },
+  titleLineOne: { type: String, default: '' },
+  titleLineTwo: { type: String, default: '' },
+  titleHighlight: { type: String, default: '' },
+  titleLineSuffix: { type: String, default: '' },
+  tagline: { type: String, default: '' }
+}, { _id: false });
+
+const publicSkillsSectionSchema = new mongoose.Schema({
+  headline: { type: String, default: '' },
+  highlight: { type: String, default: '' },
+  headlineSuffix: { type: String, default: '' },
+  subheadline: { type: String, default: '' }
+}, { _id: false });
+
+const publicContactSectionSchema = new mongoose.Schema({
+  heading: { type: String, default: '' },
+  message: { type: String, default: '' },
+  email: { type: String, default: '' }
+}, { _id: false });
+
+const publicSectionCopySchema = new mongoose.Schema({
+  hero: { type: publicHeroSectionSchema, default: () => ({}) },
+  skills: { type: publicSkillsSectionSchema, default: () => ({}) },
+  contact: { type: publicContactSectionSchema, default: () => ({}) }
 }, { _id: false });
 
 const publicProfileSchema = new mongoose.Schema({
@@ -39,6 +78,11 @@ const publicProfileSchema = new mongoose.Schema({
   },
   skills: [publicSkillSchema],
   projects: [publicProjectSchema],
+  workExperiences: [publicWorkExperienceSchema],
+  sections: {
+    type: publicSectionCopySchema,
+    default: () => ({})
+  },
   seoTitle: {
     type: String,
     default: ''

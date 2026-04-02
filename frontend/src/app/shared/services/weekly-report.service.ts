@@ -10,8 +10,48 @@ export interface WeeklyReport {
   progressSummary: string;
   insights: string[];
   recommendations: string[];
+  topAchievements?: string[];
+  biggestRiskArea?: string;
+  predictedHiringReadiness?: { score: number; reason: string };
   reportText: string;
-  meta?: { githubScore: number; resumeScore: number; skillFocus: string[] };
+  meta?: {
+    githubScore: number;
+    resumeScore: number;
+    skillFocus: string[];
+    activity?: {
+      repositoriesTracked: number;
+      activeRepositories: number;
+      commits: number;
+      weeklyCommitSignal: number;
+      stars: number;
+      forks: number;
+    };
+    sprint?: {
+      tasksCompleted: number;
+      tasksTotal: number;
+      completionRate: number;
+      weeklyGoal: number;
+      streak: number;
+    };
+    interview?: {
+      sessions: number;
+      questionsGenerated: number;
+    };
+    comparisons?: {
+      scoreDelta: number;
+      readinessDelta: number;
+      githubDelta: number;
+      resumeDelta: number;
+      sprintCompletionDelta: number;
+      tasksCompletedDelta: number;
+      interviewSessionsDelta: number;
+      interviewQuestionsDelta: number;
+      activityCommitsDelta: number;
+      activeReposDelta: number;
+      missingSkillsDelta: number;
+      coverageDelta: number;
+    };
+  };
 }
 
 @Injectable({
