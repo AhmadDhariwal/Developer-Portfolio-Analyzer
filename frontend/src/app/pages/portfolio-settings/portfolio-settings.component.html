@@ -167,7 +167,7 @@
         </div>
         <div class="card-content">
           <div class="matrix-list">
-            <div class="matrix-row" *ngFor="let skill of profile.skills; let i = index">
+            <div class="matrix-row" *ngFor="let skill of profile.skills; let i = index; trackBy: trackByIndex">
               <div class="skill-input-group">
                 <input [id]="'skill-name-' + i" [(ngModel)]="skill.name" placeholder="Technology/Skill" class="skill-name" />
                 <div class="score-input-box">
@@ -195,7 +195,7 @@
         </div>
         <div class="card-content">
           <div class="projects-stack">
-            <div class="project-entry" *ngFor="let project of profile.projects; let projectIndex = index">
+            <div class="project-entry" *ngFor="let project of profile.projects; let projectIndex = index; trackBy: trackByIndex">
               <div class="project-entry-header">
                 <div class="input-group">
                   <label [attr.for]="'project-title-' + projectIndex">Project Title</label>
@@ -226,7 +226,7 @@
                   <button class="tiny-add" (click)="addProjectTech(projectIndex)">+ Add</button>
                 </div>
                 <div class="tech-tags-input">
-                  <div class="tech-tag-chip" *ngFor="let tech of project.tech; let techIndex = index">
+                  <div class="tech-tag-chip" *ngFor="let tech of project.tech; let techIndex = index; trackBy: trackByIndex">
                     <input [id]="'project-tech-' + projectIndex + '-' + techIndex" [(ngModel)]="project.tech[techIndex]" placeholder="Tech" />
                     <button title="remove project " (click)="removeProjectTech(projectIndex, techIndex)"><i class="mdi mdi-close"></i></button>
                   </div>
@@ -251,7 +251,7 @@
         </div>
         <div class="card-content">
           <div class="projects-stack">
-            <div class="project-entry" *ngFor="let experience of profile.workExperiences; let experienceIndex = index">
+            <div class="project-entry" *ngFor="let experience of profile.workExperiences; let experienceIndex = index; trackBy: trackByIndex">
               <div class="project-entry-header">
                 <div class="input-group">
                   <label [attr.for]="'experience-title-' + experienceIndex">Card Title</label>

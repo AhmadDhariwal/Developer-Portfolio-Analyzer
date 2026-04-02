@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, Inject, AfterViewInit, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import {
   PublicProfileService,
   PublicProfilePayload,
@@ -18,12 +20,14 @@ import { SkillIconService, SkillIcon } from '../../shared/services/skill-icon.se
   templateUrl: './public-portfolio.component.html',
   styleUrl: './public-portfolio.component.scss'
 })
-export class PublicPortfolioComponent implements OnInit {
+export class PublicPortfolioComponent implements OnInit, AfterViewInit {
+  @ViewChildren('revealSection') revealSections!: QueryList<ElementRef>;
   profile: PublicProfilePayload | null = null;
   isLoading = true;
   errorMessage = '';
   shareUrl = '';
   copyFeedback = '';
+  private observer: IntersectionObserver | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -31,7 +35,8 @@ export class PublicPortfolioComponent implements OnInit {
     private readonly title: Title,
     private readonly meta: Meta,
     private readonly cdr: ChangeDetectorRef,
-    private readonly skillIconService: SkillIconService
+    private readonly skillIconService: SkillIconService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +46,38 @@ export class PublicPortfolioComponent implements OnInit {
         this.fetchProfile(slug);
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.setupScrollObserver();
+    }
+  }
+
+  private setupScrollObserver(): void {
+    // We observe any elements with the 'reveal-on-scroll' class (we'll add this to HTML or select native elements)
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.15
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          // Optional: stop observing once revealed
+          // this.observer?.unobserve(entry.target);
+        }
+      });
+    }, options);
+
+    // Initial check in case elements are quickly loaded
+    setTimeout(() => {
+      document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+        this.observer?.observe(el);
+      });
+    }, 500);
   }
 
   private ensureProfileShape(profile: PublicProfilePayload): PublicProfilePayload {
@@ -204,13 +241,9 @@ export class PublicPortfolioComponent implements OnInit {
   }
 
   getUserAvatar(): string {
-    if (this.profile?.user.avatar) {
-      return this.profile.user.avatar;
-    }
-    if (this.profile?.user.githubUsername) {
-      return `https://github.com/${this.profile.user.githubUsername}.png`;
-    }
-    return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(this.profile?.user.name || 'User');
+    // Automatically load the picture from the new local folder you requested.
+    // Make sure to name your uploaded file 'profile.png' and place it in 'frontend/public/avatar/'.
+    return '/avatar/profile.png';
   }
 
   getContactEmail(): string {

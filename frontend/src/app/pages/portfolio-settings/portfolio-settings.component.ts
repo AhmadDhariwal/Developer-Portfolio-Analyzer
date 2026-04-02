@@ -179,16 +179,8 @@ export class PortfolioSettingsComponent implements OnInit {
     globalThis.open(previewUrl, '_blank', 'noopener,noreferrer');
   }
 
-  private refreshProfileSnapshot(): void {
-    this.profileService.getMyPublicProfile().subscribe({
-      next: (profile) => {
-        this.profile = this.ensureProfileShape(profile);
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cdr.detectChanges();
-      }
-    });
+  trackByIndex(index: number): number {
+    return index;
   }
 
   addSkill(): void {
@@ -352,7 +344,6 @@ export class PortfolioSettingsComponent implements OnInit {
         }
 
         this.loadAnalytics();
-        this.refreshProfileSnapshot();
         if (typeof globalThis.scrollTo === 'function') {
           globalThis.scrollTo({ top: 0, behavior: 'smooth' });
         }

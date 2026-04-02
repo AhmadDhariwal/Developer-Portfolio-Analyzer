@@ -276,7 +276,13 @@ export class ApiService {
   }
 
   getMyPublicProfile(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/public-profiles/me`);
+    const cacheBust = Date.now();
+    return this.http.get(`${this.baseUrl}/public-profiles/me?_=${cacheBust}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
+    });
   }
 
   updateMyPublicProfile(payload: any): Observable<any> {
@@ -284,7 +290,13 @@ export class ApiService {
   }
 
   getPublicProfileAnalytics(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/public-profiles/me/analytics`);
+    const cacheBust = Date.now();
+    return this.http.get(`${this.baseUrl}/public-profiles/me/analytics?_=${cacheBust}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
+    });
   }
 
   /* ── Recruiter Dashboard ── */

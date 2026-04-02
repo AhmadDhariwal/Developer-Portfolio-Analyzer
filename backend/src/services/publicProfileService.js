@@ -420,7 +420,10 @@ async function buildPublicProfilePayload(profile, user) {
   const normalizedSkills = profile.skills?.length ? normalizeSkills(profile.skills) : skillScores;
   const normalizedProjects = normalizeProjects(profile.projects || []);
   const normalizedSocialLinks = normalizeSocialLinks(profile.socialLinks || {}, user?.githubUsername || '');
-  const normalizedSections = normalizeSectionCopy(profile.sections || {}, { user, profile });
+  const sectionsSource = profile.sections?.toObject
+    ? profile.sections.toObject()
+    : (profile.sections || {});
+  const normalizedSections = normalizeSectionCopy(sectionsSource, { user, profile });
   const normalizedWorkExperiences = normalizeWorkExperiences(profile.workExperiences || [], {
     projects: normalizedProjects,
     skills: normalizedSkills
@@ -546,6 +549,9 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
   };
 
   profile.sections = normalizeSectionCopy(mergedSections, { user, profile });
+  if (typeof profile.markModified === 'function') {
+    profile.markModified('sections');
+  }
 };
 
 const applySocialLinksUpdate = ({ profile, payload, user }) => {
@@ -556,6 +562,9 @@ const applySocialLinksUpdate = ({ profile, payload, user }) => {
     ...payload.socialLinks
   };
   profile.socialLinks = normalizeSocialLinks(mergedSocialLinks, user?.githubUsername || '');
+  if (typeof profile.markModified === 'function') {
+    profile.markModified('socialLinks');
+  }
 };
 
 const updatePublicProfile = async (userId, payload = {}) => {
@@ -570,7 +579,8 @@ const updatePublicProfile = async (userId, payload = {}) => {
   applySocialLinksUpdate({ profile, payload, user });
 
   await profile.save();
-  return buildPublicProfilePayload(profile, user);
+  const savedProfile = await PublicProfile.findById(profile._id);
+  return buildPublicProfilePayload(savedProfile || profile, user);
 };
 
 const recordProfileView = async ({ profile, req }) => {
