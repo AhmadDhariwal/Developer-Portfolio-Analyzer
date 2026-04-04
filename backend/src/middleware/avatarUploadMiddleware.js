@@ -2,13 +2,14 @@ const multer = require('multer');
 const path = require('node:path');
 const fs = require('node:fs');
 
+const AVATAR_UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads', 'avatars');
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads/avatars/';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    if (!fs.existsSync(AVATAR_UPLOAD_DIR)) {
+      fs.mkdirSync(AVATAR_UPLOAD_DIR, { recursive: true });
     }
-    cb(null, uploadDir);
+    cb(null, AVATAR_UPLOAD_DIR);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname || '').toLowerCase();

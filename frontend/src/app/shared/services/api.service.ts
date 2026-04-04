@@ -392,4 +392,8 @@ export class ApiService {
   getCareerSprintHistory(limit = 6): Observable<any> {
     return this.http.get(`${this.baseUrl}/career-sprints/history?limit=${encodeURIComponent(String(limit))}`);
   }
+
+  restoreCareerStreak(sprintId: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/restore-streak`, {});
+  }
 }

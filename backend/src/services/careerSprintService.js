@@ -46,8 +46,39 @@ const getCurrentSprint = async (userId) => {
   const now = new Date();
   let sprint = await CareerSprint.findOne({ userId, weekStartDate: { $lte: now }, weekEndDate: { $gte: now } });
   if (!sprint) {
+    // Create new sprint and check if previous streak should be broken
     sprint = await CareerSprint.create(buildSprintPayload({ userId }));
+
+    // Check if previous sprint met its goal
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const previousSprint = await CareerSprint.findOne({
+      userId,
+      weekEndDate: { $lt: now, $gte: weekAgo }
+    });
+
+    if (previousSprint) {
+      const completedCount = previousSprint.tasks.filter((t) => t.isCompleted).length;
+      const goalMet = completedCount >= Number(previousSprint.weeklyGoal || 0);
+
+      // If previous sprint didn't meet goal and we have a streak, break it
+      if (!goalMet && sprint.streak > 0) {
+        sprint.streakBroken = true;
+        sprint.streakBrokenAt = now;
+        sprint.streak = 0;
+        await sprint.save();
+      }
+    }
   }
+
+  // Check if current sprint is close to ending and warn about streak
+  const daysUntilWeekEnd = Math.ceil((sprint.weekEndDate - now) / (1000 * 60 * 60 * 24));
+  if (daysUntilWeekEnd <= 1) {
+    const completedCount = sprint.tasks.filter((t) => t.isCompleted).length;
+    const tasksRemaining = Number(sprint.weeklyGoal || 0) - completedCount;
+    sprint.streakWarning = tasksRemaining > 0 && sprint.streak > 0;
+  }
+
   return sprint;
 };
 
@@ -102,6 +133,43 @@ const updateSprintStreak = async (sprint) => {
 
   sprint.longestStreak = Math.max(Number(sprint.longestStreak || 0), sprint.streak);
   sprint.lastCompletedWeekAt = now;
+  sprint.streakBroken = false;
+  sprint.streakBrokenAt = null;
+  sprint.streakWarning = false;
+  await sprint.save();
+  return sprint;
+};
+
+const restoreStreak = async (userId, sprintId) => {
+  const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
+  if (!sprint) return null;
+
+  // Can only restore if streak was just broken (within last day)
+  if (!sprint.streakBroken || !sprint.streakBrokenAt) {
+    return null;
+  }
+
+  const now = new Date();
+  const hoursSinceBroken = (now - sprint.streakBrokenAt) / (1000 * 60 * 60);
+  if (hoursSinceBroken > 24) {
+    return null; // Too late to restore
+  }
+
+  // Restore to last known streak (before it was broken this sprint)
+  const previousSprint = await CareerSprint.findOne({
+    userId,
+    _id: { $ne: sprintId },
+    weekEndDate: { $lt: sprint.weekStartDate }
+  }).sort({ weekEndDate: -1 }).lean();
+
+  if (previousSprint && previousSprint.streak) {
+    sprint.streak = previousSprint.streak;
+  } else {
+    sprint.streak = 1;
+  }
+
+  sprint.streakBroken = false;
+  sprint.streakBrokenAt = null;
   await sprint.save();
   return sprint;
 };
@@ -110,5 +178,6 @@ module.exports = {
   createSprint,
   getCurrentSprint,
   toggleTaskCompletion,
-  addTaskToSprint
+  addTaskToSprint,
+  restoreStreak
 };

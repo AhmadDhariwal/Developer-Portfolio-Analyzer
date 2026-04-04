@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { CareerProfileService } from './career-profile.service';
 import { CareerStack, ExperienceLevel, CareerGoal } from '../models/career-profile.model';
@@ -82,6 +82,7 @@ export interface AvatarUploadResponse {
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
   private readonly baseUrl = 'http://localhost:5000/api/profile';
+  private readonly apiOrigin = this.baseUrl.replace(/\/api\/profile$/, '');
 
   constructor(
     private readonly http:                HttpClient,
@@ -91,8 +92,25 @@ export class ProfileService {
 
   // ── Fetch profile + stats from backend ────────────────────────────────
   getProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
+    const cacheBust = Date.now();
+    return this.http.get<UserProfile>(`${this.baseUrl}/me?_=${cacheBust}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
+    }).pipe(
+      map((profile) => ({
+        ...profile,
+        avatar: this.resolveAvatarUrl(profile.avatar)
+      })),
       tap(profile => {
+        this.syncStoredUser({
+          _id: profile._id,
+          name: profile.name,
+          githubUsername: profile.githubUsername,
+          avatar: profile.avatar
+        });
+
         // Keep CareerProfileService in sync with the server truth on every profile load
         this.careerProfileService.hydrateFromServer({
           careerStack:     profile.careerStack     ?? 'Full Stack',
@@ -110,12 +128,11 @@ export class ProfileService {
   updateProfile(payload: UpdateProfilePayload): Observable<Partial<UserProfile>> {
     return this.http.put<Partial<UserProfile>>(`${this.baseUrl}/me`, payload).pipe(
       tap((updated) => {
-        // Keep localStorage user object in sync
-        const stored = this.authService.getCurrentUser();
-        if (stored) {
-          const merged = { ...stored, ...updated };
-          localStorage.setItem('user', JSON.stringify(merged));
-        }
+        const next = {
+          ...updated,
+          ...(typeof updated.avatar === 'string' ? { avatar: this.resolveAvatarUrl(updated.avatar) } : {})
+        };
+        this.authService.updateCurrentUser(next);
       })
     );
   }
@@ -130,12 +147,12 @@ export class ProfileService {
     form.append('avatar', file);
 
     return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
+      map((res) => ({
+        ...res,
+        avatar: this.resolveAvatarUrl(res.avatar)
+      })),
       tap((res) => {
-        const stored = this.authService.getCurrentUser();
-        if (stored) {
-          const merged = { ...stored, avatar: res.avatar };
-          localStorage.setItem('user', JSON.stringify(merged));
-        }
+        this.authService.updateCurrentUser({ avatar: res.avatar });
       })
     );
   }
@@ -153,5 +170,28 @@ export class ProfileService {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  }
+
+  resolveAvatarUrl(avatar: string): string {
+    const raw = String(avatar || '').trim();
+    if (!raw) return '';
+
+    if (/^data:/i.test(raw)) return raw;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
+
+    if (raw.startsWith('/uploads/')) {
+      return `${this.apiOrigin}${raw}`;
+    }
+
+    if (raw.startsWith('uploads/')) {
+      return `${this.apiOrigin}/${raw}`;
+    }
+
+    return raw;
+  }
+
+  private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'avatar'>>): void {
+    this.authService.updateCurrentUser(partial);
   }
 }

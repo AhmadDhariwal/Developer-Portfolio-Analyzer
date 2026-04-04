@@ -7,7 +7,9 @@ import {
   PublicProfileSkill,
   PublicProfileAnalytics,
   PublicProfileSections,
-  PublicProfileWorkExperience
+  PublicProfileWorkExperience,
+  PublicProfileUpcomingProject,
+  PublicProfileTestimonial
 } from '../../shared/services/public-profile.service';
 
 @Component({
@@ -89,6 +91,27 @@ export class PortfolioSettingsComponent implements OnInit {
         heading: 'Contact',
         message: "I'm currently looking to join a cross-functional team that values improving people's lives through accessible design. Or have a project in mind? Let's connect.",
         email: String(profile.user?.email || '').trim().toLowerCase()
+      },
+      upcoming: {
+        heading: 'Upcoming Projects',
+        subheading: 'Currently in development and planned next milestones.'
+      },
+      testimonials: {
+        heading: 'Testimonials',
+        subheading: 'What collaborators and clients say about working together.'
+      },
+      cta: {
+        heading: "Let's Work Together",
+        subtext: 'Open to impactful product, platform, and AI-focused opportunities.',
+        primaryLabel: 'Contact Me',
+        secondaryLabel: 'Download Resume',
+        resumeUrl: ''
+      },
+      visibility: {
+        projects: true,
+        upcoming: true,
+        testimonials: true,
+        cta: true
       }
     };
 
@@ -108,6 +131,26 @@ export class PortfolioSettingsComponent implements OnInit {
       ...defaultSections.contact,
       ...contactOverride
     };
+    const upcomingOverride = profile.sections?.upcoming as Partial<PublicProfileSections['upcoming']> | undefined;
+    const testimonialsOverride = profile.sections?.testimonials as Partial<PublicProfileSections['testimonials']> | undefined;
+    const ctaOverride = profile.sections?.cta as Partial<PublicProfileSections['cta']> | undefined;
+    const visibilityOverride = profile.sections?.visibility as Partial<PublicProfileSections['visibility']> | undefined;
+    const upcomingSection: PublicProfileSections['upcoming'] = {
+      ...defaultSections.upcoming,
+      ...upcomingOverride
+    };
+    const testimonialsSection: PublicProfileSections['testimonials'] = {
+      ...defaultSections.testimonials,
+      ...testimonialsOverride
+    };
+    const ctaSection: PublicProfileSections['cta'] = {
+      ...defaultSections.cta,
+      ...ctaOverride
+    };
+    const visibilitySection: PublicProfileSections['visibility'] = {
+      ...defaultSections.visibility,
+      ...visibilityOverride
+    };
 
     return {
       ...profile,
@@ -116,14 +159,40 @@ export class PortfolioSettingsComponent implements OnInit {
         ? profile.projects.map((project) => ({
           ...project,
           repoUrl: String(project.repoUrl || ''),
+          imageUrl: String(project.imageUrl || ''),
+          expectedDate: String(project.expectedDate || ''),
+          status: (project.status || 'completed') as 'completed' | 'in-progress' | 'upcoming' | 'planned'
+        }))
+        : [],
+      upcomingProjects: Array.isArray(profile.upcomingProjects)
+        ? profile.upcomingProjects.map((project) => ({
+          ...project,
+          expectedDate: String(project.expectedDate || ''),
+          techStack: Array.isArray(project.techStack) ? project.techStack : [],
+          status: (project.status || 'planned') as 'in-progress' | 'planned',
+          url: String(project.url || ''),
+          repoUrl: String(project.repoUrl || ''),
           imageUrl: String(project.imageUrl || '')
+        }))
+        : [],
+      testimonials: Array.isArray(profile.testimonials)
+        ? profile.testimonials.map((testimonial) => ({
+          ...testimonial,
+          quote: String(testimonial.quote || ''),
+          name: String(testimonial.name || ''),
+          role: String(testimonial.role || ''),
+          avatarUrl: String(testimonial.avatarUrl || '')
         }))
         : [],
       workExperiences: Array.isArray(profile.workExperiences) ? profile.workExperiences : [],
       sections: {
         hero: heroSection,
         skills: skillsSection,
-        contact: contactSection
+        contact: contactSection,
+        upcoming: upcomingSection,
+        testimonials: testimonialsSection,
+        cta: ctaSection,
+        visibility: visibilitySection
       },
       socialLinks: {
         website: profile.socialLinks?.website || '',
@@ -203,6 +272,8 @@ export class PortfolioSettingsComponent implements OnInit {
         url: '',
         repoUrl: '',
         imageUrl: '',
+        status: 'completed',
+        expectedDate: '',
         tech: ['Angular']
       }
     ];
@@ -225,6 +296,60 @@ export class PortfolioSettingsComponent implements OnInit {
     const project = this.profile.projects[projectIndex];
     if (!project) return;
     project.tech.splice(techIndex, 1);
+  }
+
+  addUpcomingProject(): void {
+    if (!this.profile) return;
+    this.profile.upcomingProjects = [
+      ...(this.profile.upcomingProjects || []),
+      {
+        title: 'New Upcoming Project',
+        description: '',
+        expectedDate: '',
+        techStack: ['Angular'],
+        status: 'planned',
+        url: '',
+        repoUrl: '',
+        imageUrl: ''
+      }
+    ];
+  }
+
+  removeUpcomingProject(index: number): void {
+    if (!this.profile) return;
+    this.profile.upcomingProjects.splice(index, 1);
+  }
+
+  addUpcomingTech(projectIndex: number): void {
+    if (!this.profile) return;
+    const project = this.profile.upcomingProjects[projectIndex];
+    if (!project) return;
+    project.techStack = [...(project.techStack || []), 'New Tech'];
+  }
+
+  removeUpcomingTech(projectIndex: number, techIndex: number): void {
+    if (!this.profile) return;
+    const project = this.profile.upcomingProjects[projectIndex];
+    if (!project) return;
+    project.techStack.splice(techIndex, 1);
+  }
+
+  addTestimonial(): void {
+    if (!this.profile) return;
+    this.profile.testimonials = [
+      ...(this.profile.testimonials || []),
+      {
+        quote: 'Great to collaborate with, highly dependable and focused on outcomes.',
+        name: 'New Reference',
+        role: 'Manager',
+        avatarUrl: ''
+      }
+    ];
+  }
+
+  removeTestimonial(index: number): void {
+    if (!this.profile) return;
+    this.profile.testimonials.splice(index, 1);
   }
 
   addWorkExperience(): void {
@@ -275,11 +400,37 @@ export class PortfolioSettingsComponent implements OnInit {
         url: String(project?.url || '').trim(),
         repoUrl: String(project?.repoUrl || '').trim(),
         imageUrl: String(project?.imageUrl || '').trim(),
+        status: (String(project?.status || 'completed').trim().toLowerCase() || 'completed') as 'completed' | 'in-progress' | 'upcoming' | 'planned',
+        expectedDate: String(project?.expectedDate || '').trim(),
         tech: Array.isArray(project?.tech)
           ? project.tech.map((tech) => String(tech || '').trim()).filter(Boolean)
           : []
       }))
       .filter((project) => project.title);
+
+    const normalizedUpcomingProjects = (this.profile.upcomingProjects || [])
+      .map((project) => ({
+        title: String(project?.title || '').trim(),
+        description: String(project?.description || '').trim(),
+        expectedDate: String(project?.expectedDate || '').trim(),
+        status: (String(project?.status || 'planned').trim().toLowerCase() === 'in-progress' ? 'in-progress' : 'planned') as 'in-progress' | 'planned',
+        url: String(project?.url || '').trim(),
+        repoUrl: String(project?.repoUrl || '').trim(),
+        imageUrl: String(project?.imageUrl || '').trim(),
+        techStack: Array.isArray(project?.techStack)
+          ? project.techStack.map((tech) => String(tech || '').trim()).filter(Boolean)
+          : []
+      }))
+      .filter((project) => project.title);
+
+    const normalizedTestimonials = (this.profile.testimonials || [])
+      .map((testimonial) => ({
+        quote: String(testimonial?.quote || '').trim(),
+        name: String(testimonial?.name || '').trim(),
+        role: String(testimonial?.role || '').trim(),
+        avatarUrl: String(testimonial?.avatarUrl || '').trim()
+      }))
+      .filter((testimonial) => testimonial.quote && testimonial.name);
 
     const normalizedWorkExperiences = (this.profile.workExperiences || [])
       .map((experience) => ({
@@ -311,6 +462,27 @@ export class PortfolioSettingsComponent implements OnInit {
         heading: String(this.profile.sections?.contact?.heading || '').trim(),
         message: String(this.profile.sections?.contact?.message || '').trim(),
         email: String(this.profile.sections?.contact?.email || '').trim().toLowerCase()
+      },
+      upcoming: {
+        heading: String(this.profile.sections?.upcoming?.heading || '').trim(),
+        subheading: String(this.profile.sections?.upcoming?.subheading || '').trim()
+      },
+      testimonials: {
+        heading: String(this.profile.sections?.testimonials?.heading || '').trim(),
+        subheading: String(this.profile.sections?.testimonials?.subheading || '').trim()
+      },
+      cta: {
+        heading: String(this.profile.sections?.cta?.heading || '').trim(),
+        subtext: String(this.profile.sections?.cta?.subtext || '').trim(),
+        primaryLabel: String(this.profile.sections?.cta?.primaryLabel || '').trim(),
+        secondaryLabel: String(this.profile.sections?.cta?.secondaryLabel || '').trim(),
+        resumeUrl: String(this.profile.sections?.cta?.resumeUrl || '').trim()
+      },
+      visibility: {
+        projects: Boolean(this.profile.sections?.visibility?.projects ?? true),
+        upcoming: Boolean(this.profile.sections?.visibility?.upcoming ?? true),
+        testimonials: Boolean(this.profile.sections?.visibility?.testimonials ?? true),
+        cta: Boolean(this.profile.sections?.visibility?.cta ?? true)
       }
     };
 
@@ -323,6 +495,8 @@ export class PortfolioSettingsComponent implements OnInit {
       seoDescription: this.profile.seoDescription,
       skills: normalizedSkills as PublicProfileSkill[],
       projects: normalizedProjects,
+      upcomingProjects: normalizedUpcomingProjects as PublicProfileUpcomingProject[],
+      testimonials: normalizedTestimonials as PublicProfileTestimonial[],
       workExperiences: normalizedWorkExperiences as PublicProfileWorkExperience[],
       sections: normalizedSections,
       socialLinks: this.profile.socialLinks

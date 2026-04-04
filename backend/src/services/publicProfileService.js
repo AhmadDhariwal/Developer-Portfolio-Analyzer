@@ -9,6 +9,8 @@ const WeeklyReport = require('../models/weeklyReport');
 
 const DEFAULT_MAX_SKILLS = 12;
 const DEFAULT_MAX_PROJECTS = 12;
+const DEFAULT_MAX_UPCOMING_PROJECTS = 12;
+const DEFAULT_MAX_TESTIMONIALS = 12;
 const DEFAULT_MAX_TECH = 10;
 const DEFAULT_MAX_WORK_EXPERIENCES = 8;
 const DEFAULT_WORK_EXPERIENCE_ICONS = [
@@ -26,6 +28,45 @@ const clamp = (value, min = 0, max = 100) => {
 
 const trimText = (value = '', maxLen = 240) => String(value || '').trim().slice(0, maxLen);
 const normalizeEmail = (value = '') => String(value || '').trim().toLowerCase().slice(0, 120);
+
+const normalizeProjectStatus = (value = '', fallback = 'completed') => {
+  const status = String(value || '').trim().toLowerCase();
+  if (['completed', 'in-progress', 'upcoming', 'planned'].includes(status)) {
+    return status;
+  }
+  return fallback;
+};
+
+const normalizeUpcomingStatus = (value = '', fallback = 'planned') => {
+  const status = String(value || '').trim().toLowerCase();
+  if (status === 'in-progress') return 'in-progress';
+  if (status === 'planned') return 'planned';
+  if (status === 'upcoming') return 'planned';
+  return fallback;
+};
+
+const normalizeExpectedDate = (value = '') => trimText(value, 48);
+
+const resolveAvatarForResponse = (avatarValue = '', req = null) => {
+  const raw = String(avatarValue || '').trim();
+  if (!raw) return '';
+  if (/^data:/i.test(raw)) return raw;
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  const host = req?.get?.('host');
+  const protocol = req?.protocol;
+  if (host && protocol) {
+    if (raw.startsWith('/uploads/')) {
+      return `${protocol}://${host}${raw}`;
+    }
+
+    if (raw.startsWith('uploads/')) {
+      return `${protocol}://${host}/${raw}`;
+    }
+  }
+
+  return raw;
+};
 
 const inferRoleLabel = (headline = '', jobTitle = '') => {
   const source = `${headline || ''} ${jobTitle || ''}`.toLowerCase();
@@ -59,6 +100,27 @@ const getDefaultSectionCopy = ({ user = {}, profile = {} } = {}) => {
       heading: 'Contact',
       message: "I'm currently looking to join a cross-functional team that values improving people's lives through accessible design. Or have a project in mind? Let's connect.",
       email: normalizeEmail(user?.email || '')
+    },
+    upcoming: {
+      heading: 'Upcoming Projects',
+      subheading: 'Currently in development and planned next milestones.'
+    },
+    testimonials: {
+      heading: 'Testimonials',
+      subheading: 'What collaborators and clients say about working together.'
+    },
+    cta: {
+      heading: "Let's Work Together",
+      subtext: 'Open to impactful product, platform, and AI-focused opportunities.',
+      primaryLabel: 'Contact Me',
+      secondaryLabel: 'Download Resume',
+      resumeUrl: ''
+    },
+    visibility: {
+      projects: true,
+      upcoming: true,
+      testimonials: true,
+      cta: true
     }
   };
 };
@@ -76,6 +138,22 @@ const normalizeSectionCopy = (sections = {}, { user = {}, profile = {} } = {}) =
   const mergedContact = {
     ...defaults.contact,
     ...sections?.contact
+  };
+  const mergedUpcoming = {
+    ...defaults.upcoming,
+    ...sections?.upcoming
+  };
+  const mergedTestimonials = {
+    ...defaults.testimonials,
+    ...sections?.testimonials
+  };
+  const mergedCta = {
+    ...defaults.cta,
+    ...sections?.cta
+  };
+  const mergedVisibility = {
+    ...defaults.visibility,
+    ...sections?.visibility
   };
 
   return {
@@ -98,6 +176,27 @@ const normalizeSectionCopy = (sections = {}, { user = {}, profile = {} } = {}) =
       heading: trimText(mergedContact.heading, 48) || 'Contact',
       message: trimText(mergedContact.message, 240),
       email: normalizeEmail(mergedContact.email || user?.email || '')
+    },
+    upcoming: {
+      heading: trimText(mergedUpcoming.heading, 64) || 'Upcoming Projects',
+      subheading: trimText(mergedUpcoming.subheading, 220)
+    },
+    testimonials: {
+      heading: trimText(mergedTestimonials.heading, 64) || 'Testimonials',
+      subheading: trimText(mergedTestimonials.subheading, 220)
+    },
+    cta: {
+      heading: trimText(mergedCta.heading, 72) || "Let's Work Together",
+      subtext: trimText(mergedCta.subtext, 240),
+      primaryLabel: trimText(mergedCta.primaryLabel, 40) || 'Contact Me',
+      secondaryLabel: trimText(mergedCta.secondaryLabel, 40) || 'Download Resume',
+      resumeUrl: normalizeUrl(mergedCta.resumeUrl || '')
+    },
+    visibility: {
+      projects: Boolean(mergedVisibility.projects ?? true),
+      upcoming: Boolean(mergedVisibility.upcoming ?? true),
+      testimonials: Boolean(mergedVisibility.testimonials ?? true),
+      cta: Boolean(mergedVisibility.cta ?? true)
     }
   };
 };
@@ -296,11 +395,58 @@ const normalizeProjects = (projects = []) => {
       url: normalizeUrl(project?.url || ''),
       repoUrl: normalizeUrl(project?.repoUrl || ''),
       imageUrl: normalizeUrl(project?.imageUrl || ''),
-      tech: normalizeTechList(project?.tech || [])
+      tech: normalizeTechList(project?.tech || []),
+      status: normalizeProjectStatus(project?.status, 'completed'),
+      expectedDate: normalizeExpectedDate(project?.expectedDate || '')
     });
   });
 
   return normalized.slice(0, DEFAULT_MAX_PROJECTS);
+};
+
+const normalizeUpcomingProjects = (upcomingProjects = []) => {
+  if (!Array.isArray(upcomingProjects)) return [];
+
+  const normalized = [];
+
+  upcomingProjects.forEach((project) => {
+    const title = trimText(project?.title, 96);
+    if (!title) return;
+
+    normalized.push({
+      title,
+      description: trimText(project?.description, 520),
+      expectedDate: normalizeExpectedDate(project?.expectedDate || ''),
+      techStack: normalizeTechList(project?.techStack || project?.tech || []),
+      status: normalizeUpcomingStatus(project?.status, 'planned'),
+      url: normalizeUrl(project?.url || ''),
+      repoUrl: normalizeUrl(project?.repoUrl || ''),
+      imageUrl: normalizeUrl(project?.imageUrl || '')
+    });
+  });
+
+  return normalized.slice(0, DEFAULT_MAX_UPCOMING_PROJECTS);
+};
+
+const normalizeTestimonials = (testimonials = []) => {
+  if (!Array.isArray(testimonials)) return [];
+
+  const normalized = [];
+
+  testimonials.forEach((testimonial) => {
+    const quote = trimText(testimonial?.quote, 520);
+    const name = trimText(testimonial?.name, 96);
+    if (!quote || !name) return;
+
+    normalized.push({
+      quote,
+      name,
+      role: trimText(testimonial?.role, 96),
+      avatarUrl: normalizeUrl(testimonial?.avatarUrl || '')
+    });
+  });
+
+  return normalized.slice(0, DEFAULT_MAX_TESTIMONIALS);
 };
 
 const ensureUniqueSlug = async (base, { excludeProfileId = null } = {}) => {
@@ -411,7 +557,7 @@ const calculateProfileStrength = ({ profile, user, skills, projects, workExperie
   return Math.round((completed / checks.length) * 100);
 };
 
-async function buildPublicProfilePayload(profile, user) {
+async function buildPublicProfilePayload(profile, user, req = null) {
   const [skillScores, latestReport] = await Promise.all([
     getSkillScores(profile.userId),
     WeeklyReport.findOne({ userId: profile.userId }).sort({ weekEndDate: -1 }).lean()
@@ -419,6 +565,22 @@ async function buildPublicProfilePayload(profile, user) {
 
   const normalizedSkills = profile.skills?.length ? normalizeSkills(profile.skills) : skillScores;
   const normalizedProjects = normalizeProjects(profile.projects || []);
+  const normalizedUpcomingProjectsFromField = normalizeUpcomingProjects(profile.upcomingProjects || []);
+  const normalizedUpcomingProjects = normalizedUpcomingProjectsFromField.length
+    ? normalizedUpcomingProjectsFromField
+    : normalizedProjects
+      .filter((project) => ['in-progress', 'upcoming', 'planned'].includes(project.status || ''))
+      .map((project) => ({
+        title: project.title,
+        description: project.description,
+        expectedDate: project.expectedDate || '',
+        techStack: project.tech || [],
+        status: normalizeUpcomingStatus(project.status, 'planned'),
+        url: project.url,
+        repoUrl: project.repoUrl,
+        imageUrl: project.imageUrl
+      }));
+  const normalizedTestimonials = normalizeTestimonials(profile.testimonials || []);
   const normalizedSocialLinks = normalizeSocialLinks(profile.socialLinks || {}, user?.githubUsername || '');
   const sectionsSource = profile.sections?.toObject
     ? profile.sections.toObject()
@@ -439,6 +601,8 @@ async function buildPublicProfilePayload(profile, user) {
     seoDescription: trimText(profile.seoDescription, 180),
     skills: normalizedSkills,
     projects: normalizedProjects,
+    upcomingProjects: normalizedUpcomingProjects,
+    testimonials: normalizedTestimonials,
     workExperiences: normalizedWorkExperiences,
     sections: normalizedSections,
     socialLinks: normalizedSocialLinks,
@@ -469,7 +633,7 @@ async function buildPublicProfilePayload(profile, user) {
       name: user?.name || '',
       jobTitle: user?.jobTitle || '',
       location: user?.location || '',
-      avatar: user?.avatar || '',
+      avatar: resolveAvatarForResponse(user?.avatar || '', req),
       githubUsername: user?.githubUsername || '',
       email: user?.email || ''
     }
@@ -514,6 +678,14 @@ const applyCollectionProfileUpdates = ({ profile, payload }) => {
     profile.projects = normalizeProjects(payload.projects);
   }
 
+  if (payload.upcomingProjects !== undefined) {
+    profile.upcomingProjects = normalizeUpcomingProjects(payload.upcomingProjects);
+  }
+
+  if (payload.testimonials !== undefined) {
+    profile.testimonials = normalizeTestimonials(payload.testimonials);
+  }
+
   if (payload.workExperiences !== undefined) {
     profile.workExperiences = normalizeWorkExperiences(payload.workExperiences, {
       projects: normalizeProjects(profile.projects || []),
@@ -530,6 +702,10 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
   const incomingHero = incomingSections.hero && typeof incomingSections.hero === 'object' ? incomingSections.hero : {};
   const incomingSkills = incomingSections.skills && typeof incomingSections.skills === 'object' ? incomingSections.skills : {};
   const incomingContact = incomingSections.contact && typeof incomingSections.contact === 'object' ? incomingSections.contact : {};
+  const incomingUpcoming = incomingSections.upcoming && typeof incomingSections.upcoming === 'object' ? incomingSections.upcoming : {};
+  const incomingTestimonials = incomingSections.testimonials && typeof incomingSections.testimonials === 'object' ? incomingSections.testimonials : {};
+  const incomingCta = incomingSections.cta && typeof incomingSections.cta === 'object' ? incomingSections.cta : {};
+  const incomingVisibility = incomingSections.visibility && typeof incomingSections.visibility === 'object' ? incomingSections.visibility : {};
 
   const mergedSections = {
     ...existingSections,
@@ -545,6 +721,22 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
     contact: {
       ...existingSections.contact,
       ...incomingContact
+    },
+    upcoming: {
+      ...existingSections.upcoming,
+      ...incomingUpcoming
+    },
+    testimonials: {
+      ...existingSections.testimonials,
+      ...incomingTestimonials
+    },
+    cta: {
+      ...existingSections.cta,
+      ...incomingCta
+    },
+    visibility: {
+      ...existingSections.visibility,
+      ...incomingVisibility
     }
   };
 
@@ -624,7 +816,7 @@ const getPublicProfileBySlug = async (slug, req) => {
     .lean();
   await recordProfileView({ profile, req });
 
-  return buildPublicProfilePayload(profile, user);
+  return buildPublicProfilePayload(profile, user, req);
 };
 
 const getPublicProfileForOwner = async (userId) => {

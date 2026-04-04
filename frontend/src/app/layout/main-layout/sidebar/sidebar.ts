@@ -1,8 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, DestroyRef, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../shared/services/auth.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
+import { ProfileService } from '../../../shared/services/profile.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,11 +13,17 @@ import { TenantContextService } from '../../../shared/services/tenant-context.se
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
-export class Sidebar {
+export class Sidebar implements OnInit {
   @Input() isOpen: boolean = true;
   @Output() collapse = new EventEmitter<void>();
 
   openGroups = new Set<string>(['Interviews & Reports']);
+  userName = 'Developer';
+  userHandle = 'developer';
+  userInitial = 'D';
+  userAvatar = '';
+  avatarVersion = Date.now();
+  private readonly destroyRef = inject(DestroyRef);
 
   navItems = [
     {
@@ -118,8 +126,18 @@ export class Sidebar {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
+    private readonly profileService: ProfileService
   ) {}
+
+  ngOnInit(): void {
+    this.syncUserState(this.authService.getCurrentUser());
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        setTimeout(() => this.syncUserState(user));
+      });
+  }
 
   get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
     const role = this.tenantContext.snapshot.myRole;
@@ -150,5 +168,39 @@ export class Sidebar {
   logout() {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  getAvatarSrc(): string {
+    const raw = String(this.userAvatar || '').trim();
+    if (!raw) return '';
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+    
+    const separator = raw.includes('?') ? '&' : '?';
+    return `${raw}${separator}v=${this.avatarVersion}`;
+  }
+
+  private bumpAvatarVersion(): void {
+    this.avatarVersion = Date.now();
+  }
+
+  private syncUserState(user: any): void {
+    if (!user) {
+      this.userName = 'Developer';
+      this.userHandle = 'developer';
+      this.userInitial = 'D';
+      this.userAvatar = '';
+      return;
+    }
+
+    const previousAvatar = this.userAvatar;
+    this.userName = user.name || 'Developer';
+    this.userHandle = user.githubUsername || 'developer';
+    this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
+    this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
+
+    // Bump version if avatar changed
+    if (previousAvatar !== this.userAvatar) {
+      this.bumpAvatarVersion();
+    }
   }
 }

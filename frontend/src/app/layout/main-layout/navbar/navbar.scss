@@ -443,7 +443,7 @@
       .avatar-circle {
         width: 34px;
         height: 34px;
-        border-radius: 50%;
+        border-radius: 12px;
         background: linear-gradient(135deg, #6366F1, #8B5CF6);
         display: flex;
         align-items: center;
@@ -452,6 +452,27 @@
         font-size: 0.875rem;
         color: #ffffff;
         flex-shrink: 0;
+        overflow: hidden;
+        transition: border-radius 0.25s ease, transform 0.25s ease;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.25s ease;
+        }
+      }
+
+      .avatar-button:hover {
+        .avatar-circle {
+          border-radius: 16px;
+          transform: translateY(-1px);
+
+          img {
+            transform: scale(1.06);
+          }
+        }
       }
 
       .user-info {

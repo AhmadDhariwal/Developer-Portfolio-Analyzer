@@ -1,0 +1,29 @@
+<article class="project-item" [class.reverse]="reverse">
+  <div class="project-content" [class.content-left]="!reverse" [class.content-right]="reverse">
+    <span class="project-label">Featured Project</span>
+    <h3 class="project-title">{{ project.title }}</h3>
+
+    <div class="project-description-card">
+      <p>{{ project.description }}</p>
+    </div>
+
+    <div class="project-tech" *ngIf="project.tech.length">
+      <span class="project-tech-chip" *ngFor="let tech of project.tech">{{ tech }}</span>
+    </div>
+
+    <div class="project-links">
+      <a *ngIf="primaryLink" [href]="primaryLink" target="_blank" rel="noopener" class="project-link" title="Open project">
+        <i class="mdi mdi-open-in-new"></i>
+      </a>
+      <a *ngIf="repositoryLink" [href]="repositoryLink" target="_blank" rel="noopener" class="project-link" title="Open repository">
+        <i class="mdi mdi-github"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="project-preview" [class.preview-right]="!reverse" [class.preview-left]="reverse">
+    <div class="preview-frame">
+      <img [src]="previewImage" [alt]="project.title" class="preview-image" loading="lazy" decoding="async" />
+    </div>
+  </div>
+</article>

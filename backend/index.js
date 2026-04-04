@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('node:path');
 const connectDB = require('./src/config/db');
 const { validateEnv } = require('./src/config/env');
 const logger = require('./src/utils/logger');
@@ -55,7 +56,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             connectSrc: ["'self'", 'http://localhost:4200', 'http://localhost:3000', 'http://localhost:5000'],
-            imgSrc: ["'self'", 'data:', 'https:'],
+            imgSrc: ["'self'", 'data:', 'https:', 'http://localhost:5000', 'http://localhost:4200'],
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             frameAncestors: ["'none'"]
@@ -68,7 +69,12 @@ app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static('uploads'));
+// Serve uploads with cache control to prevent stale avatar issues
+app.use('/uploads', (req, res, next) => {
+  // Set cache control headers to allow browser caching but enable revalidation
+  res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
     app.use((req, _res, next) => {

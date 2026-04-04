@@ -82,6 +82,38 @@
           <h3>Portfolio Copy Sections</h3>
         </div>
         <div class="card-content">
+          <h4 class="subsection-title">Section Visibility</h4>
+          <div class="section-toggle-grid">
+            <label class="section-toggle-item" for="toggle-projects">
+              <div>
+                <span>Featured Projects</span>
+                <small>Show or hide your main project highlights section.</small>
+              </div>
+              <input id="toggle-projects" type="checkbox" [(ngModel)]="profile.sections.visibility.projects" />
+            </label>
+            <label class="section-toggle-item" for="toggle-upcoming">
+              <div>
+                <span>Upcoming Projects</span>
+                <small>Control visibility for roadmap and in-progress projects.</small>
+              </div>
+              <input id="toggle-upcoming" type="checkbox" [(ngModel)]="profile.sections.visibility.upcoming" />
+            </label>
+            <label class="section-toggle-item" for="toggle-testimonials">
+              <div>
+                <span>Testimonials</span>
+                <small>Show or hide collaborator recommendations.</small>
+              </div>
+              <input id="toggle-testimonials" type="checkbox" [(ngModel)]="profile.sections.visibility.testimonials" />
+            </label>
+            <label class="section-toggle-item" for="toggle-cta">
+              <div>
+                <span>Call To Action</span>
+                <small>Control the “Let’s Work Together” section near the footer.</small>
+              </div>
+              <input id="toggle-cta" type="checkbox" [(ngModel)]="profile.sections.visibility.cta" />
+            </label>
+          </div>
+
           <h4 class="subsection-title">Hero</h4>
           <div class="form-grid-3">
             <div class="input-group">
@@ -155,6 +187,57 @@
             <label for="contact-message">Contact Message</label>
             <textarea id="contact-message" [(ngModel)]="profile.sections.contact.message" rows="3" placeholder="Let's connect."></textarea>
           </div>
+
+          <h4 class="subsection-title">Upcoming Section Copy</h4>
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="upcoming-heading">Upcoming Heading</label>
+              <input id="upcoming-heading" [(ngModel)]="profile.sections.upcoming.heading" placeholder="Upcoming Projects" />
+            </div>
+            <div class="input-group">
+              <label for="upcoming-subheading">Upcoming Subheading</label>
+              <input id="upcoming-subheading" [(ngModel)]="profile.sections.upcoming.subheading" placeholder="Currently in development and planned next milestones." />
+            </div>
+          </div>
+
+          <h4 class="subsection-title">Testimonials Section Copy</h4>
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="testimonials-heading">Testimonials Heading</label>
+              <input id="testimonials-heading" [(ngModel)]="profile.sections.testimonials.heading" placeholder="Testimonials" />
+            </div>
+            <div class="input-group">
+              <label for="testimonials-subheading">Testimonials Subheading</label>
+              <input id="testimonials-subheading" [(ngModel)]="profile.sections.testimonials.subheading" placeholder="What collaborators and clients say about working together." />
+            </div>
+          </div>
+
+          <h4 class="subsection-title">CTA Section Copy</h4>
+          <div class="form-row split">
+            <div class="input-group">
+              <label for="cta-heading">CTA Heading</label>
+              <input id="cta-heading" [(ngModel)]="profile.sections.cta.heading" placeholder="Let's Work Together" />
+            </div>
+            <div class="input-group">
+              <label for="cta-subtext">CTA Subtext</label>
+              <input id="cta-subtext" [(ngModel)]="profile.sections.cta.subtext" placeholder="Open to impactful opportunities." />
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label for="cta-primary">Primary Button Label</label>
+              <input id="cta-primary" [(ngModel)]="profile.sections.cta.primaryLabel" placeholder="Contact Me" />
+            </div>
+            <div class="input-group">
+              <label for="cta-secondary">Secondary Button Label</label>
+              <input id="cta-secondary" [(ngModel)]="profile.sections.cta.secondaryLabel" placeholder="Download Resume" />
+            </div>
+            <div class="input-group">
+              <label for="cta-resume-url">Resume URL</label>
+              <input id="cta-resume-url" [(ngModel)]="profile.sections.cta.resumeUrl" placeholder="https://.../resume.pdf" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -216,6 +299,21 @@
                   <input [id]="'project-image-' + projectIndex" [(ngModel)]="project.imageUrl" placeholder="https://.../preview.png" />
                 </div>
               </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'project-status-' + projectIndex">Project Status</label>
+                  <select [id]="'project-status-' + projectIndex" [(ngModel)]="project.status">
+                    <option value="completed">Completed</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="planned">Planned</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'project-date-' + projectIndex">Expected Date</label>
+                  <input [id]="'project-date-' + projectIndex" [(ngModel)]="project.expectedDate" placeholder="Q3 2026" />
+                </div>
+              </div>
               <div class="input-group">
                 <label [attr.for]="'project-description-' + projectIndex">Impact Description</label>
                 <textarea [id]="'project-description-' + projectIndex" [(ngModel)]="project.description" rows="3" placeholder="What was the measurable outcome?"></textarea>
@@ -239,6 +337,113 @@
           </div>
           <div class="empty-placeholder" *ngIf="!profile.projects.length">
             Document your best work to provide evidence of your skills.
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-timeline-clock-outline"></i>
+          <h3>Upcoming Projects</h3>
+          <button class="ghost-add-btn" (click)="addUpcomingProject()">+ Add Upcoming</button>
+        </div>
+        <div class="card-content">
+          <div class="projects-stack">
+            <div class="project-entry" *ngFor="let upcoming of profile.upcomingProjects; let upcomingIndex = index; trackBy: trackByIndex">
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-title-' + upcomingIndex">Project Title</label>
+                  <input [id]="'upcoming-title-' + upcomingIndex" [(ngModel)]="upcoming.title" placeholder="Upcoming project" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-date-' + upcomingIndex">Expected Completion</label>
+                  <input [id]="'upcoming-date-' + upcomingIndex" [(ngModel)]="upcoming.expectedDate" placeholder="Dec 2026" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-status-' + upcomingIndex">Status</label>
+                  <select [id]="'upcoming-status-' + upcomingIndex" [(ngModel)]="upcoming.status">
+                    <option value="planned">Planned</option>
+                    <option value="in-progress">In Progress</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-image-' + upcomingIndex">Preview Image URL</label>
+                  <input [id]="'upcoming-image-' + upcomingIndex" [(ngModel)]="upcoming.imageUrl" placeholder="https://.../preview.png" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-url-' + upcomingIndex">Live URL</label>
+                  <input [id]="'upcoming-url-' + upcomingIndex" [(ngModel)]="upcoming.url" placeholder="https://..." />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'upcoming-repo-' + upcomingIndex">Repository URL</label>
+                  <input [id]="'upcoming-repo-' + upcomingIndex" [(ngModel)]="upcoming.repoUrl" placeholder="https://github.com/..." />
+                </div>
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'upcoming-description-' + upcomingIndex">Short Description</label>
+                <textarea [id]="'upcoming-description-' + upcomingIndex" [(ngModel)]="upcoming.description" rows="3" placeholder="What problem will it solve?"></textarea>
+              </div>
+              <div class="tech-stack-manager">
+                <div class="manager-head">
+                  <label [attr.for]="'upcoming-tech-' + upcomingIndex">Tech Stack</label>
+                  <button class="tiny-add" (click)="addUpcomingTech(upcomingIndex)">+ Add</button>
+                </div>
+                <div class="tech-tags-input">
+                  <div class="tech-tag-chip" *ngFor="let tech of upcoming.techStack; let techIndex = index; trackBy: trackByIndex">
+                    <input [id]="'upcoming-tech-' + upcomingIndex + '-' + techIndex" [(ngModel)]="upcoming.techStack[techIndex]" placeholder="Tech" />
+                    <button title="remove tech" (click)="removeUpcomingTech(upcomingIndex, techIndex)"><i class="mdi mdi-close"></i></button>
+                  </div>
+                </div>
+              </div>
+              <button class="remove-project-btn" (click)="removeUpcomingProject(upcomingIndex)">
+                <i class="mdi mdi-trash-can-outline"></i> Delete Upcoming Project
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!profile.upcomingProjects.length">
+            Add roadmap projects here. These will appear in the new Upcoming section.
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-account-voice"></i>
+          <h3>Testimonials</h3>
+          <button class="ghost-add-btn" (click)="addTestimonial()">+ Add Testimonial</button>
+        </div>
+        <div class="card-content">
+          <div class="projects-stack">
+            <div class="project-entry" *ngFor="let testimonial of profile.testimonials; let testimonialIndex = index; trackBy: trackByIndex">
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'testimonial-name-' + testimonialIndex">Name</label>
+                  <input [id]="'testimonial-name-' + testimonialIndex" [(ngModel)]="testimonial.name" placeholder="Person name" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'testimonial-role-' + testimonialIndex">Role</label>
+                  <input [id]="'testimonial-role-' + testimonialIndex" [(ngModel)]="testimonial.role" placeholder="Manager, Client, Team Lead" />
+                </div>
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'testimonial-avatar-' + testimonialIndex">Avatar URL (optional)</label>
+                <input [id]="'testimonial-avatar-' + testimonialIndex" [(ngModel)]="testimonial.avatarUrl" placeholder="https://.../avatar.jpg" />
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'testimonial-quote-' + testimonialIndex">Quote</label>
+                <textarea [id]="'testimonial-quote-' + testimonialIndex" [(ngModel)]="testimonial.quote" rows="3" placeholder="Working with Ahmad was excellent..."></textarea>
+              </div>
+              <button class="remove-project-btn" (click)="removeTestimonial(testimonialIndex)">
+                <i class="mdi mdi-trash-can-outline"></i> Delete Testimonial
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!profile.testimonials.length">
+            Add testimonials to strengthen your credibility section.
           </div>
         </div>
       </section>

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CareerSprintService, CareerSprint, SprintTask } from '../../shared/services/career-sprint.service';
+import { ProfileService } from '../../shared/services/profile.service';
 
 @Component({
   selector: 'app-career-sprint',
@@ -12,6 +13,9 @@ import { CareerSprintService, CareerSprint, SprintTask } from '../../shared/serv
 })
 export class CareerSprintComponent implements OnInit {
   sprint: CareerSprint | null = null;
+  userAvatar = '';
+  userName = '';
+  userInitial = 'D';
   isLoading = false;
   newTaskTitle = '';
   newTaskDescription = '';
@@ -19,11 +23,27 @@ export class CareerSprintComponent implements OnInit {
 
   constructor(
     private readonly sprintService: CareerSprintService,
+    private readonly profileService: ProfileService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadSprint();
+    this.loadProfile();
+  }
+
+  loadProfile(): void {
+    this.profileService.getProfile().subscribe({
+      next: (profile) => {
+        this.userAvatar = this.profileService.resolveAvatarUrl(profile.avatar || '');
+        this.userName = profile.name || '';
+        this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadSprint(): void {
@@ -109,5 +129,32 @@ export class CareerSprintComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  restoreStreak(): void {
+    if (!this.sprint) return;
+
+    this.sprintService.restoreStreak(this.sprint._id).subscribe({
+      next: (sprint) => {
+        this.sprint = sprint;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getStreakLabel(): string {
+    if (!this.sprint) return '';
+    const weeks = this.sprint.streak || 0;
+    return weeks === 1 ? '1 week' : `${weeks} weeks`;
+  }
+
+  getStreakStatus(): string {
+    if (!this.sprint) return '';
+    if (this.sprint.streakBroken) return 'broken';
+    if (this.sprint.streakWarning) return 'warning';
+    return 'active';
   }
 }

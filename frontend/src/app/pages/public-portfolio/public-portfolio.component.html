@@ -13,11 +13,17 @@
           <path d="M20 12 L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
         </svg>
       </div>
-      <div class="nav-links">
-        <a href="#home" class="nav-link">Home</a>
-        <a href="#about" class="nav-link">About</a>
-        <a href="#projects" class="nav-link">Projects</a>
-        <a href="#contact" class="nav-link">Contact</a>
+
+      <button class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen">
+        <i class="mdi" [ngClass]="mobileMenuOpen ? 'mdi-close' : 'mdi-menu'"></i>
+      </button>
+
+      <div class="nav-links" [class.mobile-open]="mobileMenuOpen">
+        <a href="#home" class="nav-link" [class.active]="activeSection === 'home'" (click)="scrollToSection('home', $event)">Home</a>
+        <a href="#about" class="nav-link" [class.active]="activeSection === 'about'" (click)="scrollToSection('about', $event)">About</a>
+        <a href="#projects" class="nav-link" [class.active]="activeSection === 'projects'" (click)="scrollToSection('projects', $event)" *ngIf="isSectionVisible('projects')">Projects</a>
+        <a href="#upcoming" class="nav-link" [class.active]="activeSection === 'upcoming'" (click)="scrollToSection('upcoming', $event)" *ngIf="shouldShowUpcomingNav()">Upcoming</a>
+        <a href="#contact" class="nav-link" [class.active]="activeSection === 'contact'" (click)="scrollToSection('contact', $event)">Contact</a>
       </div>
     </div>
   </nav>
@@ -192,43 +198,49 @@
   </section>
 
   <!-- Featured Projects Section -->
-  <section class="projects-section reveal-on-scroll" id="projects" *ngIf="profile.projects && profile.projects.length > 0">
+  <section class="projects-section reveal-on-scroll" id="projects" *ngIf="isSectionVisible('projects') && getFeaturedProjects().length > 0">
     <div class="projects-container">
-      <div 
-        class="project-item" 
-        *ngFor="let project of profile.projects; let even = even; let i = index"
-        [class.reverse]="!even">
-        
-        <div class="project-content" [class.content-left]="even" [class.content-right]="!even">
-          <span class="project-label">Featured Project</span>
-          <h3 class="project-title">{{ project.title }}</h3>
-          
-          <div class="project-description-card">
-            <p>{{ project.description }}</p>
-          </div>
-
-          <div class="project-tech" *ngIf="project.tech.length">
-            <span class="project-tech-chip" *ngFor="let tech of project.tech">{{ tech }}</span>
-          </div>
-          
-          <div class="project-links">
-            <a *ngIf="getProjectPrimaryLink(project)" [href]="getProjectPrimaryLink(project)" target="_blank" rel="noopener" class="project-link">
-              <i class="mdi mdi-open-in-new"></i>
-            </a>
-            <a *ngIf="getProjectRepositoryLink(project)" [href]="getProjectRepositoryLink(project)" target="_blank" rel="noopener" class="project-link">
-              <i class="mdi mdi-github"></i>
-            </a>
-          </div>
-        </div>
-
-        <div class="project-preview" [class.preview-right]="even" [class.preview-left]="!even">
-          <div class="preview-frame">
-            <img title="projectpreview" [src]="getProjectPreview(project)" [alt]="project.title" class="preview-image">
-          </div>
-        </div>
+      <div class="section-header">
+        <h2 class="section-title">Featured Projects</h2>
+        <p class="section-subtitle">Showcasing my best work and achievements</p>
       </div>
+      <app-project-card
+        *ngFor="let project of getFeaturedProjects(); let even = even; let i = index"
+        [project]="project"
+        [reverse]="!even"
+        [primaryLink]="getProjectPrimaryLink(project)"
+        [repositoryLink]="getProjectRepositoryLink(project)"
+        [previewImage]="getProjectPreview(project)"
+      ></app-project-card>
     </div>
   </section>
+
+  <app-upcoming-projects-section
+    *ngIf="isSectionVisible('upcoming')"
+    [heading]="profile.sections.upcoming.heading"
+    [subheading]="profile.sections.upcoming.subheading"
+    [projects]="getUpcomingProjects()"
+    [previewResolver]="previewResolver"
+    [primaryLinkResolver]="primaryLinkResolver"
+    [repoLinkResolver]="repoLinkResolver"
+  ></app-upcoming-projects-section>
+
+  <app-testimonials-section
+    *ngIf="isSectionVisible('testimonials')"
+    [heading]="profile.sections.testimonials.heading"
+    [subheading]="profile.sections.testimonials.subheading"
+    [testimonials]="getTestimonials()"
+  ></app-testimonials-section>
+
+  <app-cta-section
+    *ngIf="isSectionVisible('cta')"
+    [heading]="profile.sections.cta.heading"
+    [subtext]="profile.sections.cta.subtext"
+    [primaryLabel]="profile.sections.cta.primaryLabel"
+    [secondaryLabel]="profile.sections.cta.secondaryLabel"
+    [resumeUrl]="profile.sections.cta.resumeUrl"
+    [contactEmail]="getContactEmail()"
+  ></app-cta-section>
 
   <!-- Contact Footer Section -->
   <footer class="contact-section" id="contact">
@@ -246,6 +258,7 @@
           target="_blank"
           rel="noopener"
           class="social-link"
+          title="Visit Website"
         >
           <i class="mdi mdi-web"></i>
         </a>
@@ -254,7 +267,8 @@
           [href]="toExternalLink(profile.socialLinks.twitter)" 
           target="_blank" 
           rel="noopener"
-          class="social-link">
+          class="social-link"
+          title="Follow on Twitter">
           <i class="mdi mdi-twitter"></i>
         </a>
         <a 
@@ -262,7 +276,8 @@
           [href]="toExternalLink(profile.socialLinks.linkedin)" 
           target="_blank" 
           rel="noopener"
-          class="social-link">
+          class="social-link"
+          title="Connect on LinkedIn">
           <i class="mdi mdi-linkedin"></i>
         </a>
         <a 
@@ -270,9 +285,96 @@
           [href]="'https://github.com/' + profile.user.githubUsername" 
           target="_blank" 
           rel="noopener"
-          class="social-link">
+          class="social-link"
+          title="View GitHub Profile">
           <i class="mdi mdi-github"></i>
         </a>
+      </div>
+
+      <!-- Footer Bottom Section -->
+      <div class="footer-bottom">
+        <div class="footer-content">
+          <!-- Logo and Tagline -->
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <svg viewBox="0 0 40 40" fill="none">
+                <path d="M8 12 L20 12 L8 28 L8 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path d="M20 12 L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            <p class="footer-tagline">Building the future, one line of code at a time.</p>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="footer-links">
+            <div class="footer-column">
+              <h4 class="footer-column-title">Navigate</h4>
+              <ul class="footer-link-list">
+                <li><a href="#home" (click)="scrollToSection('home', $event)">Home</a></li>
+                <li><a href="#about" (click)="scrollToSection('about', $event)">About</a></li>
+                <li *ngIf="isSectionVisible('projects')"><a href="#projects" (click)="scrollToSection('projects', $event)">Projects</a></li>
+                <li *ngIf="shouldShowUpcomingNav()"><a href="#upcoming" (click)="scrollToSection('upcoming', $event)">Upcoming</a></li>
+                <li><a href="#contact" (click)="scrollToSection('contact', $event)">Contact</a></li>
+              </ul>
+            </div>
+
+            <div class="footer-column">
+              <h4 class="footer-column-title">Connect</h4>
+              <ul class="footer-link-list">
+                <li *ngIf="profile.user.githubUsername">
+                  <a [href]="'https://github.com/' + profile.user.githubUsername" target="_blank" rel="noopener">
+                    <i class="mdi mdi-github"></i> GitHub
+                  </a>
+                </li>
+                <li *ngIf="profile.socialLinks.linkedin">
+                  <a [href]="toExternalLink(profile.socialLinks.linkedin)" target="_blank" rel="noopener">
+                    <i class="mdi mdi-linkedin"></i> LinkedIn
+                  </a>
+                </li>
+                <li *ngIf="profile.socialLinks.twitter">
+                  <a [href]="toExternalLink(profile.socialLinks.twitter)" target="_blank" rel="noopener">
+                    <i class="mdi mdi-twitter"></i> Twitter
+                  </a>
+                </li>
+                <li>
+                  <a [href]="'mailto:' + getContactEmail()">
+                    <i class="mdi mdi-email"></i> Email
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="footer-column">
+              <h4 class="footer-column-title">Resources</h4>
+              <ul class="footer-link-list">
+                <li *ngIf="profile.socialLinks.website">
+                  <a [href]="toExternalLink(profile.socialLinks.website)" target="_blank" rel="noopener">
+                    <i class="mdi mdi-web"></i> Portfolio
+                  </a>
+                </li>
+                <li>
+                  <a [href]="shareUrl" target="_blank" rel="noopener">
+                    <i class="mdi mdi-share-variant"></i> Share Profile
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="footer-copyright">
+          <div class="copyright-content">
+            <p>&copy; {{ getCurrentYear() }} {{ profile.user.name }}. All rights reserved.</p>
+            <div class="footer-meta">
+              <span class="location" *ngIf="profile.user.location">
+                <i class="mdi mdi-map-marker"></i> {{ profile.user.location }}
+              </span>
+              <span class="divider" *ngIf="profile.user.location">•</span>
+              <span class="powered-by">Powered by DevInsight AI</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </footer>

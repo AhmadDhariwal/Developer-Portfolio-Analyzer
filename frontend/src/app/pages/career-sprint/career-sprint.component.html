@@ -17,6 +17,12 @@
       <div class="card hero-card">
         <div class="hero-top">
           <div class="sprint-info">
+            <div class="user-avatar-badge">
+              <img *ngIf="userAvatar; else sprintAvatarFallback" [src]="userAvatar" [alt]="userName" title="Your Profile" />
+              <ng-template #sprintAvatarFallback>
+                <span class="avatar-fallback">{{ userInitial }}</span>
+              </ng-template>
+            </div>
             <h3>{{ sprint.title }}</h3>
             <span class="date-badge">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -25,9 +31,15 @@
           </div>
           
           <div class="streaks-container">
-            <div class="streak-item highlight">
+            <div class="streak-item highlight" [class.streak-broken]="getStreakStatus() === 'broken'" [class.streak-warning]="getStreakStatus() === 'warning'">
               <span class="streak-label">Current Streak</span>
               <strong class="streak-value">{{ sprint.streak }}<span class="unit">w</span></strong>
+              <span class="streak-status" *ngIf="getStreakStatus() !== 'active'" [class.status-broken]="getStreakStatus() === 'broken'" [class.status-warning]="getStreakStatus() === 'warning'">
+                {{ getStreakStatus() === 'broken' ? '🔴 Broken' : '⚠️ Warning' }}
+              </span>
+              <button *ngIf="getStreakStatus() === 'broken'" class="restore-btn" (click)="restoreStreak()">
+                Restore Streak
+              </button>
             </div>
             <div class="streak-divider"></div>
             <div class="streak-item">
@@ -78,7 +90,13 @@
               </div>
               <div class="task-row" *ngFor="let task of pendingTasks">
                 <label class="task-checkbox">
-                  <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" />
+                  <input
+                    type="checkbox"
+                    [checked]="task.isCompleted"
+                    [attr.aria-label]="'Toggle completion for ' + task.title"
+                    title="Toggle task completion"
+                    (change)="toggleTask(task)"
+                  />
                   <span class="checkmark"></span>
                 </label>
                 <div class="task-content">
@@ -99,7 +117,13 @@
               </div>
               <div class="task-row completed-row" *ngFor="let task of completedTasks">
                 <label class="task-checkbox">
-                  <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" />
+                  <input
+                    type="checkbox"
+                    [checked]="task.isCompleted"
+                    [attr.aria-label]="'Toggle completion for ' + task.title"
+                    title="Toggle task completion"
+                    (change)="toggleTask(task)"
+                  />
                   <span class="checkmark"></span>
                 </label>
                 <div class="task-content">
@@ -126,8 +150,8 @@
             </div>
             <div class="composer-row">
               <div class="input-group points-input">
-                <label>Points</label>
-                <input type="number" min="1" max="10" [(ngModel)]="newTaskPoints" title="Task points" />
+                <label for="new-task-points">Points</label>
+                <input id="new-task-points" type="number" min="1" max="10" [(ngModel)]="newTaskPoints" title="Task points" />
               </div>
               <button class="primary-btn" [disabled]="!newTaskTitle.trim()" (click)="addTask()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>

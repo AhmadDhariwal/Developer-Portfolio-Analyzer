@@ -1,0 +1,29 @@
+<article class="upcoming-card">
+  <div class="upcoming-media">
+    <img [src]="previewImage" [alt]="project.title" class="upcoming-image" loading="lazy" decoding="async" />
+    <span class="status-badge" [class.in-progress]="project.status === 'in-progress'">{{ statusLabel }}</span>
+  </div>
+
+  <div class="upcoming-body">
+    <h3 class="upcoming-title">{{ project.title }}</h3>
+    <p class="upcoming-description">{{ project.description }}</p>
+
+    <div class="meta-row" *ngIf="project.expectedDate">
+      <i class="mdi mdi-calendar-month-outline"></i>
+      <span>{{ project.expectedDate }}</span>
+    </div>
+
+    <div class="upcoming-tech" *ngIf="project.techStack.length">
+      <span class="tech-chip" *ngFor="let tech of project.techStack">{{ tech }}</span>
+    </div>
+
+    <div class="project-links">
+      <a *ngIf="primaryLink" [href]="primaryLink" target="_blank" rel="noopener" class="project-link" title="Open preview">
+        <i class="mdi mdi-open-in-new"></i>
+      </a>
+      <a *ngIf="repositoryLink" [href]="repositoryLink" target="_blank" rel="noopener" class="project-link" title="Open repository">
+        <i class="mdi mdi-github"></i>
+      </a>
+    </div>
+  </div>
+</article>

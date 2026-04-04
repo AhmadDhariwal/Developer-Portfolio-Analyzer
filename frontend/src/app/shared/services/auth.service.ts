@@ -8,6 +8,22 @@ import { TenantContextService } from './tenant-context.service';
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
 const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
 
+export interface SessionUser {
+  _id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  githubUsername?: string;
+  activeGithubUsername?: string;
+  avatar?: string;
+  careerStack?: string;
+  experienceLevel?: string;
+  activeCareerStack?: string;
+  activeExperienceLevel?: string;
+  token?: string;
+  [key: string]: unknown;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,6 +31,8 @@ export class AuthService {
   private readonly baseUrl = 'http://localhost:5000/api';
   private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
+  private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());
+  currentUser$ = this.currentUserSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService) {
@@ -75,6 +93,30 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('loginExpiry');
+    this.currentUserSubject?.next(null);
+  }
+
+  private readStoredUser(): SessionUser | null {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+
+    try {
+      const parsed = JSON.parse(userStr);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return parsed as SessionUser;
+    } catch {
+      return null;
+    }
+  }
+
+  private persistCurrentUser(user: SessionUser | null): void {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+
+    this.currentUserSubject.next(user);
   }
 
   private scheduleAutoLogout(): void {
@@ -95,7 +137,7 @@ export class AuthService {
 
   private storeSession(response: any): void {
     localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response));
+    this.persistCurrentUser({ ...response, avatar: response.avatar || '' } as SessionUser);
     const careerProfile = {
       careerStack: response.activeCareerStack || response.careerStack || 'Full Stack',
       experienceLevel: response.activeExperienceLevel || response.experienceLevel || 'Student',
@@ -149,16 +191,18 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  getCurrentUser(): any {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        return JSON.parse(userStr);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+  getCurrentUser(): SessionUser | null {
+    return this.currentUserSubject.value ?? this.readStoredUser();
+  }
+
+  updateCurrentUser(partial: Partial<SessionUser>): void {
+    const current = this.currentUserSubject.value ?? this.readStoredUser();
+    if (!current) return;
+
+    this.persistCurrentUser({
+      ...current,
+      ...partial
+    } as SessionUser);
   }
 
   isLoggedIn(): boolean {

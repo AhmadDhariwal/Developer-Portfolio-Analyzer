@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import {
 } from '../../shared/services/profile.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   CAREER_STACKS,
   EXPERIENCE_LEVELS,
@@ -41,6 +42,9 @@ export class ProfileComponent implements OnInit {
   pwdSuccess        = '';
   careerSuccess     = '';
   isUploadingAvatar = false;
+  avatarVersion     = Date.now();
+  private avatarPreviewUrl: string | null = null;
+  private readonly destroyRef = inject(DestroyRef);
 
   // ── Profile data (bound to form) ───────────────────────────────────────
   profile: UserProfile = {
@@ -96,6 +100,19 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        const nextAvatar = this.profileService.resolveAvatarUrl(String(user?.avatar || ''));
+        if (!nextAvatar || this.isUploadingAvatar || this.profile.avatar === nextAvatar) {
+          return;
+        }
+
+        this.profile.avatar = nextAvatar;
+        this.bumpAvatarVersion();
+        this.cdr.detectChanges();
+      });
   }
 
   // ── Load from backend ──────────────────────────────────────────────────
@@ -104,6 +121,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.getProfile().subscribe({
       next: (data) => {
         this.profile = this.normalizeProfile(data);
+        this.bumpAvatarVersion();
         this.snapshot = { ...this.profile };
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -114,6 +132,8 @@ export class ProfileComponent implements OnInit {
           this.profile.name           = cached.name           ?? '';
           this.profile.email          = cached.email          ?? '';
           this.profile.githubUsername = cached.githubUsername ?? '';
+          this.profile.avatar         = this.profileService.resolveAvatarUrl(String(cached.avatar || ''));
+          this.bumpAvatarVersion();
         }
         this.errorMessage = err?.error?.message || 'Could not load profile from server.';
         this.isLoading    = false;
@@ -188,7 +208,7 @@ export class ProfileComponent implements OnInit {
       email: data.email || '',
       githubUsername: data.githubUsername || '',
       activeGithubUsername: data.activeGithubUsername || data.githubUsername || '',
-      avatar: data.avatar || '',
+      avatar: this.profileService.resolveAvatarUrl(data.avatar || ''),
       jobTitle: data.jobTitle || '',
       location: data.location || '',
       bio: data.bio || '',
@@ -314,6 +334,8 @@ export class ProfileComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
+    const previousAvatar = this.profile.avatar;
+
     const isImage = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
     if (!isImage) {
       this.errorMessage = 'Only JPG, PNG, and WEBP files are allowed.';
@@ -327,21 +349,51 @@ export class ProfileComponent implements OnInit {
     this.isUploadingAvatar = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.releaseAvatarPreviewUrl();
+    this.avatarPreviewUrl = URL.createObjectURL(file);
+    this.profile.avatar = this.avatarPreviewUrl;
+    this.bumpAvatarVersion();
     this.cdr.detectChanges();
 
     this.profileService.uploadAvatar(file).subscribe({
       next: (res) => {
-        this.profile.avatar = res.avatar;
+        this.releaseAvatarPreviewUrl();
+        this.profile.avatar = this.profileService.resolveAvatarUrl(res.avatar);
+        this.bumpAvatarVersion();
         this.snapshot = { ...this.profile };
         this.isUploadingAvatar = false;
         this.successMessage = 'Profile photo updated successfully.';
+        input.value = '';
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.releaseAvatarPreviewUrl();
+        this.profile.avatar = previousAvatar;
+        this.bumpAvatarVersion();
         this.isUploadingAvatar = false;
         this.errorMessage = err?.error?.message || 'Failed to upload profile photo.';
+        input.value = '';
         this.cdr.detectChanges();
       }
     });
+  }
+
+  getAvatarSrc(): string {
+    const raw = String(this.profile.avatar || '').trim();
+    if (!raw) return '';
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+    const separator = raw.includes('?') ? '&' : '?';
+    return `${raw}${separator}v=${this.avatarVersion}`;
+  }
+
+  private bumpAvatarVersion(): void {
+    this.avatarVersion = Date.now();
+  }
+
+  private releaseAvatarPreviewUrl(): void {
+    if (this.avatarPreviewUrl) {
+      URL.revokeObjectURL(this.avatarPreviewUrl);
+      this.avatarPreviewUrl = null;
+    }
   }
 }

@@ -4,12 +4,30 @@ const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const bcrypt   = require('bcryptjs');
 const fs = require('node:fs');
+const path = require('node:path');
 const { createNotification } = require('../services/notificationService');
 
 // ─── Helper: format member-since date ─────────────────────────────────────
 const formatMemberSince = (date) => {
   if (!date) return 'N/A';
   return new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+
+const resolveAvatarForResponse = (req, avatarValue) => {
+  const raw = String(avatarValue || '').trim();
+  if (!raw) return '';
+  if (/^data:/i.test(raw)) return raw;
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  if (raw.startsWith('/uploads/')) {
+    return `${req.protocol}://${req.get('host')}${raw}`;
+  }
+
+  if (raw.startsWith('uploads/')) {
+    return `${req.protocol}://${req.get('host')}/${raw}`;
+  }
+
+  return raw;
 };
 
 // @desc  Get logged-in user profile + account stats
@@ -99,7 +117,7 @@ const getProfile = async (req, res) => {
       email:             user.email,
       githubUsername:    user.githubUsername,
       activeGithubUsername,
-      avatar:            user.avatar,
+      avatar:            resolveAvatarForResponse(req, user.avatar),
       jobTitle:          user.jobTitle   || '',
       location:          user.location   || '',
       bio:               user.bio        || '',
@@ -456,18 +474,16 @@ const uploadAvatar = async (req, res) => {
 
     // Best-effort cleanup of previous local avatar file.
     if (user.avatar?.includes('/uploads/avatars/')) {
-      const previous = user.avatar.split('/uploads/avatars/')[1];
+      const previous = user.avatar.split('/uploads/avatars/')[1]?.split('?')[0];
       if (previous) {
-        const absoluteOldPath = `uploads/avatars/${previous}`;
+        const absoluteOldPath = path.join(__dirname, '..', '..', 'uploads', 'avatars', previous);
         if (fs.existsSync(absoluteOldPath)) {
           fs.unlinkSync(absoluteOldPath);
         }
       }
     }
 
-    const host = req.get('host');
-    const protocol = req.protocol;
-    user.avatar = `${protocol}://${host}${nextAvatarPath}`;
+    user.avatar = resolveAvatarForResponse(req, nextAvatarPath);
     await user.save();
 
     await createNotification({
@@ -481,7 +497,7 @@ const uploadAvatar = async (req, res) => {
 
     return res.json({
       message: 'Avatar updated successfully.',
-      avatar: user.avatar
+      avatar: resolveAvatarForResponse(req, user.avatar)
     });
   } catch (error) {
     console.error('Avatar upload error:', error.message);

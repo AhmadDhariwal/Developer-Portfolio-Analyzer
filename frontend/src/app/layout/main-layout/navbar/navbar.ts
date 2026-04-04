@@ -10,6 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationService, AppNotification, NotificationResponse } from '../../../shared/services/notification.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ApiService } from '../../../shared/services/api.service';
+import { ProfileService } from '../../../shared/services/profile.service';
 
 interface SearchSuggestion {
   type: 'page' | 'repo' | 'skill';
@@ -37,6 +38,8 @@ export class Navbar implements OnInit {
   userName = 'Developer';
   userHandle = 'developer';
   userInitial = 'D';
+  userAvatar = '';
+  avatarVersion = Date.now();
   showUserMenu = false;
   showNotifications = false;
   unreadNotifications = 0;
@@ -54,6 +57,7 @@ export class Navbar implements OnInit {
 
   private cachedRepos: any[] = [];
   private cachedSkills: SearchSuggestion[] = [];
+  private lastLoadedGithubHandle = '';
   private readonly searchSubject = new Subject<string>();
   private readonly destroyRef = inject(DestroyRef);
   private notificationStream: EventSource | null = null;
@@ -89,7 +93,8 @@ export class Navbar implements OnInit {
     private readonly http: HttpClient,
     private readonly notificationService: NotificationService,
     private readonly tenantContext: TenantContextService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly profileService: ProfileService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
@@ -107,18 +112,13 @@ export class Navbar implements OnInit {
   }
 
   ngOnInit() {
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        this.userName = user.name || 'Developer';
-        this.userHandle = user.githubUsername || 'developer';
-        this.userInitial = this.userName.charAt(0).toUpperCase();
-        if (user.githubUsername) {
-          this.loadGithubRepos(user.githubUsername);
-        }
-      } catch { /* fallback */ }
-    }
+    this.syncUserState(this.authService.getCurrentUser());
+
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        setTimeout(() => this.syncUserState(user));
+      });
 
     if (this.authService.isLoggedIn()) {
       this.loadNotifications();
@@ -346,8 +346,16 @@ export class Navbar implements OnInit {
   }
 
   toggleUserMenu() {
+    this.syncUserState(this.authService.getCurrentUser());
     this.showUserMenu = !this.showUserMenu;
     if (this.showUserMenu) this.showNotifications = false;
+  }
+
+  @HostListener('window:storage', ['$event'])
+  onStorageChanged(event: StorageEvent): void {
+    if (event.key === 'user') {
+      this.syncUserState(this.authService.getCurrentUser());
+    }
   }
 
   toggleNotifications(): void {
@@ -419,6 +427,48 @@ export class Navbar implements OnInit {
 
     if (!clickedButton && !clickedDropdown) {
       this.closeNotifications();
+    }
+  }
+
+  getAvatarSrc(): string {
+    const raw = String(this.userAvatar || '').trim();
+    if (!raw) return '';
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+    
+    const separator = raw.includes('?') ? '&' : '?';
+    return `${raw}${separator}v=${this.avatarVersion}`;
+  }
+
+  private bumpAvatarVersion(): void {
+    this.avatarVersion = Date.now();
+  }
+
+  private syncUserState(user: any): void {
+    if (!user) {
+      this.userName = 'Developer';
+      this.userHandle = 'developer';
+      this.userInitial = 'D';
+      this.userAvatar = '';
+      this.cachedRepos = [];
+      this.cachedSkills = [];
+      this.lastLoadedGithubHandle = '';
+      return;
+    }
+
+    const previousAvatar = this.userAvatar;
+    this.userName = user.name || 'Developer';
+    this.userHandle = user.githubUsername || 'developer';
+    this.userInitial = this.userName.charAt(0).toUpperCase();
+    this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
+
+    // Bump version if avatar changed
+    if (previousAvatar !== this.userAvatar) {
+      this.bumpAvatarVersion();
+    }
+
+    if (this.userHandle && this.userHandle !== 'developer' && this.lastLoadedGithubHandle !== this.userHandle) {
+      this.lastLoadedGithubHandle = this.userHandle;
+      this.loadGithubRepos(this.userHandle);
     }
   }
 }

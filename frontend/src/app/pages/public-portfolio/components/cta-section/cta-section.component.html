@@ -1,0 +1,12 @@
+<section class="cta-section reveal-on-scroll" id="cta">
+  <div class="cta-panel">
+    <h2>{{ heading }}</h2>
+    <p>{{ subtext }}</p>
+
+    <div class="cta-actions">
+      <a class="cta-btn primary" [href]="'mailto:' + contactEmail">{{ primaryLabel }}</a>
+      <a class="cta-btn secondary" *ngIf="resumeUrl" [href]="resumeUrl" target="_blank" rel="noopener">{{ secondaryLabel }}</a>
+      <a class="cta-btn secondary" *ngIf="!resumeUrl" [href]="'mailto:' + contactEmail">{{ secondaryLabel }}</a>
+    </div>
+  </div>
+</section>

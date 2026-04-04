@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+
+.testimonial-card {
+  background: #f8fafc;
+  color: #0f172a;
+  border-radius: 20px;
+  padding: 26px;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+  }
+}
+
+.quote {
+  margin: 0;
+  line-height: 1.65;
+  font-size: 16px;
+}
+
+.person {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.identity {
+  text-align: left;
+
+  h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #020617;
+  }
+
+  span {
+    display: block;
+    margin-top: 2px;
+    color: #475569;
+    font-size: 13px;
+  }
+}

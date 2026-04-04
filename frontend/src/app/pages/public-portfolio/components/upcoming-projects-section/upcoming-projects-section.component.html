@@ -1,0 +1,18 @@
+<section class="upcoming-projects-section reveal-on-scroll" id="upcoming" *ngIf="projects.length > 0">
+  <div class="projects-container">
+    <div class="section-header">
+      <h2 class="section-title">{{ heading }}</h2>
+      <p class="section-subtitle" *ngIf="subheading">{{ subheading }}</p>
+    </div>
+
+    <div class="upcoming-grid">
+      <app-upcoming-project-card
+        *ngFor="let project of projects"
+        [project]="project"
+        [previewImage]="previewResolver(project)"
+        [primaryLink]="primaryLinkResolver(project)"
+        [repositoryLink]="repoLinkResolver(project)"
+      ></app-upcoming-project-card>
+    </div>
+  </div>
+</section>

@@ -14,6 +14,26 @@ export interface PublicProfileProject {
   repoUrl?: string;
   imageUrl?: string;
   tech: string[];
+  status?: 'completed' | 'in-progress' | 'upcoming' | 'planned';
+  expectedDate?: string;
+}
+
+export interface PublicProfileUpcomingProject {
+  title: string;
+  description: string;
+  expectedDate: string;
+  techStack: string[];
+  status?: 'in-progress' | 'planned';
+  url?: string;
+  repoUrl?: string;
+  imageUrl?: string;
+}
+
+export interface PublicProfileTestimonial {
+  quote: string;
+  name: string;
+  role: string;
+  avatarUrl?: string;
 }
 
 export interface PublicProfileWorkExperience {
@@ -45,6 +65,27 @@ export interface PublicProfileSections {
     message: string;
     email: string;
   };
+  upcoming: {
+    heading: string;
+    subheading: string;
+  };
+  testimonials: {
+    heading: string;
+    subheading: string;
+  };
+  cta: {
+    heading: string;
+    subtext: string;
+    primaryLabel: string;
+    secondaryLabel: string;
+    resumeUrl: string;
+  };
+  visibility: {
+    projects: boolean;
+    upcoming: boolean;
+    testimonials: boolean;
+    cta: boolean;
+  };
 }
 
 export interface PublicProfileAnalytics {
@@ -72,6 +113,8 @@ export interface PublicProfilePayload {
   seoDescription: string;
   skills: PublicProfileSkill[];
   projects: PublicProfileProject[];
+  upcomingProjects: PublicProfileUpcomingProject[];
+  testimonials: PublicProfileTestimonial[];
   workExperiences: PublicProfileWorkExperience[];
   sections: PublicProfileSections;
   socialLinks: { website?: string; twitter?: string; linkedin?: string; github?: string };

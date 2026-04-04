@@ -1,22 +1,36 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Inject, OnInit, PLATFORM_ID, QueryList, ViewChildren } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
-import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID, Inject, AfterViewInit, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import {
   PublicProfileService,
   PublicProfilePayload,
   PublicProfileProject,
   PublicProfileSections,
+  PublicProfileUpcomingProject,
+  PublicProfileTestimonial,
   PublicProfileWorkExperience
 } from '../../shared/services/public-profile.service';
 import { SkillIconService, SkillIcon } from '../../shared/services/skill-icon.service';
+import { ProjectCardComponent } from './components/project-card/project-card.component';
+import { UpcomingProjectsSectionComponent } from './components/upcoming-projects-section/upcoming-projects-section.component';
+import { TestimonialsSectionComponent } from './components/testimonials-section/testimonials-section.component';
+import { CtaSectionComponent } from './components/cta-section/cta-section.component';
+
+type SectionId = 'home' | 'about' | 'projects' | 'upcoming' | 'testimonials' | 'cta' | 'contact';
+type LinkableProject = { url?: string; repoUrl?: string; imageUrl?: string };
 
 @Component({
   selector: 'app-public-portfolio',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ProjectCardComponent,
+    UpcomingProjectsSectionComponent,
+    TestimonialsSectionComponent,
+    CtaSectionComponent
+  ],
   templateUrl: './public-portfolio.component.html',
   styleUrl: './public-portfolio.component.scss'
 })
@@ -27,7 +41,16 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   shareUrl = '';
   copyFeedback = '';
+  activeSection: SectionId = 'home';
+  mobileMenuOpen = false;
+  featuredProjects: PublicProfileProject[] = [];
+  upcomingProjects: PublicProfileUpcomingProject[] = [];
+  testimonials: PublicProfileTestimonial[] = [];
+  readonly previewResolver = (project: LinkableProject) => this.getProjectPreview(project);
+  readonly primaryLinkResolver = (project: LinkableProject) => this.getProjectPrimaryLink(project);
+  readonly repoLinkResolver = (project: LinkableProject) => this.getProjectRepositoryLink(project);
   private observer: IntersectionObserver | null = null;
+  private readonly sectionIds: SectionId[] = ['home', 'about', 'projects', 'upcoming', 'testimonials', 'cta', 'contact'];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -36,7 +59,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     private readonly meta: Meta,
     private readonly cdr: ChangeDetectorRef,
     private readonly skillIconService: SkillIconService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private readonly platformId: object
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +74,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.setupScrollObserver();
+      this.updateActiveSection();
     }
   }
 
@@ -85,6 +109,10 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     const heroOverride = profile.sections?.hero as Partial<PublicProfileSections['hero']> | undefined;
     const skillsOverride = profile.sections?.skills as Partial<PublicProfileSections['skills']> | undefined;
     const contactOverride = profile.sections?.contact as Partial<PublicProfileSections['contact']> | undefined;
+    const upcomingOverride = profile.sections?.upcoming as Partial<PublicProfileSections['upcoming']> | undefined;
+    const testimonialsOverride = profile.sections?.testimonials as Partial<PublicProfileSections['testimonials']> | undefined;
+    const ctaOverride = profile.sections?.cta as Partial<PublicProfileSections['cta']> | undefined;
+    const visibilityOverride = profile.sections?.visibility as Partial<PublicProfileSections['visibility']> | undefined;
 
     const heroSection: PublicProfileSections['hero'] = {
       greetingLabel: 'Hello! I Am',
@@ -109,15 +137,77 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
       email: '',
       ...contactOverride
     };
+    const upcomingSection: PublicProfileSections['upcoming'] = {
+      heading: 'Upcoming Projects',
+      subheading: 'Currently in development and planned next milestones.',
+      ...upcomingOverride
+    };
+    const testimonialsSection: PublicProfileSections['testimonials'] = {
+      heading: 'Testimonials',
+      subheading: 'What collaborators and clients say about working together.',
+      ...testimonialsOverride
+    };
+    const ctaSection: PublicProfileSections['cta'] = {
+      heading: "Let's Work Together",
+      subtext: 'Open to impactful product, platform, and AI-focused opportunities.',
+      primaryLabel: 'Contact Me',
+      secondaryLabel: 'Download Resume',
+      resumeUrl: '',
+      ...ctaOverride
+    };
+    const visibilitySection: PublicProfileSections['visibility'] = {
+      projects: true,
+      upcoming: true,
+      testimonials: true,
+      cta: true,
+      ...visibilityOverride
+    };
 
     return {
       ...profile,
-      projects: Array.isArray(profile.projects) ? profile.projects : [],
+      projects: Array.isArray(profile.projects)
+        ? profile.projects.map((project) => ({
+          ...project,
+          title: String(project.title || ''),
+          description: String(project.description || ''),
+          url: String(project.url || ''),
+          repoUrl: String(project.repoUrl || ''),
+          imageUrl: String(project.imageUrl || ''),
+          tech: Array.isArray(project.tech) ? project.tech : [],
+          expectedDate: String(project.expectedDate || ''),
+          status: project.status || 'completed'
+        }))
+        : [],
+      upcomingProjects: Array.isArray(profile.upcomingProjects)
+        ? profile.upcomingProjects.map((project) => ({
+          ...project,
+          title: String(project.title || ''),
+          description: String(project.description || ''),
+          expectedDate: String(project.expectedDate || ''),
+          techStack: Array.isArray(project.techStack) ? project.techStack : [],
+          status: project.status || 'planned',
+          url: String(project.url || ''),
+          repoUrl: String(project.repoUrl || ''),
+          imageUrl: String(project.imageUrl || '')
+        }))
+        : [],
+      testimonials: Array.isArray(profile.testimonials)
+        ? profile.testimonials.map((item) => ({
+          quote: String(item.quote || ''),
+          name: String(item.name || ''),
+          role: String(item.role || ''),
+          avatarUrl: String(item.avatarUrl || '')
+        }))
+        : [],
       workExperiences: Array.isArray(profile.workExperiences) ? profile.workExperiences : [],
       sections: {
         hero: heroSection,
         skills: skillsSection,
-        contact: contactSection
+        contact: contactSection,
+        upcoming: upcomingSection,
+        testimonials: testimonialsSection,
+        cta: ctaSection,
+        visibility: visibilitySection
       },
       socialLinks: {
         website: profile.socialLinks?.website || '',
@@ -135,7 +225,9 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     this.profileService.getPublicProfile(slug).subscribe({
       next: (profile) => {
         const safeProfile = this.ensureProfileShape(profile);
+        safeProfile.user.avatar = this.resolveAvatarUrl(safeProfile.user.avatar || '');
         this.profile = safeProfile;
+        this.prepareRenderableData();
         this.isLoading = false;
         this.shareUrl = globalThis.location?.href || '';
         const title = safeProfile.seoTitle || `${safeProfile.user.name} | Portfolio`;
@@ -176,6 +268,28 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   // Create 4 work experience cards from projects or skills
   getWorkExperiences(): PublicProfileWorkExperience[] {
     return (this.profile?.workExperiences || []).slice(0, 4);
+  }
+
+  // Get completed/featured projects
+  getFeaturedProjects(): PublicProfileProject[] {
+    return this.featuredProjects;
+  }
+
+  // Get upcoming/in-progress projects
+  getUpcomingProjects(): PublicProfileUpcomingProject[] {
+    return this.upcomingProjects;
+  }
+
+  getTestimonials(): PublicProfileTestimonial[] {
+    return this.testimonials;
+  }
+
+  isSectionVisible(section: keyof PublicProfileSections['visibility']): boolean {
+    return Boolean(this.profile?.sections?.visibility?.[section] ?? true);
+  }
+
+  shouldShowUpcomingNav(): boolean {
+    return this.isSectionVisible('upcoming') && this.getUpcomingProjects().length > 0;
   }
 
   copyShareLink(): void {
@@ -223,15 +337,15 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     return `https://${raw.replace(/^\/+/, '')}`;
   }
 
-  getProjectPrimaryLink(project: PublicProfileProject): string {
+  getProjectPrimaryLink(project: LinkableProject): string {
     return this.toExternalLink(project.url || project.repoUrl || '');
   }
 
-  getProjectRepositoryLink(project: PublicProfileProject): string {
+  getProjectRepositoryLink(project: LinkableProject): string {
     return this.toExternalLink(project.repoUrl || project.url || '');
   }
 
-  getProjectPreview(project: PublicProfileProject): string {
+  getProjectPreview(project: LinkableProject): string {
     const directImage = this.toExternalLink(project.imageUrl);
     if (directImage) return directImage;
 
@@ -241,9 +355,13 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   getUserAvatar(): string {
-    // Automatically load the picture from the new local folder you requested.
-    // Make sure to name your uploaded file 'profile.png' and place it in 'frontend/public/avatar/'.
-    return '/avatar/profile.png';
+    const avatar = this.resolveAvatarUrl(this.profile?.user?.avatar || '');
+    if (!avatar) return '/avatar/profile.png';
+    
+    // Add cache busting for avatar URLs
+    if (/^data:/i.test(avatar) || avatar.startsWith('blob:')) return avatar;
+    const separator = avatar.includes('?') ? '&' : '?';
+    return `${avatar}${separator}v=${Date.now()}`;
   }
 
   getContactEmail(): string {
@@ -259,6 +377,10 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     return `${username}@gmail.com`;
   }
 
+  getCurrentYear(): number {
+    return new Date().getFullYear();
+  }
+
   getLineAngle(index: number, total: number): string {
     if (total <= 1) return '0deg';
     // Calculate angle for connecting lines from icons to central orb
@@ -267,5 +389,119 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     const angleRange = endAngle - startAngle;
     const angle = startAngle + (angleRange / (total - 1)) * index;
     return `${angle}deg`;
+  }
+
+  scrollToSection(sectionId: SectionId, event?: Event): void {
+    event?.preventDefault();
+    this.activeSection = sectionId;
+    this.mobileMenuOpen = false;
+
+    if (!isPlatformBrowser(this.platformId)) return;
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    const navbarOffset = 108;
+    const top = target.getBoundingClientRect().top + globalThis.scrollY - navbarOffset;
+    globalThis.scrollTo({ top, behavior: 'smooth' });
+
+    if (globalThis.history?.replaceState) {
+      globalThis.history.replaceState(null, '', `#${sectionId}`);
+    }
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  private prepareRenderableData(): void {
+    if (!this.profile) {
+      this.featuredProjects = [];
+      this.upcomingProjects = [];
+      this.testimonials = [];
+      return;
+    }
+
+    this.featuredProjects = (this.profile.projects || []).filter((project) => !project.status || project.status === 'completed');
+
+    this.upcomingProjects = (this.profile.upcomingProjects || []).length
+      ? this.profile.upcomingProjects
+      : (this.profile.projects || [])
+        .filter((project) => ['in-progress', 'upcoming', 'planned'].includes(project.status || ''))
+        .map((project) => ({
+          title: project.title,
+          description: project.description,
+          expectedDate: project.expectedDate || '',
+          techStack: project.tech || [],
+          status: project.status === 'in-progress' ? 'in-progress' : 'planned',
+          url: project.url,
+          repoUrl: project.repoUrl,
+          imageUrl: project.imageUrl
+        }));
+
+    this.testimonials = (this.profile.testimonials || []).length
+      ? this.profile.testimonials
+      : [
+        {
+          quote: 'They consistently delivered clean architecture decisions and strong execution under tight deadlines.',
+          name: 'Ayesha Karim',
+          role: 'Engineering Manager',
+          avatarUrl: ''
+        },
+        {
+          quote: 'Communication was excellent, and the end result was exactly what we needed for launch.',
+          name: 'Rahul Mehta',
+          role: 'Product Lead',
+          avatarUrl: ''
+        },
+        {
+          quote: 'A reliable developer who balances speed, quality, and product thinking in every sprint.',
+          name: 'Sana Ali',
+          role: 'Client Partner',
+          avatarUrl: ''
+        }
+      ];
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.updateActiveSection();
+  }
+
+  private updateActiveSection(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const marker = 140;
+    let selected: SectionId = 'home';
+
+    this.sectionIds.forEach((id) => {
+      const section = document.getElementById(id);
+      if (!section) return;
+
+      const top = section.getBoundingClientRect().top;
+      if (top - marker <= 0) {
+        selected = id;
+      }
+    });
+
+    this.activeSection = selected;
+  }
+
+  private resolveAvatarUrl(avatar: string): string {
+    const raw = String(avatar || '').trim();
+    if (!raw) return '';
+
+    if (/^data:/i.test(raw)) return raw;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
+
+    if (raw.startsWith('/uploads/')) {
+      return `http://localhost:5000${raw}`;
+    }
+
+    if (raw.startsWith('uploads/')) {
+      return `http://localhost:5000/${raw}`;
+    }
+
+    return raw;
   }
 }

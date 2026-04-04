@@ -1,0 +1,12 @@
+<section class="testimonials-section reveal-on-scroll" id="testimonials" *ngIf="testimonials.length > 0">
+  <div class="testimonials-container">
+    <div class="section-header">
+      <h2 class="section-title">{{ heading }}</h2>
+      <p class="section-subtitle" *ngIf="subheading">{{ subheading }}</p>
+    </div>
+
+    <div class="testimonial-grid">
+      <app-testimonial-card *ngFor="let item of testimonials" [testimonial]="item"></app-testimonial-card>
+    </div>
+  </div>
+</section>

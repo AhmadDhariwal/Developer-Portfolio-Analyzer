@@ -48,6 +48,19 @@
   </nav>
 
   <div class="sidebar-footer">
+    <div class="sidebar-user-card">
+      <div class="sidebar-user-avatar">
+        <img *ngIf="userAvatar; else sidebarAvatarFallback" [src]="getAvatarSrc()" [alt]="userName" title="User avatar" />
+        <ng-template #sidebarAvatarFallback>
+          <span>{{ userInitial }}</span>
+        </ng-template>
+      </div>
+      <div class="sidebar-user-meta">
+        <span class="sidebar-user-name">{{ userName }}</span>
+        <span class="sidebar-user-handle">@{{ userHandle }}</span>
+      </div>
+    </div>
+
     <button class="logout-btn" (click)="logout()">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

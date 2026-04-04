@@ -1,5 +1,5 @@
 const CareerSprint = require('../models/careerSprint');
-const { createSprint, getCurrentSprint, toggleTaskCompletion, addTaskToSprint } = require('../services/careerSprintService');
+const { createSprint, getCurrentSprint, toggleTaskCompletion, addTaskToSprint, restoreStreak } = require('../services/careerSprintService');
 
 // GET /api/career-sprints/current
 const getCurrentCareerSprint = async (req, res) => {
@@ -61,10 +61,25 @@ const getCareerSprintHistory = async (req, res) => {
   }
 };
 
+// POST /api/career-sprints/:id/restore-streak
+const restoreCareerStreakController = async (req, res) => {
+  try {
+    const sprint = await restoreStreak(req.user._id, req.params.id);
+    if (!sprint) {
+      return res.status(400).json({ message: 'Cannot restore streak at this time.' });
+    }
+    res.json(sprint);
+  } catch (error) {
+    console.error('Career sprint restore streak error:', error.message);
+    res.status(500).json({ message: 'Failed to restore streak.' });
+  }
+};
+
 module.exports = {
   getCurrentCareerSprint,
   createCareerSprint,
   addCareerSprintTask,
   updateCareerSprintTask,
-  getCareerSprintHistory
+  getCareerSprintHistory,
+  restoreCareerStreakController
 };

@@ -1,0 +1,18 @@
+<article class="testimonial-card">
+  <p class="quote">“{{ testimonial.quote }}”</p>
+
+  <div class="person">
+    <img
+      *ngIf="hasAvatar"
+      [src]="testimonial.avatarUrl"
+      [alt]="testimonial.name"
+      class="avatar"
+      loading="lazy"
+      decoding="async"
+    />
+    <div class="identity">
+      <h4>{{ testimonial.name }}</h4>
+      <span>{{ testimonial.role }}</span>
+    </div>
+  </div>
+</article>

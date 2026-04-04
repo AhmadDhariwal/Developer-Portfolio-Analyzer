@@ -26,6 +26,9 @@ const careerSprintSchema = new mongoose.Schema({
   streak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastCompletedWeekAt: { type: Date, default: null },
+  streakBroken: { type: Boolean, default: false },
+  streakBrokenAt: { type: Date, default: null },
+  streakWarning: { type: Boolean, default: false },
   tasks: [sprintTaskSchema]
 }, { timestamps: true });
 

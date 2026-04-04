@@ -21,6 +21,9 @@ export interface CareerSprint {
   streak: number;
   longestStreak: number;
   lastCompletedWeekAt?: string | null;
+  streakBroken?: boolean;
+  streakBrokenAt?: string | null;
+  streakWarning?: boolean;
   tasks: SprintTask[];
 }
 
@@ -48,5 +51,9 @@ export class CareerSprintService {
 
   getHistory(limit = 6): Observable<{ history: CareerSprint[] }> {
     return this.api.getCareerSprintHistory(limit);
+  }
+
+  restoreStreak(sprintId: string): Observable<CareerSprint> {
+    return this.api.restoreCareerStreak(sprintId);
   }
 }
