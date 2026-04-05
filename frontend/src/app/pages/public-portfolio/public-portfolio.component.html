@@ -14,7 +14,7 @@
         </svg>
       </div>
 
-      <button class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen">
+      <button title="menu button" class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen">
         <i class="mdi" [ngClass]="mobileMenuOpen ? 'mdi-close' : 'mdi-menu'"></i>
       </button>
 
@@ -44,7 +44,7 @@
         <!-- Avatar with laptop -->
         <div class="avatar-container">
           <div class="avatar-glow"></div>
-          <img title="Profile Avatar" [src]="getUserAvatar()" [alt]="profile.user.name" class="avatar-image">
+          <img title="Profile Avatar" [src]="userAvatarSrc" [alt]="profile.user.name" class="avatar-image">
           <div class="laptop-overlay">
             <div class="laptop-screen"></div>
             <div class="apple-logo">
@@ -243,7 +243,7 @@
   ></app-cta-section>
 
   <!-- Contact Footer Section -->
-  <footer class="contact-section" id="contact">
+  <footer class="contact-section reveal-on-scroll" id="contact">
     <div class="contact-container">
       <h2 class="contact-title">{{ profile.sections.contact.heading }}</h2>
       

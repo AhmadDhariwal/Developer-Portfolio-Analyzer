@@ -176,8 +176,20 @@ export class ProfileService {
     const raw = String(avatar || '').trim();
     if (!raw) return '';
 
-    if (/^data:/i.test(raw)) return raw;
-    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const parsed = new URL(raw);
+        if (parsed.pathname.startsWith('/uploads/')) {
+          return `${this.apiOrigin}${parsed.pathname}${parsed.search || ''}`;
+        }
+      } catch {
+        return raw;
+      }
+      return raw;
+    }
+
     if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
 
     if (raw.startsWith('/uploads/')) {

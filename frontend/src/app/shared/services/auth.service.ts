@@ -29,6 +29,7 @@ export interface SessionUser {
 })
 export class AuthService {
   private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly apiOrigin = this.baseUrl.replace(/\/api$/, '');
   private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());
@@ -103,7 +104,10 @@ export class AuthService {
     try {
       const parsed = JSON.parse(userStr);
       if (!parsed || typeof parsed !== 'object') return null;
-      return parsed as SessionUser;
+      return {
+        ...(parsed as SessionUser),
+        avatar: this.normalizeAvatarUrl(String((parsed as SessionUser).avatar || ''))
+      };
     } catch {
       return null;
     }
@@ -111,12 +115,52 @@ export class AuthService {
 
   private persistCurrentUser(user: SessionUser | null): void {
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
+      const normalized = {
+        ...user,
+        avatar: this.normalizeAvatarUrl(String(user.avatar || ''))
+      };
+      localStorage.setItem('user', JSON.stringify(normalized));
+      this.currentUserSubject.next(normalized);
+      return;
     } else {
       localStorage.removeItem('user');
     }
 
     this.currentUserSubject.next(user);
+  }
+
+  private normalizeAvatarUrl(avatar: string): string {
+    const raw = String(avatar || '').trim();
+    if (!raw) return '';
+
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const parsed = new URL(raw);
+        if (parsed.pathname.startsWith('/uploads/')) {
+          return `${this.apiOrigin}${parsed.pathname}${parsed.search || ''}`;
+        }
+      } catch {
+        return raw;
+      }
+      return raw;
+    }
+
+    if (raw.startsWith('//')) {
+      const protocol = globalThis.location?.protocol || 'https:';
+      return `${protocol}${raw}`;
+    }
+
+    if (raw.startsWith('/uploads/')) {
+      return `${this.apiOrigin}${raw}`;
+    }
+
+    if (raw.startsWith('uploads/')) {
+      return `${this.apiOrigin}/${raw}`;
+    }
+
+    return raw;
   }
 
   private scheduleAutoLogout(): void {

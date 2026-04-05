@@ -25,6 +25,22 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   manualUsername: Partial<Record<ProviderName, string>> = {};
   manualApiKey: Partial<Record<ProviderName, string>> = {};
 
+  get connectedCount(): number {
+    return this.integrations.filter((item) => item.status === 'connected').length;
+  }
+
+  get disconnectedCount(): number {
+    return this.integrations.filter((item) => item.status !== 'connected').length;
+  }
+
+  get oauthCount(): number {
+    return this.integrations.filter((item) => item.authMode === 'oauth2').length;
+  }
+
+  get manualCount(): number {
+    return this.integrations.filter((item) => item.authMode === 'manual').length;
+  }
+
   constructor(
     private readonly integrationsService: IntegrationsService,
     private readonly route: ActivatedRoute,

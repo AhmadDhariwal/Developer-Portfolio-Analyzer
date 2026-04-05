@@ -1,7 +1,7 @@
 .integrations-page {
-  max-width: 1200px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 1.75rem 1.25rem;
+  padding: 1.75rem 1.4rem;
 }
 
 .page-head {
@@ -50,8 +50,81 @@
 
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.1rem;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(260px, 0.9fr);
+  gap: 1.1rem;
+  align-items: start;
+}
+
+.insights-column {
+  display: grid;
+  gap: 0.95rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.insight-card {
+  background: linear-gradient(165deg, rgba(17, 24, 39, 0.94), rgba(15, 23, 42, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  padding: 0.95rem;
+
+  h3 {
+    margin: 0 0 0.45rem;
+    color: #f8fafc;
+    font-size: 0.95rem;
+  }
+
+  .muted {
+    margin: 0;
+    color: rgba(248, 250, 252, 0.65);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}
+
+.score-card {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.98));
+
+  .score-value {
+    margin: 0 0 0.3rem;
+    color: #86efac;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.metric-tile {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  padding: 0.55rem 0.6rem;
+  background: rgba(15, 23, 42, 0.52);
+
+  span {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(191, 219, 254, 0.85);
+  }
+
+  strong {
+    display: block;
+    color: #f8fafc;
+    font-size: 1.05rem;
+    margin-top: 0.2rem;
+  }
 }
 
 .integration-card {
@@ -62,6 +135,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  min-height: 260px;
 }
 
 .card-top {
@@ -188,4 +262,25 @@
   background: rgba(220, 38, 38, 0.16);
   color: #fecaca;
   border-color: rgba(248, 113, 113, 0.32);
+}
+
+@media (max-width: 1150px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-column {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .integrations-page {
+    padding: 1.3rem 1rem;
+  }
+
+  .insights-column {
+    grid-template-columns: 1fr;
+  }
 }

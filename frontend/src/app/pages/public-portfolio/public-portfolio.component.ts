@@ -41,6 +41,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   shareUrl = '';
   copyFeedback = '';
+  userAvatarSrc = '/avatar/profile.png';
   activeSection: SectionId = 'home';
   mobileMenuOpen = false;
   featuredProjects: PublicProfileProject[] = [];
@@ -51,6 +52,8 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   readonly repoLinkResolver = (project: LinkableProject) => this.getProjectRepositoryLink(project);
   private observer: IntersectionObserver | null = null;
   private readonly sectionIds: SectionId[] = ['home', 'about', 'projects', 'upcoming', 'testimonials', 'cta', 'contact'];
+  private avatarVersion = Date.now();
+  private readonly backendOrigin = 'http://localhost:5000';
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -227,6 +230,8 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
         const safeProfile = this.ensureProfileShape(profile);
         safeProfile.user.avatar = this.resolveAvatarUrl(safeProfile.user.avatar || '');
         this.profile = safeProfile;
+        this.avatarVersion = Date.now();
+        this.refreshUserAvatarSrc();
         this.prepareRenderableData();
         this.isLoading = false;
         this.shareUrl = globalThis.location?.href || '';
@@ -355,13 +360,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   getUserAvatar(): string {
-    const avatar = this.resolveAvatarUrl(this.profile?.user?.avatar || '');
-    if (!avatar) return '/avatar/profile.png';
-    
-    // Add cache busting for avatar URLs
-    if (/^data:/i.test(avatar) || avatar.startsWith('blob:')) return avatar;
-    const separator = avatar.includes('?') ? '&' : '?';
-    return `${avatar}${separator}v=${Date.now()}`;
+    return this.userAvatarSrc;
   }
 
   getContactEmail(): string {
@@ -490,18 +489,46 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     const raw = String(avatar || '').trim();
     if (!raw) return '';
 
-    if (/^data:/i.test(raw)) return raw;
-    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const parsed = new URL(raw);
+        if (parsed.pathname.startsWith('/uploads/')) {
+          return `${this.backendOrigin}${parsed.pathname}${parsed.search || ''}`;
+        }
+      } catch {
+        return raw;
+      }
+      return raw;
+    }
+
     if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
 
     if (raw.startsWith('/uploads/')) {
-      return `http://localhost:5000${raw}`;
+      return `${this.backendOrigin}${raw}`;
     }
 
     if (raw.startsWith('uploads/')) {
-      return `http://localhost:5000/${raw}`;
+      return `${this.backendOrigin}/${raw}`;
     }
 
     return raw;
+  }
+
+  private refreshUserAvatarSrc(): void {
+    const avatar = this.resolveAvatarUrl(this.profile?.user?.avatar || '');
+    if (!avatar) {
+      this.userAvatarSrc = '/avatar/profile.png';
+      return;
+    }
+
+    if (/^data:/i.test(avatar) || avatar.startsWith('blob:')) {
+      this.userAvatarSrc = avatar;
+      return;
+    }
+
+    const separator = avatar.includes('?') ? '&' : '?';
+    this.userAvatarSrc = `${avatar}${separator}v=${this.avatarVersion}`;
   }
 }

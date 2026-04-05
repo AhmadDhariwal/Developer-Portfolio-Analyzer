@@ -11,69 +11,108 @@
 
   <div class="loading-state" *ngIf="isLoading">Loading integrations...</div>
 
-  <div class="market-grid" *ngIf="!isLoading">
-    <article class="integration-card" *ngFor="let item of integrations">
-      <div class="card-top">
-        <div>
-          <h3>{{ item.name }}</h3>
-          <span class="category-pill">{{ item.category }}</span>
+  <div class="workspace-grid" *ngIf="!isLoading">
+    <section class="market-column">
+      <div class="market-grid">
+        <article class="integration-card" *ngFor="let item of integrations">
+          <div class="card-top">
+            <div>
+              <h3>{{ item.name }}</h3>
+              <span class="category-pill">{{ item.category }}</span>
+            </div>
+            <span class="status-pill" [ngClass]="item.status">{{ item.status }}</span>
+          </div>
+
+          <p class="description">{{ item.description }}</p>
+
+          <div class="auth-mode" *ngIf="item.authMode === 'oauth2'">OAuth2 Secure Connect</div>
+          <div class="auth-mode" *ngIf="item.authMode === 'manual'">Manual Connect (public profile ingestion)</div>
+
+          <div class="manual-fields" *ngIf="item.authMode === 'manual'">
+            <input
+              type="text"
+              placeholder="Enter username"
+              [(ngModel)]="manualUsername[item.provider]"
+              [disabled]="busyProvider === item.provider"
+            />
+            <input
+              type="text"
+              placeholder="Optional API key"
+              [(ngModel)]="manualApiKey[item.provider]"
+              [disabled]="busyProvider === item.provider"
+            />
+          </div>
+
+          <div class="meta" *ngIf="item.externalUsername || item.lastSyncedAt">
+            <span *ngIf="item.externalUsername">User: {{ item.externalUsername }}</span>
+            <span *ngIf="item.lastSyncedAt">Last sync: {{ item.lastSyncedAt | date:'medium' }}</span>
+          </div>
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              *ngIf="item.status !== 'connected'"
+              (click)="connect(item)"
+              [disabled]="busyProvider === item.provider"
+            >
+              {{ busyProvider === item.provider ? 'Connecting...' : (item.authMode === 'oauth2' ? 'Connect with OAuth' : 'Connect + Sync') }}
+            </button>
+
+            <ng-container *ngIf="item.status === 'connected'">
+              <button
+                class="btn btn-secondary"
+                (click)="runIngestion(item.provider)"
+                [disabled]="busyProvider === item.provider"
+              >
+                {{ busyProvider === item.provider ? 'Syncing...' : 'Run Ingestion' }}
+              </button>
+
+              <button
+                class="btn btn-danger"
+                (click)="disconnect(item)"
+                [disabled]="busyProvider === item.provider"
+              >
+                Disconnect
+              </button>
+            </ng-container>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="insights-column">
+      <article class="insight-card score-card">
+        <h3>Integration Health</h3>
+        <p class="score-value">{{ integrationScore }}%</p>
+        <p class="muted">Keep adding providers and run ingestion regularly to improve recommendation quality.</p>
+      </article>
+
+      <article class="insight-card">
+        <h3>Connection Mix</h3>
+        <div class="metric-grid">
+          <div class="metric-tile">
+            <span>Connected</span>
+            <strong>{{ connectedCount }}</strong>
+          </div>
+          <div class="metric-tile">
+            <span>Disconnected</span>
+            <strong>{{ disconnectedCount }}</strong>
+          </div>
+          <div class="metric-tile">
+            <span>OAuth</span>
+            <strong>{{ oauthCount }}</strong>
+          </div>
+          <div class="metric-tile">
+            <span>Manual</span>
+            <strong>{{ manualCount }}</strong>
+          </div>
         </div>
-        <span class="status-pill" [ngClass]="item.status">{{ item.status }}</span>
-      </div>
+      </article>
 
-      <p class="description">{{ item.description }}</p>
-
-      <div class="auth-mode" *ngIf="item.authMode === 'oauth2'">OAuth2 Secure Connect</div>
-      <div class="auth-mode" *ngIf="item.authMode === 'manual'">Manual Connect (public profile ingestion)</div>
-
-      <div class="manual-fields" *ngIf="item.authMode === 'manual'">
-        <input
-          type="text"
-          placeholder="Enter username"
-          [(ngModel)]="manualUsername[item.provider]"
-          [disabled]="busyProvider === item.provider"
-        />
-        <input
-          type="text"
-          placeholder="Optional API key"
-          [(ngModel)]="manualApiKey[item.provider]"
-          [disabled]="busyProvider === item.provider"
-        />
-      </div>
-
-      <div class="meta" *ngIf="item.externalUsername || item.lastSyncedAt">
-        <span *ngIf="item.externalUsername">User: {{ item.externalUsername }}</span>
-        <span *ngIf="item.lastSyncedAt">Last sync: {{ item.lastSyncedAt | date:'medium' }}</span>
-      </div>
-
-      <div class="actions">
-        <button
-          class="btn btn-primary"
-          *ngIf="item.status !== 'connected'"
-          (click)="connect(item)"
-          [disabled]="busyProvider === item.provider"
-        >
-          {{ busyProvider === item.provider ? 'Connecting...' : (item.authMode === 'oauth2' ? 'Connect with OAuth' : 'Connect + Sync') }}
-        </button>
-
-        <ng-container *ngIf="item.status === 'connected'">
-          <button
-            class="btn btn-secondary"
-            (click)="runIngestion(item.provider)"
-            [disabled]="busyProvider === item.provider"
-          >
-            {{ busyProvider === item.provider ? 'Syncing...' : 'Run Ingestion' }}
-          </button>
-
-          <button
-            class="btn btn-danger"
-            (click)="disconnect(item)"
-            [disabled]="busyProvider === item.provider"
-          >
-            Disconnect
-          </button>
-        </ng-container>
-      </div>
-    </article>
+      <article class="insight-card">
+        <h3>Quick Guidance</h3>
+        <p class="muted">Use OAuth where possible for richer signals. For manual providers, add username first, then sync after every portfolio update.</p>
+      </article>
+    </aside>
   </div>
 </div>
