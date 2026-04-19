@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject, HostListener, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -94,7 +94,8 @@ export class Navbar implements OnInit {
     private readonly notificationService: NotificationService,
     private readonly tenantContext: TenantContextService,
     private readonly apiService: ApiService,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
@@ -117,7 +118,15 @@ export class Navbar implements OnInit {
     this.authService.currentUser$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
-        setTimeout(() => this.syncUserState(user));
+        this.syncUserState(user);
+      });
+
+    // Subscribe to avatar version changes to force refresh
+    this.authService.avatarVersion$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((version) => {
+        this.avatarVersion = version;
+        this.cdr.detectChanges();
       });
 
     if (this.authService.isLoggedIn()) {
@@ -439,6 +448,13 @@ export class Navbar implements OnInit {
     return `${raw}${separator}v=${this.avatarVersion}`;
   }
 
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.error('[Navbar] Avatar failed to load:', img.src);
+    // Hide broken img and show initials fallback
+    this.userAvatar = '';
+  }
+
   private bumpAvatarVersion(): void {
     this.avatarVersion = Date.now();
   }
@@ -452,6 +468,7 @@ export class Navbar implements OnInit {
       this.cachedRepos = [];
       this.cachedSkills = [];
       this.lastLoadedGithubHandle = '';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -461,10 +478,14 @@ export class Navbar implements OnInit {
     this.userInitial = this.userName.charAt(0).toUpperCase();
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
 
+    console.log('[Navbar] syncUserState — avatar:', this.userAvatar);
+
     // Bump version if avatar changed
     if (previousAvatar !== this.userAvatar) {
       this.bumpAvatarVersion();
     }
+
+    this.cdr.detectChanges();
 
     if (this.userHandle && this.userHandle !== 'developer' && this.lastLoadedGithubHandle !== this.userHandle) {
       this.lastLoadedGithubHandle = this.userHandle;

@@ -26,7 +26,7 @@
       <div class="prof-card avatar-card">
         <div class="avatar-wrap">
           <div class="avatar-circle">
-            <img *ngIf="profile.avatar" [src]="getAvatarSrc()" [alt]="profile.name || 'User'" title="Profile image" />
+            <img *ngIf="profile.avatar" [src]="getAvatarSrc()" [alt]="profile.name || 'User'" title="Profile image" (error)="onAvatarError($event)" />
             <span *ngIf="!profile.avatar">{{ getInitials() }}</span>
           </div>
           <input #avatarInput id="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onAvatarFileSelected($event)" hidden />

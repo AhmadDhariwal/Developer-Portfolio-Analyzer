@@ -16,6 +16,7 @@ export class CareerSprintComponent implements OnInit {
   userAvatar = '';
   userName = '';
   userInitial = 'D';
+  avatarVersion = Date.now();
   isLoading = false;
   newTaskTitle = '';
   newTaskDescription = '';
@@ -38,6 +39,7 @@ export class CareerSprintComponent implements OnInit {
         this.userAvatar = this.profileService.resolveAvatarUrl(profile.avatar || '');
         this.userName = profile.name || '';
         this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
+        this.bumpAvatarVersion();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -156,5 +158,18 @@ export class CareerSprintComponent implements OnInit {
     if (this.sprint.streakBroken) return 'broken';
     if (this.sprint.streakWarning) return 'warning';
     return 'active';
+  }
+
+  getAvatarSrc(): string {
+    const raw = String(this.userAvatar || '').trim();
+    if (!raw) return '';
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
+    
+    const separator = raw.includes('?') ? '&' : '?';
+    return `${raw}${separator}v=${this.avatarVersion}`;
+  }
+
+  private bumpAvatarVersion(): void {
+    this.avatarVersion = Date.now();
   }
 }

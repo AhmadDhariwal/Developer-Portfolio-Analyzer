@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, DestroyRef, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, DestroyRef, inject, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../shared/services/auth.service';
@@ -127,7 +127,8 @@ export class Sidebar implements OnInit {
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly tenantContext: TenantContextService,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -135,7 +136,15 @@ export class Sidebar implements OnInit {
     this.authService.currentUser$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
-        setTimeout(() => this.syncUserState(user));
+        this.syncUserState(user);
+      });
+
+    // Subscribe to avatar version changes to force refresh
+    this.authService.avatarVersion$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((version) => {
+        this.avatarVersion = version;
+        this.cdr.detectChanges();
       });
   }
 
@@ -179,6 +188,13 @@ export class Sidebar implements OnInit {
     return `${raw}${separator}v=${this.avatarVersion}`;
   }
 
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.error('[Sidebar] Avatar failed to load:', img.src);
+    // Hide broken img and show initials fallback
+    this.userAvatar = '';
+  }
+
   private bumpAvatarVersion(): void {
     this.avatarVersion = Date.now();
   }
@@ -189,6 +205,7 @@ export class Sidebar implements OnInit {
       this.userHandle = 'developer';
       this.userInitial = 'D';
       this.userAvatar = '';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -198,9 +215,13 @@ export class Sidebar implements OnInit {
     this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
 
+    console.log('[Sidebar] syncUserState — avatar:', this.userAvatar);
+
     // Bump version if avatar changed
     if (previousAvatar !== this.userAvatar) {
       this.bumpAvatarVersion();
     }
+
+    this.cdr.detectChanges();
   }
 }

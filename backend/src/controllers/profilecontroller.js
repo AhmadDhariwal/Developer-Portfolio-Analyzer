@@ -483,7 +483,8 @@ const uploadAvatar = async (req, res) => {
       }
     }
 
-    user.avatar = resolveAvatarForResponse(req, nextAvatarPath);
+    // Store only the relative path in DB — full URL is resolved per-request
+    user.avatar = nextAvatarPath;
     await user.save();
 
     await createNotification({
@@ -497,7 +498,7 @@ const uploadAvatar = async (req, res) => {
 
     return res.json({
       message: 'Avatar updated successfully.',
-      avatar: resolveAvatarForResponse(req, user.avatar)
+      avatar: resolveAvatarForResponse(req, nextAvatarPath)
     });
   } catch (error) {
     console.error('Avatar upload error:', error.message);

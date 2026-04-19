@@ -18,7 +18,7 @@
         <div class="hero-top">
           <div class="sprint-info">
             <div class="user-avatar-badge">
-              <img *ngIf="userAvatar; else sprintAvatarFallback" [src]="userAvatar" [alt]="userName" title="Your Profile" />
+              <img *ngIf="userAvatar; else sprintAvatarFallback" [src]="getAvatarSrc()" [alt]="userName" title="Your Profile" />
               <ng-template #sprintAvatarFallback>
                 <span class="avatar-fallback">{{ userInitial }}</span>
               </ng-template>

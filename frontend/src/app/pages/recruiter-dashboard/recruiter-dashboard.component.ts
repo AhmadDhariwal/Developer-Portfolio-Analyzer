@@ -17,6 +17,7 @@ export class RecruiterDashboardComponent implements OnInit {
   isLoading = false;
   candidates: RecruiterCandidate[] = [];
   shortlisted = new Set<string>();
+  private avatarVersions = new Map<string, number>();
 
   constructor(
     private readonly recruiterService: RecruiterDashboardService,
@@ -41,6 +42,12 @@ export class RecruiterDashboardComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.candidates = res.candidates || [];
+        // Initialize avatar versions for cache busting
+        this.candidates.forEach(candidate => {
+          if (candidate.avatar && !this.avatarVersions.has(candidate.id)) {
+            this.avatarVersions.set(candidate.id, Date.now());
+          }
+        });
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -62,5 +69,12 @@ export class RecruiterDashboardComponent implements OnInit {
 
   isShortlisted(candidate: RecruiterCandidate): boolean {
     return this.shortlisted.has(candidate.id);
+  }
+
+  getCandidateAvatarSrc(candidate: RecruiterCandidate): string {
+    if (!candidate.avatar) return '';
+    const version = this.avatarVersions.get(candidate.id) || Date.now();
+    const separator = candidate.avatar.includes('?') ? '&' : '?';
+    return `${candidate.avatar}${separator}v=${version}`;
   }
 }

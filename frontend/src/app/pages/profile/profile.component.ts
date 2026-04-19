@@ -386,6 +386,13 @@ export class ProfileComponent implements OnInit {
     return `${raw}${separator}v=${this.avatarVersion}`;
   }
 
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.error('[Profile] Avatar failed to load:', img.src);
+    this.profile.avatar = '';
+    this.cdr.detectChanges();
+  }
+
   private bumpAvatarVersion(): void {
     this.avatarVersion = Date.now();
   }

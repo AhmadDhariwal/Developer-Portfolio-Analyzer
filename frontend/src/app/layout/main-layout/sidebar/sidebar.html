@@ -50,7 +50,11 @@
   <div class="sidebar-footer">
     <div class="sidebar-user-card">
       <div class="sidebar-user-avatar">
-        <img *ngIf="userAvatar; else sidebarAvatarFallback" [src]="getAvatarSrc()" [alt]="userName" title="User avatar" />
+        <img *ngIf="userAvatar; else sidebarAvatarFallback"
+             [src]="getAvatarSrc()"
+             [alt]="userName"
+             title="User avatar"
+             (error)="onAvatarError($event)" />
         <ng-template #sidebarAvatarFallback>
           <span>{{ userInitial }}</span>
         </ng-template>

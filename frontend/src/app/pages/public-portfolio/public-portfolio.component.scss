@@ -43,28 +43,9 @@ footer[id] {
   transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 
-  .hero-title,
-  .bio-title,
-  .skills-title,
-  .section-title,
-  .contact-title {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
   &.is-visible {
     opacity: 1;
     transform: translateY(0);
-
-    .hero-title,
-    .bio-title,
-    .skills-title,
-    .section-title,
-    .contact-title {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 }
 
@@ -81,17 +62,9 @@ footer[id] {
 }
 
 @keyframes drift {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg) scale(1);
-  }
-
-  50% {
-    transform: translate(-45%, -55%) rotate(180deg) scale(1.1);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg) scale(1);
-  }
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50% { transform: translate(-45%, -55%) rotate(180deg) scale(1.1); }
+  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
 }
 
 .bg-glow {
@@ -131,8 +104,8 @@ footer[id] {
   width: 100%;
   padding: 18px 0;
   background: rgba(6, 14, 32, 0.42);
-  -webkit-backdrop-filter: blur(30px);
   backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   z-index: 1000;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
@@ -206,7 +179,6 @@ footer[id] {
         color: #ffffff;
         transform: translateY(-1px);
       }
-
       &:hover::after {
         opacity: 0.2;
       }
@@ -227,7 +199,7 @@ footer[id] {
 // HERO SECTION - Figma exact style
 // ============================================
 .hero-section {
-  padding: 150px 64px 72px;
+  padding: 180px 80px 100px;
   position: relative;
   z-index: 1;
   min-height: 100vh;
@@ -296,27 +268,14 @@ footer[id] {
       }
 
       @keyframes spin-glow {
-        from {
-          transform: rotate(0deg) scale(1);
-        }
-
-        to {
-          transform: rotate(360deg) scale(1);
-        }
+        from { transform: rotate(0deg) scale(1); }
+        to { transform: rotate(360deg) scale(1); }
       }
 
       @keyframes float-avatar {
-        0% {
-          transform: translateY(0px) scale(1);
-        }
-
-        50% {
-          transform: translateY(-20px) scale(1.02);
-        }
-
-        100% {
-          transform: translateY(0px) scale(1);
-        }
+        0% { transform: translateY(0px) scale(1); }
+        50% { transform: translateY(-20px) scale(1.02); }
+        100% { transform: translateY(0px) scale(1); }
       }
 
       .avatar-image {
@@ -409,7 +368,7 @@ footer[id] {
 // BIO SECTION
 // ============================================
 .bio-section {
-  padding: 48px 64px 84px;
+  padding: 60px 80px 120px;
   position: relative;
   z-index: 1;
 
@@ -441,7 +400,7 @@ footer[id] {
     .company-link {
       color: #4285f4;
       font-weight: 500;
-
+      
       i {
         margin-right: 6px;
         vertical-align: middle;
@@ -469,7 +428,7 @@ footer[id] {
 // SKILLS SECTION - Orbital Design
 // ============================================
 .skills-section {
-  padding: 64px 64px 110px;
+  padding: 80px 80px 200px;
   position: relative;
   z-index: 1;
 
@@ -481,7 +440,7 @@ footer[id] {
 
   .skills-header {
     text-align: center;
-    margin-bottom: 44px;
+    margin-bottom: 60px;
 
     .skills-title {
       font-family: "Space Grotesk", sans-serif;
@@ -661,7 +620,7 @@ footer[id] {
           box-shadow: 0 0 15px rgba(236, 99, 255, 0.5);
           background: rgba(139, 92, 246, 0.8);
           border-color: rgba(236, 99, 255, 0.8);
-
+          
           i {
             color: #ffffff;
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
@@ -696,7 +655,7 @@ footer[id] {
 // WORK EXPERIENCE SECTION
 // ============================================
 .work-section {
-  padding: 64px 64px 96px;
+  padding: 80px 80px 120px;
   position: relative;
   z-index: 1;
 
@@ -709,7 +668,7 @@ footer[id] {
     font-family: "Space Grotesk", sans-serif;
     font-size: clamp(40px, 5vw, 56px);
     font-weight: 600;
-    margin-bottom: 44px;
+    margin-bottom: 60px;
     color: $text-white;
     letter-spacing: -1px;
   }
@@ -722,8 +681,8 @@ footer[id] {
 
   .experience-card {
     background: $glass-bg;
-    -webkit-backdrop-filter: blur(24px);
     backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-radius: 24px;
     padding: 40px;
     position: relative;
@@ -839,10 +798,7 @@ footer[id] {
         &::before {
           content: '';
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          top: 0; left: 0; right: 0; bottom: 0;
           background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
           border-radius: 8px;
           z-index: -1;
@@ -874,7 +830,7 @@ footer[id] {
 // PROJECTS SECTION
 // ============================================
 .projects-section {
-  padding: 64px 64px 96px;
+  padding: 80px 80px 120px;
   position: relative;
   z-index: 1;
 
@@ -887,7 +843,7 @@ footer[id] {
     display: flex;
     align-items: center;
     gap: 60px;
-    margin-bottom: 96px;
+    margin-bottom: 150px;
     position: relative;
 
     &.reverse {
@@ -925,8 +881,8 @@ footer[id] {
 
       .project-description-card {
         background: rgba(25, 37, 64, 0.4);
-        -webkit-backdrop-filter: blur(24px);
         backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
         border: 1px solid rgba(99, 102, 241, 0.2);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         border-radius: 16px;
@@ -1077,6 +1033,7 @@ footer[id] {
       right: 0;
       bottom: 0;
       background: rgba(6, 14, 32, 0.85);
+      //backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1109,20 +1066,15 @@ footer[id] {
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 // ============================================
 // CONTACT SECTION (Enhanced Footer)
 // ============================================
 .contact-section {
-  padding: 72px 64px 0;
+  padding: 100px 80px 0;
   position: relative;
   z-index: 1;
 
@@ -1135,7 +1087,7 @@ footer[id] {
     font-family: "Space Grotesk", sans-serif;
     font-size: 42px;
     font-weight: 600;
-    margin-bottom: 28px;
+    margin-bottom: 40px;
     color: $text-white;
     letter-spacing: -1px;
     text-align: center;
@@ -1145,7 +1097,7 @@ footer[id] {
     font-size: 18px;
     line-height: 1.7;
     color: $text-gray;
-    margin-bottom: 24px;
+    margin-bottom: 30px;
     text-align: center;
 
     .highlight {
@@ -1157,7 +1109,7 @@ footer[id] {
     font-size: 16px;
     color: $text-gray;
     text-decoration: none;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     display: block;
     text-align: center;
     transition: color 0.3s ease;
@@ -1171,7 +1123,7 @@ footer[id] {
     display: flex;
     gap: 24px;
     justify-content: center;
-    margin-bottom: 60px;
+    margin-bottom: 80px;
 
     .social-link {
       width: 44px;
@@ -1200,8 +1152,8 @@ footer[id] {
   // Footer Bottom Section
   .footer-bottom {
     border-top: 1px solid rgba(99, 102, 241, 0.15);
-    padding-top: 44px;
-    margin-top: 44px;
+    padding-top: 60px;
+    margin-top: 60px;
 
     .footer-content {
       max-width: 1200px;
@@ -1209,7 +1161,7 @@ footer[id] {
       display: grid;
       grid-template-columns: 1.5fr 2fr;
       gap: 60px;
-      margin-bottom: 28px;
+      margin-bottom: 40px;
     }
 
     .footer-brand {
@@ -1217,7 +1169,7 @@ footer[id] {
         width: 50px;
         height: 50px;
         margin-bottom: 20px;
-
+        
         svg {
           width: 100%;
           height: 100%;
@@ -1411,26 +1363,19 @@ footer[id] {
 // ANIMATIONS
 // ============================================
 @keyframes blink {
-
-  0%,
-  50% {
+  0%, 50% {
     opacity: 1;
   }
-
-  51%,
-  100% {
+  51%, 100% {
     opacity: 0;
   }
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
     opacity: 0.8;
   }
-
   50% {
     transform: scale(1.1);
     opacity: 1;
@@ -1442,7 +1387,6 @@ footer[id] {
     opacity: 0;
     transform: translateY(-20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1453,19 +1397,15 @@ footer[id] {
   from {
     transform: rotateX(70deg) rotateZ(0deg);
   }
-
   to {
     transform: rotateX(70deg) rotateZ(360deg);
   }
 }
 
 @keyframes float {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-10px);
   }
@@ -1498,7 +1438,7 @@ footer[id] {
   }
 
   .hero-section {
-    padding: 122px 32px 64px;
+    padding: 140px 40px 80px;
   }
 
   .hero-section .hero-container {
@@ -1527,8 +1467,8 @@ footer[id] {
   .work-section,
   .projects-section,
   .contact-section {
-    padding-left: 32px;
-    padding-right: 32px;
+    padding-left: 40px;
+    padding-right: 40px;
   }
 
   .work-section .experience-grid {
@@ -1588,7 +1528,7 @@ footer[id] {
   }
 
   .hero-section {
-    padding: 104px 20px 48px;
+    padding: 120px 24px 60px;
   }
 
   .hero-section .hero-left .avatar-container {
@@ -1606,8 +1546,8 @@ footer[id] {
   .projects-section,
   .upcoming-projects-section,
   .contact-section {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
   }
 
   .skills-section .skills-row {
@@ -1680,3 +1620,4 @@ footer[id] {
     font-size: 32px;
   }
 }
+

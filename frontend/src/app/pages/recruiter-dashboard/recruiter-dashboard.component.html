@@ -38,7 +38,7 @@
         <tr *ngFor="let candidate of candidates">
           <td>
             <div class="candidate-info">
-              <img *ngIf="candidate.avatar" [src]="candidate.avatar" class="avatar" />
+              <img title="avatar" *ngIf="candidate.avatar" [src]="getCandidateAvatarSrc(candidate)" class="avatar" />
               <div>
                 <strong>{{ candidate.name }}</strong>
                 <p>{{ candidate.jobTitle }}</p>

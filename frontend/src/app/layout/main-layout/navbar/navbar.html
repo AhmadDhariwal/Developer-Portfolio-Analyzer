@@ -135,7 +135,11 @@
     <div class="user-avatar-block" *ngIf="(isLoggedIn$ | async)">
       <button class="avatar-button" (click)="toggleUserMenu()">
         <div class="avatar-circle">
-          <img *ngIf="userAvatar; else navbarAvatarInitial" [src]="getAvatarSrc()" alt="User avatar" title="User avatar" />
+          <img *ngIf="userAvatar; else navbarAvatarInitial"
+               [src]="getAvatarSrc()"
+               alt="User avatar"
+               title="User avatar"
+               (error)="onAvatarError($event)" />
           <ng-template #navbarAvatarInitial>
             <span>{{ userInitial }}</span>
           </ng-template>

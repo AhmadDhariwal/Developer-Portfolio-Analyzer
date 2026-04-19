@@ -34,6 +34,8 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());
   currentUser$ = this.currentUserSubject.asObservable();
+  private readonly avatarVersionSubject = new BehaviorSubject<number>(Date.now());
+  avatarVersion$ = this.avatarVersionSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService) {
@@ -139,7 +141,8 @@ export class AuthService {
       try {
         const parsed = new URL(raw);
         if (parsed.pathname.startsWith('/uploads/')) {
-          return `${this.apiOrigin}${parsed.pathname}${parsed.search || ''}`;
+          // Strip query params when storing — cache-busting ?v= is added at display time
+          return `${this.apiOrigin}${parsed.pathname}`;
         }
       } catch {
         return raw;
@@ -243,10 +246,21 @@ export class AuthService {
     const current = this.currentUserSubject.value ?? this.readStoredUser();
     if (!current) return;
 
-    this.persistCurrentUser({
+    const updated = {
       ...current,
       ...partial
-    } as SessionUser);
+    } as SessionUser;
+
+    // Bump avatar version if avatar changed
+    if (partial.avatar && partial.avatar !== current.avatar) {
+      this.avatarVersionSubject.next(Date.now());
+    }
+
+    this.persistCurrentUser(updated);
+  }
+
+  getAvatarVersion(): number {
+    return this.avatarVersionSubject.value;
   }
 
   isLoggedIn(): boolean {

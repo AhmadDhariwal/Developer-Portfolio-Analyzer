@@ -182,7 +182,8 @@ export class ProfileService {
       try {
         const parsed = new URL(raw);
         if (parsed.pathname.startsWith('/uploads/')) {
-          return `${this.apiOrigin}${parsed.pathname}${parsed.search || ''}`;
+          // Strip query params — cache-busting ?v= is added at display time by getAvatarSrc()
+          return `${this.apiOrigin}${parsed.pathname}`;
         }
       } catch {
         return raw;
