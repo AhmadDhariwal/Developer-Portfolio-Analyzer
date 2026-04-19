@@ -13,7 +13,9 @@ const envSchema = z.object({
   OTEL_SERVICE_NAME: z.string().default('developer-portfolio-analyzer-api'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
   METRICS_ALERT_LATENCY_MS: z.coerce.number().int().positive().default(1800),
-  METRICS_ALERT_ERROR_RATE: z.coerce.number().min(0).max(1).default(0.2)
+  METRICS_ALERT_ERROR_RATE: z.coerce.number().min(0).max(1).default(0.2),
+  NEWS_API_KEY: z.string().optional(),
+  GNEWS_API_KEY: z.string().optional()
 });
 
 const mask = (value) => {

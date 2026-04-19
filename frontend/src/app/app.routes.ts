@@ -25,6 +25,7 @@ import { WeeklyReportsComponent } from './pages/weekly-reports/weekly-reports.co
 import { InterviewPrepComponent } from './pages/interview-prep/interview-prep.component';
 import { CareerSprintComponent } from './pages/career-sprint/career-sprint.component';
 import { InterviewsReportsComponent } from './pages/interviews-reports/interviews-reports.component';
+import { NewsComponent } from './pages/news/news.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
 import { authGuard } from './guards/auth.guard';
@@ -37,6 +38,7 @@ export const routes: Routes = [
   { path: 'privacy', component: PrivacyPolicyComponent },
   { path: 'p/:slug', component: PublicPortfolioComponent },
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
+  { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
 
   // Authentication pages (public) - only accessible when NOT logged in
@@ -68,6 +70,7 @@ export const routes: Routes = [
     { path: 'weekly-reports',  component: WeeklyReportsComponent },
     { path: 'interview-prep',  component: InterviewPrepComponent },
     { path: 'career-sprint',   component: CareerSprintComponent },
+      { path: 'news',            component: NewsComponent },
   { path: 'notifications', component: NotificationsComponent },
       { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },
       {

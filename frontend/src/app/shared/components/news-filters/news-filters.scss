@@ -1,0 +1,46 @@
+.filters-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  button {
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  button.active {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: rgba(99, 102, 241, 0.45);
+    color: var(--color-primary-light);
+  }
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(4, minmax(120px, 1fr));
+  gap: 8px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  input,
+  select {
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 9px 11px;
+    font-size: 0.82rem;
+  }
+}

@@ -1,0 +1,47 @@
+<section class="news-page">
+  <header class="news-header">
+    <div>
+      <h1>Tech News Hub</h1>
+      <p>Personalized developer news powered by your DevInsight profile context.</p>
+    </div>
+    <div class="header-stats">
+      <span>{{ items.length }} loaded</span>
+      <span>{{ bookmarks.size }} bookmarked</span>
+      <span>{{ readLater.size }} read later</span>
+    </div>
+  </header>
+
+  <app-news-filters [filters]="filters" (filtersChange)="onFiltersChange($event)"></app-news-filters>
+
+  <section class="topic-strip" *ngIf="trendingTopics.length > 0">
+    <h3>Trending Topics</h3>
+    <div class="chips">
+      <span *ngFor="let topic of trendingTopics">#{{ topic }}</span>
+    </div>
+  </section>
+
+  <section class="source-strip" *ngIf="(sourceSummary | keyvalue).length > 0">
+    <span *ngFor="let source of sourceSummary | keyvalue">{{ source.key }}: {{ source.value }}</span>
+  </section>
+
+  <div class="state loading" *ngIf="isLoading">Loading personalized news feed...</div>
+  <div class="state error" *ngIf="!isLoading && errorMessage">{{ errorMessage }}</div>
+  <div class="state empty" *ngIf="!isLoading && !errorMessage && items.length === 0">No news found for current filters.</div>
+
+  <div class="news-grid" *ngIf="!isLoading && !errorMessage && items.length > 0">
+    <app-news-card
+      *ngFor="let item of items; trackBy: trackByUrl"
+      [news]="item"
+      [bookmarked]="bookmarks.has(item.url)"
+      [readLater]="readLater.has(item.url)"
+      (bookmarkToggle)="onBookmarkToggle($event)"
+      (readLaterToggle)="onReadLaterToggle($event)"
+    ></app-news-card>
+  </div>
+
+  <div class="load-more-wrap" *ngIf="!isLoading && page < totalPages">
+    <button type="button" [disabled]="isLoadingMore" (click)="loadMore()">
+      {{ isLoadingMore ? 'Loading...' : 'Load More News' }}
+    </button>
+  </div>
+</section>

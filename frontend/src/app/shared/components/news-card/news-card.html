@@ -1,0 +1,26 @@
+<article class="news-card">
+  <img class="news-image" [src]="news.image" [alt]="news.title" loading="lazy" />
+  <div class="news-body">
+    <div class="meta-row">
+      <span class="source">{{ news.source }}</span>
+      <span class="date">{{ news.publishedAt | date:'mediumDate' }}</span>
+    </div>
+    <h3 class="title">{{ news.title }}</h3>
+    <p class="description">{{ news.description || 'No summary available for this article.' }}</p>
+
+    <div class="badge-row">
+      <span class="badge">{{ news.category }}</span>
+      <span class="score">Score {{ news.rankScore | number:'1.0-0' }}</span>
+    </div>
+
+    <div class="actions">
+      <a class="btn-read" [href]="news.url" target="_blank" rel="noopener noreferrer">Read More</a>
+      <button type="button" class="btn-ghost" (click)="onBookmarkToggle()">
+        {{ bookmarked ? 'Bookmarked' : 'Bookmark' }}
+      </button>
+      <button type="button" class="btn-ghost" (click)="onReadLaterToggle()">
+        {{ readLater ? 'Saved' : 'Read Later' }}
+      </button>
+    </div>
+  </div>
+</article>

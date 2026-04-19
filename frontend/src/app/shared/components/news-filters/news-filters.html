@@ -1,0 +1,36 @@
+<section class="filters-wrap">
+  <div class="tabs">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      [class.active]="filters.tab === tab.value"
+      (click)="setTab(tab.value)"
+    >
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <div class="controls">
+    <input
+      type="text"
+      [ngModel]="filters.search"
+      (ngModelChange)="setSearch($event)"
+      placeholder="Search keywords..."
+    />
+    <select [ngModel]="filters.category" (ngModelChange)="setCategory($event)">
+      <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
+    </select>
+    <select [ngModel]="filters.source" (ngModelChange)="setSource($event)">
+      <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
+    </select>
+    <select [ngModel]="filters.date" (ngModelChange)="setDate($event)">
+      <option value="today">Today</option>
+      <option value="week">This Week</option>
+      <option value="month">This Month</option>
+    </select>
+    <select [ngModel]="filters.popularity" (ngModelChange)="setPopularity($event)">
+      <option value="all">All Popularity</option>
+      <option value="high">High Popularity</option>
+    </select>
+  </div>
+</section>
