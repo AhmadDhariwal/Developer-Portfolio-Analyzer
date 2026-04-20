@@ -359,6 +359,7 @@ export class ProfileComponent implements OnInit {
       next: (res) => {
         this.releaseAvatarPreviewUrl();
         this.profile.avatar = this.profileService.resolveAvatarUrl(res.avatar);
+        this.authService.updateCurrentUser({ avatar: this.profile.avatar });
         this.bumpAvatarVersion();
         this.snapshot = { ...this.profile };
         this.isUploadingAvatar = false;

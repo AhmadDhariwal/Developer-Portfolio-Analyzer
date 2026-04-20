@@ -15,4 +15,9 @@ export class TestimonialCardComponent {
   get hasAvatar(): boolean {
     return Boolean(this.testimonial.avatarUrl);
   }
+
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
 }

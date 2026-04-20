@@ -1,0 +1,39 @@
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hint {
+  margin-top: -4px;
+  color: #94a3b8;
+}
+
+.error-message {
+  color: #fca5a5;
+}
+
+.success-message {
+  color: #86efac;
+}
+
+.resend-btn,
+.back-link {
+  background: transparent;
+  border: none;
+  color: #93c5fd;
+  cursor: pointer;
+  text-align: center;
+}

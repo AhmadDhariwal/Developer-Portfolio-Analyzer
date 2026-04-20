@@ -1,0 +1,5 @@
+<select [ngModel]="value" (ngModelChange)="onChange($event)" class="country-code-select">
+  <option *ngFor="let option of options" [ngValue]="option.value">
+    {{ option.label }}
+  </option>
+</select>

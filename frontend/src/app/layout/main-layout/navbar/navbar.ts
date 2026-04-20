@@ -453,6 +453,7 @@ export class Navbar implements OnInit {
     console.error('[Navbar] Avatar failed to load:', img.src);
     // Hide broken img and show initials fallback
     this.userAvatar = '';
+    this.cdr.detectChanges();
   }
 
   private bumpAvatarVersion(): void {
@@ -475,7 +476,7 @@ export class Navbar implements OnInit {
     const previousAvatar = this.userAvatar;
     this.userName = user.name || 'Developer';
     this.userHandle = user.githubUsername || 'developer';
-    this.userInitial = this.userName.charAt(0).toUpperCase();
+    this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
 
     console.log('[Navbar] syncUserState — avatar:', this.userAvatar);

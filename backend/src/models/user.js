@@ -10,9 +10,21 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  phoneNumber: {
+    type: String,
+    default: ''
+  },
+  countryCode: {
+    type: String,
+    default: ''
+  },
   password: {
     type: String,
     required: true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   },
   githubUsername: {
     type: String,

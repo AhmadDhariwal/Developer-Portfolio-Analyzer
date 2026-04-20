@@ -2,14 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../shared/services/auth.service';
+import { AuthService, OtpType } from '../../shared/services/auth.service';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
+import { CountryCodeDropdownComponent } from '../../features/auth/components/country-code-dropdown/country-code-dropdown.component';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent],
+  imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent, CountryCodeDropdownComponent],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })
@@ -19,6 +20,9 @@ export class Signup {
   githubUsername: string = '';
   password: string = '';
   confirmPassword: string = '';
+  otpType: OtpType = 'email';
+  countryCode = '+92';
+  phoneNumber = '';
   agreeToTerms: boolean = false;
   isLoading: boolean = false;
   error: string = '';
@@ -36,6 +40,11 @@ export class Signup {
       return;
     }
 
+    if (this.otpType === 'phone' && !this.phoneNumber) {
+      this.error = 'Phone number is required for phone OTP';
+      return;
+    }
+
     if (!this.agreeToTerms) {
       this.error = 'Please agree to the terms and conditions';
       return;
@@ -48,11 +57,36 @@ export class Signup {
       name: this.name,
       email: this.email,
       password: this.password,
-      githubUsername: this.githubUsername || 'not-provided'
+      githubUsername: this.githubUsername || 'not-provided',
+      phoneNumber: this.phoneNumber,
+      countryCode: this.countryCode
     }).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.router.navigate(['/app/dashboard']);
+      next: (res) => {
+        const userId = String(res?._id || '');
+        const type = this.otpType;
+        this.authService.sendOtp({
+          userId,
+          type,
+          purpose: 'signup'
+        }).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.router.navigate(['/auth/otp-verification'], {
+              state: {
+                userId,
+                type,
+                purpose: 'signup',
+                email: this.email,
+                phoneNumber: this.phoneNumber,
+                countryCode: this.countryCode
+              }
+            });
+          },
+          error: (otpErr) => {
+            this.isLoading = false;
+            this.error = otpErr?.error?.message || 'Account created but failed to send OTP.';
+          }
+        });
       },
       error: (err) => {
         this.isLoading = false;

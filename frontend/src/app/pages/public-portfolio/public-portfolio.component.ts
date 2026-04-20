@@ -339,6 +339,9 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     const raw = String(url || '').trim();
     if (!raw) return '';
     if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/uploads/')) return `${this.backendOrigin}${raw}`;
+    if (raw.startsWith('uploads/')) return `${this.backendOrigin}/${raw}`;
+    if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
     return `https://${raw.replace(/^\/+/, '')}`;
   }
 
@@ -351,12 +354,23 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   getProjectPreview(project: LinkableProject): string {
-    const directImage = this.toExternalLink(project.imageUrl);
+    const directImage = this.resolveMediaImageUrl(project.imageUrl);
     if (directImage) return directImage;
 
     const target = this.getProjectPrimaryLink(project) || this.getProjectRepositoryLink(project) || 'https://github.com';
     const encodedTarget = encodeURIComponent(target);
     return `https://s-shot.ru/1280x720/PNG/1280/${encodedTarget}`;
+  }
+
+  private resolveMediaImageUrl(url: string | undefined): string {
+    const raw = String(url || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+    if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
+    if (raw.startsWith('/uploads/')) return `${this.backendOrigin}${raw}`;
+    if (raw.startsWith('uploads/')) return `${this.backendOrigin}/${raw}`;
+    if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(raw)) return `https://${raw}`;
+    return '';
   }
 
   getUserAvatar(): string {

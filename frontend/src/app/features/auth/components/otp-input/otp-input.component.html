@@ -1,0 +1,13 @@
+<div class="otp-grid">
+  <input
+    *ngFor="let digit of digits; let i = index"
+    #otpCell
+    [value]="digit"
+    maxlength="1"
+    inputmode="numeric"
+    autocomplete="one-time-code"
+    (input)="onInput(i, $event)"
+    (keydown)="onKeyDown(i, $event)"
+    class="otp-cell"
+  />
+</div>

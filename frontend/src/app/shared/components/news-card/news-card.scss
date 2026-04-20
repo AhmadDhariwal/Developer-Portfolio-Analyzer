@@ -48,7 +48,11 @@
   color: var(--text-secondary);
   font-size: 0.86rem;
   line-height: 1.55;
-  min-height: 56px;
+  min-height: calc(1.55em * 4);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .badge-row {

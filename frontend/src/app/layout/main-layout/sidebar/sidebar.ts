@@ -198,6 +198,7 @@ export class Sidebar implements OnInit {
     console.error('[Sidebar] Avatar failed to load:', img.src);
     // Hide broken img and show initials fallback
     this.userAvatar = '';
+    this.cdr.detectChanges();
   }
 
   private bumpAvatarVersion(): void {

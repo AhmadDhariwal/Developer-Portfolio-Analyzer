@@ -28,6 +28,9 @@ import { InterviewsReportsComponent } from './pages/interviews-reports/interview
 import { NewsComponent } from './pages/news/news.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
+import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
+import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
 import { publicGuard } from './guards/public.guard';
 import { adminSettingsGuard } from './guards/admin-settings.guard';
@@ -44,6 +47,9 @@ export const routes: Routes = [
   // Authentication pages (public) - only accessible when NOT logged in
   { path: 'auth/login', component: Login, canActivate: [publicGuard] },
   { path: 'auth/signup', component: Signup, canActivate: [publicGuard] },
+  { path: 'auth/forgot-password', component: ForgotPasswordComponent, canActivate: [publicGuard] },
+  { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
+  { path: 'auth/reset-password', component: ResetPasswordComponent, canActivate: [publicGuard] },
 
   // Dashboard pages (protected - within main layout) - only accessible when logged in
   {

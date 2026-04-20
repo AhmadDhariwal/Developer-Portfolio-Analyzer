@@ -1,6 +1,6 @@
 <article class="upcoming-card">
   <div class="upcoming-media">
-    <img [src]="previewImage" [alt]="project.title" class="upcoming-image" loading="lazy" decoding="async" />
+    <img [src]="previewImage" [alt]="project.title" class="upcoming-image" loading="lazy" decoding="async" (error)="onPreviewError($event)" />
     <span class="status-badge" [class.in-progress]="project.status === 'in-progress'">{{ statusLabel }}</span>
   </div>
 

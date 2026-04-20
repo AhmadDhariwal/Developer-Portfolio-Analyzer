@@ -9,6 +9,7 @@
       class="avatar"
       loading="lazy"
       decoding="async"
+      (error)="onAvatarError($event)"
     />
     <div class="identity">
       <h4>{{ testimonial.name }}</h4>

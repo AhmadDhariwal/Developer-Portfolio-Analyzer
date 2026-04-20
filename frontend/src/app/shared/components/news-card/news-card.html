@@ -1,5 +1,5 @@
 <article class="news-card">
-  <img class="news-image" [src]="news.image" [alt]="news.title" loading="lazy" />
+  <img class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
   <div class="news-body">
     <div class="meta-row">
       <span class="source">{{ news.source }}</span>

@@ -23,7 +23,7 @@
 
   <div class="project-preview" [class.preview-right]="!reverse" [class.preview-left]="reverse">
     <div class="preview-frame">
-      <img [src]="previewImage" [alt]="project.title" class="preview-image" loading="lazy" decoding="async" />
+      <img [src]="previewImage" [alt]="project.title" class="preview-image" loading="lazy" decoding="async" (error)="onPreviewError($event)" />
     </div>
   </div>
 </article>

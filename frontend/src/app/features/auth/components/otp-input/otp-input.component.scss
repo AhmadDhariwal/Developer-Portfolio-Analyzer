@@ -1,0 +1,16 @@
+.otp-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.otp-cell {
+  height: 46px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+}

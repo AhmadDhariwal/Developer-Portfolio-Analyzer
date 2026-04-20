@@ -42,6 +42,30 @@
             placeholder="you@example.com"
             required />
         </div>
+
+        <div class="form-group">
+          <label>OTP Delivery</label>
+          <div class="otp-type-row">
+            <label><input type="radio" name="otpType" value="email" [(ngModel)]="otpType" /> Email</label>
+            <label><input type="radio" name="otpType" value="phone" [(ngModel)]="otpType" /> Phone</label>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="otpType === 'phone'">
+          <label for="countryCode">Country Code</label>
+          <app-country-code-dropdown [(value)]="countryCode"></app-country-code-dropdown>
+        </div>
+
+        <div class="form-group" *ngIf="otpType === 'phone'">
+          <label for="phoneNumber">Phone Number</label>
+          <input
+            id="phoneNumber"
+            type="text"
+            [(ngModel)]="phoneNumber"
+            name="phoneNumber"
+            placeholder="3001234567"
+            required />
+        </div>
         
         <div class="form-group">
           <label for="githubUsername">GitHub Username</label>

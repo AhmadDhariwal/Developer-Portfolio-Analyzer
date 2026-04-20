@@ -15,7 +15,13 @@ const envSchema = z.object({
   METRICS_ALERT_LATENCY_MS: z.coerce.number().int().positive().default(1800),
   METRICS_ALERT_ERROR_RATE: z.coerce.number().min(0).max(1).default(0.2),
   NEWS_API_KEY: z.string().optional(),
-  GNEWS_API_KEY: z.string().optional()
+  GNEWS_API_KEY: z.string().optional(),
+  EMAIL_USER: z.string().optional(),
+  EMAIL_PASS: z.string().optional(),
+  TWILIO_SID: z.string().optional(),
+  TWILIO_TOKEN: z.string().optional(),
+  TWILIO_PHONE_NUMBER: z.string().optional(),
+  MONGO_URI: z.string().optional()
 });
 
 const mask = (value) => {

@@ -24,6 +24,9 @@ export interface SessionUser {
   [key: string]: unknown;
 }
 
+export type OtpType = 'email' | 'phone';
+export type OtpPurpose = 'signup' | 'forgot-password';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -217,6 +220,43 @@ export class AuthService {
         if (response.token) this.storeSession(response);
       })
     );
+  }
+
+  sendOtp(payload: {
+    userId?: string;
+    email?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+    type: OtpType;
+    purpose: OtpPurpose;
+  }): Observable<{ message: string; userId: string }> {
+    return this.http.post<{ message: string; userId: string }>(`${this.baseUrl}/auth/send-otp`, payload);
+  }
+
+  verifyOtp(payload: {
+    userId: string;
+    otp: string;
+    type: OtpType;
+    purpose: OtpPurpose;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/verify-otp`, payload).pipe(
+      tap((response: any) => {
+        if (response?.token) this.storeSession(response);
+      })
+    );
+  }
+
+  forgotPassword(payload: {
+    email?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+    type: OtpType;
+  }): Observable<{ message: string; userId: string }> {
+    return this.http.post<{ message: string; userId: string }>(`${this.baseUrl}/auth/forgot-password`, payload);
+  }
+
+  resetPassword(payload: { resetToken: string; newPassword: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/auth/reset-password`, payload);
   }
 
   completeExternalLogin(authPayload: any): void {
