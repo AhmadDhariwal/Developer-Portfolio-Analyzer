@@ -51,7 +51,8 @@ export class ForgotPasswordComponent {
             purpose: 'forgot-password',
             email: this.email,
             phoneNumber: this.phoneNumber,
-            countryCode: this.countryCode
+            countryCode: this.countryCode,
+            expiresAt: res.expiresAt
           }
         });
       },

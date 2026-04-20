@@ -1,13 +1,14 @@
 <div class="otp-grid">
   <input
-    *ngFor="let digit of digits; let i = index"
+    *ngFor="let digit of digits; let i = index; trackBy: trackByFn"
     #otpCell
+    type="text"
     [value]="digit"
-    maxlength="1"
     inputmode="numeric"
     autocomplete="one-time-code"
     (input)="onInput(i, $event)"
     (keydown)="onKeyDown(i, $event)"
+    (paste)="onPaste($event)"
     class="otp-cell"
   />
 </div>

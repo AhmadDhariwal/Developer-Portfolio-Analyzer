@@ -229,8 +229,8 @@ export class AuthService {
     countryCode?: string;
     type: OtpType;
     purpose: OtpPurpose;
-  }): Observable<{ message: string; userId: string }> {
-    return this.http.post<{ message: string; userId: string }>(`${this.baseUrl}/auth/send-otp`, payload);
+  }): Observable<{ message: string; userId: string; expiresAt?: string }> {
+    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(`${this.baseUrl}/auth/send-otp`, payload);
   }
 
   verifyOtp(payload: {
@@ -251,8 +251,8 @@ export class AuthService {
     phoneNumber?: string;
     countryCode?: string;
     type: OtpType;
-  }): Observable<{ message: string; userId: string }> {
-    return this.http.post<{ message: string; userId: string }>(`${this.baseUrl}/auth/forgot-password`, payload);
+  }): Observable<{ message: string; userId: string; expiresAt?: string }> {
+    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(`${this.baseUrl}/auth/forgot-password`, payload);
   }
 
   resetPassword(payload: { resetToken: string; newPassword: string }): Observable<{ message: string }> {

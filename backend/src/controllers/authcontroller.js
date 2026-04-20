@@ -34,12 +34,13 @@ const getUserByIdentifier = async ({ email, countryCode, phoneNumber }) => {
 };
 
 const sendOtpToUser = async ({ user, type, purpose }) => {
-    const { otp } = await createOtp({ userId: user._id, type, purpose });
+    const { otp, expiresAt } = await createOtp({ userId: user._id, type, purpose });
     if (type === 'phone') {
         await sendSMSOTP(`${user.countryCode}${user.phoneNumber}`, otp);
     } else {
         await sendEmailOTP(user.email, otp);
     }
+    return expiresAt;
 };
 
 // @desc    Register a new user
@@ -115,13 +116,6 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email: normalizedEmail });
 
         if (user && (await bcrypt.compare(password, user.password))) {
-            if (!user.isVerified) {
-                return res.status(403).json({
-                    message: 'Account not verified. Please verify OTP first.',
-                    requiresVerification: true,
-                    userId: user._id
-                });
-            }
             user.activeGithubUsername = user.githubUsername;
             user.activeResumeFileId = user.defaultResumeFileId || null;
             user.activeCareerStack = user.careerStack || 'Full Stack';
@@ -173,10 +167,11 @@ const sendOtp = async (req, res) => {
             return res.status(400).json({ message: 'Phone OTP is unavailable for this account.' });
         }
 
-        await sendOtpToUser({ user, type: otpType, purpose: otpPurpose });
+        const expiresAt = await sendOtpToUser({ user, type: otpType, purpose: otpPurpose });
         return res.json({
             message: `OTP sent via ${otpType}.`,
-            userId: user._id
+            userId: user._id,
+            expiresAt
         });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Failed to send OTP.' });
@@ -247,8 +242,8 @@ const forgotPassword = async (req, res) => {
             return res.status(400).json({ message: 'Phone OTP is unavailable for this account.' });
         }
 
-        await sendOtpToUser({ user, type: otpType, purpose: 'forgot-password' });
-        return res.json({ message: 'OTP sent for password reset.', userId: user._id });
+        const expiresAt = await sendOtpToUser({ user, type: otpType, purpose: 'forgot-password' });
+        return res.json({ message: 'OTP sent for password reset.', userId: user._id, expiresAt });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Failed to start password reset.' });
     }

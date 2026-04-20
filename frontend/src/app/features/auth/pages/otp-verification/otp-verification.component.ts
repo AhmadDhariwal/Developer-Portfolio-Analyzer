@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, OtpPurpose, OtpType } from '../../../../shared/services/auth.service';
@@ -29,10 +29,15 @@ export class OtpVerificationComponent implements OnInit {
   resendSeconds = 30;
   private resendTimer: ReturnType<typeof setInterval> | null = null;
 
+  expiresAt: Date | null = null;
+  expiryDisplay = '';
+  private expiryTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor(
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -43,6 +48,11 @@ export class OtpVerificationComponent implements OnInit {
     this.email = String(state.email || '');
     this.phoneNumber = String(state.phoneNumber || '');
     this.countryCode = String(state.countryCode || '');
+
+    if (state.expiresAt) {
+      this.expiresAt = new Date(state.expiresAt);
+      this.startExpiryCountdown();
+    }
 
     this.route.queryParamMap.subscribe((params) => {
       if (!this.userId) this.userId = String(params.get('userId') || '');
@@ -118,10 +128,14 @@ export class OtpVerificationComponent implements OnInit {
       : this.authService.sendOtp(payload as { userId: string; type: OtpType; purpose: OtpPurpose });
 
     request$.subscribe({
-      next: () => {
+      next: (res: any) => {
         this.isResending = false;
         this.info = 'OTP resent successfully.';
         this.startResendCountdown();
+        if (res.expiresAt) {
+          this.expiresAt = new Date(res.expiresAt);
+          this.startExpiryCountdown();
+        }
       },
       error: (err) => {
         this.isResending = false;
@@ -132,15 +146,54 @@ export class OtpVerificationComponent implements OnInit {
 
   private startResendCountdown(): void {
     this.resendSeconds = 30;
-    if (this.resendTimer) {
-      clearInterval(this.resendTimer);
-    }
+    if (this.resendTimer) clearInterval(this.resendTimer);
+    
+    const endTime = Date.now() + 30000;
+    
     this.resendTimer = setInterval(() => {
-      this.resendSeconds = Math.max(0, this.resendSeconds - 1);
-      if (this.resendSeconds === 0 && this.resendTimer) {
+      const remains = endTime - Date.now();
+      const newSeconds = Math.max(0, Math.ceil(remains / 1000));
+      
+      if (this.resendSeconds !== newSeconds) {
+        this.resendSeconds = newSeconds;
+        this.cdr.detectChanges();
+      }
+      
+      if (newSeconds === 0 && this.resendTimer) {
         clearInterval(this.resendTimer);
         this.resendTimer = null;
       }
-    }, 1000);
+    }, 250);
+  }
+
+  private startExpiryCountdown(): void {
+    if (this.expiryTimer) {
+      clearInterval(this.expiryTimer);
+    }
+    
+    const updateDisplay = () => {
+      if (!this.expiresAt) return;
+      const remains = this.expiresAt.getTime() - Date.now();
+      
+      if (remains <= 0) {
+        this.expiryDisplay = 'OTP Expired';
+        if (this.expiryTimer) clearInterval(this.expiryTimer);
+        this.cdr.detectChanges();
+        return;
+      }
+      
+      const totalSeconds = Math.floor((remains + 999) / 1000);
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      const newDisplay = `Expires in ${m}:${s.toString().padStart(2, '0')}`;
+      
+      if (this.expiryDisplay !== newDisplay) {
+        this.expiryDisplay = newDisplay;
+        this.cdr.detectChanges();
+      }
+    };
+    
+    updateDisplay();
+    this.expiryTimer = setInterval(updateDisplay, 250);
   }
 }

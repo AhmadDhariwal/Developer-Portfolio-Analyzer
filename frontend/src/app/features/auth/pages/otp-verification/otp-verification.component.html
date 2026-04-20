@@ -1,23 +1,27 @@
 <div class="auth-page">
   <div class="auth-container">
-    <app-ui-card class="auth-card">
-      <h2>Verify OTP</h2>
-      <p class="hint">Enter the 6-digit code sent to your {{ type === 'phone' ? 'phone' : 'email' }}.</p>
+    <app-ui-card class="auth-card" (keydown.enter)="submit()">
+      <div class="form-content">
+        <h2>Verify OTP</h2>
+        <p class="hint">Enter the 6-digit code sent to your {{ type === 'phone' ? 'phone' : 'email' }}.
+          <span *ngIf="expiryDisplay" class="expiry-timer">({{ expiryDisplay }})</span>
+        </p>
 
-      <div *ngIf="error" class="error-message">{{ error }}</div>
-      <div *ngIf="info" class="success-message">{{ info }}</div>
+        <div *ngIf="error" class="error-message">{{ error }}</div>
+        <div *ngIf="info" class="success-message">{{ info }}</div>
 
-      <app-otp-input (otpChange)="onOtpChange($event)"></app-otp-input>
+        <app-otp-input (otpChange)="onOtpChange($event)"></app-otp-input>
 
-      <app-ui-button variant="primary" [fullWidth]="true" [loading]="isLoading" (click)="submit()">
-        Verify OTP
-      </app-ui-button>
+        <app-ui-button variant="primary" [fullWidth]="true" [loading]="isLoading" (click)="submit()">
+          Verify OTP
+        </app-ui-button>
 
-      <button type="button" class="resend-btn" [disabled]="resendSeconds > 0 || isResending" (click)="resendOtp()">
-        {{ resendSeconds > 0 ? ('Resend OTP in ' + resendSeconds + 's') : 'Resend OTP' }}
-      </button>
+        <button type="button" class="resend-btn" [disabled]="resendSeconds > 0 || isResending" (click)="resendOtp()">
+          {{ resendSeconds > 0 ? ('Resend OTP in ' + resendSeconds + 's') : 'Resend OTP' }}
+        </button>
 
-      <a routerLink="/auth/login" class="back-link">Back to login</a>
+        <a routerLink="/auth/login" class="back-link">Back to login</a>
+      </div>
     </app-ui-card>
   </div>
 </div>

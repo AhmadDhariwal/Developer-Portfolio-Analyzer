@@ -1,16 +1,39 @@
 .otp-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(40px, 1fr));
-  gap: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .otp-cell {
-  height: 46px;
+  width: 48px;
+  height: 56px;
   text-align: center;
-  font-size: 1.1rem;
-  font-weight: 700;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  border-radius: 10px;
-  background: #0f172a;
-  color: #e2e8f0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  font-family: inherit;
+  
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
+
+  &:focus {
+    border-color: #3b82f6;
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  &:not(:placeholder-shown) {
+    border-color: rgba(148, 163, 184, 0.4);
+  }
 }

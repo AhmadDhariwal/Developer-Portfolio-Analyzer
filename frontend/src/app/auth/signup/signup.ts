@@ -69,7 +69,7 @@ export class Signup {
           type,
           purpose: 'signup'
         }).subscribe({
-          next: () => {
+          next: (otpRes) => {
             this.isLoading = false;
             this.router.navigate(['/auth/otp-verification'], {
               state: {
@@ -78,7 +78,8 @@ export class Signup {
                 purpose: 'signup',
                 email: this.email,
                 phoneNumber: this.phoneNumber,
-                countryCode: this.countryCode
+                countryCode: this.countryCode,
+                expiresAt: otpRes.expiresAt
               }
             });
           },
