@@ -54,24 +54,109 @@ const fetchRepoCommitCount = async (username, repoName) => {
 };
 
 /**
- * Fetch weekly commit activity for a repo (last 52 weeks from GitHub).
- * Returns array of { week: unix_timestamp, total: number }.
- * GitHub may return 202 (computing) — we retry once after a short delay.
+ * Fetch commit counts per month for a single repo over the last 6 months.
+ * Uses the /commits endpoint with since/until filters — always returns real data,
+ * unlike /stats/commit_activity which is computed lazily and often returns 202/empty.
+ *
+ * GitHub paginates at 100 per page. We fetch all pages for the 6-month window.
+ * Returns a map: { 'YYYY-M': count }
  */
-const fetchRepoWeeklyCommits = async (username, repoName) => {
-  const url = `https://api.github.com/repos/${username}/${repoName}/stats/commit_activity`;
-  try {
-    let res = await axios.get(url, { ...buildConfig(), timeout: 12000 });
-    // 202 means GitHub is computing stats — wait and retry once
-    if (res.status === 202) {
-      await new Promise(r => setTimeout(r, 2000));
-      res = await axios.get(url, { ...buildConfig(), timeout: 12000 });
+const fetchRepoCommitsByMonth = async (username, repoName, since, until) => {
+  const monthMap = {};
+  let page = 1;
+  const perPage = 100;
+
+  while (true) {
+    try {
+      const res = await axios.get(
+        `https://api.github.com/repos/${username}/${repoName}/commits`,
+        {
+          ...buildConfig(),
+          timeout: 15000,
+          params: {
+            since: since.toISOString(),
+            until: until.toISOString(),
+            per_page: perPage,
+            page
+          }
+        }
+      );
+
+      const commits = res.data;
+      if (!Array.isArray(commits) || commits.length === 0) break;
+
+      commits.forEach(c => {
+        const dateStr = c.commit?.author?.date || c.commit?.committer?.date;
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const key = `${d.getFullYear()}-${d.getMonth()}`; // 0-indexed month
+        monthMap[key] = (monthMap[key] || 0) + 1;
+      });
+
+      // If we got fewer than perPage, we've reached the last page
+      if (commits.length < perPage) break;
+      page++;
+
+      // Safety cap: max 5 pages per repo (500 commits) to avoid rate-limit hammering
+      if (page > 5) break;
+    } catch {
+      break;
     }
-    if (!Array.isArray(res.data)) return [];
-    return res.data.map(w => ({ week: w.week, total: w.total }));
-  } catch {
-    return [];
   }
+
+  return monthMap;
+};
+
+/**
+ * Fetch real commit activity for a user across their repos over the last 6 months.
+ * Uses /repos/{owner}/{repo}/commits with since/until — reliable, always returns data.
+ * Returns: [{ month: 'Jan', count: 42 }, ...]
+ */
+const fetchMonthlyCommitActivity = async (username, repos) => {
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+
+  // Build 6-month buckets (oldest → newest), keyed by 'YYYY-M'
+  const buckets = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.push({
+      key:   `${d.getFullYear()}-${d.getMonth()}`,
+      label: MONTH_NAMES[d.getMonth()],
+      count: 0
+    });
+  }
+
+  // Date range: start of the oldest bucket → now
+  const since = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const until = now;
+
+  // Only process repos pushed to within the last 6 months, cap at 20
+  const activeRepos = (repos || [])
+    .filter(r => {
+      const pushed = r.pushed_at || r.pushedAt;
+      return pushed && new Date(pushed) >= since;
+    })
+    .slice(0, 20);
+
+  if (activeRepos.length === 0) {
+    return buckets.map(b => ({ month: b.label, count: 0 }));
+  }
+
+  // Fetch commit counts per month for each repo in parallel
+  const allMonthMaps = await Promise.all(
+    activeRepos.map(r => fetchRepoCommitsByMonth(username, r.name || r.repoName, since, until))
+  );
+
+  // Aggregate into buckets
+  allMonthMaps.forEach(monthMap => {
+    Object.entries(monthMap).forEach(([key, count]) => {
+      const bucket = buckets.find(b => b.key === key);
+      if (bucket) bucket.count += count;
+    });
+  });
+
+  return buckets.map(b => ({ month: b.label, count: b.count }));
 };
 
 const fetchRepoLanguages = async (username, repoName) => {
@@ -191,53 +276,5 @@ const analyzeGitHubProfile = async (username) => {
   };
 };
 
-/**
- * Fetch real commit activity for a user across their repos over the last 6 months.
- * Queries the top repos' weekly commit stats and aggregates into monthly buckets.
- * Returns: [{ month: 'Jan', count: 42 }, ...]
- */
-const fetchMonthlyCommitActivity = async (username, repos) => {
-  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now = new Date();
-
-  // Build 6-month buckets (oldest → newest)
-  const buckets = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets.push({
-      year:  d.getFullYear(),
-      month: d.getMonth(),       // 0-indexed
-      label: MONTH_NAMES[d.getMonth()],
-      count: 0
-    });
-  }
-
-  // Only fetch stats for repos that were pushed to in the last 6 months
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const activeRepos = (repos || [])
-    .filter(r => {
-      const pushed = r.pushed_at || r.pushedAt;
-      return pushed && new Date(pushed) >= sixMonthsAgo;
-    })
-    .slice(0, 15); // cap at 15 repos to avoid rate-limit hammering
-
-  // Fetch weekly stats in parallel
-  const allWeeklyData = await Promise.all(
-    activeRepos.map(r => fetchRepoWeeklyCommits(username, r.name || r.repoName))
-  );
-
-  // Aggregate weekly totals into monthly buckets
-  allWeeklyData.forEach(weeks => {
-    weeks.forEach(({ week, total }) => {
-      if (!total) return;
-      const d = new Date(week * 1000); // unix timestamp → Date
-      const bucket = buckets.find(b => b.year === d.getFullYear() && b.month === d.getMonth());
-      if (bucket) bucket.count += total;
-    });
-  });
-
-  return buckets.map(b => ({ month: b.label, count: b.count }));
-};
-
-module.exports = { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity };
+module.exports = { analyzeGitHubProfile, fetchGitHubUser, fetchGitHubRepos, fetchMonthlyCommitActivity };
 

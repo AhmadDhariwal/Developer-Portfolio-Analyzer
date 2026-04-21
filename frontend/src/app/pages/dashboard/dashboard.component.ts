@@ -382,6 +382,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   loadActivityAndLanguage() {
     this.apiService.getDashboardContributions().subscribe({
       next: (data: any) => {
+        // Always render the chart as long as we have month labels,
+        // even if all counts are zero — the Y axis will show 0 correctly.
         if (Array.isArray(data) && data.length > 0) {
           if (this.viewInitialized && this.activityChart?.nativeElement) {
             this.initActivityChart(data);
@@ -389,6 +391,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             this.pendingActivityData = data;
           }
         }
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
@@ -659,6 +662,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.totalActivity = activityData.reduce((s, d) => s + d.count, 0);
     const labels = activityData.map(d => d.month);
     const data   = activityData.map(d => d.count);
+    const maxVal = Math.max(...data, 1); // at least 1 so the axis isn't flat
 
     const ctx = this.activityChart.nativeElement.getContext('2d') as CanvasRenderingContext2D;
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
@@ -679,14 +683,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           pointBackgroundColor: '#6366F1',
           pointBorderColor: '#1E293B',
           pointBorderWidth: 2,
-          pointRadius: 4,
+          pointRadius: 5,
           pointHoverRadius: 7
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.y} commit${ctx.parsed.y !== 1 ? 's' : ''}`
+            }
+          }
+        },
         scales: {
           x: {
             display: true,
@@ -694,11 +705,24 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             border: { display: false },
             ticks: { color: '#64748B', font: { size: 11 } }
           },
-          y: { display: false, min: 0 }
+          y: {
+            display: true,
+            min: 0,
+            suggestedMax: Math.ceil(maxVal * 1.2),
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            border: { display: false },
+            ticks: {
+              color: '#64748B',
+              font: { size: 10 },
+              maxTicksLimit: 5,
+              precision: 0  // integers only
+            }
+          }
         },
         layout: { padding: { top: 10, bottom: 10 } }
       }
     });
+    this.cdr.detectChanges();
   }
 
   initLanguageChart(langData: Record<string, number>) {

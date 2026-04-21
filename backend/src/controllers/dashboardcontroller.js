@@ -2,7 +2,7 @@ const Analysis = require('../models/analysis');
 const User     = require('../models/user');
 const Repository = require('../models/repository');
 const AnalysisCache = require('../models/analysisCache');
-const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity } = require('../services/githubservice');
+const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity, fetchGitHubRepos } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
@@ -209,12 +209,39 @@ const getDashboardSummary = async (req, res) => {
 const getDashboardContributions = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
+    const githubUsername = user.activeGithubUsername || user.githubUsername;
+    const { analysis } = await ensureAnalysis(req.user._id, githubUsername);
 
-    if (analysis?.contributionActivity?.length > 0) {
-      return res.json(analysis.contributionActivity);
+    // If we have real contribution data already stored, return it immediately
+    const stored = analysis?.contributionActivity || [];
+    const hasRealData = stored.length > 0 && stored.some(m => m.count > 0);
+    if (hasRealData) {
+      return res.json(stored);
     }
-    res.json([]);
+
+    // No real data yet — fetch directly from GitHub using the reliable /commits endpoint
+    if (!githubUsername) {
+      return res.json(buildContributionActivity());
+    }
+
+    // Fetch the user's repos to know which were active in the last 6 months
+    let rawRepos = [];
+    try {
+      rawRepos = await fetchGitHubRepos(githubUsername);
+    } catch {
+      return res.json(buildContributionActivity());
+    }
+
+    const repos = rawRepos.map(r => ({ name: r.name, pushed_at: r.pushed_at }));
+    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, repos);
+
+    // Persist so the next request is instant
+    if (analysis && monthlyActivity.some(m => m.count > 0)) {
+      analysis.contributionActivity = monthlyActivity;
+      await analysis.save();
+    }
+
+    return res.json(monthlyActivity.length > 0 ? monthlyActivity : buildContributionActivity());
   } catch (err) {
     console.error('Dashboard contributions error:', err);
     res.status(500).json({ message: 'Failed to load contributions' });
