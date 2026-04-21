@@ -2,14 +2,23 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
+export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskCategory = 'learning' | 'project' | 'practice';
+export type TaskType     = 'ai' | 'manual';
+export type StreakStatus = 'active' | 'warning' | 'broken';
+
 export interface SprintTask {
   _id: string;
   title: string;
   description: string;
   points: number;
+  priority: TaskPriority;
+  category: TaskCategory;
+  taskType: TaskType;
   isCompleted: boolean;
   completedAt?: string | null;
   dueDate?: string | null;
+  deadline?: string | null;
 }
 
 export interface CareerSprint {
@@ -24,12 +33,23 @@ export interface CareerSprint {
   streakBroken?: boolean;
   streakBrokenAt?: string | null;
   streakWarning?: boolean;
+  streakStatus?: StreakStatus;
+  xpPoints: number;
+  level: number;
+  goalStack?: string;
+  goalTechnology?: string;
+  goalTitle?: string;
+  goalExperienceLevel?: string;
   tasks: SprintTask[];
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface GenerateAiTasksPayload {
+  stack?: string;
+  technology?: string;
+  experienceLevel?: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class CareerSprintService {
   constructor(private readonly api: ApiService) {}
 
@@ -37,11 +57,26 @@ export class CareerSprintService {
     return this.api.getCurrentCareerSprint();
   }
 
-  create(payload: { title?: string; weeklyGoal?: number; tasks?: Array<{ title: string; description?: string; points?: number }> }): Observable<CareerSprint> {
+  create(payload: {
+    title?: string;
+    weeklyGoal?: number;
+    tasks?: Array<{ title: string; description?: string; points?: number; priority?: string; category?: string; taskType?: string }>;
+    goalStack?: string;
+    goalTechnology?: string;
+    goalTitle?: string;
+    goalExperienceLevel?: string;
+  }): Observable<CareerSprint> {
     return this.api.createCareerSprint(payload);
   }
 
-  addTask(sprintId: string, payload: { title: string; description?: string; points?: number }): Observable<CareerSprint> {
+  addTask(sprintId: string, payload: {
+    title: string;
+    description?: string;
+    points?: number;
+    priority?: TaskPriority;
+    category?: TaskCategory;
+    taskType?: TaskType;
+  }): Observable<CareerSprint> {
     return this.api.addCareerSprintTask(sprintId, payload);
   }
 
@@ -55,5 +90,9 @@ export class CareerSprintService {
 
   restoreStreak(sprintId: string): Observable<CareerSprint> {
     return this.api.restoreCareerStreak(sprintId);
+  }
+
+  generateAiTasks(payload: GenerateAiTasksPayload): Observable<{ tasks: SprintTask[] }> {
+    return this.api.generateAiTasks(payload);
   }
 }

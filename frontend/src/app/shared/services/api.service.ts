@@ -396,4 +396,8 @@ export class ApiService {
   restoreCareerStreak(sprintId: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/restore-streak`, {});
   }
+
+  generateAiTasks(payload: { stack?: string; technology?: string; experienceLevel?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/generate-ai-tasks`, payload);
+  }
 }
