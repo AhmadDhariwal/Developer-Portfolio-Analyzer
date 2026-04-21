@@ -67,14 +67,21 @@
     </div>
     <div class="score-body">
       <app-score-meter [score]="developerScore" [maxScore]="100" size="lg"></app-score-meter>
-      <div class="score-trend">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <div class="score-trend" [class.trend-down]="!scoreTrendUp" [class.trend-neutral]="scoreChangeFromLastMonth === 0">
+        <svg *ngIf="scoreTrendUp && scoreChangeFromLastMonth !== 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
           <polyline points="16 7 22 7 22 13"></polyline>
         </svg>
-        +12 from last month
+        <svg *ngIf="!scoreTrendUp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+          <polyline points="16 17 22 17 22 11"></polyline>
+        </svg>
+        <svg *ngIf="scoreChangeFromLastMonth === 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        {{ scoreTrendLabel }}
       </div>
-      <p class="percentile-note">You're in the <span>top 25%</span> of developers</p>
+      <p class="percentile-note">You're in the <span>{{ percentileLabel }}</span> of developers</p>
     </div>
   </div>
 

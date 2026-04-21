@@ -2,7 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { Navbar } from './navbar/navbar';
 import { Sidebar } from './sidebar/sidebar';
-import { ResumeOnboardingService } from '../../shared/services/resume-onboarding.service';
+import { ResumeOnboardingService, DismissMode } from '../../shared/services/resume-onboarding.service';
 import { ResumePromptModalComponent } from '../../shared/components/resume-prompt-modal/resume-prompt-modal.component';
 import { CommonModule } from '@angular/common';
 
@@ -25,16 +25,16 @@ export class MainLayout {
   }
 
   handleUpload(): void {
+    this.onboardingService.dismiss('later');
     this.router.navigate(['/app/resume-analyzer']);
-    this.onboardingService.dismiss(); // Manual dismiss for now until they upload
   }
 
   handleSetDefault(): void {
+    this.onboardingService.dismiss('later');
     this.router.navigate(['/app/resume-analyzer']);
-    this.onboardingService.dismiss();
   }
 
-  handleDismiss(permanent: boolean): void {
-    this.onboardingService.dismiss(permanent);
+  handleDismiss(mode: DismissMode): void {
+    this.onboardingService.dismiss(mode);
   }
 }

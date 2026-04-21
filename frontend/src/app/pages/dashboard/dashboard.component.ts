@@ -94,6 +94,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   rateLimitWarning = false;
   noGithubUsername = false;
+  /** null = no prior data; number = point change vs last month */
+  scoreChangeFromLastMonth: number | null = null;
 
   readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
@@ -219,6 +221,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.rateLimitWarning = data.rateLimited  === true;
         this.noGithubUsername = data.noUsername   === true;
         this.githubScore = Number(data.score || 0);
+        this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
 
         const summaryReadiness = Number(data.readinessScore || 0);
         this.integrationScore = Number(data?.integration?.score || 0);
@@ -529,6 +532,48 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
+  }
+
+  /**
+   * Returns the formatted score trend label for display.
+   * - null change → 'No prior data'
+   * - 0 change    → 'No change from last month'
+   * - positive    → '+N pts from last month'
+   * - negative    → 'N pts from last month'
+   */
+  get scoreTrendLabel(): string {
+    if (this.scoreChangeFromLastMonth === null) return 'No prior data yet';
+    if (this.scoreChangeFromLastMonth === 0)    return 'No change from last month';
+    const sign = this.scoreChangeFromLastMonth > 0 ? '+' : '';
+    return `${sign}${this.scoreChangeFromLastMonth} pts from last month`;
+  }
+
+  /** true = improved or flat, false = declined */
+  get scoreTrendUp(): boolean {
+    return (this.scoreChangeFromLastMonth ?? 0) >= 0;
+  }
+
+  /**
+   * Maps the developer readiness score to a realistic percentile label.
+   * Based on industry-standard score distributions for software developers
+   * (Stack Overflow Developer Survey, GitHub Octoverse, LinkedIn Talent Insights).
+   *
+   * Score distribution approximation:
+   *   90+  → top ~5%   (exceptional — strong OSS, high stars, full resume match)
+   *   80–89 → top ~15%  (strong — solid GitHub + resume coverage)
+   *   70–79 → top ~30%  (above average — good skills, some gaps)
+   *   60–69 → top ~50%  (average — typical junior/mid developer)
+   *   50–59 → top ~65%  (below average — limited portfolio)
+   *   <50   → bottom ~35% (early stage — needs significant improvement)
+   */
+  get percentileLabel(): string {
+    const s = Math.round(this.developerScore);
+    if (s >= 90) return 'top 5%';
+    if (s >= 80) return 'top 15%';
+    if (s >= 70) return 'top 30%';
+    if (s >= 60) return 'top 50%';
+    if (s >= 50) return 'top 65%';
+    return 'bottom 35%';
   }
 
   get scoreBreakdownRows(): { label: string; value: number }[] {

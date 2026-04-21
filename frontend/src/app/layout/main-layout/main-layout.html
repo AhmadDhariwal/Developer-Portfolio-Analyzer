@@ -10,11 +10,13 @@
 </div>
 
 <!-- Resume Onboarding Prompt -->
-<app-resume-prompt-modal
-  *ngIf="(onboardingStatus$ | async)?.state as state"
-  [state]="state"
-  [isLoading]="(onboardingStatus$ | async)?.loading || false"
-  (upload)="handleUpload()"
-  (setDefault)="handleSetDefault()"
-  (dismiss)="handleDismiss($event)"
-></app-resume-prompt-modal>
+<ng-container *ngIf="onboardingStatus$ | async as status">
+  <app-resume-prompt-modal
+    *ngIf="status.state"
+    [state]="status.state"
+    [isLoading]="status.loading"
+    (upload)="handleUpload()"
+    (setDefault)="handleSetDefault()"
+    (dismiss)="handleDismiss($event)"
+  ></app-resume-prompt-modal>
+</ng-container>

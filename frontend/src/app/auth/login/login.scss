@@ -140,6 +140,21 @@
           color: var(--text-secondary);
         }
       }
+
+      .field-error {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: var(--color-danger, #ef4444);
+        font-weight: 500;
+      }
+
+      &.has-error input {
+        border-color: var(--color-danger, #ef4444);
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+      }
     }
 
     .forgot-password {

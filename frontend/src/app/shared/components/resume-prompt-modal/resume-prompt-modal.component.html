@@ -1,6 +1,8 @@
-<div class="modal-backdrop" (click)="onClose()">
+<div class="modal-backdrop">
   <div class="modal-container" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="onClose()" title="Close">
+
+    <!-- ✕ Close — session-only dismiss (remind me later) -->
+    <button class="close-btn" (click)="onCloseLater()" title="Remind me later" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -8,6 +10,7 @@
     </button>
 
     <div class="modal-content">
+      <!-- Icon -->
       <div class="icon-header" [class.pulse]="!isProcessing">
         <svg *ngIf="state === 'UPLOAD'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -21,14 +24,19 @@
         </svg>
       </div>
 
+      <!-- Heading -->
       <h2>{{ state === 'UPLOAD' ? 'Complete Your Profile' : 'Set Default Resume' }}</h2>
+
+      <!-- Body text -->
       <p>
-        {{ state === 'UPLOAD' 
-          ? 'Upload your resume to get personalized recommendations and better results tailored to your profile.' 
-          : 'You’ve uploaded a resume. Please set it as default to ensure accurate and personalized results.' }}
+        {{ state === 'UPLOAD'
+          ? 'Upload your resume to get personalized recommendations and better results tailored to your profile.'
+          : 'You\'ve uploaded a resume. Set it as default to ensure accurate and personalized results.' }}
       </p>
 
+      <!-- Actions -->
       <div class="actions">
+        <!-- Primary CTA -->
         <button class="btn-primary" (click)="onPrimaryAction()" [disabled]="isProcessing">
           <span *ngIf="!isProcessing">
             {{ state === 'UPLOAD' ? 'Upload Resume' : 'Set as Default' }}
@@ -36,11 +44,14 @@
           <span *ngIf="isProcessing" class="loader"></span>
         </button>
 
+        <!-- Secondary links -->
         <div class="secondary-actions">
-          <button class="btn-link" (click)="onClose()">Remind me tomorrow</button>
-          <button class="btn-link danger" (click)="onClose(true)">Don't show again</button>
+          <button class="btn-link" (click)="onRemindTomorrow()">Remind me tomorrow</button>
+          <button class="btn-link" (click)="onCloseLater()">Remind me later</button>
+          <button class="btn-link danger" (click)="onNeverShow()">Don't show again</button>
         </div>
       </div>
     </div>
+
   </div>
 </div>

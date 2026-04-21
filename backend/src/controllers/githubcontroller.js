@@ -55,7 +55,7 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
                     language: r.language,
                     stars: r.stars,
                     forks: r.forks,
-                    commits: 0,
+                    commits: r.commits || 0,
                     lastUpdated: new Date(),
                     ownerId: req.user._id
                 }))

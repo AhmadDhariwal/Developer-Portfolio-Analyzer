@@ -156,6 +156,33 @@
         }
       }
 
+      // Per-field inline error text
+      .field-error {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: var(--color-danger, #ef4444);
+        font-weight: 500;
+      }
+
+      // Highlight input border red when field has an error
+      &.has-error input:not([type="checkbox"]) {
+        border-color: var(--color-danger, #ef4444);
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+      }
+
+      .radio-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 0;
+        font-weight: 500;
+        text-transform: none;
+        cursor: pointer;
+      }
+
       &.checkbox {
         flex-direction: row;
         align-items: center;

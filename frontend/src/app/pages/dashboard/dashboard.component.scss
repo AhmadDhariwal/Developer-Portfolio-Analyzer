@@ -241,6 +241,16 @@
       margin-bottom: 16px;
 
       svg { width: 15px; height: 15px; }
+
+      &.trend-down {
+        background: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+      }
+
+      &.trend-neutral {
+        background: rgba(100, 116, 139, 0.12);
+        color: #94A3B8;
+      }
     }
 
     .percentile-note {

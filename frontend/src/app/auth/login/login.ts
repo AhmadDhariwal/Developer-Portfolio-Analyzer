@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -19,32 +19,58 @@ export class Login {
   isLoading: boolean = false;
   error: string = '';
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {}
+  // Per-field real-time errors
+  fieldErrors: Record<string, string> = {};
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  validateEmail(): void {
+    if (!this.email.trim()) {
+      this.fieldErrors['email'] = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
+      this.fieldErrors['email'] = 'Enter a valid email address.';
+    } else {
+      this.fieldErrors['email'] = '';
+    }
+  }
+
+  validatePassword(): void {
+    this.fieldErrors['password'] = this.password ? '' : 'Password is required.';
+  }
 
   onSubmit() {
-    if (!this.email || !this.password) {
-      this.error = 'Please fill in all fields';
+    // Run all validators first
+    this.validateEmail();
+    this.validatePassword();
+
+    if (!this.email.trim() || !this.password) {
+      this.error = '';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.error = '';
+    this.cdr.detectChanges();
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: this.email.trim(), password: this.password }).subscribe({
       next: () => {
         this.isLoading = false;
         this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.error = err.error?.message || 'Invalid email or password';
+        this.error = err?.error?.message || 'Invalid email or password.';
+        this.cdr.detectChanges();
       }
     });
   }
 
   loginWithGithub() {
-    // GitHub OAuth implementation would go here
     console.log('GitHub login clicked');
   }
 }
-

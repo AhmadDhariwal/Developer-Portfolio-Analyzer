@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -27,71 +27,132 @@ export class Signup {
   isLoading: boolean = false;
   error: string = '';
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {}
+  // Per-field errors for real-time feedback
+  fieldErrors: Record<string, string> = {};
+
+  constructor(private readonly authService: AuthService, private readonly router: Router, private readonly cdr: ChangeDetectorRef) {}
+
+  // ── Real-time validators ──────────────────────────────────────────────────
+
+  validateName(): void {
+    this.fieldErrors['name'] = this.name.trim() ? '' : 'Full name is required.';
+  }
+
+  validateEmail(): void {
+    if (!this.email.trim()) {
+      this.fieldErrors['email'] = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
+      this.fieldErrors['email'] = 'Enter a valid email address.';
+    } else {
+      this.fieldErrors['email'] = '';
+    }
+  }
+
+  validateGithubUsername(): void {
+    this.fieldErrors['githubUsername'] = this.githubUsername.trim() ? '' : 'GitHub username is required.';
+  }
+
+  validatePassword(): void {
+    if (!this.password) {
+      this.fieldErrors['password'] = 'Password is required.';
+    } else if (this.password.length < 6) {
+      this.fieldErrors['password'] = 'Password must be at least 6 characters.';
+    } else {
+      this.fieldErrors['password'] = '';
+    }
+    // Re-validate confirm password whenever password changes
+    if (this.confirmPassword) {
+      this.validateConfirmPassword();
+    }
+  }
+
+  validateConfirmPassword(): void {
+    if (!this.confirmPassword) {
+      this.fieldErrors['confirmPassword'] = 'Please confirm your password.';
+    } else if (this.password !== this.confirmPassword) {
+      this.fieldErrors['confirmPassword'] = 'Passwords do not match.';
+    } else {
+      this.fieldErrors['confirmPassword'] = '';
+    }
+  }
+
+  validatePhoneNumber(): void {
+    if (this.otpType === 'phone') {
+      this.fieldErrors['phoneNumber'] = this.phoneNumber.trim() ? '' : 'Phone number is required.';
+    } else {
+      this.fieldErrors['phoneNumber'] = '';
+    }
+  }
+
+  onOtpTypeChange(): void {
+    // Clear phone error when switching back to email
+    if (this.otpType === 'email') {
+      this.fieldErrors['phoneNumber'] = '';
+    }
+  }
+
+  // ── Form submission ───────────────────────────────────────────────────────
+
+  private getValidationError(): string | null {
+    if (!this.name.trim()) return 'Full name is required.';
+    if (!this.email.trim()) return 'Email is required.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) return 'Enter a valid email address.';
+    if (!this.githubUsername.trim()) return 'GitHub username is required.';
+    if (!this.password) return 'Password is required.';
+    if (this.password.length < 6) return 'Password must be at least 6 characters.';
+    if (this.password !== this.confirmPassword) return 'Passwords do not match.';
+    if (this.otpType === 'phone' && !this.phoneNumber.trim()) return 'Phone number is required for phone OTP.';
+    if (!this.agreeToTerms) return 'Please agree to the Terms of Service and Privacy Policy.';
+    return null;
+  }
 
   onSubmit() {
-    if (!this.name || !this.email || !this.password || !this.confirmPassword) {
-      this.error = 'Please fill in all fields';
-      return;
-    }
-
-    if (this.password !== this.confirmPassword) {
-      this.error = 'Passwords do not match';
-      return;
-    }
-
-    if (this.otpType === 'phone' && !this.phoneNumber) {
-      this.error = 'Phone number is required for phone OTP';
-      return;
-    }
-
-    if (!this.agreeToTerms) {
-      this.error = 'Please agree to the terms and conditions';
+    const validationError = this.getValidationError();
+    if (validationError) {
+      this.error = validationError;
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.error = '';
+    this.cdr.detectChanges();
 
-    this.authService.register({
-      name: this.name,
-      email: this.email,
+    // Only send phone fields when the user actually chose phone OTP
+    const payload: any = {
+      name: this.name.trim(),
+      email: this.email.trim(),
       password: this.password,
-      githubUsername: this.githubUsername || 'not-provided',
-      phoneNumber: this.phoneNumber,
-      countryCode: this.countryCode
-    }).subscribe({
+      githubUsername: this.githubUsername.trim(),
+    };
+
+    if (this.otpType === 'phone') {
+      payload.phoneNumber = this.phoneNumber.trim();
+      payload.countryCode = this.countryCode;
+    }
+
+    this.authService.register(payload).subscribe({
       next: (res) => {
-        const userId = String(res?._id || '');
+        // Backend now returns pendingId (no user created yet — awaiting OTP)
+        const pendingId = String(res?.pendingId || '');
         const type = this.otpType;
-        this.authService.sendOtp({
-          userId,
-          type,
-          purpose: 'signup'
-        }).subscribe({
-          next: (otpRes) => {
-            this.isLoading = false;
-            this.router.navigate(['/auth/otp-verification'], {
-              state: {
-                userId,
-                type,
-                purpose: 'signup',
-                email: this.email,
-                phoneNumber: this.phoneNumber,
-                countryCode: this.countryCode,
-                expiresAt: otpRes.expiresAt
-              }
-            });
-          },
-          error: (otpErr) => {
-            this.isLoading = false;
-            this.error = otpErr?.error?.message || 'Account created but failed to send OTP.';
+        this.isLoading = false;
+        this.router.navigate(['/auth/otp-verification'], {
+          state: {
+            pendingId,
+            type,
+            purpose: 'signup',
+            email: this.email.trim(),
+            phoneNumber: this.otpType === 'phone' ? this.phoneNumber.trim() : '',
+            countryCode: this.otpType === 'phone' ? this.countryCode : '',
+            expiresAt: res.expiresAt
           }
         });
       },
       error: (err) => {
         this.isLoading = false;
-        this.error = err.error?.message || 'Signup failed. Please try again.';
+        this.error = err?.error?.message || 'Signup failed. Please try again.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -101,4 +162,3 @@ export class Signup {
     console.log('GitHub signup clicked');
   }
 }
-

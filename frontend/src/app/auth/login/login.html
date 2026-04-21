@@ -21,7 +21,7 @@
 
       <!-- Login Form -->
       <form class="auth-form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
+        <div class="form-group" [class.has-error]="fieldErrors['email']">
           <label for="email">Email Address</label>
           <input
             id="email"
@@ -29,10 +29,12 @@
             [(ngModel)]="email"
             name="email"
             placeholder="you@example.com"
-            required />
+            (blur)="validateEmail()"
+            (input)="validateEmail()" />
+          <span *ngIf="fieldErrors['email']" class="field-error">{{ fieldErrors['email'] }}</span>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" [class.has-error]="fieldErrors['password']">
           <label for="password">Password</label>
           <input
             id="password"
@@ -40,8 +42,10 @@
             [(ngModel)]="password"
             name="password"
             placeholder="••••••••"
-            required />
+            (blur)="validatePassword()"
+            (input)="validatePassword()" />
           <a routerLink="/auth/forgot-password" class="forgot-password">Forgot password?</a>
+          <span *ngIf="fieldErrors['password']" class="field-error">{{ fieldErrors['password'] }}</span>
         </div>
 
         <app-ui-button type="submit" variant="primary" [fullWidth]="true" [loading]="isLoading">

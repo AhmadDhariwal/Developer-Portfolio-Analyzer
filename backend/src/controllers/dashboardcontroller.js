@@ -2,7 +2,7 @@ const Analysis = require('../models/analysis');
 const User     = require('../models/user');
 const Repository = require('../models/repository');
 const AnalysisCache = require('../models/analysisCache');
-const { analyzeGitHubProfile, fetchGitHubUser } = require('../services/githubservice');
+const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
@@ -39,28 +39,15 @@ const toLanguageMap = (languageDistribution = []) => {
 };
 
 const buildContributionActivity = (repositories = []) => {
+  // Fallback: if we have no real commit data, return 6 zero-filled months
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const now = new Date();
-  const activityMap = new Map();
-
+  const result = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthLabel = months[d.getMonth()];
-    const key = `${d.getFullYear()}-${d.getMonth()}`;
-    activityMap.set(key, { month: monthLabel, count: 0 });
+    result.push({ month: months[d.getMonth()], count: 0 });
   }
-
-  repositories.forEach((repo) => {
-    const sourceDate = repo.pushedAt || repo.updatedAt || repo.createdAt;
-    if (!sourceDate) return;
-    const d = new Date(sourceDate);
-    if (Number.isNaN(d.getTime())) return;
-    const key = `${d.getFullYear()}-${d.getMonth()}`;
-    if (!activityMap.has(key)) return;
-    activityMap.get(key).count += 1;
-  });
-
-  return Array.from(activityMap.values());
+  return result;
 };
 
 const persistRepositories = async (userId, repositories = []) => {
@@ -73,8 +60,8 @@ const persistRepositories = async (userId, repositories = []) => {
       language: repo.language,
       stars: repo.stars,
       forks: repo.forks,
-      commits: 0,
-      lastUpdated: new Date(),
+      commits: repo.commits || 0,
+      lastUpdated: repo.pushedAt ? new Date(repo.pushedAt) : new Date(),
       ownerId: userId
     }))
   );
@@ -111,7 +98,12 @@ const ensureAnalysis = async (userId, githubUsername) => {
     };
 
     analysis.languageDistribution = toLanguageMap(data.languageDistribution);
-    analysis.contributionActivity = buildContributionActivity(data.repositories);
+
+    // Fetch real monthly commit activity from GitHub stats API
+    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, data.repositories);
+    analysis.contributionActivity = monthlyActivity.length > 0
+      ? monthlyActivity
+      : buildContributionActivity();
 
     await persistRepositories(userId, data.repositories);
 
@@ -147,6 +139,20 @@ const getDashboardSummary = async (req, res) => {
     }).sort({ updatedAt: -1 }).lean();
 
     const baseReadiness = latestReadiness?.analysisData?.portfolioScore?.overallScore || analysis.readinessScore || analysis.githubScore || 0;
+
+    // ── Month-over-month score change ─────────────────────────────────────
+    // Find the most recent cache entry that is at least 25 days old (last month's snapshot)
+    const oneMonthAgo = new Date(Date.now() - 25 * 24 * 60 * 60 * 1000);
+    const lastMonthReadiness = await AnalysisCache.findOne({
+      userId: user._id,
+      'analysisData.portfolioScore.overallScore': { $exists: true },
+      updatedAt: { $lte: oneMonthAgo }
+    }).sort({ updatedAt: -1 }).lean();
+
+    const lastMonthScore = lastMonthReadiness?.analysisData?.portfolioScore?.overallScore ?? null;
+    const scoreChangeFromLastMonth = lastMonthScore !== null
+      ? Math.round(Number(baseReadiness) - Number(lastMonthScore))
+      : null; // null means no prior data to compare against
     const integrationInsight = await getIntegrationInsight(user._id);
     const integrationScore = Number(integrationInsight.integrationScore || 0);
     const readinessScore = integrationScore > 0
@@ -169,6 +175,7 @@ const getDashboardSummary = async (req, res) => {
     res.json({
       score:        analysis.githubScore || 0,
       readinessScore,
+      scoreChangeFromLastMonth,
       repositories: analysis.githubStats?.repos     || 0,
       stars:        analysis.githubStats?.stars      || 0,
       forks:        analysis.githubStats?.forks      || 0,
