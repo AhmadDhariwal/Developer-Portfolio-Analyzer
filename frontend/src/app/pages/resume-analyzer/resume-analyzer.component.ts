@@ -9,6 +9,8 @@ import { ScoreCardComponent } from '../../shared/components/score-card/score-car
 import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
 import { SuggestionCardComponent } from '../../shared/components/suggestion-card/suggestion-card.component';
 
+import { ResumeService } from '../../shared/services/resume.service';
+
 @Component({
   selector: 'app-resume-analyzer',
   standalone: true,
@@ -62,6 +64,7 @@ export class ResumeAnalyzerComponent implements OnInit {
 
   constructor(
     private readonly apiService: ApiService,
+    private readonly resumeService: ResumeService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -102,7 +105,12 @@ export class ResumeAnalyzerComponent implements OnInit {
 
   useSelectedResume(setAsDefault = false) {
     if (!this.selectedResumeFileId) return;
-    this.apiService.setActiveResume(this.selectedResumeFileId, setAsDefault).subscribe({
+    
+    const obs$ = setAsDefault 
+      ? this.resumeService.setDefaultResume(this.selectedResumeFileId)
+      : this.apiService.setActiveResume(this.selectedResumeFileId, false);
+
+    obs$.subscribe({
       next: () => {
         this.loadResumeContext();
         this.loadPreviousAnalysis();
@@ -171,7 +179,7 @@ export class ResumeAnalyzerComponent implements OnInit {
     const formData = new FormData();
     formData.append('file', this.selectedFile);
 
-    this.apiService.uploadResume(formData).subscribe({
+    this.resumeService.uploadResume(formData).subscribe({
       next: (uploadRes) => {
         // Now analyze the uploaded file
         this.apiService.analyzeResume(uploadRes.fileId).subscribe({

@@ -8,3 +8,13 @@
     </main>
   </div>
 </div>
+
+<!-- Resume Onboarding Prompt -->
+<app-resume-prompt-modal
+  *ngIf="(onboardingStatus$ | async)?.state as state"
+  [state]="state"
+  [isLoading]="(onboardingStatus$ | async)?.loading || false"
+  (upload)="handleUpload()"
+  (setDefault)="handleSetDefault()"
+  (dismiss)="handleDismiss($event)"
+></app-resume-prompt-modal>

@@ -145,6 +145,16 @@
 
   .nav-group-link {
     font-weight: 600;
+    padding-right: 2.5rem;
+    
+    &.clickable {
+      cursor: pointer;
+      user-select: none;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
   }
 
   .nav-submenu {

@@ -1,0 +1,46 @@
+<div class="modal-backdrop" (click)="onClose()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="onClose()" title="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="modal-content">
+      <div class="icon-header" [class.pulse]="!isProcessing">
+        <svg *ngIf="state === 'UPLOAD'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <svg *ngIf="state === 'SET_DEFAULT'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <path d="M9 15l2 2 4-4"></path>
+        </svg>
+      </div>
+
+      <h2>{{ state === 'UPLOAD' ? 'Complete Your Profile' : 'Set Default Resume' }}</h2>
+      <p>
+        {{ state === 'UPLOAD' 
+          ? 'Upload your resume to get personalized recommendations and better results tailored to your profile.' 
+          : 'You’ve uploaded a resume. Please set it as default to ensure accurate and personalized results.' }}
+      </p>
+
+      <div class="actions">
+        <button class="btn-primary" (click)="onPrimaryAction()" [disabled]="isProcessing">
+          <span *ngIf="!isProcessing">
+            {{ state === 'UPLOAD' ? 'Upload Resume' : 'Set as Default' }}
+          </span>
+          <span *ngIf="isProcessing" class="loader"></span>
+        </button>
+
+        <div class="secondary-actions">
+          <button class="btn-link" (click)="onClose()">Remind me tomorrow</button>
+          <button class="btn-link danger" (click)="onClose(true)">Don't show again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
