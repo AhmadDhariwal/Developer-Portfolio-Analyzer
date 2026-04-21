@@ -9,6 +9,7 @@ import {
   TaskCategory,
   TaskType,
   StreakStatus,
+  PlannerFilter,
 } from '../../shared/services/career-sprint.service';
 import { ProfileService } from '../../shared/services/profile.service';
 
@@ -35,15 +36,22 @@ export class CareerSprintComponent implements OnInit {
   newTaskCategory: TaskCategory = 'learning';
 
   // ── Sprint setup / AI generation ──────────────────────────────────────
-  goalStack       = '';
-  goalTechnology  = '';
+  goalStack           = '';
+  goalTechnology      = '';
   goalExperienceLevel = '';
-  isGenerating    = false;
+  isGenerating        = false;
   generatedTasks: SprintTask[] = [];
-  showSetupPanel  = false;
+  showSetupPanel      = false;
 
-  // ── Weekly planner filter ─────────────────────────────────────────────
-  plannerFilter: 'today' | 'week' | 'overdue' = 'week';
+  // ── Sprint date picker ────────────────────────────────────────────────
+  sprintStartDate = '';
+  sprintEndDate   = '';
+  isSavingDates   = false;
+
+  // ── Task filter ───────────────────────────────────────────────────────
+  plannerFilter: PlannerFilter = 'week';
+  customRangeStart = '';
+  customRangeEnd   = '';
 
   readonly priorityOptions: TaskPriority[] = ['high', 'medium', 'low'];
   readonly categoryOptions: TaskCategory[] = ['learning', 'project', 'practice'];
@@ -64,11 +72,10 @@ export class CareerSprintComponent implements OnInit {
   loadProfile(): void {
     this.profileService.getProfile().subscribe({
       next: (profile) => {
-        this.userAvatar = this.profileService.resolveAvatarUrl(profile.avatar || '');
-        this.userName   = profile.name || '';
-        this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
-        // Pre-fill goal fields from profile
-        if (!this.goalStack && profile.careerStack)         this.goalStack = profile.careerStack;
+        this.userAvatar      = this.profileService.resolveAvatarUrl(profile.avatar || '');
+        this.userName        = profile.name || '';
+        this.userInitial     = this.profileService.getInitials(this.userName || 'Developer') || 'D';
+        if (!this.goalStack && profile.careerStack)               this.goalStack = profile.careerStack;
         if (!this.goalExperienceLevel && profile.experienceLevel) this.goalExperienceLevel = profile.experienceLevel;
         this.bumpAvatarVersion();
         this.cdr.detectChanges();
@@ -83,6 +90,7 @@ export class CareerSprintComponent implements OnInit {
       next: (sprint) => {
         this.sprint    = sprint;
         this.isLoading = false;
+        this.syncDatePickers();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -90,6 +98,48 @@ export class CareerSprintComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private syncDatePickers(): void {
+    if (!this.sprint) return;
+    const start = this.sprint.sprintStartDate || this.sprint.weekStartDate;
+    const end   = this.sprint.sprintEndDate   || this.sprint.weekEndDate;
+    this.sprintStartDate = start ? new Date(start).toISOString().split('T')[0] : '';
+    this.sprintEndDate   = end   ? new Date(end).toISOString().split('T')[0]   : '';
+  }
+
+  // ── Sprint dates ──────────────────────────────────────────────────────
+
+  saveDates(): void {
+    if (!this.sprint || !this.sprintStartDate || !this.sprintEndDate) return;
+    this.isSavingDates = true;
+    this.sprintService.updateSprintDates(this.sprint._id, this.sprintStartDate, this.sprintEndDate).subscribe({
+      next: (sprint) => {
+        this.sprint        = sprint;
+        this.isSavingDates = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isSavingDates = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  get effectiveStartDate(): Date | null {
+    const d = this.sprint?.sprintStartDate || this.sprint?.weekStartDate;
+    return d ? new Date(d) : null;
+  }
+
+  get effectiveEndDate(): Date | null {
+    const d = this.sprint?.sprintEndDate || this.sprint?.weekEndDate;
+    return d ? new Date(d) : null;
+  }
+
+  get sprintDurationDays(): number {
+    if (!this.effectiveStartDate || !this.effectiveEndDate) return 7;
+    const ms = this.effectiveEndDate.getTime() - this.effectiveStartDate.getTime();
+    return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1);
   }
 
   // ── Computed: progress ────────────────────────────────────────────────
@@ -122,11 +172,11 @@ export class CareerSprintComponent implements OnInit {
 
   get motivationalText(): string {
     const p = this.progressPercent;
-    if (p === 0)   return 'Ready to start';
-    if (p < 25)    return 'Let\'s start strong';
-    if (p < 60)    return 'Good momentum';
-    if (p < 100)   return 'Almost there';
-    return 'Goal achieved this week! 🎉';
+    if (p === 0)  return 'Ready to start';
+    if (p < 25)   return 'Let\'s start strong';
+    if (p < 60)   return 'Good momentum';
+    if (p < 100)  return 'Almost there';
+    return 'Goal achieved! 🎉';
   }
 
   // ── Computed: XP & Level ──────────────────────────────────────────────
@@ -139,7 +189,41 @@ export class CareerSprintComponent implements OnInit {
     return Math.min(100, Math.round((this.xpInCurrentLevel / 100) * 100));
   }
 
+  // ── Computed: streak (day-based) ──────────────────────────────────────
+
+  get currentStreak(): number {
+    // Use currentStreak (days) if available, fall back to legacy streak (weeks)
+    return this.sprint?.currentStreak ?? this.sprint?.streak ?? 0;
+  }
+
+  get longestStreak(): number {
+    return this.sprint?.longestStreak ?? 0;
+  }
+
+  get canRestore(): boolean {
+    return !!(this.sprint?._canRestore);
+  }
+
+  getStreakStatus(): StreakStatus {
+    if (!this.sprint) return 'active';
+    return this.sprint.streakStatus || (this.sprint.streakBroken ? 'broken' : this.sprint.streakWarning ? 'warning' : 'active');
+  }
+
+  getStreakLabel(): string {
+    const days = this.currentStreak;
+    return days === 1 ? '1 day' : `${days} days`;
+  }
+
+  getLongestStreakLabel(): string {
+    const days = this.longestStreak;
+    return days === 1 ? '1 day' : `${days} days`;
+  }
+
   // ── Computed: tasks ───────────────────────────────────────────────────
+
+  get allTasks(): SprintTask[] {
+    return this.sprint?.tasks || [];
+  }
 
   get pendingTasks(): SprintTask[] {
     return this.sprint?.tasks.filter(t => !t.isCompleted) || [];
@@ -153,17 +237,15 @@ export class CareerSprintComponent implements OnInit {
     return this.sprint?.tasks.filter(t => t.isCompleted && t.priority === 'high').length || 0;
   }
 
-  // ── Computed: weekly planner ──────────────────────────────────────────
+  // ── Computed: task filters ────────────────────────────────────────────
 
   get todayTasks(): SprintTask[] {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
     return this.sprint?.tasks.filter(t => {
       if (t.isCompleted) return false;
-      const due = t.deadline ? new Date(t.deadline) : null;
-      return !due || (due >= today && due < tomorrow);
+      const end = t.endDate ? new Date(t.endDate) : (t.deadline ? new Date(t.deadline) : null);
+      return !end || (end >= today && end < tomorrow);
     }) || [];
   }
 
@@ -171,27 +253,46 @@ export class CareerSprintComponent implements OnInit {
     const now = new Date();
     return this.sprint?.tasks.filter(t => {
       if (t.isCompleted) return false;
-      const due = t.deadline ? new Date(t.deadline) : null;
-      return due && due < now;
+      const end = t.endDate ? new Date(t.endDate) : (t.deadline ? new Date(t.deadline) : null);
+      return end && end < now;
+    }) || [];
+  }
+
+  get sprintTasks(): SprintTask[] {
+    // Tasks within the sprint date range
+    const start = this.effectiveStartDate;
+    const end   = this.effectiveEndDate;
+    if (!start || !end) return this.pendingTasks;
+    return this.sprint?.tasks.filter(t => {
+      if (t.isCompleted) return false;
+      const taskStart = t.startDate ? new Date(t.startDate) : null;
+      const taskEnd   = t.endDate   ? new Date(t.endDate)   : null;
+      if (!taskStart && !taskEnd) return true; // no dates = always in sprint
+      return (!taskStart || taskStart <= end) && (!taskEnd || taskEnd >= start);
+    }) || [];
+  }
+
+  get customRangeTasks(): SprintTask[] {
+    if (!this.customRangeStart || !this.customRangeEnd) return this.pendingTasks;
+    const start = new Date(this.customRangeStart); start.setHours(0, 0, 0, 0);
+    const end   = new Date(this.customRangeEnd);   end.setHours(23, 59, 59, 999);
+    return this.sprint?.tasks.filter(t => {
+      if (t.isCompleted) return false;
+      const taskEnd = t.endDate ? new Date(t.endDate) : (t.deadline ? new Date(t.deadline) : null);
+      return !taskEnd || (taskEnd >= start && taskEnd <= end);
     }) || [];
   }
 
   get plannerTasks(): SprintTask[] {
-    if (this.plannerFilter === 'today')   return this.todayTasks;
-    if (this.plannerFilter === 'overdue') return this.overdueTasks;
-    return this.pendingTasks;
-  }
-
-  // ── Computed: streak ──────────────────────────────────────────────────
-
-  getStreakStatus(): StreakStatus {
-    if (!this.sprint) return 'active';
-    return this.sprint.streakStatus || (this.sprint.streakBroken ? 'broken' : this.sprint.streakWarning ? 'warning' : 'active');
-  }
-
-  getStreakLabel(): string {
-    const weeks = this.sprint?.streak || 0;
-    return weeks === 1 ? '1 week' : `${weeks} weeks`;
+    switch (this.plannerFilter) {
+      case 'all':     return this.allTasks;
+      case 'sprint':  return this.sprintTasks;
+      case 'today':   return this.todayTasks;
+      case 'week':    return this.pendingTasks;
+      case 'overdue': return this.overdueTasks;
+      case 'custom':  return this.customRangeTasks;
+      default:        return this.pendingTasks;
+    }
   }
 
   // ── Computed: insights ────────────────────────────────────────────────
@@ -199,17 +300,18 @@ export class CareerSprintComponent implements OnInit {
   get insights(): string[] {
     if (!this.sprint) return [];
     const msgs: string[] = [];
-    const p = this.progressPercent;
+    const p      = this.progressPercent;
     const status = this.getStreakStatus();
+    const streak = this.currentStreak;
 
     if (p === 100) {
-      msgs.push('🎉 You completed all tasks this week!');
+      msgs.push('🎉 You completed all tasks this sprint!');
     } else if (p >= 70) {
       msgs.push(`✅ You are ${p}% complete — almost there!`);
     } else if (p >= 40) {
       msgs.push(`📈 You are ${p}% complete — keep the momentum.`);
     } else if (p > 0) {
-      msgs.push(`⚡ You are ${p}% complete — push harder this week.`);
+      msgs.push(`⚡ You are ${p}% complete — push harder.`);
     } else {
       msgs.push('🚀 No tasks completed yet — start today!');
     }
@@ -219,11 +321,14 @@ export class CareerSprintComponent implements OnInit {
     }
 
     if (status === 'warning') {
-      msgs.push('⚠️ Sprint ends soon — complete remaining tasks to keep your streak.');
+      msgs.push('⚠️ You haven\'t completed a task today — your streak is at risk!');
     } else if (status === 'broken') {
-      msgs.push('💔 Your streak was broken. Restore it within 24 hours.');
-    } else if ((this.sprint?.streak || 0) >= 3) {
-      msgs.push(`🏆 ${this.sprint!.streak}-week streak — consistency is your superpower!`);
+      const canR = this.canRestore;
+      msgs.push(canR ? '💔 Streak broken. You can still restore it (within 3 days).' : '💔 Streak broken. Start fresh today!');
+    } else if (streak >= 7) {
+      msgs.push(`🏆 ${streak}-day streak — incredible consistency!`);
+    } else if (streak >= 3) {
+      msgs.push(`🔥 ${streak}-day streak — consistency is building!`);
     }
 
     if (this.overdueTasks.length > 0) {
@@ -237,7 +342,6 @@ export class CareerSprintComponent implements OnInit {
 
   addTask(): void {
     if (!this.sprint || !this.newTaskTitle.trim()) return;
-
     this.sprintService.addTask(this.sprint._id, {
       title:       this.newTaskTitle.trim(),
       description: this.newTaskDescription.trim() || undefined,
@@ -247,12 +351,12 @@ export class CareerSprintComponent implements OnInit {
       taskType:    'manual',
     }).subscribe({
       next: (sprint) => {
-        this.sprint            = sprint;
-        this.newTaskTitle      = '';
+        this.sprint             = sprint;
+        this.newTaskTitle       = '';
         this.newTaskDescription = '';
-        this.newTaskPoints     = 3;
-        this.newTaskPriority   = 'medium';
-        this.newTaskCategory   = 'learning';
+        this.newTaskPoints      = 3;
+        this.newTaskPriority    = 'medium';
+        this.newTaskCategory    = 'learning';
         this.cdr.detectChanges();
       },
       error: () => this.cdr.detectChanges(),
@@ -280,11 +384,12 @@ export class CareerSprintComponent implements OnInit {
   generateAiPlan(): void {
     this.isGenerating   = true;
     this.generatedTasks = [];
-
     this.sprintService.generateAiTasks({
-      stack:           this.goalStack || undefined,
+      stack:           this.goalStack      || undefined,
       technology:      this.goalTechnology || undefined,
       experienceLevel: this.goalExperienceLevel || undefined,
+      sprintStartDate: this.sprintStartDate || undefined,
+      sprintEndDate:   this.sprintEndDate   || undefined,
     }).subscribe({
       next: (res) => {
         this.generatedTasks = res.tasks || [];
@@ -300,8 +405,6 @@ export class CareerSprintComponent implements OnInit {
 
   addGeneratedTasksToSprint(): void {
     if (!this.sprint || this.generatedTasks.length === 0) return;
-
-    // Add tasks sequentially to avoid race conditions
     const addNext = (index: number) => {
       if (index >= this.generatedTasks.length) {
         this.generatedTasks = [];
@@ -317,6 +420,8 @@ export class CareerSprintComponent implements OnInit {
         priority:    t.priority,
         category:    t.category,
         taskType:    'ai',
+        startDate:   t.startDate || undefined,
+        endDate:     t.endDate   || undefined,
       }).subscribe({
         next: (sprint) => { this.sprint = sprint; addNext(index + 1); },
         error: () => addNext(index + 1),
@@ -333,6 +438,28 @@ export class CareerSprintComponent implements OnInit {
 
   getCategoryIcon(category: TaskCategory): string {
     return { learning: '📚', project: '🛠️', practice: '⚡' }[category] || '📌';
+  }
+
+  formatTaskDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  getTaskDateRange(task: SprintTask): string {
+    const start = task.startDate;
+    const end   = task.endDate || task.deadline || task.dueDate;
+    if (start && end) return `${this.formatTaskDate(start)} → ${this.formatTaskDate(end)}`;
+    if (end)          return `Due ${this.formatTaskDate(end)}`;
+    return '';
+  }
+
+  isTaskActive(task: SprintTask): boolean {
+    const now   = new Date();
+    const start = task.startDate ? new Date(task.startDate) : null;
+    const end   = task.endDate   ? new Date(task.endDate)   : null;
+    if (!start && !end) return true;
+    return (!start || start <= now) && (!end || end >= now);
   }
 
   getAvatarSrc(): string {

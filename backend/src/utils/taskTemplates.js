@@ -10,34 +10,43 @@ const CATEGORY = { LEARNING: 'learning', PROJECT: 'project', PRACTICE: 'practice
 // ── Generic level-based templates ────────────────────────────────────────
 
 const BEGINNER_GENERIC = (stack) => [
-  { title: `Learn ${stack} fundamentals`, description: 'Study core concepts and syntax', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
-  { title: `Complete a ${stack} tutorial`, description: 'Follow an end-to-end beginner tutorial', points: 3, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
-  { title: `Build a simple ${stack} project`, description: 'Apply what you learned in a small project', points: 5, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
-  { title: `Read ${stack} documentation`, description: 'Explore official docs for key APIs', points: 1, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
-  { title: `Practice ${stack} exercises`, description: 'Solve 5 coding exercises', points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Learn ${stack} fundamentals`, description: `Study the core concepts, syntax, and mental model of ${stack}. Follow the official documentation and complete at least one beginner tutorial. Take notes on key concepts.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
+  { title: `Complete a ${stack} tutorial project`, description: `Follow an end-to-end beginner tutorial that builds a real project. Focus on understanding each step rather than just copying code. Rebuild it from scratch afterward.`, points: 3, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
+  { title: `Build a simple ${stack} project from scratch`, description: `Apply what you learned by building a small project independently. Choose something you can finish in 1–2 days. Focus on clean code and proper structure.`, points: 5, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
+  { title: `Read ${stack} official documentation`, description: `Explore the official docs for the most-used APIs and patterns. Bookmark key reference pages. Read at least 3 in-depth guides beyond the getting-started section.`, points: 1, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Practice ${stack} with coding exercises`, description: `Solve 10 coding exercises focused on ${stack} fundamentals. Use platforms like LeetCode, Exercism, or Codewars. Review solutions and understand alternative approaches.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Join a ${stack} community and ask questions`, description: `Join the official Discord, Reddit, or Stack Overflow community. Ask at least one question and answer one. Reading others' questions is one of the fastest ways to learn.`, points: 1, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Deploy your first ${stack} project`, description: `Get your project live on the internet. Use a free hosting platform like Vercel, Netlify, or Railway. Share the link and get feedback from peers.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
+  { title: `Review and refactor your ${stack} code`, description: `Go back to your first project and improve it. Apply what you've learned: better naming, smaller functions, error handling, and code organization.`, points: 3, priority: PRIORITY.LOW, category: CATEGORY.PRACTICE },
 ];
 
 const INTERMEDIATE_GENERIC = (stack) => [
-  { title: `Build a full ${stack} project`, description: 'Create a complete project with real features', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
-  { title: `Write tests for ${stack} code`, description: 'Add unit and integration tests', points: 3, priority: PRIORITY.HIGH, category: CATEGORY.PRACTICE },
-  { title: `Optimize ${stack} performance`, description: 'Profile and improve bottlenecks', points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
-  { title: `Contribute to a ${stack} open-source project`, description: 'Submit a PR or fix an issue', points: 5, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
-  { title: `Study advanced ${stack} patterns`, description: 'Learn design patterns specific to this stack', points: 3, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Build a full ${stack} project`, description: `Create a complete project with real features: authentication, data persistence, and a polished UI. Deploy it publicly and add it to your portfolio with a detailed README.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
+  { title: `Write tests for your ${stack} code`, description: `Add unit and integration tests to an existing project. Aim for 70%+ code coverage. Use the standard testing framework for ${stack} and practice TDD on at least one new feature.`, points: 3, priority: PRIORITY.HIGH, category: CATEGORY.PRACTICE },
+  { title: `Optimize ${stack} performance`, description: `Profile your application to find bottlenecks. Apply at least 3 optimizations (caching, lazy loading, query optimization). Measure and document the before/after improvement.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Contribute to a ${stack} open-source project`, description: `Find a project on GitHub, read the contributing guide, and submit a meaningful PR. Start with a bug fix or documentation improvement. Engage with maintainer feedback.`, points: 5, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
+  { title: `Study advanced ${stack} patterns`, description: `Learn 3 design patterns commonly used in ${stack}: understand the problem each solves, implement a small example, and identify where you could apply them in your existing projects.`, points: 3, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Set up CI/CD for a ${stack} project`, description: `Configure GitHub Actions to run tests, linting, and deployment automatically on every push. Add status badges to your README and set up branch protection rules.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
+  { title: `Code review and refactor an existing project`, description: `Review your oldest project with fresh eyes. Identify code smells, apply SOLID principles, extract reusable utilities, and improve error handling. Document the changes you made.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Write a technical blog post about ${stack}`, description: `Share something you learned recently about ${stack}. Explain a concept, walk through a problem you solved, or compare two approaches. Publish on Dev.to or your personal blog.`, points: 3, priority: PRIORITY.LOW, category: CATEGORY.PRACTICE },
 ];
 
 const ADVANCED_GENERIC = (stack) => [
-  { title: `Architect a scalable ${stack} system`, description: 'Design a production-grade architecture', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
-  { title: `Mentor others in ${stack}`, description: 'Write a blog post or record a tutorial', points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
-  { title: `Implement CI/CD for ${stack} project`, description: 'Set up automated pipelines', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
-  { title: `Review and refactor legacy ${stack} code`, description: 'Improve code quality and maintainability', points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
-  { title: `Explore ${stack} ecosystem updates`, description: 'Stay current with latest releases', points: 1, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Architect a scalable ${stack} system`, description: `Design a production-grade architecture for a complex ${stack} system. Document the architecture with diagrams (C4 model), justify technology choices, and identify potential failure points.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
+  { title: `Implement CI/CD and DevOps for ${stack}`, description: `Set up a complete DevOps pipeline: automated testing, Docker containerization, staging environment, and production deployment with rollback capability. Add monitoring and alerting.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
+  { title: `Mentor others in ${stack}`, description: `Write a comprehensive tutorial or record a video series on an advanced ${stack} topic. Review code from junior developers and provide constructive feedback. Host a knowledge-sharing session.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Review and refactor legacy ${stack} code`, description: `Take a legacy codebase and systematically improve it: add types, extract modules, improve test coverage, update dependencies, and document architectural decisions.`, points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PRACTICE },
+  { title: `Implement observability for a ${stack} system`, description: `Add structured logging, distributed tracing, and metrics to a production system. Set up dashboards in Grafana, configure alerts, and practice debugging with traces.`, points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
+  { title: `Conduct a security audit of a ${stack} project`, description: `Review a project for OWASP Top 10 vulnerabilities. Run automated security scanners, fix identified issues, add security headers, and document the security posture.`, points: 3, priority: PRIORITY.HIGH, category: CATEGORY.PRACTICE },
+  { title: `Explore ${stack} ecosystem updates`, description: `Research the latest major releases and RFC proposals in the ${stack} ecosystem. Evaluate 2–3 new tools or libraries. Write a summary of what's changing and how it affects your projects.`, points: 1, priority: PRIORITY.LOW, category: CATEGORY.LEARNING },
+  { title: `Build a developer tool or library in ${stack}`, description: `Create a reusable library, CLI tool, or developer utility that solves a real problem. Publish it to npm/PyPI/GitHub. Write documentation and add automated tests.`, points: 5, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
 ];
 
-// ── Technology-specific templates ─────────────────────────────────────────
+// ── Technology-specific templates (8–9 tasks each, rich descriptions) ────
 
 const TECH_TEMPLATES = {
   react: [
-    { title: 'Learn React hooks (useState, useEffect)', description: 'Build 3 components using hooks', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
+    { title: 'Learn React hooks (useState, useEffect)', description: 'Study the two most essential React hooks. Build 3 small components using useState for local state and useEffect for data fetching. Understand the dependency array and cleanup functions to avoid memory leaks.', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.LEARNING },
     { title: 'Build a React UI component library', description: 'Create reusable Button, Input, Modal components', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PROJECT },
     { title: 'Implement React Router navigation', description: 'Add multi-page routing to a project', points: 3, priority: PRIORITY.MEDIUM, category: CATEGORY.PROJECT },
     { title: 'Manage state with Context API or Redux', description: 'Implement global state management', points: 5, priority: PRIORITY.HIGH, category: CATEGORY.PRACTICE },

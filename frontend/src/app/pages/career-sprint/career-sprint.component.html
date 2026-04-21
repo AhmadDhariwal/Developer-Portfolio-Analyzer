@@ -4,11 +4,11 @@
   <div class="page-header">
     <div class="header-content">
       <h2>Career Sprint</h2>
-      <p>Drive your career forward with focused weekly execution.</p>
+      <p>Drive your career forward with focused daily execution.</p>
     </div>
     <button class="setup-toggle-btn" (click)="showSetupPanel = !showSetupPanel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
       </svg>
       {{ showSetupPanel ? 'Hide Setup' : 'AI Sprint Setup' }}
     </button>
@@ -31,8 +31,28 @@
           </svg>
           AI Sprint Setup
         </h3>
-        <p class="setup-desc">Define your goal to generate a personalized task plan. Leave blank to use your profile.</p>
+        <p class="setup-desc">Define your goal and sprint dates to generate a personalized, time-phased task plan.</p>
 
+        <!-- Sprint date range -->
+        <div class="date-range-row">
+          <div class="setup-field">
+            <label>Sprint Start</label>
+            <input type="date" [(ngModel)]="sprintStartDate" title="Sprint start date" />
+          </div>
+          <div class="date-arrow">→</div>
+          <div class="setup-field">
+            <label>Sprint End</label>
+            <input type="date" [(ngModel)]="sprintEndDate" title="Sprint end date" />
+          </div>
+          <button class="save-dates-btn" (click)="saveDates()" [disabled]="isSavingDates || !sprintStartDate || !sprintEndDate">
+            {{ isSavingDates ? 'Saving...' : 'Save Dates' }}
+          </button>
+        </div>
+        <p class="duration-hint" *ngIf="sprintStartDate && sprintEndDate">
+          Sprint duration: <strong>{{ sprintDurationDays }} days</strong>
+        </p>
+
+        <!-- Goal fields -->
         <div class="setup-fields">
           <div class="setup-field">
             <label>Career Stack</label>
@@ -83,7 +103,12 @@
           <div class="preview-list">
             <div class="preview-task" *ngFor="let t of generatedTasks">
               <span class="task-type-badge ai">AI</span>
-              <span class="preview-title">{{ t.title }}</span>
+              <div class="preview-task-info">
+                <span class="preview-title">{{ t.title }}</span>
+                <span class="preview-dates" *ngIf="t.startDate || t.endDate">
+                  {{ formatTaskDate(t.startDate) }} → {{ formatTaskDate(t.endDate) }}
+                </span>
+              </div>
               <span class="priority-dot" [style.background]="getPriorityColor(t.priority)"></span>
               <span class="preview-pts">{{ t.points }}pts</span>
             </div>
@@ -103,33 +128,35 @@
             </div>
             <h3>{{ sprint.title }}</h3>
             <span class="date-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              {{ sprint.weekStartDate | date: 'MMM d' }} – {{ sprint.weekEndDate | date: 'MMM d' }}
+              {{ effectiveStartDate | date: 'MMM d' }} – {{ effectiveEndDate | date: 'MMM d' }}
+              <span class="duration-chip">{{ sprintDurationDays }}d</span>
             </span>
           </div>
 
+          <!-- Day-based streak panel -->
           <div class="streaks-container">
             <div class="streak-item highlight"
                  [class.streak-broken]="getStreakStatus() === 'broken'"
                  [class.streak-warning]="getStreakStatus() === 'warning'">
               <span class="streak-label">Current Streak</span>
-              <strong class="streak-value">{{ sprint.streak }}<span class="unit">w</span></strong>
+              <strong class="streak-value">{{ currentStreak }}<span class="unit">d</span></strong>
               <span class="streak-status"
                     *ngIf="getStreakStatus() !== 'active'"
                     [class.status-broken]="getStreakStatus() === 'broken'"
                     [class.status-warning]="getStreakStatus() === 'warning'">
-                {{ getStreakStatus() === 'broken' ? '🔴 Broken' : '⚠️ Warning' }}
+                {{ getStreakStatus() === 'broken' ? '🔴 Broken' : '⚠️ At Risk' }}
               </span>
-              <button *ngIf="getStreakStatus() === 'broken'" class="restore-btn" (click)="restoreStreak()">
-                Restore Streak
+              <button *ngIf="getStreakStatus() === 'broken' && canRestore" class="restore-btn" (click)="restoreStreak()">
+                Restore (≤3 days)
               </button>
             </div>
             <div class="streak-divider"></div>
             <div class="streak-item">
-              <span class="streak-label">Longest</span>
-              <strong class="streak-value">{{ sprint.longestStreak }}<span class="unit">w</span></strong>
+              <span class="streak-label">Best Streak</span>
+              <strong class="streak-value">{{ longestStreak }}<span class="unit">d</span></strong>
             </div>
           </div>
         </div>
@@ -185,28 +212,46 @@
         </ul>
       </div>
 
-      <!-- ── Weekly Planner ────────────────────────────────────────────── -->
+      <!-- ── Task Planner ───────────────────────────────────────────────── -->
       <div class="card planner-card">
         <div class="planner-header">
-          <h3>Weekly Planner</h3>
+          <h3>Task Planner</h3>
           <div class="planner-tabs">
+            <button [class.active]="plannerFilter === 'all'"     (click)="plannerFilter = 'all'">
+              All <span class="tab-badge">{{ allTasks.length }}</span>
+            </button>
+            <button [class.active]="plannerFilter === 'sprint'"  (click)="plannerFilter = 'sprint'">
+              Sprint <span class="tab-badge">{{ sprintTasks.length }}</span>
+            </button>
             <button [class.active]="plannerFilter === 'today'"   (click)="plannerFilter = 'today'">
               Today <span *ngIf="todayTasks.length > 0" class="tab-badge">{{ todayTasks.length }}</span>
             </button>
             <button [class.active]="plannerFilter === 'week'"    (click)="plannerFilter = 'week'">
-              This Week <span class="tab-badge">{{ pendingTasks.length }}</span>
+              Pending <span class="tab-badge">{{ pendingTasks.length }}</span>
             </button>
             <button [class.active]="plannerFilter === 'overdue'" (click)="plannerFilter = 'overdue'">
               Overdue <span *ngIf="overdueTasks.length > 0" class="tab-badge danger">{{ overdueTasks.length }}</span>
             </button>
+            <button [class.active]="plannerFilter === 'custom'"  (click)="plannerFilter = 'custom'">
+              Custom
+            </button>
           </div>
+        </div>
+
+        <!-- Custom date range inputs -->
+        <div class="custom-range-row" *ngIf="plannerFilter === 'custom'">
+          <input type="date" [(ngModel)]="customRangeStart" title="Custom range start" />
+          <span>to</span>
+          <input type="date" [(ngModel)]="customRangeEnd" title="Custom range end" />
         </div>
 
         <div class="planner-list">
           <div *ngIf="plannerTasks.length === 0" class="empty-state">
             <p>No tasks in this view.</p>
           </div>
-          <div class="task-row" *ngFor="let task of plannerTasks">
+          <div class="task-row" *ngFor="let task of plannerTasks"
+               [class.task-active]="isTaskActive(task)"
+               [class.completed-row]="task.isCompleted">
             <label class="task-checkbox">
               <input type="checkbox" [checked]="task.isCompleted"
                      [attr.aria-label]="'Toggle ' + task.title"
@@ -225,6 +270,9 @@
               <div class="task-meta">
                 <span class="category-chip">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
                 <span class="priority-chip" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
+                <span class="date-chip" *ngIf="getTaskDateRange(task)">
+                  📅 {{ getTaskDateRange(task) }}
+                </span>
               </div>
             </div>
             <span class="points-chip">{{ task.points }} pts</span>
@@ -237,14 +285,13 @@
         <div class="board-header">
           <h3>Task Board</h3>
         </div>
-
         <div class="task-lists-container">
           <!-- Pending -->
           <div class="task-column">
             <h4 class="column-title">Pending <span>{{ pendingTasks.length }}</span></h4>
             <div class="task-list">
               <div *ngIf="pendingTasks.length === 0" class="empty-state"><p>No pending tasks.</p></div>
-              <div class="task-row" *ngFor="let task of pendingTasks">
+              <div class="task-row" *ngFor="let task of pendingTasks" [class.task-active]="isTaskActive(task)">
                 <label class="task-checkbox">
                   <input type="checkbox" [checked]="task.isCompleted"
                          [attr.aria-label]="'Toggle ' + task.title"
@@ -263,6 +310,7 @@
                   <div class="task-meta">
                     <span class="category-chip">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
                     <span class="priority-chip" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
+                    <span class="date-chip" *ngIf="getTaskDateRange(task)">📅 {{ getTaskDateRange(task) }}</span>
                   </div>
                 </div>
                 <span class="points-chip">{{ task.points }} pts</span>
@@ -308,7 +356,7 @@
               <input [(ngModel)]="newTaskTitle" placeholder="What do you need to accomplish?" title="New task title" />
             </div>
             <div class="input-group full-width">
-              <input [(ngModel)]="newTaskDescription" placeholder="Optional details or context" title="New task description" />
+              <input [(ngModel)]="newTaskDescription" placeholder="Optional details or context (2–3 lines)" title="New task description" />
             </div>
             <div class="composer-row">
               <div class="input-group">
@@ -328,7 +376,7 @@
                 <input id="new-task-points" type="number" min="1" max="10" [(ngModel)]="newTaskPoints" title="Task points" />
               </div>
               <button class="primary-btn" [disabled]="!newTaskTitle.trim()" (click)="addTask()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
                 Add Task

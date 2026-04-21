@@ -1,22 +1,19 @@
 /**
  * AI Task Service
- * Generates structured task lists using a priority-based data cascade:
- *   1. Sprint goal (stack + technology) — if provided
- *   2. User profile (careerStack + experienceLevel + skills)
- *   3. Resume missing skills
- *   4. GitHub weak areas
- *   5. Default beginner templates
- *
- * Template-based first — no heavy AI API required.
- * Designed to be extended with LLM calls later without changing the interface.
+ * Generates 8–9 structured tasks per technology with:
+ *   - Rich 2–3 line descriptions
+ *   - startDate / endDate based on sprint duration phases
+ *   - Priority cascade: goal → profile → resume → github → default
  */
 
 const { getTasksForTechnology, getTaskForMissingSkill, getTaskForGitHubWeakness } = require('../utils/taskTemplates');
+const { distributeTaskDates, phaseCategory, startOfDay, addDays } = require('../utils/dateUtils');
 const User = require('../models/user');
 const AnalysisCache = require('../models/analysisCache');
 const Analysis = require('../models/analysis');
 
-const MAX_TASKS = 8;
+const MIN_TASKS = 8;
+const MAX_TASKS = 9;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -38,7 +35,32 @@ const normalizeTask = (t, taskType = 'ai') => ({
   category:    ['learning', 'project', 'practice'].includes(t.category) ? t.category : 'learning',
   taskType,
   isCompleted: false,
+  startDate:   t.startDate || null,
+  endDate:     t.endDate   || null,
 });
+
+/**
+ * Assign startDate / endDate to each task based on sprint duration.
+ * Phase logic:
+ *   Day 1–30%  → learning tasks
+ *   Day 30–70% → building/project tasks
+ *   Day 70–100%→ deployment/polish tasks
+ */
+const assignDates = (tasks, sprintStart, sprintEnd) => {
+  if (!sprintStart || !sprintEnd) return tasks;
+
+  const start = startOfDay(new Date(sprintStart));
+  const end   = startOfDay(new Date(sprintEnd));
+  const slots = distributeTaskDates(start, end, tasks.length);
+
+  return tasks.map((t, i) => ({
+    ...t,
+    startDate: slots[i]?.startDate || start,
+    endDate:   slots[i]?.endDate   || end,
+    // Override category based on phase position if not already set meaningfully
+    category: t.category || phaseCategory(i / tasks.length),
+  }));
+};
 
 // ── Priority 1: Sprint goal ───────────────────────────────────────────────
 
@@ -53,9 +75,8 @@ const getTasksFromGoal = (stack, technology, experienceLevel) => {
 const getTasksFromProfile = async (userId) => {
   const user = await User.findById(userId).select('careerStack experienceLevel').lean();
   if (!user) return [];
-  const stack = user.careerStack || 'Full Stack';
-  const level = user.experienceLevel || 'Student';
-  return getTasksForTechnology(stack, level).map(t => normalizeTask(t, 'ai'));
+  return getTasksForTechnology(user.careerStack || 'Full Stack', user.experienceLevel || 'Student')
+    .map(t => normalizeTask(t, 'ai'));
 };
 
 // ── Priority 3: Resume missing skills ────────────────────────────────────
@@ -82,77 +103,73 @@ const getTasksFromGitHub = async (userId) => {
   if (!analysis) return [];
 
   const tasks = [];
-  const stats = analysis.githubStats || {};
+  const activity = analysis.contributionActivity || [];
+  const totalCommits = activity.reduce((s, m) => s + (m.count || 0), 0);
 
-  if ((stats.repos || 0) > 0) {
-    // Low commit activity relative to repos
-    const activity = analysis.contributionActivity || [];
-    const totalCommits = activity.reduce((s, m) => s + (m.count || 0), 0);
-    if (totalCommits < 10) {
-      const t = getTaskForGitHubWeakness('low_commits');
-      if (t) tasks.push(normalizeTask(t, 'ai'));
-    }
+  if (totalCommits < 10) {
+    const t = getTaskForGitHubWeakness('low_commits');
+    if (t) tasks.push(normalizeTask(t, 'ai'));
   }
-
-  // Low GitHub score suggests code quality issues
   if ((analysis.githubScore || 0) < 50) {
     const t = getTaskForGitHubWeakness('poor_readme');
     if (t) tasks.push(normalizeTask(t, 'ai'));
   }
-
   return tasks;
 };
 
-// ── Priority 5: Default beginner templates ────────────────────────────────
+// ── Priority 5: Default ───────────────────────────────────────────────────
 
-const getDefaultTasks = () => {
-  return getTasksForTechnology('full stack', 'Student').map(t => normalizeTask(t, 'ai'));
-};
+const getDefaultTasks = () =>
+  getTasksForTechnology('full stack', 'Student').map(t => normalizeTask(t, 'ai'));
 
 // ── Main entry point ──────────────────────────────────────────────────────
 
 /**
- * Generate AI tasks using the priority cascade.
- *
  * @param {Object} options
- * @param {string} options.userId
- * @param {string} [options.stack]       - Sprint goal: career stack
- * @param {string} [options.technology]  - Sprint goal: specific technology
- * @param {string} [options.experienceLevel]
- * @returns {Promise<Array>} Normalized task list (max MAX_TASKS)
+ * @param {string}  options.userId
+ * @param {string}  [options.stack]
+ * @param {string}  [options.technology]
+ * @param {string}  [options.experienceLevel]
+ * @param {Date|string} [options.sprintStartDate]
+ * @param {Date|string} [options.sprintEndDate]
  */
-const generateTasks = async ({ userId, stack, technology, experienceLevel }) => {
+const generateTasks = async ({ userId, stack, technology, experienceLevel, sprintStartDate, sprintEndDate }) => {
   let tasks = [];
 
-  // Priority 1: Sprint goal
   if (stack || technology) {
     tasks = getTasksFromGoal(stack, technology, experienceLevel);
   }
 
-  // Priority 2: User profile (if goal not provided or yielded nothing)
-  if (tasks.length < 3) {
-    const profileTasks = await getTasksFromProfile(userId);
-    tasks = dedupe([...tasks, ...profileTasks]);
+  if (tasks.length < MIN_TASKS) {
+    tasks = dedupe([...tasks, ...await getTasksFromProfile(userId)]);
   }
 
-  // Priority 3: Resume missing skills
   if (tasks.length < MAX_TASKS) {
-    const resumeTasks = await getTasksFromResume(userId);
-    tasks = dedupe([...tasks, ...resumeTasks]);
+    tasks = dedupe([...tasks, ...await getTasksFromResume(userId)]);
   }
 
-  // Priority 4: GitHub weak areas
   if (tasks.length < MAX_TASKS) {
-    const githubTasks = await getTasksFromGitHub(userId);
-    tasks = dedupe([...tasks, ...githubTasks]);
+    tasks = dedupe([...tasks, ...await getTasksFromGitHub(userId)]);
   }
 
-  // Priority 5: Default fallback
   if (tasks.length === 0) {
     tasks = getDefaultTasks();
   }
 
-  return tasks.slice(0, MAX_TASKS);
+  // Ensure we have at least MIN_TASKS by padding with defaults if needed
+  if (tasks.length < MIN_TASKS) {
+    const defaults = getDefaultTasks();
+    tasks = dedupe([...tasks, ...defaults]).slice(0, MAX_TASKS);
+  }
+
+  tasks = tasks.slice(0, MAX_TASKS);
+
+  // Assign sprint-phase dates
+  const start = sprintStartDate || new Date();
+  const end   = sprintEndDate   || addDays(new Date(), 6);
+  tasks = assignDates(tasks, start, end);
+
+  return tasks;
 };
 
 module.exports = { generateTasks };

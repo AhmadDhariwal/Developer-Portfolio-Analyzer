@@ -6,6 +6,7 @@ const {
   addTaskToSprint,
   restoreStreak,
   calcWeightedProgress,
+  updateSprintDates,
 } = require('../services/careerSprintService');
 const { generateTasks } = require('../services/aiTaskService');
 
@@ -95,22 +96,37 @@ const restoreCareerStreakController = async (req, res) => {
 
 /**
  * POST /api/career-sprints/generate-ai-tasks
- * Body: { stack, technology, experienceLevel }
- * Returns a list of AI-generated tasks (not yet saved to sprint).
+ * Body: { stack, technology, experienceLevel, sprintStartDate, sprintEndDate }
+ * Returns a list of AI-generated tasks with dates assigned (not yet saved to sprint).
  */
 const generateAiTasks = async (req, res) => {
   try {
-    const { stack, technology, experienceLevel } = req.body || {};
+    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate } = req.body || {};
     const tasks = await generateTasks({
       userId: req.user._id,
       stack,
       technology,
       experienceLevel,
+      sprintStartDate,
+      sprintEndDate,
     });
     res.json({ tasks });
   } catch (error) {
     console.error('AI task generation error:', error.message);
     res.status(500).json({ message: 'Failed to generate AI tasks.' });
+  }
+};
+
+// PUT /api/career-sprints/:id/dates
+const updateSprintDatesController = async (req, res) => {
+  try {
+    const { sprintStartDate, sprintEndDate } = req.body || {};
+    const sprint = await updateSprintDates(req.user._id, req.params.id, sprintStartDate, sprintEndDate);
+    if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    res.json(sprint);
+  } catch (error) {
+    console.error('Sprint dates update error:', error.message);
+    res.status(500).json({ message: 'Failed to update sprint dates.' });
   }
 };
 
@@ -122,4 +138,5 @@ module.exports = {
   getCareerSprintHistory,
   restoreCareerStreakController,
   generateAiTasks,
+  updateSprintDatesController,
 };

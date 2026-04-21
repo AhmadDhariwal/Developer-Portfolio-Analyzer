@@ -6,6 +6,7 @@ export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskCategory = 'learning' | 'project' | 'practice';
 export type TaskType     = 'ai' | 'manual';
 export type StreakStatus = 'active' | 'warning' | 'broken';
+export type PlannerFilter = 'all' | 'sprint' | 'today' | 'week' | 'overdue' | 'custom';
 
 export interface SprintTask {
   _id: string;
@@ -17,6 +18,8 @@ export interface SprintTask {
   taskType: TaskType;
   isCompleted: boolean;
   completedAt?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   dueDate?: string | null;
   deadline?: string | null;
 }
@@ -24,29 +27,43 @@ export interface SprintTask {
 export interface CareerSprint {
   _id: string;
   title: string;
+  // Sprint date range (user-selectable)
+  sprintStartDate?: string | null;
+  sprintEndDate?: string | null;
+  // Legacy week fields
   weekStartDate: string;
   weekEndDate: string;
   weeklyGoal: number;
-  streak: number;
+  // Day-based streak
+  currentStreak: number;
   longestStreak: number;
+  lastActiveDate?: string | null;
+  // Legacy
+  streak: number;
   lastCompletedWeekAt?: string | null;
   streakBroken?: boolean;
   streakBrokenAt?: string | null;
   streakWarning?: boolean;
   streakStatus?: StreakStatus;
+  // XP
   xpPoints: number;
   level: number;
+  // Goal
   goalStack?: string;
   goalTechnology?: string;
   goalTitle?: string;
   goalExperienceLevel?: string;
   tasks: SprintTask[];
+  // Virtual (set by backend, not persisted)
+  _canRestore?: boolean;
 }
 
 export interface GenerateAiTasksPayload {
   stack?: string;
   technology?: string;
   experienceLevel?: string;
+  sprintStartDate?: string;
+  sprintEndDate?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -65,6 +82,8 @@ export class CareerSprintService {
     goalTechnology?: string;
     goalTitle?: string;
     goalExperienceLevel?: string;
+    sprintStartDate?: string;
+    sprintEndDate?: string;
   }): Observable<CareerSprint> {
     return this.api.createCareerSprint(payload);
   }
@@ -76,6 +95,8 @@ export class CareerSprintService {
     priority?: TaskPriority;
     category?: TaskCategory;
     taskType?: TaskType;
+    startDate?: string;
+    endDate?: string;
   }): Observable<CareerSprint> {
     return this.api.addCareerSprintTask(sprintId, payload);
   }
@@ -94,5 +115,9 @@ export class CareerSprintService {
 
   generateAiTasks(payload: GenerateAiTasksPayload): Observable<{ tasks: SprintTask[] }> {
     return this.api.generateAiTasks(payload);
+  }
+
+  updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<CareerSprint> {
+    return this.api.updateSprintDates(sprintId, sprintStartDate, sprintEndDate);
   }
 }
