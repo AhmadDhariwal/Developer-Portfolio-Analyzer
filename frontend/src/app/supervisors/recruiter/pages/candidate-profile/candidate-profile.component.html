@@ -1,0 +1,55 @@
+<section class="recruiter-page" *ngIf="candidate as profile">
+  <app-message></app-message>
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" label="Loading candidate profile"></app-loader>
+
+  <article class="card header-card">
+    <h2>{{ profile.fullName }}</h2>
+    <p>{{ profile.headline || profile.stack }}</p>
+    <small>{{ profile.location || 'Location not set' }} | {{ profile.email }}</small>
+  </article>
+
+  <div class="score-grid">
+    <article class="card">GitHub: <strong>{{ profile.githubScore }}</strong></article>
+    <article class="card">Resume: <strong>{{ profile.resumeScore }}</strong></article>
+    <article class="card">Consistency: <strong>{{ profile.consistencyScore }}</strong></article>
+    <article class="card">Growth: <strong>{{ profile.growthPotentialScore }}</strong></article>
+  </div>
+
+  <div class="recruiter-layout">
+    <section class="card panel">
+      <h3>Skills</h3>
+      <div class="chips">
+        <span *ngFor="let skill of profile.skills">{{ skill }}</span>
+      </div>
+
+      <h3>Skill Gaps</h3>
+      <div class="chips gaps">
+        <span *ngFor="let gap of profile.skillGaps">{{ gap }}</span>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <h3>Projects</h3>
+      <article class="project" *ngFor="let project of profile.projects">
+        <h4>{{ project.title }}</h4>
+        <p>{{ project.description }}</p>
+      </article>
+
+      <h3>GitHub Stats</h3>
+      <ul>
+        <li>Repos: {{ profile.githubStats.repos }}</li>
+        <li>Stars: {{ profile.githubStats.stars }}</li>
+        <li>Forks: {{ profile.githubStats.forks }}</li>
+        <li>Followers: {{ profile.githubStats.followers }}</li>
+      </ul>
+
+      <app-insights-panel [insight]="profile.aiInsight"></app-insights-panel>
+    </section>
+  </div>
+</section>
+
+<app-empty-state
+  *ngIf="!candidate"
+  title="Candidate not found"
+  subtitle="This profile is unavailable or was removed."
+></app-empty-state>

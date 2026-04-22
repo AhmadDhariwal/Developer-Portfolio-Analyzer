@@ -1,0 +1,43 @@
+<section class="recruiter-page">
+  <app-message></app-message>
+
+  <div class="card filter-bar">
+    <label>
+      Search
+      <input [(ngModel)]="filters.search" placeholder="Name, email, GitHub" />
+    </label>
+
+    <label>
+      Stack
+      <input [(ngModel)]="filters.stack" placeholder="Frontend, Backend" />
+    </label>
+
+    <label>
+      Experience
+      <input type="number" min="0" [(ngModel)]="filters.experience" />
+    </label>
+
+    <label>
+      Score
+      <input type="number" min="0" max="100" [(ngModel)]="filters.minScore" />
+    </label>
+
+    <button type="button" class="apply" (click)="loadCandidates()">Apply Filters</button>
+  </div>
+
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" type="spinner" label="Loading candidates"></app-loader>
+
+  <div class="candidate-grid" *ngIf="candidates.length > 0">
+    <app-candidate-card
+      *ngFor="let candidate of candidates"
+      [candidate]="candidate"
+      (view)="openProfile($event)"
+    ></app-candidate-card>
+  </div>
+
+  <app-empty-state
+    *ngIf="candidates.length === 0"
+    title="No candidates found"
+    subtitle="Try changing stack, experience, or score filters."
+  ></app-empty-state>
+</section>

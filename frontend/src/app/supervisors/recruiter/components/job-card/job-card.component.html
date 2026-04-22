@@ -1,0 +1,19 @@
+<article class="card job-card" *ngIf="job" [class.selected]="selected">
+  <header>
+    <h3>{{ job.title }}</h3>
+    <span class="status">{{ job.status }}</span>
+  </header>
+
+  <p>{{ job.description }}</p>
+  <small>{{ job.stack }} | {{ job.minExperienceYears }}+ years</small>
+
+  <div class="skills">
+    <span *ngFor="let skill of job.requiredSkills | slice:0:6">{{ skill }}</span>
+  </div>
+
+  <footer>
+    <button type="button" class="primary" (click)="selectJob.emit(job._id)">Select</button>
+    <button type="button" class="ghost" (click)="editJob.emit(job)">Edit</button>
+    <button type="button" class="danger" (click)="deleteJob.emit(job._id)">Delete</button>
+  </footer>
+</article>

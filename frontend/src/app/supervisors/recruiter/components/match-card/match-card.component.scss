@@ -1,0 +1,19 @@
+.match-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  background: rgba(12, 20, 34, 0.9);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.score-pill {
+  font-weight: 700;
+  color: #93c5fd;
+}

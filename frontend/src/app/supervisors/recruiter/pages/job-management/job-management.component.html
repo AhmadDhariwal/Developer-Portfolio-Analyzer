@@ -1,0 +1,68 @@
+<section class="recruiter-page">
+  <app-message></app-message>
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" label="Loading jobs"></app-loader>
+
+  <div class="recruiter-layout">
+    <article class="card form-card">
+      <h3>{{ editingJobId ? 'Edit Job' : 'Create Job' }}</h3>
+
+      <label>Title <input [(ngModel)]="form.title" /></label>
+      <label>Role <input [(ngModel)]="form.role" /></label>
+      <label>Stack <input [(ngModel)]="form.stack" /></label>
+      <label>Description <textarea [(ngModel)]="form.description"></textarea></label>
+      <label>Required Skills <input [(ngModel)]="form.requiredSkills" placeholder="Angular, Node" /></label>
+      <label>Preferred Skills <input [(ngModel)]="form.preferredSkills" placeholder="MongoDB, Docker" /></label>
+      <label>Min Experience <input type="number" min="0" [(ngModel)]="form.minExperienceYears" /></label>
+      <label>Location <input [(ngModel)]="form.location" /></label>
+
+      <div class="row">
+        <label>Status
+          <select [(ngModel)]="form.status">
+            <option value="draft">Draft</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+          </select>
+        </label>
+
+        <label>Employment
+          <select [(ngModel)]="form.employmentType">
+            <option value="full-time">Full-Time</option>
+            <option value="part-time">Part-Time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" (click)="saveJob()">{{ editingJobId ? 'Update Job' : 'Create Job' }}</button>
+        <button type="button" class="ghost" (click)="resetForm()">Reset</button>
+      </div>
+    </article>
+
+    <section class="jobs-panel">
+      <app-empty-state
+        *ngIf="jobs.length === 0"
+        title="No jobs available"
+        subtitle="Create your first role to start candidate matching."
+      ></app-empty-state>
+
+      <app-job-card
+        *ngFor="let job of jobs"
+        [job]="job"
+        (editJob)="startEdit($event)"
+        (deleteJob)="askDelete($event)"
+      ></app-job-card>
+    </section>
+  </div>
+
+  <app-confirm-dialog
+    [open]="showDeleteDialog"
+    title="Delete this job?"
+    message="This action cannot be undone."
+    confirmText="Delete"
+    cancelText="Cancel"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  ></app-confirm-dialog>
+</section>

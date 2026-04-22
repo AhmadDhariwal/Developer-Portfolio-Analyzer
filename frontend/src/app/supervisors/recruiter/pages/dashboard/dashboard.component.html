@@ -1,0 +1,53 @@
+<section class="recruiter-page">
+  <app-message></app-message>
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" type="skeleton" label="Loading recruiter dashboard"></app-loader>
+
+  <div class="stats-grid">
+    <article class="card metric">
+      <h4>Total Candidates</h4>
+      <p>{{ totalCandidates }}</p>
+    </article>
+
+    <article class="card metric">
+      <h4>Top Candidates</h4>
+      <p>{{ topCandidates.length }}</p>
+    </article>
+
+    <article class="card metric">
+      <h4>Average Score</h4>
+      <p>{{ averageScore | number: '1.0-1' }}</p>
+    </article>
+
+    <article class="card metric">
+      <h4>Active Jobs</h4>
+      <p>{{ jobs.length }}</p>
+    </article>
+  </div>
+
+  <div class="recruiter-layout">
+    <section class="card panel">
+      <h3>Top Candidates</h3>
+      <app-empty-state
+        *ngIf="topCandidates.length === 0"
+        title="No candidates found"
+        subtitle="Start by adding recruiter candidates or syncing profile analysis."
+      ></app-empty-state>
+
+      <app-candidate-card
+        *ngFor="let candidate of topCandidates"
+        [candidate]="candidate"
+      ></app-candidate-card>
+    </section>
+
+    <section class="card panel">
+      <h3>Recent Matches</h3>
+      <app-empty-state
+        *ngIf="recentMatches.length === 0"
+        title="No recent matches"
+        subtitle="Run candidate matching from Match Results to populate analytics."
+      ></app-empty-state>
+
+      <app-match-card *ngFor="let match of recentMatches" [result]="match"></app-match-card>
+    </section>
+  </div>
+</section>

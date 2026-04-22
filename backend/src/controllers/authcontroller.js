@@ -27,6 +27,7 @@ const normalizePhone       = (v) => String(v || '').trim();
 const normalizeCountryCode = (v) => String(v || '').trim();
 const normalizeOtpType     = (v) => (String(v || '').toLowerCase() === 'phone' ? 'phone' : 'email');
 const normalizePurpose     = (v) => (String(v || '').toLowerCase() === 'forgot-password' ? 'forgot-password' : 'signup');
+const toPublicRole         = (v) => (String(v || '').toLowerCase() === 'user' ? 'developer' : String(v || 'developer'));
 
 const getUserByIdentifier = async ({ email, countryCode, phoneNumber }) => {
   const normalizedEmail = normalizeEmail(email);
@@ -141,7 +142,7 @@ const loginUser = async (req, res) => {
         _id:                  user.id,
         name:                 user.name,
         email:                user.email,
-        role:                 user.role,
+        role:                 toPublicRole(user.role),
         githubUsername:       user.githubUsername,
         activeGithubUsername: user.activeGithubUsername || user.githubUsername,
         avatar:               user.avatar || '',
@@ -290,7 +291,7 @@ const verifyOtp = async (req, res) => {
         _id:                  user.id,
         name:                 user.name,
         email:                user.email,
-        role:                 user.role,
+        role:                 toPublicRole(user.role),
         githubUsername:       user.githubUsername,
         activeGithubUsername: user.activeGithubUsername || user.githubUsername,
         avatar:               user.avatar || '',

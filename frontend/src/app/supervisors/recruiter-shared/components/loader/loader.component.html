@@ -1,0 +1,12 @@
+<div class="loader-wrapper" *ngIf="loading">
+  <ng-container [ngSwitch]="type">
+    <div *ngSwitchCase="'skeleton'" class="skeleton-grid" aria-live="polite" aria-label="Loading">
+      <div class="skeleton-card" *ngFor="let _ of [1, 2, 3, 4]"></div>
+    </div>
+
+    <div *ngSwitchDefault class="spinner-box" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>{{ label }}</p>
+    </div>
+  </ng-container>
+</div>

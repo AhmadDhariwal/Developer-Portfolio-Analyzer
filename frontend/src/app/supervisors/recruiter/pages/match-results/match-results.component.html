@@ -1,0 +1,45 @@
+<section class="recruiter-page">
+  <app-message></app-message>
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" label="Processing match results"></app-loader>
+
+  <div class="recruiter-layout">
+    <section class="card left-panel">
+      <h3>Jobs</h3>
+      <app-job-card
+        *ngFor="let job of jobs"
+        [job]="job"
+        [selected]="selectedJobId === job._id"
+        (selectJob)="setSelectedJob($event)"
+      ></app-job-card>
+
+      <div class="actions">
+        <button type="button" class="primary" (click)="runMatch()">Run Match</button>
+        <button type="button" class="ghost" (click)="runAiRank()">Run AI Rank</button>
+      </div>
+    </section>
+
+    <section class="card right-panel">
+      <h3>Candidates</h3>
+      <div class="candidate-grid">
+        <app-candidate-card
+          *ngFor="let candidate of candidates"
+          [candidate]="candidate"
+          [selectable]="true"
+          [selected]="selectedCandidateIds.has(candidate.id)"
+          (selectionChange)="handleSelection($event)"
+        ></app-candidate-card>
+      </div>
+    </section>
+  </div>
+
+  <section class="results">
+    <h3>Ranked Match Results</h3>
+    <app-empty-state
+      *ngIf="matches.length === 0"
+      title="No match results"
+      subtitle="Select a job and run match to view ranked candidates."
+    ></app-empty-state>
+
+    <app-match-card *ngFor="let match of matches" [result]="match"></app-match-card>
+  </section>
+</section>

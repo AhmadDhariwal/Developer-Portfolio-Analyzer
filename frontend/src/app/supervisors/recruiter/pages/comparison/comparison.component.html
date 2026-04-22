@@ -1,0 +1,55 @@
+<section class="recruiter-page">
+  <app-message></app-message>
+  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" label="Loading comparison data"></app-loader>
+
+  <div class="candidate-grid">
+    <app-candidate-card
+      *ngFor="let candidate of candidates"
+      [candidate]="candidate"
+      [selectable]="true"
+      [selected]="selectedIds.has(candidate.id)"
+      (selectionChange)="handleSelection($event)"
+    ></app-candidate-card>
+  </div>
+
+  <section class="comparison-table" *ngIf="selectedCandidates.length > 1">
+    <h3>Candidate Comparison</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th *ngFor="let candidate of selectedCandidates">{{ candidate.fullName }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Stack</td>
+          <td *ngFor="let candidate of selectedCandidates">{{ candidate.stack }}</td>
+        </tr>
+        <tr>
+          <td>Score</td>
+          <td *ngFor="let candidate of selectedCandidates">{{ candidate.score | number: '1.0-0' }}</td>
+        </tr>
+        <tr>
+          <td>GitHub</td>
+          <td *ngFor="let candidate of selectedCandidates">{{ candidate.githubScore }}</td>
+        </tr>
+        <tr>
+          <td>Projects</td>
+          <td *ngFor="let candidate of selectedCandidates">{{ candidate.projects.length }}</td>
+        </tr>
+        <tr>
+          <td>Skills</td>
+          <td *ngFor="let candidate of selectedCandidates">{{ candidate.skills.slice(0, 4).join(', ') }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <app-empty-state
+    *ngIf="selectedCandidates.length <= 1"
+    title="Select 2-3 candidates"
+    subtitle="Pick candidates to compare skills, score, projects, and GitHub stats."
+  ></app-empty-state>
+</section>

@@ -20,7 +20,6 @@ import { SettingsPageComponent } from './settings/settings-page.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { PublicPortfolioComponent } from './pages/public-portfolio/public-portfolio.component';
 import { PortfolioSettingsComponent } from './pages/portfolio-settings/portfolio-settings.component';
-import { RecruiterDashboardComponent } from './pages/recruiter-dashboard/recruiter-dashboard.component';
 import { WeeklyReportsComponent } from './pages/weekly-reports/weekly-reports.component';
 import { InterviewPrepComponent } from './pages/interview-prep/interview-prep.component';
 import { CareerSprintComponent } from './pages/career-sprint/career-sprint.component';
@@ -34,6 +33,7 @@ import { ResetPasswordComponent } from './features/auth/pages/reset-password/res
 import { authGuard } from './guards/auth.guard';
 import { publicGuard } from './guards/public.guard';
 import { adminSettingsGuard } from './guards/admin-settings.guard';
+import { recruiterRoleGuard } from './guards/recruiter-role.guard';
 
 export const routes: Routes = [
   // Landing page (public) — default route
@@ -43,6 +43,7 @@ export const routes: Routes = [
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
+  { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter/dashboard', pathMatch: 'full' },
 
   // Authentication pages (public) - only accessible when NOT logged in
   { path: 'auth/login', component: Login, canActivate: [publicGuard] },
@@ -72,7 +73,11 @@ export const routes: Routes = [
       { path: 'profile',         component: ProfileComponent },
   { path: 'interviews-reports', component: InterviewsReportsComponent },
     { path: 'portfolio',       component: PortfolioSettingsComponent },
-    { path: 'recruiter-dashboard', component: RecruiterDashboardComponent },
+      {
+        path: 'recruiter',
+        canActivate: [recruiterRoleGuard],
+        loadChildren: () => import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule)
+      },
     { path: 'weekly-reports',  component: WeeklyReportsComponent },
     { path: 'interview-prep',  component: InterviewPrepComponent },
     { path: 'career-sprint',   component: CareerSprintComponent },

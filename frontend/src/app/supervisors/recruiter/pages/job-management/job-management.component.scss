@@ -1,0 +1,78 @@
+.recruiter-page {
+  display: grid;
+  gap: 14px;
+}
+
+.recruiter-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.82);
+  padding: 14px;
+}
+
+.form-card {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+}
+
+input,
+textarea,
+select {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: rgba(17, 24, 39, 0.6);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+textarea {
+  min-height: 80px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.primary {
+  background: #0369a1;
+  color: #e0f2fe;
+}
+
+.ghost {
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.jobs-panel {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 1024px) {
+  .recruiter-layout {
+    grid-template-columns: 1fr;
+  }
+}

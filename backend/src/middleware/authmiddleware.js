@@ -1,6 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+const normalizeUserRole = (role) => {
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'user') return 'developer';
+    return normalized;
+};
+
 const protect = async (req, res, next) => {
     let token;
 
@@ -36,4 +42,18 @@ const protect = async (req, res, next) => {
     }
 };
 
-module.exports = { protect };
+const authorizeRoles = (...roles) => {
+    const allowed = new Set((roles || []).map((role) => String(role || '').toLowerCase()));
+
+    return (req, res, next) => {
+        const currentRole = normalizeUserRole(req.user?.role);
+
+        if (!allowed.has(currentRole)) {
+            return res.status(403).json({ message: 'Forbidden: insufficient role permissions.' });
+        }
+
+        return next();
+    };
+};
+
+module.exports = { protect, authorizeRoles, normalizeUserRole };

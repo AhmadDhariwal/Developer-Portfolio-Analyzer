@@ -1,0 +1,58 @@
+.recruiter-page {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.recruiter-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 20px;
+}
+
+.panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips span {
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  padding: 2px 8px;
+}
+
+.gaps span {
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+.project {
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+
+@media (max-width: 1024px) {
+  .recruiter-layout {
+    grid-template-columns: 1fr;
+  }
+}

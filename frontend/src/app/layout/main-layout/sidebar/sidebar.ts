@@ -96,6 +96,11 @@ export class Sidebar implements OnInit {
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`
         },
         {
+          label: 'Recruiter Hub',
+          route: '/app/recruiter/dashboard',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"></circle><circle cx="17" cy="7" r="2"></circle><path d="M3 20a5 5 0 0 1 10 0"></path><path d="M14 20a4 4 0 0 1 8 0"></path></svg>`
+        },
+        {
           label: 'Public Portfolio',
           route: '/app/portfolio',
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18v16H3z"></path><path d="M7 8h10"></path><path d="M7 12h6"></path></svg>`
@@ -182,7 +187,15 @@ export class Sidebar implements OnInit {
   }
 
   get visibleNavGroups(): Array<{ label: string; route?: string; icon: string; items: Array<{ label: string; route: string; icon: string }> }> {
-    return this.navGroups;
+    const currentRole = this.getNormalizedRole(this.authService.getCurrentUser()?.role);
+    if (currentRole === 'recruiter') {
+      return this.navGroups;
+    }
+
+    return this.navGroups.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.route !== '/app/recruiter/dashboard')
+    }));
   }
 
   toggleGroup(label: string): void {
@@ -247,5 +260,11 @@ export class Sidebar implements OnInit {
     }
 
     this.cdr.detectChanges();
+  }
+
+  private getNormalizedRole(role: unknown): string {
+    const value = typeof role === 'string' ? role.toLowerCase() : '';
+    if (value === 'user') return 'developer';
+    return value;
   }
 }

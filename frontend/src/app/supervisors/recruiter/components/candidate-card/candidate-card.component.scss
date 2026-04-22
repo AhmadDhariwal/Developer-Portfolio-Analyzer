@@ -1,0 +1,63 @@
+.candidate-card {
+  display: grid;
+  gap: 12px;
+  background: linear-gradient(160deg, rgba(12, 28, 44, 0.9), rgba(17, 24, 39, 0.9));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+.score {
+  font-weight: 700;
+  color: #7dd3fc;
+}
+
+.headline {
+  color: var(--text-secondary);
+  min-height: 40px;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skills span {
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  color: #bae6fd;
+}
+
+footer {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+button.primary {
+  background: #075985;
+  color: #ffffff;
+}
+
+button.ghost {
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}

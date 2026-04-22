@@ -1,0 +1,33 @@
+.breakdown {
+  display: grid;
+  gap: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px 50px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.label {
+  text-transform: capitalize;
+  color: var(--text-secondary);
+}
+
+.value {
+  color: #bae6fd;
+}
+
+.bar {
+  height: 8px;
+  background: rgba(71, 85, 105, 0.45);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0369a1, #38bdf8);
+}

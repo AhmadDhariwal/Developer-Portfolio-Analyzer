@@ -1,0 +1,12 @@
+<article class="match-card" *ngIf="result">
+  <header>
+    <div>
+      <h3>#{{ result.rank }} {{ result.candidate.fullName }}</h3>
+      <p>{{ result.candidate.stack }} | {{ result.candidate.yearsOfExperience }} yrs</p>
+    </div>
+    <div class="score-pill">{{ result.rankScore | number: '1.0-0' }}%</div>
+  </header>
+
+  <app-score-breakdown [breakdown]="result.scoreBreakdown"></app-score-breakdown>
+  <app-insights-panel [insight]="result.aiInsight"></app-insights-panel>
+</article>

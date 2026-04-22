@@ -1,0 +1,65 @@
+.recruiter-page {
+  display: grid;
+  gap: 14px;
+}
+
+.recruiter-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.8);
+  padding: 14px;
+}
+
+.left-panel,
+.right-panel,
+.results {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.actions button {
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.primary {
+  background: #075985;
+  color: #ffffff;
+}
+
+.ghost {
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.results {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: rgba(12, 18, 31, 0.85);
+  padding: 14px;
+}
+
+@media (max-width: 1024px) {
+  .recruiter-layout {
+    grid-template-columns: 1fr;
+  }
+}

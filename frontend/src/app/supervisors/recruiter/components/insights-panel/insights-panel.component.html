@@ -1,0 +1,21 @@
+<section class="insights" *ngIf="insight">
+  <p class="summary">{{ insight.summary }}</p>
+
+  <div class="columns">
+    <div>
+      <h4>Strengths</h4>
+      <ul>
+        <li *ngFor="let item of insight.strengths">{{ item }}</li>
+      </ul>
+    </div>
+
+    <div>
+      <h4>Weaknesses</h4>
+      <ul>
+        <li *ngFor="let item of insight.weaknesses">{{ item }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <strong class="recommendation">{{ insight.recommendation }}</strong>
+</section>

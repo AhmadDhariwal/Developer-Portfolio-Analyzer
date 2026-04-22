@@ -1,0 +1,22 @@
+<article class="card candidate-card" *ngIf="candidate">
+  <header>
+    <div>
+      <h3>{{ candidate.fullName }}</h3>
+      <p>{{ candidate.stack }} | {{ candidate.yearsOfExperience }} yrs</p>
+    </div>
+    <span class="score">{{ candidate.score | number: '1.0-0' }}</span>
+  </header>
+
+  <p class="headline">{{ candidate.headline || 'No headline available' }}</p>
+
+  <div class="skills">
+    <span *ngFor="let skill of candidate.skills | slice:0:6">{{ skill }}</span>
+  </div>
+
+  <footer>
+    <button type="button" class="ghost" (click)="view.emit(candidate.id)">View Profile</button>
+    <button *ngIf="selectable" type="button" class="primary" (click)="onSelectChange()">
+      {{ selected ? 'Remove' : 'Select' }}
+    </button>
+  </footer>
+</article>

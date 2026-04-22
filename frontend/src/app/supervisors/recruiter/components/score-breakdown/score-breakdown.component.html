@@ -1,0 +1,9 @@
+<div class="breakdown" *ngIf="keys.length">
+  <div class="row" *ngFor="let key of keys">
+    <span class="label">{{ key }}</span>
+    <span class="value">{{ breakdown[key].raw | number: '1.0-0' }}</span>
+    <div class="bar">
+      <span [style.width.%]="breakdown[key].raw"></span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<div
+  class="message"
+  *ngIf="(messageService.message$ | async) as state"
+  [class.visible]="state.visible"
+  [class.success]="state.type === 'success'"
+  [class.error]="state.type === 'error'"
+  [class.warning]="state.type === 'warning'"
+>
+  <span class="text" *ngIf="state.visible">{{ state.text }}</span>
+  <button *ngIf="state.visible" type="button" (click)="dismiss()" aria-label="Dismiss message">Dismiss</button>
+</div>
