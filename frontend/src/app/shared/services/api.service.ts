@@ -263,6 +263,9 @@ export class ApiService {
   runWhatIfSimulation(payload: {
     baselineHiringScore: number;
     baselineJobMatch: number;
+    role?: string;
+    experienceLevel?: string;
+    durationWeeks?: number;
     skills: string[];
     projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
   }): Observable<any> {

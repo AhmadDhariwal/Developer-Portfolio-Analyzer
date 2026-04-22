@@ -138,8 +138,11 @@ export class CareerSprintComponent implements OnInit {
 
   get sprintDurationDays(): number {
     if (!this.effectiveStartDate || !this.effectiveEndDate) return 7;
-    const ms = this.effectiveEndDate.getTime() - this.effectiveStartDate.getTime();
-    return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1);
+    // Inclusive: Apr 19 – Apr 27 = 9 days
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const startMs = new Date(this.effectiveStartDate).setHours(0, 0, 0, 0);
+    const endMs   = new Date(this.effectiveEndDate).setHours(0, 0, 0, 0);
+    return Math.max(1, Math.round((endMs - startMs) / msPerDay) + 1);
   }
 
   // ── Computed: progress ────────────────────────────────────────────────

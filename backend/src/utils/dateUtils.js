@@ -39,25 +39,21 @@ const addDays = (date, n) => {
 /**
  * Distribute N tasks evenly across a date range.
  * Returns an array of { startDate, endDate } objects.
- *
- * Phase logic (for AI task scheduling):
- *   - First 30% of duration → learning tasks
- *   - Middle 40%            → building/project tasks
- *   - Last 30%              → deployment/polish tasks
+ * Uses inclusive day count: Apr 19 – Apr 27 = 9 days.
  */
 const distributeTaskDates = (sprintStart, sprintEnd, taskCount) => {
   const start = startOfDay(sprintStart);
   const end   = startOfDay(sprintEnd);
-  const totalDays = Math.max(1, daysBetween(start, end));
+  // +1 because both start and end days are inclusive
+  const totalDays = Math.max(1, daysBetween(start, end) + 1);
 
   const slots = [];
   for (let i = 0; i < taskCount; i++) {
-    // Spread tasks evenly across the sprint duration
     const startOffset = Math.floor((i / taskCount) * totalDays);
-    const endOffset   = Math.floor(((i + 1) / taskCount) * totalDays) - 1;
+    const endOffset   = Math.max(startOffset, Math.floor(((i + 1) / taskCount) * totalDays) - 1);
     slots.push({
       startDate: addDays(start, startOffset),
-      endDate:   addDays(start, Math.max(startOffset, endOffset)),
+      endDate:   addDays(start, endOffset),
     });
   }
   return slots;
