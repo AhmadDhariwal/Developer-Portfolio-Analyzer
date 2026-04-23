@@ -128,6 +128,22 @@
           <span *ngIf="fieldErrors['confirmPassword']" class="field-error">{{ fieldErrors['confirmPassword'] }}</span>
         </div>
 
+        <!-- Profile Visibility -->
+        <div class="form-group visibility-toggle">
+          <div class="visibility-toggle__content">
+            <div class="visibility-toggle__text">
+              <span class="visibility-toggle__label">Make my profile visible to recruiters</span>
+              <span class="visibility-toggle__hint">Recruiters can discover your profile in the talent pool. You can change this anytime from your profile settings.</span>
+            </div>
+            <label class="toggle-switch" aria-label="Make profile visible to recruiters">
+              <input type="checkbox" [(ngModel)]="isPublic" name="isPublic" />
+              <span class="toggle-switch__track">
+                <span class="toggle-switch__knob"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
         <!-- Terms -->
         <div class="form-group checkbox">
           <input

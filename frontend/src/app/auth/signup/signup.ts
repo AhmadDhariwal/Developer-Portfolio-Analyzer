@@ -24,6 +24,7 @@ export class Signup {
   countryCode = '+92';
   phoneNumber = '';
   agreeToTerms: boolean = false;
+  isPublic: boolean = false;
   isLoading: boolean = false;
   error: string = '';
 
@@ -124,6 +125,7 @@ export class Signup {
       email: this.email.trim(),
       password: this.password,
       githubUsername: this.githubUsername.trim(),
+      isPublic: this.isPublic,
     };
 
     if (this.otpType === 'phone') {

@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    default: null,
+    index: true
+  },
   name: {
     type: String,
     required: true
@@ -123,6 +129,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin', 'developer', 'recruiter'],
     default: 'developer'
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
+    index: true
   },
   createdAt: {
     type: Date,

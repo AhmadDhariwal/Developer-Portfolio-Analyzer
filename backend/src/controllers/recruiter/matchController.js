@@ -12,7 +12,7 @@ const matchCandidates = async (req, res) => {
     }
 
     const result = await matchCandidatesToJob({
-      recruiterId: req.user._id,
+      organizationId: req.organizationId,
       jobId,
       candidateIds
     });
@@ -21,6 +21,10 @@ const matchCandidates = async (req, res) => {
   } catch (error) {
     if (error.code === 404) {
       return res.status(404).json({ message: error.message });
+    }
+
+    if (error.code === 400) {
+      return res.status(400).json({ message: error.message });
     }
 
     console.error('Match candidates error:', error.message);
@@ -34,7 +38,7 @@ const aiRankCandidates = async (req, res) => {
 
     let resolvedJob = inlineJob || null;
     if (!resolvedJob && jobId) {
-      resolvedJob = await Job.findOne({ _id: jobId, recruiterId: req.user._id }).lean();
+      resolvedJob = await Job.findOne({ _id: jobId, organizationId: req.organizationId }).lean();
     }
 
     if (!resolvedJob) {
@@ -47,7 +51,11 @@ const aiRankCandidates = async (req, res) => {
       if (Array.isArray(candidateIds) && candidateIds.length) {
         const allCandidates = await listCandidates({ limit: 300 });
         const allowed = new Set(candidateIds.map(String));
-        candidates = allCandidates.filter((candidate) => allowed.has(String(candidate.id)));
+        candidates = allCandidates.filter((candidate) => {
+          const candidateId = String(candidate.id || '');
+          const userId = String(candidate.userId || '');
+          return allowed.has(candidateId) || allowed.has(userId);
+        });
       } else {
         candidates = await listCandidates({ stack: resolvedJob.stack, limit: 300 });
       }

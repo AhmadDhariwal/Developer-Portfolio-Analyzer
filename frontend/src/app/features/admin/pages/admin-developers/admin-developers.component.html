@@ -1,0 +1,40 @@
+<section class="admin-page">
+  <header class="card">
+    <h2>Global Public Developers</h2>
+    <p>Only public developer profiles are shown across all organizations.</p>
+  </header>
+
+  <app-shared-message
+    [visible]="!!message"
+    type="error"
+    [text]="message"
+    (dismiss)="message = ''"
+  ></app-shared-message>
+
+  <section class="card toolbar">
+    <input [(ngModel)]="search" placeholder="Search by name, email, GitHub" />
+  </section>
+
+  <app-shared-loader [loading]="loading" label="Loading developers"></app-shared-loader>
+
+  <section class="dev-grid" *ngIf="!loading && filteredDevelopers.length > 0">
+    <article class="card dev-card" *ngFor="let developer of filteredDevelopers">
+      <div class="dev-head">
+        <img *ngIf="developer.avatar" [src]="developer.avatar" [alt]="developer.name" title="Developer avatar" />
+        <div>
+          <h3>{{ developer.name }}</h3>
+          <p>{{ developer.jobTitle || 'Developer' }}</p>
+        </div>
+      </div>
+      <p class="meta">{{ developer.email }}</p>
+      <p class="meta">@{{ developer.githubUsername }}</p>
+      <a *ngIf="developer.publicProfileSlug" [href]="'/p/' + developer.publicProfileSlug" target="_blank" rel="noopener">Open Public Portfolio</a>
+    </article>
+  </section>
+
+  <app-shared-empty-state
+    *ngIf="!loading && filteredDevelopers.length === 0"
+    title="No public developers found"
+    subtitle="Developers must enable profile visibility before appearing in the global talent pool."
+  ></app-shared-empty-state>
+</section>

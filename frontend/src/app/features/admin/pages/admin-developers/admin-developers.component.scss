@@ -1,0 +1,59 @@
+.admin-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  padding: 1rem;
+}
+
+.toolbar input {
+  width: 100%;
+  border: 1px solid var(--border-light);
+  background: rgba(15, 23, 42, 0.35);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.8rem;
+}
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.9rem;
+}
+
+.dev-card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dev-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+
+  img {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+  }
+
+  h3 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+}
+
+.meta {
+  color: var(--text-secondary);
+}

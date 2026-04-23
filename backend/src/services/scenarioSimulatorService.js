@@ -251,11 +251,15 @@ const simulateHiringOutcome = ({
   const normalizedLevel = normalizeLevel(experienceLevel);
   const duration        = Math.max(1, Math.min(52, Number(durationWeeks) || 6));
 
-  const cleanSkills = [...new Set(
-    (Array.isArray(skills) ? skills : [])
-      .map(s => String(s || '').trim())
-      .filter(Boolean)
-  )];
+  const cleanSkills = [];
+  const skillSet = new Set();
+  (Array.isArray(skills) ? skills : []).forEach((entry) => {
+    const safeSkill = String(entry || '').trim();
+    const normalized = safeSkill.toLowerCase();
+    if (!safeSkill || skillSet.has(normalized)) return;
+    skillSet.add(normalized);
+    cleanSkills.push(safeSkill);
+  });
 
   const cleanProjects = (Array.isArray(projects) ? projects : [])
     .map(p => ({
@@ -309,6 +313,15 @@ const simulateHiringOutcome = ({
     insights,
     warnings,
     suggestions,
+    assumptions: {
+      skillsConsidered: cleanSkills,
+      projectsConsidered: cleanProjects.map((project) => ({
+        name: project.name,
+        complexity: project.complexity,
+        weeks: project.weeks,
+        impact: project.impact
+      }))
+    },
     meta: {
       role:           normalizedRole,
       level:          normalizedLevel,

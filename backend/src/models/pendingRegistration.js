@@ -20,6 +20,7 @@ const pendingRegistrationSchema = new mongoose.Schema(
     phoneNumber: { type: String, default: '' },
     countryCode: { type: String, default: '' },
     otpType: { type: String, enum: ['email', 'phone'], default: 'email' },
+    isPublic: { type: Boolean, default: false },
     otp: { type: String, required: true },          // hashed OTP
     otpAttempts: { type: Number, default: 0 },
     expiresAt: { type: Date, required: true }

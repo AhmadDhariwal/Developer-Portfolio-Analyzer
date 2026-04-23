@@ -362,6 +362,53 @@
         </div>
       </div>
 
+      <!-- Profile Visibility ─────────────────────────────────── -->
+      <div class="prof-card" *ngIf="!isAdmin">
+        <div class="section-head">
+          <div class="section-head__icon section-head__icon--green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Talent Pool Visibility</h2>
+            <p>Control whether recruiters can discover your profile</p>
+          </div>
+        </div>
+
+        <div class="visibility-success" *ngIf="visibilityMessage">{{ visibilityMessage }}</div>
+
+        <div class="notif-row">
+          <div class="notif-info">
+            <span class="notif-title">Visible to Recruiters</span>
+            <span class="notif-desc">
+              When enabled, your profile appears in the global talent pool and recruiters can find you based on your skills and experience.
+            </span>
+          </div>
+          <button class="toggle-btn"
+                  [class.toggle-btn--on]="profile.isPublic"
+                  [disabled]="isTogglingVisibility"
+                  title="Toggle talent pool visibility"
+                  [attr.aria-label]="'Toggle talent pool visibility'"
+                  (click)="toggleVisibility()">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+
+        <p class="visibility-status" [class.visibility-status--on]="profile.isPublic">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline *ngIf="profile.isPublic" points="20 6 9 17 4 12"/>
+            <line *ngIf="!profile.isPublic" x1="18" y1="6" x2="6" y2="18"/>
+            <line *ngIf="!profile.isPublic" x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          {{ profile.isPublic ? 'Your profile is currently visible to recruiters' : 'Your profile is currently hidden from recruiters' }}
+        </p>
+      </div>
+
       <!-- Security Settings ───────────────────────────────────── -->
       <div class="prof-card security-card">
         <div class="section-head">

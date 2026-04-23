@@ -10,14 +10,16 @@ const {
   updateCareerProfile,
   updateActiveCareerProfile,
   uploadAvatar,
+  updateProfileVisibility,
 } = require('../controllers/profilecontroller');
 
-router.get   ('/me',       protect, getProfile);
-router.put   ('/me',       protect, updateProfile);
-router.put   ('/career',   protect, updateCareerProfile);
+router.get   ('/me',         protect, getProfile);
+router.put   ('/me',         protect, updateProfile);
+router.put   ('/career',     protect, updateCareerProfile);
 router.put   ('/career/active', protect, updateActiveCareerProfile);
-router.put   ('/password', protect, updatePassword);
-router.post  ('/avatar',   protect, avatarUpload.single('avatar'), uploadAvatar);
-router.delete('/me',       protect, deleteAccount);
+router.put   ('/password',   protect, updatePassword);
+router.put   ('/visibility', protect, updateProfileVisibility);
+router.post  ('/avatar',     protect, avatarUpload.single('avatar'), uploadAvatar);
+router.delete('/me',         protect, deleteAccount);
 
 module.exports = router;

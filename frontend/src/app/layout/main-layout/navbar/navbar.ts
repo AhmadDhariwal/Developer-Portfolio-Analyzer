@@ -69,9 +69,11 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'Resume Analyzer', sublabel: 'Analyze your resume', route: '/app/resume-analyzer' },
     { type: 'page', label: 'Skill Gap Analysis', sublabel: 'Find skills to learn', route: '/app/skill-gap' },
     { type: 'page', label: 'Recommendations', sublabel: 'Personalized career advice', route: '/app/recommendations' },
+    { type: 'page', label: 'Recruiter Hub', sublabel: 'Candidate matching workspace', route: '/app/recruiter' },
     { type: 'page', label: 'Integrations', sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle', route: '/app/integrations' },
     { type: 'page', label: 'Scenario Simulator', sublabel: 'What-if score and job match simulator', route: '/app/scenario-simulator' },
-  { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/settings/activity-logs' },
+    { type: 'page', label: 'Admin Console', sublabel: 'Organization hiring control center', route: '/app/admin' },
+    { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/settings/activity-logs' },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
     { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },
     { type: 'page', label: 'User Management', sublabel: 'Organizations and teams', route: '/app/settings/user-management' },
@@ -80,11 +82,24 @@ export class Navbar implements OnInit {
 
   private get searchablePages(): SearchSuggestion[] {
     const role = this.selectedRole;
+    const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || sessionRole === 'admin';
+    const isRecruiter = sessionRole === 'recruiter';
+
+    const roleScoped = this.navPages.filter((page) => {
+      if (String(page.route || '').startsWith('/app/admin') && !isAdmin) return false;
+      if (String(page.route || '').startsWith('/app/recruiter') && !isRecruiter) return false;
+      return true;
+    });
+
     if (role === 'admin') {
-      return this.navPages;
+      return roleScoped;
     }
 
-    return this.navPages.filter((page) => !String(page.route || '').startsWith('/app/settings'));
+    return roleScoped.filter((page) => {
+      const route = String(page.route || '');
+      return !route.startsWith('/app/settings') && !route.startsWith('/app/admin');
+    });
   }
 
   constructor(

@@ -1,0 +1,17 @@
+.shared-empty-state {
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.25);
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 1rem;
+
+  h4 {
+    margin-bottom: 0.35rem;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+  }
+}

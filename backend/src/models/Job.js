@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const jobSchema = new mongoose.Schema({
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    default: null,
+    index: true
+  },
   recruiterId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

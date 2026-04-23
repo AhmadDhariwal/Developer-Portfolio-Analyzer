@@ -49,6 +49,8 @@ export interface UserProfile {
   activeExperienceLevel?: ExperienceLevel;
   careerGoal:         CareerGoal;
   isConfigured:       boolean;
+  isPublic?:          boolean;
+  role?:              string;
   defaultResume?:     ResumeContextFile | null;
   activeResume?:      ResumeContextFile | null;
   stats:              AccountStats;
@@ -160,6 +162,11 @@ export class ProfileService {
   // ── Delete account ─────────────────────────────────────────────────────
   deleteAccount(): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/me`);
+  }
+
+  // ── Update profile visibility (talent pool opt-in) ────────────────────
+  updateVisibility(isPublic: boolean): Observable<{ isPublic: boolean }> {
+    return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic });
   }
 
   // ── Build initials avatar fallback ────────────────────────────────────

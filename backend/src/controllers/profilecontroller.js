@@ -124,6 +124,8 @@ const getProfile = async (req, res) => {
       website:           user.website    || '',
       twitter:           user.twitter    || '',
       linkedin:          user.linkedin   || '',
+      isPublic:          Boolean(user.isPublic),
+      role:              user.role       || 'developer',
       notifications:     user.notifications || {
         weeklyScoreReport: true,
         skillTrendAlerts:  true,
@@ -506,4 +508,43 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar };
+// @desc  Toggle profile visibility in the talent pool (developers & recruiters only)
+// @route PUT /api/profile/visibility
+// @access Private
+const updateProfileVisibility = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    // Admins are not part of the talent pool — block them from enabling visibility.
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Admins cannot appear in the talent pool.' });
+    }
+
+    const { isPublic } = req.body;
+    if (typeof isPublic !== 'boolean') {
+      return res.status(400).json({ message: 'isPublic must be a boolean.' });
+    }
+
+    user.isPublic = isPublic;
+    await user.save();
+
+    await createNotification({
+      userId: user._id,
+      type: 'profile_update',
+      title: 'Profile Visibility Updated',
+      message: isPublic
+        ? 'Your profile is now visible to recruiters in the talent pool.'
+        : 'Your profile is now hidden from the talent pool.',
+      dedupeKey: `profile_visibility:${user._id}`,
+      dedupeWindowHours: 1
+    });
+
+    return res.json({ isPublic: user.isPublic });
+  } catch (error) {
+    console.error('Profile visibility update error:', error.message);
+    return res.status(500).json({ message: 'Server error updating profile visibility.' });
+  }
+};
+
+module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };

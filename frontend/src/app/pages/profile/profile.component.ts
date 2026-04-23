@@ -43,6 +43,8 @@ export class ProfileComponent implements OnInit {
   careerSuccess     = '';
   isUploadingAvatar = false;
   avatarVersion     = Date.now();
+  isTogglingVisibility = false;
+  visibilityMessage    = '';
   private avatarPreviewUrl: string | null = null;
   private readonly destroyRef = inject(DestroyRef);
 
@@ -56,6 +58,8 @@ export class ProfileComponent implements OnInit {
     experienceLevel: 'Student',
     careerGoal:      '',
     isConfigured:    false,
+    isPublic:        false,
+    role:            'developer',
     defaultResume: null,
     activeResume: null,
     notifications: {
@@ -79,6 +83,8 @@ export class ProfileComponent implements OnInit {
     experienceLevel: 'Student',
     careerGoal:      '',
     isConfigured:    false,
+    isPublic:        false,
+    role:            'developer',
     defaultResume: null,
     activeResume: null,
     notifications: {
@@ -221,6 +227,8 @@ export class ProfileComponent implements OnInit {
       activeExperienceLevel: data.activeExperienceLevel || data.experienceLevel || 'Student',
       careerGoal:      data.careerGoal      || '',
       isConfigured:    data.isConfigured    ?? false,
+      isPublic:        data.isPublic        ?? false,
+      role:            data.role            || 'developer',
       defaultResume: data.defaultResume || null,
       activeResume: data.activeResume || null,
       notifications: {
@@ -311,6 +319,37 @@ export class ProfileComponent implements OnInit {
         this.errorMessage      = err?.error?.message || 'Failed to delete account.';
         this.showDeleteConfirm = false;
       },
+    });
+  }
+
+  // ── Profile visibility toggle ──────────────────────────────────────────
+  get isAdmin(): boolean {
+    return this.profile.role === 'admin';
+  }
+
+  toggleVisibility(): void {
+    if (this.isAdmin || this.isTogglingVisibility) return;
+
+    const next = !this.profile.isPublic;
+    this.isTogglingVisibility = true;
+    this.visibilityMessage = '';
+
+    this.profileService.updateVisibility(next).subscribe({
+      next: (res) => {
+        this.profile.isPublic = res.isPublic;
+        this.snapshot.isPublic = res.isPublic;
+        this.visibilityMessage = res.isPublic
+          ? 'Your profile is now visible to recruiters.'
+          : 'Your profile is now hidden from the talent pool.';
+        this.isTogglingVisibility = false;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.visibilityMessage = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err) => {
+        this.visibilityMessage = err?.error?.message || 'Failed to update visibility.';
+        this.isTogglingVisibility = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

@@ -1,0 +1,4 @@
+<div *ngIf="visible" class="shared-message" [class.success]="type === 'success'" [class.error]="type === 'error'" [class.warning]="type === 'warning'">
+  <span>{{ text }}</span>
+  <button type="button" (click)="dismiss.emit()" aria-label="Dismiss message">Dismiss</button>
+</div>

@@ -1,7 +1,7 @@
 const {
   getRecruiterCandidates,
   getRecruiterCandidateById
-} = require('./recruiterController');
+} = require('./candidateController');
 
 const {
   createRecruiterJob,

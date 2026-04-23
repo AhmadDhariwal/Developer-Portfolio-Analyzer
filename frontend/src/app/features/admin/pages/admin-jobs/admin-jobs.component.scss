@@ -1,0 +1,100 @@
+.admin-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  padding: 1rem;
+}
+
+.form-card {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+
+  input,
+  select,
+  textarea {
+    border: 1px solid var(--border-light);
+    background: rgba(15, 23, 42, 0.35);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.7rem;
+    width: 100%;
+  }
+
+  button {
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    margin-top: 0.6rem;
+  }
+}
+
+.rank-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+
+  select {
+    flex: 1;
+    min-width: 230px;
+    border: 1px solid var(--border-light);
+    background: rgba(15, 23, 42, 0.35);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.7rem;
+  }
+
+  button {
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-info);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+  }
+}
+
+.ranking-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.rank-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.45);
+  padding: 0.8rem;
+
+  h4 {
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  .score {
+    margin-top: 0.45rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary-light);
+  }
+
+  .summary {
+    margin-top: 0.4rem;
+  }
+}

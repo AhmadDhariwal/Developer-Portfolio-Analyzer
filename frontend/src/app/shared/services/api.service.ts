@@ -353,6 +353,40 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/recruiter/ai-rank`, payload);
   }
 
+  /* ── Admin Hiring APIs ── */
+  getAdminOverview(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/overview`);
+  }
+
+  getAdminRecruiters(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/recruiters`);
+  }
+
+  createAdminRecruiter(payload: {
+    name: string;
+    email: string;
+    password: string;
+    githubUsername?: string;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/recruiter`, payload);
+  }
+
+  getAdminDevelopers(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/developers`);
+  }
+
+  getAdminJobs(limit = 200): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/jobs?limit=${encodeURIComponent(String(limit))}`);
+  }
+
+  createAdminJob(payload: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/jobs`, payload);
+  }
+
+  runAdminAiRanking(payload: { jobId: string; candidateIds?: string[]; candidates?: any[] }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/ai-rank`, payload);
+  }
+
   /* ── Weekly AI Reports ── */
   generateWeeklyReport(): Observable<any> {
     return this.http.post(`${this.baseUrl}/weekly-reports/generate`, {});

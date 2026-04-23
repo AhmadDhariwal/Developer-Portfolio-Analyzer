@@ -1,0 +1,64 @@
+<section class="admin-page">
+  <header class="card">
+    <h2>Organization Jobs + AI Ranking</h2>
+    <p>Create jobs for your tenant and run ranking against the global public developer pool.</p>
+  </header>
+
+  <app-shared-message
+    [visible]="!!message"
+    [type]="messageType"
+    [text]="message"
+    (dismiss)="message = ''"
+  ></app-shared-message>
+
+  <app-shared-loader [loading]="loading" label="Processing admin jobs"></app-shared-loader>
+
+  <section class="card form-card">
+    <h3>Create Job</h3>
+    <div class="grid">
+      <input [(ngModel)]="form.title" placeholder="Job title" />
+      <input [(ngModel)]="form.role" placeholder="Role label" />
+      <input [(ngModel)]="form.stack" placeholder="Stack" />
+      <input type="number" min="0" [(ngModel)]="form.minExperienceYears" placeholder="Min years" />
+      <input [(ngModel)]="form.requiredSkills" placeholder="Required skills (comma separated)" />
+      <input [(ngModel)]="form.preferredSkills" placeholder="Preferred skills (comma separated)" />
+      <input [(ngModel)]="form.location" placeholder="Location" />
+      <select [(ngModel)]="form.employmentType" title="Employment type">
+        <option value="full-time">Full-time</option>
+        <option value="part-time">Part-time</option>
+        <option value="contract">Contract</option>
+        <option value="internship">Internship</option>
+      </select>
+    </div>
+    <textarea [(ngModel)]="form.description" rows="4" placeholder="Job description"></textarea>
+    <button (click)="createJob()">Create Job</button>
+  </section>
+
+  <section class="card">
+    <h3>Run AI Ranking</h3>
+    <div class="rank-controls">
+      <select [(ngModel)]="selectedJobId" title="Select job for ranking">
+        <option value="">Select job</option>
+        <option *ngFor="let job of jobs" [value]="job._id">{{ job.title }} · {{ job.stack }}</option>
+      </select>
+      <button (click)="runRanking()">Run AI Ranking</button>
+    </div>
+
+    <app-shared-empty-state
+      *ngIf="!loading && ranking.length === 0"
+      title="No ranking results"
+      subtitle="Run AI ranking for a selected job to see top matches and explanations."
+    ></app-shared-empty-state>
+
+    <div class="ranking-list" *ngIf="ranking.length > 0">
+      <article class="rank-card" *ngFor="let item of ranking">
+        <div>
+          <h4>#{{ item.rank }} {{ item.candidate.fullName }}</h4>
+          <p>{{ item.candidate.stack }} · @{{ item.candidate.githubUsername }}</p>
+        </div>
+        <div class="score">{{ item.rankScore | number: '1.0-2' }}</div>
+        <p class="summary">{{ item.aiInsight.summary }}</p>
+      </article>
+    </div>
+  </section>
+</section>

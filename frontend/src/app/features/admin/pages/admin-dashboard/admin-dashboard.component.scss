@@ -1,0 +1,47 @@
+.admin-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+
+  .admin-header {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.2), rgba(30, 41, 59, 0.95));
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .metric-card {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+
+    h3 {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--color-primary-light);
+    }
+
+    a {
+      color: var(--color-info);
+      font-weight: 600;
+    }
+  }
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: var(--bg-card);
+}

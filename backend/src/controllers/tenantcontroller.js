@@ -99,6 +99,13 @@ const createOrganization = async (req, res) => {
       invitedBy: req.user._id
     });
 
+    await User.findByIdAndUpdate(req.user._id, {
+      $set: {
+        role: 'admin',
+        organizationId: organization._id
+      }
+    });
+
     return res.status(201).json({
       organization,
       membership

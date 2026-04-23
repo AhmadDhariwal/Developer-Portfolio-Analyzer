@@ -234,7 +234,8 @@ export class AuthService {
   }
 
   verifyOtp(payload: {
-    userId: string;
+    userId?: string;
+    pendingId?: string;
     otp: string;
     type: OtpType;
     purpose: OtpPurpose;

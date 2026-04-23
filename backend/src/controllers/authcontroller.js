@@ -54,7 +54,7 @@ const sendOtpToUser = async ({ user, type, purpose }) => {
 // @access Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, githubUsername, phoneNumber, countryCode } = req.body;
+    const { name, email, password, githubUsername, phoneNumber, countryCode, isPublic } = req.body;
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phoneNumber);
     const normalizedCode  = normalizeCountryCode(countryCode);
@@ -94,6 +94,7 @@ const registerUser = async (req, res) => {
           phoneNumber: normalizedPhone,
           countryCode: normalizedCode,
           otpType: normalizedPhone ? 'phone' : 'email',
+          isPublic: Boolean(isPublic),
           otp: hashValue(otp),
           otpAttempts: 0,
           expiresAt
@@ -143,6 +144,8 @@ const loginUser = async (req, res) => {
         name:                 user.name,
         email:                user.email,
         role:                 toPublicRole(user.role),
+        organizationId:       user.organizationId || null,
+        isPublic:             Boolean(user.isPublic),
         githubUsername:       user.githubUsername,
         activeGithubUsername: user.activeGithubUsername || user.githubUsername,
         avatar:               user.avatar || '',
@@ -280,6 +283,7 @@ const verifyOtp = async (req, res) => {
         activeGithubUsername: pending.githubUsername,
         activeCareerStack:    'Full Stack',
         activeExperienceLevel:'Student',
+        isPublic:             Boolean(pending.isPublic),
         isVerified:           true
       });
 
@@ -292,6 +296,8 @@ const verifyOtp = async (req, res) => {
         name:                 user.name,
         email:                user.email,
         role:                 toPublicRole(user.role),
+        organizationId:       user.organizationId || null,
+        isPublic:             Boolean(user.isPublic),
         githubUsername:       user.githubUsername,
         activeGithubUsername: user.activeGithubUsername || user.githubUsername,
         avatar:               user.avatar || '',

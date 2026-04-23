@@ -9,6 +9,8 @@ const Candidate = require('../../models/Candidate');
 const Job = require('../../models/Job');
 const { rankCandidates } = require('./aiRankingService');
 
+const DEVELOPER_ROLE_VALUES = Object.freeze(['developer', 'user']);
+
 const EXPERIENCE_LEVEL_TO_YEARS = {
   Student: 0,
   Intern: 0.5,
@@ -89,6 +91,21 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(id);
 };
 
+const listPublicDeveloperUserIds = async () => {
+  const [publicUsers, publicProfiles] = await Promise.all([
+    User.find({ role: { $in: DEVELOPER_ROLE_VALUES }, isPublic: true }).select('_id').lean(),
+    PublicProfile.find({ isPublic: true }).select('userId').lean()
+  ]);
+
+  const ids = new Set();
+  publicUsers.forEach((entry) => ids.add(String(entry._id)));
+  publicProfiles.forEach((entry) => {
+    if (entry?.userId) ids.add(String(entry.userId));
+  });
+
+  return Array.from(ids).filter((id) => mongoose.Types.ObjectId.isValid(id));
+};
+
 const hydrateUserCandidates = async (users = []) => {
   if (!users.length) return [];
 
@@ -155,20 +172,28 @@ const hydrateUserCandidates = async (users = []) => {
       id: String(user._id),
       userId: String(user._id),
       sourceType: 'user',
+      name: user.name,
       fullName: user.name,
       email: user.email,
       stack: user.activeCareerStack || user.careerStack || 'Full Stack',
       yearsOfExperience: Number(resume?.experienceYears || EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] || 0),
+      jobTitle: user.jobTitle || '',
       headline: user.jobTitle || '',
       location: user.location || '',
+      avatar: user.avatar || '',
       githubUsername: user.githubUsername || '',
       githubScore,
       resumeScore,
       consistencyScore,
       growthPotentialScore,
       skills,
+      skillScores: (profile?.skills || []).map((skill) => ({
+        name: skill?.name || '',
+        score: Number(skill?.score || 0)
+      })).filter((skill) => Boolean(skill.name)),
       projects,
       skillGaps: analysis?.missingSkills || [],
+      publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
       githubStats: {
         repos: Number(analysis?.githubStats?.repos || 0),
         stars: Number(analysis?.githubStats?.stars || 0),
@@ -194,20 +219,25 @@ const normalizeCandidateDoc = (candidateDoc = {}) => {
     id: String(candidateDoc._id),
     userId: candidateDoc.userId ? String(candidateDoc.userId) : '',
     sourceType: 'candidate',
+    name: candidateDoc.fullName,
     fullName: candidateDoc.fullName,
     email: candidateDoc.email,
     stack: candidateDoc.stack || 'Full Stack',
     yearsOfExperience: Number(candidateDoc.yearsOfExperience || 0),
+    jobTitle: candidateDoc.headline || '',
     headline: candidateDoc.headline || '',
     location: candidateDoc.location || '',
+    avatar: '',
     githubUsername: candidateDoc.githubUsername || '',
     githubScore: Number(candidateDoc.githubScore || 0),
     resumeScore: Number(candidateDoc.resumeScore || 0),
     consistencyScore: Number(candidateDoc.consistencyScore || 0),
     growthPotentialScore: Number(candidateDoc.growthPotentialScore || 0),
     skills: normalizeSkills(candidateDoc.skills || []),
+    skillScores: [],
     projects: Array.isArray(candidateDoc.projects) ? candidateDoc.projects : [],
     skillGaps: Array.isArray(candidateDoc.skillGaps) ? candidateDoc.skillGaps : [],
+    publicProfileSlug: null,
     githubStats: {
       repos: Number(candidateDoc.githubStats?.repos || 0),
       stars: Number(candidateDoc.githubStats?.stars || 0),
@@ -244,6 +274,11 @@ const mergeCandidates = (candidateDocs = [], hydratedUsers = []) => {
       mergedMap.set(key, {
         ...existing,
         ...normalized,
+        name: normalized.name || existing.name,
+        jobTitle: normalized.jobTitle || existing.jobTitle,
+        avatar: normalized.avatar || existing.avatar || '',
+        publicProfileSlug: normalized.publicProfileSlug || existing.publicProfileSlug || null,
+        skillScores: normalized.skillScores?.length ? normalized.skillScores : (existing.skillScores || []),
         skills: normalizeSkills([...(existing.skills || []), ...(normalized.skills || [])]),
         projects: normalized.projects?.length ? normalized.projects : existing.projects,
         skillGaps: normalized.skillGaps?.length ? normalized.skillGaps : existing.skillGaps
@@ -285,9 +320,15 @@ const applyCandidateFilters = (candidates = [], filters = {}) => {
 };
 
 const listCandidates = async ({ search = '', stack = '', experience = 0, minScore = 0, limit = 50 } = {}) => {
-  const candidateDocs = await Candidate.find({ isActive: true }).lean();
+  const visibleDeveloperIds = await listPublicDeveloperUserIds();
+  if (!visibleDeveloperIds.length) return [];
 
-  const userQuery = {};
+  const userObjectIds = visibleDeveloperIds.map((id) => new mongoose.Types.ObjectId(id));
+  const userQuery = {
+    _id: { $in: userObjectIds },
+    role: { $in: DEVELOPER_ROLE_VALUES }
+  };
+
   if (search) {
     const regex = new RegExp(search, 'i');
     userQuery.$or = [
@@ -299,11 +340,22 @@ const listCandidates = async ({ search = '', stack = '', experience = 0, minScor
   }
 
   const users = await User.find(userQuery)
-    .select('name email githubUsername jobTitle location careerStack activeCareerStack experienceLevel activeExperienceLevel')
+    .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
     .limit(Math.max(limit, 100))
     .lean();
 
+  if (!users.length) return [];
+
   const hydratedUsers = await hydrateUserCandidates(users);
+  const hydratedUserIds = hydratedUsers
+    .map((candidate) => candidate.userId)
+    .filter((id) => mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
+
+  const candidateDocs = hydratedUserIds.length
+    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } }).lean()
+    : [];
+
   const merged = mergeCandidates(candidateDocs, hydratedUsers);
   const filtered = applyCandidateFilters(merged, { search, stack, experience, minScore });
 
@@ -312,24 +364,59 @@ const listCandidates = async ({ search = '', stack = '', experience = 0, minScor
 };
 
 const getCandidateById = async (id) => {
-  const candidateDoc = toObjectId(id) ? await Candidate.findById(id).lean() : null;
-  if (candidateDoc) return normalizeCandidateDoc(candidateDoc);
+  const objectId = toObjectId(id);
+  if (!objectId) return null;
 
-  if (toObjectId(id)) {
-    const user = await User.findById(id)
-      .select('name email githubUsername jobTitle location careerStack activeCareerStack experienceLevel activeExperienceLevel')
-      .lean();
-    if (user) {
-      const [candidate] = await hydrateUserCandidates([user]);
-      return candidate;
+  const candidateDoc = await Candidate.findById(objectId).lean();
+  if (candidateDoc?.userId) {
+    const userId = String(candidateDoc.userId);
+    const [user, publicProfile] = await Promise.all([
+      User.findOne({ _id: userId, role: { $in: DEVELOPER_ROLE_VALUES } })
+        .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
+        .lean(),
+      PublicProfile.findOne({ userId, isPublic: true }).select('_id').lean()
+    ]);
+
+    if (!user || (!user.isPublic && !publicProfile)) {
+      return null;
     }
+
+    const [hydratedCandidate] = await hydrateUserCandidates([user]);
+    const merged = mergeCandidates([candidateDoc], hydratedCandidate ? [hydratedCandidate] : []);
+    return merged[0] || hydratedCandidate || null;
   }
 
-  return null;
+  const [user, publicProfile] = await Promise.all([
+    User.findOne({ _id: objectId, role: { $in: DEVELOPER_ROLE_VALUES } })
+      .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
+      .lean(),
+    PublicProfile.findOne({ userId: objectId, isPublic: true }).select('_id').lean()
+  ]);
+
+  if (!user || (!user.isPublic && !publicProfile)) {
+    return null;
+  }
+
+  const [candidate] = await hydrateUserCandidates([user]);
+  return candidate || null;
 };
 
-const createJob = async ({ recruiterId, payload }) => {
+const assertOrganizationScope = (organizationId) => {
+  const safeOrganizationId = String(organizationId || '').trim();
+  if (!safeOrganizationId) {
+    const error = new Error('organizationId is required.');
+    error.code = 400;
+    throw error;
+  }
+
+  return safeOrganizationId;
+};
+
+const createJob = async ({ recruiterId, organizationId, payload }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+
   const job = await Job.create({
+    organizationId: safeOrganizationId,
     recruiterId,
     title: String(payload.title || '').trim(),
     role: String(payload.role || payload.title || '').trim(),
@@ -346,8 +433,10 @@ const createJob = async ({ recruiterId, payload }) => {
   return job;
 };
 
-const updateJob = async ({ recruiterId, jobId, payload }) => {
-  const job = await Job.findOne({ _id: jobId, recruiterId });
+const updateJob = async ({ organizationId, jobId, payload }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+
+  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId });
   if (!job) return null;
 
   const patch = {
@@ -373,48 +462,49 @@ const updateJob = async ({ recruiterId, jobId, payload }) => {
   return job;
 };
 
-const deleteJob = async ({ recruiterId, jobId }) => {
-  const deleted = await Job.findOneAndDelete({ _id: jobId, recruiterId });
+const deleteJob = async ({ organizationId, jobId }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const deleted = await Job.findOneAndDelete({ _id: jobId, organizationId: safeOrganizationId });
   return !!deleted;
 };
 
-const listJobs = async ({ recruiterId }) => {
-  return Job.find({ recruiterId }).sort({ updatedAt: -1 }).lean();
+const listJobs = async ({ organizationId, recruiterId = '' }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const query = { organizationId: safeOrganizationId };
+  if (recruiterId) query.recruiterId = recruiterId;
+  return Job.find(query).sort({ updatedAt: -1 }).lean();
 };
 
-const matchCandidatesToJob = async ({ recruiterId, jobId, candidateIds = [] }) => {
-  const job = await Job.findOne({ _id: jobId, recruiterId }).lean();
+const listOrganizationJobs = async ({ organizationId, limit = 100 }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  return Job.find({ organizationId: safeOrganizationId })
+    .sort({ updatedAt: -1 })
+    .limit(Math.max(1, Math.min(500, Number(limit) || 100)))
+    .lean();
+};
+
+const matchCandidatesToJob = async ({ organizationId, jobId, candidateIds = [] }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId }).lean();
   if (!job) {
     const error = new Error('Job not found.');
     error.code = 404;
     throw error;
   }
 
-  let candidates = [];
+  const visibleCandidates = await listCandidates({
+    stack: job.stack,
+    minScore: 0,
+    limit: 500
+  });
 
+  let candidates = visibleCandidates;
   if (Array.isArray(candidateIds) && candidateIds.length > 0) {
-    const uniqueIds = [...new Set(candidateIds.map((id) => String(id).trim()).filter(Boolean))];
-
-    const candidateObjectIds = uniqueIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
-    const candidateDocs = candidateObjectIds.length
-      ? await Candidate.find({ _id: { $in: candidateObjectIds }, isActive: true }).lean()
-      : [];
-
-    const unresolvedIds = uniqueIds.filter((id) => !candidateDocs.some((doc) => String(doc._id) === id));
-    const userObjectIds = unresolvedIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
-    const users = userObjectIds.length
-      ? await User.find({ _id: { $in: userObjectIds } })
-        .select('name email githubUsername jobTitle location careerStack activeCareerStack experienceLevel activeExperienceLevel')
-        .lean()
-      : [];
-
-    const hydratedUsers = await hydrateUserCandidates(users);
-    candidates = mergeCandidates(candidateDocs, hydratedUsers);
-  } else {
-    candidates = await listCandidates({
-      stack: job.stack,
-      minScore: 0,
-      limit: 200
+    const selected = new Set(candidateIds.map((candidateId) => String(candidateId).trim()).filter(Boolean));
+    candidates = visibleCandidates.filter((candidate) => {
+      const candidateId = String(candidate.id || '').trim();
+      const userId = String(candidate.userId || '').trim();
+      return selected.has(candidateId) || selected.has(userId);
     });
   }
 
@@ -432,5 +522,6 @@ module.exports = {
   updateJob,
   deleteJob,
   listJobs,
+  listOrganizationJobs,
   matchCandidatesToJob
 };

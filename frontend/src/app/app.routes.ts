@@ -36,67 +36,81 @@ import { adminSettingsGuard } from './guards/admin-settings.guard';
 import { recruiterRoleGuard } from './guards/recruiter-role.guard';
 
 export const routes: Routes = [
-  // Landing page (public) — default route
+  // Public routes
   { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
   { path: 'privacy', component: PrivacyPolicyComponent },
   { path: 'p/:slug', component: PublicPortfolioComponent },
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
-  { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter/dashboard', pathMatch: 'full' },
+  // Legacy redirect — old path → new direct path
+  { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter', pathMatch: 'full' },
 
-  // Authentication pages (public) - only accessible when NOT logged in
-  { path: 'auth/login', component: Login, canActivate: [publicGuard] },
-  { path: 'auth/signup', component: Signup, canActivate: [publicGuard] },
-  { path: 'auth/forgot-password', component: ForgotPasswordComponent, canActivate: [publicGuard] },
+  // Auth pages (only when NOT logged in)
+  { path: 'auth/login',            component: Login,                    canActivate: [publicGuard] },
+  { path: 'auth/signup',           component: Signup,                   canActivate: [publicGuard] },
+  { path: 'auth/forgot-password',  component: ForgotPasswordComponent,  canActivate: [publicGuard] },
   { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
-  { path: 'auth/reset-password', component: ResetPasswordComponent, canActivate: [publicGuard] },
+  { path: 'auth/reset-password',   component: ResetPasswordComponent,   canActivate: [publicGuard] },
 
-  // Dashboard pages (protected - within main layout) - only accessible when logged in
+  // Protected app routes (inside MainLayout)
   {
     path: 'app',
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'team-management', redirectTo: 'settings/user-management', pathMatch: 'full' },
+      { path: '',                  redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',         component: DashboardComponent },
+      { path: 'github-analyzer',   component: GithubAnalyzerComponent },
+      { path: 'resume-analyzer',   component: ResumeAnalyzerComponent },
+      { path: 'skill-gap',         component: SkillGapComponent },
+      { path: 'recommendations',   component: RecommendationsComponent },
+      { path: 'courses',           component: CoursesComponent },
+      { path: 'jobs',              component: JobsComponent },
+      { path: 'integrations',      component: IntegrationsMarketplaceComponent },
+      { path: 'scenario-simulator',component: ScenarioSimulatorComponent },
+      { path: 'profile',           component: ProfileComponent },
+      { path: 'portfolio',         component: PortfolioSettingsComponent },
+      { path: 'weekly-reports',    component: WeeklyReportsComponent },
+      { path: 'interview-prep',    component: InterviewPrepComponent },
+      { path: 'career-sprint',     component: CareerSprintComponent },
+      { path: 'interviews-reports',component: InterviewsReportsComponent },
+      { path: 'news',              component: NewsComponent },
+      { path: 'notifications',     component: NotificationsComponent },
       { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
-      { path: 'github-analyzer', component: GithubAnalyzerComponent },
-      { path: 'resume-analyzer', component: ResumeAnalyzerComponent },
-      { path: 'skill-gap', component: SkillGapComponent },
-      { path: 'recommendations', component: RecommendationsComponent },
-      { path: 'courses',         component: CoursesComponent },
-      { path: 'jobs',            component: JobsComponent },
-      { path: 'integrations',    component: IntegrationsMarketplaceComponent },
-      { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
-      { path: 'profile',         component: ProfileComponent },
-  { path: 'interviews-reports', component: InterviewsReportsComponent },
-    { path: 'portfolio',       component: PortfolioSettingsComponent },
+
+      // Recruiter hub
       {
         path: 'recruiter',
         canActivate: [recruiterRoleGuard],
         loadChildren: () => import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule)
       },
-    { path: 'weekly-reports',  component: WeeklyReportsComponent },
-    { path: 'interview-prep',  component: InterviewPrepComponent },
-    { path: 'career-sprint',   component: CareerSprintComponent },
-      { path: 'news',            component: NewsComponent },
-  { path: 'notifications', component: NotificationsComponent },
-      { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },
+
+      // Admin hiring workspace
+      {
+        path: 'admin',
+        canActivate: [adminSettingsGuard],
+        loadChildren: () => import('./features/admin/admin.module').then((m) => m.AdminModule)
+      },
+
+      // Legacy redirects
+      { path: 'team-management', redirectTo: 'settings/user-management', pathMatch: 'full' },
+      { path: 'ai-versions',     redirectTo: 'settings/ai-versions',     pathMatch: 'full' },
+
+      // Settings (admin only)
       {
         path: 'settings',
         canActivate: [adminSettingsGuard],
         children: [
-          { path: '', component: SettingsPageComponent },
-          { path: 'ai-versions', component: AiVersionsComponent },
-          { path: 'user-management', component: TeamManagementComponent },
-          { path: 'activity-logs', component: ActivityLogsComponent }
+          { path: '',               component: SettingsPageComponent },
+          { path: 'ai-versions',    component: AiVersionsComponent },
+          { path: 'user-management',component: TeamManagementComponent },
+          { path: 'activity-logs',  component: ActivityLogsComponent }
         ]
       }
     ]
   },
 
-  // Wildcard route - redirect to home
+  // Wildcard
   { path: '**', redirectTo: '' }
 ];
