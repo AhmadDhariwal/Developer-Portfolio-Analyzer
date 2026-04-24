@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 export interface TenantContextState {
   organizationId: string;
   organizationName: string;
-  myRole: 'admin' | 'manager' | 'member' | '';
+  myRole: 'admin' | 'manager' | 'member' | 'recruiter' | '';
   teamId: string;
   teamName: string;
 }
@@ -30,7 +30,7 @@ export class TenantContextService {
     return this.stateSubject.value;
   }
 
-  setOrganization(org: { id: string; name: string; myRole?: 'admin' | 'manager' | 'member' | '' }): void {
+  setOrganization(org: { id: string; name: string; myRole?: 'admin' | 'manager' | 'member' | 'recruiter' | '' }): void {
     const next: TenantContextState = {
       organizationId: org.id,
       organizationName: org.name,

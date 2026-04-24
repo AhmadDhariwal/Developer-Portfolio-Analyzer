@@ -2,54 +2,144 @@
   <app-message></app-message>
   <app-loader [loading]="(recruiterService.loading$ | async) ?? false" label="Loading candidate profile"></app-loader>
 
-  <article class="card header-card">
-    <h2>{{ profile.fullName }}</h2>
-    <p>{{ profile.headline || profile.stack }}</p>
-    <small>{{ profile.location || 'Location not set' }} | {{ profile.email }}</small>
+  <!-- Header card -->
+  <article class="card profile-header">
+    <div class="profile-header__avatar">
+      {{ profile.fullName.charAt(0).toUpperCase() }}
+    </div>
+    <div class="profile-header__info">
+      <h2>{{ profile.fullName }}</h2>
+      <p class="headline">{{ profile.headline || profile.stack }}</p>
+      <div class="meta-row">
+        <span *ngIf="profile.location">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ profile.location }}
+        </span>
+        <span *ngIf="profile.githubUsername">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          @{{ profile.githubUsername }}
+        </span>
+        <span class="exp-badge">{{ profile.yearsOfExperience }} yrs exp</span>
+        <span class="stack-badge">{{ profile.stack }}</span>
+      </div>
+    </div>
+    <div class="profile-header__links">
+      <a *ngIf="profile.publicProfileSlug"
+         [href]="'/p/' + profile.publicProfileSlug"
+         target="_blank" rel="noopener"
+         class="btn-portfolio">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Public Portfolio
+      </a>
+      <span class="no-portfolio" *ngIf="!profile.publicProfileSlug">No public portfolio</span>
+    </div>
   </article>
 
+  <!-- Score grid -->
   <div class="score-grid">
-    <article class="card">GitHub: <strong>{{ profile.githubScore }}</strong></article>
-    <article class="card">Resume: <strong>{{ profile.resumeScore }}</strong></article>
-    <article class="card">Consistency: <strong>{{ profile.consistencyScore }}</strong></article>
-    <article class="card">Growth: <strong>{{ profile.growthPotentialScore }}</strong></article>
+    <article class="score-card score-card--github">
+      <span class="score-card__label">GitHub</span>
+      <span class="score-card__value">{{ profile.githubScore | number:'1.0-0' }}</span>
+    </article>
+    <article class="score-card score-card--resume">
+      <span class="score-card__label">Resume</span>
+      <span class="score-card__value">{{ profile.resumeScore | number:'1.0-0' }}</span>
+    </article>
+    <article class="score-card score-card--consistency">
+      <span class="score-card__label">Consistency</span>
+      <span class="score-card__value">{{ profile.consistencyScore | number:'1.0-0' }}</span>
+    </article>
+    <article class="score-card score-card--growth">
+      <span class="score-card__label">Growth</span>
+      <span class="score-card__value">{{ profile.growthPotentialScore | number:'1.0-0' }}</span>
+    </article>
+    <article class="score-card score-card--total">
+      <span class="score-card__label">Overall</span>
+      <span class="score-card__value">{{ profile.score | number:'1.0-0' }}</span>
+    </article>
   </div>
 
-  <div class="recruiter-layout">
-    <section class="card panel">
-      <h3>Skills</h3>
-      <div class="chips">
-        <span *ngFor="let skill of profile.skills">{{ skill }}</span>
-      </div>
+  <div class="profile-layout">
 
-      <h3>Skill Gaps</h3>
-      <div class="chips gaps">
-        <span *ngFor="let gap of profile.skillGaps">{{ gap }}</span>
-      </div>
-    </section>
+    <!-- Left column -->
+    <div class="profile-col">
 
-    <section class="card panel">
-      <h3>Projects</h3>
-      <article class="project" *ngFor="let project of profile.projects">
-        <h4>{{ project.title }}</h4>
-        <p>{{ project.description }}</p>
-      </article>
+      <!-- Skills -->
+      <section class="card">
+        <h3 class="section-title">Skills</h3>
+        <div class="chips" *ngIf="profile.skills.length > 0">
+          <span class="chip" *ngFor="let skill of profile.skills">{{ skill }}</span>
+        </div>
+        <p class="empty-hint" *ngIf="profile.skills.length === 0">No skills listed.</p>
+      </section>
 
-      <h3>GitHub Stats</h3>
-      <ul>
-        <li>Repos: {{ profile.githubStats.repos }}</li>
-        <li>Stars: {{ profile.githubStats.stars }}</li>
-        <li>Forks: {{ profile.githubStats.forks }}</li>
-        <li>Followers: {{ profile.githubStats.followers }}</li>
-      </ul>
+      <!-- GitHub Stats -->
+      <section class="card">
+        <h3 class="section-title">GitHub Activity</h3>
+        <div class="stat-list">
+          <div class="stat-item">
+            <span class="stat-item__label">Repositories</span>
+            <span class="stat-item__value">{{ profile.githubStats.repos }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Stars</span>
+            <span class="stat-item__value">{{ profile.githubStats.stars }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Forks</span>
+            <span class="stat-item__value">{{ profile.githubStats.forks }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Followers</span>
+            <span class="stat-item__value">{{ profile.githubStats.followers }}</span>
+          </div>
+        </div>
+      </section>
 
-      <app-insights-panel [insight]="profile.aiInsight"></app-insights-panel>
-    </section>
+    </div>
+
+    <!-- Right column -->
+    <div class="profile-col">
+
+      <!-- Projects -->
+      <section class="card">
+        <h3 class="section-title">Projects</h3>
+        <div class="project-list" *ngIf="profile.projects.length > 0">
+          <article class="project-item" *ngFor="let project of profile.projects">
+            <div class="project-item__head">
+              <h4>{{ project.title }}</h4>
+              <span class="project-status" [class.project-status--done]="project.status === 'completed'">
+                {{ project.status || 'completed' }}
+              </span>
+            </div>
+            <p>{{ project.description }}</p>
+            <div class="chips chips--sm" *ngIf="project.technologies?.length">
+              <span class="chip chip--sm" *ngFor="let tech of project.technologies">{{ tech }}</span>
+            </div>
+          </article>
+        </div>
+        <p class="empty-hint" *ngIf="profile.projects.length === 0">No projects listed.</p>
+      </section>
+
+    </div>
+
   </div>
 </section>
 
 <app-empty-state
-  *ngIf="!candidate"
+  *ngIf="!candidate && !((recruiterService.loading$ | async) ?? false)"
   title="Candidate not found"
-  subtitle="This profile is unavailable or was removed."
+  subtitle="This profile is unavailable or has been removed from the talent pool."
 ></app-empty-state>

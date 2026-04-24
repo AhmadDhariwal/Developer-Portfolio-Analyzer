@@ -421,6 +421,16 @@ footer[id] {
     p {
       margin: 0;
     }
+
+    &.bio-description--meta {
+      margin-top: 1rem;
+      font-size: 15px;
+      color: $text-gray;
+
+      p + p {
+        margin-top: 0.25rem;
+      }
+    }
   }
 }
 

@@ -1,0 +1,405 @@
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  max-width: 1100px;
+}
+
+// ── Page header ───────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #f1f5f9);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.9rem;
+  }
+}
+
+.count-badge {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: var(--color-primary-light, #818cf8);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  align-self: center;
+}
+
+// ── Card base ─────────────────────────────────────────────────────────────
+.card {
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  background: var(--bg-card, #1e293b);
+  padding: 1.25rem;
+}
+
+.section-head {
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #f1f5f9);
+  }
+}
+
+// ── Invite card ───────────────────────────────────────────────────────────
+.invite-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(30, 41, 59, 0.95));
+  border-color: rgba(99, 102, 241, 0.25);
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0 0 0.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary, #f1f5f9);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.83rem;
+      color: var(--text-secondary, #94a3b8);
+    }
+  }
+}
+
+.invite-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary-light, #818cf8);
+  flex-shrink: 0;
+}
+
+.invite-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+// ── Form fields ───────────────────────────────────────────────────────────
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary, #94a3b8);
+  }
+
+  input {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-light, #334155);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text-primary, #f1f5f9);
+    font-size: 0.88rem;
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary, #6366f1);
+    }
+
+    &::placeholder {
+      color: var(--text-muted, #475569);
+    }
+  }
+}
+
+// ── Recruiter list ────────────────────────────────────────────────────────
+.recruiter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.recruiter-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color, #334155);
+  flex-wrap: wrap;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &__info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 220px;
+  }
+
+  &__badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 2px;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding-top: 2px;
+  }
+}
+
+.recruiter-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--color-primary-light, #818cf8);
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.recruiter-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recruiter-name {
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  font-size: 0.95rem;
+}
+
+.recruiter-email {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.recruiter-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 4px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--text-muted, #64748b);
+  }
+}
+
+// ── Status badges ─────────────────────────────────────────────────────────
+.status-badge {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--active {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+  }
+
+  &--inactive {
+    background: rgba(100, 116, 139, 0.12);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: #94a3b8;
+  }
+
+  &--done {
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--color-primary-light, #818cf8);
+  }
+
+  &--pending {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+  }
+}
+
+.date-label {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────
+.btn-action {
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--text-secondary, #94a3b8);
+    color: var(--text-primary, #f1f5f9);
+  }
+
+  &--edit:hover {
+    border-color: var(--color-primary, #6366f1);
+    color: var(--color-primary-light, #818cf8);
+  }
+
+  &--activate {
+    border-color: rgba(34, 197, 94, 0.35);
+    color: #4ade80;
+
+    &:hover {
+      background: rgba(34, 197, 94, 0.1);
+    }
+  }
+
+  &--deactivate {
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.08);
+    }
+  }
+
+  &--revoke {
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.08);
+    }
+  }
+
+  &--delete {
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #f87171;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.12);
+    }
+  }
+}
+
+// ── Edit form ─────────────────────────────────────────────────────────────
+.edit-form {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 10px;
+  padding: 1rem;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.88;
+  }
+
+  &.btn-sm {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+  }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--color-primary, #6366f1);
+    color: var(--text-primary, #f1f5f9);
+  }
+
+  &.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+}

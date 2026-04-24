@@ -23,7 +23,7 @@ export interface RecruiterCandidate {
   id: string;
   userId?: string;
   fullName: string;
-  email: string;
+  publicProfileSlug?: string | null;
   stack: string;
   yearsOfExperience: number;
   headline: string;
@@ -35,7 +35,6 @@ export interface RecruiterCandidate {
   growthPotentialScore: number;
   skills: string[];
   projects: RecruiterProject[];
-  skillGaps: string[];
   githubStats: {
     repos: number;
     stars: number;

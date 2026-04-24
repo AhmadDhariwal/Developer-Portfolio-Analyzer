@@ -635,6 +635,7 @@ async function buildPublicProfilePayload(profile, user, req = null) {
       location: user?.location || '',
       avatar: resolveAvatarForResponse(user?.avatar || '', req),
       githubUsername: user?.githubUsername || '',
+      phoneNumber: user?.phoneNumber || '',
       email: user?.email || ''
     }
   };
@@ -762,7 +763,7 @@ const applySocialLinksUpdate = ({ profile, payload, user }) => {
 const updatePublicProfile = async (userId, payload = {}) => {
   const profile = await getOrCreatePublicProfile(userId);
   const user = await User.findById(userId)
-    .select('name email jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
 
   await applyCoreProfileUpdates({ profile, payload });
@@ -812,7 +813,7 @@ const getPublicProfileBySlug = async (slug, req) => {
   if (!profile) return null;
 
   const user = await User.findById(profile.userId)
-    .select('name email jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
   await recordProfileView({ profile, req });
 
@@ -822,7 +823,7 @@ const getPublicProfileBySlug = async (slug, req) => {
 const getPublicProfileForOwner = async (userId) => {
   const profile = await getOrCreatePublicProfile(userId);
   const user = await User.findById(userId)
-    .select('name email jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
   return buildPublicProfilePayload(profile, user);
 };

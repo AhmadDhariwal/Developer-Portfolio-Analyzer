@@ -6,7 +6,9 @@ const {
   sendOtp,
   verifyOtp,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getInviteDetails,
+  acceptInvite
 } = require('../controllers/authcontroller');
 const { authRateLimiter, bruteForceGuard } = require('../middleware/securityMiddleware');
 
@@ -16,5 +18,7 @@ router.post('/send-otp', authRateLimiter, sendOtp);
 router.post('/verify-otp', authRateLimiter, verifyOtp);
 router.post('/forgot-password', authRateLimiter, forgotPassword);
 router.post('/reset-password', authRateLimiter, resetPassword);
+router.get('/invite-details/:token', authRateLimiter, getInviteDetails);
+router.post('/accept-invite', authRateLimiter, acceptInvite);
 
 module.exports = router;

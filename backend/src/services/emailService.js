@@ -35,4 +35,33 @@ const sendEmailOTP = async (email, otp) => {
   });
 };
 
-module.exports = { sendEmailOTP };
+const sendRecruiterInvitationEmail = async ({ to, inviteeName, organizationName, invitationLink }) => {
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!recipient) {
+    throw new Error('Recipient email is required.');
+  }
+
+  if (!String(invitationLink || '').trim()) {
+    throw new Error('Invitation link is required.');
+  }
+
+  try {
+    const tx = getTransporter();
+    const safeName = String(inviteeName || 'there').trim();
+    const safeOrg = String(organizationName || 'DevInsight').trim();
+
+    await tx.sendMail({
+      from: String(process.env.EMAIL_USER || '').trim(),
+      to: recipient,
+      subject: `You are invited as a recruiter at ${safeOrg}`,
+      text: `Hello ${safeName},\n\nYou have been invited to join ${safeOrg} as a recruiter.\n\nAccept invitation: ${invitationLink}\n\nThis invitation expires in 7 days.`,
+      html: `<p>Hello ${safeName},</p><p>You have been invited to join <strong>${safeOrg}</strong> as a recruiter.</p><p><a href="${invitationLink}">Accept recruiter invitation</a></p><p>This invitation expires in <strong>7 days</strong>.</p>`
+    });
+
+    return { sent: true, reason: null };
+  } catch (error) {
+    return { sent: false, reason: error.message || 'Failed to send recruiter invitation email.' };
+  }
+};
+
+module.exports = { sendEmailOTP, sendRecruiterInvitationEmail };

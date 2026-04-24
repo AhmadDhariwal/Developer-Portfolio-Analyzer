@@ -90,7 +90,7 @@ export const routes: Routes = [
       {
         path: 'admin',
         canActivate: [adminSettingsGuard],
-        loadChildren: () => import('./features/admin/admin.module').then((m) => m.AdminModule)
+        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule)
       },
 
       // Legacy redirects

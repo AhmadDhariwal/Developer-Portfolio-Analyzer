@@ -51,6 +51,8 @@ export class ProfileComponent implements OnInit {
   // ── Profile data (bound to form) ───────────────────────────────────────
   profile: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
+    phoneNumber: '',
+    countryCode: '',
     activeGithubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
@@ -60,6 +62,7 @@ export class ProfileComponent implements OnInit {
     isConfigured:    false,
     isPublic:        false,
     role:            'developer',
+    profileCompleted: true,
     defaultResume: null,
     activeResume: null,
     notifications: {
@@ -76,6 +79,8 @@ export class ProfileComponent implements OnInit {
 
   private snapshot: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
+    phoneNumber: '',
+    countryCode: '',
     activeGithubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
@@ -85,6 +90,7 @@ export class ProfileComponent implements OnInit {
     isConfigured:    false,
     isPublic:        false,
     role:            'developer',
+    profileCompleted: true,
     defaultResume: null,
     activeResume: null,
     notifications: {
@@ -168,6 +174,7 @@ export class ProfileComponent implements OnInit {
       website:       this.profile.website,
       twitter:       this.profile.twitter,
       linkedin:      this.profile.linkedin,
+      phoneNumber:   this.profile.phoneNumber,
       notifications: this.profile.notifications,
     };
 
@@ -198,7 +205,8 @@ export class ProfileComponent implements OnInit {
       'bio',
       'website',
       'twitter',
-      'linkedin'
+      'linkedin',
+      'phoneNumber'
     ];
 
     const fieldChanged = fields.some((key) => current[key] !== snapshot[key]);
@@ -212,6 +220,8 @@ export class ProfileComponent implements OnInit {
       _id: data._id || '',
       name: data.name || '',
       email: data.email || '',
+      phoneNumber: data.phoneNumber || '',
+      countryCode: data.countryCode || '',
       githubUsername: data.githubUsername || '',
       activeGithubUsername: data.activeGithubUsername || data.githubUsername || '',
       avatar: this.profileService.resolveAvatarUrl(data.avatar || ''),
@@ -229,6 +239,7 @@ export class ProfileComponent implements OnInit {
       isConfigured:    data.isConfigured    ?? false,
       isPublic:        data.isPublic        ?? false,
       role:            data.role            || 'developer',
+      profileCompleted: data.profileCompleted ?? true,
       defaultResume: data.defaultResume || null,
       activeResume: data.activeResume || null,
       notifications: {

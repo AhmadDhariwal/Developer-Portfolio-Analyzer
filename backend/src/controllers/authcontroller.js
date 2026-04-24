@@ -1,5 +1,7 @@
 const User = require('../models/user');
 const PendingRegistration = require('../models/pendingRegistration');
+const Invitation = require('../models/invitation');
+const Organization = require('../models/organization');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { registerAuthFailure, clearAuthFailures } = require('../middleware/securityMiddleware');
@@ -28,6 +30,43 @@ const normalizeCountryCode = (v) => String(v || '').trim();
 const normalizeOtpType     = (v) => (String(v || '').toLowerCase() === 'phone' ? 'phone' : 'email');
 const normalizePurpose     = (v) => (String(v || '').toLowerCase() === 'forgot-password' ? 'forgot-password' : 'signup');
 const toPublicRole         = (v) => (String(v || '').toLowerCase() === 'user' ? 'developer' : String(v || 'developer'));
+const normalizeLinkedIn    = (v) => String(v || '').trim();
+
+const isRecruiterProfileComplete = (user) => {
+  if (!user || String(user.role || '').toLowerCase() !== 'recruiter') {
+    return true;
+  }
+
+  const hasName = Boolean(String(user.name || '').trim());
+  const hasPhone = Boolean(normalizePhone(user.phoneNumber));
+  const hasProfessionalLink = Boolean(normalizeLinkedIn(user.linkedin) || String(user.githubUsername || '').trim());
+  const hasBasicProfile = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
+
+  return hasName && hasPhone && hasProfessionalLink && hasBasicProfile;
+};
+
+const loadValidRecruiterInvitationByToken = async (rawToken) => {
+  const token = String(rawToken || '').trim();
+  if (!token) {
+    return { error: { status: 400, message: 'Invitation token is required.' } };
+  }
+
+  const invitation = await Invitation.findOne({ token, role: 'recruiter' }).lean();
+  if (!invitation) {
+    return { error: { status: 404, message: 'Invitation not found.' } };
+  }
+
+  if (invitation.status !== 'pending') {
+    return { error: { status: 400, message: 'Invitation is no longer pending.' } };
+  }
+
+  if (new Date(invitation.expiresAt).getTime() < Date.now()) {
+    await Invitation.findByIdAndUpdate(invitation._id, { status: 'expired' });
+    return { error: { status: 400, message: 'Invitation has expired.' } };
+  }
+
+  return { invitation };
+};
 
 const getUserByIdentifier = async ({ email, countryCode, phoneNumber }) => {
   const normalizedEmail = normalizeEmail(email);
@@ -131,6 +170,10 @@ const loginUser = async (req, res) => {
     const normalizedEmail = normalizeEmail(email);
     const user = await User.findOne({ email: normalizedEmail });
 
+    if (user?.isActive === false) {
+      return res.status(403).json({ message: 'Account is deactivated. Please contact your administrator.' });
+    }
+
     if (user && (await bcrypt.compare(password, user.password))) {
       user.activeGithubUsername  = user.githubUsername;
       user.activeResumeFileId    = user.defaultResumeFileId || null;
@@ -145,7 +188,11 @@ const loginUser = async (req, res) => {
         email:                user.email,
         role:                 toPublicRole(user.role),
         organizationId:       user.organizationId || null,
+        isActive:             user.isActive !== false,
         isPublic:             Boolean(user.isPublic),
+        phoneNumber:          user.phoneNumber || '',
+        linkedin:             user.linkedin || '',
+        profileCompleted:     isRecruiterProfileComplete(user),
         githubUsername:       user.githubUsername,
         activeGithubUsername: user.activeGithubUsername || user.githubUsername,
         avatar:               user.avatar || '',
@@ -390,4 +437,177 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, sendOtp, verifyOtp, forgotPassword, resetPassword };
+// ── Recruiter Invitation Details ─────────────────────────────────────────
+// @route GET /api/auth/invite-details/:token
+// @access Public
+const getInviteDetails = async (req, res) => {
+  try {
+    const loaded = await loadValidRecruiterInvitationByToken(req.params.token);
+    if (loaded.error) {
+      return res.status(loaded.error.status).json({ message: loaded.error.message });
+    }
+
+    const invitation = loaded.invitation;
+    const [organization, existingUser] = await Promise.all([
+      Organization.findById(invitation.organizationId).select('name').lean(),
+      User.findOne({ email: invitation.email }).select('_id role organizationId').lean()
+    ]);
+
+    return res.json({
+      invitation: {
+        name: invitation.name || '',
+        email: invitation.email,
+        role: 'recruiter',
+        expiresAt: invitation.expiresAt,
+        organizationName: organization?.name || 'Organization',
+        hasExistingAccount: Boolean(existingUser),
+        alreadyInAnotherOrganization: Boolean(
+          existingUser?.organizationId &&
+          String(existingUser.organizationId) !== String(invitation.organizationId)
+        )
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Failed to load invitation details.' });
+  }
+};
+
+// ── Recruiter Invitation Accept ──────────────────────────────────────────
+// @route POST /api/auth/accept-invite
+// @access Public
+const acceptInvite = async (req, res) => {
+  try {
+    const token = String(req.body?.token || '').trim();
+    const loaded = await loadValidRecruiterInvitationByToken(token);
+    if (loaded.error) {
+      return res.status(loaded.error.status).json({ message: loaded.error.message });
+    }
+
+    const invitation = loaded.invitation;
+    const requestedName = String(req.body?.name || '').trim();
+    const requestedPassword = String(req.body?.password || '');
+    const requestedGithub = String(req.body?.githubUsername || '').trim();
+    const requestedLinkedIn = normalizeLinkedIn(req.body?.linkedin);
+    const requestedPhone = normalizePhone(req.body?.phoneNumber);
+    const requestedCountryCode = normalizeCountryCode(req.body?.countryCode);
+
+    const existingUser = await User.findOne({ email: invitation.email });
+
+    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(invitation.organizationId)) {
+      return res.status(403).json({ message: 'This invitation cannot be accepted outside the assigned organization.' });
+    }
+
+    if (existingUser?.role && !['recruiter', 'user', 'developer'].includes(String(existingUser.role).toLowerCase())) {
+      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
+    }
+
+    let user = existingUser;
+    if (!user && requestedPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    if (user) {
+      if (requestedPassword) {
+        if (requestedPassword.length < 6) {
+          return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+        }
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(requestedPassword, salt);
+      }
+
+      user.name = requestedName || invitation.name || user.name;
+      user.role = 'recruiter';
+      user.organizationId = invitation.organizationId;
+      user.isVerified = true;
+      user.isActive = true;
+      if (requestedGithub) {
+        user.githubUsername = requestedGithub;
+        user.activeGithubUsername = requestedGithub;
+      }
+      if (requestedLinkedIn || requestedLinkedIn === '') {
+        user.linkedin = requestedLinkedIn;
+      }
+      if (requestedPhone || requestedPhone === '') {
+        user.phoneNumber = requestedPhone;
+      }
+      if (requestedCountryCode || requestedCountryCode === '') {
+        user.countryCode = requestedCountryCode;
+      }
+
+      await user.save();
+    } else {
+      const fallbackName = requestedName || invitation.name || String(invitation.email).split('@')[0] || 'Recruiter';
+      const fallbackGithub = requestedGithub;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(requestedPassword, salt);
+
+      user = await User.create({
+        name: fallbackName,
+        email: invitation.email,
+        password: hashedPassword,
+        githubUsername: fallbackGithub,
+        activeGithubUsername: fallbackGithub,
+        role: 'recruiter',
+        organizationId: invitation.organizationId,
+        isPublic: false,
+        isVerified: true,
+        isActive: true,
+        linkedin: requestedLinkedIn,
+        phoneNumber: requestedPhone,
+        countryCode: requestedCountryCode,
+        activeCareerStack: 'Full Stack',
+        activeExperienceLevel: 'Student'
+      });
+    }
+
+    await Invitation.findByIdAndUpdate(invitation._id, {
+      status: 'accepted',
+      acceptedBy: user._id
+    });
+
+    user.activeCareerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
+    user.activeExperienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
+    await user.save();
+
+    const profileCompleted = isRecruiterProfileComplete(user);
+
+    return res.json({
+      message: 'Invitation accepted successfully.',
+      requiresProfileCompletion: !profileCompleted,
+      redirectTo: profileCompleted ? '/app/recruiter/dashboard' : '/app/profile?onboarding=recruiter',
+      user: {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: toPublicRole(user.role),
+        organizationId: user.organizationId || null,
+        isActive: user.isActive !== false,
+        isPublic: Boolean(user.isPublic),
+        githubUsername: user.githubUsername || '',
+        activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+        phoneNumber: user.phoneNumber || '',
+        linkedin: user.linkedin || '',
+        avatar: user.avatar || '',
+        careerStack: user.careerStack,
+        experienceLevel: user.experienceLevel,
+        activeCareerStack: user.activeCareerStack || user.careerStack,
+        activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+        profileCompleted,
+        token: generateToken(user._id)
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Failed to accept invitation.' });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  sendOtp,
+  verifyOtp,
+  forgotPassword,
+  resetPassword,
+  getInviteDetails,
+  acceptInvite
+};

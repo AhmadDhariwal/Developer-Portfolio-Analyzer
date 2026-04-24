@@ -30,6 +30,19 @@ const resolveAvatarForResponse = (req, avatarValue) => {
   return raw;
 };
 
+const isRecruiterProfileComplete = (user) => {
+  if (String(user?.role || '').toLowerCase() !== 'recruiter') {
+    return true;
+  }
+
+  const hasName = Boolean(String(user?.name || '').trim());
+  const hasPhone = Boolean(String(user?.phoneNumber || '').trim());
+  const hasProfessionalLink = Boolean(String(user?.linkedin || '').trim() || String(user?.githubUsername || '').trim());
+  const hasBasicInfo = Boolean(String(user?.jobTitle || '').trim() || String(user?.bio || '').trim());
+
+  return hasName && hasPhone && hasProfessionalLink && hasBasicInfo;
+};
+
 // @desc  Get logged-in user profile + account stats
 // @route GET /api/profile/me
 // @access Private
@@ -115,6 +128,8 @@ const getProfile = async (req, res) => {
       _id:               user._id,
       name:              user.name,
       email:             user.email,
+      phoneNumber:       user.phoneNumber || '',
+      countryCode:       user.countryCode || '',
       githubUsername:    user.githubUsername,
       activeGithubUsername,
       avatar:            resolveAvatarForResponse(req, user.avatar),
@@ -139,6 +154,7 @@ const getProfile = async (req, res) => {
       careerGoal:         user.careerGoal         || '',
       careerProfileSetAt: user.careerProfileSetAt || null,
       isConfigured:       !!user.careerProfileSetAt,
+      profileCompleted:   isRecruiterProfileComplete(user),
       defaultResume: defaultResumeFile ? {
         fileId: defaultResumeFile._id,
         fileName: defaultResumeFile.fileName,
@@ -167,7 +183,7 @@ const updateProfile = async (req, res) => {
     const {
       name, githubUsername, defaultResumeFileId,
       jobTitle, location, bio,
-      website, twitter, linkedin,
+      website, twitter, linkedin, phoneNumber,
       notifications,
     } = req.body;
 
@@ -182,7 +198,7 @@ const updateProfile = async (req, res) => {
     }
     if (githubUsername !== undefined) {
       const normalizedGithub = String(githubUsername || '').trim();
-      if (!normalizedGithub) {
+      if (!normalizedGithub && user.role !== 'recruiter') {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
       if (normalizedGithub !== user.githubUsername) {
@@ -237,6 +253,10 @@ const updateProfile = async (req, res) => {
       user.linkedin = linkedin;
       hasChanges = true;
     }
+    if (phoneNumber !== undefined && phoneNumber !== user.phoneNumber) {
+      user.phoneNumber = String(phoneNumber || '').trim();
+      hasChanges = true;
+    }
     if (notifications !== undefined) {
       // Merge only valid notification keys, fallback to defaults if missing
       const nextNotifications = {
@@ -278,6 +298,8 @@ const updateProfile = async (req, res) => {
       _id:           updated._id,
       name:          updated.name,
       email:         updated.email,
+      phoneNumber:   updated.phoneNumber || '',
+      countryCode:   updated.countryCode || '',
       githubUsername:updated.githubUsername,
       activeGithubUsername: updated.activeGithubUsername || updated.githubUsername,
       defaultResume: defaultResume ? {
@@ -298,6 +320,7 @@ const updateProfile = async (req, res) => {
       website:       updated.website,
       twitter:       updated.twitter,
       linkedin:      updated.linkedin,
+      profileCompleted: isRecruiterProfileComplete(updated),
       notifications: updated.notifications,
     });
   } catch (error) {

@@ -19,6 +19,22 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/auth/login`, credentials);
   }
 
+  getAuthInviteDetails(token: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/auth/invite-details/${encodeURIComponent(token)}`);
+  }
+
+  acceptAuthInvite(payload: {
+    token: string;
+    name: string;
+    password?: string;
+    githubUsername?: string;
+    linkedin?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/accept-invite`, payload);
+  }
+
   /* ── Career Profile ── */
   updateCareerProfile(careerStack: string, experienceLevel: string, careerGoal?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal });
@@ -362,13 +378,28 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/recruiters`);
   }
 
-  createAdminRecruiter(payload: {
+  inviteAdminRecruiter(payload: {
     name: string;
     email: string;
-    password: string;
-    githubUsername?: string;
+    role?: 'recruiter';
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/admin/recruiter`, payload);
+    return this.http.post(`${this.baseUrl}/admin/invite-recruiter`, payload);
+  }
+
+  updateAdminRecruiter(id: string, payload: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}`, payload);
+  }
+
+  setAdminRecruiterActive(id: string, isActive: boolean): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}/active`, { isActive });
+  }
+
+  revokeAdminRecruiterAccess(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}/revoke`, {});
+  }
+
+  deleteAdminRecruiter(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}`);
   }
 
   getAdminDevelopers(): Observable<any> {

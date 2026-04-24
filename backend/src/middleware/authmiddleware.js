@@ -25,10 +25,16 @@ const protect = async (req, res, next) => {
             // Get user from the token
             req.user = await User.findById(decoded.id).select('-password');
 
-            if (req.user) {
-                req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;
-                req.user.experienceLevel = req.user.activeExperienceLevel || req.user.experienceLevel;
+            if (!req.user) {
+                return res.status(401).json({ message: 'Not authorized, user not found' });
             }
+
+            if (req.user.isActive === false) {
+                return res.status(403).json({ message: 'Account is deactivated. Please contact your administrator.' });
+            }
+
+            req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;
+            req.user.experienceLevel = req.user.activeExperienceLevel || req.user.experienceLevel;
 
             next();
         } catch (error) {

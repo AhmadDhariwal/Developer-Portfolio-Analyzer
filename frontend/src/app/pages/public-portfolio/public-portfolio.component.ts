@@ -325,6 +325,11 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     return this.profile.summary || 'A self-taught Software Engineer, functioning in the industry for 3+ years now. I make meaningful and delightful digital products that create an equilibrium between user needs and business goals.';
   }
 
+  getTopSkillsText(): string {
+    if (!this.profile?.skills?.length) return 'Not provided';
+    return this.profile.skills.slice(0, 8).map((skill) => skill.name).join(', ');
+  }
+
   getCurrentCompany(): string {
     if (!this.profile) return 'a tech company';
     // Extract company from job title or location

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { ApiService } from '../../../shared/services/api.service';
+import { ApiService } from '../../shared/services/api.service';
 
 export interface AdminOverview {
   organizationId: string;
@@ -16,8 +16,12 @@ export interface AdminRecruiter {
   name: string;
   email: string;
   githubUsername: string;
+  linkedin: string;
+  phoneNumber: string;
   role: 'recruiter';
   organizationId: string;
+  isActive: boolean;
+  profileCompleted: boolean;
   createdAt: string;
 }
 
@@ -91,14 +95,40 @@ export class AdminHiringService {
     );
   }
 
-  createRecruiter(payload: {
+  inviteRecruiter(payload: {
     name: string;
     email: string;
-    password: string;
-    githubUsername?: string;
-  }): Observable<AdminRecruiter> {
-    return this.api.createAdminRecruiter(payload).pipe(
+    role?: 'recruiter';
+  }): Observable<{ invitationLink: string; emailSent: boolean }> {
+    return this.api.inviteAdminRecruiter(payload).pipe(
+      map((res: { invitationLink?: string; email?: { sent?: boolean } }) => ({
+        invitationLink: String(res?.invitationLink || ''),
+        emailSent: Boolean(res?.email?.sent)
+      }))
+    );
+  }
+
+  updateRecruiter(id: string, payload: Partial<Pick<AdminRecruiter, 'name' | 'email' | 'githubUsername' | 'linkedin' | 'phoneNumber'>>): Observable<AdminRecruiter> {
+    return this.api.updateAdminRecruiter(id, payload).pipe(
       map((res: { recruiter: AdminRecruiter }) => res.recruiter)
+    );
+  }
+
+  setRecruiterActive(id: string, isActive: boolean): Observable<AdminRecruiter> {
+    return this.api.setAdminRecruiterActive(id, isActive).pipe(
+      map((res: { recruiter: AdminRecruiter }) => res.recruiter)
+    );
+  }
+
+  revokeRecruiterAccess(id: string): Observable<AdminRecruiter> {
+    return this.api.revokeAdminRecruiterAccess(id).pipe(
+      map((res: { recruiter: AdminRecruiter }) => res.recruiter)
+    );
+  }
+
+  deleteRecruiter(id: string): Observable<void> {
+    return this.api.deleteAdminRecruiter(id).pipe(
+      map(() => void 0)
     );
   }
 

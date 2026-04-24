@@ -164,6 +164,18 @@
               <input id="profile-location" type="text" [(ngModel)]="profile.location" placeholder="San Francisco, CA" title="Location" />
             </div>
           </div>
+          <div class="form-field">
+            <label for="profile-mobile">Mobile Number</label>
+            <div class="input-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12" y2="18"/>
+              </svg>
+              <input id="profile-mobile" type="text" [(ngModel)]="profile.phoneNumber" placeholder="+92 300 1234567" title="Mobile number" />
+            </div>
+            <small class="field-hint">Adding your mobile number increases your chances of being contacted by recruiters.</small>
+          </div>
         </div>
 
         <div class="form-field form-field--full">
@@ -237,6 +249,27 @@
             </svg>
             <span class="prefix-text">linkedin.com/</span>
             <input id="profile-linkedin" type="text" [(ngModel)]="profile.linkedin" placeholder="in/alexjohnson" title="LinkedIn profile" />
+          </div>
+        </div>
+
+        <!-- Phone number with recruiter hint -->
+        <div class="form-field">
+          <label for="profile-phone">Mobile Number</label>
+          <div class="input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/>
+            </svg>
+            <input id="profile-phone" type="text" [(ngModel)]="profile.phoneNumber" placeholder="+1 555 000 0000" title="Mobile number" />
+          </div>
+          <div class="phone-hint">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Adding your mobile number increases your chances of being contacted by recruiters.
           </div>
         </div>
       </div>

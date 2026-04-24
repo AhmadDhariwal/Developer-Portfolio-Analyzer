@@ -121,7 +121,7 @@ export interface PublicProfilePayload {
   analytics: PublicProfileAnalytics;
   profileStrengthScore?: number;
   momentum?: PublicProfileMomentum | null;
-  user: { name: string; jobTitle: string; location: string; avatar: string; githubUsername: string; email?: string };
+  user: { name: string; jobTitle: string; location: string; avatar: string; githubUsername: string; email?: string; phoneNumber?: string };
 }
 
 @Injectable({

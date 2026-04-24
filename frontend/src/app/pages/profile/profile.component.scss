@@ -914,3 +914,23 @@
     color: #4ade80;
   }
 }
+
+// ── Phone number recruiter hint ───────────────────────────────────────────
+.phone-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--color-primary-light, #818cf8);
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 6px;
+  padding: 7px 10px;
+  line-height: 1.4;
+  margin-top: 2px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}

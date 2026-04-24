@@ -20,16 +20,22 @@ export class AcceptInvitationComponent implements OnInit {
   error = '';
   needsOnboarding = false;
   processing = false;
+  flow: 'auth-recruiter' | 'tenant' = 'auth-recruiter';
   details: {
+    name?: string;
     email: string;
     role: string;
     organizationName: string;
-    teamName: string;
+    teamName?: string;
     hasExistingAccount: boolean;
+    alreadyInAnotherOrganization?: boolean;
   } | null = null;
   form = {
     name: '',
     githubUsername: '',
+    linkedin: '',
+    phoneNumber: '',
+    countryCode: '+92',
     password: ''
   };
 
@@ -49,11 +55,28 @@ export class AcceptInvitationComponent implements OnInit {
       return;
     }
 
+    this.apiService.getAuthInviteDetails(this.token).subscribe({
+      next: (res) => {
+        this.flow = 'auth-recruiter';
+        this.details = res?.invitation || null;
+        this.form.name = this.details?.name || '';
+        this.form.githubUsername = String(this.details?.email || '').split('@')[0] || '';
+        this.loading = false;
+        this.needsOnboarding = true;
+      },
+      error: () => {
+        this.flow = 'tenant';
+        this.loadTenantInvitationFlow();
+      }
+    });
+  }
+
+  private loadTenantInvitationFlow(): void {
     this.apiService.getInvitationDetailsByToken(this.token).subscribe({
       next: (res) => {
         this.details = res?.invitation || null;
         this.form.githubUsername = String(this.details?.email || '').split('@')[0] || '';
-        this.tryCompleteInvitation();
+        this.tryCompleteTenantInvitation();
       },
       error: (error) => {
         this.loading = false;
@@ -62,7 +85,7 @@ export class AcceptInvitationComponent implements OnInit {
     });
   }
 
-  private tryCompleteInvitation(): void {
+  private tryCompleteTenantInvitation(): void {
     if (!this.token) {
       this.loading = false;
       this.error = 'Invitation token is missing.';
@@ -87,7 +110,7 @@ export class AcceptInvitationComponent implements OnInit {
           this.tenantContext.setOrganization({
             id: organizationId,
             name: '',
-            myRole: 'member'
+            myRole: 'recruiter'
           });
         }
         if (teamId) {
@@ -108,6 +131,12 @@ export class AcceptInvitationComponent implements OnInit {
 
   completeOnboarding(): void {
     if (!this.token) return;
+
+    if (this.flow === 'auth-recruiter') {
+      this.completeAuthInviteOnboarding();
+      return;
+    }
+
     if (!this.form.name.trim() || !this.form.password.trim()) {
       this.error = 'Name and password are required.';
       return;
@@ -146,6 +175,57 @@ export class AcceptInvitationComponent implements OnInit {
       error: (error) => {
         this.processing = false;
         this.error = error?.error?.message || 'Failed to complete onboarding.';
+      }
+    });
+  }
+
+  private completeAuthInviteOnboarding(): void {
+    if (!this.form.name.trim()) {
+      this.error = 'Name is required.';
+      return;
+    }
+
+    if (!this.details?.hasExistingAccount && this.form.password.trim().length < 6) {
+      this.error = 'Password must be at least 6 characters.';
+      return;
+    }
+
+    this.processing = true;
+    this.error = '';
+
+    this.apiService.acceptAuthInvite({
+      token: this.token,
+      name: this.form.name.trim(),
+      password: this.form.password || undefined,
+      githubUsername: this.form.githubUsername.trim() || undefined,
+      linkedin: this.form.linkedin.trim() || undefined,
+      phoneNumber: this.form.phoneNumber.trim() || undefined,
+      countryCode: this.form.countryCode.trim() || undefined
+    }).subscribe({
+      next: (res) => {
+        this.processing = false;
+        if (res?.user?.token) {
+          this.authService.completeExternalLogin(res.user);
+        }
+
+        const organizationId = String(res?.user?.organizationId || res?.organizationId || '');
+        if (organizationId) {
+          this.tenantContext.setOrganization({
+            id: organizationId,
+            name: this.details?.organizationName || '',
+            myRole: 'recruiter'
+          });
+        }
+
+        this.accepted = true;
+        this.needsOnboarding = false;
+
+        const redirectTo = String(res?.redirectTo || '/app/profile?onboarding=recruiter');
+        this.router.navigateByUrl(redirectTo);
+      },
+      error: (error) => {
+        this.processing = false;
+        this.error = error?.error?.message || 'Failed to complete recruiter onboarding.';
       }
     });
   }

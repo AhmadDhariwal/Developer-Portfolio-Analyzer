@@ -35,6 +35,46 @@ const normalizeSkills = (skills = []) => {
     .filter(Boolean))];
 };
 
+const sanitizePublicCandidate = (candidate = {}) => ({
+  id: candidate.id,
+  userId: candidate.userId,
+  fullName: candidate.fullName || candidate.name || '',
+  stack: candidate.stack || '',
+  yearsOfExperience: Number(candidate.yearsOfExperience || 0),
+  headline: candidate.headline || candidate.jobTitle || '',
+  location: candidate.location || '',
+  githubUsername: candidate.githubUsername || '',
+  publicProfileSlug: candidate.publicProfileSlug || null,
+  githubScore: Number(candidate.githubScore || 0),
+  resumeScore: Number(candidate.resumeScore || 0),
+  consistencyScore: Number(candidate.consistencyScore || 0),
+  growthPotentialScore: Number(candidate.growthPotentialScore || 0),
+  score: Number(candidate.score || 0),
+  skills: Array.isArray(candidate.skills) ? candidate.skills : [],
+  skillScores: Array.isArray(candidate.skillScores) ? candidate.skillScores : [],
+  projects: Array.isArray(candidate.projects)
+    ? candidate.projects.map((project) => ({
+      title: project?.title || '',
+      description: project?.description || '',
+      technologies: Array.isArray(project?.technologies) ? project.technologies : [],
+      status: project?.status || '',
+      impactScore: Number(project?.impactScore || 0)
+    }))
+    : [],
+  githubStats: {
+    repos: Number(candidate.githubStats?.repos || 0),
+    stars: Number(candidate.githubStats?.stars || 0),
+    forks: Number(candidate.githubStats?.forks || 0),
+    followers: Number(candidate.githubStats?.followers || 0)
+  },
+  aiInsight: {
+    summary: String(candidate.aiInsight?.summary || ''),
+    strengths: Array.isArray(candidate.aiInsight?.strengths) ? candidate.aiInsight.strengths : [],
+    weaknesses: Array.isArray(candidate.aiInsight?.weaknesses) ? candidate.aiInsight.weaknesses : [],
+    recommendation: String(candidate.aiInsight?.recommendation || '')
+  }
+});
+
 const computeResumeScore = (resumeAnalysis) => {
   if (!resumeAnalysis) return 0;
   const scores = [
@@ -360,7 +400,7 @@ const listCandidates = async ({ search = '', stack = '', experience = 0, minScor
   const filtered = applyCandidateFilters(merged, { search, stack, experience, minScore });
 
   const sorted = [...filtered].sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
-  return sorted.slice(0, limit);
+  return sorted.slice(0, limit).map((candidate) => sanitizePublicCandidate(candidate));
 };
 
 const getCandidateById = async (id) => {
@@ -383,7 +423,7 @@ const getCandidateById = async (id) => {
 
     const [hydratedCandidate] = await hydrateUserCandidates([user]);
     const merged = mergeCandidates([candidateDoc], hydratedCandidate ? [hydratedCandidate] : []);
-    return merged[0] || hydratedCandidate || null;
+    return sanitizePublicCandidate(merged[0] || hydratedCandidate || null);
   }
 
   const [user, publicProfile] = await Promise.all([
@@ -398,7 +438,7 @@ const getCandidateById = async (id) => {
   }
 
   const [candidate] = await hydrateUserCandidates([user]);
-  return candidate || null;
+  return sanitizePublicCandidate(candidate || null);
 };
 
 const assertOrganizationScope = (organizationId) => {

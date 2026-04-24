@@ -80,6 +80,14 @@
       <div class="bio-description">
         <p>{{ getSummaryText() }}</p>
       </div>
+
+      <div class="bio-description bio-description--meta">
+        <p><strong>Name:</strong> {{ profile.user.name }}</p>
+        <p><strong>Skills:</strong> {{ getTopSkillsText() }}</p>
+        <p><strong>GitHub:</strong> {{ profile.user.githubUsername ? ('@' + profile.user.githubUsername) : 'Not provided' }}</p>
+        <p><strong>LinkedIn:</strong> {{ profile.socialLinks.linkedin ? profile.socialLinks.linkedin : 'Not provided' }}</p>
+        <p *ngIf="profile.user.phoneNumber"><strong>Phone:</strong> {{ profile.user.phoneNumber }}</p>
+      </div>
     </div>
   </section>
 

@@ -1,37 +1,123 @@
-<div class="invite-page">
-  <div class="card" *ngIf="loading">
-    <h2>Loading Invitation...</h2>
-    <p>We are validating your invitation and activating your membership.</p>
+<div class="invite-wrap">
+
+  <!-- Loading -->
+  <div class="invite-card" *ngIf="loading">
+    <div class="invite-card__icon invite-card__icon--loading">
+      <span class="spinner"></span>
+    </div>
+    <h2>Validating Invitation</h2>
+    <p>Please wait while we verify your invitation link…</p>
   </div>
 
-  <div class="card" *ngIf="!loading && !accepted && needsOnboarding && !error">
-    <h2>Complete Invitation Setup</h2>
-    <p *ngIf="details">
-      Join {{ details.organizationName }}<span *ngIf="details.teamName"> / {{ details.teamName }}</span> as {{ details.role }}.
+  <!-- Onboarding form -->
+  <div class="invite-card" *ngIf="!loading && !accepted && needsOnboarding && !error">
+    <div class="invite-card__badge">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" y1="8" x2="19" y2="14"/>
+        <line x1="22" y1="11" x2="16" y2="11"/>
+      </svg>
+    </div>
+
+    <h2>Complete Your Setup</h2>
+
+    <div class="invite-card__org" *ngIf="details">
+      <span class="org-label">Joining</span>
+      <strong>{{ details.organizationName }}</strong>
+      <span class="role-badge">{{ details.role }}</span>
+    </div>
+
+    <p class="invite-card__email" *ngIf="details">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      {{ details.email }}
     </p>
-    <p *ngIf="details">Invitation email: {{ details.email }}</p>
 
-    <input [(ngModel)]="form.name" placeholder="Full name" />
-    <input [(ngModel)]="form.githubUsername" placeholder="GitHub username" />
-    <input [(ngModel)]="form.password" type="password" placeholder="Set password" />
+    <div class="invite-card__alert" *ngIf="details?.alreadyInAnotherOrganization">
+      This email is already attached to another organization and cannot be reassigned.
+    </div>
 
-    <div class="actions">
-      <button (click)="completeOnboarding()" [disabled]="processing">{{ processing ? 'Processing...' : 'Complete Setup' }}</button>
+    <div class="invite-card__alert" *ngIf="error && needsOnboarding">{{ error }}</div>
+
+    <div class="form-stack">
+      <div class="form-field">
+        <label for="inv-name">Full Name <span class="req">*</span></label>
+        <input id="inv-name" type="text" [(ngModel)]="form.name" placeholder="Your full name" />
+      </div>
+
+      <div class="form-field">
+        <label for="inv-password">
+          {{ details?.hasExistingAccount ? 'New Password (optional)' : 'Set Password' }}
+          <span class="req" *ngIf="!details?.hasExistingAccount">*</span>
+        </label>
+        <input id="inv-password" type="password" [(ngModel)]="form.password"
+               [placeholder]="details?.hasExistingAccount ? 'Leave blank to keep current' : 'Min. 6 characters'" />
+      </div>
+
+      <div class="form-field">
+        <label for="inv-github">GitHub Username <span class="optional">(optional)</span></label>
+        <div class="input-prefix">
+          <span>github.com/</span>
+          <input id="inv-github" type="text" [(ngModel)]="form.githubUsername" placeholder="yourhandle" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="inv-linkedin">LinkedIn <span class="optional">(optional)</span></label>
+        <div class="input-prefix">
+          <span>linkedin.com/</span>
+          <input id="inv-linkedin" type="text" [(ngModel)]="form.linkedin" placeholder="in/yourname" />
+        </div>
+        <small class="field-hint">
+          {{ form.linkedin.trim() ? ('LinkedIn: ' + form.linkedin.trim()) : 'LinkedIn: Not provided' }}
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label for="inv-phone">Phone Number <span class="optional">(optional)</span></label>
+        <input id="inv-phone" type="text" [(ngModel)]="form.phoneNumber" placeholder="+1 555 000 0000" />
+      </div>
+    </div>
+
+    <button class="btn-primary" (click)="completeOnboarding()" [disabled]="processing">
+      <span *ngIf="processing" class="spinner spinner--sm"></span>
+      {{ processing ? 'Setting up account…' : 'Complete Setup & Join' }}
+    </button>
+  </div>
+
+  <!-- Success -->
+  <div class="invite-card invite-card--success" *ngIf="!loading && accepted">
+    <div class="invite-card__icon invite-card__icon--success">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h2>You're In!</h2>
+    <p>Your account has been set up and you've joined the organization successfully.</p>
+    <div class="btn-group">
+      <a class="btn-primary" routerLink="/app/recruiter/dashboard">Go to Dashboard</a>
+      <button class="btn-ghost" type="button" (click)="goToTeamManagement()">User Management</button>
     </div>
   </div>
 
-  <div class="card success" *ngIf="!loading && accepted">
-    <h2>Invitation Accepted</h2>
-    <p>You have joined the organization successfully.</p>
-    <div class="actions">
-      <button (click)="goToTeamManagement()">Open User Management</button>
-      <a routerLink="/app/dashboard">Go to Dashboard</a>
+  <!-- Error -->
+  <div class="invite-card invite-card--error" *ngIf="!loading && error && !needsOnboarding">
+    <div class="invite-card__icon invite-card__icon--error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
     </div>
-  </div>
-
-  <div class="card error" *ngIf="!loading && error">
-    <h2>Unable To Join</h2>
+    <h2>Unable to Join</h2>
     <p>{{ error }}</p>
-    <a routerLink="/app/settings/user-management">Back to User Management</a>
+    <a class="btn-ghost" routerLink="/auth/login">Back to Login</a>
   </div>
+
 </div>

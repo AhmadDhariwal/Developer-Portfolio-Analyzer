@@ -33,6 +33,8 @@ export interface UserProfile {
   _id:                string;
   name:               string;
   email:              string;
+  phoneNumber?:       string;
+  countryCode?:       string;
   githubUsername:     string;
   activeGithubUsername?: string;
   avatar:             string;
@@ -51,6 +53,7 @@ export interface UserProfile {
   isConfigured:       boolean;
   isPublic?:          boolean;
   role?:              string;
+  profileCompleted?:  boolean;
   defaultResume?:     ResumeContextFile | null;
   activeResume?:      ResumeContextFile | null;
   stats:              AccountStats;
@@ -66,6 +69,7 @@ export interface UpdateProfilePayload {
   website?:       string;
   twitter?:       string;
   linkedin?:      string;
+  phoneNumber?:   string;
   notifications?: Partial<NotificationPrefs>;
 }
 

@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const invitationSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      default: ''
+    },
     organizationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Organization',
@@ -23,7 +27,7 @@ const invitationSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'manager', 'member'],
+      enum: ['admin', 'manager', 'member', 'recruiter'],
       default: 'member'
     },
     token: {

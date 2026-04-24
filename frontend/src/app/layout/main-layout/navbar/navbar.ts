@@ -49,11 +49,11 @@ export class Navbar implements OnInit {
   searchQuery = '';
   suggestions: SearchSuggestion[] = [];
   showSuggestions = false;
-  organizations: Array<{ _id: string; name: string; myRole: 'admin' | 'manager' | 'member' }> = [];
+  organizations: Array<{ _id: string; name: string; myRole: 'admin' | 'manager' | 'member' | 'recruiter' }> = [];
   teams: Array<{ _id: string; name: string }> = [];
   selectedOrganizationId = '';
   selectedTeamId = '';
-  selectedRole: 'admin' | 'manager' | 'member' | '' = '';
+  selectedRole: 'admin' | 'manager' | 'member' | 'recruiter' | '' = '';
 
   private cachedRepos: any[] = [];
   private cachedSkills: SearchSuggestion[] = [];
