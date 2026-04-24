@@ -171,6 +171,12 @@
   border: 1px solid var(--border-light, #334155);
   border-radius: 8px;
   overflow: hidden;
+  transition: border-color 0.15s;
+
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   span {
     padding: 10px 10px 10px 12px;
@@ -278,4 +284,30 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+// ── Fieldset disabled state ───────────────────────────────────────────────
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  &[disabled] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+// ── Success email display ─────────────────────────────────────────────────
+.success-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: #4ade80;
+  font-weight: 500;
 }
