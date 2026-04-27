@@ -140,6 +140,11 @@ const userSchema = new mongoose.Schema({
     default: false,
     index: true
   },
+  onboardingCompleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

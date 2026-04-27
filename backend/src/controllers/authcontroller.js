@@ -2,6 +2,7 @@ const User = require('../models/user');
 const PendingRegistration = require('../models/pendingRegistration');
 const Invitation = require('../models/invitation');
 const Organization = require('../models/organization');
+const Membership = require('../models/membership');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { registerAuthFailure, clearAuthFailures } = require('../middleware/securityMiddleware');
@@ -182,12 +183,20 @@ const loginUser = async (req, res) => {
       await user.save();
       clearAuthFailures(req);
 
+      // Resolve organization name for tenant context
+      let organizationName = '';
+      if (user.organizationId) {
+        const org = await Organization.findById(user.organizationId).select('name').lean();
+        organizationName = org?.name || '';
+      }
+
       return res.json({
         _id:                  user.id,
         name:                 user.name,
         email:                user.email,
         role:                 toPublicRole(user.role),
         organizationId:       user.organizationId || null,
+        organizationName,
         isActive:             user.isActive !== false,
         isPublic:             Boolean(user.isPublic),
         phoneNumber:          user.phoneNumber || '',
@@ -565,8 +574,28 @@ const acceptInvite = async (req, res) => {
       acceptedBy: user._id
     });
 
+    // Ensure the recruiter has an active membership record for this org
+    // (used by orgMiddleware to resolve organization context on subsequent requests)
+    await Membership.findOneAndUpdate(
+      {
+        organizationId: invitation.organizationId,
+        userId: user._id,
+        teamId: null
+      },
+      {
+        $set: {
+          role: 'member',
+          status: 'active',
+          invitedBy: invitation.invitedBy,
+          joinedAt: new Date()
+        }
+      },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+
     user.activeCareerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
     user.activeExperienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
+    user.onboardingCompleted = true;
     await user.save();
 
     const profileCompleted = isRecruiterProfileComplete(user);
@@ -581,6 +610,9 @@ const acceptInvite = async (req, res) => {
         email: user.email,
         role: toPublicRole(user.role),
         organizationId: user.organizationId || null,
+        organizationName: invitation.organizationId
+          ? (await Organization.findById(invitation.organizationId).select('name').lean())?.name || ''
+          : '',
         isActive: user.isActive !== false,
         isPublic: Boolean(user.isPublic),
         githubUsername: user.githubUsername || '',

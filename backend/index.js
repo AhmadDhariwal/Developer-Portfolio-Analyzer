@@ -57,8 +57,8 @@ app.use(helmet({
         useDefaults: true,
         directives: {
             defaultSrc: ["'self'"],
-            connectSrc: ["'self'", 'http://localhost:4200', 'http://localhost:3000', 'http://localhost:5000'],
-            imgSrc: ["'self'", 'data:', 'https:', 'http://localhost:5000', 'http://localhost:4200'],
+            connectSrc: ["'self'", 'http://localhost:*', 'http://127.0.0.1:*', 'http://localhost:5000'],
+            imgSrc: ["'self'", 'data:', 'https:', 'http://localhost:5000', 'http://localhost:*'],
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             frameAncestors: ["'none'"]

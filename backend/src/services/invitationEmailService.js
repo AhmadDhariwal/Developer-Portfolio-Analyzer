@@ -161,7 +161,7 @@ const sendInvitationEmail = async ({
   });
 
   const provider = getProvider();
-  const invitationLink = `${FRONTEND_BASE_URL}/app/invitations/accept/${normalized.token}`;
+  const invitationLink = `${FRONTEND_BASE_URL}/invitations/accept/${normalized.token}`;
 
   if (!provider) {
     const status = getEmailProviderStatus();

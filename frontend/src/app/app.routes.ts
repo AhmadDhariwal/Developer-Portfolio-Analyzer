@@ -53,6 +53,9 @@ export const routes: Routes = [
   { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
   { path: 'auth/reset-password',   component: ResetPasswordComponent,   canActivate: [publicGuard] },
 
+  // Recruiter invitation — public, no auth required (recruiter has no account yet)
+  { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
+
   // Protected app routes (inside MainLayout)
   {
     path: 'app',
@@ -77,6 +80,8 @@ export const routes: Routes = [
       { path: 'interviews-reports',component: InterviewsReportsComponent },
       { path: 'news',              component: NewsComponent },
       { path: 'notifications',     component: NotificationsComponent },
+
+      // Invitation accept — also reachable from inside the app shell (handles old email links)
       { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
 
       // Recruiter hub

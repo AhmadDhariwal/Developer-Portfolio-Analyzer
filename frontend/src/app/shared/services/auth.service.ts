@@ -44,10 +44,26 @@ export class AuthService {
   constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService) {
     if (this.checkToken()) {
       this.scheduleAutoLogout();
-      // Restore role from stored user on page refresh
+      // Restore role from stored user on page refresh — use real org id if present
       const user = this.getCurrentUser();
       if (user?.role === 'admin') {
-        this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
+        const orgId = String(user['organizationId'] || '');
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(orgId);
+        this.tenantContext.setOrganization({
+          id: isValidObjectId ? orgId : '',
+          name: String(user['organizationName'] || ''),
+          myRole: 'admin'
+        });
+      } else if (user?.role === 'recruiter') {
+        const orgId = String(user['organizationId'] || '');
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(orgId);
+        if (isValidObjectId) {
+          this.tenantContext.setOrganization({
+            id: orgId,
+            name: String(user['organizationName'] || ''),
+            myRole: 'recruiter'
+          });
+        }
       }
     }
   }
@@ -196,12 +212,31 @@ export class AuthService {
     };
     localStorage.setItem(CAREER_PROFILE_STORAGE_KEY, JSON.stringify(careerProfile));
     localStorage.setItem('loginExpiry', String(Date.now() + SESSION_DURATION_MS));
-    // Set role in tenant context so sidebar and guards work correctly
+
+    // Set tenant context using the real organizationId from the server response.
+    // Only fall back to a placeholder when no real org is available yet.
+    const orgId = String(response.organizationId || '');
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(orgId);
+
     if (response.role === 'admin') {
-      this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
+      // Admin: use real org id if available, otherwise leave empty so the
+      // backend resolves it from the Organization collection (avoids "local" cast error)
+      this.tenantContext.setOrganization({
+        id: isValidObjectId ? orgId : '',
+        name: response.organizationName || '',
+        myRole: 'admin'
+      });
+    } else if (response.role === 'recruiter' && isValidObjectId) {
+      this.tenantContext.setOrganization({
+        id: orgId,
+        name: response.organizationName || '',
+        myRole: 'recruiter'
+      });
     } else {
-      this.tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'member' });
+      // Developer / member — no org context needed on the frontend
+      this.tenantContext.setOrganization({ id: '', name: '', myRole: 'member' });
     }
+
     this.isLoggedInSubject.next(true);
     this.scheduleAutoLogout();
   }

@@ -18,7 +18,7 @@ router.post('/send-otp', authRateLimiter, sendOtp);
 router.post('/verify-otp', authRateLimiter, verifyOtp);
 router.post('/forgot-password', authRateLimiter, forgotPassword);
 router.post('/reset-password', authRateLimiter, resetPassword);
-router.get('/invite-details/:token', authRateLimiter, getInviteDetails);
+router.get('/invite-details/:token', getInviteDetails);
 router.post('/accept-invite', authRateLimiter, acceptInvite);
 
 module.exports = router;

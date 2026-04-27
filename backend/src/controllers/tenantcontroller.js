@@ -317,7 +317,7 @@ const inviteUser = async (req, res) => {
       actorId: req.user._id
     });
 
-    const invitationLink = `${process.env.FRONTEND_BASE_URL || 'http://localhost:4200'}/app/invitations/accept/${token}`;
+    const invitationLink = `${process.env.FRONTEND_BASE_URL || 'http://localhost:4200'}/invitations/accept/${token}`;
 
     // If no email provider, return success with the invitation link for manual sharing
     if (!emailProviderStatus.configured) {

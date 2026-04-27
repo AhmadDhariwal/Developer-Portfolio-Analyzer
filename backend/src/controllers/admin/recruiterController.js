@@ -100,7 +100,7 @@ const inviteRecruiter = async (req, res) => {
     });
 
     const frontendBase = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
-    const invitationLink = `${frontendBase}/app/invitations/accept/${token}`;
+    const invitationLink = `${frontendBase}/invitations/accept/${token}`;
 
     const emailResult = await sendRecruiterInvitationEmail({
       to: email,
