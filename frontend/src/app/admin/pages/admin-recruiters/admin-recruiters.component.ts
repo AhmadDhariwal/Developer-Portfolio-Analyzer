@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AdminHiringService, AdminRecruiter } from '../../services/admin-hiring.service';
+import { AdminHiringService, AdminRecruiter, PendingInvitation } from '../../services/admin-hiring.service';
 
 @Component({
   selector: 'app-admin-recruiters-page',
@@ -13,7 +13,15 @@ export class AdminRecruitersPageComponent implements OnInit {
   message = '';
   messageType: 'success' | 'error' | 'warning' = 'success';
   recruiters: AdminRecruiter[] = [];
+  pendingInvitations: PendingInvitation[] = [];
   editingRecruiterId = '';
+
+  // ── Confirm dialog state ────────────────────────────────────────────────
+  confirmOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmText = 'Delete';
+  private pendingConfirmAction: (() => void) | null = null;
 
   form = {
     name: '',
@@ -31,22 +39,31 @@ export class AdminRecruitersPageComponent implements OnInit {
   constructor(private readonly adminService: AdminHiringService) {}
 
   ngOnInit(): void {
-    this.loadRecruiters();
+    this.loadAll();
   }
 
-  loadRecruiters(): void {
+  loadAll(): void {
     this.loading = true;
+    let done = 0;
+    const finish = () => { if (++done === 2) this.loading = false; };
+
     this.adminService.getRecruiters().subscribe({
-      next: (recruiters) => {
-        this.recruiters = recruiters;
-        this.loading = false;
-      },
+      next: (recruiters) => { this.recruiters = recruiters; finish(); },
       error: () => {
         this.messageType = 'error';
         this.message = 'Failed to load recruiters.';
-        this.loading = false;
+        finish();
       }
     });
+
+    this.adminService.getPendingInvitations().subscribe({
+      next: (invitations) => { this.pendingInvitations = invitations; finish(); },
+      error: () => { finish(); }
+    });
+  }
+
+  loadRecruiters(): void {
+    this.loadAll();
   }
 
   inviteRecruiter(): void {
@@ -68,7 +85,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.message = result.emailSent
           ? 'Recruiter invitation sent successfully.'
           : `Invitation created. Share this link manually: ${result.invitationLink}`;
-        this.loadRecruiters();
+        this.loadAll();
       },
       error: (err) => {
         this.messageType = 'error';
@@ -119,7 +136,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'success';
         this.message = 'Recruiter updated successfully.';
         this.cancelEdit();
-        this.loadRecruiters();
+        this.loadAll();
       },
       error: (err) => {
         this.messageType = 'error';
@@ -135,7 +152,7 @@ export class AdminRecruitersPageComponent implements OnInit {
       next: () => {
         this.messageType = 'success';
         this.message = recruiter.isActive ? 'Recruiter deactivated.' : 'Recruiter activated.';
-        this.loadRecruiters();
+        this.loadAll();
       },
       error: (err) => {
         this.messageType = 'error';
@@ -151,7 +168,7 @@ export class AdminRecruitersPageComponent implements OnInit {
       next: () => {
         this.messageType = 'success';
         this.message = 'Recruiter access revoked.';
-        this.loadRecruiters();
+        this.loadAll();
       },
       error: (err) => {
         this.messageType = 'error';
@@ -162,21 +179,106 @@ export class AdminRecruitersPageComponent implements OnInit {
   }
 
   deleteRecruiter(recruiter: AdminRecruiter): void {
-    const confirmed = globalThis.confirm(`Delete recruiter ${recruiter.name}? This cannot be undone.`);
-    if (!confirmed) return;
+    this.openConfirm(
+      'Delete Recruiter',
+      `Delete recruiter ${recruiter.name}? This cannot be undone.`,
+      () => {
+        this.loading = true;
+        this.adminService.deleteRecruiter(recruiter._id).subscribe({
+          next: () => {
+            this.messageType = 'success';
+            this.message = 'Recruiter deleted successfully.';
+            this.loadAll();
+          },
+          error: (err) => {
+            this.messageType = 'error';
+            this.message = String(err?.error?.message || 'Failed to delete recruiter.');
+            this.loading = false;
+          }
+        });
+      }
+    );
+  }
 
+  // ── Pending invitation actions ──────────────────────────────────────────
+
+  revokeInvitation(inv: PendingInvitation): void {
     this.loading = true;
-    this.adminService.deleteRecruiter(recruiter._id).subscribe({
+    this.adminService.revokeInvitation(inv._id).subscribe({
       next: () => {
         this.messageType = 'success';
-        this.message = 'Recruiter deleted successfully.';
-        this.loadRecruiters();
+        this.message = `Invitation for ${inv.email} revoked.`;
+        this.loadAll();
       },
       error: (err) => {
         this.messageType = 'error';
-        this.message = String(err?.error?.message || 'Failed to delete recruiter.');
+        this.message = String(err?.error?.message || 'Failed to revoke invitation.');
         this.loading = false;
       }
     });
+  }
+
+  expireInvitation(inv: PendingInvitation): void {
+    this.loading = true;
+    this.adminService.expireInvitation(inv._id).subscribe({
+      next: () => {
+        this.messageType = 'success';
+        this.message = `Invitation for ${inv.email} expired.`;
+        this.loadAll();
+      },
+      error: (err) => {
+        this.messageType = 'error';
+        this.message = String(err?.error?.message || 'Failed to expire invitation.');
+        this.loading = false;
+      }
+    });
+  }
+
+  deleteInvitation(inv: PendingInvitation): void {
+    this.openConfirm(
+      'Delete Invitation',
+      `Delete invitation for ${inv.email}? This cannot be undone.`,
+      () => {
+        this.loading = true;
+        this.adminService.deleteInvitation(inv._id).subscribe({
+          next: () => {
+            this.messageType = 'success';
+            this.message = `Invitation for ${inv.email} deleted.`;
+            this.loadAll();
+          },
+          error: (err) => {
+            this.messageType = 'error';
+            this.message = String(err?.error?.message || 'Failed to delete invitation.');
+            this.loading = false;
+          }
+        });
+      }
+    );
+  }
+
+  isExpired(inv: PendingInvitation): boolean {
+    return new Date(inv.expiresAt) < new Date();
+  }
+
+  // ── Confirm dialog helpers ──────────────────────────────────────────────
+
+  private openConfirm(title: string, message: string, action: () => void): void {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.pendingConfirmAction = action;
+    this.confirmOpen = true;
+  }
+
+  onConfirmed(): void {
+    this.confirmOpen = false;
+    if (this.pendingConfirmAction) {
+      this.pendingConfirmAction();
+      this.pendingConfirmAction = null;
+    }
+  }
+
+  onCancelled(): void {
+    this.confirmOpen = false;
+    this.pendingConfirmAction = null;
   }
 }

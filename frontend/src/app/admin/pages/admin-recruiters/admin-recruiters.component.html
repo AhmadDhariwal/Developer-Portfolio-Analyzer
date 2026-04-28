@@ -6,7 +6,7 @@
       <h2>Recruiter Management</h2>
       <p>Invite recruiters and manage their access within your organization.</p>
     </div>
-    <span class="count-badge" *ngIf="recruiters.length > 0">{{ recruiters.length }} recruiter{{ recruiters.length !== 1 ? 's' : '' }}</span>
+    <span class="count-badge" *ngIf="recruiters.length > 0">{{ recruiters.length }} active</span>
   </header>
 
   <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
@@ -50,10 +50,67 @@
 
   <app-shared-loader [loading]="loading" label="Loading recruiters"></app-shared-loader>
 
-  <!-- Recruiter list -->
+  <!-- Pending Invitations -->
+  <section class="card" *ngIf="!loading && pendingInvitations.length > 0">
+    <div class="section-head">
+      <h3>Pending Invitations</h3>
+      <span class="count-badge count-badge--warning">{{ pendingInvitations.length }} pending</span>
+    </div>
+
+    <div class="recruiter-list">
+      <div class="recruiter-row" *ngFor="let inv of pendingInvitations">
+        <div class="recruiter-row__info">
+          <div class="recruiter-avatar recruiter-avatar--pending">{{ inv.name ? inv.name.charAt(0).toUpperCase() : '?' }}</div>
+          <div class="recruiter-meta">
+            <span class="recruiter-name">{{ inv.name || '(Name not set)' }}</span>
+            <span class="recruiter-email">{{ inv.email }}</span>
+            <div class="recruiter-details">
+              <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Invited {{ inv.createdAt | date: 'mediumDate' }}
+              </span>
+              <span [class.text-danger]="isExpired(inv)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {{ isExpired(inv) ? 'Expired' : 'Expires' }} {{ inv.expiresAt | date: 'mediumDate' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recruiter-row__badges">
+          <span class="status-badge status-badge--pending">Pending</span>
+          <span class="status-badge status-badge--inactive" *ngIf="isExpired(inv)">Link Expired</span>
+        </div>
+
+        <div class="recruiter-row__actions">
+          <button class="btn-action btn-action--revoke" type="button" title="Revoke access" (click)="revokeInvitation(inv)">
+            Revoke Access
+          </button>
+          <button class="btn-action btn-action--deactivate" type="button" title="Expire the invitation link" (click)="expireInvitation(inv)">
+            Expire Link
+          </button>
+          <button class="btn-action btn-action--delete" type="button" title="Delete invitation" (click)="deleteInvitation(inv)">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Active Recruiters -->
   <section class="card" *ngIf="!loading">
     <div class="section-head">
-      <h3>Organization Recruiters</h3>
+      <h3>Active Recruiters</h3>
     </div>
 
     <app-shared-empty-state
@@ -163,5 +220,16 @@
       </div>
     </div>
   </section>
+
+  <!-- Confirm dialog -->
+  <app-confirm-dialog
+    [open]="confirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    confirmText="Delete"
+    cancelText="Cancel"
+    (confirmed)="onConfirmed()"
+    (cancelled)="onCancelled()"
+  ></app-confirm-dialog>
 
 </section>

@@ -38,6 +38,12 @@
   font-weight: 600;
   white-space: nowrap;
   align-self: center;
+
+  &--warning {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+  }
 }
 
 // ── Card base ─────────────────────────────────────────────────────────────
@@ -50,6 +56,9 @@
 
 .section-head {
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 
   h3 {
     margin: 0;
@@ -195,6 +204,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  &--pending {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+  }
 }
 
 .recruiter-meta {
@@ -265,6 +280,10 @@
 .date-label {
   font-size: 0.75rem;
   color: var(--text-muted, #64748b);
+}
+
+.text-danger {
+  color: #f87171 !important;
 }
 
 // ── Action buttons ────────────────────────────────────────────────────────

@@ -25,6 +25,16 @@ export interface AdminRecruiter {
   createdAt: string;
 }
 
+export interface PendingInvitation {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export interface AdminDeveloper {
   _id: string;
   name: string;
@@ -130,6 +140,24 @@ export class AdminHiringService {
     return this.api.deleteAdminRecruiter(id).pipe(
       map(() => void 0)
     );
+  }
+
+  getPendingInvitations(): Observable<PendingInvitation[]> {
+    return this.api.getAdminPendingInvitations().pipe(
+      map((res: { invitations?: PendingInvitation[] }) => res?.invitations || [])
+    );
+  }
+
+  revokeInvitation(id: string): Observable<void> {
+    return this.api.revokeAdminInvitation(id).pipe(map(() => void 0));
+  }
+
+  expireInvitation(id: string): Observable<void> {
+    return this.api.expireAdminInvitation(id).pipe(map(() => void 0));
+  }
+
+  deleteInvitation(id: string): Observable<void> {
+    return this.api.deleteAdminInvitation(id).pipe(map(() => void 0));
   }
 
   getDevelopers(): Observable<AdminDeveloper[]> {

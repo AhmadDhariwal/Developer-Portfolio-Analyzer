@@ -260,11 +260,102 @@ const deleteRecruiter = async (req, res) => {
   }
 };
 
+// ── Pending Invitations ───────────────────────────────────────────────────
+
+const getPendingInvitations = async (req, res) => {
+  try {
+    const invitations = await Invitation.find({
+      organizationId: req.organizationId,
+      role: 'recruiter',
+      status: 'pending'
+    })
+      .select('_id name email role status expiresAt createdAt invitedBy')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({ invitations });
+  } catch (error) {
+    console.error('Admin pending invitations error:', error.message);
+    return res.status(500).json({ message: 'Failed to load pending invitations.' });
+  }
+};
+
+const revokeInvitation = async (req, res) => {
+  try {
+    const invitation = await Invitation.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        organizationId: req.organizationId,
+        role: 'recruiter',
+        status: 'pending'
+      },
+      { $set: { status: 'revoked' } },
+      { new: true }
+    );
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Pending invitation not found.' });
+    }
+
+    return res.status(200).json({ message: 'Invitation revoked successfully.' });
+  } catch (error) {
+    console.error('Admin revoke invitation error:', error.message);
+    return res.status(500).json({ message: 'Failed to revoke invitation.' });
+  }
+};
+
+const expireInvitation = async (req, res) => {
+  try {
+    const invitation = await Invitation.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        organizationId: req.organizationId,
+        role: 'recruiter',
+        status: 'pending'
+      },
+      { $set: { status: 'expired', expiresAt: new Date() } },
+      { new: true }
+    );
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Pending invitation not found.' });
+    }
+
+    return res.status(200).json({ message: 'Invitation expired successfully.' });
+  } catch (error) {
+    console.error('Admin expire invitation error:', error.message);
+    return res.status(500).json({ message: 'Failed to expire invitation.' });
+  }
+};
+
+const deleteInvitation = async (req, res) => {
+  try {
+    const invitation = await Invitation.findOneAndDelete({
+      _id: req.params.id,
+      organizationId: req.organizationId,
+      role: 'recruiter'
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Invitation not found.' });
+    }
+
+    return res.status(200).json({ message: 'Invitation deleted successfully.' });
+  } catch (error) {
+    console.error('Admin delete invitation error:', error.message);
+    return res.status(500).json({ message: 'Failed to delete invitation.' });
+  }
+};
+
 module.exports = {
   getRecruiters,
   inviteRecruiter,
   updateRecruiter,
   setRecruiterActive,
   revokeRecruiterAccess,
-  deleteRecruiter
+  deleteRecruiter,
+  getPendingInvitations,
+  revokeInvitation,
+  expireInvitation,
+  deleteInvitation
 };

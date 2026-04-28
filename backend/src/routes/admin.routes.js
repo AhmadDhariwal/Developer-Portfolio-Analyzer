@@ -10,7 +10,11 @@ const {
 	updateRecruiter,
 	setRecruiterActive,
 	revokeRecruiterAccess,
-	deleteRecruiter
+	deleteRecruiter,
+	getPendingInvitations,
+	revokeInvitation,
+	expireInvitation,
+	deleteInvitation
 } = require('../controllers/admin/recruiterController');
 const { getAdminJobs, createAdminJob, aiRankCandidates } = require('../controllers/admin/jobController');
 
@@ -24,6 +28,10 @@ router.put('/recruiters/:id', updateRecruiter);
 router.patch('/recruiters/:id/active', setRecruiterActive);
 router.patch('/recruiters/:id/revoke', revokeRecruiterAccess);
 router.delete('/recruiters/:id', deleteRecruiter);
+router.get('/invitations/pending', getPendingInvitations);
+router.patch('/invitations/:id/revoke', revokeInvitation);
+router.patch('/invitations/:id/expire', expireInvitation);
+router.delete('/invitations/:id', deleteInvitation);
 router.get('/developers', getDevelopers);
 router.get('/jobs', getAdminJobs);
 router.post('/jobs', createAdminJob);

@@ -1,38 +1,64 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.65);
-  display: grid;
-  place-items: center;
-  z-index: 1000;
+  background: rgba(2, 6, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .dialog-card {
   width: min(420px, 92vw);
   background: #172033;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px;
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-title {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.dialog-message {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  line-height: 1.55;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .actions button {
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
 }
 
 .actions .cancel {
-  background: #1f2937;
-  color: var(--text-primary);
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
 }
 
 .actions .confirm {
-  background: #0ea5e9;
-  color: #0b1120;
+  background: #ef4444;
+  color: #fff;
 }

@@ -402,6 +402,22 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}`);
   }
 
+  getAdminPendingInvitations(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/invitations/pending`);
+  }
+
+  revokeAdminInvitation(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/revoke`, {});
+  }
+
+  expireAdminInvitation(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/expire`, {});
+  }
+
+  deleteAdminInvitation(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}`);
+  }
+
   getAdminDevelopers(): Observable<any> {
     return this.http.get(`${this.baseUrl}/admin/developers`);
   }
