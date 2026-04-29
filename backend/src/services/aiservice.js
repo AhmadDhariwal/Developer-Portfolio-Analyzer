@@ -12,7 +12,7 @@ class AIService {
     const openAIEnvKey = (process.env.OPENAI_API_KEY || '').trim();
     const geminiFallbackKey = (process.env.GEMINI_FALLBACK_API_KEY || '').trim();
 
-    const envLooksOpenAI = envKey.startsWith('sk-');
+    const envLooksOpenAI = envKey.startsWith('sk-') || envKey.startsWith('gsk_');
     this.openAIKey = openAIEnvKey || (envLooksOpenAI ? envKey : '');
     this.geminiKey = geminiFallbackKey || (envLooksOpenAI ? '' : envKey);
     this.cache = new Map(); // prompt hash -> parsed JSON result
@@ -64,14 +64,60 @@ class AIService {
       .map((m) => m.trim())
       .filter(Boolean);
 
-    const defaults = ['gpt-4o-mini', 'gpt-4.1-mini'];
+    // Groq-hosted models (fast inference, OpenAI-compatible)
+    const defaults = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
     return [...new Set([...fromEnv, ...defaults])];
   }
 
   extractJson(text = '') {
-    const jsonMatch = /\{[\s\S]*\}|\[[\s\S]*\]/.exec(text);
+    // Strip markdown code fences if present
+    const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    // Try direct parse first
+    try {
+      return JSON.parse(stripped);
+    } catch (_) {}
+
+    // Try to extract the outermost JSON object or array
+    const jsonMatch = /(\{[\s\S]*\}|\[[\s\S]*\])/.exec(stripped);
     if (!jsonMatch) throw new Error('No JSON found in AI response');
-    return JSON.parse(jsonMatch[0]);
+
+    let candidate = jsonMatch[0];
+
+    // Try direct parse of extracted block
+    try {
+      return JSON.parse(candidate);
+    } catch (_) {}
+
+    // Attempt to repair truncated JSON by closing open brackets/braces
+    try {
+      return JSON.parse(this.repairJson(candidate));
+    } catch (_) {}
+
+    throw new Error('Failed to parse JSON from AI response');
+  }
+
+  repairJson(text) {
+    // Count unclosed braces and brackets, then close them
+    const stack = [];
+    let inString = false;
+    let escape = false;
+
+    for (const ch of text) {
+      if (escape) { escape = false; continue; }
+      if (ch === '\\' && inString) { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === '{') stack.push('}');
+      else if (ch === '[') stack.push(']');
+      else if (ch === '}' || ch === ']') stack.pop();
+    }
+
+    // Remove trailing comma before we close
+    let repaired = text.trimEnd().replace(/,\s*$/, '');
+    // Close all open structures in reverse order
+    while (stack.length) repaired += stack.pop();
+    return repaired;
   }
 
   getStatusCode(error) {
@@ -112,29 +158,41 @@ class AIService {
     console.warn(`[AIService] Gemini paused for ${seconds}s due to ${reason}. Returning fallback unless OpenAI recovers.`);
   }
 
+  // Reasoning models (grok-*-mini, o1, o3, etc.) reject the temperature parameter
+  isReasoningModel(modelName) {
+    return /mini|o1|o3|reasoning/i.test(modelName);
+  }
+
   async runOpenAI(prompt, modelName) {
+    const body = {
+      model: modelName,
+      max_tokens: 8000,
+      messages: [
+        {
+          role: 'system',
+          content: 'Return valid JSON only. No markdown, no commentary.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]
+    };
+
+    // Reasoning models do not accept temperature — omit it entirely
+    if (!this.isReasoningModel(modelName)) {
+      body.temperature = 0.2;
+    }
+
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: modelName,
-        temperature: 0.2,
-        messages: [
-          {
-            role: 'system',
-            content: 'Return valid JSON only. No markdown, no commentary.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      },
+      'https://api.groq.com/openai/v1/chat/completions',
+      body,
       {
         headers: {
           Authorization: `Bearer ${this.openAIKey}`,
           'Content-Type': 'application/json'
         },
-        timeout: 20000
+        timeout: 30000
       }
     );
 
@@ -164,8 +222,9 @@ class AIService {
         } catch (error) {
           const message = error?.message || 'Unknown AI error';
           const statusCode = this.getStatusCode(error);
+          const responseBody = error?.response?.data ? JSON.stringify(error.response.data) : '';
 
-          console.error(`[AIService] ${provider.toUpperCase()} error [model=${modelName}, status=${statusCode || 'n/a'}]: ${message}`);
+          console.error(`[AIService] ${provider.toUpperCase()} error [model=${modelName}, status=${statusCode || 'n/a'}]: ${message}${responseBody ? ` | body: ${responseBody}` : ''}`);
 
           if (this.isModelMissing(statusCode, message)) {
             break;
