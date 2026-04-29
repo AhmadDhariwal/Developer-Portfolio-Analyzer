@@ -40,13 +40,27 @@
     <!-- Sidebar Filters -->
     <aside class="filters-sidebar" [class.mobile-open]="isMobileFiltersOpen">
       <!-- Mobile overlay -->
-      <div class="mobile-overlay" *ngIf="isMobileFiltersOpen" (click)="toggleMobileFilters()"></div>
+      <button
+        class="mobile-overlay"
+        *ngIf="isMobileFiltersOpen"
+        type="button"
+        tabindex="0"
+        aria-label="Close filters"
+        (click)="toggleMobileFilters()"
+      ></button>
       <div class="filters-sidebar-inner">
         <app-job-filters
-          [initialFilters]="activeFilters"
+          [initialFilters]="pendingFilters"
           (filtersChange)="onFiltersChange($event)"
           (filtersReset)="onFiltersReset()"
         ></app-job-filters>
+        <button
+          class="btn-apply-filters"
+          (click)="applyFilters()"
+          [disabled]="isLoading"
+        >
+          Apply Filters
+        </button>
       </div>
     </aside>
 

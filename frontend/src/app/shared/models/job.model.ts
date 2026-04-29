@@ -45,6 +45,10 @@ export interface JobsResponse {
   totalPages: number;
   hasMore:    boolean;
   fromCache?: boolean;
+  sourceMessage?: string;
+  primarySource?: string;
+  sourceSummary?: Record<string, number>;
+  jsearchConfigured?: boolean;
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────

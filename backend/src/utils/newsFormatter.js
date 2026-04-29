@@ -1,5 +1,46 @@
+const crypto = require('node:crypto');
+
 const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80';
+
+const FALLBACK_IMAGES = {
+  Frontend: [
+    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80'
+  ],
+  Backend: [
+    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80'
+  ],
+  'Full Stack': [
+    'https://images.unsplash.com/photo-1516382799247-87df95d790b7?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80'
+  ],
+  'AI / ML': [
+    'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80'
+  ],
+  DevOps: [
+    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80'
+  ],
+  Mobile: [
+    'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80'
+  ],
+  Cybersecurity: [
+    'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1510511233900-1c8b3dfbe8f5?auto=format&fit=crop&w=1200&q=80'
+  ],
+  Web3: [
+    'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?auto=format&fit=crop&w=1200&q=80'
+  ],
+  Default: [
+    DEFAULT_IMAGE,
+    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80'
+  ]
+};
 
 const CATEGORY_KEYWORDS = {
   Frontend: ['frontend', 'react', 'angular', 'vue', 'css', 'javascript', 'typescript', 'web ui'],
@@ -12,7 +53,17 @@ const CATEGORY_KEYWORDS = {
   Web3: ['web3', 'blockchain', 'solidity', 'ethereum', 'smart contract', 'defi', 'crypto']
 };
 
-const cleanText = (value = '') => String(value).replace(/\s+/g, ' ').trim();
+const cleanText = (value = '') => String(value).replaceAll(/\s+/g, ' ').trim();
+
+const hashText = (value = '') => {
+  return Number.parseInt(crypto.createHash('sha256').update(String(value)).digest('hex').slice(0, 8), 16);
+};
+
+const pickFallbackImage = (category, title, description, source) => {
+  const candidates = FALLBACK_IMAGES[category] || FALLBACK_IMAGES.Default;
+  const seed = `${category}|${title}|${description}|${source}`;
+  return candidates[hashText(seed) % candidates.length] || DEFAULT_IMAGE;
+};
 
 const normalizeDate = (value) => {
   const ts = value ? new Date(value) : new Date();
@@ -30,14 +81,15 @@ const inferCategory = (headline = '', summary = '') => {
 const normalizeItem = (item = {}) => {
   const title = cleanText(item.title);
   const description = cleanText(item.description);
+  const category = cleanText(item.category) || inferCategory(title, description);
   return {
     title: title || 'Untitled',
     description,
     source: cleanText(item.source) || 'Unknown',
     url: cleanText(item.url),
-    image: cleanText(item.image) || DEFAULT_IMAGE,
+    image: cleanText(item.image) || pickFallbackImage(category, title, description, item.source),
     publishedAt: normalizeDate(item.publishedAt),
-    category: cleanText(item.category) || inferCategory(title, description),
+    category,
     popularity: Number(item.popularity || 0),
     tags: Array.isArray(item.tags) ? item.tags.map((tag) => cleanText(tag)).filter(Boolean) : []
   };
@@ -115,7 +167,7 @@ const fromReddit = (payload) => {
       description: data.selftext,
       source: 'Reddit',
       url: data.url,
-      image: data.thumbnail && data.thumbnail.startsWith('http') ? data.thumbnail : '',
+      image: data.thumbnail?.startsWith('http') ? data.thumbnail : '',
       publishedAt: Number(data.created_utc) ? new Date(data.created_utc * 1000).toISOString() : undefined,
       popularity: Number(data.ups || 0) + Number(data.num_comments || 0),
       tags: [data.subreddit_name_prefixed || 'r/programming'],

@@ -4,8 +4,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 import { JobService }           from '../../shared/services/job.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -34,6 +34,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   totalPages:    number      = 1;
   totalJobs:     number      = 0;
   activeFilters: JobFilters  = { ...DEFAULT_JOB_FILTERS };
+  pendingFilters: JobFilters = { ...DEFAULT_JOB_FILTERS };
   isMobileFiltersOpen        = false;
 
   // Expose constants to template
@@ -48,7 +49,6 @@ export class JobsComponent implements OnInit, OnDestroy {
   get hiddenCount():      number   { return Math.max(0, this.allJobs.length - this.displayCount); }
 
   private readonly subscriptions = new Subscription();
-  private readonly filterChanges = new Subject<JobFilters>();
 
   constructor(
     private readonly jobService:           JobService,
@@ -57,13 +57,12 @@ export class JobsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Debounce filter changes (450 ms)
-    this.subscriptions.add(
-      this.filterChanges.pipe(debounceTime(450)).subscribe(filters => {
-        this.activeFilters = { ...filters };
-        this.resetAndFetch();
-      })
-    );
+    // Initialize pending filters with active filters
+    this.pendingFilters = { ...this.activeFilters };
+    
+    // Load jobs on initial page load
+    this.resetAndFetch();
+    
     // React to career profile changes
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
@@ -78,12 +77,22 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // ── Filter change emitted from child ──────────────────────────────────────
+  // ── Filter change emitted from child (stored but not applied immediately) ──
   onFiltersChange(filters: JobFilters): void {
-    this.filterChanges.next(filters);
+    this.pendingFilters = { ...filters };
+    this.cdr.markForCheck();
+  }
+
+  // ── Apply filters button click ─────────────────────────────────────────────
+  applyFilters(): void {
+    this.activeFilters = { ...this.pendingFilters };
+    this.resetAndFetch();
+    this.isMobileFiltersOpen = false;
+    this.cdr.markForCheck();
   }
 
   onFiltersReset(): void {
+    this.pendingFilters = { ...DEFAULT_JOB_FILTERS };
     this.activeFilters = { ...DEFAULT_JOB_FILTERS };
     this.resetAndFetch();
   }

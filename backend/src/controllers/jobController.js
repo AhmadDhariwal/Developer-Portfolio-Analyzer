@@ -104,12 +104,18 @@ const fetchJobs = async (req, res) => {
 
     const jsearchConfigured = hasJSearchConfig();
     const jsearchCount = Number(sourceSummary.JSearch || 0);
-    let sourceMessage = 'JSearch is configured but returned no jobs for current filters. AI/fallback sources are used.';
+    const aiCount = Number(sourceSummary.AI || 0);
+    const fallbackCount = Number(sourceSummary.Fallback || 0);
+    let sourceMessage = 'JSearch returned no jobs for these filters. Showing the fallback pool so the page stays populated.';
 
     if (jsearchConfigured === false) {
       sourceMessage = 'JSearch is disabled because RAPIDAPI_KEY is missing in backend/.env.';
     } else if (jsearchCount > 0) {
       sourceMessage = `JSearch is active with ${jsearchCount} jobs in the current pool.`;
+    } else if (aiCount > 0) {
+      sourceMessage = `JSearch returned no jobs for these filters. AI-generated jobs are being shown (${aiCount} items).`;
+    } else if (fallbackCount > 0) {
+      sourceMessage = `JSearch returned no jobs for these filters. Curated fallback jobs are being shown (${fallbackCount} items).`;
     }
 
     // 7. Respond

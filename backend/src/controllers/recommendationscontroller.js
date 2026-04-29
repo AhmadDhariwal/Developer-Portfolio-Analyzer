@@ -290,5 +290,242 @@ const getRecommendations = async (req, res) => {
   }
 };
 
-module.exports = { getRecommendations };
+/**
+ * @desc  Generate recommendations (supports both temporary and permanent analysis)
+ * @route POST /api/recommendations/generate
+ * @body   { githubUsername, careerStack, experienceLevel, isTemporary, knownSkills, missingSkills }
+ * @access Public (temporary) or Protected (permanent)
+ */
+const generateRecommendations = async (req, res) => {
+  try {
+    let { githubUsername, careerStack, experienceLevel, isTemporary, missingSkills, knownSkills, resumeText } = req.body;
+    const isTemporaryMode = isTemporary === true || isTemporary === 'true';
+    
+    // Validate required fields
+    if (!githubUsername) {
+      return res.status(400).json({ message: 'GitHub username is required.' });
+    }
+
+    if (!careerStack) {
+      return res.status(400).json({ message: 'Career stack is required.' });
+    }
+
+    if (!experienceLevel) {
+      return res.status(400).json({ message: 'Experience level is required.' });
+    }
+
+    // Use the incoming parameters directly for temporary analysis
+    // For permanent analysis, prefer user profile but allow overrides
+    const finalCareerStack = isTemporaryMode ? careerStack : (req.user?.careerStack || careerStack || 'Full Stack');
+    const finalExperienceLevel = isTemporaryMode ? experienceLevel : (req.user?.experienceLevel || experienceLevel || 'Student');
+
+    const { analyzeGitHubProfile } = require('../services/githubservice');
+    const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
+
+    let githubData;
+    try {
+      githubData = await analyzeGitHubProfile(githubUsername.trim());
+    } catch (githubError) {
+      console.warn('Recommendations GitHub fallback:', githubError.message);
+      githubData = {
+        repoCount: 0,
+        developerLevel: 'Unknown',
+        strengths: [],
+        weakAreas: [],
+        languageDistribution: [],
+        scores: {},
+        repositories: []
+      };
+    }
+
+    // Only fetch resume analysis for non-temporary (permanent) requests with authenticated user
+    let latestResumeAnalysis = null;
+    if (!isTemporaryMode && req.user?._id) {
+      const userContext = await User.findById(req.user._id).select('activeResumeFileId defaultResumeFileId').lean();
+      const activeResumeFileId = userContext?.activeResumeFileId || userContext?.defaultResumeFileId || null;
+      if (activeResumeFileId) {
+        latestResumeAnalysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: activeResumeFileId }).sort({ analyzedAt: -1 }).lean();
+      }
+      if (!latestResumeAnalysis) {
+        latestResumeAnalysis = await ResumeAnalysis.findOne({ userId: req.user._id }).sort({ analyzedAt: -1 }).lean();
+      }
+    }
+
+    const resumeSkills = flattenResumeSkills(latestResumeAnalysis?.skills);
+    const resumeInsights = {
+      experienceLevel: latestResumeAnalysis?.experienceLevel || finalExperienceLevel,
+      experienceYears: latestResumeAnalysis?.experienceYears || 0,
+      atsScore: latestResumeAnalysis?.atsScore || 0,
+      keywordDensity: latestResumeAnalysis?.keywordDensity || 0,
+      skills: resumeSkills.slice(0, 25),
+      keyAchievements: (latestResumeAnalysis?.keyAchievements || []).slice(0, 8)
+    };
+
+    const githubInsights = {
+      repoCount: githubData?.repoCount || 0,
+      developerLevel: githubData?.developerLevel || '',
+      strengths: githubData?.strengths || [],
+      weakAreas: githubData?.weakAreas || [],
+      languageDistribution: githubData?.languageDistribution || [],
+      scores: githubData?.scores || {}
+    };
+
+    const baseKnownSkills = uniqueBy(
+      [...resumeSkills, ...(githubData?.languageDistribution || []).map((l) => l.language).filter(Boolean)],
+      (s) => String(s || '').trim().toLowerCase()
+    ).slice(0, 30);
+
+    const cleanResume = (resumeText || '').trim();
+    const resumeHash = cleanResume
+      ? crypto.createHash('sha256').update(cleanResume).digest('hex')
+      : 'no-resume';
+
+    const recommendationCacheKey = {
+      githubUsername: githubUsername.trim(),
+      careerStack: finalCareerStack,
+      experienceLevel: finalExperienceLevel,
+      resumeHash,
+      analysisVersion: 'v2'
+    };
+
+    const aiUnavailableNow = (() => {
+      const openAIDown = !aiService?.hasOpenAI || (typeof aiService.isOpenAICoolingDown === 'function' && aiService.isOpenAICoolingDown());
+      const geminiDown = !aiService?.hasGemini || (typeof aiService.isGeminiCoolingDown === 'function' && aiService.isGeminiCoolingDown());
+      return openAIDown && geminiDown;
+    })();
+
+    // Resolve missingSkills and knownSkills if not supplied
+    if (!missingSkills || !knownSkills) {
+      const lookupHash = crypto.createHash('md5').update(cleanResume).digest('hex');
+      const cachedAnalysis = await AnalysisCache.findOne({ hash: lookupHash }).lean();
+
+      if (cachedAnalysis?.missingSkills && cachedAnalysis?.knownSkills) {
+        knownSkills = cachedAnalysis.knownSkills;
+        missingSkills = cachedAnalysis.missingSkills;
+      } else {
+        const detectedSkills = {
+          github: (githubData?.repositories || []).map((r) => `${r.name} (${r.language || 'Unknown'})`).concat(resumeSkills.slice(0, 15)),
+          repoQuality: githubData?.scores || {}
+        };
+
+        const skillGapPrompt = getSkillGapPrompt(
+          finalCareerStack,
+          finalExperienceLevel,
+          detectedSkills,
+          resumeInsights,
+          githubInsights
+        );
+
+        const gapFallback = { yourSkills: [], missingSkills: [] };
+        const skillGapData = await aiService.runAIAnalysis(skillGapPrompt, gapFallback);
+        try {
+          knownSkills = skillGapData.yourSkills?.map((s) => s.name || s) || [];
+          missingSkills = skillGapData.missingSkills?.map((s) => s.name || s) || [];
+          if (cleanResume) {
+            await AnalysisCache.updateOne({ hash: lookupHash }, { hash: lookupHash, missingSkills, knownSkills }, { upsert: true });
+          }
+        } catch (jsonError) {
+          console.warn('Skill gap parsing error:', jsonError.message);
+          knownSkills = resumeSkills;
+          missingSkills = [];
+        }
+      }
+    }
+
+    const safeKnownSkills = uniqueBy(Array.isArray(knownSkills) ? knownSkills : baseKnownSkills, (s) => String(s || '').trim().toLowerCase()).slice(0, 30);
+    const safeMissingSkills = uniqueBy(Array.isArray(missingSkills) ? missingSkills : [], (s) => String(s || '').trim().toLowerCase()).slice(0, 20);
+
+    const prompt = getRecommendationPrompt(
+      finalCareerStack,
+      finalExperienceLevel,
+      safeKnownSkills,
+      safeMissingSkills,
+      resumeInsights,
+      githubInsights
+    );
+
+    // AI-first behavior: if providers are unavailable, use cached AI output only.
+    if (aiUnavailableNow) {
+      const cachedRecommendations = await AnalysisCache.findOne(recommendationCacheKey).lean()
+        || await AnalysisCache.findOne({
+          githubUsername: githubUsername.trim(),
+          careerStack: finalCareerStack,
+          experienceLevel: finalExperienceLevel,
+          analysisVersion: 'v2'
+        }).sort({ updatedAt: -1 }).lean();
+
+      if (cachedRecommendations?.analysisData?.projects?.length) {
+        const cachedResult = {
+          username: githubUsername,
+          careerStack: finalCareerStack,
+          experienceLevel: finalExperienceLevel,
+          ...normalizeRecommendationPayload(cachedRecommendations.analysisData),
+          fromCache: true,
+          aiUnavailableNow: true
+        };
+        return res.json(cachedResult);
+      }
+
+      return res.status(503).json({
+        message: 'AI providers are temporarily rate-limited. Please retry in a minute.',
+        aiUnavailableNow: true
+      });
+    }
+
+    const parsedRecommendations = await aiService.runAIAnalysis(prompt, {
+      projects: [],
+      technologies: [],
+      careerPaths: []
+    });
+
+    const projects = uniqueBy(Array.isArray(parsedRecommendations.projects) ? parsedRecommendations.projects : [], (p) => String(p?.title || '').toLowerCase());
+    const technologies = uniqueBy(Array.isArray(parsedRecommendations.technologies) ? parsedRecommendations.technologies : [], (t) => String(t?.name || '').toLowerCase());
+    const careerPaths = uniqueBy(Array.isArray(parsedRecommendations.careerPaths) ? parsedRecommendations.careerPaths : [], (c) => String(c?.title || '').toLowerCase());
+
+    if (!projects.length && !technologies.length && !careerPaths.length) {
+      return res.status(503).json({
+        message: 'AI did not return recommendation data. Please retry shortly.',
+        aiUnavailableNow: false
+      });
+    }
+
+    const fullResult = {
+      username: githubUsername,
+      careerStack: finalCareerStack,
+      experienceLevel: finalExperienceLevel,
+      ...normalizeRecommendationPayload({
+        projects: projects.slice(0, 8),
+        technologies: technologies.slice(0, 12),
+        careerPaths: careerPaths.slice(0, 6)
+      })
+    };
+
+    // Only save AI version snapshot for non-temporary analysis
+    if (!isTemporaryMode) {
+      await saveAIVersionSnapshot({
+        req,
+        source: 'recommendations/generate',
+        output: fullResult,
+        metadata: { isTemporary: false, username: githubUsername, careerStack: finalCareerStack, experienceLevel: finalExperienceLevel }
+      });
+    }
+
+    console.log('[recommendations/generate] response counts', {
+      username: githubUsername,
+      projects: fullResult.projects?.length || 0,
+      technologies: fullResult.technologies?.length || 0,
+      careerPaths: fullResult.careerPaths?.length || 0,
+      aiUnavailableNow
+    });
+
+    res.json(fullResult);
+
+  } catch (error) {
+    console.error('Generate Recommendations Error:', error.message);
+    res.status(500).json({ message: 'Failed to generate recommendations.' });
+  }
+};
+
+module.exports = { getRecommendations, generateRecommendations };
+
 

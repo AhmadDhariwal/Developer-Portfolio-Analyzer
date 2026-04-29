@@ -11,8 +11,8 @@ const { rankJobs }     = require('../utils/jobRanker');
 const RAPIDAPI_KEY  = process.env.RAPIDAPI_KEY || '';
 const JSEARCH_HOST  = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE  = 'https://jsearch.p.rapidapi.com/search';
-const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '15000', 10);
-const JSEARCH_RETRIES = Number.parseInt(process.env.JSEARCH_RETRIES || '2', 10);
+const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '10000', 10);
+const JSEARCH_RETRIES = Number.parseInt(process.env.JSEARCH_RETRIES || '1', 10);
 const JSEARCH_PRIMARY_MIN = Number.parseInt(process.env.JSEARCH_PRIMARY_MIN || '30', 10);
 
 // Platform colour map attached to each job object
@@ -59,11 +59,13 @@ function buildFallbackPool(count = 20) {
   while (expanded.length < count) {
     for (const job of base) {
       if (expanded.length >= count) break;
+      const querySeparator = job.url.includes('?') ? '&' : '?';
+      const jobUrl = cycle === 0 ? job.url : `${job.url}${querySeparator}variant=${cycle}`;
       expanded.push({
         ...job,
         id: `${job.id}_c${cycle}`,
         company: cycle === 0 ? job.company : `${job.company} (${cycle + 1})`,
-        url: cycle === 0 ? job.url : `${job.url}${job.url.includes('?') ? '&' : '?'}variant=${cycle}`
+        url: jobUrl
       });
     }
     cycle += 1;
@@ -128,7 +130,7 @@ async function fetchJSearchJobs(query, maxResults = 80) {
 
   for (let attempt = 0; attempt <= JSEARCH_RETRIES; attempt++) {
     const reducedQuery = attempt > 0 ? `${query} developer` : query;
-    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt > 0 ? 2 : 4));
+    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt > 0 ? 2 : 3));
 
     try {
       const aggregated = [];
@@ -179,17 +181,17 @@ async function generateAIJobs(options = {}) {
     const raw = await aiService.runAIAnalysis(prompt, fallback);
     let parsed;
     if (typeof raw === 'string') {
-      const match = raw.match(/\[[\s\S]*\]/);
+      const match = /\[[\s\S]*\]/.exec(raw);
       if (!match) throw new Error('No JSON array in AI response');
       parsed = JSON.parse(match[0]);
     } else if (Array.isArray(raw)) {
       parsed = raw;
     } else {
-      throw new Error('Unexpected AI response type');
+      throw new TypeError('Unexpected AI response type');
     }
     if (!Array.isArray(parsed)) throw new Error('Parsed result is not array');
     return parsed
-      .filter(j => j && j.title && j.company && j.platform)
+      .filter((job) => job?.title && job?.company && job?.platform)
       .map((j, idx) => ({
         id: j.id || `ai_${idx}_${Date.now()}`,
         title:            String(j.title || '').trim(),
@@ -225,7 +227,7 @@ function applyFilters(jobs, { platform, location, skills, jobType, experienceLev
       if (filter === 'usa' && !loc.includes('usa') && !loc.includes('united states') && !loc.includes('new york') && !loc.includes('san francisco')) return false;
       if (filter === 'europe' && !loc.includes('europe') && !loc.includes('uk') && !loc.includes('germany')) return false;
     }
-    if (skills && skills.trim()) {
+    if (skills?.trim()) {
       const s = skills.toLowerCase();
       const jobSkillsText = (job.skills || []).join(' ').toLowerCase();
       const titleText = job.title.toLowerCase();
@@ -297,7 +299,7 @@ async function buildJobPool(options = {}) {
   let pool = merged.length >= 5 ? merged : buildFallbackPool(80);
 
   // Apply client filters
-  const filterExperience = experience !== 'All' ? experience : null;
+  const filterExperience = experience === 'All' ? null : experience;
   const filtered = applyFilters(pool, { platform, location, skills, jobType, experienceLevel: filterExperience });
   const hasActiveFilters = [platform, location, jobType, filterExperience]
     .some((value) => String(value || '').trim() && String(value || '').trim() !== 'All')
