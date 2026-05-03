@@ -6,7 +6,7 @@
 
   <div class="sa-filters">
     <input [(ngModel)]="search" placeholder="Search by name..." (keydown.enter)="load(1)" />
-    <select [(ngModel)]="suspended" (change)="load(1)">
+    <select title="status" [(ngModel)]="suspended" (change)="load(1)">
       <option value="">All statuses</option>
       <option value="false">Active</option>
       <option value="true">Suspended</option>

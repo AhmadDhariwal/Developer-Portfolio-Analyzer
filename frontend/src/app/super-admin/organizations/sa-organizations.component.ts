@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuperAdminService } from '../shared/super-admin.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-sa-organizations',
@@ -15,7 +16,11 @@ export class SaOrganizationsComponent implements OnInit {
   total = 0; page = 1; totalPages = 1;
   loading = false; search = ''; suspended = '';
 
-  constructor(private readonly sa: SuperAdminService) {}
+  constructor(
+    private readonly sa: SuperAdminService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly destroyRef: DestroyRef
+  ) {}
 
   ngOnInit(): void { this.load(); }
 
@@ -25,9 +30,18 @@ export class SaOrganizationsComponent implements OnInit {
     const params: Record<string, string> = { page: String(page), limit: '20' };
     if (this.search) params['search'] = this.search;
     if (this.suspended) params['suspended'] = this.suspended;
-    this.sa.getOrganizations(params).subscribe({
-      next: (res) => { this.organizations = res.organizations || []; this.total = res.total || 0; this.totalPages = res.totalPages || 1; this.loading = false; },
-      error: () => { this.loading = false; }
+    this.sa.getOrganizations(params).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.organizations = res.organizations || [];
+        this.total = res.total || 0;
+        this.totalPages = res.totalPages || 1;
+        this.loading = false;
+        try { this.cdr.detectChanges(); } catch {}
+      },
+      error: () => {
+        this.loading = false;
+        try { this.cdr.detectChanges(); } catch {}
+      }
     });
   }
 

@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SuperAdminService } from '../shared/super-admin.service';
 import { Chart, registerables } from 'chart.js';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 Chart.register(...registerables);
 
@@ -30,10 +31,14 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
   private dataReady = false;
   private viewReady = false;
 
-  constructor(private readonly sa: SuperAdminService) {}
+  constructor(
+    private readonly sa: SuperAdminService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly destroyRef: DestroyRef
+  ) {}
 
   ngOnInit(): void {
-    this.sa.getDashboard().subscribe({
+    this.sa.getDashboard().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.metrics       = res?.metrics       ?? {};
         this.latestOrgs    = res?.latestOrgs    ?? [];
@@ -42,15 +47,29 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
         this.charts        = res?.charts        ?? {};
         this.loading = false;
         this.dataReady = true;
-        if (this.viewReady) this.buildCharts();
+
+        // Ensure the view updates even if this callback runs outside Angular's zone.
+        // Also let Angular render the *ngIf block before chart refs are queried.
+        setTimeout(() => {
+          try { this.cdr.detectChanges(); } catch {}
+          if (this.viewReady) this.buildCharts();
+        }, 0);
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        try { this.cdr.detectChanges(); } catch {}
+      }
     });
   }
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.dataReady) this.buildCharts();
+    if (this.dataReady) {
+      setTimeout(() => {
+        try { this.cdr.detectChanges(); } catch {}
+        this.buildCharts();
+      }, 0);
+    }
   }
 
   ngOnDestroy(): void {
