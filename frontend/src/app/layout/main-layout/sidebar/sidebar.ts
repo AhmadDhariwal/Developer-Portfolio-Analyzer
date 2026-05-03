@@ -197,15 +197,37 @@ export class Sidebar implements OnInit {
 
     const isRecruiter = currentRole === 'recruiter';
     const isAdmin = currentRole === 'admin' || tenantRole === 'admin';
+    const isSuperAdmin = currentRole === 'super_admin';
 
-    return this.navGroups.map((group) => ({
-      ...group,
-      items: group.items.filter((item) => {
-        if (item.route === '/app/recruiter' && !isRecruiter) return false;
-        if (item.route === '/app/admin' && !isAdmin) return false;
+    return this.navGroups.map((group) => {
+      let filteredItems = group.items.filter((item) => {
+        if (item.route === '/app/recruiter' && !isRecruiter && !isSuperAdmin) return false;
+        
+        // Hide Admin Console if not Admin AND not Super Admin
+        if (item.route === '/app/admin') {
+          if (!isAdmin && !isSuperAdmin) return false;
+        }
+        
         return true;
-      })
-    }));
+      });
+
+      // If this is the 'System' group and user is Super Admin, add the Super Admin Dashboard link
+      if (group.label === 'System' && isSuperAdmin) {
+        filteredItems = [
+          {
+            label: 'Super Admin',
+            route: '/super-admin/dashboard',
+            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>`
+          },
+          ...filteredItems
+        ];
+      }
+
+      return {
+        ...group,
+        items: filteredItems
+      };
+    });
   }
 
   toggleGroup(label: string): void {

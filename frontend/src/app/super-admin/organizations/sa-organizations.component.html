@@ -28,8 +28,8 @@
           <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
           <td>{{ org.createdAt | date:'mediumDate' }}</td>
           <td>
-            <button *ngIf="!org.isSuspended" class="action-btn action-btn--danger" (click)="suspend(org)">Suspend</button>
-            <button *ngIf="org.isSuspended" class="action-btn action-btn--success" (click)="activate(org)">Activate</button>
+            <button *ngIf="!org.isSuspended" class="action-btn action-btn--danger" (click)="toggleSuspend(org)">Suspend</button>
+            <button *ngIf="org.isSuspended" class="action-btn action-btn--success" (click)="toggleSuspend(org)">Activate</button>
           </td>
         </tr>
       </tbody>

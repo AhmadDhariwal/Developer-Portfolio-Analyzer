@@ -1,42 +1,110 @@
 <div class="sa-page">
   <div class="sa-header">
     <h1>Super Admin Dashboard</h1>
-    <p>Global platform overview — all organizations, users, and analytics.</p>
+    <p>Global platform overview — organizations, users, analytics, and growth trends.</p>
   </div>
 
-  <div *ngIf="loading" class="sa-state">Loading platform metrics...</div>
+  <div *ngIf="loading" class="sa-loading">
+    <div class="sa-loading__spinner"></div>
+    <span>Loading platform data...</span>
+  </div>
 
   <ng-container *ngIf="!loading">
-    <!-- Metric Cards -->
+    <!-- ── Metric Cards ─────────────────────────────────────────────────── -->
     <div class="sa-grid">
       <ng-container *ngFor="let card of metricCards">
         <a *ngIf="card.link" class="sa-card sa-card--{{ card.color }}" [routerLink]="card.link">
           <div class="sa-card__value">{{ card.value }}</div>
           <div class="sa-card__label">{{ card.label }}</div>
+          <div class="sa-card__sub">{{ card.sub }}</div>
         </a>
         <div *ngIf="!card.link" class="sa-card sa-card--{{ card.color }}">
           <div class="sa-card__value">{{ card.value }}</div>
           <div class="sa-card__label">{{ card.label }}</div>
+          <div class="sa-card__sub">{{ card.sub }}</div>
         </div>
       </ng-container>
     </div>
 
-    <!-- Tables Row -->
+    <!-- ── Charts Row 1: User Growth + Role Distribution ─────────────────── -->
+    <div class="sa-charts-row">
+      <div class="sa-chart-card sa-chart-card--wide">
+        <div class="sa-chart-head">
+          <strong>User Growth (12 months)</strong>
+          <span class="sa-chart-sub">Organizations, Recruiters & Developers</span>
+        </div>
+        <div class="sa-chart-wrap">
+          <canvas #userGrowthChart></canvas>
+        </div>
+      </div>
+
+      <div class="sa-chart-card">
+        <div class="sa-chart-head">
+          <strong>Role Distribution</strong>
+          <span class="sa-chart-sub">Platform-wide breakdown</span>
+        </div>
+        <div class="sa-chart-wrap sa-chart-wrap--sm">
+          <canvas #roleDistChart></canvas>
+        </div>
+        <div class="sa-role-stats">
+          <div class="sa-role-stat">
+            <span class="dot dot--purple"></span>
+            <span>Admins</span>
+            <strong>{{ metrics.totalAdmins ?? 0 }}</strong>
+          </div>
+          <div class="sa-role-stat">
+            <span class="dot dot--green"></span>
+            <span>Recruiters</span>
+            <strong>{{ metrics.totalRecruiters ?? 0 }}</strong>
+          </div>
+          <div class="sa-role-stat">
+            <span class="dot dot--orange"></span>
+            <span>Developers</span>
+            <strong>{{ metrics.totalDevelopers ?? 0 }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Charts Row 2: Stack Distribution + AI Analyses ────────────────── -->
+    <div class="sa-charts-row">
+      <div class="sa-chart-card">
+        <div class="sa-chart-head">
+          <strong>Developer Stack Distribution</strong>
+          <span class="sa-chart-sub">By career stack</span>
+        </div>
+        <div class="sa-chart-wrap">
+          <canvas #stackDistChart></canvas>
+        </div>
+      </div>
+
+      <div class="sa-chart-card sa-chart-card--wide">
+        <div class="sa-chart-head">
+          <strong>AI Analysis Activity (12 months)</strong>
+          <span class="sa-chart-sub">Monthly analysis runs</span>
+        </div>
+        <div class="sa-chart-wrap">
+          <canvas #analysisChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tables Row ─────────────────────────────────────────────────────── -->
     <div class="sa-tables">
       <!-- Latest Organizations -->
       <div class="sa-table-card">
         <div class="sa-table-head">
           <strong>Latest Organizations</strong>
-          <a routerLink="../organizations" class="sa-link">View all</a>
+          <a routerLink="../organizations" class="sa-link">View all →</a>
         </div>
         <table *ngIf="latestOrgs.length > 0">
           <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th>Created</th></tr></thead>
           <tbody>
             <tr *ngFor="let org of latestOrgs">
-              <td>{{ org.name }}</td>
+              <td><strong>{{ org.name }}</strong></td>
               <td>{{ org.ownerId?.name || '—' }}</td>
               <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
-              <td>{{ org.createdAt | date:'mediumDate' }}</td>
+              <td>{{ org.createdAt | date:'MMM d, y' }}</td>
             </tr>
           </tbody>
         </table>
@@ -46,35 +114,53 @@
       <!-- Top Developers -->
       <div class="sa-table-card">
         <div class="sa-table-head">
-          <strong>Top Developers</strong>
-          <a routerLink="../developers" class="sa-link">View all</a>
+          <strong>Top Developers by Score</strong>
+          <a routerLink="../developers" class="sa-link">View all →</a>
         </div>
         <table *ngIf="topDevelopers.length > 0">
-          <thead><tr><th>Name</th><th>Stack</th><th>Score</th></tr></thead>
+          <thead><tr><th>Name</th><th>Stack</th><th>Level</th><th>Score</th></tr></thead>
           <tbody>
             <tr *ngFor="let dev of topDevelopers">
-              <td>{{ dev.name }}</td>
-              <td>{{ dev.careerStack }}</td>
-              <td>{{ dev.score }}</td>
+              <td><strong>{{ dev.name }}</strong></td>
+              <td>{{ dev.careerStack || '—' }}</td>
+              <td>{{ dev.experienceLevel || '—' }}</td>
+              <td><span class="score-pill">{{ dev.score ?? 0 }}</span></td>
             </tr>
           </tbody>
         </table>
         <div *ngIf="topDevelopers.length === 0" class="sa-empty">No developers yet.</div>
       </div>
 
+      <!-- Top Orgs by Members -->
+      <div class="sa-table-card" *ngIf="charts?.topOrgs?.length > 0">
+        <div class="sa-table-head">
+          <strong>Top Organizations by Members</strong>
+        </div>
+        <table>
+          <thead><tr><th>Organization</th><th>Members</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let org of charts.topOrgs">
+              <td><strong>{{ org.name }}</strong></td>
+              <td>{{ org.memberCount }}</td>
+              <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Active Admins -->
       <div class="sa-table-card">
         <div class="sa-table-head">
           <strong>Active Admins</strong>
-          <a routerLink="../admins" class="sa-link">View all</a>
+          <a routerLink="../admins" class="sa-link">View all →</a>
         </div>
         <table *ngIf="activeAdmins.length > 0">
           <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
           <tbody>
             <tr *ngFor="let admin of activeAdmins">
-              <td>{{ admin.name }}</td>
+              <td><strong>{{ admin.name }}</strong></td>
               <td>{{ admin.email }}</td>
-              <td>{{ admin.createdAt | date:'mediumDate' }}</td>
+              <td>{{ admin.createdAt | date:'MMM d, y' }}</td>
             </tr>
           </tbody>
         </table>

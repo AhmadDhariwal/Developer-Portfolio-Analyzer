@@ -80,6 +80,11 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'AI Versions', sublabel: 'Versioning and rollback controls', route: '/app/settings/ai-versions' },
   ];
 
+  get isSuperAdmin(): boolean {
+    const role = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
+    return role === 'super_admin' || role === 'superadmin';
+  }
+
   private get searchablePages(): SearchSuggestion[] {
     const role = this.selectedRole;
     const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();

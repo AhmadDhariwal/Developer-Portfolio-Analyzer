@@ -8,7 +8,7 @@ import { SuperAdminService } from '../shared/super-admin.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sa-developers.component.html',
-  styleUrls: ['../dashboard/super-admin-dashboard.component.scss']
+  styleUrls: ['./sa-developers.component.scss']
 })
 export class SaDevelopersComponent implements OnInit {
   developers: any[] = [];

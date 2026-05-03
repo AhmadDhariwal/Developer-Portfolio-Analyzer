@@ -8,7 +8,7 @@ import { SuperAdminService } from '../shared/super-admin.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sa-recruiters.component.html',
-  styleUrls: ['../dashboard/super-admin-dashboard.component.scss']
+  styleUrls: ['./sa-recruiters.component.scss']
 })
 export class SaRecruitersComponent implements OnInit {
   recruiters: any[] = [];

@@ -240,6 +240,31 @@
         }
       }
 
+      .sa-console-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: #818cf8;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-right: 8px;
+
+        svg { width: 14px; height: 14px; }
+
+        &:hover {
+          background: rgba(99, 102, 241, 0.25);
+          border-color: rgba(99, 102, 241, 0.5);
+          color: #a5b4fc;
+          transform: translateY(-1px);
+        }
+      }
+
       .role-badge {
         font-size: 0.7rem;
         font-weight: 700;

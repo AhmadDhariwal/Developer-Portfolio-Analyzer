@@ -15,13 +15,20 @@ export const adminSettingsGuard: CanActivateFn = () => {
   return tenantContext.state$.pipe(
     take(1),
     switchMap((ctx) => {
+      // Global Super Admin bypass
+      const storedUser = authService.getCurrentUser();
+      const isSuperAdmin = storedUser?.role === 'super_admin' || storedUser?.role === 'superadmin';
+      
+      if (isSuperAdmin) {
+        return of(true);
+      }
+
       // Check tenant context role first
       if (ctx.myRole === 'admin') {
         return of(true);
       }
 
       // Fallback: check role stored in localStorage user object
-      const storedUser = authService.getCurrentUser();
       if (storedUser?.role === 'admin') {
         tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
         return of(true);

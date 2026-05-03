@@ -9,11 +9,12 @@
     <div class="sa-table-head"><strong>{{ total }} recruiters</strong></div>
     <div *ngIf="loading" class="sa-state">Loading...</div>
     <table *ngIf="!loading && recruiters.length > 0">
-      <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Email</th><th>Organization</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
       <tbody>
         <tr *ngFor="let r of recruiters">
           <td>{{ r.name }}</td>
           <td>{{ r.email }}</td>
+          <td>{{ r.organizationId?.name || 'N/A' }}</td>
           <td><span class="badge" [class.badge--green]="r.isActive" [class.badge--red]="!r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span></td>
           <td>{{ r.createdAt | date:'mediumDate' }}</td>
           <td><button class="action-btn" [class.action-btn--danger]="r.isActive" [class.action-btn--success]="!r.isActive" (click)="toggle(r)">{{ r.isActive ? 'Deactivate' : 'Activate' }}</button></td>

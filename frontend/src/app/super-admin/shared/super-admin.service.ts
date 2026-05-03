@@ -8,6 +8,10 @@ export class SuperAdminService {
 
   constructor(private readonly http: HttpClient) {}
 
+  getDashboard(): Observable<any> {
+    return this.http.get(`${this.base}/dashboard`);
+  }
+
   getMetrics(): Observable<any> {
     return this.http.get(`${this.base}/metrics`);
   }

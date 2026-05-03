@@ -8,13 +8,12 @@ import { SuperAdminService } from '../shared/super-admin.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sa-organizations.component.html',
-  styleUrls: ['../dashboard/super-admin-dashboard.component.scss']
+  styleUrls: ['./sa-organizations.component.scss']
 })
 export class SaOrganizationsComponent implements OnInit {
   organizations: any[] = [];
   total = 0; page = 1; totalPages = 1;
-  loading = false;
-  search = ''; suspended = '';
+  loading = false; search = ''; suspended = '';
 
   constructor(private readonly sa: SuperAdminService) {}
 
@@ -32,11 +31,8 @@ export class SaOrganizationsComponent implements OnInit {
     });
   }
 
-  suspend(org: any): void {
-    this.sa.suspendOrganization(org._id).subscribe({ next: () => this.load(this.page) });
-  }
-
-  activate(org: any): void {
-    this.sa.activateOrganization(org._id).subscribe({ next: () => this.load(this.page) });
+  toggleSuspend(org: any): void {
+    const obs = org.isSuspended ? this.sa.activateOrganization(org._id) : this.sa.suspendOrganization(org._id);
+    obs.subscribe({ next: () => this.load(this.page) });
   }
 }
