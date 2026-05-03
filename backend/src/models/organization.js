@@ -33,6 +33,11 @@ const organizationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
+      index: true
     }
   },
   {

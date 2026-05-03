@@ -1,0 +1,50 @@
+<div class="sa-page">
+  <div class="sa-header"><h1>Platform Analytics</h1><p>Platform-wide growth and usage statistics.</p></div>
+  <div *ngIf="loading" class="sa-state">Loading analytics...</div>
+  <ng-container *ngIf="!loading">
+    <div class="sa-full-table" style="margin-bottom:24px">
+      <div class="sa-table-head"><strong>Platform Metrics</strong></div>
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of statRows">
+            <td>{{ row.label }}</td>
+            <td><strong>{{ row.value ?? 0 }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sa-tables">
+      <div class="sa-table-card">
+        <div class="sa-table-head"><strong>Latest Organizations</strong></div>
+        <table *ngIf="latestOrgs.length > 0">
+          <thead><tr><th>Name</th><th>Owner</th><th>Created</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let org of latestOrgs">
+              <td>{{ org.name }}</td>
+              <td>{{ org.ownerId?.name || '—' }}</td>
+              <td>{{ org.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="latestOrgs.length === 0" class="sa-empty">No organizations yet.</div>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head"><strong>Top Developers by Score</strong></div>
+        <table *ngIf="topDevelopers.length > 0">
+          <thead><tr><th>Name</th><th>Stack</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let dev of topDevelopers">
+              <td>{{ dev.name }}</td>
+              <td>{{ dev.careerStack }}</td>
+              <td>{{ dev.score }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="topDevelopers.length === 0" class="sa-empty">No developers yet.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>

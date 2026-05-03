@@ -95,6 +95,17 @@ const requireOrganizationContext = (allowedRoles = []) => {
     try {
       const role = normalizeUserRole(req.user?.role);
 
+      // Super Admin has global access and does not require an organization context
+      if (role === 'super_admin') {
+        req.organizationId = null;
+        req.tenantContext = {
+          organizationId: null,
+          membershipRole: null,
+          role
+        };
+        return next();
+      }
+
       if (roleSet.size > 0 && !roleSet.has(role)) {
         return res.status(403).json({ message: 'Forbidden: insufficient role permissions.' });
       }

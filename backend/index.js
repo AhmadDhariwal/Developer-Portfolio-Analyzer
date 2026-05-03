@@ -36,6 +36,7 @@ const { requestContextMiddleware } = require('./src/middleware/requestContextMid
 const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
 const { metricsMiddleware, metricsHandler } = require('./src/services/metricsService');
 const { initTracing, shutdownTracing } = require('./src/services/tracingService');
+const superAdminRoutes = require('./src/routes/super-admin.routes');
 const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
 const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
@@ -100,6 +101,7 @@ app.use('/api/github',    githubroute);
 app.use('/api/resume',    resumroute);
 app.use('/api/analysis',        analysisroute);
 app.use('/api/dashboard',       dashboardroute);
+app.use('/api/super-admin',     superAdminRoutes);
 app.use('/api/skillgap',        skillgaproute);
 app.use('/api/recommendations', recommendationsroute);
 app.use('/api/profile',         profileroute);

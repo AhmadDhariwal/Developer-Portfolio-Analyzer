@@ -28,6 +28,7 @@ import { NewsComponent } from './pages/news/news.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
 import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
+import { superAdminGuard } from './guards/super-admin.guard';
 import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
@@ -43,7 +44,6 @@ export const routes: Routes = [
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
-  // Legacy redirect — old path → new direct path
   { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter', pathMatch: 'full' },
 
   // Auth pages (only when NOT logged in)
@@ -53,7 +53,7 @@ export const routes: Routes = [
   { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
   { path: 'auth/reset-password',   component: ResetPasswordComponent,   canActivate: [publicGuard] },
 
-  // Recruiter invitation — public, no auth required (recruiter has no account yet)
+  // Recruiter invitation — public
   { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
 
   // Protected app routes (inside MainLayout)
@@ -62,26 +62,24 @@ export const routes: Routes = [
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: '',                  redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard',         component: DashboardComponent },
-      { path: 'github-analyzer',   component: GithubAnalyzerComponent },
-      { path: 'resume-analyzer',   component: ResumeAnalyzerComponent },
-      { path: 'skill-gap',         component: SkillGapComponent },
-      { path: 'recommendations',   component: RecommendationsComponent },
-      { path: 'courses',           component: CoursesComponent },
-      { path: 'jobs',              component: JobsComponent },
-      { path: 'integrations',      component: IntegrationsMarketplaceComponent },
-      { path: 'scenario-simulator',component: ScenarioSimulatorComponent },
-      { path: 'profile',           component: ProfileComponent },
-      { path: 'portfolio',         component: PortfolioSettingsComponent },
-      { path: 'weekly-reports',    component: WeeklyReportsComponent },
-      { path: 'interview-prep',    component: InterviewPrepComponent },
-      { path: 'career-sprint',     component: CareerSprintComponent },
-      { path: 'interviews-reports',component: InterviewsReportsComponent },
-      { path: 'news',              component: NewsComponent },
-      { path: 'notifications',     component: NotificationsComponent },
-
-      // Invitation accept — also reachable from inside the app shell (handles old email links)
+      { path: '',                   redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',          component: DashboardComponent },
+      { path: 'github-analyzer',    component: GithubAnalyzerComponent },
+      { path: 'resume-analyzer',    component: ResumeAnalyzerComponent },
+      { path: 'skill-gap',          component: SkillGapComponent },
+      { path: 'recommendations',    component: RecommendationsComponent },
+      { path: 'courses',            component: CoursesComponent },
+      { path: 'jobs',               component: JobsComponent },
+      { path: 'integrations',       component: IntegrationsMarketplaceComponent },
+      { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
+      { path: 'profile',            component: ProfileComponent },
+      { path: 'portfolio',          component: PortfolioSettingsComponent },
+      { path: 'weekly-reports',     component: WeeklyReportsComponent },
+      { path: 'interview-prep',     component: InterviewPrepComponent },
+      { path: 'career-sprint',      component: CareerSprintComponent },
+      { path: 'interviews-reports', component: InterviewsReportsComponent },
+      { path: 'news',               component: NewsComponent },
+      { path: 'notifications',      component: NotificationsComponent },
       { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
 
       // Recruiter hub
@@ -107,13 +105,20 @@ export const routes: Routes = [
         path: 'settings',
         canActivate: [adminSettingsGuard],
         children: [
-          { path: '',               component: SettingsPageComponent },
-          { path: 'ai-versions',    component: AiVersionsComponent },
-          { path: 'user-management',component: TeamManagementComponent },
-          { path: 'activity-logs',  component: ActivityLogsComponent }
+          { path: '',                component: SettingsPageComponent },
+          { path: 'ai-versions',     component: AiVersionsComponent },
+          { path: 'user-management', component: TeamManagementComponent },
+          { path: 'activity-logs',   component: ActivityLogsComponent }
         ]
       }
     ]
+  },
+
+  // Super Admin area — standalone routes, no NgModule
+  {
+    path: 'super-admin',
+    canActivate: [authGuard, superAdminGuard],
+    loadChildren: () => import('./super-admin/super-admin.routes').then((m) => m.SUPER_ADMIN_ROUTES)
   },
 
   // Wildcard

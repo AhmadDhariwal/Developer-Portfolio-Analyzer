@@ -1,0 +1,30 @@
+<div class="sa-page">
+  <div class="sa-header"><h1>Recruiters</h1><p>All recruiters across the platform.</p></div>
+  <div class="sa-filters">
+    <input [(ngModel)]="search" placeholder="Search by name or email..." (keydown.enter)="load(1)" />
+    <button class="primary" (click)="load(1)">Search</button>
+    <button class="ghost" (click)="search=''; load(1)">Reset</button>
+  </div>
+  <div class="sa-full-table">
+    <div class="sa-table-head"><strong>{{ total }} recruiters</strong></div>
+    <div *ngIf="loading" class="sa-state">Loading...</div>
+    <table *ngIf="!loading && recruiters.length > 0">
+      <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of recruiters">
+          <td>{{ r.name }}</td>
+          <td>{{ r.email }}</td>
+          <td><span class="badge" [class.badge--green]="r.isActive" [class.badge--red]="!r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>{{ r.createdAt | date:'mediumDate' }}</td>
+          <td><button class="action-btn" [class.action-btn--danger]="r.isActive" [class.action-btn--success]="!r.isActive" (click)="toggle(r)">{{ r.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!loading && recruiters.length === 0" class="sa-empty">No recruiters found.</div>
+    <div class="sa-pager">
+      <button [disabled]="page <= 1" (click)="load(page - 1)">Previous</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="load(page + 1)">Next</button>
+    </div>
+  </div>
+</div>

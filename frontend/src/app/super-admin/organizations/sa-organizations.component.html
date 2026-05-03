@@ -1,0 +1,44 @@
+<div class="sa-page">
+  <div class="sa-header">
+    <h1>Organizations</h1>
+    <p>Manage all organizations on the platform.</p>
+  </div>
+
+  <div class="sa-filters">
+    <input [(ngModel)]="search" placeholder="Search by name..." (keydown.enter)="load(1)" />
+    <select [(ngModel)]="suspended" (change)="load(1)">
+      <option value="">All statuses</option>
+      <option value="false">Active</option>
+      <option value="true">Suspended</option>
+    </select>
+    <button class="primary" (click)="load(1)">Search</button>
+    <button class="ghost" (click)="search=''; suspended=''; load(1)">Reset</button>
+  </div>
+
+  <div class="sa-full-table">
+    <div class="sa-table-head"><strong>{{ total }} organizations</strong></div>
+    <div *ngIf="loading" class="sa-state">Loading...</div>
+    <table *ngIf="!loading && organizations.length > 0">
+      <thead><tr><th>Name</th><th>Slug</th><th>Owner</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let org of organizations">
+          <td>{{ org.name }}</td>
+          <td>{{ org.slug }}</td>
+          <td>{{ org.ownerId?.name || '—' }}</td>
+          <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
+          <td>{{ org.createdAt | date:'mediumDate' }}</td>
+          <td>
+            <button *ngIf="!org.isSuspended" class="action-btn action-btn--danger" (click)="suspend(org)">Suspend</button>
+            <button *ngIf="org.isSuspended" class="action-btn action-btn--success" (click)="activate(org)">Activate</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!loading && organizations.length === 0" class="sa-empty">No organizations found.</div>
+    <div class="sa-pager">
+      <button [disabled]="page <= 1" (click)="load(page - 1)">Previous</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="load(page + 1)">Next</button>
+    </div>
+  </div>
+</div>

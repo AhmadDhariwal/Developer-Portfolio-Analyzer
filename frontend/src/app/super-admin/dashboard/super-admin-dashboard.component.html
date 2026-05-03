@@ -1,0 +1,85 @@
+<div class="sa-page">
+  <div class="sa-header">
+    <h1>Super Admin Dashboard</h1>
+    <p>Global platform overview — all organizations, users, and analytics.</p>
+  </div>
+
+  <div *ngIf="loading" class="sa-state">Loading platform metrics...</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Metric Cards -->
+    <div class="sa-grid">
+      <ng-container *ngFor="let card of metricCards">
+        <a *ngIf="card.link" class="sa-card sa-card--{{ card.color }}" [routerLink]="card.link">
+          <div class="sa-card__value">{{ card.value }}</div>
+          <div class="sa-card__label">{{ card.label }}</div>
+        </a>
+        <div *ngIf="!card.link" class="sa-card sa-card--{{ card.color }}">
+          <div class="sa-card__value">{{ card.value }}</div>
+          <div class="sa-card__label">{{ card.label }}</div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="sa-tables">
+      <!-- Latest Organizations -->
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <strong>Latest Organizations</strong>
+          <a routerLink="../organizations" class="sa-link">View all</a>
+        </div>
+        <table *ngIf="latestOrgs.length > 0">
+          <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th>Created</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let org of latestOrgs">
+              <td>{{ org.name }}</td>
+              <td>{{ org.ownerId?.name || '—' }}</td>
+              <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
+              <td>{{ org.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="latestOrgs.length === 0" class="sa-empty">No organizations yet.</div>
+      </div>
+
+      <!-- Top Developers -->
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <strong>Top Developers</strong>
+          <a routerLink="../developers" class="sa-link">View all</a>
+        </div>
+        <table *ngIf="topDevelopers.length > 0">
+          <thead><tr><th>Name</th><th>Stack</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let dev of topDevelopers">
+              <td>{{ dev.name }}</td>
+              <td>{{ dev.careerStack }}</td>
+              <td>{{ dev.score }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="topDevelopers.length === 0" class="sa-empty">No developers yet.</div>
+      </div>
+
+      <!-- Active Admins -->
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <strong>Active Admins</strong>
+          <a routerLink="../admins" class="sa-link">View all</a>
+        </div>
+        <table *ngIf="activeAdmins.length > 0">
+          <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let admin of activeAdmins">
+              <td>{{ admin.name }}</td>
+              <td>{{ admin.email }}</td>
+              <td>{{ admin.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="activeAdmins.length === 0" class="sa-empty">No admins yet.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,40 @@
+<div class="sa-page">
+  <div class="sa-header"><h1>Developers</h1><p>Global developer talent pool — visible to all recruiters and admins.</p></div>
+  <div class="sa-filters">
+    <input [(ngModel)]="search" placeholder="Search by name or email..." (keydown.enter)="load(1)" />
+    <select [(ngModel)]="careerStack" (change)="load(1)">
+      <option value="">All stacks</option>
+      <option *ngFor="let s of stacks" [value]="s">{{ s }}</option>
+    </select>
+    <select [(ngModel)]="experienceLevel" (change)="load(1)">
+      <option value="">All levels</option>
+      <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+    </select>
+    <button class="primary" (click)="load(1)">Search</button>
+    <button class="ghost" (click)="reset()">Reset</button>
+  </div>
+  <div class="sa-full-table">
+    <div class="sa-table-head"><strong>{{ total }} developers</strong></div>
+    <div *ngIf="loading" class="sa-state">Loading...</div>
+    <table *ngIf="!loading && developers.length > 0">
+      <thead><tr><th>Name</th><th>Email</th><th>Stack</th><th>Level</th><th>Score</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let dev of developers">
+          <td>{{ dev.name }}</td>
+          <td>{{ dev.email }}</td>
+          <td>{{ dev.careerStack }}</td>
+          <td>{{ dev.experienceLevel }}</td>
+          <td>{{ dev.score }}</td>
+          <td><span class="badge" [class.badge--green]="dev.isActive" [class.badge--red]="!dev.isActive">{{ dev.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td><button class="action-btn" [class.action-btn--danger]="dev.isActive" [class.action-btn--success]="!dev.isActive" (click)="toggle(dev)">{{ dev.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!loading && developers.length === 0" class="sa-empty">No developers found.</div>
+    <div class="sa-pager">
+      <button [disabled]="page <= 1" (click)="load(page - 1)">Previous</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="load(page + 1)">Next</button>
+    </div>
+  </div>
+</div>

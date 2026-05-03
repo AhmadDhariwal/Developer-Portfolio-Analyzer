@@ -60,7 +60,10 @@ export class Login {
     this.authService.login({ email: this.email.trim(), password: this.password }).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/app/dashboard']);
+        // Redirect based on role: super_admin to the new console, others to app dashboard
+        const current = this.authService.getCurrentUser();
+        const target = current?.role === 'super_admin' ? '/super-admin' : '/app/dashboard';
+        this.router.navigate([target]);
       },
       error: (err) => {
         this.isLoading = false;

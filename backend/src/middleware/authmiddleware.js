@@ -3,7 +3,12 @@ const User = require('../models/user');
 
 const normalizeUserRole = (role) => {
     const normalized = String(role || '').toLowerCase();
-    if (normalized === 'user') return 'developer';
+    // Normalize legacy mappings if exist
+    if (normalized === 'user' || normalized === 'guest') return 'developer';
+    // Support potential hyphenated/underscore variants for super admin
+    if (normalized === 'super-admin') return 'super_admin';
+    if (normalized === 'superadmin') return 'super_admin';
+    if (normalized === 'super_admin') return 'super_admin';
     return normalized;
 };
 
@@ -52,7 +57,12 @@ const authorizeRoles = (...roles) => {
     const allowed = new Set((roles || []).map((role) => String(role || '').toLowerCase()));
 
     return (req, res, next) => {
-        const currentRole = normalizeUserRole(req.user?.role);
+        // Global Super Admin bypass: if user is super_admin, allow all actions
+        const currentRawRole = req.user?.role;
+        const currentRole = normalizeUserRole(currentRawRole);
+        if (currentRole === 'super_admin') {
+            return next();
+        }
 
         if (!allowed.has(currentRole)) {
             return res.status(403).json({ message: 'Forbidden: insufficient role permissions.' });

@@ -131,8 +131,11 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   role: {
+    // Roles in the enterprise RBAC hierarchy
+    // super_admin has global access, bypassing org-scoped checks
+    // admin, recruiter, developer operate within organization scope
     type: String,
-    enum: ['user', 'admin', 'developer', 'recruiter'],
+    enum: ['super_admin', 'admin', 'recruiter', 'developer'],
     default: 'developer'
   },
   isPublic: {
