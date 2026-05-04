@@ -35,7 +35,7 @@ const protect = async (req, res, next) => {
             }
 
             if (req.user.isActive === false) {
-                return res.status(403).json({ message: 'Account is deactivated. Please contact your administrator.' });
+                return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
             }
 
             req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;

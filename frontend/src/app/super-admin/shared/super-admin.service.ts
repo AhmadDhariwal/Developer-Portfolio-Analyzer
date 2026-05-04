@@ -47,4 +47,16 @@ export class SuperAdminService {
   toggleUserActive(id: string): Observable<any> {
     return this.http.patch(`${this.base}/users/${id}/toggle-active`, {});
   }
+
+  getUserDetails(id: string): Observable<any> {
+    return this.http.get(`${this.base}/users/${id}`);
+  }
+
+  createUser(payload: Record<string, any>): Observable<any> {
+    return this.http.post(`${this.base}/users`, payload);
+  }
+
+  updateUser(id: string, payload: Record<string, any>): Observable<any> {
+    return this.http.patch(`${this.base}/users/${id}`, payload);
+  }
 }

@@ -172,7 +172,7 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail });
 
     if (user?.isActive === false) {
-      return res.status(403).json({ message: 'Account is deactivated. Please contact your administrator.' });
+      return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
     }
 
     if (user && (await bcrypt.compare(password, user.password))) {

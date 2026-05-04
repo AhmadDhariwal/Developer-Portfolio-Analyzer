@@ -6,6 +6,7 @@
   max-width: 1400px;
   min-height: 100vh;
   background: var(--bg-main);
+  color: var(--text-primary);
 }
 
 // ── Page Header ─────────────────────────────────────────────────────────────
@@ -27,6 +28,30 @@
   }
 }
 
+// Section grouping (dashboard)
+.sa-section {
+  margin-bottom: 26px;
+}
+
+.sa-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sa-section__title {
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sa-section__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 // ── State messages ───────────────────────────────────────────────────────────
 .sa-state {
   color: var(--text-muted);
@@ -45,9 +70,9 @@
 // ── Metric Cards Grid ────────────────────────────────────────────────────────
 .sa-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 18px;
+  margin-bottom: 34px;
 }
 
 .sa-card {
@@ -143,7 +168,7 @@ th {
 td {
   padding: 10px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   vertical-align: middle;
 }
 
@@ -158,6 +183,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   flex-wrap: wrap;
   margin-bottom: 20px;
   align-items: center;
+
+  .spacer { flex: 1; }
 
   input, select {
     padding: 8px 12px;
@@ -196,6 +223,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       &:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
     }
   }
+}
+
+.sa-pager--enhanced {
+  justify-content: space-between;
+
+  .sa-pager__controls { display: flex; gap: 10px; align-items: center; }
+  .sa-pager__meta { padding-left: 2px; }
 }
 
 // ── Pagination ───────────────────────────────────────────────────────────────
@@ -256,6 +290,22 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   &--danger  { background: rgba(239,68,68,0.12);  color: #f87171; &:hover { background: rgba(239,68,68,0.2); } }
   &--success { background: rgba(34,197,94,0.12);  color: #4ade80; &:hover { background: rgba(34,197,94,0.2); } }
   &--neutral { background: rgba(255,255,255,0.06);color: var(--text-secondary); &:hover { background: rgba(255,255,255,0.1); } }
+  &--edit    { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); &:hover { background: rgba(59,130,246,0.2); } }
+  &--primary { background: rgba(99,102,241,0.14); color: var(--color-primary-light); border: 1px solid rgba(99,102,241,0.28); &:hover { background: rgba(99,102,241,0.22); } }
+}
+
+// Common buttons (usable outside .sa-filters)
+button.primary {
+  background: var(--color-primary);
+  color: #fff;
+  &:hover { background: var(--color-primary-dark); }
+}
+
+button.ghost {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  &:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 }
 
 // ── Analytics stat table ─────────────────────────────────────────────────────

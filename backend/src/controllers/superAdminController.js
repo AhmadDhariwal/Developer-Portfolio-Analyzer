@@ -3,11 +3,16 @@ const User = require('../models/user');
 const Team = require('../models/team');
 const Membership = require('../models/membership');
 const Analysis = require('../models/analysis');
+const bcrypt = require('bcryptjs');
 
 const parsePage = (q) => ({
   page: Math.max(1, parseInt(q.page, 10) || 1),
-  limit: Math.min(100, parseInt(q.limit, 10) || 20)
+  limit: Math.min(100, parseInt(q.limit, 10) || 30)
 });
+
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const isTruthy = (value) => String(value || '').toLowerCase() === 'true';
+const isFalsy = (value) => String(value || '').toLowerCase() === 'false';
 
 const getMonthlyRange = () => {
   const now = new Date();
@@ -207,6 +212,9 @@ const getAllAdmins = async (req, res) => {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'admin' };
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
+    if (req.query.organizationId) filter.organizationId = req.query.organizationId;
+    if (isTruthy(req.query.active)) filter.isActive = true;
+    if (isFalsy(req.query.active)) filter.isActive = false;
 
     const [admins, total] = await Promise.all([
       User.find(filter).select('-password').populate('organizationId', 'name').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
@@ -224,6 +232,8 @@ const getAllRecruiters = async (req, res) => {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'recruiter' };
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
+    if (isTruthy(req.query.active)) filter.isActive = true;
+    if (isFalsy(req.query.active)) filter.isActive = false;
     if (req.query.organizationId) {
       const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
       filter._id = { $in: ids };
@@ -247,6 +257,12 @@ const getAllDevelopers = async (req, res) => {
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
     if (req.query.careerStack) filter.careerStack = req.query.careerStack;
     if (req.query.experienceLevel) filter.experienceLevel = req.query.experienceLevel;
+    if (isTruthy(req.query.active)) filter.isActive = true;
+    if (isFalsy(req.query.active)) filter.isActive = false;
+    if (req.query.organizationId) {
+      const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
+      filter._id = { $in: ids };
+    }
 
     const [developers, total] = await Promise.all([
       User.find(filter).select('-password').sort({ score: -1, createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
@@ -289,8 +305,150 @@ const toggleUserActive = async (req, res) => {
   }
 };
 
+// ── GET /users/:id (full details) ──────────────────────────────────────────────
+const getUserDetails = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password')
+      .populate('organizationId', 'name isSuspended createdAt')
+      .lean();
+
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const memberships = await Membership.find({ userId: user._id, status: 'active' })
+      .populate('organizationId', 'name')
+      .populate('teamId', 'name')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    return res.json({ user, memberships });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to fetch user details', error: err?.message });
+  }
+};
+
+// ── POST /users (create admin/recruiter/developer) ─────────────────────────────
+const createUser = async (req, res) => {
+  try {
+    const role = String(req.body.role || '').toLowerCase();
+    if (!['admin', 'recruiter', 'developer'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role.' });
+    }
+
+    const name = String(req.body.name || '').trim();
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || '');
+    const organizationId = req.body.organizationId || null;
+
+    if (!name) return res.status(400).json({ message: 'Name is required.' });
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
+    if (!password || password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+
+    const existing = await User.findOne({ email }).select('_id').lean();
+    if (existing) return res.status(409).json({ message: 'Email already exists.' });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashed,
+      role,
+      isVerified: true,
+      isActive: true,
+      organizationId: organizationId || null,
+      careerStack: req.body.careerStack || undefined,
+      experienceLevel: req.body.experienceLevel || undefined
+    });
+
+    // Best-effort membership for org-scoped access and filtering
+    if (organizationId) {
+      const membershipRole = role === 'admin' ? 'admin' : 'member';
+      await Membership.updateOne(
+        { organizationId, userId: user._id, teamId: null },
+        { $setOnInsert: { organizationId, userId: user._id, teamId: null, role: membershipRole, status: 'active', invitedBy: req.user?._id || null } },
+        { upsert: true }
+      );
+    }
+
+    const created = await User.findById(user._id).select('-password').populate('organizationId', 'name').lean();
+    return res.status(201).json({ user: created });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to create user', error: err?.message });
+  }
+};
+
+// ── PATCH /users/:id (edit user) ───────────────────────────────────────────────
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password').lean();
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot modify super admin.' });
+
+    const update = {};
+
+    if (req.body.name !== undefined) update.name = String(req.body.name || '').trim();
+    if (req.body.email !== undefined) update.email = normalizeEmail(req.body.email);
+    if (req.body.phoneNumber !== undefined) update.phoneNumber = String(req.body.phoneNumber || '');
+    if (req.body.countryCode !== undefined) update.countryCode = String(req.body.countryCode || '');
+    if (req.body.githubUsername !== undefined) update.githubUsername = String(req.body.githubUsername || '');
+    if (req.body.linkedin !== undefined) update.linkedin = String(req.body.linkedin || '');
+    if (req.body.website !== undefined) update.website = String(req.body.website || '');
+    if (req.body.bio !== undefined) update.bio = String(req.body.bio || '');
+    if (req.body.location !== undefined) update.location = String(req.body.location || '');
+    if (req.body.jobTitle !== undefined) update.jobTitle = String(req.body.jobTitle || '');
+    if (req.body.careerStack !== undefined) update.careerStack = req.body.careerStack;
+    if (req.body.experienceLevel !== undefined) update.experienceLevel = req.body.experienceLevel;
+    if (req.body.isActive !== undefined) update.isActive = Boolean(req.body.isActive);
+
+    if (req.body.role !== undefined) {
+      const nextRole = String(req.body.role || '').toLowerCase();
+      if (!['admin', 'recruiter', 'developer'].includes(nextRole)) {
+        return res.status(400).json({ message: 'Invalid role.' });
+      }
+      update.role = nextRole;
+    }
+
+    const nextOrgId = req.body.organizationId === undefined ? user.organizationId : (req.body.organizationId || null);
+    update.organizationId = nextOrgId;
+
+    if (req.body.password) {
+      const nextPassword = String(req.body.password);
+      if (nextPassword.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      update.password = await bcrypt.hash(nextPassword, 10);
+    }
+
+    // Ensure email uniqueness on change
+    if (update.email && update.email !== user.email) {
+      const existing = await User.findOne({ email: update.email }).select('_id').lean();
+      if (existing) return res.status(409).json({ message: 'Email already exists.' });
+    }
+
+    const updated = await User.findByIdAndUpdate(req.params.id, update, { new: true })
+      .select('-password')
+      .populate('organizationId', 'name')
+      .lean();
+
+    // Best-effort membership sync if org is set
+    if (nextOrgId) {
+      const effectiveRole = String(updated.role || user.role);
+      const membershipRole = effectiveRole === 'admin' ? 'admin' : 'member';
+      await Membership.updateOne(
+        { organizationId: nextOrgId, userId: updated._id, teamId: null },
+        { $setOnInsert: { organizationId: nextOrgId, userId: updated._id, teamId: null, role: membershipRole, status: 'active', invitedBy: req.user?._id || null } },
+        { upsert: true }
+      );
+    }
+
+    return res.json({ user: updated });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to update user', error: err?.message });
+  }
+};
+
 module.exports = {
   getPlatformMetrics, getDashboard, getAnalytics,
   getAllOrganizations, suspendOrganization, activateOrganization,
-  getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams, toggleUserActive
+  getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams,
+  toggleUserActive, getUserDetails, createUser, updateUser
 };

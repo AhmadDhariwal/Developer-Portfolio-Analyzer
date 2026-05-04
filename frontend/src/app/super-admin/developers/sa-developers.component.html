@@ -2,6 +2,10 @@
   <div class="sa-header"><h1>Developers</h1><p>Global developer talent pool — visible to all recruiters and admins.</p></div>
   <div class="sa-filters">
     <input [(ngModel)]="search" placeholder="Search by name or email..." (keydown.enter)="load(1)" />
+    <select [(ngModel)]="organizationId" (change)="load(1)">
+      <option value="">All organizations</option>
+      <option *ngFor="let o of organizations" [value]="o._id">{{ o.name }}</option>
+    </select>
     <select [(ngModel)]="careerStack" (change)="load(1)">
       <option value="">All stacks</option>
       <option *ngFor="let s of stacks" [value]="s">{{ s }}</option>
@@ -10,8 +14,15 @@
       <option value="">All levels</option>
       <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
     </select>
+    <select [(ngModel)]="active" (change)="load(1)">
+      <option value="">All status</option>
+      <option value="true">Active</option>
+      <option value="false">Revoked</option>
+    </select>
     <button class="primary" (click)="load(1)">Search</button>
     <button class="ghost" (click)="reset()">Reset</button>
+    <span class="spacer"></span>
+    <button class="primary" (click)="openCreate()">Add Developer</button>
   </div>
   <div class="sa-full-table">
     <div class="sa-table-head"><strong>{{ total }} developers</strong></div>
@@ -26,15 +37,27 @@
           <td>{{ dev.experienceLevel }}</td>
           <td>{{ dev.score }}</td>
           <td><span class="badge" [class.badge--green]="dev.isActive" [class.badge--red]="!dev.isActive">{{ dev.isActive ? 'Active' : 'Inactive' }}</span></td>
-          <td><button class="action-btn" [class.action-btn--danger]="dev.isActive" [class.action-btn--success]="!dev.isActive" (click)="toggle(dev)">{{ dev.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+          <td>
+            <a class="action-btn action-btn--primary" [routerLink]="['/super-admin/users', dev._id]">Details</a>
+            <button class="action-btn action-btn--edit" (click)="openEdit(dev)">Edit</button>
+            <button class="action-btn" [class.action-btn--danger]="dev.isActive" [class.action-btn--success]="!dev.isActive" (click)="toggle(dev)">{{ dev.isActive ? 'Revoke' : 'Restore' }}</button>
+          </td>
         </tr>
       </tbody>
     </table>
     <div *ngIf="!loading && developers.length === 0" class="sa-empty">No developers found.</div>
-    <div class="sa-pager">
-      <button [disabled]="page <= 1" (click)="load(page - 1)">Previous</button>
-      <span>Page {{ page }} / {{ totalPages }}</span>
-      <button [disabled]="page >= totalPages" (click)="load(page + 1)">Next</button>
-    </div>
+    <sa-pager [page]="page" [totalPages]="totalPages" [total]="total" [pageSize]="pageSize" (change)="load($event)" />
   </div>
 </div>
+
+<sa-user-form-modal
+  [open]="formOpen"
+  [mode]="formMode"
+  role="developer"
+  [organizations]="organizations"
+  [user]="selected"
+  [busy]="formBusy"
+  [error]="formError"
+  (close)="formOpen=false"
+  (save)="save($event)"
+/>

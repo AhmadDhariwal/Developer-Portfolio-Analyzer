@@ -31,10 +31,15 @@
 // ── Charts ───────────────────────────────────────────────────────────────────
 .sa-charts-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 24px;
+  grid-template-columns: 2fr 1fr;
+  gap: 22px;
+  margin-bottom: 26px;
 
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+}
+
+.sa-charts-row--reverse {
+  grid-template-columns: 1fr 2fr;
   @media (max-width: 1024px) { grid-template-columns: 1fr; }
 }
 
@@ -64,7 +69,7 @@
 
 .sa-chart-wrap {
   padding: 16px 20px 20px;
-  height: 240px;
+  height: 260px;
   position: relative;
 
   &--sm { height: 180px; }

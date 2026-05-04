@@ -35,10 +35,6 @@
       </tbody>
     </table>
     <div *ngIf="!loading && organizations.length === 0" class="sa-empty">No organizations found.</div>
-    <div class="sa-pager">
-      <button [disabled]="page <= 1" (click)="load(page - 1)">Previous</button>
-      <span>Page {{ page }} / {{ totalPages }}</span>
-      <button [disabled]="page >= totalPages" (click)="load(page + 1)">Next</button>
-    </div>
+    <sa-pager [page]="page" [totalPages]="totalPages" [total]="total" [pageSize]="pageSize" (change)="load($event)" />
   </div>
 </div>

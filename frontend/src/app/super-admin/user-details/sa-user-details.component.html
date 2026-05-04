@@ -1,0 +1,57 @@
+<div class="sa-page">
+  <div class="sa-header">
+    <h1>User Details</h1>
+    <p *ngIf="user as u">Full profile, status, and memberships.</p>
+  </div>
+
+  <div *ngIf="loading" class="sa-state">Loading...</div>
+  <div *ngIf="!loading && error" class="sa-state">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && user as u">
+    <div class="sa-details">
+      <div class="sa-details__card">
+        <div class="sa-table-head">
+          <strong>{{ u.name }}</strong>
+          <span class="badge" [class.badge--green]="u.isActive !== false" [class.badge--red]="u.isActive === false">
+            {{ u.isActive !== false ? 'Active' : 'Revoked' }}
+          </span>
+        </div>
+
+        <div class="sa-kv">
+          <div><span>Email</span><strong>{{ u.email }}</strong></div>
+          <div><span>Role</span><strong>{{ u.role }}</strong></div>
+          <div><span>Organization</span><strong>{{ u.organizationId?.name || '—' }}</strong></div>
+          <div><span>Joined</span><strong>{{ u.createdAt | date:'medium' }}</strong></div>
+          <div><span>Phone</span><strong>{{ u.countryCode }} {{ u.phoneNumber }}</strong></div>
+          <div><span>GitHub</span><strong>{{ u.githubUsername || '—' }}</strong></div>
+          <div><span>Career Stack</span><strong>{{ u.careerStack || '—' }}</strong></div>
+          <div><span>Experience</span><strong>{{ u.experienceLevel || '—' }}</strong></div>
+          <div><span>LinkedIn</span><strong>{{ u.linkedin || '—' }}</strong></div>
+          <div><span>Website</span><strong>{{ u.website || '—' }}</strong></div>
+          <div class="sa-kv__full"><span>Bio</span><strong>{{ u.bio || '—' }}</strong></div>
+        </div>
+
+        <div class="sa-details__actions">
+          <a class="sa-link" routerLink="../admins">Back to lists</a>
+        </div>
+      </div>
+
+      <div class="sa-details__card">
+        <div class="sa-table-head"><strong>Memberships</strong></div>
+        <table *ngIf="memberships.length > 0">
+          <thead><tr><th>Organization</th><th>Team</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let m of memberships">
+              <td>{{ m.organizationId?.name || '—' }}</td>
+              <td>{{ m.teamId?.name || '—' }}</td>
+              <td>{{ m.role }}</td>
+              <td><span class="badge badge--gray">{{ m.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="memberships.length === 0" class="sa-empty">No active memberships.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+

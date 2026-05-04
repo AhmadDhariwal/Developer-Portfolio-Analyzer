@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SuperAdminService } from '../shared/super-admin.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SaPagerComponent } from '../shared/components/sa-pager/sa-pager.component';
 
 @Component({
   selector: 'app-sa-organizations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SaPagerComponent],
   templateUrl: './sa-organizations.component.html',
   styleUrls: ['./sa-organizations.component.scss']
 })
@@ -15,6 +16,7 @@ export class SaOrganizationsComponent implements OnInit {
   organizations: any[] = [];
   total = 0; page = 1; totalPages = 1;
   loading = false; search = ''; suspended = '';
+  readonly pageSize = 30;
 
   constructor(
     private readonly sa: SuperAdminService,
@@ -27,7 +29,7 @@ export class SaOrganizationsComponent implements OnInit {
   load(page = 1): void {
     this.loading = true;
     this.page = page;
-    const params: Record<string, string> = { page: String(page), limit: '20' };
+    const params: Record<string, string> = { page: String(page), limit: String(this.pageSize) };
     if (this.search) params['search'] = this.search;
     if (this.suspended) params['suspended'] = this.suspended;
     this.sa.getOrganizations(params).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

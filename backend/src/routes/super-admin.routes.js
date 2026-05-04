@@ -4,7 +4,8 @@ const { protect, authorizeRoles } = require('../middleware/authmiddleware');
 const {
   getAllOrganizations, suspendOrganization, activateOrganization,
   getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams,
-  toggleUserActive, getPlatformMetrics, getDashboard, getAnalytics
+  toggleUserActive, getPlatformMetrics, getDashboard, getAnalytics,
+  getUserDetails, createUser, updateUser
 } = require('../controllers/superAdminController');
 
 router.use(protect, authorizeRoles('super_admin'));
@@ -20,5 +21,8 @@ router.get('/recruiters',                   getAllRecruiters);
 router.get('/developers',                   getAllDevelopers);
 router.get('/teams',                        getAllTeams);
 router.patch('/users/:id/toggle-active',    toggleUserActive);
+router.get('/users/:id',                    getUserDetails);
+router.post('/users',                       createUser);
+router.patch('/users/:id',                  updateUser);
 
 module.exports = router;
