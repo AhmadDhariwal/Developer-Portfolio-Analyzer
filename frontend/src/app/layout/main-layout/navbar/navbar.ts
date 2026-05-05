@@ -88,11 +88,14 @@ export class Navbar implements OnInit {
   private get searchablePages(): SearchSuggestion[] {
     const role = this.selectedRole;
     const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
+    const isSuperAdmin = sessionRole === 'super_admin' || sessionRole === 'superadmin';
     const isAdmin = role === 'admin' || sessionRole === 'admin';
     const isRecruiter = sessionRole === 'recruiter';
 
     const roleScoped = this.navPages.filter((page) => {
       if (String(page.route || '').startsWith('/app/admin') && !isAdmin) return false;
+      if (String(page.route || '').startsWith('/app/admin') && isSuperAdmin) return false;
+      if (String(page.route || '').startsWith('/app/recruiter') && isSuperAdmin) return false;
       if (String(page.route || '').startsWith('/app/recruiter') && !isRecruiter) return false;
       return true;
     });

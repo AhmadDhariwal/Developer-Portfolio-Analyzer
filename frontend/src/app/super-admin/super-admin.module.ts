@@ -1,8 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { SUPER_ADMIN_ROUTES } from './super-admin.routes';
 
-// This module is no longer used — routing now uses super-admin.routes.ts (standalone).
 @NgModule({
-  imports: [CommonModule]
+  imports: [CommonModule, RouterModule.forChild(SUPER_ADMIN_ROUTES)],
+  exports: [RouterModule]
 })
 export class SuperAdminModule {}

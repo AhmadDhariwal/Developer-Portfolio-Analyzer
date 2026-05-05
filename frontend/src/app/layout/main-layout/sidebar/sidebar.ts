@@ -182,9 +182,13 @@ export class Sidebar implements OnInit {
   }
 
   get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
-    const role = this.tenantContext.snapshot.myRole;
-    const storedUser = this.authService.getCurrentUser();
-    const isAdmin = role === 'admin' || storedUser?.role === 'admin';
+    const user = this.authService.getCurrentUser();
+    const currentRole = this.getNormalizedRole(user?.role);
+    const tenantRole = this.tenantContext.snapshot.myRole;
+
+    const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
+    const isAdmin = currentRole === 'admin' || tenantRole === 'admin' || isSuperAdmin;
+
     if (isAdmin) {
       return this.navItems;
     }
@@ -192,40 +196,51 @@ export class Sidebar implements OnInit {
   }
 
   get visibleNavGroups(): Array<{ label: string; route?: string; icon: string; items: Array<{ label: string; route: string; icon: string }> }> {
-    const currentRole = this.getNormalizedRole(this.authService.getCurrentUser()?.role);
+    const user = this.authService.getCurrentUser();
+    const currentRole = this.getNormalizedRole(user?.role);
     const tenantRole = this.tenantContext.snapshot.myRole;
 
-    const isRecruiter = currentRole === 'recruiter';
+    const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
+    const isRecruiter = currentRole === 'recruiter' || tenantRole === 'recruiter';
     const isAdmin = currentRole === 'admin' || tenantRole === 'admin';
-    const isSuperAdmin = currentRole === 'super_admin';
 
     return this.navGroups.map((group) => {
       let filteredItems = group.items.filter((item) => {
-        if (item.route === '/app/recruiter' && !isRecruiter && !isSuperAdmin) return false;
-        
-        // Hide Admin Console if not Admin AND not Super Admin
-        if (item.route === '/app/admin') {
-          if (!isAdmin && !isSuperAdmin) return false;
+        // Special logic for Super Admin
+        if (isSuperAdmin) {
+          // Hide Recruiter Hub and Admin Console for Super Admin in the main project
+          if (item.route === '/app/recruiter' || item.route === '/app/admin') {
+            return false;
+          }
+          // Everything else is visible to Super Admin
+          return true;
         }
-        
+
+        // Standard RBAC for other roles
+        if (item.route === '/app/recruiter') return isRecruiter;
+        if (item.route === '/app/admin') return isAdmin;
+
         return true;
       });
 
       // If this is the 'System' group and user is Super Admin, add the Super Admin Dashboard link
       if (group.label === 'System' && isSuperAdmin) {
-        filteredItems = [
-          {
-            label: 'Super Admin',
-            route: '/super-admin/dashboard',
-            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>`
-          },
-          ...filteredItems
-        ];
+        const hasSaLink = filteredItems.some((i) => i.route === '/super-admin/dashboard');
+        if (!hasSaLink) {
+          filteredItems = [
+            {
+              label: 'Super Admin',
+              route: '/super-admin/dashboard',
+              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>`,
+            },
+            ...filteredItems,
+          ];
+        }
       }
 
       return {
         ...group,
-        items: filteredItems
+        items: filteredItems,
       };
     });
   }

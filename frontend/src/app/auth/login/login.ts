@@ -62,7 +62,8 @@ export class Login {
         this.isLoading = false;
         // Redirect based on role: super_admin to the new console, others to app dashboard
         const current = this.authService.getCurrentUser();
-        const target = current?.role === 'super_admin' ? '/super-admin' : '/app/dashboard';
+        const role = String(current?.role || '').toLowerCase();
+        const target = (role === 'super_admin' || role === 'superadmin') ? '/super-admin' : '/app/dashboard';
         this.router.navigate([target]);
       },
       error: (err) => {

@@ -28,13 +28,14 @@ import { NewsComponent } from './pages/news/news.component';
 import { Login } from './auth/login/login';
 import { Signup } from './auth/signup/signup';
 import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
-import { superAdminGuard } from './guards/super-admin.guard';
 import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
 import { publicGuard } from './guards/public.guard';
 import { adminSettingsGuard } from './guards/admin-settings.guard';
 import { recruiterRoleGuard } from './guards/recruiter-role.guard';
+import { noAdminTabsGuard } from './guards/no-admin-tabs.guard';
+import { superAdminGuard } from './guards/super-admin.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -85,14 +86,14 @@ export const routes: Routes = [
       // Recruiter hub
       {
         path: 'recruiter',
-        canActivate: [recruiterRoleGuard],
+        canActivate: [noAdminTabsGuard, recruiterRoleGuard],
         loadChildren: () => import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule)
       },
 
       // Admin hiring workspace
       {
         path: 'admin',
-        canActivate: [adminSettingsGuard],
+        canActivate: [noAdminTabsGuard, adminSettingsGuard],
         loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule)
       },
 
@@ -118,7 +119,7 @@ export const routes: Routes = [
   {
     path: 'super-admin',
     canActivate: [authGuard, superAdminGuard],
-    loadChildren: () => import('./super-admin/super-admin.routes').then((m) => m.SUPER_ADMIN_ROUTES)
+    loadChildren: () => import('./super-admin/super-admin.module').then((m) => m.SuperAdminModule)
   },
 
   // Wildcard
