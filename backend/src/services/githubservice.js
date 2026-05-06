@@ -1,6 +1,7 @@
 const axios = require('axios');
 const aiService = require('./aiservice');
 const { getGitHubPrompt } = require('../prompts/githubPrompt');
+const { getIntegrationSecretsSync } = require('./platformSettingsService');
 
 // Build shared GitHub API config with optional auth token
 const buildConfig = () => {
@@ -8,7 +9,7 @@ const buildConfig = () => {
     headers: { 'Accept': 'application/vnd.github.v3+json' },
     timeout: 10000
   };
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GITHUB_TOKEN || getIntegrationSecretsSync()?.githubApiKey || '';
   if (token && token !== 'your_github_personal_access_token') {
     config.headers.Authorization = `token ${token}`;
   }

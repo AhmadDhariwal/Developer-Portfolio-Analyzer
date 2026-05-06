@@ -43,6 +43,7 @@ const { startWeeklyReportScheduler } = require('./src/services/weeklyReportServi
 const { initRedisCache } = require('./src/services/redisCacheService');
 const { startInterviewQuestionIngestionScheduler } = require('./src/services/interviewQuestionIngestionService');
 const { startInterviewQuestionMaintenanceScheduler } = require('./src/services/interviewQuestionMaintenanceService');
+const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
 
 const env = validateEnv();
 
@@ -72,6 +73,24 @@ app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Global maintenance mode (controlled by Super Admin settings).
+// Keep auth + super-admin routes accessible so admins can turn it off.
+app.use((req, res, next) => {
+  try {
+    const maintenance = Boolean(getSettingsSnapshotSync()?.general?.maintenanceMode);
+    if (!maintenance) return next();
+
+    const path = String(req.path || req.originalUrl || '');
+    if (path.startsWith('/api/super-admin')) return next();
+    if (path.startsWith('/api/auth')) return next();
+    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
+
+    return res.status(503).json({ message: 'Platform is under maintenance. Please try again later.' });
+  } catch {
+    return next();
+  }
+});
 // Serve uploads with cache control to prevent stale avatar issues
 app.use('/uploads', (req, res, next) => {
   // Set cache control headers to allow browser caching but enable revalidation
@@ -135,6 +154,7 @@ app.listen(PORT, () => {
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
     startInterviewQuestionMaintenanceScheduler();
+    getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;

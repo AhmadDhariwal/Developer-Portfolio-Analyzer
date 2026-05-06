@@ -29,6 +29,7 @@ import { AuthService } from '../shared/services/auth.service';
         <a routerLink="recruiters"   routerLinkActive="active" title="Recruiters"><span class="sa-nav__icon">R</span><span class="sa-nav__label">Recruiters</span></a>
         <a routerLink="developers"   routerLinkActive="active" title="Developers"><span class="sa-nav__icon">Dev</span><span class="sa-nav__label">Developers</span></a>
         <a routerLink="analytics"    routerLinkActive="active" title="Analytics"><span class="sa-nav__icon">An</span><span class="sa-nav__label">Analytics</span></a>
+        <a routerLink="settings"     routerLinkActive="active" title="Settings"><span class="sa-nav__icon">S</span><span class="sa-nav__label">Settings</span></a>
         <button (click)="logout()" class="sa-nav__exit">Logout</button>
       </nav>
       <main class="sa-main"><router-outlet></router-outlet></main>

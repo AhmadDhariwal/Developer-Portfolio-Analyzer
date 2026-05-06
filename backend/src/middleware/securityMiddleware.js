@@ -1,6 +1,7 @@
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
+const { getSettingsSnapshotSync } = require('../services/platformSettingsService');
 
 const loginAttemptStore = new Map();
 
@@ -77,7 +78,10 @@ const effectiveGlobalLimit = process.env.NODE_ENV === 'development' ? developmen
 
 const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: effectiveGlobalLimit,
+  limit: async () => {
+    const settings = getSettingsSnapshotSync()?.security || {};
+    return Number(settings.globalRateLimitMax || effectiveGlobalLimit);
+  },
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: globalRateLimitKeyGenerator,
@@ -112,8 +116,10 @@ const registerAuthFailure = (req) => {
   const key = makeLoginKey(req);
   const now = Date.now();
 
-  const maxFailures = Number(process.env.BRUTE_FORCE_MAX_ATTEMPTS || 6);
-  const lockoutMs = Number(process.env.BRUTE_FORCE_LOCKOUT_MS || 10 * 60 * 1000);
+  const security = getSettingsSnapshotSync()?.security || {};
+  const maxFailures = Number(security.loginMaxFailures || process.env.BRUTE_FORCE_MAX_ATTEMPTS || 6);
+  const lockoutMinutes = Number(security.loginLockoutMinutes || 10);
+  const lockoutMs = lockoutMinutes * 60 * 1000;
 
   const entry = loginAttemptStore.get(key) || { count: 0, lastAttemptAt: now, blockedUntil: 0 };
   entry.count += 1;

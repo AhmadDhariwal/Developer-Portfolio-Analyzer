@@ -71,6 +71,14 @@ export class SuperAdminService {
     return this.http.patch(`${this.base}/users/${id}`, payload);
   }
 
+  getSettings(): Observable<any> {
+    return this.http.get(`${this.base}/settings`);
+  }
+
+  updateSettings(payload: Record<string, any>): Observable<any> {
+    return this.http.put(`${this.base}/settings`, payload);
+  }
+
   deleteUser(id: string): Observable<any> {
     return this.http.delete(`${this.base}/users/${encodeURIComponent(id)}`);
   }

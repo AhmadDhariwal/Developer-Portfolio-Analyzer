@@ -7,19 +7,19 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { registerAuthFailure, clearAuthFailures } = require('../middleware/securityMiddleware');
 const { createOtp, validateOtp } = require('../services/otpService');
+const { getSettingsSnapshotSync } = require('../services/platformSettingsService');
 const { hashValue, matchesHashedValue } = require('../utils/hash');
 const { generateOtp } = require('../utils/otpGenerator');
 const { sendEmailOTP } = require('../services/emailService');
 const { sendSMSOTP } = require('../services/smsService');
 
-const OTP_EXPIRY_MINUTES = 10; // pending registrations live for 10 min
-const MAX_OTP_ATTEMPTS   = 3;
+const getSecurityConfig = () => getSettingsSnapshotSync()?.security || {};
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '20h',
+    expiresIn: process.env.JWT_EXPIRES_IN || getSecurityConfig().jwtExpiresIn || '20h',
     algorithm: 'HS256',
     issuer:    process.env.JWT_ISSUER    || 'devinsight-api',
     audience:  process.env.JWT_AUDIENCE  || 'devinsight-web'
@@ -102,8 +102,9 @@ const registerUser = async (req, res) => {
     if (!name || !normalizedEmail || !password || !githubUsername) {
       return res.status(400).json({ message: 'Please add all fields' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
+    if (password.length < minPasswordLength) {
+      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
     }
     if ((normalizedPhone && !normalizedCode) || (!normalizedPhone && normalizedCode)) {
       return res.status(400).json({ message: 'Country code and phone number must be provided together.' });
@@ -121,7 +122,7 @@ const registerUser = async (req, res) => {
 
     // Generate OTP
     const otp       = generateOtp();
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+    const expiresAt = new Date(Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000);
 
     // Upsert pending registration (replace if they're retrying)
     const pending = await PendingRegistration.findOneAndUpdate(
@@ -243,7 +244,7 @@ const sendOtp = async (req, res) => {
       }
 
       const otp       = generateOtp();
-      const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+      const expiresAt = new Date(Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000);
       pending.otp         = hashValue(otp);
       pending.otpAttempts = 0;
       pending.expiresAt   = expiresAt;
@@ -311,7 +312,8 @@ const verifyOtp = async (req, res) => {
       }
 
       // Check attempts
-      if (pending.otpAttempts >= MAX_OTP_ATTEMPTS) {
+      const maxOtpAttempts = Number(getSecurityConfig().otpMaxAttempts || 3);
+      if (pending.otpAttempts >= maxOtpAttempts) {
         await PendingRegistration.deleteOne({ _id: pending._id });
         return res.status(400).json({ message: 'Maximum OTP attempts reached. Please sign up again.' });
       }
@@ -320,7 +322,7 @@ const verifyOtp = async (req, res) => {
       if (!matchesHashedValue(otp, pending.otp)) {
         pending.otpAttempts += 1;
         await pending.save();
-        const remaining = MAX_OTP_ATTEMPTS - pending.otpAttempts;
+        const remaining = maxOtpAttempts - pending.otpAttempts;
         return res.status(400).json({
           message: remaining > 0
             ? `Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
@@ -419,8 +421,9 @@ const resetPassword = async (req, res) => {
     if (!resetToken || !newPassword) {
       return res.status(400).json({ message: 'resetToken and newPassword are required.' });
     }
-    if (String(newPassword).length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
+    if (String(newPassword).length < minPasswordLength) {
+      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
     }
 
     const decoded = jwt.decode(resetToken);
@@ -510,15 +513,17 @@ const acceptInvite = async (req, res) => {
       return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
     }
 
+    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
+
     let user = existingUser;
-    if (!user && requestedPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    if (!user && requestedPassword.length < minPasswordLength) {
+      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
     }
 
     if (user) {
       if (requestedPassword) {
-        if (requestedPassword.length < 6) {
-          return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+        if (requestedPassword.length < minPasswordLength) {
+          return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
         }
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(requestedPassword, salt);

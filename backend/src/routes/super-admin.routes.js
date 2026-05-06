@@ -9,6 +9,10 @@ const {
   deleteUser,
   getRecruiterAnalytics, assignTeamToRecruiter, removeRecruiterTeam
 } = require('../controllers/superAdminController');
+const {
+  getPlatformSettings,
+  updatePlatformSettings
+} = require('../controllers/superAdminSettingsController');
 
 router.use(protect, authorizeRoles('super_admin'));
 
@@ -31,5 +35,7 @@ router.get('/users/:id',                    getUserDetails);
 router.post('/users',                       createUser);
 router.patch('/users/:id',                  updateUser);
 router.delete('/users/:id',                 deleteUser);
+router.get('/settings',                     getPlatformSettings);
+router.put('/settings',                     updatePlatformSettings);
 
 module.exports = router;

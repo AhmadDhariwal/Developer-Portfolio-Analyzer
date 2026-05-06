@@ -1,0 +1,453 @@
+<div class="sa-page sa-settings">
+  <div class="sa-toast" *ngIf="toast.show" [class.sa-toast--error]="toast.type === 'error'">{{ toast.message }}</div>
+
+  <div class="sa-settings__hero">
+    <div class="sa-settings__hero-inner">
+      <div class="sa-settings__title">
+        <div class="sa-settings__kicker">Super Admin Control Center</div>
+        <h1>Platform Settings</h1>
+        <p>Global switches and policies that shape DevInsight AI behavior across the platform.</p>
+      </div>
+      <div class="sa-settings__hero-meta">
+        <span class="badge badge--gray">Super Admin Only</span>
+        <span class="sa-settings__updated" *ngIf="lastUpdatedAt">Updated {{ lastUpdatedAt | date:'medium' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sa-settings__layout">
+    <aside class="sa-settings__nav">
+      <div class="sa-settings__nav-head">
+        <div class="sa-settings__nav-title">Sections</div>
+        <div class="sa-settings__nav-sub">Choose a category to configure.</div>
+      </div>
+
+      <nav class="sa-settings__nav-list">
+        <button
+          *ngFor="let tab of tabs"
+          type="button"
+          class="sa-navtab"
+          [class.is-active]="activeTab === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          <span class="sa-navtab__icon" [attr.data-id]="tab.id"></span>
+          <span class="sa-navtab__label">{{ tab.label }}</span>
+          <span class="sa-navtab__chev">›</span>
+        </button>
+      </nav>
+    </aside>
+
+    <form class="sa-settings__content" [formGroup]="form" (ngSubmit)="save()">
+      <div class="sa-settings__content-head">
+        <div class="sa-settings__content-title">
+          <div class="sa-settings__content-badge">{{ tabs.find(t => t.id === activeTab)?.label }}</div>
+          <div class="sa-settings__content-hint">Changes apply globally and take effect immediately.</div>
+        </div>
+
+        <div class="sa-settings__content-actions">
+          <button type="button" class="ghost" (click)="reset()" [disabled]="loading || saving">Reset</button>
+          <button type="submit" class="primary" [disabled]="loading || saving">{{ saving ? 'Saving...' : 'Save' }}</button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="loading">
+        <div class="sa-skeleton">
+          <div class="sa-skeleton__card"></div>
+          <div class="sa-skeleton__card"></div>
+          <div class="sa-skeleton__card"></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loading">
+        <!-- GENERAL -->
+        <section *ngIf="activeTab === 'general'" formGroupName="general" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="general"></div>
+            <div>
+              <h2>General Settings</h2>
+              <p>Brand identity and platform defaults.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Branding</div>
+              <div class="sa-card__desc">Name and logo used across the UI.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Platform Name</span><input formControlName="platformName" /></label>
+                <label class="sa-field"><span>Logo URL</span><input formControlName="logoUrl" placeholder="https://..." /></label>
+              </div>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Defaults</div>
+              <div class="sa-card__desc">Baseline locale and timezone preferences.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Default Timezone</span><input formControlName="defaultTimezone" /></label>
+                <label class="sa-field"><span>Default Language</span><input formControlName="defaultLanguage" /></label>
+              </div>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Maintenance</div>
+              <div class="sa-card__desc">Pause access while deploying or performing upgrades.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="maintenanceMode" />
+                <span><strong>Maintenance Mode</strong><small>Non-admin users will see a maintenance response.</small></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI -->
+        <section *ngIf="activeTab === 'ai'" formGroupName="ai" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="ai"></div>
+            <div>
+              <h2>AI Settings</h2>
+              <p>Provider, model, and feature controls.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Feature Switch</div>
+              <div class="sa-card__desc">Disable AI modules globally for the entire platform.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enabled" />
+                <span><strong>Enable AI Modules</strong><small>Turns AI-powered features on or off globally.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Provider</div>
+              <div class="sa-card__desc">Select the default AI backend and model.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Provider</span><input formControlName="provider" /></label>
+                <label class="sa-field"><span>Model</span><input formControlName="model" /></label>
+              </div>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Limits</div>
+              <div class="sa-card__desc">Guardrails for usage and recommendation generation.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Usage Limit Per Day</span><input type="number" formControlName="usageLimitPerDay" /></label>
+                <label class="sa-field"><span>Recommendation Limit</span><input type="number" formControlName="recommendationLimit" /></label>
+              </div>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Prompt and Key</div>
+              <div class="sa-card__desc">Optional prompt template and provider API key.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field sa-field--full"><span>Prompt Template</span><textarea rows="6" formControlName="promptTemplate"></textarea></label>
+                <label class="sa-field sa-field--full">
+                  <span>AI Provider API Key</span>
+                  <input type="password" formControlName="providerApiKey" placeholder="Leave blank to keep existing" />
+                  <small class="sa-help">Status: {{ hasSecret('aiProviderApiKey') || 'not set' }}</small>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ORGANIZATION -->
+        <section *ngIf="activeTab === 'organization'" formGroupName="organization" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="org"></div>
+            <div>
+              <h2>Organization Settings</h2>
+              <p>Capacity controls and admin invitation policy.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Creation</div>
+              <div class="sa-card__desc">Control who can create organizations.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="allowOrgCreation" />
+                <span><strong>Allow Organization Creation</strong><small>Enable org creation workflows for admins.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Invitations</div>
+              <div class="sa-card__desc">Approval policy for org admin invitations.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="adminInvitesRequireApproval" />
+                <span><strong>Require Invite Approval</strong><small>Add review for organization admin invites.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Limits</div>
+              <div class="sa-card__desc">Global caps applied per organization.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Max Teams Per Organization</span><input type="number" formControlName="maxTeamsPerOrganization" /></label>
+                <label class="sa-field"><span>Recruiter Limit Per Organization</span><input type="number" formControlName="recruiterLimitPerOrg" /></label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECRUITER -->
+        <section *ngIf="activeTab === 'recruiter'" formGroupName="recruiter" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="recruiter"></div>
+            <div>
+              <h2>Recruiter Settings</h2>
+              <p>Access policies and activity thresholds.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Access</div>
+              <div class="sa-card__desc">Turn recruiter hub access on or off.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enableRecruiterAccess" />
+                <span><strong>Enable Recruiter Access</strong><small>Globally enable recruiter functionality.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Visibility</div>
+              <div class="sa-card__desc">Define how candidates are exposed to recruiters.</div>
+              <label class="sa-field"><span>Candidate Visibility</span><input formControlName="candidateVisibility" /></label>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Activity</div>
+              <div class="sa-card__desc">Threshold used for recruiter health checks.</div>
+              <label class="sa-field"><span>Activity Threshold (days)</span><input type="number" formControlName="activityThresholdDays" /></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEVELOPER -->
+        <section *ngIf="activeTab === 'developer'" formGroupName="developer" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="developer"></div>
+            <div>
+              <h2>Developer Settings</h2>
+              <p>Portfolio visibility and profile requirements.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Visibility</div>
+              <div class="sa-card__desc">Control public portfolio exposure across the platform.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="publicPortfolioVisibility" />
+                <span><strong>Public Portfolio Visibility</strong><small>Allow public portfolio access globally.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Identity</div>
+              <div class="sa-card__desc">Require GitHub username/link for developer profiles.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="githubRequirement" />
+                <span><strong>Require GitHub</strong><small>Improve verification and profile completeness.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Completion</div>
+              <div class="sa-card__desc">Minimum profile completion percentage.</div>
+              <label class="sa-field"><span>Profile Completion Requirement (%)</span><input type="number" formControlName="profileCompletionRequirement" /></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section *ngIf="activeTab === 'security'" formGroupName="security" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="security"></div>
+            <div>
+              <h2>Security Settings</h2>
+              <p>Authentication, OTP policy, throttling, and password standards.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Session</div>
+              <div class="sa-card__desc">Token expiry behavior for logged-in sessions.</div>
+              <label class="sa-field"><span>JWT Expiry</span><input formControlName="jwtExpiresIn" /></label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">OTP</div>
+              <div class="sa-card__desc">How long OTP codes stay valid.</div>
+              <label class="sa-field"><span>OTP Expiry (minutes)</span><input type="number" formControlName="otpExpiryMinutes" /></label>
+              <label class="sa-field"><span>OTP Max Attempts</span><input type="number" formControlName="otpMaxAttempts" /></label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Password</div>
+              <div class="sa-card__desc">Baseline password requirements.</div>
+              <label class="sa-field"><span>Password Min Length</span><input type="number" formControlName="passwordMinLength" /></label>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="requireStrongPassword" />
+                <span><strong>Require Strong Password</strong><small>Enforce stricter password policy.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Login Protection</div>
+              <div class="sa-card__desc">Limits for failed attempts and global request throttling.</div>
+              <div class="sa-form-grid">
+                <label class="sa-field"><span>Login Max Failures</span><input type="number" formControlName="loginMaxFailures" /></label>
+                <label class="sa-field"><span>Lockout (minutes)</span><input type="number" formControlName="loginLockoutMinutes" /></label>
+                <label class="sa-field sa-field--full"><span>Global Rate Limit Max</span><input type="number" formControlName="globalRateLimitMax" /></label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section *ngIf="activeTab === 'analytics'" formGroupName="analytics" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="analytics"></div>
+            <div>
+              <h2>Analytics Settings</h2>
+              <p>Refresh intervals, caching, and log controls.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card">
+              <div class="sa-card__title">Refresh</div>
+              <div class="sa-card__desc">How often dashboards are refreshed.</div>
+              <label class="sa-field"><span>Refresh Interval (minutes)</span><input type="number" formControlName="refreshIntervalMinutes" /></label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Cache</div>
+              <div class="sa-card__desc">Server-side dashboard caching window.</div>
+              <label class="sa-field"><span>Dashboard Cache (minutes)</span><input type="number" formControlName="dashboardCacheMinutes" /></label>
+            </div>
+
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Logging</div>
+              <div class="sa-card__desc">Structured logs improve observability and debugging.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enableStructuredLogging" />
+                <span><strong>Structured Logging</strong><small>Keep logs consistent for observability.</small></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section *ngIf="activeTab === 'notifications'" formGroupName="notifications" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="notifications"></div>
+            <div>
+              <h2>Notification Settings</h2>
+              <p>Control platform alerts and delivery channels.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div class="sa-card sa-card--wide">
+              <div class="sa-card__title">Delivery</div>
+              <div class="sa-card__desc">Enable or disable platform email delivery.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="emailNotifications" />
+                <span><strong>Email Notifications</strong><small>Allow platform email delivery.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">System Alerts</div>
+              <div class="sa-card__desc">Operational alerts for incidents and health.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="systemAlerts" />
+                <span><strong>Enable System Alerts</strong><small>Platform-level alerts and warnings.</small></span>
+              </label>
+            </div>
+
+            <div class="sa-card">
+              <div class="sa-card__title">Role Alerts</div>
+              <div class="sa-card__desc">Alerts for recruiters and admins.</div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="recruiterAlerts" />
+                <span><strong>Recruiter Alerts</strong><small>Enable recruiter notification channels.</small></span>
+              </label>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="adminAlerts" />
+                <span><strong>Admin Alerts</strong><small>Enable organization admin channels.</small></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- INTEGRATIONS -->
+        <section *ngIf="activeTab === 'integrations'" formGroupName="integrations" class="sa-section">
+          <div class="sa-section__head">
+            <div class="sa-section__icon" data-ic="integrations"></div>
+            <div>
+              <h2>API and Integration Settings</h2>
+              <p>External API keys and service connectivity.</p>
+            </div>
+          </div>
+
+          <div class="sa-card-grid">
+            <div formGroupName="github" class="sa-card sa-integration">
+              <div class="sa-card__title">GitHub</div>
+              <div class="sa-card__desc">Repository analysis and profile sync.</div>
+              <div class="sa-pill-row">
+                <span class="sa-pill">{{ hasSecret('githubApiKey') || 'not set' }}</span>
+              </div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enabled" />
+                <span><strong>Enabled</strong><small>Allow GitHub integration.</small></span>
+              </label>
+              <label class="sa-field">
+                <span>API Key</span>
+                <input type="password" formControlName="apiKey" placeholder="Leave blank to keep existing" />
+              </label>
+            </div>
+
+            <div formGroupName="news" class="sa-card sa-integration">
+              <div class="sa-card__title">News</div>
+              <div class="sa-card__desc">News ingestion and trend feeds.</div>
+              <div class="sa-pill-row">
+                <span class="sa-pill">{{ hasSecret('newsApiKey') || 'not set' }}</span>
+              </div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enabled" />
+                <span><strong>Enabled</strong><small>Allow news integration.</small></span>
+              </label>
+              <label class="sa-field">
+                <span>API Key</span>
+                <input type="password" formControlName="apiKey" placeholder="Leave blank to keep existing" />
+              </label>
+            </div>
+
+            <div formGroupName="jobs" class="sa-card sa-integration">
+              <div class="sa-card__title">Jobs</div>
+              <div class="sa-card__desc">Job discovery and recommendations.</div>
+              <div class="sa-pill-row">
+                <span class="sa-pill">{{ hasSecret('jobsApiKey') || 'not set' }}</span>
+              </div>
+              <label class="sa-switch sa-switch--premium">
+                <input type="checkbox" formControlName="enabled" />
+                <span><strong>Enabled</strong><small>Allow jobs integration.</small></span>
+              </label>
+              <label class="sa-field">
+                <span>API Key</span>
+                <input type="password" formControlName="apiKey" placeholder="Leave blank to keep existing" />
+              </label>
+            </div>
+          </div>
+        </section>
+      </ng-container>
+    </form>
+  </div>
+</div>

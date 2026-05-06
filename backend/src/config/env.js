@@ -7,6 +7,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('20h'),
   JWT_ISSUER: z.string().default('devinsight-api'),
   JWT_AUDIENCE: z.string().default('devinsight-web'),
+  SETTINGS_ENCRYPTION_KEY: z.string().optional(),
   REDIS_URL: z.string().optional(),
   INTERVIEW_QUESTION_INGEST_CRON: z.string().optional(),
   SECURITY_STRICT_ENV: z.string().optional(),

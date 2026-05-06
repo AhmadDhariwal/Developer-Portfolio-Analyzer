@@ -7,6 +7,7 @@ import { SaRecruitersComponent } from './recruiters/sa-recruiters.component';
 import { SaDevelopersComponent } from './developers/sa-developers.component';
 import { SaAnalyticsComponent } from './analytics/sa-analytics.component';
 import { SaUserDetailsComponent } from './user-details/sa-user-details.component';
+import { SuperAdminSettingsComponent } from './settings/super-admin-settings.component';
 
 export const SUPER_ADMIN_ROUTES: Routes = [
   {
@@ -21,6 +22,7 @@ export const SUPER_ADMIN_ROUTES: Routes = [
       { path: 'developers',   component: SaDevelopersComponent },
       { path: 'analytics',    component: SaAnalyticsComponent },
       { path: 'users/:id',    component: SaUserDetailsComponent },
+      { path: 'settings',     component: SuperAdminSettingsComponent },
     ]
   }
 ];

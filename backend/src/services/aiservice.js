@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const crypto = require("node:crypto");
 const axios = require('axios');
+const { getAiSnapshotSync } = require('./platformSettingsService');
 
 /**
  * AI Service: The central engine for all LLM interactions.
@@ -207,8 +208,9 @@ class AIService {
     return this.extractJson(response.text());
   }
 
-  async tryProvider(provider, prompt, retries) {
-    const models = provider === 'openai' ? this.openAIModels : this.geminiModels;
+  async tryProvider(provider, prompt, retries, preferredModel = '') {
+    const baseModels = provider === 'openai' ? this.openAIModels : this.geminiModels;
+    const models = preferredModel ? [...new Set([preferredModel, ...baseModels])] : baseModels;
 
     for (const modelName of models) {
       for (let attempt = 0; attempt <= retries; attempt++) {
@@ -255,6 +257,8 @@ class AIService {
    * @param {number} retries Number of per-model retries on transient errors.
    */
   async runAIAnalysis(prompt, fallback, retries = 2) {
+    const aiSettings = getAiSnapshotSync();
+    if (aiSettings?.enabled === false) return fallback;
     if (!this.isEnabled) return fallback;
 
     const cacheKey = crypto.createHash('sha256').update(prompt).digest('hex');
@@ -265,34 +269,46 @@ class AIService {
     let openAIQuotaExhausted = false;
     let geminiQuotaExhausted = false;
 
-    if (this.hasOpenAI && !this.isOpenAICoolingDown()) {
-      const openAIResult = await this.tryProvider('openai', prompt, retries);
-      if (openAIResult.ok) {
-        this.cache.set(cacheKey, openAIResult.parsed);
-        return openAIResult.parsed;
+    const preferredProvider = String(aiSettings?.provider || '').toLowerCase();
+    const preferredModel = String(aiSettings?.model || '').trim();
+
+    const runProvider = async (providerName) => {
+      if (providerName === 'openai' && this.hasOpenAI && !this.isOpenAICoolingDown()) {
+        return this.tryProvider('openai', prompt, retries, preferredModel);
       }
-      openAIQuotaExhausted = openAIResult.quotaExhausted;
-      if (openAIQuotaExhausted) {
-        this.startOpenAICooldown('429/quota');
+      if (providerName === 'gemini' && this.hasGemini && !this.isGeminiCoolingDown()) {
+        return this.tryProvider('gemini', prompt, retries, preferredModel);
       }
-    } else if (this.hasOpenAI && this.isOpenAICoolingDown()) {
-      const waitSeconds = Math.ceil((this.openAICooldownUntil - Date.now()) / 1000);
-      console.warn(`[AIService] OpenAI cooldown active (${waitSeconds}s left). Using Gemini.`);
+      return { ok: false, quotaExhausted: false };
+    };
+
+    const primary = preferredProvider === 'gemini' ? 'gemini' : 'openai';
+    const secondary = primary === 'openai' ? 'gemini' : 'openai';
+
+    const primaryResult = await runProvider(primary);
+    if (primaryResult.ok) {
+      this.cache.set(cacheKey, primaryResult.parsed);
+      return primaryResult.parsed;
+    }
+    if (primary === 'openai') {
+      openAIQuotaExhausted = primaryResult.quotaExhausted;
+      if (openAIQuotaExhausted) this.startOpenAICooldown('429/quota');
+    } else {
+      geminiQuotaExhausted = primaryResult.quotaExhausted;
+      if (geminiQuotaExhausted) this.startGeminiCooldown('429/quota');
     }
 
-    if (this.hasGemini && !this.isGeminiCoolingDown()) {
-      const geminiResult = await this.tryProvider('gemini', prompt, retries);
-      if (geminiResult.ok) {
-        this.cache.set(cacheKey, geminiResult.parsed);
-        return geminiResult.parsed;
-      }
-      geminiQuotaExhausted = geminiResult.quotaExhausted;
-      if (geminiQuotaExhausted) {
-        this.startGeminiCooldown('429/quota');
-      }
-    } else if (this.hasGemini && this.isGeminiCoolingDown()) {
-      const waitSeconds = Math.ceil((this.geminiCooldownUntil - Date.now()) / 1000);
-      console.warn(`[AIService] Gemini cooldown active (${waitSeconds}s left).`);
+    const secondaryResult = await runProvider(secondary);
+    if (secondaryResult.ok) {
+      this.cache.set(cacheKey, secondaryResult.parsed);
+      return secondaryResult.parsed;
+    }
+    if (secondary === 'openai') {
+      openAIQuotaExhausted = secondaryResult.quotaExhausted;
+      if (openAIQuotaExhausted) this.startOpenAICooldown('429/quota');
+    } else {
+      geminiQuotaExhausted = secondaryResult.quotaExhausted;
+      if (geminiQuotaExhausted) this.startGeminiCooldown('429/quota');
     }
 
     if (openAIQuotaExhausted || geminiQuotaExhausted) {

@@ -13,11 +13,13 @@ const AuditLog = require('../models/auditLog');
 const Candidate = require('../models/Candidate');
 const { registry } = require('../services/metricsService');
 const bcrypt = require('bcryptjs');
+const { getSettingsSnapshotSync } = require('../services/platformSettingsService');
 
 const parsePage = (q) => ({
   page: Math.max(1, parseInt(q.page, 10) || 1),
   limit: Math.min(100, parseInt(q.limit, 10) || 30)
 });
+const getPasswordMinLength = () => Number(getSettingsSnapshotSync()?.security?.passwordMinLength || 6);
 
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const isTruthy = (value) => String(value || '').toLowerCase() === 'true';
@@ -1067,7 +1069,8 @@ const createUser = async (req, res) => {
 
     if (!name) return res.status(400).json({ message: 'Name is required.' });
     if (!email) return res.status(400).json({ message: 'Email is required.' });
-    if (!password || password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    const minPasswordLength = getPasswordMinLength();
+    if (!password || password.length < minPasswordLength) return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
 
     const existing = await User.findOne({ email }).select('_id').lean();
     if (existing) return res.status(409).json({ message: 'Email already exists.' });
@@ -1139,7 +1142,8 @@ const updateUser = async (req, res) => {
 
     if (req.body.password) {
       const nextPassword = String(req.body.password);
-      if (nextPassword.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      const minPasswordLength = getPasswordMinLength();
+      if (nextPassword.length < minPasswordLength) return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
       update.password = await bcrypt.hash(nextPassword, 10);
     }
 

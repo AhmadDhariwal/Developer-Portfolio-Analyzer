@@ -1,13 +1,16 @@
 const Otp = require('../models/otp');
 const { generateOtp } = require('../utils/otpGenerator');
 const { hashValue, matchesHashedValue } = require('../utils/hash');
+const { getSettingsSnapshotSync } = require('./platformSettingsService');
 
 const OTP_EXPIRY_MINUTES = 5;
 const MAX_ATTEMPTS = 3;
 
 const createOtp = async ({ userId, type, purpose = 'signup' }) => {
   const otp = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const security = getSettingsSnapshotSync()?.security || {};
+  const otpExpiryMinutes = Number(security.otpExpiryMinutes || OTP_EXPIRY_MINUTES);
+  const expiresAt = new Date(Date.now() + otpExpiryMinutes * 60 * 1000);
 
   await Otp.findOneAndUpdate(
     { userId, type, purpose },
@@ -25,6 +28,8 @@ const createOtp = async ({ userId, type, purpose = 'signup' }) => {
 };
 
 const validateOtp = async ({ userId, otp, type, purpose = 'signup' }) => {
+  const security = getSettingsSnapshotSync()?.security || {};
+  const maxAttempts = Number(security.otpMaxAttempts || MAX_ATTEMPTS);
   const entry = await Otp.findOne({ userId, type, purpose });
   if (!entry) {
     return { isValid: false, message: 'OTP not found. Please request a new one.' };
@@ -35,7 +40,7 @@ const validateOtp = async ({ userId, otp, type, purpose = 'signup' }) => {
     return { isValid: false, message: 'OTP has expired. Please request a new one.' };
   }
 
-  if (entry.attempts >= MAX_ATTEMPTS) {
+  if (entry.attempts >= maxAttempts) {
     await Otp.deleteOne({ _id: entry._id });
     return { isValid: false, message: 'Maximum OTP attempts reached. Request a new OTP.' };
   }
