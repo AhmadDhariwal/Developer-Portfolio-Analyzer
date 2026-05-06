@@ -68,6 +68,27 @@ import { AuthService } from '../shared/services/auth.service';
     .sa-nav__exit:hover { color: var(--color-danger); background: rgba(239, 68, 68, 0.05); }
     .sa-shell--collapsed .sa-nav__exit { padding: 18px 12px; text-align: center; }
     .sa-main { flex: 1; overflow-y: auto; background: var(--bg-main); }
+
+    @media (max-width: 1024px) {
+      .sa-shell { flex-direction: column; }
+      .sa-nav { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; }
+      .sa-nav__top { width: 100%; padding: 0; }
+      .sa-nav__divider { width: 100%; margin: 8px 0; }
+      .sa-nav__full-details { width: 100%; margin: 0; }
+      .sa-nav a { flex: 1 1 calc(50% - 8px); justify-content: flex-start; padding: 10px 14px; }
+      .sa-nav__exit { width: 100%; text-align: center; margin-top: 6px; }
+      .sa-shell--collapsed .sa-nav { width: 100%; }
+      .sa-shell--collapsed .sa-nav__label,
+      .sa-shell--collapsed .sa-nav__brand-text { display: inline-block; opacity: 1; width: auto; }
+    }
+
+    @media (max-width: 640px) {
+      .sa-nav { position: sticky; top: 0; z-index: 20; }
+      .sa-nav a { flex-basis: 100%; }
+      .sa-nav__top { gap: 10px; }
+      .sa-nav__toggle { margin-left: auto; }
+      .sa-nav__full-details { display: none; }
+    }
   `]
 })
 export class SaShellComponent implements OnInit {

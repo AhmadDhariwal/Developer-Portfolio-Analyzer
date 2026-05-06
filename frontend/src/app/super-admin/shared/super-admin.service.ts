@@ -16,6 +16,10 @@ export class SuperAdminService {
     return this.http.get(`${this.base}/metrics`);
   }
 
+  getAnalytics(params: Record<string, string> = {}): Observable<any> {
+    return this.http.get(`${this.base}/analytics`, { params });
+  }
+
   getOrganizations(params: Record<string, string> = {}): Observable<any> {
     return this.http.get(`${this.base}/organizations`, { params });
   }

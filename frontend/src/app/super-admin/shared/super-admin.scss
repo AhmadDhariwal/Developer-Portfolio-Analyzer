@@ -2,8 +2,9 @@
 // Matches the project's dark design system (--bg-main, --bg-card, etc.)
 
 .sa-page {
-  padding: 28px 32px;
-  max-width: 1400px;
+  padding: clamp(16px, 2vw, 32px);
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   background: var(--bg-main);
   color: var(--text-primary);
@@ -124,6 +125,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   overflow: hidden;
+  overflow-x: auto;
 }
 
 .sa-table-head {
@@ -151,6 +153,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
+  min-width: 680px;
 }
 
 th {
@@ -222,6 +225,45 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       border: 1px solid var(--border-color);
       &:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .sa-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .sa-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .spacer {
+      display: none;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+    }
+  }
+
+  .sa-tables {
+    grid-template-columns: 1fr;
+  }
+
+  .sa-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sa-table-head {
+    padding: 14px 16px;
+  }
+
+  td,
+  th {
+    padding: 10px 12px;
   }
 }
 

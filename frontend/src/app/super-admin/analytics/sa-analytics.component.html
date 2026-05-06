@@ -1,50 +1,275 @@
-<div class="sa-page">
-  <div class="sa-header"><h1>Platform Analytics</h1><p>Platform-wide growth and usage statistics.</p></div>
-  <div *ngIf="loading" class="sa-state">Loading analytics...</div>
-  <ng-container *ngIf="!loading">
-    <div class="sa-full-table" style="margin-bottom:24px">
-      <div class="sa-table-head"><strong>Platform Metrics</strong></div>
-      <table>
-        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let row of statRows">
-            <td>{{ row.label }}</td>
-            <td><strong>{{ row.value ?? 0 }}</strong></td>
-          </tr>
-        </tbody>
-      </table>
+<div class="sa-page sa-analytics">
+  <div class="sa-header sa-analytics__header">
+    <div>
+      <h1>Super Admin Analytics</h1>
+      <p>Investor-grade platform visibility across organizations, AI usage, recruiter performance, and system health.</p>
     </div>
+    <div class="sa-analytics__header-meta">
+      <span class="sa-chip">Enterprise monitoring</span>
+      <span class="sa-chip sa-chip--muted">Live aggregation</span>
+    </div>
+  </div>
 
-    <div class="sa-tables">
-      <div class="sa-table-card">
-        <div class="sa-table-head"><strong>Latest Organizations</strong></div>
-        <table *ngIf="latestOrgs.length > 0">
-          <thead><tr><th>Name</th><th>Owner</th><th>Created</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let org of latestOrgs">
-              <td>{{ org.name }}</td>
-              <td>{{ org.ownerId?.name || '—' }}</td>
-              <td>{{ org.createdAt | date:'mediumDate' }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div *ngIf="latestOrgs.length === 0" class="sa-empty">No organizations yet.</div>
+  <div class="sa-filters sa-analytics__filters">
+    <select [(ngModel)]="filters.organizationId" (change)="applyFilters()">
+      <option value="">All organizations</option>
+      <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+    </select>
+
+    <select [(ngModel)]="filters.role" (change)="applyFilters()">
+      <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+    </select>
+
+    <select [(ngModel)]="filters.stack" (change)="applyFilters()">
+      <option value="">All stacks</option>
+      <option *ngFor="let stack of stacks" [value]="stack">{{ stack }}</option>
+    </select>
+
+    <label class="sa-filter-date">
+      <span>From</span>
+      <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()" />
+    </label>
+
+    <label class="sa-filter-date">
+      <span>To</span>
+      <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()" />
+    </label>
+
+    <button class="primary" type="button" (click)="applyFilters()">Apply</button>
+    <button class="ghost" type="button" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <div *ngIf="loading" class="sa-analytics__loading">
+    <div class="sa-skeleton sa-skeleton--hero"></div>
+    <div class="sa-analytics__skeleton-grid">
+      <div class="sa-skeleton" *ngFor="let item of [1,2,3,4,5,6]"></div>
+    </div>
+    <div class="sa-analytics__skeleton-charts">
+      <div class="sa-skeleton sa-skeleton--chart" *ngFor="let item of [1,2,3,4]"></div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && error" class="sa-state">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Platform Overview</div>
+        <div class="sa-section__hint">Core platform scale and growth signal</div>
       </div>
 
-      <div class="sa-table-card">
-        <div class="sa-table-head"><strong>Top Developers by Score</strong></div>
-        <table *ngIf="topDevelopers.length > 0">
-          <thead><tr><th>Name</th><th>Stack</th><th>Score</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let dev of topDevelopers">
-              <td>{{ dev.name }}</td>
-              <td>{{ dev.careerStack }}</td>
-              <td>{{ dev.score }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div *ngIf="topDevelopers.length === 0" class="sa-empty">No developers yet.</div>
+      <div class="sa-analytics__grid">
+        <div *ngFor="let card of platformCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend" [class.is-up]="card.trend >= 0" [class.is-down]="card.trend < 0">
+            {{ card.trend >= 0 ? '+' : '' }}{{ card.trend }}% vs prior period
+          </span>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">AI Usage Analytics</div>
+        <div class="sa-section__hint">GitHub, resume, and recommendation volume</div>
+      </div>
+
+      <div class="sa-analytics__grid sa-analytics__grid--compact">
+        <div *ngFor="let card of aiCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend" [class.is-up]="card.trend >= 0" [class.is-down]="card.trend < 0">
+            {{ card.trend >= 0 ? '+' : '' }}{{ card.trend }}% vs prior period
+          </span>
+        </div>
+      </div>
+
+      <div class="sa-analytics__charts">
+        <app-chart-container title="Daily AI usage trend" subtitle="Line and bar trends for the selected range" height="320px">
+          <canvas #aiUsageChart></canvas>
+        </app-chart-container>
+
+        <app-chart-container title="Monthly AI usage" subtitle="12-month usage comparison" height="320px">
+          <canvas #platformChart></canvas>
+        </app-chart-container>
+      </div>
+    </section>
+
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Recruiter Performance</div>
+        <div class="sa-section__hint">Pipeline activity and hiring effectiveness</div>
+      </div>
+
+      <div class="sa-analytics__grid sa-analytics__grid--compact">
+        <div *ngFor="let card of recruiterCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend">{{ card.trend >= 0 ? '+' : '' }}{{ card.trend }}% vs prior period</span>
+        </div>
+      </div>
+
+      <div class="sa-analytics__charts">
+        <app-chart-container title="Recruiter pipeline" subtitle="Active recruiters, candidates analyzed, and matches generated" height="320px">
+          <canvas #recruiterChart></canvas>
+        </app-chart-container>
+
+        <div class="sa-card-shell sa-analytics__table-card">
+          <div class="sa-table-head">
+            <strong>Recruiter comparisons</strong>
+          </div>
+          <div class="sa-analytics__mini-table">
+            <div class="sa-analytics__row">
+              <span>Active recruiters</span>
+              <strong>{{ data?.summary?.recruiterPerformance?.activeRecruiters || 0 }}</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Candidates analyzed</span>
+              <strong>{{ data?.summary?.recruiterPerformance?.candidatesAnalyzed || 0 }}</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Matches generated</span>
+              <strong>{{ data?.summary?.recruiterPerformance?.matchesGenerated || 0 }}</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Hiring success</span>
+              <strong>{{ data?.summary?.recruiterPerformance?.hiringSuccessPct || 0 }}%</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Organization Performance</div>
+        <div class="sa-section__hint">Top organizations and team activity</div>
+      </div>
+
+      <div class="sa-analytics__grid sa-analytics__grid--compact">
+        <div *ngFor="let card of organizationCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend">{{ card.trend >= 0 ? '+' : '' }}{{ card.trend }}% vs prior period</span>
+        </div>
+      </div>
+
+      <div class="sa-analytics__charts">
+        <app-chart-container title="Top organizations" subtitle="Member concentration across organizations" height="320px">
+          <canvas #orgChart></canvas>
+        </app-chart-container>
+
+        <div class="sa-card-shell sa-analytics__table-card">
+          <div class="sa-table-head">
+            <strong>Top organizations</strong>
+          </div>
+          <div class="sa-table-scroll">
+            <table *ngIf="topOrganizations.length > 0">
+              <thead>
+                <tr><th>Organization</th><th>Members</th><th>Jobs</th><th>Productivity</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let org of topOrganizations">
+                  <td>{{ org.name }}</td>
+                  <td>{{ org.memberCount || 0 }}</td>
+                  <td>{{ org.jobs || 0 }}</td>
+                  <td>{{ org.productivityScore || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="topOrganizations.length === 0" class="sa-empty">No organization activity in the selected range.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Developer Insights</div>
+        <div class="sa-section__hint">Stacks, activity and profile completeness</div>
+      </div>
+
+      <div class="sa-analytics__grid sa-analytics__grid--compact">
+        <div *ngFor="let card of developerCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend">{{ card.trend >= 0 ? '+' : '' }}{{ card.trend }}% vs prior period</span>
+        </div>
+      </div>
+
+      <div class="sa-analytics__charts">
+        <app-chart-container title="Top stacks" subtitle="Stack distribution across developers" height="320px">
+          <canvas #developerChart></canvas>
+        </app-chart-container>
+
+        <div class="sa-card-shell sa-analytics__table-card">
+          <div class="sa-table-head">
+            <strong>Most active developers</strong>
+          </div>
+          <div class="sa-table-scroll">
+            <table *ngIf="mostActiveDevelopers.length > 0">
+              <thead>
+                <tr><th>Name</th><th>Stack</th><th>GitHub score</th><th>Completion</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let dev of mostActiveDevelopers">
+                  <td>{{ dev.name }}</td>
+                  <td>{{ dev.careerStack || '—' }}</td>
+                  <td>{{ dev.githubScore || 0 }}</td>
+                  <td>{{ dev.profileCompletion || 0 }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="mostActiveDevelopers.length === 0" class="sa-empty">No developer activity in the selected range.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">System Health</div>
+        <div class="sa-section__hint">Latency, uptime, errors and request volume</div>
+      </div>
+
+      <div class="sa-analytics__grid sa-analytics__grid--compact">
+        <div *ngFor="let card of systemCards" class="sa-analytics__metric sa-card-shell" [attr.data-tone]="card.tone">
+          <span class="sa-analytics__metric-label">{{ card.label }}</span>
+          <strong class="sa-analytics__metric-value">{{ card.value }}</strong>
+          <span class="sa-analytics__metric-trend">Live system snapshot</span>
+        </div>
+      </div>
+
+      <div class="sa-analytics__charts">
+        <app-chart-container title="System health snapshot" subtitle="Response times and error rate" height="320px">
+          <canvas #systemChart></canvas>
+        </app-chart-container>
+
+        <div class="sa-card-shell sa-analytics__table-card">
+          <div class="sa-table-head">
+            <strong>Health indicators</strong>
+          </div>
+          <div class="sa-analytics__mini-table">
+            <div class="sa-analytics__row">
+              <span>Failed requests</span>
+              <strong>{{ data?.summary?.systemHealth?.failedRequests || 0 }}</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Error rate</span>
+              <strong>{{ data?.summary?.systemHealth?.errorRatePct || 0 }}%</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Avg response time</span>
+              <strong>{{ data?.summary?.systemHealth?.avgResponseTimeMs || 0 }} ms</strong>
+            </div>
+            <div class="sa-analytics__row">
+              <span>Server uptime</span>
+              <strong>{{ data?.summary?.systemHealth?.serverUptimeHours || 0 }} hrs</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </ng-container>
 </div>

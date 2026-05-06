@@ -107,4 +107,11 @@ const metricsHandler = async (_req, res) => {
   res.end(await registry.metrics());
 };
 
-module.exports = { metricsMiddleware, metricsHandler };
+module.exports = {
+  metricsMiddleware,
+  metricsHandler,
+  registry,
+  httpRequestDurationMs,
+  httpRequestsTotal,
+  httpErrorsTotal
+};
