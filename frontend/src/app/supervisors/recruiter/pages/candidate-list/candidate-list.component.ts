@@ -46,6 +46,11 @@ export class CandidateListPageComponent implements OnInit {
   }
 
   openProfile(candidateId: string): void {
-    this.router.navigate(['/app/recruiter/candidate', candidateId]);
+    const nextId = String(candidateId || '').trim();
+    if (!nextId) {
+      return;
+    }
+
+    this.router.navigateByUrl(`/app/recruiter/candidate/${encodeURIComponent(nextId)}`);
   }
 }

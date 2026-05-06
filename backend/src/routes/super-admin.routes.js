@@ -5,7 +5,9 @@ const {
   getAllOrganizations, suspendOrganization, activateOrganization,
   getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams,
   toggleUserActive, getPlatformMetrics, getDashboard, getAnalytics,
-  getUserDetails, createUser, updateUser
+  getUserDetails, createUser, updateUser,
+  deleteUser,
+  getRecruiterAnalytics, assignTeamToRecruiter, removeRecruiterTeam
 } = require('../controllers/superAdminController');
 
 router.use(protect, authorizeRoles('super_admin'));
@@ -20,9 +22,14 @@ router.get('/admins',                       getAllAdmins);
 router.get('/recruiters',                   getAllRecruiters);
 router.get('/developers',                   getAllDevelopers);
 router.get('/teams',                        getAllTeams);
+// Recruiter-team management (assign/remove teams) and recruiter analytics
+router.get('/recruiters/:id/analytics',     getRecruiterAnalytics);
+router.post('/recruiters/:id/teams',         assignTeamToRecruiter);
+router.delete('/recruiters/:id/teams/:teamId', removeRecruiterTeam);
 router.patch('/users/:id/toggle-active',    toggleUserActive);
 router.get('/users/:id',                    getUserDetails);
 router.post('/users',                       createUser);
 router.patch('/users/:id',                  updateUser);
+router.delete('/users/:id',                 deleteUser);
 
 module.exports = router;

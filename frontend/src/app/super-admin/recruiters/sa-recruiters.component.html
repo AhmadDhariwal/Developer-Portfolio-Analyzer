@@ -1,10 +1,42 @@
 <div class="sa-page">
-  <div class="sa-header"><h1>Recruiters</h1><p>All recruiters across the platform.</p></div>
+  <div class="sa-header sa-recruiters__header">
+    <div>
+      <h1>Recruiters</h1>
+      <p>All recruiters across the platform.</p>
+    </div>
+    <div class="sa-recruiters__header-actions">
+      <span class="sa-chip">Enterprise recruiter management</span>
+      <span class="sa-chip sa-chip--muted">Live analytics</span>
+    </div>
+  </div>
+
+  <div class="sa-analytics-grid" aria-label="Recruiters analytics">
+    <div class="stat-card" *ngFor="let s of [
+      {label:'Total recruiters', value: total},
+      {label:'Active recruiters', value: recruiters.filter(r => r.isActive).length},
+      {label:'Top performers', value: topPerformers.length},
+      {label:'Total matches generated', value: analyticsData?.matchesGenerated ?? 0},
+      {label:'Avg hiring %', value: analyticsData?.hiringRate ?? 0}
+    ]">
+      <div class="stat-label">{{ s.label }}</div>
+      <div class="stat-value">{{ s.value }}</div>
+      <div class="stat-trend">
+        <span class="stat-trend__bar"></span>
+        <span class="stat-trend__bar stat-trend__bar--soft"></span>
+        <span class="stat-trend__bar stat-trend__bar--accent"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="sa-filters">
     <input [(ngModel)]="search" placeholder="Search by name or email..." (keydown.enter)="load(1)" />
     <select [(ngModel)]="organizationId" (change)="load(1)">
       <option value="">All organizations</option>
       <option *ngFor="let o of organizations" [value]="o._id">{{ o.name }}</option>
+    </select>
+    <select [(ngModel)]="teamId" (change)="load(1)">
+      <option value="">All teams</option>
+      <option *ngFor="let t of teams" [value]="t._id">{{ t.name }}</option>
     </select>
     <select [(ngModel)]="active" (change)="load(1)">
       <option value="">All status</option>
@@ -13,25 +45,73 @@
     </select>
     <button class="primary" (click)="load(1)">Search</button>
     <button class="ghost" (click)="search=''; load(1)">Reset</button>
+    <input type="date" [(ngModel)]="joinedFrom" (change)="load(1)" placeholder="Joined from" />
+    <input type="date" [(ngModel)]="joinedTo" (change)="load(1)" placeholder="Joined to" />
+    <select [(ngModel)]="sort" (change)="load(1)">
+      <option value="createdAt">Joined Date</option>
+      <option value="name">Name</option>
+      <option value="activityScore">Activity</option>
+      <option value="hiringRate">Hiring Rate</option>
+    </select>
+    <select [(ngModel)]="sortOrder" (change)="load(1)">
+      <option value="desc">Desc</option>
+      <option value="asc">Asc</option>
+    </select>
     <span class="spacer"></span>
     <button class="primary" (click)="openCreate()">Add Recruiter</button>
   </div>
+
   <div class="sa-full-table">
     <div class="sa-table-head"><strong>{{ total }} recruiters</strong></div>
-    <div *ngIf="loading" class="sa-state">Loading...</div>
-    <table *ngIf="!loading && recruiters.length > 0">
-      <thead><tr><th>Name</th><th>Email</th><th>Organization</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+    <div *ngIf="loading" class="sa-recruiters__skeleton">
+      <div class="sa-skeleton-row" *ngFor="let item of [1,2,3,4,5]">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <table *ngIf="!loading && recruiters.length > 0" class="sa-table-responsive">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Organization</th>
+          <th>Assigned Teams</th>
+          <th>Total Cand</th>
+          <th>Matches</th>
+          <th>Hiring Rate</th>
+          <th>Activity</th>
+          <th>Last Active</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let r of recruiters">
           <td>{{ r.name }}</td>
           <td>{{ r.email }}</td>
-          <td>{{ r.organizationId?.name || 'N/A' }}</td>
-          <td><span class="badge" [class.badge--green]="r.isActive" [class.badge--red]="!r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>{{ r.organizationName || (r.organizationId?.name || '') }}</td>
+          <td>{{ r.assignedTeams?.length ? teamNames(r.assignedTeams) : '-' }}</td>
+          <td>{{ r.totalCandidatesAnalyzed ?? 0 }}</td>
+          <td>{{ r.matchesGenerated ?? 0 }}</td>
+          <td>{{ r.hiringRate ?? 0 }}%</td>
+          <td>{{ r.activityScore ?? 0 }}</td>
+          <td>{{ r.lastActive ? (r.lastActive | date:'medium') : (r.createdAt | date:'medium') }}</td>
+          <td>
+            <span class="badge" [class.badge--green]="r.isActive" [class.badge--red]="!r.isActive">
+              {{ r.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
           <td>{{ r.createdAt | date:'mediumDate' }}</td>
           <td>
-            <a class="action-btn action-btn--primary" [routerLink]="['/super-admin/users', r._id]">Details</a>
-            <button class="action-btn action-btn--edit" (click)="openEdit(r)">Edit</button>
-            <button class="action-btn" [class.action-btn--danger]="r.isActive" [class.action-btn--success]="!r.isActive" (click)="toggle(r)">{{ r.isActive ? 'Revoke' : 'Restore' }}</button>
+            <div class="sa-row-actions">
+              <a class="action-btn action-btn--primary" [routerLink]="['/super-admin/users', r._id]">Details</a>
+              <button class="action-btn action-btn--edit" (click)="openEdit(r)">Edit</button>
+              <button class="action-btn action-btn--analytics" (click)="viewAnalytics(r)">Analytics</button>
+              <button class="action-btn" [class.action-btn--danger]="r.isActive" [class.action-btn--success]="!r.isActive" (click)="toggle(r)">
+                {{ r.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+              <button class="action-btn action-btn--danger action-btn--soft" (click)="removeRecruiter(r)">Remove</button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -39,6 +119,64 @@
     <div *ngIf="!loading && recruiters.length === 0" class="sa-empty">No recruiters found.</div>
     <sa-pager [page]="page" [totalPages]="totalPages" [total]="total" [pageSize]="pageSize" (change)="load($event)" />
   </div>
+</div>
+
+<div class="sa-analytics-panel" *ngIf="analyticsPanelOpen">
+  <div class="sa-analytics-panel__backdrop" (click)="closeAnalytics()"></div>
+  <aside class="sa-analytics-panel__sheet">
+    <div class="sa-analytics-panel__head">
+      <div>
+        <h2>{{ selectedRecruiter?.name || 'Recruiter analytics' }}</h2>
+        <p>{{ selectedRecruiter?.email || 'Performance snapshot' }}</p>
+      </div>
+      <button type="button" class="ghost" (click)="closeAnalytics()">Close</button>
+    </div>
+
+    <div *ngIf="analyticsLoading" class="sa-state">Loading analytics...</div>
+    <div *ngIf="!analyticsLoading && analyticsError" class="sa-empty">{{ analyticsError }}</div>
+
+    <ng-container *ngIf="!analyticsLoading && !analyticsError">
+      <div class="sa-analytics-panel__cards">
+        <div class="sa-panel-card">
+          <span>Total candidates</span>
+          <strong>{{ analyticsData?.totalCandidatesAnalyzed ?? 0 }}</strong>
+        </div>
+        <div class="sa-panel-card">
+          <span>Matches</span>
+          <strong>{{ analyticsData?.matchesGenerated ?? 0 }}</strong>
+        </div>
+        <div class="sa-panel-card">
+          <span>Hiring rate</span>
+          <strong>{{ analyticsData?.hiringRate ?? 0 }}%</strong>
+        </div>
+        <div class="sa-panel-card">
+          <span>Activity score</span>
+          <strong>{{ analyticsData?.activityScore ?? 0 }}</strong>
+        </div>
+      </div>
+
+      <div class="sa-analytics-panel__actions">
+        <select [(ngModel)]="selectedTeamId">
+          <option value="">Select team to assign</option>
+          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+        </select>
+        <button type="button" class="primary" [disabled]="!selectedRecruiter?._id || !selectedTeamId" (click)="assignSelectedTeam()">Assign team</button>
+      </div>
+
+      <div class="sa-analytics-panel__teams" *ngIf="selectedRecruiter?.assignedTeams?.length">
+        <div class="sa-analytics-panel__team" *ngFor="let team of selectedRecruiter.assignedTeams">
+          <span>{{ team.name }}</span>
+          <button type="button" class="ghost" (click)="removeSelectedTeam(team._id)">Remove</button>
+        </div>
+      </div>
+
+      <div class="sa-analytics-panel__chart">
+        <div class="sa-analytics-panel__chart-bar" [style.width.%]="analyticsBarWidth(analyticsData?.activityScore ?? 0)"></div>
+        <div class="sa-analytics-panel__chart-bar sa-analytics-panel__chart-bar--secondary" [style.width.%]="analyticsBarWidth(analyticsData?.hiringRate ?? 0)"></div>
+        <div class="sa-analytics-panel__chart-bar sa-analytics-panel__chart-bar--tertiary" [style.width.%]="analyticsBarWidth(analyticsData?.matchesGenerated ?? 0, 10)"></div>
+      </div>
+    </ng-container>
+  </aside>
 </div>
 
 <sa-user-form-modal

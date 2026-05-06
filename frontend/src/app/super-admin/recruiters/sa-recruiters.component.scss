@@ -1,1 +1,305 @@
 @use '../shared/super-admin' as *;
+
+.sa-recruiters__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sa-recruiters__header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sa-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.92), rgba(17, 24, 39, 0.84));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.28);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stat-trend {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.stat-trend__bar {
+  width: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.38);
+}
+
+.stat-trend__bar--soft {
+  background: rgba(99, 102, 241, 0.28);
+}
+
+.stat-trend__bar--accent {
+  width: 22px;
+  background: linear-gradient(90deg, #38bdf8, #60a5fa);
+}
+
+.sa-recruiters__skeleton {
+  display: grid;
+  gap: 10px;
+  padding: 16px 20px 0;
+}
+
+.sa-skeleton-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.9fr 1.4fr;
+  gap: 10px;
+}
+
+.sa-skeleton-row span {
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  background-size: 200% 100%;
+  animation: sa-shimmer 1.4s ease-in-out infinite;
+}
+
+.sa-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-btn {
+  white-space: nowrap;
+}
+
+.action-btn--analytics {
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+  border: 1px solid rgba(14, 165, 233, 0.24);
+}
+
+.action-btn--soft {
+  opacity: 0.95;
+}
+
+.sa-pager {
+  margin-left: auto;
+  width: fit-content;
+}
+
+.sa-pager--enhanced {
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.sa-pager__controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sa-analytics-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.sa-analytics-panel__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.sa-analytics-panel__sheet {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: min(560px, calc(100vw - 32px));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 20px;
+  overflow: auto;
+  box-shadow: var(--shadow-xl);
+}
+
+.sa-analytics-panel__head,
+.sa-analytics-panel__actions,
+.sa-analytics-panel__team,
+.sa-analytics-panel__cards {
+  display: flex;
+  gap: 12px;
+}
+
+.sa-analytics-panel__head {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.sa-analytics-panel__head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.sa-analytics-panel__head p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sa-analytics-panel__cards {
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.sa-panel-card {
+  flex: 1 1 45%;
+  min-width: 180px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sa-panel-card span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.sa-panel-card strong {
+  font-size: 1.4rem;
+}
+
+.sa-analytics-panel__actions {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sa-analytics-panel__actions select {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.sa-analytics-panel__teams {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.sa-analytics-panel__team {
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sa-analytics-panel__chart {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.sa-analytics-panel__chart-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.95), rgba(56, 189, 248, 0.45));
+}
+
+.sa-analytics-panel__chart-bar--secondary {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.95), rgba(129, 140, 248, 0.45));
+}
+
+.sa-analytics-panel__chart-bar--tertiary {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.95), rgba(52, 211, 153, 0.45));
+}
+
+@keyframes sa-shimmer {
+  0% { background-position: 0 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (max-width: 980px) {
+  .sa-recruiters__header {
+    flex-direction: column;
+  }
+
+  .sa-recruiters__header-actions {
+    justify-content: flex-start;
+  }
+
+  .sa-analytics-panel__sheet {
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .sa-table-responsive {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .sa-row-actions {
+    min-width: 260px;
+  }
+}
+
+@media (max-width: 720px) {
+  .sa-skeleton-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sa-analytics-panel__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sa-analytics-panel__team {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

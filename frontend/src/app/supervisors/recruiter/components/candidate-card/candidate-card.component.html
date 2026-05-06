@@ -14,7 +14,7 @@
   </div>
 
   <footer>
-    <button type="button" class="ghost" (click)="view.emit(candidate.id)">View Profile</button>
+    <button type="button" class="ghost" (click)="view.emit(candidate.userId || candidate.id)">View Profile</button>
     <button *ngIf="selectable" type="button" class="primary" (click)="onSelectChange()">
       {{ selected ? 'Remove' : 'Select' }}
     </button>

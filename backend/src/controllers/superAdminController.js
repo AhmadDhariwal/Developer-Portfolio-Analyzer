@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 const Organization = require('../models/organization');
 const User = require('../models/user');
-const Team = require('../models/team');
+const Job = require('../models/Job');
+const Recruiter = require('../models/Recruiter');
 const Membership = require('../models/membership');
+const Team = require('../models/team');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const Recommendation = require('../models/recommendation');
 const Invitation = require('../models/invitation');
 const AuditLog = require('../models/auditLog');
 const Candidate = require('../models/Candidate');
-const Job = require('../models/Job');
-const Recruiter = require('../models/Recruiter');
 const { registry } = require('../services/metricsService');
 const bcrypt = require('bcryptjs');
 
@@ -813,21 +813,164 @@ const getAllRecruiters = async (req, res) => {
   try {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'recruiter' };
+    // basic text search
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
     if (isTruthy(req.query.active)) filter.isActive = true;
     if (isFalsy(req.query.active)) filter.isActive = false;
+    // organization scope
     if (req.query.organizationId) {
       const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
       filter._id = { $in: ids };
     }
+    // team scope
+    if (req.query.teamId) {
+      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      filter._id = { ...(filter._id || {}), $in: teamMemberIds };
+    }
+    // stack/experience filter
+    if (req.query.stack) filter.careerStack = req.query.stack;
+    // joined date range
+    if (req.query.joinedFrom || req.query.joinedTo) {
+      filter.createdAt = {};
+      if (req.query.joinedFrom) filter.createdAt.$gte = new Date(req.query.joinedFrom);
+      if (req.query.joinedTo) filter.createdAt.$lte = new Date(req.query.joinedTo);
+    }
+    // sorting
+    const sortField = req.query.sort || 'createdAt';
+    const sortOrder = (req.query.sortOrder === 'asc') ? 1 : -1;
 
     const [recruiters, total] = await Promise.all([
-      User.find(filter).select('-password').populate('organizationId', 'name').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      User.find(filter).select('-password').populate('organizationId', 'name').sort({ [sortField]: sortOrder }).skip((page - 1) * limit).limit(limit).lean(),
       User.countDocuments(filter)
     ]);
-    res.json({ recruiters, total, page, totalPages: Math.ceil(total / limit) || 1 });
+
+    // enrich each recruiter with analytics-like data
+    const enriched = await Promise.all(recruiters.map(async (rec) => {
+      const recruiterId = rec._id;
+      // assigned teams
+        const memberships = await Membership.find({ userId: recruiterId, status: 'active' }).populate('teamId', 'name _id').lean();
+        const assignedTeams = memberships
+          .map((m) => (m.teamId ? { _id: m.teamId._id, name: m.teamId.name } : null))
+          .filter(Boolean);
+
+      // analytics-like metrics
+      const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
+      const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
+      const matchesGenerated = await Recommendation.countDocuments({ userId: { $in: candidateIds } });
+      const totalJobs = await Job.countDocuments({ recruiterId });
+      const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
+      const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
+      // activity score based on last activity (candidate or job) vs now
+      const lastCandidate = await Candidate.find({ createdBy: recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+      const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+      const lastActiveDate = [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, rec.createdAt].filter(Boolean).sort((a,b)=> b - a)[0] || rec.createdAt;
+      const daysSince = Math.floor((Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24));
+      const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
+
+      return {
+        ...rec,
+        organizationName: rec?.organizationId?.name,
+        assignedTeams,
+        totalCandidatesAnalyzed,
+        matchesGenerated,
+        hiringRate,
+        activityScore,
+        lastActive: lastActiveDate,
+        status: rec.isActive ? 'Active' : 'Inactive',
+applicationRoute: '/super-admin/users/' + rec._id
+      };
+    }));
+
+    res.json({ recruiters: enriched, total, page, totalPages: Math.ceil(total / limit) || 1 });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch recruiters', error: err?.message });
+  }
+};
+
+// ── GET /recruiters/:id/analytics ─────────────────────────────────────────────
+const getRecruiterAnalytics = async (req, res) => {
+  try {
+    const recruiterId = req.params.id;
+    const recruiter = await User.findById(recruiterId).select('-password').lean();
+    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found.' });
+
+    // compute a small analytics snapshot
+    const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
+    const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
+    const matchesGenerated = await Recommendation.countDocuments({ userId: { $in: candidateIds } });
+    const totalJobs = await Job.countDocuments({ recruiterId });
+    const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
+    const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
+    const lastCandidate = await Candidate.find({ createdBy: recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+    const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+    const lastActiveDate = [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, recruiter.createdAt].filter(Boolean).sort((a,b)=> b - a)[0] || recruiter.createdAt;
+    const daysSince = Math.floor((Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24));
+    const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
+
+    res.json({ recruiter, analytics: {
+      totalCandidatesAnalyzed,
+      matchesGenerated,
+      hiringRate,
+      activityScore,
+      lastActive: lastActiveDate
+    }});
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch recruiter analytics', error: err?.message });
+  }
+};
+
+// ── POST /recruiters/:id/teams ───────────────────────────────────────────────
+const assignTeamToRecruiter = async (req, res) => {
+  try {
+    const recruiterId = req.params.id;
+    const teamId = req.body.teamId;
+    if (!teamId) return res.status(400).json({ message: 'teamId is required' });
+    const team = await Team.findById(teamId).lean();
+    if (!team) return res.status(404).json({ message: 'Team not found' });
+
+    // upsert membership for recruiter to team
+    const MembershipModel = Membership;
+    const exist = await MembershipModel.findOne({ userId: recruiterId, teamId, status: 'active' }).lean();
+    if (exist) return res.json({ message: 'Already assigned', membership: exist });
+    const membership = await MembershipModel.create({ organizationId: team.organizationId, teamId, userId: recruiterId, role: 'member', status: 'active' });
+    res.status(201).json({ membership });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to assign team to recruiter', error: err?.message });
+  }
+};
+
+// ── DELETE /recruiters/:id/teams/:teamId ───────────────────────────────────
+const removeRecruiterTeam = async (req, res) => {
+  try {
+    const recruiterId = req.params.id;
+    const teamId = req.params.teamId;
+    if (!teamId) return res.status(400).json({ message: 'teamId is required' });
+    await Membership.deleteOne({ userId: recruiterId, teamId });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to remove recruiter from team', error: err?.message });
+  }
+};
+
+// ── DELETE /users/:id ────────────────────────────────────────────────
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password').lean();
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot delete super admin.' });
+
+    await Promise.all([
+      User.deleteOne({ _id: user._id }),
+      Membership.deleteMany({ userId: user._id }),
+      Invitation.updateMany(
+        { email: user.email, role: 'recruiter', status: 'pending' },
+        { $set: { status: 'revoked' } }
+      )
+    ]);
+
+    return res.json({ message: 'User deleted successfully.' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to delete user.', error: err?.message });
   }
 };
 
@@ -1032,5 +1175,6 @@ module.exports = {
   getPlatformMetrics, getDashboard, getAnalytics,
   getAllOrganizations, suspendOrganization, activateOrganization,
   getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams,
-  toggleUserActive, getUserDetails, createUser, updateUser
-};
+    toggleUserActive, getUserDetails, createUser, updateUser, deleteUser
+    , getRecruiterAnalytics, assignTeamToRecruiter, removeRecruiterTeam
+  };

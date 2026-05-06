@@ -8,7 +8,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   template: `
     <div class="sa-pager sa-pager--enhanced">
       <div class="sa-pager__meta" *ngIf="total !== null && pageSize !== null">
-        Showing {{ rangeStart }}–{{ rangeEnd }} of {{ total }}
+        Showing {{ rangeStart }}-{{ rangeEnd }} of {{ total }}
       </div>
       <div class="sa-pager__controls">
         <button [disabled]="page <= 1" (click)="change.emit(page - 1)">Previous</button>
@@ -35,4 +35,3 @@ export class SaPagerComponent {
     return Math.min(this.page * this.pageSize, this.total);
   }
 }
-

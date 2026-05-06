@@ -70,4 +70,20 @@ export class SuperAdminService {
   updateUser(id: string, payload: Record<string, any>): Observable<any> {
     return this.http.patch(`${this.base}/users/${id}`, payload);
   }
+
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(`${this.base}/users/${encodeURIComponent(id)}`);
+  }
+
+  getRecruiterAnalytics(recruiterId: string): Observable<any> {
+    return this.http.get(`${this.base}/recruiters/${recruiterId}/analytics`);
+  }
+
+  assignTeamToRecruiter(recruiterId: string, teamId: string): Observable<any> {
+    return this.http.post(`${this.base}/recruiters/${recruiterId}/teams`, { teamId });
+  }
+
+  removeRecruiterTeam(recruiterId: string, teamId: string): Observable<any> {
+    return this.http.delete(`${this.base}/recruiters/${recruiterId}/teams/${teamId}`);
+  }
 }
