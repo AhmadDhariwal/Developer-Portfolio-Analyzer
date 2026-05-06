@@ -268,10 +268,43 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 
 .sa-pager--enhanced {
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px 18px;
 
-  .sa-pager__controls { display: flex; gap: 10px; align-items: center; }
-  .sa-pager__meta { padding-left: 2px; }
+  .sa-pager__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .sa-pager__label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .sa-pager__page {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .sa-pager__controls {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
 }
 
 // ── Pagination ───────────────────────────────────────────────────────────────
@@ -280,7 +313,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   gap: 10px;
   align-items: center;
   justify-content: flex-end;
-  padding: 14px 20px;
+  padding: 14px 20px 18px;
   font-size: 0.8rem;
   color: var(--text-muted);
   border-top: 1px solid var(--border-color);
@@ -301,6 +334,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     }
 
     &:disabled { opacity: 0.35; cursor: default; }
+  }
+}
+
+@media (max-width: 640px) {
+  .sa-pager--enhanced {
+    justify-content: stretch;
+    width: 100%;
+
+    .sa-pager__meta,
+    .sa-pager__controls {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
 
