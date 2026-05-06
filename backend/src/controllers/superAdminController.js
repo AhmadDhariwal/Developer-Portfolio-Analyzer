@@ -6,6 +6,8 @@ const Membership = require('../models/membership');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const Recommendation = require('../models/recommendation');
+const Invitation = require('../models/invitation');
+const AuditLog = require('../models/auditLog');
 const Candidate = require('../models/Candidate');
 const Job = require('../models/Job');
 const Recruiter = require('../models/Recruiter');
@@ -222,6 +224,42 @@ const getMetricRegistrySnapshot = async () => {
   };
 };
 
+const mapRecentOrganization = (org) => ({
+  id: org._id,
+  title: org.name,
+  meta: org.ownerId?.name || org.ownerId?.email || 'No owner assigned',
+  status: org.isSuspended ? 'Suspended' : 'Active',
+  createdAt: org.createdAt,
+  tone: org.isSuspended ? 'red' : 'green'
+});
+
+const mapRecentInvite = (invite) => ({
+  id: invite._id,
+  title: invite.email,
+  meta: `${invite.organizationId?.name || 'Organization'} - ${invite.role || 'member'}`,
+  status: invite.status || 'pending',
+  createdAt: invite.createdAt,
+  tone: invite.status === 'accepted' ? 'green' : invite.status === 'revoked' ? 'red' : 'blue'
+});
+
+const mapRecentDeveloper = (user) => ({
+  id: user._id,
+  title: user.name,
+  meta: `${user.careerStack || 'Unspecified stack'} - ${user.experienceLevel || 'Developer'}`,
+  status: user.isActive === false ? 'Inactive' : 'Active',
+  createdAt: user.createdAt,
+  tone: user.isActive === false ? 'red' : 'green'
+});
+
+const mapRecentAnalysis = (analysis) => ({
+  id: analysis._id,
+  title: analysis.userId?.name || 'AI analysis generated',
+  meta: `${analysis.userId?.careerStack || 'Unknown stack'} - Score ${Number(analysis.githubScore || analysis.readinessScore || 0)}`,
+  status: 'Generated',
+  createdAt: analysis.createdAt,
+  tone: 'indigo'
+});
+
 // ── GET /metrics ─────────────────────────────────────────────────────────────
 const getPlatformMetrics = async (req, res) => {
   try {
@@ -244,11 +282,40 @@ const getPlatformMetrics = async (req, res) => {
       User.find({ role: 'admin', isActive: true }).sort({ createdAt: -1 }).limit(5).select('name email organizationId createdAt').lean()
     ]);
 
+    const [recentOrganizations, recentRecruiterInvites, recentDeveloperRegistrations, recentAiAnalyses] = await Promise.all([
+      Organization.find().sort({ createdAt: -1 }).limit(4).populate('ownerId', 'name email').lean(),
+      Invitation.find({ role: 'recruiter' })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .populate('organizationId', 'name')
+        .populate('invitedBy', 'name email')
+        .select('name email role status createdAt organizationId invitedBy')
+        .lean(),
+      User.find({ role: 'developer' })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .populate('organizationId', 'name')
+        .select('name email careerStack experienceLevel isActive createdAt organizationId')
+        .lean(),
+      Analysis.find()
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .populate('userId', 'name email careerStack')
+        .select('githubScore readinessScore createdAt userId')
+        .lean()
+    ]);
+
     res.json({
       metrics: { totalOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers },
       latestOrgs,
       topDevelopers,
-      activeAdmins
+      activeAdmins,
+      recentActivity: {
+        organizations: recentOrganizations.map(mapRecentOrganization),
+        recruiterInvites: recentRecruiterInvites.map(mapRecentInvite),
+        developerRegistrations: recentDeveloperRegistrations.map(mapRecentDeveloper),
+        aiAnalyses: recentAiAnalyses.map(mapRecentAnalysis)
+      }
     });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch platform metrics', error: err?.message });
@@ -264,11 +331,12 @@ const getDashboard = async (req, res) => {
     const months = getMonthlyRange();
 
     const [
-      totalOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses,
+      totalOrgs, activeOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses,
       recentOrgs, priorOrgs, recentUsers,
       latestOrgs, topDevelopers, activeAdmins
     ] = await Promise.all([
       Organization.countDocuments(),
+      Organization.countDocuments({ isSuspended: { $ne: true } }),
       User.countDocuments({ role: 'admin' }),
       User.countDocuments({ role: 'recruiter' }),
       User.countDocuments({ role: 'developer' }),
@@ -318,7 +386,7 @@ const getDashboard = async (req, res) => {
     ]).catch(() => []);
 
     res.json({
-      metrics: { totalOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers, platformGrowth },
+      metrics: { totalOrgs, activeOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers, platformGrowth },
       latestOrgs,
       topDevelopers,
       activeAdmins,
@@ -702,7 +770,7 @@ const getAllOrganizations = async (req, res) => {
 
 const suspendOrganization = async (req, res) => {
   try {
-    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: true }, { new: true }).lean();
+    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: true }, { returnDocument: 'after' }).lean();
     if (!org) return res.status(404).json({ message: 'Organization not found.' });
     res.json({ organization: org });
   } catch (err) {
@@ -712,7 +780,7 @@ const suspendOrganization = async (req, res) => {
 
 const activateOrganization = async (req, res) => {
   try {
-    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: false }, { new: true }).lean();
+    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: false }, { returnDocument: 'after' }).lean();
     if (!org) return res.status(404).json({ message: 'Organization not found.' });
     res.json({ organization: org });
   } catch (err) {
@@ -812,7 +880,7 @@ const toggleUserActive = async (req, res) => {
     const user = await User.findById(req.params.id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found.' });
     if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot deactivate super admin.' });
-    const updated = await User.findByIdAndUpdate(req.params.id, { isActive: !user.isActive }, { new: true }).select('-password').lean();
+    const updated = await User.findByIdAndUpdate(req.params.id, { isActive: !user.isActive }, { returnDocument: 'after' }).select('-password').lean();
     res.json({ user: updated });
   } catch (err) {
     res.status(500).json({ message: 'Failed to toggle user status', error: err?.message });
@@ -938,7 +1006,7 @@ const updateUser = async (req, res) => {
       if (existing) return res.status(409).json({ message: 'Email already exists.' });
     }
 
-    const updated = await User.findByIdAndUpdate(req.params.id, update, { new: true })
+    const updated = await User.findByIdAndUpdate(req.params.id, update, { returnDocument: 'after' })
       .select('-password')
       .populate('organizationId', 'name')
       .lean();

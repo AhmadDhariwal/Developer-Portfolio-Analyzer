@@ -1,32 +1,76 @@
-<div class="sa-page">
-  <div class="sa-header">
-    <h1>Super Admin Dashboard</h1>
-    <p>Global platform overview — organizations, users, analytics, and growth trends.</p>
+<div class="sa-page sa-dashboard">
+  <div class="sa-dashboard__hero">
+    <div>
+      <h1>Super Admin Dashboard</h1>
+      <p>Global platform overview - organizations, users, analytics, and growth trends.</p>
+    </div>
+    <div class="sa-dashboard__hero-chips">
+      <span class="sa-chip">Enterprise view</span>
+      <span class="sa-chip sa-chip--muted">Live backend data</span>
+    </div>
   </div>
 
-  <div *ngIf="loading" class="sa-loading">
-    <div class="sa-loading__spinner"></div>
-    <span>Loading platform data...</span>
+  <div *ngIf="loading" class="sa-loading-panel">
+    <div class="sa-loading-panel__header">
+      <div class="sa-loading-bar sa-loading-bar--title"></div>
+      <div class="sa-loading-bar sa-loading-bar--chip"></div>
+    </div>
+    <div class="sa-loading-grid sa-loading-grid--metrics">
+      <div class="sa-loading-card" *ngFor="let item of [1,2,3,4,5,6]"></div>
+    </div>
+    <div class="sa-loading-grid sa-loading-grid--charts">
+      <div class="sa-loading-card sa-loading-card--chart" *ngFor="let item of [1,2,3,4]"></div>
+    </div>
   </div>
 
-  <ng-container *ngIf="!loading">
+  <div *ngIf="!loading && error" class="sa-error-panel">
+    <strong>Dashboard unavailable</strong>
+    <p>{{ error }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
     <section class="sa-section">
       <div class="sa-section__head">
-        <div class="sa-section__title">Overview</div>
-        <div class="sa-section__hint">Platform totals & recent growth</div>
+        <div class="sa-section__title">Top Metrics</div>
+        <div class="sa-section__hint">Growth indicators and live platform signals</div>
       </div>
 
-      <div class="sa-grid">
+      <div class="sa-kpi-grid">
         <ng-container *ngFor="let card of metricCards">
-          <a *ngIf="card.link" class="sa-card sa-card--{{ card.color }}" [routerLink]="card.link">
-            <div class="sa-card__value">{{ card.value }}</div>
-            <div class="sa-card__label">{{ card.label }}</div>
-            <div class="sa-card__sub">{{ card.sub }}</div>
+          <a *ngIf="card.link" class="sa-kpi sa-card-shell" [attr.data-tone]="card.tone" [routerLink]="card.link">
+            <div class="sa-kpi__head">
+              <span class="sa-kpi__label">{{ card.label }}</span>
+              <span class="sa-kpi__trend" [class.is-up]="card.trendText.startsWith('+')" [class.is-down]="card.trendText.startsWith('-')">
+                {{ card.trendText }}
+              </span>
+            </div>
+            <div class="sa-kpi__body">
+              <div>
+                <div class="sa-kpi__value">{{ card.value }}</div>
+                <div class="sa-kpi__sub">{{ card.sub }}</div>
+              </div>
+              <svg *ngIf="card.sparkline" class="sa-kpi__sparkline" viewBox="0 0 90 28" aria-hidden="true">
+                <path [attr.d]="card.sparkline"></path>
+              </svg>
+            </div>
           </a>
-          <div *ngIf="!card.link" class="sa-card sa-card--{{ card.color }}">
-            <div class="sa-card__value">{{ card.value }}</div>
-            <div class="sa-card__label">{{ card.label }}</div>
-            <div class="sa-card__sub">{{ card.sub }}</div>
+
+          <div *ngIf="!card.link" class="sa-kpi sa-card-shell" [attr.data-tone]="card.tone">
+            <div class="sa-kpi__head">
+              <span class="sa-kpi__label">{{ card.label }}</span>
+              <span class="sa-kpi__trend" [class.is-up]="card.trendText.startsWith('+')" [class.is-down]="card.trendText.startsWith('-')">
+                {{ card.trendText }}
+              </span>
+            </div>
+            <div class="sa-kpi__body">
+              <div>
+                <div class="sa-kpi__value">{{ card.value }}</div>
+                <div class="sa-kpi__sub">{{ card.sub }}</div>
+              </div>
+              <svg *ngIf="card.sparkline" class="sa-kpi__sparkline" viewBox="0 0 90 28" aria-hidden="true">
+                <path [attr.d]="card.sparkline"></path>
+              </svg>
+            </div>
           </div>
         </ng-container>
       </div>
@@ -34,152 +78,222 @@
 
     <section class="sa-section">
       <div class="sa-section__head">
-        <div class="sa-section__title">Trends</div>
-        <div class="sa-section__hint">12-month growth and distribution</div>
+        <div class="sa-section__title">Analytics</div>
+        <div class="sa-section__hint">Connected charts with loading and empty states</div>
       </div>
 
-      <div class="sa-charts-row">
-        <div class="sa-chart-card sa-chart-card--wide">
-          <div class="sa-chart-head">
-            <strong>User Growth (12 months)</strong>
-            <span class="sa-chart-sub">Organizations, Recruiters & Developers</span>
+      <div class="sa-chart-grid">
+        <article class="sa-panel sa-panel--wide">
+          <div class="sa-panel__head">
+            <div>
+              <strong>User Growth</strong>
+              <span>Organizations, recruiters, and developers over 12 months</span>
+            </div>
           </div>
-          <div class="sa-chart-wrap">
-            <canvas #userGrowthChart></canvas>
+          <div class="sa-panel__body sa-panel__body--chart">
+            <ng-container *ngIf="hasUserGrowthData; else userGrowthEmpty">
+              <canvas #userGrowthChart></canvas>
+            </ng-container>
+            <ng-template #userGrowthEmpty>
+              <div class="sa-empty-state">No growth data available yet.</div>
+            </ng-template>
           </div>
-        </div>
+        </article>
 
-        <div class="sa-chart-card">
-          <div class="sa-chart-head">
-            <strong>Role Distribution</strong>
-            <span class="sa-chart-sub">Platform-wide breakdown</span>
-          </div>
-          <div class="sa-chart-wrap sa-chart-wrap--sm">
-            <canvas #roleDistChart></canvas>
-          </div>
-          <div class="sa-role-stats">
-            <div class="sa-role-stat">
-              <span class="dot dot--purple"></span>
-              <span>Admins</span>
-              <strong>{{ metrics.totalAdmins ?? 0 }}</strong>
-            </div>
-            <div class="sa-role-stat">
-              <span class="dot dot--green"></span>
-              <span>Recruiters</span>
-              <strong>{{ metrics.totalRecruiters ?? 0 }}</strong>
-            </div>
-            <div class="sa-role-stat">
-              <span class="dot dot--orange"></span>
-              <span>Developers</span>
-              <strong>{{ metrics.totalDevelopers ?? 0 }}</strong>
+        <article class="sa-panel">
+          <div class="sa-panel__head">
+            <div>
+              <strong>Role Distribution</strong>
+              <span>Platform-wide breakdown</span>
             </div>
           </div>
-        </div>
+          <div class="sa-panel__body sa-panel__body--chart sa-panel__body--chart-sm">
+            <ng-container *ngIf="hasRoleDistributionData; else roleDistributionEmpty">
+              <canvas #roleDistChart></canvas>
+            </ng-container>
+            <ng-template #roleDistributionEmpty>
+              <div class="sa-empty-state">No role distribution data available.</div>
+            </ng-template>
+          </div>
+        </article>
       </div>
 
-      <div class="sa-charts-row sa-charts-row--reverse">
-        <div class="sa-chart-card">
-          <div class="sa-chart-head">
-            <strong>Developer Stack Distribution</strong>
-            <span class="sa-chart-sub">By career stack</span>
+      <div class="sa-chart-grid sa-chart-grid--reverse">
+        <article class="sa-panel">
+          <div class="sa-panel__head">
+            <div>
+              <strong>Stack Popularity</strong>
+              <span>Developer stack distribution</span>
+            </div>
           </div>
-          <div class="sa-chart-wrap">
-            <canvas #stackDistChart></canvas>
+          <div class="sa-panel__body sa-panel__body--chart">
+            <ng-container *ngIf="hasStackDistributionData; else stackDistributionEmpty">
+              <canvas #stackDistChart></canvas>
+            </ng-container>
+            <ng-template #stackDistributionEmpty>
+              <div class="sa-empty-state">No stack distribution data available.</div>
+            </ng-template>
           </div>
-        </div>
+        </article>
 
-        <div class="sa-chart-card sa-chart-card--wide">
-          <div class="sa-chart-head">
-            <strong>AI Analysis Activity (12 months)</strong>
-            <span class="sa-chart-sub">Monthly analysis runs</span>
+        <article class="sa-panel sa-panel--wide">
+          <div class="sa-panel__head">
+            <div>
+              <strong>AI Analysis Activity</strong>
+              <span>Monthly analysis volume</span>
+            </div>
           </div>
-          <div class="sa-chart-wrap">
-            <canvas #analysisChart></canvas>
+          <div class="sa-panel__body sa-panel__body--chart">
+            <ng-container *ngIf="hasAnalysisData; else analysisEmpty">
+              <canvas #analysisChart></canvas>
+            </ng-container>
+            <ng-template #analysisEmpty>
+              <div class="sa-empty-state">No AI analysis data available.</div>
+            </ng-template>
           </div>
-        </div>
+        </article>
       </div>
     </section>
 
     <section class="sa-section">
       <div class="sa-section__head">
-        <div class="sa-section__title">Activity</div>
-        <div class="sa-section__hint">Latest organizations, top developers, active admins</div>
+        <div class="sa-section__title">Performance Overview</div>
+        <div class="sa-section__hint">Operational health across organizations, recruiters, developers, and systems</div>
       </div>
 
-      <div class="sa-tables">
-        <div class="sa-table-card">
-          <div class="sa-table-head">
-            <strong>Latest Organizations</strong>
-            <a routerLink="../organizations" class="sa-link">View all →</a>
-          </div>
-          <table *ngIf="latestOrgs.length > 0">
-            <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th>Created</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let org of latestOrgs">
-                <td><strong>{{ org.name }}</strong></td>
-                <td>{{ org.ownerId?.name || '—' }}</td>
-                <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
-                <td>{{ org.createdAt | date:'MMM d, y' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="latestOrgs.length === 0" class="sa-empty">No organizations yet.</div>
-        </div>
+      <div class="sa-performance-grid">
+        <article *ngFor="let card of performanceCards" class="sa-panel sa-performance-card" [attr.data-tone]="card.tone">
+          <span class="sa-performance-card__label">{{ card.label }}</span>
+          <strong class="sa-performance-card__value">{{ card.value }}</strong>
+          <span class="sa-performance-card__sub">{{ card.sub }}</span>
+        </article>
+      </div>
+    </section>
 
-        <div class="sa-table-card">
-          <div class="sa-table-head">
-            <strong>Top Developers by Score</strong>
-            <a routerLink="../developers" class="sa-link">View all →</a>
-          </div>
-          <table *ngIf="topDevelopers.length > 0">
-            <thead><tr><th>Name</th><th>Stack</th><th>Level</th><th>Score</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let dev of topDevelopers">
-                <td><strong>{{ dev.name }}</strong></td>
-                <td>{{ dev.careerStack || '—' }}</td>
-                <td>{{ dev.experienceLevel || '—' }}</td>
-                <td><span class="score-pill">{{ dev.score ?? 0 }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="topDevelopers.length === 0" class="sa-empty">No developers yet.</div>
-        </div>
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Recent Activity</div>
+        <div class="sa-section__hint">New organizations, invites, registrations, and analyses</div>
+      </div>
 
-        <div class="sa-table-card" *ngIf="charts?.topOrgs?.length > 0">
-          <div class="sa-table-head">
-            <strong>Top Organizations by Members</strong>
+      <div class="sa-activity-grid">
+        <article *ngFor="let group of activityGroups" class="sa-panel sa-activity-card">
+          <div class="sa-panel__head">
+            <div>
+              <strong>{{ group.title }}</strong>
+              <span>{{ group.items.length }} items</span>
+            </div>
           </div>
-          <table>
-            <thead><tr><th>Organization</th><th>Members</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let org of charts.topOrgs">
-                <td><strong>{{ org.name }}</strong></td>
-                <td>{{ org.memberCount }}</td>
-                <td><span class="badge" [class.badge--red]="org.isSuspended" [class.badge--green]="!org.isSuspended">{{ org.isSuspended ? 'Suspended' : 'Active' }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <div class="sa-panel__body sa-activity-list">
+            <ng-container *ngIf="group.items.length > 0; else activityEmpty">
+              <div *ngFor="let item of group.items" class="sa-activity-list__item">
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.meta }}</p>
+                </div>
+                <div class="sa-activity-list__meta">
+                  <span class="badge" [class.badge--green]="item.tone === 'green'" [class.badge--red]="item.tone === 'red'" [class.badge--blue]="item.tone === 'blue'" [class.badge--purple]="item.tone === 'purple'" [class.badge--orange]="item.tone === 'orange'" [class.badge--teal]="item.tone === 'teal'" [class.badge--indigo]="item.tone === 'indigo'">
+                    {{ item.status }}
+                  </span>
+                  <span>{{ item.createdAt | date:'MMM d, y' }}</span>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #activityEmpty>
+              <div class="sa-empty-state">{{ group.empty }}</div>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+    </section>
 
-        <div class="sa-table-card">
-          <div class="sa-table-head">
-            <strong>Active Admins</strong>
-            <a routerLink="../admins" class="sa-link">View all →</a>
+    <section class="sa-section">
+      <div class="sa-section__head">
+        <div class="sa-section__title">Comparisons</div>
+        <div class="sa-section__hint">Organization, recruiter, stack, and hiring trend comparisons</div>
+      </div>
+
+      <div class="sa-comparison-grid">
+        <article *ngFor="let card of comparisonCards" class="sa-panel sa-comparison-card" [attr.data-tone]="card.tone">
+          <div class="sa-comparison-card__head">
+            <span>{{ card.label }}</span>
+            <span class="sa-comparison-card__delta" [class.is-up]="card.delta >= 0" [class.is-down]="card.delta < 0">
+              {{ card.deltaText }}
+            </span>
           </div>
-          <table *ngIf="activeAdmins.length > 0">
-            <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let admin of activeAdmins">
-                <td><strong>{{ admin.name }}</strong></td>
-                <td>{{ admin.email }}</td>
-                <td>{{ admin.createdAt | date:'MMM d, y' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="activeAdmins.length === 0" class="sa-empty">No admins yet.</div>
-        </div>
+          <div class="sa-comparison-card__values">
+            <div>
+              <span>Current</span>
+              <strong>{{ card.current }}</strong>
+            </div>
+            <div>
+              <span>Previous</span>
+              <strong>{{ card.previous }}</strong>
+            </div>
+          </div>
+          <svg *ngIf="card.sparkline" class="sa-comparison-card__sparkline" viewBox="0 0 90 28" aria-hidden="true">
+            <path [attr.d]="card.sparkline"></path>
+          </svg>
+        </article>
+      </div>
+
+      <div class="sa-comparison-split">
+        <article class="sa-panel">
+          <div class="sa-panel__head">
+            <div>
+              <strong>Stack Popularity</strong>
+              <span>Top developer stacks by current volume</span>
+            </div>
+          </div>
+          <div class="sa-panel__body sa-table-scroll">
+            <table *ngIf="topStacks.length > 0">
+              <thead>
+                <tr>
+                  <th>Stack</th>
+                  <th>Developers</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let stack of topStacks">
+                  <td><strong>{{ stack.stack }}</strong></td>
+                  <td>{{ stack.count }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="topStacks.length === 0" class="sa-empty-state">No stack data available.</div>
+          </div>
+        </article>
+
+        <article class="sa-panel">
+          <div class="sa-panel__head">
+            <div>
+              <strong>Hiring Trends</strong>
+              <span>Top organizations by members and productivity</span>
+            </div>
+          </div>
+          <div class="sa-panel__body sa-table-scroll">
+            <table *ngIf="topOrganizations.length > 0">
+              <thead>
+                <tr>
+                  <th>Organization</th>
+                  <th>Members</th>
+                  <th>Jobs</th>
+                  <th>Productivity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let org of topOrganizations">
+                  <td><strong>{{ org.name }}</strong></td>
+                  <td>{{ org.memberCount || 0 }}</td>
+                  <td>{{ org.jobs || 0 }}</td>
+                  <td>{{ org.productivityScore || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="topOrganizations.length === 0" class="sa-empty-state">No hiring trend data available.</div>
+          </div>
+        </article>
       </div>
     </section>
   </ng-container>
 </div>
-

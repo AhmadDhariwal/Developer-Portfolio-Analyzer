@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SuperAdminService {
@@ -10,6 +10,13 @@ export class SuperAdminService {
 
   getDashboard(): Observable<any> {
     return this.http.get(`${this.base}/dashboard`);
+  }
+
+  getDashboardBundle(params: Record<string, string> = {}): Observable<any> {
+    return forkJoin({
+      dashboard: this.getDashboard(),
+      analytics: this.getAnalytics(params)
+    });
   }
 
   getMetrics(): Observable<any> {

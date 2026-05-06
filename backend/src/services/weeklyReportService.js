@@ -875,7 +875,7 @@ const generateWeeklyReport = async (userId, options = {}) => {
   };
 
   if (existingReport && forceRegenerate) {
-    return WeeklyReport.findByIdAndUpdate(existingReport._id, { $set: payload }, { new: true });
+    return WeeklyReport.findByIdAndUpdate(existingReport._id, { $set: payload }, { returnDocument: 'after' });
   }
 
   return WeeklyReport.create(payload);
