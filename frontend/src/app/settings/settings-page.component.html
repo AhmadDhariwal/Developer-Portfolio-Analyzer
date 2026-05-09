@@ -1,14 +1,87 @@
 <div class="settings-page">
-  <div class="page-header">
-    <h2>Settings</h2>
-    <p>Admin-only controls for platform governance and configuration.</p>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="settings-header">
+    <div class="settings-header__eyebrow">
+      <span class="eyebrow-dot"></span>
+      Admin Settings
+    </div>
+    <h1>Platform Settings</h1>
+    <p>Admin-only controls for platform governance, AI versioning, and team configuration.</p>
   </div>
 
+  <!-- ── Settings grid ─────────────────────────────────────────────────── -->
   <div class="settings-grid">
-    <a class="settings-card" *ngFor="let section of sections" [routerLink]="section.route">
-      <h3>{{ section.title }}</h3>
-      <p>{{ section.description }}</p>
-      <span class="open-link">Open Section</span>
+
+    <a class="settings-card settings-card--indigo" routerLink="/app/settings/ai-versions">
+      <div class="settings-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="settings-card__body">
+        <h3>AI Versions</h3>
+        <p>Manage model output snapshots, compare versions, and rollback when needed.</p>
+      </div>
+      <div class="settings-card__footer">
+        <span class="settings-card__link">Open Section →</span>
+      </div>
     </a>
+
+    <a class="settings-card settings-card--teal" routerLink="/app/settings/user-management">
+      <div class="settings-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="settings-card__body">
+        <h3>User Management</h3>
+        <p>Manage organizations, teams, members, roles, and invitation lifecycle.</p>
+      </div>
+      <div class="settings-card__footer">
+        <span class="settings-card__link">Open Section →</span>
+      </div>
+    </a>
+
+    <a class="settings-card settings-card--slate" routerLink="/app/settings/activity-logs">
+      <div class="settings-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div class="settings-card__body">
+        <h3>Activity Logs</h3>
+        <p>Review and manage audit activity, API mutations, and delivery traces for your organization.</p>
+      </div>
+      <div class="settings-card__footer">
+        <span class="settings-card__link">Open Section →</span>
+      </div>
+    </a>
+
+    <a class="settings-card settings-card--purple" routerLink="/app/admin/recruiters">
+      <div class="settings-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+      </div>
+      <div class="settings-card__body">
+        <h3>Recruiter Management</h3>
+        <p>Invite, activate, and manage recruiter access within your organization.</p>
+      </div>
+      <div class="settings-card__footer">
+        <span class="settings-card__link">Open Section →</span>
+      </div>
+    </a>
+
   </div>
+
 </div>

@@ -1,64 +1,172 @@
 <section class="admin-page">
-  <header class="card">
-    <h2>Organization Jobs + AI Ranking</h2>
-    <p>Create jobs for your tenant and run ranking against the global public developer pool.</p>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header__text">
+      <div class="page-header__eyebrow">
+        <span class="eyebrow-dot"></span>
+        Jobs & AI Ranking
+      </div>
+      <h1>Organization Jobs</h1>
+      <p>Create job listings and run AI-powered candidate ranking against the global developer pool.</p>
+    </div>
+    <div class="page-header__meta" *ngIf="!loading">
+      <span class="stat-pill stat-pill--blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        {{ jobs.length }} Job{{ jobs.length !== 1 ? 's' : '' }}
+      </span>
+    </div>
   </header>
 
-  <app-shared-message
-    [visible]="!!message"
-    [type]="messageType"
-    [text]="message"
-    (dismiss)="message = ''"
-  ></app-shared-message>
+  <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
+  <app-shared-loader [loading]="loading" [label]="selectedJobId ? 'Running AI ranking...' : 'Processing jobs'"></app-shared-loader>
 
-  <app-shared-loader [loading]="loading" label="Processing admin jobs"></app-shared-loader>
+  <div class="jobs-layout">
 
-  <section class="card form-card">
-    <h3>Create Job</h3>
-    <div class="grid">
-      <input [(ngModel)]="form.title" placeholder="Job title" />
-      <input [(ngModel)]="form.role" placeholder="Role label" />
-      <input [(ngModel)]="form.stack" placeholder="Stack" />
-      <input type="number" min="0" [(ngModel)]="form.minExperienceYears" placeholder="Min years" />
-      <input [(ngModel)]="form.requiredSkills" placeholder="Required skills (comma separated)" />
-      <input [(ngModel)]="form.preferredSkills" placeholder="Preferred skills (comma separated)" />
-      <input [(ngModel)]="form.location" placeholder="Location" />
-      <select [(ngModel)]="form.employmentType" title="Employment type">
-        <option value="full-time">Full-time</option>
-        <option value="part-time">Part-time</option>
-        <option value="contract">Contract</option>
-        <option value="internship">Internship</option>
-      </select>
-    </div>
-    <textarea [(ngModel)]="form.description" rows="4" placeholder="Job description"></textarea>
-    <button (click)="createJob()">Create Job</button>
-  </section>
-
-  <section class="card">
-    <h3>Run AI Ranking</h3>
-    <div class="rank-controls">
-      <select [(ngModel)]="selectedJobId" title="Select job for ranking">
-        <option value="">Select job</option>
-        <option *ngFor="let job of jobs" [value]="job._id">{{ job.title }} · {{ job.stack }}</option>
-      </select>
-      <button (click)="runRanking()">Run AI Ranking</button>
-    </div>
-
-    <app-shared-empty-state
-      *ngIf="!loading && ranking.length === 0"
-      title="No ranking results"
-      subtitle="Run AI ranking for a selected job to see top matches and explanations."
-    ></app-shared-empty-state>
-
-    <div class="ranking-list" *ngIf="ranking.length > 0">
-      <article class="rank-card" *ngFor="let item of ranking">
-        <div>
-          <h4>#{{ item.rank }} {{ item.candidate.fullName }}</h4>
-          <p>{{ item.candidate.stack }} · @{{ item.candidate.githubUsername }}</p>
+    <!-- ── Left: Create job form ─────────────────────────────────────────── -->
+    <div class="create-panel">
+      <div class="panel-header">
+        <div class="panel-header__icon panel-header__icon--blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </div>
-        <div class="score">{{ item.rankScore | number: '1.0-2' }}</div>
-        <p class="summary">{{ item.aiInsight.summary }}</p>
-      </article>
+        <div>
+          <h3>Create Job Listing</h3>
+          <p>Fill in the details to post a new position.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label for="job-title">Job Title <span class="required">*</span></label>
+          <input id="job-title" type="text" [(ngModel)]="form.title" placeholder="e.g. Senior Frontend Engineer" />
+        </div>
+        <div class="form-field">
+          <label for="job-role">Role Label</label>
+          <input id="job-role" type="text" [(ngModel)]="form.role" placeholder="e.g. IC4 / Lead" />
+        </div>
+        <div class="form-field">
+          <label for="job-stack">Tech Stack</label>
+          <input id="job-stack" type="text" [(ngModel)]="form.stack" placeholder="Full Stack, Frontend…" />
+        </div>
+        <div class="form-field">
+          <label for="job-location">Location</label>
+          <input id="job-location" type="text" [(ngModel)]="form.location" placeholder="Remote / City" />
+        </div>
+        <div class="form-field">
+          <label for="job-exp">Min. Experience (yrs)</label>
+          <input id="job-exp" type="number" min="0" [(ngModel)]="form.minExperienceYears" placeholder="0" />
+        </div>
+        <div class="form-field">
+          <label for="job-type">Employment Type</label>
+          <select id="job-type" [(ngModel)]="form.employmentType" title="Employment type">
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="job-status">Status</label>
+          <select id="job-status" [(ngModel)]="form.status" title="Job status">
+            <option value="open">Open</option>
+            <option value="draft">Draft</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="form-field form-field--full">
+          <label for="job-required">Required Skills <span class="hint">(comma separated)</span></label>
+          <input id="job-required" type="text" [(ngModel)]="form.requiredSkills" placeholder="React, TypeScript, Node.js" />
+        </div>
+        <div class="form-field form-field--full">
+          <label for="job-preferred">Preferred Skills <span class="hint">(comma separated)</span></label>
+          <input id="job-preferred" type="text" [(ngModel)]="form.preferredSkills" placeholder="GraphQL, Docker, AWS" />
+        </div>
+        <div class="form-field form-field--full">
+          <label for="job-desc">Job Description <span class="required">*</span></label>
+          <textarea id="job-desc" [(ngModel)]="form.description" rows="5" placeholder="Describe the role, responsibilities, and expectations…"></textarea>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary" (click)="createJob()" [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Job
+      </button>
     </div>
-  </section>
+
+    <!-- ── Right: AI Ranking ──────────────────────────────────────────────── -->
+    <div class="ranking-panel">
+      <div class="panel-header">
+        <div class="panel-header__icon panel-header__icon--orange">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <h3>AI Candidate Ranking</h3>
+          <p>Match top developers to a job using AI analysis.</p>
+        </div>
+      </div>
+
+      <div class="rank-controls">
+        <div class="form-field">
+          <label for="rank-job">Select Job</label>
+          <select id="rank-job" [(ngModel)]="selectedJobId" title="Select job for ranking">
+            <option value="">Choose a job listing…</option>
+            <option *ngFor="let job of jobs" [value]="job._id">{{ job.title }} · {{ job.stack }}</option>
+          </select>
+        </div>
+        <button type="button" class="btn-rank" (click)="runRanking()" [disabled]="loading || !selectedJobId">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Run AI Ranking
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <app-shared-empty-state
+        *ngIf="!loading && ranking.length === 0"
+        title="No ranking results yet"
+        subtitle="Select a job and run AI ranking to see top candidate matches."
+      ></app-shared-empty-state>
+
+      <!-- Ranking results -->
+      <div class="ranking-list" #rankingResults *ngIf="ranking.length > 0">
+        <div class="rank-card" *ngFor="let item of ranking">
+          <div class="rank-card__position">
+            <span class="rank-number" [class.rank-number--gold]="item.rank === 1" [class.rank-number--silver]="item.rank === 2" [class.rank-number--bronze]="item.rank === 3">
+              #{{ item.rank }}
+            </span>
+          </div>
+          <div class="rank-card__info">
+            <div class="rank-card__name">{{ item.candidate.fullName }}</div>
+            <div class="rank-card__sub">{{ item.candidate.stack }} · @{{ item.candidate.githubUsername }}</div>
+            <p class="rank-card__summary">{{ item.aiInsight.summary }}</p>
+          </div>
+          <div class="rank-card__score">
+            <span class="score-value">{{ item.rankScore | number: '1.0-1' }}</span>
+            <span class="score-label">Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jobs list -->
+      <div class="jobs-list" *ngIf="!loading && jobs.length > 0">
+        <div class="jobs-list__header">
+          <span>Posted Jobs</span>
+          <span class="jobs-count">{{ jobs.length }}</span>
+        </div>
+        <div class="job-row" *ngFor="let job of jobs">
+          <div class="job-row__info">
+            <span class="job-row__title">{{ job.title }}</span>
+            <span class="job-row__meta">{{ job.stack }} · {{ job.employmentType }}</span>
+          </div>
+          <span class="job-status-badge"
+                [class.job-status-badge--open]="job.status === 'open'"
+                [class.job-status-badge--draft]="job.status === 'draft'"
+                [class.job-status-badge--closed]="job.status === 'closed'">
+            {{ job.status }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </section>

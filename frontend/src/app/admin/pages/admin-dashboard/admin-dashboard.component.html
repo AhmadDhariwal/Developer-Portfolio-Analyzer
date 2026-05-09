@@ -1,94 +1,222 @@
-<section class="admin-page">
+<section class="admin-dash">
 
-  <header class="page-header">
-    <div class="page-header__text">
-      <h2>Admin Control Center</h2>
-      <p>Manage recruiters, jobs, and monitor the global developer talent pool.</p>
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="dash-header">
+    <div class="dash-header__text">
+      <div class="dash-header__eyebrow">
+        <span class="eyebrow-dot"></span>
+        Admin Control Center
+      </div>
+      <h1>Organization Dashboard</h1>
+      <p>Manage recruiters, jobs, and monitor your developer talent pool in real time.</p>
+    </div>
+    <div class="dash-header__actions">
+      <a class="btn-outline" routerLink="/app/admin/recruiters">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Invite Recruiter
+      </a>
+      <a class="btn-primary" routerLink="/app/admin/jobs">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Post a Job
+      </a>
     </div>
   </header>
 
   <app-shared-message [visible]="!!error" type="error" [text]="error" (dismiss)="error = ''"></app-shared-message>
-  <app-shared-loader [loading]="loading" label="Loading overview"></app-shared-loader>
 
+  <!-- ── Skeleton loader ────────────────────────────────────────────────── -->
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+  </div>
+
+  <!-- ── Metric cards ───────────────────────────────────────────────────── -->
   <div class="metrics-grid" *ngIf="!loading">
 
     <a class="metric-card metric-card--purple" routerLink="/app/admin/recruiters">
-      <div class="metric-card__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+      <div class="metric-card__top">
+        <div class="metric-card__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="metric-card__trend metric-card__trend--up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          Active
+        </span>
       </div>
       <div class="metric-card__body">
-        <span class="metric-card__label">Recruiters</span>
         <span class="metric-card__value">{{ overview.recruitersCount }}</span>
+        <span class="metric-card__label">Total Recruiters</span>
       </div>
-      <span class="metric-card__link">Manage →</span>
+      <div class="metric-card__footer">
+        <span>Manage team →</span>
+      </div>
     </a>
 
     <a class="metric-card metric-card--blue" routerLink="/app/admin/jobs">
-      <div class="metric-card__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-        </svg>
+      <div class="metric-card__top">
+        <div class="metric-card__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+        </div>
+        <span class="metric-card__trend metric-card__trend--up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          Open
+        </span>
       </div>
       <div class="metric-card__body">
-        <span class="metric-card__label">Active Jobs</span>
         <span class="metric-card__value">{{ overview.jobsCount }}</span>
+        <span class="metric-card__label">Active Jobs</span>
       </div>
-      <span class="metric-card__link">Manage →</span>
+      <div class="metric-card__footer">
+        <span>View all jobs →</span>
+      </div>
     </a>
 
     <a class="metric-card metric-card--green" routerLink="/app/admin/developers">
-      <div class="metric-card__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="16 18 22 12 16 6"/>
-          <polyline points="8 6 2 12 8 18"/>
-        </svg>
+      <div class="metric-card__top">
+        <div class="metric-card__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <span class="metric-card__trend metric-card__trend--neutral">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Public
+        </span>
       </div>
       <div class="metric-card__body">
-        <span class="metric-card__label">Public Developers</span>
         <span class="metric-card__value">{{ overview.globalDevelopersCount }}</span>
+        <span class="metric-card__label">Public Developers</span>
       </div>
-      <span class="metric-card__link">View pool →</span>
+      <div class="metric-card__footer">
+        <span>Browse talent pool →</span>
+      </div>
     </a>
 
   </div>
 
-  <!-- Quick nav -->
-  <div class="quick-nav" *ngIf="!loading">
-    <a class="quick-link" routerLink="/app/admin/recruiters">
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <line x1="19" y1="8" x2="19" y2="14"/>
-        <line x1="22" y1="11" x2="16" y2="11"/>
-      </svg>
-      Invite Recruiter
-    </a>
-    <a class="quick-link" routerLink="/app/admin/jobs">
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      Post a Job
-    </a>
-    <a class="quick-link" routerLink="/app/admin/developers">
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      Browse Talent Pool
-    </a>
+  <!-- ── Quick actions ──────────────────────────────────────────────────── -->
+  <div class="quick-actions" *ngIf="!loading">
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="quick-actions__grid">
+
+      <a class="quick-card" routerLink="/app/admin/recruiters">
+        <div class="quick-card__icon quick-card__icon--purple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">Invite Recruiter</span>
+          <span class="quick-card__sub">Send secure email invite</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a class="quick-card" routerLink="/app/admin/jobs">
+        <div class="quick-card__icon quick-card__icon--blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">Post a Job</span>
+          <span class="quick-card__sub">Create new job listing</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a class="quick-card" routerLink="/app/admin/developers">
+        <div class="quick-card__icon quick-card__icon--green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">Browse Talent Pool</span>
+          <span class="quick-card__sub">{{ overview.globalDevelopersCount }} public profiles</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a class="quick-card" routerLink="/app/admin/jobs">
+        <div class="quick-card__icon quick-card__icon--orange">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">AI Candidate Ranking</span>
+          <span class="quick-card__sub">Match top talent to jobs</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a class="quick-card" routerLink="/app/settings/user-management">
+        <div class="quick-card__icon quick-card__icon--teal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">User Management</span>
+          <span class="quick-card__sub">Teams, roles & invitations</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+      <a class="quick-card" routerLink="/app/settings/activity-logs">
+        <div class="quick-card__icon quick-card__icon--slate">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="quick-card__text">
+          <span class="quick-card__title">Activity Logs</span>
+          <span class="quick-card__sub">Audit trail & history</span>
+        </div>
+        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── Status bar ─────────────────────────────────────────────────────── -->
+  <div class="status-bar" *ngIf="!loading">
+    <div class="status-bar__item">
+      <span class="status-dot status-dot--green"></span>
+      <span>Organization Active</span>
+    </div>
+    <div class="status-bar__item">
+      <span class="status-dot status-dot--blue"></span>
+      <span>{{ overview.recruitersCount }} Recruiter{{ overview.recruitersCount !== 1 ? 's' : '' }} Onboarded</span>
+    </div>
+    <div class="status-bar__item">
+      <span class="status-dot status-dot--purple"></span>
+      <span>{{ overview.jobsCount }} Job{{ overview.jobsCount !== 1 ? 's' : '' }} Listed</span>
+    </div>
+    <div class="status-bar__item">
+      <span class="status-dot status-dot--teal"></span>
+      <span>{{ overview.globalDevelopersCount }} Developers in Pool</span>
+    </div>
   </div>
 
 </section>

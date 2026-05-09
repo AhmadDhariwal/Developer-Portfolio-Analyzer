@@ -2,6 +2,9 @@
    DevInsight AI Design System
    ========================================================================== */
 
+/* Google Fonts — loaded globally to avoid per-component budget overruns */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 :root {
   /* Primary Colors */
   --color-primary: #6366F1;       /* Indigo */

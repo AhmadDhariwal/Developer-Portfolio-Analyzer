@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
 import { AdminHiringService, AdminJob, AdminRankedCandidate } from '../../services/admin-hiring.service';
 
@@ -9,6 +9,8 @@ import { AdminHiringService, AdminJob, AdminRankedCandidate } from '../../servic
   styleUrls: ['./admin-jobs.component.scss']
 })
 export class AdminJobsPageComponent implements OnInit {
+  @ViewChild('rankingResults') rankingResults?: ElementRef;
+
   loading = false;
   message = '';
   messageType: 'success' | 'error' | 'warning' = 'success';
@@ -87,7 +89,8 @@ export class AdminJobsPageComponent implements OnInit {
           status: 'open'
         };
         this.messageType = 'success';
-        this.message = 'Organization job created successfully.';
+        this.message = 'Job created successfully! Refreshing job list...';
+        this.loading = false;
         this.loadJobs();
       },
       error: (err) => {
@@ -110,13 +113,18 @@ export class AdminJobsPageComponent implements OnInit {
       next: (ranking) => {
         this.ranking = ranking;
         this.messageType = 'success';
-        this.message = 'AI candidate ranking completed.';
+        this.message = `AI candidate ranking completed! Found ${ranking.length} matches.`;
         this.loading = false;
+        
+        // Auto-scroll to ranking results
+        setTimeout(() => {
+          this.rankingResults?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       },
       error: () => {
         this.ranking = [];
         this.messageType = 'error';
-        this.message = 'Failed to run AI ranking.';
+        this.message = 'Failed to run AI ranking. Please check the job details and try again.';
         this.loading = false;
       }
     });

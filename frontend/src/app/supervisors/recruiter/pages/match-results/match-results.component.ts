@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
 import { RecruiterCandidate, RecruiterJob, RankedCandidate, RecruiterService } from '../../services/recruiter.service';
 import { RecruiterMessageService } from '../../../recruiter-shared/services/recruiter-message.service';
@@ -10,6 +10,8 @@ import { RecruiterMessageService } from '../../../recruiter-shared/services/recr
   styleUrls: ['./match-results.component.scss']
 })
 export class MatchResultsPageComponent implements OnInit {
+  @ViewChild('resultsSection') resultsSection?: ElementRef;
+
   jobs: RecruiterJob[] = [];
   candidates: RecruiterCandidate[] = [];
   selectedJobId = '';
@@ -66,11 +68,16 @@ export class MatchResultsPageComponent implements OnInit {
     this.recruiterService.matchCandidates(this.selectedJobId, Array.from(this.selectedCandidateIds)).subscribe({
       next: (result) => {
         this.matches = result.rankedCandidates || [];
-        this.recruiterMessage.success('Candidate matching completed successfully.');
+        this.recruiterMessage.success(`Found ${this.matches.length} candidate matches! Scroll down to view results.`);
+        
+        // Auto-scroll to results
+        setTimeout(() => {
+          this.resultsSection?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       },
       error: () => {
         this.matches = [];
-        this.recruiterMessage.error('Failed to match candidates.');
+        this.recruiterMessage.error('Failed to match candidates. Please try again.');
       }
     });
   }
@@ -84,11 +91,16 @@ export class MatchResultsPageComponent implements OnInit {
     this.recruiterService.rankCandidates(this.selectedJobId, Array.from(this.selectedCandidateIds)).subscribe({
       next: (result) => {
         this.matches = result.rankedCandidates || [];
-        this.recruiterMessage.success('AI ranking completed successfully.');
+        this.recruiterMessage.success(`AI ranking completed! Found ${this.matches.length} top matches. Scroll down to view results.`);
+        
+        // Auto-scroll to results
+        setTimeout(() => {
+          this.resultsSection?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       },
       error: () => {
         this.matches = [];
-        this.recruiterMessage.error('Failed to run AI ranking.');
+        this.recruiterMessage.error('Failed to run AI ranking. Please check your selections and try again.');
       }
     });
   }

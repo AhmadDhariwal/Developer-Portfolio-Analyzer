@@ -1,22 +1,34 @@
 <section class="admin-page">
 
-  <!-- Header -->
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <header class="page-header">
-    <div>
-      <h2>Recruiter Management</h2>
-      <p>Invite recruiters and manage their access within your organization.</p>
+    <div class="page-header__text">
+      <div class="page-header__eyebrow">
+        <span class="eyebrow-dot"></span>
+        Recruiter Management
+      </div>
+      <h1>Manage Recruiters</h1>
+      <p>Invite, activate, and manage recruiter access within your organization.</p>
     </div>
-    <span class="count-badge" *ngIf="recruiters.length > 0">{{ recruiters.length }} active</span>
+    <div class="page-header__meta" *ngIf="!loading">
+      <span class="stat-pill stat-pill--purple">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        {{ recruiters.length }} Recruiter{{ recruiters.length !== 1 ? 's' : '' }}
+      </span>
+      <span class="stat-pill stat-pill--amber" *ngIf="pendingInvitations.length > 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        {{ pendingInvitations.length }} Pending
+      </span>
+    </div>
   </header>
 
   <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
 
-  <!-- Invite form -->
-  <section class="card invite-card">
-    <div class="invite-card__head">
-      <div class="invite-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2">
+  <!-- ── Invite form ─────────────────────────────────────────────────────── -->
+  <div class="invite-card">
+    <div class="invite-card__header">
+      <div class="invite-card__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
           <line x1="19" y1="8" x2="19" y2="14"/>
@@ -24,204 +36,186 @@
         </svg>
       </div>
       <div>
-        <h3>Invite Recruiter</h3>
-        <p>An invitation email will be sent with a secure setup link.</p>
+        <h3>Invite New Recruiter</h3>
+        <p>A secure invitation email will be sent with an onboarding link.</p>
       </div>
     </div>
-    <div class="invite-fields">
+    <div class="invite-card__fields">
       <div class="form-field">
         <label for="inv-name">Full Name</label>
-        <input id="inv-name" type="text" [(ngModel)]="form.name" placeholder="e.g. Sarah Ahmed" />
+        <input id="inv-name" type="text" [(ngModel)]="form.name" placeholder="e.g. Sarah Ahmed" autocomplete="off" />
       </div>
       <div class="form-field">
         <label for="inv-email">Work Email</label>
-        <input id="inv-email" type="email" [(ngModel)]="form.email" placeholder="recruiter@company.com" />
+        <input id="inv-email" type="email" [(ngModel)]="form.email" placeholder="recruiter@company.com" autocomplete="off" />
+      </div>
+      <div class="invite-card__submit">
+        <button type="button" class="btn-primary" (click)="inviteRecruiter()" [disabled]="loading">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send Invitation
+        </button>
       </div>
     </div>
-    <button class="btn-primary" (click)="inviteRecruiter()" [disabled]="loading">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="22" y1="2" x2="11" y2="13"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-      </svg>
-      Send Invitation
-    </button>
-  </section>
+  </div>
 
   <app-shared-loader [loading]="loading" label="Loading recruiters"></app-shared-loader>
 
-  <!-- Pending Invitations -->
-  <section class="card" *ngIf="!loading && pendingInvitations.length > 0">
-    <div class="section-head">
-      <h3>Pending Invitations</h3>
-      <span class="count-badge count-badge--warning">{{ pendingInvitations.length }} pending</span>
+  <!-- ── Pending Invitations ────────────────────────────────────────────── -->
+  <div class="section-card" *ngIf="!loading && pendingInvitations.length > 0">
+    <div class="section-card__header">
+      <div class="section-card__title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending Invitations
+      </div>
+      <span class="badge badge--amber">{{ pendingInvitations.length }} pending</span>
     </div>
 
-    <div class="recruiter-list">
-      <div class="recruiter-row" *ngFor="let inv of pendingInvitations">
-        <div class="recruiter-row__info">
-          <div class="recruiter-avatar recruiter-avatar--pending">{{ inv.name ? inv.name.charAt(0).toUpperCase() : '?' }}</div>
-          <div class="recruiter-meta">
-            <span class="recruiter-name">{{ inv.name || '(Name not set)' }}</span>
-            <span class="recruiter-email">{{ inv.email }}</span>
-            <div class="recruiter-details">
-              <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                Invited {{ inv.createdAt | date: 'mediumDate' }}
-              </span>
-              <span [class.text-danger]="isExpired(inv)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
-                {{ isExpired(inv) ? 'Expired' : 'Expires' }} {{ inv.expiresAt | date: 'mediumDate' }}
-              </span>
-            </div>
+    <div class="recruiter-table">
+      <div class="recruiter-table__head">
+        <span>Recruiter</span>
+        <span>Status</span>
+        <span>Invited</span>
+        <span>Expires</span>
+        <span>Actions</span>
+      </div>
+      <div class="recruiter-table__row" *ngFor="let inv of pendingInvitations">
+        <div class="recruiter-info">
+          <div class="recruiter-avatar recruiter-avatar--amber">{{ inv.name ? inv.name.charAt(0).toUpperCase() : '?' }}</div>
+          <div>
+            <div class="recruiter-name">{{ inv.name || '(Name not set)' }}</div>
+            <div class="recruiter-email">{{ inv.email }}</div>
           </div>
         </div>
-
-        <div class="recruiter-row__badges">
-          <span class="status-badge status-badge--pending">Pending</span>
-          <span class="status-badge status-badge--inactive" *ngIf="isExpired(inv)">Link Expired</span>
+        <div>
+          <span class="badge badge--amber">Pending</span>
+          <span class="badge badge--red ml-4" *ngIf="isExpired(inv)">Expired</span>
         </div>
-
-        <div class="recruiter-row__actions">
-          <button class="btn-action btn-action--revoke" type="button" title="Revoke access" (click)="revokeInvitation(inv)">
-            Revoke Access
-          </button>
-          <button class="btn-action btn-action--deactivate" type="button" title="Expire the invitation link" (click)="expireInvitation(inv)">
-            Expire Link
-          </button>
-          <button class="btn-action btn-action--delete" type="button" title="Delete invitation" (click)="deleteInvitation(inv)">
-            Delete
-          </button>
+        <div class="table-meta">{{ inv.createdAt | date: 'MMM d, y' }}</div>
+        <div class="table-meta" [class.text-red]="isExpired(inv)">{{ inv.expiresAt | date: 'MMM d, y' }}</div>
+        <div class="action-group">
+          <button type="button" class="btn-action btn-action--ghost" title="Revoke invitation" (click)="revokeInvitation(inv)">Revoke</button>
+          <button type="button" class="btn-action btn-action--ghost" title="Expire invitation link" (click)="expireInvitation(inv)">Expire</button>
+          <button type="button" class="btn-action btn-action--danger" title="Delete invitation" (click)="deleteInvitation(inv)">Delete</button>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Active Recruiters -->
-  <section class="card" *ngIf="!loading">
-    <div class="section-head">
-      <h3>Active Recruiters</h3>
+  <!-- ── Active Recruiters ──────────────────────────────────────────────── -->
+  <div class="section-card" *ngIf="!loading">
+    <div class="section-card__header">
+      <div class="section-card__title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Active Recruiters
+      </div>
+      <span class="badge badge--purple" *ngIf="recruiters.length > 0">{{ recruiters.length }} total</span>
     </div>
 
     <app-shared-empty-state
       *ngIf="recruiters.length === 0"
       title="No recruiters yet"
-      subtitle="Send an invitation above to add your first recruiter."
+      subtitle="Send an invitation above to add your first recruiter to the organization."
     ></app-shared-empty-state>
 
-    <div class="recruiter-list" *ngIf="recruiters.length > 0">
-      <div class="recruiter-row" *ngFor="let recruiter of recruiters">
+    <div class="recruiter-table" *ngIf="recruiters.length > 0">
+      <div class="recruiter-table__head">
+        <span>Recruiter</span>
+        <span>Contact</span>
+        <span>Status</span>
+        <span>Joined</span>
+        <span>Actions</span>
+      </div>
 
-        <!-- View mode -->
-        <ng-container *ngIf="editingRecruiterId !== recruiter._id">
-          <div class="recruiter-row__info">
-            <div class="recruiter-avatar">{{ recruiter.name.charAt(0).toUpperCase() }}</div>
-            <div class="recruiter-meta">
-              <span class="recruiter-name">{{ recruiter.name }}</span>
-              <span class="recruiter-email">{{ recruiter.email }}</span>
-              <div class="recruiter-details">
-                <span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                       fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                  </svg>
-                  {{ recruiter.githubUsername || 'GitHub: Not provided' }}
-                </span>
-                <span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                       fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/>
-                  </svg>
-                  {{ recruiter.phoneNumber || 'Phone: Not provided' }}
-                </span>
-                <span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                       fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-                    <rect x="2" y="9" width="4" height="12"/>
-                    <circle cx="4" cy="4" r="2"/>
-                  </svg>
-                  {{ recruiter.linkedin || 'LinkedIn: Not provided' }}
-                </span>
-              </div>
+      <ng-container *ngFor="let recruiter of recruiters">
+
+        <!-- ── View mode ──────────────────────────────────────────────── -->
+        <div class="recruiter-table__row" *ngIf="editingRecruiterId !== recruiter._id">
+          <div class="recruiter-info">
+            <div class="recruiter-avatar" [class.recruiter-avatar--inactive]="!recruiter.isActive">
+              {{ recruiter.name.charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <div class="recruiter-name">{{ recruiter.name }}</div>
+              <div class="recruiter-email">{{ recruiter.email }}</div>
             </div>
           </div>
 
-          <div class="recruiter-row__badges">
-            <span class="status-badge" [class.status-badge--active]="recruiter.isActive" [class.status-badge--inactive]="!recruiter.isActive">
+          <div class="recruiter-contact">
+            <span *ngIf="recruiter.githubUsername" class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              @{{ recruiter.githubUsername }}
+            </span>
+            <span *ngIf="recruiter.phoneNumber" class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
+              {{ recruiter.phoneNumber }}
+            </span>
+            <span *ngIf="!recruiter.githubUsername && !recruiter.phoneNumber" class="contact-item contact-item--muted">No contact info</span>
+          </div>
+
+          <div class="badge-group">
+            <span class="badge" [class.badge--green]="recruiter.isActive" [class.badge--slate]="!recruiter.isActive">
               {{ recruiter.isActive ? 'Active' : 'Inactive' }}
             </span>
-            <span class="status-badge" [class.status-badge--done]="recruiter.profileCompleted" [class.status-badge--pending]="!recruiter.profileCompleted">
+            <span class="badge" [class.badge--purple]="recruiter.profileCompleted" [class.badge--amber]="!recruiter.profileCompleted">
               {{ recruiter.profileCompleted ? 'Profile Complete' : 'Profile Pending' }}
             </span>
-            <span class="date-label">{{ recruiter.createdAt | date: 'mediumDate' }}</span>
           </div>
 
-          <div class="recruiter-row__actions">
-            <button class="btn-action btn-action--edit" type="button" title="Edit recruiter" (click)="startEdit(recruiter)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Edit
+          <div class="table-meta">{{ recruiter.createdAt | date: 'MMM d, y' }}</div>
+
+          <div class="action-group">
+            <button type="button" class="btn-action btn-action--icon" title="Edit recruiter" (click)="startEdit(recruiter)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="btn-action" [class.btn-action--deactivate]="recruiter.isActive" [class.btn-action--activate]="!recruiter.isActive"
-                    type="button" (click)="toggleActive(recruiter)">
+            <button type="button" class="btn-action"
+                    [class.btn-action--amber]="recruiter.isActive"
+                    [class.btn-action--green]="!recruiter.isActive"
+                    (click)="toggleActive(recruiter)">
               {{ recruiter.isActive ? 'Deactivate' : 'Activate' }}
             </button>
-            <button class="btn-action btn-action--revoke" type="button" (click)="revokeAccess(recruiter)">Revoke</button>
-            <button class="btn-action btn-action--delete" type="button" (click)="deleteRecruiter(recruiter)">Delete</button>
+            <button type="button" class="btn-action btn-action--ghost" (click)="revokeAccess(recruiter)">Revoke</button>
+            <button type="button" class="btn-action btn-action--danger" (click)="deleteRecruiter(recruiter)">Delete</button>
           </div>
-        </ng-container>
+        </div>
 
-        <!-- Edit mode -->
-        <ng-container *ngIf="editingRecruiterId === recruiter._id">
-          <div class="edit-form">
-            <div class="edit-form__grid">
-              <div class="form-field">
-                <label>Name</label>
-                <input type="text" [(ngModel)]="editForm.name" placeholder="Full name" />
-              </div>
-              <div class="form-field">
-                <label>Email</label>
-                <input type="email" [(ngModel)]="editForm.email" placeholder="Email" />
-              </div>
-              <div class="form-field">
-                <label>GitHub</label>
-                <input type="text" [(ngModel)]="editForm.githubUsername" placeholder="GitHub username" />
-              </div>
-              <div class="form-field">
-                <label>LinkedIn</label>
-                <input type="text" [(ngModel)]="editForm.linkedin" placeholder="linkedin.com/in/..." />
-              </div>
-              <div class="form-field">
-                <label>Phone</label>
-                <input type="text" [(ngModel)]="editForm.phoneNumber" placeholder="+1 555 000 0000" />
-              </div>
+        <!-- ── Edit mode ──────────────────────────────────────────────── -->
+        <div class="edit-row" *ngIf="editingRecruiterId === recruiter._id">
+          <div class="edit-row__header">
+            <span class="edit-row__label">Editing: {{ recruiter.name }}</span>
+          </div>
+          <div class="edit-row__grid">
+            <div class="form-field">
+              <label>Full Name</label>
+              <input type="text" [(ngModel)]="editForm.name" placeholder="Full name" />
             </div>
-            <div class="edit-form__actions">
-              <button class="btn-primary btn-sm" type="button" (click)="saveRecruiter(recruiter._id)">Save Changes</button>
-              <button class="btn-ghost btn-sm" type="button" (click)="cancelEdit()">Cancel</button>
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="editForm.email" placeholder="Email address" />
+            </div>
+            <div class="form-field">
+              <label>GitHub Username</label>
+              <input type="text" [(ngModel)]="editForm.githubUsername" placeholder="github-handle" />
+            </div>
+            <div class="form-field">
+              <label>LinkedIn URL</label>
+              <input type="text" [(ngModel)]="editForm.linkedin" placeholder="linkedin.com/in/..." />
+            </div>
+            <div class="form-field">
+              <label>Phone Number</label>
+              <input type="text" [(ngModel)]="editForm.phoneNumber" placeholder="+1 555 000 0000" />
             </div>
           </div>
-        </ng-container>
+          <div class="edit-row__actions">
+            <button type="button" class="btn-primary btn-sm" (click)="saveRecruiter(recruiter._id)">Save Changes</button>
+            <button type="button" class="btn-ghost btn-sm" (click)="cancelEdit()">Cancel</button>
+          </div>
+        </div>
 
-      </div>
+      </ng-container>
     </div>
-  </section>
+  </div>
 
-  <!-- Confirm dialog -->
+  <!-- ── Confirm dialog ─────────────────────────────────────────────────── -->
   <app-confirm-dialog
     [open]="confirmOpen"
     [title]="confirmTitle"

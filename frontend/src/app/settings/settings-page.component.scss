@@ -1,59 +1,153 @@
+// ── Settings Page ─────────────────────────────────────────────────────────
 .settings-page {
-  display: grid;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1.75rem;
+  max-width: 1000px;
 }
 
-.page-header h2 {
-  margin: 0;
-  color: #f8fafc;
+// ── Header ────────────────────────────────────────────────────────────────
+.settings-header {
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #818cf8;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    max-width: 520px;
+  }
 }
 
-.page-header p {
-  margin: 6px 0 0;
-  color: #94a3b8;
+.eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #818cf8;
+  box-shadow: 0 0 6px rgba(129, 140, 248, 0.6);
 }
 
+// ── Settings grid ─────────────────────────────────────────────────────────
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
+// ── Settings card ─────────────────────────────────────────────────────────
 .settings-card {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
-  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  background: rgba(15, 23, 42, 0.7);
   text-decoration: none;
-  transition: transform .18s ease, border-color .18s ease;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.83rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+  }
+
+  &__footer {
+    margin-top: auto;
+  }
+
+  &__link {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  // Color variants
+  &--indigo {
+    border-color: rgba(99, 102, 241, 0.25);
+
+    &:hover { border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1); }
+
+    .settings-card__icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .settings-card__link { color: #818cf8; }
+  }
+
+  &--teal {
+    border-color: rgba(20, 184, 166, 0.25);
+
+    &:hover { border-color: rgba(20, 184, 166, 0.5); box-shadow: 0 8px 32px rgba(20, 184, 166, 0.08); }
+
+    .settings-card__icon { background: rgba(20, 184, 166, 0.12); color: #2dd4bf; }
+    .settings-card__link { color: #2dd4bf; }
+  }
+
+  &--slate {
+    border-color: rgba(100, 116, 139, 0.25);
+
+    &:hover { border-color: rgba(100, 116, 139, 0.5); box-shadow: 0 8px 32px rgba(100, 116, 139, 0.08); }
+
+    .settings-card__icon { background: rgba(100, 116, 139, 0.12); color: #94a3b8; }
+    .settings-card__link { color: #94a3b8; }
+  }
+
+  &--purple {
+    border-color: rgba(168, 85, 247, 0.25);
+
+    &:hover { border-color: rgba(168, 85, 247, 0.5); box-shadow: 0 8px 32px rgba(168, 85, 247, 0.08); }
+
+    .settings-card__icon { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+    .settings-card__link { color: #c084fc; }
+  }
 }
 
-.settings-card h3 {
-  margin: 0;
-  color: #f8fafc;
-}
+// ── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .settings-page { padding: 1rem; }
 
-.settings-card p {
-  margin: 0;
-  color: #94a3b8;
-}
-
-.settings-card .open-link {
-  margin-top: 4px;
-  color: #5eead4;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.settings-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(94, 234, 212, 0.5);
-}
-
-@media (max-width: 900px) {
   .settings-grid {
     grid-template-columns: 1fr;
   }
