@@ -228,8 +228,16 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/tenant/organizations/${organizationId}/invitations`, payload);
   }
 
+  createAdminRecruiterDirect(payload: { name: string; email: string; password: string; teamId?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/recruiters/direct`, payload);
+  }
+
   getInvitations(organizationId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/tenant/organizations/${organizationId}/invitations`);
+  }
+
+  getAdminTeams(organizationId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/tenant/organizations/${organizationId}/teams`);
   }
 
   revokeInvitation(organizationId: string, invitationId: string): Observable<any> {

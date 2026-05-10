@@ -184,12 +184,10 @@ export class Sidebar implements OnInit {
   get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
     const user = this.authService.getCurrentUser();
     const currentRole = this.getNormalizedRole(user?.role);
-    const tenantRole = this.tenantContext.snapshot.myRole;
 
     const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
-    const isAdmin = currentRole === 'admin' || tenantRole === 'admin' || isSuperAdmin;
 
-    if (isAdmin) {
+    if (isSuperAdmin) {
       return this.navItems;
     }
     return this.navItems.filter((item) => item.route !== '/app/settings');
@@ -198,11 +196,10 @@ export class Sidebar implements OnInit {
   get visibleNavGroups(): Array<{ label: string; route?: string; icon: string; items: Array<{ label: string; route: string; icon: string }> }> {
     const user = this.authService.getCurrentUser();
     const currentRole = this.getNormalizedRole(user?.role);
-    const tenantRole = this.tenantContext.snapshot.myRole;
 
     const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
-    const isRecruiter = currentRole === 'recruiter' || tenantRole === 'recruiter';
-    const isAdmin = currentRole === 'admin' || tenantRole === 'admin';
+    const isRecruiter = currentRole === 'recruiter' || this.tenantContext.snapshot.myRole === 'recruiter';
+    const isAdmin = currentRole === 'admin' || this.tenantContext.snapshot.myRole === 'admin';
 
     return this.navGroups.map((group) => {
       let filteredItems = group.items.filter((item) => {
@@ -219,6 +216,7 @@ export class Sidebar implements OnInit {
         // Standard RBAC for other roles
         if (item.route === '/app/recruiter') return isRecruiter;
         if (item.route === '/app/admin') return isAdmin;
+        if (item.route === '/app/settings') return false;
 
         return true;
       });

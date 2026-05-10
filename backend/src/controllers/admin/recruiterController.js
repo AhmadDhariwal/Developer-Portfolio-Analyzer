@@ -1,15 +1,20 @@
 const crypto = require('node:crypto');
 
+const bcrypt = require('bcryptjs');
 const User = require('../../models/user');
 const Invitation = require('../../models/invitation');
 const Organization = require('../../models/organization');
+const Team = require('../../models/team');
+const Membership = require('../../models/membership');
 const { sendRecruiterInvitationEmail } = require('../../services/emailService');
+const { getSettingsSnapshotSync } = require('../../services/platformSettingsService');
 
 const INVITATION_TTL_DAYS = 7;
 
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
+const getPasswordMinLength = () => Number(getSettingsSnapshotSync()?.security?.passwordMinLength || 6);
 
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
@@ -132,6 +137,160 @@ const inviteRecruiter = async (req, res) => {
   } catch (error) {
     console.error('Admin invite recruiter error:', error.message);
     return res.status(500).json({ message: 'Failed to invite recruiter.' });
+  }
+};
+
+const validateDirectRecruiterInput = ({ name, email, password }) => {
+  if (!name || !email) {
+    return { status: 400, message: 'name and email are required.' };
+  }
+
+  const minPasswordLength = getPasswordMinLength();
+  if (!password || password.length < minPasswordLength) {
+    return { status: 400, message: `Password must be at least ${minPasswordLength} characters.` };
+  }
+
+  return null;
+};
+
+const upsertDirectRecruiterRecord = async ({ existingUser, organizationId, name, email, password }) => {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  if (existingUser) {
+    const recruiter = await User.findById(existingUser._id);
+    recruiter.name = name;
+    recruiter.email = email;
+    recruiter.password = hashedPassword;
+    recruiter.role = 'recruiter';
+    recruiter.organizationId = organizationId;
+    recruiter.isVerified = true;
+    recruiter.isActive = true;
+    recruiter.onboardingCompleted = true;
+    recruiter.activeCareerStack = recruiter.activeCareerStack || recruiter.careerStack || 'Full Stack';
+    recruiter.activeExperienceLevel = recruiter.activeExperienceLevel || recruiter.experienceLevel || 'Student';
+    await recruiter.save();
+    return recruiter;
+  }
+
+  return User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: 'recruiter',
+    organizationId,
+    isVerified: true,
+    isActive: true,
+    onboardingCompleted: true,
+    activeCareerStack: 'Full Stack',
+    activeExperienceLevel: 'Student'
+  });
+};
+
+const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId, invitedBy }) => {
+  const orgMembership = await Membership.findOneAndUpdate(
+    {
+      organizationId,
+      userId: recruiterId,
+      teamId: null
+    },
+    {
+      $set: {
+        role: 'member',
+        status: 'active',
+        invitedBy,
+        joinedAt: new Date()
+      }
+    },
+    { upsert: true, setDefaultsOnInsert: true, new: true }
+  );
+
+  const teamMembership = teamId
+    ? await Membership.findOneAndUpdate(
+        {
+          organizationId,
+          userId: recruiterId,
+          teamId
+        },
+        {
+          $set: {
+            role: 'member',
+            status: 'active',
+            invitedBy,
+            joinedAt: new Date()
+          }
+        },
+        { upsert: true, setDefaultsOnInsert: true, new: true }
+      )
+    : null;
+
+  return { orgMembership, teamMembership };
+};
+
+const addRecruiterDirect = async (req, res) => {
+  try {
+    const name = String(req.body?.name || '').trim();
+    const email = normalizeEmail(req.body?.email);
+    const password = String(req.body?.password || '');
+    const teamId = String(req.body?.teamId || '').trim() || null;
+
+    const validationError = validateDirectRecruiterInput({ name, email, password });
+    if (validationError) {
+      return res.status(validationError.status).json({ message: validationError.message });
+    }
+
+    const [existingUser, organization, team] = await Promise.all([
+      User.findOne({ email }).lean(),
+      Organization.findById(req.organizationId).select('name').lean(),
+      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId }).select('_id name').lean() : null
+    ]);
+
+    if (!organization) {
+      return res.status(404).json({ message: 'Organization not found.' });
+    }
+
+    if (teamId && !team) {
+      return res.status(404).json({ message: 'Team not found in this organization.' });
+    }
+
+    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
+      return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    }
+
+    const restrictedRole = String(existingUser?.role || '').toLowerCase();
+    if (restrictedRole === 'admin' || restrictedRole === 'super_admin') {
+      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
+    }
+
+    const recruiter = await upsertDirectRecruiterRecord({
+      existingUser,
+      organizationId: req.organizationId,
+      name,
+      email,
+      password
+    });
+
+    const { orgMembership, teamMembership } = await upsertRecruiterMemberships({
+      organizationId: req.organizationId,
+      recruiterId: recruiter._id,
+      teamId: team ? team._id : null,
+      invitedBy: req.user?._id || null
+    });
+
+    const createdRecruiter = await User.findById(recruiter._id)
+      .select('_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt')
+      .lean();
+
+    return res.status(201).json({
+      message: 'Recruiter created successfully.',
+      recruiter: sanitizeRecruiter(createdRecruiter),
+      membership: orgMembership,
+      teamMembership,
+      team: team ? { _id: team._id, name: team.name } : null
+    });
+  } catch (error) {
+    console.error('Admin direct recruiter create error:', error.message);
+    return res.status(500).json({ message: 'Failed to create recruiter.' });
   }
 };
 
@@ -350,6 +509,7 @@ const deleteInvitation = async (req, res) => {
 module.exports = {
   getRecruiters,
   inviteRecruiter,
+  addRecruiterDirect,
   updateRecruiter,
   setRecruiterActive,
   revokeRecruiterAccess,

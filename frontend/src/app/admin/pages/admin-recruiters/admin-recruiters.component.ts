@@ -1,19 +1,29 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-import { AdminHiringService, AdminRecruiter, PendingInvitation } from '../../services/admin-hiring.service';
+import { AdminHiringService, AdminRecruiter, AdminTeamOption, PendingInvitation } from '../../services/admin-hiring.service';
+import { SharedLoaderComponent } from '../../../shared/components/loader/loader.component';
+import { SharedMessageComponent } from '../../../shared/components/message/message.component';
+import { SharedEmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { RecruiterSharedModule } from '../../../supervisors/recruiter-shared/recruiter-shared.module';
 
 @Component({
   selector: 'app-admin-recruiters-page',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, SharedLoaderComponent, SharedMessageComponent, SharedEmptyStateComponent, RecruiterSharedModule],
   templateUrl: './admin-recruiters.component.html',
   styleUrls: ['./admin-recruiters.component.scss']
 })
 export class AdminRecruitersPageComponent implements OnInit {
   loading = false;
+  directLoading = false;
   message = '';
   messageType: 'success' | 'error' | 'warning' = 'success';
   recruiters: AdminRecruiter[] = [];
   pendingInvitations: PendingInvitation[] = [];
+  teams: AdminTeamOption[] = [];
+  organizationId = '';
   editingRecruiterId = '';
 
   // ── Confirm dialog state ────────────────────────────────────────────────
@@ -28,6 +38,13 @@ export class AdminRecruitersPageComponent implements OnInit {
     email: ''
   };
 
+  directForm = {
+    name: '',
+    email: '',
+    password: '',
+    teamId: ''
+  };
+
   editForm = {
     name: '',
     email: '',
@@ -39,7 +56,39 @@ export class AdminRecruitersPageComponent implements OnInit {
   constructor(private readonly adminService: AdminHiringService) {}
 
   ngOnInit(): void {
+    this.loadContext();
     this.loadAll();
+  }
+
+  loadContext(): void {
+    this.adminService.getOverview().subscribe({
+      next: (overview) => {
+        this.organizationId = overview.organizationId || '';
+        if (this.organizationId) {
+          this.loadTeams();
+        }
+      },
+      error: () => {
+        this.organizationId = '';
+        this.teams = [];
+      }
+    });
+  }
+
+  loadTeams(): void {
+    if (!this.organizationId) {
+      this.teams = [];
+      return;
+    }
+
+    this.adminService.getTeams(this.organizationId).subscribe({
+      next: (teams) => {
+        this.teams = teams;
+      },
+      error: () => {
+        this.teams = [];
+      }
+    });
   }
 
   loadAll(): void {
@@ -91,6 +140,41 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to invite recruiter.');
         this.loading = false;
+      }
+    });
+  }
+
+  addRecruiterDirect(): void {
+    if (!this.directForm.name || !this.directForm.email || !this.directForm.password) {
+      this.messageType = 'warning';
+      this.message = 'Name, email, and password are required for direct creation.';
+      return;
+    }
+
+    if (!this.organizationId) {
+      this.messageType = 'error';
+      this.message = 'Organization context is not available.';
+      return;
+    }
+
+    this.directLoading = true;
+    this.adminService.createRecruiterDirect({
+      name: this.directForm.name,
+      email: this.directForm.email,
+      password: this.directForm.password,
+      teamId: this.directForm.teamId || undefined
+    }).subscribe({
+      next: () => {
+        this.messageType = 'success';
+        this.message = 'Recruiter added successfully without invitation.';
+        this.directForm = { name: '', email: '', password: '', teamId: '' };
+        this.directLoading = false;
+        this.loadAll();
+      },
+      error: (err) => {
+        this.messageType = 'error';
+        this.message = String(err?.error?.message || 'Failed to add recruiter directly.');
+        this.directLoading = false;
       }
     });
   }

@@ -7,6 +7,7 @@ const { getOrganizationOverview, getDevelopers } = require('../controllers/admin
 const {
 	getRecruiters,
 	inviteRecruiter,
+	addRecruiterDirect,
 	updateRecruiter,
 	setRecruiterActive,
 	revokeRecruiterAccess,
@@ -24,6 +25,7 @@ router.get('/overview', getOrganizationOverview);
 router.get('/recruiters', getRecruiters);
 router.post('/invite-recruiter', inviteRecruiter);
 router.post('/recruiter', inviteRecruiter);
+router.post('/recruiters/direct', addRecruiterDirect);
 router.put('/recruiters/:id', updateRecruiter);
 router.patch('/recruiters/:id/active', setRecruiterActive);
 router.patch('/recruiters/:id/revoke', revokeRecruiterAccess);

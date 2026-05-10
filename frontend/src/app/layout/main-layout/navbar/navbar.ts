@@ -100,13 +100,13 @@ export class Navbar implements OnInit {
       return true;
     });
 
-    if (role === 'admin') {
+    if (isSuperAdmin) {
       return roleScoped;
     }
 
     return roleScoped.filter((page) => {
       const route = String(page.route || '');
-      return !route.startsWith('/app/settings') && !route.startsWith('/app/admin');
+      return !route.startsWith('/app/settings');
     });
   }
 
@@ -485,9 +485,9 @@ export class Navbar implements OnInit {
 
   private syncUserState(user: any): void {
     if (!user) {
-      this.userName = 'Developer';
-      this.userHandle = 'developer';
-      this.userInitial = 'D';
+      this.userName = 'User';
+      this.userHandle = '';
+      this.userInitial = 'U';
       this.userAvatar = '';
       this.cachedRepos = [];
       this.cachedSkills = [];
@@ -497,9 +497,10 @@ export class Navbar implements OnInit {
     }
 
     const previousAvatar = this.userAvatar;
-    this.userName = user.name || 'Developer';
-    this.userHandle = user.githubUsername || 'developer';
-    this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
+    const roleLabel = String(user.role || '').trim().toLowerCase();
+    this.userName = roleLabel || user.name || 'User';
+    this.userHandle = user.githubUsername || user.email || '';
+    this.userInitial = this.profileService.getInitials(this.userName || 'User') || 'U';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
 
     console.log('[Navbar] syncUserState — avatar:', this.userAvatar);
@@ -511,7 +512,7 @@ export class Navbar implements OnInit {
 
     this.cdr.detectChanges();
 
-    if (this.userHandle && this.userHandle !== 'developer' && this.lastLoadedGithubHandle !== this.userHandle) {
+    if (this.userHandle && this.lastLoadedGithubHandle !== this.userHandle) {
       this.lastLoadedGithubHandle = this.userHandle;
       this.loadGithubRepos(this.userHandle);
     }

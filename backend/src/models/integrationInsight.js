@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const providerInsightSchema = new mongoose.Schema({
   provider: {
     type: String,
-    enum: ['linkedin', 'github', 'leetcode', 'kaggle'],
+    enum: ['linkedin', 'github', 'leetcode', 'kaggle', 'stackoverflow', 'hackerrank', 'portfolio', 'certifications', 'devblogs'],
     required: true
   },
   profileScore: { type: Number, default: 0 },

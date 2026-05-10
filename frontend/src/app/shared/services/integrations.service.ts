@@ -2,7 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export type ProviderName = 'linkedin' | 'github' | 'leetcode' | 'kaggle';
+export type ProviderName =
+  | 'linkedin'
+  | 'github'
+  | 'leetcode'
+  | 'kaggle'
+  | 'stackoverflow'
+  | 'hackerrank'
+  | 'portfolio'
+  | 'certifications'
+  | 'devblogs';
 
 export interface IntegrationMarketplaceItem {
   provider: ProviderName;
@@ -15,6 +24,68 @@ export interface IntegrationMarketplaceItem {
   lastSyncedAt?: string | null;
 }
 
+export interface ProviderInsightNormalized {
+  profile?: {
+    username?: string;
+    name?: string;
+    // LeetCode
+    ranking?: number;
+    reputation?: number;
+    solvedProblems?: number;
+    // LinkedIn
+    profileCompleteness?: number;
+    accountTrust?: number;
+    // Stack Overflow
+    totalBadges?: number;
+    goldBadges?: number;
+    silverBadges?: number;
+    bronzeBadges?: number;
+    answerCount?: number;
+    questionCount?: number;
+    // HackerRank / Certifications (shared key — use number)
+    totalCertifications?: number;
+    codingScore?: number;
+    certScore?: number;
+    // Portfolio
+    url?: string;
+    isReachable?: boolean;
+    statusCode?: number;
+    responseTimeMs?: number;
+    // Dev Blogs
+    totalArticles?: number;
+    totalReactions?: number;
+    brandingScore?: number;
+    [key: string]: unknown;
+  };
+  activity?: {
+    // LeetCode
+    easy?: number;
+    medium?: number;
+    hard?: number;
+    // LinkedIn
+    accountActivityProxy?: number;
+    // Stack Overflow
+    soTopTags?: string[];
+    namedBadges?: string[];
+    acceptRate?: number;
+    // HackerRank
+    hrBadges?: string[];
+    hrCertifications?: string[];
+    // Portfolio
+    technologies?: string[];
+    hasSSL?: boolean;
+    seoScore?: number;
+    performanceScore?: number;
+    // Certifications
+    certifications?: string[];
+    platforms?: string[];
+    // Dev Blogs
+    recentArticles?: Array<{ title: string; reactions: number; platform: string }>;
+    blogTopTags?: string[];
+    [key: string]: unknown;
+  };
+}
+
 export interface IntegrationInsightsResponse {
   providers: Array<{
     provider: ProviderName;
@@ -22,23 +93,7 @@ export interface IntegrationInsightsResponse {
     activityScore: number;
     confidence: number;
     inferredSkills?: string[];
-    normalized?: {
-      profile?: {
-        username?: string;
-        name?: string;
-        ranking?: number;
-        reputation?: number;
-        solvedProblems?: number;
-      };
-      activity?: {
-        easy?: number;
-        medium?: number;
-        hard?: number;
-        profileCompleteness?: number;
-        accountTrust?: number;
-        accountActivityProxy?: number;
-      };
-    };
+    normalized?: ProviderInsightNormalized;
     syncedAt?: string;
   }>;
   mergedSkills: string[];
@@ -66,9 +121,7 @@ export class IntegrationsService {
     hints?: any;
     missingConfig?: string[];
   }> {
-    return this.http.post<any>(`${this.baseUrl}/oauth/start`, {
-      provider
-    });
+    return this.http.post<any>(`${this.baseUrl}/oauth/start`, { provider });
   }
 
   oauthCallback(provider: ProviderName, code: string, state: string, username?: string): Observable<any> {
@@ -81,6 +134,10 @@ export class IntegrationsService {
 
   ingest(provider: ProviderName): Observable<any> {
     return this.http.post(`${this.baseUrl}/ingest`, { provider });
+  }
+
+  syncNow(provider?: ProviderName): Observable<any> {
+    return this.http.post(`${this.baseUrl}/sync-now`, provider ? { provider } : {});
   }
 
   disconnect(provider: ProviderName): Observable<any> {

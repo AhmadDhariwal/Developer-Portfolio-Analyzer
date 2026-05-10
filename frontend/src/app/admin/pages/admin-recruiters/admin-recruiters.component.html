@@ -58,6 +58,52 @@
     </div>
   </div>
 
+  <!-- ── Direct add form ────────────────────────────────────────────────── -->
+  <div class="invite-card invite-card--direct">
+    <div class="invite-card__header">
+      <div class="invite-card__icon invite-card__icon--success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M19 8v6"/>
+          <path d="M22 11h-6"/>
+        </svg>
+      </div>
+      <div>
+        <h3>Add Recruiter Directly</h3>
+        <p>Create the recruiter account immediately and assign it to your organization or a specific team.</p>
+      </div>
+    </div>
+
+    <div class="invite-card__fields invite-card__fields--direct">
+      <div class="form-field">
+        <label for="direct-name">Full Name</label>
+        <input id="direct-name" type="text" [(ngModel)]="directForm.name" placeholder="e.g. Sarah Ahmed" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="direct-email">Work Email</label>
+        <input id="direct-email" type="email" [(ngModel)]="directForm.email" placeholder="recruiter@company.com" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="direct-password">Password</label>
+        <input id="direct-password" type="password" [(ngModel)]="directForm.password" placeholder="Set a login password" autocomplete="new-password" />
+      </div>
+      <div class="form-field">
+        <label for="direct-team">Team <span class="opt">(optional)</span></label>
+        <select id="direct-team" [(ngModel)]="directForm.teamId">
+          <option value="">Organization only</option>
+          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+        </select>
+      </div>
+      <div class="invite-card__submit">
+        <button type="button" class="btn-primary btn-primary--success" (click)="addRecruiterDirect()" [disabled]="directLoading || loading">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          {{ directLoading ? 'Adding…' : 'Add Recruiter' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <app-shared-loader [loading]="loading" label="Loading recruiters"></app-shared-loader>
 
   <!-- ── Pending Invitations ────────────────────────────────────────────── -->
@@ -185,24 +231,24 @@
           </div>
           <div class="edit-row__grid">
             <div class="form-field">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="editForm.name" placeholder="Full name" />
+              <label [attr.for]="'edit-name-' + recruiter._id">Full Name</label>
+              <input [id]="'edit-name-' + recruiter._id" type="text" [(ngModel)]="editForm.name" placeholder="Full name" />
             </div>
             <div class="form-field">
-              <label>Email</label>
-              <input type="email" [(ngModel)]="editForm.email" placeholder="Email address" />
+              <label [attr.for]="'edit-email-' + recruiter._id">Email</label>
+              <input [id]="'edit-email-' + recruiter._id" type="email" [(ngModel)]="editForm.email" placeholder="Email address" />
             </div>
             <div class="form-field">
-              <label>GitHub Username</label>
-              <input type="text" [(ngModel)]="editForm.githubUsername" placeholder="github-handle" />
+              <label [attr.for]="'edit-github-' + recruiter._id">GitHub Username</label>
+              <input [id]="'edit-github-' + recruiter._id" type="text" [(ngModel)]="editForm.githubUsername" placeholder="github-handle" />
             </div>
             <div class="form-field">
-              <label>LinkedIn URL</label>
-              <input type="text" [(ngModel)]="editForm.linkedin" placeholder="linkedin.com/in/..." />
+              <label [attr.for]="'edit-linkedin-' + recruiter._id">LinkedIn URL</label>
+              <input [id]="'edit-linkedin-' + recruiter._id" type="text" [(ngModel)]="editForm.linkedin" placeholder="linkedin.com/in/..." />
             </div>
             <div class="form-field">
-              <label>Phone Number</label>
-              <input type="text" [(ngModel)]="editForm.phoneNumber" placeholder="+1 555 000 0000" />
+              <label [attr.for]="'edit-phone-' + recruiter._id">Phone Number</label>
+              <input [id]="'edit-phone-' + recruiter._id" type="text" [(ngModel)]="editForm.phoneNumber" placeholder="+1 555 000 0000" />
             </div>
           </div>
           <div class="edit-row__actions">

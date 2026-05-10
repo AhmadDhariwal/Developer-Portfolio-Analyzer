@@ -23,7 +23,7 @@ export class AcceptInvitationComponent implements OnInit {
   accepted = false;
   error = '';
   processing = false;
-  redirectTo = '/app/recruiter/dashboard';
+  redirectTo = '/app/recruiter';
 
   details: {
     name?: string;
@@ -135,6 +135,7 @@ export class AcceptInvitationComponent implements OnInit {
           localStorage.setItem('token', user.token);
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('loginExpiry', String(Date.now() + 20 * 60 * 60 * 1000));
+          this.authService.updateCurrentUser(user);
 
           if (isValidObjectId) {
             this.tenantContext.setOrganization({
@@ -145,13 +146,14 @@ export class AcceptInvitationComponent implements OnInit {
           }
         }
 
-        this.redirectTo = res?.redirectTo || '/app/recruiter/dashboard';
+        this.redirectTo = res?.redirectTo || '/app/recruiter';
         this.accepted = true;
+        setTimeout(() => this.goToDashboard(), 800);
       });
   }
 
   goToDashboard(): void {
-    this.router.navigate([this.redirectTo]);
+    this.router.navigateByUrl(this.redirectTo);
   }
 
   goToLogin(): void {

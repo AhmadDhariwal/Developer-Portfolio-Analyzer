@@ -9,7 +9,7 @@ const integrationConnectionSchema = new mongoose.Schema({
   },
   provider: {
     type: String,
-    enum: ['linkedin', 'github', 'leetcode', 'kaggle'],
+    enum: ['linkedin', 'github', 'leetcode', 'kaggle', 'stackoverflow', 'hackerrank', 'portfolio', 'certifications', 'devblogs'],
     required: true
   },
   status: {

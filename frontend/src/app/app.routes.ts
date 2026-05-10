@@ -101,10 +101,10 @@ export const routes: Routes = [
       { path: 'team-management', redirectTo: 'settings/user-management', pathMatch: 'full' },
       { path: 'ai-versions',     redirectTo: 'settings/ai-versions',     pathMatch: 'full' },
 
-      // Settings (admin only)
+      // Settings (super admin only)
       {
         path: 'settings',
-        canActivate: [adminSettingsGuard],
+        canActivate: [superAdminGuard],
         children: [
           { path: '',                component: SettingsPageComponent },
           { path: 'ai-versions',     component: AiVersionsComponent },

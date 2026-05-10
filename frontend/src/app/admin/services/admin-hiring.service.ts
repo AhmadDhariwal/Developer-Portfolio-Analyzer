@@ -35,6 +35,11 @@ export interface PendingInvitation {
   createdAt: string;
 }
 
+export interface AdminTeamOption {
+  _id: string;
+  name: string;
+}
+
 export interface AdminDeveloper {
   _id: string;
   name: string;
@@ -115,6 +120,23 @@ export class AdminHiringService {
         invitationLink: String(res?.invitationLink || ''),
         emailSent: Boolean(res?.email?.sent)
       }))
+    );
+  }
+
+  createRecruiterDirect(payload: {
+    name: string;
+    email: string;
+    password: string;
+    teamId?: string;
+  }): Observable<AdminRecruiter> {
+    return this.api.createAdminRecruiterDirect(payload).pipe(
+      map((res: { recruiter: AdminRecruiter }) => res.recruiter)
+    );
+  }
+
+  getTeams(organizationId: string): Observable<AdminTeamOption[]> {
+    return this.api.getTeams(organizationId).pipe(
+      map((res: { teams?: AdminTeamOption[] }) => res?.teams || [])
     );
   }
 

@@ -16,7 +16,6 @@ import { AdminJobsPageComponent } from './pages/admin-jobs/admin-jobs.component'
 @NgModule({
   declarations: [
     AdminDashboardPageComponent,
-    AdminRecruitersPageComponent,
     AdminDevelopersPageComponent,
     AdminJobsPageComponent
   ],
@@ -27,6 +26,7 @@ import { AdminJobsPageComponent } from './pages/admin-jobs/admin-jobs.component'
     SharedLoaderComponent,
     SharedMessageComponent,
     SharedEmptyStateComponent,
+    AdminRecruitersPageComponent,
     RecruiterSharedModule
   ]
 })

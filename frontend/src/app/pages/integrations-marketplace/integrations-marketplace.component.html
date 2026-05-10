@@ -1,118 +1,273 @@
 <div class="integrations-page">
+
+  <!-- ── Page header ─────────────────────────────────────────────────────── -->
   <div class="page-head">
-    <div>
+    <div class="page-head__text">
+      <div class="page-head__eyebrow">
+        <span class="eyebrow-dot"></span>
+        Developer Intelligence
+      </div>
       <h1>Integrations Marketplace</h1>
-      <p>Connect career platforms with OAuth and run ingestion pipelines.</p>
+      <p>Connect career platforms to build a complete developer intelligence profile that powers AI recommendations, hiring scores, and recruiter insights.</p>
     </div>
-    <div class="score-pill">Integration Score: {{ integrationScore }}%</div>
+    <div class="page-head__score" [class]="getScoreHealthClass(integrationScore)">
+      <span class="score-num">{{ integrationScore }}%</span>
+      <span class="score-label">{{ getScoreHealthLabel(integrationScore) }}</span>
+    </div>
   </div>
 
-  <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <!-- ── Error banner ─────────────────────────────────────────────────────── -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ errorMessage }}
+    <button type="button" class="error-close" (click)="errorMessage = ''">×</button>
+  </div>
 
-  <div class="loading-state" *ngIf="isLoading">Loading integrations...</div>
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading && integrations.length === 0">
+    <div class="loading-spinner"></div>
+    Loading integrations…
+  </div>
 
-  <div class="workspace-grid" *ngIf="!isLoading">
+  <div class="workspace-grid" *ngIf="!isLoading || integrations.length > 0">
+
+    <!-- ── Left: Integration cards ─────────────────────────────────────────── -->
     <section class="market-column">
-      <div class="market-grid">
-        <article class="integration-card" *ngFor="let item of integrations">
+
+      <!-- Connected integrations -->
+      <div class="section-label" *ngIf="connectedIntegrations.length > 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Connected ({{ connectedIntegrations.length }})
+      </div>
+
+      <div class="market-grid" *ngIf="connectedIntegrations.length > 0">
+        <article class="integration-card integration-card--connected"
+                 *ngFor="let item of connectedIntegrations">
           <div class="card-top">
-            <div>
-              <h3>{{ item.name }}</h3>
-              <span class="category-pill">{{ item.category }}</span>
+            <div class="card-top__left">
+              <div class="provider-icon" [style.color]="getProviderColor(item.provider)" [innerHTML]="getProviderIcon(item.provider)"></div>
+              <div>
+                <h3>{{ item.name }}</h3>
+                <span class="category-pill">{{ item.category }}</span>
+              </div>
             </div>
-            <span class="status-pill" [ngClass]="item.status">{{ item.status }}</span>
+            <span class="status-pill connected">
+              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              Connected
+            </span>
+          </div>
+
+          <div class="meta" *ngIf="item.externalUsername || item.lastSyncedAt">
+            <span *ngIf="item.externalUsername" class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {{ item.externalUsername }}
+            </span>
+            <span *ngIf="item.lastSyncedAt" class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Synced {{ item.lastSyncedAt | date:'MMM d, HH:mm' }}
+            </span>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-secondary"
+                    (click)="runIngestion(item.provider)"
+                    [disabled]="busyProvider === item.provider">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              {{ busyProvider === item.provider ? 'Syncing…' : 'Sync Now' }}
+            </button>
+            <button type="button" class="btn btn-danger"
+                    (click)="disconnect(item)"
+                    [disabled]="busyProvider === item.provider">
+              Disconnect
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- Available integrations -->
+      <div class="section-label" [class.section-label--mt]="connectedIntegrations.length > 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Available ({{ availableIntegrations.length }})
+      </div>
+
+      <div class="market-grid">
+        <article class="integration-card"
+                 *ngFor="let item of availableIntegrations"
+                 [class.integration-card--busy]="busyProvider === item.provider">
+
+          <div class="card-top">
+            <div class="card-top__left">
+              <div class="provider-icon" [style.color]="getProviderColor(item.provider)" [innerHTML]="getProviderIcon(item.provider)"></div>
+              <div>
+                <h3>{{ item.name }}</h3>
+                <span class="category-pill">{{ item.category }}</span>
+              </div>
+            </div>
+            <span class="status-pill" [ngClass]="item.status">
+              {{ item.status === 'error' ? 'Error' : 'Not connected' }}
+            </span>
           </div>
 
           <p class="description">{{ item.description }}</p>
 
-          <div class="auth-mode" *ngIf="item.authMode === 'oauth2'">OAuth2 Secure Connect</div>
-          <div class="auth-mode" *ngIf="item.authMode === 'manual'">Manual Connect (public profile ingestion)</div>
-
-          <div class="manual-fields" *ngIf="item.authMode === 'manual'">
-            <input
-              type="text"
-              placeholder="Enter username"
-              [(ngModel)]="manualUsername[item.provider]"
-              [disabled]="busyProvider === item.provider"
-            />
-            <input
-              type="text"
-              placeholder="Optional API key"
-              [(ngModel)]="manualApiKey[item.provider]"
-              [disabled]="busyProvider === item.provider"
-            />
+          <!-- Auth mode badge -->
+          <div class="auth-mode-badge">
+            <svg *ngIf="item.authMode === 'oauth2'" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg *ngIf="item.authMode === 'manual'" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {{ item.authMode === 'oauth2' ? 'OAuth2 Secure Connect' : 'Manual Connect' }}
           </div>
 
-          <div class="meta" *ngIf="item.externalUsername || item.lastSyncedAt">
-            <span *ngIf="item.externalUsername">User: {{ item.externalUsername }}</span>
-            <span *ngIf="item.lastSyncedAt">Last sync: {{ item.lastSyncedAt | date:'medium' }}</span>
+          <!-- Impact tags -->
+          <div class="impact-tags">
+            <span class="impact-tag" *ngFor="let impact of getImpactItems(item.provider)">{{ impact }}</span>
+          </div>
+
+          <!-- Manual input fields -->
+          <div class="manual-fields" *ngIf="item.authMode === 'manual'">
+            <div class="field-wrap">
+              <label [for]="'input-' + item.provider">{{ getInputLabel(item.provider) }}</label>
+              <input
+                [id]="'input-' + item.provider"
+                type="text"
+                [placeholder]="getInputPlaceholder(item.provider)"
+                [(ngModel)]="manualUsername[item.provider]"
+                [disabled]="busyProvider === item.provider"
+              />
+              <span class="field-hint" *ngIf="getInputHint(item.provider)">{{ getInputHint(item.provider) }}</span>
+            </div>
           </div>
 
           <div class="actions">
-            <button
-              class="btn btn-primary"
-              *ngIf="item.status !== 'connected'"
-              (click)="connect(item)"
-              [disabled]="busyProvider === item.provider"
-            >
-              {{ busyProvider === item.provider ? 'Connecting...' : (item.authMode === 'oauth2' ? 'Connect with OAuth' : 'Connect + Sync') }}
+            <button type="button" class="btn btn-primary"
+                    (click)="connect(item)"
+                    [disabled]="busyProvider === item.provider">
+              <svg *ngIf="busyProvider !== item.provider && item.authMode === 'oauth2'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <svg *ngIf="busyProvider !== item.provider && item.authMode === 'manual'" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span *ngIf="busyProvider === item.provider" class="btn-spinner"></span>
+              {{ busyProvider === item.provider
+                  ? (item.authMode === 'oauth2' ? 'Connecting…' : 'Connecting + Syncing…')
+                  : (item.authMode === 'oauth2' ? 'Connect with OAuth' : 'Connect + Sync') }}
             </button>
-
-            <ng-container *ngIf="item.status === 'connected'">
-              <button
-                class="btn btn-secondary"
-                (click)="runIngestion(item.provider)"
-                [disabled]="busyProvider === item.provider"
-              >
-                {{ busyProvider === item.provider ? 'Syncing...' : 'Run Ingestion' }}
-              </button>
-
-              <button
-                class="btn btn-danger"
-                (click)="disconnect(item)"
-                [disabled]="busyProvider === item.provider"
-              >
-                Disconnect
-              </button>
-            </ng-container>
           </div>
         </article>
       </div>
+
     </section>
 
+    <!-- ── Right: Insights sidebar ──────────────────────────────────────────── -->
     <aside class="insights-column">
-      <article class="insight-card score-card">
-        <h3>Integration Health</h3>
-        <p class="score-value">{{ integrationScore }}%</p>
-        <p class="muted">Keep adding providers and run ingestion regularly to improve recommendation quality.</p>
+
+      <!-- Integration health -->
+      <article class="insight-card score-card" [class]="getScoreHealthClass(integrationScore)">
+        <div class="score-card__header">
+          <h3>Integration Health</h3>
+          <span class="health-badge" [class]="getScoreHealthClass(integrationScore)">{{ getScoreHealthLabel(integrationScore) }}</span>
+        </div>
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 80 80">
+            <circle class="ring-track" cx="40" cy="40" r="32" stroke-width="6" fill="none"/>
+            <circle class="ring-fill" cx="40" cy="40" r="32" stroke-width="6" fill="none"
+                    [style.stroke-dasharray]="'201.06'"
+                    [style.stroke-dashoffset]="201.06 - (integrationScore / 100) * 201.06"/>
+          </svg>
+          <span class="score-center">{{ integrationScore }}%</span>
+        </div>
+        <p class="muted">Connect more providers and run ingestion regularly to improve AI recommendation quality and hiring score.</p>
       </article>
 
+      <!-- Connection mix -->
       <article class="insight-card">
         <h3>Connection Mix</h3>
         <div class="metric-grid">
-          <div class="metric-tile">
+          <div class="metric-tile metric-tile--green">
             <span>Connected</span>
             <strong>{{ connectedCount }}</strong>
           </div>
-          <div class="metric-tile">
-            <span>Disconnected</span>
+          <div class="metric-tile metric-tile--slate">
+            <span>Available</span>
             <strong>{{ disconnectedCount }}</strong>
           </div>
-          <div class="metric-tile">
+          <div class="metric-tile metric-tile--blue">
             <span>OAuth</span>
             <strong>{{ oauthCount }}</strong>
           </div>
-          <div class="metric-tile">
+          <div class="metric-tile metric-tile--purple">
             <span>Manual</span>
             <strong>{{ manualCount }}</strong>
           </div>
         </div>
       </article>
 
+      <!-- Platform impact -->
+      <article class="insight-card">
+        <h3>Platform Impact</h3>
+        <div class="impact-list">
+          <div class="impact-row">
+            <div class="impact-row__icon impact-row__icon--blue">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <span class="impact-row__title">AI Recommendations</span>
+              <span class="impact-row__sub">Integrations feed skill gap detection</span>
+            </div>
+          </div>
+          <div class="impact-row">
+            <div class="impact-row__icon impact-row__icon--green">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <span class="impact-row__title">Hiring Score</span>
+              <span class="impact-row__sub">Integration score boosts readiness by 15%</span>
+            </div>
+          </div>
+          <div class="impact-row">
+            <div class="impact-row__icon impact-row__icon--purple">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <span class="impact-row__title">Recruiter Insights</span>
+              <span class="impact-row__sub">Verified skills visible to recruiters</span>
+            </div>
+          </div>
+          <div class="impact-row">
+            <div class="impact-row__icon impact-row__icon--orange">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+            </div>
+            <div>
+              <span class="impact-row__title">Profile Completeness</span>
+              <span class="impact-row__sub">Each integration adds credibility signals</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Quick guidance -->
       <article class="insight-card">
         <h3>Quick Guidance</h3>
-        <p class="muted">Use OAuth where possible for richer signals. For manual providers, add username first, then sync after every portfolio update.</p>
+        <div class="guidance-list">
+          <div class="guidance-item">
+            <span class="guidance-dot guidance-dot--blue"></span>
+            <span>Use <strong>OAuth</strong> for GitHub and LinkedIn for richer signals</span>
+          </div>
+          <div class="guidance-item">
+            <span class="guidance-dot guidance-dot--orange"></span>
+            <span>Weak LeetCode score → AI suggests DSA prep courses</span>
+          </div>
+          <div class="guidance-item">
+            <span class="guidance-dot guidance-dot--green"></span>
+            <span>Strong Stack Overflow → boosts backend credibility score</span>
+          </div>
+          <div class="guidance-item">
+            <span class="guidance-dot guidance-dot--purple"></span>
+            <span>Add certifications to improve verified skills score</span>
+          </div>
+          <div class="guidance-item">
+            <span class="guidance-dot guidance-dot--pink"></span>
+            <span>Dev blogs increase developer branding and community score</span>
+          </div>
+        </div>
       </article>
+
     </aside>
   </div>
 </div>
