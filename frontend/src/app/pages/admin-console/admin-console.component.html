@@ -1,0 +1,823 @@
+<div class="ac-shell">
+
+  <!-- ─── Header ─────────────────────────────────────────────────────── -->
+  <div class="ac-header">
+    <div class="ac-header-left">
+      <div class="ac-header-title-group">
+        <h1 class="ac-title">Organization Console</h1>
+        <span class="ac-org-badge">{{ orgName }}</span>
+      </div>
+      <p class="ac-subtitle">Manage your organization, teams, and recruiters</p>
+    </div>
+    <div class="ac-header-right">
+      <button type="button" class="btn-ghost-sm ac-refresh-btn" (click)="setTab(activeTab)" [disabled]="loading" title="Refresh current tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Alerts ──────────────────────────────────────────────────────── -->
+  <div class="ac-alert ac-alert--error" *ngIf="error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="ac-alert-close" (click)="dismissMessages()" title="Dismiss error" aria-label="Dismiss error">✕</button>
+  </div>
+  <output class="ac-alert ac-alert--success" *ngIf="successMsg">
+    <span>{{ successMsg }}</span>
+    <button type="button" class="ac-alert-close" (click)="dismissMessages()" title="Dismiss message" aria-label="Dismiss message">✕</button>
+  </output>
+
+  <!-- ─── Tab Nav ─────────────────────────────────────────────────────── -->
+  <nav class="ac-tabs" aria-label="Admin console sections">
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'overview'"    [attr.aria-selected]="activeTab === 'overview'"    (click)="setTab('overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'teams'"       [attr.aria-selected]="activeTab === 'teams'"       (click)="setTab('teams')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Teams
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'recruiters'"  [attr.aria-selected]="activeTab === 'recruiters'"  (click)="setTab('recruiters')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Recruiters
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'invitations'" [attr.aria-selected]="activeTab === 'invitations'" (click)="setTab('invitations')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Invitations
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'analytics'"   [attr.aria-selected]="activeTab === 'analytics'"   (click)="setTab('analytics')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'activity'"    [attr.aria-selected]="activeTab === 'activity'"    (click)="setTab('activity')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Activity
+    </button>
+    <button type="button" class="ac-tab" role="tab" [class.ac-tab--active]="activeTab === 'preferences'" [attr.aria-selected]="activeTab === 'preferences'" (click)="setTab('preferences')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Preferences
+    </button>
+  </nav>
+
+  <!-- ─── Loading bar ─────────────────────────────────────────────────── -->
+  <progress class="ac-loading-bar" *ngIf="loading"></progress>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: OVERVIEW
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'overview'" role="tabpanel" aria-label="Overview">
+    <div *ngIf="!loading && overview">
+
+      <!-- Org info card -->
+      <div class="ac-card ac-org-info">
+        <div class="ac-org-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>
+        </div>
+        <div class="ac-org-details">
+          <h2 class="ac-org-name">{{ overview.organization.name }}</h2>
+          <p class="ac-org-slug">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            {{ overview.organization.slug }}
+          </p>
+          <p class="ac-org-desc" *ngIf="overview.organization.description">{{ overview.organization.description }}</p>
+          <p class="ac-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Created {{ overview.organization.createdAt | date:'mediumDate' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats grid — 7 cards -->
+      <div class="ac-stats-grid">
+
+        <div class="ac-stat-card ac-stat-card--indigo">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--indigo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.membersCount }}</span>
+          <span class="ac-stat-label">Total Members</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--indigo">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--indigo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.teamsCount }}</span>
+          <span class="ac-stat-label">Teams</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--green">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--green" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.activeRecruitersCount }}</span>
+          <span class="ac-stat-label">Active Recruiters</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--red">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--red" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.inactiveRecruitersCount }}</span>
+          <span class="ac-stat-label">Inactive Recruiters</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--amber">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.pendingInvitationsCount }}</span>
+          <span class="ac-stat-label">Pending Invitations</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--blue">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.jobsCount }}</span>
+          <span class="ac-stat-label">Jobs</span>
+        </div>
+
+        <div class="ac-stat-card ac-stat-card--purple">
+          <div class="ac-stat-card__accent"></div>
+          <div class="ac-stat-card__icon ac-stat-card__icon--purple" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <span class="ac-stat-value">{{ overview.stats.recruitersCount }}</span>
+          <span class="ac-stat-label">Total Recruiters</span>
+        </div>
+
+      </div>
+
+      <!-- Quick actions -->
+      <div class="ac-card">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Quick Actions
+        </h3>
+        <div class="ac-quick-actions">
+          <button type="button" class="btn-primary-sm ac-pill-btn" (click)="setTab('recruiters')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Manage Recruiters
+          </button>
+          <button type="button" class="btn-ghost-sm ac-pill-btn" (click)="setTab('teams')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            View Teams
+          </button>
+          <button type="button" class="btn-ghost-sm ac-pill-btn" (click)="setTab('invitations')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Invitations
+          </button>
+          <button type="button" class="btn-ghost-sm ac-pill-btn" (click)="setTab('analytics')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Analytics
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ac-empty" *ngIf="!loading && !overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <p>No overview data available.</p>
+      <button type="button" class="btn-ghost-sm" (click)="loadOverview()">Retry</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: TEAMS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'teams'" role="tabpanel" aria-label="Teams">
+    <div *ngIf="!loading">
+      <div class="ac-section-header">
+        <div class="ac-section-header-left">
+          <h2 class="ac-section-title">
+            Teams
+            <span class="ac-badge">{{ teams.length }}</span>
+          </h2>
+          <p class="ac-section-hint">Click a team to expand members</p>
+        </div>
+      </div>
+
+      <div class="ac-empty" *ngIf="teams.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p>No teams found in this organization.</p>
+      </div>
+
+      <div class="ac-team-list" *ngIf="teams.length > 0">
+        <div class="ac-team-card" [class.ac-team-card--expanded]="expandedTeamId === team._id" *ngFor="let team of teams">
+
+          <button type="button" class="ac-team-header" (click)="toggleTeam(team._id)" [attr.aria-expanded]="expandedTeamId === team._id" [attr.aria-controls]="'team-members-' + team._id">
+            <div class="ac-team-info">
+              <div class="ac-team-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <span class="ac-team-name">{{ team.name }}</span>
+              <span class="ac-badge">{{ team.memberCount }} member{{ team.memberCount !== 1 ? 's' : '' }}</span>
+              <span class="ac-meta ac-team-desc" *ngIf="team.description">{{ team.description }}</span>
+            </div>
+            <div class="ac-team-meta">
+              <span class="ac-meta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                {{ team.createdAt | date:'mediumDate' }}
+              </span>
+              <svg class="ac-chevron" [class.ac-chevron--open]="expandedTeamId === team._id"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Members list -->
+          <div class="ac-team-members" [id]="'team-members-' + team._id" *ngIf="expandedTeamId === team._id">
+            <div class="ac-empty ac-empty--sm" *ngIf="!team.members || team.members.length === 0">
+              <p>No members in this team.</p>
+            </div>
+            <table class="ac-table" *ngIf="team.members && team.members.length > 0" aria-label="Team members">
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let member of team.members">
+                  <td>
+                    <div class="ac-member-cell">
+                      <div class="ac-avatar ac-avatar--sm" aria-hidden="true">{{ member.name.charAt(0).toUpperCase() }}</div>
+                      <span>{{ member.name }}</span>
+                    </div>
+                  </td>
+                  <td class="ac-meta">{{ member.email }}</td>
+                  <td>
+                    <span class="ac-role-badge"
+                      [class.ac-role-badge--admin]="member.role === 'admin'"
+                      [class.ac-role-badge--manager]="member.role === 'manager'"
+                      [class.ac-role-badge--member]="member.role === 'member'">
+                      {{ member.role }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="ac-status-dot" [class.ac-status-dot--green]="member.isActive" [class.ac-status-dot--red]="!member.isActive" aria-hidden="true"></span>
+                    <span>{{ member.isActive ? 'Active' : 'Inactive' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: RECRUITERS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'recruiters'" role="tabpanel" aria-label="Recruiters">
+    <div *ngIf="!loading">
+
+      <!-- Invite card -->
+      <div class="ac-invite-card">
+        <div class="ac-invite-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <div class="ac-invite-card__body">
+          <h3 class="ac-invite-card__title">Invite New Recruiter</h3>
+          <p class="ac-invite-card__desc">Send an invitation email to onboard a new recruiter to your organization.</p>
+          <form class="ac-invite-form" (ngSubmit)="inviteRecruiter()">
+            <div class="ac-invite-fields">
+              <label class="ac-field">
+                <span class="ac-label">Full Name</span>
+                <input class="ac-input" type="text" placeholder="Jane Smith" [(ngModel)]="inviteForm.name" name="inviteName" title="Recruiter full name" required />
+              </label>
+              <label class="ac-field">
+                <span class="ac-label">Email Address</span>
+                <input class="ac-input" type="email" placeholder="jane@company.com" [(ngModel)]="inviteForm.email" name="inviteEmail" title="Recruiter email address" required />
+              </label>
+            </div>
+            <button class="btn-primary-sm" type="submit" [disabled]="loading || !inviteForm.name || !inviteForm.email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Invite
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Recruiter list header -->
+      <div class="ac-section-header">
+        <h2 class="ac-section-title">
+          Recruiters
+          <span class="ac-badge">{{ recruiters.length }}</span>
+        </h2>
+      </div>
+
+      <div class="ac-empty" *ngIf="recruiters.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <p>No recruiters yet. Invite one above.</p>
+      </div>
+
+      <div class="ac-recruiter-list" *ngIf="recruiters.length > 0">
+        <div class="ac-recruiter-card" [class.ac-recruiter-card--editing]="editingRecruiterId === r._id" *ngFor="let r of recruiters">
+
+          <!-- View mode -->
+          <div *ngIf="editingRecruiterId !== r._id">
+            <div class="ac-recruiter-row">
+              <div class="ac-recruiter-info">
+                <div class="ac-avatar" aria-hidden="true">{{ r.name.charAt(0).toUpperCase() }}</div>
+                <div class="ac-recruiter-details">
+                  <span class="ac-recruiter-name">{{ r.name }}</span>
+                  <span class="ac-meta">{{ r.email }}</span>
+                </div>
+                <div class="ac-recruiter-badges">
+                  <span class="ac-status-pill" [class.ac-status-pill--green]="r.isActive" [class.ac-status-pill--red]="!r.isActive">
+                    <span class="ac-status-dot" [class.ac-status-dot--green]="r.isActive" [class.ac-status-dot--red]="!r.isActive" aria-hidden="true"></span>
+                    {{ r.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                  <span class="ac-status-pill ac-status-pill--amber" *ngIf="!r.profileCompleted">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Profile incomplete
+                  </span>
+                  <span class="ac-status-pill ac-status-pill--green" *ngIf="r.profileCompleted">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    Profile complete
+                  </span>
+                </div>
+              </div>
+              <div class="ac-recruiter-actions">
+                <button type="button" class="btn-ghost-sm" (click)="startEdit(r)" title="Edit recruiter">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+                <button type="button" class="btn-ghost-sm" (click)="toggleActive(r)" [disabled]="loading" [title]="r.isActive ? 'Deactivate recruiter' : 'Activate recruiter'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true" *ngIf="r.isActive"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true" *ngIf="!r.isActive"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  {{ r.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+                <button type="button" class="btn-ghost-sm" (click)="revokeAccess(r)" [disabled]="loading" title="Revoke access">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                  Revoke
+                </button>
+                <button type="button" class="btn-danger-sm" (click)="deleteRecruiter(r)" [disabled]="loading" title="Delete recruiter">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit mode -->
+          <div *ngIf="editingRecruiterId === r._id" class="ac-edit-form">
+            <div class="ac-edit-header">
+              <div class="ac-avatar" aria-hidden="true">{{ r.name.charAt(0).toUpperCase() }}</div>
+              <h4 class="ac-edit-title">Edit Recruiter — {{ r.name }}</h4>
+            </div>
+            <div class="ac-form-grid">
+              <div class="ac-field">
+                <label class="ac-label" for="edit-name-{{ r._id }}">Name</label>
+                <input [id]="'edit-name-' + r._id" class="ac-input" type="text" [(ngModel)]="editForm.name" name="editName" title="Recruiter name" />
+              </div>
+              <div class="ac-field">
+                <label class="ac-label" for="edit-email-{{ r._id }}">Email</label>
+                <input [id]="'edit-email-' + r._id" class="ac-input" type="email" [(ngModel)]="editForm.email" name="editEmail" title="Recruiter email" />
+              </div>
+              <div class="ac-field">
+                <label class="ac-label" for="edit-github-{{ r._id }}">GitHub Username</label>
+                <input [id]="'edit-github-' + r._id" class="ac-input" type="text" [(ngModel)]="editForm.githubUsername" name="editGithub" title="GitHub username" placeholder="username" />
+              </div>
+              <div class="ac-field">
+                <label class="ac-label" for="edit-linkedin-{{ r._id }}">LinkedIn</label>
+                <input [id]="'edit-linkedin-' + r._id" class="ac-input" type="text" [(ngModel)]="editForm.linkedin" name="editLinkedin" title="LinkedIn profile URL" placeholder="https://linkedin.com/in/..." />
+              </div>
+              <div class="ac-field">
+                <label class="ac-label" for="edit-phone-{{ r._id }}">Phone</label>
+                <input [id]="'edit-phone-' + r._id" class="ac-input" type="text" [(ngModel)]="editForm.phoneNumber" name="editPhone" title="Phone number" placeholder="+1 555 000 0000" />
+              </div>
+            </div>
+            <div class="ac-edit-actions">
+              <button type="button" class="btn-primary-sm" (click)="saveRecruiter(r._id)" [disabled]="loading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Changes
+              </button>
+              <button type="button" class="btn-ghost-sm" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: INVITATIONS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'invitations'" role="tabpanel" aria-label="Invitations">
+    <div *ngIf="!loading">
+      <div class="ac-section-header">
+        <h2 class="ac-section-title">
+          Invitations
+          <span class="ac-badge">{{ pendingInvitations.length }}</span>
+        </h2>
+        <button type="button" class="btn-ghost-sm" (click)="loadInvitations()" title="Refresh invitations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="ac-empty" *ngIf="pendingInvitations.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" class="ac-empty-icon" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <p>No invitations found.</p>
+      </div>
+
+      <div class="ac-card ac-table-wrap" *ngIf="pendingInvitations.length > 0">
+        <table class="ac-table" aria-label="Invitations list">
+          <thead>
+            <tr>
+              <th scope="col">Invitee</th>
+              <th scope="col">Email</th>
+              <th scope="col">Status</th>
+              <th scope="col">Expires</th>
+              <th scope="col">Sent</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of pendingInvitations" [class.ac-row--expired]="isExpired(inv)">
+              <td>
+                <div class="ac-member-cell">
+                  <div class="ac-avatar ac-avatar--sm" aria-hidden="true">{{ inv.name.charAt(0).toUpperCase() }}</div>
+                  <span>{{ inv.name }}</span>
+                </div>
+              </td>
+              <td class="ac-meta">{{ inv.email }}</td>
+              <td>
+                <span class="ac-status-pill"
+                  [class.ac-status-pill--amber]="inv.status === 'pending'"
+                  [class.ac-status-pill--green]="inv.status === 'accepted'"
+                  [class.ac-status-pill--red]="inv.status === 'revoked' || inv.status === 'expired'">
+                  {{ inv.status }}
+                </span>
+                <span class="ac-status-pill ac-status-pill--red" *ngIf="isExpired(inv) && inv.status === 'pending'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Expired
+                </span>
+              </td>
+              <td>
+                <span class="ac-meta" [class.ac-text--warning]="isExpired(inv)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" aria-hidden="true" *ngIf="isExpired(inv)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {{ inv.expiresAt | date:'mediumDate' }}
+                </span>
+              </td>
+              <td class="ac-meta">{{ inv.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <div class="ac-row-actions">
+                  <button type="button" class="btn-ghost-sm" (click)="revokeInvitation(inv)"  [disabled]="loading || inv.status !== 'pending'" title="Revoke invitation">Revoke</button>
+                  <button type="button" class="btn-ghost-sm" (click)="expireInvitation(inv)"  [disabled]="loading || inv.status !== 'pending'" title="Expire invitation">Expire</button>
+                  <button type="button" class="btn-danger-sm" (click)="deleteInvitation(inv)" [disabled]="loading" title="Delete invitation">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: ANALYTICS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'analytics'" role="tabpanel" aria-label="Analytics">
+    <div *ngIf="!loading && analytics">
+
+      <!-- Row 1: Hiring Activity -->
+      <div class="ac-analytics-section">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Hiring Activity
+        </h3>
+        <div class="ac-stats-grid ac-stats-grid--4">
+          <div class="ac-stat-card">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--indigo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.hiringActivity.total }}</span>
+            <span class="ac-stat-label">Total Jobs</span>
+          </div>
+          <div class="ac-stat-card ac-stat-card--green">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--green" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.hiringActivity.open }}</span>
+            <span class="ac-stat-label">Open</span>
+          </div>
+          <div class="ac-stat-card">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--indigo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.hiringActivity.draft }}</span>
+            <span class="ac-stat-label">Draft</span>
+          </div>
+          <div class="ac-stat-card ac-stat-card--red">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--red" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.hiringActivity.closed }}</span>
+            <span class="ac-stat-label">Closed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Invitation Funnel -->
+      <div class="ac-analytics-section">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Invitation Funnel
+        </h3>
+        <div class="ac-stats-grid ac-stats-grid--4">
+          <div class="ac-stat-card ac-stat-card--amber">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--amber" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.invitationFunnel.pending }}</span>
+            <span class="ac-stat-label">Pending</span>
+          </div>
+          <div class="ac-stat-card ac-stat-card--green">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--green" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.invitationFunnel.accepted }}</span>
+            <span class="ac-stat-label">Accepted</span>
+          </div>
+          <div class="ac-stat-card">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--indigo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.invitationFunnel.expired }}</span>
+            <span class="ac-stat-label">Expired</span>
+          </div>
+          <div class="ac-stat-card ac-stat-card--red">
+            <div class="ac-stat-card__accent"></div>
+            <div class="ac-stat-card__icon ac-stat-card__icon--red" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <span class="ac-stat-value">{{ analytics.invitationFunnel.revoked }}</span>
+            <span class="ac-stat-label">Revoked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recruiter Performance -->
+      <div class="ac-card" *ngIf="analytics.recruiterPerformance && analytics.recruiterPerformance.length > 0">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Recruiter Performance
+        </h3>
+        <div class="ac-table-wrap">
+          <table class="ac-table" aria-label="Recruiter performance">
+            <thead>
+              <tr>
+                <th scope="col">Recruiter</th>
+                <th scope="col">Email</th>
+                <th scope="col">Status</th>
+                <th scope="col">Jobs Posted</th>
+                <th scope="col">Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rp of analytics.recruiterPerformance">
+                <td>
+                  <div class="ac-member-cell">
+                    <div class="ac-avatar ac-avatar--sm" aria-hidden="true">{{ rp.name.charAt(0).toUpperCase() }}</div>
+                    <span>{{ rp.name }}</span>
+                  </div>
+                </td>
+                <td class="ac-meta">{{ rp.email }}</td>
+                <td>
+                  <span class="ac-status-dot" [class.ac-status-dot--green]="rp.isActive" [class.ac-status-dot--red]="!rp.isActive" aria-hidden="true"></span>
+                  <span>{{ rp.isActive ? 'Active' : 'Inactive' }}</span>
+                </td>
+                <td>
+                  <div class="ac-jobs-cell">
+                    <span class="ac-jobs-count">{{ rp.jobsPosted }}</span>
+                    <progress class="ac-progress-bar" [attr.title]="rp.jobsPosted + ' jobs posted'" [attr.aria-label]="rp.name + ' jobs posted: ' + rp.jobsPosted" [attr.value]="rp.jobsPosted" max="10"></progress>
+                  </div>
+                </td>
+                <td class="ac-meta">{{ rp.joinedAt | date:'mediumDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Team Summary — cards grid -->
+      <div *ngIf="analytics.teamSummary && analytics.teamSummary.length > 0">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Team Summary
+        </h3>
+        <div class="ac-team-summary-grid">
+          <div class="ac-team-summary-card" *ngFor="let ts of analytics.teamSummary">
+            <div class="ac-team-summary-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="ac-team-summary-card__body">
+              <span class="ac-team-summary-card__name">{{ ts.name }}</span>
+              <span class="ac-badge">{{ ts.memberCount }} member{{ ts.memberCount !== 1 ? 's' : '' }}</span>
+              <span class="ac-meta">{{ ts.createdAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="ac-empty" *ngIf="!loading && !analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <p>No analytics data available.</p>
+      <button type="button" class="btn-ghost-sm" (click)="loadAnalytics()">Retry</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: ACTIVITY
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'activity'" role="tabpanel" aria-label="Activity log">
+    <div *ngIf="!loading">
+      <div class="ac-section-header">
+        <h2 class="ac-section-title">
+          Activity Log
+          <span class="ac-badge">{{ activityTotal }}</span>
+        </h2>
+        <button type="button" class="btn-ghost-sm" (click)="loadActivity(activityPage)" title="Refresh activity log">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="ac-empty" *ngIf="activityLogs.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <p>No activity logs found.</p>
+      </div>
+
+      <div class="ac-card ac-table-wrap" *ngIf="activityLogs.length > 0">
+        <table class="ac-table ac-table--activity" aria-label="Activity log">
+          <thead>
+            <tr>
+              <th scope="col">Actor</th>
+              <th scope="col">Action</th>
+              <th scope="col">Method</th>
+              <th scope="col">Route</th>
+              <th scope="col">Status</th>
+              <th scope="col">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of activityLogs">
+              <td>
+                <div class="ac-actor-cell">
+                  <span class="ac-actor-name">{{ fmtActor(log.actor) }}</span>
+                  <span class="ac-role-badge" *ngIf="log.actor?.role">{{ log.actor?.role }}</span>
+                </div>
+              </td>
+              <td class="ac-action-cell" [title]="log.action">{{ log.action }}</td>
+              <td>
+                <span class="ac-method-badge" [ngClass]="'ac-method-badge--' + log.method.toLowerCase()">{{ log.method }}</span>
+              </td>
+              <td class="ac-route-cell" [title]="log.route">{{ log.route }}</td>
+              <td>
+                <span class="ac-status-pill"
+                  [class.ac-status-pill--green]="log.statusCode >= 200 && log.statusCode < 300"
+                  [class.ac-status-pill--amber]="log.statusCode >= 300 && log.statusCode < 400"
+                  [class.ac-status-pill--red]="log.statusCode >= 400">
+                  {{ log.statusCode }}
+                </span>
+              </td>
+              <td class="ac-meta ac-time-cell">{{ log.timestamp | date:'short' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="ac-pagination" *ngIf="activityTotalPages > 1" aria-label="Activity log pagination">
+        <button type="button" class="btn-ghost-sm" (click)="loadActivity(activityPage - 1)" [disabled]="activityPage <= 1 || loading" aria-label="Previous page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Prev
+        </button>
+        <span class="ac-page-info">Page {{ activityPage }} of {{ activityTotalPages }}</span>
+        <button type="button" class="btn-ghost-sm" (click)="loadActivity(activityPage + 1)" [disabled]="activityPage >= activityTotalPages || loading" aria-label="Next page">
+          Next
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB: PREFERENCES
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="ac-tab-content" *ngIf="activeTab === 'preferences'" role="tabpanel" aria-label="Preferences">
+    <div *ngIf="!loading">
+
+      <div class="ac-card" *ngIf="preferences">
+        <h3 class="ac-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Organization Settings
+        </h3>
+
+        <div class="ac-pref-layout">
+          <!-- Left: editable fields -->
+          <div class="ac-pref-form">
+            <div class="ac-form-stack">
+              <div class="ac-field">
+                <label class="ac-label" for="pref-name">Organization Name</label>
+                <input id="pref-name" class="ac-input" type="text" [(ngModel)]="prefForm.name" name="prefName" placeholder="Organization name" title="Organization name" />
+              </div>
+              <div class="ac-field">
+                <label class="ac-label" for="pref-desc">Description</label>
+                <textarea id="pref-desc" class="ac-input ac-textarea" [(ngModel)]="prefForm.description" name="prefDesc" rows="4" placeholder="Brief description of your organization" title="Organization description"></textarea>
+              </div>
+              <div class="ac-form-actions">
+                <button type="button" class="btn-primary-sm" (click)="savePreferences()" [disabled]="loading || !prefForm.name">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: readonly info -->
+          <div class="ac-pref-info">
+            <h4 class="ac-pref-info__title">Organization Details</h4>
+            <div class="ac-pref-info__grid">
+              <div class="ac-pref-info__item">
+                <span class="ac-label">Slug</span>
+                <div class="ac-pref-info__value ac-pref-info__value--mono">{{ preferences.organization.slug }}</div>
+              </div>
+              <div class="ac-pref-info__item">
+                <span class="ac-label">Created</span>
+                <div class="ac-pref-info__value">{{ preferences.organization.createdAt | date:'mediumDate' }}</div>
+              </div>
+              <div class="ac-pref-info__item">
+                <span class="ac-label">Organization ID</span>
+                <div class="ac-pref-info__value ac-pref-info__value--mono ac-pref-info__value--truncate" [title]="preferences.organization._id">{{ preferences.organization._id }}</div>
+              </div>
+              <div class="ac-pref-info__item" *ngIf="preferences.organization.ownerId">
+                <span class="ac-label">Owner ID</span>
+                <div class="ac-pref-info__value ac-pref-info__value--mono ac-pref-info__value--truncate" [title]="preferences.organization.ownerId">{{ preferences.organization.ownerId }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ac-empty" *ngIf="!preferences">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" class="ac-empty-icon" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <p>No preferences data available.</p>
+        <button type="button" class="btn-ghost-sm" (click)="loadPreferences()">Retry</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════════════════════ -->
+<dialog class="ac-confirm-overlay" *ngIf="confirmOpen" open aria-modal="true" [attr.aria-labelledby]="'confirm-title'" [attr.aria-describedby]="'confirm-message'">
+  <div class="ac-confirm-box">
+    <div class="ac-confirm-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h4 id="confirm-title" class="ac-confirm-title">{{ confirmTitle }}</h4>
+    <p id="confirm-message" class="ac-confirm-message">{{ confirmMessage }}</p>
+    <div class="ac-confirm-actions">
+      <button type="button" class="btn-ghost-sm" (click)="onCancelled()">Cancel</button>
+      <button type="button" class="btn-danger-sm" (click)="onConfirmed()">Confirm</button>
+    </div>
+  </div>
+</dialog>

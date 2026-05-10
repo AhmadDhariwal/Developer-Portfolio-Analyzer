@@ -25,6 +25,9 @@ export class AdminRecruitersPageComponent implements OnInit {
   teams: AdminTeamOption[] = [];
   organizationId = '';
   editingRecruiterId = '';
+  searchTerm = '';
+  teamFilter = '';
+  statusFilter: 'all' | 'active' | 'inactive' | 'profile-complete' | 'profile-pending' = 'all';
 
   // ── Confirm dialog state ────────────────────────────────────────────────
   confirmOpen = false;
@@ -113,6 +116,74 @@ export class AdminRecruitersPageComponent implements OnInit {
 
   loadRecruiters(): void {
     this.loadAll();
+  }
+
+  get filteredRecruiters(): AdminRecruiter[] {
+    const term = this.searchTerm.trim().toLowerCase();
+
+    return [...this.recruiters].filter((recruiter) => {
+      const teamNames = (recruiter.teams || []).map((team) => team.name.toLowerCase());
+      const matchesSearch = !term || [
+        recruiter.name,
+        recruiter.email,
+        recruiter.githubUsername,
+        recruiter.linkedin,
+        recruiter.phoneNumber,
+        ...teamNames
+      ].some((value) => String(value || '').toLowerCase().includes(term));
+
+      const matchesTeam = !this.teamFilter || (recruiter.teams || []).some((team) => String(team._id) === this.teamFilter);
+
+      const matchesStatus = (() => {
+        switch (this.statusFilter) {
+          case 'active': return recruiter.isActive;
+          case 'inactive': return !recruiter.isActive;
+          case 'profile-complete': return recruiter.profileCompleted;
+          case 'profile-pending': return !recruiter.profileCompleted;
+          default: return true;
+        }
+      })();
+
+      return matchesSearch && matchesTeam && matchesStatus;
+    });
+  }
+
+  get filteredInvitations(): PendingInvitation[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.pendingInvitations.filter((inv) => {
+      if (!term) return true;
+      return [inv.name, inv.email, inv.role, inv.status].some((value) => String(value || '').toLowerCase().includes(term));
+    });
+  }
+
+  get activeCount(): number {
+    return this.recruiters.filter((recruiter) => recruiter.isActive).length;
+  }
+
+  get inactiveCount(): number {
+    return this.recruiters.filter((recruiter) => !recruiter.isActive).length;
+  }
+
+  get profilePendingCount(): number {
+    return this.recruiters.filter((recruiter) => !recruiter.profileCompleted).length;
+  }
+
+  get teamOptions(): AdminTeamOption[] {
+    return this.teams;
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.teamFilter = '';
+    this.statusFilter = 'all';
+  }
+
+  trackByRecruiterId(_: number, recruiter: AdminRecruiter): string {
+    return recruiter._id;
+  }
+
+  teamLabel(recruiter: AdminRecruiter): string {
+    return (recruiter.teams || []).map((team) => team.name).join(', ') || 'Organization only';
   }
 
   inviteRecruiter(): void {

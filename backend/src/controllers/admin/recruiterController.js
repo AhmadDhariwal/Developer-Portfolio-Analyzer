@@ -24,7 +24,7 @@ const buildRecruiterProfileCompleted = (user = {}) => {
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo;
 };
 
-const sanitizeRecruiter = (user) => ({
+const sanitizeRecruiter = (user, teams = []) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
@@ -35,8 +35,40 @@ const sanitizeRecruiter = (user) => ({
   phoneNumber: user.phoneNumber || '',
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
+  teams,
   createdAt: user.createdAt
 });
+
+const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
+  if (!organizationId || recruiterIds.length === 0) {
+    return new Map();
+  }
+
+  const memberships = await Membership.find({
+    organizationId,
+    userId: { $in: recruiterIds },
+    status: 'active',
+    teamId: { $ne: null }
+  })
+    .populate('teamId', 'name')
+    .lean();
+
+  return memberships.reduce((map, membership) => {
+    const userId = String(membership.userId || '');
+    const team = membership.teamId ? { _id: membership.teamId._id, name: membership.teamId.name } : null;
+    if (!userId || !team) {
+      return map;
+    }
+
+    const current = map.get(userId) || [];
+    const alreadyAdded = current.some((item) => String(item._id) === String(team._id));
+    if (!alreadyAdded) {
+      current.push(team);
+      map.set(userId, current);
+    }
+    return map;
+  }, new Map());
+};
 
 const getRecruiters = async (req, res) => {
   try {
@@ -48,8 +80,10 @@ const getRecruiters = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    const teamMap = await loadRecruiterTeams(req.organizationId, recruiters.map((recruiter) => recruiter._id));
+
     return res.status(200).json({
-      recruiters: recruiters.map((recruiter) => sanitizeRecruiter(recruiter))
+      recruiters: recruiters.map((recruiter) => sanitizeRecruiter(recruiter, teamMap.get(String(recruiter._id)) || []))
     });
   } catch (error) {
     console.error('Admin recruiters error:', error.message);

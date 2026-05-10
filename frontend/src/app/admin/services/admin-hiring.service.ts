@@ -22,6 +22,7 @@ export interface AdminRecruiter {
   organizationId: string;
   isActive: boolean;
   profileCompleted: boolean;
+  teams: Array<{ _id: string; name: string }>;
   createdAt: string;
 }
 

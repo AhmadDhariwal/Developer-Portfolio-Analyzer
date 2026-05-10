@@ -133,6 +133,11 @@ export class Sidebar implements OnInit {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
       items: [
         {
+          label: 'Org Console',
+          route: '/app/admin-console',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>`
+        },
+        {
           label: 'Admin Console',
           route: '/app/admin',
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M7 20h10"></path><path d="M8 8h8"></path><path d="M8 12h5"></path></svg>`
@@ -206,7 +211,7 @@ export class Sidebar implements OnInit {
         // Special logic for Super Admin
         if (isSuperAdmin) {
           // Hide Recruiter Hub and Admin Console for Super Admin in the main project
-          if (item.route === '/app/recruiter' || item.route === '/app/admin') {
+          if (item.route === '/app/recruiter' || item.route === '/app/admin' || item.route === '/app/admin-console') {
             return false;
           }
           // Everything else is visible to Super Admin
@@ -216,6 +221,7 @@ export class Sidebar implements OnInit {
         // Standard RBAC for other roles
         if (item.route === '/app/recruiter') return isRecruiter;
         if (item.route === '/app/admin') return isAdmin;
+        if (item.route === '/app/admin-console') return isAdmin;
         if (item.route === '/app/settings') return false;
 
         return true;
