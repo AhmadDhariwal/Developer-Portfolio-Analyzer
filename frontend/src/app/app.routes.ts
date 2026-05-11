@@ -36,8 +36,6 @@ import { adminSettingsGuard } from './guards/admin-settings.guard';
 import { recruiterRoleGuard } from './guards/recruiter-role.guard';
 import { noAdminTabsGuard } from './guards/no-admin-tabs.guard';
 import { superAdminGuard } from './guards/super-admin.guard';
-import { AdminConsoleComponent } from './pages/admin-console/admin-console.component';
-import { adminConsoleGuard } from './guards/admin-console.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -92,8 +90,8 @@ export const routes: Routes = [
         loadChildren: () => import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule)
       },
 
-      // Org Admin Console
-      { path: 'admin-console', component: AdminConsoleComponent, canActivate: [authGuard, adminConsoleGuard] },
+      // Org Admin Console — now lives inside /app/admin/console
+      { path: 'admin-console', redirectTo: 'admin/console', pathMatch: 'full' },
 
       // Admin hiring workspace
       {

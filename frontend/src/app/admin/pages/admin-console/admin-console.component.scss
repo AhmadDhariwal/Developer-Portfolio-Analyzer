@@ -1,0 +1,1397 @@
+// ── Variables ─────────────────────────────────────────────────────────────
+$bg-page:       #0f1117;
+$bg-card:       #111827;
+$bg-card-hover: #1a2235;
+$border:        rgba(255, 255, 255, 0.06);
+$indigo:        #6366f1;
+$indigo-hover:  #4f46e5;
+$text-primary:  #f1f5f9;
+$text-secondary:#94a3b8;
+$text-muted:    #64748b;
+$green:         #22c55e;
+$red:           #ef4444;
+$amber:         #f59e0b;
+$blue:          #3b82f6;
+$purple:        #a855f7;
+$teal:          #14b8a6;
+$slate:         #64748b;
+
+// ── Animations ────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Shell ─────────────────────────────────────────────────────────────────
+.oc-shell {
+  max-width: 1200px;
+  padding: 24px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: $text-primary;
+  font-family: inherit;
+  position: relative;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+.oc-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #818cf8;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #f1f5f9 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+}
+
+.oc-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #818cf8;
+  box-shadow: 0 0 6px rgba(129, 140, 248, 0.6);
+  flex-shrink: 0;
+}
+
+.oc-org-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-secondary;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 3px 10px;
+  width: fit-content;
+}
+
+// ── Loading bar ───────────────────────────────────────────────────────────
+.oc-loading-bar {
+  height: 3px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+
+  &__shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, $indigo 50%, transparent 100%);
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────
+.oc-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease;
+
+  span { flex: 1; }
+
+  &--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+
+    svg { color: $red; flex-shrink: 0; }
+  }
+
+  &--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: #86efac;
+
+    svg { color: $green; flex-shrink: 0; }
+  }
+
+  &__dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+
+    &:hover { opacity: 1; }
+  }
+}
+
+// ── Tab navigation ────────────────────────────────────────────────────────
+.oc-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid $border;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.oc-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-muted;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    color: $text-secondary;
+  }
+
+  &--active {
+    color: $indigo;
+    border-bottom-color: $indigo;
+  }
+}
+
+// ── Tab panel ─────────────────────────────────────────────────────────────
+.oc-tab-panel {
+  animation: fadeIn 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ── Section header ────────────────────────────────────────────────────────
+.oc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-primary;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.oc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+
+  &__title {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $text-muted;
+  }
+}
+
+// ── Count badge ───────────────────────────────────────────────────────────
+.oc-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  min-width: 22px;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+.oc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: $text-muted;
+  text-align: center;
+
+  svg { opacity: 0.4; }
+  p { margin: 0; font-size: 0.9rem; }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────
+.oc-btn-primary-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $indigo;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+
+  &:hover {
+    background: $indigo-hover;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.oc-btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  color: $text-secondary;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: $text-primary;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.oc-btn-danger-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// ── Pill buttons (quick actions) ──────────────────────────────────────────
+.oc-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.oc-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(99, 102, 241, 0.08);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+// ── Org info card ─────────────────────────────────────────────────────────
+.oc-org-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  &__slug {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $indigo;
+    font-family: monospace;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 4px;
+    padding: 1px 6px;
+    width: fit-content;
+  }
+
+  &__desc {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: $text-secondary;
+    line-height: 1.5;
+  }
+
+  &__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: $text-muted;
+    margin-top: 0.25rem;
+  }
+}
+
+// ── Stats grid ────────────────────────────────────────────────────────────
+.oc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.875rem;
+}
+
+// ── Stat card ─────────────────────────────────────────────────────────────
+.oc-stat-card {
+  position: relative;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1rem 1rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  &__accent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $text-muted;
+  }
+
+  // Color variants
+  &--indigo {
+    .oc-stat-card__accent { background: $indigo; }
+    .oc-stat-card__icon   { background: rgba(99, 102, 241, 0.12); color: #818cf8; }
+    .oc-stat-card__value  { color: #818cf8; }
+  }
+
+  &--blue {
+    .oc-stat-card__accent { background: $blue; }
+    .oc-stat-card__icon   { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+    .oc-stat-card__value  { color: #60a5fa; }
+  }
+
+  &--green {
+    .oc-stat-card__accent { background: $green; }
+    .oc-stat-card__icon   { background: rgba(34, 197, 94, 0.1); color: #4ade80; }
+    .oc-stat-card__value  { color: #4ade80; }
+  }
+
+  &--red {
+    .oc-stat-card__accent { background: $red; }
+    .oc-stat-card__icon   { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+    .oc-stat-card__value  { color: #f87171; }
+  }
+
+  &--amber {
+    .oc-stat-card__accent { background: $amber; }
+    .oc-stat-card__icon   { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+    .oc-stat-card__value  { color: #fbbf24; }
+  }
+
+  &--purple {
+    .oc-stat-card__accent { background: $purple; }
+    .oc-stat-card__icon   { background: rgba(168, 85, 247, 0.1); color: #c084fc; }
+    .oc-stat-card__value  { color: #c084fc; }
+  }
+
+  &--teal {
+    .oc-stat-card__accent { background: $teal; }
+    .oc-stat-card__icon   { background: rgba(20, 184, 166, 0.1); color: #2dd4bf; }
+    .oc-stat-card__value  { color: #2dd4bf; }
+  }
+
+  &--slate {
+    .oc-stat-card__accent { background: $slate; }
+    .oc-stat-card__icon   { background: rgba(100, 116, 139, 0.12); color: #94a3b8; }
+    .oc-stat-card__value  { color: #94a3b8; }
+  }
+}
+
+// ── Analytics grid ────────────────────────────────────────────────────────
+.oc-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.875rem;
+}
+
+// ── Team summary grid ─────────────────────────────────────────────────────
+.oc-team-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.oc-team-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  transition: background 0.15s;
+
+  &:hover { background: $bg-card-hover; }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-size: 0.72rem;
+    color: $text-muted;
+  }
+}
+
+// ── Accordion (Teams) ─────────────────────────────────────────────────────
+.oc-accordion {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(255, 255, 255, 0.1); }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.02); }
+
+    &--open {
+      border-bottom: 1px solid $border;
+
+      .oc-accordion__chevron {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: $text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &__date {
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+
+  &__chevron {
+    color: $text-muted;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    padding: 1rem 1.25rem;
+    animation: fadeIn 0.15s ease;
+  }
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────
+.oc-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &--sm {
+    width: 28px;
+    height: 28px;
+    font-size: 0.72rem;
+  }
+
+  &--xs {
+    width: 24px;
+    height: 24px;
+    font-size: 0.65rem;
+  }
+
+  &--system {
+    background: rgba(100, 116, 139, 0.15);
+    color: $text-muted;
+  }
+}
+
+// ── Member cell ───────────────────────────────────────────────────────────
+.oc-member-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// ── Role badge ────────────────────────────────────────────────────────────
+.oc-role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.15);
+  color: $text-secondary;
+
+  &--admin {
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+  }
+
+  &--recruiter {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+  }
+}
+
+// ── Status dot ────────────────────────────────────────────────────────────
+.oc-status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &--active {
+    color: #4ade80;
+    &::before { background: #4ade80; box-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
+  }
+
+  &--inactive {
+    color: $text-muted;
+    &::before { background: $text-muted; }
+  }
+}
+
+// ── Generic badge ─────────────────────────────────────────────────────────
+.oc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.12);
+  color: $text-secondary;
+
+  &--green  { background: rgba(34, 197, 94, 0.1);   color: #4ade80; }
+  &--red    { background: rgba(239, 68, 68, 0.1);   color: #f87171; }
+  &--amber  { background: rgba(245, 158, 11, 0.1);  color: #fbbf24; }
+  &--blue   { background: rgba(59, 130, 246, 0.1);  color: #60a5fa; }
+  &--purple { background: rgba(168, 85, 247, 0.1);  color: #c084fc; }
+  &--slate  { background: rgba(100, 116, 139, 0.12); color: $text-secondary; }
+}
+
+// ── Recruiter card ────────────────────────────────────────────────────────
+.oc-recruiter-card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(255, 255, 255, 0.1); }
+
+  &__view {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  &__email {
+    font-size: 0.78rem;
+    color: $text-muted;
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  &__edit {
+    padding: 1.25rem;
+    border-top: 1px solid $border;
+    animation: fadeIn 0.15s ease;
+  }
+
+  &__edit-title {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-secondary;
+  }
+}
+
+// ── Edit grid ─────────────────────────────────────────────────────────────
+.oc-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.oc-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+// ── Invite card ───────────────────────────────────────────────────────────
+.oc-invite-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(17, 24, 39, 0.95) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  &__sub {
+    margin: 0;
+    font-size: 0.8rem;
+    color: $text-secondary;
+  }
+
+  &__form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+  }
+}
+
+// ── Form elements ─────────────────────────────────────────────────────────
+.oc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.oc-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.oc-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: $text-primary;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder { color: $text-muted; }
+
+  &:focus {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.oc-textarea {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────
+.oc-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid $border;
+}
+
+.oc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+
+  thead tr {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 14px;
+    color: $text-secondary;
+    border-bottom: 1px solid $border;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background 0.12s;
+
+    &:last-child td { border-bottom: none; }
+    &:hover { background: rgba(255, 255, 255, 0.02); }
+  }
+}
+
+.oc-text-muted { color: $text-muted; }
+.oc-text-danger { color: #f87171; }
+
+.oc-expired-tag {
+  display: inline-flex;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 4px;
+}
+
+.oc-action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.oc-action-text {
+  font-size: 0.78rem;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oc-route-cell {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: $text-muted;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Method badge ──────────────────────────────────────────────────────────
+.oc-method-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-family: monospace;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  min-width: 48px;
+  text-align: center;
+
+  &--get    { background: rgba(34, 197, 94, 0.12);  color: #4ade80; }
+  &--post   { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+  &--patch  { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+  &--put    { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+  &--delete { background: rgba(239, 68, 68, 0.12);  color: #f87171; }
+}
+
+// ── Status badge ──────────────────────────────────────────────────────────
+.oc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 2px 8px;
+  border-radius: 5px;
+  min-width: 38px;
+  text-align: center;
+
+  &--success  { background: rgba(34, 197, 94, 0.12);  color: #4ade80; }
+  &--redirect { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+  &--error    { background: rgba(239, 68, 68, 0.12);  color: #f87171; }
+}
+
+// ── Actor cell ────────────────────────────────────────────────────────────
+.oc-actor-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.oc-actor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.oc-actor-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.oc-actor-role {
+  font-size: 0.68rem;
+  color: $text-muted;
+  text-transform: capitalize;
+}
+
+.oc-perf-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #818cf8;
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────
+.oc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+
+  &__info {
+    font-size: 0.82rem;
+    color: $text-muted;
+    font-weight: 500;
+  }
+}
+
+// ── Preferences layout ────────────────────────────────────────────────────
+.oc-prefs-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.oc-prefs-edit {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+}
+
+.oc-prefs-readonly {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+
+  &__title {
+    margin: 0 0 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+}
+
+.oc-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid $border;
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+
+  &__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: $text-muted;
+  }
+
+  &__value {
+    font-size: 0.84rem;
+    color: $text-secondary;
+    word-break: break-all;
+  }
+}
+
+.oc-code {
+  font-family: monospace;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #818cf8;
+}
+
+// ── Confirm dialog ────────────────────────────────────────────────────────
+.oc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.oc-dialog {
+  background: #1a2235;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  &__message {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $text-secondary;
+    line-height: 1.55;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.625rem;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .oc-shell {
+    padding: 16px 16px 40px;
+    gap: 1.125rem;
+  }
+
+  .oc-header {
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &__title { font-size: 1.4rem; }
+  }
+
+  .oc-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .oc-analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .oc-prefs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-invite-card__form {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-recruiter-card__view {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .oc-recruiter-card__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .oc-accordion__right {
+    gap: 0.5rem;
+  }
+
+  .oc-accordion__date {
+    display: none;
+  }
+
+  .oc-team-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .oc-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .oc-tab {
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    gap: 4px;
+  }
+}
