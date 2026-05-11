@@ -4,6 +4,8 @@
  * All handlers assume req.organizationId is set by requireOrganizationContext middleware.
  */
 
+const { body, param, validationResult } = require('express-validator');
+
 const User = require('../models/user');
 const Team = require('../models/team');
 const Membership = require('../models/membership');
@@ -13,9 +15,124 @@ const Organization = require('../models/organization');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
 const Job = require('../models/Job');
+const { normalizeSlug } = require('../services/tenantService');
 
 // ── helpers ───────────────────────────────────────────────────────────────
 const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v || 0)));
+
+const validate = (req, res) => {
+  const errors = validationResult(req);
+  if (errors.isEmpty()) return null;
+  return res.status(400).json({
+    message: 'Validation failed.',
+    errors: errors.array().map((error) => ({ field: error.path, message: error.msg }))
+  });
+};
+
+const buildTeamMember = (membership) => {
+  const user = membership.userId;
+  if (!user?._id) return null;
+
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: membership.role,
+    isActive: user.isActive !== false
+  };
+};
+
+const loadTeamMembers = async (organizationId, teamIds = []) => {
+  if (!organizationId || teamIds.length === 0) {
+    return new Map();
+  }
+
+  const memberships = await Membership.find({
+    organizationId,
+    teamId: { $in: teamIds },
+    status: 'active'
+  })
+    .populate('userId', 'name email role isActive')
+    .lean();
+
+  return memberships.reduce((map, membership) => {
+    const teamId = String(membership.teamId || '');
+    const member = buildTeamMember(membership);
+    if (!teamId || !member) {
+      return map;
+    }
+
+    const current = map.get(teamId) || [];
+    if (!current.some((item) => String(item._id) === String(member._id))) {
+      current.push(member);
+      map.set(teamId, current);
+    }
+
+    return map;
+  }, new Map());
+};
+
+const hydrateTeams = async (organizationId, teams = []) => {
+  const membersByTeam = await loadTeamMembers(organizationId, teams.map((team) => team._id));
+
+  return teams.map((team) => {
+    const members = membersByTeam.get(String(team._id)) || [];
+    return {
+      ...team,
+      isActive: team.isActive !== false,
+      members,
+      memberCount: members.length
+    };
+  });
+};
+
+const normalizeRecruiterIds = (value) => {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((item) => String(item || '').trim()).filter(Boolean))];
+};
+
+const loadOrgRecruiters = async (organizationId, recruiterIds = []) => {
+  if (recruiterIds.length === 0) {
+    return [];
+  }
+
+  const recruiters = await User.find({
+    _id: { $in: recruiterIds },
+    organizationId,
+    role: 'recruiter'
+  })
+    .select('_id')
+    .lean();
+
+  if (recruiters.length !== recruiterIds.length) {
+    const error = new Error('One or more recruiters were not found in this organization.');
+    error.status = 404;
+    throw error;
+  }
+
+  return recruiters;
+};
+
+const upsertRecruiterTeamMemberships = async ({ organizationId, teamId, recruiterIds = [], invitedBy }) => {
+  const recruiters = await loadOrgRecruiters(organizationId, recruiterIds);
+
+  await Promise.all(recruiters.map((recruiter) => Membership.findOneAndUpdate(
+    {
+      organizationId,
+      teamId,
+      userId: recruiter._id
+    },
+    {
+      $set: {
+        role: 'member',
+        status: 'active',
+        invitedBy,
+        joinedAt: new Date()
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  )));
+};
 
 // ── GET /api/admin-console/overview ──────────────────────────────────────
 const getConsoleOverview = async (req, res) => {
@@ -194,38 +311,215 @@ const getConsoleTeams = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const teamIds = teams.map((t) => t._id);
-    const memberships = await Membership.find({
-      organizationId: orgId,
-      teamId: { $in: teamIds },
-      status: 'active'
-    })
-      .populate('userId', 'name email role isActive')
-      .lean();
-
-    const membersByTeam = new Map();
-    memberships.forEach((m) => {
-      const key = String(m.teamId);
-      if (!membersByTeam.has(key)) membersByTeam.set(key, []);
-      membersByTeam.get(key).push({
-        _id: m.userId?._id,
-        name: m.userId?.name,
-        email: m.userId?.email,
-        role: m.role,
-        isActive: m.userId?.isActive !== false
-      });
-    });
-
-    const enrichedTeams = teams.map((t) => ({
-      ...t,
-      members: membersByTeam.get(String(t._id)) || [],
-      memberCount: (membersByTeam.get(String(t._id)) || []).length
-    }));
+    const enrichedTeams = await hydrateTeams(orgId, teams);
 
     return res.json({ teams: enrichedTeams });
   } catch (error) {
     console.error('Admin console teams error:', error.message);
     return res.status(500).json({ message: 'Failed to load teams.' });
+  }
+};
+
+const createConsoleTeam = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const name = String(req.body?.name || '').trim();
+    const slug = normalizeSlug(String(req.body?.slug || name));
+    const description = String(req.body?.description || '').trim();
+    const recruiterIds = normalizeRecruiterIds(req.body?.recruiterIds);
+
+    if (!name) {
+      return res.status(400).json({ message: 'name is required.' });
+    }
+
+    const organization = await Organization.findById(orgId).select('_id').lean();
+    if (!organization) {
+      return res.status(404).json({ message: 'Organization not found.' });
+    }
+
+    const existing = await Team.findOne({ organizationId: orgId, slug }).lean();
+    if (existing) {
+      return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+    }
+
+    const team = await Team.create({
+      organizationId: orgId,
+      name,
+      slug,
+      description,
+      isActive: true,
+      createdBy: req.user._id
+    });
+
+    if (recruiterIds.length > 0) {
+      await upsertRecruiterTeamMemberships({
+        organizationId: orgId,
+        teamId: team._id,
+        recruiterIds,
+        invitedBy: req.user._id
+      });
+    }
+
+    const [enrichedTeam] = await hydrateTeams(orgId, [team.toObject()]);
+    return res.status(201).json({ team: enrichedTeam });
+  } catch (error) {
+    console.error('Admin console create team error:', error.message);
+    return res.status(error.status || 500).json({ message: error.message || 'Failed to create team.' });
+  }
+};
+
+const updateConsoleTeam = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId }).lean();
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found.' });
+    }
+
+    const updates = {};
+    if (Object.hasOwn(req.body || {}, 'name')) {
+      const name = String(req.body?.name || '').trim();
+      if (!name) {
+        return res.status(400).json({ message: 'name is required.' });
+      }
+      updates.name = name;
+    }
+
+    if (Object.hasOwn(req.body || {}, 'slug')) {
+      const nextSlug = String(req.body?.slug || '').trim();
+      if (nextSlug) {
+        updates.slug = normalizeSlug(nextSlug);
+      }
+    }
+
+    if (Object.hasOwn(req.body || {}, 'description')) {
+      updates.description = String(req.body?.description || '').trim();
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No team fields were provided to update.' });
+    }
+
+    if (updates.slug && updates.slug !== team.slug) {
+      const duplicate = await Team.findOne({ organizationId: orgId, slug: updates.slug, _id: { $ne: team._id } }).lean();
+      if (duplicate) {
+        return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+      }
+    }
+
+    const updatedTeam = await Team.findOneAndUpdate(
+      { _id: team._id, organizationId: orgId },
+      { $set: updates },
+      { new: true }
+    ).lean();
+
+    const [enrichedTeam] = await hydrateTeams(orgId, [updatedTeam]);
+    return res.json({ team: enrichedTeam });
+  } catch (error) {
+    console.error('Admin console update team error:', error.message);
+    return res.status(500).json({ message: 'Failed to update team.' });
+  }
+};
+
+const toggleConsoleTeamActive = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const updatedTeam = await Team.findOneAndUpdate(
+      { _id: req.params.id, organizationId: orgId },
+      { $set: { isActive: req.body?.isActive !== false } },
+      { new: true }
+    ).lean();
+
+    if (!updatedTeam) {
+      return res.status(404).json({ message: 'Team not found.' });
+    }
+
+    const [enrichedTeam] = await hydrateTeams(orgId, [updatedTeam]);
+    return res.json({ team: enrichedTeam });
+  } catch (error) {
+    console.error('Admin console toggle team error:', error.message);
+    return res.status(500).json({ message: 'Failed to update team status.' });
+  }
+};
+
+const deleteConsoleTeam = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId }).lean();
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found.' });
+    }
+
+    await Promise.all([
+      Team.deleteOne({ _id: team._id, organizationId: orgId }),
+      Membership.deleteMany({ organizationId: orgId, teamId: team._id }),
+      Invitation.updateMany(
+        { organizationId: orgId, teamId: team._id, status: 'pending' },
+        { $set: { status: 'revoked' } }
+      )
+    ]);
+
+    return res.json({ message: 'Team deleted successfully.' });
+  } catch (error) {
+    console.error('Admin console delete team error:', error.message);
+    return res.status(500).json({ message: 'Failed to delete team.' });
+  }
+};
+
+const assignRecruiterToConsoleTeam = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId, isActive: true }).lean();
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found.' });
+    }
+
+    const recruiterId = String(req.body?.recruiterId || '').trim();
+    const recruiter = await User.findOne({ _id: recruiterId, organizationId: orgId, role: 'recruiter' }).select('_id').lean();
+    if (!recruiter) {
+      return res.status(404).json({ message: 'Recruiter not found in this organization.' });
+    }
+
+    await Membership.findOneAndUpdate(
+      { organizationId: orgId, teamId: team._id, userId: recruiter._id },
+      {
+        $set: {
+          role: 'member',
+          status: 'active',
+          invitedBy: req.user._id,
+          joinedAt: new Date()
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    const [enrichedTeam] = await hydrateTeams(orgId, [team]);
+    return res.status(201).json({ team: enrichedTeam });
+  } catch (error) {
+    console.error('Admin console assign recruiter error:', error.message);
+    return res.status(500).json({ message: 'Failed to assign recruiter to team.' });
+  }
+};
+
+const removeRecruiterFromConsoleTeam = async (req, res) => {
+  try {
+    const orgId = req.organizationId;
+    const team = await Team.findOne({ _id: req.params.id, organizationId: orgId }).lean();
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found.' });
+    }
+
+    await Membership.deleteOne({
+      organizationId: orgId,
+      teamId: team._id,
+      userId: req.params.recruiterId
+    });
+
+    const [enrichedTeam] = await hydrateTeams(orgId, [team]);
+    return res.json({ team: enrichedTeam });
+  } catch (error) {
+    console.error('Admin console remove recruiter error:', error.message);
+    return res.status(500).json({ message: 'Failed to remove recruiter from team.' });
   }
 };
 
@@ -281,6 +575,12 @@ module.exports = {
   getConsoleAnalytics,
   getConsoleActivity,
   getConsoleTeams,
+  createConsoleTeam,
+  updateConsoleTeam,
+  toggleConsoleTeamActive,
+  deleteConsoleTeam,
+  assignRecruiterToConsoleTeam,
+  removeRecruiterFromConsoleTeam,
   getConsolePreferences,
   updateConsolePreferences
 };

@@ -50,12 +50,16 @@ const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
     status: 'active',
     teamId: { $ne: null }
   })
-    .populate('teamId', 'name')
+    .populate('teamId', 'name isActive')
     .lean();
 
   return memberships.reduce((map, membership) => {
     const userId = String(membership.userId || '');
-    const team = membership.teamId ? { _id: membership.teamId._id, name: membership.teamId.name } : null;
+    const team = membership.teamId ? {
+      _id: membership.teamId._id,
+      name: membership.teamId.name,
+      isActive: membership.teamId.isActive !== false
+    } : null;
     if (!userId || !team) {
       return map;
     }
@@ -105,6 +109,7 @@ const inviteRecruiter = async (req, res) => {
       Invitation.findOne({
         email,
         organizationId: req.organizationId,
+        teamId: req.body?.teamId || null,
         role: 'recruiter',
         status: 'pending',
         expiresAt: { $gt: new Date() }
@@ -124,6 +129,15 @@ const inviteRecruiter = async (req, res) => {
       return res.status(409).json({ message: 'An active recruiter invitation already exists for this email.' });
     }
 
+    let team = null;
+    const teamId = String(req.body?.teamId || '').trim() || null;
+    if (teamId) {
+      team = await Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean();
+      if (!team) {
+        return res.status(404).json({ message: 'Team not found in this organization.' });
+      }
+    }
+
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
@@ -132,6 +146,7 @@ const inviteRecruiter = async (req, res) => {
       email,
       role: 'recruiter',
       organizationId: req.organizationId,
+      teamId: team ? team._id : null,
       invitedBy: req.user._id,
       status: 'pending',
       token,
@@ -160,6 +175,7 @@ const inviteRecruiter = async (req, res) => {
         email: invitation.email,
         role: invitation.role,
         status: invitation.status,
+        teamId: invitation.teamId,
         expiresAt: invitation.expiresAt
       },
       invitationLink,
@@ -276,7 +292,7 @@ const addRecruiterDirect = async (req, res) => {
     const [existingUser, organization, team] = await Promise.all([
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
-      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId }).select('_id name').lean() : null
+      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean() : null
     ]);
 
     if (!organization) {
@@ -433,6 +449,10 @@ const deleteRecruiter = async (req, res) => {
 
     await Promise.all([
       User.deleteOne({ _id: recruiter._id }),
+      Membership.deleteMany({
+        organizationId: req.organizationId,
+        userId: recruiter._id
+      }),
       Invitation.updateMany(
         {
           organizationId: req.organizationId,

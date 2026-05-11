@@ -213,7 +213,7 @@ const listTeams = async (req, res) => {
   if (validate(req, res)) return;
 
   try {
-    const teams = await Team.find({ organizationId: req.params.organizationId })
+    const teams = await Team.find({ organizationId: req.params.organizationId, isActive: true })
       .sort({ createdAt: -1 })
       .lean();
 

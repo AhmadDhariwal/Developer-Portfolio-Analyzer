@@ -22,7 +22,7 @@ export interface AdminRecruiter {
   organizationId: string;
   isActive: boolean;
   profileCompleted: boolean;
-  teams: Array<{ _id: string; name: string }>;
+  teams: Array<{ _id: string; name: string; isActive?: boolean }>;
   createdAt: string;
 }
 
@@ -115,6 +115,7 @@ export class AdminHiringService {
     name: string;
     email: string;
     role?: 'recruiter';
+    teamId?: string;
   }): Observable<{ invitationLink: string; emailSent: boolean }> {
     return this.api.inviteAdminRecruiter(payload).pipe(
       map((res: { invitationLink?: string; email?: { sent?: boolean } }) => ({

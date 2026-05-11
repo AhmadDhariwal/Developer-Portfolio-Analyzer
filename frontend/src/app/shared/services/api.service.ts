@@ -390,6 +390,7 @@ export class ApiService {
     name: string;
     email: string;
     role?: 'recruiter';
+    teamId?: string;
   }): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/invite-recruiter`, payload);
   }

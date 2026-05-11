@@ -58,6 +58,7 @@ export interface ConsoleTeam {
   name: string;
   slug: string;
   description: string;
+  isActive: boolean;
   memberCount: number;
   createdAt: string;
   members: Array<{
@@ -110,6 +111,30 @@ export class AdminConsoleService {
 
   getTeams(): Observable<{ teams: ConsoleTeam[] }> {
     return this.http.get<{ teams: ConsoleTeam[] }>(`${this.base}/teams`);
+  }
+
+  createTeam(payload: { name: string; slug?: string; description?: string; recruiterIds?: string[] }): Observable<{ team: ConsoleTeam }> {
+    return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams`, payload);
+  }
+
+  updateTeam(id: string, payload: { name?: string; slug?: string; description?: string }): Observable<{ team: ConsoleTeam }> {
+    return this.http.patch<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}`, payload);
+  }
+
+  setTeamActive(id: string, isActive: boolean): Observable<{ team: ConsoleTeam }> {
+    return this.http.patch<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/active`, { isActive });
+  }
+
+  deleteTeam(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.base}/teams/${encodeURIComponent(id)}`);
+  }
+
+  assignRecruiterToTeam(id: string, recruiterId: string): Observable<{ team: ConsoleTeam }> {
+    return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/recruiters`, { recruiterId });
+  }
+
+  removeRecruiterFromTeam(id: string, recruiterId: string): Observable<{ team: ConsoleTeam }> {
+    return this.http.delete<{ team: ConsoleTeam }>(`${this.base}/teams/${encodeURIComponent(id)}/recruiters/${encodeURIComponent(recruiterId)}`);
   }
 
   getPreferences(): Observable<ConsolePreferences> {

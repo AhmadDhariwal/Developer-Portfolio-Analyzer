@@ -13,6 +13,12 @@ const {
   getConsoleAnalytics,
   getConsoleActivity,
   getConsoleTeams,
+  createConsoleTeam,
+  updateConsoleTeam,
+  toggleConsoleTeamActive,
+  deleteConsoleTeam,
+  assignRecruiterToConsoleTeam,
+  removeRecruiterFromConsoleTeam,
   getConsolePreferences,
   updateConsolePreferences
 } = require('../controllers/adminConsoleController');
@@ -25,6 +31,12 @@ router.get('/overview',     getConsoleOverview);
 router.get('/analytics',    getConsoleAnalytics);
 router.get('/activity',     getConsoleActivity);
 router.get('/teams',        getConsoleTeams);
+router.post('/teams',       createConsoleTeam);
+router.patch('/teams/:id',  updateConsoleTeam);
+router.patch('/teams/:id/active', toggleConsoleTeamActive);
+router.delete('/teams/:id', deleteConsoleTeam);
+router.post('/teams/:id/recruiters', assignRecruiterToConsoleTeam);
+router.delete('/teams/:id/recruiters/:recruiterId', removeRecruiterFromConsoleTeam);
 router.get('/preferences',  getConsolePreferences);
 router.patch('/preferences', updateConsolePreferences);
 

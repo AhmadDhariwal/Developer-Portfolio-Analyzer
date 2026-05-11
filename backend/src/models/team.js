@@ -28,6 +28,11 @@ const teamSchema = new mongoose.Schema(
       maxlength: 500,
       default: ''
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -41,6 +46,7 @@ const teamSchema = new mongoose.Schema(
 );
 
 teamSchema.index({ organizationId: 1, slug: 1 }, { unique: true });
+teamSchema.index({ organizationId: 1, isActive: 1, createdAt: -1 });
 teamSchema.index({ organizationId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Team', teamSchema);
