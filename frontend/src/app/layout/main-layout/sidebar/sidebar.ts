@@ -327,10 +327,11 @@ export class Sidebar implements OnInit {
 
     const previousAvatar = this.userAvatar;
     this.userName = user.name || 'Developer';
-    this.userHandle = user.githubUsername || 'developer';
+    const normalizedRole = this.getNormalizedRole(user?.role);
+    this.userHandle = this.formatRoleLabel(normalizedRole) || user.githubUsername || 'developer';
     this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
-    this.currentRole = this.getNormalizedRole(user?.role);
+    this.currentRole = normalizedRole;
 
     this.updateAvatarSrc();
     this.recomputeNav();
@@ -348,6 +349,16 @@ export class Sidebar implements OnInit {
     const value = typeof role === 'string' ? role.toLowerCase() : '';
     if (value === 'user') return 'developer';
     return value;
+  }
+
+  private formatRoleLabel(role: string): string {
+    if (!role) return '';
+    return role
+      .replace(/_/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
   }
 
   private trustSvg(svg: string): SafeHtml {
