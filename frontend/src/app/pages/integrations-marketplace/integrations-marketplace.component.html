@@ -45,7 +45,7 @@
                  *ngFor="let item of connectedIntegrations">
           <div class="card-top">
             <div class="card-top__left">
-              <div class="provider-icon" [style.color]="getProviderColor(item.provider)" [innerHTML]="getProviderIcon(item.provider)"></div>
+              <div class="provider-icon" [style.color]="providerColor[item.provider] || '#94a3b8'" [innerHTML]="providerIconHtml[item.provider]"></div>
               <div>
                 <h3>{{ item.name }}</h3>
                 <span class="category-pill">{{ item.category }}</span>
@@ -97,7 +97,7 @@
 
           <div class="card-top">
             <div class="card-top__left">
-              <div class="provider-icon" [style.color]="getProviderColor(item.provider)" [innerHTML]="getProviderIcon(item.provider)"></div>
+              <div class="provider-icon" [style.color]="providerColor[item.provider] || '#94a3b8'" [innerHTML]="providerIconHtml[item.provider]"></div>
               <div>
                 <h3>{{ item.name }}</h3>
                 <span class="category-pill">{{ item.category }}</span>

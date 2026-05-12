@@ -134,7 +134,7 @@
     <div class="stats-grid">
       <div class="stat-card reveal" *ngFor="let stat of stats">
         <div class="stat-icon-wrapper">
-          <div class="stat-icon" [innerHTML]="getIcon(stat.icon)"></div>
+          <div class="stat-icon" [innerHTML]="iconHtml[stat.icon]"></div>
         </div>
         <h3
           class="stat-value"
@@ -193,7 +193,7 @@
               <span *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></span>
             </div>
             <div class="code-content">
-              <pre><code [innerHTML]="codeSnippet"></code></pre>
+              <pre><code [innerHTML]="codeSnippetHtml"></code></pre>
             </div>
           </div>
         </div>
@@ -230,7 +230,7 @@
     </div>
     <div class="recruiter-grid">
       <div *ngFor="let item of recruiterHighlights" class="recruiter-card reveal">
-        <div class="recruiter-icon" [innerHTML]="getIcon(item.icon)"></div>
+        <div class="recruiter-icon" [innerHTML]="iconHtml[item.icon]"></div>
         <h4>{{ item.title }}</h4>
         <p>{{ item.description }}</p>
       </div>
@@ -365,7 +365,7 @@
     
     <div class="features-grid">
       <div *ngFor="let feature of features" class="feature-card reveal">
-        <div class="feature-icon" [innerHTML]="getIcon(feature.icon)"></div>
+        <div class="feature-icon" [innerHTML]="iconHtml[feature.icon]"></div>
         <h4>{{ feature.title }}</h4>
         <p>{{ feature.description }}</p>
       </div>
@@ -384,7 +384,7 @@
     </div>
     <div class="stacks-grid">
       <div *ngFor="let stack of careerStacks" class="stack-card reveal">
-        <div class="stack-icon" [innerHTML]="getIcon(stack.icon)"></div>
+        <div class="stack-icon" [innerHTML]="iconHtml[stack.icon]"></div>
         <h4>{{ stack.title }}</h4>
         <p>{{ stack.description }}</p>
       </div>
@@ -405,7 +405,7 @@
     <div class="steps-grid">
       <div *ngFor="let step of steps" class="step-card reveal">
         <div class="step-header">
-          <div class="step-icon" [innerHTML]="step.number === '01' ? getIcon('github') : step.number === '02' ? getIcon('file') : getIcon('lightbulb')"></div>
+          <div class="step-icon" [innerHTML]="iconHtml[step.number === '01' ? 'github' : step.number === '02' ? 'file' : 'lightbulb']"></div>
           <span class="step-number">{{ step.number }}</span>
         </div>
         <h4>{{ step.title }}</h4>
@@ -426,7 +426,7 @@
         <div class="stars">
           <svg *ngFor="let i of [1,2,3,4,5]" viewBox="0 0 24 24" width="16" height="16" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
         </div>
-        <p class="quote" [innerHTML]="quoted(testimonial.quote)"></p>
+        <p class="quote">{{ quoted(testimonial.quote) }}</p>
         <div class="author-info">
           <div class="avatar" [ngStyle]="getAvatarStyle(testimonial.color)">
             {{ testimonial.initials }}

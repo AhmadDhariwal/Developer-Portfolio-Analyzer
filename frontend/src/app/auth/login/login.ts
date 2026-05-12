@@ -75,6 +75,6 @@ export class Login {
   }
 
   loginWithGithub() {
-    console.log('GitHub login clicked');
+    // GitHub OAuth implementation would go here
   }
 }

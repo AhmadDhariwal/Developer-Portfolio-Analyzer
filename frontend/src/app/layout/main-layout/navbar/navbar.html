@@ -143,7 +143,7 @@
       <button class="avatar-button" (click)="toggleUserMenu()">
         <div class="avatar-circle">
           <img *ngIf="userAvatar; else navbarAvatarInitial"
-               [src]="getAvatarSrc()"
+               [src]="avatarSrc"
                alt="User avatar"
                title="User avatar"
                (error)="onAvatarError($event)" />

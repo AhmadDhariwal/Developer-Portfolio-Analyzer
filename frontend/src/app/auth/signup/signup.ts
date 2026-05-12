@@ -161,6 +161,5 @@ export class Signup {
 
   signupWithGithub() {
     // GitHub OAuth implementation would go here
-    console.log('GitHub signup clicked');
   }
 }

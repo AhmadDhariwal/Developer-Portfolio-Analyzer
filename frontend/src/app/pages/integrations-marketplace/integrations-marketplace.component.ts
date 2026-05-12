@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { finalize } from 'rxjs/operators';
 import {
   IntegrationsService,
@@ -104,6 +105,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   busyProvider: ProviderName | '' = '';
+
+  readonly providerIconHtml: Record<string, SafeHtml>;
+  readonly providerColor: Record<string, string>;
   integrationScore = 0;
   manualUsername: Partial<Record<ProviderName, string>> = {};
   manualApiKey: Partial<Record<ProviderName, string>> = {};
@@ -136,8 +140,20 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     private readonly integrationsService: IntegrationsService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+    private readonly cdr: ChangeDetectorRef,
+    private readonly sanitizer: DomSanitizer
+  ) {
+    const icons: Record<string, SafeHtml> = {};
+    const colors: Record<string, string> = {};
+
+    for (const [key, meta] of Object.entries(PROVIDER_META)) {
+      icons[key] = this.sanitizer.bypassSecurityTrustHtml(meta.icon || '');
+      colors[key] = meta.color || '#94a3b8';
+    }
+
+    this.providerIconHtml = icons;
+    this.providerColor = colors;
+  }
 
   ngOnInit(): void {
     this.loadMarketplace();
@@ -321,13 +337,8 @@ export class IntegrationsMarketplaceComponent implements OnInit {
 
   // ── UI helpers ────────────────────────────────────────────────────────
 
-  getProviderIcon(provider: string): string {
-    return PROVIDER_META[provider]?.icon || '';
-  }
-
-  getProviderColor(provider: string): string {
-    return PROVIDER_META[provider]?.color || '#94a3b8';
-  }
+  // `providerIconHtml` and `providerColor` replace the previous template helper functions
+  // to keep Angular templates stable during change detection.
 
   getInputLabel(provider: string): string {
     return PROVIDER_META[provider]?.inputLabel || 'Username';

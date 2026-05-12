@@ -1,13 +1,16 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { interval } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  styleUrl: './navbar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavbarComponent implements OnInit {
   @Output() toggleSidebar = new EventEmitter<void>();
@@ -15,11 +18,17 @@ export class NavbarComponent implements OnInit {
   readonly userName: string = 'Developer';
   readonly notifications: number = 3;
   currentTime: Date = new Date();
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    setInterval(() => {
-      this.currentTime = new Date();
-    }, 1000);
+    interval(1000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentTime = new Date();
+        this.cdr.markForCheck();
+      });
   }
 
   onToggleSidebar() {
@@ -27,6 +36,6 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
-    console.log('Logout clicked');
+    // Intentionally left blank (this component is presentational-only).
   }
 }

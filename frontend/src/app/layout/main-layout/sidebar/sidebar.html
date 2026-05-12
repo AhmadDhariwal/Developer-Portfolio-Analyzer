@@ -60,7 +60,7 @@
     <div class="sidebar-user-card">
       <div class="sidebar-user-avatar">
         <img *ngIf="userAvatar; else sidebarAvatarFallback"
-             [src]="getAvatarSrc()"
+             [src]="avatarSrc"
              [alt]="userName"
              title="User avatar"
              (error)="onAvatarError($event)" />

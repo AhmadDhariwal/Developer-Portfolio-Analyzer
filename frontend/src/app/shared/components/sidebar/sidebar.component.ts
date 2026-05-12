@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 interface NavItem {
   label: string;
@@ -13,7 +14,8 @@ interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss'
+  styleUrl: './sidebar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidebarComponent {
   @Input() isOpen: boolean = true;
@@ -27,8 +29,10 @@ export class SidebarComponent {
     { label: 'Profile', icon: 'user', path: '/profile' }
   ];
 
-  getIcon(iconName: string): string {
-    const icons: { [key: string]: string } = {
+  readonly iconHtml: Record<string, SafeHtml>;
+
+  constructor(private readonly sanitizer: DomSanitizer) {
+    const icons: Record<string, string> = {
       dashboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7"></rect>
         <rect x="14" y="3" width="7" height="7"></rect>
@@ -59,11 +63,15 @@ export class SidebarComponent {
         <circle cx="12" cy="7" r="4"></circle>
       </svg>`
     };
-    return icons[iconName] || '';
+
+    const safe: Record<string, SafeHtml> = {};
+    for (const [key, svg] of Object.entries(icons)) {
+      safe[key] = this.sanitizer.bypassSecurityTrustHtml(svg);
+    }
+    this.iconHtml = safe;
   }
 
   logout() {
-    console.log('Logout clicked from sidebar');
     // Implement actual auth logout logic here later if needed
   }
 }

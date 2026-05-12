@@ -84,16 +84,16 @@
     <div class="qa-list">
       <div class="qa-card" *ngFor="let item of questions; let i = index; trackBy: trackByQuestion">
         <div class="qa-header">
-          <strong [innerHTML]="getHighlightedText(item.question)"></strong>
+          <strong [innerHTML]="highlightedQuestions[i]"></strong>
           <span class="badge">{{ item.difficulty | titlecase }}</span>
         </div>
         <div class="tag-row" *ngIf="item.tags.length">
           <span class="tag" *ngFor="let tag of item.tags">{{ tag }}</span>
         </div>
         <button class="ghost-btn" type="button" (click)="toggleAnswer(i)">
-          {{ isAnswerOpen(i) ? 'Hide Answer' : 'Show Answer' }}
+          {{ openAnswers.has(i) ? 'Hide Answer' : 'Show Answer' }}
         </button>
-        <p *ngIf="isAnswerOpen(i)" class="answer" [innerHTML]="getHighlightedText(item.answer)"></p>
+        <p *ngIf="openAnswers.has(i)" class="answer" [innerHTML]="highlightedAnswers[i]"></p>
       </div>
     </div>
 

@@ -1,14 +1,16 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { CommonModule, NgStyle } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
   imports: [CommonModule, NgStyle, RouterLink, UiButtonComponent],
   templateUrl: './landing-page.component.html',
-  styleUrl: './landing-page.component.scss'
+  styleUrl: './landing-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LandingPageComponent implements AfterViewInit, OnDestroy {
   private revealObserver?: IntersectionObserver;
@@ -172,8 +174,36 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     }
   ];
 
-  getIcon(name: string): string {
-    const icons: { [key: string]: string } = {
+  private static readonly CODE_SNIPPET = `<span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="type">VisualTemperature</span>
+{
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">Start</span>() {
+
+        gameObject.<span class="function">GetComponent&lt;Renderer&gt;</span>().material.color = VisualTemperature.<span class="function">Evaluate</span>(0f);
+
+        <span class="keyword">var</span> baseControlVar = GameObject.<span class="function">FindWithTag</span>(<span class="string">"GameController"</span>);
+        temperature = baseControlVar.<span class="function">GetComponent&lt;GameController&gt;</span>().StartingTemperature;
+        sunroundingsTemperature = baseControlVar.<span class="function">GetComponent&lt;GameController&gt;</span>().SunroudingTemperature;
+
+        <span class="comment">// getting the amount of rays needed to calculate the heating factor</span>
+        rayAmount = GameObject.<span class="function">Find</span>(<span class="string">"PhysicsFiles"</span>).<span class="function">GetComponent&lt;Physics&gt;</span>().RayAmount;
+        <span class="function">print</span>(<span class="string">"RayAmount: "</span> + rayAmount);
+    }
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">Update</span>() {
+
+        <span class="function">SetArray</span>();
+        <span class="function">AdaptTemperature</span>();
+    }
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">ColorUp</span>() {
+
+        gameObject.<span class="function">GetComponent&lt;Renderer&gt;</span>().material.color = VisualTemperature.<span class="function">Evaluate</span>(temperature / maxTemperature);
+    }
+}`;
+
+  readonly iconHtml: Record<string, SafeHtml>;
+  readonly codeSnippetHtml: SafeHtml;
+
+  constructor(private readonly sanitizer: DomSanitizer) {
+    const icons: Record<string, string> = {
       github: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
       </svg>`,
@@ -282,33 +312,15 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
         <line x1="11" y1="18" x2="13" y2="18"></line>
       </svg>`
     };
-    return icons[name] || '';
+
+    const safe: Record<string, SafeHtml> = {};
+    for (const [key, svg] of Object.entries(icons)) {
+      safe[key] = this.sanitizer.bypassSecurityTrustHtml(svg);
+    }
+    this.iconHtml = safe;
+
+    this.codeSnippetHtml = this.sanitizer.bypassSecurityTrustHtml(LandingPageComponent.CODE_SNIPPET);
   }
-
-  codeSnippet = `<span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="type">VisualTemperature</span>
-{
-    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">Start</span>() {
-
-        gameObject.<span class="function">GetComponent&lt;Renderer&gt;</span>().material.color = VisualTemperature.<span class="function">Evaluate</span>(0f);
-
-        <span class="keyword">var</span> baseControlVar = GameObject.<span class="function">FindWithTag</span>(<span class="string">"GameController"</span>);
-        temperature = baseControlVar.<span class="function">GetComponent&lt;GameController&gt;</span>().StartingTemperature;
-        sunroundingsTemperature = baseControlVar.<span class="function">GetComponent&lt;GameController&gt;</span>().SunroudingTemperature;
-
-        <span class="comment">// getting the amount of rays needed to calculate the heating factor</span>
-        rayAmount = GameObject.<span class="function">Find</span>(<span class="string">"PhysicsFiles"</span>).<span class="function">GetComponent&lt;Physics&gt;</span>().RayAmount;
-        <span class="function">print</span>(<span class="string">"RayAmount: "</span> + rayAmount);
-    }
-    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">Update</span>() {
-
-        <span class="function">SetArray</span>();
-        <span class="function">AdaptTemperature</span>();
-    }
-    <span class="keyword">private</span> <span class="keyword">void</span> <span class="function">ColorUp</span>() {
-
-        gameObject.<span class="function">GetComponent&lt;Renderer&gt;</span>().material.color = VisualTemperature.<span class="function">Evaluate</span>(temperature / maxTemperature);
-    }
-}`;
 
   quoted(text: string): string {
     return `\u201C${text}\u201D`;

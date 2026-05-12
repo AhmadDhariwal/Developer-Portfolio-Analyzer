@@ -88,7 +88,7 @@
           <label for="direct-team">Team <span class="opt">(optional)</span></label>
           <select id="direct-team" [(ngModel)]="directForm.teamId">
             <option value="">Organization only</option>
-            <option *ngFor="let team of teamOptions" [value]="team._id">{{ team.name }}</option>
+            <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
           </select>
         </div>
       </div>
@@ -114,18 +114,18 @@
     <div class="filters-grid">
       <div class="form-field form-field--wide">
         <label for="recruiter-search">Search</label>
-        <input id="recruiter-search" type="text" [(ngModel)]="searchTerm" placeholder="Search name, email, GitHub, phone, or team" />
+        <input id="recruiter-search" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange($event)" placeholder="Search name, email, GitHub, phone, or team" />
       </div>
       <div class="form-field">
         <label for="team-filter">Team</label>
-        <select id="team-filter" [(ngModel)]="teamFilter">
+        <select id="team-filter" [(ngModel)]="teamFilter" (ngModelChange)="onTeamFilterChange($event)">
           <option value="">All teams</option>
-          <option *ngFor="let team of teamOptions" [value]="team._id">{{ team.name }}</option>
+          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
         </select>
       </div>
       <div class="form-field">
         <label for="status-filter">Status</label>
-        <select id="status-filter" [(ngModel)]="statusFilter">
+        <select id="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
           <option value="all">All recruiters</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -144,13 +144,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Pending Invitations
       </div>
-      <span class="badge badge--amber">{{ filteredInvitations.length }} pending</span>
+      <span class="badge badge--amber">{{ visibleInvitations.length }} pending</span>
     </div>
 
-    <app-shared-empty-state *ngIf="filteredInvitations.length === 0" title="No pending invitations" subtitle="Invite a recruiter to see pending onboarding links here."></app-shared-empty-state>
+    <app-shared-empty-state *ngIf="visibleInvitations.length === 0" title="No pending invitations" subtitle="Invite a recruiter to see pending onboarding links here."></app-shared-empty-state>
 
-    <div class="invitation-grid" *ngIf="filteredInvitations.length > 0">
-      <article class="invitation-card" *ngFor="let inv of filteredInvitations">
+    <div class="invitation-grid" *ngIf="visibleInvitations.length > 0">
+      <article class="invitation-card" *ngFor="let inv of visibleInvitations; trackBy: trackByInvitationId">
         <div class="invitation-card__head">
           <div class="recruiter-avatar recruiter-avatar--amber">{{ inv.name ? inv.name.charAt(0).toUpperCase() : '?' }}</div>
           <div>
@@ -160,11 +160,11 @@
         </div>
         <div class="invitation-card__meta">
           <span class="badge badge--amber">Pending</span>
-          <span class="badge badge--red" *ngIf="isExpired(inv)">Expired</span>
+          <span class="badge badge--red" *ngIf="invitationExpired[inv._id]">Expired</span>
         </div>
         <div class="invitation-card__foot">
           <span>{{ inv.createdAt | date: 'MMM d, y' }}</span>
-          <span [class.text-red]="isExpired(inv)">{{ inv.expiresAt | date: 'MMM d, y' }}</span>
+          <span [class.text-red]="invitationExpired[inv._id]">{{ inv.expiresAt | date: 'MMM d, y' }}</span>
         </div>
         <div class="action-group">
           <button type="button" class="btn-action btn-action--ghost" (click)="revokeInvitation(inv)">Revoke</button>
@@ -181,13 +181,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
         Active Recruiters
       </div>
-      <span class="badge badge--purple">{{ filteredRecruiters.length }} visible</span>
+      <span class="badge badge--purple">{{ visibleRecruiters.length }} visible</span>
     </div>
 
-    <app-shared-empty-state *ngIf="filteredRecruiters.length === 0" title="No recruiters match the current filters" subtitle="Adjust the team or status filters to reveal recruiters."></app-shared-empty-state>
+    <app-shared-empty-state *ngIf="visibleRecruiters.length === 0" title="No recruiters match the current filters" subtitle="Adjust the team or status filters to reveal recruiters."></app-shared-empty-state>
 
-    <div class="recruiter-grid" *ngIf="filteredRecruiters.length > 0">
-      <article class="recruiter-card" *ngFor="let recruiter of filteredRecruiters; trackBy: trackByRecruiterId">
+    <div class="recruiter-grid" *ngIf="visibleRecruiters.length > 0">
+      <article class="recruiter-card" *ngFor="let recruiter of visibleRecruiters; trackBy: trackByRecruiterId">
         <ng-container *ngIf="editingRecruiterId !== recruiter._id; else editMode">
           <div class="recruiter-card__top">
             <div class="recruiter-info">

@@ -1,10 +1,16 @@
-import { Component, Input, Output, EventEmitter, OnInit, DestroyRef, inject, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../shared/services/auth.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ProfileService } from '../../../shared/services/profile.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+type NavItem = { label: string; route: string; icon: SafeHtml };
+type NavGroup = { label: string; route?: string; icon: SafeHtml; items: NavItem[] };
+type RawNavItem = { label: string; route: string; icon: string };
+type RawNavGroup = { label: string; route?: string; icon: string; items: RawNavItem[] };
 
 @Component({
   selector: 'app-sidebar',
@@ -12,6 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   imports: [RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar implements OnInit {
   @Input() isOpen: boolean = true;
@@ -22,10 +29,15 @@ export class Sidebar implements OnInit {
   userHandle = 'developer';
   userInitial = 'D';
   userAvatar = '';
+  avatarSrc = '';
   avatarVersion = Date.now();
   private readonly destroyRef = inject(DestroyRef);
+  private currentRole = '';
 
-  navItems = [
+  visibleNavItems: NavItem[] = [];
+  visibleNavGroups: NavGroup[] = [];
+
+  private readonly baseNavItems: RawNavItem[] = [
     {
       label: 'Dashboard',
       route: '/app/dashboard',
@@ -38,7 +50,7 @@ export class Sidebar implements OnInit {
     }
   ];
 
-  navGroups = [
+  private readonly baseNavGroups: RawNavGroup[] = [
     {
       label: 'Analysis',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>`,
@@ -166,7 +178,8 @@ export class Sidebar implements OnInit {
     private readonly router: Router,
     private readonly tenantContext: TenantContextService,
     private readonly profileService: ProfileService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -182,32 +195,30 @@ export class Sidebar implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((version) => {
         this.avatarVersion = version;
-        this.cdr.detectChanges();
+        this.updateAvatarSrc();
+        this.cdr.markForCheck();
       });
   }
 
-  get visibleNavItems(): Array<{ label: string; route: string; icon: string }> {
-    const user = this.authService.getCurrentUser();
-    const currentRole = this.getNormalizedRole(user?.role);
+  private recomputeNav(): void {
+    const role = this.currentRole;
+    const isSuperAdmin = role === 'super_admin' || role === 'superadmin';
+    const isRecruiter = role === 'recruiter' || this.tenantContext.snapshot.myRole === 'recruiter';
+    const isAdmin = role === 'admin' || this.tenantContext.snapshot.myRole === 'admin';
 
-    const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
+    const allItems: NavItem[] = this.baseNavItems.map((item) => ({
+      label: item.label,
+      route: item.route,
+      icon: this.trustSvg(item.icon),
+    }));
 
-    if (isSuperAdmin) {
-      return this.navItems;
-    }
-    return this.navItems.filter((item) => item.route !== '/app/settings');
-  }
+    this.visibleNavItems = isSuperAdmin
+      ? allItems
+      : allItems.filter((item) => item.route !== '/app/settings');
 
-  get visibleNavGroups(): Array<{ label: string; route?: string; icon: string; items: Array<{ label: string; route: string; icon: string }> }> {
-    const user = this.authService.getCurrentUser();
-    const currentRole = this.getNormalizedRole(user?.role);
-
-    const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'superadmin';
-    const isRecruiter = currentRole === 'recruiter' || this.tenantContext.snapshot.myRole === 'recruiter';
-    const isAdmin = currentRole === 'admin' || this.tenantContext.snapshot.myRole === 'admin';
-
-    return this.navGroups.map((group) => {
-      let filteredItems = group.items.filter((item) => {
+    this.visibleNavGroups = this.baseNavGroups.map((group) => {
+      let filteredItems: NavItem[] = group.items
+        .filter((item) => {
         // Special logic for Super Admin
         if (isSuperAdmin) {
           // Hide Recruiter Hub and Admin Console for Super Admin in the main project
@@ -225,7 +236,12 @@ export class Sidebar implements OnInit {
         if (item.route === '/app/settings') return false;
 
         return true;
-      });
+        })
+        .map((item) => ({
+          label: item.label,
+          route: item.route,
+          icon: this.trustSvg(item.icon),
+        }));
 
       // If this is the 'System' group and user is Super Admin, add the Super Admin Dashboard link
       if (group.label === 'System' && isSuperAdmin) {
@@ -235,7 +251,7 @@ export class Sidebar implements OnInit {
             {
               label: 'Super Admin',
               route: '/super-admin/dashboard',
-              icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>`,
+              icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>`),
             },
             ...filteredItems,
           ];
@@ -243,7 +259,9 @@ export class Sidebar implements OnInit {
       }
 
       return {
-        ...group,
+        label: group.label,
+        route: group.route,
+        icon: this.trustSvg(group.icon),
         items: filteredItems,
       };
     });
@@ -266,13 +284,19 @@ export class Sidebar implements OnInit {
     this.router.navigate(['/auth/login']);
   }
 
-  getAvatarSrc(): string {
+  private updateAvatarSrc(): void {
     const raw = String(this.userAvatar || '').trim();
-    if (!raw) return '';
-    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
-    
+    if (!raw) {
+      this.avatarSrc = '';
+      return;
+    }
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) {
+      this.avatarSrc = raw;
+      return;
+    }
+
     const separator = raw.includes('?') ? '&' : '?';
-    return `${raw}${separator}v=${this.avatarVersion}`;
+    this.avatarSrc = `${raw}${separator}v=${this.avatarVersion}`;
   }
 
   onAvatarError(event: Event): void {
@@ -280,7 +304,8 @@ export class Sidebar implements OnInit {
     console.error('[Sidebar] Avatar failed to load:', img.src);
     // Hide broken img and show initials fallback
     this.userAvatar = '';
-    this.cdr.detectChanges();
+    this.updateAvatarSrc();
+    this.cdr.markForCheck();
   }
 
   private bumpAvatarVersion(): void {
@@ -293,7 +318,10 @@ export class Sidebar implements OnInit {
       this.userHandle = 'developer';
       this.userInitial = 'D';
       this.userAvatar = '';
-      this.cdr.detectChanges();
+      this.currentRole = '';
+      this.updateAvatarSrc();
+      this.recomputeNav();
+      this.cdr.markForCheck();
       return;
     }
 
@@ -302,20 +330,27 @@ export class Sidebar implements OnInit {
     this.userHandle = user.githubUsername || 'developer';
     this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
+    this.currentRole = this.getNormalizedRole(user?.role);
 
-    console.log('[Sidebar] syncUserState — avatar:', this.userAvatar);
+    this.updateAvatarSrc();
+    this.recomputeNav();
 
     // Bump version if avatar changed
     if (previousAvatar !== this.userAvatar) {
       this.bumpAvatarVersion();
+      this.updateAvatarSrc();
     }
 
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   private getNormalizedRole(role: unknown): string {
     const value = typeof role === 'string' ? role.toLowerCase() : '';
     if (value === 'user') return 'developer';
     return value;
+  }
+
+  private trustSvg(svg: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
   }
 }

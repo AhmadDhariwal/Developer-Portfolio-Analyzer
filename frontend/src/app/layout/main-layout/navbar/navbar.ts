@@ -39,6 +39,7 @@ export class Navbar implements OnInit {
   userHandle = 'developer';
   userInitial = 'D';
   userAvatar = '';
+  avatarSrc = '';
   avatarVersion = Date.now();
   showUserMenu = false;
   showNotifications = false;
@@ -149,7 +150,8 @@ export class Navbar implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((version) => {
         this.avatarVersion = version;
-        this.cdr.detectChanges();
+        this.updateAvatarSrc();
+        this.cdr.markForCheck();
       });
 
     if (this.authService.isLoggedIn()) {
@@ -462,13 +464,19 @@ export class Navbar implements OnInit {
     }
   }
 
-  getAvatarSrc(): string {
+  private updateAvatarSrc(): void {
     const raw = String(this.userAvatar || '').trim();
-    if (!raw) return '';
-    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
-    
+    if (!raw) {
+      this.avatarSrc = '';
+      return;
+    }
+    if (/^data:/i.test(raw) || raw.startsWith('blob:')) {
+      this.avatarSrc = raw;
+      return;
+    }
+
     const separator = raw.includes('?') ? '&' : '?';
-    return `${raw}${separator}v=${this.avatarVersion}`;
+    this.avatarSrc = `${raw}${separator}v=${this.avatarVersion}`;
   }
 
   onAvatarError(event: Event): void {
@@ -476,7 +484,8 @@ export class Navbar implements OnInit {
     console.error('[Navbar] Avatar failed to load:', img.src);
     // Hide broken img and show initials fallback
     this.userAvatar = '';
-    this.cdr.detectChanges();
+    this.updateAvatarSrc();
+    this.cdr.markForCheck();
   }
 
   private bumpAvatarVersion(): void {
@@ -489,10 +498,11 @@ export class Navbar implements OnInit {
       this.userHandle = '';
       this.userInitial = 'U';
       this.userAvatar = '';
+      this.updateAvatarSrc();
       this.cachedRepos = [];
       this.cachedSkills = [];
       this.lastLoadedGithubHandle = '';
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
       return;
     }
 
@@ -503,14 +513,15 @@ export class Navbar implements OnInit {
     this.userInitial = this.profileService.getInitials(this.userName || 'User') || 'U';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
 
-    console.log('[Navbar] syncUserState — avatar:', this.userAvatar);
+    this.updateAvatarSrc();
 
     // Bump version if avatar changed
     if (previousAvatar !== this.userAvatar) {
       this.bumpAvatarVersion();
+      this.updateAvatarSrc();
     }
 
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
 
     if (this.userHandle && this.lastLoadedGithubHandle !== this.userHandle) {
       this.lastLoadedGithubHandle = this.userHandle;

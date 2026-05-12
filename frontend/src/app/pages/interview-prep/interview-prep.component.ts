@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { InterviewPrepService, InterviewQuestion, InterviewQuestionListResponse } from '../../shared/services/interview-prep.service';
@@ -89,6 +90,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   openAnswers = new Set<number>();
   skeletonItems = Array.from({ length: 6 });
+  highlightedQuestions: SafeHtml[] = [];
+  highlightedAnswers: SafeHtml[] = [];
 
   private readonly subscriptions = new Subscription();
   private readonly searchChanges = new Subject<string>();
@@ -96,7 +99,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   constructor(
     private readonly prepService: InterviewPrepService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -107,6 +111,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         this.searchQuery = query;
         if (query.trim().length < 2) {
           this.questions = [];
+          this.recomputeHighlights();
           this.total = 0;
           this.currentPage = 1;
           this.totalPages = 1;
@@ -150,12 +155,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         this.fetchSearchQuestions(true);
       } else {
         this.questions = [];
+        this.recomputeHighlights();
         this.total = 0;
         this.currentPage = 1;
         this.totalPages = 1;
       }
     } else {
       this.questions = [];
+      this.recomputeHighlights();
       this.total = 0;
       this.currentPage = 1;
       this.totalPages = 1;
@@ -304,6 +311,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.currentPage = Number(response.page || 1);
     this.totalPages = Number(response.totalPages || 1);
     this.currentSource = String(response.source || this.currentSource || 'db');
+    this.recomputeHighlights();
 
     if (reset) {
       this.allowEnrichmentLoadMore = true;
@@ -349,12 +357,26 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  getHighlightedText(text: string): string {
-    const safeText = this.escapeHtml(text);
+  private recomputeHighlights(): void {
     const keyword = this.searchQuery.trim();
-    if (!keyword || this.activeTab !== 'search') return safeText;
-    const pattern = new RegExp(`(${this.escapeRegExp(keyword)})`, 'ig');
-    return safeText.replace(pattern, '<mark>$1</mark>');
+    const enableHighlight = this.activeTab === 'search' && keyword.length > 0;
+    const pattern = enableHighlight ? new RegExp(`(${this.escapeRegExp(keyword)})`, 'ig') : null;
+
+    const questions: SafeHtml[] = [];
+    const answers: SafeHtml[] = [];
+
+    for (const item of this.questions) {
+      const safeQuestion = this.escapeHtml(item.question);
+      const safeAnswer = this.escapeHtml(item.answer || '');
+      const highlightedQuestion = pattern ? safeQuestion.replace(pattern, '<mark>$1</mark>') : safeQuestion;
+      const highlightedAnswer = pattern ? safeAnswer.replace(pattern, '<mark>$1</mark>') : safeAnswer;
+
+      questions.push(this.sanitizer.bypassSecurityTrustHtml(highlightedQuestion));
+      answers.push(this.sanitizer.bypassSecurityTrustHtml(highlightedAnswer));
+    }
+
+    this.highlightedQuestions = questions;
+    this.highlightedAnswers = answers;
   }
 
   toggleAnswer(index: number): void {

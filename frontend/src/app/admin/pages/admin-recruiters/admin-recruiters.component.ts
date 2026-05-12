@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -13,7 +13,8 @@ import { RecruiterSharedModule } from '../../../supervisors/recruiter-shared/rec
   standalone: true,
   imports: [CommonModule, FormsModule, SharedLoaderComponent, SharedMessageComponent, SharedEmptyStateComponent, RecruiterSharedModule],
   templateUrl: './admin-recruiters.component.html',
-  styleUrls: ['./admin-recruiters.component.scss']
+  styleUrls: ['./admin-recruiters.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminRecruitersPageComponent implements OnInit {
   loading = false;
@@ -28,6 +29,13 @@ export class AdminRecruitersPageComponent implements OnInit {
   searchTerm = '';
   teamFilter = '';
   statusFilter: 'all' | 'active' | 'inactive' | 'profile-complete' | 'profile-pending' = 'all';
+
+  visibleRecruiters: AdminRecruiter[] = [];
+  visibleInvitations: PendingInvitation[] = [];
+  invitationExpired: Record<string, boolean> = {};
+  activeCount = 0;
+  inactiveCount = 0;
+  profilePendingCount = 0;
 
   // ── Confirm dialog state ────────────────────────────────────────────────
   confirmOpen = false;
@@ -56,7 +64,10 @@ export class AdminRecruitersPageComponent implements OnInit {
     phoneNumber: ''
   };
 
-  constructor(private readonly adminService: AdminHiringService) {}
+  constructor(
+    private readonly adminService: AdminHiringService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadContext();
@@ -70,10 +81,12 @@ export class AdminRecruitersPageComponent implements OnInit {
         if (this.organizationId) {
           this.loadTeams();
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.organizationId = '';
         this.teams = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -81,15 +94,18 @@ export class AdminRecruitersPageComponent implements OnInit {
   loadTeams(): void {
     if (!this.organizationId) {
       this.teams = [];
+      this.cdr.markForCheck();
       return;
     }
 
     this.adminService.getTeams(this.organizationId).subscribe({
       next: (teams) => {
         this.teams = teams;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.teams = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -97,19 +113,35 @@ export class AdminRecruitersPageComponent implements OnInit {
   loadAll(): void {
     this.loading = true;
     let done = 0;
-    const finish = () => { if (++done === 2) this.loading = false; };
+    const finish = () => {
+      if (++done === 2) {
+        this.loading = false;
+        this.recomputeViews();
+        this.cdr.markForCheck();
+      }
+    };
 
     this.adminService.getRecruiters().subscribe({
-      next: (recruiters) => { this.recruiters = recruiters; finish(); },
+      next: (recruiters) => {
+        this.recruiters = recruiters;
+        this.updateCounts();
+        finish();
+      },
       error: () => {
         this.messageType = 'error';
         this.message = 'Failed to load recruiters.';
+        this.recruiters = [];
+        this.updateCounts();
         finish();
       }
     });
 
     this.adminService.getPendingInvitations().subscribe({
-      next: (invitations) => { this.pendingInvitations = invitations; finish(); },
+      next: (invitations) => {
+        this.pendingInvitations = invitations;
+        this.updateInvitationExpiry();
+        finish();
+      },
       error: () => { finish(); }
     });
   }
@@ -118,10 +150,28 @@ export class AdminRecruitersPageComponent implements OnInit {
     this.loadAll();
   }
 
-  get filteredRecruiters(): AdminRecruiter[] {
+  onSearchTermChange(value: string): void {
+    this.searchTerm = value;
+    this.recomputeViews();
+    this.cdr.markForCheck();
+  }
+
+  onTeamFilterChange(value: string): void {
+    this.teamFilter = value;
+    this.recomputeViews();
+    this.cdr.markForCheck();
+  }
+
+  onStatusFilterChange(value: 'all' | 'active' | 'inactive' | 'profile-complete' | 'profile-pending'): void {
+    this.statusFilter = value;
+    this.recomputeViews();
+    this.cdr.markForCheck();
+  }
+
+  private recomputeViews(): void {
     const term = this.searchTerm.trim().toLowerCase();
 
-    return [...this.recruiters].filter((recruiter) => {
+    this.visibleRecruiters = this.recruiters.filter((recruiter) => {
       const teamNames = (recruiter.teams || []).map((team) => team.name.toLowerCase());
       const matchesSearch = !term || [
         recruiter.name,
@@ -146,36 +196,28 @@ export class AdminRecruitersPageComponent implements OnInit {
 
       return matchesSearch && matchesTeam && matchesStatus;
     });
-  }
 
-  get filteredInvitations(): PendingInvitation[] {
-    const term = this.searchTerm.trim().toLowerCase();
-    return this.pendingInvitations.filter((inv) => {
+    this.visibleInvitations = this.pendingInvitations.filter((inv) => {
       if (!term) return true;
       return [inv.name, inv.email, inv.role, inv.status].some((value) => String(value || '').toLowerCase().includes(term));
     });
   }
 
-  get activeCount(): number {
-    return this.recruiters.filter((recruiter) => recruiter.isActive).length;
-  }
-
-  get inactiveCount(): number {
-    return this.recruiters.filter((recruiter) => !recruiter.isActive).length;
-  }
-
-  get profilePendingCount(): number {
-    return this.recruiters.filter((recruiter) => !recruiter.profileCompleted).length;
-  }
-
-  get teamOptions(): AdminTeamOption[] {
-    return this.teams;
+  private updateInvitationExpiry(): void {
+    const now = Date.now();
+    const expired: Record<string, boolean> = {};
+    for (const inv of this.pendingInvitations) {
+      expired[inv._id] = new Date(inv.expiresAt).getTime() < now;
+    }
+    this.invitationExpired = expired;
   }
 
   clearFilters(): void {
     this.searchTerm = '';
     this.teamFilter = '';
     this.statusFilter = 'all';
+    this.recomputeViews();
+    this.cdr.markForCheck();
   }
 
   trackByRecruiterId(_: number, recruiter: AdminRecruiter): string {
@@ -190,6 +232,7 @@ export class AdminRecruitersPageComponent implements OnInit {
     if (!this.form.name || !this.form.email) {
       this.messageType = 'warning';
       this.message = 'Name and email are required.';
+      this.cdr.markForCheck();
       return;
     }
 
@@ -211,6 +254,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to invite recruiter.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -219,12 +263,14 @@ export class AdminRecruitersPageComponent implements OnInit {
     if (!this.directForm.name || !this.directForm.email || !this.directForm.password) {
       this.messageType = 'warning';
       this.message = 'Name, email, and password are required for direct creation.';
+      this.cdr.markForCheck();
       return;
     }
 
     if (!this.organizationId) {
       this.messageType = 'error';
       this.message = 'Organization context is not available.';
+      this.cdr.markForCheck();
       return;
     }
 
@@ -246,6 +292,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to add recruiter directly.');
         this.directLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -276,6 +323,7 @@ export class AdminRecruitersPageComponent implements OnInit {
     if (!this.editForm.name || !this.editForm.email) {
       this.messageType = 'warning';
       this.message = 'Name and email are required.';
+      this.cdr.markForCheck();
       return;
     }
 
@@ -297,6 +345,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to update recruiter.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -313,6 +362,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to update recruiter status.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -329,6 +379,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to revoke recruiter access.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -349,6 +400,7 @@ export class AdminRecruitersPageComponent implements OnInit {
             this.messageType = 'error';
             this.message = String(err?.error?.message || 'Failed to delete recruiter.');
             this.loading = false;
+            this.cdr.markForCheck();
           }
         });
       }
@@ -369,6 +421,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to revoke invitation.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -385,6 +438,7 @@ export class AdminRecruitersPageComponent implements OnInit {
         this.messageType = 'error';
         this.message = String(err?.error?.message || 'Failed to expire invitation.');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -405,14 +459,31 @@ export class AdminRecruitersPageComponent implements OnInit {
             this.messageType = 'error';
             this.message = String(err?.error?.message || 'Failed to delete invitation.');
             this.loading = false;
+            this.cdr.markForCheck();
           }
         });
       }
     );
   }
 
-  isExpired(inv: PendingInvitation): boolean {
-    return new Date(inv.expiresAt) < new Date();
+  trackByInvitationId(_: number, inv: PendingInvitation): string {
+    return inv._id;
+  }
+
+  private updateCounts(): void {
+    let active = 0;
+    let inactive = 0;
+    let profilePending = 0;
+
+    for (const recruiter of this.recruiters) {
+      if (recruiter.isActive) active += 1;
+      else inactive += 1;
+      if (!recruiter.profileCompleted) profilePending += 1;
+    }
+
+    this.activeCount = active;
+    this.inactiveCount = inactive;
+    this.profilePendingCount = profilePending;
   }
 
   // ── Confirm dialog helpers ──────────────────────────────────────────────
@@ -422,6 +493,7 @@ export class AdminRecruitersPageComponent implements OnInit {
     this.confirmMessage = message;
     this.pendingConfirmAction = action;
     this.confirmOpen = true;
+    this.cdr.markForCheck();
   }
 
   onConfirmed(): void {
@@ -430,10 +502,12 @@ export class AdminRecruitersPageComponent implements OnInit {
       this.pendingConfirmAction();
       this.pendingConfirmAction = null;
     }
+    this.cdr.markForCheck();
   }
 
   onCancelled(): void {
     this.confirmOpen = false;
     this.pendingConfirmAction = null;
+    this.cdr.markForCheck();
   }
 }

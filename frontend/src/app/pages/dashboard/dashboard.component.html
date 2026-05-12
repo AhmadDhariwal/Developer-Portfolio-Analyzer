@@ -89,7 +89,7 @@
   <div class="mini-stats-grid">
     <div class="card stat-card" *ngFor="let card of statCards">
       <div class="stat-top">
-        <div [class]="'stat-icon ' + card.iconType" [innerHTML]="getStatIcon(card.iconType)"></div>
+        <div [class]="'stat-icon ' + card.iconType" [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"></div>
         <div class="trend-arrow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="7" y1="17" x2="17" y2="7"></line>
@@ -273,7 +273,7 @@
   <div class="rec-grid">
     <div class="card rec-card" *ngFor="let rec of recommendations">
       <div class="rec-top">
-        <div class="rec-icon" [innerHTML]="getRecIcon(rec.icon)"></div>
+        <div class="rec-icon" [innerHTML]="recIconHtml[rec.icon] || recIconHtml['technology']"></div>
         <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
       </div>
       <p class="rec-title">{{ rec.title }}</p>
