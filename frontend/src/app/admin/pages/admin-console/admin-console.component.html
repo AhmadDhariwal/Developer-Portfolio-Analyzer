@@ -298,9 +298,16 @@
           <textarea id="team-description" class="oc-input" rows="3" placeholder="What does this team own?" [(ngModel)]="teamForm.description" name="teamDescription"></textarea>
         </div>
         <div class="oc-form-group oc-form-group--full">
-          <label class="oc-label" for="team-recruiters">Assign Recruiters</label>
-          <select id="team-recruiters" class="oc-input" multiple size="4" [(ngModel)]="teamForm.recruiterIds" name="teamRecruiters">
-            <option *ngFor="let recruiter of recruiters" [ngValue]="recruiter._id">{{ recruiter.name }} ({{ recruiter.isActive ? 'Active' : 'Inactive' }})</option>
+          <label class="oc-label" for="team-recruiters">Assign Recruiter (Optional)</label>
+          <select id="team-recruiters" class="oc-input" [(ngModel)]="teamForm.recruiterId" name="teamRecruiter">
+            <option value="">No recruiter selected</option>
+            <option
+              *ngFor="let recruiter of recruiters"
+              [ngValue]="recruiter._id"
+              [disabled]="recruiterAssignedToAnotherTeam(recruiter)"
+              [attr.title]="recruiterOptionTitle(recruiter)">
+              {{ recruiter.name }} ({{ recruiter.email }}){{ recruiterAssignedToAnotherTeam(recruiter) ? ' - Assigned to ' + recruiterAssignedTeamName(recruiter) : '' }}
+            </option>
           </select>
         </div>
       </div>
@@ -396,7 +403,13 @@
                 <label class="oc-label" [for]="'team-assign-' + team._id">Recruiter</label>
                 <select [id]="'team-assign-' + team._id" class="oc-input" [(ngModel)]="teamRecruiterSelections[team._id]" [name]="'teamRecruiterSelect' + team._id">
                   <option value="">Select recruiter</option>
-                  <option *ngFor="let recruiter of availableRecruitersForTeam(team)" [ngValue]="recruiter._id">{{ recruiter.name }} ({{ recruiter.email }})</option>
+                  <option
+                    *ngFor="let recruiter of recruitersForTeamDropdown(team)"
+                    [ngValue]="recruiter._id"
+                    [disabled]="recruiterAssignedToAnotherTeam(recruiter, team)"
+                    [attr.title]="recruiterOptionTitle(recruiter, team)">
+                    {{ recruiter.name }} ({{ recruiter.email }}){{ recruiterAssignedToAnotherTeam(recruiter, team) ? ' - Assigned to ' + recruiterAssignedTeamName(recruiter) : '' }}
+                  </option>
                 </select>
               </div>
             </div>

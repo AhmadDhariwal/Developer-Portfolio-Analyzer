@@ -33,11 +33,15 @@ const buildTeamMember = (membership) => {
   const user = membership.userId;
   if (!user?._id) return null;
 
+  // Membership role controls team permissions (admin/member),
+  // but for recruiter accounts we want to surface their account role in UI.
+  const displayRole = user.role === 'recruiter' ? 'recruiter' : membership.role;
+
   return {
     _id: user._id,
     name: user.name,
     email: user.email,
-    role: membership.role,
+    role: displayRole,
     isActive: user.isActive !== false
   };
 };
@@ -116,22 +120,40 @@ const loadOrgRecruiters = async (organizationId, recruiterIds = []) => {
 const upsertRecruiterTeamMemberships = async ({ organizationId, teamId, recruiterIds = [], invitedBy }) => {
   const recruiters = await loadOrgRecruiters(organizationId, recruiterIds);
 
-  await Promise.all(recruiters.map((recruiter) => Membership.findOneAndUpdate(
-    {
+  for (const recruiter of recruiters) {
+    const existingMembership = await Membership.findOne({
       organizationId,
-      teamId,
-      userId: recruiter._id
-    },
-    {
-      $set: {
-        role: 'member',
-        status: 'active',
-        invitedBy,
-        joinedAt: new Date()
-      }
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  )));
+      userId: recruiter._id,
+      status: 'active',
+      teamId: { $ne: null }
+    })
+      .populate('teamId', 'name')
+      .lean();
+
+    if (existingMembership && String(existingMembership.teamId?._id || existingMembership.teamId) !== String(teamId)) {
+      const assignedName = existingMembership.teamId?.name || 'another team';
+      const error = new Error(`Recruiter is already assigned to ${assignedName}.`);
+      error.status = 409;
+      throw error;
+    }
+
+    await Membership.findOneAndUpdate(
+      {
+        organizationId,
+        teamId,
+        userId: recruiter._id
+      },
+      {
+        $set: {
+          role: 'member',
+          status: 'active',
+          invitedBy,
+          joinedAt: new Date()
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
 };
 
 // ── GET /api/admin-console/overview ──────────────────────────────────────
@@ -326,7 +348,9 @@ const createConsoleTeam = async (req, res) => {
     const name = String(req.body?.name || '').trim();
     const slug = normalizeSlug(String(req.body?.slug || name));
     const description = String(req.body?.description || '').trim();
-    const recruiterIds = normalizeRecruiterIds(req.body?.recruiterIds);
+    const recruiterIds = normalizeRecruiterIds(
+      req.body?.recruiterIds || (req.body?.recruiterId ? [req.body.recruiterId] : [])
+    );
 
     if (!name) {
       return res.status(400).json({ message: 'name is required.' });
@@ -478,6 +502,20 @@ const assignRecruiterToConsoleTeam = async (req, res) => {
     const recruiter = await User.findOne({ _id: recruiterId, organizationId: orgId, role: 'recruiter' }).select('_id').lean();
     if (!recruiter) {
       return res.status(404).json({ message: 'Recruiter not found in this organization.' });
+    }
+
+    const existingMembership = await Membership.findOne({
+      organizationId: orgId,
+      userId: recruiter._id,
+      status: 'active',
+      teamId: { $ne: null }
+    })
+      .populate('teamId', 'name')
+      .lean();
+
+    if (existingMembership && String(existingMembership.teamId?._id || existingMembership.teamId) !== String(team._id)) {
+      const assignedName = existingMembership.teamId?.name || 'another team';
+      return res.status(409).json({ message: `Recruiter is already assigned to ${assignedName}.` });
     }
 
     await Membership.findOneAndUpdate(

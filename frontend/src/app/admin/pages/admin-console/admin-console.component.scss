@@ -1001,6 +1001,7 @@ $slate:         #64748b;
   transition: border-color 0.15s, background 0.15s;
   width: 100%;
   box-sizing: border-box;
+  appearance: none;
 
   &::placeholder { color: $text-muted; }
 
@@ -1008,6 +1009,20 @@ $slate:         #64748b;
     border-color: rgba(99, 102, 241, 0.5);
     background: rgba(255, 255, 255, 0.06);
   }
+}
+
+select.oc-input {
+  background-color: #141b2d;
+  color: $text-primary;
+}
+
+select.oc-input option {
+  background-color: #141b2d;
+  color: $text-primary;
+}
+
+select.oc-input option:disabled {
+  color: $text-muted;
 }
 
 .oc-textarea {

@@ -48,7 +48,7 @@ export class AdminConsolePageComponent implements OnInit {
     name: '',
     slug: '',
     description: '',
-    recruiterIds: [] as string[]
+    recruiterId: ''
   };
   teamEditForm = {
     name: '',
@@ -329,11 +329,11 @@ export class AdminConsolePageComponent implements OnInit {
       name: this.teamForm.name,
       slug: this.teamForm.slug || undefined,
       description: this.teamForm.description,
-      recruiterIds: this.teamForm.recruiterIds
+      recruiterId: this.teamForm.recruiterId || undefined
     }).subscribe({
       next: () => {
         this.successMsg = 'Team created successfully.';
-        this.teamForm = { name: '', slug: '', description: '', recruiterIds: [] };
+        this.teamForm = { name: '', slug: '', description: '', recruiterId: '' };
         this.loadTeams();
       },
       error: (err) => {
@@ -454,9 +454,31 @@ export class AdminConsolePageComponent implements OnInit {
     });
   }
 
-  availableRecruitersForTeam(team: ConsoleTeam): AdminRecruiter[] {
-    const memberIds = new Set((team.members || []).map((member) => member._id));
-    return this.recruiters.filter((recruiter) => !memberIds.has(recruiter._id));
+  recruiterAssignedTeamName(recruiter: AdminRecruiter): string {
+    return recruiter?.teams?.[0]?.name || '';
+  }
+
+  recruiterAssignedToAnotherTeam(recruiter: AdminRecruiter, team?: ConsoleTeam): boolean {
+    const teams = recruiter?.teams || [];
+    if (teams.length === 0) return false;
+    if (!team?._id) return true;
+    return !teams.some((assigned) => String(assigned._id) === String(team._id));
+  }
+
+  recruiterOptionTitle(recruiter: AdminRecruiter, team?: ConsoleTeam): string {
+    if (!this.recruiterAssignedToAnotherTeam(recruiter, team)) return '';
+    const assignedTeam = this.recruiterAssignedTeamName(recruiter);
+    return assignedTeam
+      ? `Already assigned to ${assignedTeam}`
+      : 'Already assigned to another team';
+  }
+
+  recruitersForTeamDropdown(team: ConsoleTeam): AdminRecruiter[] {
+    return this.recruiters.filter((recruiter) => {
+      const teams = recruiter?.teams || [];
+      if (teams.length === 0) return true;
+      return teams.some((assigned) => String(assigned._id) === String(team._id));
+    });
   }
 
   // ── Analytics ─────────────────────────────────────────────────────────

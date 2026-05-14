@@ -113,7 +113,7 @@ export class AdminConsoleService {
     return this.http.get<{ teams: ConsoleTeam[] }>(`${this.base}/teams`);
   }
 
-  createTeam(payload: { name: string; slug?: string; description?: string; recruiterIds?: string[] }): Observable<{ team: ConsoleTeam }> {
+  createTeam(payload: { name: string; slug?: string; description?: string; recruiterId?: string }): Observable<{ team: ConsoleTeam }> {
     return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams`, payload);
   }
 
