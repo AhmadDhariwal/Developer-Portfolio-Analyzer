@@ -7,16 +7,14 @@ import { finalize } from 'rxjs/operators';
 import {
   AdminConsoleService,
   ConsoleOverview,
-  ConsoleAnalytics,
   ConsoleTeam,
   ActivityLog,
   ConsolePreferences
 } from './admin-console.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
-import { ApiService } from '../../../shared/services/api.service';
 import { AdminHiringService, AdminRecruiter, AdminTeamOption, PendingInvitation } from '../../services/admin-hiring.service';
 
-type Tab = 'overview' | 'teams' | 'recruiters' | 'invitations' | 'analytics' | 'activity' | 'preferences';
+type Tab = 'overview' | 'teams' | 'recruiters' | 'invitations' | 'activity' | 'preferences';
 
 @Component({
   selector: 'app-admin-console-page',
@@ -26,20 +24,11 @@ type Tab = 'overview' | 'teams' | 'recruiters' | 'invitations' | 'analytics' | '
   styleUrl: './admin-console.component.scss'
 })
 export class AdminConsolePageComponent implements OnInit {
-  activeTab: Tab = 'overview';
-
-  // ── Loading / error ───────────────────────────────────────────────────
+  activeTab: Tab = 'overview';  // ── Loading / error ───────────────────────────────────────────────────
   loading = false;
   error = '';
-  successMsg = '';
-
-  // ── Overview ──────────────────────────────────────────────────────────
-  overview: ConsoleOverview | null = null;
-
-  // ── Analytics ─────────────────────────────────────────────────────────
-  analytics: ConsoleAnalytics | null = null;
-
-  // ── Teams ─────────────────────────────────────────────────────────────
+  successMsg = '';  // ── Overview ──────────────────────────────────────────────────────────
+  overview: ConsoleOverview | null = null;  // ── Analytics ─────────────────────────────────────────────────────────  // ── Teams ─────────────────────────────────────────────────────────────
   teams: ConsoleTeam[] = [];
   teamOptions: AdminTeamOption[] = [];
   expandedTeamId = '';
@@ -55,9 +44,7 @@ export class AdminConsolePageComponent implements OnInit {
     slug: '',
     description: ''
   };
-  teamRecruiterSelections: Record<string, string> = {};
-
-  // ── Recruiters ────────────────────────────────────────────────────────
+  teamRecruiterSelections: Record<string, string> = {};  // ── Recruiters ────────────────────────────────────────────────────────
   recruiters: AdminRecruiter[] = [];
   editingRecruiterId = '';
   inviteForm = { name: '', email: '', teamId: '' };
@@ -65,63 +52,42 @@ export class AdminConsolePageComponent implements OnInit {
   confirmOpen = false;
   confirmTitle = '';
   confirmMessage = '';
-  private pendingConfirmAction: (() => void) | null = null;
-
-  // ── Invitations ───────────────────────────────────────────────────────
-  pendingInvitations: PendingInvitation[] = [];
-
-  // ── Activity ──────────────────────────────────────────────────────────
+  private pendingConfirmAction: (() => void) | null = null;  // ── Invitations ───────────────────────────────────────────────────────
+  pendingInvitations: PendingInvitation[] = [];  // ── Activity ──────────────────────────────────────────────────────────
   activityLogs: ActivityLog[] = [];
   activityPage = 1;
   activityTotalPages = 1;
-  activityTotal = 0;
-
-  // ── Preferences ───────────────────────────────────────────────────────
+  activityTotal = 0;  // ── Preferences ───────────────────────────────────────────────────────
   preferences: ConsolePreferences | null = null;
-  prefForm = { name: '', description: '' };
-
-  // ── Org context ───────────────────────────────────────────────────────
+  prefForm = { name: '', description: '' };  // ── Org context ───────────────────────────────────────────────────────
   organizationId = '';
-  orgName = '';
-
-  private readonly destroyRef = inject(DestroyRef);
-
-  constructor(
+  orgName = '';  private readonly destroyRef = inject(DestroyRef);  constructor(
     private readonly consoleService: AdminConsoleService,
     private readonly adminService: AdminHiringService,
     private readonly tenantContext: TenantContextService,
-    private readonly apiService: ApiService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
+  ) {}  ngOnInit(): void {
     this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
       this.organizationId = ctx.organizationId || '';
       this.orgName = ctx.organizationName || 'Organization';
       this.loadTeamOptions();
-    });
-
-    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+    });    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const tab = params['tab'] as Tab;
       if (tab && this.isValidTab(tab)) {
         this.activeTab = tab;
       }
       this.loadActiveTab();
     });
-  }
-
-  setTab(tab: Tab): void {
+  }  setTab(tab: Tab): void {
     this.activeTab = tab;
     this.error = '';
     this.successMsg = '';
     this.router.navigate([], { queryParams: { tab }, replaceUrl: true });
     this.loadActiveTab();
-  }
-
-  private isValidTab(tab: string): tab is Tab {
-    return ['overview', 'teams', 'recruiters', 'invitations', 'analytics', 'activity', 'preferences'].includes(tab);
+  }  private isValidTab(tab: string): tab is Tab {
+    return ['overview', 'teams', 'recruiters', 'invitations', 'activity', 'preferences'].includes(tab);
   }
 
   private loadActiveTab(): void {
@@ -130,10 +96,13 @@ export class AdminConsolePageComponent implements OnInit {
       case 'teams':       this.loadTeams(); break;
       case 'recruiters':  this.loadRecruiters(); break;
       case 'invitations': this.loadInvitations(); break;
-      case 'analytics':   this.loadAnalytics(); break;
       case 'activity':    this.loadActivity(1); break;
       case 'preferences': this.loadPreferences(); break;
     }
+  }
+
+  goToPerformanceStatistics(): void {
+    this.router.navigate(['/app/admin/console/performance-statistics']);
   }
 
   // ── Overview ──────────────────────────────────────────────────────────
@@ -145,38 +114,24 @@ export class AdminConsolePageComponent implements OnInit {
       next: (data) => { this.overview = data; },
       error: (err) => { this.error = err?.error?.message || 'Failed to load overview.'; }
     });
-  }
-
-  // ── Teams ─────────────────────────────────────────────────────────────
+  }  // ── Teams ─────────────────────────────────────────────────────────────
   loadTeams(): void {
     this.loading = true;
     let done = 0;
-    const finish = () => { if (++done === 3) { this.loading = false; this.cdr.detectChanges(); } };
-
-    this.consoleService.getTeams().subscribe({
+    const finish = () => { if (++done === 3) { this.loading = false; this.cdr.detectChanges(); } };    this.consoleService.getTeams().subscribe({
       next: (res) => { this.teams = res.teams || []; finish(); },
       error: (err) => { this.error = err?.error?.message || 'Failed to load teams.'; finish(); }
-    });
-
-    this.adminService.getRecruiters().subscribe({
+    });    this.adminService.getRecruiters().subscribe({
       next: (recruiters) => { this.recruiters = recruiters; finish(); },
       error: () => { finish(); }
-    });
-
-    this.loadTeamOptions(() => finish());
-  }
-
-  toggleTeam(teamId: string): void {
+    });    this.loadTeamOptions(() => finish());
+  }  toggleTeam(teamId: string): void {
     this.expandedTeamId = this.expandedTeamId === teamId ? '' : teamId;
-  }
-
-  // ── Recruiters ────────────────────────────────────────────────────────
+  }  // ── Recruiters ────────────────────────────────────────────────────────
   loadRecruiters(): void {
     this.loading = true;
     let done = 0;
-    const finish = () => { if (++done === 2) { this.loading = false; this.cdr.detectChanges(); } };
-
-    this.adminService.getRecruiters().subscribe({
+    const finish = () => { if (++done === 2) { this.loading = false; this.cdr.detectChanges(); } };    this.adminService.getRecruiters().subscribe({
       next: (r) => { this.recruiters = r; finish(); },
       error: () => { this.error = 'Failed to load recruiters.'; finish(); }
     });
@@ -184,9 +139,7 @@ export class AdminConsolePageComponent implements OnInit {
       next: (inv) => { this.pendingInvitations = inv; finish(); },
       error: () => { finish(); }
     });
-  }
-
-  inviteRecruiter(): void {
+  }  inviteRecruiter(): void {
     if (!this.inviteForm.name || !this.inviteForm.email) {
       this.error = 'Name and email are required.';
       return;
@@ -211,43 +164,31 @@ export class AdminConsolePageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  startEdit(r: AdminRecruiter): void {
+  }  startEdit(r: AdminRecruiter): void {
     this.editingRecruiterId = r._id;
     this.editForm = { name: r.name, email: r.email, githubUsername: r.githubUsername || '', linkedin: r.linkedin || '', phoneNumber: r.phoneNumber || '' };
-  }
-
-  cancelEdit(): void {
+  }  cancelEdit(): void {
     this.editingRecruiterId = '';
-  }
-
-  saveRecruiter(id: string): void {
+  }  saveRecruiter(id: string): void {
     if (!this.editForm.name || !this.editForm.email) { this.error = 'Name and email are required.'; return; }
     this.loading = true;
     this.adminService.updateRecruiter(id, this.editForm).subscribe({
       next: () => { this.successMsg = 'Recruiter updated.'; this.cancelEdit(); this.loadRecruiters(); },
       error: (err) => { this.error = err?.error?.message || 'Failed to update.'; this.loading = false; this.cdr.detectChanges(); }
     });
-  }
-
-  toggleActive(r: AdminRecruiter): void {
+  }  toggleActive(r: AdminRecruiter): void {
     this.loading = true;
     this.adminService.setRecruiterActive(r._id, !r.isActive).subscribe({
       next: () => { this.successMsg = r.isActive ? 'Recruiter deactivated.' : 'Recruiter activated.'; this.loadRecruiters(); },
       error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
     });
-  }
-
-  revokeAccess(r: AdminRecruiter): void {
+  }  revokeAccess(r: AdminRecruiter): void {
     this.loading = true;
     this.adminService.revokeRecruiterAccess(r._id).subscribe({
       next: () => { this.successMsg = 'Access revoked.'; this.loadRecruiters(); },
       error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
     });
-  }
-
-  deleteRecruiter(r: AdminRecruiter): void {
+  }  deleteRecruiter(r: AdminRecruiter): void {
     this.openConfirm('Delete Recruiter', `Delete ${r.name}? This cannot be undone.`, () => {
       this.loading = true;
       this.adminService.deleteRecruiter(r._id).subscribe({
@@ -255,9 +196,7 @@ export class AdminConsolePageComponent implements OnInit {
         error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
       });
     });
-  }
-
-  // ── Invitations ───────────────────────────────────────────────────────
+  }  // ── Invitations ───────────────────────────────────────────────────────
   loadInvitations(): void {
     this.loading = true;
     this.adminService.getPendingInvitations().pipe(
@@ -266,25 +205,19 @@ export class AdminConsolePageComponent implements OnInit {
       next: (inv) => { this.pendingInvitations = inv; },
       error: (err) => { this.error = err?.error?.message || 'Failed to load invitations.'; }
     });
-  }
-
-  revokeInvitation(inv: PendingInvitation): void {
+  }  revokeInvitation(inv: PendingInvitation): void {
     this.loading = true;
     this.adminService.revokeInvitation(inv._id).subscribe({
       next: () => { this.successMsg = `Invitation for ${inv.email} revoked.`; this.loadInvitations(); },
       error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
     });
-  }
-
-  expireInvitation(inv: PendingInvitation): void {
+  }  expireInvitation(inv: PendingInvitation): void {
     this.loading = true;
     this.adminService.expireInvitation(inv._id).subscribe({
       next: () => { this.successMsg = `Invitation for ${inv.email} expired.`; this.loadInvitations(); },
       error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
     });
-  }
-
-  deleteInvitation(inv: PendingInvitation): void {
+  }  deleteInvitation(inv: PendingInvitation): void {
     this.openConfirm('Delete Invitation', `Delete invitation for ${inv.email}?`, () => {
       this.loading = true;
       this.adminService.deleteInvitation(inv._id).subscribe({
@@ -292,21 +225,15 @@ export class AdminConsolePageComponent implements OnInit {
         error: (err) => { this.error = err?.error?.message || 'Failed.'; this.loading = false; this.cdr.detectChanges(); }
       });
     });
-  }
-
-  isExpired(inv: PendingInvitation): boolean {
+  }  isExpired(inv: PendingInvitation): boolean {
     return new Date(inv.expiresAt) < new Date();
-  }
-
-  // ── Teams ─────────────────────────────────────────────────────────────
+  }  // ── Teams ─────────────────────────────────────────────────────────────
   loadTeamOptions(done?: () => void): void {
     if (!this.organizationId) {
       this.teamOptions = [];
       done?.();
       return;
-    }
-
-    this.adminService.getTeams(this.organizationId).subscribe({
+    }    this.adminService.getTeams(this.organizationId).subscribe({
       next: (teams) => {
         this.teamOptions = teams;
         done?.();
@@ -316,15 +243,11 @@ export class AdminConsolePageComponent implements OnInit {
         done?.();
       }
     });
-  }
-
-  createTeam(): void {
+  }  createTeam(): void {
     if (!this.teamForm.name) {
       this.error = 'Team name is required.';
       return;
-    }
-
-    this.loading = true;
+    }    this.loading = true;
     this.consoleService.createTeam({
       name: this.teamForm.name,
       slug: this.teamForm.slug || undefined,
@@ -342,29 +265,21 @@ export class AdminConsolePageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  startTeamEdit(team: ConsoleTeam): void {
+  }  startTeamEdit(team: ConsoleTeam): void {
     this.editingTeamId = team._id;
     this.teamEditForm = {
       name: team.name || '',
       slug: team.slug || '',
       description: team.description || ''
     };
-  }
-
-  cancelTeamEdit(): void {
+  }  cancelTeamEdit(): void {
     this.editingTeamId = '';
     this.teamEditForm = { name: '', slug: '', description: '' };
-  }
-
-  saveTeam(teamId: string): void {
+  }  saveTeam(teamId: string): void {
     if (!this.teamEditForm.name) {
       this.error = 'Team name is required.';
       return;
-    }
-
-    this.loading = true;
+    }    this.loading = true;
     this.consoleService.updateTeam(teamId, {
       name: this.teamEditForm.name,
       slug: this.teamEditForm.slug || undefined,
@@ -381,9 +296,7 @@ export class AdminConsolePageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  toggleTeamActive(team: ConsoleTeam): void {
+  }  toggleTeamActive(team: ConsoleTeam): void {
     this.loading = true;
     this.consoleService.setTeamActive(team._id, !team.isActive).subscribe({
       next: () => {
@@ -396,9 +309,7 @@ export class AdminConsolePageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  deleteTeam(team: ConsoleTeam): void {
+  }  deleteTeam(team: ConsoleTeam): void {
     this.openConfirm('Delete Team', `Delete team ${team.name}? This cannot be undone.`, () => {
       this.loading = true;
       this.consoleService.deleteTeam(team._id).subscribe({
@@ -413,16 +324,12 @@ export class AdminConsolePageComponent implements OnInit {
         }
       });
     });
-  }
-
-  assignRecruiterToTeam(team: ConsoleTeam): void {
+  }  assignRecruiterToTeam(team: ConsoleTeam): void {
     const recruiterId = this.teamRecruiterSelections[team._id] || '';
     if (!recruiterId) {
       this.error = 'Select a recruiter first.';
       return;
-    }
-
-    this.loading = true;
+    }    this.loading = true;
     this.consoleService.assignRecruiterToTeam(team._id, recruiterId).subscribe({
       next: () => {
         this.successMsg = 'Recruiter assigned to team.';
@@ -435,9 +342,7 @@ export class AdminConsolePageComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  removeRecruiterFromTeam(team: ConsoleTeam, member: ConsoleTeam['members'][number]): void {
+  }  removeRecruiterFromTeam(team: ConsoleTeam, member: ConsoleTeam['members'][number]): void {
     this.openConfirm('Remove Recruiter', `Remove ${member.name} from ${team.name}?`, () => {
       this.loading = true;
       this.consoleService.removeRecruiterFromTeam(team._id, member._id).subscribe({
@@ -452,9 +357,7 @@ export class AdminConsolePageComponent implements OnInit {
         }
       });
     });
-  }
-
-  recruiterAssignedTeamName(recruiter: AdminRecruiter): string {
+  }  recruiterAssignedTeamName(recruiter: AdminRecruiter): string {
     return recruiter?.teams?.[0]?.name || '';
   }
 
@@ -481,18 +384,7 @@ export class AdminConsolePageComponent implements OnInit {
     });
   }
 
-  // ── Analytics ─────────────────────────────────────────────────────────
-  loadAnalytics(): void {
-    this.loading = true;
-    this.consoleService.getAnalytics().pipe(
-      finalize(() => { this.loading = false; this.cdr.detectChanges(); })
-    ).subscribe({
-      next: (data) => { this.analytics = data; },
-      error: (err) => { this.error = err?.error?.message || 'Failed to load analytics.'; }
-    });
-  }
-
-  // ── Activity ──────────────────────────────────────────────────────────
+  // ── Analytics ─────────────────────────────────────────────────────────`r`n`r`n  // ── Activity ──────────────────────────────────────────────────────────
   loadActivity(page: number): void {
     this.loading = true;
     this.activityPage = page;
@@ -506,14 +398,10 @@ export class AdminConsolePageComponent implements OnInit {
       },
       error: (err) => { this.error = err?.error?.message || 'Failed to load activity.'; }
     });
-  }
-
-  fmtActor(actor: ActivityLog['actor']): string {
+  }  fmtActor(actor: ActivityLog['actor']): string {
     if (!actor) return 'System';
     return actor.name || actor.email || 'Unknown';
-  }
-
-  // ── Preferences ───────────────────────────────────────────────────────
+  }  // ── Preferences ───────────────────────────────────────────────────────
   loadPreferences(): void {
     this.loading = true;
     this.consoleService.getPreferences().pipe(
@@ -525,9 +413,7 @@ export class AdminConsolePageComponent implements OnInit {
       },
       error: (err) => { this.error = err?.error?.message || 'Failed to load preferences.'; }
     });
-  }
-
-  savePreferences(): void {
+  }  savePreferences(): void {
     if (!this.prefForm.name) { this.error = 'Organization name is required.'; return; }
     this.loading = true;
     this.consoleService.updatePreferences(this.prefForm).pipe(
@@ -544,28 +430,20 @@ export class AdminConsolePageComponent implements OnInit {
       },
       error: (err) => { this.error = err?.error?.message || 'Failed to save preferences.'; }
     });
-  }
-
-  // ── Confirm dialog ────────────────────────────────────────────────────
+  }  // ── Confirm dialog ────────────────────────────────────────────────────
   private openConfirm(title: string, message: string, action: () => void): void {
     this.confirmTitle = title;
     this.confirmMessage = message;
     this.pendingConfirmAction = action;
     this.confirmOpen = true;
-  }
-
-  onConfirmed(): void {
+  }  onConfirmed(): void {
     this.confirmOpen = false;
     this.pendingConfirmAction?.();
     this.pendingConfirmAction = null;
-  }
-
-  onCancelled(): void {
+  }  onCancelled(): void {
     this.confirmOpen = false;
     this.pendingConfirmAction = null;
-  }
-
-  dismissMessages(): void {
+  }  dismissMessages(): void {
     this.error = '';
     this.successMsg = '';
   }

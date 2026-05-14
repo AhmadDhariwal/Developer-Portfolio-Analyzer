@@ -6,6 +6,7 @@ import { AdminRecruitersPageComponent } from './pages/admin-recruiters/admin-rec
 import { AdminDevelopersPageComponent } from './pages/admin-developers/admin-developers.component';
 import { AdminJobsPageComponent } from './pages/admin-jobs/admin-jobs.component';
 import { AdminConsolePageComponent } from './pages/admin-console/admin-console.component';
+import { AdminPerformanceComponent } from './pages/admin-performance/admin-performance.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -13,7 +14,8 @@ const routes: Routes = [
   { path: 'recruiters', component: AdminRecruitersPageComponent },
   { path: 'developers', component: AdminDevelopersPageComponent },
   { path: 'jobs', component: AdminJobsPageComponent },
-  { path: 'console', component: AdminConsolePageComponent }
+  { path: 'console', component: AdminConsolePageComponent },
+  { path: 'console/performance-statistics', component: AdminPerformanceComponent }
 ];
 
 @NgModule({

@@ -20,7 +20,8 @@ const {
   assignRecruiterToConsoleTeam,
   removeRecruiterFromConsoleTeam,
   getConsolePreferences,
-  updateConsolePreferences
+  updateConsolePreferences,
+  getConsolePerformance
 } = require('../controllers/adminConsoleController');
 
 // All routes: must be authenticated, must be admin role (not super_admin — they have their own module),
@@ -30,6 +31,7 @@ router.use(protect, authorizeRoles('admin'), requireOrganizationContext(['admin'
 router.get('/overview',     getConsoleOverview);
 router.get('/analytics',    getConsoleAnalytics);
 router.get('/activity',     getConsoleActivity);
+router.get('/performance',  getConsolePerformance);
 router.get('/teams',        getConsoleTeams);
 router.post('/teams',       createConsoleTeam);
 router.patch('/teams/:id',  updateConsoleTeam);

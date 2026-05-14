@@ -92,6 +92,7 @@ export const routes: Routes = [
 
       // Org Admin Console — now lives inside /app/admin/console
       { path: 'admin-console', redirectTo: 'admin/console', pathMatch: 'full' },
+      { path: 'admin-console/performance-statistics', redirectTo: 'admin/console/performance-statistics', pathMatch: 'full' },
 
       // Admin hiring workspace
       {

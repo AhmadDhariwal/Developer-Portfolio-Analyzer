@@ -94,12 +94,6 @@
       </svg>
       Invitations
     </button>
-    <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'analytics'" (click)="setTab('analytics')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-      </svg>
-      Analytics
-    </button>
     <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'activity'" (click)="setTab('activity')">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -241,9 +235,9 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Manage Teams
           </button>
-          <button type="button" class="oc-pill-btn" (click)="setTab('analytics')">
+          <button type="button" class="oc-pill-btn" (click)="goToPerformanceStatistics()">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            View Analytics
+            View Full Analytics
           </button>
           <button type="button" class="oc-pill-btn" (click)="setTab('activity')">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -690,151 +684,6 @@
           </tr>
         </tbody>
       </table>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════════
-       TAB: ANALYTICS
-  ══════════════════════════════════════════════════════════════════════ -->
-  <div class="oc-tab-panel" role="tabpanel" aria-label="Analytics" *ngIf="activeTab === 'analytics'">
-
-    <div *ngIf="analytics">
-
-      <!-- Hiring Activity -->
-      <div class="oc-section">
-        <h3 class="oc-section__title">Hiring Activity</h3>
-        <div class="oc-analytics-grid">
-          <div class="oc-stat-card oc-stat-card--indigo">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.hiringActivity.total }}</span>
-            <span class="oc-stat-card__label">Total Jobs</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--green">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.hiringActivity.open }}</span>
-            <span class="oc-stat-card__label">Open</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--amber">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.hiringActivity.draft }}</span>
-            <span class="oc-stat-card__label">Draft</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--red">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.hiringActivity.closed }}</span>
-            <span class="oc-stat-card__label">Closed</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Invitation Funnel -->
-      <div class="oc-section">
-        <h3 class="oc-section__title">Invitation Funnel</h3>
-        <div class="oc-analytics-grid">
-          <div class="oc-stat-card oc-stat-card--amber">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.invitationFunnel.pending }}</span>
-            <span class="oc-stat-card__label">Pending</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--green">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.invitationFunnel.accepted }}</span>
-            <span class="oc-stat-card__label">Accepted</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--red">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.invitationFunnel.expired }}</span>
-            <span class="oc-stat-card__label">Expired</span>
-          </div>
-          <div class="oc-stat-card oc-stat-card--slate">
-            <div class="oc-stat-card__accent"></div>
-            <div class="oc-stat-card__icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-            </div>
-            <span class="oc-stat-card__value">{{ analytics.invitationFunnel.revoked }}</span>
-            <span class="oc-stat-card__label">Revoked</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recruiter Performance -->
-      <div class="oc-section">
-        <h3 class="oc-section__title">Recruiter Performance</h3>
-        <div class="oc-table-wrap">
-          <table class="oc-table">
-            <thead>
-              <tr>
-                <th>Recruiter</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Jobs Posted</th>
-                <th>Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rp of analytics.recruiterPerformance">
-                <td>
-                  <div class="oc-member-cell">
-                    <div class="oc-avatar oc-avatar--sm">{{ rp.name.charAt(0).toUpperCase() }}</div>
-                    <span>{{ rp.name }}</span>
-                  </div>
-                </td>
-                <td class="oc-text-muted">{{ rp.email }}</td>
-                <td>
-                  <span class="oc-badge" [class.oc-badge--green]="rp.isActive" [class.oc-badge--red]="!rp.isActive">
-                    {{ rp.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-                <td>
-                  <span class="oc-perf-value">{{ rp.jobsPosted }}</span>
-                </td>
-                <td class="oc-text-muted">{{ rp.joinedAt | date:'mediumDate' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Team Summary -->
-      <div class="oc-section">
-        <h3 class="oc-section__title">Team Summary</h3>
-        <div class="oc-team-summary-grid">
-          <div class="oc-team-summary-card" *ngFor="let ts of analytics.teamSummary">
-            <div class="oc-team-summary-card__avatar">{{ ts.name.charAt(0).toUpperCase() }}</div>
-            <div class="oc-team-summary-card__info">
-              <span class="oc-team-summary-card__name">{{ ts.name }}</span>
-              <span class="oc-team-summary-card__meta">{{ ts.memberCount }} members &middot; Created {{ ts.createdAt | date:'mediumDate' }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="oc-empty" *ngIf="!analytics && !loading">
-      <p>No analytics data available.</p>
     </div>
 
   </div>

@@ -150,6 +150,11 @@ export class Sidebar implements OnInit {
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>`
         },
         {
+          label: 'Performance & Statistics',
+          route: '/app/admin/console/performance-statistics',
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`
+        },
+        {
           label: 'Admin Console',
           route: '/app/admin',
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M7 20h10"></path><path d="M8 8h8"></path><path d="M8 12h5"></path></svg>`
@@ -232,7 +237,7 @@ export class Sidebar implements OnInit {
         // Standard RBAC for other roles
         if (item.route === '/app/recruiter') return isRecruiter;
         if (item.route === '/app/admin') return isAdmin;
-        if (item.route === '/app/admin-console') return isAdmin;
+        if (item.route === '/app/admin-console' || item.route === '/app/admin/console/performance-statistics') return isAdmin;
         if (item.route === '/app/settings') return false;
 
         return true;
