@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { NavigationEnd, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../shared/services/auth.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ProfileService } from '../../../shared/services/profile.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs/operators';
 
 type NavItem = { label: string; route: string; icon: SafeHtml };
 type NavGroup = { label: string; route?: string; icon: SafeHtml; items: NavItem[] };
@@ -31,6 +32,7 @@ export class Sidebar implements OnInit {
   userAvatar = '';
   avatarSrc = '';
   avatarVersion = Date.now();
+  currentUrl = '';
   private readonly destroyRef = inject(DestroyRef);
   private currentRole = '';
 
@@ -146,7 +148,7 @@ export class Sidebar implements OnInit {
       items: [
         {
           label: 'Org Console',
-          route: '/app/admin-console',
+          route: '/app/admin/console',
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>`
         },
         {
@@ -188,6 +190,17 @@ export class Sidebar implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.currentUrl = this.router.url || '';
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((event) => {
+        this.currentUrl = event.urlAfterRedirects || event.url || '';
+        this.cdr.markForCheck();
+      });
+
     this.syncUserState(this.authService.getCurrentUser());
     this.authService.currentUser$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -227,7 +240,7 @@ export class Sidebar implements OnInit {
         // Special logic for Super Admin
         if (isSuperAdmin) {
           // Hide Recruiter Hub and Admin Console for Super Admin in the main project
-          if (item.route === '/app/recruiter' || item.route === '/app/admin' || item.route === '/app/admin-console') {
+          if (item.route === '/app/recruiter' || item.route === '/app/admin' || item.route === '/app/admin/console') {
             return false;
           }
           // Everything else is visible to Super Admin
@@ -237,7 +250,7 @@ export class Sidebar implements OnInit {
         // Standard RBAC for other roles
         if (item.route === '/app/recruiter') return isRecruiter;
         if (item.route === '/app/admin') return isAdmin;
-        if (item.route === '/app/admin-console' || item.route === '/app/admin/console/performance-statistics') return isAdmin;
+        if (item.route === '/app/admin/console' || item.route === '/app/admin/console/performance-statistics') return isAdmin;
         if (item.route === '/app/settings') return false;
 
         return true;
@@ -287,6 +300,11 @@ export class Sidebar implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  isAdminConsoleActive(): boolean {
+    const path = this.normalizePath(this.currentUrl || this.router.url || '');
+    return path.startsWith('/app/admin') && !path.startsWith('/app/admin/console');
   }
 
   private updateAvatarSrc(): void {
@@ -368,5 +386,10 @@ export class Sidebar implements OnInit {
 
   private trustSvg(svg: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(svg);
+  }
+
+  private normalizePath(url: string): string {
+    const withoutQuery = url.split('?')[0] ?? '';
+    return (withoutQuery.split('#')[0] ?? '').trim();
   }
 }
