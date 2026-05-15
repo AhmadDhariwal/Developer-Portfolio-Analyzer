@@ -132,6 +132,7 @@ export class ApiService {
     actor?: string;
     action?: string;
     organizationId?: string;
+    teamId?: string;
     from?: string;
     to?: string;
     page?: number;

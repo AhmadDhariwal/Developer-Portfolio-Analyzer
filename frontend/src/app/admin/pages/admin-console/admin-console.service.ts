@@ -66,6 +66,7 @@ export interface ConsoleTeam {
     name: string;
     email: string;
     role: string;
+    githubUsername?: string;
     isActive: boolean;
   }>;
 }

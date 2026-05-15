@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../shared/services/api.service';
-import { TenantContextService } from '../../shared/services/tenant-context.service';
 
 interface AuditActor {
   _id?: string;
@@ -70,24 +69,12 @@ export class ActivityLogsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
-    private readonly apiService: ApiService,
-    private readonly tenantContext: TenantContextService
+    private readonly apiService: ApiService
   ) {}
 
   ngOnInit(): void {
     this.ensureDefaultDateRange();
-    const ctx = this.tenantContext.snapshot;
-    this.selectedOrganizationId = ctx.organizationId || '';
     this.loadOrganizations();
-
-    this.tenantContext.state$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((state) => {
-        if (state.organizationId && state.organizationId !== this.selectedOrganizationId) {
-          this.selectedOrganizationId = state.organizationId;
-          this.fetchLogs(1);
-        }
-      });
   }
 
   private ensureDefaultDateRange(): void {
@@ -182,18 +169,6 @@ export class ActivityLogsComponent implements OnInit {
       next: (res) => {
         this.ensureDefaultDateRange();
         this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
-        if (!this.selectedOrganizationId && this.organizations.length > 0) {
-          this.selectedOrganizationId = this.organizations[0]._id;
-          this.tenantContext.setOrganization({
-            id: this.organizations[0]._id,
-            name: this.organizations[0].name,
-            myRole: this.organizations[0].myRole
-          });
-        }
-        const savedOrgId = this.tenantContext.snapshot.organizationId;
-        if (savedOrgId && this.organizations.some((org) => org._id === savedOrgId)) {
-          this.selectedOrganizationId = savedOrgId;
-        }
         this.cdr.markForCheck();
         this.fetchLogs();
       },

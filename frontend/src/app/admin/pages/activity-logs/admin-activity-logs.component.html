@@ -1,14 +1,12 @@
 <div class="page">
-
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
-        Audit Trail
+        Org Admin Console
       </div>
       <h1>Activity Logs</h1>
-      <p>By default, this shows your own activity. Select an organization to expand into team and recruiter activity across the org.</p>
+      <p>Default view shows your own activity. Use team, user, and date filters to expand within {{ orgName }}.</p>
     </div>
     <div class="page-header__meta" *ngIf="total > 0">
       <span class="stat-pill">
@@ -18,7 +16,6 @@
     </div>
   </div>
 
-  <!-- ── Filters ────────────────────────────────────────────────────────── -->
   <div class="filters-card">
     <div class="filters-card__header">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
@@ -26,19 +23,18 @@
     </div>
     <div class="filters-row">
       <div class="filter-field">
-        <label>Organization</label>
-        <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization filter">
-          <option value="">My activity only</option>
-          <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+        <label>Team</label>
+        <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team filter">
+          <option value="">All teams</option>
+          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
         </select>
       </div>
       <div class="filter-field">
-        <label>Actor</label>
-        <select *ngIf="hasOrgScopedActorOptions" [(ngModel)]="actor" title="Actor filter">
-          <option value="">All allowed users</option>
-          <option *ngFor="let option of actorOptions" [value]="option._id">{{ fmtActorOption(option) }}</option>
+        <label>User</label>
+        <select [(ngModel)]="selectedActorId" (change)="applyFilters()" title="User filter">
+          <option value="">{{ selectedTeamId ? 'All team users' : 'All organization users' }}</option>
+          <option *ngFor="let option of availableActors" [value]="option._id">{{ fmtActorOption(option) }}</option>
         </select>
-        <input *ngIf="!hasOrgScopedActorOptions" [(ngModel)]="actor" placeholder="Name, email, or GitHub" />
       </div>
       <div class="filter-field">
         <label>Action</label>
@@ -62,16 +58,12 @@
     </div>
   </div>
 
-  <!-- ── Status message ────────────────────────────────────────────────── -->
   <div class="status-msg" *ngIf="statusMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     {{ statusMessage }}
   </div>
 
-  <!-- ── Content grid ───────────────────────────────────────────────────── -->
   <div class="content-grid">
-
-    <!-- ── Logs table ──────────────────────────────────────────────────── -->
     <div class="logs-panel">
       <div class="logs-panel__header">
         <span class="logs-panel__title">
@@ -88,7 +80,7 @@
 
       <div class="logs-empty" *ngIf="!loading && logs.length === 0">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p>No logs found. Audit entries are created after successful POST, PUT, or DELETE API actions.</p>
+        <p>No logs found. Audit entries are created after successful POST, PUT, PATCH, or DELETE API actions.</p>
       </div>
 
       <div class="table-wrap" *ngIf="logs.length > 0">
@@ -133,7 +125,6 @@
         </table>
       </div>
 
-      <!-- Pagination -->
       <div class="pager" *ngIf="totalPages > 1">
         <button type="button" class="pager-btn" [disabled]="page <= 1" (click)="fetchLogs(page - 1)">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -147,7 +138,6 @@
       </div>
     </div>
 
-    <!-- ── Detail panel ────────────────────────────────────────────────── -->
     <div class="detail-panel" *ngIf="selectedLog as log">
       <div class="detail-panel__header">
         <div class="detail-panel__title">
@@ -201,11 +191,9 @@
       </div>
     </div>
 
-    <!-- ── Empty detail placeholder ──────────────────────────────────── -->
     <div class="detail-placeholder" *ngIf="!selectedLog && logs.length > 0">
       <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <p>Select a log entry to view details</p>
     </div>
-
   </div>
 </div>

@@ -13,6 +13,7 @@ import { AdminRecruitersPageComponent } from './pages/admin-recruiters/admin-rec
 import { AdminDevelopersPageComponent } from './pages/admin-developers/admin-developers.component';
 import { AdminJobsPageComponent } from './pages/admin-jobs/admin-jobs.component';
 import { AdminConsolePageComponent } from './pages/admin-console/admin-console.component';
+import { AdminActivityLogsComponent } from './pages/activity-logs/admin-activity-logs.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { AdminConsolePageComponent } from './pages/admin-console/admin-console.c
     SharedEmptyStateComponent,
     AdminRecruitersPageComponent,
     AdminConsolePageComponent,
+    AdminActivityLogsComponent,
     RecruiterSharedModule
   ]
 })

@@ -94,12 +94,6 @@
       </svg>
       Invitations
     </button>
-    <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'activity'" (click)="setTab('activity')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-      Activity
-    </button>
     <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'preferences'" (click)="setTab('preferences')">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3"/>
@@ -239,7 +233,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             View Full Analytics
           </button>
-          <button type="button" class="oc-pill-btn" (click)="setTab('activity')">
+          <button type="button" class="oc-pill-btn" (click)="goToActivityLogs()">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Activity Logs
           </button>

@@ -74,10 +74,10 @@ export class Navbar implements OnInit {
     { type: 'page', label: 'Integrations', sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle', route: '/app/integrations' },
     { type: 'page', label: 'Scenario Simulator', sublabel: 'What-if score and job match simulator', route: '/app/scenario-simulator' },
     { type: 'page', label: 'Admin Console', sublabel: 'Organization hiring control center', route: '/app/admin' },
-    { type: 'page', label: 'Activity Logs', sublabel: 'Audit activity and delivery traces', route: '/app/settings/activity-logs' },
+    { type: 'page', label: 'Activity Logs', sublabel: 'My logs, team filters, and date filters', route: '/app/admin/activity-logs' },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
     { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },
-    { type: 'page', label: 'User Management', sublabel: 'Organizations and teams', route: '/app/settings/user-management' },
+    { type: 'page', label: 'User Management', sublabel: 'Org overview, teams, roles, and invitations', route: '/app/admin/console' },
     { type: 'page', label: 'AI Versions', sublabel: 'Versioning and rollback controls', route: '/app/settings/ai-versions' },
   ];
 

@@ -81,6 +81,11 @@ export class AdminConsolePageComponent implements OnInit {
       this.loadActiveTab();
     });
   }  setTab(tab: Tab): void {
+    if (tab === 'activity') {
+      this.router.navigate(['/app/admin/activity-logs']);
+      return;
+    }
+
     this.activeTab = tab;
     this.error = '';
     this.successMsg = '';
@@ -96,13 +101,17 @@ export class AdminConsolePageComponent implements OnInit {
       case 'teams':       this.loadTeams(); break;
       case 'recruiters':  this.loadRecruiters(); break;
       case 'invitations': this.loadInvitations(); break;
-      case 'activity':    this.loadActivity(1); break;
+      case 'activity':    this.router.navigate(['/app/admin/activity-logs']); break;
       case 'preferences': this.loadPreferences(); break;
     }
   }
 
   goToPerformanceStatistics(): void {
     this.router.navigate(['/app/admin/console/performance-statistics']);
+  }
+
+  goToActivityLogs(): void {
+    this.router.navigate(['/app/admin/activity-logs']);
   }
 
   // ── Overview ──────────────────────────────────────────────────────────
