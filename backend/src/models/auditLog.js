@@ -7,6 +7,18 @@ const auditLogSchema = new mongoose.Schema(
       ref: 'User',
       default: null
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+      index: true
+    },
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      default: null,
+      index: true
+    },
     action: {
       type: String,
       required: true,
@@ -47,6 +59,8 @@ const auditLogSchema = new mongoose.Schema(
 );
 
 auditLogSchema.index({ actor: 1, timestamp: -1 });
+auditLogSchema.index({ organizationId: 1, timestamp: -1 });
+auditLogSchema.index({ teamId: 1, timestamp: -1 });
 auditLogSchema.index({ action: 1, timestamp: -1 });
 
 module.exports = mongoose.model('AuditLog', auditLogSchema);

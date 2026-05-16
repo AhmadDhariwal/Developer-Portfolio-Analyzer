@@ -10,6 +10,7 @@ const { createOtp, validateOtp } = require('../services/otpService');
 const { getSettingsSnapshotSync } = require('../services/platformSettingsService');
 const { hashValue, matchesHashedValue } = require('../utils/hash');
 const { generateOtp } = require('../utils/otpGenerator');
+const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 const { sendEmailOTP } = require('../services/emailService');
 const { sendSMSOTP } = require('../services/smsService');
 
@@ -19,7 +20,7 @@ const getSecurityConfig = () => getSettingsSnapshotSync()?.security || {};
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || getSecurityConfig().jwtExpiresIn || '20h',
+    expiresIn: getSecurityConfig().jwtExpiresIn || process.env.JWT_EXPIRES_IN || '20h',
     algorithm: 'HS256',
     issuer:    process.env.JWT_ISSUER    || 'devinsight-api',
     audience:  process.env.JWT_AUDIENCE  || 'devinsight-web'
@@ -102,9 +103,9 @@ const registerUser = async (req, res) => {
     if (!name || !normalizedEmail || !password || !githubUsername) {
       return res.status(400).json({ message: 'Please add all fields' });
     }
-    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
-    if (password.length < minPasswordLength) {
-      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+    const passwordPolicy = validatePasswordAgainstPolicy(password);
+    if (!passwordPolicy.valid) {
+      return res.status(400).json({ message: passwordPolicy.message });
     }
     if ((normalizedPhone && !normalizedCode) || (!normalizedPhone && normalizedCode)) {
       return res.status(400).json({ message: 'Country code and phone number must be provided together.' });
@@ -421,9 +422,9 @@ const resetPassword = async (req, res) => {
     if (!resetToken || !newPassword) {
       return res.status(400).json({ message: 'resetToken and newPassword are required.' });
     }
-    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
-    if (String(newPassword).length < minPasswordLength) {
-      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+    const passwordPolicy = validatePasswordAgainstPolicy(newPassword);
+    if (!passwordPolicy.valid) {
+      return res.status(400).json({ message: passwordPolicy.message });
     }
 
     const decoded = jwt.decode(resetToken);
@@ -513,17 +514,19 @@ const acceptInvite = async (req, res) => {
       return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
     }
 
-    const minPasswordLength = Number(getSecurityConfig().passwordMinLength || 6);
-
     let user = existingUser;
-    if (!user && requestedPassword.length < minPasswordLength) {
-      return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+    if (!user) {
+      const passwordPolicy = validatePasswordAgainstPolicy(requestedPassword);
+      if (!passwordPolicy.valid) {
+        return res.status(400).json({ message: passwordPolicy.message });
+      }
     }
 
     if (user) {
       if (requestedPassword) {
-        if (requestedPassword.length < minPasswordLength) {
-          return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+        const passwordPolicy = validatePasswordAgainstPolicy(requestedPassword);
+        if (!passwordPolicy.valid) {
+          return res.status(400).json({ message: passwordPolicy.message });
         }
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(requestedPassword, salt);

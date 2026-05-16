@@ -6,6 +6,7 @@ const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const SkillGraph = require('../models/skillGraph');
 const WeeklyReport = require('../models/weeklyReport');
+const { getDeveloperSettingsSync } = require('./platformSettingsService');
 
 const DEFAULT_MAX_SKILLS = 12;
 const DEFAULT_MAX_PROJECTS = 12;
@@ -809,6 +810,10 @@ const recordProfileView = async ({ profile, req }) => {
 };
 
 const getPublicProfileBySlug = async (slug, req) => {
+  if (getDeveloperSettingsSync().publicPortfolioVisibility === false) {
+    return null;
+  }
+
   const profile = await PublicProfile.findOne({ slug, isPublic: true });
   if (!profile) return null;
 

@@ -1,1 +1,9 @@
 <router-outlet></router-outlet>
+
+<ng-container *ngIf="maintenanceMode.state$ | async as state">
+  <app-maintenance-modal
+    *ngIf="state.open"
+    [message]="state.message"
+    (close)="maintenanceMode.close()"
+  />
+</ng-container>

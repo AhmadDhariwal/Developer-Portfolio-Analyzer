@@ -2,7 +2,11 @@ import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../shared/services/api.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { SuperAdminService } from '../../super-admin/shared/super-admin.service';
+import { SearchableSelectComponent, SearchableSelectOption } from '../../shared/components/searchable-select/searchable-select.component';
 
 interface AuditActor {
   _id?: string;
@@ -34,18 +38,24 @@ interface OrganizationItem {
   myRole: 'admin' | 'manager' | 'member';
 }
 
+interface TeamItem {
+  _id: string;
+  name: string;
+  organizationId?: string | { _id?: string; name?: string };
+}
+
 interface ActorOption {
   _id: string;
   name?: string;
   email?: string;
   githubUsername?: string;
-  role?: 'admin' | 'manager' | 'member';
+  role?: 'super_admin' | 'admin' | 'recruiter' | 'developer' | 'manager' | 'member';
 }
 
 @Component({
   selector: 'app-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss'
 })
@@ -53,8 +63,11 @@ export class ActivityLogsComponent implements OnInit {
   logs: AuditLogItem[] = [];
   selectedLog: AuditLogItem | null = null;
   organizations: OrganizationItem[] = [];
+  teams: TeamItem[] = [];
   actorOptions: ActorOption[] = [];
+  actionOptions: string[] = [];
   selectedOrganizationId = '';
+  selectedTeamId = '';
   page = 1;
   totalPages = 1;
   total = 0;
@@ -65,11 +78,14 @@ export class ActivityLogsComponent implements OnInit {
   action = '';
   from = '';
   to = '';
+  selectedRole = '';
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly authService: AuthService,
+    private readonly superAdminService: SuperAdminService
   ) {}
 
   ngOnInit(): void {
@@ -86,7 +102,50 @@ export class ActivityLogsComponent implements OnInit {
   }
 
   get hasOrgScopedActorOptions(): boolean {
-    return !!this.selectedOrganizationId && this.actorOptions.length > 0;
+    return this.actorOptions.length > 0;
+  }
+
+  get organizationSelectOptions(): SearchableSelectOption[] {
+    return this.organizations.map((organization) => ({
+      value: organization._id,
+      label: organization.name
+    }));
+  }
+
+  get teamSelectOptions(): SearchableSelectOption[] {
+    return this.teams.map((team) => ({
+      value: team._id,
+      label: team.name
+    }));
+  }
+
+  get roleSelectOptions(): SearchableSelectOption[] {
+    return [
+      { value: 'super_admin', label: 'Super Admin' },
+      { value: 'admin', label: 'Admin' },
+      { value: 'recruiter', label: 'Recruiter' },
+      { value: 'developer', label: 'Developer' }
+    ];
+  }
+
+  get actorSelectOptions(): SearchableSelectOption[] {
+    return this.actorOptions.map((actor) => ({
+      value: actor._id,
+      label: this.fmtActorOption(actor),
+      meta: [actor.email, actor.role].filter(Boolean).join(' • ')
+    }));
+  }
+
+  get actionSelectOptions(): SearchableSelectOption[] {
+    return this.actionOptions.map((action) => ({
+      value: action,
+      label: action
+    }));
+  }
+
+  get isSuperAdmin(): boolean {
+    const role = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
+    return role === 'super_admin' || role === 'superadmin';
   }
 
   private toDateString(d: Date): string {
@@ -118,6 +177,8 @@ export class ActivityLogsComponent implements OnInit {
       actor?: string;
       action?: string;
       organizationId?: string;
+      teamId?: string;
+      role?: string;
       from?: string;
       to?: string;
       page: number;
@@ -126,6 +187,8 @@ export class ActivityLogsComponent implements OnInit {
       actor: this.actor || undefined,
       action: this.action || undefined,
       organizationId: this.selectedOrganizationId || undefined,
+      teamId: this.selectedTeamId || undefined,
+      role: this.selectedRole || undefined,
       page: this.page,
       limit: 20
     };
@@ -146,6 +209,9 @@ export class ActivityLogsComponent implements OnInit {
         this.total = Number(res?.total || 0);
         this.totalPages = Number(res?.totalPages || 1);
         this.actorOptions = Array.isArray(res?.actorOptions) ? res.actorOptions : [];
+        this.actionOptions = Array.isArray(res?.actionOptions)
+          ? res.actionOptions.map((value: unknown) => String(value || '')).filter(Boolean)
+          : [];
         this.selectedLog = this.logs[0] || null;
         this.loading = false;
         this.cdr.markForCheck();
@@ -163,6 +229,36 @@ export class ActivityLogsComponent implements OnInit {
   }
 
   loadOrganizations(): void {
+    if (this.isSuperAdmin) {
+      this.superAdminService.getOrganizations({ page: '1', limit: '100' })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            this.ensureDefaultDateRange();
+            this.organizations = Array.isArray(res?.organizations)
+              ? res.organizations.map((org: any) => ({
+                  _id: org._id,
+                  name: org.name,
+                  myRole: 'admin'
+                }))
+              : [];
+            this.loadTeams();
+            this.loadActorOptions();
+            this.cdr.markForCheck();
+            this.fetchLogs();
+          },
+          error: () => {
+            this.ensureDefaultDateRange();
+            this.organizations = [];
+            this.teams = [];
+            this.actorOptions = [];
+            this.cdr.markForCheck();
+            this.fetchLogs();
+          }
+        });
+      return;
+    }
+
     this.apiService.getOrganizations()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -182,9 +278,26 @@ export class ActivityLogsComponent implements OnInit {
   }
 
   onOrganizationChange(): void {
+    this.selectedTeamId = '';
     this.actor = '';
     this.actorOptions = [];
-    this.fetchLogs(1);
+    this.loadTeams();
+    this.loadActorOptions();
+    this.cdr.markForCheck();
+  }
+
+  onTeamChange(): void {
+    this.actor = '';
+    this.actorOptions = [];
+    this.loadActorOptions();
+    this.cdr.markForCheck();
+  }
+
+  onRoleChange(): void {
+    this.actor = '';
+    this.actorOptions = [];
+    this.loadActorOptions();
+    this.cdr.markForCheck();
   }
 
   applyFilters(): void {
@@ -194,10 +307,134 @@ export class ActivityLogsComponent implements OnInit {
   resetFilters(): void {
     this.actor  = '';
     this.action = '';
+    this.selectedRole = '';
+    this.selectedOrganizationId = '';
+    this.selectedTeamId = '';
+    this.actorOptions = [];
+    this.actionOptions = [];
     const today = new Date();
     this.from = this.toDateString(today);
     this.to   = this.toDateString(today);
+    this.loadTeams();
+    this.loadActorOptions();
     this.fetchLogs(1);
+  }
+
+  private loadTeams(): void {
+    if (!this.isSuperAdmin) return;
+
+    const params: Record<string, string> = { page: '1', limit: '200' };
+    if (this.selectedOrganizationId) {
+      params['organizationId'] = this.selectedOrganizationId;
+    }
+
+    this.superAdminService.getTeams(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.teams = Array.isArray(res?.teams)
+            ? res.teams.map((team: any) => ({
+                _id: String(team._id || ''),
+                name: String(team.name || 'Unnamed team'),
+                organizationId: team.organizationId
+              })).filter((team: TeamItem) => team._id)
+            : [];
+
+          if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
+            this.selectedTeamId = '';
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.teams = [];
+          this.selectedTeamId = '';
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadActorOptions(): void {
+    if (!this.isSuperAdmin) return;
+
+    const requests: any[] = [];
+    const appendUsers = (items: any[] = [], fallbackRole = '') => items.map((item) => ({
+      _id: String(item._id || ''),
+      name: item.name,
+      email: item.email,
+      githubUsername: item.githubUsername,
+      role: String(item.role || fallbackRole || '').toLowerCase() as ActorOption['role']
+    })).filter((item) => item._id);
+
+    const organizationId = this.selectedOrganizationId || '';
+    const teamId = this.selectedTeamId || '';
+    const commonParams: Record<string, string> = {
+      page: '1',
+      limit: '200'
+    };
+    if (organizationId) {
+      commonParams['organizationId'] = organizationId;
+    }
+    if (teamId) {
+      commonParams['teamId'] = teamId;
+    }
+
+    if (!this.selectedRole || this.selectedRole === 'admin') {
+      requests.push(this.superAdminService.getAdmins(commonParams));
+    }
+    if (!this.selectedRole || this.selectedRole === 'recruiter') {
+      requests.push(this.superAdminService.getRecruiters(commonParams));
+    }
+    if (!this.selectedRole || this.selectedRole === 'developer') {
+      requests.push(this.superAdminService.getDevelopers(commonParams));
+    }
+
+    if ((!organizationId && !teamId) && (!this.selectedRole || this.selectedRole === 'super_admin')) {
+      this.actorOptions = this.selectedRole === 'super_admin'
+        ? [{
+            _id: String(this.authService.getCurrentUser()?._id || ''),
+            name: String(this.authService.getCurrentUser()?.name || 'Super Admin'),
+            email: String(this.authService.getCurrentUser()?.email || ''),
+            role: 'super_admin' as const
+          }].filter((item) => item._id)
+        : this.actorOptions;
+    }
+
+    if (requests.length === 0) {
+      this.cdr.markForCheck();
+      return;
+    }
+
+    forkJoin(requests)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (responses) => {
+          const options = new Map<string, ActorOption>();
+          responses.forEach((res: any) => {
+            const list = appendUsers(res?.admins || res?.recruiters || res?.developers || []);
+            list.forEach((item) => options.set(item._id, item));
+          });
+
+          if ((!organizationId && !teamId) && (!this.selectedRole || this.selectedRole === 'super_admin')) {
+            const me = this.authService.getCurrentUser();
+            const myId = String(me?._id || '');
+            if (myId) {
+              options.set(myId, {
+                _id: myId,
+                name: String(me?.name || 'Super Admin'),
+                email: String(me?.email || ''),
+                role: 'super_admin'
+              });
+            }
+          }
+
+          this.actorOptions = Array.from(options.values());
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.actorOptions = [];
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   openDetail(log: AuditLogItem): void {

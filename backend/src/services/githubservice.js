@@ -9,7 +9,11 @@ const buildConfig = () => {
     headers: { 'Accept': 'application/vnd.github.v3+json' },
     timeout: 10000
   };
-  const token = process.env.GITHUB_TOKEN || getIntegrationSecretsSync()?.githubApiKey || '';
+  const integrationSettings = getIntegrationSecretsSync();
+  if (integrationSettings?.githubEnabled === false) {
+    return config;
+  }
+  const token = process.env.GITHUB_TOKEN || integrationSettings?.githubApiKey || '';
   if (token && token !== 'your_github_personal_access_token') {
     config.headers.Authorization = `token ${token}`;
   }

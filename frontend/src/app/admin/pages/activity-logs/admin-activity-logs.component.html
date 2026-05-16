@@ -24,21 +24,39 @@
     <div class="filters-row">
       <div class="filter-field">
         <label>Team</label>
-        <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team filter">
-          <option value="">All teams</option>
-          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
-        </select>
+        <app-searchable-select
+          [options]="teamSelectOptions"
+          [value]="selectedTeamId"
+          (valueChange)="selectedTeamId = $event; onTeamChange()"
+          [emptyOptionLabel]="'All teams'"
+          [placeholder]="'Select team'"
+          [searchPlaceholder]="'Search teams'"
+          [emptyStateLabel]="'No teams found'"
+        />
       </div>
       <div class="filter-field">
         <label>User</label>
-        <select [(ngModel)]="selectedActorId" (change)="applyFilters()" title="User filter">
-          <option value="">{{ selectedTeamId ? 'All team users' : 'All organization users' }}</option>
-          <option *ngFor="let option of availableActors" [value]="option._id">{{ fmtActorOption(option) }}</option>
-        </select>
+        <app-searchable-select
+          [options]="actorSelectOptions"
+          [value]="selectedActorId"
+          (valueChange)="selectedActorId = $event"
+          [emptyOptionLabel]="selectedTeamId ? 'All team users' : 'All organization users'"
+          [placeholder]="'Select user'"
+          [searchPlaceholder]="'Search users'"
+          [emptyStateLabel]="'No users found'"
+        />
       </div>
       <div class="filter-field">
         <label>Action</label>
-        <input [(ngModel)]="action" placeholder="e.g. POST /api/profile" />
+        <app-searchable-select
+          [options]="actionSelectOptions"
+          [value]="action"
+          (valueChange)="action = $event"
+          [emptyOptionLabel]="'All actions'"
+          [placeholder]="'Select action'"
+          [searchPlaceholder]="'Search actions'"
+          [emptyStateLabel]="'No actions found yet'"
+        />
       </div>
       <div class="filter-field">
         <label>From</label>

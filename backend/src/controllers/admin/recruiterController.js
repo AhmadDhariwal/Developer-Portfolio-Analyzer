@@ -7,15 +7,17 @@ const Organization = require('../../models/organization');
 const Team = require('../../models/team');
 const Membership = require('../../models/membership');
 const { sendRecruiterInvitationEmail } = require('../../services/emailService');
-const { getSettingsSnapshotSync } = require('../../services/platformSettingsService');
+const {
+  getOrganizationSettingsSync,
+  getRecruiterSettingsSync
+} = require('../../services/platformSettingsService');
+const { validatePasswordAgainstPolicy } = require('../../utils/passwordPolicy');
 
 const INVITATION_TTL_DAYS = 7;
 
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
-const getPasswordMinLength = () => Number(getSettingsSnapshotSync()?.security?.passwordMinLength || 6);
-
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
@@ -97,6 +99,11 @@ const getRecruiters = async (req, res) => {
 
 const inviteRecruiter = async (req, res) => {
   try {
+    const recruiterSettings = getRecruiterSettingsSync();
+    if (recruiterSettings.enableRecruiterAccess === false) {
+      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+    }
+
     const name = String(req.body?.name || '').trim();
     const email = normalizeEmail(req.body?.email);
 
@@ -104,7 +111,8 @@ const inviteRecruiter = async (req, res) => {
       return res.status(400).json({ message: 'name and email are required.' });
     }
 
-    const [existingUser, existingPendingInvite, organization] = await Promise.all([
+    const organizationSettings = getOrganizationSettingsSync();
+    const [existingUser, existingPendingInvite, organization, recruiterCount] = await Promise.all([
       User.findOne({ email }).lean(),
       Invitation.findOne({
         email,
@@ -114,8 +122,13 @@ const inviteRecruiter = async (req, res) => {
         status: 'pending',
         expiresAt: { $gt: new Date() }
       }).lean(),
-      Organization.findById(req.organizationId).select('name').lean()
+      Organization.findById(req.organizationId).select('name').lean(),
+      User.countDocuments({ role: 'recruiter', organizationId: req.organizationId, isActive: { $ne: false } })
     ]);
+
+    if (recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)) {
+      return res.status(400).json({ message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.` });
+    }
 
     if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
       return res.status(403).json({ message: 'This email is already assigned to another organization.' });
@@ -195,9 +208,9 @@ const validateDirectRecruiterInput = ({ name, email, password }) => {
     return { status: 400, message: 'name and email are required.' };
   }
 
-  const minPasswordLength = getPasswordMinLength();
-  if (!password || password.length < minPasswordLength) {
-    return { status: 400, message: `Password must be at least ${minPasswordLength} characters.` };
+  const passwordPolicy = validatePasswordAgainstPolicy(password);
+  if (!passwordPolicy.valid) {
+    return { status: 400, message: passwordPolicy.message };
   }
 
   return null;
@@ -279,6 +292,11 @@ const upsertRecruiterMemberships = async ({ organizationId, recruiterId, teamId,
 
 const addRecruiterDirect = async (req, res) => {
   try {
+    const recruiterSettings = getRecruiterSettingsSync();
+    if (recruiterSettings.enableRecruiterAccess === false) {
+      return res.status(403).json({ message: 'Recruiter access is currently disabled by Super Admin settings.' });
+    }
+
     const name = String(req.body?.name || '').trim();
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');
@@ -289,10 +307,12 @@ const addRecruiterDirect = async (req, res) => {
       return res.status(validationError.status).json({ message: validationError.message });
     }
 
-    const [existingUser, organization, team] = await Promise.all([
+    const organizationSettings = getOrganizationSettingsSync();
+    const [existingUser, organization, team, recruiterCount] = await Promise.all([
       User.findOne({ email }).lean(),
       Organization.findById(req.organizationId).select('name').lean(),
-      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean() : null
+      teamId ? Team.findOne({ _id: teamId, organizationId: req.organizationId, isActive: true }).select('_id name').lean() : null,
+      User.countDocuments({ role: 'recruiter', organizationId: req.organizationId, isActive: { $ne: false } })
     ]);
 
     if (!organization) {
@@ -305,6 +325,11 @@ const addRecruiterDirect = async (req, res) => {
 
     if (existingUser?.organizationId && String(existingUser.organizationId) !== String(req.organizationId)) {
       return res.status(403).json({ message: 'This email is already assigned to another organization.' });
+    }
+
+    if ((!existingUser || String(existingUser.organizationId || '') === String(req.organizationId)) &&
+        recruiterCount >= Number(organizationSettings.recruiterLimitPerOrg || 5)) {
+      return res.status(400).json({ message: `Recruiter limit (${organizationSettings.recruiterLimitPerOrg}) reached for this organization.` });
     }
 
     const restrictedRole = String(existingUser?.role || '').toLowerCase();

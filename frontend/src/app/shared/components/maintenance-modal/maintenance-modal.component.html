@@ -1,0 +1,8 @@
+<div class="maintenance-backdrop" role="dialog" aria-modal="true" aria-labelledby="maintenance-title">
+  <div class="maintenance-modal">
+    <div class="maintenance-badge">Maintenance Mode</div>
+    <h2 id="maintenance-title">Application is under maintenance</h2>
+    <p>{{ message }}</p>
+    <button type="button" (click)="close.emit()">Go back to sign in</button>
+  </div>
+</div>

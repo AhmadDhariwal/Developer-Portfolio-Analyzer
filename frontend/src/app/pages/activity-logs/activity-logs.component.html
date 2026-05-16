@@ -8,7 +8,8 @@
         Audit Trail
       </div>
       <h1>Activity Logs</h1>
-      <p>By default, this shows your own activity. Select an organization to expand into team and recruiter activity across the org.</p>
+      <p *ngIf="isSuperAdmin">By default, this shows your own activity. Use organization, role, user, date, and action filters, then click Apply to load broader platform activity.</p>
+      <p *ngIf="!isSuperAdmin">By default, this shows your own activity. Select an organization to expand into team and recruiter activity across the org.</p>
     </div>
     <div class="page-header__meta" *ngIf="total > 0">
       <span class="stat-pill">
@@ -27,22 +28,65 @@
     <div class="filters-row">
       <div class="filter-field">
         <label>Organization</label>
-        <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization filter">
-          <option value="">My activity only</option>
-          <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
-        </select>
+        <app-searchable-select
+          [options]="organizationSelectOptions"
+          [value]="selectedOrganizationId"
+          (valueChange)="selectedOrganizationId = $event; onOrganizationChange()"
+          [emptyOptionLabel]="'My activity only'"
+          [placeholder]="'Select organization'"
+          [searchPlaceholder]="'Search organizations'"
+          [emptyStateLabel]="'No organizations found'"
+        />
+      </div>
+      <div class="filter-field" *ngIf="isSuperAdmin">
+        <label>Team</label>
+        <app-searchable-select
+          [options]="teamSelectOptions"
+          [value]="selectedTeamId"
+          (valueChange)="selectedTeamId = $event; onTeamChange()"
+          [emptyOptionLabel]="selectedOrganizationId ? 'All teams in organization' : 'All teams'"
+          [placeholder]="'Select team'"
+          [searchPlaceholder]="'Search teams'"
+          [emptyStateLabel]="'No teams found'"
+        />
+      </div>
+      <div class="filter-field" *ngIf="isSuperAdmin">
+        <label>Role</label>
+        <app-searchable-select
+          [options]="roleSelectOptions"
+          [value]="selectedRole"
+          (valueChange)="selectedRole = $event; onRoleChange()"
+          [emptyOptionLabel]="'All allowed roles'"
+          [placeholder]="'Select role'"
+          [searchPlaceholder]="'Search roles'"
+          [emptyStateLabel]="'No roles found'"
+        />
       </div>
       <div class="filter-field">
-        <label>Actor</label>
-        <select *ngIf="hasOrgScopedActorOptions" [(ngModel)]="actor" title="Actor filter">
-          <option value="">All allowed users</option>
-          <option *ngFor="let option of actorOptions" [value]="option._id">{{ fmtActorOption(option) }}</option>
-        </select>
+        <label>{{ isSuperAdmin ? 'User' : 'Actor' }}</label>
+        <app-searchable-select
+          *ngIf="hasOrgScopedActorOptions"
+          [options]="actorSelectOptions"
+          [value]="actor"
+          (valueChange)="actor = $event"
+          [emptyOptionLabel]="'All allowed users'"
+          [placeholder]="'Select user'"
+          [searchPlaceholder]="'Search users'"
+          [emptyStateLabel]="'No users found'"
+        />
         <input *ngIf="!hasOrgScopedActorOptions" [(ngModel)]="actor" placeholder="Name, email, or GitHub" />
       </div>
       <div class="filter-field">
         <label>Action</label>
-        <input [(ngModel)]="action" placeholder="e.g. POST /api/profile" />
+        <app-searchable-select
+          [options]="actionSelectOptions"
+          [value]="action"
+          (valueChange)="action = $event"
+          [emptyOptionLabel]="'All actions'"
+          [placeholder]="'Select action'"
+          [searchPlaceholder]="'Search actions'"
+          [emptyStateLabel]="'No actions found yet'"
+        />
       </div>
       <div class="filter-field">
         <label>From</label>

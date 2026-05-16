@@ -4,6 +4,7 @@ const Membership = require('../models/membership');
 const Team = require('../models/team');
 const mongoose = require('mongoose');
 const { resolveOrganizationRole } = require('../services/tenantService');
+const { normalizeUserRole } = require('../middleware/authmiddleware');
 
 const toInclusiveEndDate = (value) => {
   const text = String(value || '').trim();
@@ -17,6 +18,7 @@ const toInclusiveEndDate = (value) => {
 };
 
 const isObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ''));
+const uniqueIds = (values = []) => Array.from(new Set(values.map((value) => String(value || '')).filter(Boolean)));
 
 const loadOrganizationActorScope = async ({ organizationId, teamId, requesterRole, requesterId }) => {
   if (teamId) {
@@ -107,7 +109,11 @@ const loadOrganizationActorScope = async ({ organizationId, teamId, requesterRol
   }
 
   actorOptionMap.forEach((value) => actorOptions.push(value));
-  return { allowedUserIds, actorOptions };
+  const allowedSet = new Set(allowedUserIds.map((value) => String(value)));
+  return {
+    allowedUserIds,
+    actorOptions: actorOptions.filter((actor) => allowedSet.has(String(actor._id || '')))
+  };
 };
 
 const resolveRequestedActorIds = async ({ actorTerm, organizationId, allowedUserIds }) => {
@@ -136,6 +142,155 @@ const resolveRequestedActorIds = async ({ actorTerm, organizationId, allowedUser
 
   const matchingUsers = await User.find(query).select('_id').lean();
   return matchingUsers.map((user) => String(user._id));
+};
+
+const loadSuperAdminActorScope = async ({ requesterId, organizationId, teamId, actorTerm, roleFilter }) => {
+  let effectiveOrganizationId = organizationId;
+
+  if (teamId) {
+    if (!isObjectId(teamId)) {
+      const error = new Error('teamId is invalid.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const team = await Team.findById(teamId).select('_id organizationId').lean();
+    if (!team) {
+      const error = new Error('Team not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const teamOrganizationId = String(team.organizationId || '');
+    if (effectiveOrganizationId && String(effectiveOrganizationId) !== teamOrganizationId) {
+      const error = new Error('Selected team does not belong to the selected organization.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    effectiveOrganizationId = teamOrganizationId;
+  }
+
+  const shouldExpandScope = !!effectiveOrganizationId || !!teamId || !!actorTerm || !!roleFilter;
+  if (!shouldExpandScope) {
+    return {
+      actorFilter: requesterId,
+      actorOptions: [],
+      effectiveOrganizationId: '',
+      effectiveTeamId: ''
+    };
+  }
+
+  if (effectiveOrganizationId && !isObjectId(effectiveOrganizationId)) {
+    const error = new Error('organizationId is invalid.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const scopedUserIds = new Set();
+
+  if (effectiveOrganizationId || teamId) {
+    const memberships = await Membership.find({
+      status: 'active',
+      ...(effectiveOrganizationId ? { organizationId: effectiveOrganizationId } : {}),
+      ...(teamId ? { teamId } : {})
+    }).select('userId').lean();
+
+    memberships.forEach((membership) => {
+      if (membership?.userId) scopedUserIds.add(String(membership.userId));
+    });
+  }
+
+  if (effectiveOrganizationId && !teamId) {
+    const orgUsers = await User.find({ organizationId: effectiveOrganizationId }).select('_id').lean();
+    orgUsers.forEach((user) => {
+      if (user?._id) scopedUserIds.add(String(user._id));
+    });
+  }
+
+  const userQuery = {};
+  if (scopedUserIds.size > 0) {
+    userQuery._id = { $in: Array.from(scopedUserIds) };
+  } else if (effectiveOrganizationId || teamId) {
+    userQuery._id = { $in: [] };
+  }
+
+  const normalizedRole = normalizeUserRole(roleFilter);
+  if (normalizedRole) {
+    userQuery.role = normalizedRole;
+  }
+
+  if (actorTerm) {
+    if (isObjectId(actorTerm)) {
+      const actorId = String(actorTerm);
+      if (userQuery._id?.$in) {
+        userQuery._id = { $in: userQuery._id.$in.includes(actorId) ? [actorId] : [] };
+      } else {
+        userQuery._id = actorId;
+      }
+    } else {
+      const regex = new RegExp(actorTerm, 'i');
+      userQuery.$or = [{ name: regex }, { email: regex }, { githubUsername: regex }];
+    }
+  }
+
+  const matchingUsers = await User.find(userQuery)
+    .select('_id name email githubUsername role organizationId')
+    .sort({ name: 1, email: 1, createdAt: -1 })
+    .lean();
+
+  return {
+    actorFilter: { $in: uniqueIds(matchingUsers.map((user) => user._id)) },
+    actorOptions: matchingUsers.map((user) => ({
+      _id: String(user._id),
+      name: user.name,
+      email: user.email,
+      githubUsername: user.githubUsername,
+      role: normalizeUserRole(user.role)
+    })),
+    effectiveOrganizationId: effectiveOrganizationId || '',
+    effectiveTeamId: teamId || ''
+  };
+};
+
+const buildActionOptions = async (filter) => {
+  const actions = await AuditLog.distinct('action', filter).catch(() => []);
+  return actions
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right));
+};
+
+const normalizeDateFilter = (query) => {
+  if (!query.from && !query.to) return null;
+  const timestamp = {};
+  if (query.from) timestamp.$gte = new Date(query.from);
+  if (query.to) timestamp.$lte = toInclusiveEndDate(query.to);
+  return timestamp;
+};
+
+const buildAuditQueryFilter = ({ actorFilter, organizationId, teamId, action, timestamp, includeScopeFallback = false }) => {
+  const filter = {};
+  if (action) filter.action = { $regex: String(action), $options: 'i' };
+  if (timestamp) filter.timestamp = timestamp;
+
+  if (!includeScopeFallback) {
+    filter.actor = actorFilter;
+    return filter;
+  }
+
+  const scopeClauses = [];
+  if (actorFilter) scopeClauses.push({ actor: actorFilter });
+  if (teamId) scopeClauses.push({ teamId });
+  if (organizationId && !teamId) scopeClauses.push({ organizationId });
+
+  if (scopeClauses.length <= 1) {
+    if (scopeClauses[0]) Object.assign(filter, scopeClauses[0]);
+    return filter;
+  }
+
+  filter.$or = scopeClauses;
+  return filter;
 };
 
 const resolveAuditActorScope = async ({ req, organizationId, teamId, actorTerm, requesterId }) => {
@@ -274,33 +429,51 @@ const getAuditLogs = async (req, res) => {
     const organizationId = String(req.query.organizationId || '').trim();
     const teamId = String(req.query.teamId || '').trim();
     const actorTerm = String(req.query.actor || '').trim();
+    const roleFilter = String(req.query.role || '').trim();
+    const requesterRole = normalizeUserRole(req.user?.role);
 
-    const filter = {};
-
-    const { actorFilter, actorOptions } = await resolveAuditActorScope({
-      req,
-      organizationId,
-      teamId,
-      actorTerm,
-      requesterId
+    const scope = requesterRole === 'super_admin'
+      ? await loadSuperAdminActorScope({
+          requesterId,
+          organizationId,
+          teamId,
+          actorTerm,
+          roleFilter
+        })
+      : await resolveAuditActorScope({
+          req,
+          organizationId,
+          teamId,
+          actorTerm,
+          requesterId
+        });
+    const timestamp = normalizeDateFilter(req.query);
+    const includeScopeFallback = requesterRole === 'super_admin' && !actorTerm && !roleFilter;
+    const filter = buildAuditQueryFilter({
+      actorFilter: scope.actorFilter,
+      organizationId: requesterRole === 'super_admin' ? scope.effectiveOrganizationId : '',
+      teamId: requesterRole === 'super_admin' ? scope.effectiveTeamId : '',
+      action: req.query.action,
+      timestamp,
+      includeScopeFallback
     });
-    filter.actor = actorFilter;
+    const optionsFilter = buildAuditQueryFilter({
+      actorFilter: scope.actorFilter,
+      organizationId: requesterRole === 'super_admin' ? scope.effectiveOrganizationId : '',
+      teamId: requesterRole === 'super_admin' ? scope.effectiveTeamId : '',
+      timestamp,
+      includeScopeFallback
+    });
 
-  if (req.query.action) filter.action = { $regex: String(req.query.action), $options: 'i' };
-  if (req.query.from || req.query.to) {
-    filter.timestamp = {};
-    if (req.query.from) filter.timestamp.$gte = new Date(req.query.from);
-      if (req.query.to) filter.timestamp.$lte = toInclusiveEndDate(req.query.to);
-    }
-
-    const [logs, total] = await Promise.all([
+    const [logs, total, actionOptions] = await Promise.all([
       AuditLog.find(filter)
         .sort({ timestamp: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .populate('actor', 'name email githubUsername')
         .lean(),
-      AuditLog.countDocuments(filter)
+      AuditLog.countDocuments(filter),
+      buildActionOptions(optionsFilter)
     ]);
 
     res.json({
@@ -308,7 +481,8 @@ const getAuditLogs = async (req, res) => {
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),
-      actorOptions
+      actorOptions: scope.actorOptions,
+      actionOptions
     });
   } catch (error) {
     console.error('Get audit logs error:', error.message);

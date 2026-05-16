@@ -9,13 +9,6 @@ const { getAiSnapshotSync } = require('./platformSettingsService');
  */
 class AIService {
   constructor() {
-    const envKey = (process.env.GEMINI_API_KEY || '').trim();
-    const openAIEnvKey = (process.env.OPENAI_API_KEY || '').trim();
-    const geminiFallbackKey = (process.env.GEMINI_FALLBACK_API_KEY || '').trim();
-
-    const envLooksOpenAI = envKey.startsWith('sk-') || envKey.startsWith('gsk_');
-    this.openAIKey = openAIEnvKey || (envLooksOpenAI ? envKey : '');
-    this.geminiKey = geminiFallbackKey || (envLooksOpenAI ? '' : envKey);
     this.cache = new Map(); // prompt hash -> parsed JSON result
 
     this.openAIModels = this.getOpenAIModelCandidates();
@@ -25,22 +18,45 @@ class AIService {
     this.geminiCooldownUntil = 0;
     this.geminiCooldownMs = Number.parseInt(process.env.GEMINI_COOLDOWN_MS || '180000', 10);
 
-    if (this.geminiKey && this.geminiKey.length > 10 && !this.geminiKey.includes('your_')) {
-      this.genAI = new GoogleGenerativeAI(this.geminiKey);
-    }
-
-    this.hasOpenAI = !!(this.openAIKey && this.openAIKey.length > 10 && !this.openAIKey.includes('your_'));
-    this.hasGemini = !!this.genAI;
-    this.isEnabled = this.hasOpenAI || this.hasGemini;
+    const providers = this.getProviderState();
+    this.isEnabled = providers.hasOpenAI || providers.hasGemini;
 
     if (this.isEnabled) {
-      const providers = [];
-      if (this.hasOpenAI) providers.push('OpenAI');
-      if (this.hasGemini) providers.push('Gemini');
-      console.log(`[AIService] Providers ready: ${providers.join(', ')}. Priority: OpenAI -> Gemini.`);
+      const labels = [];
+      if (providers.hasOpenAI) labels.push('OpenAI');
+      if (providers.hasGemini) labels.push('Gemini');
+      console.log(`[AIService] Providers ready: ${labels.join(', ')}. Priority: OpenAI -> Gemini.`);
     } else {
       console.warn('[AIService] No valid AI key configured. Returning safe fallbacks.');
     }
+  }
+
+  getProviderState() {
+    const aiSettings = getAiSnapshotSync();
+    const settingsKey = String(aiSettings?.apiKey || '').trim();
+    const provider = String(aiSettings?.provider || '').toLowerCase();
+
+    const openAIEnvKey = String(process.env.OPENAI_API_KEY || '').trim();
+    const geminiEnvKey = String(process.env.GEMINI_FALLBACK_API_KEY || process.env.GEMINI_API_KEY || '').trim();
+
+    const settingsLooksOpenAI = settingsKey.startsWith('sk-') || settingsKey.startsWith('gsk_');
+    const settingsOpenAIKey = provider === 'openai' || settingsLooksOpenAI ? settingsKey : '';
+    const settingsGeminiKey = provider === 'gemini' || (!settingsLooksOpenAI && settingsKey) ? settingsKey : '';
+
+    const openAIKey = settingsOpenAIKey || openAIEnvKey;
+    const geminiKey = settingsGeminiKey || geminiEnvKey;
+
+    const hasOpenAI = !!(openAIKey && openAIKey.length > 10 && !openAIKey.includes('your_'));
+    const hasGemini = !!(geminiKey && geminiKey.length > 10 && !geminiKey.includes('your_'));
+
+    return {
+      openAIKey,
+      geminiKey,
+      hasOpenAI,
+      hasGemini,
+      provider,
+      preferredModel: String(aiSettings?.model || '').trim()
+    };
   }
 
   getGeminiModelCandidates() {
@@ -165,6 +181,7 @@ class AIService {
   }
 
   async runOpenAI(prompt, modelName) {
+    const { openAIKey } = this.getProviderState();
     const body = {
       model: modelName,
       max_tokens: 8000,
@@ -190,7 +207,7 @@ class AIService {
       body,
       {
         headers: {
-          Authorization: `Bearer ${this.openAIKey}`,
+          Authorization: `Bearer ${openAIKey}`,
           'Content-Type': 'application/json'
         },
         timeout: 30000
@@ -202,7 +219,9 @@ class AIService {
   }
 
   async runGemini(prompt, modelName) {
-    const model = this.genAI.getGenerativeModel({ model: modelName });
+    const { geminiKey } = this.getProviderState();
+    const genAI = new GoogleGenerativeAI(geminiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
     const result = await model.generateContent(prompt);
     const response = result.response;
     return this.extractJson(response.text());
@@ -258,8 +277,9 @@ class AIService {
    */
   async runAIAnalysis(prompt, fallback, retries = 2) {
     const aiSettings = getAiSnapshotSync();
+    const providers = this.getProviderState();
     if (aiSettings?.enabled === false) return fallback;
-    if (!this.isEnabled) return fallback;
+    if (!providers.hasOpenAI && !providers.hasGemini) return fallback;
 
     const cacheKey = crypto.createHash('sha256').update(prompt).digest('hex');
     if (this.cache.has(cacheKey)) {
@@ -269,14 +289,14 @@ class AIService {
     let openAIQuotaExhausted = false;
     let geminiQuotaExhausted = false;
 
-    const preferredProvider = String(aiSettings?.provider || '').toLowerCase();
-    const preferredModel = String(aiSettings?.model || '').trim();
+    const preferredProvider = providers.provider;
+    const preferredModel = providers.preferredModel;
 
     const runProvider = async (providerName) => {
-      if (providerName === 'openai' && this.hasOpenAI && !this.isOpenAICoolingDown()) {
+      if (providerName === 'openai' && providers.hasOpenAI && !this.isOpenAICoolingDown()) {
         return this.tryProvider('openai', prompt, retries, preferredModel);
       }
-      if (providerName === 'gemini' && this.hasGemini && !this.isGeminiCoolingDown()) {
+      if (providerName === 'gemini' && providers.hasGemini && !this.isGeminiCoolingDown()) {
         return this.tryProvider('gemini', prompt, retries, preferredModel);
       }
       return { ok: false, quotaExhausted: false };

@@ -18,9 +18,13 @@ const {
   canManageRole,
   resolveOrganizationRole
 } = require('../services/tenantService');
+const {
+  getOrganizationSettingsSync
+} = require('../services/platformSettingsService');
+const { validatePasswordAgainstPolicy, getSecurityPolicy } = require('../utils/passwordPolicy');
 
 const ORGANIZATION_ROLES = ['admin', 'manager', 'member'];
-const TOKEN_TTL = '20h';
+const getTokenTtl = () => String(getSecurityPolicy().jwtExpiresIn || '20h');
 
 const validate = (req, res) => {
   const errors = validationResult(req);
@@ -37,7 +41,7 @@ const generateAuthToken = (id) => jwt.sign(
   { id },
   process.env.JWT_SECRET,
   {
-    expiresIn: TOKEN_TTL,
+    expiresIn: getTokenTtl(),
     algorithm: 'HS256',
     issuer: process.env.JWT_ISSUER || 'devinsight-api',
     audience: process.env.JWT_AUDIENCE || 'devinsight-web'
@@ -71,6 +75,11 @@ const createOrganization = async (req, res) => {
   if (validate(req, res)) return;
 
   try {
+    const organizationSettings = getOrganizationSettingsSync();
+    if (organizationSettings.allowOrgCreation === false) {
+      return res.status(403).json({ message: 'Organization creation is disabled by Super Admin settings.' });
+    }
+
     const name = req.body.name.trim();
     const slug = normalizeSlug(req.body.slug || name);
     if (!slug) {
@@ -160,6 +169,7 @@ const createTeam = async (req, res) => {
 
   try {
     const organizationId = req.params.organizationId;
+    const organizationSettings = getOrganizationSettingsSync();
     const name = req.body.name.trim();
     const slug = normalizeSlug(req.body.slug || name);
 
@@ -171,6 +181,11 @@ const createTeam = async (req, res) => {
     const existing = await Team.findOne({ organizationId, slug }).lean();
     if (existing) {
       return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+    }
+
+    const teamCount = await Team.countDocuments({ organizationId });
+    if (teamCount >= Number(organizationSettings.maxTeamsPerOrganization || 10)) {
+      return res.status(400).json({ message: `Maximum team limit (${organizationSettings.maxTeamsPerOrganization}) reached for this organization.` });
     }
 
     const team = await Team.create({
@@ -235,6 +250,7 @@ const inviteUser = async (req, res) => {
   if (validate(req, res)) return;
 
   try {
+    const organizationSettings = getOrganizationSettingsSync();
     const organizationId = req.params.organizationId;
     const email = String(req.body.email || '').trim().toLowerCase();
     const role = String(req.body.role || 'member');
@@ -247,6 +263,10 @@ const inviteUser = async (req, res) => {
 
     if (!canManageRole(actorRole, role)) {
       return res.status(403).json({ message: `Role ${actorRole} cannot assign ${role}.` });
+    }
+
+    if (role === 'admin' && organizationSettings.adminInvitesRequireApproval) {
+      return res.status(403).json({ message: 'Admin invitations currently require Super Admin approval and cannot be sent from organization management.' });
     }
 
     const organization = await Organization.findById(organizationId).select('name').lean();
@@ -406,7 +426,7 @@ const invitationDetailsValidators = [
 const acceptInvitationOnboardValidators = [
   param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.'),
   body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
-  body('password').isString().isLength({ min: 8, max: 128 }).withMessage('password must be 8-128 characters long.'),
+  body('password').isString().isLength({ min: 1, max: 128 }).withMessage('password is required.'),
   body('githubUsername').optional().isString().trim().isLength({ min: 2, max: 60 }).withMessage('githubUsername must be 2-60 characters long.')
 ];
 
@@ -553,6 +573,11 @@ const acceptInvitationOnboard = async (req, res) => {
     const password = String(req.body.password || '');
     const fallbackGithub = String(invitation.email || '').split('@')[0] || 'developer';
     const githubUsername = String(req.body.githubUsername || fallbackGithub).trim();
+    const passwordPolicy = validatePasswordAgainstPolicy(password);
+
+    if (!passwordPolicy.valid) {
+      return res.status(400).json({ message: passwordPolicy.message });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

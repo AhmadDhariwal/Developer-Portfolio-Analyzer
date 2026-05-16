@@ -1,3 +1,5 @@
+const { getAnalyticsSettingsSync } = require('../services/platformSettingsService');
+
 const LEVELS = ['debug', 'info', 'warn', 'error'];
 
 const resolveLevelWeight = (level) => {
@@ -10,15 +12,17 @@ const ACTIVE_WEIGHT = resolveLevelWeight(ACTIVE_LEVEL);
 
 const write = (level, message, meta = {}) => {
   if (resolveLevelWeight(level) < ACTIVE_WEIGHT) return;
+  const analytics = getAnalyticsSettingsSync();
+  const useStructuredLogging = analytics.enableStructuredLogging !== false;
 
-  const payload = {
-    ts: new Date().toISOString(),
-    level,
-    message,
-    ...(meta && typeof meta === 'object' ? meta : {})
-  };
-
-  const line = JSON.stringify(payload);
+  const line = useStructuredLogging
+    ? JSON.stringify({
+        ts: new Date().toISOString(),
+        level,
+        message,
+        ...(meta && typeof meta === 'object' ? meta : {})
+      })
+    : `[${new Date().toISOString()}] ${String(level || '').toUpperCase()} ${message}`;
   if (level === 'error') {
     console.error(line);
     return;

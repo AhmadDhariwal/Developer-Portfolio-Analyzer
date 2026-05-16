@@ -12,6 +12,7 @@ const getRecruiterCandidates = async (req, res) => {
       stack: String(stack || '').trim(),
       experience: Number(experience || 0),
       minScore: Number(minScore || 0),
+      organizationId: String(req.organizationId || '').trim(),
       limit: Math.min(200, Math.max(1, Number(limit || 50)))
     });
 

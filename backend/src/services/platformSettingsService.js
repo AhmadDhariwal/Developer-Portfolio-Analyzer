@@ -256,6 +256,26 @@ const getSettings = async () => sanitizeForClient(await getSettingsDocument());
 
 const getSettingsSnapshotSync = () => settingsCache.value || deepClone(DEFAULT_SETTINGS);
 
+const getOrganizationSettingsSync = () => {
+  const settings = getSettingsSnapshotSync();
+  return settings?.organization || deepClone(DEFAULT_SETTINGS.organization);
+};
+
+const getRecruiterSettingsSync = () => {
+  const settings = getSettingsSnapshotSync();
+  return settings?.recruiter || deepClone(DEFAULT_SETTINGS.recruiter);
+};
+
+const getDeveloperSettingsSync = () => {
+  const settings = getSettingsSnapshotSync();
+  return settings?.developer || deepClone(DEFAULT_SETTINGS.developer);
+};
+
+const getAnalyticsSettingsSync = () => {
+  const settings = getSettingsSnapshotSync();
+  return settings?.analytics || deepClone(DEFAULT_SETTINGS.analytics);
+};
+
 const updateSettings = async (payload = {}, updatedBy = null) => {
   const existing = await getSettingsDocument();
   const stored = buildStoredDocument(payload, existing);
@@ -295,6 +315,9 @@ const getIntegrationSecretsSync = () => {
   const settings = getSettingsSnapshotSync();
   const integrations = settings?.integrations || DEFAULT_SETTINGS.integrations;
   return {
+    githubEnabled: integrations?.github?.enabled !== false,
+    newsEnabled: integrations?.news?.enabled !== false,
+    jobsEnabled: integrations?.jobs?.enabled !== false,
     githubApiKey: decryptSecret(integrations?.github?.apiKey || ''),
     newsApiKey: decryptSecret(integrations?.news?.apiKey || ''),
     jobsApiKey: decryptSecret(integrations?.jobs?.apiKey || '')
@@ -305,6 +328,10 @@ module.exports = {
   DEFAULT_SETTINGS,
   getSettings,
   getSettingsSnapshotSync,
+  getOrganizationSettingsSync,
+  getRecruiterSettingsSync,
+  getDeveloperSettingsSync,
+  getAnalyticsSettingsSync,
   updateSettings,
   getSecuritySnapshot,
   getAiSnapshotSync,

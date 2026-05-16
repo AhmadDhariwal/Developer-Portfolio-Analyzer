@@ -13,6 +13,12 @@ const jobSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    default: null,
+    index: true
+  },
   title: {
     type: String,
     required: true,
@@ -42,6 +48,16 @@ const jobSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  salaryRangeMin: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  salaryRangeMax: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
   employmentType: {
     type: String,
     enum: ['full-time', 'part-time', 'contract', 'internship'],
@@ -52,6 +68,10 @@ const jobSchema = new mongoose.Schema({
     enum: ['draft', 'open', 'closed'],
     default: 'open',
     index: true
+  },
+  archivedAt: {
+    type: Date,
+    default: null
   }
 }, { timestamps: true });
 

@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 
-import { RecruiterModule as SupervisorRecruiterModule } from '../../supervisors/recruiter/recruiter.module';
+import { RecruiterHubModule } from '../recruiter-hub/recruiter-hub.module';
 
 @NgModule({
-  imports: [SupervisorRecruiterModule]
+  imports: [RecruiterHubModule]
 })
 export class RecruiterModule {}

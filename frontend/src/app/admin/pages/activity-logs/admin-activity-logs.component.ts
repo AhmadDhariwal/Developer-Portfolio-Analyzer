@@ -7,6 +7,7 @@ import { ApiService } from '../../../shared/services/api.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { AdminConsoleService, ConsoleTeam } from '../admin-console/admin-console.service';
+import { SearchableSelectComponent, SearchableSelectOption } from '../../../shared/components/searchable-select/searchable-select.component';
 
 interface AuditActor {
   _id: string;
@@ -44,7 +45,7 @@ interface UserOption {
 @Component({
   selector: 'app-admin-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './admin-activity-logs.component.html',
   styleUrl: '../../../pages/activity-logs/activity-logs.component.scss'
 })
@@ -53,6 +54,7 @@ export class AdminActivityLogsComponent implements OnInit {
   selectedLog: AuditLogItem | null = null;
   teams: ConsoleTeam[] = [];
   userOptions: UserOption[] = [];
+  actionOptions: string[] = [];
   selectedTeamId = '';
   selectedActorId = '';
   page = 1;
@@ -171,6 +173,15 @@ export class AdminActivityLogsComponent implements OnInit {
               });
             });
           });
+          const currentUser = this.authService.getCurrentUser();
+          if (this.currentUserId) {
+            users.set(this.currentUserId, {
+              _id: this.currentUserId,
+              name: String(currentUser?.name || 'My activity'),
+              email: String(currentUser?.email || ''),
+              role: String(currentUser?.role || 'admin')
+            });
+          }
           this.userOptions = Array.from(users.values());
           this.refreshActorSelection();
           this.cdr.markForCheck();
@@ -189,7 +200,30 @@ export class AdminActivityLogsComponent implements OnInit {
   onTeamChange(): void {
     this.selectedActorId = this.selectedTeamId ? '' : this.currentUserId;
     this.refreshActorSelection();
-    this.fetchLogs(1);
+    this.cdr.markForCheck();
+  }
+
+  get teamSelectOptions(): SearchableSelectOption[] {
+    return this.teams.map((team) => ({
+      value: team._id,
+      label: team.name,
+      meta: `${team.members?.length || 0} members`
+    }));
+  }
+
+  get actorSelectOptions(): SearchableSelectOption[] {
+    return this.availableActors.map((actor) => ({
+      value: actor._id,
+      label: this.fmtActorOption(actor),
+      meta: [actor.email, actor.role].filter(Boolean).join(' • ')
+    }));
+  }
+
+  get actionSelectOptions(): SearchableSelectOption[] {
+    return this.actionOptions.map((action) => ({
+      value: action,
+      label: action
+    }));
   }
 
   applyFilters(): void {
@@ -200,6 +234,7 @@ export class AdminActivityLogsComponent implements OnInit {
     this.selectedTeamId = '';
     this.selectedActorId = this.currentUserId;
     this.action = '';
+    this.actionOptions = [];
     const today = new Date();
     this.from = this.toDateString(today);
     this.to = this.toDateString(today);
@@ -246,6 +281,9 @@ export class AdminActivityLogsComponent implements OnInit {
           this.logs = Array.isArray(res?.logs) ? res.logs : [];
           this.total = Number(res?.total || 0);
           this.totalPages = Number(res?.totalPages || 1);
+          this.actionOptions = Array.isArray(res?.actionOptions)
+            ? res.actionOptions.map((value: unknown) => String(value || '')).filter(Boolean)
+            : [];
           const actors = Array.isArray(res?.actorOptions) ? res.actorOptions : [];
           if (!this.selectedTeamId) {
             const scopedUsers = new Map<string, UserOption>();
@@ -253,6 +291,15 @@ export class AdminActivityLogsComponent implements OnInit {
               if (!actor?._id) return;
               scopedUsers.set(actor._id, actor);
             });
+            if (this.currentUserId && !scopedUsers.has(this.currentUserId)) {
+              const currentUser = this.authService.getCurrentUser();
+              scopedUsers.set(this.currentUserId, {
+                _id: this.currentUserId,
+                name: String(currentUser?.name || 'My activity'),
+                email: String(currentUser?.email || ''),
+                role: String(currentUser?.role || 'admin')
+              });
+            }
             this.userOptions = Array.from(scopedUsers.values());
             this.refreshActorSelection();
           }

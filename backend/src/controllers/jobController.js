@@ -1,9 +1,12 @@
 const { buildJobPool } = require('../services/jobService');
 const AnalysisCache   = require('../models/analysisCache');
 const crypto          = require('node:crypto');
+const { getIntegrationSecretsSync } = require('../services/platformSettingsService');
 
 const hasJSearchConfig = () => {
-  const key = String(process.env.RAPIDAPI_KEY || '').trim();
+  const integrations = getIntegrationSecretsSync();
+  if (integrations?.jobsEnabled === false) return false;
+  const key = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
   return !!key && key !== 'your_rapidapi_key';
 };
 

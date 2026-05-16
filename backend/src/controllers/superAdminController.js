@@ -13,17 +13,21 @@ const AuditLog = require('../models/auditLog');
 const Candidate = require('../models/Candidate');
 const { registry } = require('../services/metricsService');
 const bcrypt = require('bcryptjs');
-const { getSettingsSnapshotSync } = require('../services/platformSettingsService');
+const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 
 const parsePage = (q) => ({
   page: Math.max(1, parseInt(q.page, 10) || 1),
   limit: Math.min(100, parseInt(q.limit, 10) || 30)
 });
-const getPasswordMinLength = () => Number(getSettingsSnapshotSync()?.security?.passwordMinLength || 6);
-
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const isTruthy = (value) => String(value || '').toLowerCase() === 'true';
 const isFalsy = (value) => String(value || '').toLowerCase() === 'false';
+const intersectIdSets = (currentIds = null, nextIds = []) => {
+  const normalizedNextIds = (nextIds || []).map((value) => String(value || '')).filter(Boolean);
+  if (!currentIds) return normalizedNextIds;
+  const nextSet = new Set(normalizedNextIds);
+  return currentIds.filter((value) => nextSet.has(String(value || '')));
+};
 
 const getMonthlyRange = () => {
   const now = new Date();
@@ -799,6 +803,10 @@ const getAllAdmins = async (req, res) => {
     if (req.query.organizationId) filter.organizationId = req.query.organizationId;
     if (isTruthy(req.query.active)) filter.isActive = true;
     if (isFalsy(req.query.active)) filter.isActive = false;
+    if (req.query.teamId) {
+      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      filter._id = { $in: teamMemberIds };
+    }
 
     const [admins, total] = await Promise.all([
       User.find(filter).select('-password').populate('organizationId', 'name').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
@@ -815,6 +823,7 @@ const getAllRecruiters = async (req, res) => {
   try {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'recruiter' };
+    let scopedIds = null;
     // basic text search
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
     if (isTruthy(req.query.active)) filter.isActive = true;
@@ -822,12 +831,12 @@ const getAllRecruiters = async (req, res) => {
     // organization scope
     if (req.query.organizationId) {
       const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
-      filter._id = { $in: ids };
+      scopedIds = intersectIdSets(scopedIds, ids);
     }
     // team scope
     if (req.query.teamId) {
       const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
-      filter._id = { ...(filter._id || {}), $in: teamMemberIds };
+      scopedIds = intersectIdSets(scopedIds, teamMemberIds);
     }
     // stack/experience filter
     if (req.query.stack) filter.careerStack = req.query.stack;
@@ -840,6 +849,7 @@ const getAllRecruiters = async (req, res) => {
     // sorting
     const sortField = req.query.sort || 'createdAt';
     const sortOrder = (req.query.sortOrder === 'asc') ? 1 : -1;
+    if (scopedIds) filter._id = { $in: scopedIds };
 
     const [recruiters, total] = await Promise.all([
       User.find(filter).select('-password').populate('organizationId', 'name').sort({ [sortField]: sortOrder }).skip((page - 1) * limit).limit(limit).lean(),
@@ -981,6 +991,7 @@ const getAllDevelopers = async (req, res) => {
   try {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'developer' };
+    let scopedIds = null;
     if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
     if (req.query.careerStack) filter.careerStack = req.query.careerStack;
     if (req.query.experienceLevel) filter.experienceLevel = req.query.experienceLevel;
@@ -988,8 +999,13 @@ const getAllDevelopers = async (req, res) => {
     if (isFalsy(req.query.active)) filter.isActive = false;
     if (req.query.organizationId) {
       const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
-      filter._id = { $in: ids };
+      scopedIds = intersectIdSets(scopedIds, ids);
     }
+    if (req.query.teamId) {
+      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      scopedIds = intersectIdSets(scopedIds, teamMemberIds);
+    }
+    if (scopedIds) filter._id = { $in: scopedIds };
 
     const [developers, total] = await Promise.all([
       User.find(filter).select('-password').sort({ score: -1, createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
@@ -1069,8 +1085,8 @@ const createUser = async (req, res) => {
 
     if (!name) return res.status(400).json({ message: 'Name is required.' });
     if (!email) return res.status(400).json({ message: 'Email is required.' });
-    const minPasswordLength = getPasswordMinLength();
-    if (!password || password.length < minPasswordLength) return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+    const passwordPolicy = validatePasswordAgainstPolicy(password);
+    if (!passwordPolicy.valid) return res.status(400).json({ message: passwordPolicy.message });
 
     const existing = await User.findOne({ email }).select('_id').lean();
     if (existing) return res.status(409).json({ message: 'Email already exists.' });
@@ -1142,8 +1158,8 @@ const updateUser = async (req, res) => {
 
     if (req.body.password) {
       const nextPassword = String(req.body.password);
-      const minPasswordLength = getPasswordMinLength();
-      if (nextPassword.length < minPasswordLength) return res.status(400).json({ message: `Password must be at least ${minPasswordLength} characters.` });
+      const passwordPolicy = validatePasswordAgainstPolicy(nextPassword);
+      if (!passwordPolicy.valid) return res.status(400).json({ message: passwordPolicy.message });
       update.password = await bcrypt.hash(nextPassword, 10);
     }
 

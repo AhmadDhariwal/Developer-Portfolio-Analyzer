@@ -97,6 +97,13 @@ const userSchema = new mongoose.Schema({
     newRecommendations:{ type: Boolean, default: false },
     jobMatchAlerts:    { type: Boolean, default: true }
   },
+  recruiterPreferences: {
+    preferredStacks: [{ type: String }],
+    preferredLocations: [{ type: String }],
+    preferredJobTypes: [{ type: String }],
+    noteTemplate: { type: String, default: '' },
+    activityDigest: { type: Boolean, default: true }
+  },
   score: {
     type: Number,
     default: 0

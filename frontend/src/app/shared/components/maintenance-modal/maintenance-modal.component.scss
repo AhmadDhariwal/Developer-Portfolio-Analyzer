@@ -1,0 +1,55 @@
+.maintenance-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(2, 6, 23, 0.82);
+  backdrop-filter: blur(10px);
+}
+
+.maintenance-modal {
+  width: min(100%, 420px);
+  padding: 1.75rem;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.92));
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+  color: #e2e8f0;
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0 0 1.25rem;
+    color: #94a3b8;
+    line-height: 1.55;
+  }
+
+  button {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    background: #6366f1;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+}
+
+.maintenance-badge {
+  display: inline-flex;
+  margin-bottom: 0.85rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.14);
+  color: #c7d2fe;
+  font-size: 0.78rem;
+  font-weight: 700;
+}

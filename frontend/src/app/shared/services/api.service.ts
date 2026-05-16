@@ -133,6 +133,7 @@ export class ApiService {
     action?: string;
     organizationId?: string;
     teamId?: string;
+    role?: string;
     from?: string;
     to?: string;
     page?: number;
@@ -376,6 +377,111 @@ export class ApiService {
 
   aiRankCandidates(payload: { jobId?: string; candidateIds?: string[]; candidates?: any[]; job?: any }): Observable<any> {
     return this.http.post(`${this.baseUrl}/recruiter/ai-rank`, payload);
+  }
+
+  /* ── Recruiter Hub ── */
+  getRecruiterHubDashboard(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/analytics/dashboard`);
+  }
+
+  getRecruiterHubAnalytics(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/analytics`);
+  }
+
+  getRecruiterHubActivity(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/activity?${suffix}` : `${this.baseUrl}/recruiter-hub/activity`);
+  }
+
+  getRecruiterHubCandidates(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/candidates?${suffix}` : `${this.baseUrl}/recruiter-hub/candidates`);
+  }
+
+  getRecruiterHubCandidate(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/candidates/${encodeURIComponent(id)}`);
+  }
+
+  analyzeRecruiterHubCandidate(id: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/candidates/${encodeURIComponent(id)}/analyze`, {});
+  }
+
+  getRecruiterHubJobs(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/jobs`);
+  }
+
+  getRecruiterHubJob(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}`);
+  }
+
+  createRecruiterHubJob(payload: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/jobs`, payload);
+  }
+
+  updateRecruiterHubJob(id: string, payload: Record<string, unknown>): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}`, payload);
+  }
+
+  archiveRecruiterHubJob(id: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}/archive`, {});
+  }
+
+  deleteRecruiterHubJob(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}`);
+  }
+
+  getRecruiterHubMatches(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/matches?${suffix}` : `${this.baseUrl}/recruiter-hub/matches`);
+  }
+
+  generateRecruiterHubMatches(payload: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/matches/generate`, payload);
+  }
+
+  getRecruiterHubShortlists(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/shortlists?${suffix}` : `${this.baseUrl}/recruiter-hub/shortlists`);
+  }
+
+  createRecruiterHubShortlist(payload: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/shortlists`, payload);
+  }
+
+  updateRecruiterHubShortlist(id: string, payload: Record<string, unknown>): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`, payload);
+  }
+
+  deleteRecruiterHubShortlist(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`);
+  }
+
+  compareRecruiterHubCandidates(payload: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/recruiter-hub/comparison`, payload);
+  }
+
+  getRecruiterHubProfile(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/profile`);
+  }
+
+  updateRecruiterHubProfile(payload: Record<string, unknown>): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/recruiter-hub/profile`, payload);
   }
 
   /* ── Admin Hiring APIs ── */

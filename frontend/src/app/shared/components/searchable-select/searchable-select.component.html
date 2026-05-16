@@ -1,0 +1,42 @@
+<div class="searchable-select" [class.searchable-select--open]="isOpen" [class.searchable-select--disabled]="disabled">
+  <button type="button" class="searchable-select__trigger" (click)="toggle()" [disabled]="disabled">
+    <span class="searchable-select__trigger-text">{{ selectedLabel }}</span>
+    <svg class="searchable-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+  <div class="searchable-select__panel" *ngIf="isOpen">
+    <input
+      class="searchable-select__search"
+      [(ngModel)]="searchTerm"
+      [placeholder]="searchPlaceholder"
+      type="text"
+    />
+
+    <button
+      *ngIf="emptyOptionLabel"
+      type="button"
+      class="searchable-select__option"
+      [class.searchable-select__option--active]="!value"
+      (click)="select('')"
+    >
+      <span class="searchable-select__option-label">{{ emptyOptionLabel }}</span>
+    </button>
+
+    <button
+      *ngFor="let option of filteredOptions"
+      type="button"
+      class="searchable-select__option"
+      [class.searchable-select__option--active]="option.value === value"
+      (click)="select(option.value)"
+    >
+      <span class="searchable-select__option-label">{{ option.label }}</span>
+      <span class="searchable-select__option-meta" *ngIf="option.meta">{{ option.meta }}</span>
+    </button>
+
+    <div class="searchable-select__empty" *ngIf="filteredOptions.length === 0">
+      {{ emptyStateLabel }}
+    </div>
+  </div>
+</div>

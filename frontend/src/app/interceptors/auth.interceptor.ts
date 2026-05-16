@@ -2,6 +2,8 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../shared/services/auth.service';
+import { Router } from '@angular/router';
+import { MaintenanceModeService } from '../shared/services/maintenance-mode.service';
 
 const BACKEND_ORIGINS = ['http://localhost:5000', 'http://localhost:3000'];
 
@@ -16,6 +18,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const cleanReq = skipAuth ? req.clone({ headers: req.headers.delete('X-Skip-Auth') }) : req;
 
   const authService = inject(AuthService);
+  const router = inject(Router);
+  const maintenanceMode = inject(MaintenanceModeService);
   const token = localStorage.getItem('token');
 
   const authReq = (isBackend && token && !skipAuth)
@@ -27,6 +31,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // Only treat 401 as session expiry for our own backend
       if (isBackend && !skipAuth && error.status === 401) {
         authService.logout();
+      }
+      if (isBackend && error.status === 503 && String(error.error?.message || '').toLowerCase().includes('maintenance')) {
+        authService.logout();
+        maintenanceMode.open('Application is under maintenance. Go back to sign in because access is disabled while maintenance mode is active.');
+        router.navigate(['/auth/login']);
       }
       return throwError(() => error);
     })

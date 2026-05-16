@@ -16,7 +16,7 @@ export const recruiterRoleGuard: CanActivateFn = () => {
   const currentUser = authService.getCurrentUser();
   const role = normalizeRole(currentUser?.role);
 
-  if (role === 'recruiter' || role === 'super_admin' || role === 'superadmin') {
+  if (role === 'recruiter') {
     return true;
   }
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorizeRoles } = require('../middleware/authmiddleware');
 const { requireOrganizationContext } = require('../middleware/orgMiddleware');
+const { requireRecruiterAccessEnabled } = require('../middleware/platformSettingsMiddleware');
 const {
 	getRecruiterCandidates,
 	getRecruiterCandidateById,
@@ -13,7 +14,7 @@ const {
 	aiRankCandidates
 } = require('../controllers/recruiter');
 
-router.use(protect, authorizeRoles('recruiter'), requireOrganizationContext(['recruiter']));
+router.use(protect, authorizeRoles('recruiter'), requireRecruiterAccessEnabled, requireOrganizationContext(['recruiter']));
 
 router.get('/candidates', getRecruiterCandidates);
 router.get('/candidate/:id', getRecruiterCandidateById);

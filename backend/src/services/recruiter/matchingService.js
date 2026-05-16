@@ -8,6 +8,7 @@ const WeeklyReport = require('../../models/weeklyReport');
 const Candidate = require('../../models/Candidate');
 const Job = require('../../models/Job');
 const { rankCandidates } = require('./aiRankingService');
+const { getDeveloperSettingsSync, getRecruiterSettingsSync } = require('../platformSettingsService');
 
 const DEVELOPER_ROLE_VALUES = Object.freeze(['developer', 'user']);
 
@@ -131,7 +132,30 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(id);
 };
 
-const listPublicDeveloperUserIds = async () => {
+const listPublicDeveloperUserIds = async ({ organizationId = '' } = {}) => {
+  const recruiterSettings = getRecruiterSettingsSync();
+  const visibilityMode = String(recruiterSettings.candidateVisibility || 'public').toLowerCase();
+  const developerSettings = getDeveloperSettingsSync();
+
+  if (developerSettings.publicPortfolioVisibility === false && visibilityMode !== 'organization') {
+    return [];
+  }
+
+  if (['private', 'disabled', 'none', 'off'].includes(visibilityMode)) {
+    return [];
+  }
+
+  if (visibilityMode === 'organization' && organizationId) {
+    const internalUsers = await User.find({
+      role: { $in: DEVELOPER_ROLE_VALUES },
+      organizationId
+    }).select('_id').lean();
+
+    return internalUsers
+      .map((entry) => String(entry._id))
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+  }
+
   const [publicUsers, publicProfiles] = await Promise.all([
     User.find({ role: { $in: DEVELOPER_ROLE_VALUES }, isPublic: true }).select('_id').lean(),
     PublicProfile.find({ isPublic: true }).select('userId').lean()
@@ -359,8 +383,8 @@ const applyCandidateFilters = (candidates = [], filters = {}) => {
   });
 };
 
-const listCandidates = async ({ search = '', stack = '', experience = 0, minScore = 0, limit = 50 } = {}) => {
-  const visibleDeveloperIds = await listPublicDeveloperUserIds();
+const listCandidates = async ({ search = '', stack = '', experience = 0, minScore = 0, organizationId = '', limit = 50 } = {}) => {
+  const visibleDeveloperIds = await listPublicDeveloperUserIds({ organizationId });
   if (!visibleDeveloperIds.length) return [];
 
   const userObjectIds = visibleDeveloperIds.map((id) => new mongoose.Types.ObjectId(id));

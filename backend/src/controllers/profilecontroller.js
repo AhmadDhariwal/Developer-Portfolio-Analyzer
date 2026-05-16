@@ -6,6 +6,8 @@ const bcrypt   = require('bcryptjs');
 const fs = require('node:fs');
 const path = require('node:path');
 const { createNotification } = require('../services/notificationService');
+const { getDeveloperSettingsSync } = require('../services/platformSettingsService');
+const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 
 // ─── Helper: format member-since date ─────────────────────────────────────
 const formatMemberSince = (date) => {
@@ -41,6 +43,21 @@ const isRecruiterProfileComplete = (user) => {
   const hasBasicInfo = Boolean(String(user?.jobTitle || '').trim() || String(user?.bio || '').trim());
 
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo;
+};
+
+const computeDeveloperProfileCompletion = (user) => {
+  const fields = [
+    user?.name,
+    user?.githubUsername,
+    user?.jobTitle,
+    user?.location,
+    user?.bio,
+    user?.linkedin || user?.website,
+    user?.careerStack,
+    user?.experienceLevel
+  ];
+  const completed = fields.filter((value) => String(value || '').trim().length > 0).length;
+  return Math.round((completed / fields.length) * 100);
 };
 
 // @desc  Get logged-in user profile + account stats
@@ -189,6 +206,7 @@ const updateProfile = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    const developerSettings = getDeveloperSettingsSync();
 
     let hasChanges = false;
 
@@ -198,7 +216,7 @@ const updateProfile = async (req, res) => {
     }
     if (githubUsername !== undefined) {
       const normalizedGithub = String(githubUsername || '').trim();
-      if (!normalizedGithub && user.role !== 'recruiter') {
+      if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
       if (normalizedGithub !== user.githubUsername) {
@@ -339,8 +357,9 @@ const updatePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Both current and new passwords are required.' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+    const passwordPolicy = validatePasswordAgainstPolicy(newPassword);
+    if (!passwordPolicy.valid) {
+      return res.status(400).json({ message: passwordPolicy.message });
     }
 
     const user = await User.findById(req.user._id);
@@ -357,11 +376,11 @@ const updatePassword = async (req, res) => {
 
     await createNotification({
       userId: user._id,
-      type: 'career_update',
-      title: 'Career Defaults Updated',
-      message: `Default career profile set to ${user.careerStack} (${user.experienceLevel}).`,
-      dedupeKey: `career_default:${user._id}:${user.careerStack}:${user.experienceLevel}`,
-      dedupeWindowHours: 2
+      type: 'profile_update',
+      title: 'Password Updated',
+      message: 'Your password was updated successfully.',
+      dedupeKey: `password_update:${user._id}`,
+      dedupeWindowHours: 1
     });
 
     res.json({ message: 'Password updated successfully.' });
@@ -538,6 +557,7 @@ const updateProfileVisibility = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    const developerSettings = getDeveloperSettingsSync();
 
     // Admins are not part of the talent pool — block them from enabling visibility.
     if (user.role === 'admin') {
@@ -547,6 +567,22 @@ const updateProfileVisibility = async (req, res) => {
     const { isPublic } = req.body;
     if (typeof isPublic !== 'boolean') {
       return res.status(400).json({ message: 'isPublic must be a boolean.' });
+    }
+
+    if (isPublic && developerSettings.publicPortfolioVisibility === false) {
+      return res.status(403).json({ message: 'Public portfolio visibility is disabled by Super Admin settings.' });
+    }
+
+    if (isPublic && developerSettings.githubRequirement !== false && !String(user.githubUsername || '').trim()) {
+      return res.status(400).json({ message: 'A GitHub username is required before enabling public visibility.' });
+    }
+
+    if (isPublic) {
+      const completion = computeDeveloperProfileCompletion(user);
+      const requiredCompletion = Number(developerSettings.profileCompletionRequirement || 0);
+      if (completion < requiredCompletion) {
+        return res.status(400).json({ message: `Profile must be at least ${requiredCompletion}% complete before enabling public visibility.` });
+      }
     }
 
     user.isPublic = isPublic;

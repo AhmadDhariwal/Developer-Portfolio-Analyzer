@@ -11,14 +11,12 @@ const {
   fromReddit
 } = require('../utils/newsFormatter');
 const { rankNewsItems } = require('../utils/newsRanker');
+const { getIntegrationSecretsSync } = require('./platformSettingsService');
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
 const CACHE_TTL_MS = 1000 * 60 * 20;
 const REDDIT_FEEDS = ['programming', 'webdev', 'MachineLearning', 'devops'];
-const NEWS_API_KEY = String(process.env.NEWS_API_KEY || '').trim();
-const GNEWS_API_KEY = String(process.env.GNEWS_API_KEY || '').trim();
-
 const SOURCE_NAMES = ['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'];
 
 const parseDateRange = (dateRange = '') => {
@@ -54,7 +52,9 @@ const fetchJson = async (url, options = {}) => {
 };
 
 const fetchFromNewsApi = async (sinceDate) => {
-  const token = NEWS_API_KEY;
+  const integrations = getIntegrationSecretsSync();
+  const token = String(process.env.NEWS_API_KEY || integrations?.newsApiKey || '').trim();
+  if (integrations?.newsEnabled === false) return [];
   if (!token) return [];
   const from = sinceDate.toISOString().slice(0, 10);
   const query = encodeURIComponent('(software OR programming OR developer OR javascript OR nodejs)');
@@ -64,7 +64,9 @@ const fetchFromNewsApi = async (sinceDate) => {
 };
 
 const fetchFromGNews = async (sinceDate) => {
-  const token = GNEWS_API_KEY;
+  const integrations = getIntegrationSecretsSync();
+  const token = String(process.env.GNEWS_API_KEY || integrations?.newsApiKey || '').trim();
+  if (integrations?.newsEnabled === false) return [];
   if (!token) return [];
   const from = sinceDate.toISOString();
   const query = encodeURIComponent('developer OR programming OR software engineering');

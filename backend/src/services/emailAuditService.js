@@ -21,6 +21,8 @@ const logEmailDeliveryAudit = async ({
   try {
     await AuditLog.create({
       actor: actor || null,
+      organizationId: organizationId || null,
+      teamId: teamId || null,
       action: 'EMAIL_INVITATION_DELIVERY',
       method: 'POST',
       route: `/api/tenant/organizations/${organizationId}/invitations/email`,

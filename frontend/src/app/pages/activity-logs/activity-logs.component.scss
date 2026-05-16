@@ -77,7 +77,9 @@
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(51, 65, 85, 0.7);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+  z-index: 20;
 
   &__header {
     display: flex;
@@ -96,10 +98,11 @@
 
 .filters-row {
   display: grid;
-  grid-template-columns: 1.5fr 1.5fr 1.5fr 1fr 1fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.875rem;
   padding: 1rem 1.25rem;
-  align-items: flex-end;
+  align-items: start;
+  overflow: visible;
 }
 
 .filter-field {
@@ -142,9 +145,12 @@
 
 .filter-actions {
   display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: flex-end;
-  padding-bottom: 1px;
+  align-items: center;
+  grid-column: 1 / -1;
+  padding-top: 0.25rem;
 }
 
 .btn-apply {
@@ -553,7 +559,7 @@ tr {
 // ── Responsive ────────────────────────────────────────────────────────────
 @media (max-width: 1200px) {
   .filters-row {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   .content-grid {
@@ -569,18 +575,8 @@ tr {
   .page { padding: 1rem; }
 
   .filters-row {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .filter-actions {
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
   }
 
   .action-text { max-width: 120px; }
-}
-
-@media (max-width: 480px) {
-  .filters-row {
-    grid-template-columns: 1fr;
-  }
 }

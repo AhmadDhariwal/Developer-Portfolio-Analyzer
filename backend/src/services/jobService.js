@@ -7,8 +7,8 @@ const axios       = require('axios');
 const aiService   = require('./aiservice');
 const { getJobPrompt } = require('../prompts/jobPrompt');
 const { rankJobs }     = require('../utils/jobRanker');
+const { getIntegrationSecretsSync } = require('./platformSettingsService');
 
-const RAPIDAPI_KEY  = process.env.RAPIDAPI_KEY || '';
 const JSEARCH_HOST  = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE  = 'https://jsearch.p.rapidapi.com/search';
 const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '10000', 10);
@@ -118,12 +118,18 @@ function mapJSearchJob(j, idx) {
 }
 
 async function fetchJSearchJobs(query, maxResults = 80) {
-  if (!RAPIDAPI_KEY || RAPIDAPI_KEY === 'your_rapidapi_key') {
+  const integrations = getIntegrationSecretsSync();
+  const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
+  if (integrations?.jobsEnabled === false) {
+    console.warn('[JobService] JSearch disabled by platform settings.');
+    return [];
+  }
+  if (!rapidApiKey || rapidApiKey === 'your_rapidapi_key') {
     console.warn('[JobService] JSearch disabled: RAPIDAPI_KEY is missing or placeholder.');
     return [];
   }
   const headers = {
-    'X-RapidAPI-Key': RAPIDAPI_KEY,
+    'X-RapidAPI-Key': rapidApiKey,
     'X-RapidAPI-Host': JSEARCH_HOST,
     'User-Agent': 'Developer-Portfolio-Analyzer/1.0'
   };
