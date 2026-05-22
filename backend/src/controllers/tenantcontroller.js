@@ -485,6 +485,11 @@ const acceptInvitation = async (req, res) => {
 
     const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
 
+    // ── FIX: ensure organizationId is set on the User record
+    await User.findByIdAndUpdate(req.user._id, {
+      $set: { organizationId: invitation.organizationId }
+    });
+
     return res.json({
       message: 'Invitation accepted.',
       membership
@@ -512,6 +517,12 @@ const acceptInvitationByToken = async (req, res) => {
     }
 
     const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
+
+    // ── FIX: ensure organizationId is set on the User record so orgMiddleware
+    //         can resolve context without falling back to a membership lookup.
+    await User.findByIdAndUpdate(req.user._id, {
+      $set: { organizationId: invitation.organizationId }
+    });
 
     return res.json({
       message: 'Invitation accepted.',
@@ -606,6 +617,11 @@ const acceptInvitationOnboard = async (req, res) => {
     }
 
     const membership = await activateInvitationForUser({ invitation, userId: user._id });
+
+    // ── FIX: ensure organizationId is set on the User record
+    await User.findByIdAndUpdate(user._id, {
+      $set: { organizationId: invitation.organizationId }
+    });
 
     return res.json({
       message: 'Invitation accepted and account ready.',

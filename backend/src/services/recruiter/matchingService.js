@@ -427,39 +427,35 @@ const listCandidates = async ({ search = '', stack = '', experience = 0, minScor
   return sorted.slice(0, limit).map((candidate) => sanitizePublicCandidate(candidate));
 };
 
-const getCandidateById = async (id) => {
+const getCandidateById = async (id, { organizationId = '' } = {}) => {
   const objectId = toObjectId(id);
   if (!objectId) return null;
+
+  const visibleDeveloperIds = await listPublicDeveloperUserIds({ organizationId });
+  const visibleSet = new Set(visibleDeveloperIds.map((entry) => String(entry)));
+  if (!visibleSet.size) return null;
 
   const candidateDoc = await Candidate.findById(objectId).lean();
   if (candidateDoc?.userId) {
     const userId = String(candidateDoc.userId);
-    const [user, publicProfile] = await Promise.all([
-      User.findOne({ _id: userId, role: { $in: DEVELOPER_ROLE_VALUES } })
-        .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
-        .lean(),
-      PublicProfile.findOne({ userId, isPublic: true }).select('_id').lean()
-    ]);
+    if (!visibleSet.has(userId)) return null;
 
-    if (!user || (!user.isPublic && !publicProfile)) {
-      return null;
-    }
+    const user = await User.findOne({ _id: userId, role: { $in: DEVELOPER_ROLE_VALUES } })
+      .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
+      .lean();
+    if (!user) return null;
 
     const [hydratedCandidate] = await hydrateUserCandidates([user]);
     const merged = mergeCandidates([candidateDoc], hydratedCandidate ? [hydratedCandidate] : []);
     return sanitizePublicCandidate(merged[0] || hydratedCandidate || null);
   }
 
-  const [user, publicProfile] = await Promise.all([
-    User.findOne({ _id: objectId, role: { $in: DEVELOPER_ROLE_VALUES } })
-      .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
-      .lean(),
-    PublicProfile.findOne({ userId: objectId, isPublic: true }).select('_id').lean()
-  ]);
+  if (!visibleSet.has(String(objectId))) return null;
 
-  if (!user || (!user.isPublic && !publicProfile)) {
-    return null;
-  }
+  const user = await User.findOne({ _id: objectId, role: { $in: DEVELOPER_ROLE_VALUES } })
+    .select('name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic')
+    .lean();
+  if (!user) return null;
 
   const [candidate] = await hydrateUserCandidates([user]);
   return sanitizePublicCandidate(candidate || null);

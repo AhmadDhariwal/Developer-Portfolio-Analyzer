@@ -52,14 +52,20 @@ const resolveOrganizationContext = async (user) => {
       ''
     ).trim();
 
-    // Valid ObjectId — use it directly
+    // Valid ObjectId — verify it actually exists in the DB
     if (rawOrgId && rawOrgId !== 'local' && rawOrgId.match(/^[0-9a-fA-F]{24}$/)) {
-      return { organizationId: rawOrgId, role: safeRole, membershipRole: null };
+      const orgExists = await Organization.exists({ _id: rawOrgId });
+      if (orgExists) {
+        return { organizationId: rawOrgId, role: safeRole, membershipRole: null };
+      }
+      // Org ID is set but org doesn't exist — clear it and fall through
+      console.warn(`[orgMiddleware] organizationId "${rawOrgId}" for user ${user._id} points to non-existent org. Clearing...`);
+      await User.findByIdAndUpdate(user._id, { $unset: { organizationId: 1 } });
     }
 
     // If organizationId is "local" or invalid, clear it from user record
     if (rawOrgId === 'local' || (rawOrgId && !rawOrgId.match(/^[0-9a-fA-F]{24}$/))) {
-      console.warn(`Invalid organizationId "${rawOrgId}" found for user ${user._id}. Clearing...`);
+      console.warn(`[orgMiddleware] Invalid organizationId "${rawOrgId}" for user ${user._id}. Clearing...`);
       await User.findByIdAndUpdate(user._id, { $unset: { organizationId: 1 } });
     }
 
@@ -69,6 +75,8 @@ const resolveOrganizationContext = async (user) => {
         .select('_id')
         .lean();
       if (ownedOrg) {
+        // Persist it so next request is fast
+        await User.findByIdAndUpdate(user._id, { $set: { organizationId: ownedOrg._id } });
         return { organizationId: String(ownedOrg._id), role: safeRole, membershipRole: null };
       }
     }
@@ -76,6 +84,11 @@ const resolveOrganizationContext = async (user) => {
     // Fall back to membership lookup
     const membership = await resolveMembershipContext(user._id);
     if (!membership) return null;
+
+    // Persist the resolved org on the user so future requests skip the lookup
+    await User.findByIdAndUpdate(user._id, {
+      $set: { organizationId: new (require('mongoose').Types.ObjectId)(membership.organizationId) }
+    });
 
     return {
       organizationId: membership.organizationId,

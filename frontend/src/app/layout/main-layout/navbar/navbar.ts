@@ -508,7 +508,7 @@ export class Navbar implements OnInit {
 
     const previousAvatar = this.userAvatar;
     const roleLabel = String(user.role || '').trim().toLowerCase();
-    this.userName = roleLabel || user.name || 'User';
+    this.userName = user.name || roleLabel || 'User';
     this.userHandle = user.githubUsername || user.email || '';
     this.userInitial = this.profileService.getInitials(this.userName || 'User') || 'U';
     this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');

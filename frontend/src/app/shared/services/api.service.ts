@@ -329,6 +329,10 @@ export class ApiService {
   }
 
   /* ── Recruiter Dashboard ── */
+  getRecruiterDashboard(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter/dashboard`);
+  }
+
   getRecruiterCandidates(params: {
     search?: string;
     stack?: string;

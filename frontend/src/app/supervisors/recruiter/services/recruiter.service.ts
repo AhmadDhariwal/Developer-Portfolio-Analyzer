@@ -79,6 +79,35 @@ export interface MatchResult {
   };
 }
 
+export interface ScoreDistributionItem { range: string; count: number; }
+export interface StackBreakdownItem    { stack: string; count: number; }
+export interface ExperienceItem        { range: string; count: number; }
+export interface JobsOverTimeItem      { month: string; count: number; }
+export interface SkillDemandItem       { skill: string; demand: number; }
+export interface SupplyDemandItem      { stack: string; supply: number; demand: number; }
+
+export interface RecruiterDashboard {
+  stats: {
+    totalCandidates: number;
+    averageScore: number;
+    totalJobs: number;
+    openJobs: number;
+    draftJobs: number;
+    closedJobs: number;
+    totalRecruiters: number;
+  };
+  topCandidates: RecruiterCandidate[];
+  recentJobs: RecruiterJob[];
+  charts: {
+    scoreDistribution: ScoreDistributionItem[];
+    stackBreakdown: StackBreakdownItem[];
+    experienceDistribution: ExperienceItem[];
+    jobsOverTime: JobsOverTimeItem[];
+    topSkillsDemand: SkillDemandItem[];
+    supplyDemand: SupplyDemandItem[];
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -90,6 +119,14 @@ export class RecruiterService {
   readonly latestMatches$ = this.latestMatchesSubject.asObservable();
 
   constructor(private readonly apiService: ApiService) {}
+
+  getDashboard(): Observable<RecruiterDashboard> {
+    return this.withLoading(
+      this.apiService.getRecruiterDashboard().pipe(
+        map((res: RecruiterDashboard) => res)
+      )
+    );
+  }
 
   getCandidates(filters: {
     search?: string;

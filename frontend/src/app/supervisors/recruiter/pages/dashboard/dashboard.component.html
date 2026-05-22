@@ -1,53 +1,442 @@
-<section class="recruiter-page">
-  <app-message></app-message>
-  <app-loader [loading]="(recruiterService.loading$ | async) ?? false" type="skeleton" label="Loading recruiter dashboard"></app-loader>
+<section class="rd-shell">
 
-  <div class="stats-grid">
-    <article class="card metric">
-      <h4>Total Candidates</h4>
-      <p>{{ totalCandidates }}</p>
-    </article>
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="rd-header">
+    <div class="rd-header__left">
+      <div class="rd-header__eyebrow">
+        <span class="rd-eyebrow-dot"></span>
+        Recruiter Workspace
+      </div>
+      <h1 class="rd-header__title">Hiring Dashboard</h1>
+      <p class="rd-header__sub">Real-time overview of your talent pipeline, jobs, and candidate insights.</p>
+    </div>
+    <button type="button" class="rd-btn-ghost" (click)="loadDashboard()" [disabled]="loading">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Refresh
+    </button>
+  </header>
 
-    <article class="card metric">
-      <h4>Top Candidates</h4>
-      <p>{{ topCandidates.length }}</p>
-    </article>
-
-    <article class="card metric">
-      <h4>Average Score</h4>
-      <p>{{ averageScore | number: '1.0-1' }}</p>
-    </article>
-
-    <article class="card metric">
-      <h4>Active Jobs</h4>
-      <p>{{ jobs.length }}</p>
-    </article>
+  <!-- ── Loading shimmer ─────────────────────────────────────────────────── -->
+  <div class="rd-loading-bar" *ngIf="loading">
+    <div class="rd-loading-bar__fill"></div>
   </div>
 
-  <div class="recruiter-layout">
-    <section class="card panel">
-      <h3>Top Candidates</h3>
-      <app-empty-state
-        *ngIf="topCandidates.length === 0"
-        title="No candidates found"
-        subtitle="Start by adding recruiter candidates or syncing profile analysis."
-      ></app-empty-state>
-
-      <app-candidate-card
-        *ngFor="let candidate of topCandidates"
-        [candidate]="candidate"
-      ></app-candidate-card>
-    </section>
-
-    <section class="card panel">
-      <h3>Recent Matches</h3>
-      <app-empty-state
-        *ngIf="recentMatches.length === 0"
-        title="No recent matches"
-        subtitle="Run candidate matching from Match Results to populate analytics."
-      ></app-empty-state>
-
-      <app-match-card *ngFor="let match of recentMatches" [result]="match"></app-match-card>
-    </section>
+  <!-- ── Error ───────────────────────────────────────────────────────────── -->
+  <div class="rd-alert" *ngIf="error" role="alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+    <button type="button" class="rd-alert__close" (click)="error = ''">✕</button>
   </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         STAT CARDS ROW
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="rd-stats-grid">
+
+      <div class="rd-stat rd-stat--indigo">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ totalCandidates }}</span>
+        <span class="rd-stat__label">Total Candidates</span>
+      </div>
+
+      <div class="rd-stat rd-stat--blue">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ averageScore | number:'1.0-1' }}</span>
+        <span class="rd-stat__label">Avg. Candidate Score</span>
+      </div>
+
+      <div class="rd-stat rd-stat--green">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ openJobs }}</span>
+        <span class="rd-stat__label">Open Jobs</span>
+      </div>
+
+      <div class="rd-stat rd-stat--amber">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ draftJobs }}</span>
+        <span class="rd-stat__label">Draft Jobs</span>
+      </div>
+
+      <div class="rd-stat rd-stat--red">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ closedJobs }}</span>
+        <span class="rd-stat__label">Closed Jobs</span>
+      </div>
+
+      <div class="rd-stat rd-stat--purple">
+        <div class="rd-stat__accent"></div>
+        <div class="rd-stat__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="rd-stat__value">{{ totalRecruiters }}</span>
+        <span class="rd-stat__label">Team Recruiters</span>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CHARTS ROW 1 — Score Distribution + Stack Breakdown
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="rd-charts-row">
+
+      <!-- Score Distribution (horizontal bar chart) -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            Score Distribution
+          </div>
+          <span class="rd-badge rd-badge--blue">{{ totalCandidates }} candidates</span>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="scoreDistribution.length === 0">
+            <p>No candidate data yet.</p>
+          </div>
+          <div class="rd-hbar-list" *ngIf="scoreDistribution.length > 0">
+            <div class="rd-hbar-row" *ngFor="let item of scoreDistribution; trackBy: trackByRange">
+              <span class="rd-hbar-label">{{ item.range }}</span>
+              <div class="rd-hbar-track">
+                <div class="rd-hbar-fill rd-hbar-fill--score"
+                     [style.width.%]="(item.count / maxScoreBucket) * 100"
+                     [style.background]="item.range === '81–100' ? '#22c55e' : item.range === '61–80' ? '#3b82f6' : item.range === '41–60' ? '#f59e0b' : '#ef4444'">
+                </div>
+              </div>
+              <span class="rd-hbar-count">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stack Breakdown (horizontal bars) -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+            Candidates by Stack
+          </div>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="stackBreakdown.length === 0">
+            <p>No stack data available.</p>
+          </div>
+          <div class="rd-hbar-list" *ngIf="stackBreakdown.length > 0">
+            <div class="rd-hbar-row" *ngFor="let item of stackBreakdown; trackBy: trackByStack">
+              <span class="rd-hbar-label">{{ item.stack }}</span>
+              <div class="rd-hbar-track">
+                <div class="rd-hbar-fill rd-hbar-fill--indigo"
+                     [style.width.%]="(item.count / maxStackCount) * 100">
+                </div>
+              </div>
+              <span class="rd-hbar-count">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CHARTS ROW 2 — Jobs Over Time + Experience Distribution
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="rd-charts-row">
+
+      <!-- Jobs Over Time (vertical bar chart) -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Jobs Posted (Last 6 Months)
+          </div>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="jobsOverTime.length === 0">
+            <p>No job history yet.</p>
+          </div>
+          <div class="rd-vbar-chart" *ngIf="jobsOverTime.length > 0">
+            <div class="rd-vbar-col" *ngFor="let item of jobsOverTime; trackBy: trackByMonth">
+              <span class="rd-vbar-value">{{ item.count }}</span>
+              <div class="rd-vbar-track">
+                <div class="rd-vbar-fill"
+                     [style.height.%]="maxJobsMonth > 0 ? (item.count / maxJobsMonth) * 100 : 0">
+                </div>
+              </div>
+              <span class="rd-vbar-label">{{ item.month }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience Distribution (donut-style segments) -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Experience Distribution
+          </div>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="experienceDistribution.length === 0">
+            <p>No experience data yet.</p>
+          </div>
+          <div class="rd-exp-list" *ngIf="experienceDistribution.length > 0">
+            <div class="rd-exp-row" *ngFor="let item of experienceDistribution; trackBy: trackByExp; let i = index">
+              <div class="rd-exp-dot" [style.background]="['#6366f1','#3b82f6','#22c55e','#f59e0b','#a855f7'][i % 5]"></div>
+              <span class="rd-exp-label">{{ item.range }} yrs</span>
+              <div class="rd-exp-track">
+                <div class="rd-exp-fill"
+                     [style.width.%]="totalCandidates > 0 ? (item.count / totalCandidates) * 100 : 0"
+                     [style.background]="['#6366f1','#3b82f6','#22c55e','#f59e0b','#a855f7'][i % 5]">
+                </div>
+              </div>
+              <span class="rd-exp-pct">{{ totalCandidates > 0 ? ((item.count / totalCandidates) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CHARTS ROW 3 — Top Skills Demand + Supply vs Demand
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="rd-charts-row">
+
+      <!-- Top Skills in Demand -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            Top Skills in Demand
+          </div>
+          <span class="rd-badge rd-badge--green">{{ openJobs }} open jobs</span>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="topSkillsDemand.length === 0">
+            <p>Post open jobs to see skill demand.</p>
+          </div>
+          <div class="rd-hbar-list" *ngIf="topSkillsDemand.length > 0">
+            <div class="rd-hbar-row" *ngFor="let item of topSkillsDemand; trackBy: trackBySkill">
+              <span class="rd-hbar-label">{{ item.skill }}</span>
+              <div class="rd-hbar-track">
+                <div class="rd-hbar-fill rd-hbar-fill--green"
+                     [style.width.%]="(item.demand / maxSkillDemand) * 100">
+                </div>
+              </div>
+              <span class="rd-hbar-count">{{ item.demand }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supply vs Demand -->
+      <div class="rd-card">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 4-5"/>
+            </svg>
+            Supply vs Demand
+          </div>
+          <div class="rd-legend">
+            <span class="rd-legend-dot rd-legend-dot--indigo"></span><span>Supply</span>
+            <span class="rd-legend-dot rd-legend-dot--green"></span><span>Demand</span>
+          </div>
+        </div>
+        <div class="rd-chart-body">
+          <div class="rd-empty" *ngIf="supplyDemand.length === 0">
+            <p>No supply/demand data yet.</p>
+          </div>
+          <div class="rd-sd-list" *ngIf="supplyDemand.length > 0">
+            <div class="rd-sd-row" *ngFor="let item of supplyDemand; trackBy: trackBySupply">
+              <span class="rd-sd-label">{{ item.stack }}</span>
+              <div class="rd-sd-bars">
+                <div class="rd-sd-bar-wrap">
+                  <div class="rd-sd-bar rd-sd-bar--supply"
+                       [style.width.%]="(item.supply / maxSupply) * 100"
+                       [title]="'Supply: ' + item.supply">
+                  </div>
+                </div>
+                <div class="rd-sd-bar-wrap">
+                  <div class="rd-sd-bar rd-sd-bar--demand"
+                       [style.width.%]="(item.demand / maxSupply) * 100"
+                       [title]="'Demand: ' + item.demand">
+                  </div>
+                </div>
+              </div>
+              <div class="rd-sd-nums">
+                <span class="rd-sd-num rd-sd-num--supply">{{ item.supply }}</span>
+                <span class="rd-sd-num rd-sd-num--demand">{{ item.demand }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BOTTOM ROW — Top Candidates + Recent Jobs + Recent Matches
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="rd-bottom-row">
+
+      <!-- Top Candidates -->
+      <div class="rd-card rd-card--tall">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+            Top Candidates
+          </div>
+          <span class="rd-badge rd-badge--indigo">by score</span>
+        </div>
+        <div class="rd-card-body">
+          <div class="rd-empty" *ngIf="topCandidates.length === 0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+            <p>No candidates yet.</p>
+          </div>
+          <div class="rd-candidate-list" *ngIf="topCandidates.length > 0">
+            <div class="rd-candidate-row" *ngFor="let c of topCandidates; let i = index; trackBy: trackByCandidate">
+              <div class="rd-candidate-rank" [class.rd-candidate-rank--gold]="i === 0" [class.rd-candidate-rank--silver]="i === 1" [class.rd-candidate-rank--bronze]="i === 2">
+                #{{ i + 1 }}
+              </div>
+              <div class="rd-candidate-avatar">{{ c.fullName.charAt(0).toUpperCase() }}</div>
+              <div class="rd-candidate-info">
+                <span class="rd-candidate-name">{{ c.fullName }}</span>
+                <span class="rd-candidate-meta">{{ c.stack }} · {{ c.yearsOfExperience }}y exp</span>
+                <div class="rd-candidate-skills" *ngIf="c.skills.length">
+                  <span class="rd-skill-chip" *ngFor="let skill of c.skills.slice(0, 3)">{{ skill }}</span>
+                </div>
+              </div>
+              <div class="rd-candidate-score" [style.color]="getScoreColor(c.score)">
+                <span class="rd-score-value">{{ c.score | number:'1.0-0' }}</span>
+                <span class="rd-score-label">{{ getScoreLabel(c.score) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Jobs -->
+      <div class="rd-card rd-card--tall">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+            Recent Jobs
+          </div>
+          <span class="rd-badge rd-badge--amber">{{ totalJobs }} total</span>
+        </div>
+        <div class="rd-card-body">
+          <div class="rd-empty" *ngIf="recentJobs.length === 0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+            <p>No jobs posted yet.</p>
+          </div>
+          <div class="rd-job-list" *ngIf="recentJobs.length > 0">
+            <div class="rd-job-row" *ngFor="let job of recentJobs; trackBy: trackByJob">
+              <div class="rd-job-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                </svg>
+              </div>
+              <div class="rd-job-info">
+                <span class="rd-job-title">{{ job.title }}</span>
+                <span class="rd-job-meta">{{ job.stack }} · {{ job.employmentType }}</span>
+              </div>
+              <span class="rd-job-status" [style.color]="getJobStatusColor(job.status)" [style.border-color]="getJobStatusColor(job.status)">
+                {{ job.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Matches -->
+      <div class="rd-card rd-card--tall">
+        <div class="rd-card__header">
+          <div class="rd-card__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            Recent AI Matches
+          </div>
+        </div>
+        <div class="rd-card-body">
+          <div class="rd-empty" *ngIf="recentMatches.length === 0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <p>Run AI matching to see results here.</p>
+          </div>
+          <div class="rd-match-list" *ngIf="recentMatches.length > 0">
+            <div class="rd-match-row" *ngFor="let m of recentMatches">
+              <div class="rd-match-rank" [class.rd-match-rank--gold]="m.rank === 1" [class.rd-match-rank--silver]="m.rank === 2" [class.rd-match-rank--bronze]="m.rank === 3">
+                #{{ m.rank }}
+              </div>
+              <div class="rd-match-avatar">{{ m.candidate.fullName.charAt(0).toUpperCase() }}</div>
+              <div class="rd-match-info">
+                <span class="rd-match-name">{{ m.candidate.fullName }}</span>
+                <span class="rd-match-meta">{{ m.candidate.stack }}</span>
+              </div>
+              <div class="rd-match-score">
+                <span class="rd-score-value" [style.color]="getScoreColor(m.rankScore)">{{ m.rankScore | number:'1.0-1' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
 </section>

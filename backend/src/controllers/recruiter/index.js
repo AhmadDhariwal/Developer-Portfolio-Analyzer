@@ -15,7 +15,10 @@ const {
   aiRankCandidates
 } = require('./matchController');
 
+const { getRecruiterDashboard } = require('./dashboardController');
+
 module.exports = {
+  getRecruiterDashboard,
   getRecruiterCandidates,
   getRecruiterCandidateById,
   createRecruiterJob,

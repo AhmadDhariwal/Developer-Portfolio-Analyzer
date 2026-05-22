@@ -7,6 +7,7 @@ const {
   deleteRecruiterJob
 } = require('../../services/recruiter-hub/recruiterJobService');
 const { getRecruiterScope } = require('../../utils/recruiter-hub/recruiterAccess');
+const AuditLog = require('../../models/auditLog');
 
 const listJobs = async (req, res) => {
   try {
@@ -35,6 +36,22 @@ const createJob = async (req, res) => {
   try {
     const scope = await getRecruiterScope(req);
     const job = await createRecruiterJob({ ...scope, payload: req.body || {} });
+    await AuditLog.create({
+      actor: scope.recruiterId,
+      organizationId: scope.organizationId,
+      teamId: job?.teamId || scope.teamIds[0] || null,
+      action: 'RECRUITER_JOB_CREATED',
+      method: 'POST',
+      route: req.originalUrl,
+      before: null,
+      after: {
+        jobId: String(job?._id || ''),
+        title: String(job?.title || ''),
+        status: String(job?.status || '')
+      },
+      statusCode: 201,
+      timestamp: new Date()
+    });
     return res.status(201).json({ job });
   } catch (error) {
     console.error('Recruiter hub create job error:', error.message);
@@ -47,6 +64,22 @@ const updateJob = async (req, res) => {
     const scope = await getRecruiterScope(req);
     const job = await updateRecruiterJob({ ...scope, jobId: req.params.id, payload: req.body || {} });
     if (!job) return res.status(404).json({ message: 'Job not found.' });
+    await AuditLog.create({
+      actor: scope.recruiterId,
+      organizationId: scope.organizationId,
+      teamId: job?.teamId || scope.teamIds[0] || null,
+      action: 'RECRUITER_JOB_UPDATED',
+      method: 'PATCH',
+      route: req.originalUrl,
+      before: null,
+      after: {
+        jobId: String(job?._id || req.params.id || ''),
+        title: String(job?.title || ''),
+        status: String(job?.status || '')
+      },
+      statusCode: 200,
+      timestamp: new Date()
+    });
     return res.status(200).json({ job });
   } catch (error) {
     console.error('Recruiter hub update job error:', error.message);
@@ -59,6 +92,22 @@ const archiveJob = async (req, res) => {
     const scope = await getRecruiterScope(req);
     const job = await archiveRecruiterJob({ ...scope, jobId: req.params.id });
     if (!job) return res.status(404).json({ message: 'Job not found.' });
+    await AuditLog.create({
+      actor: scope.recruiterId,
+      organizationId: scope.organizationId,
+      teamId: job?.teamId || scope.teamIds[0] || null,
+      action: 'RECRUITER_JOB_ARCHIVED',
+      method: 'POST',
+      route: req.originalUrl,
+      before: null,
+      after: {
+        jobId: String(job?._id || req.params.id || ''),
+        title: String(job?.title || ''),
+        status: String(job?.status || '')
+      },
+      statusCode: 200,
+      timestamp: new Date()
+    });
     return res.status(200).json({ job });
   } catch (error) {
     console.error('Recruiter hub archive job error:', error.message);
@@ -71,6 +120,20 @@ const deleteJob = async (req, res) => {
     const scope = await getRecruiterScope(req);
     const deleted = await deleteRecruiterJob({ ...scope, jobId: req.params.id });
     if (!deleted) return res.status(404).json({ message: 'Job not found.' });
+    await AuditLog.create({
+      actor: scope.recruiterId,
+      organizationId: scope.organizationId,
+      teamId: scope.teamIds[0] || null,
+      action: 'RECRUITER_JOB_DELETED',
+      method: 'DELETE',
+      route: req.originalUrl,
+      before: {
+        jobId: String(req.params.id || '')
+      },
+      after: null,
+      statusCode: 200,
+      timestamp: new Date()
+    });
     return res.status(200).json({ message: 'Job deleted successfully.' });
   } catch (error) {
     console.error('Recruiter hub delete job error:', error.message);

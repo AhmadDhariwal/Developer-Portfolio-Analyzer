@@ -13,7 +13,7 @@ const compareCandidates = async ({ recruiterId, organizationId, payload = {} }) 
     throw error;
   }
 
-  const candidates = (await Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId))))
+  const candidates = (await Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId, organizationId))))
     .filter(Boolean);
 
   let matchSummaries = [];

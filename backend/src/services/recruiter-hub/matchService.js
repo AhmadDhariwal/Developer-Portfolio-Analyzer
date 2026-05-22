@@ -3,6 +3,48 @@ const RecruiterShortlist = require('../../models/RecruiterShortlist');
 const Job = require('../../models/Job');
 const { listCandidates } = require('../recruiter/matchingService');
 const { generateMatches } = require('../../utils/recruiter-hub/matchCalculator');
+const { getRecruiterCandidateDetails } = require('./candidateService');
+
+const mapJobSummary = (job = {}) => ({
+  _id: String(job?._id || ''),
+  title: String(job?.title || ''),
+  stack: String(job?.stack || ''),
+  status: String(job?.status || ''),
+  description: String(job?.description || ''),
+  requiredSkills: Array.isArray(job?.requiredSkills) ? job.requiredSkills : [],
+  preferredSkills: Array.isArray(job?.preferredSkills) ? job.preferredSkills : []
+});
+
+const hydrateMatches = async ({ recruiterId, organizationId, job, matches = [] }) => {
+  const candidateIds = [...new Set(matches.map((entry) => String(entry.candidateId || '')).filter(Boolean))];
+  const jobIds = [...new Set(matches.map((entry) => String(entry.jobId || '')).filter(Boolean))];
+
+  const [candidates, jobs] = await Promise.all([
+    Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId, organizationId))),
+    jobIds.length > 0
+      ? Job.find({ _id: { $in: jobIds }, recruiterId, organizationId })
+          .select('title stack status description requiredSkills preferredSkills')
+          .lean()
+      : []
+  ]);
+
+  const candidateMap = new Map(
+    candidates
+      .filter(Boolean)
+      .map((candidate) => [String(candidate.id || candidate.userId || ''), candidate])
+  );
+  const jobMap = new Map(jobs.map((entry) => [String(entry._id), mapJobSummary(entry)]));
+
+  if (job?._id) {
+    jobMap.set(String(job._id), mapJobSummary(job));
+  }
+
+  return matches.map((entry) => ({
+    ...entry,
+    candidate: candidateMap.get(String(entry.candidateId || '')) || null,
+    job: jobMap.get(String(entry.jobId || '')) || null
+  }));
+};
 
 const loadJob = async ({ recruiterId, organizationId, jobId }) => {
   return Job.findOne({ _id: jobId, recruiterId, organizationId }).lean();
@@ -59,13 +101,20 @@ const generateRecruiterMatches = async ({ recruiterId, organizationId, teamIds =
     }).select('candidateId').lean()).map((entry) => [String(entry.candidateId), true])
   );
 
-  return {
+  const hydratedMatches = await hydrateMatches({
+    recruiterId,
+    organizationId,
     job,
     matches: result.records.map((record, index) => ({
       ...record,
       rank: index + 1,
       shortlisted: shortlistMap.has(record.candidateId)
-    })),
+    }))
+  });
+
+  return {
+    job: mapJobSummary(job),
+    matches: hydratedMatches,
     meta: result.meta
   };
 };
@@ -79,26 +128,57 @@ const listRecruiterMatches = async ({ recruiterId, organizationId, query = {} })
   if (query.candidateId) filter.candidateId = String(query.candidateId);
   if (query.status) filter.status = String(query.status);
 
-  return RecruiterMatch.find(filter)
+  const matches = await RecruiterMatch.find(filter)
     .sort({ updatedAt: -1 })
-    .populate('candidateId', 'name email githubUsername jobTitle location')
-    .populate('jobId', 'title stack status')
     .lean();
+
+  return hydrateMatches({
+    recruiterId,
+    organizationId,
+    matches: matches.map((entry) => ({
+      ...entry,
+      candidateId: String(entry.candidateId || ''),
+      jobId: String(entry.jobId || '')
+    }))
+  });
 };
 
 const getRecruiterMatchDetails = async ({ recruiterId, organizationId, matchId }) => {
-  return RecruiterMatch.findOne({ _id: matchId, recruiterId, organizationId })
-    .populate('candidateId', 'name email githubUsername jobTitle location')
-    .populate('jobId', 'title stack status description requiredSkills preferredSkills')
-    .lean();
+  const match = await RecruiterMatch.findOne({ _id: matchId, recruiterId, organizationId }).lean();
+  if (!match) return null;
+
+  const [hydrated] = await hydrateMatches({
+    recruiterId,
+    organizationId,
+    matches: [{
+      ...match,
+      candidateId: String(match.candidateId || ''),
+      jobId: String(match.jobId || '')
+    }]
+  });
+
+  return hydrated || null;
 };
 
 const updateMatchStatus = async ({ recruiterId, organizationId, matchId, status }) => {
-  return RecruiterMatch.findOneAndUpdate(
+  const match = await RecruiterMatch.findOneAndUpdate(
     { _id: matchId, recruiterId, organizationId },
     { $set: { status } },
     { new: true }
   ).lean();
+  if (!match) return null;
+
+  const [hydrated] = await hydrateMatches({
+    recruiterId,
+    organizationId,
+    matches: [{
+      ...match,
+      candidateId: String(match.candidateId || ''),
+      jobId: String(match.jobId || '')
+    }]
+  });
+
+  return hydrated || null;
 };
 
 module.exports = {

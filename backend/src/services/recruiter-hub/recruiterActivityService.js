@@ -35,7 +35,7 @@ const listRecruiterActivities = async ({ recruiterId, organizationId, query = {}
 
   const [jobs, candidates] = await Promise.all([
     jobIds.length > 0 ? Job.find({ _id: { $in: jobIds }, recruiterId, organizationId }).select('_id title').lean() : [],
-    Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId)))
+    Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId, organizationId)))
   ]);
 
   const jobMap = new Map(jobs.map((job) => [String(job._id), job]));

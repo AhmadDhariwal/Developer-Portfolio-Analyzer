@@ -11,6 +11,30 @@ const normalizeArrayFilter = (value) => {
     .filter(Boolean);
 };
 
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const sortCandidates = (candidates = [], sortBy = 'score-desc') => {
+  const list = [...candidates];
+  switch (String(sortBy || 'score-desc')) {
+    case 'name-asc':
+      return list.sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')));
+    case 'experience-desc':
+      return list.sort((left, right) => toNumber(right.yearsOfExperience) - toNumber(left.yearsOfExperience));
+    case 'experience-asc':
+      return list.sort((left, right) => toNumber(left.yearsOfExperience) - toNumber(right.yearsOfExperience));
+    case 'latest':
+      return list.sort((left, right) => new Date(right.lastActive || 0).getTime() - new Date(left.lastActive || 0).getTime());
+    case 'score-asc':
+      return list.sort((left, right) => toNumber(left.readinessScore) - toNumber(right.readinessScore));
+    case 'score-desc':
+    default:
+      return list.sort((left, right) => toNumber(right.readinessScore) - toNumber(left.readinessScore));
+  }
+};
+
 const enrichCandidates = async (candidates = []) => {
   const ids = candidates.map((candidate) => String(candidate.userId || candidate.id || '')).filter(Boolean);
   const users = ids.length
@@ -59,32 +83,48 @@ const filterCandidateCards = (candidates = [], filters = {}) => {
 };
 
 const listRecruiterCandidates = async ({ organizationId, query = {} }) => {
+  const page = Math.max(1, toNumber(query.page, 1));
+  const limit = Math.min(240, Math.max(1, toNumber(query.limit, 12)));
+  const sortBy = String(query.sortBy || 'score-desc').trim() || 'score-desc';
   const base = await listCandidates({
     search: String(query.search || '').trim(),
     stack: String(query.stack || '').trim(),
-    experience: Number(query.experience || 0),
-    minScore: Number(query.minReadiness || query.minScore || 0),
+    experience: toNumber(query.experience, 0),
+    minScore: toNumber(query.minReadiness || query.minScore, 0),
     organizationId,
-    limit: Math.min(250, Math.max(1, Number(query.limit || 100)))
+    limit: 320
   });
 
   const enriched = await enrichCandidates(base);
   const filtered = filterCandidateCards(enriched, query);
+  const sorted = sortCandidates(filtered, sortBy);
+  const total = sorted.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * limit;
+  const paged = sorted.slice(start, start + limit);
   const stacks = [...new Set(filtered.map((candidate) => String(candidate.stack || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const locations = [...new Set(filtered.map((candidate) => String(candidate.location || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
   return {
-    candidates: filtered,
+    candidates: paged,
     filters: {
       stacks,
       locations,
       availability: ['Open to entry roles', 'High intent', 'Available', 'Review needed']
+    },
+    meta: {
+      page: safePage,
+      limit,
+      total,
+      totalPages,
+      sortBy
     }
   };
 };
 
-const getRecruiterCandidateDetails = async (candidateId) => {
-  const candidate = await getCandidateById(candidateId);
+const getRecruiterCandidateDetails = async (candidateId, organizationId) => {
+  const candidate = await getCandidateById(candidateId, { organizationId });
   if (!candidate) return null;
 
   const formatted = formatCandidateCard(candidate);
@@ -101,7 +141,7 @@ const getRecruiterCandidateDetails = async (candidateId) => {
 };
 
 const analyzeRecruiterCandidate = async ({ recruiterId, organizationId, teamId, candidateId, route }) => {
-  const candidate = await getRecruiterCandidateDetails(candidateId);
+  const candidate = await getRecruiterCandidateDetails(candidateId, organizationId);
   if (!candidate) return null;
 
   const analysis = {

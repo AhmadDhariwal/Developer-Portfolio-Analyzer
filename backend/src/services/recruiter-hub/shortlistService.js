@@ -12,6 +12,22 @@ const addToShortlist = async ({ recruiterId, organizationId, teamIds = [], paylo
     throw error;
   }
 
+  const candidate = await getRecruiterCandidateDetails(candidateId, organizationId);
+  if (!candidate) {
+    const error = new Error('Candidate not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (jobId) {
+    const job = await getRecruiterJobDetails({ recruiterId, organizationId, jobId });
+    if (!job) {
+      const error = new Error('Job not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+  }
+
   const shortlist = await RecruiterShortlist.findOneAndUpdate(
     {
       recruiterId,
@@ -50,7 +66,7 @@ const listShortlists = async ({ recruiterId, organizationId, query = {} }) => {
 
   const hydrated = await Promise.all(items.map(async (item) => ({
     ...item,
-    candidate: await getRecruiterCandidateDetails(item.candidateId),
+    candidate: await getRecruiterCandidateDetails(item.candidateId, organizationId),
     job: item.jobId ? await getRecruiterJobDetails({ recruiterId, organizationId, jobId: item.jobId }) : null
   })));
 

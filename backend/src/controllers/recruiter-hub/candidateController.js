@@ -22,7 +22,7 @@ const listCandidates = async (req, res) => {
 const getCandidateDetails = async (req, res) => {
   try {
     const scope = await getRecruiterScope(req);
-    const candidate = await getRecruiterCandidateDetails(req.params.id);
+    const candidate = await getRecruiterCandidateDetails(req.params.id, scope.organizationId);
     if (!candidate) {
       return res.status(404).json({ message: 'Candidate not found.' });
     }

@@ -226,11 +226,17 @@ export class Sidebar implements OnInit {
 
     if (isRecruiter) {
       this.openGroups.add('Recruiter Hub');
+      this.openGroups.add('Workspace');
       this.visibleNavItems = [
         {
           label: 'Dashboard',
           route: '/app/recruiter/dashboard',
           icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`)
+        },
+        {
+          label: 'Notifications',
+          route: '/app/notifications',
+          icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`)
         }
       ];
       this.visibleNavGroups = [
@@ -241,12 +247,21 @@ export class Sidebar implements OnInit {
           items: [
             { label: 'Candidates', route: '/app/recruiter/candidates', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>`) },
             { label: 'Jobs', route: '/app/recruiter/jobs', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`) },
-            { label: 'Matches', route: '/app/recruiter/matches', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h8"></path><path d="M12 8l4 4-4 4"></path><path d="M4 6h6"></path><path d="M14 18h6"></path></svg>`) },
+            { label: 'Match Results', route: '/app/recruiter/matches', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h8"></path><path d="M12 8l4 4-4 4"></path><path d="M4 6h6"></path><path d="M14 18h6"></path></svg>`) },
             { label: 'Shortlists', route: '/app/recruiter/shortlists', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`) },
-            { label: 'Compare Candidates', route: '/app/recruiter/comparison', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4H4v16h6"></path><path d="M14 4h6v16h-6"></path><path d="M9 12h6"></path></svg>`) },
+            { label: 'Comparison', route: '/app/recruiter/comparison', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4H4v16h6"></path><path d="M14 4h6v16h-6"></path><path d="M9 12h6"></path></svg>`) },
             { label: 'Analytics', route: '/app/recruiter/analytics', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`) },
             { label: 'Activity Logs', route: '/app/recruiter/activity-logs', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`) },
-            { label: 'Profile', route: '/app/recruiter/profile', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`) }
+            { label: 'Profile Settings', route: '/app/recruiter/profile', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`) }
+          ]
+        },
+        {
+          label: 'Workspace',
+          route: '',
+          icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8"></path><path d="M12 18v2"></path></svg>`),
+          items: [
+            { label: 'Integrations', route: '/app/integrations', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><line x1="10" y1="6.5" x2="14" y2="6.5"></line><line x1="17.5" y1="10" x2="17.5" y2="14"></line></svg>`) },
+            { label: 'My Profile', route: '/app/profile', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`) }
           ]
         }
       ];
