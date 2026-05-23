@@ -227,13 +227,7 @@ export class Sidebar implements OnInit {
     if (isRecruiter) {
       this.openGroups.add('Recruiter Hub');
       this.openGroups.add('Workspace');
-      this.visibleNavItems = [
-        {
-          label: 'Notifications',
-          route: '/app/notifications',
-          icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`)
-        }
-      ];
+      this.visibleNavItems = [];
       this.visibleNavGroups = [
         {
           label: 'Recruiter Hub',
@@ -241,6 +235,7 @@ export class Sidebar implements OnInit {
           icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"></circle><circle cx="17" cy="7" r="2"></circle><path d="M3 20a5 5 0 0 1 10 0"></path><path d="M14 20a4 4 0 0 1 8 0"></path></svg>`),
           items: [
             { label: 'Dashboard', route: '/app/recruiter/dashboard', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`) },
+            { label: 'Notifications', route: '/app/recruiter/notifications', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`) },
             { label: 'Candidates', route: '/app/recruiter/candidates', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>`) },
             { label: 'Jobs', route: '/app/recruiter/jobs', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`) },
             { label: 'Match Results', route: '/app/recruiter/matches', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h8"></path><path d="M12 8l4 4-4 4"></path><path d="M4 6h6"></path><path d="M14 18h6"></path></svg>`) },

@@ -11,10 +11,12 @@ import { ComparisonComponent } from './pages/comparison/comparison.component';
 import { RecruiterAnalyticsComponent } from './pages/recruiter-analytics/recruiter-analytics.component';
 import { RecruiterActivityLogsComponent } from './pages/activity-logs/activity-logs.component';
 import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-profile.component';
+import { NotificationsComponent } from '../../pages/notifications/notifications.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: RecruiterDashboardComponent },
+  { path: 'notifications', component: NotificationsComponent },
   { path: 'candidates', component: CandidatesComponent },
   { path: 'candidates/:id', component: CandidateDetailsComponent },
   { path: 'jobs', component: JobsComponent },
