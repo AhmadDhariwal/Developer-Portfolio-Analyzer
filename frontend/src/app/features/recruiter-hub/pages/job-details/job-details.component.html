@@ -1,4 +1,6 @@
 <section class="hub-page">
+  <app-recruiter-back-button fallbackRoute="/app/recruiter/jobs" label="Back to Jobs" />
+
   <app-recruiter-loader *ngIf="loading" label="Loading job details..." />
   <div class="message message--error" *ngIf="error">{{ error }}</div>
 

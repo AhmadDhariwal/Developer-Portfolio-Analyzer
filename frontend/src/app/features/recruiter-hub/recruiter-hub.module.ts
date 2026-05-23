@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 import { RecruiterHubRoutingModule } from './recruiter-hub-routing.module';
 import { RecruiterHubSharedModule } from './recruiter-hub-shared.module';
+import { RecruiterSharedModule as SharedRecruiterUiModule } from '../../supervisors/recruiter-shared/recruiter-shared.module';
 import { RecruiterHubService } from './services/recruiter-hub.service';
 import { CandidateService } from './services/candidate.service';
 import { RecruiterJobService } from './services/recruiter-job.service';
@@ -37,8 +39,10 @@ import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-p
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     SearchableSelectComponent,
     RecruiterHubSharedModule,
+    SharedRecruiterUiModule,
     RecruiterHubRoutingModule,
   ],
   providers: [RecruiterHubService, CandidateService, RecruiterJobService, RecruiterMatchService],

@@ -85,11 +85,25 @@ h1 {
   grid-column: 1/-1;
 }
 label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #94a3b8;
+}
+.field__meta {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+}
+.field__meta--required {
+  color: #fca5a5;
+}
+.field__meta--optional {
+  color: #93c5fd;
 }
 input,
 textarea,
@@ -101,10 +115,29 @@ select {
   color: #f8fafc;
   padding: 0.78rem 0.9rem;
   outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(129, 140, 248, 0.65);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: rgba(248, 113, 113, 0.6);
 }
 textarea {
   min-height: 120px;
   resize: vertical;
+}
+.field__error {
+  color: #fca5a5;
+  font-size: 0.76rem;
 }
 .form-actions {
   grid-column: 1/-1;
@@ -121,6 +154,20 @@ textarea {
   font-weight: 700;
   cursor: pointer;
   padding: 0 1rem;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+.primary-btn:hover:not(:disabled),
+.ghost-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.primary-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .primary-btn {
   background: linear-gradient(135deg, #7c3aed, #4f46e5);

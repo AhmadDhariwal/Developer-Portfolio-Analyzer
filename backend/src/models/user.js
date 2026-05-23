@@ -104,6 +104,15 @@ const userSchema = new mongoose.Schema({
     noteTemplate: { type: String, default: '' },
     activityDigest: { type: Boolean, default: true }
   },
+  recruiterDetails: {
+    education: { type: String, default: '' },
+    certifications: [{ type: String }],
+    yearsOfExperience: { type: Number, default: 0 },
+    experienceSummary: { type: String, default: '' },
+    specialties: [{ type: String }],
+    toolsAndPlatforms: [{ type: String }],
+    languages: [{ type: String }]
+  },
   score: {
     type: Number,
     default: 0

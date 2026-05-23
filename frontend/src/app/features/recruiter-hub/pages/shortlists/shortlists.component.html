@@ -29,4 +29,14 @@
     title="No shortlists yet"
     message="Shortlist candidates from match results or the candidate profile to start follow-up tracking."
   />
+
+  <app-confirm-dialog
+    [open]="confirmState().open"
+    [title]="confirmState().title"
+    [message]="confirmState().message"
+    [confirmText]="confirmState().confirmText"
+    cancelText="Cancel"
+    (confirmed)="onConfirmAccepted()"
+    (cancelled)="onConfirmCancelled()"
+  />
 </section>

@@ -14,79 +14,141 @@
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
-  <form class="glass-form" (ngSubmit)="saveJob()">
+  <form class="glass-form" [formGroup]="jobForm" (ngSubmit)="saveJob()">
     <div class="field">
-      <label>Job title</label>
-      <input [(ngModel)]="form.title" name="title" placeholder="Senior React Developer" required />
+      <label for="job-title">
+        <span>Job title</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <input id="job-title" formControlName="title" placeholder="Senior React Developer" />
+      <small class="field__error" *ngIf="showControlError('title')">
+        {{ controlError('title', 'Job title is required.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Role label</label>
-      <input [(ngModel)]="form.role" name="role" placeholder="Frontend Engineer" />
+      <label for="job-role">
+        <span>Role label</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <input id="job-role" formControlName="role" placeholder="Frontend Engineer" />
+      <small class="field__error" *ngIf="showControlError('role')">
+        {{ controlError('role', 'Role label is required.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Stack</label>
-      <input [(ngModel)]="form.stack" name="stack" placeholder="React, TypeScript" />
+      <label for="job-stack">
+        <span>Stack</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <input id="job-stack" formControlName="stack" placeholder="React, TypeScript" />
+      <small class="field__error" *ngIf="showControlError('stack')">
+        {{ controlError('stack', 'Stack is required.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Location</label>
-      <input [(ngModel)]="form.location" name="location" placeholder="Remote or on-site" />
+      <label for="job-location">
+        <span>Location</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <input id="job-location" formControlName="location" placeholder="Remote or on-site" />
+      <small class="field__error" *ngIf="showControlError('location')">
+        {{ controlError('location', 'Location is required.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Employment type</label>
-      <select [(ngModel)]="form.employmentType" name="employmentType">
+      <label for="job-employment-type">
+        <span>Employment type</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <select id="job-employment-type" formControlName="employmentType">
         <option value="full-time">Full-time</option>
         <option value="part-time">Part-time</option>
         <option value="contract">Contract</option>
         <option value="internship">Internship</option>
       </select>
     </div>
+
     <div class="field">
-      <label>Status</label>
-      <select [(ngModel)]="form.status" name="status">
+      <label for="job-status">
+        <span>Status</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
+      <select id="job-status" formControlName="status">
         <option value="open">Open</option>
         <option value="draft">Draft</option>
         <option value="closed">Closed</option>
       </select>
     </div>
+
     <div class="field">
-      <label>Minimum experience</label>
+      <label for="job-experience">
+        <span>Minimum experience</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
       <input
-        [(ngModel)]="form.minExperienceYears"
-        name="minExperienceYears"
+        id="job-experience"
+        formControlName="minExperienceYears"
         type="number"
         min="0"
         placeholder="3"
       />
+      <small class="field__error" *ngIf="showControlError('minExperienceYears')">
+        {{ controlError('minExperienceYears', 'Minimum experience is required.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Required skills</label>
+      <label for="job-required-skills">
+        <span>Required skills</span>
+        <span class="field__meta field__meta--required">*</span>
+      </label>
       <input
-        [(ngModel)]="form.requiredSkills"
-        name="requiredSkills"
+        id="job-required-skills"
+        formControlName="requiredSkills"
         placeholder="React, TypeScript, Testing"
       />
+      <small class="field__error" *ngIf="showControlError('requiredSkills')">
+        {{ controlError('requiredSkills', 'Required skills are mandatory.') }}
+      </small>
     </div>
+
     <div class="field">
-      <label>Preferred skills</label>
+      <label for="job-preferred-skills">
+        <span>Preferred skills</span>
+        <span class="field__meta field__meta--optional">Optional</span>
+      </label>
       <input
-        [(ngModel)]="form.preferredSkills"
-        name="preferredSkills"
+        id="job-preferred-skills"
+        formControlName="preferredSkills"
         placeholder="Next.js, GraphQL"
       />
     </div>
+
     <div class="field field--wide">
-      <label>Description</label>
+      <label for="job-description">
+        <span>Description</span>
+        <span class="field__meta field__meta--optional">Optional</span>
+      </label>
       <textarea
-        [(ngModel)]="form.description"
-        name="description"
+        id="job-description"
+        formControlName="description"
         placeholder="Describe responsibilities, team setup, and hiring goals."
-        required
       ></textarea>
+      <small class="field__error" *ngIf="showControlError('description')">
+        {{ controlError('description', 'Description is too long.') }}
+      </small>
     </div>
+
     <div class="form-actions">
-      <button type="button" class="ghost-btn" (click)="resetForm()">Clear</button>
-      <button type="submit" class="primary-btn">
-        {{ editingJobId ? 'Update Job' : 'Create Job' }}
+      <button type="button" class="ghost-btn" (click)="resetForm()" [disabled]="saving">
+        Clear
+      </button>
+      <button type="submit" class="primary-btn" [disabled]="isSubmitDisabled">
+        {{ saving ? 'Saving...' : submitLabel }}
       </button>
     </div>
   </form>
@@ -108,5 +170,15 @@
     *ngIf="!loading && jobs.length === 0"
     title="No jobs yet"
     message="Create your first recruiter job to start generating match results and shortlist activity."
+  />
+
+  <app-confirm-dialog
+    [open]="confirmState().open"
+    [title]="confirmState().title"
+    [message]="confirmState().message"
+    [confirmText]="confirmState().confirmText"
+    cancelText="Cancel"
+    (confirmed)="onConfirmAccepted()"
+    (cancelled)="onConfirmCancelled()"
   />
 </section>

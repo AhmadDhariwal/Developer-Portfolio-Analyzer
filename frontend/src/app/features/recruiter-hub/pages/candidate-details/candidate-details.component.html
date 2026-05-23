@@ -1,8 +1,5 @@
 <section class="hub-page">
-  <button type="button" class="back-btn" (click)="goBackToCandidates()">
-    <span aria-hidden="true">←</span>
-    Back to Candidates
-  </button>
+  <app-recruiter-back-button fallbackRoute="/app/recruiter/candidates" label="Back to Candidates" />
 
   <app-recruiter-loader *ngIf="loading" label="Loading candidate profile..." />
 

@@ -18,23 +18,43 @@ const INVITATION_TTL_DAYS = 7;
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
+const sanitizeText = (value) => String(value || '').trim();
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
   const hasProfessionalLink = Boolean(String(user.githubUsername || '').trim() || normalizeLinkedIn(user.linkedin));
   const hasBasicInfo = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
-  return hasName && hasPhone && hasProfessionalLink && hasBasicInfo;
+  const hasBackground = Boolean(
+    sanitizeText(user.recruiterDetails?.education) ||
+    Number(user.recruiterDetails?.yearsOfExperience || 0) > 0 ||
+    (Array.isArray(user.recruiterDetails?.certifications) && user.recruiterDetails.certifications.length > 0)
+  );
+  return hasName && hasPhone && hasProfessionalLink && hasBasicInfo && hasBackground;
 };
 
-const sanitizeRecruiter = (user, teams = []) => ({
+const sanitizeRecruiter = (user, teams = [], organization = null) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
   role: user.role,
   organizationId: user.organizationId,
+  organization: organization || null,
   githubUsername: user.githubUsername || '',
   linkedin: user.linkedin || '',
   phoneNumber: user.phoneNumber || '',
+  avatar: user.avatar || '',
+  jobTitle: user.jobTitle || '',
+  location: user.location || '',
+  bio: user.bio || '',
+  recruiterDetails: {
+    education: sanitizeText(user.recruiterDetails?.education),
+    certifications: Array.isArray(user.recruiterDetails?.certifications) ? user.recruiterDetails.certifications : [],
+    yearsOfExperience: Number(user.recruiterDetails?.yearsOfExperience || 0),
+    experienceSummary: sanitizeText(user.recruiterDetails?.experienceSummary),
+    specialties: Array.isArray(user.recruiterDetails?.specialties) ? user.recruiterDetails.specialties : [],
+    toolsAndPlatforms: Array.isArray(user.recruiterDetails?.toolsAndPlatforms) ? user.recruiterDetails.toolsAndPlatforms : [],
+    languages: Array.isArray(user.recruiterDetails?.languages) ? user.recruiterDetails.languages : []
+  },
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
   teams,
@@ -78,18 +98,30 @@ const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
 
 const getRecruiters = async (req, res) => {
   try {
-    const recruiters = await User.find({
-      role: 'recruiter',
-      organizationId: req.organizationId
-    })
-      .select('_id name email role organizationId githubUsername linkedin phoneNumber isActive jobTitle bio createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
+    const [organization, recruiters] = await Promise.all([
+      Organization.findById(req.organizationId).select('_id name').lean(),
+      User.find({
+        role: 'recruiter',
+        organizationId: req.organizationId
+      })
+        .select('_id name email role organizationId githubUsername linkedin phoneNumber avatar isActive jobTitle location bio recruiterDetails createdAt')
+        .sort({ createdAt: -1 })
+        .lean()
+    ]);
 
     const teamMap = await loadRecruiterTeams(req.organizationId, recruiters.map((recruiter) => recruiter._id));
+    const organizationPayload = organization?._id
+      ? { _id: organization._id, name: organization.name || '' }
+      : null;
 
     return res.status(200).json({
-      recruiters: recruiters.map((recruiter) => sanitizeRecruiter(recruiter, teamMap.get(String(recruiter._id)) || []))
+      recruiters: recruiters.map((recruiter) =>
+        sanitizeRecruiter(
+          recruiter,
+          teamMap.get(String(recruiter._id)) || [],
+          organizationPayload
+        )
+      )
     });
   } catch (error) {
     console.error('Admin recruiters error:', error.message);

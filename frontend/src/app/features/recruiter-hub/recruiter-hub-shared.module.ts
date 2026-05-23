@@ -11,6 +11,7 @@ import { RecruiterPerformanceChartComponent } from './components/recruiter-perfo
 import { ActivityTimelineComponent } from './components/activity-timeline/activity-timeline.component';
 import { EmptyStateComponent } from './components/empty-state/empty-state.component';
 import { LoaderComponent } from './components/loader/loader.component';
+import { RecruiterBackButtonComponent } from './components/recruiter-back-button/recruiter-back-button.component';
 
 @NgModule({
   imports: [
@@ -26,6 +27,7 @@ import { LoaderComponent } from './components/loader/loader.component';
     ActivityTimelineComponent,
     EmptyStateComponent,
     LoaderComponent,
+    RecruiterBackButtonComponent,
   ],
   exports: [
     RecruiterStatCardComponent,
@@ -39,6 +41,7 @@ import { LoaderComponent } from './components/loader/loader.component';
     ActivityTimelineComponent,
     EmptyStateComponent,
     LoaderComponent,
+    RecruiterBackButtonComponent,
   ],
 })
 export class RecruiterHubSharedModule {}

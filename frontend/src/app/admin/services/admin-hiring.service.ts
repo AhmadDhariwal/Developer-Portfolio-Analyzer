@@ -18,8 +18,22 @@ export interface AdminRecruiter {
   githubUsername: string;
   linkedin: string;
   phoneNumber: string;
+  avatar?: string;
+  jobTitle?: string;
+  location?: string;
+  bio?: string;
   role: 'recruiter';
   organizationId: string;
+  organization?: { _id: string; name: string } | null;
+  recruiterDetails?: {
+    education: string;
+    certifications: string[];
+    yearsOfExperience: number;
+    experienceSummary: string;
+    specialties: string[];
+    toolsAndPlatforms: string[];
+    languages: string[];
+  };
   isActive: boolean;
   profileCompleted: boolean;
   teams: Array<{ _id: string; name: string; isActive?: boolean }>;

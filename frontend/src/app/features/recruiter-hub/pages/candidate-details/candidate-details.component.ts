@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -18,7 +18,6 @@ export class CandidateDetailsComponent implements OnInit {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly candidateService: CandidateService,
     private readonly matchService: RecruiterMatchService,
   ) {}
@@ -75,10 +74,6 @@ export class CandidateDetailsComponent implements OnInit {
         this.error = err?.error?.message || 'Unable to shortlist this candidate.';
       },
     });
-  }
-
-  goBackToCandidates(): void {
-    this.router.navigate(['/app/recruiter/candidates']);
   }
 
   private getCandidateId(): string {

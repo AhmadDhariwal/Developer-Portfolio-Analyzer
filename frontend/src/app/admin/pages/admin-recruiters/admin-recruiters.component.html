@@ -204,6 +204,29 @@
           </div>
 
           <div class="recruiter-card__section">
+            <div class="section-label">Organization</div>
+            <span class="chip">{{ recruiter.organization?.name || 'Connected organization' }}</span>
+          </div>
+
+          <div class="recruiter-card__section" *ngIf="recruiter.jobTitle || recruiter.location || recruiter.recruiterDetails?.yearsOfExperience || recruiter.recruiterDetails?.education">
+            <div class="section-label">Background</div>
+            <div class="recruiter-contact">
+              <span *ngIf="recruiter.jobTitle" class="contact-item"><strong>Title:</strong> {{ recruiter.jobTitle }}</span>
+              <span *ngIf="recruiter.location" class="contact-item"><strong>Location:</strong> {{ recruiter.location }}</span>
+              <span *ngIf="recruiter.recruiterDetails?.yearsOfExperience" class="contact-item"><strong>Experience:</strong> {{ recruiter.recruiterDetails?.yearsOfExperience }} years</span>
+              <span *ngIf="recruiter.recruiterDetails?.education" class="contact-item"><strong>Education:</strong> {{ recruiter.recruiterDetails?.education }}</span>
+            </div>
+          </div>
+
+          <div class="recruiter-card__section" *ngIf="(recruiter.recruiterDetails?.certifications?.length || 0) > 0 || (recruiter.recruiterDetails?.specialties?.length || 0) > 0">
+            <div class="section-label">Expertise</div>
+            <div class="chip-row">
+              <span class="chip" *ngFor="let item of (recruiter.recruiterDetails?.specialties || []).slice(0, 3)">{{ item }}</span>
+              <span class="chip chip--muted" *ngFor="let item of (recruiter.recruiterDetails?.certifications || []).slice(0, 2)">{{ item }}</span>
+            </div>
+          </div>
+
+          <div class="recruiter-card__section">
             <div class="section-label">Teams</div>
             <div class="chip-row" *ngIf="(recruiter.teams.length || 0) > 0; else orgOnly">
               <span class="chip" *ngFor="let team of recruiter.teams || []">{{ team.name }}</span>
