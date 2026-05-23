@@ -1,0 +1,6 @@
+    <article class="stat-card" [class]="'stat-card stat-card--' + tone">
+      <div class="stat-card__halo"></div>
+      <div class="stat-card__label">{{ label }}</div>
+      <div class="stat-card__value">{{ displayValue }}</div>
+      <div class="stat-card__hint" *ngIf="hint">{{ hint }}</div>
+    </article>

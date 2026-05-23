@@ -1,0 +1,41 @@
+    <section class="hub-page">
+      <app-recruiter-loader *ngIf="loading" label="Loading job details..." />
+      <div class="message message--error" *ngIf="error">{{ error }}</div>
+
+      <ng-container *ngIf="!loading && job">
+        <header class="hero">
+          <div>
+            <span class="hero__kicker">Job details</span>
+            <h1>{{ job.title }}</h1>
+            <p>{{ job.description }}</p>
+          </div>
+          <button type="button" class="cta" (click)="generateMatches()">Generate Match Results</button>
+        </header>
+
+        <div class="detail-grid">
+          <article class="glass-card">
+            <h3>Job Snapshot</h3>
+            <div class="detail-list">
+              <div><label>Status</label><strong>{{ job.status || 'open' }}</strong></div>
+              <div><label>Stack</label><strong>{{ job.stack || 'Generalist' }}</strong></div>
+              <div><label>Location</label><strong>{{ job.location || 'Remote' }}</strong></div>
+              <div><label>Experience</label><strong>{{ job.minExperienceYears || 0 }}+ years</strong></div>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <h3>Required Skills</h3>
+            <div class="tag-row">
+              <span *ngFor="let skill of job.requiredSkills">{{ skill }}</span>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <h3>Preferred Skills</h3>
+            <div class="tag-row">
+              <span *ngFor="let skill of job.preferredSkills">{{ skill }}</span>
+            </div>
+          </article>
+        </div>
+      </ng-container>
+    </section>

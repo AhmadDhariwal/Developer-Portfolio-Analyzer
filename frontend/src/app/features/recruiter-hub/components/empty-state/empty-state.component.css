@@ -1,0 +1,4 @@
+    .empty-state{padding:2rem;border-radius:18px;border:1px dashed rgba(99,102,241,.5);background:radial-gradient(circle at 20% -20%,rgba(99,102,241,.22),rgba(15,23,42,0) 55%),rgba(15,23,42,.7);text-align:center;animation:fadeIn .3s ease both}
+    h3{margin:0 0 .45rem;color:#f8fafc;font-size:1.08rem}
+    p{margin:0;color:#94a3b8;max-width:520px;margin-inline:auto}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}

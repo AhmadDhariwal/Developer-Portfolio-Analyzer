@@ -1,0 +1,76 @@
+    <section class="hub-page">
+      <header class="hero">
+        <div>
+          <span class="hero__kicker">Profile Settings</span>
+          <h1>Recruiter profile</h1>
+          <p>Update recruiter identity, contact preferences, sourcing defaults, and profile metadata shown across the workspace.</p>
+        </div>
+      </header>
+
+      <div class="message message--error" *ngIf="error">{{ error }}</div>
+      <div class="message message--success" *ngIf="notice">{{ notice }}</div>
+
+      <form class="glass-form" *ngIf="profile" (ngSubmit)="save()">
+        <div class="field">
+          <label>Name</label>
+          <input [(ngModel)]="profile.name" name="name" placeholder="Recruiter name" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input [ngModel]="profile.email" name="email" disabled />
+        </div>
+        <div class="field">
+          <label>Avatar URL</label>
+          <input [(ngModel)]="profile.avatar" name="avatar" placeholder="https://..." />
+        </div>
+        <div class="field">
+          <label>Job Title</label>
+          <input [(ngModel)]="profile.jobTitle" name="jobTitle" placeholder="Senior Recruiter" />
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input [(ngModel)]="profile.location" name="location" placeholder="Karachi or Remote" />
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input [(ngModel)]="profile.phoneNumber" name="phoneNumber" placeholder="+92 ..." />
+        </div>
+        <div class="field">
+          <label>GitHub</label>
+          <input [(ngModel)]="profile.githubUsername" name="githubUsername" placeholder="github username" />
+        </div>
+        <div class="field">
+          <label>LinkedIn</label>
+          <input [(ngModel)]="profile.linkedin" name="linkedin" placeholder="linkedin.com/in/..." />
+        </div>
+        <div class="field field--wide">
+          <label>Bio</label>
+          <textarea [(ngModel)]="profile.bio" name="bio" placeholder="Short recruiter bio"></textarea>
+        </div>
+        <div class="field">
+          <label>Preferred Stacks</label>
+          <input [(ngModel)]="preferredStacks" name="preferredStacks" placeholder="React, Node.js, Python" />
+        </div>
+        <div class="field">
+          <label>Preferred Locations</label>
+          <input [(ngModel)]="preferredLocations" name="preferredLocations" placeholder="Remote, Lahore, Karachi" />
+        </div>
+        <div class="field">
+          <label>Preferred Job Types</label>
+          <input [(ngModel)]="preferredJobTypes" name="preferredJobTypes" placeholder="Full-time, Contract" />
+        </div>
+        <div class="field field--wide">
+          <label>Default note template</label>
+          <textarea [(ngModel)]="noteTemplate" name="noteTemplate" placeholder="Quick outreach note template"></textarea>
+        </div>
+        <div class="toggle-row">
+          <label>
+            <input [(ngModel)]="activityDigest" name="activityDigest" type="checkbox" />
+            Send recruiter activity digest
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">Save Profile</button>
+        </div>
+      </form>
+    </section>

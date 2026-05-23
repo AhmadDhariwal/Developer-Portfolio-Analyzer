@@ -1,0 +1,42 @@
+    .chart-card{padding:1rem 1.05rem;border-radius:22px;background:linear-gradient(170deg,rgba(15,23,42,.95),rgba(15,23,42,.82));border:1px solid var(--card-border,rgba(99,102,241,.2));box-shadow:0 22px 44px rgba(2,6,23,.34);min-height:220px;animation:cardIn .4s ease both}
+    .chart-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;margin-bottom:.95rem}
+    h3{margin:0;color:#f8fafc;font-size:1rem;line-height:1.2}
+    .chart-card__badge{padding:.24rem .56rem;border-radius:999px;background:rgba(51,65,85,.8);color:#cbd5e1;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
+    .chart-row{display:grid;grid-template-columns:minmax(88px,130px) 1fr minmax(48px,74px);gap:.72rem;align-items:center;margin-bottom:.72rem;color:#cbd5e1;font-size:.81rem}
+    .chart-row__label{color:#cbd5e1}
+    .chart-row__dual{display:grid;gap:.35rem}
+    .bar{height:10px;border-radius:999px;background:rgba(30,41,59,.9);overflow:hidden;position:relative}
+    .bar i{display:block;height:100%;background:var(--bar-gradient,linear-gradient(90deg,#7c3aed,#38bdf8));transform-origin:left center;animation:grow .7s ease both}
+    .bar--demand i{background:linear-gradient(90deg,#0ea5e9,#22c55e)}
+    .chart-row__value{text-align:right;color:#f8fafc}
+    .chart-card__empty{margin:0;color:#94a3b8;padding:.4rem 0}
+    .donut-wrap{display:grid;grid-template-columns:minmax(140px,176px) 1fr;gap:1rem;align-items:center}
+    .donut{width:162px;height:162px;border-radius:50%;padding:16px;box-shadow:0 18px 32px rgba(2,6,23,.36);justify-self:center;animation:spinIn .6s ease both}
+    .donut__core{width:100%;height:100%;border-radius:50%;background:rgba(15,23,42,.92);display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid rgba(148,163,184,.2)}
+    .donut__core strong{color:#f8fafc;font-size:1.35rem}
+    .donut__core span{color:#94a3b8;font-size:.78rem}
+    .legend-list{display:flex;flex-direction:column;gap:.58rem;min-width:0}
+    .legend-item{display:grid;grid-template-columns:auto 1fr auto;gap:.48rem;align-items:center;font-size:.79rem;color:#cbd5e1}
+    .legend-dot{width:9px;height:9px;border-radius:50%}
+    .legend-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gauge-wrap{display:flex;justify-content:center;align-items:center;min-height:172px}
+    .gauge{width:166px;height:166px;border-radius:50%;padding:12px;box-shadow:0 16px 30px rgba(2,6,23,.36);animation:spinIn .55s ease both}
+    .gauge__core{width:100%;height:100%;border-radius:50%;background:rgba(15,23,42,.93);display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid rgba(148,163,184,.2)}
+    .gauge__core strong{font-size:2rem;color:#f8fafc;line-height:1}
+    .gauge__core span{margin-top:.35rem;color:#94a3b8;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+    .chart-row--heatmap{display:flex;flex-direction:column;gap:.55rem}
+    .heat-row{display:grid;grid-template-columns:minmax(70px,96px) 1fr auto;gap:.6rem;align-items:center}
+    .heat-row span{font-size:.79rem;color:#cbd5e1}
+    .heat-row__cells{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.32rem}
+    .heat-row__cells i{height:11px;border-radius:4px;background:linear-gradient(135deg,#22d3ee,#7c3aed);transition:opacity .22s ease}
+    .heat-row strong{font-size:.8rem;color:#f8fafc}
+    .chart-card--indigo{--card-border:rgba(99,102,241,.24);--bar-gradient:linear-gradient(90deg,#6366f1,#818cf8)}
+    .chart-card--purple{--card-border:rgba(147,51,234,.24);--bar-gradient:linear-gradient(90deg,#9333ea,#c084fc)}
+    .chart-card--blue{--card-border:rgba(59,130,246,.24);--bar-gradient:linear-gradient(90deg,#3b82f6,#38bdf8)}
+    .chart-card--cyan{--card-border:rgba(34,211,238,.24);--bar-gradient:linear-gradient(90deg,#06b6d4,#22d3ee)}
+    .chart-card--green{--card-border:rgba(34,197,94,.24);--bar-gradient:linear-gradient(90deg,#22c55e,#4ade80)}
+    .chart-card--orange{--card-border:rgba(249,115,22,.24);--bar-gradient:linear-gradient(90deg,#f97316,#fb7185)}
+    @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    @keyframes spinIn{from{opacity:.2;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+    @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width: 920px){.donut-wrap{grid-template-columns:1fr}.donut{width:150px;height:150px}.chart-row{grid-template-columns:minmax(70px,110px) 1fr minmax(42px,64px)}}

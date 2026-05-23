@@ -1,0 +1,30 @@
+    <div class="filter-bar">
+      <div class="filter-field filter-field--search">
+        <label>Search</label>
+        <input [(ngModel)]="model.search" placeholder="Name, stack, skills, GitHub" (keyup.enter)="apply.emit(model)" />
+      </div>
+      <div class="filter-field">
+        <label>Stack</label>
+        <app-searchable-select [options]="stackOptions" [value]="model.stack" [emptyOptionLabel]="'All stacks'" (valueChange)="setValue('stack',$event)" />
+      </div>
+      <div class="filter-field">
+        <label>Location</label>
+        <app-searchable-select [options]="locationOptions" [value]="model.location" [emptyOptionLabel]="'All locations'" (valueChange)="setValue('location',$event)" />
+      </div>
+      <div class="filter-field">
+        <label>Skills</label>
+        <input [(ngModel)]="model.skills" placeholder="React, Node.js, Python" (keyup.enter)="apply.emit(model)" />
+      </div>
+      <div class="filter-field">
+        <label>Min Score</label>
+        <input [(ngModel)]="model.minReadiness" type="number" min="0" max="100" placeholder="70" />
+      </div>
+      <div class="filter-field">
+        <label>Sort</label>
+        <app-searchable-select [options]="sortOptions" [value]="model.sortBy || 'score-desc'" [emptyOptionLabel]="'Highest score'" (valueChange)="setValue('sortBy',$event || 'score-desc')" />
+      </div>
+      <div class="filter-actions">
+        <button type="button" class="filter-btn filter-btn--ghost" (click)="clear.emit()">Clear</button>
+        <button type="button" class="filter-btn" (click)="apply.emit(model)">Apply Filters</button>
+      </div>
+    </div>

@@ -1,0 +1,99 @@
+    <section class="hub-page">
+      <button type="button" class="back-btn" (click)="goBackToCandidates()">
+        <span aria-hidden="true">←</span>
+        Back to Candidates
+      </button>
+
+      <app-recruiter-loader *ngIf="loading" label="Loading candidate profile..." />
+
+      <div class="message message--error" *ngIf="error">{{ error }}</div>
+      <div class="message message--success" *ngIf="notice">{{ notice }}</div>
+
+      <ng-container *ngIf="!loading && candidate">
+        <header class="profile-hero">
+          <div class="profile-hero__identity">
+            <div class="profile-hero__avatar">{{ initial }}</div>
+            <div>
+              <span class="profile-hero__kicker">Candidate profile</span>
+              <h1>{{ candidate.name }}</h1>
+              <p>{{ candidate.profileSummary || candidate.headline }}</p>
+            </div>
+          </div>
+          <div class="profile-hero__actions">
+            <button type="button" class="cta" (click)="analyze()">Run AI Summary</button>
+            <button type="button" class="cta cta--ghost" (click)="shortlist()">Shortlist</button>
+          </div>
+        </header>
+
+        <div class="score-grid">
+          <app-recruiter-stat-card label="Overall Score" [value]="candidate.readinessScore || candidate.score || 0" tone="purple" />
+          <app-recruiter-stat-card label="GitHub Score" [value]="candidate.githubScore || 0" tone="cyan" />
+          <app-recruiter-stat-card label="Resume Score" [value]="candidate.resumeScore || 0" tone="blue" />
+          <app-recruiter-stat-card label="Consistency Score" [value]="candidate.consistencyScore || 0" tone="green" />
+          <app-recruiter-stat-card label="Growth Score" [value]="candidate.growthPotentialScore || 0" tone="orange" />
+          <app-recruiter-stat-card label="Profile Complete" [value]="(candidate.profileCompleteness || 0) + '%'" tone="indigo" />
+        </div>
+
+        <div class="detail-grid">
+          <article class="glass-card">
+            <h3>Profile Overview</h3>
+            <div class="detail-list">
+              <div><label>Primary Stack</label><strong>{{ candidate.stack || 'Generalist' }}</strong></div>
+              <div><label>Experience</label><strong>{{ candidate.yearsOfExperience || 0 }} years</strong></div>
+              <div><label>Location</label><strong>{{ candidate.location || 'Remote' }}</strong></div>
+              <div><label>Availability</label><strong>{{ candidate.availability || 'Available' }}</strong></div>
+            </div>
+            <div class="link-row">
+              <a *ngIf="candidate.githubUsername" [href]="'https://github.com/' + candidate.githubUsername" target="_blank" rel="noreferrer">GitHub</a>
+              <a *ngIf="candidate.portfolio" [href]="candidate.portfolio" target="_blank" rel="noreferrer">Public Portfolio</a>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <h3>GitHub Statistics</h3>
+            <div class="detail-list">
+              <div><label>Public Repos</label><strong>{{ candidate.githubStats?.repos || 0 }}</strong></div>
+              <div><label>Stars</label><strong>{{ candidate.githubStats?.stars || 0 }}</strong></div>
+              <div><label>Forks</label><strong>{{ candidate.githubStats?.forks || 0 }}</strong></div>
+              <div><label>Followers</label><strong>{{ candidate.githubStats?.followers || 0 }}</strong></div>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <h3>Skills</h3>
+            <div class="tag-row">
+              <span *ngFor="let skill of candidate.skills">{{ skill }}</span>
+            </div>
+            <div *ngIf="(candidate.skillGaps || []).length" class="sub-block">
+              <h4>Skill Gaps</h4>
+              <div class="tag-row tag-row--warn">
+                <span *ngFor="let skill of candidate.skillGaps">{{ skill }}</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <h3>Top Projects</h3>
+            <div class="project-list" *ngIf="(candidate.projects || []).length; else noProjects">
+              <div class="project-card" *ngFor="let project of candidate.projects">
+                <strong>{{ project.title }}</strong>
+                <p>{{ project.description || 'No project summary provided.' }}</p>
+                <span>{{ (project.technologies || []).join(', ') }}</span>
+              </div>
+            </div>
+            <ng-template #noProjects>
+              <p class="muted">No public projects available yet.</p>
+            </ng-template>
+          </article>
+        </div>
+
+        <article class="glass-card" *ngIf="analysis || candidate.aiSummary">
+          <h3>AI Summary</h3>
+          <p>{{ analysis?.summary || candidate.aiSummary }}</p>
+          <div class="detail-list" *ngIf="analysis">
+            <div><label>Recommendation</label><strong>{{ analysis.recommendation }}</strong></div>
+            <div><label>Confidence</label><strong>{{ analysis.confidenceScore || 0 }}</strong></div>
+          </div>
+        </article>
+      </ng-container>
+    </section>
