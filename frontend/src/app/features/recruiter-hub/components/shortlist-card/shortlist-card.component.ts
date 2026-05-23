@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './shortlist-card.component.html',
-  styleUrl: './shortlist-card.component.css'
+  styleUrl: './shortlist-card.component.scss',
 })
 export class ShortlistCardComponent {
   @Input() item: any;

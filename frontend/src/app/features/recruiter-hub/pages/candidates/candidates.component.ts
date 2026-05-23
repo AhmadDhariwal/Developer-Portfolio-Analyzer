@@ -7,7 +7,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-candidates',
   standalone: false,
   templateUrl: './candidates.component.html',
-  styleUrl: './candidates.component.css'
+  styleUrl: './candidates.component.scss',
 })
 export class CandidatesComponent implements OnInit {
   loading = true;
@@ -22,7 +22,7 @@ export class CandidatesComponent implements OnInit {
     minReadiness: 0,
     sortBy: 'score-desc',
     page: 1,
-    limit: 12
+    limit: 12,
   };
   meta: any = { page: 1, totalPages: 1, total: 0 };
   stackOptions: any[] = [];
@@ -32,7 +32,7 @@ export class CandidatesComponent implements OnInit {
   constructor(
     private readonly candidateService: CandidateService,
     private readonly matchService: RecruiterMatchService,
-    private readonly router: Router
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -59,15 +59,21 @@ export class CandidatesComponent implements OnInit {
       next: (response) => {
         this.candidates = response?.candidates || [];
         this.meta = response?.meta || { page: 1, totalPages: 1, total: this.candidates.length };
-        this.stackOptions = (response?.filters?.stacks || []).map((label: string) => ({ value: label, label }));
-        this.locationOptions = (response?.filters?.locations || []).map((label: string) => ({ value: label, label }));
+        this.stackOptions = (response?.filters?.stacks || []).map((label: string) => ({
+          value: label,
+          label,
+        }));
+        this.locationOptions = (response?.filters?.locations || []).map((label: string) => ({
+          value: label,
+          label,
+        }));
         this.loading = false;
       },
       error: (err) => {
         this.candidates = [];
         this.error = err?.error?.message || 'Unable to load candidates right now.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -85,7 +91,7 @@ export class CandidatesComponent implements OnInit {
       minReadiness: 0,
       sortBy: 'score-desc',
       page: 1,
-      limit: 12
+      limit: 12,
     };
     this.loadCandidates();
   }
@@ -110,7 +116,7 @@ export class CandidatesComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to shortlist this candidate.';
-      }
+      },
     });
   }
 
@@ -135,7 +141,7 @@ export class CandidatesComponent implements OnInit {
   openComparison(): void {
     if (this.compareIds.size < 2) return;
     this.router.navigate(['/app/recruiter/comparison'], {
-      queryParams: { ids: Array.from(this.compareIds).join(',') }
+      queryParams: { ids: Array.from(this.compareIds).join(',') },
     });
   }
 

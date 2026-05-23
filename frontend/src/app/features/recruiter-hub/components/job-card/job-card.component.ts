@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './job-card.component.html',
-  styleUrl: './job-card.component.css'
+  styleUrl: './job-card.component.scss',
 })
 export class JobCardComponent {
   @Input() job: any;

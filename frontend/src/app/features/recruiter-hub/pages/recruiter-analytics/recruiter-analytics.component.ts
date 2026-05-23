@@ -5,7 +5,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   selector: 'app-recruiter-analytics',
   standalone: false,
   templateUrl: './recruiter-analytics.component.html',
-  styleUrl: './recruiter-analytics.component.css'
+  styleUrl: './recruiter-analytics.component.scss',
 })
 export class RecruiterAnalyticsComponent implements OnInit {
   loading = true;
@@ -23,7 +23,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
       error: (err) => {
         this.error = err?.error?.message || 'Unable to load recruiter analytics.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -63,7 +63,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
     return {
       metrics: {
         ...defaults.metrics,
-        ...(payload?.metrics || {})
+        ...(payload?.metrics || {}),
       },
       charts: {
         candidateActivityTrend: this.asArray(payload?.charts?.candidateActivityTrend),
@@ -72,11 +72,11 @@ export class RecruiterAnalyticsComponent implements OnInit {
         topSkillsDemand: this.asArray(payload?.charts?.topSkillsDemand),
         supplyVsDemand: this.asArray(payload?.charts?.supplyVsDemand),
         weeklyRecruiterActivity: this.asArray(payload?.charts?.weeklyRecruiterActivity),
-        skillDemandChart: this.asArray(payload?.charts?.skillDemandChart)
+        skillDemandChart: this.asArray(payload?.charts?.skillDemandChart),
       },
       highlights: {
-        mostActiveJobs: this.asArray(payload?.highlights?.mostActiveJobs)
-      }
+        mostActiveJobs: this.asArray(payload?.highlights?.mostActiveJobs),
+      },
     };
   }
 
@@ -89,7 +89,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
         shortlistedCandidates: 0,
         successRate: 0,
         recruiterActivityScore: 0,
-        openJobs: 0
+        openJobs: 0,
       },
       charts: {
         candidateActivityTrend: [],
@@ -98,11 +98,11 @@ export class RecruiterAnalyticsComponent implements OnInit {
         topSkillsDemand: [],
         supplyVsDemand: [],
         weeklyRecruiterActivity: [],
-        skillDemandChart: []
+        skillDemandChart: [],
       },
       highlights: {
-        mostActiveJobs: []
-      }
+        mostActiveJobs: [],
+      },
     };
   }
 

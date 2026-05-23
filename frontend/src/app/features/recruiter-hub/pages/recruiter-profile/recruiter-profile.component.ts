@@ -6,7 +6,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   selector: 'app-recruiter-profile',
   standalone: false,
   templateUrl: './recruiter-profile.component.html',
-  styleUrl: './recruiter-profile.component.css'
+  styleUrl: './recruiter-profile.component.scss',
 })
 export class RecruiterProfileComponent implements OnInit {
   profile: any = null;
@@ -20,22 +20,28 @@ export class RecruiterProfileComponent implements OnInit {
 
   constructor(
     private readonly hubService: RecruiterHubService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
     this.hubService.getProfile().subscribe({
       next: (response) => {
         this.profile = response?.profile || null;
-        this.preferredStacks = (this.profile?.recruiterPreferences?.preferredStacks || []).join(', ');
-        this.preferredLocations = (this.profile?.recruiterPreferences?.preferredLocations || []).join(', ');
-        this.preferredJobTypes = (this.profile?.recruiterPreferences?.preferredJobTypes || []).join(', ');
+        this.preferredStacks = (this.profile?.recruiterPreferences?.preferredStacks || []).join(
+          ', ',
+        );
+        this.preferredLocations = (
+          this.profile?.recruiterPreferences?.preferredLocations || []
+        ).join(', ');
+        this.preferredJobTypes = (this.profile?.recruiterPreferences?.preferredJobTypes || []).join(
+          ', ',
+        );
         this.noteTemplate = this.profile?.recruiterPreferences?.noteTemplate || '';
         this.activityDigest = this.profile?.recruiterPreferences?.activityDigest !== false;
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to load recruiter profile.';
-      }
+      },
     });
   }
 
@@ -51,8 +57,8 @@ export class RecruiterProfileComponent implements OnInit {
         preferredLocations: this.toArray(this.preferredLocations),
         preferredJobTypes: this.toArray(this.preferredJobTypes),
         noteTemplate: this.noteTemplate,
-        activityDigest: this.activityDigest
-      }
+        activityDigest: this.activityDigest,
+      },
     };
 
     this.hubService.updateProfile(payload).subscribe({
@@ -61,13 +67,13 @@ export class RecruiterProfileComponent implements OnInit {
         this.authService.updateCurrentUser({
           name: this.profile?.name,
           avatar: this.profile?.avatar,
-          githubUsername: this.profile?.githubUsername
+          githubUsername: this.profile?.githubUsername,
         });
         this.notice = 'Recruiter profile updated successfully.';
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to update recruiter profile.';
-      }
+      },
     });
   }
 

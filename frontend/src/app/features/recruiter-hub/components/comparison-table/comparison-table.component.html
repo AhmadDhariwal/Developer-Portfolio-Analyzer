@@ -1,46 +1,65 @@
-    <div class="comparison-wrap" *ngIf="items.length">
-      <table>
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th *ngFor="let item of items">{{ item.name }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Stack</td>
-            <td *ngFor="let item of items">{{ item.stack || 'Generalist' }}</td>
-          </tr>
-          <tr>
-            <td>Experience</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('experience', item.experience)">{{ item.experience || 0 }} yrs</td>
-          </tr>
-          <tr>
-            <td>Readiness</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('readinessScore', item.readinessScore)">{{ item.readinessScore || 0 }}</td>
-          </tr>
-          <tr>
-            <td>GitHub</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('githubScore', item.githubScore)">{{ item.githubScore || 0 }}</td>
-          </tr>
-          <tr>
-            <td>Resume</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('resumeScore', item.resumeScore)">{{ item.resumeScore || 0 }}</td>
-          </tr>
-          <tr>
-            <td>Project Quality</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('projectQuality', item.projectQuality)">{{ item.projectQuality || 0 }}</td>
-          </tr>
-          <tr *ngIf="hasMatchRow">
-            <td>Job Match</td>
-            <td *ngFor="let item of items" [class.is-best]="isBest('matchScore', item.match?.matchScore)">
-              {{ item.match?.matchScore ?? '-' }}
-            </td>
-          </tr>
-          <tr>
-            <td>Recommendation</td>
-            <td *ngFor="let item of items">{{ item.recommendation || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<div class="comparison-wrap" *ngIf="items.length">
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th *ngFor="let item of items">{{ item.name }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Stack</td>
+        <td *ngFor="let item of items">{{ item.stack || 'Generalist' }}</td>
+      </tr>
+      <tr>
+        <td>Experience</td>
+        <td *ngFor="let item of items" [class.is-best]="isBest('experience', item.experience)">
+          {{ item.experience || 0 }} yrs
+        </td>
+      </tr>
+      <tr>
+        <td>Readiness</td>
+        <td
+          *ngFor="let item of items"
+          [class.is-best]="isBest('readinessScore', item.readinessScore)"
+        >
+          {{ item.readinessScore || 0 }}
+        </td>
+      </tr>
+      <tr>
+        <td>GitHub</td>
+        <td *ngFor="let item of items" [class.is-best]="isBest('githubScore', item.githubScore)">
+          {{ item.githubScore || 0 }}
+        </td>
+      </tr>
+      <tr>
+        <td>Resume</td>
+        <td *ngFor="let item of items" [class.is-best]="isBest('resumeScore', item.resumeScore)">
+          {{ item.resumeScore || 0 }}
+        </td>
+      </tr>
+      <tr>
+        <td>Project Quality</td>
+        <td
+          *ngFor="let item of items"
+          [class.is-best]="isBest('projectQuality', item.projectQuality)"
+        >
+          {{ item.projectQuality || 0 }}
+        </td>
+      </tr>
+      <tr *ngIf="hasMatchRow">
+        <td>Job Match</td>
+        <td
+          *ngFor="let item of items"
+          [class.is-best]="isBest('matchScore', item.match?.matchScore)"
+        >
+          {{ item.match?.matchScore ?? '-' }}
+        </td>
+      </tr>
+      <tr>
+        <td>Recommendation</td>
+        <td *ngFor="let item of items">{{ item.recommendation || '-' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

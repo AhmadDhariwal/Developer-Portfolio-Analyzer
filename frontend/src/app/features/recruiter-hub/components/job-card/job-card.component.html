@@ -1,30 +1,45 @@
-    <article class="job-card">
-      <div class="job-card__head">
-        <div>
-          <h3>{{ job?.title || 'Untitled job' }}</h3>
-          <p>{{ job?.location || 'Remote' }} | {{ job?.employmentType || 'full-time' }}</p>
-        </div>
-        <span class="job-card__status" [class.job-card__status--draft]="job?.status === 'draft'" [class.job-card__status--closed]="job?.status === 'closed'">{{ job?.status || 'open' }}</span>
-      </div>
+<article class="job-card">
+  <div class="job-card__head">
+    <div>
+      <h3>{{ job?.title || 'Untitled job' }}</h3>
+      <p>{{ job?.location || 'Remote' }} | {{ job?.employmentType || 'full-time' }}</p>
+    </div>
+    <span
+      class="job-card__status"
+      [class.job-card__status--draft]="job?.status === 'draft'"
+      [class.job-card__status--closed]="job?.status === 'closed'"
+      >{{ job?.status || 'open' }}</span
+    >
+  </div>
 
-      <p class="job-card__desc">{{ job?.description || 'No description available.' }}</p>
+  <p class="job-card__desc">{{ job?.description || 'No description available.' }}</p>
 
-      <div class="job-card__meta">
-        <div><label>Stack</label><strong>{{ job?.stack || 'Generalist' }}</strong></div>
-        <div><label>Experience</label><strong>{{ job?.minExperienceYears || 0 }}+ yrs</strong></div>
-        <div><label>Required</label><strong>{{ (job?.requiredSkills || []).length }}</strong></div>
-      </div>
+  <div class="job-card__meta">
+    <div>
+      <label>Stack</label><strong>{{ job?.stack || 'Generalist' }}</strong>
+    </div>
+    <div>
+      <label>Experience</label><strong>{{ job?.minExperienceYears || 0 }}+ yrs</strong>
+    </div>
+    <div>
+      <label>Required</label><strong>{{ (job?.requiredSkills || []).length }}</strong>
+    </div>
+  </div>
 
-      <div class="job-card__skills">
-        <span *ngFor="let skill of (job?.requiredSkills || []).slice(0, 6)">{{ skill }}</span>
-      </div>
+  <div class="job-card__skills">
+    <span *ngFor="let skill of (job?.requiredSkills || []).slice(0, 6)">{{ skill }}</span>
+  </div>
 
-      <div class="job-card__actions" *ngIf="!hideActions">
-        <button type="button" class="job-card__btn job-card__btn--ghost" (click)="view.emit(job)">View</button>
-        <button type="button" class="job-card__btn" (click)="edit.emit(job)">Edit</button>
-        <button type="button" class="job-card__btn job-card__btn--accent" (click)="archive.emit(job)">
-          {{ job?.status === 'closed' ? 'Archived' : 'Archive' }}
-        </button>
-        <button type="button" class="job-card__btn job-card__btn--danger" (click)="remove.emit(job)">Delete</button>
-      </div>
-    </article>
+  <div class="job-card__actions" *ngIf="!hideActions">
+    <button type="button" class="job-card__btn job-card__btn--ghost" (click)="view.emit(job)">
+      View
+    </button>
+    <button type="button" class="job-card__btn" (click)="edit.emit(job)">Edit</button>
+    <button type="button" class="job-card__btn job-card__btn--accent" (click)="archive.emit(job)">
+      {{ job?.status === 'closed' ? 'Archived' : 'Archive' }}
+    </button>
+    <button type="button" class="job-card__btn job-card__btn--danger" (click)="remove.emit(job)">
+      Delete
+    </button>
+  </div>
+</article>

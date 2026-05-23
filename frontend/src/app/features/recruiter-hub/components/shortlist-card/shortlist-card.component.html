@@ -1,22 +1,30 @@
-    <article class="shortlist-card">
-      <div class="shortlist-card__head">
-        <div>
-          <h3>{{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}</h3>
-          <p>{{ item?.job?.title || 'General shortlist' }}</p>
-        </div>
-        <span class="shortlist-card__status">{{ item?.status || 'shortlisted' }}</span>
-      </div>
+<article class="shortlist-card">
+  <div class="shortlist-card__head">
+    <div>
+      <h3>{{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}</h3>
+      <p>{{ item?.job?.title || 'General shortlist' }}</p>
+    </div>
+    <span class="shortlist-card__status">{{ item?.status || 'shortlisted' }}</span>
+  </div>
 
-      <div class="shortlist-card__meta">
-        <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
-        <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>
-        <span>{{ item?.updatedAt ? (item.updatedAt | date:'MMM d, y') : 'Recently updated' }}</span>
-      </div>
+  <div class="shortlist-card__meta">
+    <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
+    <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>
+    <span>{{ item?.updatedAt ? (item.updatedAt | date: 'MMM d, y') : 'Recently updated' }}</span>
+  </div>
 
-      <p class="shortlist-card__notes">{{ item?.notes || 'No notes added yet. Keep the pipeline moving with a quick follow-up.' }}</p>
+  <p class="shortlist-card__notes">
+    {{ item?.notes || 'No notes added yet. Keep the pipeline moving with a quick follow-up.' }}
+  </p>
 
-      <div class="shortlist-card__actions" *ngIf="!hideActions">
-        <button type="button" class="shortlist-card__btn" (click)="edit.emit(item)">Advance</button>
-        <button type="button" class="shortlist-card__btn shortlist-card__btn--ghost" (click)="remove.emit(item)">Remove</button>
-      </div>
-    </article>
+  <div class="shortlist-card__actions" *ngIf="!hideActions">
+    <button type="button" class="shortlist-card__btn" (click)="edit.emit(item)">Advance</button>
+    <button
+      type="button"
+      class="shortlist-card__btn shortlist-card__btn--ghost"
+      (click)="remove.emit(item)"
+    >
+      Remove
+    </button>
+  </div>
+</article>

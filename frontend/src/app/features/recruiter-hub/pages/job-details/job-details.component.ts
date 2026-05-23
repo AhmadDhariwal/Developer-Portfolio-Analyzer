@@ -7,7 +7,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-job-details',
   standalone: false,
   templateUrl: './job-details.component.html',
-  styleUrl: './job-details.component.css'
+  styleUrl: './job-details.component.scss',
 })
 export class JobDetailsComponent implements OnInit {
   loading = true;
@@ -18,7 +18,7 @@ export class JobDetailsComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly jobService: RecruiterJobService,
-    private readonly matchService: RecruiterMatchService
+    private readonly matchService: RecruiterMatchService,
   ) {}
 
   ngOnInit(): void {
@@ -31,7 +31,7 @@ export class JobDetailsComponent implements OnInit {
       error: (err) => {
         this.error = err?.error?.message || 'Unable to load this job.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -43,7 +43,7 @@ export class JobDetailsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to generate matches for this job.';
-      }
+      },
     });
   }
 }

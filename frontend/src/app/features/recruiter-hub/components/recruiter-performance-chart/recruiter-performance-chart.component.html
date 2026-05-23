@@ -1,74 +1,85 @@
-    <section class="chart-card" [class]="'chart-card chart-card--' + tone">
-      <div class="chart-card__head">
-        <h3>{{ title }}</h3>
-        <span class="chart-card__badge" *ngIf="trendLabel">{{ trendLabel }}</span>
+<section class="chart-card" [class]="'chart-card chart-card--' + tone">
+  <div class="chart-card__head">
+    <h3>{{ title }}</h3>
+    <span class="chart-card__badge" *ngIf="trendLabel">{{ trendLabel }}</span>
+  </div>
+
+  <ng-container *ngIf="items.length; else emptyBlock">
+    <ng-container [ngSwitch]="resolvedMode">
+      <div class="chart-row chart-row--heatmap" *ngSwitchCase="'heatmap'">
+        <div class="heat-row" *ngFor="let item of items">
+          <span>{{ item.label || item.date || '-' }}</span>
+          <div class="heat-row__cells">
+            <i *ngFor="let level of heatCellsFor(item)" [style.opacity]="level"></i>
+          </div>
+          <strong>{{ numericValue(item) }}</strong>
+        </div>
       </div>
 
-      <ng-container *ngIf="items.length; else emptyBlock">
-        <ng-container [ngSwitch]="resolvedMode">
-          <div class="chart-row chart-row--heatmap" *ngSwitchCase="'heatmap'">
-            <div class="heat-row" *ngFor="let item of items">
-              <span>{{ item.label || item.date || '-' }}</span>
-              <div class="heat-row__cells">
-                <i *ngFor="let level of heatCellsFor(item)" [style.opacity]="level"></i>
-              </div>
-              <strong>{{ numericValue(item) }}</strong>
-            </div>
+      <div class="donut-wrap" *ngSwitchCase="'donut'">
+        <div class="donut" [style.background]="donutGradient">
+          <div class="donut__core">
+            <strong>{{ totalValue }}</strong>
+            <span>Total</span>
           </div>
-
-          <div class="donut-wrap" *ngSwitchCase="'donut'">
-            <div class="donut" [style.background]="donutGradient">
-              <div class="donut__core">
-                <strong>{{ totalValue }}</strong>
-                <span>Total</span>
-              </div>
-            </div>
-            <div class="legend-list">
-              <div class="legend-item" *ngFor="let item of donutItems; let index = index">
-                <span class="legend-dot" [style.background]="legendColor(index)"></span>
-                <span class="legend-label">{{ item.label || item.date || '-' }}</span>
-                <strong>{{ numericValue(item) }}</strong>
-              </div>
-            </div>
+        </div>
+        <div class="legend-list">
+          <div class="legend-item" *ngFor="let item of donutItems; let index = index">
+            <span class="legend-dot" [style.background]="legendColor(index)"></span>
+            <span class="legend-label">{{ item.label || item.date || '-' }}</span>
+            <strong>{{ numericValue(item) }}</strong>
           </div>
+        </div>
+      </div>
 
-          <div class="gauge-wrap" *ngSwitchCase="'gauge'">
-            <div class="gauge" [style.background]="gaugeGradient">
-              <div class="gauge__core">
-                <strong>{{ gaugeValue }}</strong>
-                <span>{{ gaugeLabel }}</span>
+      <div class="gauge-wrap" *ngSwitchCase="'gauge'">
+        <div class="gauge" [style.background]="gaugeGradient">
+          <div class="gauge__core">
+            <strong>{{ gaugeValue }}</strong>
+            <span>{{ gaugeLabel }}</span>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngSwitchDefault>
+        <div class="chart-row" *ngFor="let item of items; let index = index">
+          <span class="chart-row__label">{{ item.label || item.date || '-' }}</span>
+
+          <ng-container *ngIf="isDual(item); else singleSeries">
+            <div class="chart-row__dual">
+              <div class="bar bar--supply">
+                <i
+                  [style.width.%]="widthFor(item.supply || 0)"
+                  [style.animationDelay.ms]="index * 60"
+                ></i>
+              </div>
+              <div class="bar bar--demand">
+                <i
+                  [style.width.%]="widthFor(item.demand || 0)"
+                  [style.animationDelay.ms]="index * 60 + 45"
+                ></i>
               </div>
             </div>
-          </div>
-
-          <ng-container *ngSwitchDefault>
-            <div class="chart-row" *ngFor="let item of items; let index = index">
-              <span class="chart-row__label">{{ item.label || item.date || '-' }}</span>
-
-              <ng-container *ngIf="isDual(item); else singleSeries">
-                <div class="chart-row__dual">
-                  <div class="bar bar--supply">
-                    <i [style.width.%]="widthFor(item.supply || 0)" [style.animationDelay.ms]="index * 60"></i>
-                  </div>
-                  <div class="bar bar--demand">
-                    <i [style.width.%]="widthFor(item.demand || 0)" [style.animationDelay.ms]="(index * 60) + 45"></i>
-                  </div>
-                </div>
-                <strong class="chart-row__value">{{ item.supply || 0 }} / {{ item.demand || 0 }}</strong>
-              </ng-container>
-
-              <ng-template #singleSeries>
-                <div class="bar">
-                  <i [style.width.%]="widthFor(numericValue(item))" [style.animationDelay.ms]="index * 65"></i>
-                </div>
-                <strong class="chart-row__value">{{ numericValue(item) }}</strong>
-              </ng-template>
-            </div>
+            <strong class="chart-row__value"
+              >{{ item.supply || 0 }} / {{ item.demand || 0 }}</strong
+            >
           </ng-container>
-        </ng-container>
-      </ng-container>
 
-      <ng-template #emptyBlock>
-        <p class="chart-card__empty">{{ emptyMessage }}</p>
-      </ng-template>
-    </section>
+          <ng-template #singleSeries>
+            <div class="bar">
+              <i
+                [style.width.%]="widthFor(numericValue(item))"
+                [style.animationDelay.ms]="index * 65"
+              ></i>
+            </div>
+            <strong class="chart-row__value">{{ numericValue(item) }}</strong>
+          </ng-template>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #emptyBlock>
+    <p class="chart-card__empty">{{ emptyMessage }}</p>
+  </ng-template>
+</section>

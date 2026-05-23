@@ -5,7 +5,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-shortlists',
   standalone: false,
   templateUrl: './shortlists.component.html',
-  styleUrl: './shortlists.component.css'
+  styleUrl: './shortlists.component.scss',
 })
 export class ShortlistsComponent implements OnInit {
   loading = true;
@@ -31,7 +31,7 @@ export class ShortlistsComponent implements OnInit {
         this.shortlists = [];
         this.error = err?.error?.message || 'Unable to load shortlist entries.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -44,7 +44,7 @@ export class ShortlistsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to update this shortlist entry.';
-      }
+      },
     });
   }
 
@@ -56,7 +56,7 @@ export class ShortlistsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to remove this shortlist entry.';
-      }
+      },
     });
   }
 

@@ -8,7 +8,7 @@ type StatTone = 'indigo' | 'blue' | 'cyan' | 'green' | 'orange' | 'purple';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './recruiter-stat-card.component.html',
-  styleUrl: './recruiter-stat-card.component.css'
+  styleUrl: './recruiter-stat-card.component.scss',
 })
 export class RecruiterStatCardComponent implements OnChanges, OnDestroy {
   @Input() label = '';
@@ -46,7 +46,8 @@ export class RecruiterStatCardComponent implements OnChanges, OnDestroy {
       const progress = Math.min(1, (now - start) / durationMs);
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = parsed.target * eased;
-      const rounded = parsed.decimals > 0 ? current.toFixed(parsed.decimals) : Math.round(current).toString();
+      const rounded =
+        parsed.decimals > 0 ? current.toFixed(parsed.decimals) : Math.round(current).toString();
       this.displayValue = `${parsed.prefix}${rounded}${parsed.suffix}`;
 
       if (progress < 1) {
@@ -64,13 +65,15 @@ export class RecruiterStatCardComponent implements OnChanges, OnDestroy {
     }
   }
 
-  private parseDisplayValue(value: string | number): { prefix: string; target: number; suffix: string; decimals: number } | null {
+  private parseDisplayValue(
+    value: string | number,
+  ): { prefix: string; target: number; suffix: string; decimals: number } | null {
     if (typeof value === 'number' && Number.isFinite(value)) {
       return {
         prefix: '',
         target: value,
         suffix: '',
-        decimals: Number.isInteger(value) ? 0 : 1
+        decimals: Number.isInteger(value) ? 0 : 1,
       };
     }
 
@@ -87,7 +90,7 @@ export class RecruiterStatCardComponent implements OnChanges, OnDestroy {
       prefix: matched[1] || '',
       target,
       suffix: matched[3] || '',
-      decimals: matched[2].includes('.') ? 1 : 0
+      decimals: matched[2].includes('.') ? 1 : 0,
     };
   }
 }

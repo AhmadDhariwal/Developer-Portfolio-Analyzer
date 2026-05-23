@@ -25,7 +25,7 @@ import { LoaderComponent } from './components/loader/loader.component';
     RecruiterPerformanceChartComponent,
     ActivityTimelineComponent,
     EmptyStateComponent,
-    LoaderComponent
+    LoaderComponent,
   ],
   exports: [
     RecruiterStatCardComponent,
@@ -38,7 +38,7 @@ import { LoaderComponent } from './components/loader/loader.component';
     RecruiterPerformanceChartComponent,
     ActivityTimelineComponent,
     EmptyStateComponent,
-    LoaderComponent
-  ]
+    LoaderComponent,
+  ],
 })
 export class RecruiterHubSharedModule {}

@@ -24,11 +24,11 @@ const routes: Routes = [
   { path: 'comparison', component: ComparisonComponent },
   { path: 'analytics', component: RecruiterAnalyticsComponent },
   { path: 'activity-logs', component: RecruiterActivityLogsComponent },
-  { path: 'profile', component: RecruiterProfileComponent }
+  { path: 'profile', component: RecruiterProfileComponent },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class RecruiterHubRoutingModule {}

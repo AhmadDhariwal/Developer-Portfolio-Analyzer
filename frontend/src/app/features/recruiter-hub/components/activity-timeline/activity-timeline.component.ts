@@ -6,13 +6,16 @@ import { Component, Input } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './activity-timeline.component.html',
-  styleUrl: './activity-timeline.component.css'
+  styleUrl: './activity-timeline.component.scss',
 })
 export class ActivityTimelineComponent {
   @Input() items: any[] = [];
 
   labelFor(action: string): string {
-    const value = String(action || '').replace(/RECRUITER_/g, '').replaceAll('_', ' ').trim();
+    const value = String(action || '')
+      .replace(/RECRUITER_/g, '')
+      .replaceAll('_', ' ')
+      .trim();
     if (!value) return 'Activity';
     return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }

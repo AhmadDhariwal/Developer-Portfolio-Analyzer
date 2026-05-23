@@ -9,7 +9,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-matches',
   standalone: false,
   templateUrl: './matches.component.html',
-  styleUrl: './matches.component.css'
+  styleUrl: './matches.component.scss',
 })
 export class MatchesComponent implements OnInit {
   loading = true;
@@ -27,7 +27,7 @@ export class MatchesComponent implements OnInit {
     private readonly router: Router,
     private readonly jobService: RecruiterJobService,
     private readonly candidateService: CandidateService,
-    private readonly matchService: RecruiterMatchService
+    private readonly matchService: RecruiterMatchService,
   ) {}
 
   get jobOptions(): SearchableSelectOption[] {
@@ -49,7 +49,7 @@ export class MatchesComponent implements OnInit {
             this.jobs = response?.jobs || [];
             resolve();
           },
-          error: () => resolve()
+          error: () => resolve(),
         });
       }),
       new Promise<void>((resolve) => {
@@ -58,25 +58,27 @@ export class MatchesComponent implements OnInit {
             this.candidates = response?.candidates || [];
             resolve();
           },
-          error: () => resolve()
+          error: () => resolve(),
         });
-      })
+      }),
     ]).then(() => this.loadMatches());
   }
 
   loadMatches(): void {
     this.loading = true;
-    this.matchService.listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {}).subscribe({
-      next: (response) => {
-        this.matches = response?.matches || [];
-        this.loading = false;
-      },
-      error: (err) => {
-        this.matches = [];
-        this.error = err?.error?.message || 'Unable to load match results.';
-        this.loading = false;
-      }
-    });
+    this.matchService
+      .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
+      .subscribe({
+        next: (response) => {
+          this.matches = response?.matches || [];
+          this.loading = false;
+        },
+        error: (err) => {
+          this.matches = [];
+          this.error = err?.error?.message || 'Unable to load match results.';
+          this.loading = false;
+        },
+      });
   }
 
   onJobChange(jobId: string): void {
@@ -109,35 +111,41 @@ export class MatchesComponent implements OnInit {
     this.error = '';
     this.notice = '';
     const candidateIds = Array.from(this.selectedCandidateIds);
-    this.matchService.generateMatches({
-      jobId: this.selectedJobId,
-      candidateIds: candidateIds.length ? candidateIds : undefined
-    }).subscribe({
-      next: (response) => {
-        this.matches = response?.matches || [];
-        this.notice = `Generated ${this.matches.length} match results.`;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to generate matches.';
-        this.loading = false;
-      }
-    });
+    this.matchService
+      .generateMatches({
+        jobId: this.selectedJobId,
+        candidateIds: candidateIds.length ? candidateIds : undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.matches = response?.matches || [];
+          this.notice = `Generated ${this.matches.length} match results.`;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to generate matches.';
+          this.loading = false;
+        },
+      });
   }
 
   shortlist(match: any): void {
-    this.matchService.addToShortlist({
-      candidateId: match?.candidateId,
-      jobId: match?.jobId
-    }).subscribe({
-      next: () => {
-        this.notice = `${match?.candidate?.name || 'Candidate'} added to shortlist.`;
-        this.matches = this.matches.map((entry) => entry === match ? { ...entry, status: 'shortlisted', shortlisted: true } : entry);
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to shortlist this match.';
-      }
-    });
+    this.matchService
+      .addToShortlist({
+        candidateId: match?.candidateId,
+        jobId: match?.jobId,
+      })
+      .subscribe({
+        next: () => {
+          this.notice = `${match?.candidate?.name || 'Candidate'} added to shortlist.`;
+          this.matches = this.matches.map((entry) =>
+            entry === match ? { ...entry, status: 'shortlisted', shortlisted: true } : entry,
+          );
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to shortlist this match.';
+        },
+      });
   }
 
   compare(match: any): void {
@@ -156,8 +164,8 @@ export class MatchesComponent implements OnInit {
       this.router.navigate(['/app/recruiter/comparison'], {
         queryParams: {
           ids: Array.from(this.compareIds).join(','),
-          jobId: this.selectedJobId || undefined
-        }
+          jobId: this.selectedJobId || undefined,
+        },
       });
     }
   }

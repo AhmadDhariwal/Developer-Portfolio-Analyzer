@@ -1,46 +1,69 @@
-    <article class="candidate-card" [class.candidate-card--selected]="selected">
-      <div class="candidate-card__header">
-        <div class="candidate-card__identity">
-          <div class="candidate-card__avatar">{{ initial }}</div>
-          <div>
-            <h3>{{ candidate?.name || candidate?.fullName || 'Candidate' }}</h3>
-            <p>{{ candidate?.headline || candidate?.stack || 'Developer profile' }}</p>
-          </div>
-        </div>
-        <div class="candidate-card__score" [class]="scoreToneClass">
-          <strong>{{ candidate?.readinessScore || candidate?.score || 0 }}</strong>
-          <span>Overall</span>
-        </div>
+<article class="candidate-card" [class.candidate-card--selected]="selected">
+  <div class="candidate-card__header">
+    <div class="candidate-card__identity">
+      <div class="candidate-card__avatar">{{ initial }}</div>
+      <div>
+        <h3>{{ candidate?.name || candidate?.fullName || 'Candidate' }}</h3>
+        <p>{{ candidate?.headline || candidate?.stack || 'Developer profile' }}</p>
       </div>
+    </div>
+    <div class="candidate-card__score" [class]="scoreToneClass">
+      <strong>{{ candidate?.readinessScore || candidate?.score || 0 }}</strong>
+      <span>Overall</span>
+    </div>
+  </div>
 
-      <div class="candidate-card__meta">
-        <span>{{ candidate?.stack || 'Generalist' }}</span>
-        <span>{{ candidate?.yearsOfExperience || 0 }} yrs</span>
-        <span>{{ candidate?.location || 'Remote' }}</span>
-      </div>
+  <div class="candidate-card__meta">
+    <span>{{ candidate?.stack || 'Generalist' }}</span>
+    <span>{{ candidate?.yearsOfExperience || 0 }} yrs</span>
+    <span>{{ candidate?.location || 'Remote' }}</span>
+  </div>
 
-      <div class="candidate-card__metrics">
-        <div><label>GitHub</label><strong>{{ candidate?.githubScore || 0 }}</strong></div>
-        <div><label>Resume</label><strong>{{ candidate?.resumeScore || 0 }}</strong></div>
-        <div><label>Consistency</label><strong>{{ candidate?.consistencyScore || 0 }}</strong></div>
-      </div>
+  <div class="candidate-card__metrics">
+    <div>
+      <label>GitHub</label><strong>{{ candidate?.githubScore || 0 }}</strong>
+    </div>
+    <div>
+      <label>Resume</label><strong>{{ candidate?.resumeScore || 0 }}</strong>
+    </div>
+    <div>
+      <label>Consistency</label><strong>{{ candidate?.consistencyScore || 0 }}</strong>
+    </div>
+  </div>
 
-      <div class="candidate-card__availability">
-        <span class="candidate-card__availability-badge">{{ candidate?.availability || 'Available' }}</span>
-        <span class="candidate-card__activity">Active {{ candidate?.lastActive ? (candidate?.lastActive | date:'MMM d') : 'recently' }}</span>
-      </div>
+  <div class="candidate-card__availability">
+    <span class="candidate-card__availability-badge">{{
+      candidate?.availability || 'Available'
+    }}</span>
+    <span class="candidate-card__activity"
+      >Active
+      {{ candidate?.lastActive ? (candidate?.lastActive | date: 'MMM d') : 'recently' }}</span
+    >
+  </div>
 
-      <div class="candidate-card__skills">
-        <span *ngFor="let skill of (candidate?.skills || []).slice(0, 6)">{{ skill }}</span>
-      </div>
+  <div class="candidate-card__skills">
+    <span *ngFor="let skill of (candidate?.skills || []).slice(0, 6)">{{ skill }}</span>
+  </div>
 
-      <div class="candidate-card__summary" *ngIf="candidate?.aiSummary">{{ candidate.aiSummary }}</div>
+  <div class="candidate-card__summary" *ngIf="candidate?.aiSummary">{{ candidate.aiSummary }}</div>
 
-      <div class="candidate-card__actions" *ngIf="!hideActions">
-        <button type="button" class="candidate-card__btn candidate-card__btn--ghost" (click)="view.emit(candidate)">View Profile</button>
-        <button type="button" class="candidate-card__btn" (click)="shortlist.emit(candidate)">Shortlist</button>
-        <button type="button" class="candidate-card__btn candidate-card__btn--accent" (click)="compare.emit(candidate)">
-          {{ selected ? 'Selected' : 'Compare' }}
-        </button>
-      </div>
-    </article>
+  <div class="candidate-card__actions" *ngIf="!hideActions">
+    <button
+      type="button"
+      class="candidate-card__btn candidate-card__btn--ghost"
+      (click)="view.emit(candidate)"
+    >
+      View Profile
+    </button>
+    <button type="button" class="candidate-card__btn" (click)="shortlist.emit(candidate)">
+      Shortlist
+    </button>
+    <button
+      type="button"
+      class="candidate-card__btn candidate-card__btn--accent"
+      (click)="compare.emit(candidate)"
+    >
+      {{ selected ? 'Selected' : 'Compare' }}
+    </button>
+  </div>
+</article>

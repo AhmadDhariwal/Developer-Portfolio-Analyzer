@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './candidate-card.component.html',
-  styleUrl: './candidate-card.component.css'
+  styleUrl: './candidate-card.component.scss',
 })
 export class CandidateCardComponent {
   @Input() candidate: any;
@@ -17,7 +17,12 @@ export class CandidateCardComponent {
   @Output() compare = new EventEmitter<any>();
 
   get initial(): string {
-    return String(this.candidate?.name || this.candidate?.fullName || 'C').trim().charAt(0).toUpperCase() || 'C';
+    return (
+      String(this.candidate?.name || this.candidate?.fullName || 'C')
+        .trim()
+        .charAt(0)
+        .toUpperCase() || 'C'
+    );
   }
 
   get scoreToneClass(): string {

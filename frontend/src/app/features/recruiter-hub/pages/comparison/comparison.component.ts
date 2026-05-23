@@ -9,7 +9,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-comparison',
   standalone: false,
   templateUrl: './comparison.component.html',
-  styleUrl: './comparison.component.css'
+  styleUrl: './comparison.component.scss',
 })
 export class ComparisonComponent implements OnInit {
   loading = true;
@@ -24,7 +24,7 @@ export class ComparisonComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly candidateService: CandidateService,
     private readonly jobService: RecruiterJobService,
-    private readonly matchService: RecruiterMatchService
+    private readonly matchService: RecruiterMatchService,
   ) {}
 
   get jobOptions(): SearchableSelectOption[] {
@@ -47,7 +47,7 @@ export class ComparisonComponent implements OnInit {
             this.candidates = response?.candidates || [];
             resolve();
           },
-          error: () => resolve()
+          error: () => resolve(),
         });
       }),
       new Promise<void>((resolve) => {
@@ -56,9 +56,9 @@ export class ComparisonComponent implements OnInit {
             this.jobs = response?.jobs || [];
             resolve();
           },
-          error: () => resolve()
+          error: () => resolve(),
         });
-      })
+      }),
     ]).then(() => this.loadComparison());
   }
 
@@ -90,19 +90,21 @@ export class ComparisonComponent implements OnInit {
 
     this.loading = true;
     this.error = '';
-    this.matchService.compareCandidates({
-      candidateIds: Array.from(this.selectedIds),
-      jobId: this.selectedJobId || undefined
-    }).subscribe({
-      next: (response) => {
-        this.comparison = response?.comparison || [];
-        this.loading = false;
-      },
-      error: (err) => {
-        this.comparison = [];
-        this.error = err?.error?.message || 'Unable to compare the selected candidates.';
-        this.loading = false;
-      }
-    });
+    this.matchService
+      .compareCandidates({
+        candidateIds: Array.from(this.selectedIds),
+        jobId: this.selectedJobId || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.comparison = response?.comparison || [];
+          this.loading = false;
+        },
+        error: (err) => {
+          this.comparison = [];
+          this.error = err?.error?.message || 'Unable to compare the selected candidates.';
+          this.loading = false;
+        },
+      });
   }
 }

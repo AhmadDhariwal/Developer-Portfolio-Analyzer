@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './match-card.component.html',
-  styleUrl: './match-card.component.css'
+  styleUrl: './match-card.component.scss',
 })
 export class MatchCardComponent {
   @Input() match: any;

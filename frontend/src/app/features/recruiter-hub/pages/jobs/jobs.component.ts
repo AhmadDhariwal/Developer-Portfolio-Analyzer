@@ -6,7 +6,7 @@ import { RecruiterJobService } from '../../services/recruiter-job.service';
   selector: 'app-recruiter-jobs',
   standalone: false,
   templateUrl: './jobs.component.html',
-  styleUrl: './jobs.component.css'
+  styleUrl: './jobs.component.scss',
 })
 export class JobsComponent implements OnInit {
   jobs: any[] = [];
@@ -24,10 +24,13 @@ export class JobsComponent implements OnInit {
     status: 'open',
     minExperienceYears: 0,
     requiredSkills: '',
-    preferredSkills: ''
+    preferredSkills: '',
   };
 
-  constructor(private readonly jobService: RecruiterJobService, private readonly router: Router) {}
+  constructor(
+    private readonly jobService: RecruiterJobService,
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.loadJobs();
@@ -45,7 +48,7 @@ export class JobsComponent implements OnInit {
         this.jobs = [];
         this.error = err?.error?.message || 'Unable to load jobs right now.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -55,7 +58,7 @@ export class JobsComponent implements OnInit {
     const payload = {
       ...this.form,
       requiredSkills: this.toArray(this.form.requiredSkills),
-      preferredSkills: this.toArray(this.form.preferredSkills)
+      preferredSkills: this.toArray(this.form.preferredSkills),
     };
 
     const stream$ = this.editingJobId
@@ -70,7 +73,7 @@ export class JobsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to save this job.';
-      }
+      },
     });
   }
 
@@ -86,7 +89,7 @@ export class JobsComponent implements OnInit {
       status: job.status || 'open',
       minExperienceYears: Number(job.minExperienceYears || 0),
       requiredSkills: (job.requiredSkills || []).join(', '),
-      preferredSkills: (job.preferredSkills || []).join(', ')
+      preferredSkills: (job.preferredSkills || []).join(', '),
     };
   }
 
@@ -101,7 +104,7 @@ export class JobsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to archive this job.';
-      }
+      },
     });
   }
 
@@ -115,7 +118,7 @@ export class JobsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to delete this job.';
-      }
+      },
     });
   }
 
@@ -135,7 +138,7 @@ export class JobsComponent implements OnInit {
       status: 'open',
       minExperienceYears: 0,
       requiredSkills: '',
-      preferredSkills: ''
+      preferredSkills: '',
     };
   }
 

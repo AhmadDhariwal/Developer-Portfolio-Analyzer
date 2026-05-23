@@ -1,11 +1,11 @@
-    <section class="timeline">
-      <p class="timeline__empty" *ngIf="!items.length">No recent recruiter activity yet.</p>
-      <div class="timeline__item" *ngFor="let item of items">
-        <div class="timeline__dot"></div>
-        <div class="timeline__content">
-          <strong>{{ labelFor(item.action) }}</strong>
-          <p>{{ item.candidate?.name || item.job?.title || item.route || 'Recruiter activity' }}</p>
-          <small>{{ item.timestamp | date:'medium' }}</small>
-        </div>
-      </div>
-    </section>
+<section class="timeline">
+  <p class="timeline__empty" *ngIf="!items.length">No recent recruiter activity yet.</p>
+  <div class="timeline__item" *ngFor="let item of items">
+    <div class="timeline__dot"></div>
+    <div class="timeline__content">
+      <strong>{{ labelFor(item.action) }}</strong>
+      <p>{{ item.candidate?.name || item.job?.title || item.route || 'Recruiter activity' }}</p>
+      <small>{{ item.timestamp | date: 'medium' }}</small>
+    </div>
+  </div>
+</section>

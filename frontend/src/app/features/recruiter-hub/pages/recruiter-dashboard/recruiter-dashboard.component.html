@@ -16,23 +16,91 @@
 
   <ng-container *ngIf="!loading && dashboard">
     <div class="metric-grid">
-      <app-recruiter-stat-card label="Total Candidates" [value]="dashboard.metrics.totalCandidates" tone="blue" [hint]="dashboard.metrics.candidatesViewed + ' viewed this cycle'" />
-      <app-recruiter-stat-card label="Avg. Candidate Score" [value]="dashboard.metrics.avgCandidateScore" tone="cyan" hint="Portfolio readiness" />
-      <app-recruiter-stat-card label="Open Jobs" [value]="dashboard.metrics.openJobs" tone="orange" [hint]="dashboard.metrics.activeJobs + ' active now'" />
-      <app-recruiter-stat-card label="Draft Jobs" [value]="dashboard.metrics.draftJobs" tone="orange" hint="Pending publish" />
-      <app-recruiter-stat-card label="Closed Jobs" [value]="dashboard.metrics.closedJobs" tone="green" hint="Completed roles" />
-      <app-recruiter-stat-card label="Team Recruiters" [value]="dashboard.metrics.teamRecruiters" tone="purple" [hint]="dashboard.metrics.assignedTeams + ' assigned teams'" />
+      <app-recruiter-stat-card
+        label="Total Candidates"
+        [value]="dashboard.metrics.totalCandidates"
+        tone="blue"
+        [hint]="dashboard.metrics.candidatesViewed + ' viewed this cycle'"
+      />
+      <app-recruiter-stat-card
+        label="Avg. Candidate Score"
+        [value]="dashboard.metrics.avgCandidateScore"
+        tone="cyan"
+        hint="Portfolio readiness"
+      />
+      <app-recruiter-stat-card
+        label="Open Jobs"
+        [value]="dashboard.metrics.openJobs"
+        tone="orange"
+        [hint]="dashboard.metrics.activeJobs + ' active now'"
+      />
+      <app-recruiter-stat-card
+        label="Draft Jobs"
+        [value]="dashboard.metrics.draftJobs"
+        tone="orange"
+        hint="Pending publish"
+      />
+      <app-recruiter-stat-card
+        label="Closed Jobs"
+        [value]="dashboard.metrics.closedJobs"
+        tone="green"
+        hint="Completed roles"
+      />
+      <app-recruiter-stat-card
+        label="Team Recruiters"
+        [value]="dashboard.metrics.teamRecruiters"
+        tone="purple"
+        [hint]="dashboard.metrics.assignedTeams + ' assigned teams'"
+      />
     </div>
 
     <div class="chart-grid">
-      <app-recruiter-performance-chart title="Candidate Score Distribution" tone="cyan" [items]="dashboard.charts.scoreDistribution" />
-      <app-recruiter-performance-chart title="Candidates by Stack" tone="purple" [items]="dashboard.charts.candidatesByStack" />
-      <app-recruiter-performance-chart title="Jobs Posted (Last 6 Months)" tone="blue" [items]="dashboard.charts.jobsPostedTrend" />
-      <app-recruiter-performance-chart title="Experience Distribution" tone="orange" mode="donut" [items]="dashboard.charts.experienceDistribution" />
-      <app-recruiter-performance-chart title="Top Skills in Demand" tone="indigo" [items]="dashboard.charts.topSkillsDemand" />
-      <app-recruiter-performance-chart title="Supply vs Demand" tone="green" mode="dual" [items]="dashboard.charts.supplyVsDemand" />
-      <app-recruiter-performance-chart title="Recruiter Activity (This Week)" tone="purple" mode="heatmap" [items]="dashboard.charts.weeklyRecruiterActivity" [trendLabel]="activityTrendLabel" />
-      <app-recruiter-performance-chart title="Productivity Score" tone="green" mode="gauge" [items]="productivityItems" [trendLabel]="successRateLabel" />
+      <app-recruiter-performance-chart
+        title="Candidate Score Distribution"
+        tone="cyan"
+        [items]="dashboard.charts.scoreDistribution"
+      />
+      <app-recruiter-performance-chart
+        title="Candidates by Stack"
+        tone="purple"
+        [items]="dashboard.charts.candidatesByStack"
+      />
+      <app-recruiter-performance-chart
+        title="Jobs Posted (Last 6 Months)"
+        tone="blue"
+        [items]="dashboard.charts.jobsPostedTrend"
+      />
+      <app-recruiter-performance-chart
+        title="Experience Distribution"
+        tone="orange"
+        mode="donut"
+        [items]="dashboard.charts.experienceDistribution"
+      />
+      <app-recruiter-performance-chart
+        title="Top Skills in Demand"
+        tone="indigo"
+        [items]="dashboard.charts.topSkillsDemand"
+      />
+      <app-recruiter-performance-chart
+        title="Supply vs Demand"
+        tone="green"
+        mode="dual"
+        [items]="dashboard.charts.supplyVsDemand"
+      />
+      <app-recruiter-performance-chart
+        title="Recruiter Activity (This Week)"
+        tone="purple"
+        mode="heatmap"
+        [items]="dashboard.charts.weeklyRecruiterActivity"
+        [trendLabel]="activityTrendLabel"
+      />
+      <app-recruiter-performance-chart
+        title="Productivity Score"
+        tone="green"
+        mode="gauge"
+        [items]="productivityItems"
+        [trendLabel]="successRateLabel"
+      />
     </div>
 
     <div class="insight-grid">
@@ -41,7 +109,10 @@
           <h2>Top Candidates</h2>
         </div>
         <div class="list-card__body" *ngIf="topCandidates.length; else noTopCandidates">
-          <div class="list-row list-row--candidate" *ngFor="let candidate of topCandidates; let index = index">
+          <div
+            class="list-row list-row--candidate"
+            *ngFor="let candidate of topCandidates; let index = index"
+          >
             <span class="list-rank">{{ index + 1 }}</span>
             <div class="list-avatar">{{ initialFor(candidate?.name || candidate?.fullName) }}</div>
             <div class="list-main">
@@ -66,7 +137,9 @@
               <strong>{{ job?.title || 'Untitled job' }}</strong>
               <span>{{ job?.location || 'Remote' }}</span>
             </div>
-            <span class="status-chip" [ngClass]="statusClass(job?.status)">{{ job?.status || 'open' }}</span>
+            <span class="status-chip" [ngClass]="statusClass(job?.status)">{{
+              job?.status || 'open'
+            }}</span>
           </div>
         </div>
         <ng-template #noRecentJobs>
@@ -80,9 +153,13 @@
         </div>
         <div class="list-card__body" *ngIf="recentMatches.length; else noRecentMatches">
           <div class="list-row list-row--match" *ngFor="let match of recentMatches">
-            <div class="list-avatar">{{ initialFor(match?.candidate?.name || match?.candidate?.fullName || 'C') }}</div>
+            <div class="list-avatar">
+              {{ initialFor(match?.candidate?.name || match?.candidate?.fullName || 'C') }}
+            </div>
             <div class="list-main">
-              <strong>{{ match?.candidate?.name || match?.candidate?.fullName || 'Candidate' }}</strong>
+              <strong>{{
+                match?.candidate?.name || match?.candidate?.fullName || 'Candidate'
+              }}</strong>
               <span>{{ match?.job?.title || 'General role' }}</span>
             </div>
             <span class="match-badge">{{ matchScore(match) }}% Match</span>
@@ -100,7 +177,9 @@
         <div class="list-card__body" *ngIf="pendingFollowUps.length; else noFollowUps">
           <div class="list-row list-row--follow" *ngFor="let item of pendingFollowUps">
             <div class="list-main">
-              <strong>{{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}</strong>
+              <strong>{{
+                item?.candidate?.name || item?.candidate?.fullName || 'Candidate'
+              }}</strong>
               <span>{{ item?.job?.title || 'General shortlist' }}</span>
             </div>
             <span class="list-time">{{ timeAgo(item?.updatedAt || item?.createdAt) }}</span>

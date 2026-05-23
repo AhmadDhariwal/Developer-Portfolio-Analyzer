@@ -9,7 +9,7 @@ type ChartMode = 'auto' | 'bars' | 'dual' | 'donut' | 'heatmap' | 'gauge';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './recruiter-performance-chart.component.html',
-  styleUrl: './recruiter-performance-chart.component.css'
+  styleUrl: './recruiter-performance-chart.component.scss',
 })
 export class RecruiterPerformanceChartComponent {
   @Input() title = 'Performance';
@@ -17,7 +17,14 @@ export class RecruiterPerformanceChartComponent {
   @Input() mode: ChartMode = 'auto';
   @Input() trendLabel = '';
   @Input() emptyMessage = 'No data available yet.';
-  @Input() items: Array<{ label?: string; date?: string; count?: number; value?: number; supply?: number; demand?: number }> = [];
+  @Input() items: Array<{
+    label?: string;
+    date?: string;
+    count?: number;
+    value?: number;
+    supply?: number;
+    demand?: number;
+  }> = [];
 
   get resolvedMode(): ChartMode {
     if (this.mode !== 'auto') return this.mode;
@@ -71,7 +78,12 @@ export class RecruiterPerformanceChartComponent {
     return Number.isFinite(value) ? value : 0;
   }
 
-  heatCellsFor(item: { count?: number; value?: number; supply?: number; demand?: number }): number[] {
+  heatCellsFor(item: {
+    count?: number;
+    value?: number;
+    supply?: number;
+    demand?: number;
+  }): number[] {
     const value = this.numericValue(item);
     const max = this.maxValue();
     const ratio = max > 0 ? value / max : 0;
@@ -79,13 +91,22 @@ export class RecruiterPerformanceChartComponent {
   }
 
   legendColor(index: number): string {
-    const palette = ['#60a5fa', '#22d3ee', '#a78bfa', '#4ade80', '#f59e0b', '#f97316', '#f472b6', '#34d399'];
+    const palette = [
+      '#60a5fa',
+      '#22d3ee',
+      '#a78bfa',
+      '#4ade80',
+      '#f59e0b',
+      '#f97316',
+      '#f472b6',
+      '#34d399',
+    ];
     return palette[index % palette.length];
   }
 
   widthFor(value: number): number {
     const max = this.maxValue();
-    const ratio = max > 0 ? (Number(value || 0) / max) : 0;
+    const ratio = max > 0 ? Number(value || 0) / max : 0;
     return Math.max(8, Math.round(Math.max(0, ratio) * 100));
   }
 
@@ -94,7 +115,7 @@ export class RecruiterPerformanceChartComponent {
       .flatMap((item) => [
         this.numericValue(item),
         Number(item?.supply ?? 0),
-        Number(item?.demand ?? 0)
+        Number(item?.demand ?? 0),
       ])
       .filter((item) => Number.isFinite(item) && item >= 0);
     return Math.max(...values, 1);

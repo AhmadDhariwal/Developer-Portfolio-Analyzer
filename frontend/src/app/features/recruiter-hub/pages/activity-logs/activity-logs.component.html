@@ -1,23 +1,45 @@
-    <section class="hub-page">
-      <header class="hero">
-        <div>
-          <span class="hero__kicker">Activity Logs</span>
-          <h1>Recruiter activity</h1>
-          <p>Filter recruiter-scoped activity across candidate reviews, AI analysis, and pipeline actions.</p>
-        </div>
-      </header>
+<section class="hub-page">
+  <header class="hero">
+    <div>
+      <span class="hero__kicker">Activity Logs</span>
+      <h1>Recruiter activity</h1>
+      <p>
+        Filter recruiter-scoped activity across candidate reviews, AI analysis, and pipeline
+        actions.
+      </p>
+    </div>
+  </header>
 
-      <div class="filter-bar">
-        <app-searchable-select [options]="actionOptions" [value]="filters.action" [emptyOptionLabel]="'All actions'" (valueChange)="filters.action = $event" />
-        <app-searchable-select [options]="candidateOptions" [value]="filters.candidateId" [emptyOptionLabel]="'All candidates'" (valueChange)="filters.candidateId = $event" />
-        <app-searchable-select [options]="jobOptions" [value]="filters.jobId" [emptyOptionLabel]="'All jobs'" (valueChange)="filters.jobId = $event" />
-        <input [(ngModel)]="filters.from" type="date" />
-        <input [(ngModel)]="filters.to" type="date" />
-        <button type="button" (click)="loadActivity()">Apply</button>
-      </div>
+  <div class="filter-bar">
+    <app-searchable-select
+      [options]="actionOptions"
+      [value]="filters.action"
+      [emptyOptionLabel]="'All actions'"
+      (valueChange)="filters.action = $event"
+    />
+    <app-searchable-select
+      [options]="candidateOptions"
+      [value]="filters.candidateId"
+      [emptyOptionLabel]="'All candidates'"
+      (valueChange)="filters.candidateId = $event"
+    />
+    <app-searchable-select
+      [options]="jobOptions"
+      [value]="filters.jobId"
+      [emptyOptionLabel]="'All jobs'"
+      (valueChange)="filters.jobId = $event"
+    />
+    <input [(ngModel)]="filters.from" type="date" />
+    <input [(ngModel)]="filters.to" type="date" />
+    <button type="button" (click)="loadActivity()">Apply</button>
+  </div>
 
-      <div class="message message--error" *ngIf="error">{{ error }}</div>
-      <app-recruiter-loader *ngIf="loading" label="Loading recruiter activity..." />
-      <app-activity-timeline *ngIf="!loading && logs.length > 0" [items]="logs" />
-      <app-recruiter-empty-state *ngIf="!loading && logs.length === 0" title="No recruiter activity yet" message="Candidate views, AI summaries, shortlists, and match actions will appear here." />
-    </section>
+  <div class="message message--error" *ngIf="error">{{ error }}</div>
+  <app-recruiter-loader *ngIf="loading" label="Loading recruiter activity..." />
+  <app-activity-timeline *ngIf="!loading && logs.length > 0" [items]="logs" />
+  <app-recruiter-empty-state
+    *ngIf="!loading && logs.length === 0"
+    title="No recruiter activity yet"
+    message="Candidate views, AI summaries, shortlists, and match actions will appear here."
+  />
+</section>

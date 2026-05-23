@@ -5,7 +5,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   selector: 'app-recruiter-dashboard',
   standalone: false,
   templateUrl: './recruiter-dashboard.component.html',
-  styleUrl: './recruiter-dashboard.component.css'
+  styleUrl: './recruiter-dashboard.component.scss',
 })
 export class RecruiterDashboardComponent implements OnInit {
   loading = true;
@@ -23,12 +23,14 @@ export class RecruiterDashboardComponent implements OnInit {
       error: (err) => {
         this.error = err?.error?.message || 'Unable to load recruiter dashboard.';
         this.loading = false;
-      }
+      },
     });
   }
 
   get productivityItems(): Array<{ label: string; value: number }> {
-    return [{ label: 'Activity', value: Number(this.dashboard?.metrics?.recruiterActivityScore || 0) }];
+    return [
+      { label: 'Activity', value: Number(this.dashboard?.metrics?.recruiterActivityScore || 0) },
+    ];
   }
 
   get successRateLabel(): string {
@@ -63,7 +65,12 @@ export class RecruiterDashboardComponent implements OnInit {
   }
 
   initialFor(value: string): string {
-    return String(value || 'C').trim().charAt(0).toUpperCase() || 'C';
+    return (
+      String(value || 'C')
+        .trim()
+        .charAt(0)
+        .toUpperCase() || 'C'
+    );
   }
 
   matchScore(match: any): number {
@@ -97,11 +104,11 @@ export class RecruiterDashboardComponent implements OnInit {
     return {
       profile: {
         ...defaults.profile,
-        ...(payload?.profile || {})
+        ...(payload?.profile || {}),
       },
       metrics: {
         ...defaults.metrics,
-        ...(payload?.metrics || {})
+        ...(payload?.metrics || {}),
       },
       charts: {
         scoreDistribution: this.asArray(payload?.charts?.scoreDistribution),
@@ -110,15 +117,15 @@ export class RecruiterDashboardComponent implements OnInit {
         experienceDistribution: this.asArray(payload?.charts?.experienceDistribution),
         topSkillsDemand: this.asArray(payload?.charts?.topSkillsDemand),
         supplyVsDemand: this.asArray(payload?.charts?.supplyVsDemand),
-        weeklyRecruiterActivity: this.asArray(payload?.charts?.weeklyRecruiterActivity)
+        weeklyRecruiterActivity: this.asArray(payload?.charts?.weeklyRecruiterActivity),
       },
       widgets: {
         topCandidates: this.asArray(payload?.widgets?.topCandidates),
         recentJobs: this.asArray(payload?.widgets?.recentJobs),
         recentMatches: this.asArray(payload?.widgets?.recentMatches),
         pendingFollowUps: this.asArray(payload?.widgets?.pendingFollowUps),
-        recentActivity: this.asArray(payload?.widgets?.recentActivity)
-      }
+        recentActivity: this.asArray(payload?.widgets?.recentActivity),
+      },
     };
   }
 
@@ -136,7 +143,7 @@ export class RecruiterDashboardComponent implements OnInit {
         activeJobs: 0,
         candidatesViewed: 0,
         recruiterActivityScore: 0,
-        successRate: 0
+        successRate: 0,
       },
       charts: {
         scoreDistribution: [],
@@ -145,15 +152,15 @@ export class RecruiterDashboardComponent implements OnInit {
         experienceDistribution: [],
         topSkillsDemand: [],
         supplyVsDemand: [],
-        weeklyRecruiterActivity: []
+        weeklyRecruiterActivity: [],
       },
       widgets: {
         topCandidates: [],
         recentJobs: [],
         recentMatches: [],
         pendingFollowUps: [],
-        recentActivity: []
-      }
+        recentActivity: [],
+      },
     };
   }
 

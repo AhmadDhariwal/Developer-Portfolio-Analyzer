@@ -1,35 +1,49 @@
-    <article class="match-card">
-      <div class="match-card__header">
-        <div>
-          <div class="match-card__rank" *ngIf="match?.rank">Rank #{{ match.rank }}</div>
-          <h3>{{ match?.candidate?.name || match?.candidate?.fullName || match?.candidateId }}</h3>
-          <p>{{ match?.job?.title || match?.jobId }}</p>
-        </div>
-        <div class="match-card__score">
-          <strong>{{ match?.matchScore || 0 }}%</strong>
-          <span>Match</span>
-        </div>
-      </div>
+<article class="match-card">
+  <div class="match-card__header">
+    <div>
+      <div class="match-card__rank" *ngIf="match?.rank">Rank #{{ match.rank }}</div>
+      <h3>{{ match?.candidate?.name || match?.candidate?.fullName || match?.candidateId }}</h3>
+      <p>{{ match?.job?.title || match?.jobId }}</p>
+    </div>
+    <div class="match-card__score">
+      <strong>{{ match?.matchScore || 0 }}%</strong>
+      <span>Match</span>
+    </div>
+  </div>
 
-      <div class="match-card__meta">
-        <div><label>Skill</label><strong>{{ match?.skillMatchPercent || 0 }}%</strong></div>
-        <div><label>Confidence</label><strong>{{ match?.confidenceScore || 0 }}%</strong></div>
-        <div><label>Readiness</label><strong>{{ match?.readinessScore || 0 }}</strong></div>
-      </div>
+  <div class="match-card__meta">
+    <div>
+      <label>Skill</label><strong>{{ match?.skillMatchPercent || 0 }}%</strong>
+    </div>
+    <div>
+      <label>Confidence</label><strong>{{ match?.confidenceScore || 0 }}%</strong>
+    </div>
+    <div>
+      <label>Readiness</label><strong>{{ match?.readinessScore || 0 }}</strong>
+    </div>
+  </div>
 
-      <div class="match-card__insight">
-        <span class="match-card__badge">{{ match?.experienceMatch || 'Moderate' }} experience fit</span>
-        <span class="match-card__status" *ngIf="match?.status">{{ match.status }}</span>
-      </div>
+  <div class="match-card__insight">
+    <span class="match-card__badge">{{ match?.experienceMatch || 'Moderate' }} experience fit</span>
+    <span class="match-card__status" *ngIf="match?.status">{{ match.status }}</span>
+  </div>
 
-      <p class="match-card__summary">{{ match?.recommendation || match?.explanation || 'AI ranking complete.' }}</p>
+  <p class="match-card__summary">
+    {{ match?.recommendation || match?.explanation || 'AI ranking complete.' }}
+  </p>
 
-      <div class="match-card__skills" *ngIf="(match?.strengths || []).length">
-        <span *ngFor="let item of (match?.strengths || []).slice(0, 3)">{{ item }}</span>
-      </div>
+  <div class="match-card__skills" *ngIf="(match?.strengths || []).length">
+    <span *ngFor="let item of (match?.strengths || []).slice(0, 3)">{{ item }}</span>
+  </div>
 
-      <div class="match-card__actions" *ngIf="!hideActions">
-        <button type="button" class="match-card__btn" (click)="shortlist.emit(match)">Shortlist</button>
-        <button type="button" class="match-card__btn match-card__btn--ghost" (click)="compare.emit(match)">Compare</button>
-      </div>
-    </article>
+  <div class="match-card__actions" *ngIf="!hideActions">
+    <button type="button" class="match-card__btn" (click)="shortlist.emit(match)">Shortlist</button>
+    <button
+      type="button"
+      class="match-card__btn match-card__btn--ghost"
+      (click)="compare.emit(match)"
+    >
+      Compare
+    </button>
+  </div>
+</article>

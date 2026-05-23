@@ -32,20 +32,15 @@ import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-p
     ComparisonComponent,
     RecruiterAnalyticsComponent,
     RecruiterActivityLogsComponent,
-    RecruiterProfileComponent
+    RecruiterProfileComponent,
   ],
   imports: [
     CommonModule,
     FormsModule,
     SearchableSelectComponent,
     RecruiterHubSharedModule,
-    RecruiterHubRoutingModule
+    RecruiterHubRoutingModule,
   ],
-  providers: [
-    RecruiterHubService,
-    CandidateService,
-    RecruiterJobService,
-    RecruiterMatchService
-  ]
+  providers: [RecruiterHubService, CandidateService, RecruiterJobService, RecruiterMatchService],
 })
 export class RecruiterHubModule {}

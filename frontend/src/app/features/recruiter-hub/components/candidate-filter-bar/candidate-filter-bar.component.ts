@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SearchableSelectComponent, SearchableSelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-candidate-filter-bar',
   standalone: true,
   imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './candidate-filter-bar.component.html',
-  styleUrl: './candidate-filter-bar.component.css'
+  styleUrl: './candidate-filter-bar.component.scss',
 })
 export class CandidateFilterBarComponent {
   @Input() model: any = {};
@@ -22,7 +25,7 @@ export class CandidateFilterBarComponent {
     { value: 'experience-desc', label: 'Most experience' },
     { value: 'latest', label: 'Recently active' },
     { value: 'name-asc', label: 'Name A-Z' },
-    { value: 'score-asc', label: 'Lowest score' }
+    { value: 'score-asc', label: 'Lowest score' },
   ];
 
   setValue(key: string, value: string): void {

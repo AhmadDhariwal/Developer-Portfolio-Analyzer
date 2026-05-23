@@ -7,7 +7,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   selector: 'app-recruiter-candidate-details',
   standalone: false,
   templateUrl: './candidate-details.component.html',
-  styleUrl: './candidate-details.component.css'
+  styleUrl: './candidate-details.component.scss',
 })
 export class CandidateDetailsComponent implements OnInit {
   loading = true;
@@ -20,11 +20,16 @@ export class CandidateDetailsComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly candidateService: CandidateService,
-    private readonly matchService: RecruiterMatchService
+    private readonly matchService: RecruiterMatchService,
   ) {}
 
   get initial(): string {
-    return String(this.candidate?.name || 'C').trim().charAt(0).toUpperCase() || 'C';
+    return (
+      String(this.candidate?.name || 'C')
+        .trim()
+        .charAt(0)
+        .toUpperCase() || 'C'
+    );
   }
 
   ngOnInit(): void {
@@ -37,7 +42,7 @@ export class CandidateDetailsComponent implements OnInit {
       error: (err) => {
         this.error = err?.error?.message || 'Unable to load candidate details.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -53,7 +58,7 @@ export class CandidateDetailsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to analyze this candidate right now.';
-      }
+      },
     });
   }
 
@@ -68,7 +73,7 @@ export class CandidateDetailsComponent implements OnInit {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to shortlist this candidate.';
-      }
+      },
     });
   }
 

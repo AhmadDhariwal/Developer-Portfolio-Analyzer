@@ -1,7 +1,0 @@
-    .timeline{display:flex;flex-direction:column;gap:.8rem}
-    .timeline__empty{margin:0;padding:.85rem 1rem;border-radius:14px;background:rgba(15,23,42,.74);border:1px solid rgba(71,85,105,.66);color:#94a3b8}
-    .timeline__item{display:flex;gap:.85rem;align-items:flex-start;padding:1rem;border-radius:18px;background:linear-gradient(180deg,rgba(15,23,42,.94),rgba(15,23,42,.82));border:1px solid rgba(99,102,241,.16);box-shadow:0 18px 34px rgba(2,6,23,.24);transition:transform .2s ease,border-color .2s ease}
-    .timeline__item:hover{transform:translateY(-1px);border-color:rgba(129,140,248,.36)}
-    .timeline__dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#38bdf8);margin-top:.4rem;box-shadow:0 0 0 6px rgba(99,102,241,.12)}
-    strong{color:#f8fafc}
-    p,small{margin:.2rem 0 0;color:#94a3b8}

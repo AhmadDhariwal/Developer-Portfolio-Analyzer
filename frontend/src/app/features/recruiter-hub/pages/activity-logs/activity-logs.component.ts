@@ -5,7 +5,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   selector: 'app-recruiter-activity-logs',
   standalone: false,
   templateUrl: './activity-logs.component.html',
-  styleUrl: './activity-logs.component.css'
+  styleUrl: './activity-logs.component.scss',
 })
 export class RecruiterActivityLogsComponent implements OnInit {
   loading = true;
@@ -28,16 +28,25 @@ export class RecruiterActivityLogsComponent implements OnInit {
     this.hubService.getActivity(this.filters).subscribe({
       next: (response) => {
         this.logs = response?.logs || [];
-        this.actionOptions = (response?.filters?.actions || []).map((label: string) => ({ value: label, label }));
-        this.candidateOptions = (response?.filters?.candidates || []).map((item: any) => ({ value: item._id, label: item.name }));
-        this.jobOptions = (response?.filters?.jobs || []).map((item: any) => ({ value: item._id, label: item.title }));
+        this.actionOptions = (response?.filters?.actions || []).map((label: string) => ({
+          value: label,
+          label,
+        }));
+        this.candidateOptions = (response?.filters?.candidates || []).map((item: any) => ({
+          value: item._id,
+          label: item.name,
+        }));
+        this.jobOptions = (response?.filters?.jobs || []).map((item: any) => ({
+          value: item._id,
+          label: item.title,
+        }));
         this.loading = false;
       },
       error: (err) => {
         this.logs = [];
         this.error = err?.error?.message || 'Unable to load recruiter activity.';
         this.loading = false;
-      }
+      },
     });
   }
 }
