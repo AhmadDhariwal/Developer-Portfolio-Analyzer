@@ -1,0 +1,77 @@
+<section class="blog-page">
+  <div class="blog-shell">
+    <header class="page-hero">
+      <div class="page-topbar">
+        <a routerLink="/" class="back-home">Back to Home</a>
+
+        <nav class="page-nav" aria-label="Public pages">
+          <a
+            *ngFor="let item of pageLinks"
+            [routerLink]="item.route"
+            routerLinkActive="page-nav__link--active"
+            class="page-nav__link"
+          >
+            {{ item.label }}
+          </a>
+        </nav>
+      </div>
+
+      <span class="eyebrow">Insights</span>
+      <h1>DevInsight Blog</h1>
+      <p class="subtitle">
+        Editorial content around recruiter systems, developer growth, AI-assisted evaluation, and
+        building safer analytics products for modern teams.
+      </p>
+      <p class="updated">Editorial overview updated: May 24, 2026</p>
+    </header>
+
+    <section class="intro-grid">
+      <article class="intro-card">
+        <h2>What we publish</h2>
+        <p>
+          The DevInsight Blog focuses on practical, product-aware topics: how recruiters review
+          technical candidates, how developers present meaningful portfolio signals, and how AI can
+          be used responsibly inside hiring and growth workflows.
+        </p>
+      </article>
+
+      <article class="intro-card intro-card--accent">
+        <h2>Editorial tracks</h2>
+        <ul>
+          <li *ngFor="let note of editorialNotes">{{ note }}</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="posts-grid">
+      <article class="post-card" *ngFor="let post of featuredPosts">
+        <span class="post-category">{{ post.category }}</span>
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.excerpt }}</p>
+        <div class="post-footer">
+          <span>{{ post.readTime }}</span>
+          <a routerLink="/contact">Request more</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="bottom-card">
+        <h3>Who this is for</h3>
+        <p>
+          Recruiters, admins, developers, and product teams that need clearer thinking around
+          growth signals, matching logic, analytics UX, and organization-safe hiring tooling.
+        </p>
+      </article>
+
+      <article class="bottom-card bottom-card--cta">
+        <h3>Want tailored advice?</h3>
+        <p>
+          If you want content or guidance around a specific workflow, reach out and we can point
+          you to the right product or implementation context.
+        </p>
+        <a routerLink="/contact" class="primary-action">Contact the Team</a>
+      </article>
+    </section>
+  </div>
+</section>

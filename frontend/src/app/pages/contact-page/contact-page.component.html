@@ -1,0 +1,82 @@
+<section class="contact-page">
+  <div class="contact-shell">
+    <header class="page-hero">
+      <div class="page-topbar">
+        <a routerLink="/" class="back-home">Back to Home</a>
+
+        <nav class="page-nav" aria-label="Public pages">
+          <a
+            *ngFor="let item of pageLinks"
+            [routerLink]="item.route"
+            routerLinkActive="page-nav__link--active"
+            class="page-nav__link"
+          >
+            {{ item.label }}
+          </a>
+        </nav>
+      </div>
+
+      <span class="eyebrow">Support</span>
+      <h1>Contact DevInsight AI</h1>
+      <p class="subtitle">
+        Reach the team for onboarding, recruiter workflows, admin setup, product questions, or API
+        clarification.
+      </p>
+      <p class="updated">Available for support and onboarding guidance</p>
+    </header>
+
+    <section class="hero-grid">
+      <article class="hero-card">
+        <h2>Direct support channels</h2>
+        <p>
+          The primary contact is configured as a Gmail address, so clicking the main action opens
+          Gmail compose directly. If the contact value is switched to a phone number later, the same
+          logic automatically falls back to the dial pad.
+        </p>
+
+        <div class="action-row">
+          <button type="button" class="primary-action" (click)="openPrimaryContact()">
+            Open Gmail
+          </button>
+          <button type="button" class="secondary-action" (click)="openBackupPhone()">
+            Call Support
+          </button>
+        </div>
+      </article>
+
+      <article class="contact-card">
+        <span class="contact-label">Primary Email</span>
+        <strong>{{ primaryContact }}</strong>
+        <span class="contact-label">Backup Phone</span>
+        <strong>{{ backupPhone }}</strong>
+      </article>
+    </section>
+
+    <section class="channels-grid">
+      <article class="channel-card" *ngFor="let item of supportChannels">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.detail }}</p>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="bottom-card">
+        <h3>Suggested use cases</h3>
+        <ul>
+          <li>Recruiter dashboard, jobs, matching, and shortlist help</li>
+          <li>Admin-side recruiter visibility and organization setup</li>
+          <li>Questions about APIs, workflows, or product behavior</li>
+          <li>Onboarding support for new teams using DevInsight AI</li>
+        </ul>
+      </article>
+
+      <article class="bottom-card bottom-card--note">
+        <h3>Response expectations</h3>
+        <p>
+          Email is best for detailed questions, account access issues, and product clarification.
+          Phone is a fallback route when a faster support touchpoint is needed.
+        </p>
+      </article>
+    </section>
+  </div>
+</section>

@@ -16,6 +16,10 @@ import { LandingPageComponent } from './pages/landing-page/landing-page.componen
 import { IntegrationsMarketplaceComponent } from './pages/integrations-marketplace/integrations-marketplace.component';
 import { ScenarioSimulatorComponent } from './pages/scenario-simulator/scenario-simulator.component';
 import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.component';
+import { TermsOfServiceComponent } from './pages/terms-of-service/terms-of-service.component';
+import { ApiDocsPageComponent } from './pages/api-docs-page/api-docs-page.component';
+import { PublicBlogPageComponent } from './pages/public-blog-page/public-blog-page.component';
+import { ContactPageComponent } from './pages/contact-page/contact-page.component';
 import { SettingsPageComponent } from './settings/settings-page.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { PublicPortfolioComponent } from './pages/public-portfolio/public-portfolio.component';
@@ -41,6 +45,10 @@ export const routes: Routes = [
   // Public routes
   { path: '', component: LandingPageComponent, canActivate: [publicGuard] },
   { path: 'privacy', component: PrivacyPolicyComponent },
+  { path: 'terms', component: TermsOfServiceComponent },
+  { path: 'api-docs', component: ApiDocsPageComponent },
+  { path: 'blog', component: PublicBlogPageComponent },
+  { path: 'contact', component: ContactPageComponent },
   { path: 'p/:slug', component: PublicPortfolioComponent },
   { path: 'notifications', redirectTo: 'app/notifications', pathMatch: 'full' },
   { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },

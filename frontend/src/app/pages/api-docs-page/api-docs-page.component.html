@@ -1,0 +1,92 @@
+<section class="docs-page">
+  <div class="docs-shell">
+    <header class="page-hero">
+      <div class="page-topbar">
+        <a routerLink="/" class="back-home">Back to Home</a>
+
+        <nav class="page-nav" aria-label="Public pages">
+          <a
+            *ngFor="let item of pageLinks"
+            [routerLink]="item.route"
+            routerLinkActive="page-nav__link--active"
+            class="page-nav__link"
+          >
+            {{ item.label }}
+          </a>
+        </nav>
+      </div>
+
+      <span class="eyebrow">Developer Hub</span>
+      <h1>API Docs</h1>
+      <p class="subtitle">
+        A realistic overview of the DevInsight AI API surface across auth, developer analysis,
+        recruiter operations, admin tooling, and organization-aware workflows.
+      </p>
+      <p class="updated">Updated for current app structure: May 24, 2026</p>
+    </header>
+
+    <section class="hero-grid">
+      <article class="intro-card">
+        <h2>Platform API overview</h2>
+        <p>
+          DevInsight AI primarily exposes JSON APIs consumed by the Angular frontend. The platform
+          combines JWT-authenticated requests, role-based access checks, and scoped organization
+          data responses across its major product areas.
+        </p>
+
+        <div class="code-block">
+          <code>Base API pattern: /api/&lt;domain&gt;/&lt;resource&gt;</code>
+        </div>
+      </article>
+
+      <div class="feature-grid">
+        <article
+          *ngFor="let item of featureCards"
+          class="feature-card"
+          [ngClass]="'feature-card--' + item.accent"
+        >
+          <strong>{{ item.value }}</strong>
+          <span>{{ item.label }}</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="groups-grid">
+      <article class="group-card" *ngFor="let group of apiGroups">
+        <h3>{{ group.title }}</h3>
+        <p>{{ group.description }}</p>
+        <div class="endpoint-list">
+          <code *ngFor="let endpoint of group.endpoints">{{ endpoint }}</code>
+        </div>
+      </article>
+    </section>
+
+    <section class="reference-grid">
+      <article class="reference-card">
+        <h3>Authentication model</h3>
+        <p>
+          The app relies on authenticated JWT sessions and role-specific organization context,
+          especially in recruiter and admin workflows where tenant isolation matters.
+        </p>
+      </article>
+
+      <article class="reference-card">
+        <h3>Response shape conventions</h3>
+        <p>
+          APIs generally return named payloads such as <code>profile</code>, <code>dashboard</code>,
+          <code>analytics</code>, <code>recruiters</code>, <code>jobs</code>, or <code>message</code>
+          plus optional <code>errors</code> for validation feedback.
+        </p>
+      </article>
+
+      <article class="reference-card reference-card--cta">
+        <h3>Need API clarification?</h3>
+        <p>
+          Use the contact page if you need help understanding current endpoint domains, payloads, or
+          integration expectations for internal tooling.
+        </p>
+        <a routerLink="/contact" class="primary-action">Contact the Team</a>
+      </article>
+    </section>
+  </div>
+</section>

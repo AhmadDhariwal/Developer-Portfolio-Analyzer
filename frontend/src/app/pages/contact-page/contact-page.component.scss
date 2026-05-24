@@ -1,0 +1,241 @@
+:host {
+  display: block;
+}
+
+.contact-page {
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 32%),
+    linear-gradient(180deg, #020617 0%, #0f172a 48%, #111827 100%);
+}
+
+.contact-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.page-topbar,
+.hero-grid,
+.channels-grid,
+.bottom-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-topbar {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.page-nav {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.back-home,
+.page-nav__link {
+  text-decoration: none;
+}
+
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  background: rgba(15, 23, 42, 0.7);
+  color: #bbf7d0;
+  font-weight: 700;
+}
+
+.page-nav__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.56rem 0.82rem;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 85, 105, 0.65);
+  background: rgba(15, 23, 42, 0.7);
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  &:hover,
+  &--active {
+    color: #f8fafc;
+    border-color: rgba(52, 211, 153, 0.36);
+    background: rgba(5, 150, 105, 0.18);
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  margin-bottom: 0.55rem;
+  padding: 0.34rem 0.72rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.16);
+  color: #bbf7d0;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  letter-spacing: -0.04em;
+}
+
+.subtitle,
+.updated,
+.hero-card p,
+.channel-card p,
+.bottom-card p,
+.bottom-card li {
+  line-height: 1.74;
+}
+
+.subtitle {
+  margin: 0.55rem 0 0;
+  max-width: 70ch;
+  color: #cbd5e1;
+  font-size: 1.04rem;
+}
+
+.updated {
+  margin: 0.55rem 0 0;
+  color: #86efac;
+  font-size: 0.92rem;
+}
+
+.hero-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.85fr);
+  margin-top: 1rem;
+}
+
+.hero-card,
+.contact-card,
+.channel-card,
+.bottom-card {
+  border: 1px solid rgba(51, 65, 85, 0.82);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.84));
+  box-shadow: 0 24px 44px rgba(2, 6, 23, 0.28);
+}
+
+.hero-card,
+.contact-card,
+.channel-card,
+.bottom-card {
+  padding: 1.25rem 1.35rem;
+}
+
+.hero-card h2,
+.channel-card h3,
+.bottom-card h3 {
+  margin: 0 0 0.55rem;
+  color: #f8fafc;
+}
+
+.hero-card p,
+.channel-card p,
+.bottom-card p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.primary-action,
+.secondary-action {
+  min-height: 44px;
+  padding: 0 1rem;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-action {
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #2563eb);
+  color: #fff;
+}
+
+.secondary-action {
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  background: rgba(15, 23, 42, 0.62);
+  color: #bbf7d0;
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: center;
+  border-color: rgba(52, 211, 153, 0.22);
+}
+
+.contact-label {
+  color: #86efac;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contact-card strong {
+  color: #f8fafc;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.channels-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.bottom-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.bottom-card ul {
+  margin: 0.85rem 0 0;
+  padding-left: 1rem;
+}
+
+.bottom-card li {
+  margin-bottom: 0.45rem;
+  color: #cbd5e1;
+}
+
+.bottom-card--note {
+  border-color: rgba(59, 130, 246, 0.22);
+}
+
+@media (max-width: 980px) {
+  .page-topbar,
+  .hero-grid,
+  .channels-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-nav,
+  .back-home {
+    justify-self: start;
+  }
+}
