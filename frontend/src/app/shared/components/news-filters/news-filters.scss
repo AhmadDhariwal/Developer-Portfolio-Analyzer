@@ -3,43 +3,6 @@
   gap: 1rem;
 }
 
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-
-  button {
-    min-width: 6.75rem;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    background: rgba(15, 23, 42, 0.78);
-    color: var(--text-secondary);
-    border-radius: 999px;
-    padding: 0.72rem 1rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    transition:
-      transform 160ms ease,
-      border-color 160ms ease,
-      color 160ms ease,
-      box-shadow 160ms ease;
-
-    &:hover {
-      transform: translateY(-1px);
-      border-color: rgba(96, 165, 250, 0.36);
-      color: var(--text-primary);
-    }
-
-    &.active {
-      color: #eef2ff;
-      border-color: rgba(99, 102, 241, 0.48);
-      background:
-        linear-gradient(180deg, rgba(99, 102, 241, 0.22), rgba(15, 23, 42, 0.92)),
-        rgba(15, 23, 42, 0.88);
-      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.18);
-    }
-  }
-}
-
 .filters-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));

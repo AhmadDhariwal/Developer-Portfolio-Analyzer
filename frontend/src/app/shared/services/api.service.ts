@@ -298,6 +298,43 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 
+  getScenarioSimulatorContext(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/simulator/context`);
+  }
+
+  saveScenarioSimulation(payload: {
+    name?: string;
+    baselineHiringScore: number;
+    baselineJobMatch: number;
+    role?: string;
+    experienceLevel?: string;
+    durationWeeks?: number;
+    skills: string[];
+    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/simulator/save`, payload);
+  }
+
+  getScenarioSimulationHistory(limit = 8): Observable<any> {
+    return this.http.get(`${this.baseUrl}/simulator/history?limit=${encodeURIComponent(String(limit))}`);
+  }
+
+  deleteScenarioSimulation(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`);
+  }
+
+  createSprintFromScenario(payload: {
+    baselineHiringScore: number;
+    baselineJobMatch: number;
+    role?: string;
+    experienceLevel?: string;
+    durationWeeks?: number;
+    skills: string[];
+    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload);
+  }
+
   /* ── Public Profiles ── */
   getPublicProfile(slug: string): Observable<any> {
     const cacheBust = Date.now();

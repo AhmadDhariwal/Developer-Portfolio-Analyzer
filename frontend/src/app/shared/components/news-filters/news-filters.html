@@ -1,15 +1,4 @@
 <section class="filters-shell">
-  <div class="tabs" role="tablist" aria-label="News feed tabs">
-    <button
-      *ngFor="let tab of tabs"
-      type="button"
-      [class.active]="draftFilters.tab === tab.value"
-      (click)="setTab(tab.value)"
-    >
-      {{ tab.label }}
-    </button>
-  </div>
-
   <div class="filters-panel">
     <div class="search-control">
       <label for="news-search">Search</label>

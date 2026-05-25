@@ -13,13 +13,11 @@ import {
   DEFAULT_NEWS_FILTERS,
   NEWS_CATEGORIES,
   NEWS_SOURCES,
-  NEWS_TABS,
   NewsCategory,
   NewsDateFilter,
   NewsFilters,
   NewsPopularityFilter,
   NewsSource,
-  NewsTab,
   normalizeNewsFilters
 } from '../../models/news.model';
 
@@ -36,7 +34,6 @@ export class NewsFiltersComponent implements OnChanges {
   @Input() isApplying = false;
   @Output() filtersChange = new EventEmitter<NewsFilters>();
 
-  readonly tabs = NEWS_TABS;
   readonly categories = NEWS_CATEGORIES;
   readonly sources = NEWS_SOURCES;
   draftFilters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
@@ -53,10 +50,6 @@ export class NewsFiltersComponent implements OnChanges {
 
   get hasPendingChanges(): boolean {
     return JSON.stringify(this.draftFilters) !== JSON.stringify(normalizeNewsFilters(this.filters));
-  }
-
-  setTab(tab: NewsTab): void {
-    this.update({ tab });
   }
 
   setCategory(category: NewsCategory): void {

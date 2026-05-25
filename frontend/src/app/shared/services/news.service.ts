@@ -57,6 +57,12 @@ export class NewsService {
     );
   }
 
+  getSavedNewsByType(type: NewsSavedType): Observable<SavedNewsItem[]> {
+    return this.http.get<{ items?: SavedNewsItem[] }>(`${this.baseUrl}/saved?type=${encodeURIComponent(type)}`).pipe(
+      map((response) => this.normalizeSavedItems(response?.items))
+    );
+  }
+
   saveNews(article: NewsItem, type: NewsSavedType): Observable<SavedNewsItem> {
     return this.http
       .post<{ item?: SavedNewsItem }>(`${this.baseUrl}/save`, {
@@ -75,6 +81,12 @@ export class NewsService {
   removeSavedNews(savedId: string): Observable<{ id: string }> {
     return this.http.delete<{ id?: string }>(`${this.baseUrl}/save/${savedId}`).pipe(
       map((response) => ({ id: String(response?.id || savedId) }))
+    );
+  }
+
+  markSavedNewsAsRead(savedId: string): Observable<SavedNewsItem> {
+    return this.http.patch<{ item?: SavedNewsItem }>(`${this.baseUrl}/save/${savedId}/read`, {}).pipe(
+      map((response) => this.normalizeSavedItem(response?.item, '', 'read_later'))
     );
   }
 
@@ -115,7 +127,8 @@ export class NewsService {
       publishedAt: item?.publishedAt || null,
       category: String(item?.category || 'Backend'),
       type: item?.type === 'read_later' || item?.type === 'bookmark' ? item.type : fallbackType,
-      createdAt: item?.createdAt || null
+      createdAt: item?.createdAt || null,
+      readAt: item?.readAt || null
     };
   }
 }

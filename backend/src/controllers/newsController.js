@@ -44,7 +44,8 @@ const mapSavedItem = (item) => ({
   publishedAt: item?.publishedAt || null,
   category: String(item?.category || 'Backend'),
   type: item?.type,
-  createdAt: item?.createdAt || null
+  createdAt: item?.createdAt || null,
+  readAt: item?.readAt || null
 });
 
 const getNews = async (req, res) => {
@@ -83,7 +84,15 @@ const getNews = async (req, res) => {
 
 const getSavedNews = async (req, res) => {
   try {
-    const items = await NewsSavedItem.find({ userId: req.user._id })
+    const type = normalizeSavedType(req.query?.type);
+    if (req.query?.type && !type) {
+      return res.status(400).json({ message: 'Saved news type is invalid.' });
+    }
+
+    const filter = { userId: req.user._id };
+    if (type) filter.type = type;
+
+    const items = await NewsSavedItem.find(filter)
       .sort({ createdAt: -1 })
       .lean();
 
@@ -138,7 +147,16 @@ const saveNews = async (req, res) => {
       image,
       publishedAt,
       category,
-      type
+      type,
+      articleData: {
+        articleId,
+        title,
+        url,
+        source,
+        image,
+        publishedAt,
+        category
+      }
     });
 
     res.status(201).json({
@@ -187,4 +205,34 @@ const removeSavedNews = async (req, res) => {
   }
 };
 
-module.exports = { getNews, getSavedNews, saveNews, removeSavedNews };
+const markSavedNewsAsRead = async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Saved news id is invalid.' });
+    }
+
+    const item = await NewsSavedItem.findOneAndUpdate(
+      { _id: id, userId: req.user._id, type: 'read_later' },
+      { $set: { readAt: new Date() } },
+      { returnDocument: 'after' }
+    ).lean();
+
+    if (!item) {
+      return res.status(404).json({ message: 'Read later item was not found.' });
+    }
+
+    res.json({
+      item: mapSavedItem(item),
+      message: 'Read later item marked as read.'
+    });
+  } catch (error) {
+    logger.error('saved news read update failed', {
+      ...logger.withRequest(req),
+      error: error.message
+    });
+    res.status(500).json({ message: 'Failed to update this saved news item.' });
+  }
+};
+
+module.exports = { getNews, getSavedNews, saveNews, removeSavedNews, markSavedNewsAsRead };

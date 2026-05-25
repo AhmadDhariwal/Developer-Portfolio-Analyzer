@@ -15,6 +15,7 @@ export type NewsSource = 'All' | 'NewsAPI' | 'GNews' | 'Hacker News' | 'Dev.to' 
 export type NewsDateFilter = 'today' | 'week' | 'month';
 export type NewsPopularityFilter = 'all' | 'high';
 export type NewsSavedType = 'bookmark' | 'read_later';
+export type NewsHubView = NewsTab | 'bookmarks' | 'read_later';
 
 export interface NewsItem {
   id: string;
@@ -90,6 +91,7 @@ export interface SavedNewsItem {
   category: string;
   type: NewsSavedType;
   createdAt: string | null;
+  readAt: string | null;
 }
 
 export interface ActiveNewsFilterChip {

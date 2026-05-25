@@ -7,154 +7,189 @@
     <div class="header-copy">
       <span class="eyebrow">Developer feed</span>
       <h1>Tech News Hub</h1>
-      <p>Personalized news based on your career path, skill signals, and the topics you are actively tracking.</p>
+      <p>Personalized developer news, saved articles, and read-later tracking in one clean workspace.</p>
     </div>
 
     <div class="header-stats">
       <article class="stat-card">
-        <span class="stat-label">Loaded</span>
-        <strong>{{ items.length }}</strong>
-        <small>of {{ total || items.length }} articles</small>
+        <span class="stat-label">Showing</span>
+        <strong>{{ displayedCount }}</strong>
+        <small>{{ displayedTotalLabel }}</small>
       </article>
       <article class="stat-card">
         <span class="stat-label">Bookmarks</span>
         <strong>{{ bookmarks.size }}</strong>
-        <small>saved for later</small>
+        <small>saved across devices</small>
       </article>
       <article class="stat-card">
         <span class="stat-label">Read Later</span>
         <strong>{{ readLater.size }}</strong>
-        <small>queued articles</small>
+        <small>queued to review</small>
       </article>
     </div>
   </header>
 
-  <section class="insight-grid">
-    <article class="context-card">
-      <div class="section-head">
-        <div>
-          <span class="section-kicker">Personalized Based On</span>
-          <h2>Your current developer context</h2>
+  <section class="view-tabs" role="tablist" aria-label="Tech News views">
+    <button
+      *ngFor="let tab of viewTabs; trackBy: trackByLabel"
+      type="button"
+      class="view-tab"
+      [class.active]="selectedView === tab.value"
+      (click)="selectView(tab.value)"
+    >
+      {{ tab.label }}
+    </button>
+  </section>
+
+  <ng-container *ngIf="isFeedView; else savedView">
+    <section class="insight-grid">
+      <article class="context-card">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Personalized Based On</span>
+            <h2>Your current developer context</h2>
+          </div>
+          <span class="context-status" [class.context-status--cached]="recommendedBasedOn?.fromCache">
+            {{ recommendedBasedOn?.fromCache ? 'Cached feed' : 'Live context' }}
+          </span>
         </div>
-        <span class="context-status" [class.context-status--cached]="recommendedBasedOn?.fromCache">
-          {{ recommendedBasedOn?.fromCache ? 'Cached feed' : 'Live context' }}
-        </span>
-      </div>
 
-      <p class="context-summary">
-        {{ recommendedBasedOn?.summary || 'Your feed will adapt to your stack, detected skills, and recent news filters.' }}
-      </p>
+        <p class="context-summary">
+          {{ recommendedBasedOn?.summary || 'Your feed will adapt to your stack, detected skills, and recent news filters.' }}
+        </p>
 
-      <div class="context-pills">
-        <span>
-          <strong>Career stack</strong>
-          {{ recommendedBasedOn?.careerStack || 'Developer' }}
-        </span>
-        <span>
-          <strong>Active tab</strong>
-          {{ filters.tab === 'for-you' ? 'For You' : filters.tab === 'trending' ? 'Trending' : 'Latest' }}
-        </span>
-        <span>
-          <strong>Last updated</strong>
-          {{ lastUpdatedLabel || 'Refreshing now' }}
-        </span>
-      </div>
+        <div class="context-pills">
+          <span>
+            <strong>Career stack</strong>
+            {{ recommendedBasedOn?.careerStack || 'Developer' }}
+          </span>
+          <span>
+            <strong>Active tab</strong>
+            {{ selectedViewLabel }}
+          </span>
+          <span>
+            <strong>Last updated</strong>
+            {{ lastUpdatedLabel || 'Refreshing now' }}
+          </span>
+        </div>
 
-      <div class="signal-groups">
-        <div class="signal-group">
-          <h3>Detected skills</h3>
-          <div class="chip-row">
-            <span *ngFor="let skill of recommendedBasedOn?.detectedSkills || []; trackBy: trackByValue">{{ skill }}</span>
-            <span *ngIf="!(recommendedBasedOn?.detectedSkills?.length)">General developer signals</span>
+        <div class="signal-groups">
+          <div class="signal-group">
+            <h3>Detected skills</h3>
+            <div class="chip-row">
+              <span *ngFor="let skill of recommendedBasedOn?.detectedSkills || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngIf="!(recommendedBasedOn?.detectedSkills?.length)">General developer signals</span>
+            </div>
+          </div>
+
+          <div class="signal-group">
+            <h3>Skill gaps</h3>
+            <div class="chip-row">
+              <span *ngFor="let skill of recommendedBasedOn?.skillGaps || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngIf="!(recommendedBasedOn?.skillGaps?.length)">No urgent gaps detected</span>
+            </div>
           </div>
         </div>
+      </article>
 
-        <div class="signal-group">
-          <h3>Skill gaps</h3>
-          <div class="chip-row">
-            <span *ngFor="let skill of recommendedBasedOn?.skillGaps || []; trackBy: trackByValue">{{ skill }}</span>
-            <span *ngIf="!(recommendedBasedOn?.skillGaps?.length)">No urgent gaps detected</span>
+      <article class="status-card">
+        <div class="section-head compact">
+          <div>
+            <span class="section-kicker">Source Status</span>
+            <h2>Feed health</h2>
           </div>
+          <span class="status-pill" [ngClass]="sourceStatusClass">{{ telemetry.cacheHit ? 'Cache hit' : 'Fresh fetch' }}</span>
         </div>
-      </div>
-    </article>
 
-    <article class="status-card">
-      <div class="section-head compact">
-        <div>
-          <span class="section-kicker">Source Status</span>
-          <h2>Feed health</h2>
+        <p class="status-message">{{ sourceBannerMessage }}</p>
+
+        <div class="status-metrics">
+          <span>
+            <strong>{{ telemetry.providerUsed.length }}</strong>
+            Providers used
+          </span>
+          <span>
+            <strong>{{ telemetry.providerFailureCount }}</strong>
+            Provider failures
+          </span>
+          <span>
+            <strong>{{ telemetry.responseTimeMs }}</strong>
+            ms response
+          </span>
         </div>
-        <span class="status-pill" [ngClass]="sourceStatusClass">{{ telemetry.cacheHit ? 'Cache hit' : 'Fresh fetch' }}</span>
+      </article>
+    </section>
+
+    <app-news-filters [filters]="filters" [isApplying]="isLoading" (filtersChange)="onFiltersChange($event)"></app-news-filters>
+
+    <section class="active-filters" *ngIf="hasActiveFilters">
+      <div class="active-filter-head">
+        <h3>Active filters</h3>
+        <button type="button" (click)="resetFilters()">Reset all</button>
       </div>
 
-      <p class="status-message">{{ sourceBannerMessage }}</p>
-
-      <div class="status-metrics">
-        <span>
-          <strong>{{ telemetry.providerUsed.length }}</strong>
-          Providers used
-        </span>
-        <span>
-          <strong>{{ telemetry.providerFailureCount }}</strong>
-          Provider failures
-        </span>
-        <span>
-          <strong>{{ telemetry.responseTimeMs }}</strong>
-          ms response
-        </span>
+      <div class="filter-chip-row">
+        <button type="button" class="filter-chip" *ngFor="let chip of activeFilterChips; trackBy: trackByLabel" (click)="clearFilter(chip.key)">
+          <span>{{ chip.label }}:</span>
+          {{ chip.value }}
+          <strong>x</strong>
+        </button>
       </div>
-    </article>
-  </section>
+    </section>
 
-  <app-news-filters [filters]="filters" [isApplying]="isLoading" (filtersChange)="onFiltersChange($event)"></app-news-filters>
+    <section class="topic-strip" *ngIf="trendingTopics.length > 0">
+      <div class="strip-head">
+        <h3>Trending topics</h3>
+        <small>Picked from the current ranked feed</small>
+      </div>
+      <div class="chips">
+        <span *ngFor="let topic of trendingTopics; trackBy: trackByValue">#{{ topic }}</span>
+      </div>
+    </section>
 
-  <section class="active-filters" *ngIf="hasActiveFilters">
-    <div class="active-filter-head">
-      <h3>Active filters</h3>
-      <button type="button" (click)="resetFilters()">Reset all</button>
-    </div>
+    <section class="source-strip" *ngIf="sourceBreakdown.length > 0">
+      <span *ngFor="let source of sourceBreakdown; trackBy: trackByLabel">
+        <strong>{{ source.label }}</strong>
+        {{ source.count }}
+      </span>
+    </section>
+  </ng-container>
 
-    <div class="filter-chip-row">
-      <button type="button" class="filter-chip" *ngFor="let chip of activeFilterChips; trackBy: trackByLabel" (click)="clearFilter(chip.key)">
-        <span>{{ chip.label }}:</span>
-        {{ chip.value }}
-        <strong>x</strong>
-      </button>
-    </div>
-  </section>
+  <ng-template #savedView>
+    <section class="saved-overview">
+      <article class="saved-summary-card">
+        <div class="section-head compact">
+          <div>
+            <span class="section-kicker">Saved News</span>
+            <h2>{{ selectedView === 'bookmarks' ? 'Bookmarks' : 'Read Later' }}</h2>
+          </div>
+          <span class="status-pill status-live">{{ displayedCount }} items</span>
+        </div>
 
-  <section class="topic-strip" *ngIf="trendingTopics.length > 0">
-    <div class="strip-head">
-      <h3>Trending topics</h3>
-      <small>Picked from the current ranked feed</small>
-    </div>
-    <div class="chips">
-      <span *ngFor="let topic of trendingTopics; trackBy: trackByValue">#{{ topic }}</span>
-    </div>
-  </section>
-
-  <section class="source-strip" *ngIf="sourceBreakdown.length > 0">
-    <span *ngFor="let source of sourceBreakdown; trackBy: trackByLabel">
-      <strong>{{ source.label }}</strong>
-      {{ source.count }}
-    </span>
-  </section>
+        <p class="context-summary" *ngIf="selectedView === 'bookmarks'">
+          Your bookmarked articles stay synced per account so you can return to the most useful reads from any device.
+        </p>
+        <p class="context-summary" *ngIf="selectedView === 'read_later'">
+          Keep a lighter reading queue here, mark items as read when finished, or move the best ones into bookmarks.
+        </p>
+      </article>
+    </section>
+  </ng-template>
 
   <section class="state-card error-state" *ngIf="!isLoading && errorMessage">
     <div>
-      <h3>Unable to refresh the feed</h3>
+      <h3>Unable to refresh {{ isFeedView ? 'the feed' : selectedView === 'bookmarks' ? 'bookmarks' : 'read later items' }}</h3>
       <p>{{ errorMessage }}</p>
     </div>
     <button type="button" (click)="retry()">Retry</button>
   </section>
 
-  <section class="state-card empty-state" *ngIf="!isLoading && !errorMessage && items.length === 0">
+  <section class="state-card empty-state" *ngIf="!isLoading && !errorMessage && displayedCount === 0">
     <div>
-      <h3>No news matched these filters</h3>
-      <p>Try broadening the source, category, or search query to bring more developer news back into the feed.</p>
+      <h3>{{ emptyTitle }}</h3>
+      <p>{{ emptyMessage }}</p>
     </div>
-    <button type="button" (click)="resetFilters()">Reset Filters</button>
+    <button type="button" *ngIf="isFeedView" (click)="resetFilters()">Reset Filters</button>
   </section>
 
   <div class="news-grid skeleton-grid" *ngIf="isLoading">
@@ -169,7 +204,7 @@
     </article>
   </div>
 
-  <div class="news-grid" *ngIf="!isLoading && !errorMessage && items.length > 0">
+  <div class="news-grid" *ngIf="isFeedView && !isLoading && !errorMessage && items.length > 0">
     <app-news-card
       *ngFor="let item of items; trackBy: trackById"
       [news]="item"
@@ -182,7 +217,58 @@
     ></app-news-card>
   </div>
 
-  <div class="load-more-wrap" *ngIf="!isLoading && !errorMessage && page < totalPages">
+  <div class="saved-grid" *ngIf="!isFeedView && !isLoading && !errorMessage && savedItemsView.length > 0">
+    <article class="saved-card" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
+      <div class="saved-card__image-wrap">
+        <img class="saved-card__image" [src]="item.image || 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80'" [alt]="item.title || 'Saved article'" />
+        <div class="saved-card__badges">
+          <span class="saved-badge">{{ item.source }}</span>
+          <span class="saved-badge saved-badge--alt">{{ item.category }}</span>
+        </div>
+      </div>
+
+      <div class="saved-card__body">
+        <h3>{{ item.title || 'Saved article' }}</h3>
+        <div class="saved-card__meta">
+          <span>Saved {{ formatSavedDate(item.createdAt) }}</span>
+          <span *ngIf="item.publishedAt">Published {{ item.publishedAt | date:'mediumDate' }}</span>
+          <span *ngIf="selectedView === 'read_later' && item.readAt">Read {{ formatSavedDate(item.readAt) }}</span>
+        </div>
+
+        <div class="saved-card__actions">
+          <a class="saved-action saved-action--primary" [href]="item.url" target="_blank" rel="noopener noreferrer">Open Article</a>
+          <button
+            *ngIf="selectedView === 'read_later'"
+            type="button"
+            class="saved-action"
+            [disabled]="!!item.readAt || isSavedActionPending(item.id, 'read')"
+            (click)="markSavedItemAsRead(item)"
+          >
+            {{ item.readAt ? 'Read' : isSavedActionPending(item.id, 'read') ? 'Updating...' : 'Mark as Read' }}
+          </button>
+          <button
+            *ngIf="selectedView === 'read_later'"
+            type="button"
+            class="saved-action"
+            [disabled]="isSavedActionPending(item.id, 'move')"
+            (click)="moveReadLaterToBookmark(item)"
+          >
+            {{ isSavedActionPending(item.id, 'move') ? 'Moving...' : 'Move to Bookmark' }}
+          </button>
+          <button
+            type="button"
+            class="saved-action saved-action--danger"
+            [disabled]="isSavedActionPending(item.id, 'remove')"
+            (click)="removeSavedItem(item)"
+          >
+            {{ isSavedActionPending(item.id, 'remove') ? 'Removing...' : 'Remove' }}
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="load-more-wrap" *ngIf="isFeedView && !isLoading && !errorMessage && page < totalPages">
     <div class="page-state">Page {{ page }} of {{ totalPages }}</div>
     <button type="button" [disabled]="isLoadingMore" (click)="loadMore()">
       {{ isLoadingMore ? 'Loading more...' : 'Load More News' }}

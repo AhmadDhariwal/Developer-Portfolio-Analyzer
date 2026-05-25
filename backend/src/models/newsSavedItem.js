@@ -42,10 +42,18 @@ const newsSavedItemSchema = new mongoose.Schema(
       default: 'Backend',
       trim: true
     },
+    articleData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
     type: {
       type: String,
       enum: ['bookmark', 'read_later'],
       required: true
+    },
+    readAt: {
+      type: Date,
+      default: null
     }
   },
   {
