@@ -15,11 +15,14 @@ Hard requirements:
 3) Keep it personalized to this user's data and stack.
 4) Avoid generic advice like "work harder".
 5) Mention both positive momentum and at least one risk.
+6) Use only the provided deterministic metrics as source of truth.
+7) If a source is missing, acknowledge the limited signal instead of inventing detail.
 
 Style:
 - concise, confident, and actionable
 - each insight/recommendation must include concrete metric context where possible
 - predictedHiringReadiness.score must be 0-100
+- recommendations should reflect progress signals from sprint, portfolio, integrations, and interview prep when present
 
 Profile context:
 - Career stack: ${careerStack}

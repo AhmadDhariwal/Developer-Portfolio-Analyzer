@@ -555,8 +555,8 @@ export class ApiService {
   }
 
   /* ── Weekly AI Reports ── */
-  generateWeeklyReport(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/weekly-reports/generate`, {});
+  generateWeeklyReport(forceRefresh = false): Observable<any> {
+    return this.http.post(`${this.baseUrl}/weekly-reports/generate?forceRefresh=${forceRefresh ? 'true' : 'false'}`, {});
   }
 
   getWeeklyReportLatest(): Observable<any> {

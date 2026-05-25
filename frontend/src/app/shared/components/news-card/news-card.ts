@@ -17,8 +17,10 @@ export class NewsCardComponent {
   @Input({ required: true }) news!: NewsItem;
   @Input() bookmarked = false;
   @Input() readLater = false;
-  @Output() bookmarkToggle = new EventEmitter<string>();
-  @Output() readLaterToggle = new EventEmitter<string>();
+  @Input() bookmarkLoading = false;
+  @Input() readLaterLoading = false;
+  @Output() bookmarkToggle = new EventEmitter<NewsItem>();
+  @Output() readLaterToggle = new EventEmitter<NewsItem>();
 
   get imageSrc(): string {
     const raw = String(this.news?.image || '').trim();
@@ -42,11 +44,13 @@ export class NewsCardComponent {
   }
 
   onBookmarkToggle(): void {
-    this.bookmarkToggle.emit(this.news.id);
+    if (this.bookmarkLoading) return;
+    this.bookmarkToggle.emit(this.news);
   }
 
   onReadLaterToggle(): void {
-    this.readLaterToggle.emit(this.news.id);
+    if (this.readLaterLoading) return;
+    this.readLaterToggle.emit(this.news);
   }
 
   onImageError(event: Event): void {

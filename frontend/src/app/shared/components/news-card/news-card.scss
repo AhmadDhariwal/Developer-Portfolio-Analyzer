@@ -188,6 +188,11 @@
     background: rgba(30, 64, 175, 0.22);
     color: #dbeafe;
   }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: progress;
+  }
 }
 
 .read-button {

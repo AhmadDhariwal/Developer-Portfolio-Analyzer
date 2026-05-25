@@ -1,4 +1,8 @@
 <section class="news-page">
+  <div class="news-toast" *ngIf="toast.visible" [class.news-toast--error]="toast.type === 'error'">
+    {{ toast.message }}
+  </div>
+
   <header class="news-header">
     <div class="header-copy">
       <span class="eyebrow">Developer feed</span>
@@ -169,8 +173,10 @@
     <app-news-card
       *ngFor="let item of items; trackBy: trackById"
       [news]="item"
-      [bookmarked]="bookmarks.has(item.id)"
-      [readLater]="readLater.has(item.id)"
+      [bookmarked]="isBookmarked(item.id)"
+      [readLater]="isReadLater(item.id)"
+      [bookmarkLoading]="isBookmarkPending(item.id)"
+      [readLaterLoading]="isReadLaterPending(item.id)"
       (bookmarkToggle)="onBookmarkToggle($event)"
       (readLaterToggle)="onReadLaterToggle($event)"
     ></app-news-card>

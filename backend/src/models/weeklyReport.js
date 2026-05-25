@@ -34,6 +34,19 @@ const weeklyReportSchema = new mongoose.Schema({
     score: { type: Number, default: 0 },
     reason: { type: String, default: '' }
   },
+  emailStatus: {
+    type: String,
+    enum: ['sent', 'skipped', 'failed'],
+    default: 'skipped'
+  },
+  emailedAt: {
+    type: Date,
+    default: null
+  },
+  emailError: {
+    type: String,
+    default: ''
+  },
   reportText: {
     type: String,
     required: true
@@ -75,11 +88,55 @@ const weeklyReportSchema = new mongoose.Schema({
       missingSkillsDelta: { type: Number, default: 0 },
       coverageDelta: { type: Number, default: 0 }
     },
+    dataSourcesUsed: {
+      github: {
+        connected: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      resume: {
+        analyzed: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      skillGap: {
+        analyzed: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      recommendations: {
+        available: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      careerSprint: {
+        connected: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      interviewPrep: {
+        analyzed: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      portfolio: {
+        connected: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      },
+      integrations: {
+        connected: { type: Boolean, default: false },
+        lastAnalyzedAt: { type: Date, default: null },
+        status: { type: String, default: 'Unavailable' }
+      }
+    },
     snapshot: {
       type: mongoose.Schema.Types.Mixed,
       default: {}
     }
   }
 }, { timestamps: true });
+
+weeklyReportSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 }, { unique: true });
 
 module.exports = mongoose.model('WeeklyReport', weeklyReportSchema);

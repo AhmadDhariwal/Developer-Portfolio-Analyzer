@@ -25,11 +25,23 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="action-button" [class.active]="bookmarked" (click)="onBookmarkToggle()">
-        {{ bookmarked ? 'Saved' : 'Bookmark' }}
+      <button
+        type="button"
+        class="action-button"
+        [class.active]="bookmarked"
+        [disabled]="bookmarkLoading"
+        (click)="onBookmarkToggle()"
+      >
+        {{ bookmarkLoading ? 'Saving...' : bookmarked ? 'Saved' : 'Bookmark' }}
       </button>
-      <button type="button" class="action-button" [class.active]="readLater" (click)="onReadLaterToggle()">
-        {{ readLater ? 'Queued' : 'Read Later' }}
+      <button
+        type="button"
+        class="action-button"
+        [class.active]="readLater"
+        [disabled]="readLaterLoading"
+        (click)="onReadLaterToggle()"
+      >
+        {{ readLaterLoading ? 'Saving...' : readLater ? 'Queued' : 'Read Later' }}
       </button>
       <a class="read-button" [href]="news.url" target="_blank" rel="noopener noreferrer">Read More</a>
     </div>

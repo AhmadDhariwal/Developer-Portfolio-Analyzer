@@ -14,6 +14,7 @@ export type NewsCategory =
 export type NewsSource = 'All' | 'NewsAPI' | 'GNews' | 'Hacker News' | 'Dev.to' | 'Reddit';
 export type NewsDateFilter = 'today' | 'week' | 'month';
 export type NewsPopularityFilter = 'all' | 'high';
+export type NewsSavedType = 'bookmark' | 'read_later';
 
 export interface NewsItem {
   id: string;
@@ -76,6 +77,19 @@ export interface NewsResponse {
   fromCache?: boolean;
   recommendedBasedOn?: PersonalizedNewsContext | null;
   telemetry?: NewsTelemetry;
+}
+
+export interface SavedNewsItem {
+  id: string;
+  articleId: string;
+  title: string;
+  url: string;
+  source: string;
+  image: string;
+  publishedAt: string | null;
+  category: string;
+  type: NewsSavedType;
+  createdAt: string | null;
 }
 
 export interface ActiveNewsFilterChip {

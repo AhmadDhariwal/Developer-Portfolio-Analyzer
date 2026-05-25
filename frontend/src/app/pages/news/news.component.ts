@@ -17,8 +17,10 @@ import {
   DEFAULT_NEWS_FILTERS,
   NewsFilters,
   NewsItem,
+  NewsSavedType,
   NewsTelemetry,
   PersonalizedNewsContext,
+  SavedNewsItem,
   normalizeNewsFilters
 } from '../../shared/models/news.model';
 
@@ -31,6 +33,8 @@ const DEFAULT_TELEMETRY: NewsTelemetry = {
   providerUsed: [],
   responseTimeMs: 0
 };
+
+type ToastState = { visible: boolean; type: 'success' | 'error'; message: string };
 
 @Component({
   selector: 'app-news',
@@ -49,6 +53,9 @@ export class NewsComponent implements OnInit, OnDestroy {
   telemetry: NewsTelemetry = { ...DEFAULT_TELEMETRY };
   bookmarks = new Set<string>();
   readLater = new Set<string>();
+  bookmarkPending = new Set<string>();
+  readLaterPending = new Set<string>();
+  toast: ToastState = { visible: false, type: 'success', message: '' };
   page = 1;
   total = 0;
   totalPages = 1;
@@ -59,11 +66,16 @@ export class NewsComponent implements OnInit, OnDestroy {
   lastUpdatedLabel = '';
 
   private readonly subscriptions = new Subscription();
+  private readonly savedItemsByType: Record<NewsSavedType, Map<string, SavedNewsItem>> = {
+    bookmark: new Map<string, SavedNewsItem>(),
+    read_later: new Map<string, SavedNewsItem>()
+  };
   private activeRequest?: Subscription;
   private requestNonce = 0;
   private pendingSignature = '';
   private lastCompletedSignature = '';
   private profileSignature = '';
+  private toastTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private readonly newsService: NewsService,
@@ -73,6 +85,7 @@ export class NewsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.restoreClientState();
+    this.loadSavedItems();
 
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
@@ -96,6 +109,7 @@ export class NewsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.activeRequest?.unsubscribe();
+    if (this.toastTimer) clearTimeout(this.toastTimer);
     this.subscriptions.unsubscribe();
   }
 
@@ -155,16 +169,28 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.fetch(false, true);
   }
 
-  onBookmarkToggle(id: string): void {
-    if (this.bookmarks.has(id)) this.bookmarks.delete(id);
-    else this.bookmarks.add(id);
-    this.persistClientState(BOOKMARK_KEY, this.bookmarks);
+  isBookmarked(articleId: string): boolean {
+    return this.bookmarks.has(articleId);
   }
 
-  onReadLaterToggle(id: string): void {
-    if (this.readLater.has(id)) this.readLater.delete(id);
-    else this.readLater.add(id);
-    this.persistClientState(READ_LATER_KEY, this.readLater);
+  isReadLater(articleId: string): boolean {
+    return this.readLater.has(articleId);
+  }
+
+  isBookmarkPending(articleId: string): boolean {
+    return this.bookmarkPending.has(articleId);
+  }
+
+  isReadLaterPending(articleId: string): boolean {
+    return this.readLaterPending.has(articleId);
+  }
+
+  onBookmarkToggle(article: NewsItem): void {
+    this.toggleSavedState(article, 'bookmark');
+  }
+
+  onReadLaterToggle(article: NewsItem): void {
+    this.toggleSavedState(article, 'read_later');
   }
 
   trackById(_: number, item: NewsItem): string {
@@ -239,6 +265,138 @@ export class NewsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadSavedItems(): void {
+    this.subscriptions.add(
+      this.newsService.getSavedNews().subscribe({
+        next: (items) => {
+          this.savedItemsByType.bookmark.clear();
+          this.savedItemsByType.read_later.clear();
+          items.forEach((item) => this.savedItemsByType[item.type].set(item.articleId, item));
+
+          this.bookmarks = new Set(items.filter((item) => item.type === 'bookmark').map((item) => item.articleId));
+          this.readLater = new Set(items.filter((item) => item.type === 'read_later').map((item) => item.articleId));
+          this.persistClientState(BOOKMARK_KEY, this.bookmarks);
+          this.persistClientState(READ_LATER_KEY, this.readLater);
+        },
+        error: () => {
+          this.syncSavedMapFromLocalFallback();
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  private toggleSavedState(article: NewsItem, type: NewsSavedType): void {
+    const articleId = article.id;
+    const pendingSet = type === 'bookmark' ? this.bookmarkPending : this.readLaterPending;
+    if (!articleId || pendingSet.has(articleId)) return;
+
+    const targetSet = type === 'bookmark' ? this.bookmarks : this.readLater;
+    const storageKey = type === 'bookmark' ? BOOKMARK_KEY : READ_LATER_KEY;
+    const wasSaved = targetSet.has(articleId);
+    const previousState = new Set(targetSet);
+    const previousSavedItem = this.findSavedItem(article, type);
+
+    if (wasSaved) targetSet.delete(articleId);
+    else targetSet.add(articleId);
+
+    this.persistClientState(storageKey, targetSet);
+    pendingSet.add(articleId);
+    this.cdr.markForCheck();
+
+    if (wasSaved) {
+      if (!previousSavedItem?.id) {
+        pendingSet.delete(articleId);
+        this.showToast('success', type === 'bookmark' ? 'Bookmark removed.' : 'Removed from Read Later.');
+        this.cdr.markForCheck();
+        return;
+      }
+
+      this.subscriptions.add(
+        this.newsService.removeSavedNews(previousSavedItem.id).subscribe({
+          next: () => {
+            this.savedItemsByType[type].delete(previousSavedItem.articleId);
+            pendingSet.delete(articleId);
+            this.showToast('success', type === 'bookmark' ? 'Bookmark removed.' : 'Removed from Read Later.');
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            this.restoreSavedSet(type, previousState);
+            pendingSet.delete(articleId);
+            this.showToast('error', error?.error?.message || 'Unable to update saved news right now.');
+            this.cdr.markForCheck();
+          }
+        })
+      );
+      return;
+    }
+
+    this.subscriptions.add(
+      this.newsService.saveNews(article, type).subscribe({
+        next: (savedItem) => {
+          this.savedItemsByType[type].set(savedItem.articleId, savedItem);
+          pendingSet.delete(articleId);
+          this.showToast('success', type === 'bookmark' ? 'Article bookmarked.' : 'Saved to Read Later.');
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.restoreSavedSet(type, previousState);
+          pendingSet.delete(articleId);
+          this.showToast('error', error?.error?.message || 'Unable to save this article right now.');
+          this.cdr.markForCheck();
+        }
+      })
+    );
+  }
+
+  private restoreSavedSet(type: NewsSavedType, values: Set<string>): void {
+    if (type === 'bookmark') {
+      this.bookmarks = new Set(values);
+      this.persistClientState(BOOKMARK_KEY, this.bookmarks);
+      return;
+    }
+
+    this.readLater = new Set(values);
+    this.persistClientState(READ_LATER_KEY, this.readLater);
+  }
+
+  private findSavedItem(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
+    const direct = this.savedItemsByType[type].get(article.id);
+    if (direct) return direct;
+
+    for (const item of this.savedItemsByType[type].values()) {
+      if (item.url === article.url) return item;
+    }
+
+    return undefined;
+  }
+
+  private syncSavedMapFromLocalFallback(): void {
+    this.savedItemsByType.bookmark.clear();
+    this.savedItemsByType.read_later.clear();
+    this.bookmarks.forEach((articleId) => {
+      this.savedItemsByType.bookmark.set(articleId, this.createFallbackSavedItem(articleId, 'bookmark'));
+    });
+    this.readLater.forEach((articleId) => {
+      this.savedItemsByType.read_later.set(articleId, this.createFallbackSavedItem(articleId, 'read_later'));
+    });
+  }
+
+  private createFallbackSavedItem(articleId: string, type: NewsSavedType): SavedNewsItem {
+    return {
+      id: '',
+      articleId,
+      title: '',
+      url: '',
+      source: 'Unknown',
+      image: '',
+      publishedAt: null,
+      category: 'Backend',
+      type,
+      createdAt: null
+    };
+  }
+
   private mergeUniqueItems(currentItems: NewsItem[], nextItems: NewsItem[]): NewsItem[] {
     const seen = new Set(currentItems.map((item) => item.id));
     const merged = [...currentItems];
@@ -281,6 +439,16 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (value === 'week') return 'This week';
     if (value === 'month') return 'This month';
     return value;
+  }
+
+  private showToast(type: 'success' | 'error', message: string): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toast = { visible: true, type, message };
+    this.toastTimer = setTimeout(() => {
+      this.toast = { ...this.toast, visible: false };
+      this.cdr.markForCheck();
+    }, 2800);
+    this.cdr.markForCheck();
   }
 
   private buildFilterSignature(filters: NewsFilters): string {
