@@ -1,14 +1,15 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   CourseFilters,
   DEFAULT_FILTERS,
+  DURATION_OPTIONS,
+  LEVEL_OPTIONS,
   PLATFORM_OPTIONS,
   RATING_OPTIONS,
-  LEVEL_OPTIONS,
-  DURATION_OPTIONS,
-  TOPIC_OPTIONS
+  TOPIC_OPTIONS,
+  normalizeCourseFilters
 } from '../../models/course.model';
 
 @Component({
@@ -18,41 +19,67 @@ import {
   templateUrl: './course-filters.html',
   styleUrl: './course-filters.scss'
 })
-export class CourseFiltersComponent implements OnInit {
-  @Input()  initialFilters: Partial<CourseFilters> = {};
+export class CourseFiltersComponent implements OnInit, OnChanges {
+  @Input() initialFilters: Partial<CourseFilters> = {};
+  @Input() isApplying = false;
   @Output() filtersChange = new EventEmitter<CourseFilters>();
-  @Output() filtersReset  = new EventEmitter<void>();
+  @Output() filtersReset = new EventEmitter<void>();
 
   filters: CourseFilters = { ...DEFAULT_FILTERS };
+  appliedFilters: CourseFilters = { ...DEFAULT_FILTERS };
 
   readonly platformOptions = PLATFORM_OPTIONS;
-  readonly ratingOptions   = RATING_OPTIONS;
-  readonly levelOptions    = LEVEL_OPTIONS;
+  readonly ratingOptions = RATING_OPTIONS;
+  readonly levelOptions = LEVEL_OPTIONS;
   readonly durationOptions = DURATION_OPTIONS;
-  readonly topicOptions    = TOPIC_OPTIONS;
+  readonly topicOptions = TOPIC_OPTIONS;
 
   isCollapsed = false;
 
   ngOnInit(): void {
-    this.filters = { ...DEFAULT_FILTERS, ...this.initialFilters };
+    this.syncFilters();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialFilters']) {
+      this.syncFilters();
+    }
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.hasNonDefaultFilters(this.appliedFilters);
+  }
+
+  get hasPendingChanges(): boolean {
+    return JSON.stringify(this.filters) !== JSON.stringify(this.appliedFilters);
+  }
+
+  get hasDraftFilters(): boolean {
+    return this.hasNonDefaultFilters(this.filters);
+  }
+
+  private hasNonDefaultFilters(filters: CourseFilters): boolean {
+    return filters.platform !== 'All'
+      || filters.rating !== ''
+      || filters.level !== 'All'
+      || filters.duration !== 'All'
+      || filters.topic !== '';
   }
 
   onFilterChange(): void {
+    this.filters = normalizeCourseFilters(this.filters);
+  }
+
+  applyFilters(): void {
+    this.filters = normalizeCourseFilters(this.filters);
+    this.appliedFilters = { ...this.filters };
     this.filtersChange.emit({ ...this.filters });
   }
 
   resetFilters(): void {
     this.filters = { ...DEFAULT_FILTERS };
+    this.appliedFilters = { ...DEFAULT_FILTERS };
     this.filtersReset.emit();
-    this.filtersChange.emit({ ...this.filters });
-  }
-
-  get hasActiveFilters(): boolean {
-    return this.filters.platform !== 'All'
-      || this.filters.rating    !== ''
-      || this.filters.level     !== 'All'
-      || this.filters.duration  !== 'All'
-      || this.filters.topic     !== '';
   }
 
   toggleCollapse(): void {
@@ -62,5 +89,16 @@ export class CourseFiltersComponent implements OnInit {
   selectTopic(topic: string): void {
     this.filters.topic = this.filters.topic === topic ? '' : topic;
     this.onFilterChange();
+  }
+
+  clearTopic(): void {
+    if (!this.filters.topic) return;
+    this.filters.topic = '';
+    this.onFilterChange();
+  }
+
+  private syncFilters(): void {
+    this.filters = normalizeCourseFilters(this.initialFilters);
+    this.appliedFilters = { ...this.filters };
   }
 }

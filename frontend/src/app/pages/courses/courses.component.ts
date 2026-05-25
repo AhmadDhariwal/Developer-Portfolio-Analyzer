@@ -1,79 +1,75 @@
 import {
-  Component,
-  OnInit,
-  OnDestroy,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
-  ChangeDetectionStrategy
+  Component,
+  OnDestroy,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-
-import { CourseService }        from '../../shared/services/course.service';
+import { distinctUntilChanged } from 'rxjs/operators';
+import { CourseService } from '../../shared/services/course.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import {
+  ActiveCourseFilterChip,
   Course,
   CourseFilters,
-  DEFAULT_FILTERS
+  DEFAULT_FILTERS,
+  RecommendedBasedOn,
+  normalizeCourseFilters
 } from '../../shared/models/course.model';
-import { CourseCardComponent }    from '../../shared/components/course-card/course-card';
+import { CourseCardComponent } from '../../shared/components/course-card/course-card';
 import { CourseFiltersComponent } from '../../shared/components/course-filters/course-filters';
 
-const INITIAL_DISPLAY = 10;   // courses shown before the first Load More
-const PAGE_SIZE       = 10;   // courses per backend page
+const INITIAL_DISPLAY = 10;
+const PAGE_SIZE = 10;
 
 @Component({
-  selector:        'app-courses',
-  standalone:      true,
-  imports:         [CommonModule, FormsModule, CourseCardComponent, CourseFiltersComponent],
-  templateUrl:     './courses.component.html',
-  styleUrl:        './courses.component.scss',
+  selector: 'app-courses',
+  standalone: true,
+  imports: [CommonModule, FormsModule, CourseCardComponent, CourseFiltersComponent],
+  templateUrl: './courses.component.html',
+  styleUrl: './courses.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CoursesComponent implements OnInit, OnDestroy {
+  allCourses: Course[] = [];
+  displayCount = INITIAL_DISPLAY;
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  /** All courses fetched from the backend so far (accumulates across pages). */
-  allCourses:    Course[] = [];
-  /** How many of allCourses are currently visible to the user. */
-  displayCount:  number   = INITIAL_DISPLAY;
+  isLoading = false;
+  isLoadingMore = false;
+  errorMessage = '';
 
-  isLoading:     boolean  = false;
-  isLoadingMore: boolean  = false;
-  errorMessage:  string   = '';
-
-  currentPage:   number   = 0;   // 0 = nothing fetched yet
-  totalPages:    number   = 1;
-  totalCourses:  number   = 0;
+  currentPage = 0;
+  totalPages = 1;
+  totalCourses = 0;
 
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
+  recommendedBasedOn: RecommendedBasedOn | null = null;
   isMobileFiltersOpen = false;
 
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
-  readonly PAGE_SIZE        = PAGE_SIZE;
+  readonly PAGE_SIZE = PAGE_SIZE;
 
   private readonly subscriptions = new Subscription();
   private readonly filterChanges = new Subject<CourseFilters>();
+  private requestToken = 0;
 
-  // ── Computed properties ────────────────────────────────────────────────────
+  constructor(
+    private readonly courseService: CourseService,
+    private readonly careerProfileService: CareerProfileService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   get displayedCourses(): Course[] {
     return this.allCourses.slice(0, this.displayCount);
   }
 
-  /**
-   * Phase 1 – there are more already-fetched courses to reveal.
-   * Button text: "Show X more"
-   */
   get hasHiddenCourses(): boolean {
     return this.displayCount < this.allCourses.length;
   }
 
-  /**
-   * Phase 2 – all fetched courses are shown but more pages exist.
-   * Button text: "Load more courses"
-   */
   get hasMorePages(): boolean {
     return !this.hasHiddenCourses && this.currentPage > 0 && this.currentPage < this.totalPages;
   }
@@ -87,41 +83,70 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return this.activeFilters.platform !== 'All'
-      || this.activeFilters.rating     !== ''
-      || this.activeFilters.level      !== 'All'
-      || this.activeFilters.duration   !== 'All'
-      || this.activeFilters.topic      !== '';
+    return this.activeFilterChips.length > 0;
   }
 
-  get currentCareerStack():    string { return this.careerProfileService.careerStack; }
-  get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
-  get skeletonItems():          number[] { return Array.from({ length: PAGE_SIZE }); }
+  get currentCareerStack(): string {
+    return this.careerProfileService.careerStack;
+  }
 
-  constructor(
-    private readonly courseService:        CourseService,
-    private readonly careerProfileService: CareerProfileService,
-    private readonly cdr:                  ChangeDetectorRef
-  ) {}
+  get currentExperienceLevel(): string {
+    return this.careerProfileService.experienceLevel;
+  }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  get skeletonItems(): number[] {
+    return Array.from({ length: PAGE_SIZE }, (_, index) => index);
+  }
+
+  get activeFilterChips(): ActiveCourseFilterChip[] {
+    const filters = this.activeFilters;
+    const chips: ActiveCourseFilterChip[] = [];
+
+    if (filters.platform !== 'All') {
+      chips.push({ key: 'platform', label: 'Platform', value: filters.platform });
+    }
+    if (filters.rating) {
+      chips.push({ key: 'rating', label: 'Rating', value: `${filters.rating}+` });
+    }
+    if (filters.level !== 'All') {
+      chips.push({ key: 'level', label: 'Level', value: filters.level });
+    }
+    if (filters.duration !== 'All') {
+      chips.push({ key: 'duration', label: 'Duration', value: filters.duration });
+    }
+    if (filters.topic) {
+      chips.push({ key: 'topic', label: 'Topic', value: filters.topic });
+    }
+
+    return chips;
+  }
+
+  get recommendationSummary(): string {
+    return this.recommendedBasedOn?.summary
+      || `Courses are recommended using your ${this.currentCareerStack} profile and ${this.currentExperienceLevel} experience level.`;
+  }
 
   ngOnInit(): void {
-    // Debounce filter changes (avoids hammering the API while typing/clicking)
     this.subscriptions.add(
-      this.filterChanges.pipe(debounceTime(450)).subscribe(filters => {
-        this.activeFilters = { ...filters };
+      this.filterChanges.pipe(
+        distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
+      ).subscribe((filters) => {
+        this.activeFilters = normalizeCourseFilters(filters);
+        this.isMobileFiltersOpen = false;
         this.resetAndFetch();
       })
     );
 
-    // Re-fetch when career profile changes (BehaviorSubject fires immediately on subscribe → initial load)
     this.subscriptions.add(
-      this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
+      this.careerProfileService.careerProfile$
+        .pipe(
+          distinctUntilChanged(
+            (previous, current) =>
+              previous.careerStack === current.careerStack
+              && previous.experienceLevel === current.experienceLevel
+          )
         )
-      ).subscribe(() => this.resetAndFetch())
+        .subscribe(() => this.resetAndFetch())
     );
   }
 
@@ -129,65 +154,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // ── Fetch helpers ──────────────────────────────────────────────────────────
-
-  /** Full reset + reload from page 1. */
-  private resetAndFetch(): void {
-    this.allCourses    = [];
-    this.displayCount  = INITIAL_DISPLAY;
-    this.currentPage   = 0;
-    this.totalPages    = 1;
-    this.totalCourses  = 0;
-    this.errorMessage  = '';
-    this.fetchPage(1, false);
-  }
-
-  /**
-   * Load one backend page.
-   * @param page   1-based page number
-   * @param append true → append to allCourses;  false → replace
-   */
-  private fetchPage(page: number, append: boolean): void {
-    if (append) {
-      this.isLoadingMore = true;
-    } else {
-      this.isLoading = true;
-    }
-    this.cdr.markForCheck();
-
-    this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE).subscribe({
-      next: (res) => {
-        const incoming = res.courses || [];
-
-        if (append) {
-          this.allCourses   = [...this.allCourses, ...incoming];
-          this.displayCount = this.allCourses.length; // show all after loading more
-        } else {
-          this.allCourses   = incoming;
-          this.displayCount = INITIAL_DISPLAY;        // start fresh at 6
-        }
-
-        this.currentPage   = res.page       ?? page;
-        this.totalPages    = res.totalPages ?? 1;
-        this.totalCourses  = res.total      ?? this.allCourses.length;
-
-        this.isLoading     = false;
-        this.isLoadingMore = false;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.errorMessage  = err?.error?.message || 'Failed to load courses. Please try again.';
-        this.isLoading     = false;
-        this.isLoadingMore = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  // ── User actions ───────────────────────────────────────────────────────────
-
   onFiltersChange(filters: CourseFilters): void {
-    this.filterChanges.next(filters);
+    this.activeFilters = normalizeCourseFilters(filters);
+    this.filterChanges.next(this.activeFilters);
   }
 
   onFiltersReset(): void {
@@ -195,22 +164,35 @@ export class CoursesComponent implements OnInit, OnDestroy {
     this.resetAndFetch();
   }
 
-  /**
-   * Two-phase Load More:
-   *   Phase 1 – reveal courses already fetched but hidden (displayCount → allCourses.length)
-   *   Phase 2 – fetch the next backend page and reveal it
-   */
-  loadMore(): void {
-    if (this.isLoadingMore) return;
+  clearFilter(key: keyof CourseFilters): void {
+    const nextFilters: CourseFilters = { ...this.activeFilters };
+    if (key === 'platform') {
+      nextFilters.platform = DEFAULT_FILTERS.platform;
+    } else if (key === 'rating') {
+      nextFilters.rating = DEFAULT_FILTERS.rating;
+    } else if (key === 'level') {
+      nextFilters.level = DEFAULT_FILTERS.level;
+    } else if (key === 'duration') {
+      nextFilters.duration = DEFAULT_FILTERS.duration;
+    } else if (key === 'topic') {
+      nextFilters.topic = DEFAULT_FILTERS.topic;
+    }
 
-    // Phase 1: reveal hidden courses from current page
+    this.activeFilters = normalizeCourseFilters(nextFilters);
+    this.resetAndFetch();
+  }
+
+  loadMore(): void {
+    if (this.isLoadingMore) {
+      return;
+    }
+
     if (this.hasHiddenCourses) {
       this.displayCount = this.allCourses.length;
       this.cdr.markForCheck();
       return;
     }
 
-    // Phase 2: go get the next page
     if (this.hasMorePages) {
       this.fetchPage(this.currentPage + 1, true);
     }
@@ -228,5 +210,83 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   trackById(_: number, course: Course): string {
     return course.id;
+  }
+
+  private resetAndFetch(): void {
+    this.requestToken += 1;
+    this.allCourses = [];
+    this.displayCount = INITIAL_DISPLAY;
+    this.currentPage = 0;
+    this.totalPages = 1;
+    this.totalCourses = 0;
+    this.errorMessage = '';
+    this.recommendedBasedOn = null;
+    this.fetchPage(1, false);
+  }
+
+  private fetchPage(page: number, append: boolean): void {
+    const currentRequest = ++this.requestToken;
+
+    if (append) {
+      this.isLoadingMore = true;
+    } else {
+      this.isLoading = true;
+      this.isLoadingMore = false;
+    }
+
+    this.cdr.markForCheck();
+
+    this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE).subscribe({
+      next: (response) => {
+        if (currentRequest !== this.requestToken) {
+          return;
+        }
+
+        const incoming = Array.isArray(response.courses) ? response.courses : [];
+        this.allCourses = append
+          ? this.mergeCourses(this.allCourses, incoming)
+          : incoming;
+
+        this.displayCount = append
+          ? this.allCourses.length
+          : Math.min(INITIAL_DISPLAY, this.allCourses.length);
+
+        this.currentPage = response.page ?? page;
+        this.totalPages = response.totalPages ?? 1;
+        this.totalCourses = response.total ?? this.allCourses.length;
+        this.recommendedBasedOn = response.recommendedBasedOn ?? null;
+        this.errorMessage = '';
+        this.isLoading = false;
+        this.isLoadingMore = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        if (currentRequest !== this.requestToken) {
+          return;
+        }
+
+        this.errorMessage = error?.error?.message || 'Failed to load courses. Please try again.';
+        this.isLoading = false;
+        this.isLoadingMore = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private mergeCourses(existing: Course[], incoming: Course[]): Course[] {
+    const seen = new Set(existing.map((course) => `${course.id}|${course.url}`.toLowerCase()));
+    const merged = [...existing];
+
+    for (const course of incoming) {
+      const key = `${course.id}|${course.url}`.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      merged.push(course);
+    }
+
+    return merged;
   }
 }
