@@ -1,16 +1,13 @@
 <div class="page-container">
-  <!-- Header Section -->
   <div class="page-header">
     <h1>Resume Analyzer</h1>
-    <p>AI-powered resume parsing and improvement suggestions</p>
+    <p>AI-powered resume parsing, score breakdown, detected skills, and structured improvement guidance.</p>
   </div>
 
-  <!-- Error Message -->
   <div *ngIf="errorMessage" class="error-message">
     <span>{{ errorMessage }}</span>
   </div>
 
-  <!-- Empty State: no resume uploaded yet -->
   <div *ngIf="hasNoData && !analysisComplete && !isAnalyzing" class="empty-state-card">
     <div class="empty-state-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -21,10 +18,9 @@
       </svg>
     </div>
     <h3>No Resume Uploaded Yet</h3>
-    <p>Upload your PDF resume below to get an AI-powered analysis including ATS compatibility score, keyword density, detected skills, and personalised improvement suggestions.</p>
+    <p>Upload your PDF resume below to get an AI-powered analysis including ATS compatibility score, keyword density, detected skills, and personalized improvement suggestions.</p>
   </div>
 
-  <!-- Upload Card -->
   <app-ui-card class="upload-card">
     <div class="upload-content">
       <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName">
@@ -49,7 +45,6 @@
         <line x1="12" y1="3" x2="12" y2="15"></line>
       </svg>
 
-      <!-- File Info if Analyzed -->
       <div *ngIf="analysisComplete && analysis" class="file-info">
         <div class="file-details">
           <div class="file-icon">
@@ -64,23 +59,21 @@
           </div>
         </div>
         <div class="file-status">
-          <app-ui-badge variant="success" size="sm">✓ Analyzed</app-ui-badge>
+          <app-ui-badge variant="success" size="sm">Analyzed</app-ui-badge>
         </div>
       </div>
 
-      <!-- Upload prompt if no file analyzed -->
       <div *ngIf="!analysisComplete" class="upload-prompt">
-        <h3>{{ isAnalyzing ? 'Analyzing your resume…' : 'Upload your resume' }}</h3>
+        <h3>{{ isAnalyzing ? 'Analyzing your resume...' : 'Upload your resume' }}</h3>
         <p *ngIf="!isAnalyzing">Drag and drop or click to browse</p>
         <span *ngIf="!isAnalyzing" class="file-hint">PDF format accepted</span>
 
-        <!-- Analyzing spinner -->
         <div *ngIf="isAnalyzing" class="analyzing-spinner">
           <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
           </svg>
-          <p class="analyzing-text">Parsing PDF and extracting skills…</p>
+          <p class="analyzing-text">Parsing PDF and extracting skills...</p>
         </div>
 
         <input *ngIf="!isAnalyzing" type="file" accept=".pdf" (change)="onFileSelected($event)" id="fileInput" [disabled]="isAnalyzing" hidden>
@@ -91,7 +84,6 @@
     </div>
   </app-ui-card>
 
-  <!-- Re-upload button when analysis is complete -->
   <div *ngIf="analysisComplete" class="reupload-row">
     <label for="reuploadInput" class="reupload-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reupload-icon">
@@ -104,7 +96,6 @@
     <input type="file" accept=".pdf" (change)="onFileSelected($event)" id="reuploadInput" [disabled]="isAnalyzing" hidden>
   </div>
 
-  <!-- Score Cards Grid -->
   <div *ngIf="analysisComplete && analysis" class="score-cards-grid">
     <app-score-card
       *ngFor="let scoreCard of scoreCards"
@@ -114,80 +105,89 @@
     </app-score-card>
   </div>
 
-  <!-- Skills and Suggestions Section -->
-  <div *ngIf="analysisComplete && analysis" class="skills-suggestions-grid">
-    <!-- Skills Panel -->
+  <div *ngIf="analysisComplete && analysis" class="analysis-flow">
     <app-ui-card class="skills-panel">
-      <div class="skills-header">
-        <div class="skills-title">
+      <div class="section-head">
+        <div>
           <h2>Detected Skills</h2>
-          <p class="skills-count">{{ getTotalSkillsCount() }} skills extracted from your resume</p>
+          <p>{{ getTotalSkillsCount() }} skills extracted from your resume across the main hiring categories.</p>
         </div>
         <app-ui-badge variant="success" size="sm">AI Parsed</app-ui-badge>
       </div>
 
-      <div class="skills-container">
-        <div *ngFor="let category of skillCategories" class="skill-category">
-          <div class="skill-category-header">
-            <div class="skill-category-dot"></div>
-            <div class="skill-category-title">{{ category }}</div>
+      <div class="skills-overview">
+        <div class="skill-group-card" *ngFor="let group of getDetectedSkillGroups()">
+          <div class="skill-group-card__head">
+            <div class="skill-group-card__dot"></div>
+            <h3>{{ group.category }}</h3>
+            <span>{{ group.skills.length }}</span>
           </div>
-          <div class="skill-badges">
+
+          <div class="skill-badges" *ngIf="group.skills.length > 0; else noSkillsForGroup">
             <app-skill-badge
-              *ngFor="let skill of getSkillsForCategory(category)"
+              *ngFor="let skill of group.skills"
               [skill]="skill"
-              [category]="category">
+              [category]="group.category">
             </app-skill-badge>
-            <span *ngIf="getSkillsForCategory(category).length === 0" class="no-skills-hint">None detected</span>
           </div>
+
+          <ng-template #noSkillsForGroup>
+            <div class="empty-inline">None detected in this category yet.</div>
+          </ng-template>
         </div>
       </div>
     </app-ui-card>
 
-    <!-- Suggestions Panel -->
     <app-ui-card class="suggestions-panel">
-      <div class="suggestions-header">
-        <h2>Resume Improvement Suggestions</h2>
-        <p class="suggestions-description">AI-generated recommendations to boost your resume</p>
+      <div class="section-head section-head--stacked">
+        <div>
+          <h2>Resume Improvement Suggestions</h2>
+          <p>Ordered from higher-priority fixes to polish opportunities, based on the latest analysis.</p>
+        </div>
       </div>
 
-      <div *ngIf="getSuggestions().length > 0; else noSuggestions" class="suggestions-list">
-        <app-suggestion-card
-          *ngFor="let suggestion of getSuggestions()"
-          [title]="suggestion.title"
-          [description]="suggestion.description"
-          [color]="suggestion.color">
-        </app-suggestion-card>
+      <div *ngIf="getSuggestions().length > 0; else noSuggestions" class="suggestions-sequence">
+        <div class="suggestion-step" *ngFor="let suggestion of getSuggestions(); let i = index">
+          <div class="suggestion-step__marker">
+            <span>{{ i + 1 }}</span>
+            <small>{{ getTopSuggestionLabel(i) }}</small>
+          </div>
+          <div class="suggestion-step__content">
+            <app-suggestion-card
+              [title]="suggestion.title"
+              [description]="suggestion.description"
+              [color]="suggestion.color"
+              [icon]="suggestion.icon || ''">
+            </app-suggestion-card>
+          </div>
+        </div>
       </div>
+
       <ng-template #noSuggestions>
         <p class="no-suggestions">Great job! No major issues were found in your resume.</p>
       </ng-template>
     </app-ui-card>
   </div>
 
-  <!-- CTA Button -->
   <div *ngIf="analysisComplete" class="cta-section">
     <button
       class="cta-button"
       (click)="downloadGuide()"
       [disabled]="isDownloading"
       [class.loading]="isDownloading">
-
-      <!-- Spinner shown while generating -->
       <svg *ngIf="isDownloading" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
         <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
       </svg>
 
-      <!-- Download icon shown when idle -->
       <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
 
-      {{ isDownloading ? 'Generating Guide…' : 'Download Improved Resume Guide' }}
+      {{ isDownloading ? 'Generating Guide...' : 'Download Improved Resume Guide' }}
     </button>
-    <p class="cta-hint">AI generates a personalised HTML guide — open in browser and print to PDF</p>
+    <p class="cta-hint">AI generates a personalized HTML guide — open in browser and print to PDF</p>
   </div>
 </div>

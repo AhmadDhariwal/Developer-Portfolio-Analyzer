@@ -1,14 +1,11 @@
 <div class="sg-page">
-
-  <!-- ── Page Header ─────────────────────────────────── -->
   <div class="sg-header">
     <div class="sg-header__text">
       <h1>Skill Gap Analysis</h1>
-      <p>Compare your skills against industry standards</p>
+      <p>Compare your skills against role expectations using GitHub, resume, and supporting progress signals.</p>
     </div>
   </div>
 
-  <!-- ── Search Bar ───────────────────────────────────── -->
   <div class="sg-search-card">
     <div class="sg-search-card__inner">
       <div class="sg-search-card__icon">
@@ -32,31 +29,76 @@
       <button class="btn-analyze" (click)="analyze()" [disabled]="isLoading || !username.trim()">
         <span *ngIf="!isLoading">Analyze Skills</span>
         <span *ngIf="isLoading" class="spinner-wrap">
-          <span class="spinner"></span> Analyzing&hellip;
+          <span class="spinner"></span>Analyzing...
         </span>
       </button>
     </div>
   </div>
 
-  <!-- ── Error ────────────────────────────────────────── -->
   <div class="sg-error" *ngIf="errorMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
     {{ errorMessage }}
   </div>
 
-  <!-- ── Results ──────────────────────────────────────── -->
   <ng-container *ngIf="result">
+    <div class="insight-grid">
+      <div class="sg-card insight-card" *ngIf="result.analysisSummary">
+        <div class="card-heading">
+          <h2>Analysis Summary</h2>
+        </div>
+        <p>{{ result.analysisSummary }}</p>
+      </div>
 
-    <!-- Overall Skill Coverage ────────────────────────── -->
+      <div class="sg-card insight-card">
+        <div class="card-heading">
+          <h2>Signals Used</h2>
+        </div>
+
+        <div class="signal-grid">
+          <div class="signal-pill">
+            <span class="signal-pill__label">GitHub</span>
+            <strong>{{ result.signalsUsed?.github?.connected ? (result.signalsUsed?.github?.username || 'Connected') : 'Not connected' }}</strong>
+            <small>{{ result.signalsUsed?.github?.repoCount || 0 }} repos</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Resume</span>
+            <strong>{{ result.signalsUsed?.resume?.analyzed ? 'Analyzed' : 'Not analyzed' }}</strong>
+            <small>ATS {{ result.signalsUsed?.resume?.atsScore || 0 }}</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Portfolio</span>
+            <strong>{{ result.signalsUsed?.portfolio?.completenessScore || 0 }}%</strong>
+            <small>{{ result.signalsUsed?.portfolio?.projectCount || 0 }} projects</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Integrations</span>
+            <strong>{{ result.signalsUsed?.integrations?.score || 0 }}%</strong>
+            <small>{{ integrationProvidersLabel }}</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Weekly Progress</span>
+            <strong>{{ result.signalsUsed?.weeklyProgress?.status || 'Unavailable' }}</strong>
+            <small>{{ result.signalsUsed?.weeklyProgress?.score || 0 }}% | {{ weeklyTrendLabel }}</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Career Sprint</span>
+            <strong>{{ result.signalsUsed?.careerSprint?.consistencyScore || 0 }}%</strong>
+            <small>{{ result.signalsUsed?.careerSprint?.streak || 0 }} day streak</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="sg-card coverage-card">
       <div class="coverage-card__top">
         <div class="coverage-card__title">
           <h2>Overall Skill Coverage</h2>
-          <p>Based on 500+ senior developer job postings analysis</p>
+          <p>Role-fit estimate using current proof plus supporting progress evidence</p>
         </div>
         <div class="coverage-card__badges">
           <div class="cov-badge cov-badge--green">
@@ -82,10 +124,7 @@
       </div>
     </div>
 
-    <!-- Two-column skills panel ────────────────────────── -->
     <div class="skills-grid">
-
-      <!-- Your Skills -->
       <div class="sg-card skills-card">
         <div class="skills-card__header">
           <h3>Your Skills</h3>
@@ -107,7 +146,6 @@
         </div>
       </div>
 
-      <!-- Missing Skills -->
       <div class="sg-card skills-card">
         <div class="skills-card__header">
           <h3>Missing Skills</h3>
@@ -127,11 +165,16 @@
       </div>
     </div>
 
-    <!-- Skill Graph Visualization ─────────────────────────── -->
     <div class="sg-card graph-card" *ngIf="graphLayout.length">
       <div class="graph-card__header">
         <h2>Skill Dependency Graph</h2>
         <p>Green nodes are current strengths, orange nodes are high-impact skills to learn next.</p>
+      </div>
+
+      <div class="graph-legend">
+        <span class="legend-chip legend-chip--current">Current strengths</span>
+        <span class="legend-chip legend-chip--missing">Next high-value gaps</span>
+        <span class="legend-chip legend-chip--edge">Prerequisite and related paths</span>
       </div>
 
       <div class="graph-canvas">
@@ -151,15 +194,17 @@
           *ngFor="let node of graphLayout"
           [style.left.%]="node.x"
           [style.top.%]="node.y"
-          [ngClass]="node.kind === 'current' ? 'node-current' : 'node-missing'"
-        >
+          [ngClass]="node.kind === 'current' ? 'node-current' : 'node-missing'">
           <div class="node-title">{{ node.name }}</div>
-          <div class="node-meta">Demand {{ node.demandScore }}%</div>
+          <div class="node-meta">{{ node.category }}</div>
+          <div class="node-score">
+            {{ node.kind === 'current' ? 'Proficiency' : 'Demand' }}
+            {{ node.kind === 'current' ? node.proficiency : node.demandScore }}%
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Weekly Roadmap Engine Output ─────────────────────── -->
     <div class="sg-card weekly-card" *ngIf="result.weeklyRoadmap?.length">
       <div class="weekly-card__header">
         <h2>Weekly Learning Roadmap</h2>
@@ -175,11 +220,13 @@
           <div class="week-skill-list">
             <span class="week-skill" *ngFor="let skill of week.focusSkills">{{ skill }}</span>
           </div>
+          <ul class="week-outcomes" *ngIf="week.outcomes.length">
+            <li *ngFor="let outcome of week.outcomes">{{ outcome }}</li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <!-- Learning Roadmap ────────────────────────────────── -->
     <div class="sg-card roadmap-card">
       <div class="roadmap-card__header">
         <h2>Learning Roadmap</h2>
@@ -190,7 +237,6 @@
         <div class="phase-card"
              *ngFor="let phase of result.roadmap; trackBy: trackByPhase"
              [ngClass]="getPhaseClass(phase.color)">
-
           <div class="phase-card__top">
             <span class="phase-label">{{ phase.phase }}</span>
             <span class="phase-duration">{{ phase.duration }}</span>
@@ -215,27 +261,25 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
                 {{ getResourceTitle(r) }}
               </a>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-
   </ng-container>
 
-  <!-- Empty state ─────────────────────────────────────── -->
   <div class="sg-empty" *ngIf="!result && !isLoading && !errorMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
     <h3>Enter a GitHub username to analyze skill gaps</h3>
-    <p>We'll compare your GitHub activity against 500+ job postings to identify missing skills.</p>
+    <p>We'll compare your GitHub activity, resume, and supporting signals to identify missing skills and the right next learning priorities.</p>
   </div>
-
 </div>

@@ -883,6 +883,7 @@ const getPublicProfileAnalytics = async (userId) => {
 };
 
 module.exports = {
+  buildPublicProfilePayload,
   getOrCreatePublicProfile,
   updatePublicProfile,
   getPublicProfileBySlug,

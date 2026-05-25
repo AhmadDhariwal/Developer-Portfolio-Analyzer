@@ -62,6 +62,14 @@ export class ResumeAnalyzerComponent implements OnInit {
     'Soft Skills'
   ];
 
+  readonly suggestionPriorityOrder: Record<ResumeSuggestion['color'], number> = {
+    red: 0,
+    orange: 1,
+    purple: 2,
+    blue: 3,
+    cyan: 4
+  };
+
   constructor(
     private readonly apiService: ApiService,
     private readonly resumeService: ResumeService,
@@ -238,7 +246,12 @@ export class ResumeAnalyzerComponent implements OnInit {
    */
   getSuggestions(): ResumeSuggestion[] {
     if (!this.analysis || !this.analysis.suggestions) return [];
-    return this.analysis.suggestions;
+    return [...this.analysis.suggestions].sort((left, right) => {
+      const leftRank = this.suggestionPriorityOrder[left.color] ?? 99;
+      const rightRank = this.suggestionPriorityOrder[right.color] ?? 99;
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      return left.title.localeCompare(right.title);
+    });
   }
 
   /**
@@ -247,6 +260,20 @@ export class ResumeAnalyzerComponent implements OnInit {
   getTotalSkillsCount(): number {
     if (!this.analysis || !this.analysis.skills) return 0;
     return Object.values(this.analysis.skills).reduce((sum, skills) => sum + (skills?.length || 0), 0);
+  }
+
+  getDetectedSkillGroups(): Array<{ category: string; skills: string[] }> {
+    return this.skillCategories.map((category) => ({
+      category,
+      skills: this.getSkillsForCategory(category)
+    }));
+  }
+
+  getTopSuggestionLabel(index: number): string {
+    if (index === 0) return 'Highest priority';
+    if (index === 1) return 'Next focus';
+    if (index === 2) return 'Worth improving';
+    return `Step ${index + 1}`;
   }
 
   /**

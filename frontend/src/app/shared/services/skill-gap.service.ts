@@ -37,12 +37,47 @@ export interface SkillGapResult {
   yourSkills:      CurrentSkill[];
   missingSkills:   MissingSkill[];
   levelAssessment: string;
+  analysisSummary?: string;
   roadmap:         RoadmapPhase[];
   skillGraph?: {
     nodes: SkillGraphNode[];
     edges: SkillGraphEdge[];
   };
   weeklyRoadmap?: WeeklyRoadmapWeek[];
+  signalsUsed?: {
+    github: {
+      connected: boolean;
+      username: string;
+      repoCount: number;
+      developerLevel: string;
+    };
+    resume: {
+      analyzed: boolean;
+      atsScore: number;
+      experienceLevel: string;
+    };
+    portfolio: {
+      present: boolean;
+      completenessScore: number;
+      projectCount: number;
+      liveLinkCount: number;
+    };
+    integrations: {
+      providers: string[];
+      score: number;
+      strongestProof: string[];
+    };
+    weeklyProgress: {
+      status: string;
+      score: number;
+      trendDelta: number;
+    };
+    careerSprint: {
+      consistencyScore: number;
+      streak: number;
+      activeLearningFocus: string;
+    };
+  };
   totalWeeks:      string;
 }
 

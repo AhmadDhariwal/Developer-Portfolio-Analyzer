@@ -1,72 +1,217 @@
 <div class="page">
-  <div class="page-header">
-    <h2>Notifications & Activities</h2>
-    <p>Search, filter, and manage your activity notifications.</p>
-  </div>
+  <section class="page-hero card">
+    <div class="page-hero__content">
+      <div>
+        <h2>Notifications & Activities</h2>
+        <p>Track account activity, resume updates, GitHub events, and organization-level alerts in one place.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary-action" (click)="markAllAsRead()" [disabled]="markingAllRead || unreadCount === 0">
+          {{ markingAllRead ? 'Marking...' : 'Mark All as Read' }}
+        </button>
+      </div>
+    </div>
 
-  <div class="filters card">
-    <div class="row">
-      <input [(ngModel)]="search" placeholder="Search title or description" />
-      <input [(ngModel)]="from" type="date" title="From date" />
-      <input [(ngModel)]="to" type="date" title="To date" />
-      <select [(ngModel)]="typeFilter" title="Activity type">
-        <option *ngFor="let option of typeOptions" [value]="option.value">{{ option.label }}</option>
-      </select>
-      <label class="checkbox">
-        <input type="checkbox" [(ngModel)]="unreadOnly" />
-        Unread only
+    <div class="hero-stats">
+      <div class="stat-card">
+        <span class="stat-card__label">Unread</span>
+        <strong>{{ unreadCount }}</strong>
+        <small>Needs attention</small>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Total</span>
+        <strong>{{ total }}</strong>
+        <small>Loaded notifications</small>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Read Rate</span>
+        <strong>{{ getReadRate() }}%</strong>
+        <small>Inbox progress</small>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Active Filters</span>
+        <strong>{{ getActiveFiltersCount() }}</strong>
+        <small>Current narrowing</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="filters card">
+    <div class="filters__header">
+      <div>
+        <h3>Filter Notifications</h3>
+        <p>Search by message, narrow by role, type, organization, team, or date range.</p>
+      </div>
+      <div class="filters__actions">
+        <button class="primary-action" (click)="applyFilters()">Apply Filters</button>
+        <button class="ghost-action" (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+
+    <div class="filters-grid">
+      <label class="field">
+        <span>Search</span>
+        <input [(ngModel)]="search" placeholder="Search title or description" />
+      </label>
+
+      <label class="field">
+        <span>From</span>
+        <input [(ngModel)]="from" type="date" title="From date" />
+      </label>
+
+      <label class="field">
+        <span>To</span>
+        <input [(ngModel)]="to" type="date" title="To date" />
+      </label>
+
+      <label class="field">
+        <span>Type</span>
+        <select [(ngModel)]="typeFilter" title="Activity type">
+          <option *ngFor="let option of typeOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Organization</span>
+        <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization">
+          <option value="">All organizations</option>
+          <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+        </select>
+      </label>
+
+      <label class="field" *ngIf="teams.length">
+        <span>Team</span>
+        <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team">
+          <option value="">All teams</option>
+          <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+        </select>
+      </label>
+
+      <label class="field" *ngIf="canFilterRole">
+        <span>Role</span>
+        <select [(ngModel)]="roleFilter" title="Role filter">
+          <option *ngFor="let option of roleOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <label class="field" *ngIf="canFilterUsers">
+        <span>User</span>
+        <select [(ngModel)]="selectedUserId" title="User filter">
+          <option value="">All users</option>
+          <option *ngFor="let user of userOptions" [value]="user._id">{{ fmtUser(user) }}</option>
+        </select>
       </label>
     </div>
-    <div class="row">
-      <select [(ngModel)]="selectedOrganizationId" (change)="onOrganizationChange()" title="Organization">
-        <option value="">All organizations</option>
-        <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
-      </select>
-      <select *ngIf="teams.length" [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team">
-        <option value="">All teams</option>
-        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
-      </select>
-      <select *ngIf="canFilterRole" [(ngModel)]="roleFilter" title="Role filter">
-        <option value="">All roles</option>
-        <option value="admin">Admins</option>
-        <option value="manager">Managers</option>
-        <option value="member">Members</option>
-      </select>
-      <select *ngIf="canFilterUsers" [(ngModel)]="selectedUserId" title="User filter">
-        <option value="">All users</option>
-        <option *ngFor="let user of userOptions" [value]="user._id">{{ fmtUser(user) }}</option>
-      </select>
-      <button (click)="applyFilters()">Apply</button>
-      <button class="ghost" (click)="resetFilters()">Reset</button>
-    </div>
-  </div>
+
+    <label class="checkbox">
+      <input type="checkbox" [(ngModel)]="unreadOnly" />
+      <span>Show unread notifications only</span>
+    </label>
+  </section>
 
   <div class="status" *ngIf="statusMessage">{{ statusMessage }}</div>
 
-  <div class="card table-card">
+  <section class="card inbox-card">
     <div class="table-head">
-      <strong>All Notifications</strong>
-      <span>{{ unreadCount }} unread • {{ total }} total</span>
+      <div>
+        <strong>Notification Feed</strong>
+        <span>{{ unreadCount }} unread • {{ total }} total</span>
+      </div>
+      <div class="pager pager--top">
+        <button [disabled]="page <= 1" (click)="fetchNotifications(page - 1)">Previous</button>
+        <span>Page {{ page }} / {{ totalPages }}</span>
+        <button [disabled]="page >= totalPages" (click)="fetchNotifications(page + 1)">Next</button>
+      </div>
     </div>
 
-    <div *ngIf="loading" class="state">Loading notifications...</div>
+    <div *ngIf="loading" class="state state--loading">
+      <div class="skeleton-item" *ngFor="let _ of [1, 2, 3]">
+        <div class="skeleton-item__icon"></div>
+        <div class="skeleton-item__body">
+          <div class="skeleton-line skeleton-line--title"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="notification-list" *ngIf="!loading && notifications.length > 0">
-      <div class="notification-item" *ngFor="let notification of notifications" [class.unread]="!notification.isRead">
+      <article
+        class="notification-item"
+        *ngFor="let notification of notifications"
+        [class.unread]="!notification.isRead"
+        [class.notification-item--warning]="getNotificationTone(notification) === 'warning'"
+        [class.notification-item--success]="getNotificationTone(notification) === 'success'"
+        [class.notification-item--info]="getNotificationTone(notification) === 'info'"
+        [class.notification-item--purple]="getNotificationTone(notification) === 'purple'">
+        <div class="notification-icon" [class.notification-icon--warning]="getNotificationTone(notification) === 'warning'"
+             [class.notification-icon--success]="getNotificationTone(notification) === 'success'"
+             [class.notification-icon--info]="getNotificationTone(notification) === 'info'"
+             [class.notification-icon--purple]="getNotificationTone(notification) === 'purple'">
+          <svg *ngIf="getNotificationIcon(notification) === 'user'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21a8 8 0 0 0-16 0"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <svg *ngIf="getNotificationIcon(notification) === 'file'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <svg *ngIf="getNotificationIcon(notification) === 'github'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <svg *ngIf="getNotificationIcon(notification) === 'alert'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <svg *ngIf="getNotificationIcon(notification) === 'spark'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9L12 3z"></path>
+          </svg>
+          <svg *ngIf="getNotificationIcon(notification) === 'bell'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
+            <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .738-1.674C19.41 13.956 18 12.499 18 8a6 6 0 1 0-12 0c0 4.499-1.411 5.956-2.738 7.326"></path>
+          </svg>
+        </div>
+
         <button type="button" class="notification-main" (click)="markAsRead(notification)">
-          <div class="notification-title">{{ notification.title }}</div>
+          <div class="notification-topline">
+            <div class="notification-title-wrap">
+              <div class="notification-title">{{ notification.title }}</div>
+              <span class="type-pill" [class.type-pill--warning]="getNotificationTone(notification) === 'warning'"
+                    [class.type-pill--success]="getNotificationTone(notification) === 'success'"
+                    [class.type-pill--info]="getNotificationTone(notification) === 'info'"
+                    [class.type-pill--purple]="getNotificationTone(notification) === 'purple'">
+                {{ getNotificationTypeLabel(notification) }}
+              </span>
+            </div>
+            <span class="unread-dot" *ngIf="!notification.isRead"></span>
+          </div>
+
           <div class="notification-message">{{ notification.message }}</div>
+
           <div class="notification-meta">
+            <span>{{ getRelativeTime(notification.createdAt) }}</span>
             <span>{{ formatTime(notification.createdAt) }}</span>
             <span class="pill" [class.unread-pill]="!notification.isRead">{{ notification.isRead ? 'Read' : 'Unread' }}</span>
           </div>
         </button>
-        <button class="ghost" (click)="deleteNotification(notification)">Delete</button>
-      </div>
+
+        <div class="notification-actions">
+          <button class="ghost-action" *ngIf="!notification.isRead" (click)="markAsRead(notification)">Mark Read</button>
+          <button class="ghost-action ghost-action--danger" (click)="deleteNotification(notification)">Delete</button>
+        </div>
+      </article>
     </div>
 
-    <div *ngIf="!loading && notifications.length === 0" class="state">
-      No notifications found for the selected filters.
+    <div *ngIf="!loading && notifications.length === 0" class="state state--empty">
+      <div class="state-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
+          <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .738-1.674C19.41 13.956 18 12.499 18 8a6 6 0 1 0-12 0c0 4.499-1.411 5.956-2.738 7.326"></path>
+        </svg>
+      </div>
+      <h3>No notifications found</h3>
+      <p>No notifications matched your current filters. Try widening the date range or clearing some filters.</p>
     </div>
 
     <div class="pager">
@@ -74,5 +219,5 @@
       <span>Page {{ page }} / {{ totalPages }}</span>
       <button [disabled]="page >= totalPages" (click)="fetchNotifications(page + 1)">Next</button>
     </div>
-  </div>
+  </section>
 </div>

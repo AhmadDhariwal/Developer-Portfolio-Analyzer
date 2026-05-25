@@ -1,6 +1,4 @@
 <div class="rec-page">
-
-  <!-- ── Page Header ──────────────────────────────────────────── -->
   <div class="rec-header">
     <div class="rec-header__text">
       <h1>Recommendations</h1>
@@ -15,7 +13,6 @@
     </button>
   </div>
 
-  <!-- ── Search Bar ────────────────────────────────────────────── -->
   <div class="rec-search-card">
     <div class="rec-search-card__inner">
       <div class="rec-search-card__icon">
@@ -42,13 +39,12 @@
       <button class="btn-analyze" (click)="analyze()" [disabled]="isLoading || !username.trim()">
         <span *ngIf="!isLoading">Get Recommendations</span>
         <span *ngIf="isLoading" class="spinner-wrap">
-          <span class="spinner"></span>Generating…
+          <span class="spinner"></span>Generating...
         </span>
       </button>
     </div>
   </div>
 
-  <!-- ── Error ─────────────────────────────────────────────────── -->
   <div class="rec-error" *ngIf="errorMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2">
@@ -59,10 +55,7 @@
     {{ errorMessage }}
   </div>
 
-  <!-- ── Results ───────────────────────────────────────────────── -->
   <ng-container *ngIf="result">
-
-    <!-- Tab bar -->
     <div class="tab-bar">
       <button
         *ngFor="let tab of tabs"
@@ -73,7 +66,113 @@
       </button>
     </div>
 
-    <!-- ── Recommended Projects ──────────────────────────────── -->
+    <div class="insight-grid">
+      <div class="insight-card" *ngIf="result.analysisSummary">
+        <div class="section-header">
+          <div class="section-header__icon section-header__icon--blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3v18"/>
+              <path d="M3 12h18"/>
+            </svg>
+          </div>
+          <h2>Analysis Summary</h2>
+        </div>
+        <p class="insight-card__summary">{{ result.analysisSummary }}</p>
+      </div>
+
+      <div class="insight-card">
+        <div class="section-header">
+          <div class="section-header__icon section-header__icon--purple">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 1-2 0 1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 1 0-2 1.65 1.65 0 0 0 .6-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 1 2 0 1.65 1.65 0 0 0 1 .6 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.26.3.46.65.6 1a1.65 1.65 0 0 1 0 2c-.14.35-.34.7-.6 1z"/>
+            </svg>
+          </div>
+          <h2>Signals Used</h2>
+        </div>
+
+        <div class="signal-grid">
+          <div class="signal-pill">
+            <span class="signal-pill__label">GitHub</span>
+            <strong>{{ result.signalsUsed?.github?.connected ? (result.signalsUsed?.github?.username || 'Connected') : 'Not connected' }}</strong>
+            <small>{{ result.signalsUsed?.github?.repoCount || 0 }} repos</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Resume</span>
+            <strong>{{ result.signalsUsed?.resume?.analyzed ? 'Analyzed' : 'Not analyzed' }}</strong>
+            <small>ATS {{ result.signalsUsed?.resume?.atsScore || 0 }}</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Portfolio</span>
+            <strong>{{ result.signalsUsed?.portfolio?.completenessScore || 0 }}%</strong>
+            <small>{{ result.signalsUsed?.portfolio?.projectCount || 0 }} projects</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Weekly Progress</span>
+            <strong>{{ result.signalsUsed?.weeklyProgress?.status || 'Unavailable' }}</strong>
+            <small>{{ result.signalsUsed?.weeklyProgress?.score || 0 }}% | {{ weeklyTrendLabel }}</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Career Sprint</span>
+            <strong>{{ result.signalsUsed?.careerSprint?.consistencyScore || 0 }}%</strong>
+            <small>{{ result.signalsUsed?.careerSprint?.streak || 0 }} day streak</small>
+          </div>
+          <div class="signal-pill">
+            <span class="signal-pill__label">Integrations</span>
+            <strong>{{ result.signalsUsed?.integrations?.score || 0 }}%</strong>
+            <small>{{ signalProviderList }}</small>
+          </div>
+        </div>
+
+        <div class="signal-notes">
+          <span>Strongest proof: {{ signalProofList }}</span>
+          <span>Sprint focus: {{ getSprintFocus() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-plan" *ngIf="hasActionPlan">
+      <div class="section-header">
+        <div class="section-header__icon section-header__icon--green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <h2>Action Plan</h2>
+      </div>
+
+      <div class="action-grid">
+        <div class="action-card" *ngIf="result.portfolioRecommendations?.length">
+          <h3>Portfolio</h3>
+          <ul>
+            <li *ngFor="let item of result.portfolioRecommendations">{{ item }}</li>
+          </ul>
+        </div>
+        <div class="action-card" *ngIf="result.resumeRecommendations?.length">
+          <h3>Resume</h3>
+          <ul>
+            <li *ngFor="let item of result.resumeRecommendations">{{ item }}</li>
+          </ul>
+        </div>
+        <div class="action-card" *ngIf="result.learningActions?.length">
+          <h3>Learning</h3>
+          <ul>
+            <li *ngFor="let item of result.learningActions">{{ item }}</li>
+          </ul>
+        </div>
+        <div class="action-card" *ngIf="result.interviewReadinessActions?.length">
+          <h3>Interview Readiness</h3>
+          <ul>
+            <li *ngFor="let item of result.interviewReadinessActions">{{ item }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <ng-container *ngIf="showProjects()">
       <div class="section-header">
         <div class="section-header__icon section-header__icon--blue">
@@ -93,7 +192,8 @@
             <div class="project-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
               </svg>
             </div>
             <span class="difficulty-badge" [ngClass]="getDifficultyClass(proj.difficulty)">
@@ -134,7 +234,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
             </a>
           </div>
@@ -142,7 +243,6 @@
       </div>
     </ng-container>
 
-    <!-- ── Recommended Technologies ─────────────────────────── -->
     <ng-container *ngIf="showTechnologies()">
       <div class="section-header">
         <div class="section-header__icon section-header__icon--purple">
@@ -160,7 +260,8 @@
           <div class="tech-row__icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
             </svg>
           </div>
           <div class="tech-row__info">
@@ -185,7 +286,6 @@
       </div>
     </ng-container>
 
-    <!-- ── Career Path Suggestions ───────────────────────────── -->
     <ng-container *ngIf="showCareerPaths()">
       <div class="section-header">
         <div class="section-header__icon section-header__icon--green">
@@ -250,17 +350,16 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
             </a>
           </div>
         </div>
       </div>
     </ng-container>
-
   </ng-container>
 
-  <!-- ── Empty state ───────────────────────────────────────────── -->
   <div class="rec-empty" *ngIf="!result && !isLoading && !errorMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="1.5">
@@ -269,7 +368,6 @@
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
     <h3>Enter a GitHub username to get personalized recommendations</h3>
-    <p>We'll analyze your skills and suggest projects, technologies, and career paths tailored to you.</p>
+    <p>We'll analyze your skills and suggest projects, technologies, career paths, and practical next actions tailored to you.</p>
   </div>
-
 </div>

@@ -36,6 +36,13 @@ const buildPrereqsByTarget = (edges = []) => {
   return prereqsByTarget;
 };
 
+const describeSkillSet = (focusSkills = []) => {
+  if (!focusSkills.length) return 'your current roadmap';
+  if (focusSkills.length === 1) return focusSkills[0];
+  if (focusSkills.length === 2) return `${focusSkills[0]} and ${focusSkills[1]}`;
+  return `${focusSkills[0]}, ${focusSkills[1]}, and ${focusSkills[2]}`;
+};
+
 const selectWeekSkills = ({ missingNodes, prereqsByTarget, completed, planned }) => {
   const weekSkills = [];
 
@@ -66,8 +73,43 @@ const getWeekReason = (week, maxDemand, focusSkills = []) => {
     return 'Review and consolidate previous learning goals.';
   }
 
-  const priorityLabel = maxDemand >= 80 ? 'high market demand' : 'strong dependency unlock';
-  return `Prioritized for week ${week} due to ${priorityLabel} and prerequisite readiness.`;
+  const focusLabel = describeSkillSet(focusSkills);
+  if (week === 1) {
+    return `Start with ${focusLabel} because these skills are either immediately market-relevant or unblock the rest of your roadmap.`;
+  }
+
+  if (maxDemand >= 85) {
+    return `Week ${week} focuses on ${focusLabel} because demand is high and the earlier dependencies should now be in place.`;
+  }
+
+  if (week <= 3) {
+    return `Week ${week} moves into ${focusLabel} to build on the foundation from the previous milestone and keep momentum practical.`;
+  }
+
+  return `Week ${week} uses ${focusLabel} to deepen applied proof, close remaining gaps, and prepare stronger role-fit evidence.`;
+};
+
+const buildWeekOutcomes = (week, focusSkills = []) => {
+  if (!focusSkills.length) {
+    return [
+      'Review completed notes and refine portfolio evidence for the strongest skills covered so far.',
+      'Use the week to consolidate gaps that still feel unclear before moving forward.'
+    ];
+  }
+
+  return focusSkills.map((skill, index) => {
+    if (week <= 2) {
+      return `Implement one small practice artifact that proves ${skill} in a realistic workflow.`;
+    }
+    if (week <= 5) {
+      return index === 0
+        ? `Add ${skill} to a portfolio-ready project and document the technical decisions behind it.`
+        : `Write, test, or deploy a concrete feature that demonstrates ${skill} beyond tutorial-level understanding.`;
+    }
+    return index === 0
+      ? `Prepare an interview-ready explanation showing where ${skill} fits in a production system.`
+      : `Turn ${skill} into measurable proof through cleanup, documentation, and repeatable project evidence.`;
+  });
 };
 
 const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
@@ -175,9 +217,7 @@ const generateWeeklyLearningRoadmap = (graph, weeks = 8) => {
       week,
       focusSkills,
       reason,
-      outcomes: focusSkills.length
-        ? focusSkills.map((skill) => `Build one mini project task using ${skill}.`)
-        : ['Refine documentation and portfolio evidence for completed skills.']
+      outcomes: buildWeekOutcomes(week, focusSkills)
     });
   }
 

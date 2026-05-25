@@ -38,6 +38,41 @@ export interface CareerPath {
   exploreUrl?:     string;
 }
 
+export interface RecommendationSignalsUsed {
+  github: {
+    connected: boolean;
+    username: string;
+    repoCount: number;
+    developerLevel: string;
+  };
+  resume: {
+    analyzed: boolean;
+    atsScore: number;
+    experienceLevel: string;
+  };
+  portfolio: {
+    present: boolean;
+    completenessScore: number;
+    projectCount: number;
+    liveLinkCount: number;
+  };
+  integrations: {
+    providers: string[];
+    score: number;
+    strongestProof: string[];
+  };
+  weeklyProgress: {
+    status: string;
+    score: number;
+    trendDelta: number;
+  };
+  careerSprint: {
+    consistencyScore: number;
+    streak: number;
+    activeLearningFocus: string;
+  };
+}
+
 export interface RecommendationsResult {
   username:        string;
   careerStack:     string;
@@ -45,6 +80,12 @@ export interface RecommendationsResult {
   projects:        RecommendedProject[];
   technologies:    RecommendedTechnology[];
   careerPaths:     CareerPath[];
+  analysisSummary?: string;
+  portfolioRecommendations?: string[];
+  resumeRecommendations?: string[];
+  learningActions?: string[];
+  interviewReadinessActions?: string[];
+  signalsUsed?: RecommendationSignalsUsed;
 }
 
 @Injectable({ providedIn: 'root' })

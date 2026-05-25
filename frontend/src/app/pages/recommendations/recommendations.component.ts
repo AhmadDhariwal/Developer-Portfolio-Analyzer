@@ -7,6 +7,7 @@ import {
   RecommendedProject,
   RecommendedTechnology,
   CareerPath,
+  RecommendationSignalsUsed,
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -89,7 +90,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
           experienceLevel: data?.experienceLevel || experienceLevel,
           projects:        Array.isArray(data?.projects)     ? data.projects     : [],
           technologies:    Array.isArray(data?.technologies) ? data.technologies : [],
-          careerPaths:     Array.isArray(data?.careerPaths)  ? data.careerPaths  : []
+          careerPaths:     Array.isArray(data?.careerPaths)  ? data.careerPaths  : [],
+          analysisSummary: typeof data?.analysisSummary === 'string' ? data.analysisSummary : '',
+          portfolioRecommendations: Array.isArray(data?.portfolioRecommendations) ? data.portfolioRecommendations : [],
+          resumeRecommendations: Array.isArray(data?.resumeRecommendations) ? data.resumeRecommendations : [],
+          learningActions: Array.isArray(data?.learningActions) ? data.learningActions : [],
+          interviewReadinessActions: Array.isArray(data?.interviewReadinessActions) ? data.interviewReadinessActions : [],
+          signalsUsed: this.normalizeSignalsUsed(data?.signalsUsed, user)
         };
 
         this.result = normalized;
@@ -143,6 +150,35 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return `${Math.min(100, Math.max(0, pct))}%`;
   }
 
+  get hasActionPlan(): boolean {
+    return Boolean(
+      this.result?.portfolioRecommendations?.length ||
+      this.result?.resumeRecommendations?.length ||
+      this.result?.learningActions?.length ||
+      this.result?.interviewReadinessActions?.length
+    );
+  }
+
+  get signalProviderList(): string {
+    const providers = this.result?.signalsUsed?.integrations?.providers || [];
+    return providers.length ? providers.join(', ') : 'No extra integrations';
+  }
+
+  get signalProofList(): string {
+    const proof = this.result?.signalsUsed?.integrations?.strongestProof || [];
+    return proof.length ? proof.join(', ') : 'No strong external proof yet';
+  }
+
+  get weeklyTrendLabel(): string {
+    const delta = Number(this.result?.signalsUsed?.weeklyProgress?.trendDelta || 0);
+    if (delta > 0) return `+${delta}`;
+    return `${delta}`;
+  }
+
+  getSprintFocus(): string {
+    return this.result?.signalsUsed?.careerSprint?.activeLearningFocus || 'No active sprint focus';
+  }
+
   getProjectStartUrl(project: RecommendedProject): string {
     const url = String(project?.startUrl || '').trim();
     if (/^https?:\/\//i.test(url)) return url;
@@ -163,5 +199,42 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   trackByName(_: number, item: RecommendedTechnology): string {
     return item.name;
+  }
+
+  private normalizeSignalsUsed(raw: any, username: string): RecommendationSignalsUsed {
+    return {
+      github: {
+        connected: Boolean(raw?.github?.connected ?? username),
+        username: raw?.github?.username || username,
+        repoCount: Number(raw?.github?.repoCount || 0),
+        developerLevel: raw?.github?.developerLevel || ''
+      },
+      resume: {
+        analyzed: Boolean(raw?.resume?.analyzed),
+        atsScore: Number(raw?.resume?.atsScore || 0),
+        experienceLevel: raw?.resume?.experienceLevel || ''
+      },
+      portfolio: {
+        present: Boolean(raw?.portfolio?.present),
+        completenessScore: Number(raw?.portfolio?.completenessScore || 0),
+        projectCount: Number(raw?.portfolio?.projectCount || 0),
+        liveLinkCount: Number(raw?.portfolio?.liveLinkCount || 0)
+      },
+      integrations: {
+        providers: Array.isArray(raw?.integrations?.providers) ? raw.integrations.providers : [],
+        score: Number(raw?.integrations?.score || 0),
+        strongestProof: Array.isArray(raw?.integrations?.strongestProof) ? raw.integrations.strongestProof : []
+      },
+      weeklyProgress: {
+        status: raw?.weeklyProgress?.status || 'Unavailable',
+        score: Number(raw?.weeklyProgress?.score || 0),
+        trendDelta: Number(raw?.weeklyProgress?.trendDelta || 0)
+      },
+      careerSprint: {
+        consistencyScore: Number(raw?.careerSprint?.consistencyScore || 0),
+        streak: Number(raw?.careerSprint?.streak || 0),
+        activeLearningFocus: raw?.careerSprint?.activeLearningFocus || ''
+      }
+    };
   }
 }

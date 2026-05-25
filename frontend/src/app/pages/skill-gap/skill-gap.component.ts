@@ -96,11 +96,13 @@ export class SkillGapComponent implements OnInit, OnDestroy {
           yourSkills:      Array.isArray(raw?.yourSkills)    ? raw.yourSkills    : [],
           missingSkills:   Array.isArray(raw?.missingSkills) ? raw.missingSkills : [],
           levelAssessment: raw?.levelAssessment || '',
+          analysisSummary: raw?.analysisSummary || '',
           roadmap:         Array.isArray(raw?.roadmap) ? raw.roadmap : [],
           skillGraph:      raw?.skillGraph?.nodes && raw?.skillGraph?.edges
             ? raw.skillGraph
             : { nodes: [], edges: [] },
           weeklyRoadmap:   Array.isArray(raw?.weeklyRoadmap) ? raw.weeklyRoadmap : [],
+          signalsUsed: this.normalizeSignalsUsed(raw?.signalsUsed, user),
           totalWeeks:      raw?.totalWeeks || 'N/A'
         };
 
@@ -136,6 +138,16 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   get currentCareerStack(): string  { return this.careerProfileService.careerStack; }
   get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
+
+  get integrationProvidersLabel(): string {
+    const providers = this.result?.signalsUsed?.integrations?.providers || [];
+    return providers.length ? providers.join(', ') : 'No extra integrations';
+  }
+
+  get weeklyTrendLabel(): string {
+    const delta = Number(this.result?.signalsUsed?.weeklyProgress?.trendDelta || 0);
+    return delta > 0 ? `+${delta}` : `${delta}`;
+  }
 
   getPriorityClass(priority: MissingSkill['priority']): string {
     switch (priority) {
@@ -226,5 +238,42 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   findNode(id: string): (SkillGraphNode & { x: number; y: number }) | undefined {
     return this.graphLayout.find((node) => node.id === id);
+  }
+
+  private normalizeSignalsUsed(raw: any, username: string): SkillGapResult['signalsUsed'] {
+    return {
+      github: {
+        connected: Boolean(raw?.github?.connected ?? username),
+        username: raw?.github?.username || username,
+        repoCount: Number(raw?.github?.repoCount || 0),
+        developerLevel: raw?.github?.developerLevel || ''
+      },
+      resume: {
+        analyzed: Boolean(raw?.resume?.analyzed),
+        atsScore: Number(raw?.resume?.atsScore || 0),
+        experienceLevel: raw?.resume?.experienceLevel || ''
+      },
+      portfolio: {
+        present: Boolean(raw?.portfolio?.present),
+        completenessScore: Number(raw?.portfolio?.completenessScore || 0),
+        projectCount: Number(raw?.portfolio?.projectCount || 0),
+        liveLinkCount: Number(raw?.portfolio?.liveLinkCount || 0)
+      },
+      integrations: {
+        providers: Array.isArray(raw?.integrations?.providers) ? raw.integrations.providers : [],
+        score: Number(raw?.integrations?.score || 0),
+        strongestProof: Array.isArray(raw?.integrations?.strongestProof) ? raw.integrations.strongestProof : []
+      },
+      weeklyProgress: {
+        status: raw?.weeklyProgress?.status || 'Unavailable',
+        score: Number(raw?.weeklyProgress?.score || 0),
+        trendDelta: Number(raw?.weeklyProgress?.trendDelta || 0)
+      },
+      careerSprint: {
+        consistencyScore: Number(raw?.careerSprint?.consistencyScore || 0),
+        streak: Number(raw?.careerSprint?.streak || 0),
+        activeLearningFocus: raw?.careerSprint?.activeLearningFocus || ''
+      }
+    };
   }
 }

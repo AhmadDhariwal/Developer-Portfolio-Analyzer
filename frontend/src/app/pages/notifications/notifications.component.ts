@@ -36,6 +36,7 @@ interface UserOption {
 export class NotificationsComponent implements OnInit {
   notifications: AppNotification[] = [];
   loading = false;
+  markingAllRead = false;
   statusMessage = '';
   unreadCount = 0;
   page = 1;
@@ -68,6 +69,13 @@ export class NotificationsComponent implements OnInit {
     { value: 'low_score', label: 'Low score' },
     { value: 'career_update', label: 'Career update' },
     { value: 'system', label: 'System' }
+  ];
+
+  readonly roleOptions = [
+    { value: '', label: 'All roles' },
+    { value: 'admin', label: 'Admins' },
+    { value: 'manager', label: 'Managers' },
+    { value: 'member', label: 'Members' }
   ];
 
   constructor(
@@ -239,6 +247,30 @@ export class NotificationsComponent implements OnInit {
     this.fetchNotifications(1);
   }
 
+  markAllAsRead(): void {
+    if (this.markingAllRead || this.unreadCount === 0) return;
+    this.markingAllRead = true;
+    this.statusMessage = '';
+
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notifications = this.notifications.map((notification) => ({
+          ...notification,
+          isRead: true
+        }));
+        this.unreadCount = 0;
+        this.markingAllRead = false;
+        this.statusMessage = 'All notifications marked as read.';
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.markingAllRead = false;
+        this.statusMessage = 'Failed to mark all notifications as read.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   fetchNotifications(page = this.page): void {
     this.loading = true;
     this.page = page;
@@ -331,5 +363,79 @@ export class NotificationsComponent implements OnInit {
 
   fmtUser(option: UserOption): string {
     return option.name || option.githubUsername || option.email || 'User';
+  }
+
+  getNotificationTone(notification: AppNotification): string {
+    switch (notification.type) {
+      case 'low_score':
+        return 'warning';
+      case 'resume_upload':
+        return 'success';
+      case 'github_update':
+        return 'info';
+      case 'career_update':
+        return 'purple';
+      case 'profile_update':
+        return 'neutral';
+      default:
+        return 'system';
+    }
+  }
+
+  getNotificationIcon(notification: AppNotification): string {
+    switch (notification.type) {
+      case 'profile_update':
+        return 'user';
+      case 'resume_upload':
+        return 'file';
+      case 'github_update':
+        return 'github';
+      case 'low_score':
+        return 'alert';
+      case 'career_update':
+        return 'spark';
+      default:
+        return 'bell';
+    }
+  }
+
+  getNotificationTypeLabel(notification: AppNotification): string {
+    return notification.type
+      .replaceAll('_', ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  getReadRate(): number {
+    if (this.total <= 0) return 0;
+    return Math.max(0, Math.min(100, Math.round(((this.total - this.unreadCount) / this.total) * 100)));
+  }
+
+  getActiveFiltersCount(): number {
+    return [
+      this.search,
+      this.from,
+      this.to,
+      this.typeFilter,
+      this.unreadOnly ? 'unread' : '',
+      this.roleFilter,
+      this.selectedUserId,
+      this.selectedOrganizationId,
+      this.selectedTeamId
+    ].filter(Boolean).length;
+  }
+
+  getRelativeTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Just now';
+    const diff = Date.now() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
   }
 }
