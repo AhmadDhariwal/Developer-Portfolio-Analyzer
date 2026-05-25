@@ -1,26 +1,37 @@
 <article class="news-card">
-  <img class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
+  <div class="image-wrap">
+    <img class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
+    <div class="overlay-badges">
+      <span class="source-badge" [ngClass]="sourceTone">{{ news.source }}</span>
+      <span class="category-badge">{{ news.category }}</span>
+    </div>
+  </div>
+
   <div class="news-body">
     <div class="meta-row">
-      <span class="source">{{ news.source }}</span>
-      <span class="date">{{ news.publishedAt | date:'mediumDate' }}</span>
+      <span>{{ news.publishedAt | date:'mediumDate' }}</span>
+      <span class="score-label">Rank {{ news.rankScore | number:'1.0-0' }}</span>
     </div>
-    <h3 class="title">{{ news.title }}</h3>
-    <p class="description">{{ news.description || 'No summary available for this article.' }}</p>
 
-    <div class="badge-row">
-      <span class="badge">{{ news.category }}</span>
-      <span class="score">Score {{ news.rankScore | number:'1.0-0' }}</span>
+    <h3 class="title">{{ news.title }}</h3>
+    <p class="description">{{ news.description || 'No summary is available for this article yet.' }}</p>
+
+    <div class="score-track" aria-hidden="true">
+      <span class="score-fill" [style.width.%]="scoreWidth"></span>
+    </div>
+
+    <div class="tags" *ngIf="news.tags.length">
+      <span *ngFor="let tag of news.tags">{{ tag }}</span>
     </div>
 
     <div class="actions">
-      <a class="btn-read" [href]="news.url" target="_blank" rel="noopener noreferrer">Read More</a>
-      <button type="button" class="btn-ghost" (click)="onBookmarkToggle()">
-        {{ bookmarked ? 'Bookmarked' : 'Bookmark' }}
+      <button type="button" class="action-button" [class.active]="bookmarked" (click)="onBookmarkToggle()">
+        {{ bookmarked ? 'Saved' : 'Bookmark' }}
       </button>
-      <button type="button" class="btn-ghost" (click)="onReadLaterToggle()">
-        {{ readLater ? 'Saved' : 'Read Later' }}
+      <button type="button" class="action-button" [class.active]="readLater" (click)="onReadLaterToggle()">
+        {{ readLater ? 'Queued' : 'Read Later' }}
       </button>
+      <a class="read-button" [href]="news.url" target="_blank" rel="noopener noreferrer">Read More</a>
     </div>
   </div>
 </article>

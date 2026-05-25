@@ -14,10 +14,17 @@ const getNews = async (req, res) => {
       page: payload.filters.page,
       totalPages,
       hasMore: payload.filters.page < totalPages,
-      sourceSummary: payload.sourceSummary,
-      trendingTopics: payload.trendingTopics,
+      sourceSummary: payload.sourceSummary || {},
+      trendingTopics: payload.trendingTopics || [],
       activeTab: payload.filters.tab,
-      fromCache: payload.fromCache
+      fromCache: payload.fromCache,
+      recommendedBasedOn: payload.recommendedBasedOn || {},
+      telemetry: payload.telemetry || {
+        cacheHit: false,
+        providerFailureCount: 0,
+        providerUsed: [],
+        responseTimeMs: 0
+      }
     });
   } catch (error) {
     logger.error('news feed failed', {

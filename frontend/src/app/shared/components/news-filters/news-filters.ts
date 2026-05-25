@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -11,7 +19,8 @@ import {
   NewsFilters,
   NewsPopularityFilter,
   NewsSource,
-  NewsTab
+  NewsTab,
+  normalizeNewsFilters
 } from '../../models/news.model';
 
 @Component({
@@ -22,39 +31,65 @@ import {
   styleUrl: './news-filters.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewsFiltersComponent {
+export class NewsFiltersComponent implements OnChanges {
   @Input() filters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
+  @Input() isApplying = false;
   @Output() filtersChange = new EventEmitter<NewsFilters>();
 
   readonly tabs = NEWS_TABS;
   readonly categories = NEWS_CATEGORIES;
   readonly sources = NEWS_SOURCES;
+  draftFilters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['filters']) {
+      this.draftFilters = normalizeNewsFilters(this.filters);
+    }
+  }
+
+  get hasActiveFilters(): boolean {
+    return JSON.stringify(this.draftFilters) !== JSON.stringify(DEFAULT_NEWS_FILTERS);
+  }
+
+  get hasPendingChanges(): boolean {
+    return JSON.stringify(this.draftFilters) !== JSON.stringify(normalizeNewsFilters(this.filters));
+  }
 
   setTab(tab: NewsTab): void {
-    this.emit({ tab });
+    this.update({ tab });
   }
 
   setCategory(category: NewsCategory): void {
-    this.emit({ category });
+    this.update({ category });
   }
 
   setSource(source: NewsSource): void {
-    this.emit({ source });
+    this.update({ source });
   }
 
   setDate(date: NewsDateFilter): void {
-    this.emit({ date });
+    this.update({ date });
   }
 
   setPopularity(popularity: NewsPopularityFilter): void {
-    this.emit({ popularity });
+    this.update({ popularity });
   }
 
   setSearch(search: string): void {
-    this.emit({ search });
+    this.update({ search });
   }
 
-  private emit(partial: Partial<NewsFilters>): void {
-    this.filtersChange.emit({ ...this.filters, ...partial });
+  resetFilters(): void {
+    this.draftFilters = { ...DEFAULT_NEWS_FILTERS };
+    this.filtersChange.emit({ ...this.draftFilters });
+  }
+
+  applyFilters(): void {
+    if (!this.hasPendingChanges || this.isApplying) return;
+    this.filtersChange.emit({ ...this.draftFilters });
+  }
+
+  private update(partial: Partial<NewsFilters>): void {
+    this.draftFilters = normalizeNewsFilters({ ...this.draftFilters, ...partial });
   }
 }

@@ -28,12 +28,25 @@ export class NewsCardComponent {
     return this.fallbackImage;
   }
 
+  get scoreWidth(): number {
+    return Math.max(12, Math.min(100, Math.round(Number(this.news?.rankScore || 0))));
+  }
+
+  get sourceTone(): string {
+    const source = String(this.news?.source || '').toLowerCase();
+    if (source.includes('hacker')) return 'source-hn';
+    if (source.includes('gnews')) return 'source-gnews';
+    if (source.includes('dev.to')) return 'source-devto';
+    if (source.includes('reddit')) return 'source-reddit';
+    return 'source-newsapi';
+  }
+
   onBookmarkToggle(): void {
-    this.bookmarkToggle.emit(this.news.url);
+    this.bookmarkToggle.emit(this.news.id);
   }
 
   onReadLaterToggle(): void {
-    this.readLaterToggle.emit(this.news.url);
+    this.readLaterToggle.emit(this.news.id);
   }
 
   onImageError(event: Event): void {

@@ -1,36 +1,64 @@
-<section class="filters-wrap">
-  <div class="tabs">
+<section class="filters-shell">
+  <div class="tabs" role="tablist" aria-label="News feed tabs">
     <button
       *ngFor="let tab of tabs"
       type="button"
-      [class.active]="filters.tab === tab.value"
+      [class.active]="draftFilters.tab === tab.value"
       (click)="setTab(tab.value)"
     >
       {{ tab.label }}
     </button>
   </div>
 
-  <div class="controls">
-    <input
-      type="text"
-      [ngModel]="filters.search"
-      (ngModelChange)="setSearch($event)"
-      placeholder="Search keywords..."
-    />
-    <select [ngModel]="filters.category" (ngModelChange)="setCategory($event)">
-      <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
-    </select>
-    <select [ngModel]="filters.source" (ngModelChange)="setSource($event)">
-      <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
-    </select>
-    <select [ngModel]="filters.date" (ngModelChange)="setDate($event)">
-      <option value="today">Today</option>
-      <option value="week">This Week</option>
-      <option value="month">This Month</option>
-    </select>
-    <select [ngModel]="filters.popularity" (ngModelChange)="setPopularity($event)">
-      <option value="all">All Popularity</option>
-      <option value="high">High Popularity</option>
-    </select>
+  <div class="filters-panel">
+    <div class="search-control">
+      <label for="news-search">Search</label>
+      <input
+        id="news-search"
+        type="text"
+        [ngModel]="draftFilters.search"
+        (ngModelChange)="setSearch($event)"
+        placeholder="Search topics, tools, or technologies"
+      />
+    </div>
+
+    <div class="select-control">
+      <label for="news-category">Category</label>
+      <select id="news-category" [ngModel]="draftFilters.category" (ngModelChange)="setCategory($event)">
+        <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
+      </select>
+    </div>
+
+    <div class="select-control">
+      <label for="news-source">Source</label>
+      <select id="news-source" [ngModel]="draftFilters.source" (ngModelChange)="setSource($event)">
+        <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
+      </select>
+    </div>
+
+    <div class="select-control">
+      <label for="news-date">Date</label>
+      <select id="news-date" [ngModel]="draftFilters.date" (ngModelChange)="setDate($event)">
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
+    </div>
+
+    <div class="select-control">
+      <label for="news-popularity">Popularity</label>
+      <select id="news-popularity" [ngModel]="draftFilters.popularity" (ngModelChange)="setPopularity($event)">
+        <option value="all">All</option>
+        <option value="high">High Only</option>
+      </select>
+    </div>
+
+    <button type="button" class="reset-button" [disabled]="!hasActiveFilters" (click)="resetFilters()">
+      Reset Filters
+    </button>
+
+    <button type="button" class="apply-button" [disabled]="!hasPendingChanges || isApplying" (click)="applyFilters()">
+      {{ isApplying ? 'Applying...' : 'Apply Filters' }}
+    </button>
   </div>
 </section>

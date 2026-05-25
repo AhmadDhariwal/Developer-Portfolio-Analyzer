@@ -53,11 +53,13 @@ const CATEGORY_KEYWORDS = {
   Web3: ['web3', 'blockchain', 'solidity', 'ethereum', 'smart contract', 'defi', 'crypto']
 };
 
-const cleanText = (value = '') => String(value).replaceAll(/\s+/g, ' ').trim();
+const cleanText = (value = '') => String(value || '').replaceAll(/\s+/g, ' ').trim();
 
-const hashText = (value = '') => {
-  return Number.parseInt(crypto.createHash('sha256').update(String(value)).digest('hex').slice(0, 8), 16);
-};
+const hashText = (value = '') =>
+  Number.parseInt(crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 8), 16);
+
+const stableId = (...parts) =>
+  crypto.createHash('sha1').update(parts.map((part) => cleanText(part).toLowerCase()).join('|')).digest('hex').slice(0, 16);
 
 const pickFallbackImage = (category, title, description, source) => {
   const candidates = FALLBACK_IMAGES[category] || FALLBACK_IMAGES.Default;
@@ -66,8 +68,22 @@ const pickFallbackImage = (category, title, description, source) => {
 };
 
 const normalizeDate = (value) => {
-  const ts = value ? new Date(value) : new Date();
-  return Number.isNaN(ts.getTime()) ? new Date() : ts;
+  const timestamp = value ? new Date(value) : new Date();
+  return Number.isNaN(timestamp.getTime()) ? new Date() : timestamp;
+};
+
+const uniqueStrings = (values = [], limit = 6) => {
+  const seen = new Set();
+  const output = [];
+  for (const value of values) {
+    const normalized = cleanText(value);
+    const key = normalized.toLowerCase();
+    if (!normalized || seen.has(key)) continue;
+    seen.add(key);
+    output.push(normalized);
+    if (output.length >= limit) break;
+  }
+  return output;
 };
 
 const inferCategory = (headline = '', summary = '') => {
@@ -81,99 +97,118 @@ const inferCategory = (headline = '', summary = '') => {
 const normalizeItem = (item = {}) => {
   const title = cleanText(item.title);
   const description = cleanText(item.description);
+  const source = cleanText(item.source) || 'Unknown';
+  const url = cleanText(item.url);
+  if (!title || !url) return null;
   const category = cleanText(item.category) || inferCategory(title, description);
+  const tags = uniqueStrings(Array.isArray(item.tags) ? item.tags : [], 6);
+
   return {
-    title: title || 'Untitled',
+    id: stableId(url || title, title, source),
+    title,
     description,
-    source: cleanText(item.source) || 'Unknown',
-    url: cleanText(item.url),
-    image: cleanText(item.image) || pickFallbackImage(category, title, description, item.source),
+    source,
+    url,
+    image: cleanText(item.image) || pickFallbackImage(category, title, description, source),
     publishedAt: normalizeDate(item.publishedAt),
     category,
     popularity: Number(item.popularity || 0),
-    tags: Array.isArray(item.tags) ? item.tags.map((tag) => cleanText(tag)).filter(Boolean) : []
+    relevanceScore: Number(item.relevanceScore || 0),
+    rankScore: Number(item.rankScore || 0),
+    tags
   };
 };
 
 const fromNewsAPI = (payload) => {
   const articles = Array.isArray(payload?.articles) ? payload.articles : [];
-  return articles.map((article) =>
-    normalizeItem({
-      title: article.title,
-      description: article.description || article.content,
-      source: article?.source?.name || 'NewsAPI',
-      url: article.url,
-      image: article.urlToImage,
-      publishedAt: article.publishedAt,
-      category: inferCategory(article.title, article.description)
-    })
-  );
+  return articles
+    .map((article) =>
+      normalizeItem({
+        title: article.title,
+        description: article.description || article.content,
+        source: 'NewsAPI',
+        url: article.url,
+        image: article.urlToImage,
+        publishedAt: article.publishedAt,
+        category: inferCategory(article.title, article.description)
+      })
+    )
+    .filter(Boolean);
 };
 
 const fromGNews = (payload) => {
   const articles = Array.isArray(payload?.articles) ? payload.articles : [];
-  return articles.map((article) =>
-    normalizeItem({
-      title: article.title,
-      description: article.description || article.content,
-      source: article?.source?.name || 'GNews',
-      url: article.url,
-      image: article.image,
-      publishedAt: article.publishedAt,
-      category: inferCategory(article.title, article.description)
-    })
-  );
+  return articles
+    .map((article) =>
+      normalizeItem({
+        title: article.title,
+        description: article.description || article.content,
+        source: 'GNews',
+        url: article.url,
+        image: article.image,
+        publishedAt: article.publishedAt,
+        category: inferCategory(article.title, article.description)
+      })
+    )
+    .filter(Boolean);
 };
 
 const fromHackerNews = (payload) => {
   const hits = Array.isArray(payload?.hits) ? payload.hits : [];
-  return hits.map((hit) =>
-    normalizeItem({
-      title: hit.title || hit.story_title,
-      description: hit.story_text || hit.comment_text || '',
-      source: 'Hacker News',
-      url: hit.url || hit.story_url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
-      image: '',
-      publishedAt: hit.created_at,
-      popularity: Number(hit.points || 0),
-      category: inferCategory(hit.title || hit.story_title, hit.story_text)
-    })
-  );
+  return hits
+    .map((hit) =>
+      normalizeItem({
+        title: hit.title || hit.story_title,
+        description: hit.story_text || hit.comment_text || '',
+        source: 'Hacker News',
+        url: hit.url || hit.story_url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
+        image: '',
+        publishedAt: hit.created_at,
+        popularity: Number(hit.points || 0),
+        category: inferCategory(hit.title || hit.story_title, hit.story_text),
+        tags: ['Hacker News']
+      })
+    )
+    .filter(Boolean);
 };
 
 const fromDevTo = (payload) => {
   const articles = Array.isArray(payload) ? payload : [];
-  return articles.map((article) =>
-    normalizeItem({
-      title: article.title,
-      description: article.description,
-      source: 'Dev.to',
-      url: article.url,
-      image: article.social_image,
-      publishedAt: article.published_at,
-      popularity: Number(article.public_reactions_count || 0) + Number(article.comments_count || 0),
-      tags: Array.isArray(article.tag_list) ? article.tag_list : [],
-      category: inferCategory(article.title, article.description)
-    })
-  );
+  return articles
+    .map((article) =>
+      normalizeItem({
+        title: article.title,
+        description: article.description,
+        source: 'Dev.to',
+        url: article.url,
+        image: article.social_image,
+        publishedAt: article.published_at,
+        popularity: Number(article.public_reactions_count || 0) + Number(article.comments_count || 0),
+        tags: Array.isArray(article.tag_list) ? article.tag_list : [],
+        category: inferCategory(article.title, article.description)
+      })
+    )
+    .filter(Boolean);
 };
 
 const fromReddit = (payload) => {
   const posts = Array.isArray(payload?.data?.children) ? payload.data.children : [];
-  return posts.map((child) => {
-    const data = child?.data || {};
-    return normalizeItem({
-      title: data.title,
-      description: data.selftext,
-      source: 'Reddit',
-      url: data.url,
-      image: data.thumbnail?.startsWith('http') ? data.thumbnail : '',
-      publishedAt: Number(data.created_utc) ? new Date(data.created_utc * 1000).toISOString() : undefined,
-      popularity: Number(data.ups || 0) + Number(data.num_comments || 0),
-      tags: [data.subreddit_name_prefixed || 'r/programming'],
-      category: inferCategory(data.title, data.selftext)
-    });
-  });
+  return posts
+    .map((child) => {
+      const data = child?.data || {};
+      return normalizeItem({
+        title: data.title,
+        description: data.selftext,
+        source: 'Reddit',
+        url: data.url,
+        image: data.thumbnail?.startsWith('http') ? data.thumbnail : '',
+        publishedAt: Number(data.created_utc) ? new Date(data.created_utc * 1000).toISOString() : undefined,
+        popularity: Number(data.ups || 0) + Number(data.num_comments || 0),
+        tags: [data.subreddit_name_prefixed || 'r/programming'],
+        category: inferCategory(data.title, data.selftext)
+      });
+    })
+    .filter(Boolean);
 };
 
 module.exports = {

@@ -1,46 +1,157 @@
-.filters-wrap {
+.filters-shell {
   display: grid;
-  gap: 10px;
+  gap: 1rem;
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 0.75rem;
 
   button {
-    border: 1px solid var(--border-light);
+    min-width: 6.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: rgba(15, 23, 42, 0.78);
     color: var(--text-secondary);
     border-radius: 999px;
-    padding: 6px 12px;
-    background: transparent;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
+    padding: 0.72rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
 
-  button.active {
-    background: rgba(99, 102, 241, 0.16);
-    border-color: rgba(99, 102, 241, 0.45);
-    color: var(--color-primary-light);
+    &:hover {
+      transform: translateY(-1px);
+      border-color: rgba(96, 165, 250, 0.36);
+      color: var(--text-primary);
+    }
+
+    &.active {
+      color: #eef2ff;
+      border-color: rgba(99, 102, 241, 0.48);
+      background:
+        linear-gradient(180deg, rgba(99, 102, 241, 0.22), rgba(15, 23, 42, 0.92)),
+        rgba(15, 23, 42, 0.88);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.18);
+    }
   }
 }
 
-.controls {
+.filters-panel {
   display: grid;
-  grid-template-columns: 1.2fr repeat(4, minmax(120px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.85rem;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96)),
+    rgba(15, 23, 42, 0.84);
+  box-shadow: 0 18px 42px rgba(2, 6, 23, 0.32);
 
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr 1fr;
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.search-control {
+  grid-column: span 2;
+
+  @media (max-width: 900px) {
+    grid-column: span 1;
+  }
+}
+
+.search-control,
+.select-control {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+
+  label {
+    color: var(--text-muted);
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
 
   input,
   select {
-    background: #0f172a;
-    border: 1px solid var(--border-color);
+    width: 100%;
+    min-width: 0;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.94);
     color: var(--text-primary);
-    border-radius: 10px;
-    padding: 9px 11px;
-    font-size: 0.82rem;
+    border-radius: 0.9rem;
+    padding: 0.82rem 0.95rem;
+    font-size: 0.86rem;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(96, 165, 250, 0.45);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+  }
+}
+
+.reset-button {
+  height: 3rem;
+  padding: 0 1rem;
+  min-width: 0;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.68);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(251, 191, 36, 0.42);
+    background: rgba(51, 65, 85, 0.82);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.apply-button {
+  height: 3rem;
+  min-width: 0;
+  padding: 0 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    opacity 160ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
