@@ -1,94 +1,167 @@
 import {
-  Component, OnInit, OnDestroy,
-  ChangeDetectorRef, ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-
-import { JobService }           from '../../shared/services/job.service';
+import { JobService } from '../../shared/services/job.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
-import { Job, JobFilters, DEFAULT_JOB_FILTERS } from '../../shared/models/job.model';
-import { JobCardComponent }     from '../../shared/components/job-card/job-card';
-import { JobFiltersComponent }  from '../../shared/components/job-filters/job-filters';
+import {
+  ActiveJobFilterChip,
+  DEFAULT_JOB_FILTERS,
+  Job,
+  JobFilters,
+  JobsResponse,
+  JobRecommendedBasedOn,
+  JobUiState,
+  normalizeJobFilters
+} from '../../shared/models/job.model';
+import { JobCardComponent } from '../../shared/components/job-card/job-card';
+import { JobFiltersComponent } from '../../shared/components/job-filters/job-filters';
 
 const INITIAL_DISPLAY = 10;
-const PAGE_SIZE       = 10;
+const PAGE_SIZE = 10;
+const JOB_STATE_STORAGE_KEY = 'devinsight_public_jobs_state';
 
 @Component({
-  selector:        'app-jobs',
-  standalone:      true,
-  imports:         [CommonModule, FormsModule, JobCardComponent, JobFiltersComponent],
-  templateUrl:     './jobs.component.html',
-  styleUrl:        './jobs.component.scss',
+  selector: 'app-jobs',
+  standalone: true,
+  imports: [CommonModule, FormsModule, JobCardComponent, JobFiltersComponent],
+  templateUrl: './jobs.component.html',
+  styleUrl: './jobs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JobsComponent implements OnInit, OnDestroy {
-  allJobs:       Job[]       = [];
-  displayCount:  number      = INITIAL_DISPLAY;
-  isLoading:     boolean     = false;
-  isLoadingMore: boolean     = false;
-  errorMessage:  string      = '';
-  currentPage:   number      = 0;
-  totalPages:    number      = 1;
-  totalJobs:     number      = 0;
-  activeFilters: JobFilters  = { ...DEFAULT_JOB_FILTERS };
+  allJobs: Job[] = [];
+  displayCount = INITIAL_DISPLAY;
+  isLoading = false;
+  isLoadingMore = false;
+  errorMessage = '';
+  currentPage = 0;
+  totalPages = 1;
+  totalJobs = 0;
+  activeFilters: JobFilters = { ...DEFAULT_JOB_FILTERS };
   pendingFilters: JobFilters = { ...DEFAULT_JOB_FILTERS };
-  isMobileFiltersOpen        = false;
+  recommendedBasedOn: JobRecommendedBasedOn | null = null;
+  sourceMessage = '';
+  primarySource = '';
+  sourceSummary: Record<string, number> = {};
+  jsearchConfigured = true;
+  fromCache = false;
+  isMobileFiltersOpen = false;
 
-  // Expose constants to template
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
-  readonly PAGE_SIZE       = PAGE_SIZE;
-
-  // ── Two-phase Load More ────────────────────────────────────────────────────
-  get displayedJobs():    Job[]    { return this.allJobs.slice(0, this.displayCount); }
-  get hasHiddenJobs():    boolean  { return this.displayCount < this.allJobs.length; }
-  get hasMorePages():     boolean  { return !this.hasHiddenJobs && this.currentPage > 0 && this.currentPage < this.totalPages; }
-  get canShowLoadMore():  boolean  { return !this.isLoading && (this.hasHiddenJobs || this.hasMorePages); }
-  get hiddenCount():      number   { return Math.max(0, this.allJobs.length - this.displayCount); }
+  readonly PAGE_SIZE = PAGE_SIZE;
 
   private readonly subscriptions = new Subscription();
+  private readonly uiStateMap = new Map<string, JobUiState>();
+  private requestToken = 0;
 
   constructor(
-    private readonly jobService:           JobService,
+    private readonly jobService: JobService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly cdr:                  ChangeDetectorRef
-  ) {}
+    private readonly cdr: ChangeDetectorRef
+  ) {
+    this.hydrateUiState();
+  }
+
+  get displayedJobs(): Job[] {
+    return this.visibleJobs.slice(0, this.displayCount);
+  }
+
+  get visibleJobs(): Job[] {
+    return this.allJobs.filter((job) => !this.getUiState(job.id).hidden);
+  }
+
+  get hasHiddenJobs(): boolean {
+    return this.displayCount < this.visibleJobs.length;
+  }
+
+  get hasMorePages(): boolean {
+    return !this.hasHiddenJobs && this.currentPage > 0 && this.currentPage < this.totalPages;
+  }
+
+  get canShowLoadMore(): boolean {
+    return !this.isLoading && (this.hasHiddenJobs || this.hasMorePages);
+  }
+
+  get hiddenCount(): number {
+    return Math.max(0, this.visibleJobs.length - this.displayCount);
+  }
+
+  get currentCareerStack(): string {
+    return this.careerProfileService.careerStack;
+  }
+
+  get currentExperienceLevel(): string {
+    return this.careerProfileService.experienceLevel;
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.activeFilterChips.length > 0;
+  }
+
+  get hasPendingFilterChanges(): boolean {
+    return JSON.stringify(this.pendingFilters) !== JSON.stringify(this.activeFilters);
+  }
+
+  get sourceSummaryItems(): Array<{ label: string; count: number }> {
+    return Object.entries(this.sourceSummary || {}).map(([label, count]) => ({ label, count: Number(count || 0) }));
+  }
+
+  get activeFilterChips(): ActiveJobFilterChip[] {
+    const filters = this.activeFilters;
+    const chips: ActiveJobFilterChip[] = [];
+
+    if (filters.platform !== 'All') chips.push({ key: 'platform', label: 'Platform', value: filters.platform });
+    if (filters.location !== 'All') chips.push({ key: 'location', label: 'Location', value: filters.location });
+    if (filters.jobType !== 'All') chips.push({ key: 'jobType', label: 'Type', value: filters.jobType });
+    if (filters.experienceLevel !== 'All') chips.push({ key: 'experienceLevel', label: 'Exp', value: filters.experienceLevel });
+    if (filters.skills) chips.push({ key: 'skills', label: 'Skill', value: filters.skills });
+
+    return chips;
+  }
+
+  get recommendationSummary(): string {
+    return this.recommendedBasedOn?.summary
+      || `Jobs are personalized for your ${this.currentCareerStack} path and ${this.currentExperienceLevel} experience level.`;
+  }
+
+  get skeletonItems(): number[] {
+    return Array.from({ length: PAGE_SIZE }, (_, index) => index);
+  }
 
   ngOnInit(): void {
-    // Initialize pending filters with active filters
     this.pendingFilters = { ...this.activeFilters };
-    
-    // Load jobs on initial page load
-    this.resetAndFetch();
-    
-    // React to career profile changes
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
+        distinctUntilChanged(
+          (left, right) => left.careerStack === right.careerStack && left.experienceLevel === right.experienceLevel
         )
       ).subscribe(() => this.resetAndFetch())
     );
+
+    this.resetAndFetch();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  // ── Filter change emitted from child (stored but not applied immediately) ──
   onFiltersChange(filters: JobFilters): void {
-    this.pendingFilters = { ...filters };
+    this.pendingFilters = normalizeJobFilters(filters);
     this.cdr.markForCheck();
   }
 
-  // ── Apply filters button click ─────────────────────────────────────────────
   applyFilters(): void {
-    this.activeFilters = { ...this.pendingFilters };
-    this.resetAndFetch();
+    this.activeFilters = normalizeJobFilters(this.pendingFilters);
     this.isMobileFiltersOpen = false;
-    this.cdr.markForCheck();
+    this.resetAndFetch();
   }
 
   onFiltersReset(): void {
@@ -97,64 +170,28 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.resetAndFetch();
   }
 
-  // ── Fetch helpers ─────────────────────────────────────────────────────────
-  private resetAndFetch(): void {
-    this.allJobs      = [];
-    this.displayCount = INITIAL_DISPLAY;
-    this.currentPage  = 0;
-    this.totalPages   = 1;
-    this.totalJobs    = 0;
-    this.errorMessage = '';
-    this.fetchPage(1, false);
+  clearFilter(key: keyof JobFilters): void {
+    const nextFilters: JobFilters = { ...this.activeFilters };
+    if (key === 'platform') nextFilters.platform = DEFAULT_JOB_FILTERS.platform;
+    if (key === 'location') nextFilters.location = DEFAULT_JOB_FILTERS.location;
+    if (key === 'jobType') nextFilters.jobType = DEFAULT_JOB_FILTERS.jobType;
+    if (key === 'experienceLevel') nextFilters.experienceLevel = DEFAULT_JOB_FILTERS.experienceLevel;
+    if (key === 'skills') nextFilters.skills = DEFAULT_JOB_FILTERS.skills;
+    this.pendingFilters = normalizeJobFilters(nextFilters);
+    this.activeFilters = normalizeJobFilters(nextFilters);
+    this.resetAndFetch();
   }
 
-  private fetchPage(page: number, append: boolean): void {
-    if (append) {
-      this.isLoadingMore = true;
-    } else {
-      this.isLoading = true;
-    }
-    this.errorMessage = '';
-    this.cdr.markForCheck();
-
-    this.subscriptions.add(
-      this.jobService.getJobs(this.activeFilters, page, PAGE_SIZE).subscribe({
-        next: (res) => {
-          if (append) {
-            this.allJobs      = [...this.allJobs, ...res.jobs];
-            this.displayCount = this.allJobs.length;
-          } else {
-            this.allJobs      = res.jobs;
-            this.displayCount = INITIAL_DISPLAY;
-          }
-          this.currentPage   = res.page;
-          this.totalPages    = res.totalPages;
-          this.totalJobs     = res.total;
-          this.isLoading     = false;
-          this.isLoadingMore = false;
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.errorMessage  = err?.error?.message || 'Failed to load jobs. Please try again.';
-          this.isLoading     = false;
-          this.isLoadingMore = false;
-          this.cdr.markForCheck();
-        }
-      })
-    );
-  }
-
-  // ── Load More (two-phase) ─────────────────────────────────────────────────
   loadMore(): void {
     if (this.isLoadingMore) return;
+
     if (this.hasHiddenJobs) {
-      // Phase 1: reveal already-fetched hidden jobs
-      this.displayCount = this.allJobs.length;
+      this.displayCount = this.visibleJobs.length;
       this.cdr.markForCheck();
       return;
     }
+
     if (this.hasMorePages) {
-      // Phase 2: fetch next page from backend
       this.fetchPage(this.currentPage + 1, true);
     }
   }
@@ -168,7 +205,124 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.resetAndFetch();
   }
 
+  onSave(job: Job): void {
+    const state = this.getUiState(job.id);
+    this.setUiState(job.id, { ...state, saved: !state.saved });
+  }
+
+  onMarkApplied(job: Job): void {
+    const state = this.getUiState(job.id);
+    this.setUiState(job.id, { ...state, applied: !state.applied, saved: state.saved || !state.applied });
+  }
+
+  onHide(job: Job): void {
+    const state = this.getUiState(job.id);
+    this.setUiState(job.id, { ...state, hidden: true });
+    this.displayCount = Math.min(this.displayCount, this.visibleJobs.length);
+    this.cdr.markForCheck();
+  }
+
+  onSimilar(job: Job): void {
+    const focusSkill = job.skills?.[0] || '';
+    this.pendingFilters = normalizeJobFilters({
+      ...this.pendingFilters,
+      skills: focusSkill
+    });
+    this.applyFilters();
+  }
+
+  getUiState(jobId: string): JobUiState {
+    return this.uiStateMap.get(jobId) || { saved: false, applied: false, hidden: false };
+  }
+
   trackById(_: number, job: Job): string {
     return job.id;
+  }
+
+  private resetAndFetch(): void {
+    this.requestToken += 1;
+    this.allJobs = [];
+    this.displayCount = INITIAL_DISPLAY;
+    this.currentPage = 0;
+    this.totalPages = 1;
+    this.totalJobs = 0;
+    this.errorMessage = '';
+    this.recommendedBasedOn = null;
+    this.fetchPage(1, false);
+  }
+
+  private fetchPage(page: number, append: boolean): void {
+    const currentRequest = ++this.requestToken;
+    if (append) {
+      this.isLoadingMore = true;
+    } else {
+      this.isLoading = true;
+      this.isLoadingMore = false;
+    }
+    this.errorMessage = '';
+    this.cdr.markForCheck();
+
+    this.jobService.getJobs(this.activeFilters, page, PAGE_SIZE).subscribe({
+      next: (response) => {
+        if (currentRequest !== this.requestToken) return;
+        this.applyResponse(response, append, page);
+      },
+      error: (error) => {
+        if (currentRequest !== this.requestToken) return;
+        this.errorMessage = error?.error?.message || 'Failed to load jobs. Please try again.';
+        this.isLoading = false;
+        this.isLoadingMore = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private applyResponse(response: JobsResponse, append: boolean, page: number): void {
+    const incoming = Array.isArray(response.jobs) ? response.jobs : [];
+    this.allJobs = append ? this.mergeJobs(this.allJobs, incoming) : incoming;
+    this.currentPage = response.page ?? page;
+    this.totalPages = response.totalPages ?? 1;
+    this.totalJobs = response.total ?? this.allJobs.length;
+    this.recommendedBasedOn = response.recommendedBasedOn ?? null;
+    this.sourceMessage = response.sourceMessage || '';
+    this.primarySource = response.primarySource || '';
+    this.sourceSummary = response.sourceSummary || {};
+    this.jsearchConfigured = response.jsearchConfigured ?? true;
+    this.fromCache = Boolean(response.fromCache);
+    this.displayCount = append ? this.visibleJobs.length : Math.min(INITIAL_DISPLAY, this.visibleJobs.length);
+    this.isLoading = false;
+    this.isLoadingMore = false;
+    this.cdr.markForCheck();
+  }
+
+  private mergeJobs(existing: Job[], incoming: Job[]): Job[] {
+    const seen = new Set(existing.map((job) => `${job.id}|${job.url}`.toLowerCase()));
+    const merged = [...existing];
+
+    for (const job of incoming) {
+      const key = `${job.id}|${job.url}`.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(job);
+    }
+
+    return merged;
+  }
+
+  private hydrateUiState(): void {
+    try {
+      const raw = localStorage.getItem(JOB_STATE_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, JobUiState>;
+      Object.entries(parsed).forEach(([id, state]) => this.uiStateMap.set(id, state));
+    } catch {
+      this.uiStateMap.clear();
+    }
+  }
+
+  private setUiState(jobId: string, state: JobUiState): void {
+    this.uiStateMap.set(jobId, state);
+    localStorage.setItem(JOB_STATE_STORAGE_KEY, JSON.stringify(Object.fromEntries(this.uiStateMap.entries())));
+    this.cdr.markForCheck();
   }
 }

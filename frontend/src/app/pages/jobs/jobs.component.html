@@ -1,45 +1,117 @@
 <div class="jobs-page">
-
-  <!-- ── Page Header ──────────────────────────────────────────────────── -->
-  <div class="page-header">
-    <div class="header-content">
-      <h1 class="page-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="title-icon">
+  <header class="page-header">
+    <div class="header-copy">
+      <div class="title-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
         </svg>
-        Jobs Hub
-      </h1>
-      <p class="page-subtitle">Personalized job recommendations based on your career profile and skills</p>
+      </div>
+
+      <div class="header-text">
+        <h1>Jobs Hub</h1>
+        <p>Personalized jobs based on your profile, real skills, and current growth gaps.</p>
+      </div>
     </div>
 
-    <!-- Stats chips -->
-    <div class="header-stats" *ngIf="!isLoading && totalJobs > 0">
-      <span class="stat-chip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        {{ totalJobs }} jobs found
-      </span>
-      <span class="stat-chip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        {{ displayedJobs.length }} showing
-      </span>
+    <div class="header-actions">
+      <div class="header-stats" *ngIf="!isLoading && totalJobs > 0">
+        <div class="stat-chip">
+          <span class="stat-label">Jobs</span>
+          <strong>{{ totalJobs }}</strong>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-label">Page</span>
+          <strong>{{ currentPage || 1 }}/{{ totalPages }}</strong>
+        </div>
+        <div class="stat-chip accent" *ngIf="fromCache">
+          <span class="stat-label">Pool</span>
+          <strong>Cached</strong>
+        </div>
+      </div>
+
+      <button class="btn-mobile-filters" type="button" (click)="toggleMobileFilters()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        Filters
+        <span class="mobile-filter-count" *ngIf="hasActiveFilters">{{ activeFilterChips.length }}</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="insight-strip" [class.with-filters]="hasActiveFilters">
+    <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters">
+      <div class="insight-header">
+        <div>
+          <span class="eyebrow">Recommended Based On</span>
+          <h2>Your current developer context</h2>
+        </div>
+        <span class="cache-pill" *ngIf="fromCache">Cached pool</span>
+      </div>
+
+      <p class="insight-summary">{{ recommendationSummary }}</p>
+
+      <div class="context-grid">
+        <div class="context-pill">
+          <span>Career Stack</span>
+          <strong>{{ recommendedBasedOn?.careerStack || currentCareerStack }}</strong>
+        </div>
+        <div class="context-pill">
+          <span>Experience</span>
+          <strong>{{ recommendedBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
+        </div>
+        <div class="context-pill">
+          <span>Known Skills</span>
+          <strong>{{ recommendedBasedOn?.knownSkills?.length ? recommendedBasedOn?.knownSkills?.join(', ') : 'Profile signals only' }}</strong>
+        </div>
+        <div class="context-pill">
+          <span>Skill Gaps</span>
+          <strong>{{ recommendedBasedOn?.skillGaps?.length ? recommendedBasedOn?.skillGaps?.join(', ') : 'General role-fit balancing' }}</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="insight-card filter-chip-card" *ngIf="hasActiveFilters">
+      <div class="insight-header compact">
+        <div>
+          <span class="eyebrow">Active Filters</span>
+          <h2>Narrowed feed</h2>
+        </div>
+        <button class="link-button" type="button" (click)="onFiltersReset()">Reset all</button>
+      </div>
+
+      <div class="active-filter-list">
+        <button
+          *ngFor="let chip of activeFilterChips"
+          class="active-filter-chip"
+          type="button"
+          (click)="clearFilter(chip.key)"
+        >
+          <span>{{ chip.label }}</span>
+          <strong>{{ chip.value }}</strong>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <div class="source-banner" *ngIf="!isLoading && sourceMessage">
+    <div class="source-copy">
+      <span class="eyebrow">Source Status</span>
+      <p>{{ sourceMessage }}</p>
     </div>
 
-    <!-- Mobile filter toggle -->
-    <button class="btn-mobile-filters" (click)="toggleMobileFilters()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-      </svg>
-      Filters
-    </button>
+    <div class="source-meta">
+      <span class="source-pill" *ngIf="primarySource">Primary: {{ primarySource }}</span>
+      <span class="source-pill" *ngIf="!jsearchConfigured">Live source offline</span>
+      <span class="source-pill" *ngFor="let item of sourceSummaryItems">
+        {{ item.label }}: {{ item.count }}
+      </span>
+    </div>
   </div>
 
-  <!-- ── Main layout ──────────────────────────────────────────────────── -->
   <div class="jobs-layout">
-
-    <!-- Sidebar Filters -->
     <aside class="filters-sidebar" [class.mobile-open]="isMobileFiltersOpen">
-      <!-- Mobile overlay -->
       <button
         class="mobile-overlay"
         *ngIf="isMobileFiltersOpen"
@@ -48,166 +120,143 @@
         aria-label="Close filters"
         (click)="toggleMobileFilters()"
       ></button>
+
       <div class="filters-sidebar-inner">
         <app-job-filters
           [initialFilters]="pendingFilters"
+          [activeFilters]="activeFilters"
+          [isApplying]="isLoading || isLoadingMore"
           (filtersChange)="onFiltersChange($event)"
           (filtersReset)="onFiltersReset()"
         ></app-job-filters>
-        <button
-          class="btn-apply-filters"
-          (click)="applyFilters()"
-          [disabled]="isLoading"
-        >
-          Apply Filters
-        </button>
+
+        <div class="filter-actions">
+          <button class="secondary-button" type="button" (click)="onFiltersReset()" [disabled]="isLoading && !hasActiveFilters && !hasPendingFilterChanges">
+            Reset Filters
+          </button>
+          <button class="primary-button" type="button" (click)="applyFilters()" [disabled]="!hasPendingFilterChanges || isLoading">
+            Apply Filters
+          </button>
+        </div>
       </div>
     </aside>
 
-    <!-- Jobs Content -->
     <main class="jobs-content">
+      <ng-container *ngIf="isLoading">
+        <div class="loading-header">
+          <div class="shimmer-block large"></div>
+          <div class="shimmer-block small"></div>
+        </div>
 
-      <!-- ── Loading State ──────────────────────────────────────────── -->
-      <div class="loading-grid" *ngIf="isLoading">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
-          <div class="skeleton-header">
-            <div class="skeleton-logo"></div>
-            <div class="skeleton-title-block">
-              <div class="skeleton-line wide"></div>
-              <div class="skeleton-line medium"></div>
+        <div class="jobs-grid">
+          <div class="skeleton-card" *ngFor="let item of skeletonItems">
+            <div class="sk-header">
+              <div class="sk-logo"></div>
+              <div class="sk-title-block">
+                <div class="sk-line sk-long"></div>
+                <div class="sk-line sk-medium"></div>
+              </div>
             </div>
-            <div class="skeleton-badge"></div>
-          </div>
-          <div class="skeleton-meta">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line short"></div>
-          </div>
-          <div class="skeleton-desc">
-            <div class="skeleton-line full"></div>
-            <div class="skeleton-line full"></div>
-            <div class="skeleton-line medium"></div>
-          </div>
-          <div class="skeleton-skills">
-            <div class="skeleton-chip" *ngFor="let s of [1,2,3,4]"></div>
-          </div>
-          <div class="skeleton-actions">
-            <div class="skeleton-btn"></div>
-            <div class="skeleton-btn"></div>
+            <div class="sk-line sk-full"></div>
+            <div class="sk-line sk-full"></div>
+            <div class="sk-line sk-medium"></div>
           </div>
         </div>
-      </div>
+      </ng-container>
 
-      <!-- ── Error State ────────────────────────────────────────────── -->
       <div class="error-state" *ngIf="!isLoading && errorMessage">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-icon">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <h3>Failed to Load Jobs</h3>
+        <div class="state-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h3>Failed to load jobs</h3>
         <p>{{ errorMessage }}</p>
-        <button class="btn-retry" (click)="retry()">Try Again</button>
+        <button class="primary-button" type="button" (click)="retry()">Try Again</button>
       </div>
 
-      <!-- ── Empty State ────────────────────────────────────────────── -->
-      <div class="empty-state" *ngIf="!isLoading && !errorMessage && allJobs.length === 0">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="empty-icon">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-        </svg>
-        <h3>No Jobs Found</h3>
-        <p>No job postings match your current filters. Try adjusting your criteria.</p>
+      <div class="empty-state" *ngIf="!isLoading && !errorMessage && displayedJobs.length === 0 && currentPage > 0">
+        <div class="state-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h3>No jobs match these filters</h3>
+        <p>Try broadening the location or skill search, or reset filters to reload your default recommendations.</p>
+        <button class="primary-button" type="button" (click)="onFiltersReset()">Reset Filters</button>
       </div>
 
-      <!-- ── Jobs Grid ──────────────────────────────────────────────── -->
-      <div class="jobs-grid" *ngIf="!isLoading && !errorMessage && displayedJobs.length > 0">
-        <app-job-card
-          *ngFor="let job of displayedJobs; trackBy: trackById"
-          [job]="job"
-        ></app-job-card>
-      </div>
+      <ng-container *ngIf="!isLoading && !errorMessage && displayedJobs.length > 0">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">Recommended Jobs</span>
+            <h2>Your personalized discovery feed</h2>
+          </div>
 
-      <!-- ── Load-More Skeleton (Phase 2) ────────────────────────────── -->
-      <div class="loading-more-grid" *ngIf="isLoadingMore">
-        <div class="skeleton-card mini" *ngFor="let i of [1,2,3,4]">
-          <div class="skeleton-header">
-            <div class="skeleton-logo"></div>
-            <div class="skeleton-title-block">
-              <div class="skeleton-line wide"></div>
-              <div class="skeleton-line medium"></div>
+          <div class="section-meta">
+            <span>Showing {{ displayedJobs.length }} of {{ visibleJobs.length }} visible jobs</span>
+            <span *ngIf="hasActiveFilters">Filtered results</span>
+          </div>
+        </div>
+
+        <div class="progress-strip" *ngIf="visibleJobs.length > 0">
+          <div class="progress-fill" [style.width.%]="(displayedJobs.length / visibleJobs.length) * 100"></div>
+        </div>
+
+        <div class="jobs-grid">
+          <app-job-card
+            *ngFor="let job of displayedJobs; trackBy: trackById"
+            [job]="job"
+            [uiState]="getUiState(job.id)"
+            (save)="onSave($event)"
+            (markApplied)="onMarkApplied($event)"
+            (hide)="onHide($event)"
+            (similar)="onSimilar($event)"
+          ></app-job-card>
+        </div>
+
+        <div class="loading-more-grid" *ngIf="isLoadingMore">
+          <div class="skeleton-card mini" *ngFor="let item of [1, 2, 3, 4]">
+            <div class="sk-header">
+              <div class="sk-logo"></div>
+              <div class="sk-title-block">
+                <div class="sk-line sk-long"></div>
+                <div class="sk-line sk-medium"></div>
+              </div>
             </div>
           </div>
-          <div class="skeleton-desc">
-            <div class="skeleton-line full"></div>
-            <div class="skeleton-line medium"></div>
+        </div>
+
+        <div class="load-more-section" *ngIf="canShowLoadMore || visibleJobs.length > 0">
+          <div class="progress-wrap" *ngIf="visibleJobs.length > 0">
+            <div class="progress-label">
+              <span>{{ displayedJobs.length }} of {{ visibleJobs.length }} visible jobs</span>
+              <span>{{ ((displayedJobs.length / visibleJobs.length) * 100) | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="load-more-wrap" *ngIf="canShowLoadMore">
+            <button class="primary-button load-more-button" type="button" [disabled]="isLoadingMore" (click)="loadMore()">
+              <ng-container *ngIf="!isLoadingMore && hasHiddenJobs">Show {{ hiddenCount }} more jobs</ng-container>
+              <ng-container *ngIf="!isLoadingMore && hasMorePages">Load More Jobs</ng-container>
+              <ng-container *ngIf="isLoadingMore">
+                <span class="spinner"></span>
+                Loading...
+              </ng-container>
+            </button>
+          </div>
+
+          <div class="all-loaded" *ngIf="!canShowLoadMore && visibleJobs.length > 0 && !isLoadingMore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            All visible jobs loaded
           </div>
         </div>
-      </div>
-
-      <!-- ── Progress + Load More ────────────────────────────────────── -->
-      <div class="load-more-section" *ngIf="!isLoading && !errorMessage && (canShowLoadMore || (allJobs.length > 0))">
-
-        <!-- Progress bar -->
-        <div class="progress-wrap" *ngIf="totalJobs > 0">
-          <div class="progress-label">
-            <span>{{ displayedJobs.length }} of {{ totalJobs }} jobs</span>
-            <span>{{ ((displayedJobs.length / totalJobs) * 100) | number:'1.0-0' }}%</span>
-          </div>
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              [style.width.%]="(displayedJobs.length / totalJobs) * 100"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Load More button -->
-        <div class="load-more-wrap" *ngIf="canShowLoadMore">
-          <button
-            class="btn-load-more"
-            [class.phase-reveal]="hasHiddenJobs"
-            [class.phase-fetch]="hasMorePages"
-            [disabled]="isLoadingMore"
-            (click)="loadMore()"
-          >
-            <!-- Phase 1: reveal hidden jobs -->
-            <ng-container *ngIf="hasHiddenJobs && !isLoadingMore">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-              Show {{ hiddenCount }} more job{{ hiddenCount !== 1 ? 's' : '' }}
-            </ng-container>
-
-            <!-- Phase 2: fetch next page -->
-            <ng-container *ngIf="hasMorePages && !isLoadingMore">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="16"></line>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-              </svg>
-              Load More Jobs
-            </ng-container>
-
-            <!-- Loading spinner -->
-            <ng-container *ngIf="isLoadingMore">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-              </svg>
-              Loading...
-            </ng-container>
-          </button>
-        </div>
-
-        <!-- All jobs loaded -->
-        <div class="all-loaded" *ngIf="!canShowLoadMore && allJobs.length > 0 && !isLoading">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          All {{ totalJobs }} jobs loaded
-        </div>
-      </div>
-
+      </ng-container>
     </main>
   </div>
 </div>
