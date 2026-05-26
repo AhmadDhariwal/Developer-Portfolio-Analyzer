@@ -3,7 +3,6 @@ const CareerSprint = require('../models/careerSprint');
 const WeeklyReport = require('../models/weeklyReport');
 const PublicProfile = require('../models/publicProfile');
 const User = require('../models/user');
-const { calcWeightedProgress } = require('./careerSprintService');
 const { buildPublicProfilePayload } = require('./publicProfileService');
 const { getIntegrationInsight } = require('./integrationInsightService');
 
@@ -19,6 +18,16 @@ const clamp = (value, min = 0, max = 100) => {
   const numeric = Number(value || 0);
   if (!Number.isFinite(numeric)) return min;
   return Math.max(min, Math.min(max, Math.round(numeric)));
+};
+
+const calcWeightedProgress = (tasks) => {
+  if (!Array.isArray(tasks) || tasks.length === 0) return 0;
+  const totalPoints = tasks.reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
+  const completedPoints = tasks
+    .filter((task) => Boolean(task?.isCompleted))
+    .reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
+
+  return totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
 };
 
 const uniqLower = (values = []) => {

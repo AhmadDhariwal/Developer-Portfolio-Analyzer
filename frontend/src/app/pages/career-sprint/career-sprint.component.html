@@ -1,62 +1,280 @@
 <div class="career-sprint">
-
-  <!-- ── Page Header ─────────────────────────────────────────────────── -->
-  <div class="page-header">
-    <div class="header-content">
+  <header class="page-header">
+    <div class="header-copy">
+      <span class="eyebrow">Execution System</span>
       <h2>Career Sprint</h2>
-      <p>Drive your career forward with focused daily execution.</p>
+      <p>Plan, execute, and review weekly progress with streaks, XP, AI drafts, and connected developer signals.</p>
     </div>
-    <button class="setup-toggle-btn" (click)="showSetupPanel = !showSetupPanel">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-      </svg>
-      {{ showSetupPanel ? 'Hide Setup' : 'AI Sprint Setup' }}
-    </button>
+
+    <div class="header-actions">
+      <button class="ghost-btn" type="button" (click)="showSetupPanel = !showSetupPanel">
+        {{ showSetupPanel ? 'Hide AI Setup' : 'AI Sprint Setup' }}
+      </button>
+      <button class="ghost-btn" type="button" (click)="loadData()">
+        Refresh Sprint
+      </button>
+    </div>
+  </header>
+
+  <div class="message-row" *ngIf="errorMessage || actionMessage">
+    <div class="message-card error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="message-card" [class.success]="actionTone === 'success'" [class.warning]="actionTone === 'info'" [class.error]="actionTone === 'error'" *ngIf="actionMessage">
+      {{ actionMessage }}
+    </div>
   </div>
 
-  <!-- ── Loading ─────────────────────────────────────────────────────── -->
-  <div *ngIf="isLoading" class="loading-state">
-    <div class="skeleton-card hero-skeleton"></div>
-    <div class="skeleton-card board-skeleton"></div>
+  <div *ngIf="isLoading" class="loading-shell">
+    <div class="skeleton-block hero-skeleton"></div>
+    <div class="skeleton-grid">
+      <div class="skeleton-block"></div>
+      <div class="skeleton-block"></div>
+      <div class="skeleton-block"></div>
+      <div class="skeleton-block"></div>
+    </div>
   </div>
 
   <ng-container *ngIf="!isLoading && sprint">
-    <div class="dashboard-grid">
+    <section class="hero-grid">
+      <article class="card hero-card">
+        <div class="hero-top">
+          <div class="hero-identity">
+            <div class="avatar-shell">
+              <img *ngIf="userAvatar; else avatarFallback" [src]="getAvatarSrc()" [alt]="userName || 'Developer'" />
+              <ng-template #avatarFallback>
+                <span>{{ userInitial }}</span>
+              </ng-template>
+            </div>
 
-      <!-- ── Sprint Setup / AI Panel ──────────────────────────────────── -->
-      <div class="card setup-card" *ngIf="showSetupPanel">
-        <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-          AI Sprint Setup
-        </h3>
-        <p class="setup-desc">Define your goal and sprint dates to generate a personalized, time-phased task plan.</p>
+            <div class="hero-copy">
+              <span class="goal-kicker">Current Sprint</span>
+              <h3>{{ sprint.title }}</h3>
+              <p class="hero-date-line">
+                {{ effectiveStartDate | date: 'MMM d' }} to {{ effectiveEndDate | date: 'MMM d' }}
+                <span class="duration-chip">{{ sprintDaysLabel }}</span>
+              </p>
+            </div>
+          </div>
 
-        <!-- Sprint date range -->
+          <div class="hero-status">
+            <div class="status-pill" [class.warning]="getStreakStatus() === 'warning'" [class.broken]="getStreakStatus() === 'broken'">
+              {{ getStreakStatus() === 'active' ? 'On Track' : getStreakStatus() === 'warning' ? 'Streak At Risk' : 'Streak Broken' }}
+            </div>
+            <div class="status-pill accent">
+              {{ analytics?.completedTasks || 0 }} / {{ analytics?.totalTasks || 0 }} tasks done
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-main">
+          <div class="progress-cluster">
+            <div class="progress-ring-shell">
+              <svg class="progress-ring" width="140" height="140">
+                <circle class="ring-track" stroke-width="10" fill="transparent" r="45" cx="70" cy="70"></circle>
+                <circle
+                  class="ring-fill"
+                  stroke-width="10"
+                  fill="transparent"
+                  r="45"
+                  cx="70"
+                  cy="70"
+                  [style.stroke-dasharray]="2 * 3.14159 * 45"
+                  [style.stroke-dashoffset]="progressRingOffset"
+                ></circle>
+              </svg>
+              <div class="ring-content">
+                <strong>{{ progressPercent }}%</strong>
+                <span>{{ motivationalText }}</span>
+              </div>
+            </div>
+
+            <div class="xp-card">
+              <div class="xp-header">
+                <span class="level-badge">Level {{ level }}</span>
+                <span>{{ xpPoints }} XP</span>
+              </div>
+              <div class="xp-track">
+                <div class="xp-fill" [style.width.%]="xpProgressPercent"></div>
+              </div>
+              <small>{{ xpInCurrentLevel }} / 100 XP this level. Next level at {{ xpToNextLevel }} XP.</small>
+            </div>
+          </div>
+
+          <div class="hero-metrics">
+            <div class="metric-card">
+              <span class="metric-label">Consistency</span>
+              <strong>{{ analytics?.consistencyScore || 0 }}%</strong>
+              <small>Execution reliability this sprint</small>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Productivity</span>
+              <strong>{{ analytics?.productivityScore || 0 }}%</strong>
+              <small>Based on points completed and overdue load</small>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Current Streak</span>
+              <strong>{{ currentStreak }}d</strong>
+              <small>Best: {{ longestStreak }} days</small>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Overdue</span>
+              <strong>{{ overdueCount }}</strong>
+              <small>Tasks needing attention now</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="restore-banner" *ngIf="restoreMeta">
+          <div>
+            <strong>Restore window</strong>
+            <span>{{ restoreMeta.reason }}</span>
+          </div>
+          <button type="button" class="restore-btn" *ngIf="restoreMeta.canRestore" (click)="restoreStreak()">Restore Streak</button>
+        </div>
+      </article>
+
+      <article class="card trend-card compact-card">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Trend</span>
+            <h3>Productivity Trend</h3>
+          </div>
+          <span class="mini-badge">{{ analytics?.completedInLastSevenDays || 0 }} tasks in 7d</span>
+        </div>
+
+        <div class="trend-weekdays" *ngIf="trendActivity.length">
+          <span *ngFor="let day of trendActivity; trackBy: trackByActivity">{{ day.label }}</span>
+        </div>
+
+        <div class="activity-grid compact" *ngIf="trendActivity.length">
+          <div class="activity-cell compact" *ngFor="let day of trendActivity; trackBy: trackByActivity" [class.active]="day.active" [style.--level]="day.count">
+            <span>{{ day.count > 0 ? day.count : '•' }}</span>
+          </div>
+        </div>
+
+        <div class="activity-legend">
+          <span>Low</span>
+          <div class="legend-bar"></div>
+          <span>High</span>
+        </div>
+
+        <div class="comparison-strip" *ngIf="comparison">
+          <div>
+            <span>Progress vs previous</span>
+            <strong>{{ comparison.progressDelta >= 0 ? '+' : '' }}{{ comparison.progressDelta }} pts</strong>
+          </div>
+          <div>
+            <span>Completed tasks delta</span>
+            <strong>{{ comparison.completedTasksDelta >= 0 ? '+' : '' }}{{ comparison.completedTasksDelta }}</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="analytics-grid">
+      <article class="card insight-card">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Insights</span>
+            <h3>Sprint Completion Insights</h3>
+          </div>
+        </div>
+        <ul class="insight-list">
+          <li *ngFor="let insight of sprint.insights || []">{{ insight }}</li>
+        </ul>
+        <button class="text-link-btn" type="button" (click)="plannerFilter = 'week'">View planner focus</button>
+      </article>
+
+      <article class="card signals-card" *ngIf="sprint.signalsUsed">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Signals Used</span>
+            <h3>Connected Context</h3>
+          </div>
+        </div>
+
+        <div class="signals-grid">
+          <div class="signal-box">
+            <strong>Career Focus</strong>
+            <span>{{ sprint.signalsUsed.careerSprint.activeLearningFocus || 'Not set' }}</span>
+          </div>
+          <div class="signal-box">
+            <strong>Weekly Report</strong>
+            <span>{{ sprint.signalsUsed.weeklyReport.status }} - {{ sprint.signalsUsed.weeklyReport.weeklyProgressScore }}%</span>
+          </div>
+          <div class="signal-box">
+            <strong>Portfolio</strong>
+            <span>{{ sprint.signalsUsed.portfolio.completenessScore }}% complete</span>
+          </div>
+          <div class="signal-box">
+            <strong>Integrations</strong>
+            <span>{{ (sprint.signalsUsed.integrations.usedProviders || []).join(', ') || 'No active integrations' }}</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="card history-card">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">History</span>
+            <h3>Week-over-Week Comparison</h3>
+          </div>
+        </div>
+
+        <div class="history-list" *ngIf="latestHistory; else noHistory">
+          <div class="history-row featured" *ngIf="latestHistory">
+            <div>
+              <strong>{{ latestHistory.title }}</strong>
+              <span>{{ latestHistory.weekStartDate | date: 'MMM d' }} - {{ latestHistory.weekEndDate | date: 'MMM d' }}</span>
+            </div>
+            <div class="history-stats">
+              <span>{{ latestHistory.summary?.progressPercent || 0 }}%</span>
+              <small>{{ latestHistory.summary?.completedTasks || 0 }}/{{ latestHistory.summary?.totalTasks || 0 }} done</small>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noHistory>
+          <p class="empty-copy">Sprint history will appear here once you build up a few cycles.</p>
+        </ng-template>
+        <button class="text-link-btn" type="button" (click)="plannerFilter = 'all'" *ngIf="history.length > 1">View full history</button>
+      </article>
+    </section>
+
+    <section class="setup-and-drafts">
+      <article class="card setup-card" *ngIf="showSetupPanel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">AI Setup</span>
+            <h3>Plan a Smarter Sprint</h3>
+          </div>
+          <span class="mini-badge" *ngIf="generatedPlanMeta">{{ generatedPlanMeta.confidenceScore }}% confidence</span>
+        </div>
+
+        <p class="setup-desc">
+          Generate balanced study, build, and polish tasks using your profile, skill-gap signals, GitHub weak areas, weekly reports, and recommendations.
+        </p>
+
         <div class="date-range-row">
           <div class="setup-field">
             <label>Sprint Start</label>
-            <input type="date" [(ngModel)]="sprintStartDate" title="Sprint start date" />
+            <input type="date" [(ngModel)]="sprintStartDate" />
           </div>
-          <div class="date-arrow">→</div>
           <div class="setup-field">
             <label>Sprint End</label>
-            <input type="date" [(ngModel)]="sprintEndDate" title="Sprint end date" />
+            <input type="date" [(ngModel)]="sprintEndDate" />
           </div>
-          <button class="save-dates-btn" (click)="saveDates()" [disabled]="isSavingDates || !sprintStartDate || !sprintEndDate">
+          <button class="save-dates-btn" type="button" (click)="saveDates()" [disabled]="isSavingDates || !sprintStartDate || !sprintEndDate">
             {{ isSavingDates ? 'Saving...' : 'Save Dates' }}
           </button>
         </div>
-        <p class="duration-hint" *ngIf="sprintStartDate && sprintEndDate">
-          Sprint duration: <strong>{{ sprintDurationDays }} days</strong>
-        </p>
 
-        <!-- Goal fields -->
         <div class="setup-fields">
           <div class="setup-field">
             <label>Career Stack</label>
-            <select [(ngModel)]="goalStack" title="Career stack">
+            <select [(ngModel)]="goalStack">
               <option value="">Use profile default</option>
               <option value="Frontend">Frontend</option>
               <option value="Backend">Backend</option>
@@ -65,13 +283,15 @@
               <option value="DevOps">DevOps</option>
             </select>
           </div>
+
           <div class="setup-field">
             <label>Technology Focus</label>
-            <input [(ngModel)]="goalTechnology" placeholder="e.g. React, Node.js, Docker" title="Technology focus" />
+            <input [(ngModel)]="goalTechnology" placeholder="e.g. React, Docker, Testing" />
           </div>
+
           <div class="setup-field">
             <label>Experience Level</label>
-            <select [(ngModel)]="goalExperienceLevel" title="Experience level">
+            <select [(ngModel)]="goalExperienceLevel">
               <option value="">Use profile default</option>
               <option value="Student">Student</option>
               <option value="Intern">Intern</option>
@@ -84,316 +304,211 @@
           </div>
         </div>
 
-        <div class="setup-actions">
-          <button class="generate-btn" (click)="generateAiPlan()" [disabled]="isGenerating">
-            <svg *ngIf="!isGenerating" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-            <span *ngIf="isGenerating" class="spinner-sm"></span>
-            {{ isGenerating ? 'Generating...' : 'Generate AI Plan' }}
+        <div class="setup-actions dual-actions">
+          <button class="secondary-btn action-btn" type="button" (click)="generateAiPlan()" [disabled]="isGeneratingPlan || isGeneratingAi">
+            {{ isGeneratingPlan ? 'Generating Plan...' : 'Generate Plan' }}
+          </button>
+          <button class="primary-btn action-btn" type="button" (click)="generateLlmAiPlan()" [disabled]="isGeneratingAi || isGeneratingPlan">
+            {{ isGeneratingAi ? 'Generating AI Plan...' : 'Generate AI Plan' }}
+          </button>
+          <button class="secondary-btn" type="button" (click)="saveGeneratedPlan()" [disabled]="!generatedTasks.length || isSavingAiPlan">
+            {{ isSavingAiPlan ? 'Saving...' : 'Save AI Draft' }}
+          </button>
+          <button class="ghost-btn" type="button" (click)="importScenarioPlan()" [disabled]="isImportingScenario">
+            {{ isImportingScenario ? 'Importing...' : 'Use Scenario Simulator Plan' }}
           </button>
         </div>
 
-        <!-- Generated task preview -->
-        <div *ngIf="generatedTasks.length > 0" class="generated-preview">
+        <div class="generated-summary" *ngIf="generatedPlanMeta">
+          <div>
+            <strong>Plan type</strong>
+            <span>{{ getGeneratedModeLabel() }}{{ generatedPlanMeta.providerLabel ? ' - ' + generatedPlanMeta.providerLabel : '' }}</span>
+          </div>
+          <div>
+            <strong>Draft summary</strong>
+            <span>{{ generatedPlanMeta.summary }}</span>
+          </div>
+          <div>
+            <strong>Signals</strong>
+            <span>{{ generatedPlanMeta.signalsUsed.join(', ') || 'Profile defaults' }}</span>
+          </div>
+          <div>
+            <strong>Consistency</strong>
+            <span>{{ generatedPlanMeta.consistencyScore }}%</span>
+          </div>
+          <div>
+            <strong>Confidence</strong>
+            <span>{{ generatedPlanMeta.confidenceScore }}%</span>
+          </div>
+        </div>
+
+        <div class="generated-preview" *ngIf="generatedTasks.length">
           <div class="preview-header">
-            <span>{{ generatedTasks.length }} tasks generated</span>
-            <button class="add-all-btn" (click)="addGeneratedTasksToSprint()">Add All to Sprint</button>
+            <strong>{{ generatedTasks.length }} generated tasks</strong>
+            <button class="primary-btn small" type="button" (click)="addGeneratedTasksToSprint()">Add All to Sprint</button>
           </div>
-          <div class="preview-list">
-            <div class="preview-task" *ngFor="let t of generatedTasks">
-              <span class="task-type-badge ai">AI</span>
-              <div class="preview-task-info">
-                <span class="preview-title">{{ t.title }}</span>
-                <span class="preview-dates" *ngIf="t.startDate || t.endDate">
-                  {{ formatTaskDate(t.startDate) }} → {{ formatTaskDate(t.endDate) }}
-                </span>
+
+          <div class="timeline-list">
+            <article class="timeline-card" *ngFor="let task of generatedTasks; trackBy: trackByTask">
+              <div class="timeline-top">
+                <span class="task-type-badge ai">AI</span>
+                <span class="priority-pill" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
               </div>
-              <span class="priority-dot" [style.background]="getPriorityColor(t.priority)"></span>
-              <span class="preview-pts">{{ t.points }}pts</span>
-            </div>
+              <strong>{{ task.title }}</strong>
+              <p>{{ task.description }}</p>
+              <div class="timeline-meta">
+                <span>{{ getCategoryIcon(task.category) }}</span>
+                <span *ngIf="getTaskDateRange(task)">{{ getTaskDateRange(task) }}</span>
+                <span>{{ task.points }} pts</span>
+              </div>
+            </article>
           </div>
         </div>
-      </div>
+      </article>
 
-      <!-- ── Hero Card ─────────────────────────────────────────────────── -->
-      <div class="card hero-card">
-        <div class="hero-top">
-          <div class="sprint-info">
-            <div class="user-avatar-badge">
-              <img *ngIf="userAvatar; else sprintAvatarFallback" [src]="getAvatarSrc()" [alt]="userName" title="Your Profile" />
-              <ng-template #sprintAvatarFallback>
-                <span class="avatar-fallback">{{ userInitial }}</span>
-              </ng-template>
-            </div>
-            <h3>{{ sprint.title }}</h3>
-            <span class="date-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              {{ effectiveStartDate | date: 'MMM d' }} – {{ effectiveEndDate | date: 'MMM d' }}
-              <span class="duration-chip">{{ sprintDurationDays }}d</span>
-            </span>
+      <article class="card drafts-card">
+        <div class="section-head drafts-header">
+          <div>
+            <span class="section-kicker">Drafts</span>
+            <h3>Saved AI Plans</h3>
+            <p class="empty-copy section-subcopy">Generate or import a plan to keep reusable sprint templates.</p>
           </div>
-
-          <!-- Day-based streak panel -->
-          <div class="streaks-container">
-            <div class="streak-item highlight"
-                 [class.streak-broken]="getStreakStatus() === 'broken'"
-                 [class.streak-warning]="getStreakStatus() === 'warning'">
-              <span class="streak-label">Current Streak</span>
-              <strong class="streak-value">{{ currentStreak }}<span class="unit">d</span></strong>
-              <span class="streak-status"
-                    *ngIf="getStreakStatus() !== 'active'"
-                    [class.status-broken]="getStreakStatus() === 'broken'"
-                    [class.status-warning]="getStreakStatus() === 'warning'">
-                {{ getStreakStatus() === 'broken' ? '🔴 Broken' : '⚠️ At Risk' }}
-              </span>
-              <button *ngIf="getStreakStatus() === 'broken' && canRestore" class="restore-btn" (click)="restoreStreak()">
-                Restore (≤3 days)
-              </button>
-            </div>
-            <div class="streak-divider"></div>
-            <div class="streak-item">
-              <span class="streak-label">Best Streak</span>
-              <strong class="streak-value">{{ longestStreak }}<span class="unit">d</span></strong>
-            </div>
-          </div>
+          <button class="primary-btn small create-plan-btn" type="button" (click)="openSetupPanel()">Create AI Plan</button>
         </div>
 
-        <!-- Progress ring -->
-        <div class="goal-progress-section">
-          <div class="progress-ring-container">
-            <svg class="progress-ring" width="120" height="120">
-              <circle class="ring-track" stroke-width="8" fill="transparent" r="45" cx="60" cy="60"/>
-              <circle class="ring-fill" stroke-width="8" fill="transparent" r="45" cx="60" cy="60"
-                      [style.stroke-dasharray]="2 * 3.14159 * 45"
-                      [style.stroke-dashoffset]="progressRingOffset"/>
-            </svg>
-            <div class="ring-content">
-              <span class="percent">{{ progressPercent }}%</span>
+        <div class="drafts-list" *ngIf="(sprint.aiPlans || []).length; else noDrafts">
+          <article class="draft-row" *ngFor="let plan of sprint.aiPlans || []; trackBy: trackByDraft" [class.selected]="selectedDraftId === plan._id">
+            <div class="draft-copy">
+              <strong>{{ plan.name }}</strong>
+              <span>{{ getDraftModeLabel(plan) }} - {{ plan.confidenceScore }}% confidence</span>
+              <div class="draft-meta-line">
+                <span>{{ plan.tasks.length }} tasks</span>
+                <span *ngIf="plan.goalTechnology">{{ plan.goalTechnology }}</span>
+                <span>{{ plan.createdAt | date: 'MMM d, y' }}</span>
+              </div>
             </div>
-          </div>
-          <div class="progress-details">
-            <h4 class="motivational-text">{{ motivationalText }}</h4>
-            <p class="progress-meta">
-              <strong>{{ completedCount }} / {{ sprint.tasks.length }}</strong> tasks completed.
-              <span *ngIf="remainingTasksCount > 0"> {{ remainingTasksCount }} remaining.</span>
-            </p>
-            <p class="progress-meta points-meta">
-              <strong>{{ completedPoints }}</strong> / {{ totalPoints }} pts earned
-            </p>
-          </div>
+            <button class="secondary-btn small" type="button" (click)="loadDraft(plan)">Load Draft</button>
+          </article>
         </div>
 
-        <!-- XP Bar -->
-        <div class="xp-section">
-          <div class="xp-header">
-            <span class="level-badge">Lv {{ level }}</span>
-            <span class="xp-label">{{ xpPoints }} XP</span>
-            <span class="xp-next">Next: {{ xpToNextLevel }} XP</span>
+        <ng-template #noDrafts>
+          <div class="drafts-empty-state">
+            <div class="empty-orb">✦</div>
+            <p class="empty-copy">No saved AI drafts yet. Generate or import a plan to keep reusable sprint templates.</p>
           </div>
-          <div class="xp-track">
-            <div class="xp-fill" [style.width.%]="xpProgressPercent"></div>
-          </div>
-        </div>
-      </div>
+        </ng-template>
+      </article>
+    </section>
 
-      <!-- ── Insights Panel ────────────────────────────────────────────── -->
-      <div class="card insights-card" *ngIf="insights.length > 0">
-        <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Insights
-        </h3>
-        <ul class="insights-list">
-          <li *ngFor="let msg of insights">{{ msg }}</li>
-        </ul>
-      </div>
-
-      <!-- ── Task Planner ───────────────────────────────────────────────── -->
-      <div class="card planner-card">
+    <section class="planner-grid">
+      <article class="card planner-card">
         <div class="planner-header">
-          <h3>Task Planner</h3>
+          <div>
+            <span class="section-kicker">Planner</span>
+            <h3>Task Planner</h3>
+          </div>
+
           <div class="planner-tabs">
-            <button [class.active]="plannerFilter === 'all'"     (click)="plannerFilter = 'all'">
-              All <span class="tab-badge">{{ allTasks.length }}</span>
-            </button>
-            <button [class.active]="plannerFilter === 'sprint'"  (click)="plannerFilter = 'sprint'">
-              Sprint <span class="tab-badge">{{ sprintTasks.length }}</span>
-            </button>
-            <button [class.active]="plannerFilter === 'today'"   (click)="plannerFilter = 'today'">
-              Today <span *ngIf="todayTasks.length > 0" class="tab-badge">{{ todayTasks.length }}</span>
-            </button>
-            <button [class.active]="plannerFilter === 'week'"    (click)="plannerFilter = 'week'">
-              Pending <span class="tab-badge">{{ pendingTasks.length }}</span>
-            </button>
-            <button [class.active]="plannerFilter === 'overdue'" (click)="plannerFilter = 'overdue'">
-              Overdue <span *ngIf="overdueTasks.length > 0" class="tab-badge danger">{{ overdueTasks.length }}</span>
-            </button>
-            <button [class.active]="plannerFilter === 'custom'"  (click)="plannerFilter = 'custom'">
-              Custom
-            </button>
+            <button [class.active]="plannerFilter === 'all'" (click)="plannerFilter = 'all'">All</button>
+            <button [class.active]="plannerFilter === 'sprint'" (click)="plannerFilter = 'sprint'">Sprint</button>
+            <button [class.active]="plannerFilter === 'today'" (click)="plannerFilter = 'today'">Today</button>
+            <button [class.active]="plannerFilter === 'week'" (click)="plannerFilter = 'week'">Pending</button>
+            <button [class.active]="plannerFilter === 'overdue'" (click)="plannerFilter = 'overdue'">Overdue</button>
+            <button [class.active]="plannerFilter === 'custom'" (click)="plannerFilter = 'custom'">Custom</button>
           </div>
         </div>
 
-        <!-- Custom date range inputs -->
         <div class="custom-range-row" *ngIf="plannerFilter === 'custom'">
-          <input type="date" [(ngModel)]="customRangeStart" title="Custom range start" />
+          <input type="date" [(ngModel)]="customRangeStart" />
           <span>to</span>
-          <input type="date" [(ngModel)]="customRangeEnd" title="Custom range end" />
+          <input type="date" [(ngModel)]="customRangeEnd" />
         </div>
 
-        <div class="planner-list">
-          <div *ngIf="plannerTasks.length === 0" class="empty-state">
-            <p>No tasks in this view.</p>
-          </div>
-          <div class="task-row" *ngFor="let task of plannerTasks"
-               [class.task-active]="isTaskActive(task)"
-               [class.completed-row]="task.isCompleted">
+        <div class="task-stack" *ngIf="plannerTasks.length; else plannerEmpty">
+          <article class="task-card" *ngFor="let task of plannerTasks; trackBy: trackByTask" [class.task-active]="isTaskActive(task)" [class.completed-row]="task.isCompleted">
             <label class="task-checkbox">
-              <input type="checkbox" [checked]="task.isCompleted"
-                     [attr.aria-label]="'Toggle ' + task.title"
-                     title="Toggle task completion"
-                     (change)="toggleTask(task)" />
+              <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" />
               <span class="checkmark"></span>
             </label>
-            <div class="task-content">
-              <div class="task-title-row">
-                <span class="task-title">{{ task.title }}</span>
+
+            <div class="task-body">
+              <div class="task-top">
+                <strong>{{ task.title }}</strong>
                 <span class="task-type-badge" [class.ai]="task.taskType === 'ai'" [class.manual]="task.taskType === 'manual'">
                   {{ task.taskType === 'ai' ? 'AI' : 'Manual' }}
                 </span>
               </div>
-              <span class="task-desc" *ngIf="task.description">{{ task.description }}</span>
+              <p *ngIf="task.description">{{ task.description }}</p>
               <div class="task-meta">
-                <span class="category-chip">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
+                <span class="category-chip">{{ getCategoryIcon(task.category) }}</span>
                 <span class="priority-chip" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
-                <span class="date-chip" *ngIf="getTaskDateRange(task)">
-                  📅 {{ getTaskDateRange(task) }}
-                </span>
-              </div>
-            </div>
-            <span class="points-chip">{{ task.points }} pts</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Task Board ─────────────────────────────────────────────────── -->
-      <div class="card board-card">
-        <div class="board-header">
-          <h3>Task Board</h3>
-        </div>
-        <div class="task-lists-container">
-          <!-- Pending -->
-          <div class="task-column">
-            <h4 class="column-title">Pending <span>{{ pendingTasks.length }}</span></h4>
-            <div class="task-list">
-              <div *ngIf="pendingTasks.length === 0" class="empty-state"><p>No pending tasks.</p></div>
-              <div class="task-row" *ngFor="let task of pendingTasks" [class.task-active]="isTaskActive(task)">
-                <label class="task-checkbox">
-                  <input type="checkbox" [checked]="task.isCompleted"
-                         [attr.aria-label]="'Toggle ' + task.title"
-                         title="Toggle task completion"
-                         (change)="toggleTask(task)" />
-                  <span class="checkmark"></span>
-                </label>
-                <div class="task-content">
-                  <div class="task-title-row">
-                    <span class="task-title">{{ task.title }}</span>
-                    <span class="task-type-badge" [class.ai]="task.taskType === 'ai'" [class.manual]="task.taskType === 'manual'">
-                      {{ task.taskType === 'ai' ? 'AI' : 'Manual' }}
-                    </span>
-                  </div>
-                  <span class="task-desc" *ngIf="task.description">{{ task.description }}</span>
-                  <div class="task-meta">
-                    <span class="category-chip">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
-                    <span class="priority-chip" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
-                    <span class="date-chip" *ngIf="getTaskDateRange(task)">📅 {{ getTaskDateRange(task) }}</span>
-                  </div>
-                </div>
+                <span class="date-chip" *ngIf="getTaskDateRange(task)">{{ getTaskDateRange(task) }}</span>
                 <span class="points-chip">{{ task.points }} pts</span>
               </div>
             </div>
-          </div>
+          </article>
+        </div>
 
-          <!-- Completed -->
-          <div class="task-column">
-            <h4 class="column-title">Completed <span>{{ completedTasks.length }}</span></h4>
-            <div class="task-list">
-              <div *ngIf="completedTasks.length === 0" class="empty-state"><p>Nothing completed yet.</p></div>
-              <div class="task-row completed-row" *ngFor="let task of completedTasks">
-                <label class="task-checkbox">
-                  <input type="checkbox" [checked]="task.isCompleted"
-                         [attr.aria-label]="'Toggle ' + task.title"
-                         title="Toggle task completion"
-                         (change)="toggleTask(task)" />
-                  <span class="checkmark"></span>
-                </label>
-                <div class="task-content">
-                  <div class="task-title-row">
-                    <span class="task-title">{{ task.title }}</span>
-                    <span class="task-type-badge" [class.ai]="task.taskType === 'ai'" [class.manual]="task.taskType === 'manual'">
-                      {{ task.taskType === 'ai' ? 'AI' : 'Manual' }}
-                    </span>
-                  </div>
-                  <span class="task-desc" *ngIf="task.description">{{ task.description }}</span>
-                </div>
-                <span class="points-chip">{{ task.points }} pts</span>
-              </div>
-            </div>
+        <ng-template #plannerEmpty>
+          <div class="planner-empty-state">
+            <div class="planner-empty-icon">☰</div>
+            <strong>No tasks in this planner view yet.</strong>
+            <p class="empty-copy">Add a task or change the filter.</p>
+          </div>
+        </ng-template>
+      </article>
+
+      <article class="card composer-card">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Manual Input</span>
+            <h3>Add Manual Task</h3>
           </div>
         </div>
-      </div>
 
-      <!-- ── Add Task Composer ──────────────────────────────────────────── -->
-      <div class="card composer-card">
-        <h3>Add Manual Task</h3>
-        <div class="add-task-composer">
-          <div class="composer-inputs">
-            <div class="input-group full-width">
-              <input [(ngModel)]="newTaskTitle" placeholder="What do you need to accomplish?" title="New task title" />
-            </div>
-            <div class="input-group full-width">
-              <input [(ngModel)]="newTaskDescription" placeholder="Optional details or context (2–3 lines)" title="New task description" />
-            </div>
-            <div class="composer-row">
-              <div class="input-group">
-                <label for="task-priority">Priority</label>
-                <select id="task-priority" [(ngModel)]="newTaskPriority" title="Task priority">
-                  <option *ngFor="let p of priorityOptions" [value]="p">{{ p | titlecase }}</option>
-                </select>
-              </div>
-              <div class="input-group">
-                <label for="task-category">Category</label>
-                <select id="task-category" [(ngModel)]="newTaskCategory" title="Task category">
-                  <option *ngFor="let c of categoryOptions" [value]="c">{{ c | titlecase }}</option>
-                </select>
-              </div>
-              <div class="input-group points-input">
-                <label for="new-task-points">Points</label>
-                <input id="new-task-points" type="number" min="1" max="10" [(ngModel)]="newTaskPoints" title="Task points" />
-              </div>
-              <button class="primary-btn" [disabled]="!newTaskTitle.trim()" (click)="addTask()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Add Task
-              </button>
-            </div>
+        <div class="composer-grid">
+          <div class="input-group full">
+            <label>Task title</label>
+            <input [(ngModel)]="newTaskTitle" placeholder="What do you need to accomplish?" />
+          </div>
+
+          <div class="input-group full">
+            <label>Description</label>
+            <textarea [(ngModel)]="newTaskDescription" rows="4" placeholder="Optional details, acceptance criteria, or implementation notes"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Priority</label>
+            <select [(ngModel)]="newTaskPriority">
+              <option *ngFor="let priority of priorityOptions" [value]="priority">{{ priority | titlecase }}</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Category</label>
+            <select [(ngModel)]="newTaskCategory">
+              <option *ngFor="let category of categoryOptions" [value]="category">{{ category | titlecase }}</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Points</label>
+            <input type="number" min="1" max="10" [(ngModel)]="newTaskPoints" />
+          </div>
+
+          <div class="composer-actions">
+            <button class="primary-btn" type="button" (click)="addTask()" [disabled]="!newTaskTitle.trim() || isAddingTask">
+              {{ isAddingTask ? 'Adding...' : 'Add Task' }}
+            </button>
           </div>
         </div>
-      </div>
-
-    </div><!-- /dashboard-grid -->
+      </article>
+    </section>
   </ng-container>
 
-  <!-- ── Empty state ───────────────────────────────────────────────────── -->
   <div *ngIf="!isLoading && !sprint" class="empty-state-global">
-    <div class="empty-icon">🚀</div>
+    <div class="empty-icon">Sprint</div>
     <h3>No active sprint found</h3>
-    <p>Set up a new sprint to start tracking your career progression.</p>
+    <p>Refresh the page or create a fresh sprint to start tracking developer execution.</p>
   </div>
-
 </div>

@@ -17,6 +17,32 @@ const sprintTaskSchema = new mongoose.Schema({
   deadline:    { type: Date, default: null },
 }, { _id: true });
 
+const aiPlanTaskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  points: { type: Number, default: 3 },
+  priority: { type: String, enum: ['high', 'medium', 'low'], default: 'medium' },
+  category: { type: String, enum: ['learning', 'project', 'practice'], default: 'learning' },
+  taskType: { type: String, enum: ['ai', 'manual'], default: 'ai' },
+  startDate: { type: Date, default: null },
+  endDate: { type: Date, default: null }
+}, { _id: false });
+
+const aiPlanSchema = new mongoose.Schema({
+  name: { type: String, required: true, default: 'AI Sprint Plan' },
+  source: { type: String, enum: ['ai', 'scenario'], default: 'ai' },
+  generatorType: { type: String, enum: ['deterministic', 'llm', 'scenario'], default: 'deterministic' },
+  goalStack: { type: String, default: '' },
+  goalTechnology: { type: String, default: '' },
+  goalExperienceLevel: { type: String, default: '' },
+  summary: { type: String, default: '' },
+  confidenceScore: { type: Number, default: 0 },
+  consistencyScore: { type: Number, default: 0 },
+  signalsUsed: [{ type: String }],
+  tasks: [aiPlanTaskSchema],
+  createdAt: { type: Date, default: Date.now }
+}, { _id: true });
+
 const careerSprintSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -59,7 +85,8 @@ const careerSprintSchema = new mongoose.Schema({
   goalTitle:           { type: String, default: '' },
   goalExperienceLevel: { type: String, default: '' },
 
-  tasks: [sprintTaskSchema]
+  tasks: [sprintTaskSchema],
+  aiPlans: [aiPlanSchema]
 }, { timestamps: true });
 
 module.exports = mongoose.model('CareerSprint', careerSprintSchema);

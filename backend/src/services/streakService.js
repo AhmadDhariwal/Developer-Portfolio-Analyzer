@@ -57,6 +57,9 @@ const recordActivity = (sprint) => {
     sprint.streakBrokenAt = null;
   }
 
+  // Any real activity clears warning state for the day.
+  sprint.streakWarning = false;
+
   sprint.lastActiveDate = today;
   sprint.streak         = sprint.currentStreak; // keep legacy field in sync
   sprint.streakStatus   = resolveStatus(sprint);

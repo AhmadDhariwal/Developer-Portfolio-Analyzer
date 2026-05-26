@@ -1,16 +1,21 @@
-const CareerSprint = require('../models/careerSprint');
 const {
   createSprint,
   getCurrentSprint,
   toggleTaskCompletion,
   addTaskToSprint,
   restoreStreak,
-  calcWeightedProgress,
   updateSprintDates,
+  getSprintHistory,
+  saveAiPlanToSprint,
+  importScenarioPlanToSprint
 } = require('../services/careerSprintService');
-const { generateTasks } = require('../services/aiTaskService');
+const { generateTasks, generateAiTasksWithLLM } = require('../services/aiTaskService');
 
-// GET /api/career-sprints/current
+const normalizeError = (error, fallback) => ({
+  message: error?.message || fallback,
+  errors: error?.details || []
+});
+
 const getCurrentCareerSprint = async (req, res) => {
   try {
     const sprint = await getCurrentSprint(req.user._id);
@@ -21,10 +26,20 @@ const getCurrentCareerSprint = async (req, res) => {
   }
 };
 
-// POST /api/career-sprints
 const createCareerSprint = async (req, res) => {
   try {
-    const { title, weeklyGoal, tasks, goalStack, goalTechnology, goalTitle, goalExperienceLevel } = req.body || {};
+    const {
+      title,
+      weeklyGoal,
+      tasks,
+      goalStack,
+      goalTechnology,
+      goalTitle,
+      goalExperienceLevel,
+      sprintStartDate,
+      sprintEndDate
+    } = req.body || {};
+
     const sprint = await createSprint({
       userId: req.user._id,
       title,
@@ -34,15 +49,16 @@ const createCareerSprint = async (req, res) => {
       goalTechnology,
       goalTitle,
       goalExperienceLevel,
+      sprintStartDate,
+      sprintEndDate
     });
     res.status(201).json(sprint);
   } catch (error) {
     console.error('Career sprint create error:', error.message);
-    res.status(500).json({ message: 'Failed to create career sprint.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to create career sprint.'));
   }
 };
 
-// POST /api/career-sprints/:id/tasks
 const addCareerSprintTask = async (req, res) => {
   try {
     const sprint = await addTaskToSprint(req.user._id, req.params.id, req.body || {});
@@ -50,11 +66,10 @@ const addCareerSprintTask = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint add task error:', error.message);
-    res.status(500).json({ message: 'Failed to add sprint task.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to add sprint task.'));
   }
 };
 
-// PUT /api/career-sprints/:id/tasks/:taskId
 const updateCareerSprintTask = async (req, res) => {
   try {
     const { isCompleted } = req.body || {};
@@ -63,18 +78,14 @@ const updateCareerSprintTask = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint update task error:', error.message);
-    res.status(500).json({ message: 'Failed to update sprint task.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to update sprint task.'));
   }
 };
 
-// GET /api/career-sprints/history
 const getCareerSprintHistory = async (req, res) => {
   try {
     const limit = Number(req.query.limit || 6);
-    const history = await CareerSprint.find({ userId: req.user._id })
-      .sort({ weekStartDate: -1 })
-      .limit(limit)
-      .lean();
+    const history = await getSprintHistory(req.user._id, limit);
     res.json({ history });
   } catch (error) {
     console.error('Career sprint history error:', error.message);
@@ -82,7 +93,6 @@ const getCareerSprintHistory = async (req, res) => {
   }
 };
 
-// POST /api/career-sprints/:id/restore-streak
 const restoreCareerStreakController = async (req, res) => {
   try {
     const sprint = await restoreStreak(req.user._id, req.params.id);
@@ -90,34 +100,46 @@ const restoreCareerStreakController = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint restore streak error:', error.message);
-    res.status(500).json({ message: 'Failed to restore streak.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to restore streak.'));
   }
 };
 
-/**
- * POST /api/career-sprints/generate-ai-tasks
- * Body: { stack, technology, experienceLevel, sprintStartDate, sprintEndDate }
- * Returns a list of AI-generated tasks with dates assigned (not yet saved to sprint).
- */
 const generateAiTasks = async (req, res) => {
   try {
     const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate } = req.body || {};
-    const tasks = await generateTasks({
+    const result = await generateTasks({
       userId: req.user._id,
       stack,
       technology,
       experienceLevel,
       sprintStartDate,
-      sprintEndDate,
+      sprintEndDate
     });
-    res.json({ tasks });
+    res.json(result);
   } catch (error) {
     console.error('AI task generation error:', error.message);
-    res.status(500).json({ message: 'Failed to generate AI tasks.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to generate AI tasks.'));
   }
 };
 
-// PUT /api/career-sprints/:id/dates
+const generateTrueAiTasks = async (req, res) => {
+  try {
+    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate } = req.body || {};
+    const result = await generateAiTasksWithLLM({
+      userId: req.user._id,
+      stack,
+      technology,
+      experienceLevel,
+      sprintStartDate,
+      sprintEndDate
+    });
+    res.json(result);
+  } catch (error) {
+    console.error('LLM sprint generation error:', error.message);
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to generate AI sprint plan.'));
+  }
+};
+
 const updateSprintDatesController = async (req, res) => {
   try {
     const { sprintStartDate, sprintEndDate } = req.body || {};
@@ -126,7 +148,29 @@ const updateSprintDatesController = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Sprint dates update error:', error.message);
-    res.status(500).json({ message: 'Failed to update sprint dates.' });
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to update sprint dates.'));
+  }
+};
+
+const saveAiPlanController = async (req, res) => {
+  try {
+    const sprint = await saveAiPlanToSprint(req.user._id, req.params.id, req.body || {});
+    if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    res.json(sprint);
+  } catch (error) {
+    console.error('Save AI sprint plan error:', error.message);
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to save AI sprint plan.'));
+  }
+};
+
+const importScenarioPlanController = async (req, res) => {
+  try {
+    const sprint = await importScenarioPlanToSprint(req.user._id, req.params.id, req.body?.scenarioId || '');
+    if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    res.json(sprint);
+  } catch (error) {
+    console.error('Import scenario sprint plan error:', error.message);
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to import Scenario Simulator plan.'));
   }
 };
 
@@ -138,5 +182,8 @@ module.exports = {
   getCareerSprintHistory,
   restoreCareerStreakController,
   generateAiTasks,
+  generateTrueAiTasks,
   updateSprintDatesController,
+  saveAiPlanController,
+  importScenarioPlanController
 };

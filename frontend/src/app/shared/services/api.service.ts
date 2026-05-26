@@ -676,7 +676,19 @@ export class ApiService {
   }
 
   generateAiTasks(payload: { stack?: string; technology?: string; experienceLevel?: string; sprintStartDate?: string; sprintEndDate?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/generate-ai-tasks`, payload);
+    return this.http.post(`${this.baseUrl}/career-sprints/generate-plan`, payload);
+  }
+
+  generateCareerSprintAiPlan(payload: { stack?: string; technology?: string; experienceLevel?: string; sprintStartDate?: string; sprintEndDate?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/generate-ai-plan`, payload);
+  }
+
+  saveCareerSprintAiPlan(sprintId: string, payload: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/ai-plans`, payload);
+  }
+
+  importCareerSprintScenarioPlan(sprintId: string, scenarioId?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/import-scenario`, scenarioId ? { scenarioId } : {});
   }
 
   updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<any> {
