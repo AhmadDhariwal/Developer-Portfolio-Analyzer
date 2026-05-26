@@ -15,6 +15,7 @@
       <span class="status-pill" *ngIf="isApplying">Applying...</span>
       <button class="btn-reset" *ngIf="hasDraftFilters" (click)="resetFilters()">Reset</button>
       <button
+         title="toggle"
         class="btn-collapse"
         (click)="toggleCollapse()"
         [title]="isCollapsed ? 'Expand filters' : 'Collapse filters'"

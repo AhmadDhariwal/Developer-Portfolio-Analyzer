@@ -9,7 +9,6 @@
   </div>
   
   <div class="header-actions">
-    <!-- Career Stack + Experience Level Dropdowns -->
     <div class="role-selector">
       <span class="role-label">Career Stack:</span>
       <select [ngModel]="selectedCareerStack" (ngModelChange)="onCareerStackChange($event)" class="role-dropdown" title="Career stack filter">
@@ -40,7 +39,6 @@
   </span>
 </div>
 
-<!-- Rate limit / no-username warnings -->
 <div *ngIf="rateLimitWarning" class="alert-banner alert-warning">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -54,12 +52,7 @@
   <span>No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your GitHub handle to load real data.</span>
 </div>
 
-<!-- ════════════════════════════════════════════
-     ROW 1: SCORE CARD + 4 STAT CARDS
-     ════════════════════════════════════════════ -->
 <div class="row-top">
-
-  <!-- Developer Readiness Score -->
   <div class="card score-card">
     <div class="card-header-row">
       <div class="status-dot"></div>
@@ -85,7 +78,6 @@
     </div>
   </div>
 
-  <!-- 4 Mini stat cards -->
   <div class="mini-stats-grid">
     <div class="card stat-card" *ngFor="let card of statCards">
       <div class="stat-top">
@@ -102,15 +94,9 @@
       <div class="stat-growth">{{ card.growth }}</div>
     </div>
   </div>
-
 </div>
 
-<!-- ════════════════════════════════════════════
-     ROW 2: CONTRIBUTION ACTIVITY + LANGUAGE DISTRIBUTION
-     ════════════════════════════════════════════ -->
 <div class="row-middle">
-
-  <!-- Contribution Activity Line Chart -->
   <div class="card activity-card">
     <div class="card-head">
       <div class="head-text">
@@ -124,7 +110,6 @@
     </div>
   </div>
 
-  <!-- Language Distribution Donut -->
   <div class="card language-card">
     <div class="card-head">
       <div class="head-text">
@@ -145,15 +130,9 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- ════════════════════════════════════════════
-     ROW 3: SKILLS RADAR + SKILL GAP OVERVIEW
-     ════════════════════════════════════════════ -->
 <div class="row-bottom">
-
-  <!-- Radar Chart -->
   <div class="card radar-card">
     <div class="card-head">
       <div class="head-text">
@@ -166,7 +145,6 @@
     </div>
   </div>
 
-  <!-- Skill Gap Overview -->
   <div class="card gap-card">
     <div class="card-head">
       <div class="head-text">
@@ -183,19 +161,15 @@
     </div>
 
     <div class="gap-body">
-      <!-- Loading State -->
       <div *ngIf="isLoading" class="loading-state">
         <p>Loading skill gap analysis...</p>
       </div>
 
-      <!-- Empty State -->
       <div *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0" class="empty-state">
         <p>No skill data available. Please ensure your GitHub profile is analyzed.</p>
       </div>
 
-      <!-- Skills Content -->
       <div *ngIf="!isLoading && (topSkills.length > 0 || missingSkills.length > 0)">
-        <!-- Your Skills -->
         <div class="skills-group">
           <div class="group-title">
             <span class="group-dot success"></span>
@@ -211,7 +185,6 @@
           </div>
         </div>
 
-        <!-- Missing Skills -->
         <div class="skills-group">
           <div class="group-title danger-title">
             <span class="group-dot danger"></span>
@@ -228,7 +201,6 @@
           </div>
         </div>
 
-        <!-- Coverage Bar -->
         <div class="coverage-box">
           <div class="cov-head">
             <span class="cov-title">
@@ -249,12 +221,8 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- ════════════════════════════════════════════
-     ROW 4: AI RECOMMENDATIONS
-     ════════════════════════════════════════════ -->
 <div class="recommendations-section">
   <div class="rec-section-head">
     <div>
@@ -282,9 +250,6 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     ROW 5: DATA INSIGHTS
-     ════════════════════════════════════════════ -->
 <div class="insights-grid">
   <div class="card insights-card">
     <div class="card-head">

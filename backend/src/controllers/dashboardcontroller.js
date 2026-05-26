@@ -1,28 +1,76 @@
+const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
-const User     = require('../models/user');
+const User = require('../models/user');
 const Repository = require('../models/repository');
 const AnalysisCache = require('../models/analysisCache');
-const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity, fetchGitHubRepos } = require('../services/githubservice');
+const Recommendation = require('../models/recommendation');
+const ResumeAnalysis = require('../models/resumeAnalysis');
+const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
 const IntegrationSyncLog = require('../models/integrationSyncLog');
 const IntegrationConnection = require('../models/integrationConnection');
 
-// ── Helper: detect GitHub rate-limit errors ───────────────────────────────
-const isRateLimitError = (err) => {
-  const msg = (err?.message || '').toLowerCase();
+const DASHBOARD_SUMMARY_TTL_MS = 2 * 60 * 1000;
+const DASHBOARD_FRESH_MS = 24 * 60 * 60 * 1000;
+const dashboardSummaryCache = new Map();
+
+const isRateLimitError = (error) => {
+  const message = String(error?.message || '').toLowerCase();
   return (
-    err?.response?.status === 403 ||
-    err?.response?.status === 429 ||
-    msg.includes('rate limit') ||
-    msg.includes('api rate limit')
+    error?.response?.status === 403 ||
+    error?.response?.status === 429 ||
+    message.includes('rate limit')
   );
 };
 
-const getOrCreateAnalysis = (analysis, userId) => analysis || new Analysis({ userId });
+const clamp = (value, min = 0, max = 100) => {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric)) return min;
+  return Math.max(min, Math.min(max, Math.round(numeric)));
+};
 
-const fetchGitHubUserSafe = async (githubUsername) => {
+const average = (values = []) => {
+  if (!Array.isArray(values) || !values.length) return 0;
+  return values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length;
+};
+
+const emptyContributionActivity = () => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const now = new Date();
+  const result = [];
+  for (let i = 5; i >= 0; i -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push({ month: months[date.getMonth()], count: 0 });
+  }
+  return result;
+};
+
+const safeDate = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const toFreshness = (value) => {
+  const date = safeDate(value);
+  if (!date) return 'missing';
+  return (Date.now() - date.getTime()) <= DASHBOARD_FRESH_MS ? 'fresh' : 'stale';
+};
+
+const toLanguageMap = (languageDistribution = {}) => {
+  if (languageDistribution instanceof Map) return Object.fromEntries(languageDistribution);
+  if (Array.isArray(languageDistribution)) {
+    return languageDistribution.reduce((acc, item) => {
+      if (item?.language) acc[item.language] = Number(item.percentage || 0);
+      return acc;
+    }, {});
+  }
+  return languageDistribution && typeof languageDistribution === 'object' ? languageDistribution : {};
+};
+
+const safeFetchGitHubUser = async (githubUsername) => {
   try {
     return await fetchGitHubUser(githubUsername);
   } catch {
@@ -30,29 +78,27 @@ const fetchGitHubUserSafe = async (githubUsername) => {
   }
 };
 
-const toLanguageMap = (languageDistribution = []) => {
-  const langMap = {};
-  languageDistribution.forEach((item) => {
-    langMap[item.language] = item.percentage;
-  });
-  return langMap;
+const safeGetIntegrationInsight = async (userId) => {
+  try {
+    return await getIntegrationInsight(userId);
+  } catch (error) {
+    console.warn('Dashboard integration insight fallback:', error.message);
+    return { integrationScore: 0, providers: [], mergedSkills: [], updatedAt: null };
+  }
 };
 
-const buildContributionActivity = (repositories = []) => {
-  // Fallback: if we have no real commit data, return 6 zero-filled months
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const now = new Date();
-  const result = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    result.push({ month: months[d.getMonth()], count: 0 });
-  }
-  return result;
-};
+const createEmptyAnalysis = (userId) => new Analysis({
+  userId,
+  githubScore: 0,
+  readinessScore: 0,
+  githubStats: { repos: 0, stars: 0, forks: 0, followers: 0 },
+  languageDistribution: {},
+  contributionActivity: emptyContributionActivity()
+});
 
 const persistRepositories = async (userId, repositories = []) => {
   await Repository.deleteMany({ ownerId: userId });
-  if (repositories.length === 0) return;
+  if (!repositories.length) return;
 
   await Repository.insertMany(
     repositories.map((repo) => ({
@@ -67,320 +113,505 @@ const persistRepositories = async (userId, repositories = []) => {
   );
 };
 
-// ── Helper: ensure we have fresh GitHub data for this user ────────────────
-const ensureAnalysis = async (userId, githubUsername) => {
-  let analysis = await Analysis.findOne({ userId });
+const latestCacheByPredicate = async (userId, predicate) =>
+  AnalysisCache.findOne({ userId, ...predicate }).sort({ updatedAt: -1 }).lean();
 
-  // If we already have data with repos > 0, return cached (don't re-fetch every request)
-  if (analysis && analysis.githubStats && analysis.githubStats.repos > 0) {
-    return { analysis, rateLimited: false };
+const getCachedDashboardContext = async (userId) => {
+  const [latestPortfolioCache, latestSkillGapCache, latestRecommendationCache, latestResume] = await Promise.all([
+    latestCacheByPredicate(userId, { 'analysisData.portfolioScore.overallScore': { $exists: true } }),
+    latestCacheByPredicate(userId, { 'analysisData.missingSkills': { $exists: true } }),
+    latestCacheByPredicate(userId, { 'analysisData.projects': { $exists: true } }),
+    ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
+  ]);
+
+  return {
+    latestPortfolioCache,
+    latestSkillGapCache,
+    latestRecommendationCache,
+    latestResume
+  };
+};
+
+const deriveReadinessBreakdown = ({ portfolioScore, analysis, resume, skillGapCache, integrationInsight }) => {
+  const cachedBreakdown = portfolioScore?.breakdown || portfolioScore?.analysisData?.portfolioScore?.breakdown;
+  if (cachedBreakdown) {
+    return {
+      codeQuality: clamp(cachedBreakdown.codeQuality),
+      skillCoverage: clamp(cachedBreakdown.skillCoverage),
+      industryReadiness: clamp(cachedBreakdown.industryReadiness),
+      projectImpact: clamp(cachedBreakdown.projectImpact)
+    };
   }
 
-  // No cached data — try to fetch from GitHub
+  const topSkillCount = Array.isArray(skillGapCache?.analysisData?.yourSkills) ? skillGapCache.analysisData.yourSkills.length : 0;
+  const missingSkillCount = Array.isArray(skillGapCache?.analysisData?.missingSkills) ? skillGapCache.analysisData.missingSkills.length : 0;
+  const totalSkills = topSkillCount + missingSkillCount;
+  const coverage = totalSkills > 0 ? Math.round((topSkillCount / totalSkills) * 100) : 0;
+
+  return {
+    codeQuality: clamp(analysis?.githubScore || 0),
+    skillCoverage: clamp(skillGapCache?.analysisData?.coverage || coverage),
+    industryReadiness: clamp(average([
+      resume?.atsScore,
+      resume?.keywordDensity,
+      resume?.contentQuality,
+      resume?.formatScore
+    ]) || analysis?.readinessScore || analysis?.githubScore || 0),
+    projectImpact: clamp(average([
+      analysis?.githubScore,
+      integrationInsight?.integrationScore
+    ]))
+  };
+};
+
+const buildSummaryMeta = ({
+  analysis,
+  latestResume,
+  latestSkillGapCache,
+  latestRecommendationCache,
+  integrationInsight,
+  githubStatus,
+  rateLimited,
+  noUsername
+}) => {
+  const githubFreshness = toFreshness(analysis?.updatedAt || analysis?.createdAt);
+  const resumeFreshness = toFreshness(latestResume?.analyzedAt);
+  const skillGapFreshness = toFreshness(latestSkillGapCache?.updatedAt);
+  const recommendationFreshness = toFreshness(latestRecommendationCache?.updatedAt);
+  const integrationFreshness = toFreshness(integrationInsight?.updatedAt);
+
+  const syncStatus = rateLimited
+    ? 'rate_limited'
+    : noUsername
+      ? 'queued'
+      : githubStatus === 'fresh'
+        ? 'fresh'
+        : githubStatus === 'missing'
+          ? 'queued'
+          : 'stale';
+
+  return {
+    syncStatus,
+    dataFreshness: {
+      github: githubFreshness,
+      resume: resumeFreshness,
+      skillGap: skillGapFreshness,
+      recommendations: recommendationFreshness,
+      integrations: integrationFreshness
+    },
+    sourcesUsed: {
+      github: { connected: !noUsername, available: Boolean(analysis?.githubStats?.repos || analysis?.languageDistribution), status: githubFreshness },
+      resume: { connected: Boolean(latestResume), available: Boolean(latestResume), status: resumeFreshness },
+      skillGap: { connected: Boolean(latestSkillGapCache), available: Boolean(latestSkillGapCache), status: skillGapFreshness },
+      recommendations: { connected: Boolean(latestRecommendationCache), available: Boolean(latestRecommendationCache), status: recommendationFreshness },
+      integrations: {
+        connected: Array.isArray(integrationInsight?.providers) && integrationInsight.providers.length > 0,
+        available: Boolean(integrationInsight),
+        status: integrationFreshness
+      }
+    }
+  };
+};
+
+const buildEtag = (payload) => `"dashboard-${crypto.createHash('sha1').update(JSON.stringify(payload)).digest('hex')}"`;
+
+const maybeSendNotModified = (req, res, payload) => {
+  const etag = buildEtag(payload);
+  res.set('ETag', etag);
+  if (req.headers['if-none-match'] === etag) {
+    res.status(304).end();
+    return true;
+  }
+  return false;
+};
+
+const ensureAnalysis = async (userId, githubUsername, options = {}) => {
+  const { forceRefresh = false } = options;
+  let analysis = await Analysis.findOne({ userId });
+
+  if (!forceRefresh) {
+    if (analysis) {
+      return {
+        analysis,
+        rateLimited: false,
+        noUsername: !githubUsername,
+        githubStatus: analysis.githubStats?.repos > 0 ? toFreshness(analysis.updatedAt || analysis.createdAt) : 'stale',
+        languageSource: 'cached_snapshot'
+      };
+    }
+
+    return {
+      analysis: createEmptyAnalysis(userId),
+      rateLimited: false,
+      noUsername: !githubUsername,
+      githubStatus: 'missing',
+      languageSource: 'missing'
+    };
+  }
+
   if (!githubUsername) {
-    // No username configured — return empty shell
-    analysis = getOrCreateAnalysis(analysis, userId);
-    return { analysis, rateLimited: false, noUsername: true };
+    return {
+      analysis: analysis || createEmptyAnalysis(userId),
+      rateLimited: false,
+      noUsername: true,
+      githubStatus: 'missing',
+      languageSource: 'missing'
+    };
   }
 
   try {
-    const data = await analyzeGitHubProfile(githubUsername);
-    const userData = await fetchGitHubUserSafe(githubUsername);
+    const githubResult = await analyzeGitHubProfile(githubUsername);
+    const userData = await safeFetchGitHubUser(githubUsername);
+    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, githubResult.repositories || []);
 
-    analysis = getOrCreateAnalysis(analysis, userId);
-
-    analysis.githubScore = data.activityScore;
+    analysis = analysis || createEmptyAnalysis(userId);
+    analysis.githubScore = Number(githubResult.activityScore || 0);
     analysis.githubStats = {
-      repos:     data.repoCount,
-      stars:     data.totalStars,
-      forks:     data.totalForks,
-      followers: userData.followers || 0
+      repos: Number(githubResult.repoCount || 0),
+      stars: Number(githubResult.totalStars || 0),
+      forks: Number(githubResult.totalForks || 0),
+      followers: Number(userData?.followers || 0)
     };
+    analysis.languageDistribution = toLanguageMap(githubResult.languageDistribution);
+    analysis.contributionActivity = monthlyActivity.length ? monthlyActivity : emptyContributionActivity();
+    analysis.updatedAt = new Date();
 
-    analysis.languageDistribution = toLanguageMap(data.languageDistribution);
+    await Promise.all([
+      analysis.save(),
+      persistRepositories(userId, githubResult.repositories || [])
+    ]);
 
-    // Fetch real monthly commit activity from GitHub stats API
-    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, data.repositories);
-    analysis.contributionActivity = monthlyActivity.length > 0
-      ? monthlyActivity
-      : buildContributionActivity();
-
-    await persistRepositories(userId, data.repositories);
-
-    await analysis.save();
-    return { analysis, rateLimited: false };
-  } catch (err) {
-    console.warn('GitHub fetch failed:', err.message);
-    // If rate-limited but we have some cached analysis, use it
-    if (isRateLimitError(err)) {
-      analysis = getOrCreateAnalysis(analysis, userId);
-      return { analysis, rateLimited: true };
-    }
-    // Other error — return empty shell gracefully
-    analysis = getOrCreateAnalysis(analysis, userId);
-    return { analysis, rateLimited: false, fetchError: err.message };
+    return {
+      analysis,
+      rateLimited: false,
+      noUsername: false,
+      githubStatus: 'fresh',
+      languageSource: githubResult.languageDistributionSource || 'language_bytes'
+    };
+  } catch (error) {
+    console.warn('Dashboard GitHub refresh failed:', error.message);
+    return {
+      analysis: analysis || createEmptyAnalysis(userId),
+      rateLimited: isRateLimitError(error),
+      noUsername: false,
+      githubStatus: analysis ? 'stale' : 'missing',
+      languageSource: 'cached_snapshot'
+    };
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/summary
-   ───────────────────────────────────────────── */
+const buildRecommendationPreview = (recommendationData = {}) => {
+  const projects = Array.isArray(recommendationData.projects) ? recommendationData.projects : [];
+  return projects.slice(0, 4).map((project) => ({
+    title: String(project.title || 'Recommendation').trim(),
+    priority: 'High',
+    priorityType: 'high',
+    category: Array.isArray(project.tech) && project.tech.length ? project.tech.slice(0, 2).join(', ') : 'Project'
+  }));
+};
+
+const summaryCacheKey = (userId) => `${userId}:cached`;
+
 const getDashboardSummary = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
+    const user = await User.findById(req.user._id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const activeGithubUsername = user.activeGithubUsername || user.githubUsername;
-    const { analysis, rateLimited, noUsername } = await ensureAnalysis(user._id, activeGithubUsername);
+    const cacheKey = summaryCacheKey(String(req.user._id));
+    if (!forceRefresh) {
+      const cachedEntry = dashboardSummaryCache.get(cacheKey);
+      if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
+        if (maybeSendNotModified(req, res, cachedEntry.payload)) return;
+        return res.json(cachedEntry.payload);
+      }
+    }
 
-    const latestReadiness = await AnalysisCache.findOne({
-      userId: user._id,
-      'analysisData.portfolioScore.overallScore': { $exists: true }
-    }).sort({ updatedAt: -1 }).lean();
+    const githubUsername = user.activeGithubUsername || user.githubUsername || '';
+    const [analysisState, cachedContext, integrationInsight] = await Promise.all([
+      ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
+      getCachedDashboardContext(req.user._id),
+      safeGetIntegrationInsight(req.user._id)
+    ]);
 
-    const baseReadiness = latestReadiness?.analysisData?.portfolioScore?.overallScore || analysis.readinessScore || analysis.githubScore || 0;
+    const { analysis, rateLimited, noUsername, githubStatus, languageSource } = analysisState;
+    const {
+      latestPortfolioCache,
+      latestSkillGapCache,
+      latestRecommendationCache,
+      latestResume
+    } = cachedContext;
 
-    // ── Month-over-month score change ─────────────────────────────────────
-    // Find the most recent cache entry that is at least 25 days old (last month's snapshot)
-    const oneMonthAgo = new Date(Date.now() - 25 * 24 * 60 * 60 * 1000);
+    const baseReadiness = Number(
+      latestPortfolioCache?.analysisData?.portfolioScore?.overallScore ||
+      analysis?.readinessScore ||
+      analysis?.githubScore ||
+      0
+    );
+    const integrationScore = Number(integrationInsight.integrationScore || 0);
+    const readinessScore = integrationScore > 0
+      ? Math.round((baseReadiness * 0.85) + (integrationScore * 0.15))
+      : baseReadiness;
+
+    const oneMonthAgo = new Date(Date.now() - (25 * 24 * 60 * 60 * 1000));
     const lastMonthReadiness = await AnalysisCache.findOne({
-      userId: user._id,
+      userId: req.user._id,
       'analysisData.portfolioScore.overallScore': { $exists: true },
       updatedAt: { $lte: oneMonthAgo }
     }).sort({ updatedAt: -1 }).lean();
 
-    const lastMonthScore = lastMonthReadiness?.analysisData?.portfolioScore?.overallScore ?? null;
-    const scoreChangeFromLastMonth = lastMonthScore !== null
-      ? Math.round(Number(baseReadiness) - Number(lastMonthScore))
-      : null; // null means no prior data to compare against
-    const integrationInsight = await getIntegrationInsight(user._id);
-    const integrationScore = Number(integrationInsight.integrationScore || 0);
-    const readinessScore = integrationScore > 0
-      ? Math.round((Number(baseReadiness || 0) * 0.85) + (integrationScore * 0.15))
-      : Number(baseReadiness || 0);
-    const lastAnalyzedAt = latestReadiness?.updatedAt || analysis.updatedAt || analysis.createdAt || null;
+    const lastMonthScore = Number(lastMonthReadiness?.analysisData?.portfolioScore?.overallScore || 0);
+    const scoreChangeFromLastMonth = lastMonthReadiness ? Math.round(readinessScore - lastMonthScore) : null;
+    const readinessBreakdown = deriveReadinessBreakdown({
+      portfolioScore: latestPortfolioCache?.analysisData?.portfolioScore,
+      analysis,
+      resume: latestResume,
+      skillGapCache: latestSkillGapCache,
+      integrationInsight
+    });
 
-    if (Number(readinessScore) > 0 && Number(readinessScore) < 60) {
+    const meta = buildSummaryMeta({
+      analysis,
+      latestResume,
+      latestSkillGapCache,
+      latestRecommendationCache,
+      integrationInsight,
+      githubStatus,
+      rateLimited,
+      noUsername
+    });
+
+    const lastAnalyzedAt = latestPortfolioCache?.updatedAt ||
+      latestResume?.analyzedAt ||
+      analysis?.updatedAt ||
+      analysis?.createdAt ||
+      null;
+
+    if (readinessScore > 0 && readinessScore < 60) {
       await createNotification({
-        userId: user._id,
+        userId: req.user._id,
         type: 'low_score',
         title: 'Low Readiness Score Alert',
-        message: `Your current readiness score is ${Math.round(Number(readinessScore))}%. Consider improving missing skills and resume quality.`,
-        dedupeKey: `low_score:${user._id}`,
+        message: `Your current readiness score is ${Math.round(readinessScore)}%. Consider improving missing skills and resume quality.`,
+        dedupeKey: `low_score:${req.user._id}`,
         dedupeWindowHours: 24,
         meta: { readinessScore }
-      });
+      }).catch(() => null);
     }
 
-    res.json({
-      score:        analysis.githubScore || 0,
+    const payload = {
+      score: Number(analysis?.githubScore || 0),
       readinessScore,
+      readinessBreakdown,
       scoreChangeFromLastMonth,
-      repositories: analysis.githubStats?.repos     || 0,
-      stars:        analysis.githubStats?.stars      || 0,
-      forks:        analysis.githubStats?.forks      || 0,
-      followers:    analysis.githubStats?.followers  || 0,
-      userName:     user.name,
-      githubHandle: activeGithubUsername,
+      repositories: Number(analysis?.githubStats?.repos || 0),
+      stars: Number(analysis?.githubStats?.stars || 0),
+      forks: Number(analysis?.githubStats?.forks || 0),
+      followers: Number(analysis?.githubStats?.followers || 0),
+      userName: user.name || 'Developer',
+      githubHandle: githubUsername,
       lastAnalyzedAt,
+      updatedAt: lastAnalyzedAt,
+      languageSource,
       integration: {
         score: integrationScore,
-        providers: (integrationInsight.providers || []).map((p) => ({
-          provider: p.provider,
-          profileScore: p.profileScore,
-          activityScore: p.activityScore,
-          syncedAt: p.syncedAt
+        providers: (integrationInsight.providers || []).map((provider) => ({
+          provider: provider.provider,
+          profileScore: Number(provider.profileScore || 0),
+          activityScore: Number(provider.activityScore || 0),
+          confidence: Number(provider.confidence || 0),
+          syncedAt: provider.syncedAt || null
         })),
         mergedSkills: integrationInsight.mergedSkills || [],
         updatedAt: integrationInsight.updatedAt || null
       },
-      rateLimited:  rateLimited || false,
-      noUsername:   noUsername  || false
-    });
-  } catch (err) {
-    console.error('Dashboard summary error:', err);
+      resume: {
+        analyzed: Boolean(latestResume),
+        atsScore: Number(latestResume?.atsScore || 0),
+        keywordDensity: Number(latestResume?.keywordDensity || 0),
+        formatScore: Number(latestResume?.formatScore || 0),
+        contentQuality: Number(latestResume?.contentQuality || 0),
+        analyzedAt: latestResume?.analyzedAt || null
+      },
+      rateLimited: Boolean(rateLimited),
+      noUsername: Boolean(noUsername),
+      ...meta
+    };
+
+    if (!forceRefresh) {
+      dashboardSummaryCache.set(cacheKey, {
+        payload,
+        expiresAt: Date.now() + DASHBOARD_SUMMARY_TTL_MS
+      });
+    }
+
+    if (maybeSendNotModified(req, res, payload)) return;
+    res.json(payload);
+  } catch (error) {
+    console.error('Dashboard summary error:', error);
     res.status(500).json({ message: 'Failed to load dashboard summary' });
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/contributions
-   ───────────────────────────────────────────── */
 const getDashboardContributions = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-    const githubUsername = user.activeGithubUsername || user.githubUsername;
-    const { analysis } = await ensureAnalysis(req.user._id, githubUsername);
+    const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
+    const data = Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
+      ? analysis.contributionActivity
+      : emptyContributionActivity();
 
-    // If we have real contribution data already stored, return it immediately
-    const stored = analysis?.contributionActivity || [];
-    const hasRealData = stored.length > 0 && stored.some(m => m.count > 0);
-    if (hasRealData) {
-      return res.json(stored);
-    }
-
-    // No real data yet — fetch directly from GitHub using the reliable /commits endpoint
-    if (!githubUsername) {
-      return res.json(buildContributionActivity());
-    }
-
-    // Fetch the user's repos to know which were active in the last 6 months
-    let rawRepos = [];
-    try {
-      rawRepos = await fetchGitHubRepos(githubUsername);
-    } catch {
-      return res.json(buildContributionActivity());
-    }
-
-    const repos = rawRepos.map(r => ({ name: r.name, pushed_at: r.pushed_at }));
-    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, repos);
-
-    // Persist so the next request is instant
-    if (analysis && monthlyActivity.some(m => m.count > 0)) {
-      analysis.contributionActivity = monthlyActivity;
-      await analysis.save();
-    }
-
-    return res.json(monthlyActivity.length > 0 ? monthlyActivity : buildContributionActivity());
-  } catch (err) {
-    console.error('Dashboard contributions error:', err);
+    res.json({
+      data,
+      syncStatus: rateLimited ? 'rate_limited' : toFreshness(analysis?.updatedAt || analysis?.createdAt),
+      updatedAt: analysis?.updatedAt || analysis?.createdAt || null
+    });
+  } catch (error) {
+    console.error('Dashboard contributions error:', error);
     res.status(500).json({ message: 'Failed to load contributions' });
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/languages
-   ───────────────────────────────────────────── */
 const getDashboardLanguages = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
+    const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const { analysis, rateLimited, languageSource } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
 
-    if (analysis?.languageDistribution) {
-      const dist = analysis.languageDistribution instanceof Map
-        ? Object.fromEntries(analysis.languageDistribution)
-        : analysis.languageDistribution;
-      if (Object.keys(dist).length > 0) return res.json(dist);
-    }
-    res.json({});
-  } catch (err) {
-    console.error('Dashboard languages error:', err);
+    res.json({
+      data: toLanguageMap(analysis?.languageDistribution),
+      syncStatus: rateLimited ? 'rate_limited' : toFreshness(analysis?.updatedAt || analysis?.createdAt),
+      updatedAt: analysis?.updatedAt || analysis?.createdAt || null,
+      source: languageSource
+    });
+  } catch (error) {
+    console.error('Dashboard languages error:', error);
     res.status(500).json({ message: 'Failed to load language distribution' });
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/skills
-   ───────────────────────────────────────────── */
 const getDashboardSkills = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
+    const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
 
-    // Derive skills from language distribution
-    const langDist = analysis.languageDistribution instanceof Map
-      ? Object.fromEntries(analysis.languageDistribution)
-      : (analysis.languageDistribution || {});
+    const [{ analysis, rateLimited }, integrationInsight, latestSkillGapCache] = await Promise.all([
+      ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
+      safeGetIntegrationInsight(req.user._id),
+      latestCacheByPredicate(req.user._id, { 'analysisData.missingSkills': { $exists: true } })
+    ]);
 
-    const integrationInsight = await getIntegrationInsight(req.user._id);
-    const topSkills = Object.keys(langDist)
-      .filter(k => langDist[k] > 0)
+    const languageMap = toLanguageMap(analysis?.languageDistribution);
+    const derivedTopSkills = Object.keys(languageMap)
+      .filter((key) => Number(languageMap[key] || 0) > 0)
       .concat(integrationInsight.mergedSkills || []);
-    const { missingSkills } = detectSkillGaps(topSkills);
 
-    res.json({ topSkills, missingSkills });
-  } catch (err) {
-    console.error('Dashboard skills error:', err);
+    let topSkills = [];
+    let missingSkills = [];
+    let coveragePercentage = 0;
+
+    if (latestSkillGapCache?.analysisData) {
+      topSkills = Array.isArray(latestSkillGapCache.analysisData.yourSkills)
+        ? latestSkillGapCache.analysisData.yourSkills.map((skill) => typeof skill === 'string' ? skill : skill?.name || skill?.skill).filter(Boolean)
+        : [];
+      missingSkills = Array.isArray(latestSkillGapCache.analysisData.missingSkills)
+        ? latestSkillGapCache.analysisData.missingSkills.map((skill) => typeof skill === 'string' ? skill : skill?.name || skill?.skill).filter(Boolean)
+        : [];
+      coveragePercentage = clamp(latestSkillGapCache.analysisData.coverage || 0);
+    } else {
+      const detected = detectSkillGaps(derivedTopSkills);
+      topSkills = derivedTopSkills;
+      missingSkills = (detected.missingSkills || []).map((skill) => skill.name || skill).filter(Boolean);
+      const total = topSkills.length + missingSkills.length;
+      coveragePercentage = total > 0 ? Math.round((topSkills.length / total) * 100) : 0;
+    }
+
+    res.json({
+      topSkills: [...new Set(topSkills.map((value) => String(value || '').trim()).filter(Boolean))].slice(0, 12),
+      missingSkills: [...new Set(missingSkills.map((value) => String(value || '').trim()).filter(Boolean))].slice(0, 8),
+      coveragePercentage,
+      syncStatus: rateLimited ? 'rate_limited' : latestSkillGapCache ? toFreshness(latestSkillGapCache.updatedAt) : 'stale',
+      updatedAt: latestSkillGapCache?.updatedAt || analysis?.updatedAt || null
+    });
+  } catch (error) {
+    console.error('Dashboard skills error:', error);
     res.status(500).json({ message: 'Failed to load skills' });
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/recommendations
-   ───────────────────────────────────────────── */
 const getDashboardRecommendations = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-    const { analysis } = await ensureAnalysis(req.user._id, user.activeGithubUsername || user.githubUsername);
+    const [latestRecommendationCache, savedRecommendations] = await Promise.all([
+      latestCacheByPredicate(req.user._id, { 'analysisData.projects': { $exists: true } }),
+      Recommendation.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(4).lean()
+    ]);
 
-    // Derive skills and build recommendations based on real gaps
-    const langDist = analysis.languageDistribution instanceof Map
-      ? Object.fromEntries(analysis.languageDistribution)
-      : (analysis.languageDistribution || {});
-    const integrationInsight = await getIntegrationInsight(req.user._id);
-    const topSkills = Object.keys(langDist)
-      .filter(k => langDist[k] > 0)
-      .concat(integrationInsight.mergedSkills || []);
-    const { missingSkills } = detectSkillGaps(topSkills);
+    const items = latestRecommendationCache?.analysisData
+      ? buildRecommendationPreview(latestRecommendationCache.analysisData)
+      : savedRecommendations.map((item) => ({
+          title: item.title,
+          priority: item.priority,
+          priorityType: item.priorityType,
+          category: item.category
+        }));
 
-    const iconTypes = ['project', 'certification', 'opensource', 'technology'];
-    const categoryMap = { project: 'Project', certification: 'Certification', opensource: 'Open Source', technology: 'Technology' };
-
-    const recs = missingSkills.slice(0, 4).map((skill, i) => {
-      const iconKey = iconTypes[i % iconTypes.length];
-      return {
-        title:        `Learn ${skill.name || skill}`,
-        priority:     i < 2 ? 'High' : 'Medium',
-        priorityType: i < 2 ? 'high' : 'medium',
-        category:     categoryMap[iconKey],
-        icon:         iconKey
-      };
+    res.json({
+      items,
+      syncStatus: latestRecommendationCache ? toFreshness(latestRecommendationCache.updatedAt) : items.length ? 'stale' : 'queued',
+      updatedAt: latestRecommendationCache?.updatedAt || savedRecommendations[0]?.createdAt || null
     });
-
-    res.json(recs.length > 0 ? recs : []);
-  } catch (err) {
-    console.error('Dashboard recommendations error:', err);
+  } catch (error) {
+    console.error('Dashboard recommendations error:', error);
     res.status(500).json({ message: 'Failed to load recommendations' });
   }
 };
 
-/* ─────────────────────────────────────────────
-   GET /api/dashboard/integration-analytics
-   ───────────────────────────────────────────── */
 const getDashboardIntegrationAnalytics = async (req, res) => {
   try {
     const days = Math.max(1, Math.min(30, Number.parseInt(String(req.query.days || '7'), 10)));
     const since = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
 
-    const logs = await IntegrationSyncLog.find({
-      userId: req.user._id,
-      createdAt: { $gte: since }
-    })
-      .sort({ createdAt: -1 })
-      .lean();
+    const [logs, persistedInsight, connections] = await Promise.all([
+      IntegrationSyncLog.find({
+        userId: req.user._id,
+        createdAt: { $gte: since }
+      }).sort({ createdAt: -1 }).lean(),
+      safeGetIntegrationInsight(req.user._id),
+      IntegrationConnection.find({ userId: req.user._id, status: 'connected' })
+        .select('provider lastSyncedAt metadata')
+        .lean()
+    ]);
 
-    const map = new Map();
+    const logMap = new Map();
     logs.forEach((log) => {
-      const key = log.provider;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key).push(log);
+      if (!logMap.has(log.provider)) logMap.set(log.provider, []);
+      logMap.get(log.provider).push(log);
     });
 
-    const persistedInsight = await getIntegrationInsight(req.user._id);
     const insightByProvider = new Map(
-      (persistedInsight.providers || []).map((p) => [
-        p.provider,
+      (persistedInsight.providers || []).map((provider) => [
+        provider.provider,
         {
-          profileScore: Number(p.profileScore || 0),
-          activityScore: Number(p.activityScore || 0),
-          confidence: Number(p.confidence || 0),
-          syncedAt: p.syncedAt || null
+          profileScore: Number(provider.profileScore || 0),
+          activityScore: Number(provider.activityScore || 0),
+          confidence: Number(provider.confidence || 0),
+          syncedAt: provider.syncedAt || null
         }
       ])
     );
 
-    const connections = await IntegrationConnection.find({ userId: req.user._id, status: 'connected' })
-      .select('provider lastSyncedAt metadata')
-      .lean();
-
     const providerSet = new Set([
-      ...Array.from(map.keys()),
+      ...Array.from(logMap.keys()),
       ...Array.from(insightByProvider.keys()),
       ...connections.map((connection) => connection.provider)
     ]);
 
     const cards = Array.from(providerSet.values()).map((provider) => {
-      const providerLogs = map.get(provider) || [];
+      const providerLogs = logMap.get(provider) || [];
       const latest = providerLogs[0] || null;
       const previous = providerLogs[1] || null;
       const insight = insightByProvider.get(provider) || null;
@@ -392,22 +623,15 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
       const profileScore = latest
         ? Number(latest.profileScore || 0)
         : Number(insight?.profileScore || connection?.metadata?.profileScore || 0);
-      const hasDetectedSkills = Boolean(connection?.metadata?.totalSkillsDetected);
-      const connectionConfidence = hasDetectedSkills ? 65 : 45;
-      let fallbackConfidence = Number(connectionConfidence);
-      if (insight?.confidence) {
-        fallbackConfidence = Number(insight.confidence);
-      }
       const confidence = latest
         ? Number(latest.confidence || 0)
-        : fallbackConfidence;
-      const delta = latest && previous
+        : Number(insight?.confidence || (connection?.metadata?.totalSkillsDetected ? 65 : 45));
+      const trendDelta = latest && previous
         ? Number((Number(latest.activityScore || 0) - Number(previous.activityScore || 0)).toFixed(2))
         : 0;
-
-      const success = providerLogs.filter((item) => item.status === 'success').length;
+      const successCount = providerLogs.filter((item) => item.status === 'success').length;
       const successRate = providerLogs.length > 0
-        ? Number(((success / providerLogs.length) * 100).toFixed(1))
+        ? Number(((successCount / providerLogs.length) * 100).toFixed(1))
         : 0;
 
       return {
@@ -415,18 +639,23 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
         activityScore,
         profileScore,
         confidence,
-        trendDelta: delta,
+        trendDelta,
         successRate,
         syncCount: providerLogs.length,
         lastSyncedAt: latest?.createdAt || insight?.syncedAt || connection?.lastSyncedAt || null
       };
     }).sort((a, b) => {
-      const aTs = a.lastSyncedAt ? new Date(a.lastSyncedAt).getTime() : 0;
-      const bTs = b.lastSyncedAt ? new Date(b.lastSyncedAt).getTime() : 0;
-      return bTs - aTs;
+      const left = a.lastSyncedAt ? new Date(a.lastSyncedAt).getTime() : 0;
+      const right = b.lastSyncedAt ? new Date(b.lastSyncedAt).getTime() : 0;
+      return right - left;
     });
 
-    res.json({ days, cards });
+    res.json({
+      days,
+      cards,
+      syncStatus: toFreshness(persistedInsight.updatedAt),
+      updatedAt: persistedInsight.updatedAt || null
+    });
   } catch (error) {
     console.error('Dashboard integration analytics error:', error.message);
     res.status(500).json({ message: 'Failed to load integration analytics' });

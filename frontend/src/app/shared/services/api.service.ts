@@ -111,20 +111,40 @@ export class ApiService {
   }
 
   /* ── Dashboard ── */
-  getDashboardSummary(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/summary`);
+  getDashboardSummary(refresh = false): Observable<any> {
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/summary`, {
+      refresh: refresh ? 'true' : undefined
+    }));
   }
 
-  getDashboardContributions(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/contributions`);
+  getDashboardContributions(refresh = false): Observable<any> {
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/contributions`, {
+      refresh: refresh ? 'true' : undefined
+    }));
   }
 
-  getDashboardLanguages(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/languages`);
+  getDashboardLanguages(refresh = false): Observable<any> {
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/languages`, {
+      refresh: refresh ? 'true' : undefined
+    }));
+  }
+
+  getDashboardSkills(refresh = false): Observable<any> {
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/skills`, {
+      refresh: refresh ? 'true' : undefined
+    }));
+  }
+
+  getDashboardRecommendations(refresh = false): Observable<any> {
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/recommendations`, {
+      refresh: refresh ? 'true' : undefined
+    }));
   }
 
   getDashboardIntegrationAnalytics(days = 7): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard/integration-analytics?days=${encodeURIComponent(String(days))}`);
+    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/integration-analytics`, {
+      days: String(days)
+    }));
   }
 
   /* ── Audit Logs ── */
@@ -693,5 +713,17 @@ export class ApiService {
 
   updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/dates`, { sprintStartDate, sprintEndDate });
+  }
+
+  private withQuery(url: string, params: Record<string, string | undefined>): string {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.set(key, value);
+      }
+    });
+
+    const suffix = query.toString();
+    return suffix ? `${url}?${suffix}` : url;
   }
 }

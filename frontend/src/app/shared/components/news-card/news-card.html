@@ -1,6 +1,6 @@
 <article class="news-card">
   <div class="image-wrap">
-    <img class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
+    <img title="image news" class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
     <div class="overlay-badges">
       <span class="source-badge" [ngClass]="sourceTone">{{ news.source }}</span>
       <span class="category-badge">{{ news.category }}</span>

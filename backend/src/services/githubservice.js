@@ -173,6 +173,135 @@ const fetchRepoLanguages = async (username, repoName) => {
   }
 };
 
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Math.round(Number(value || 0))));
+
+const buildFallbackLanguageDistribution = (repos = []) => {
+  const langCounts = {};
+  let total = 0;
+
+  repos.forEach((repo) => {
+    if (!repo.language) return;
+    langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+    total += 1;
+  });
+
+  return Object.keys(langCounts).map((language) => ({
+    language,
+    percentage: total > 0 ? Math.round((langCounts[language] / total) * 100) : 0
+  })).sort((a, b) => b.percentage - a.percentage);
+};
+
+const buildLanguageDistribution = async (username, repos = []) => {
+  const candidateRepos = repos
+    .filter((repo) => !repo.fork)
+    .sort((a, b) => new Date(b.pushed_at || b.updated_at || 0).getTime() - new Date(a.pushed_at || a.updated_at || 0).getTime())
+    .slice(0, 30);
+
+  if (!candidateRepos.length) {
+    return {
+      distribution: buildFallbackLanguageDistribution(repos),
+      source: 'primary_language'
+    };
+  }
+
+  const languagePayloads = await Promise.all(
+    candidateRepos.map((repo) => fetchRepoLanguages(username, repo.name))
+  );
+
+  const byteMap = {};
+  languagePayloads.forEach((payload) => {
+    Object.entries(payload || {}).forEach(([language, bytes]) => {
+      byteMap[language] = (byteMap[language] || 0) + Number(bytes || 0);
+    });
+  });
+
+  const totalBytes = Object.values(byteMap).reduce((sum, value) => sum + Number(value || 0), 0);
+  if (!totalBytes) {
+    return {
+      distribution: buildFallbackLanguageDistribution(repos),
+      source: 'primary_language'
+    };
+  }
+
+  const distribution = Object.entries(byteMap).map(([language, bytes]) => ({
+    language,
+    percentage: Math.round((Number(bytes || 0) / totalBytes) * 100)
+  })).sort((a, b) => b.percentage - a.percentage);
+
+  return {
+    distribution,
+    source: 'language_bytes'
+  };
+};
+
+const buildGitHubCompositeScores = ({ aiScores = {}, repos = [], userData = {}, languageDistribution = [], repositoryActivity = [] }) => {
+  const repoCount = Number(repos.length || 0);
+  const totalStars = repos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
+  const totalForks = repos.reduce((sum, repo) => sum + Number(repo.forks_count || 0), 0);
+  const followers = Number(userData?.followers || 0);
+  const uniqueLanguages = languageDistribution.length;
+  const totalCommits = repositoryActivity.reduce((sum, item) => sum + Number(item.commits || 0), 0);
+  const activeRepos = repos.filter((repo) => {
+    const pushedAt = repo.pushed_at || repo.updated_at;
+    return pushedAt && ((Date.now() - new Date(pushedAt).getTime()) <= (180 * 24 * 60 * 60 * 1000));
+  }).length;
+
+  const repoSignal = clamp((repoCount / 18) * 100);
+  const starSignal = clamp((Math.log10(totalStars + 1) / 2.2) * 100);
+  const forkSignal = clamp((Math.log10(totalForks + 1) / 1.8) * 100);
+  const followerSignal = clamp((Math.log10(followers + 1) / 1.8) * 100);
+  const diversitySignal = clamp((uniqueLanguages / 8) * 100);
+  const contributionSignal = clamp((Math.log10(totalCommits + 1) / 2.4) * 100);
+  const activitySignal = clamp((activeRepos / Math.max(Math.min(repoCount, 12), 1)) * 100);
+
+  const codeQuality = clamp(aiScores.codeQuality || 0);
+  const projectDiversity = clamp(aiScores.projectDiversity || diversitySignal);
+  const originality = clamp(aiScores.originality || average([starSignal, forkSignal]));
+
+  return {
+    codeQuality,
+    projectDiversity,
+    originality,
+    contribution: clamp((contributionSignal * 0.7) + (activitySignal * 0.3)),
+    consistency: activitySignal,
+    projectImpact: clamp((starSignal * 0.35) + (forkSignal * 0.2) + (repoSignal * 0.2) + (originality * 0.25)),
+    skillCoverage: clamp((diversitySignal * 0.55) + (projectDiversity * 0.45)),
+    profileStrength: clamp((repoSignal * 0.35) + (followerSignal * 0.2) + (starSignal * 0.25) + (activitySignal * 0.2)),
+    overall: clamp(
+      (codeQuality * 0.28) +
+      (projectDiversity * 0.18) +
+      (originality * 0.14) +
+      (contributionSignal * 0.18) +
+      (activitySignal * 0.12) +
+      (repoSignal * 0.1)
+    )
+  };
+};
+
+const average = (values = []) => {
+  if (!Array.isArray(values) || !values.length) return 0;
+  return values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length;
+};
+
+const buildPerRepositoryActivityScore = (repo, commits = 0) => {
+  const stars = Number(repo?.stargazers_count || 0);
+  const forks = Number(repo?.forks_count || 0);
+  const pushedAt = repo?.pushed_at || repo?.updated_at;
+  const recencyDays = pushedAt ? Math.max(0, (Date.now() - new Date(pushedAt).getTime()) / (24 * 60 * 60 * 1000)) : 365;
+
+  const commitSignal = clamp((Math.log10(Number(commits || 0) + 1) / 2.2) * 100);
+  const starSignal = clamp((Math.log10(stars + 1) / 1.6) * 100);
+  const forkSignal = clamp((Math.log10(forks + 1) / 1.5) * 100);
+  const recencySignal = clamp(100 - Math.min(100, (recencyDays / 180) * 100));
+
+  return clamp(
+    (commitSignal * 0.45) +
+    (starSignal * 0.2) +
+    (forkSignal * 0.15) +
+    (recencySignal * 0.2)
+  );
+};
+
 /**
  * AI-Driven GitHub Analysis
  */
@@ -226,20 +355,6 @@ const analyzeGitHubProfile = async (username) => {
 
   const aiResult = await aiService.runAIAnalysis(prompt, fallback);
 
-  // Calculate language distribution for the frontend Donut Chart
-  const langCounts = {};
-  let totalLangs = 0;
-  repos.forEach(r => {
-    if (r.language) {
-      langCounts[r.language] = (langCounts[r.language] || 0) + 1;
-      totalLangs++;
-    }
-  });
-  const languageDistribution = Object.keys(langCounts).map(lang => ({
-    language: lang,
-    percentage: Math.round((langCounts[lang] / totalLangs) * 100)
-  })).sort((a, b) => b.percentage - a.percentage);
-
   // Calculate repository activity — fetch real commit counts for top 10 repos
   const top10Repos = repos
     .sort((a, b) => (b.stargazers_count + b.forks_count) - (a.stargazers_count + a.forks_count))
@@ -257,14 +372,30 @@ const analyzeGitHubProfile = async (username) => {
   // Also build a commit map for the full repo list (used when saving to DB)
   const commitMap = {};
   top10Repos.forEach((r, i) => { commitMap[r.name] = commitCounts[i] || 0; });
+  const { distribution: languageDistribution, source: languageDistributionSource } = await buildLanguageDistribution(username, repos);
+  const compositeScores = buildGitHubCompositeScores({
+    aiScores: aiResult.scores || {},
+    repos,
+    userData,
+    languageDistribution,
+    repositoryActivity
+  });
 
   // Return combined raw stats + AI insights + Chart data
   return {
     ...aiResult,
+    scores: {
+      ...(aiResult.scores || {}),
+      projectImpact: compositeScores.projectImpact,
+      consistency: compositeScores.consistency,
+      contribution: compositeScores.contribution,
+      skillCoverage: compositeScores.skillCoverage,
+      profileStrength: compositeScores.profileStrength
+    },
     repoCount: repos.length,
     totalStars: repos.reduce((s, r) => s + (r.stargazers_count || 0), 0),
     totalForks: repos.reduce((s, r) => s + (r.forks_count || 0), 0),
-    activityScore: aiResult.scores?.codeQuality || 70,
+    activityScore: compositeScores.overall,
     languageDistribution,
     repositoryActivity,
     commitMap,
@@ -274,6 +405,7 @@ const analyzeGitHubProfile = async (username) => {
         stars: r.stargazers_count,
         forks: r.forks_count,
         commits: commitMap[r.name] || 0,
+        activityScore: buildPerRepositoryActivityScore(r, commitMap[r.name] || 0),
         updatedAt: r.updated_at || null,
         pushedAt: r.pushed_at || null,
         createdAt: r.created_at || null

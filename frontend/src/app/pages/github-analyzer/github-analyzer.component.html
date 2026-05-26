@@ -127,7 +127,11 @@
         <div class="chart-card-header">
           <div>
             <h4 class="chart-title">Language Distribution</h4>
-            <p class="chart-subtitle">Primary languages across repositories</p>
+            <p class="chart-subtitle">
+              {{ result.languageDistributionSource === 'language_bytes'
+                ? 'Real GitHub language-byte distribution across repositories'
+                : 'Primary languages across repositories' }}
+            </p>
           </div>
         </div>
         <div class="chart-body donut-body">

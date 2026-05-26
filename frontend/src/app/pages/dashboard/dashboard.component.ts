@@ -1,17 +1,17 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Chart, registerables } from 'chart.js';
+import { Subscription, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
 import { IntegrationsService, ProviderName } from '../../shared/services/integrations.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
-import { Subscription, forkJoin, of } from 'rxjs';
-import { catchError, distinctUntilChanged } from 'rxjs/operators';
 import { TenantContextService } from '../../shared/services/tenant-context.service';
 
 Chart.register(...registerables);
@@ -74,6 +74,21 @@ interface IntegrationInsightProvider {
   syncedAt?: string | null;
 }
 
+interface ScoreBreakdown {
+  codeQuality: number;
+  skillCoverage: number;
+  industryReadiness: number;
+  projectImpact: number;
+}
+
+interface DashboardSourcesUsed {
+  github?: { connected?: boolean; available?: boolean; status?: string };
+  resume?: { connected?: boolean; available?: boolean; status?: string };
+  skillGap?: { connected?: boolean; available?: boolean; status?: string };
+  recommendations?: { connected?: boolean; available?: boolean; status?: string };
+  integrations?: { connected?: boolean; available?: boolean; status?: string };
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -82,11 +97,10 @@ interface IntegrationInsightProvider {
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('skillRadar') skillRadar!: ElementRef;
-  @ViewChild('activityChart') activityChart!: ElementRef;
-  @ViewChild('languageChart') languageChart!: ElementRef;
+  @ViewChild('skillRadar') skillRadar!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('activityChart') activityChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('languageChart') languageChart!: ElementRef<HTMLCanvasElement>;
 
-  /* State */
   developerScore = 0;
   githubScore = 0;
   lastAnalyzed = 'Loading...';
@@ -95,31 +109,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   rateLimitWarning = false;
   noGithubUsername = false;
-  /** null = no prior data; number = point change vs last month */
   scoreChangeFromLastMonth: number | null = null;
 
-  readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
+  readonly careerStacks: CareerStack[] = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
 
   statCards: StatCard[] = [
-    { label: 'Repositories', value: 0, growth: '', iconType: 'repos',     },
-    { label: 'Total Stars',  value: 0, growth: '', iconType: 'stars',     },
-    { label: 'Total Forks',  value: 0, growth: '', iconType: 'forks',     },
-    { label: 'Followers',    value: 0, growth: '', iconType: 'followers', },
+    { label: 'Repositories', value: 0, growth: '', iconType: 'repos' },
+    { label: 'Total Stars', value: 0, growth: '', iconType: 'stars' },
+    { label: 'Total Forks', value: 0, growth: '', iconType: 'forks' },
+    { label: 'Followers', value: 0, growth: '', iconType: 'followers' }
   ];
 
   totalActivity = 0;
   coveragePercentage = 0;
-
   topSkills: string[] = [];
   missingSkills: string[] = [];
-
   languageLegend: LanguageLegendItem[] = [];
   recommendations: RecommendationItem[] = [];
-  aiBreakdown: any = null;
+  aiBreakdown: ScoreBreakdown | null = null;
   confidenceScore = 0;
   scoreReasons: string[] = [];
-  explainabilityBreakdown: any = null;
+  explainabilityBreakdown: { weights: Record<string, number>; featureScores: ScoreBreakdown } | null = null;
   integrationScore = 0;
   integrationAnalyticsCards: IntegrationAnalyticsCard[] = [];
   integrationInsightsByProvider: Record<string, IntegrationInsightProvider> = {};
@@ -137,51 +148,51 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private viewInitialized = false;
   private activityInstance: Chart | null = null;
   private languageInstance: Chart | null = null;
-
   private pendingActivityData: { month: string; count: number }[] | null = null;
   private pendingLanguageData: Record<string, number> | null = null;
-  private readonly subscriptions: Subscription = new Subscription();
+  private readonly subscriptions = new Subscription();
+  private requestCycle = 0;
+  private sourcesUsed: DashboardSourcesUsed = {};
+  private languageSource = 'cached_snapshot';
 
   readonly statIconHtml: Record<string, SafeHtml>;
   readonly recIconHtml: Record<string, SafeHtml>;
 
   constructor(
-    private readonly apiService:           ApiService,
+    private readonly apiService: ApiService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly cdr:                  ChangeDetectorRef,
-    private readonly tenantContext:        TenantContextService,
-    private readonly integrationsService:  IntegrationsService,
-    private readonly sanitizer:            DomSanitizer
+    private readonly cdr: ChangeDetectorRef,
+    private readonly tenantContext: TenantContextService,
+    private readonly integrationsService: IntegrationsService,
+    private readonly sanitizer: DomSanitizer
   ) {
     const statIcons: Record<string, string> = {
-      repos:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-      stars:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-      forks:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><path d="M12 12v3"/></svg>`,
-      followers: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      repos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+      stars: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+      forks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><path d="M12 12v3"/></svg>`,
+      followers: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
     };
 
     const recIcons: Record<string, string> = {
-      project:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+      project: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
       certification: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
-      opensource:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
-      technology:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+      opensource: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+      technology: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`
     };
 
-    const safeStats: Record<string, SafeHtml> = {};
-    for (const [key, svg] of Object.entries(statIcons)) safeStats[key] = this.sanitizer.bypassSecurityTrustHtml(svg);
-    this.statIconHtml = safeStats;
-
-    const safeRecs: Record<string, SafeHtml> = {};
-    for (const [key, svg] of Object.entries(recIcons)) safeRecs[key] = this.sanitizer.bypassSecurityTrustHtml(svg);
-    this.recIconHtml = safeRecs;
+    this.statIconHtml = Object.fromEntries(
+      Object.entries(statIcons).map(([key, svg]) => [key, this.sanitizer.bypassSecurityTrustHtml(svg)])
+    );
+    this.recIconHtml = Object.fromEntries(
+      Object.entries(recIcons).map(([key, svg]) => [key, this.sanitizer.bypassSecurityTrustHtml(svg)])
+    );
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
-        )
+        debounceTime(250),
+        distinctUntilChanged((a, b) => a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel)
       ).subscribe(() => {
         this.loadDashboardData();
       })
@@ -190,20 +201,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(
       this.tenantContext.state$.pipe(
         distinctUntilChanged((a, b) =>
-          a.organizationId === b.organizationId && a.teamId === b.teamId && a.organizationName === b.organizationName && a.teamName === b.teamName
+          a.organizationId === b.organizationId &&
+          a.teamId === b.teamId &&
+          a.organizationName === b.organizationName &&
+          a.teamName === b.teamName
         )
       ).subscribe((ctx) => {
         this.tenantOrgName = ctx.organizationName || '';
         this.tenantTeamName = ctx.teamName || '';
 
         if (ctx.teamId) {
-          this.apiService.getTeamAnalytics(ctx.teamId).pipe(catchError(() => of(null))).subscribe((res: any) => {
-            this.tenantTeamAnalytics = res
-              ? {
-                  totalMembers: Number(res.totalMembers || 0),
-                  averageReadinessScore: Number(res.averageReadinessScore || 0)
-                }
-              : null;
+          this.apiService.getTeamAnalytics(ctx.teamId).pipe(
+            catchError(() => of(null))
+          ).subscribe((res: any) => {
+            this.tenantTeamAnalytics = res ? {
+              totalMembers: Number(res.totalMembers || 0),
+              averageReadinessScore: Number(res.averageReadinessScore || 0)
+            } : null;
             this.cdr.detectChanges();
           });
         } else {
@@ -212,10 +226,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     );
+
+    this.loadDashboardData();
   }
 
-  get selectedCareerStack(): CareerStack       { return this.careerProfileService.careerStack; }
-  get selectedExperienceLevel(): ExperienceLevel { return this.careerProfileService.experienceLevel; }
+  get selectedCareerStack(): CareerStack {
+    return this.careerProfileService.careerStack;
+  }
+
+  get selectedExperienceLevel(): ExperienceLevel {
+    return this.careerProfileService.experienceLevel;
+  }
 
   onCareerStackChange(stack: CareerStack): void {
     this.careerProfileService.setActiveCareerProfile(
@@ -231,187 +252,79 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe();
   }
 
-  reanalyze() {
+  reanalyze(): void {
     this.loadDashboardData(true);
   }
 
-  loadDashboardData(forceRefresh = false) {
+  loadDashboardData(forceRefresh = false): void {
+    const cycle = ++this.requestCycle;
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    // 1. Fetch Basic Dashboard Stats
-    this.apiService.getDashboardSummary().subscribe({
+    this.apiService.getDashboardSummary(forceRefresh).subscribe({
       next: (data: any) => {
-        this.githubHandle     = data.githubHandle ? `@${data.githubHandle}` : '';
-        this.lastAnalyzedAt   = data.lastAnalyzedAt || null;
-        this.lastAnalyzed     = this.formatLastAnalyzed(this.lastAnalyzedAt);
-        this.rateLimitWarning = data.rateLimited  === true;
-        this.noGithubUsername = data.noUsername   === true;
+        if (!this.isActiveCycle(cycle)) return;
+
+        this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
+        this.lastAnalyzedAt = data.lastAnalyzedAt || null;
+        this.lastAnalyzed = this.formatLastAnalyzed(this.lastAnalyzedAt);
+        this.rateLimitWarning = data.rateLimited === true || data.syncStatus === 'rate_limited';
+        this.noGithubUsername = data.noUsername === true;
         this.githubScore = Number(data.score || 0);
         this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
-
-        const summaryReadiness = Number(data.readinessScore || 0);
+        this.developerScore = Number(data.readinessScore || 0);
         this.integrationScore = Number(data?.integration?.score || 0);
-        if (summaryReadiness > 0 && this.developerScore === 0) {
-          this.developerScore = summaryReadiness;
-        }
+        this.sourcesUsed = data?.sourcesUsed || {};
+        this.languageSource = String(data?.languageSource || 'cached_snapshot');
+
+        this.resumeMetrics = {
+          atsScore: Number(data?.resume?.atsScore || 0),
+          keywordDensity: Number(data?.resume?.keywordDensity || 0),
+          formatScore: Number(data?.resume?.formatScore || 0),
+          contentQuality: Number(data?.resume?.contentQuality || 0)
+        };
+
+        this.aiBreakdown = this.normalizeBreakdown(data?.readinessBreakdown);
+        this.explainabilityBreakdown = {
+          weights: this.getBreakdownWeights(),
+          featureScores: this.aiBreakdown
+        };
+        this.confidenceScore = this.buildConfidenceScore();
+        this.scoreReasons = this.buildScoreReasons();
 
         this.statCards = [
-          { label: 'Repositories', value: data.repositories || 0, growth: '', iconType: 'repos'     },
-          { label: 'Total Stars',  value: data.stars        || 0, growth: '', iconType: 'stars'     },
-          { label: 'Total Forks',  value: data.forks        || 0, growth: '', iconType: 'forks'     },
-          { label: 'Followers',    value: data.followers    || 0, growth: '', iconType: 'followers' },
+          { label: 'Repositories', value: Number(data.repositories || 0), growth: '', iconType: 'repos' },
+          { label: 'Total Stars', value: Number(data.stars || 0), growth: '', iconType: 'stars' },
+          { label: 'Total Forks', value: Number(data.forks || 0), growth: '', iconType: 'forks' },
+          { label: 'Followers', value: Number(data.followers || 0), growth: '', iconType: 'followers' }
         ];
-        
-        // After summary, we might need resume analysis for next steps
-        this.fetchAiAnalysis(data.githubHandle);
+
+        this.loadActivityAndLanguage(forceRefresh, cycle);
+        this.loadSkills(forceRefresh, cycle);
+        this.loadRecommendations(forceRefresh, cycle);
+        this.loadIntegrationAnalytics(cycle);
+        this.loadIntegrationInsights();
+
+        if (this.viewInitialized) {
+          this.initRadarChart();
+        }
+
+        this.cdr.detectChanges();
       },
       error: () => {
+        if (!this.isActiveCycle(cycle)) return;
         this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
-
-    this.loadActivityAndLanguage();
-    this.loadIntegrationAnalytics();
-    this.loadIntegrationInsights();
   }
 
-  fetchAiAnalysis(username: string) {
-    if (!username) {
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        return;
-    }
-
-    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
-
-    // Parallel fetch: Resume Analysis + AI Skill Gap
-    forkJoin({
-        resume: this.apiService.getResumeAnalysis().pipe(
-            catchError(() => of({}))
-        ),
-        skillGap: this.apiService.getSkillGap(username, careerStack, experienceLevel)
-    }).subscribe({
-        next: (results: any) => {
-            const gapData    = results.skillGap;
-            const resumeData = results.resume;
-
-            this.resumeMetrics = {
-              atsScore: Number(resumeData?.atsScore || 0),
-              keywordDensity: Number(resumeData?.keywordDensity || 0),
-              formatScore: Number(resumeData?.formatScore || 0),
-              contentQuality: Number(resumeData?.contentQuality || 0)
-            };
-
-            if (gapData.yourSkills && Array.isArray(gapData.yourSkills)) {
-                this.topSkills = gapData.yourSkills.map((s: any) => {
-                    if (typeof s === 'string') return s;
-                    if (s.name)  return s.name;
-                    if (s.skill) return s.skill;
-                    return String(s);
-                });
-            } else {
-                this.topSkills = [];
-            }
-
-            if (gapData.missingSkills && Array.isArray(gapData.missingSkills)) {
-                this.missingSkills = gapData.missingSkills.map((s: any) => {
-                    if (typeof s === 'string') return s;
-                    if (s.name)  return s.name;
-                    if (s.skill) return s.skill;
-                    return String(s);
-                });
-            } else {
-                this.missingSkills = [];
-            }
-
-            const total = this.topSkills.length + this.missingSkills.length;
-            const hasCoverage = gapData.coverage !== undefined;
-            const derivedCoverage = total > 0 ? Math.round((this.topSkills.length / total) * 100) : 0;
-            this.coveragePercentage = hasCoverage
-              ? Math.max(0, Math.min(100, Number(gapData.coverage)))
-              : derivedCoverage;
-
-            this.apiService.getPortfolioScore(username, careerStack, experienceLevel, resumeData, gapData.githubStats).subscribe({
-                next: (scoreResult) => {
-                  this.developerScore = Number(scoreResult.overallScore || this.developerScore || 0);
-                    if (scoreResult.breakdown) {
-                        this.aiBreakdown = scoreResult.breakdown;
-                    }
-                    this.confidenceScore = Math.max(0, Math.min(100, Number(scoreResult.confidenceScore || 0)));
-                    this.scoreReasons = Array.isArray(scoreResult.reasons) ? scoreResult.reasons : [];
-                    this.explainabilityBreakdown = scoreResult.explainabilityBreakdown || null;
-                    if (this.viewInitialized) this.initRadarChart();
-                    this.cdr.detectChanges();
-                },
-                error: (err) => {
-                    console.error('Portfolio score error:', err);
-                    this.cdr.detectChanges();
-                }
-            });
-
-            this.apiService.getRecommendations(username, careerStack, experienceLevel, this.topSkills, this.missingSkills).subscribe({
-                next: (recResult) => {
-                    this.recommendations = (recResult.projects || []).slice(0, 3).map((p: any) => ({
-                        title:        p.title,
-                        priority:     'High',
-                        category:     (p.tech || []).slice(0, 2).join(', '),
-                        priorityType: 'high',
-                        icon:         'technology'
-                    }));
-                    this.cdr.detectChanges();
-                },
-                error: (err) => {
-                    console.error('Recommendations error:', err);
-                    this.cdr.detectChanges();
-                }
-            });
-
-            this.isLoading = false;
-            this.cdr.detectChanges();
-        },
-        error: (err) => {
-            console.error('Skill gap error:', err);
-            this.isLoading = false;
-            this.cdr.detectChanges();
-        }
-    });
-  }
-
-  ngAfterViewInit() {
-    this.viewInitialized = true;
-    this.loadActivityAndLanguage();
-
-    // If skills already loaded (API was faster than view init), draw radar now
-    setTimeout(() => {
-      this.initRadarChart();
-      // Flush any pending chart data that arrived before the canvas was ready
-      if (this.pendingActivityData) {
-        this.initActivityChart(this.pendingActivityData);
-        this.pendingActivityData = null;
-      }
-      if (this.pendingLanguageData) {
-        this.initLanguageChart(this.pendingLanguageData);
-        this.pendingLanguageData = null;
-      }
-      this.cdr.detectChanges();
-    }, 50);
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-    this.radarInstance?.destroy();
-    this.activityInstance?.destroy();
-    this.languageInstance?.destroy();
-  }
-
-  loadActivityAndLanguage() {
-    this.apiService.getDashboardContributions().subscribe({
-      next: (data: any) => {
-        // Always render the chart as long as we have month labels,
-        // even if all counts are zero — the Y axis will show 0 correctly.
-        if (Array.isArray(data) && data.length > 0) {
+  loadActivityAndLanguage(forceRefresh = false, cycle = this.requestCycle): void {
+    this.apiService.getDashboardContributions(forceRefresh).subscribe({
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+        const data = Array.isArray(payload?.data) ? payload.data : [];
+        if (data.length > 0) {
           if (this.viewInitialized && this.activityChart?.nativeElement) {
             this.initActivityChart(data);
           } else {
@@ -423,23 +336,87 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {}
     });
 
-    this.apiService.getDashboardLanguages().subscribe({
-      next: (data: any) => {
-        if (data && Object.keys(data).length > 0) {
+    this.apiService.getDashboardLanguages(forceRefresh).subscribe({
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+        const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+        this.languageSource = String(payload?.source || this.languageSource);
+        if (Object.keys(data).length > 0) {
           if (this.viewInitialized && this.languageChart?.nativeElement) {
             this.initLanguageChart(data);
           } else {
             this.pendingLanguageData = data;
           }
+        } else {
+          this.languageLegend = [];
         }
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
   }
 
-  loadIntegrationAnalytics() {
+  loadSkills(forceRefresh = false, cycle = this.requestCycle): void {
+    this.apiService.getDashboardSkills(forceRefresh).subscribe({
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+
+        this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : [];
+        this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : [];
+        this.coveragePercentage = Math.max(0, Math.min(100, Number(payload?.coveragePercentage || 0)));
+        this.aiBreakdown = this.buildRadarBreakdown();
+        this.explainabilityBreakdown = {
+          weights: this.getBreakdownWeights(),
+          featureScores: this.aiBreakdown
+        };
+        this.scoreReasons = this.buildScoreReasons();
+
+        if (this.viewInitialized) {
+          this.initRadarChart();
+        }
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (!this.isActiveCycle(cycle)) return;
+        this.topSkills = [];
+        this.missingSkills = [];
+        this.coveragePercentage = 0;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadRecommendations(forceRefresh = false, cycle = this.requestCycle): void {
+    this.apiService.getDashboardRecommendations(forceRefresh).subscribe({
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+
+        const items = Array.isArray(payload?.items) ? payload.items : [];
+        this.recommendations = items.slice(0, 4).map((item: any) => ({
+          title: String(item?.title || 'Recommendation'),
+          priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
+          category: String(item?.category || 'Technology'),
+          priorityType: item?.priorityType === 'low' || item?.priorityType === 'medium' ? item.priorityType : 'high',
+          icon: this.iconForCategory(item?.category)
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (!this.isActiveCycle(cycle)) return;
+        this.recommendations = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadIntegrationAnalytics(cycle = this.requestCycle): void {
     this.apiService.getDashboardIntegrationAnalytics(7).subscribe({
-      next: (payload) => {
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+
         this.integrationAnalyticsCards = Array.isArray(payload?.cards)
           ? payload.cards.map((card: any) => ({
               provider: String(card.provider || '').toLowerCase(),
@@ -455,6 +432,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.detectChanges();
       },
       error: () => {
+        if (!this.isActiveCycle(cycle)) return;
         this.integrationAnalyticsCards = [];
         this.cdr.detectChanges();
       }
@@ -489,6 +467,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.viewInitialized = true;
+    setTimeout(() => {
+      this.initRadarChart();
+      if (this.pendingActivityData) {
+        this.initActivityChart(this.pendingActivityData);
+        this.pendingActivityData = null;
+      }
+      if (this.pendingLanguageData) {
+        this.initLanguageChart(this.pendingLanguageData);
+        this.pendingLanguageData = null;
+      }
+      this.cdr.detectChanges();
+    }, 50);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.radarInstance?.destroy();
+    this.activityInstance?.destroy();
+    this.languageInstance?.destroy();
+  }
+
   providerName(provider: string): string {
     const map: Record<string, string> = {
       github: 'GitHub',
@@ -500,39 +501,26 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   integrationInsight(provider: string): IntegrationInsightProvider | null {
-    const key = String(provider || '').toLowerCase();
-    return this.integrationInsightsByProvider[key] || null;
+    return this.integrationInsightsByProvider[String(provider || '').toLowerCase()] || null;
   }
 
-  /* ── Charts ── */
-  initRadarChart() {
+  initRadarChart(): void {
     if (!this.skillRadar?.nativeElement) return;
     this.radarInstance?.destroy();
 
-    const categories = ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'];
-    let dataPoints = [
-      Math.max(0, Math.min(100, this.githubScore || 0)),
-      Math.max(0, Math.min(100, this.coveragePercentage || 0)),
-      Math.max(0, Math.min(100, Math.round((this.resumeMetrics.atsScore + this.resumeMetrics.keywordDensity + this.resumeMetrics.contentQuality) / 3) || this.developerScore || 0)),
-      Math.max(0, Math.min(100, Math.round((this.statCards[1]?.value > 0 ? 70 : 50) + (this.statCards[0]?.value > 0 ? 10 : 0))))
-    ];
-
-    if (this.aiBreakdown) {
-        dataPoints = [
-            this.aiBreakdown.codeQuality || 70,
-            this.aiBreakdown.skillCoverage || 70,
-            this.aiBreakdown.industryReadiness || 70,
-            this.aiBreakdown.projectImpact || 70
-        ];
-    }
-
+    const breakdown = this.buildRadarBreakdown();
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',
       data: {
-        labels: categories,
+        labels: ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'],
         datasets: [{
           label: 'Your Skills',
-          data: dataPoints,
+          data: [
+            breakdown.codeQuality,
+            breakdown.skillCoverage,
+            breakdown.industryReadiness,
+            breakdown.projectImpact
+          ],
           borderColor: '#6366F1',
           backgroundColor: 'rgba(99, 102, 241, 0.12)',
           borderWidth: 2,
@@ -540,7 +528,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           pointBorderColor: '#1E293B',
           pointBorderWidth: 2,
           pointRadius: 4,
-          pointHoverRadius: 6,
+          pointHoverRadius: 6
         }]
       },
       options: {
@@ -564,83 +552,55 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /**
-   * Returns the formatted score trend label for display.
-   * - null change → 'No prior data'
-   * - 0 change    → 'No change from last month'
-   * - positive    → '+N pts from last month'
-   * - negative    → 'N pts from last month'
-   */
   get scoreTrendLabel(): string {
     if (this.scoreChangeFromLastMonth === null) return 'No prior data yet';
-    if (this.scoreChangeFromLastMonth === 0)    return 'No change from last month';
+    if (this.scoreChangeFromLastMonth === 0) return 'No change from last month';
     const sign = this.scoreChangeFromLastMonth > 0 ? '+' : '';
     return `${sign}${this.scoreChangeFromLastMonth} pts from last month`;
   }
 
-  /** true = improved or flat, false = declined */
   get scoreTrendUp(): boolean {
     return (this.scoreChangeFromLastMonth ?? 0) >= 0;
   }
 
-  /**
-   * Maps the developer readiness score to a realistic percentile label.
-   * Based on industry-standard score distributions for software developers
-   * (Stack Overflow Developer Survey, GitHub Octoverse, LinkedIn Talent Insights).
-   *
-   * Score distribution approximation:
-   *   90+  → top ~5%   (exceptional — strong OSS, high stars, full resume match)
-   *   80–89 → top ~15%  (strong — solid GitHub + resume coverage)
-   *   70–79 → top ~30%  (above average — good skills, some gaps)
-   *   60–69 → top ~50%  (average — typical junior/mid developer)
-   *   50–59 → top ~65%  (below average — limited portfolio)
-   *   <50   → bottom ~35% (early stage — needs significant improvement)
-   */
   get percentileLabel(): string {
-    const s = Math.round(this.developerScore);
-    if (s >= 90) return 'top 5%';
-    if (s >= 80) return 'top 15%';
-    if (s >= 70) return 'top 30%';
-    if (s >= 60) return 'top 50%';
-    if (s >= 50) return 'top 65%';
+    const score = Math.round(this.developerScore);
+    if (score >= 90) return 'top 5%';
+    if (score >= 80) return 'top 15%';
+    if (score >= 70) return 'top 30%';
+    if (score >= 60) return 'top 50%';
+    if (score >= 50) return 'top 65%';
     return 'bottom 35%';
   }
 
   get scoreBreakdownRows(): { label: string; value: number }[] {
-    const src = this.aiBreakdown || {};
+    const src = this.buildRadarBreakdown();
     return [
-      { label: 'Code Quality', value: Math.max(0, Math.min(100, Number(src.codeQuality ?? this.githubScore ?? 0))) },
-      { label: 'Skill Coverage', value: Math.max(0, Math.min(100, Number(src.skillCoverage ?? this.coveragePercentage ?? 0))) },
-      { label: 'Industry Readiness', value: Math.max(0, Math.min(100, Number(src.industryReadiness ?? this.developerScore ?? 0))) },
-      { label: 'Project Impact', value: Math.max(0, Math.min(100, Number(src.projectImpact ?? this.developerScore ?? 0))) }
+      { label: 'Code Quality', value: src.codeQuality },
+      { label: 'Skill Coverage', value: src.skillCoverage },
+      { label: 'Industry Readiness', value: src.industryReadiness },
+      { label: 'Project Impact', value: src.projectImpact }
     ];
   }
 
   get profileSignalRows(): { label: string; value: number }[] {
     return [
-      { label: 'GitHub Strength', value: Math.max(0, Math.min(100, Number(this.githubScore || 0))) },
-      { label: 'Resume ATS', value: Math.max(0, Math.min(100, Number(this.resumeMetrics.atsScore || 0))) },
-      { label: 'Keyword Density', value: Math.max(0, Math.min(100, Number(this.resumeMetrics.keywordDensity || 0))) },
-      { label: 'Skill Coverage', value: Math.max(0, Math.min(100, Number(this.coveragePercentage || 0))) }
+      { label: 'GitHub Strength', value: this.normalizePercent(this.githubScore) },
+      { label: 'Resume ATS', value: this.normalizePercent(this.resumeMetrics.atsScore) },
+      { label: 'Keyword Density', value: this.normalizePercent(this.resumeMetrics.keywordDensity) },
+      { label: 'Skill Coverage', value: this.normalizePercent(this.coveragePercentage) }
     ];
   }
 
   get explainabilityRows(): { label: string; value: number; weight: number }[] {
-    const scores = this.explainabilityBreakdown?.featureScores || this.aiBreakdown || {};
-    const weights = this.explainabilityBreakdown?.weights || {};
-
-    const shape = [
-      { key: 'codeQuality', label: 'Code Quality' },
-      { key: 'skillCoverage', label: 'Skill Coverage' },
-      { key: 'industryReadiness', label: 'Industry Readiness' },
-      { key: 'projectImpact', label: 'Project Impact' }
+    const scores = this.buildRadarBreakdown();
+    const weights = this.getBreakdownWeights();
+    return [
+      { label: 'Code Quality', value: scores.codeQuality, weight: Math.round(weights['codeQuality'] * 100) },
+      { label: 'Skill Coverage', value: scores.skillCoverage, weight: Math.round(weights['skillCoverage'] * 100) },
+      { label: 'Industry Readiness', value: scores.industryReadiness, weight: Math.round(weights['industryReadiness'] * 100) },
+      { label: 'Project Impact', value: scores.projectImpact, weight: Math.round(weights['projectImpact'] * 100) }
     ];
-
-    return shape.map((item) => ({
-      label: item.label,
-      value: Math.max(0, Math.min(100, Number(scores[item.key] ?? 0))),
-      weight: Math.round(Number(weights[item.key] ?? 0) * 100)
-    }));
   }
 
   get dashboardIdentityLine(): string {
@@ -658,13 +618,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!value) return 'Not synced yet';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Not synced yet';
-
     const diffMs = Date.now() - date.getTime();
-    const min = Math.floor(diffMs / 60000);
-    if (min < 1) return 'Just now';
-    if (min < 60) return `${min} min ago`;
-    const hrs = Math.floor(min / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
@@ -672,29 +631,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!value) return 'Not available';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Not available';
-
     const diffMs = Date.now() - date.getTime();
-    const min = Math.floor(diffMs / 60000);
-    if (min < 1) return 'Just now';
-    if (min < 60) return `${min} min ago`;
-    const hrs = Math.floor(min / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  initActivityChart(activityData: { month: string; count: number }[]) {
+  initActivityChart(activityData: { month: string; count: number }[]): void {
     if (!this.activityChart?.nativeElement) return;
     this.activityInstance?.destroy();
 
-    this.totalActivity = activityData.reduce((s, d) => s + d.count, 0);
-    const labels = activityData.map(d => d.month);
-    const data   = activityData.map(d => d.count);
-    const maxVal = Math.max(...data, 1); // at least 1 so the axis isn't flat
+    this.totalActivity = activityData.reduce((sum, item) => sum + Number(item.count || 0), 0);
+    const labels = activityData.map((item) => item.month);
+    const data = activityData.map((item) => Number(item.count || 0));
+    const maxVal = Math.max(...data, 1);
 
     const ctx = this.activityChart.nativeElement.getContext('2d') as CanvasRenderingContext2D;
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
     gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
 
     this.activityInstance = new Chart(this.activityChart.nativeElement, {
       type: 'line',
@@ -742,7 +700,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               color: '#64748B',
               font: { size: 10 },
               maxTicksLimit: 5,
-              precision: 0  // integers only
+              precision: 0
             }
           }
         },
@@ -752,22 +710,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  initLanguageChart(langData: Record<string, number>) {
+  initLanguageChart(langData: Record<string, number>): void {
     if (!this.languageChart?.nativeElement) return;
     this.languageInstance?.destroy();
 
-    const keys   = Object.keys(langData).sort((a, b) => langData[b] - langData[a]);
-    const total  = keys.reduce((s, k) => s + langData[k], 0);
-    const top    = keys.slice(0, 4);
-    const other  = keys.slice(4).reduce((s, k) => s + langData[k], 0);
+    const keys = Object.keys(langData).sort((left, right) => Number(langData[right] || 0) - Number(langData[left] || 0));
+    const total = keys.reduce((sum, key) => sum + Number(langData[key] || 0), 0);
+    const top = keys.slice(0, 4);
+    const other = keys.slice(4).reduce((sum, key) => sum + Number(langData[key] || 0), 0);
     const labels = [...top, ...(other > 0 ? ['Other'] : [])];
-    const values = [...top.map(k => langData[k]), ...(other > 0 ? [other] : [])];
+    const values = [...top.map((key) => Number(langData[key] || 0)), ...(other > 0 ? [other] : [])];
     const colors = ['#6366F1', '#8B5CF6', '#22C55E', '#F59E0B', '#64748B'];
 
-    this.languageLegend = labels.map((lbl, i) => ({
-      label: lbl,
-      percentage: total > 0 ? Math.round((values[i] / total) * 100) : 0,
-      color: colors[i]
+    this.languageLegend = labels.map((label, index) => ({
+      label,
+      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
+      color: colors[index]
     }));
 
     this.languageInstance = new Chart(this.languageChart.nativeElement, {
@@ -791,7 +749,99 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /* ── Helpers ── */
-  // `statIconHtml` and `recIconHtml` replace the previous template helper functions to
-  // avoid re-creating HTML strings during change detection.
+  private buildRadarBreakdown(): ScoreBreakdown {
+    if (this.aiBreakdown) {
+      return this.normalizeBreakdown(this.aiBreakdown);
+    }
+
+    const repoCount = Number(this.statCards[0]?.value || 0);
+    const starCount = Number(this.statCards[1]?.value || 0);
+    const repoSignal = this.normalizePercent((repoCount / 18) * 100);
+    const starSignal = this.normalizePercent((Math.log10(starCount + 1) / 2.2) * 100);
+    const industryReadiness = this.normalizePercent(
+      (this.resumeMetrics.atsScore + this.resumeMetrics.keywordDensity + this.resumeMetrics.contentQuality + this.resumeMetrics.formatScore) / 4 ||
+      this.developerScore
+    );
+
+    return {
+      codeQuality: this.normalizePercent(this.githubScore),
+      skillCoverage: this.normalizePercent(this.coveragePercentage),
+      industryReadiness,
+      projectImpact: this.normalizePercent((starSignal * 0.55) + (repoSignal * 0.25) + (this.integrationScore * 0.2))
+    };
+  }
+
+  private normalizeBreakdown(value: any): ScoreBreakdown {
+    return {
+      codeQuality: this.normalizePercent(value?.codeQuality || 0),
+      skillCoverage: this.normalizePercent(value?.skillCoverage || 0),
+      industryReadiness: this.normalizePercent(value?.industryReadiness || 0),
+      projectImpact: this.normalizePercent(value?.projectImpact || 0)
+    };
+  }
+
+  private getBreakdownWeights(): Record<string, number> {
+    if (this.selectedCareerStack === 'Frontend') {
+      return { codeQuality: 0.30, skillCoverage: 0.34, industryReadiness: 0.20, projectImpact: 0.16 };
+    }
+    if (this.selectedCareerStack === 'Backend') {
+      return { codeQuality: 0.36, skillCoverage: 0.24, industryReadiness: 0.22, projectImpact: 0.18 };
+    }
+    if (this.selectedCareerStack === 'AI/ML') {
+      return { codeQuality: 0.28, skillCoverage: 0.24, industryReadiness: 0.28, projectImpact: 0.20 };
+    }
+    return { codeQuality: 0.32, skillCoverage: 0.28, industryReadiness: 0.22, projectImpact: 0.18 };
+  }
+
+  private buildConfidenceScore(): number {
+    const checks = [
+      Boolean(this.sourcesUsed.github?.available),
+      Boolean(this.sourcesUsed.resume?.available),
+      Boolean(this.sourcesUsed.skillGap?.available),
+      Boolean(this.sourcesUsed.recommendations?.available),
+      Boolean(this.sourcesUsed.integrations?.available)
+    ];
+    const ratio = checks.filter(Boolean).length / checks.length;
+    return this.normalizePercent(40 + (ratio * 60));
+  }
+
+  private buildScoreReasons(): string[] {
+    const weights = this.getBreakdownWeights();
+    const breakdown = this.buildRadarBreakdown();
+    const reasons = [
+      `Code quality contributes ${Math.round(weights['codeQuality'] * 100)}% weight and is currently ${breakdown.codeQuality}%.`,
+      `Skill coverage contributes ${Math.round(weights['skillCoverage'] * 100)}% weight and is currently ${breakdown.skillCoverage}%.`,
+      `Industry readiness contributes ${Math.round(weights['industryReadiness'] * 100)}% weight and is currently ${breakdown.industryReadiness}%.`,
+      `Project impact contributes ${Math.round(weights['projectImpact'] * 100)}% weight and is currently ${breakdown.projectImpact}%.`
+    ];
+
+    if (this.languageSource === 'language_bytes') {
+      reasons.push('Language distribution is based on real GitHub language-byte data across repositories.');
+    } else if (this.languageSource === 'primary_language') {
+      reasons.push('Language distribution is currently based on primary repo languages because byte data was unavailable.');
+    }
+
+    if (this.rateLimitWarning) {
+      reasons.push('GitHub was rate limited, so cached analysis is being used for stability.');
+    }
+
+    return reasons;
+  }
+
+  private iconForCategory(category: string): string {
+    const value = String(category || '').toLowerCase();
+    if (value.includes('cert')) return 'certification';
+    if (value.includes('open')) return 'opensource';
+    if (value.includes('project')) return 'project';
+    return 'technology';
+  }
+
+  private normalizePercent(value: number): number {
+    const numeric = Number(value || 0);
+    return Math.max(0, Math.min(100, Math.round(numeric)));
+  }
+
+  private isActiveCycle(cycle: number): boolean {
+    return this.requestCycle === cycle;
+  }
 }
