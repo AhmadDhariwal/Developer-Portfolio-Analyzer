@@ -355,6 +355,7 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
 };
 
 const resolveKnownAndMissingSkills = async ({
+  userId,
   username,
   careerStack,
   experienceLevel,
@@ -497,6 +498,7 @@ const runRecommendationPipeline = async ({
   });
 
   const resolvedSkills = await resolveKnownAndMissingSkills({
+    userId,
     username,
     careerStack,
     experienceLevel,
