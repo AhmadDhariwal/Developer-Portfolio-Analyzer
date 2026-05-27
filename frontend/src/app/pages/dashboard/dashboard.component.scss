@@ -100,42 +100,45 @@
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-      width: 100%;
-    }
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   .role-selector {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-shrink: 0;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0 14px;
+    padding: 0 12px;
     border-radius: 10px;
-    min-height: 44px;
-    min-width: 180px;
+    min-height: 36px;
+    min-width: 140px;
     box-sizing: border-box;
 
     .role-label {
-      font-size: 0.75rem;
+      font-size: 0.68rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
     }
 
+    .role-value {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
     .role-dropdown {
       background: transparent;
       border: none;
       color: var(--text-primary);
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      padding-right: 20px;
+      padding-right: 16px;
       cursor: pointer;
       outline: none;
 
@@ -151,22 +154,23 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0 20px;
+    flex-shrink: 0;
+    padding: 0 14px;
     background: linear-gradient(135deg, #6366F1, #8B5CF6);
     border: none;
     border-radius: 10px;
     color: #ffffff;
-    font-size: 0.875rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 44px;
-    min-width: 180px;
+    min-height: 36px;
+    min-width: 140px;
     box-sizing: border-box;
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
     }
 
     &:hover {

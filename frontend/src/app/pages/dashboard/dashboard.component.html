@@ -12,15 +12,11 @@
   <div class="header-actions">
     <div class="role-selector">
       <span class="role-label">Career Stack:</span>
-      <select [ngModel]="selectedCareerStack" (ngModelChange)="onCareerStackChange($event)" class="role-dropdown" title="Career stack filter">
-        <option *ngFor="let stack of careerStacks" [value]="stack">{{ stack }}</option>
-      </select>
+      <span class="role-value">{{ selectedCareerStack }}</span>
     </div>
     <div class="role-selector">
       <span class="role-label">Experience:</span>
-      <select [ngModel]="selectedExperienceLevel" (ngModelChange)="onExperienceLevelChange($event)" class="role-dropdown" title="Experience level filter">
-        <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
-      </select>
+      <span class="role-value">{{ selectedExperienceLevel }}</span>
     </div>
 
     <button class="reanalyze-btn" (click)="reanalyze()">
