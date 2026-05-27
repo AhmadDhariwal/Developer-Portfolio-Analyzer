@@ -1,8 +1,9 @@
 const Repository = require('../models/repository');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
-const { analyzeGitHubProfile } = require('../services/githubservice');
+const { analyzeGitHubProfile, fetchGitHubUser } = require('../services/githubservice');
 const { createNotification } = require('../services/notificationService');
+const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 
 // @desc    Publicly analyze any GitHub username
 // @route   POST /api/github/analyze
@@ -38,13 +39,22 @@ const analyzeGitHub = async (req, res) => {
 // @access  Private
 const analyzeAndSaveGitHubProfile = async (req, res) => {
     try {
-        const githubUsername = req.body.username || req.user?.activeGithubUsername || req.user?.githubUsername;
+        const defaultGithubUsername = String(req.user?.githubUsername || '').trim();
+        const requestedUsername = String(req.body.username || defaultGithubUsername).trim();
+        const githubUsername = defaultGithubUsername || requestedUsername;
 
         if (!githubUsername) {
             return res.status(400).json({ message: 'GitHub username is required.' });
         }
 
+        if (requestedUsername && defaultGithubUsername && requestedUsername.toLowerCase() !== defaultGithubUsername.toLowerCase()) {
+            return res.status(400).json({
+                message: 'Temporary GitHub analysis should use the analyzer preview flow and must not overwrite your saved profile.'
+            });
+        }
+
         const data = await analyzeGitHubProfile(githubUsername.trim());
+        const userData = await fetchGitHubUser(githubUsername.trim()).catch(() => ({}));
 
         // Persist repositories
         await Repository.deleteMany({ ownerId: req.user._id });
@@ -71,20 +81,21 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             repos: data.repoCount,
             stars: data.totalStars,
             forks: data.totalForks,
-            followers: 0
+            followers: Number(userData?.followers || 0)
         };
 
         // Store language distribution as a plain object for Mongoose Map
         const langMap = {};
         data.languageDistribution.forEach(l => { langMap[l.language] = l.percentage; });
         analysis.languageDistribution = langMap;
+        analysis.updatedAt = new Date();
 
         await analysis.save();
 
-        // Save active username on the user context
+        // Refresh the saved default profile only; temporary analysis is handled locally in the UI.
         await User.findByIdAndUpdate(req.user._id, {
-            activeGithubUsername: githubUsername.trim(),
-            lastSearchedGithub: githubUsername.trim()
+            githubUsername: githubUsername.trim(),
+            activeGithubUsername: githubUsername.trim()
         });
 
         await createNotification({
@@ -96,6 +107,8 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             meta: { username: githubUsername.trim() },
             dedupeWindowHours: 1
         });
+
+        invalidateDashboardSummaryCache(req.user._id);
 
         res.json(data);
     } catch (error) {
@@ -114,14 +127,19 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
     }
 };
 
-// @desc    Get the active github username for the analyzer (last searched or signup)
+// @desc    Get the default github username for analysis-driven components
 // @route   GET /api/github/active-username
 // @access  Private
 const getActiveUsername = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-        const activeUsername = user.activeGithubUsername || user.githubUsername;
-        res.json({ username: activeUsername, isDefault: activeUsername === user.githubUsername });
+        const defaultUsername = String(user?.githubUsername || '').trim();
+        const activeUsername = String(user?.activeGithubUsername || '').trim();
+        res.json({
+            username: defaultUsername,
+            isDefault: true,
+            activeUsername: activeUsername || defaultUsername
+        });
     } catch (error) {
         res.status(500).json({ message: 'Failed to get active username' });
     }

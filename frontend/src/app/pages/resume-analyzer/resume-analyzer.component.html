@@ -8,6 +8,16 @@
     <span>{{ errorMessage }}</span>
   </div>
 
+  <div *ngIf="analysisComplete && analysis && !errorMessage" class="error-message">
+    <span *ngIf="isTemporaryView">
+      Viewing temporary analysis for <strong>{{ viewedResumeFileName || 'selected resume' }}</strong>. The rest of the platform still uses your default resume <strong>{{ defaultResumeFileName || 'Not set' }}</strong>.
+    </span>
+    <span *ngIf="!isTemporaryView">
+      Using your default saved resume <strong>{{ viewedResumeFileName || defaultResumeFileName || 'Not set' }}</strong>.
+    </span>
+    <button *ngIf="isTemporaryView" class="file-input-label" (click)="returnToDefaultResume()">Return to My Resume</button>
+  </div>
+
   <div *ngIf="hasNoData && !analysisComplete && !isAnalyzing" class="empty-state-card">
     <div class="empty-state-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -25,7 +35,7 @@
     <div class="upload-content">
       <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName">
         <p>Default Resume: <strong>{{ defaultResumeFileName || 'Not set' }}</strong></p>
-        <p>Active Resume: <strong>{{ activeResumeFileName || 'Not set' }}</strong></p>
+        <p>Viewing Resume: <strong>{{ viewedResumeFileName || defaultResumeFileName || activeResumeFileName || 'Not set' }}</strong></p>
       </div>
 
       <div class="resume-switcher" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
@@ -35,7 +45,7 @@
             {{ file.fileName }}{{ file.isDefault ? ' (default)' : '' }}{{ file.isActive ? ' (active)' : '' }}
           </option>
         </select>
-        <button class="file-input-label" (click)="useSelectedResume(false)">Use Selected</button>
+        <button class="file-input-label" (click)="useSelectedResume(false)">Preview Selected</button>
         <button class="file-input-label" (click)="useSelectedResume(true)">Set as Default</button>
       </div>
 

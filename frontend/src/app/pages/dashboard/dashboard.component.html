@@ -6,6 +6,7 @@
     <h2>Dashboard Overview</h2>
     <p class="header-sub">{{ dashboardIdentityLine }}</p>
     <p class="header-sub">{{ dashboardScoreLine }}</p>
+    <p class="header-sub">{{ sourceHealthLine }}</p>
   </div>
   
   <div class="header-actions">
@@ -119,6 +120,9 @@
     </div>
     <div class="chart-wrap donut-wrap">
       <canvas #languageChart></canvas>
+    </div>
+    <div class="empty-state" *ngIf="!hasLanguageData">
+      <p>No language distribution available for the saved default GitHub profile yet.</p>
     </div>
     <div class="lang-legend">
       <div class="legend-row" *ngFor="let lang of languageLegend">

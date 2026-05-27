@@ -181,11 +181,13 @@ const mapToObj = (skills) => {
 const getResumeAnalysis = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
-    const activeFileId = user?.activeResumeFileId || user?.defaultResumeFileId || null;
+    const requestedFileId = String(req.query.fileId || '').trim();
+    const defaultFileId = user?.defaultResumeFileId || null;
+    const targetFileId = requestedFileId || defaultFileId;
 
     let analysis = null;
-    if (activeFileId) {
-      analysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: activeFileId }).sort({ analyzedAt: -1 });
+    if (targetFileId) {
+      analysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: targetFileId }).sort({ analyzedAt: -1 });
     }
     if (!analysis) {
       analysis = await ResumeAnalysis.findOne({ userId: req.user._id }).sort({ analyzedAt: -1 });
@@ -317,7 +319,7 @@ const getResumeFiles = async (req, res) => {
 const getActiveResumeContext = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
-    const activeFileId = user?.activeResumeFileId || user?.defaultResumeFileId || null;
+    const activeFileId = user?.defaultResumeFileId || user?.activeResumeFileId || null;
 
     const [defaultFile, activeFile] = await Promise.all([
       user?.defaultResumeFileId ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: req.user._id }).lean() : null,

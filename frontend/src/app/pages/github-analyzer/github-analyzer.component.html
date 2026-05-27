@@ -55,6 +55,26 @@
       </svg>
       {{ errorMessage }}
     </div>
+
+    <div class="error-banner" *ngIf="analysisReady && result && !errorMessage">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+      </svg>
+      <span *ngIf="isTemporaryView">
+        Viewing temporary analysis for <strong>@{{ viewedUsername }}</strong>. Your saved platform profile remains <strong>@{{ defaultUsername }}</strong>.
+      </span>
+      <span *ngIf="!isTemporaryView">
+        Viewing your default profile analysis for <strong>@{{ viewedUsername || defaultUsername }}</strong>.
+      </span>
+      <button
+        *ngIf="isTemporaryView"
+        type="button"
+        class="analyze-btn"
+        (click)="returnToDefaultProfile()"
+        [disabled]="isAnalyzing">
+        Return to My Profile
+      </button>
+    </div>
   </div>
 
   <!-- ── Results ───────────────────────────────────────────────────────────── -->
@@ -239,7 +259,7 @@
                 </div>
               </td>
               <td>
-                <a [href]="'https://github.com/' + username + '/' + repo.name"
+                <a [href]="'https://github.com/' + (viewedUsername || username) + '/' + repo.name"
                    target="_blank" rel="noopener noreferrer" class="ext-link">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
                        stroke="currentColor" stroke-width="2">

@@ -24,7 +24,9 @@ export interface GitHubAnalysisResult {
   repoCount: number;
   totalStars: number;
   totalForks: number;
+  followers?: number;
   activityScore: number;
+  languageDistributionSource?: 'language_bytes' | 'primary_language';
   languageDistribution: LanguageDistribution[];
   repositoryActivity: RepositoryActivity[];
   repositories: Repository[];
@@ -33,6 +35,7 @@ export interface GitHubAnalysisResult {
 export interface ActiveUsername {
   username: string;
   isDefault: boolean;
+  activeUsername?: string;
 }
 
 @Injectable({ providedIn: 'root' })

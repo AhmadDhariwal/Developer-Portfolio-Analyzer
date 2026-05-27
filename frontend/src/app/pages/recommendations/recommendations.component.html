@@ -55,6 +55,24 @@
     {{ errorMessage }}
   </div>
 
+  <div class="rec-error" *ngIf="!errorMessage && result">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span *ngIf="isTemporaryView">
+      Viewing temporary recommendations for <strong>@{{ viewedUsername }}</strong>. Saved dashboard and global recommendations still follow <strong>@{{ defaultUsername }}</strong>.
+    </span>
+    <span *ngIf="!isTemporaryView">
+      Showing recommendations for your default GitHub profile <strong>@{{ viewedUsername || defaultUsername }}</strong>.
+    </span>
+    <button class="btn-analyze" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">
+      Return to My Profile
+    </button>
+  </div>
+
   <ng-container *ngIf="result">
     <div class="tab-bar">
       <button

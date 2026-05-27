@@ -70,6 +70,33 @@ const toLanguageMap = (languageDistribution = {}) => {
   return languageDistribution && typeof languageDistribution === 'object' ? languageDistribution : {};
 };
 
+const normalizeLanguageMap = (languageDistribution = {}) => {
+  const rawMap = toLanguageMap(languageDistribution);
+  const safeEntries = Object.entries(rawMap)
+    .map(([language, value]) => [String(language || '').trim(), Number(value || 0)])
+    .filter(([language, value]) => (
+      Boolean(language) &&
+      language.toLowerCase() !== 'null' &&
+      language.toLowerCase() !== 'undefined' &&
+      value > 0
+    ));
+
+  const total = safeEntries.reduce((sum, [, value]) => sum + value, 0);
+  if (!total) return {};
+
+  let remaining = 100;
+  return safeEntries
+    .sort((left, right) => right[1] - left[1])
+    .reduce((acc, [language, value], index, list) => {
+      const normalized = index === list.length - 1
+        ? remaining
+        : Math.max(0, Math.min(100, Math.round((value / total) * 100)));
+      acc[language] = normalized;
+      remaining -= normalized;
+      return acc;
+    }, {});
+};
+
 const safeFetchGitHubUser = async (githubUsername) => {
   try {
     return await fetchGitHubUser(githubUsername);
@@ -272,7 +299,7 @@ const ensureAnalysis = async (userId, githubUsername, options = {}) => {
       forks: Number(githubResult.totalForks || 0),
       followers: Number(userData?.followers || 0)
     };
-    analysis.languageDistribution = toLanguageMap(githubResult.languageDistribution);
+    analysis.languageDistribution = normalizeLanguageMap(githubResult.languageDistribution);
     analysis.contributionActivity = monthlyActivity.length ? monthlyActivity : emptyContributionActivity();
     analysis.updatedAt = new Date();
 
@@ -311,6 +338,19 @@ const buildRecommendationPreview = (recommendationData = {}) => {
 };
 
 const summaryCacheKey = (userId) => `${userId}:cached`;
+const invalidateDashboardSummaryCache = (userId) => {
+  if (!userId) return;
+  dashboardSummaryCache.delete(summaryCacheKey(String(userId)));
+};
+
+const latestTimestamp = (...values) => {
+  const valid = values
+    .filter(Boolean)
+    .map((value) => new Date(value))
+    .filter((date) => !Number.isNaN(date.getTime()));
+  if (!valid.length) return null;
+  return valid.sort((left, right) => right.getTime() - left.getTime())[0].toISOString();
+};
 
 const getDashboardSummary = async (req, res) => {
   try {
@@ -327,7 +367,7 @@ const getDashboardSummary = async (req, res) => {
       }
     }
 
-    const githubUsername = user.activeGithubUsername || user.githubUsername || '';
+    const githubUsername = user.githubUsername || '';
     const [analysisState, cachedContext, integrationInsight] = await Promise.all([
       ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
       getCachedDashboardContext(req.user._id),
@@ -381,11 +421,14 @@ const getDashboardSummary = async (req, res) => {
       noUsername
     });
 
-    const lastAnalyzedAt = latestPortfolioCache?.updatedAt ||
-      latestResume?.analyzedAt ||
-      analysis?.updatedAt ||
-      analysis?.createdAt ||
-      null;
+    const lastAnalyzedAt = latestTimestamp(
+      analysis?.updatedAt,
+      analysis?.createdAt,
+      latestPortfolioCache?.updatedAt,
+      latestResume?.analyzedAt,
+      latestSkillGapCache?.updatedAt,
+      latestRecommendationCache?.updatedAt
+    );
 
     if (readinessScore > 0 && readinessScore < 60) {
       await createNotification({
@@ -456,8 +499,8 @@ const getDashboardSummary = async (req, res) => {
 const getDashboardContributions = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername').lean();
+    const githubUsername = user?.githubUsername || '';
     const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
     const data = Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
       ? analysis.contributionActivity
@@ -477,12 +520,12 @@ const getDashboardContributions = async (req, res) => {
 const getDashboardLanguages = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername').lean();
+    const githubUsername = user?.githubUsername || '';
     const { analysis, rateLimited, languageSource } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
 
     res.json({
-      data: toLanguageMap(analysis?.languageDistribution),
+      data: normalizeLanguageMap(analysis?.languageDistribution),
       syncStatus: rateLimited ? 'rate_limited' : toFreshness(analysis?.updatedAt || analysis?.createdAt),
       updatedAt: analysis?.updatedAt || analysis?.createdAt || null,
       source: languageSource
@@ -496,8 +539,8 @@ const getDashboardLanguages = async (req, res) => {
 const getDashboardSkills = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername').lean();
+    const githubUsername = user?.githubUsername || '';
 
     const [{ analysis, rateLimited }, integrationInsight, latestSkillGapCache] = await Promise.all([
       ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
@@ -505,7 +548,7 @@ const getDashboardSkills = async (req, res) => {
       latestCacheByPredicate(req.user._id, { 'analysisData.missingSkills': { $exists: true } })
     ]);
 
-    const languageMap = toLanguageMap(analysis?.languageDistribution);
+    const languageMap = normalizeLanguageMap(analysis?.languageDistribution);
     const derivedTopSkills = Object.keys(languageMap)
       .filter((key) => Number(languageMap[key] || 0) > 0)
       .concat(integrationInsight.mergedSkills || []);
@@ -668,5 +711,6 @@ module.exports = {
   getDashboardLanguages,
   getDashboardSkills,
   getDashboardRecommendations,
-  getDashboardIntegrationAnalytics
+  getDashboardIntegrationAnalytics,
+  invalidateDashboardSummaryCache
 };

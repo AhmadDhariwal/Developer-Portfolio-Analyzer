@@ -45,6 +45,24 @@
     {{ errorMessage }}
   </div>
 
+  <div class="sg-error" *ngIf="!errorMessage && result">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span *ngIf="isTemporaryView">
+      Viewing temporary skill-gap analysis for <strong>@{{ viewedUsername }}</strong>. The rest of the platform still uses <strong>@{{ defaultUsername }}</strong>.
+    </span>
+    <span *ngIf="!isTemporaryView">
+      Using your default GitHub profile <strong>@{{ viewedUsername || defaultUsername }}</strong> and saved default resume.
+    </span>
+    <button class="btn-analyze" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">
+      Return to My Profile
+    </button>
+  </div>
+
   <ng-container *ngIf="result">
     <div class="insight-grid">
       <div class="sg-card insight-card" *ngIf="result.analysisSummary">

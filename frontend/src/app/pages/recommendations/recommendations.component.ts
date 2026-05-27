@@ -25,8 +25,11 @@ type Tab = 'All' | 'Projects' | 'Technologies' | 'Career Paths';
 })
 export class RecommendationsComponent implements OnInit, OnDestroy {
   username     = '';
+  defaultUsername = '';
+  viewedUsername = '';
   isLoading    = false;
   errorMessage = '';
+  isTemporaryView = false;
   result: RecommendationsResult | null = null;
   private readonly subscriptions: Subscription = new Subscription();
 
@@ -56,7 +59,8 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     this.githubService.getActiveUsername().subscribe({
       next: (res: { username: string; isDefault?: boolean } | null) => {
         if (res?.username) {
-          this.username = res.username;
+          this.defaultUsername = res.username;
+          this.username = this.defaultUsername;
           this.analyze();
         }
         this.cdr.detectChanges();
@@ -74,6 +78,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   analyze(): void {
     const user = this.username.trim();
     if (!user) return;
+    const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
 
     this.isLoading = true;
     this.errorMessage = '';
@@ -82,7 +87,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
 
-    this.recService.getRecommendations(user, careerStack, experienceLevel).subscribe({
+    this.recService.getRecommendations(user, careerStack, experienceLevel, undefined, undefined, isTemporary).subscribe({
       next: (data) => {
         const normalized: RecommendationsResult = {
           username:        data?.username        || user,
@@ -100,6 +105,8 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         };
 
         this.result = normalized;
+        this.viewedUsername = user;
+        this.isTemporaryView = isTemporary;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -117,6 +124,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   get currentCareerStack(): string    { return this.careerProfileService.careerStack; }
   get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
+
+  returnToDefaultProfile(): void {
+    if (!this.defaultUsername || this.isLoading) return;
+    this.username = this.defaultUsername;
+    this.analyze();
+  }
 
   setTab(tab: Tab): void { this.activeTab = tab; }
 

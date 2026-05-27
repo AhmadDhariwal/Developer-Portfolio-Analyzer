@@ -53,8 +53,9 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId });
   }
 
-  getResumeAnalysis(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/resume/result`);
+  getResumeAnalysis(fileId?: string): Observable<any> {
+    const suffix = fileId ? `?fileId=${encodeURIComponent(fileId)}` : '';
+    return this.http.get(`${this.baseUrl}/resume/result${suffix}`);
   }
 
   getResumeFiles(): Observable<any> {
@@ -78,10 +79,11 @@ export class ApiService {
     username:        string,
     careerStack:     string,
     experienceLevel: string,
-    resumeText?:     string
+    resumeText?:     string,
+    isTemporary = false
   ): Observable<any> {
     return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, {
-      username, careerStack, experienceLevel, resumeText
+      username, careerStack, experienceLevel, resumeText, isTemporary
     });
   }
 
@@ -90,10 +92,23 @@ export class ApiService {
     careerStack:     string,
     experienceLevel: string,
     knownSkills?:    string[],
-    missingSkills?:  string[]
+    missingSkills?:  string[],
+    isTemporary = false
   ): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recommendations`, {
-      username, careerStack, experienceLevel, knownSkills, missingSkills
+    const endpoint = isTemporary ? `${this.baseUrl}/recommendations/generate` : `${this.baseUrl}/recommendations`;
+    return this.http.post(endpoint, isTemporary ? {
+      githubUsername: username,
+      careerStack,
+      experienceLevel,
+      knownSkills,
+      missingSkills,
+      isTemporary: true
+    } : {
+      username,
+      careerStack,
+      experienceLevel,
+      knownSkills,
+      missingSkills
     });
   }
 

@@ -596,7 +596,7 @@ const getScenarioContext = async (userId) => {
     integrationConnections
   ] = await Promise.all([
     User.findById(userId)
-      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername score jobTitle')
+      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername defaultResumeFileId score jobTitle')
       .lean(),
     Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean(),
     ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1, createdAt: -1 }).lean(),
@@ -616,7 +616,12 @@ const getScenarioContext = async (userId) => {
   ]);
 
   const sprint = currentSprint || latestSprint;
-  const resumeSkills = mapResumeSkills(resumeAnalysis);
+  const resolvedResumeAnalysis = user?.defaultResumeFileId
+    ? await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
+      .sort({ analyzedAt: -1, createdAt: -1 })
+      .lean() || resumeAnalysis
+    : resumeAnalysis;
+  const resumeSkills = mapResumeSkills(resolvedResumeAnalysis);
   const githubSkills = uniqueStrings([
     ...Object.keys(analysis?.languageDistribution || {}),
     ...(analysis?.missingSkills || [])
@@ -656,12 +661,12 @@ const getScenarioContext = async (userId) => {
   const baselineHiringScore = clamp(average([
     user?.score,
     analysis?.readinessScore,
-    resumeAnalysis?.atsScore
+    resolvedResumeAnalysis?.atsScore
   ], 55));
   const baselineJobMatch = clamp(average([
     analysis?.skillScore,
     analysis?.githubScore,
-    resumeAnalysis?.keywordDensity
+    resolvedResumeAnalysis?.keywordDensity
   ], 48));
   const suggestedSkills = uniqueStrings([
     ...missingSkills,
@@ -692,8 +697,8 @@ const getScenarioContext = async (userId) => {
     {
       key: 'resume',
       label: 'Resume Analyzer',
-      connected: !!resumeAnalysis,
-      lastUpdatedAt: resumeAnalysis?.analyzedAt || resumeAnalysis?.createdAt || null
+      connected: !!resolvedResumeAnalysis,
+      lastUpdatedAt: resolvedResumeAnalysis?.analyzedAt || resolvedResumeAnalysis?.createdAt || null
     },
     {
       key: 'skillGap',
@@ -734,7 +739,7 @@ const getScenarioContext = async (userId) => {
     profile: {
       careerStack: user?.activeCareerStack || user?.careerStack || 'Full Stack',
       experienceLevel: user?.activeExperienceLevel || user?.experienceLevel || 'Student',
-      githubUsername: user?.activeGithubUsername || user?.githubUsername || '',
+      githubUsername: user?.githubUsername || '',
       role,
       level,
       baselineHiringScore,

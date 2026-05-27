@@ -395,8 +395,10 @@ const analyzeGitHubProfile = async (username) => {
     repoCount: repos.length,
     totalStars: repos.reduce((s, r) => s + (r.stargazers_count || 0), 0),
     totalForks: repos.reduce((s, r) => s + (r.forks_count || 0), 0),
+    followers: Number(userData?.followers || 0),
     activityScore: compositeScores.overall,
     languageDistribution,
+    languageDistributionSource,
     repositoryActivity,
     commitMap,
     repositories: repos.map(r => ({

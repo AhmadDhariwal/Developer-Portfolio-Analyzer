@@ -27,7 +27,7 @@ const startWorkflow = async (req, res) => {
     const input = {
       userId: req.user._id,
       pipeline,
-      username: req.body.username || req.user.activeGithubUsername || req.user.githubUsername,
+      username: req.body.username || req.user.githubUsername,
       resumeText: req.body.resumeText || '',
       fileName: req.body.fileName || 'workflow-resume.txt',
       fileSize: req.body.fileSize || 0,

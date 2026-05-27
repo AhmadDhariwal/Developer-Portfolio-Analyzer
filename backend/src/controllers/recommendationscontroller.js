@@ -127,11 +127,11 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
 const loadResumeAnalysis = async (userId) => {
   if (!userId) return null;
   const userContext = await User.findById(userId)
-    .select('activeResumeFileId defaultResumeFileId')
+    .select('defaultResumeFileId')
     .lean();
-  const activeResumeFileId = userContext?.activeResumeFileId || userContext?.defaultResumeFileId || null;
-  if (activeResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: activeResumeFileId })
+  const defaultResumeFileId = userContext?.defaultResumeFileId || null;
+  if (defaultResumeFileId) {
+    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
       .sort({ analyzedAt: -1 })
       .lean();
     if (activeAnalysis) return activeAnalysis;
@@ -373,6 +373,7 @@ const resolveKnownAndMissingSkills = async ({
   if (!knownSkills || !missingSkills) {
     const lookupHash = buildResumeHash(resumeText);
     const cachedGap = await AnalysisCache.findOne({
+      ...(userId ? { userId } : {}),
       githubUsername: username,
       careerStack,
       experienceLevel,
@@ -519,8 +520,12 @@ const runRecommendationPipeline = async ({
     analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
   };
 
-  if (saveResult) {
-    const cached = await AnalysisCache.findOne(cacheKey).lean();
+  const scopedCacheKey = saveResult && req.user?._id
+    ? { ...cacheKey, userId: req.user._id }
+    : null;
+
+  if (scopedCacheKey) {
+    const cached = await AnalysisCache.findOne(scopedCacheKey).lean();
     if (cached?.analysisData?.projects?.length) {
       const cachedResult = { ...normalizeRecommendationPayload(cached.analysisData), fromCache: true };
       await saveAIVersionSnapshot({
@@ -565,9 +570,9 @@ const runRecommendationPipeline = async ({
     signalsUsed
   });
 
-  if (saveResult && req.user?._id) {
+  if (scopedCacheKey) {
     await AnalysisCache.findOneAndUpdate(
-      cacheKey,
+      scopedCacheKey,
       {
         $set: {
           analysisData: fullResult,
@@ -595,7 +600,7 @@ const runRecommendationPipeline = async ({
 const getRecommendations = async (req, res) => {
   try {
     let { username, knownSkills, missingSkills, resumeText } = req.body;
-    username = username || req.user?.activeGithubUsername || req.user?.githubUsername;
+    username = username || req.user?.githubUsername;
 
     const careerStack = req.user?.careerStack || req.body.careerStack || 'Full Stack';
     const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
@@ -642,7 +647,11 @@ const generateRecommendations = async (req, res) => {
       knownSkills,
       resumeText
     } = req.body;
-    const isTemporaryMode = isTemporary === true || isTemporary === 'true';
+    const defaultGithubUsername = String(req.user?.githubUsername || '').trim();
+    const normalizedGithubUsername = String(githubUsername || '').trim();
+    const isTemporaryMode = isTemporary === true
+      || isTemporary === 'true'
+      || Boolean(defaultGithubUsername && normalizedGithubUsername && normalizedGithubUsername.toLowerCase() !== defaultGithubUsername.toLowerCase());
 
     if (!githubUsername) {
       return res.status(400).json({ message: 'GitHub username is required.' });
@@ -666,7 +675,7 @@ const generateRecommendations = async (req, res) => {
     return runRecommendationPipeline({
       req,
       res,
-      username: githubUsername.trim(),
+      username: normalizedGithubUsername,
       careerStack: finalCareerStack,
       experienceLevel: finalExperienceLevel,
       resumeText,

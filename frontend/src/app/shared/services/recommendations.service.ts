@@ -99,11 +99,14 @@ export class RecommendationsService {
     careerStack:     string,
     experienceLevel: string,
     knownSkills?:    string[],
-    missingSkills?:  string[]
+    missingSkills?:  string[],
+    isTemporary = false
   ): Observable<RecommendationsResult> {
     return this.http.post<RecommendationsResult>(
-      `${this.baseUrl}/recommendations`,
-      { username, careerStack, experienceLevel, knownSkills, missingSkills }
+      isTemporary ? `${this.baseUrl}/recommendations/generate` : `${this.baseUrl}/recommendations`,
+      isTemporary
+        ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true }
+        : { username, careerStack, experienceLevel, knownSkills, missingSkills }
     );
   }
 }

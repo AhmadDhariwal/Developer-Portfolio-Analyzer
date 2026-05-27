@@ -25,9 +25,12 @@ import { distinctUntilChanged } from 'rxjs/operators';
 })
 export class SkillGapComponent implements OnInit, OnDestroy {
   username = '';
+  defaultUsername = '';
+  viewedUsername = '';
   isLoading = false;
   isInitLoading = true;
   errorMessage = '';
+  isTemporaryView = false;
   result: SkillGapResult | null = null;
   graphLayout: Array<SkillGraphNode & { x: number; y: number }> = [];
   graphEdges: SkillGraphEdge[] = [];
@@ -56,7 +59,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.isInitLoading = true;
     this.githubService.getActiveUsername().subscribe({
       next: (data) => {
-        this.username = data.username;
+        this.defaultUsername = data.username || '';
+        this.username = this.defaultUsername;
         this.isInitLoading = false;
         if (this.username) this.analyze();
         this.cdr.detectChanges();
@@ -75,6 +79,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   analyze(): void {
     const user = this.username.trim();
     if (!user) return;
+    const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
 
     this.isLoading = true;
     this.errorMessage = '';
@@ -83,7 +88,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
 
-    this.skillGapService.analyze(user, careerStack, experienceLevel).subscribe({
+    this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary).subscribe({
       next: (data: any) => {
         const raw = data?.data || data?.result || data;
 
@@ -119,6 +124,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         normalized.missing = Math.max(0, Math.min(100, 100 - validCoverage));
 
         this.result = normalized;
+        this.viewedUsername = user;
+        this.isTemporaryView = isTemporary;
         this.refreshGraphLayout();
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -138,6 +145,12 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   get currentCareerStack(): string  { return this.careerProfileService.careerStack; }
   get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
+
+  returnToDefaultProfile(): void {
+    if (!this.defaultUsername || this.isLoading) return;
+    this.username = this.defaultUsername;
+    this.analyze();
+  }
 
   get integrationProvidersLabel(): string {
     const providers = this.result?.signalsUsed?.integrations?.providers || [];

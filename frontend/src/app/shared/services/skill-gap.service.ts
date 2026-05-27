@@ -114,11 +114,12 @@ export class SkillGapService {
   analyze(
     username:        string,
     careerStack:     string,
-    experienceLevel: string
+    experienceLevel: string,
+    isTemporary = false
   ): Observable<SkillGapResult> {
     return this.http.post<SkillGapResult>(
       `${this.baseUrl}/skillgap/skill-gap`,
-      { username, careerStack, experienceLevel }
+      { username, careerStack, experienceLevel, isTemporary }
     );
   }
 }

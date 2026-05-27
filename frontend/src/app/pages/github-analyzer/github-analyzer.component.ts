@@ -39,10 +39,13 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('barCanvas')    barCanvasRef!:    ElementRef<HTMLCanvasElement>;
 
   username      = '';
+  defaultUsername = '';
+  viewedUsername = '';
   isAnalyzing   = false;
   analysisReady = false;
   errorMessage  = '';
   isInitLoading = true;
+  isTemporaryView = false;
   result: GitHubAnalysisResult | null = null;
 
   private donutChart: Chart | null = null;
@@ -61,9 +64,11 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.isInitLoading = true;
     this.github.getActiveUsername().subscribe({
       next: (data) => {
-        this.username = data.username;
+        this.defaultUsername = data.username || '';
+        this.username = this.defaultUsername;
         this.isInitLoading = false;
-        // Auto-analyze with the active username
+        this.isTemporaryView = false;
+        this.viewedUsername = this.defaultUsername;
         if (this.username) {
           this.analyze();
         }
@@ -88,6 +93,9 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   analyze(): void {
     const trimmed = this.username.trim();
     if (!trimmed || this.isAnalyzing) return;
+    const normalizedDefault = this.defaultUsername.trim().toLowerCase();
+    const normalizedCurrent = trimmed.toLowerCase();
+    const isDefaultProfileAnalysis = Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
 
     this.isAnalyzing   = true;
     this.analysisReady = false;
@@ -95,10 +103,15 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.result        = null;
     this.destroyCharts();
 
-    // Use analyzeAndSave (private endpoint) to persist results + update lastSearchedGithub
-    this.github.analyzeAndSave(trimmed).subscribe({
+    const request$ = isDefaultProfileAnalysis
+      ? this.github.analyzeAndSave(trimmed)
+      : this.github.analyzeProfile(trimmed);
+
+    request$.subscribe({
       next: (data) => {
         this.result = data;
+        this.viewedUsername = trimmed;
+        this.isTemporaryView = !isDefaultProfileAnalysis;
         this.isAnalyzing = false;
         this.analysisReady = true;
 
@@ -116,6 +129,12 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         this.cdr.detectChanges();
       }
     });
+  }
+
+  returnToDefaultProfile(): void {
+    if (!this.defaultUsername || this.isAnalyzing) return;
+    this.username = this.defaultUsername;
+    this.analyze();
   }
 
   // ── Chart builders ──────────────────────────────────────────────────────────

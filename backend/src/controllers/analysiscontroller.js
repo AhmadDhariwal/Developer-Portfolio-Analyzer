@@ -30,7 +30,7 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
 const getPortfolioReadiness = async (req, res) => {
   try {
     let { username, resumeAnalysis, githubAnalysis, resumeText } = req.body;
-    username = username || req.user?.activeGithubUsername || req.user?.githubUsername;
+    username = username || req.user?.githubUsername;
 
     // Career profile: prefer the authenticated user's saved profile, allow body override
     const careerStack     = req.user?.careerStack     || req.body.careerStack     || 'Full Stack';
@@ -42,7 +42,13 @@ const getPortfolioReadiness = async (req, res) => {
 
     const cleanResume = (resumeText || '').trim();
     const resumeHash  = crypto.createHash('sha256').update(cleanResume).digest('hex');
-    const cacheKey    = { githubUsername: username, careerStack, experienceLevel, resumeHash };
+    const cacheKey    = {
+      githubUsername: username,
+      careerStack,
+      experienceLevel,
+      resumeHash,
+      ...(req.user?._id ? { userId: req.user._id } : {})
+    };
 
     // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);

@@ -126,6 +126,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   topSkills: string[] = [];
   missingSkills: string[] = [];
   languageLegend: LanguageLegendItem[] = [];
+  hasLanguageData = false;
   recommendations: RecommendationItem[] = [];
   aiBreakdown: ScoreBreakdown | null = null;
   confidenceScore = 0;
@@ -342,13 +343,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
         this.languageSource = String(payload?.source || this.languageSource);
         if (Object.keys(data).length > 0) {
+          this.hasLanguageData = true;
           if (this.viewInitialized && this.languageChart?.nativeElement) {
             this.initLanguageChart(data);
           } else {
             this.pendingLanguageData = data;
           }
         } else {
+          this.hasLanguageData = false;
+          this.pendingLanguageData = null;
           this.languageLegend = [];
+          this.languageInstance?.destroy();
+          this.languageInstance = null;
         }
         this.cdr.detectChanges();
       },
@@ -607,11 +613,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const handle = this.githubHandle || 'Not connected';
     const orgPart = this.tenantOrgName ? ` | Org: ${this.tenantOrgName}` : '';
     const teamPart = this.tenantTeamName ? ` | Team: ${this.tenantTeamName}` : '';
-    return `Last analyzed: ${this.lastAnalyzed} | GitHub: ${handle}${orgPart}${teamPart}`;
+    return `Default profile source | Last analyzed: ${this.lastAnalyzed} | GitHub: ${handle}${orgPart}${teamPart}`;
   }
 
   get dashboardScoreLine(): string {
     return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)} | Integration Score: ${Math.round(this.integrationScore)}`;
+  }
+
+  get sourceHealthLine(): string {
+    const githubStatus = this.sourcesUsed.github?.status || 'missing';
+    const resumeStatus = this.sourcesUsed.resume?.status || 'missing';
+    const recommendationStatus = this.sourcesUsed.recommendations?.status || 'missing';
+    return `Source health | GitHub: ${githubStatus} | Resume: ${resumeStatus} | Recommendations: ${recommendationStatus}`;
   }
 
   formatIntegrationDate(value: string | null): string {
@@ -721,6 +734,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const labels = [...top, ...(other > 0 ? ['Other'] : [])];
     const values = [...top.map((key) => Number(langData[key] || 0)), ...(other > 0 ? [other] : [])];
     const colors = ['#6366F1', '#8B5CF6', '#22C55E', '#F59E0B', '#64748B'];
+    this.hasLanguageData = values.length > 0 && total > 0;
 
     this.languageLegend = labels.map((label, index) => ({
       label,

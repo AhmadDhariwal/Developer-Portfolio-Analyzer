@@ -115,8 +115,11 @@
     gap: 10px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 6px 14px;
+    padding: 0 14px;
     border-radius: 10px;
+    min-height: 44px;
+    min-width: 180px;
+    box-sizing: border-box;
 
     .role-label {
       font-size: 0.75rem;
@@ -146,8 +149,9 @@
   .reanalyze-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 20px;
+    padding: 0 20px;
     background: linear-gradient(135deg, #6366F1, #8B5CF6);
     border: none;
     border-radius: 10px;
@@ -156,6 +160,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-height: 44px;
+    min-width: 180px;
+    box-sizing: border-box;
 
     svg {
       width: 16px;

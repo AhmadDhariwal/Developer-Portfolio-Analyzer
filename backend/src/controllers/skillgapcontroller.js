@@ -182,10 +182,10 @@ const buildResumeHash = (resumeText = '') => {
 
 const loadResumeAnalysis = async (userId) => {
   if (!userId) return null;
-  const userContext = await User.findById(userId).select('activeResumeFileId defaultResumeFileId').lean();
-  const activeResumeFileId = userContext?.activeResumeFileId || userContext?.defaultResumeFileId || null;
-  if (activeResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: activeResumeFileId })
+  const userContext = await User.findById(userId).select('defaultResumeFileId').lean();
+  const defaultResumeFileId = userContext?.defaultResumeFileId || null;
+  if (defaultResumeFileId) {
+    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
       .sort({ analyzedAt: -1 })
       .lean();
     if (activeAnalysis) return activeAnalysis;
@@ -361,7 +361,12 @@ const applySkillEvidence = ({ yourSkills, missingSkills, signals }) => {
 const analyzeSkillGap = async (req, res) => {
   try {
     let { username, resumeText } = req.body;
-    username = username || req.user?.activeGithubUsername || req.user?.githubUsername;
+    const defaultGithubUsername = String(req.user?.githubUsername || '').trim();
+    const requestedUsername = String(username || '').trim();
+    const isTemporaryMode = req.body?.isTemporary === true
+      || req.body?.isTemporary === 'true'
+      || Boolean(requestedUsername && defaultGithubUsername && requestedUsername.toLowerCase() !== defaultGithubUsername.toLowerCase());
+    username = requestedUsername || defaultGithubUsername;
 
     const careerStack = req.user?.careerStack || req.body.careerStack || 'Full Stack';
     const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
@@ -402,7 +407,10 @@ const analyzeSkillGap = async (req, res) => {
       analysisVersion: ANALYSIS_VERSION
     };
 
-    const cached = await AnalysisCache.findOne(cacheKey).lean();
+    const scopedCacheKey = req.user?._id && !isTemporaryMode
+      ? { ...cacheKey, userId: req.user._id }
+      : null;
+    const cached = scopedCacheKey ? await AnalysisCache.findOne(scopedCacheKey).lean() : null;
     if (cached?.analysisData) {
       const cachedResult = { ...cached.analysisData, fromCache: true };
       await saveAIVersionSnapshot({
@@ -555,9 +563,9 @@ const analyzeSkillGap = async (req, res) => {
     fullResult.skillGraph = skillGraph;
     fullResult.weeklyRoadmap = generateWeeklyLearningRoadmap(skillGraph, 8);
 
-    if (req.user?._id) {
+    if (scopedCacheKey) {
       await AnalysisCache.findOneAndUpdate(
-        cacheKey,
+        scopedCacheKey,
         { $set: { analysisData: fullResult, userId: req.user._id } },
         { upsert: true }
       );
