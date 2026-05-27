@@ -33,10 +33,9 @@
           combines JWT-authenticated requests, role-based access checks, and scoped organization
           data responses across its major product areas.
         </p>
-
-        <div class="code-block">
-          <code>Base API pattern: /api/&lt;domain&gt;/&lt;resource&gt;</code>
-        </div>
+        <p class="private-note">
+          Endpoint paths are internal and not listed publicly.
+        </p>
       </article>
 
       <div class="feature-grid">
@@ -55,9 +54,6 @@
       <article class="group-card" *ngFor="let group of apiGroups">
         <h3>{{ group.title }}</h3>
         <p>{{ group.description }}</p>
-        <div class="endpoint-list">
-          <code *ngFor="let endpoint of group.endpoints">{{ endpoint }}</code>
-        </div>
       </article>
     </section>
 
