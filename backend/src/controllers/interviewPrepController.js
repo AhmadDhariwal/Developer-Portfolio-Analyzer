@@ -1,7 +1,7 @@
 const {
   DEFAULT_PAGE_LIMIT,
   generateInterviewPrepSessionFromBank,
-  generateHybridInterviewQuestions,
+  generateFreshInterviewQuestions,
   answerCustomInterviewQuestion,
   getQuestionBank,
   searchQuestionBank,
@@ -78,13 +78,22 @@ const getInterviewPrepQuestions = async (req, res) => {
 // GET /api/interview-prep/search
 const searchInterviewPrepQuestions = async (req, res) => {
   try {
-    const { q = '', skill = '', difficulty = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT } = req.query;
+    const { q = '', skill = '', difficulty = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT, lookupOnly = '' } = req.query;
     const topicInput = readTopicInput(req.query || {});
     if (!String(q || '').trim()) {
       return res.status(400).json({ message: 'Query parameter q is required.' });
     }
 
-    const payload = await searchQuestionBank({ q, skill, difficulty, tags, page, limit, ...topicInput });
+    const payload = await searchQuestionBank({
+      q,
+      skill,
+      difficulty,
+      tags,
+      page,
+      limit,
+      ...topicInput,
+      allowEnrichment: String(lookupOnly).toLowerCase() !== 'true'
+    });
     return res.json(payload);
   } catch (error) {
     console.error('Interview prep search error:', error.message);
@@ -95,17 +104,18 @@ const searchInterviewPrepQuestions = async (req, res) => {
 // POST /api/interview-prep/generate
 const generateInterviewPrepQuestions = async (req, res) => {
   try {
-    const { skill = '', query = '', page = 1, limit = DEFAULT_PAGE_LIMIT } = req.body || {};
+    const { skill = '', query = '', difficulty = '', page = 1, limit = DEFAULT_PAGE_LIMIT } = req.body || {};
     const topicInput = readTopicInput(req.body || {});
     const normalizedSkill = sanitizeSkill(skill || topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack);
     if (!normalizedSkill && !topicInput.topic) {
       return res.status(400).json({ message: 'Body parameter skill or topic is required.' });
     }
 
-    const payload = await generateHybridInterviewQuestions({
+    const payload = await generateFreshInterviewQuestions({
       skill: normalizedSkill,
       ...topicInput,
       query,
+      difficulty,
       page,
       limit
     });
@@ -122,14 +132,18 @@ const askInterviewPrepQuestion = async (req, res) => {
   try {
     const { question = '', skill = '' } = req.body || {};
     const topicInput = readTopicInput(req.body || {});
+    const cleanQuestion = String(question || '').replace(/\s+/g, ' ').trim();
 
-    if (!String(question || '').trim()) {
+    if (!cleanQuestion) {
       return res.status(400).json({ message: 'Body parameter question is required.' });
+    }
+    if (cleanQuestion.length < 12 || cleanQuestion.length > 500) {
+      return res.status(400).json({ message: 'Question must be between 12 and 500 characters.' });
     }
 
     const payload = await answerCustomInterviewQuestion({
       userId: req.user._id,
-      question,
+      question: cleanQuestion,
       skill,
       ...topicInput
     });
@@ -137,7 +151,9 @@ const askInterviewPrepQuestion = async (req, res) => {
     return res.json(payload);
   } catch (error) {
     console.error('Interview prep ask-question error:', error.message);
-    return res.status(500).json({ message: 'Failed to answer interview question.' });
+    return res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to answer interview question.'
+    });
   }
 };
 

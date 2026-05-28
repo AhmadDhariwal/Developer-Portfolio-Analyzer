@@ -40,10 +40,20 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     lowercase: true,
     default: ''
   },
+  normalizedQuestionHash: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    index: true
+  },
   answer: {
     type: String,
     required: true,
     trim: true
+  },
+  answerSections: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   normalizedAnswer: {
     type: String,
@@ -106,6 +116,10 @@ const interviewQuestionBankSchema = new mongoose.Schema({
 interviewQuestionBankSchema.index({ question: 'text', answer: 'text', tags: 'text', topicKey: 'text' });
 interviewQuestionBankSchema.index({ skill: 1, question: 1 }, { unique: true });
 interviewQuestionBankSchema.index({ topicKey: 1, normalizedQuestion: 1 }, { unique: true, sparse: true });
+interviewQuestionBankSchema.index(
+  { topicKey: 1, normalizedQuestionHash: 1 },
+  { unique: true, partialFilterExpression: { normalizedQuestionHash: { $type: 'string' } } }
+);
 interviewQuestionBankSchema.index({ topicKey: 1, popularity: -1, createdAt: -1 });
 interviewQuestionBankSchema.index({ topicKey: 1, sourceType: 1 });
 

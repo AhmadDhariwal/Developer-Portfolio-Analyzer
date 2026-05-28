@@ -1,7 +1,7 @@
 const { createClient } = require('redis');
 
 const CACHE_TTL_SECONDS = 60 * 60;
-const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:'];
+const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:', 'interview:custom:'];
 
 let client;
 let redisEnabled = false;

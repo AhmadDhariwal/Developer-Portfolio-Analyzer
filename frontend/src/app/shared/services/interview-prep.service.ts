@@ -9,13 +9,18 @@ export interface InterviewQuestion {
   topicType?: 'stack' | 'technology' | 'language' | 'framework';
   question: string;
   answer: string;
+  answerSections?: Record<string, string>;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
-  source?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked';
-  sourceType?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked';
+  source?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  sourceType?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  sourceLabel?: string;
   popularity?: number;
   confidenceScore?: number;
   createdAt?: string;
+  stored?: boolean;
+  duplicate?: boolean;
+  fromCache?: boolean;
 }
 
 export interface InterviewQuestionListResponse {
@@ -44,11 +49,11 @@ export class InterviewPrepService {
     return this.api.getInterviewPrepQuestions(params);
   }
 
-  searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
+  searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[]; lookupOnly?: boolean }): Observable<InterviewQuestionListResponse> {
     return this.api.searchInterviewPrepQuestions(params);
   }
 
-  generateQuestions(payload: { skill: string; query?: string; page?: number; limit?: number }): Observable<InterviewQuestionListResponse> {
+  generateQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number }): Observable<InterviewQuestionListResponse> {
     return this.api.generateInterviewPrepQuestions(payload);
   }
 

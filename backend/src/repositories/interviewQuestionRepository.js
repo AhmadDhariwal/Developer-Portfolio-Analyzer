@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const InterviewQuestionBank = require('../models/interviewQuestionBank');
 const {
   normalizeComparableText,
@@ -7,10 +8,22 @@ const {
   sanitizeTags
 } = require('../services/interviewQuestionQualityService');
 
-const DEFAULT_SORT = { popularity: -1, createdAt: -1 };
+const DEFAULT_SORT = {
+  usageCount: -1,
+  confidenceScore: -1,
+  popularity: -1,
+  lastUsedAt: -1,
+  createdAt: -1
+};
+const toQuestionHash = (value = '') => crypto
+  .createHash('sha256')
+  .update(normalizeComparableText(value))
+  .digest('hex');
 
-const buildQuestionFilter = ({ topicKey = '', skill = '', topicType = '', difficulty = '', tags = '', query = '' } = {}) => {
-  const filter = {};
+const buildQuestionFilter = ({ topicKey = '', skill = '', topicType = '', difficulty = '', tags = '', query = '', excludeGenericSeeds = false } = {}) => {
+  const filter = {
+    qualityState: { $ne: 'rejected' }
+  };
   const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
   const normalizedSkill = String(skill || '').trim().toLowerCase();
   const normalizedTopicType = String(topicType || '').trim().toLowerCase();
@@ -47,6 +60,10 @@ const buildQuestionFilter = ({ topicKey = '', skill = '', topicType = '', diffic
     filter.$text = { $search: normalizedQuery };
   }
 
+  if (excludeGenericSeeds) {
+    filter['sourceMeta.seedVersion'] = { $ne: 'v2' };
+  }
+
   return filter;
 };
 
@@ -58,7 +75,7 @@ const findQuestionsPage = async ({ filter = {}, page = 1, limit = 20, includeTex
     : undefined;
 
   const sort = includeTextScore
-    ? { score: { $meta: 'textScore' }, popularity: -1, createdAt: -1 }
+    ? { score: { $meta: 'textScore' }, usageCount: -1, confidenceScore: -1, popularity: -1, createdAt: -1 }
     : DEFAULT_SORT;
 
   const [questions, total] = await Promise.all([
@@ -77,6 +94,7 @@ const upsertQuestions = async (records = []) => {
   const operations = records.map((record) => {
     const topicKey = String(record.topicKey || record.skill || '').trim().toLowerCase();
     const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
+    const normalizedQuestionHash = String(record.normalizedQuestionHash || toQuestionHash(normalizedQuestion)).trim().toLowerCase();
     const normalizedAnswer = normalizeComparableText(record.normalizedAnswer || record.answer);
     const sourceType = String(record.sourceType || record.source || 'prebuilt').trim().toLowerCase();
     const normalizedSkill = String(record.skill || topicKey || '').trim().toLowerCase();
@@ -85,7 +103,10 @@ const upsertQuestions = async (records = []) => {
       updateOne: {
         filter: {
           topicKey,
-          normalizedQuestion
+          $or: [
+            { normalizedQuestionHash },
+            { normalizedQuestion }
+          ]
         },
         update: {
           $setOnInsert: {
@@ -99,7 +120,9 @@ const upsertQuestions = async (records = []) => {
             skill: normalizedSkill,
             question: normalizeQuestionText(record.question),
             answer: normalizeAnswerText(record.answer),
+            answerSections: record.answerSections || {},
             normalizedQuestion,
+            normalizedQuestionHash,
             normalizedAnswer,
             difficulty: sanitizeDifficulty(record.difficulty),
             tags: sanitizeTags(record.tags || []),
@@ -122,6 +145,44 @@ const upsertQuestions = async (records = []) => {
     insertedCount: Number(result.upsertedCount || 0),
     upsertedIds: Object.values(result.upsertedIds || {})
   };
+};
+
+const findExactReusableQuestion = async ({ topicKey = '', question = '', minConfidence = 0.55 } = {}) => {
+  const normalizedQuestion = normalizeComparableText(question);
+  if (!normalizedQuestion) return null;
+
+  return InterviewQuestionBank.findOne({
+    topicKey: String(topicKey || '').trim().toLowerCase(),
+    qualityState: { $ne: 'rejected' },
+    confidenceScore: { $gte: minConfidence },
+    $or: [
+      { normalizedQuestionHash: toQuestionHash(normalizedQuestion) },
+      { normalizedQuestion }
+    ]
+  }).lean();
+};
+
+const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, minConfidence = 0.6 } = {}) => {
+  const filter = {
+    topicKey: String(topicKey || '').trim().toLowerCase(),
+    qualityState: { $ne: 'rejected' },
+    confidenceScore: { $gte: minConfidence }
+  };
+  const safeTags = sanitizeTags(tags);
+  if (safeTags.length) filter.tags = { $in: safeTags };
+
+  return InterviewQuestionBank.find(filter)
+    .sort({ usageCount: -1, popularity: -1, createdAt: -1 })
+    .limit(limit)
+    .lean();
+};
+
+const incrementQuestionUsage = async (id) => {
+  if (!id) return;
+  await InterviewQuestionBank.updateOne(
+    { _id: id },
+    { $inc: { usageCount: 1 }, $set: { lastUsedAt: new Date() } }
+  );
 };
 
 const fetchComparableQuestionsByTopic = async (topicKey = '', limit = 500) => {
@@ -177,12 +238,25 @@ const countQuestionsByTopic = async (topicKey = '') => {
   return InterviewQuestionBank.countDocuments({ topicKey: String(topicKey || '').trim().toLowerCase() });
 };
 
+const countQuestionsByTopicAndSeedVersion = async (topicKey = '', seedVersion = '') => {
+  if (!topicKey || !seedVersion) return 0;
+  return InterviewQuestionBank.countDocuments({
+    topicKey: String(topicKey || '').trim().toLowerCase(),
+    'sourceMeta.seedVersion': seedVersion
+  });
+};
+
 module.exports = {
   buildQuestionFilter,
   findQuestionsPage,
   upsertQuestions,
+  findExactReusableQuestion,
+  findSemanticCandidates,
   fetchComparableQuestionsByTopic,
   getSourceMixByTopic,
   incrementUsageStats,
-  countQuestionsByTopic
+  incrementQuestionUsage,
+  toQuestionHash,
+  countQuestionsByTopic,
+  countQuestionsByTopicAndSeedVersion
 };

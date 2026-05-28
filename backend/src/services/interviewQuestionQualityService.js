@@ -1,5 +1,14 @@
 const DIFFICULTY_SET = new Set(['easy', 'medium', 'hard']);
 const STOP_WORDS = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'are', 'was', 'were', 'what', 'why', 'how', 'when', 'where']);
+const TOPIC_TOKEN_ALIASES = {
+  nodejs: ['nodejs', 'node', 'js'],
+  expressjs: ['expressjs', 'express', 'node'],
+  nextjs: ['nextjs', 'next', 'react'],
+  mongodb: ['mongodb', 'mongo'],
+  postgresql: ['postgresql', 'postgres'],
+  'rest-apis': ['rest', 'api', 'apis', 'http'],
+  'system-design': ['system', 'design', 'distributed', 'scalability']
+};
 
 const normalizeWhitespace = (value = '') => String(value || '').replaceAll(/\s+/g, ' ').trim();
 
@@ -83,7 +92,7 @@ const computeConfidenceScore = ({ sourceType = 'ai', answer = '', question = '' 
   return Number(Math.max(0, Math.min(1, base)).toFixed(2));
 };
 
-const isQualityQuestionAnswer = ({ question = '', answer = '' } = {}) => {
+const isQualityQuestionAnswer = ({ question = '', answer = '', topicKey = '' } = {}) => {
   const normalizedQuestion = normalizeQuestionText(question);
   const normalizedAnswer = normalizeAnswerText(answer);
 
@@ -91,6 +100,12 @@ const isQualityQuestionAnswer = ({ question = '', answer = '' } = {}) => {
   if (normalizedQuestion.length < 12) return false;
   if (normalizedAnswer.length < 40) return false;
   if (containsUnsafeContent(`${normalizedQuestion} ${normalizedAnswer}`)) return false;
+  if (/^start with the definition\b/i.test(normalizedAnswer)) return false;
+  if (topicKey) {
+    const topicTokens = TOPIC_TOKEN_ALIASES[topicKey] || tokenize(topicKey);
+    const combinedTokens = new Set(tokenize(`${normalizedQuestion} ${normalizedAnswer}`));
+    if (topicTokens.length && !topicTokens.some((token) => combinedTokens.has(token))) return false;
+  }
   return true;
 };
 

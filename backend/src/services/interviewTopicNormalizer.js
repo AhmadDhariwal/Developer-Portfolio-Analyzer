@@ -24,6 +24,7 @@ const IMPORTANT_TOPICS = [
   { key: 'redis', type: TOPIC_TYPES.TECHNOLOGY, label: 'Redis', aliases: [] },
   { key: 'rest-apis', type: TOPIC_TYPES.TECHNOLOGY, label: 'REST APIs', aliases: ['rest', 'rest api', 'restful api', 'restful apis'] },
   { key: 'graphql', type: TOPIC_TYPES.TECHNOLOGY, label: 'GraphQL', aliases: ['graph ql'] },
+  { key: 'system-design', type: TOPIC_TYPES.TECHNOLOGY, label: 'System Design', aliases: ['system design', 'systems design', 'distributed systems'] },
 
   { key: 'mern', type: TOPIC_TYPES.STACK, label: 'MERN', aliases: ['mongo express react node', 'mern stack'] },
   { key: 'mean', type: TOPIC_TYPES.STACK, label: 'MEAN', aliases: ['mongo express angular node', 'mean stack'] },

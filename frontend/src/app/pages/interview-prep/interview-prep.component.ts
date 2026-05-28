@@ -1,9 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { InterviewPrepService, InterviewQuestion, InterviewQuestionListResponse } from '../../shared/services/interview-prep.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 
@@ -17,8 +15,9 @@ type InterviewTab = 'top' | 'search' | 'ai';
   styleUrl: './interview-prep.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InterviewPrepComponent implements OnInit, OnDestroy {
+export class InterviewPrepComponent implements OnInit {
   readonly pageSize = 10;
+  readonly topQuestionLimit = 30;
   readonly skills = [
     'javascript',
     'typescript',
@@ -36,13 +35,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     'redis',
     'rest-apis',
     'graphql',
+    'system-design',
     'mern',
     'mean',
     'full-stack-web-development'
   ];
   readonly tabs: Array<{ id: InterviewTab; label: string }> = [
     { id: 'top', label: 'Top Questions' },
-    { id: 'search', label: 'Search Questions' },
+    { id: 'search', label: 'Search / Ask' },
     { id: 'ai', label: 'AI Generated' }
   ];
   readonly skillLabels: Record<string, string> = {
@@ -62,6 +62,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     redis: 'Redis',
     'rest-apis': 'REST APIs',
     graphql: 'GraphQL',
+    'system-design': 'System Design',
     mern: 'MERN',
     mean: 'MEAN',
     'full-stack-web-development': 'Full Stack Web Development'
@@ -71,8 +72,20 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   selectedSkill = 'javascript';
   selectedDifficulty = '';
   tagsInput = '';
-  searchQuery = '';
   aiPromptQuery = '';
+  practiceCount = 10;
+  customQuestion = '';
+  customResult: InterviewQuestion | null = null;
+  searchMatches: InterviewQuestion[] = [];
+  searchAttempted = false;
+  canAskAI = false;
+  recentQuestions: InterviewQuestion[] = [];
+  generatedQuestions: InterviewQuestion[] = [];
+  filtersDirty = false;
+  customErrorMessage = '';
+  isAskingQuestion = false;
+  isSearchingMatches = false;
+  copyMessage = '';
 
   questions: InterviewQuestion[] = [];
   total = 0;
@@ -92,9 +105,15 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   skeletonItems = Array.from({ length: 6 });
   highlightedQuestions: SafeHtml[] = [];
   highlightedAnswers: SafeHtml[] = [];
-
-  private readonly subscriptions = new Subscription();
-  private readonly searchChanges = new Subject<string>();
+  readonly answerSectionTitles = [
+    'Short direct answer',
+    'Key points',
+    'Explanation',
+    'Example',
+    'Real-world use case',
+    'Common mistakes',
+    'Interview tip'
+  ];
 
   constructor(
     private readonly prepService: InterviewPrepService,
@@ -105,34 +124,12 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedSkill = this.mapCareerProfileToSkill(this.careerProfileService.snapshot.careerStack);
-    this.subscriptions.add(
-      this.searchChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe((query) => {
-        if (this.activeTab !== 'search') return;
-        this.searchQuery = query;
-        if (query.trim().length < 2) {
-          this.questions = [];
-          this.recomputeHighlights();
-          this.total = 0;
-          this.currentPage = 1;
-          this.totalPages = 1;
-          this.errorMessage = '';
-          this.cdr.markForCheck();
-          return;
-        }
-        this.fetchSearchQuestions(true);
-      })
-    );
-
     this.fetchTopQuestions(true);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
   }
 
   get canLoadMore(): boolean {
     if (this.isLoadingMore || this.isLoading) return false;
-    if (this.activeTab !== 'top' && this.activeTab !== 'search') return false;
+    if (this.activeTab !== 'top') return false;
     if (this.currentPage < this.totalPages) return true;
     return this.allowEnrichmentLoadMore && this.hasQuestions;
   }
@@ -151,19 +148,15 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     if (tab === 'top') {
       this.fetchTopQuestions(true);
     } else if (tab === 'search') {
-      if (this.searchQuery.trim().length >= 2) {
-        this.fetchSearchQuestions(true);
-      } else {
-        this.questions = [];
-        this.recomputeHighlights();
-        this.total = 0;
-        this.currentPage = 1;
-        this.totalPages = 1;
-      }
-    } else {
       this.questions = [];
       this.recomputeHighlights();
       this.total = 0;
+      this.currentPage = 1;
+      this.totalPages = 1;
+    } else {
+      this.questions = [...this.generatedQuestions];
+      this.recomputeHighlights();
+      this.total = this.questions.length;
       this.currentPage = 1;
       this.totalPages = 1;
     }
@@ -171,35 +164,35 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onSearchQueryChange(value: string): void {
-    this.searchChanges.next(value);
-  }
-
   onSkillChange(): void {
-    this.openAnswers.clear();
-    if (this.activeTab === 'top') {
-      this.fetchTopQuestions(true);
-      return;
-    }
-    if (this.activeTab === 'search' && this.searchQuery.trim().length >= 2) {
-      this.fetchSearchQuestions(true);
-    }
+    this.markFiltersChanged();
   }
 
   applyFilters(): void {
     this.openAnswers.clear();
+    this.filtersDirty = false;
     if (this.activeTab === 'top') {
       this.fetchTopQuestions(true);
       return;
     }
-    if (this.activeTab === 'search' && this.searchQuery.trim().length >= 2) {
-      this.fetchSearchQuestions(true);
+    if (this.activeTab === 'search') {
+      this.searchStoredQuestions();
+      return;
     }
+    this.questions = [...this.generatedQuestions];
+    this.recomputeHighlights();
+    this.cdr.markForCheck();
   }
 
   clearFilters(): void {
     this.selectedDifficulty = '';
     this.tagsInput = '';
+    this.customQuestion = '';
+    this.aiPromptQuery = '';
+    this.searchMatches = [];
+    this.searchAttempted = false;
+    this.canAskAI = false;
+    this.customResult = null;
     this.applyFilters();
   }
 
@@ -209,9 +202,15 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       this.fetchTopQuestions(false);
       return;
     }
-    if (this.activeTab === 'search') {
-      this.fetchSearchQuestions(false);
-    }
+  }
+
+  onQuestionDraftChange(value: string): void {
+    this.customQuestion = value;
+    this.searchAttempted = false;
+    this.canAskAI = false;
+    this.searchMatches = [];
+    this.customErrorMessage = '';
+    this.markFiltersChanged(false);
   }
 
   generateAIQuestions(): void {
@@ -226,11 +225,13 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.prepService.generateQuestions({
       skill: this.selectedSkill,
       query: this.aiPromptQuery.trim(),
+      difficulty: this.selectedDifficulty || undefined,
       page: 1,
-      limit: this.pageSize
+      limit: this.practiceCount
     }).subscribe({
       next: (response) => {
         this.consumeResponse(response, true);
+        this.generatedQuestions = [...this.questions];
         this.aiGeneratedCount = Number(response.aiGeneratedCount || 0);
         this.currentSource = String(response.source || 'db');
         this.isGeneratingAI = false;
@@ -246,6 +247,39 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     });
   }
 
+  askCustomQuestion(): void {
+    const question = this.customQuestion.replace(/\s+/g, ' ').trim();
+    if (question.length < 12 || this.isAskingQuestion) {
+      this.customErrorMessage = question.length < 12 ? 'Enter a complete interview question (at least 12 characters).' : '';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.customResult) {
+      this.addRecentQuestion(this.customResult);
+    }
+
+    this.isAskingQuestion = true;
+    this.customErrorMessage = '';
+    this.canAskAI = false;
+    this.customResult = null;
+    this.cdr.markForCheck();
+
+    this.prepService.askQuestion({ question, skill: this.selectedSkill }).subscribe({
+      next: (response) => {
+        this.customResult = response;
+        this.searchMatches = [];
+        this.isAskingQuestion = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.customErrorMessage = error?.error?.message || 'Failed to answer this question.';
+        this.isAskingQuestion = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   fetchTopQuestions(reset: boolean): void {
     const page = reset ? 1 : this.currentPage + 1;
     this.isLoading = reset;
@@ -256,7 +290,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.prepService.getTopQuestions({
       skill: this.selectedSkill,
       page,
-      limit: this.pageSize,
+      limit: this.topQuestionLimit,
       difficulty: this.selectedDifficulty || undefined,
       tags: this.parseTags()
     }).subscribe({
@@ -272,14 +306,24 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     });
   }
 
-  fetchSearchQuestions(reset: boolean): void {
-    const query = this.searchQuery.trim();
-    if (query.length < 2) return;
+  searchStoredQuestions(): void {
+    const query = this.customQuestion.replace(/\s+/g, ' ').trim();
+    if (query.length < 3 || this.isSearchingMatches) {
+      this.customErrorMessage = query.length < 3 ? 'Enter at least 3 characters to search the question bank.' : '';
+      this.cdr.markForCheck();
+      return;
+    }
 
-    const page = reset ? 1 : this.currentPage + 1;
-    this.isLoading = reset;
-    this.isLoadingMore = !reset;
-    this.errorMessage = '';
+    if (this.customResult) {
+      this.addRecentQuestion(this.customResult);
+    }
+
+    this.isSearchingMatches = true;
+    this.searchAttempted = true;
+    this.canAskAI = false;
+    this.customResult = null;
+    this.searchMatches = [];
+    this.customErrorMessage = '';
     this.cdr.markForCheck();
 
     this.prepService.searchQuestions({
@@ -287,16 +331,23 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       skill: this.selectedSkill,
       difficulty: this.selectedDifficulty || undefined,
       tags: this.parseTags(),
-      page,
-      limit: this.pageSize
+      page: 1,
+      limit: 5,
+      lookupOnly: true
     }).subscribe({
       next: (response) => {
-        this.consumeResponse(response, reset);
+        const matches = response.questions || [];
+        this.searchMatches = matches;
+        this.customResult = matches[0] || null;
+        this.canAskAI = matches.length === 0;
+        this.isSearchingMatches = false;
+        this.filtersDirty = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
-        this.errorMessage = error?.error?.message || 'Search failed.';
-        this.isLoading = false;
-        this.isLoadingMore = false;
+        this.customErrorMessage = error?.error?.message || 'Search failed.';
+        this.canAskAI = true;
+        this.isSearchingMatches = false;
         this.cdr.markForCheck();
       }
     });
@@ -358,9 +409,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   private recomputeHighlights(): void {
-    const keyword = this.searchQuery.trim();
-    const enableHighlight = this.activeTab === 'search' && keyword.length > 0;
-    const pattern = enableHighlight ? new RegExp(`(${this.escapeRegExp(keyword)})`, 'ig') : null;
+    const pattern = null;
 
     const questions: SafeHtml[] = [];
     const answers: SafeHtml[] = [];
@@ -391,11 +440,124 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     return this.openAnswers.has(index);
   }
 
+  sourceLabel(item: InterviewQuestion): string {
+    if (item.sourceLabel) return item.sourceLabel;
+    const source = String(item.sourceType || item.source || 'db').toLowerCase();
+    if (source === 'prebuilt' || source === 'seed') return 'Seed';
+    if (source === 'scraped' || source === 'scrape') return 'Scraped';
+    if (source === 'ai' || source === 'user_asked') return 'AI';
+    if (source === 'hybrid') return 'Hybrid';
+    return 'DB';
+  }
+
+  confidenceLabel(item: InterviewQuestion): string {
+    const value = Number(item.confidenceScore || 0);
+    return value > 0 ? `${Math.round(value * 100)}% confidence` : '';
+  }
+
+  async copyAnswer(item: InterviewQuestion): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(`${item.question}\n\n${item.answer}`);
+      this.copyMessage = 'Answer copied.';
+    } catch {
+      this.copyMessage = 'Unable to copy answer.';
+    }
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.copyMessage = '';
+      this.cdr.markForCheck();
+    }, 2500);
+  }
+
+  clearCurrentQuestion(): void {
+    if (this.customResult) {
+      this.addRecentQuestion(this.customResult);
+    }
+    this.customResult = null;
+    this.customQuestion = '';
+    this.searchMatches = [];
+    this.customErrorMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  useStoredQuestion(item: InterviewQuestion): void {
+    this.customQuestion = item.question;
+    if (this.customResult) {
+      this.addRecentQuestion(this.customResult);
+    }
+    this.customResult = item;
+    this.canAskAI = false;
+    this.searchAttempted = true;
+    this.cdr.markForCheck();
+  }
+
   trackByQuestion(_index: number, item: InterviewQuestion): string {
     return item._id || item.question;
   }
 
   getSkillLabel(skill: string): string {
     return this.skillLabels[skill] || skill;
+  }
+
+  get personalizedContext(): string {
+    const profile = this.careerProfileService.snapshot;
+    return `${profile.careerStack} | ${profile.experienceLevel}`;
+  }
+
+  get selectedTopicLabel(): string {
+    return this.getSkillLabel(this.selectedSkill);
+  }
+
+  get activeFilterChips(): string[] {
+    return [
+      this.selectedTopicLabel,
+      this.selectedDifficulty ? `${this.selectedDifficulty} difficulty` : '',
+      ...this.parseTags().map((tag) => `#${tag}`),
+      this.activeTab === 'search' && this.customQuestion.trim() ? `"${this.customQuestion.trim()}"` : '',
+      this.activeTab === 'ai' && this.aiPromptQuery.trim() ? `Focus: ${this.aiPromptQuery.trim()}` : ''
+    ].filter(Boolean);
+  }
+
+  answerSection(item: InterviewQuestion, title: string): string {
+    const direct = item.answerSections?.[title];
+    if (direct) return direct;
+    const allTitles = this.answerSectionTitles.join('|');
+    const section = new RegExp(`${title}:\\s*([\\s\\S]*?)(?=\\n(?:${allTitles}|Direct answer|Example or code snippet):|$)`, 'i');
+    return item.answer.match(section)?.[1]?.trim() || '';
+  }
+
+  answerSections(item: InterviewQuestion): Array<{ title: string; body: string }> {
+    const sections = this.answerSectionTitles
+      .map((title) => ({ title, body: this.answerSection(item, title) }))
+      .filter((section) => section.body);
+    return sections.length ? sections : [{ title: 'Answer', body: item.answer }];
+  }
+
+  markFiltersChanged(clearResults = true): void {
+    this.filtersDirty = true;
+    this.openAnswers.clear();
+    if (clearResults) {
+      this.questions = [];
+      this.recomputeHighlights();
+      this.total = 0;
+      this.currentPage = 1;
+      this.totalPages = 1;
+      this.generatedQuestions = [];
+      this.aiGeneratedCount = 0;
+      this.currentSource = '';
+      this.searchMatches = [];
+      this.searchAttempted = false;
+      this.canAskAI = false;
+      this.customResult = null;
+    }
+    this.cdr.markForCheck();
+  }
+
+  private addRecentQuestion(item: InterviewQuestion): void {
+    const key = item._id || item.question;
+    this.recentQuestions = [
+      item,
+      ...this.recentQuestions.filter((recent) => (recent._id || recent.question) !== key)
+    ].slice(0, 8);
   }
 }

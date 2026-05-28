@@ -25,6 +25,26 @@ const withTimeout = async (promise, timeoutMs = 5000, fallbackValue = []) => {
   }
 };
 
+const sectionTitles = [
+  'Short direct answer',
+  'Key points',
+  'Explanation',
+  'Example',
+  'Real-world use case',
+  'Common mistakes',
+  'Interview tip'
+];
+
+const extractAnswerSections = (answer = '') => {
+  const sections = {};
+  for (const title of sectionTitles) {
+    const pattern = new RegExp(`${title}:\\s*([\\s\\S]*?)(?=\\n(?:${sectionTitles.join('|')}):|$)`, 'i');
+    const value = String(answer || '').match(pattern)?.[1]?.trim();
+    if (value) sections[title] = value;
+  }
+  return sections;
+};
+
 const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity = 10, qualityState = 'approved' }) => {
   const question = normalizeQuestionText(item.question);
   const answer = normalizeAnswerText(item.answer);
@@ -36,6 +56,7 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
     skill: topic.skill,
     question,
     answer,
+    answerSections: extractAnswerSections(answer),
     normalizedQuestion: normalizeComparableText(question),
     normalizedAnswer: normalizeComparableText(answer),
     difficulty: sanitizeDifficulty(item.difficulty),
@@ -90,44 +111,44 @@ const createInterviewEnrichmentOrchestrator = ({
       };
     }
 
-    let aiCandidates = [];
     let scrapeCandidates = [];
+    let aiCandidates = [];
 
     try {
-      aiCandidates = await aiProvider.generateQuestionsFromAI({
-        topicKey: topic.topicKey,
-        topicType: topic.topicType,
-        query,
-        count: missing
-      });
+      scrapeCandidates = await withTimeout(
+        scraperProvider.scrapeQuestionsForTopic({
+          topicKey: topic.topicKey,
+          topicType: topic.topicType,
+          count: missing
+        }),
+        maxScrapeTimeoutMs,
+        []
+      );
     } catch (error) {
-      logger.warn('interview-prep ai enrichment failed', {
+      logger.warn('interview-prep scrape enrichment failed', {
         topicKey: topic.topicKey,
         message: error.message,
         initiatedBy
       });
     }
 
-    const validAi = dedupeQuestions({
-      questions: aiCandidates.filter((item) => isQualityQuestionAnswer(item)),
+    const dedupedScrape = dedupeQuestions({
+      questions: scrapeCandidates.filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey })),
       existingComparableQuestions
     });
 
-    const remainingAfterAi = Math.max(0, missing - validAi.length);
+    const remainingAfterScrape = Math.max(0, missing - dedupedScrape.length);
 
-    if (remainingAfterAi > 0) {
+    if (remainingAfterScrape > 0) {
       try {
-        scrapeCandidates = await withTimeout(
-          scraperProvider.scrapeQuestionsForTopic({
-            topicKey: topic.topicKey,
-            topicType: topic.topicType,
-            count: remainingAfterAi
-          }),
-          maxScrapeTimeoutMs,
-          []
-        );
+        aiCandidates = await aiProvider.generateQuestionsFromAI({
+          topicKey: topic.topicKey,
+          topicType: topic.topicType,
+          query,
+          count: remainingAfterScrape
+        });
       } catch (error) {
-        logger.warn('interview-prep scrape enrichment failed', {
+        logger.warn('interview-prep ai enrichment failed', {
           topicKey: topic.topicKey,
           message: error.message,
           initiatedBy
@@ -135,28 +156,28 @@ const createInterviewEnrichmentOrchestrator = ({
       }
     }
 
-    const dedupedScrape = dedupeQuestions({
-      questions: scrapeCandidates.filter((item) => isQualityQuestionAnswer(item)),
+    const validAi = dedupeQuestions({
+      questions: aiCandidates.filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey })),
       existingComparableQuestions: [
         ...existingComparableQuestions,
-        ...validAi.map((item) => normalizeComparableText(item.question))
+        ...dedupedScrape.map((item) => normalizeComparableText(item.question))
       ]
     });
 
     const storable = [
-      ...validAi.map((item) => toStorableRecord({
-        item,
-        topic,
-        sourceType: 'ai',
-        sourceMeta: { query, initiatedBy },
-        popularity: 10
-      })),
       ...dedupedScrape.map((item) => toStorableRecord({
         item,
         topic,
         sourceType: 'scraped',
         sourceMeta: { query, initiatedBy },
         popularity: 12
+      })),
+      ...validAi.map((item) => toStorableRecord({
+        item,
+        topic,
+        sourceType: 'ai',
+        sourceMeta: { query, initiatedBy },
+        popularity: 10
       }))
     ];
 
