@@ -2,26 +2,40 @@
   <div class="page-header">
     <div>
       <h2>Interview Preparation Hub</h2>
-      <p>Browse trusted questions, ask anything, or generate a focused practice set. Quality answers are saved automatically.</p>
+      <p>Search the question bank, browse technology-specific answers, and generate focused practice sets only when needed.</p>
       <span class="profile-context">Personalized for {{ personalizedContext }}. Topic changes here are temporary.</span>
     </div>
   </div>
 
-  <div class="card">
-    <div class="tabs">
-      <button
-        *ngFor="let tab of tabs"
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === tab.id"
-        (click)="onTabChange(tab.id)">
-        {{ tab.label }}
-      </button>
+  <div class="card tab-shell">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab === tab.id"
+      (click)="onTabChange(tab.id)">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <ng-container *ngIf="activeTab === 'search'">
+  <section class="card block-card">
+    <div class="block-heading">
+      <div>
+        <span class="block-kicker">Block 1</span>
+        <h3>Search & All Questions</h3>
+        <p class="meta">Search checks saved answers first. If no match exists, AI generates a structured answer and saves it automatically.</p>
+      </div>
+      <div class="topic-summary compact">
+        <span class="summary-kicker">Showing</span>
+        <strong>{{ selectedTopicLabel }}</strong>
+        <span>{{ allRangeLabel }}</span>
+      </div>
     </div>
 
-    <div class="controls-grid filter-panel">
+    <div class="filter-panel compact-filter">
       <label>
-        Technology / Skill
+        Skill
         <select [(ngModel)]="selectedSkill" (ngModelChange)="onSkillChange()" title="Skill">
           <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
         </select>
@@ -38,41 +52,51 @@
       </label>
 
       <label>
-        Topic / Tags
-        <input [(ngModel)]="tagsInput" (ngModelChange)="markFiltersChanged()" placeholder="hooks, indexing, scaling" title="Tags" />
+        Category
+        <select [(ngModel)]="selectedCategory" (ngModelChange)="markFiltersChanged()" title="Category">
+          <option value="">All</option>
+          <option value="conceptual">Conceptual</option>
+          <option value="scenario_based">Scenario</option>
+          <option value="code_output">Code Output</option>
+          <option value="best_practice">Best Practice</option>
+          <option value="system_design">System Design</option>
+          <option value="behavioral">Behavioral</option>
+        </select>
       </label>
-    </div>
 
-    <div class="actions-row">
-      <button class="primary-btn" type="button" (click)="applyFilters()">
-        {{ filtersDirty ? 'Apply Filters' : 'Refresh Results' }}
-      </button>
-      <button class="ghost-btn" type="button" (click)="clearFilters()">Clear Filters</button>
-      <div class="topic-summary">
-        <span class="summary-kicker">Selected topic</span>
-        <strong>{{ selectedTopicLabel }}</strong>
-        <span>{{ activeTab === 'top' ? total + ' bank questions matched' : 'Temporary practice topic' }}</span>
+      <label>
+        Source
+        <select [(ngModel)]="selectedSource" (ngModelChange)="markFiltersChanged()" title="Source">
+          <option value="">All</option>
+          <option value="database">Database</option>
+          <option value="seed">Seed</option>
+          <option value="ai">AI Generated</option>
+          <option value="scraped">Scraped</option>
+        </select>
+      </label>
+
+      <label>
+        Tags
+        <input [(ngModel)]="tagsInput" (ngModelChange)="markFiltersChanged()" placeholder="hooks, indexing" title="Tags" />
+      </label>
+
+      <div class="filter-actions">
+        <button class="primary-btn small-btn" type="button" (click)="applyFilters()">
+          {{ filtersDirty ? 'Apply' : 'Refresh' }}
+        </button>
+        <button class="ghost-btn small-btn" type="button" (click)="clearFilters()">Clear</button>
       </div>
     </div>
+
     <div class="filter-chips" *ngIf="activeFilterChips.length">
       <span class="filter-chip" *ngFor="let chip of activeFilterChips">{{ chip }}</span>
       <span class="filter-dirty" *ngIf="filtersDirty">Filters changed. Apply to refresh.</span>
     </div>
 
-    <section class="custom-question-panel" *ngIf="activeTab === 'search'">
-      <div class="section-copy">
-        <h3>Search or Ask Any Interview Question</h3>
-        <p class="meta">Saved answers are checked first. If no strong answer exists, a new quality-checked answer is generated and saved automatically.</p>
-      </div>
+    <div class="custom-question-panel">
       <div class="custom-grid">
-        <label>
-          Technology / Topic
-          <select [(ngModel)]="selectedSkill" (ngModelChange)="onSkillChange(); onQuestionDraftChange(customQuestion)" title="Custom question topic">
-            <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
-          </select>
-        </label>
         <label class="custom-question-field">
-          Your question
+          Search or ask a question
           <textarea
             [(ngModel)]="customQuestion"
             (ngModelChange)="onQuestionDraftChange($event)"
@@ -81,12 +105,14 @@
             title="Custom interview question"></textarea>
         </label>
         <button class="primary-btn ask-btn" type="button" (click)="searchStoredQuestions()" [disabled]="isSearchingMatches || customQuestion.trim().length < 3">
-          {{ isSearchingMatches ? 'Searching bank...' : 'Search DB First' }}
+          {{ isSearchingMatches ? 'Searching...' : 'Search / Ask' }}
         </button>
       </div>
+
       <p class="error" *ngIf="customErrorMessage">{{ customErrorMessage }}</p>
+
       <div class="stored-matches" *ngIf="isSearchingMatches || searchMatches.length">
-        <p class="meta">{{ isSearchingMatches ? 'Checking saved answers...' : 'Stored answers found' }}</p>
+        <p class="meta">{{ isSearchingMatches ? 'Checking saved answers...' : 'Best matching answers' }}</p>
         <button
           class="stored-match"
           type="button"
@@ -94,15 +120,6 @@
           (click)="useStoredQuestion(item)">
           <span>{{ item.question }}</span>
           <span class="badge source-badge">{{ sourceLabel(item) }}</span>
-        </button>
-      </div>
-      <div class="ai-fallback-panel" *ngIf="searchAttempted && canAskAI && !isSearchingMatches">
-        <div>
-          <strong>No strong stored answer found.</strong>
-          <p class="meta">Ask AI only if you want to generate, quality-check, save, and cache a new structured answer.</p>
-        </div>
-        <button class="primary-btn" type="button" (click)="askCustomQuestion()" [disabled]="isAskingQuestion || customQuestion.trim().length < 12">
-          {{ isAskingQuestion ? 'Generating structured answer...' : 'Ask AI for Answer' }}
         </button>
       </div>
 
@@ -119,27 +136,124 @@
         <div class="tag-row" *ngIf="customResult.tags.length">
           <span class="tag" *ngFor="let tag of customResult.tags">{{ tag }}</span>
         </div>
-        <div class="answer-sections">
-          <div class="answer-section" *ngFor="let section of answerSections(customResult)">
-            <span>{{ section.title }}</span>
-            <p>{{ section.body }}</p>
-          </div>
-        </div>
+        <ng-container *ngTemplateOutlet="answerRenderer; context: { item: customResult }"></ng-container>
         <div class="card-actions">
           <button class="ghost-btn" type="button" (click)="copyAnswer(customResult)">Copy Answer</button>
-          <button class="ghost-btn" type="button" (click)="clearCurrentQuestion()">Clear Current Question</button>
-          <span class="meta">{{ customResult.duplicate || customResult.fromCache ? 'Reused from the question bank.' : 'Quality answers are saved automatically for reuse.' }}</span>
+          <button class="ghost-btn" type="button" (click)="clearCurrentQuestion()">Clear Current</button>
+          <span class="meta">{{ customResult.duplicate || customResult.fromCache ? 'Reused from the question bank.' : 'Saved automatically for reuse.' }}</span>
         </div>
       </article>
-    </section>
+    </div>
 
-    <div class="ai-row" *ngIf="activeTab === 'ai'">
-      <p class="ai-purpose">
-        Generate a focused practice set for your selected technology, topic, and difficulty.
-        High-quality questions are automatically saved and reused later.
-      </p>
+    <div class="qa-list" *ngIf="!isLoadingAll && allQuestions.length">
+      <article class="qa-card" *ngFor="let item of visibleAllQuestions; let i = index; trackBy: trackByQuestion">
+        <div class="qa-header">
+          <div class="question-title">
+            <span class="question-index">Q{{ (allVisiblePage - 1) * pageSize + i + 1 }}</span>
+            <strong>{{ item.question }}</strong>
+          </div>
+          <div class="badge-cluster">
+            <span class="badge source-badge">{{ sourceLabel(item) }}</span>
+            <span class="badge">{{ item.difficulty | titlecase }}</span>
+            <span class="badge confidence-badge" *ngIf="confidenceLabel(item)">{{ confidenceLabel(item) }}</span>
+          </div>
+        </div>
+        <div class="tag-row" *ngIf="item.tags.length">
+          <span class="tag" *ngFor="let tag of item.tags">{{ tag }}</span>
+        </div>
+        <div class="card-actions">
+          <button class="ghost-btn" type="button" (click)="toggleAnswer(2000 + ((allVisiblePage - 1) * pageSize) + i)">
+            {{ isAnswerOpen(2000 + ((allVisiblePage - 1) * pageSize) + i) ? 'Hide Answer' : 'Show Answer' }}
+          </button>
+          <button class="ghost-btn" type="button" (click)="copyAnswer(item)">Copy Answer</button>
+        </div>
+        <ng-container *ngIf="isAnswerOpen(2000 + ((allVisiblePage - 1) * pageSize) + i)" [ngTemplateOutlet]="answerRenderer" [ngTemplateOutletContext]="{ item: item }"></ng-container>
+      </article>
+    </div>
+
+    <div class="qa-list" *ngIf="isLoadingAll">
+      <div class="qa-card skeleton" *ngFor="let item of skeletonItems"></div>
+    </div>
+
+    <div class="pagination-row">
+      <button class="ghost-btn small-btn" type="button" (click)="previousAllPage()" [disabled]="allVisiblePage <= 1 || isLoadingAll">
+        Previous
+      </button>
+      <span class="page-indicator">Page {{ allVisiblePage }} of {{ allTotalPages }} | {{ allRangeLabel }}</span>
+      <button class="ghost-btn small-btn" type="button" (click)="nextAllPage()" [disabled]="allVisiblePage >= allTotalPages && !canLoadMoreAll">
+        {{ allVisiblePage >= allTotalPages && canLoadMoreAll ? 'Load More' : 'Next' }}
+      </button>
+    </div>
+
+    <p class="meta" *ngIf="!isLoadingAll && !allQuestions.length">No questions match these filters yet.</p>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="success-note" *ngIf="copyMessage">{{ copyMessage }}</p>
+  </section>
+
+  <section class="card block-card">
+    <div class="block-heading">
+      <div>
+        <span class="block-kicker">Block 2</span>
+        <h3>{{ selectedTopicLabel }} Top 30 Questions</h3>
+        <p class="meta">Fixed high-quality set from MongoDB, shown 10 at a time without extra API calls.</p>
+      </div>
+      <span class="page-indicator">Page {{ topPage }} of {{ topTotalPages }} | {{ topRangeLabel }}</span>
+    </div>
+
+    <div class="qa-list" *ngIf="!isLoading && hasQuestions">
+      <article class="qa-card" *ngFor="let item of visibleTopQuestions; let i = index; trackBy: trackByQuestion">
+        <div class="qa-header">
+          <div class="question-title">
+            <span class="question-index">Q{{ (topPage - 1) * pageSize + i + 1 }}</span>
+            <strong [innerHTML]="highlightedQuestions[(topPage - 1) * pageSize + i]"></strong>
+          </div>
+          <div class="badge-cluster">
+            <span class="badge source-badge">{{ sourceLabel(item) }}</span>
+            <span class="badge">{{ item.difficulty | titlecase }}</span>
+            <span class="badge confidence-badge" *ngIf="confidenceLabel(item)">{{ confidenceLabel(item) }}</span>
+          </div>
+        </div>
+        <div class="tag-row" *ngIf="item.tags.length">
+          <span class="tag" *ngFor="let tag of item.tags">{{ tag }}</span>
+        </div>
+        <div class="card-actions">
+          <button class="ghost-btn" type="button" (click)="toggleAnswer((topPage - 1) * pageSize + i)">
+            {{ openAnswers.has((topPage - 1) * pageSize + i) ? 'Hide Answer' : 'Show Answer' }}
+          </button>
+          <button class="ghost-btn" type="button" (click)="copyAnswer(item)">Copy Answer</button>
+        </div>
+        <ng-container *ngIf="openAnswers.has((topPage - 1) * pageSize + i)" [ngTemplateOutlet]="answerRenderer" [ngTemplateOutletContext]="{ item: item }"></ng-container>
+      </article>
+    </div>
+
+    <div class="qa-list" *ngIf="isLoading">
+      <div class="qa-card skeleton" *ngFor="let item of skeletonItems"></div>
+    </div>
+
+    <div class="pagination-row" *ngIf="hasQuestions">
+      <button class="ghost-btn small-btn" type="button" (click)="previousTopPage()" [disabled]="topPage <= 1">Previous</button>
+      <span class="page-indicator">{{ topRangeLabel }}</span>
+      <button class="ghost-btn small-btn" type="button" (click)="nextTopPage()" [disabled]="!canLoadMore">Next</button>
+    </div>
+
+    <p class="meta" *ngIf="!isLoading && !hasQuestions">No Top 30 questions are available for these filters yet.</p>
+  </section>
+  </ng-container>
+
+  <ng-container *ngIf="activeTab === 'ai'">
+  <section class="card block-card">
+    <div class="block-heading">
+      <div>
+        <span class="block-kicker">Block 3</span>
+        <h3>AI Generated Practice Set</h3>
+        <p class="meta">Generate a focused set for the selected skill/topic. Saved generated questions are reused before AI is called.</p>
+      </div>
+      <span class="page-indicator" *ngIf="currentSource">New saved: {{ aiGeneratedCount }}</span>
+    </div>
+
+    <div class="ai-row compact-ai">
       <label>
-        Practice focus (optional)
+        Practice focus
         <input [(ngModel)]="aiPromptQuery" (ngModelChange)="markFiltersChanged(false)" placeholder="e.g. hooks performance" title="AI focus" />
       </label>
       <label class="count-field">
@@ -154,30 +268,12 @@
       <button class="primary-btn" type="button" (click)="generateAIQuestions()" [disabled]="isGeneratingAI">
         {{ isGeneratingAI ? 'Generating...' : 'Generate Practice Set' }}
       </button>
-      <p class="meta" *ngIf="currentSource">New quality AI questions saved: {{ aiGeneratedCount }}</p>
     </div>
 
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-    <p class="success-note" *ngIf="copyMessage">{{ copyMessage }}</p>
-  </div>
-
-  <div class="card" *ngIf="isLoading">
-    <h3>Loading questions...</h3>
-    <div class="qa-list">
-      <div class="qa-card skeleton" *ngFor="let item of skeletonItems"></div>
-    </div>
-  </div>
-
-  <div class="card" *ngIf="!isLoading && hasQuestions && activeTab !== 'search'">
-    <h3>{{ activeTab === 'top' ? selectedTopicLabel + ' Top Questions' : 'Current Generated Set' }}</h3>
-    <p class="meta">{{ activeTab === 'top' ? 'Showing the strongest technology-specific questions from the bank. Generic legacy seed rows are ignored.' : 'Strong generated answers are automatically stored in the question bank.' }}</p>
-    <div class="qa-list">
-      <div class="qa-card" *ngFor="let item of questions; let i = index; trackBy: trackByQuestion">
+    <div class="qa-list" *ngIf="generatedQuestions.length">
+      <article class="qa-card" *ngFor="let item of generatedQuestions; let i = index; trackBy: trackByQuestion">
         <div class="qa-header">
-          <div class="question-title">
-            <span class="question-index">Q{{ i + 1 }}</span>
-            <strong [innerHTML]="highlightedQuestions[i]"></strong>
-          </div>
+          <strong>{{ item.question }}</strong>
           <div class="badge-cluster">
             <span class="badge source-badge">{{ sourceLabel(item) }}</span>
             <span class="badge">{{ item.difficulty | titlecase }}</span>
@@ -188,25 +284,22 @@
           <span class="tag" *ngFor="let tag of item.tags">{{ tag }}</span>
         </div>
         <div class="card-actions">
-          <button class="ghost-btn" type="button" (click)="toggleAnswer(i)">
-            {{ openAnswers.has(i) ? 'Hide Answer' : 'Show Answer' }}
+          <button class="ghost-btn" type="button" (click)="toggleAnswer(i + 3000)">
+            {{ isAnswerOpen(i + 3000) ? 'Hide Answer' : 'Show Answer' }}
           </button>
           <button class="ghost-btn" type="button" (click)="copyAnswer(item)">Copy Answer</button>
         </div>
-        <div class="answer-sections" *ngIf="openAnswers.has(i)">
-          <div class="answer-section" *ngFor="let section of answerSections(item)">
-            <span>{{ section.title }}</span>
-            <p>{{ section.body }}</p>
-          </div>
-        </div>
-      </div>
+        <ng-container *ngIf="isAnswerOpen(i + 3000)" [ngTemplateOutlet]="answerRenderer" [ngTemplateOutletContext]="{ item: item }"></ng-container>
+      </article>
     </div>
-  </div>
 
-  <div class="card recent-card" *ngIf="activeTab === 'ai' && recentQuestions.length">
+    <p class="meta" *ngIf="!generatedQuestions.length && !isGeneratingAI">No generated set yet. Choose a focus and generate when you need fresh practice.</p>
+  </section>
+
+  <section class="card recent-card">
     <h3>Recent Asked Questions</h3>
     <p class="meta">Your earlier Search / Ask answers remain here for this session.</p>
-    <div class="qa-list">
+    <div class="qa-list" *ngIf="recentQuestions.length">
       <article class="qa-card compact-card" *ngFor="let item of recentQuestions; let i = index; trackBy: trackByQuestion">
         <div class="qa-header">
           <strong>{{ item.question }}</strong>
@@ -221,21 +314,23 @@
           </button>
           <button class="ghost-btn" type="button" (click)="copyAnswer(item)">Copy Answer</button>
         </div>
-        <div class="answer-sections" *ngIf="isAnswerOpen(i + 1000)">
-          <div class="answer-section" *ngFor="let section of answerSections(item)">
-            <span>{{ section.title }}</span>
-            <p>{{ section.body }}</p>
-          </div>
-        </div>
+        <ng-container *ngIf="isAnswerOpen(i + 1000)" [ngTemplateOutlet]="answerRenderer" [ngTemplateOutletContext]="{ item: item }"></ng-container>
       </article>
     </div>
-  </div>
+    <p class="meta" *ngIf="!recentQuestions.length">No recent asked questions in this session yet.</p>
+  </section>
+  </ng-container>
 
-  <div class="card empty-state" *ngIf="!isLoading && !hasQuestions && !errorMessage && activeTab === 'top'">
-    <p class="meta">No stored questions are available for the selected filters yet.</p>
-  </div>
-
-  <div class="card empty-state" *ngIf="activeTab === 'ai' && !hasQuestions && !recentQuestions.length && !errorMessage">
-    <p class="meta">Generate a focused practice set, or ask a question in Search / Ask to build your recent list.</p>
-  </div>
+  <ng-template #answerRenderer let-item="item">
+    <div class="answer-sections">
+      <div class="answer-section" *ngFor="let section of answerSections(item)">
+        <span>{{ section.title }}</span>
+        <ul *ngIf="section.kind === 'list'">
+          <li *ngFor="let point of section.items">{{ point }}</li>
+        </ul>
+        <pre *ngIf="section.kind === 'code'"><code>{{ section.body }}</code></pre>
+        <p *ngIf="section.kind !== 'list' && section.kind !== 'code'" [class.context-box]="section.kind === 'context'">{{ section.body }}</p>
+      </div>
+    </div>
+  </ng-template>
 </div>

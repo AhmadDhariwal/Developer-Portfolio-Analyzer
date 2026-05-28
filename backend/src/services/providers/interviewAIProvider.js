@@ -6,15 +6,74 @@ const {
   sanitizeTags
 } = require('../interviewQuestionQualityService');
 
+const VALID_CATEGORIES = new Set([
+  'conceptual',
+  'scenario_based',
+  'code_output',
+  'best_practice',
+  'system_design',
+  'behavioral'
+]);
+
+const normalizeStructuredAnswer = (answer = {}) => {
+  if (typeof answer === 'string') {
+    return {
+      summary: normalizeAnswerText(answer).split(/[.!?]\s/)[0] || normalizeAnswerText(answer),
+      explanation: normalizeAnswerText(answer),
+      bulletPoints: [],
+      codeExample: '',
+      realWorldContext: ''
+    };
+  }
+
+  const bulletPoints = Array.isArray(answer.bulletPoints)
+    ? answer.bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6)
+    : [];
+
+  return {
+    summary: normalizeAnswerText(answer.summary || answer.directAnswer || ''),
+    explanation: normalizeAnswerText(answer.explanation || ''),
+    bulletPoints,
+    codeExample: String(answer.codeExample || '').trim(),
+    realWorldContext: normalizeAnswerText(answer.realWorldContext || answer.productionContext || '')
+  };
+};
+
+const structuredAnswerToText = (answer = {}) => {
+  const structured = normalizeStructuredAnswer(answer);
+  return normalizeAnswerText([
+    structured.summary ? `Summary: ${structured.summary}` : '',
+    structured.explanation ? `Explanation: ${structured.explanation}` : '',
+    structured.bulletPoints.length ? `Key points:\n${structured.bulletPoints.map((point) => `- ${point}`).join('\n')}` : '',
+    structured.codeExample ? `Code example:\n${structured.codeExample}` : '',
+    structured.realWorldContext ? `Real-world context: ${structured.realWorldContext}` : ''
+  ].filter(Boolean).join('\n\n'));
+};
+
+const sanitizeCategory = (value = '') => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return VALID_CATEGORIES.has(normalized) ? normalized : 'conceptual';
+};
+
+const sanitizeQualityScore = (value = 4) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 4;
+  return Math.min(5, Math.max(1, Math.round(numeric)));
+};
+
 const normalizeArray = (questions = []) => {
   const safe = Array.isArray(questions) ? questions : [];
   return safe
     .map((item, idx) => {
       const question = normalizeQuestionText(item.question || item.title || `Interview question ${idx + 1}`);
-      const answer = normalizeAnswerText(item.answer || item.sampleAnswer || 'Explain the concept, practical usage, and tradeoffs with a real-world example.');
+      const answerSections = normalizeStructuredAnswer(item.answer || item.sampleAnswer || {});
+      const answer = structuredAnswerToText(answerSections);
       return {
         question,
         answer,
+        answerSections,
+        category: sanitizeCategory(item.category),
+        qualityScore: sanitizeQualityScore(item.qualityScore),
         difficulty: sanitizeDifficulty(item.difficulty),
         tags: sanitizeTags(item.tags)
       };
@@ -32,31 +91,83 @@ const buildQuestionGenerationPrompt = ({ topicKey, topicType, query = '', diffic
   ].join('\n');
 
   return [
-    'You are an expert interview coach.',
-    `Generate ${count} high-quality interview question and answer pairs for topic: ${topicKey}.`,
-    `Topic type: ${topicType}.`,
-    'Return valid JSON only with this shape: {"questions":[{"question":"...","answer":"...","difficulty":"easy|medium|hard","tags":["..."]}]}.',
-    'Each answer must use labeled sections: Short direct answer, Key points, Explanation, Example, Real-world use case, Common mistakes, Interview tip.',
+    'You are a senior software engineer creating interview questions.',
+    `Skill: ${topicKey}, Topic: ${query || topicKey}`,
+    `Generate ${count} interview questions.`,
+    'Return ONLY a valid JSON array. Each object:',
+    '{',
+    "  question: 'the question text',",
+    '  answer: {',
+    "    summary: 'one sentence direct answer',",
+    "    explanation: 'detailed 2-3 paragraph explanation',",
+    "    bulletPoints: ['point1', 'point2', 'point3'],",
+    "    codeExample: 'only if relevant, else empty string',",
+    "    realWorldContext: 'how this works in production'",
+    '  },',
+    "  category: 'conceptual|scenario_based|code_output|best_practice|system_design|behavioral',",
+    "  difficulty: 'easy|medium|hard',",
+    '  qualityScore: number 1-5,',
+    "  tags: ['tag1', 'tag2']",
+    '}',
+    'No markdown. No extra text. JSON array only.',
     `Every question and answer must reference concrete ${topicKey} concepts, APIs, patterns, failure modes, or production tradeoffs.`,
-    'Each answer must be practical, concise, and include reasoning or an example.',
-    'Avoid duplicate questions and avoid trivial one-line answers.',
     difficultyRules,
     difficulty ? `Target difficulty: ${difficulty}.` : 'Use balanced difficulty levels.',
-    query ? `Focus context: ${query}` : 'Cover fundamentals and advanced topics.'
+    `Topic type: ${topicType}.`
   ].join('\n');
 };
 
 const buildCustomAnswerPrompt = ({ topicKey, topicType, question = '' }) => {
   return [
-    'You are an expert technical interview coach.',
-    `Topic: ${topicKey} (${topicType}).`,
-    `Candidate question: ${question}`,
-    'Return valid JSON only with this shape:',
-    '{"question":"...","answer":"...","difficulty":"easy|medium|hard","tags":["..."]}',
-    'The answer must use these exact labeled sections: Short direct answer, Key points, Explanation, Example, Real-world use case, Common mistakes, Interview tip.',
-    'Key points must be short bullet-style lines. Include code in Example when the question is implementation-focused.',
-    'Keep it specific and technically accurate; do not return a plain paragraph.'
+    'You are a senior software engineer being asked an interview question.',
+    `Skill: ${topicKey}, Topic: ${topicKey}`,
+    `Question: ${question}`,
+    'Return ONLY valid JSON:',
+    '{',
+    '  answer: {',
+    "    summary: 'one sentence direct answer',",
+    "    explanation: 'detailed 2-3 paragraph explanation',",
+    "    bulletPoints: ['point1', 'point2', 'point3'],",
+    "    codeExample: 'only if relevant, else empty string',",
+    "    realWorldContext: 'how this works in production'",
+    '  },',
+    "  category: 'conceptual|scenario_based|code_output|best_practice|system_design|behavioral',",
+    "  difficulty: 'easy|medium|hard',",
+    '  qualityScore: number 1-5,',
+    "  tags: ['tag1', 'tag2']",
+    '}',
+    'No markdown. No extra text. JSON only.',
+    `Topic type: ${topicType}.`
   ].join('\n');
+};
+
+const buildEnrichmentPrompt = ({ question = '', currentAnswer = '' }) => [
+  'You are a senior software engineer.',
+  'Expand this interview question answer into a structured format.',
+  `Question: ${question}`,
+  `Current answer: ${currentAnswer}`,
+  'Return ONLY valid JSON:',
+  '{',
+  "  summary: 'one sentence direct answer',",
+  "  explanation: 'detailed explanation in 2-3 paragraphs',",
+  "  bulletPoints: ['point1', 'point2', 'point3'],",
+  "  codeExample: 'only if relevant, else empty string',",
+  "  realWorldContext: 'production-level context'",
+  '}',
+  'No markdown. No extra text. JSON only.'
+].join('\n');
+
+const normalizeGeneratedResult = ({ result = {}, fallbackQuestion = '', fallbackTags = [] }) => {
+  const answerSections = normalizeStructuredAnswer(result.answer || result);
+  return {
+    question: normalizeQuestionText(result.question || fallbackQuestion),
+    answer: structuredAnswerToText(answerSections),
+    answerSections,
+    category: sanitizeCategory(result.category),
+    qualityScore: sanitizeQualityScore(result.qualityScore),
+    difficulty: sanitizeDifficulty(result.difficulty || 'medium'),
+    tags: sanitizeTags(Array.isArray(result.tags) ? result.tags : fallbackTags)
+  };
 };
 
 const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', difficulty = '', count = 10 }) => {
@@ -65,7 +176,15 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
     questions: [
       {
         question: `How would you explain the core concepts of ${topicKey} in an interview?`,
-        answer: `Define the fundamentals of ${topicKey}, explain when to use it, discuss tradeoffs, and share one production-style example.`,
+        answer: {
+          summary: `Explain the core ${topicKey} concepts clearly and connect them to practical engineering choices.`,
+          explanation: `A strong answer should define the main ${topicKey} concepts, explain how they are used in real applications, and describe the tradeoffs that matter in production. Interviewers usually look for whether you can connect the concept to debugging, maintainability, performance, and team decision-making.`,
+          bulletPoints: [`Define the primary ${topicKey} concept`, 'Explain when it is useful', 'Mention a production tradeoff'],
+          codeExample: '',
+          realWorldContext: `Production teams use ${topicKey} decisions to improve reliability, developer velocity, and runtime behavior.`
+        },
+        category: 'conceptual',
+        qualityScore: 4,
         difficulty: 'medium',
         tags: [topicKey, topicType]
       }
@@ -73,28 +192,79 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
   };
 
   const result = await aiService.runAIAnalysis(prompt, fallback);
-  return normalizeArray(result.questions);
+  const rawQuestions = Array.isArray(result)
+    ? result
+    : Array.isArray(result.questions)
+      ? result.questions
+      : fallback.questions;
+  return normalizeArray(rawQuestions);
 };
 
 const answerCustomQuestionFromAI = async ({ topicKey, topicType, question }) => {
   const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question });
   const fallback = {
-    question: normalizeQuestionText(question),
-    answer: `Short direct answer: Explain the relevant ${topicKey} concept precisely.\nKey points: - Define the concept.\n- Explain when to use it.\n- Mention one tradeoff.\nExplanation: Describe how it works and why it matters in interviews.\nExample: Show a concise implementation-oriented example when relevant.\nReal-world use case: Connect it to production work.\nCommon mistakes: Mention one failure mode.\nInterview tip: State the design choice and why it fits.`,
+    answer: {
+      summary: `Explain the relevant ${topicKey} concept precisely and relate it to real implementation choices.`,
+      explanation: `A useful interview answer should define the concept, show how it behaves in practice, and explain the tradeoffs behind using it. For ${topicKey}, strong answers avoid generic theory and mention concrete APIs, patterns, or failure modes where possible.`,
+      bulletPoints: ['Define the concept', 'Explain when to use it', 'Mention one tradeoff'],
+      codeExample: '',
+      realWorldContext: `In production, ${topicKey} choices affect reliability, performance, maintainability, and debugging workflows.`
+    },
+    category: 'conceptual',
+    qualityScore: 4,
     difficulty: 'medium',
     tags: [topicKey, topicType, 'ai_generated']
   };
 
   const result = await aiService.runAIAnalysis(prompt, fallback);
-  return {
-    question: normalizeQuestionText(result.question || question),
-    answer: normalizeAnswerText(result.answer || fallback.answer),
-    difficulty: sanitizeDifficulty(result.difficulty || 'medium'),
-    tags: sanitizeTags(Array.isArray(result.tags) ? result.tags : fallback.tags)
-  };
+  return normalizeGeneratedResult({
+    result: { ...result, question },
+    fallbackQuestion: question,
+    fallbackTags: fallback.tags
+  });
 };
+
+const enrichAnswerToStructured = async ({ question, currentAnswer }) => {
+  const prompt = buildEnrichmentPrompt({ question, currentAnswer });
+  const fallback = normalizeStructuredAnswer(currentAnswer);
+  const result = await aiService.runAIAnalysis(prompt, fallback);
+  return normalizeStructuredAnswer(result);
+};
+
+const answerSearchFallback = async ({ skill, topicKey, question }) => {
+  return answerCustomQuestionFromAI({
+    topicKey: topicKey || skill,
+    topicType: 'technology',
+    question
+  });
+};
+
+const generateStructuredQuestionSet = async ({ skill, topic = '', difficulty = '', count = 10 }) => (
+  generateQuestionsFromAI({
+    topicKey: skill,
+    topicType: 'technology',
+    query: topic,
+    difficulty,
+    count
+  })
+);
+
+const toStructuredAnswerText = (answer) => structuredAnswerToText(answer);
+
+const normalizeAnswerShape = (answer) => normalizeStructuredAnswer(answer);
+
+const normalizeCategory = (value) => sanitizeCategory(value);
+
+const normalizeQualityScore = (value) => sanitizeQualityScore(value);
 
 module.exports = {
   generateQuestionsFromAI,
-  answerCustomQuestionFromAI
+  answerCustomQuestionFromAI,
+  enrichAnswerToStructured,
+  answerSearchFallback,
+  generateStructuredQuestionSet,
+  toStructuredAnswerText,
+  normalizeAnswerShape,
+  normalizeCategory,
+  normalizeQualityScore
 };

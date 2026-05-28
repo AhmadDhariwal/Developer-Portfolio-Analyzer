@@ -15,6 +15,9 @@ const DEFAULT_SORT = {
   lastUsedAt: -1,
   createdAt: -1
 };
+const TOP_CATEGORY_FILTER = ['conceptual', 'best_practice'];
+const VALID_SOURCES = new Set(['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked']);
+const VALID_CATEGORIES = new Set(['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral']);
 const toQuestionHash = (value = '') => crypto
   .createHash('sha256')
   .update(normalizeComparableText(value))
@@ -96,7 +99,13 @@ const upsertQuestions = async (records = []) => {
     const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
     const normalizedQuestionHash = String(record.normalizedQuestionHash || toQuestionHash(normalizedQuestion)).trim().toLowerCase();
     const normalizedAnswer = normalizeComparableText(record.normalizedAnswer || record.answer);
-    const sourceType = String(record.sourceType || record.source || 'prebuilt').trim().toLowerCase();
+    const rawSourceType = String(record.sourceType || record.source || 'prebuilt').trim().toLowerCase();
+    const sourceType = VALID_SOURCES.has(rawSourceType) ? rawSourceType : 'ai_generated';
+    const category = String(record.category || 'conceptual').trim().toLowerCase();
+    const answerSections = record.answerSections && typeof record.answerSections === 'object'
+      ? record.answerSections
+      : {};
+    const hasStructuredAnswer = Object.keys(answerSections).length > 0 || record.answerFormat === 'structured';
     const normalizedSkill = String(record.skill || topicKey || '').trim().toLowerCase();
 
     return {
@@ -120,16 +129,20 @@ const upsertQuestions = async (records = []) => {
             skill: normalizedSkill,
             question: normalizeQuestionText(record.question),
             answer: normalizeAnswerText(record.answer),
-            answerSections: record.answerSections || {},
+            answerSections,
             normalizedQuestion,
             normalizedQuestionHash,
             normalizedAnswer,
             difficulty: sanitizeDifficulty(record.difficulty),
             tags: sanitizeTags(record.tags || []),
-            source: sourceType === 'user_asked' ? 'ai' : sourceType,
+            source: sourceType === 'user_asked' ? 'ai_generated' : sourceType,
             sourceType,
             sourceMeta: record.sourceMeta || {},
             confidenceScore: Number(record.confidenceScore || 0.7),
+            category: VALID_CATEGORIES.has(category) ? category : 'conceptual',
+            qualityScore: Math.min(5, Math.max(1, Number(record.qualityScore || 3))),
+            answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
+            isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
             qualityState: String(record.qualityState || 'approved').trim().toLowerCase(),
             popularity: Number(record.popularity || 0),
             topicDimensions: record.topicDimensions || {}
@@ -145,6 +158,121 @@ const upsertQuestions = async (records = []) => {
     insertedCount: Number(result.upsertedCount || 0),
     upsertedIds: Object.values(result.upsertedIds || {})
   };
+};
+
+const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', tags = '' } = {}) => {
+  const filter = buildQuestionFilter({
+    topicKey,
+    difficulty,
+    tags,
+    excludeGenericSeeds: true
+  });
+  filter.category = { $in: TOP_CATEGORY_FILTER };
+  filter.qualityScore = { $gte: 4 };
+
+  const rows = await InterviewQuestionBank.find(filter)
+    .sort({ usageCount: -1, qualityScore: -1, confidenceScore: -1, popularity: -1, lastUsedAt: -1, createdAt: -1 })
+    .limit(Math.min(60, Math.max(1, Number(limit || 30))))
+    .lean();
+
+  return rows;
+};
+
+const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, difficulty = '', tags = '', category = '', source = '' } = {}) => {
+  const filter = buildQuestionFilter({ topicKey, difficulty, tags, excludeGenericSeeds: true });
+  const normalizedCategory = String(category || '').trim().toLowerCase();
+  const normalizedSource = String(source || '').trim().toLowerCase();
+  if (normalizedCategory) filter.category = normalizedCategory;
+  if (normalizedSource) {
+    if (normalizedSource === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
+    else if (normalizedSource === 'seed') filter.sourceType = 'prebuilt';
+    else if (normalizedSource === 'database') filter.sourceType = { $nin: ['ai', 'ai_generated', 'scraped', 'prebuilt'] };
+    else filter.sourceType = normalizedSource;
+  }
+
+  const skip = (Math.max(1, Number(page || 1)) - 1) * Math.max(1, Number(limit || 10));
+  const [questions, total] = await Promise.all([
+    InterviewQuestionBank.find(filter)
+      .sort({ qualityScore: -1, usageCount: -1, confidenceScore: -1, popularity: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(Math.max(1, Number(limit || 10)))
+      .lean(),
+    InterviewQuestionBank.countDocuments(filter)
+  ]);
+
+  return { questions, total };
+};
+
+const findSearchTextMatches = async ({ topicKey = '', query = '', limit = 5, difficulty = '', tags = '' } = {}) => {
+  const filter = buildQuestionFilter({
+    topicKey,
+    difficulty,
+    tags,
+    query,
+    excludeGenericSeeds: true
+  });
+
+  return InterviewQuestionBank.find(filter, { score: { $meta: 'textScore' } })
+    .sort({ score: { $meta: 'textScore' }, qualityScore: -1, usageCount: -1, confidenceScore: -1 })
+    .limit(Math.max(1, Number(limit || 5)))
+    .lean();
+};
+
+const findAiGeneratedByTopic = async ({ topicKey = '', topic = '', limit = 10 } = {}) => {
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  const normalizedTopic = String(topic || '').trim().toLowerCase();
+  const filter = {
+    topicKey: normalizedTopicKey,
+    sourceType: { $in: ['ai', 'ai_generated', 'user_asked'] },
+    qualityState: { $ne: 'rejected' }
+  };
+  if (normalizedTopic) {
+    filter.$or = [
+      { tags: normalizedTopic },
+      { question: new RegExp(normalizedTopic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+      { 'sourceMeta.topic': normalizedTopic }
+    ];
+  }
+
+  return InterviewQuestionBank.find(filter)
+    .sort({ qualityScore: -1, usageCount: -1, confidenceScore: -1, createdAt: -1 })
+    .limit(Math.max(1, Number(limit || 10)))
+    .lean();
+};
+
+const countAiGeneratedByTopic = async ({ topicKey = '', topic = '' } = {}) => {
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  const normalizedTopic = String(topic || '').trim().toLowerCase();
+  const filter = {
+    topicKey: normalizedTopicKey,
+    sourceType: { $in: ['ai', 'ai_generated', 'user_asked'] },
+    qualityState: { $ne: 'rejected' }
+  };
+  if (normalizedTopic) {
+    filter.$or = [
+      { tags: normalizedTopic },
+      { 'sourceMeta.topic': normalizedTopic },
+      { 'sourceMeta.query': normalizedTopic }
+    ];
+  }
+  return InterviewQuestionBank.countDocuments(filter);
+};
+
+const findNeedsEnrichment = async ({ limit = 50 } = {}) => (
+  InterviewQuestionBank.find({
+    $or: [
+      { category: { $exists: false } },
+      { isEnriched: false },
+      { answerFormat: { $ne: 'structured' } }
+    ]
+  })
+    .sort({ createdAt: 1 })
+    .limit(Math.max(1, Number(limit || 50)))
+);
+
+const updateQuestionById = async (id, update = {}) => {
+  if (!id) return null;
+  return InterviewQuestionBank.findByIdAndUpdate(id, update, { new: true }).lean();
 };
 
 const findExactReusableQuestion = async ({ topicKey = '', question = '', minConfidence = 0.55 } = {}) => {
@@ -249,6 +377,13 @@ const countQuestionsByTopicAndSeedVersion = async (topicKey = '', seedVersion = 
 module.exports = {
   buildQuestionFilter,
   findQuestionsPage,
+  findTopQuestions,
+  findAllQuestionsPage,
+  findSearchTextMatches,
+  findAiGeneratedByTopic,
+  countAiGeneratedByTopic,
+  findNeedsEnrichment,
+  updateQuestionById,
   upsertQuestions,
   findExactReusableQuestion,
   findSemanticCandidates,

@@ -82,6 +82,7 @@ const computeConfidenceScore = ({ sourceType = 'ai', answer = '', question = '' 
   let base = 0.6;
   if (sourceType === 'prebuilt') base = 0.95;
   if (sourceType === 'scraped') base = 0.7;
+  if (sourceType === 'ai_generated') base = 0.72;
   if (sourceType === 'user_asked') base = 0.75;
 
   if (answerLength >= 220) base += 0.08;

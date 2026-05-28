@@ -5,7 +5,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { InterviewPrepService, InterviewQuestion, InterviewQuestionListResponse } from '../../shared/services/interview-prep.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 
-type InterviewTab = 'top' | 'search' | 'ai';
+type InterviewTab = 'search' | 'ai';
+type AnswerSection = { title: string; body: string; kind?: 'text' | 'list' | 'code' | 'context'; items?: string[] };
 
 @Component({
   selector: 'app-interview-prep',
@@ -18,6 +19,7 @@ type InterviewTab = 'top' | 'search' | 'ai';
 export class InterviewPrepComponent implements OnInit {
   readonly pageSize = 10;
   readonly topQuestionLimit = 30;
+  readonly allQuestionBatchLimit = 50;
   readonly skills = [
     'javascript',
     'typescript',
@@ -41,9 +43,8 @@ export class InterviewPrepComponent implements OnInit {
     'full-stack-web-development'
   ];
   readonly tabs: Array<{ id: InterviewTab; label: string }> = [
-    { id: 'top', label: 'Top Questions' },
-    { id: 'search', label: 'Search / Ask' },
-    { id: 'ai', label: 'AI Generated' }
+    { id: 'search', label: 'Search & Questions' },
+    { id: 'ai', label: 'AI Generated & Recent' }
   ];
   readonly skillLabels: Record<string, string> = {
     javascript: 'JavaScript',
@@ -68,10 +69,12 @@ export class InterviewPrepComponent implements OnInit {
     'full-stack-web-development': 'Full Stack Web Development'
   };
 
-  activeTab: InterviewTab = 'top';
+  activeTab: InterviewTab = 'search';
   selectedSkill = 'javascript';
   selectedDifficulty = '';
   tagsInput = '';
+  selectedCategory = '';
+  selectedSource = '';
   aiPromptQuery = '';
   practiceCount = 10;
   customQuestion = '';
@@ -88,12 +91,19 @@ export class InterviewPrepComponent implements OnInit {
   copyMessage = '';
 
   questions: InterviewQuestion[] = [];
+  topPage = 1;
+  allQuestions: InterviewQuestion[] = [];
+  allBatchPage = 1;
+  allVisiblePage = 1;
+  allTotal = 0;
   total = 0;
   currentPage = 1;
   totalPages = 1;
 
   isLoading = false;
   isLoadingMore = false;
+  isLoadingAll = false;
+  isLoadingAllMore = false;
   isGeneratingAI = false;
   errorMessage = '';
 
@@ -106,13 +116,11 @@ export class InterviewPrepComponent implements OnInit {
   highlightedQuestions: SafeHtml[] = [];
   highlightedAnswers: SafeHtml[] = [];
   readonly answerSectionTitles = [
-    'Short direct answer',
-    'Key points',
+    'Summary',
     'Explanation',
-    'Example',
-    'Real-world use case',
-    'Common mistakes',
-    'Interview tip'
+    'Key Points',
+    'Code Example',
+    'Real-world Context'
   ];
 
   constructor(
@@ -125,17 +133,51 @@ export class InterviewPrepComponent implements OnInit {
   ngOnInit(): void {
     this.selectedSkill = this.mapCareerProfileToSkill(this.careerProfileService.snapshot.careerStack);
     this.fetchTopQuestions(true);
+    this.fetchAllQuestions(true);
   }
 
   get canLoadMore(): boolean {
-    if (this.isLoadingMore || this.isLoading) return false;
-    if (this.activeTab !== 'top') return false;
-    if (this.currentPage < this.totalPages) return true;
-    return this.allowEnrichmentLoadMore && this.hasQuestions;
+    return this.topPage < this.topTotalPages;
+  }
+
+  get canLoadMoreAll(): boolean {
+    return !this.isLoadingAll && !this.isLoadingAllMore && this.allQuestions.length < this.allTotal;
   }
 
   get hasQuestions(): boolean {
     return this.questions.length > 0;
+  }
+
+  get visibleTopQuestions(): InterviewQuestion[] {
+    const start = (this.topPage - 1) * this.pageSize;
+    return this.questions.slice(start, start + this.pageSize);
+  }
+
+  get topTotalPages(): number {
+    return Math.max(1, Math.ceil(this.questions.length / this.pageSize));
+  }
+
+  get topRangeLabel(): string {
+    if (!this.questions.length) return '0 of 0';
+    const start = (this.topPage - 1) * this.pageSize + 1;
+    const end = Math.min(this.topPage * this.pageSize, this.questions.length);
+    return `${start}-${end} of ${this.questions.length}`;
+  }
+
+  get allRangeLabel(): string {
+    if (!this.allTotal || !this.allQuestions.length) return '0 of 0';
+    const start = (this.allVisiblePage - 1) * this.pageSize + 1;
+    const end = Math.min(this.allVisiblePage * this.pageSize, this.allQuestions.length, this.allTotal);
+    return `${start}-${end} of ${this.allTotal}`;
+  }
+
+  get visibleAllQuestions(): InterviewQuestion[] {
+    const start = (this.allVisiblePage - 1) * this.pageSize;
+    return this.allQuestions.slice(start, start + this.pageSize);
+  }
+
+  get allTotalPages(): number {
+    return Math.max(1, Math.ceil(this.allQuestions.length / this.pageSize));
   }
 
   onTabChange(tab: InterviewTab): void {
@@ -145,20 +187,8 @@ export class InterviewPrepComponent implements OnInit {
     this.openAnswers.clear();
     this.errorMessage = '';
 
-    if (tab === 'top') {
-      this.fetchTopQuestions(true);
-    } else if (tab === 'search') {
-      this.questions = [];
-      this.recomputeHighlights();
-      this.total = 0;
-      this.currentPage = 1;
-      this.totalPages = 1;
-    } else {
-      this.questions = [...this.generatedQuestions];
-      this.recomputeHighlights();
-      this.total = this.questions.length;
-      this.currentPage = 1;
-      this.totalPages = 1;
+    if (tab === 'search') {
+      this.fetchAllQuestions(true);
     }
 
     this.cdr.markForCheck();
@@ -171,21 +201,15 @@ export class InterviewPrepComponent implements OnInit {
   applyFilters(): void {
     this.openAnswers.clear();
     this.filtersDirty = false;
-    if (this.activeTab === 'top') {
-      this.fetchTopQuestions(true);
-      return;
-    }
-    if (this.activeTab === 'search') {
-      this.searchStoredQuestions();
-      return;
-    }
-    this.questions = [...this.generatedQuestions];
-    this.recomputeHighlights();
+    this.fetchTopQuestions(true);
+    this.fetchAllQuestions(true);
     this.cdr.markForCheck();
   }
 
   clearFilters(): void {
     this.selectedDifficulty = '';
+    this.selectedCategory = '';
+    this.selectedSource = '';
     this.tagsInput = '';
     this.customQuestion = '';
     this.aiPromptQuery = '';
@@ -198,9 +222,34 @@ export class InterviewPrepComponent implements OnInit {
 
   loadMore(): void {
     if (!this.canLoadMore) return;
-    if (this.activeTab === 'top') {
-      this.fetchTopQuestions(false);
+    this.topPage += 1;
+    this.cdr.markForCheck();
+  }
+
+  previousTopPage(): void {
+    if (this.topPage <= 1) return;
+    this.topPage -= 1;
+    this.cdr.markForCheck();
+  }
+
+  nextTopPage(): void {
+    this.loadMore();
+  }
+
+  previousAllPage(): void {
+    if (this.allVisiblePage <= 1 || this.isLoadingAll) return;
+    this.allVisiblePage -= 1;
+    this.cdr.markForCheck();
+  }
+
+  nextAllPage(): void {
+    if (this.allVisiblePage < this.allTotalPages) {
+      this.allVisiblePage += 1;
+      this.cdr.markForCheck();
       return;
+    }
+    if (this.canLoadMoreAll) {
+      this.fetchAllQuestions(false);
     }
   }
 
@@ -227,15 +276,20 @@ export class InterviewPrepComponent implements OnInit {
       query: this.aiPromptQuery.trim(),
       difficulty: this.selectedDifficulty || undefined,
       page: 1,
-      limit: this.practiceCount
+      limit: this.practiceCount,
+      target: this.practiceCount
     }).subscribe({
       next: (response) => {
-        this.consumeResponse(response, true);
-        this.generatedQuestions = [...this.questions];
+        this.generatedQuestions = Array.isArray(response.questions) ? response.questions : [];
         this.aiGeneratedCount = Number(response.aiGeneratedCount || 0);
         this.currentSource = String(response.source || 'db');
+        this.allQuestions = [
+          ...this.generatedQuestions,
+          ...this.allQuestions.filter((item) => !this.generatedQuestions.some((generated) => (
+            (generated._id || generated.question) === (item._id || item.question)
+          )))
+        ];
         this.isGeneratingAI = false;
-        this.activeTab = 'ai';
         this.openAnswers.clear();
         this.cdr.markForCheck();
       },
@@ -289,18 +343,59 @@ export class InterviewPrepComponent implements OnInit {
 
     this.prepService.getTopQuestions({
       skill: this.selectedSkill,
-      page,
+      page: 1,
       limit: this.topQuestionLimit,
       difficulty: this.selectedDifficulty || undefined,
       tags: this.parseTags()
     }).subscribe({
       next: (response) => {
-        this.consumeResponse(response, reset);
+        this.consumeResponse(response, true);
+        this.topPage = 1;
       },
       error: (error) => {
         this.errorMessage = error?.error?.message || 'Failed to load interview questions.';
         this.isLoading = false;
         this.isLoadingMore = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  fetchAllQuestions(reset: boolean): void {
+    const page = reset ? 1 : this.allBatchPage + 1;
+    this.fetchAllQuestionsPage(page, reset);
+  }
+
+  fetchAllQuestionsPage(page: number, reset = true): void {
+    this.isLoadingAll = reset;
+    this.isLoadingAllMore = !reset;
+    this.errorMessage = '';
+    this.cdr.markForCheck();
+
+    this.prepService.getAllQuestions({
+      skill: this.selectedSkill,
+      page,
+      limit: this.allQuestionBatchLimit,
+      difficulty: this.selectedDifficulty || undefined,
+      tags: this.parseTags(),
+      category: this.selectedCategory || undefined,
+      source: this.selectedSource || undefined
+    }).subscribe({
+      next: (response) => {
+        const incoming = Array.isArray(response.questions) ? response.questions : [];
+        this.allQuestions = reset ? incoming : [...this.allQuestions, ...incoming];
+        this.allTotal = Number(response.total || this.allQuestions.length);
+        this.allBatchPage = Number(response.page || page);
+        this.allVisiblePage = reset ? 1 : Math.ceil(this.allQuestions.length / this.pageSize);
+        this.isLoadingAll = false;
+        this.isLoadingAllMore = false;
+        this.filtersDirty = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to load all interview questions.';
+        this.isLoadingAll = false;
+        this.isLoadingAllMore = false;
         this.cdr.markForCheck();
       }
     });
@@ -333,13 +428,19 @@ export class InterviewPrepComponent implements OnInit {
       tags: this.parseTags(),
       page: 1,
       limit: 5,
-      lookupOnly: true
+      lookupOnly: false
     }).subscribe({
       next: (response) => {
         const matches = response.questions || [];
         this.searchMatches = matches;
         this.customResult = matches[0] || null;
-        this.canAskAI = matches.length === 0;
+        if (this.customResult) {
+          this.allQuestions = [
+            this.customResult,
+            ...this.allQuestions.filter((item) => (item._id || item.question) !== (this.customResult?._id || this.customResult?.question))
+          ];
+        }
+        this.canAskAI = false;
         this.isSearchingMatches = false;
         this.filtersDirty = false;
         this.cdr.markForCheck();
@@ -445,9 +546,9 @@ export class InterviewPrepComponent implements OnInit {
     const source = String(item.sourceType || item.source || 'db').toLowerCase();
     if (source === 'prebuilt' || source === 'seed') return 'Seed';
     if (source === 'scraped' || source === 'scrape') return 'Scraped';
-    if (source === 'ai' || source === 'user_asked') return 'AI';
+    if (source === 'ai' || source === 'ai_generated' || source === 'user_asked') return 'AI Generated';
     if (source === 'hybrid') return 'Hybrid';
-    return 'DB';
+    return 'Database';
   }
 
   confidenceLabel(item: InterviewQuestion): string {
@@ -512,6 +613,8 @@ export class InterviewPrepComponent implements OnInit {
     return [
       this.selectedTopicLabel,
       this.selectedDifficulty ? `${this.selectedDifficulty} difficulty` : '',
+      this.selectedCategory ? `Category: ${this.selectedCategory.replace('_', ' ')}` : '',
+      this.selectedSource ? `Source: ${this.selectedSource}` : '',
       ...this.parseTags().map((tag) => `#${tag}`),
       this.activeTab === 'search' && this.customQuestion.trim() ? `"${this.customQuestion.trim()}"` : '',
       this.activeTab === 'ai' && this.aiPromptQuery.trim() ? `Focus: ${this.aiPromptQuery.trim()}` : ''
@@ -519,18 +622,37 @@ export class InterviewPrepComponent implements OnInit {
   }
 
   answerSection(item: InterviewQuestion, title: string): string {
-    const direct = item.answerSections?.[title];
-    if (direct) return direct;
+    const direct = item.answerSections?.[title] || item.answerSections?.[title.charAt(0).toLowerCase() + title.slice(1)];
+    if (typeof direct === 'string') return direct;
     const allTitles = this.answerSectionTitles.join('|');
     const section = new RegExp(`${title}:\\s*([\\s\\S]*?)(?=\\n(?:${allTitles}|Direct answer|Example or code snippet):|$)`, 'i');
     return item.answer.match(section)?.[1]?.trim() || '';
   }
 
-  answerSections(item: InterviewQuestion): Array<{ title: string; body: string }> {
-    const sections = this.answerSectionTitles
-      .map((title) => ({ title, body: this.answerSection(item, title) }))
+  answerSections(item: InterviewQuestion): AnswerSection[] {
+    const structured = item.answerSections || {};
+    const sections: AnswerSection[] = [];
+    if (typeof structured.summary === 'string' && structured.summary) {
+      sections.push({ title: 'Summary', body: structured.summary });
+    }
+    if (Array.isArray(structured.bulletPoints) && structured.bulletPoints.length) {
+      sections.push({ title: 'Key Points', body: '', kind: 'list', items: structured.bulletPoints });
+    }
+    if (typeof structured.explanation === 'string' && structured.explanation) {
+      sections.push({ title: 'Explanation', body: structured.explanation });
+    }
+    if (typeof structured.codeExample === 'string' && structured.codeExample) {
+      sections.push({ title: 'Code Example', body: structured.codeExample, kind: 'code' });
+    }
+    if (typeof structured.realWorldContext === 'string' && structured.realWorldContext) {
+      sections.push({ title: 'Real-world Context', body: structured.realWorldContext, kind: 'context' });
+    }
+    if (sections.length) return sections;
+
+    const legacySections = this.answerSectionTitles
+      .map((title) => ({ title, body: this.answerSection(item, title), kind: 'text' as const }))
       .filter((section) => section.body);
-    return sections.length ? sections : [{ title: 'Answer', body: item.answer }];
+    return legacySections.length ? legacySections : [{ title: 'Answer', body: item.answer }];
   }
 
   markFiltersChanged(clearResults = true): void {
@@ -539,6 +661,11 @@ export class InterviewPrepComponent implements OnInit {
     if (clearResults) {
       this.questions = [];
       this.recomputeHighlights();
+      this.topPage = 1;
+      this.allQuestions = [];
+      this.allBatchPage = 1;
+      this.allVisiblePage = 1;
+      this.allTotal = 0;
       this.total = 0;
       this.currentPage = 1;
       this.totalPages = 1;

@@ -66,15 +66,22 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     enum: ['easy', 'medium', 'hard'],
     default: 'medium'
   },
+  // NEW: Used by Interview Prep blocks to filter conceptual, scenario, code, and system-design questions.
+  category: {
+    type: String,
+    enum: ['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral'],
+    default: 'conceptual',
+    index: true
+  },
   tags: [{ type: String, trim: true, lowercase: true }],
   source: {
     type: String,
-    enum: ['prebuilt', 'ai', 'scraped', 'user_asked'],
+    enum: ['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
     default: 'prebuilt'
   },
   sourceType: {
     type: String,
-    enum: ['prebuilt', 'ai', 'scraped', 'user_asked'],
+    enum: ['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
     default: 'prebuilt',
     index: true
   },
@@ -87,6 +94,27 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     default: 0.7,
     min: 0,
     max: 1
+  },
+  // NEW: Human/product quality score used for Top 30 eligibility and ranking.
+  qualityScore: {
+    type: Number,
+    default: 3,
+    min: 1,
+    max: 5,
+    index: true
+  },
+  // NEW: Tracks whether `answer`/`answerSections` are structured or legacy plain text.
+  answerFormat: {
+    type: String,
+    enum: ['structured', 'plain'],
+    default: 'plain',
+    index: true
+  },
+  // NEW: False means the answer can be enriched once, then persisted as structured.
+  isEnriched: {
+    type: Boolean,
+    default: false,
+    index: true
   },
   qualityState: {
     type: String,
@@ -122,5 +150,9 @@ interviewQuestionBankSchema.index(
 );
 interviewQuestionBankSchema.index({ topicKey: 1, popularity: -1, createdAt: -1 });
 interviewQuestionBankSchema.index({ topicKey: 1, sourceType: 1 });
+// NEW: Supports Block 1 Top 30 filters and ranking.
+interviewQuestionBankSchema.index({ topicKey: 1, category: 1, qualityScore: -1, usageCount: -1 });
+// NEW: Supports finding legacy/plain answers that need one-time enrichment.
+interviewQuestionBankSchema.index({ topicKey: 1, isEnriched: 1, answerFormat: 1 });
 
 module.exports = mongoose.model('InterviewQuestionBank', interviewQuestionBankSchema);

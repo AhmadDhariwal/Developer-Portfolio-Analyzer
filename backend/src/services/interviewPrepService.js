@@ -89,8 +89,8 @@ const toTagFilter = (tags = '') => {
   return String(tags || '').trim().toLowerCase();
 };
 
-const makeQuestionsCacheKey = ({ topicKey, page, limit, difficulty = '', tags = '' }) => {
-  return `interview:questions:bank=v3:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}`;
+const makeQuestionsCacheKey = ({ topicKey, page, limit, difficulty = '', tags = '', block = 'top', category = '', source = '' }) => {
+  return `interview:questions:bank=v5:block=${block}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:source=${String(source || '').toLowerCase()}`;
 };
 
 const makeSearchCacheKey = ({ query, topicKey, page, limit, difficulty = '', tags = '', lookupOnly = false }) => {
@@ -100,6 +100,106 @@ const makeSearchCacheKey = ({ query, topicKey, page, limit, difficulty = '', tag
 const makeCustomQuestionCacheKey = ({ question, topicKey }) => (
   `interview:custom:topic=${topicKey}:question=${questionRepository.toQuestionHash(question)}`
 );
+
+const toStructuredAnswerText = (sections = {}) => aiProvider.toStructuredAnswerText
+  ? aiProvider.toStructuredAnswerText(sections)
+  : normalizeAnswerText([
+    sections.summary ? `Summary: ${sections.summary}` : '',
+    sections.explanation ? `Explanation: ${sections.explanation}` : '',
+    Array.isArray(sections.bulletPoints) && sections.bulletPoints.length
+      ? `Key points:\n${sections.bulletPoints.map((point) => `- ${point}`).join('\n')}`
+      : '',
+    sections.codeExample ? `Code example:\n${sections.codeExample}` : '',
+    sections.realWorldContext ? `Real-world context: ${sections.realWorldContext}` : ''
+  ].filter(Boolean).join('\n\n'));
+
+const isStructuredQuestion = (item = {}) => (
+  item.isEnriched === true
+  && item.answerFormat === 'structured'
+  && item.answerSections
+  && typeof item.answerSections === 'object'
+  && Boolean(item.answerSections.summary || item.answerSections.explanation)
+);
+
+const enrichQuestionIfNeeded = async (item = {}) => {
+  if (!item?._id || isStructuredQuestion(item)) return item;
+
+  const enrichedAnswer = await aiProvider.enrichAnswerToStructured({
+    question: item.question,
+    currentAnswer: item.answer
+  });
+  const answer = toStructuredAnswerText(enrichedAnswer);
+  const updated = await questionRepository.updateQuestionById(item._id, {
+    answer,
+    answerSections: enrichedAnswer,
+    answerFormat: 'structured',
+    isEnriched: true,
+    qualityScore: Math.max(4, Number(item.qualityScore || 4)),
+    category: item.category || 'conceptual'
+  });
+
+  return updated || {
+    ...item,
+    answer,
+    answerSections: enrichedAnswer,
+    answerFormat: 'structured',
+    isEnriched: true,
+    qualityScore: Math.max(4, Number(item.qualityScore || 4)),
+    category: item.category || 'conceptual'
+  };
+};
+
+const enrichQuestionListOnce = async (questions = []) => {
+  const enriched = [];
+  for (const item of questions) {
+    try {
+      enriched.push(await enrichQuestionIfNeeded(item));
+    } catch (error) {
+      logger.warn('interview-prep answer enrichment failed', {
+        id: item?._id,
+        topicKey: item?.topicKey,
+        message: error.message
+      });
+      enriched.push(item);
+    }
+  }
+  return enriched;
+};
+
+const makeQuestionPayload = ({
+  questions = [],
+  total = 0,
+  page = 1,
+  limit = DEFAULT_PAGE_LIMIT,
+  source = 'db',
+  topicInput,
+  fromCache = false,
+  aiGeneratedCount = 0,
+  scrapedGeneratedCount = 0,
+  enrichedCount = 0,
+  sourceMix = {},
+  partial = false
+}) => {
+  const totalPages = Math.max(1, Math.ceil(Number(total || 0) / Math.max(1, Number(limit || DEFAULT_PAGE_LIMIT))));
+  return {
+    questions,
+    total: Number(total || questions.length),
+    totalAvailable: Number(total || questions.length),
+    page: Number(page || 1),
+    limit: Number(limit || DEFAULT_PAGE_LIMIT),
+    totalPages,
+    fromCache,
+    source,
+    aiGeneratedCount,
+    scrapedGeneratedCount,
+    enrichedCount,
+    sourceMix,
+    partial,
+    topicKey: topicInput?.topicKey,
+    topicType: topicInput?.topicType,
+    metrics: metricSnapshot()
+  };
+};
 
 const metricSnapshot = () => {
   const reads = interviewEngineMetrics.dbReads + interviewEngineMetrics.cacheHits;
@@ -356,23 +456,129 @@ const getQuestionBank = async ({
   page = 1,
   limit = DEFAULT_PAGE_LIMIT,
   difficulty = '',
-  tags = ''
+  tags = '',
+  block = 'top',
+  category = '',
+  source = ''
 } = {}) => {
-  return loadQuestionBankWithEnrichment({
-    skill,
-    topic,
-    stack,
-    technology,
-    language,
-    framework,
-    page,
-    limit,
+  interviewEngineMetrics.totalRequests += 1;
+  const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
+  const { page: normalizedPage, limit: normalizedLimit } = normalizePagination({ page, limit });
+  const normalizedTags = toTagFilter(tags);
+  const normalizedBlock = String(block || 'top').trim().toLowerCase();
+  const cacheKey = makeQuestionsCacheKey({
+    topicKey: topicInput.topicKey,
+    page: normalizedPage,
+    limit: normalizedLimit,
     difficulty,
-    tags,
-    initiatedBy: 'questions-endpoint',
-    allowEnrichment: true,
-    targetMinimum: MIN_TOPIC_QUESTION_POOL
+    tags: normalizedTags,
+    block: normalizedBlock,
+    category,
+    source
   });
+
+  const cached = await getCacheJson(cacheKey);
+  if (cached) {
+    interviewEngineMetrics.cacheHits += 1;
+    questionRepository.incrementUsageStats((cached.questions || []).map((item) => item?._id).filter(Boolean)).catch(() => {});
+    return { ...cached, fromCache: true, metrics: metricSnapshot() };
+  }
+
+  interviewEngineMetrics.dbReads += 1;
+  await ensurePrebuiltTopicBaseline({
+    topicKey: topicInput.topicKey,
+    minimumCount: normalizedBlock === 'top' ? MIN_TOPIC_QUESTION_POOL : 1
+  });
+
+  if (normalizedBlock === 'all') {
+    let pageResult = await questionRepository.findAllQuestionsPage({
+      topicKey: topicInput.topicKey,
+      page: normalizedPage,
+      limit: normalizedLimit,
+      difficulty,
+      tags: normalizedTags,
+      category,
+      source
+    });
+
+    if (!category && !source && !normalizedTags && pageResult.total < 50) {
+      const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topicInput.topicKey, 600);
+      const enrichment = await enrichmentOrchestrator.enrichTopicQuestionPool({
+        topic: topicInput,
+        query: '',
+        existingQuestions: existingComparableQuestions.map((normalizedQuestion) => ({ normalizedQuestion })),
+        requestedCount: 50,
+        initiatedBy: 'all-questions-fill'
+      });
+      if (enrichment.insertedCount > 0) {
+        await invalidateInterviewPrepCache();
+        pageResult = await questionRepository.findAllQuestionsPage({
+          topicKey: topicInput.topicKey,
+          page: normalizedPage,
+          limit: normalizedLimit,
+          difficulty,
+          tags: normalizedTags,
+          category,
+          source
+        });
+      }
+    }
+
+    const questions = await enrichQuestionListOnce(pageResult.questions || []);
+    questionRepository.incrementUsageStats(questions.map((item) => item._id)).catch(() => {});
+    const payload = makeQuestionPayload({
+      questions,
+      total: pageResult.total,
+      page: normalizedPage,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput,
+      sourceMix: await questionRepository.getSourceMixByTopic(topicInput.topicKey)
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    return payload;
+  }
+
+  let rows = await questionRepository.findTopQuestions({
+    topicKey: topicInput.topicKey,
+    limit: Math.min(30, Number(limit || 30)),
+    difficulty,
+    tags: normalizedTags
+  });
+
+  if (!normalizedTags && rows.length < 30) {
+    const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topicInput.topicKey, 600);
+    const enrichment = await enrichmentOrchestrator.enrichTopicQuestionPool({
+      topic: topicInput,
+      query: '',
+      existingQuestions: existingComparableQuestions.map((normalizedQuestion) => ({ normalizedQuestion })),
+      requestedCount: 30,
+      initiatedBy: 'top-30-fill'
+    });
+    if (enrichment.insertedCount > 0) {
+      await invalidateInterviewPrepCache();
+      rows = await questionRepository.findTopQuestions({
+        topicKey: topicInput.topicKey,
+        limit: Math.min(30, Number(limit || 30)),
+        difficulty,
+        tags: normalizedTags
+      });
+    }
+  }
+
+  const questions = (await enrichQuestionListOnce(rows)).slice(0, 30);
+  questionRepository.incrementUsageStats(questions.map((item) => item._id)).catch(() => {});
+  const payload = makeQuestionPayload({
+    questions,
+    total: questions.length,
+    page: 1,
+    limit: 30,
+    source: 'db',
+    topicInput,
+    sourceMix: await questionRepository.getSourceMixByTopic(topicInput.topicKey)
+  });
+  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  return payload;
 };
 
 const searchQuestionBank = async ({
@@ -391,40 +597,165 @@ const searchQuestionBank = async ({
 } = {}) => {
   const query = String(q || '').trim();
   if (!query) {
-    return {
-      questions: [],
-      total: 0,
-      totalAvailable: 0,
-      page: 1,
-      limit,
-      totalPages: 1,
-      fromCache: false,
-      source: 'db',
-      aiGeneratedCount: 0,
-      scrapedGeneratedCount: 0,
-      enrichedCount: 0,
-      sourceMix: {},
-      partial: false,
-      metrics: metricSnapshot()
-    };
+    return getQuestionBank({ skill, topic, stack, technology, language, framework, difficulty, tags, page, limit, block: 'all' });
   }
 
-  return loadQuestionBankWithEnrichment({
+  interviewEngineMetrics.totalRequests += 1;
+  const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
+  const { page: normalizedPage, limit: normalizedLimit } = normalizePagination({ page, limit });
+  const normalizedTags = toTagFilter(tags);
+  const cacheKey = makeSearchCacheKey({
     query,
-    skill,
-    topic,
-    stack,
-    technology,
-    language,
-    framework,
-    page,
-    limit,
+    topicKey: topicInput.topicKey,
+    page: normalizedPage,
+    limit: normalizedLimit,
     difficulty,
-    tags,
-    initiatedBy: 'search-endpoint',
-    allowEnrichment,
-    targetMinimum: MIN_TOPIC_QUESTION_POOL
+    tags: normalizedTags,
+    lookupOnly: !allowEnrichment
   });
+
+  const cached = await getCacheJson(cacheKey);
+  if (cached) {
+    interviewEngineMetrics.cacheHits += 1;
+    questionRepository.incrementUsageStats((cached.questions || []).map((item) => item?._id).filter(Boolean)).catch(() => {});
+    return { ...cached, fromCache: true, metrics: metricSnapshot() };
+  }
+
+  interviewEngineMetrics.dbReads += 1;
+  await ensurePrebuiltTopicBaseline({ topicKey: topicInput.topicKey, minimumCount: 1 });
+
+  let reusable = await questionRepository.findExactReusableQuestion({
+    topicKey: topicInput.topicKey,
+    question: query,
+    minConfidence: 0.55
+  });
+
+  if (reusable) {
+    reusable = await enrichQuestionIfNeeded(reusable);
+    questionRepository.incrementQuestionUsage(reusable._id).catch(() => {});
+    const payload = makeQuestionPayload({
+      questions: [reusable],
+      total: 1,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    return payload;
+  }
+
+  const textMatches = await questionRepository.findSearchTextMatches({
+    topicKey: topicInput.topicKey,
+    query,
+    limit: normalizedLimit,
+    difficulty,
+    tags: normalizedTags
+  });
+
+  if (textMatches.length > 0) {
+    const questions = await enrichQuestionListOnce(textMatches);
+    questionRepository.incrementUsageStats(questions.map((item) => item._id)).catch(() => {});
+    const payload = makeQuestionPayload({
+      questions,
+      total: questions.length,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    return payload;
+  }
+
+  const semanticCandidates = await questionRepository.findSemanticCandidates({
+    topicKey: topicInput.topicKey,
+    tags: sanitizeTags([topicInput.topicKey, ...String(query).split(/\s+/)]),
+    minConfidence: 0.6
+  });
+  const semanticMatch = semanticCandidates.find((candidate) => (
+    computeJaccardSimilarity(query, candidate.normalizedQuestion || candidate.question) >= 0.7
+  )) || null;
+
+  if (semanticMatch) {
+    const question = await enrichQuestionIfNeeded(semanticMatch);
+    questionRepository.incrementQuestionUsage(question._id).catch(() => {});
+    const payload = makeQuestionPayload({
+      questions: [question],
+      total: 1,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    return payload;
+  }
+
+  if (!allowEnrichment) {
+    const payload = makeQuestionPayload({
+      questions: [],
+      total: 0,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    return payload;
+  }
+
+  const generated = await aiProvider.answerSearchFallback({
+    skill: topicInput.skill,
+    topicKey: topicInput.topicKey,
+    question: query
+  });
+  interviewEngineMetrics.aiFallbackRuns += 1;
+
+  const record = enrichmentOrchestrator.toStorableRecord({
+    item: {
+      ...generated,
+      question: query,
+      tags: sanitizeTags([...(generated.tags || []), topicInput.topicKey, 'ai_generated']),
+      answerFormat: 'structured',
+      isEnriched: true
+    },
+    topic: topicInput,
+    sourceType: 'ai_generated',
+    sourceMeta: { query, mode: 'search-fallback', generatedAt: new Date().toISOString() },
+    popularity: 18
+  });
+
+  const approved = isQualityQuestionAnswer({ ...record, topicKey: topicInput.topicKey })
+    && Number(record.confidenceScore || 0) >= 0.7
+    && Number(record.qualityScore || 0) >= 3;
+  if (!approved) {
+    const error = new Error('A reliable answer could not be generated right now. Please try again.');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const result = await questionRepository.upsertQuestions([record]);
+  await invalidateInterviewPrepCache();
+  const savedId = result.upsertedIds?.[0] || null;
+  const payloadQuestion = {
+    ...record,
+    _id: savedId,
+    stored: true,
+    sourceLabel: 'AI Generated'
+  };
+  const payload = makeQuestionPayload({
+    questions: [payloadQuestion],
+    total: 1,
+    page: 1,
+    limit: normalizedLimit,
+    source: 'ai_generated',
+    topicInput,
+    aiGeneratedCount: 1,
+    enrichedCount: 1
+  });
+  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  return payload;
 };
 
 const generateQuestionsFromAI = async ({ skill, query = '', difficulty = '', count = MIN_GENERATE_RESULTS }) => {
@@ -445,7 +776,7 @@ const saveUniqueQuestions = async ({ skill, questions, source = 'ai', popularity
   const normalized = normalizeQuestions(questions).filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey }));
   const deduped = dedupeQuestions({ questions: normalized, existingComparableQuestions });
 
-  const sourceType = ['prebuilt', 'ai', 'scraped', 'user_asked'].includes(source) ? source : 'ai';
+  const sourceType = ['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'].includes(source) ? source : 'ai_generated';
   const records = deduped.map((item) => enrichmentOrchestrator.toStorableRecord({
     item,
     topic,
@@ -562,33 +893,82 @@ const generateFreshInterviewQuestions = async ({
   }
 
   const normalizedLimit = normalizePagination({ page, limit }).limit;
-  try {
-    const generated = await generateQuestionsFromAI({
-      skill: normalizedSkill,
-      query: String(query || '').trim(),
-      difficulty,
-      count: normalizedLimit
-    });
-    const saved = await saveUniqueQuestions({
-      skill: normalizedSkill,
-      questions: generated,
-      source: 'ai',
-      popularity: 14
-    });
+  const targetCount = Math.max(10, normalizedLimit);
+  const focusTopic = String(query || topic || topicInput.topicKey || '').trim().toLowerCase();
+  const existing = await questionRepository.findAiGeneratedByTopic({
+    topicKey: topicInput.topicKey,
+    topic: focusTopic,
+    limit: targetCount
+  });
 
-    if (saved.length > 0) {
+  if (existing.length >= targetCount) {
+    const questions = await enrichQuestionListOnce(existing.slice(0, targetCount));
+    questionRepository.incrementUsageStats(questions.map((item) => item._id)).catch(() => {});
+    return makeQuestionPayload({
+      questions,
+      total: questions.length,
+      page: 1,
+      limit: targetCount,
+      source: 'db',
+      topicInput,
+      aiGeneratedCount: 0,
+      enrichedCount: 0
+    });
+  }
+
+  const gap = Math.max(0, targetCount - existing.length);
+  try {
+    const generated = await aiProvider.generateStructuredQuestionSet({
+      skill: normalizedSkill,
+      topic: focusTopic,
+      difficulty,
+      count: gap
+    });
+    const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topicInput.topicKey, 600);
+    const normalized = normalizeQuestions(generated)
+      .map((item, index) => ({
+        ...item,
+        answerSections: generated[index]?.answerSections || item.answerSections,
+        category: generated[index]?.category || item.category || 'conceptual',
+        qualityScore: generated[index]?.qualityScore || 4,
+        answerFormat: 'structured',
+        isEnriched: true,
+        tags: sanitizeTags([...(item.tags || []), topicInput.topicKey, focusTopic, 'ai_generated'])
+      }))
+      .filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topicInput.topicKey }));
+    const deduped = dedupeQuestions({ questions: normalized, existingComparableQuestions });
+    const records = deduped.map((item) => enrichmentOrchestrator.toStorableRecord({
+      item,
+      topic: topicInput,
+      sourceType: 'ai_generated',
+      sourceMeta: { topic: focusTopic, query: focusTopic, mode: 'practice-set', generatedAt: new Date().toISOString() },
+      popularity: 14
+    })).filter((record) => Number(record.confidenceScore || 0) >= 0.7);
+
+    if (records.length > 0) {
+      await questionRepository.upsertQuestions(records);
+      await invalidateInterviewPrepCache();
+    }
+
+    const fullSet = await questionRepository.findAiGeneratedByTopic({
+      topicKey: topicInput.topicKey,
+      topic: focusTopic,
+      limit: targetCount
+    });
+    const questions = await enrichQuestionListOnce(fullSet.slice(0, targetCount));
+    if (questions.length > 0) {
       return {
-        questions: saved,
-        total: saved.length,
-        totalAvailable: saved.length,
+        questions,
+        total: questions.length,
+        totalAvailable: questions.length,
         page: 1,
-        limit: normalizedLimit,
+        limit: targetCount,
         totalPages: 1,
         fromCache: false,
-        source: 'ai',
-        aiGeneratedCount: saved.length,
+        source: records.length ? 'ai_generated' : 'db',
+        aiGeneratedCount: records.length,
         scrapedGeneratedCount: 0,
-        enrichedCount: saved.length,
+        enrichedCount: records.length,
         sourceMix: {},
         partial: false,
         topicKey: topicInput.topicKey,
@@ -682,11 +1062,11 @@ const answerCustomInterviewQuestion = async ({
   }
 
   let generated = null;
-  let generatedSourceType = 'ai';
+  let generatedSourceType = 'ai_generated';
   try {
-    generated = await aiProvider.answerCustomQuestionFromAI({
+    generated = await aiProvider.answerSearchFallback({
+      skill: topicInput.skill,
       topicKey: topicInput.topicKey,
-      topicType: topicInput.topicType,
       question: normalizedQuestion
     });
     interviewEngineMetrics.aiFallbackRuns += 1;
@@ -716,6 +1096,11 @@ const answerCustomInterviewQuestion = async ({
     item: {
       question: normalizedQuestion,
       answer: generated.answer,
+      answerSections: generated.answerSections,
+      category: generated.category,
+      qualityScore: generated.qualityScore,
+      answerFormat: 'structured',
+      isEnriched: true,
       difficulty: generated.difficulty,
       tags: sanitizeTags([...(generated.tags || []), topicInput.topicKey, generatedSourceType])
     },
@@ -725,7 +1110,7 @@ const answerCustomInterviewQuestion = async ({
     popularity: 18
   });
 
-  const approved = isQualityQuestionAnswer({ ...record, topicKey: topicInput.topicKey }) && Number(record.confidenceScore || 0) >= 0.6;
+  const approved = isQualityQuestionAnswer({ ...record, topicKey: topicInput.topicKey }) && Number(record.confidenceScore || 0) >= 0.7;
   let stored = false;
   let storedId = null;
   if (approved) {
@@ -744,8 +1129,12 @@ const answerCustomInterviewQuestion = async ({
     topicKey: topicInput.topicKey,
     topicType: topicInput.topicType,
     sourceType: generatedSourceType,
-    sourceLabel: generatedSourceType === 'scraped' ? 'Scraped' : 'AI',
+    sourceLabel: generatedSourceType === 'scraped' ? 'Scraped' : 'AI Generated',
     confidenceScore: record.confidenceScore,
+    category: record.category,
+    qualityScore: record.qualityScore,
+    answerFormat: record.answerFormat,
+    isEnriched: record.isEnriched,
     _id: storedId,
     stored,
     duplicate: false,

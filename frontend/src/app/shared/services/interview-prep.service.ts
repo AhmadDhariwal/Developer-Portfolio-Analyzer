@@ -9,11 +9,22 @@ export interface InterviewQuestion {
   topicType?: 'stack' | 'technology' | 'language' | 'framework';
   question: string;
   answer: string;
-  answerSections?: Record<string, string>;
+  answerSections?: {
+    summary?: string;
+    explanation?: string;
+    bulletPoints?: string[];
+    codeExample?: string;
+    realWorldContext?: string;
+    [key: string]: string | string[] | undefined;
+  };
   difficulty: 'easy' | 'medium' | 'hard';
+  category?: 'conceptual' | 'scenario_based' | 'code_output' | 'best_practice' | 'system_design' | 'behavioral';
+  qualityScore?: number;
+  answerFormat?: 'structured' | 'plain';
+  isEnriched?: boolean;
   tags: string[];
-  source?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
-  sourceType?: 'prebuilt' | 'ai' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  source?: 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  sourceType?: 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
   sourceLabel?: string;
   popularity?: number;
   confidenceScore?: number;
@@ -46,14 +57,18 @@ export class InterviewPrepService {
   constructor(private readonly api: ApiService) {}
 
   getTopQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
-    return this.api.getInterviewPrepQuestions(params);
+    return this.api.getInterviewPrepQuestions({ ...params, block: 'top' });
+  }
+
+  getAllQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[]; category?: string; source?: string }): Observable<InterviewQuestionListResponse> {
+    return this.api.getInterviewPrepQuestions({ ...params, block: 'all' });
   }
 
   searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[]; lookupOnly?: boolean }): Observable<InterviewQuestionListResponse> {
     return this.api.searchInterviewPrepQuestions(params);
   }
 
-  generateQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number }): Observable<InterviewQuestionListResponse> {
+  generateQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number; target?: number }): Observable<InterviewQuestionListResponse> {
     return this.api.generateInterviewPrepQuestions(payload);
   }
 

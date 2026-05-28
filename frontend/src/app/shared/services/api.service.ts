@@ -644,13 +644,16 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/interview-prep`, payload);
   }
 
-  getInterviewPrepQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<any> {
+  getInterviewPrepQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[]; block?: string; category?: string; source?: string }): Observable<any> {
     const query = new URLSearchParams();
     query.set('skill', params.skill);
     query.set('page', String(params.page ?? 1));
     query.set('limit', String(params.limit ?? 20));
     if (params.difficulty) query.set('difficulty', params.difficulty);
     if (params.tags?.length) query.set('tags', params.tags.join(','));
+    if (params.block) query.set('block', params.block);
+    if (params.category) query.set('category', params.category);
+    if (params.source) query.set('source', params.source);
     return this.http.get(`${this.baseUrl}/interview-prep/questions?${query.toString()}`);
   }
 
@@ -666,7 +669,7 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/interview-prep/search?${query.toString()}`);
   }
 
-  generateInterviewPrepQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number }): Observable<any> {
+  generateInterviewPrepQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number; target?: number }): Observable<any> {
     return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
   }
 

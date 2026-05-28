@@ -112,6 +112,10 @@ const buildSeedRecordsForTopic = (topic) => {
         seededAt: new Date().toISOString()
       },
       confidenceScore: 0.97,
+      category: tags?.includes('architecture') || tags?.includes('api-design') ? 'best_practice' : 'conceptual',
+      qualityScore: 4,
+      answerFormat: 'plain',
+      isEnriched: false,
       qualityState: 'approved',
       popularity: buildPopularity(index),
       usageCount: 0,

@@ -52,7 +52,16 @@ const generateInterviewPrepSession = async (req, res) => {
 // GET /api/interview-prep/questions
 const getInterviewPrepQuestions = async (req, res) => {
   try {
-    const { skill = '', page = 1, limit = DEFAULT_PAGE_LIMIT, difficulty = '', tags = '' } = req.query;
+    const {
+      skill = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT,
+      difficulty = '',
+      tags = '',
+      block = 'top',
+      category = '',
+      source = ''
+    } = req.query;
     const topicInput = readTopicInput(req.query || {});
     const normalizedSkill = sanitizeSkill(skill || topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack);
     if (!normalizedSkill && !topicInput.topic) {
@@ -65,7 +74,10 @@ const getInterviewPrepQuestions = async (req, res) => {
       page,
       limit,
       difficulty,
-      tags
+      tags,
+      block,
+      category,
+      source
     });
 
     return res.json(payload);
@@ -104,7 +116,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
 // POST /api/interview-prep/generate
 const generateInterviewPrepQuestions = async (req, res) => {
   try {
-    const { skill = '', query = '', difficulty = '', page = 1, limit = DEFAULT_PAGE_LIMIT } = req.body || {};
+    const { skill = '', query = '', difficulty = '', page = 1, limit = DEFAULT_PAGE_LIMIT, target = '' } = req.body || {};
     const topicInput = readTopicInput(req.body || {});
     const normalizedSkill = sanitizeSkill(skill || topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack);
     if (!normalizedSkill && !topicInput.topic) {
@@ -117,7 +129,7 @@ const generateInterviewPrepQuestions = async (req, res) => {
       query,
       difficulty,
       page,
-      limit
+      limit: target || limit
     });
 
     return res.json(payload);
