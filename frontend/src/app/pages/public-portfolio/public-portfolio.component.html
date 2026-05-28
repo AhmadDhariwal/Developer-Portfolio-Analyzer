@@ -107,6 +107,9 @@
         <div 
           class="skill-icon-circle" 
           *ngFor="let skill of getTopSkillIcons(); let i = index"
+          [attr.data-skill]="skill.displayName"
+          [attr.title]="skill.displayName"
+          [attr.aria-label]="skill.displayName"
           [style.animation-delay]="i * 0.1 + 's'">
           <div class="icon-bg" [style.background]="skill.color + '15'">
             <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
@@ -120,6 +123,9 @@
         <div 
           class="skill-icon-circle" 
           *ngFor="let skill of getBottomSkillIcons().slice(0, 6); let i = index"
+          [attr.data-skill]="skill.displayName"
+          [attr.title]="skill.displayName"
+          [attr.aria-label]="skill.displayName"
           [style.animation-delay]="(i + 7) * 0.1 + 's'">
           <div class="icon-bg" [style.background]="skill.color + '15'">
             <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
@@ -248,7 +254,7 @@
     [secondaryLabel]="profile.sections.cta.secondaryLabel"
     [resumeUrl]="getResumeDownloadUrl()"
     [resumeAvailable]="hasResumeDownload()"
-    [primaryHref]="getPrimaryContactHref()"
+    (primaryAction)="scrollToSection('contact')"
   ></app-cta-section>
 
   <!-- Contact Footer Section -->
@@ -259,7 +265,7 @@
       <p class="contact-message">{{ profile.sections.contact.message }}</p>
 
       <div class="contact-actions">
-        <a *ngIf="hasContactEmail(); else emailUnavailable" [href]="getEmailHref()" class="contact-email">{{ getContactEmail() }}</a>
+        <a *ngIf="hasContactEmail(); else emailUnavailable" [href]="getEmailHref()" target="_blank" rel="noopener" class="contact-email">{{ getContactEmail() }}</a>
         <ng-template #emailUnavailable>
           <span class="contact-email contact-email--muted">Email not provided</span>
         </ng-template>
@@ -356,7 +362,7 @@
                   </a>
                 </li>
                 <li *ngIf="hasContactEmail(); else footerEmailUnavailable">
-                  <a [href]="getEmailHref()">
+                  <a [href]="getEmailHref()" target="_blank" rel="noopener">
                     <i class="mdi mdi-email"></i> Email
                   </a>
                 </li>
@@ -390,10 +396,35 @@
                     <i class="mdi mdi-web"></i> Portfolio
                   </a>
                 </li>
-                <li>
-                  <a [href]="shareUrl" target="_blank" rel="noopener">
+                <li class="share-menu-item">
+                  <button type="button" class="footer-share-trigger" (click)="toggleShareMenu($event)">
                     <i class="mdi mdi-share-variant"></i> Share Profile
-                  </a>
+                  </button>
+
+                  <div class="share-menu" *ngIf="shareMenuOpen" (click)="$event.stopPropagation()">
+                    <button *ngIf="canUseNativeShare()" type="button" class="share-option" (click)="useNativeShare($event)">
+                      <i class="mdi mdi-share-all-outline"></i> Share via device
+                    </button>
+                    <button type="button" class="share-option" (click)="shareTo('whatsapp', $event)">
+                      <i class="mdi mdi-whatsapp"></i> WhatsApp
+                    </button>
+                    <button type="button" class="share-option" (click)="shareTo('linkedin', $event)">
+                      <i class="mdi mdi-linkedin"></i> LinkedIn
+                    </button>
+                    <button type="button" class="share-option" (click)="shareTo('twitter', $event)">
+                      <i class="mdi mdi-twitter"></i> X / Twitter
+                    </button>
+                    <button type="button" class="share-option" (click)="shareTo('facebook', $event)">
+                      <i class="mdi mdi-facebook"></i> Facebook
+                    </button>
+                    <button type="button" class="share-option" (click)="shareTo('email', $event)">
+                      <i class="mdi mdi-email-fast-outline"></i> Email
+                    </button>
+                    <button type="button" class="share-option" (click)="copyShareLink()">
+                      <i class="mdi mdi-content-copy"></i> Copy link
+                    </button>
+                  </div>
+                  <span *ngIf="copyFeedback" class="share-feedback">{{ copyFeedback }}</span>
                 </li>
               </ul>
             </div>

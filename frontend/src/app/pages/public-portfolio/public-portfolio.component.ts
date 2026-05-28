@@ -41,6 +41,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   shareUrl = '';
   copyFeedback = '';
+  shareMenuOpen = false;
   userAvatarSrc = '/avatar/profile.png';
   activeSection: SectionId = 'home';
   mobileMenuOpen = false;
@@ -297,6 +298,39 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     return this.isSectionVisible('upcoming') && this.getUpcomingProjects().length > 0;
   }
 
+  toggleShareMenu(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.copyFeedback = '';
+    this.shareMenuOpen = !this.shareMenuOpen;
+  }
+
+  closeShareMenu(): void {
+    this.shareMenuOpen = false;
+  }
+
+  async useNativeShare(event?: Event): Promise<void> {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (!this.canUseNativeShare()) return;
+
+    try {
+      await navigator.share({
+        title: this.getShareTitle(),
+        text: this.getShareText(),
+        url: this.shareUrl
+      });
+      this.shareMenuOpen = false;
+    } catch (error) {
+      const aborted = error instanceof DOMException && error.name === 'AbortError';
+      if (!aborted) {
+        this.copyFeedback = 'Unable to open share dialog.';
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
   copyShareLink(): void {
     if (!this.shareUrl || typeof navigator === 'undefined' || !navigator.clipboard) {
       this.copyFeedback = 'Copy is unavailable in this browser.';
@@ -307,12 +341,67 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     navigator.clipboard.writeText(this.shareUrl)
       .then(() => {
         this.copyFeedback = 'Link copied';
+        this.shareMenuOpen = false;
         this.cdr.detectChanges();
       })
       .catch(() => {
         this.copyFeedback = 'Unable to copy link';
         this.cdr.detectChanges();
       });
+  }
+
+  shareTo(platform: 'linkedin' | 'twitter' | 'whatsapp' | 'facebook' | 'email', event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    const url = this.getShareOptionHref(platform);
+    if (!url || !isPlatformBrowser(this.platformId)) {
+      this.copyFeedback = 'Share is unavailable right now.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const isMail = platform === 'email';
+    const features = isMail ? undefined : 'noopener,noreferrer,width=720,height=720';
+    globalThis.open(url, isMail ? '_self' : '_blank', features);
+    this.shareMenuOpen = false;
+  }
+
+  canUseNativeShare(): boolean {
+    return isPlatformBrowser(this.platformId) && typeof navigator !== 'undefined' && typeof navigator.share === 'function' && Boolean(this.shareUrl);
+  }
+
+  getShareOptionHref(platform: 'linkedin' | 'twitter' | 'whatsapp' | 'facebook' | 'email'): string {
+    if (!this.shareUrl) return '';
+
+    const encodedUrl = encodeURIComponent(this.shareUrl);
+    const encodedTitle = encodeURIComponent(this.getShareTitle());
+    const encodedText = encodeURIComponent(this.getShareText());
+
+    switch (platform) {
+      case 'linkedin':
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+      case 'twitter':
+        return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+      case 'whatsapp':
+        return `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+      case 'facebook':
+        return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+      case 'email':
+        return `mailto:?subject=${encodedTitle}&body=${encodedText}%0A%0A${encodedUrl}`;
+      default:
+        return '';
+    }
+  }
+
+  getShareTitle(): string {
+    if (!this.profile) return 'Developer Portfolio';
+    return `${this.profile.user.name} | Public Portfolio`;
+  }
+
+  getShareText(): string {
+    if (!this.profile) return 'Check out this public portfolio.';
+    return `Check out ${this.profile.user.name}'s public portfolio.`;
   }
 
   getProfileLabel(): string {
@@ -395,7 +484,9 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
 
   getEmailHref(): string {
     const email = this.getContactEmail();
-    return email ? `mailto:${email}` : '';
+    return email
+      ? `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`
+      : '';
   }
 
   getPhoneNumber(): string {
@@ -410,10 +501,6 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   getPhoneHref(): string {
     const normalized = this.getPhoneNumber().replace(/[^\d+]/g, '');
     return normalized ? `tel:${normalized}` : '';
-  }
-
-  getPrimaryContactHref(): string {
-    return this.getEmailHref() || this.getPhoneHref() || '#contact';
   }
 
   getResumeDownloadUrl(): string {
@@ -513,6 +600,12 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   @HostListener('window:scroll')
   onWindowScroll(): void {
     this.updateActiveSection();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (!this.shareMenuOpen) return;
+    this.shareMenuOpen = false;
   }
 
   private updateActiveSection(): void {

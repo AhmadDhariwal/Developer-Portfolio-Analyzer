@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-cta-section',
@@ -13,7 +13,12 @@ export class CtaSectionComponent {
   @Input() subtext = '';
   @Input() primaryLabel = 'Contact Me';
   @Input() secondaryLabel = 'Download Resume';
-  @Input() primaryHref = '#contact';
   @Input() resumeUrl = '';
   @Input() resumeAvailable = false;
+  @Output() primaryAction = new EventEmitter<void>();
+
+  onPrimaryClick(event: Event): void {
+    event.preventDefault();
+    this.primaryAction.emit();
+  }
 }

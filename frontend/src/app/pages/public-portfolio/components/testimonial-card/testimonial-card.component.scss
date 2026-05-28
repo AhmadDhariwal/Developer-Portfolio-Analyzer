@@ -3,18 +3,19 @@
 }
 
 .testimonial-card {
-  background: #f8fafc;
-  color: #0f172a;
+  background: linear-gradient(135deg, rgba(17, 27, 53, 0.92) 0%, rgba(31, 47, 89, 0.88) 100%);
+  color: #e8ecff;
   border-radius: 20px;
   padding: 26px;
   text-align: center;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 34px rgba(6, 14, 32, 0.28);
+  border: 1px solid rgba(139, 92, 246, 0.22);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+    box-shadow: 0 24px 40px rgba(6, 14, 32, 0.34);
+    border-color: rgba(236, 99, 255, 0.35);
   }
 }
 
@@ -46,13 +47,13 @@
     margin: 0;
     font-size: 15px;
     font-weight: 700;
-    color: #020617;
+    color: #ffffff;
   }
 
   span {
     display: block;
     margin-top: 2px;
-    color: #475569;
+    color: #aeb9e8;
     font-size: 13px;
   }
 }

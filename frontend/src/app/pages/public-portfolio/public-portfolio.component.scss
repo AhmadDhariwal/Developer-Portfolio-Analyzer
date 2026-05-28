@@ -503,6 +503,32 @@ footer[id] {
     position: relative;
     animation: fadeInDown 0.6s ease-out backwards;
 
+    &::after {
+      content: attr(data-skill);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 12px);
+      transform: translateX(-50%) translateY(6px);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(6, 14, 32, 0.96);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: $text-white;
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 12px 28px rgba(6, 14, 32, 0.32);
+      z-index: 4;
+    }
+
+    &:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     .icon-bg {
       width: 56px;
       height: 56px;
@@ -1240,9 +1266,11 @@ footer[id] {
 
           li {
             margin-bottom: 12px;
+            position: relative;
 
             a,
-            .footer-link-text {
+            .footer-link-text,
+            .footer-share-trigger {
               color: $text-gray;
               font-size: 14px;
               display: inline-flex;
@@ -1263,8 +1291,66 @@ footer[id] {
               }
             }
 
+            .footer-share-trigger {
+              background: transparent;
+              border: 0;
+              padding: 0;
+              text-decoration: none;
+              transition: color 0.3s ease;
+              cursor: pointer;
+
+              &:hover {
+                color: $accent-purple;
+              }
+            }
+
             .footer-link-text--muted {
               opacity: 0.8;
+            }
+
+            &.share-menu-item {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 10px;
+            }
+
+            .share-menu {
+              width: 220px;
+              padding: 10px;
+              border-radius: 18px;
+              background: rgba(6, 14, 32, 0.96);
+              border: 1px solid rgba(139, 92, 246, 0.24);
+              box-shadow: 0 18px 36px rgba(6, 14, 32, 0.36);
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              z-index: 5;
+            }
+
+            .share-option {
+              width: 100%;
+              border: 0;
+              background: transparent;
+              color: $text-gray;
+              font-size: 13px;
+              display: inline-flex;
+              align-items: center;
+              gap: 10px;
+              padding: 10px 12px;
+              border-radius: 12px;
+              cursor: pointer;
+              transition: background 0.25s ease, color 0.25s ease;
+
+              &:hover {
+                background: rgba(139, 92, 246, 0.16);
+                color: $text-white;
+              }
+            }
+
+            .share-feedback {
+              font-size: 12px;
+              color: $text-muted;
             }
           }
         }
