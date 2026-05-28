@@ -118,6 +118,10 @@ export interface PublicProfilePayload {
   workExperiences: PublicProfileWorkExperience[];
   sections: PublicProfileSections;
   socialLinks: { website?: string; twitter?: string; linkedin?: string; github?: string };
+  email?: string;
+  phoneNumber?: string;
+  resumeUrl?: string;
+  defaultResumeUrl?: string;
   analytics: PublicProfileAnalytics;
   profileStrengthScore?: number;
   momentum?: PublicProfileMomentum | null;

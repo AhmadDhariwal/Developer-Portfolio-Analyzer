@@ -86,7 +86,7 @@
         <p><strong>Skills:</strong> {{ getTopSkillsText() }}</p>
         <p><strong>GitHub:</strong> {{ profile.user.githubUsername ? ('@' + profile.user.githubUsername) : 'Not provided' }}</p>
         <p><strong>LinkedIn:</strong> {{ profile.socialLinks.linkedin ? profile.socialLinks.linkedin : 'Not provided' }}</p>
-        <p *ngIf="profile.user.phoneNumber"><strong>Phone:</strong> {{ profile.user.phoneNumber }}</p>
+        <p *ngIf="hasPhoneNumber()"><strong>Phone:</strong> <a [href]="getPhoneHref()">{{ getPhoneNumber() }}</a></p>
       </div>
     </div>
   </section>
@@ -246,8 +246,9 @@
     [subtext]="profile.sections.cta.subtext"
     [primaryLabel]="profile.sections.cta.primaryLabel"
     [secondaryLabel]="profile.sections.cta.secondaryLabel"
-    [resumeUrl]="profile.sections.cta.resumeUrl"
-    [contactEmail]="getContactEmail()"
+    [resumeUrl]="getResumeDownloadUrl()"
+    [resumeAvailable]="hasResumeDownload()"
+    [primaryHref]="getPrimaryContactHref()"
   ></app-cta-section>
 
   <!-- Contact Footer Section -->
@@ -256,8 +257,18 @@
       <h2 class="contact-title">{{ profile.sections.contact.heading }}</h2>
       
       <p class="contact-message">{{ profile.sections.contact.message }}</p>
-      
-      <a [href]="'mailto:' + getContactEmail()" class="contact-email">{{ getContactEmail() }}</a>
+
+      <div class="contact-actions">
+        <a *ngIf="hasContactEmail(); else emailUnavailable" [href]="getEmailHref()" class="contact-email">{{ getContactEmail() }}</a>
+        <ng-template #emailUnavailable>
+          <span class="contact-email contact-email--muted">Email not provided</span>
+        </ng-template>
+
+        <a *ngIf="hasPhoneNumber(); else phoneUnavailable" [href]="getPhoneHref()" class="contact-email">{{ getPhoneNumber() }}</a>
+        <ng-template #phoneUnavailable>
+          <span class="contact-email contact-email--muted">Phone not provided</span>
+        </ng-template>
+      </div>
       
       <div class="social-icons">
         <a
@@ -344,11 +355,30 @@
                     <i class="mdi mdi-twitter"></i> Twitter
                   </a>
                 </li>
-                <li>
-                  <a [href]="'mailto:' + getContactEmail()">
+                <li *ngIf="hasContactEmail(); else footerEmailUnavailable">
+                  <a [href]="getEmailHref()">
                     <i class="mdi mdi-email"></i> Email
                   </a>
                 </li>
+                <ng-template #footerEmailUnavailable>
+                  <li>
+                    <span class="footer-link-text footer-link-text--muted">
+                      <i class="mdi mdi-email-off-outline"></i> Email not provided
+                    </span>
+                  </li>
+                </ng-template>
+                <li *ngIf="hasPhoneNumber(); else footerPhoneUnavailable">
+                  <a [href]="getPhoneHref()">
+                    <i class="mdi mdi-phone"></i> Phone
+                  </a>
+                </li>
+                <ng-template #footerPhoneUnavailable>
+                  <li>
+                    <span class="footer-link-text footer-link-text--muted">
+                      <i class="mdi mdi-phone-off"></i> Phone not provided
+                    </span>
+                  </li>
+                </ng-template>
               </ul>
             </div>
 

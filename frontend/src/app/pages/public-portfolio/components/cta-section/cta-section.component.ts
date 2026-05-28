@@ -13,6 +13,7 @@ export class CtaSectionComponent {
   @Input() subtext = '';
   @Input() primaryLabel = 'Contact Me';
   @Input() secondaryLabel = 'Download Resume';
-  @Input() contactEmail = '';
+  @Input() primaryHref = '#contact';
   @Input() resumeUrl = '';
+  @Input() resumeAvailable = false;
 }

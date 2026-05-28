@@ -69,6 +69,12 @@ p {
   }
 }
 
+.cta-btn.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   .cta-section {
     padding: 80px 24px;

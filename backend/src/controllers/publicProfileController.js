@@ -2,7 +2,8 @@ const {
   getPublicProfileBySlug,
   getPublicProfileForOwner,
   updatePublicProfile,
-  getPublicProfileAnalytics
+  getPublicProfileAnalytics,
+  getPublicProfileResumeDownload
 } = require('../services/publicProfileService');
 
 // GET /api/public-profiles/:slug (public)
@@ -23,7 +24,7 @@ const getPublicProfile = async (req, res) => {
 // GET /api/public-profiles/me
 const getMyPublicProfile = async (req, res) => {
   try {
-    const profile = await getPublicProfileForOwner(req.user._id);
+    const profile = await getPublicProfileForOwner(req.user._id, req);
     res.set('Cache-Control', 'no-store');
     res.json(profile);
   } catch (error) {
@@ -41,7 +42,7 @@ const updateMyPublicProfile = async (req, res) => {
       headline: String(req.body?.headline || '')
     });
 
-    const profile = await updatePublicProfile(req.user._id, req.body || {});
+    const profile = await updatePublicProfile(req.user._id, req.body || {}, req);
 
     console.info('public-profile updated', {
       userId: String(req.user?._id || ''),
@@ -53,6 +54,25 @@ const updateMyPublicProfile = async (req, res) => {
   } catch (error) {
     console.error('Public profile update error:', error.message);
     res.status(500).json({ message: 'Failed to update public profile.' });
+  }
+};
+
+// GET /api/public-profiles/:slug/resume
+const downloadPublicProfileResume = async (req, res) => {
+  try {
+    const resume = await getPublicProfileResumeDownload(req.params.slug);
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not available.' });
+    }
+
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.type(resume.mimeType);
+    return res.download(resume.filePath, resume.fileName);
+  } catch (error) {
+    console.error('Public profile resume download error:', error.message);
+    return res.status(500).json({ message: 'Failed to download resume.' });
   }
 };
 
@@ -71,5 +91,6 @@ module.exports = {
   getPublicProfile,
   getMyPublicProfile,
   updateMyPublicProfile,
-  getMyPublicProfileAnalytics
+  getMyPublicProfileAnalytics,
+  downloadPublicProfileResume
 };

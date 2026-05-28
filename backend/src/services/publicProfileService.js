@@ -1,7 +1,10 @@
 const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 const PublicProfile = require('../models/publicProfile');
 const PublicProfileView = require('../models/publicProfileView');
 const User = require('../models/user');
+const ResumeFile = require('../models/resumeFile');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const SkillGraph = require('../models/skillGraph');
@@ -29,6 +32,51 @@ const clamp = (value, min = 0, max = 100) => {
 
 const trimText = (value = '', maxLen = 240) => String(value || '').trim().slice(0, maxLen);
 const normalizeEmail = (value = '') => String(value || '').trim().toLowerCase().slice(0, 120);
+const normalizePhoneNumber = (value = '') => String(value || '').trim().slice(0, 40);
+const uploadsDir = path.resolve(__dirname, '..', '..', 'uploads');
+
+const buildBackendOrigin = (req = null) => {
+  const host = req?.get?.('host');
+  const protocol = req?.protocol;
+  if (host && protocol) {
+    return `${protocol}://${host}`;
+  }
+
+  return String(process.env.PUBLIC_API_ORIGIN || process.env.API_BASE_URL || 'http://localhost:5000')
+    .trim()
+    .replace(/\/+$/, '');
+};
+
+const buildPublicResumeDownloadUrl = (slug = '', req = null) => {
+  const safeSlug = String(slug || '').trim();
+  if (!safeSlug) return '';
+  return `${buildBackendOrigin(req)}/api/public-profiles/${encodeURIComponent(safeSlug)}/resume`;
+};
+
+const toSafeDownloadName = (value = 'resume.pdf') => {
+  const sanitized = String(value || 'resume.pdf')
+    .trim()
+    .replace(/[^a-z0-9._-]+/gi, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  if (!sanitized) return 'resume.pdf';
+  return /\.pdf$/i.test(sanitized) ? sanitized : `${sanitized}.pdf`;
+};
+
+const resolveStoredResumePath = (value = '') => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const normalized = raw.replace(/\\/g, '/');
+  const candidate = path.isAbsolute(raw)
+    ? path.normalize(raw)
+    : path.resolve(__dirname, '..', '..', normalized.replace(/^\/+/, ''));
+
+  const relative = path.relative(uploadsDir, candidate);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) return '';
+  return fs.existsSync(candidate) ? candidate : '';
+};
 
 const normalizeProjectStatus = (value = '', fallback = 'completed') => {
   const status = String(value || '').trim().toLowerCase();
@@ -559,9 +607,14 @@ const calculateProfileStrength = ({ profile, user, skills, projects, workExperie
 };
 
 async function buildPublicProfilePayload(profile, user, req = null) {
-  const [skillScores, latestReport] = await Promise.all([
+  const [skillScores, latestReport, defaultResume] = await Promise.all([
     getSkillScores(profile.userId),
-    WeeklyReport.findOne({ userId: profile.userId }).sort({ weekEndDate: -1 }).lean()
+    WeeklyReport.findOne({ userId: profile.userId }).sort({ weekEndDate: -1 }).lean(),
+    user?.defaultResumeFileId
+      ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: profile.userId })
+        .select('fileName fileUrl mimeType')
+        .lean()
+      : null
   ]);
 
   const normalizedSkills = profile.skills?.length ? normalizeSkills(profile.skills) : skillScores;
@@ -591,6 +644,11 @@ async function buildPublicProfilePayload(profile, user, req = null) {
     projects: normalizedProjects,
     skills: normalizedSkills
   });
+  const publicEmail = normalizedSections.contact.email || normalizeEmail(user?.email || '');
+  const publicPhoneNumber = normalizePhoneNumber(user?.phoneNumber || '');
+  const hasDefaultResumeFile = Boolean(defaultResume?.fileUrl && resolveStoredResumePath(defaultResume.fileUrl));
+  const defaultResumeUrl = hasDefaultResumeFile ? buildPublicResumeDownloadUrl(profile.slug, req) : '';
+  const effectiveResumeUrl = defaultResumeUrl || normalizedSections.cta.resumeUrl || '';
 
   return {
     id: profile._id,
@@ -605,8 +663,18 @@ async function buildPublicProfilePayload(profile, user, req = null) {
     upcomingProjects: normalizedUpcomingProjects,
     testimonials: normalizedTestimonials,
     workExperiences: normalizedWorkExperiences,
-    sections: normalizedSections,
+    sections: {
+      ...normalizedSections,
+      cta: {
+        ...normalizedSections.cta,
+        resumeUrl: effectiveResumeUrl
+      }
+    },
     socialLinks: normalizedSocialLinks,
+    email: publicEmail,
+    phoneNumber: publicPhoneNumber,
+    defaultResumeUrl,
+    resumeUrl: effectiveResumeUrl,
     analytics: {
       totalViews: profile.totalViews || 0,
       uniqueViews: profile.uniqueViews || 0,
@@ -636,8 +704,8 @@ async function buildPublicProfilePayload(profile, user, req = null) {
       location: user?.location || '',
       avatar: resolveAvatarForResponse(user?.avatar || '', req),
       githubUsername: user?.githubUsername || '',
-      phoneNumber: user?.phoneNumber || '',
-      email: user?.email || ''
+      phoneNumber: publicPhoneNumber,
+      email: publicEmail
     }
   };
 }
@@ -761,10 +829,10 @@ const applySocialLinksUpdate = ({ profile, payload, user }) => {
   }
 };
 
-const updatePublicProfile = async (userId, payload = {}) => {
+const updatePublicProfile = async (userId, payload = {}, req = null) => {
   const profile = await getOrCreatePublicProfile(userId);
   const user = await User.findById(userId)
-    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
 
   await applyCoreProfileUpdates({ profile, payload });
@@ -774,7 +842,7 @@ const updatePublicProfile = async (userId, payload = {}) => {
 
   await profile.save();
   const savedProfile = await PublicProfile.findById(profile._id);
-  return buildPublicProfilePayload(savedProfile || profile, user);
+  return buildPublicProfilePayload(savedProfile || profile, user, req);
 };
 
 const recordProfileView = async ({ profile, req }) => {
@@ -818,19 +886,45 @@ const getPublicProfileBySlug = async (slug, req) => {
   if (!profile) return null;
 
   const user = await User.findById(profile.userId)
-    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
   await recordProfileView({ profile, req });
 
   return buildPublicProfilePayload(profile, user, req);
 };
 
-const getPublicProfileForOwner = async (userId) => {
+const getPublicProfileForOwner = async (userId, req = null) => {
   const profile = await getOrCreatePublicProfile(userId);
   const user = await User.findById(userId)
-    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
-  return buildPublicProfilePayload(profile, user);
+  return buildPublicProfilePayload(profile, user, req);
+};
+
+const getPublicProfileResumeDownload = async (slug) => {
+  if (getDeveloperSettingsSync().publicPortfolioVisibility === false) {
+    return null;
+  }
+
+  const profile = await PublicProfile.findOne({ slug, isPublic: true }).select('userId slug').lean();
+  if (!profile) return null;
+
+  const user = await User.findById(profile.userId).select('defaultResumeFileId').lean();
+  if (!user?.defaultResumeFileId) return null;
+
+  const resumeFile = await ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: profile.userId })
+    .select('fileName fileUrl mimeType')
+    .lean();
+  if (!resumeFile?.fileUrl) return null;
+
+  const filePath = resolveStoredResumePath(resumeFile.fileUrl);
+  if (!filePath) return null;
+
+  return {
+    filePath,
+    fileName: toSafeDownloadName(resumeFile.fileName || `${profile.slug}-resume.pdf`),
+    mimeType: resumeFile.mimeType || 'application/pdf'
+  };
 };
 
 const getPublicProfileAnalytics = async (userId) => {
@@ -888,5 +982,6 @@ module.exports = {
   updatePublicProfile,
   getPublicProfileBySlug,
   getPublicProfileForOwner,
-  getPublicProfileAnalytics
+  getPublicProfileAnalytics,
+  getPublicProfileResumeDownload
 };

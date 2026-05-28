@@ -4,9 +4,11 @@
     <p>{{ subtext }}</p>
 
     <div class="cta-actions">
-      <a class="cta-btn primary" [href]="'mailto:' + contactEmail">{{ primaryLabel }}</a>
-      <a class="cta-btn secondary" *ngIf="resumeUrl" [href]="resumeUrl" target="_blank" rel="noopener">{{ secondaryLabel }}</a>
-      <a class="cta-btn secondary" *ngIf="!resumeUrl" [href]="'mailto:' + contactEmail">{{ secondaryLabel }}</a>
+      <a class="cta-btn primary" [attr.href]="primaryHref || '#contact'">{{ primaryLabel }}</a>
+      <a class="cta-btn secondary" *ngIf="resumeAvailable; else resumeUnavailable" [attr.href]="resumeUrl">{{ secondaryLabel }}</a>
+      <ng-template #resumeUnavailable>
+        <span class="cta-btn secondary is-disabled" aria-disabled="true">Resume not available</span>
+      </ng-template>
     </div>
   </div>
 </section>

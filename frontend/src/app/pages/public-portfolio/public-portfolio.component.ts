@@ -383,16 +383,46 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   getContactEmail(): string {
-    if (!this.profile) return 'hello@portfolio.dev';
-    const fromSection = String(this.profile.sections?.contact?.email || '').trim().toLowerCase();
-    if (fromSection) return fromSection;
+    if (!this.profile) return '';
+    return String(this.profile.sections?.contact?.email || this.profile.email || this.profile.user.email || '')
+      .trim()
+      .toLowerCase();
+  }
 
-    if (this.profile.user.email) {
-      return this.profile.user.email;
-    }
+  hasContactEmail(): boolean {
+    return Boolean(this.getContactEmail());
+  }
 
-    const username = this.profile.user.githubUsername || this.profile.user.name.toLowerCase().replaceAll(/\s+/g, '');
-    return `${username}@gmail.com`;
+  getEmailHref(): string {
+    const email = this.getContactEmail();
+    return email ? `mailto:${email}` : '';
+  }
+
+  getPhoneNumber(): string {
+    if (!this.profile) return '';
+    return String(this.profile.phoneNumber || this.profile.user.phoneNumber || '').trim();
+  }
+
+  hasPhoneNumber(): boolean {
+    return Boolean(this.getPhoneNumber());
+  }
+
+  getPhoneHref(): string {
+    const normalized = this.getPhoneNumber().replace(/[^\d+]/g, '');
+    return normalized ? `tel:${normalized}` : '';
+  }
+
+  getPrimaryContactHref(): string {
+    return this.getEmailHref() || this.getPhoneHref() || '#contact';
+  }
+
+  getResumeDownloadUrl(): string {
+    const raw = String(this.profile?.defaultResumeUrl || this.profile?.resumeUrl || this.profile?.sections?.cta?.resumeUrl || '').trim();
+    return raw ? this.toExternalLink(raw) : '';
+  }
+
+  hasResumeDownload(): boolean {
+    return Boolean(this.getResumeDownloadUrl());
   }
 
   getCurrentYear(): number {
