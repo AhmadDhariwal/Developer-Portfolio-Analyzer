@@ -19,10 +19,38 @@
     (clear)="clearFilters()"
   />
 
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="In View"
+      [value]="meta.total || 0"
+      tone="blue"
+      [hint]="'Page ' + (meta.page || 1) + ' of ' + (meta.totalPages || 1)"
+    />
+    <app-recruiter-stat-card
+      label="High Readiness"
+      [value]="highReadinessCount"
+      tone="green"
+      hint="80+ match-ready profiles"
+    />
+    <app-recruiter-stat-card
+      label="Remote Friendly"
+      [value]="remoteCount"
+      tone="cyan"
+      hint="Candidates marked remote"
+    />
+    <app-recruiter-stat-card
+      label="Compare Queue"
+      [value]="compareCount"
+      tone="purple"
+      hint="Up to 3 profiles at once"
+    />
+  </div>
+
   <div class="toolbar">
     <div class="toolbar__chips">
       <span class="toolbar__chip">Page {{ meta.page || 1 }} of {{ meta.totalPages || 1 }}</span>
       <span class="toolbar__chip">{{ compareCount }} selected for comparison</span>
+      <span class="toolbar__chip">{{ highReadinessCount }} high-score profiles</span>
     </div>
     <button
       type="button"
@@ -37,11 +65,16 @@
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading candidates..." />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading candidates..."
+    variant="cards"
+    [count]="6"
+  />
 
   <div class="card-grid" *ngIf="!loading && candidates.length > 0">
     <app-candidate-card
-      *ngFor="let candidate of candidates"
+      *ngFor="let candidate of candidates; trackBy: trackByCandidate"
       [candidate]="candidate"
       [selected]="isSelected(candidate)"
       (view)="openCandidate($event)"

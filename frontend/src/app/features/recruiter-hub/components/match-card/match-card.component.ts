@@ -13,4 +13,14 @@ export class MatchCardComponent {
   @Input() hideActions = false;
   @Output() shortlist = new EventEmitter<any>();
   @Output() compare = new EventEmitter<any>();
+  @Output() reject = new EventEmitter<any>();
+  @Output() reset = new EventEmitter<any>();
+
+  get isShortlisted(): boolean {
+    return String(this.match?.status || '').toLowerCase() === 'shortlisted';
+  }
+
+  get isRejected(): boolean {
+    return String(this.match?.status || '').toLowerCase() === 'rejected';
+  }
 }

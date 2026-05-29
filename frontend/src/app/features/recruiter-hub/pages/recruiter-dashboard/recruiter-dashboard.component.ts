@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
 
 @Component({
@@ -10,14 +11,33 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
 export class RecruiterDashboardComponent implements OnInit {
   loading = true;
   error = '';
+  metricsReady = false;
+  insightsReady = false;
+  chartsReady = false;
   dashboard: any = this.defaultDashboard();
 
-  constructor(private readonly hubService: RecruiterHubService) {}
+  constructor(
+    private readonly hubService: RecruiterHubService,
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
+    this.loadDashboard();
+  }
+
+  loadDashboard(): void {
+    this.loading = true;
+    this.error = '';
+    this.metricsReady = false;
+    this.insightsReady = false;
+    this.chartsReady = false;
+
     this.hubService.getDashboard().subscribe({
       next: (dashboard) => {
         this.dashboard = this.normalizeDashboard(dashboard);
+        this.metricsReady = true;
+        this.insightsReady = true;
+        this.chartsReady = true;
         this.loading = false;
       },
       error: (err) => {
@@ -64,6 +84,15 @@ export class RecruiterDashboardComponent implements OnInit {
     return this.dashboard?.widgets?.pendingFollowUps || [];
   }
 
+  get funnelItems(): Array<{ label: string; value: number; tone: string }> {
+    return [
+      { label: 'Candidates', value: Number(this.dashboard?.metrics?.totalCandidates || 0), tone: 'blue' },
+      { label: 'Viewed', value: Number(this.dashboard?.metrics?.candidatesViewed || 0), tone: 'cyan' },
+      { label: 'Open Jobs', value: Number(this.dashboard?.metrics?.openJobs || 0), tone: 'purple' },
+      { label: 'Closed Jobs', value: Number(this.dashboard?.metrics?.closedJobs || 0), tone: 'green' },
+    ];
+  }
+
   initialFor(value: string): string {
     return (
       String(value || 'C')
@@ -96,6 +125,28 @@ export class RecruiterDashboardComponent implements OnInit {
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
+  }
+
+  openRoute(path: string): void {
+    this.router.navigate([path]);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  trackByItem(index: number, item: any): string {
+    return String(
+      item?._id ||
+        item?.id ||
+        item?.candidateId ||
+        item?.jobId ||
+        item?.label ||
+        item?.title ||
+        item?.updatedAt ||
+        item?.createdAt ||
+        index,
+    );
   }
 
   private normalizeDashboard(response: any): any {

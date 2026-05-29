@@ -12,7 +12,7 @@ export const noAdminTabsGuard: CanActivateFn = () => {
     map((user) => {
       const role = String(user?.role || '').toLowerCase();
       if (role === 'super_admin' || role === 'superadmin') {
-        router.navigate(['/super-admin']);
+        router.navigateByUrl(auth.getHomeRoute(user));
         return false;
       }
       return true;

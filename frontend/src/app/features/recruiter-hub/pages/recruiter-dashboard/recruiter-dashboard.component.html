@@ -12,10 +12,24 @@
   </header>
 
   <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <app-recruiter-loader *ngIf="loading" label="Loading recruiter dashboard..." />
 
-  <ng-container *ngIf="!loading && dashboard">
-    <div class="metric-grid">
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>Hero Metrics</h2>
+        <p>Live pipeline indicators appear as soon as dashboard data lands.</p>
+      </div>
+      <span class="section-head__badge">{{ dashboard.metrics.activeJobs || 0 }} active roles</span>
+    </div>
+
+    <app-recruiter-loader
+      *ngIf="loading && !metricsReady"
+      label="Loading recruiter metrics..."
+      variant="stats"
+      [count]="8"
+    />
+
+    <div class="metric-grid" *ngIf="metricsReady">
       <app-recruiter-stat-card
         label="Total Candidates"
         [value]="dashboard.metrics.totalCandidates"
@@ -52,9 +66,94 @@
         tone="purple"
         [hint]="dashboard.metrics.assignedTeams + ' assigned teams'"
       />
+      <app-recruiter-stat-card
+        label="Candidates Viewed"
+        [value]="dashboard.metrics.candidatesViewed"
+        tone="indigo"
+        hint="Profile reviews this cycle"
+      />
+      <app-recruiter-stat-card
+        label="Activity Score"
+        [value]="dashboard.metrics.recruiterActivityScore"
+        tone="green"
+        hint="Weekly recruiter productivity"
+      />
+    </div>
+  </section>
+
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>Pipeline Snapshot</h2>
+        <p>Productivity, quick actions, and active funnel widgets render as soon as dashboard data arrives.</p>
+      </div>
     </div>
 
-    <div class="chart-grid">
+    <app-recruiter-loader
+      *ngIf="loading && !insightsReady"
+      label="Loading recruiter widgets..."
+      variant="table"
+      [count]="4"
+    />
+
+    <div class="insight-grid insight-grid--top" *ngIf="insightsReady">
+      <article class="list-card list-card--highlight">
+        <div class="list-card__head">
+          <h2>Quick Actions</h2>
+          <span>Jump back in</span>
+        </div>
+        <div class="quick-actions">
+          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/candidates')">
+            <strong>Review candidates</strong>
+            <span>Browse scoped talent and compare profiles.</span>
+          </button>
+          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/jobs')">
+            <strong>Manage jobs</strong>
+            <span>Update openings, draft roles, and archive filled positions.</span>
+          </button>
+          <button type="button" class="quick-action" (click)="openRoute('/app/recruiter/matches')">
+            <strong>Run AI matches</strong>
+            <span>Generate ranked fits and convert top matches into shortlists.</span>
+          </button>
+        </div>
+      </article>
+
+      <article class="list-card">
+        <div class="list-card__head">
+          <h2>Candidate Funnel</h2>
+          <span>{{ dashboard.metrics.totalCandidates || 0 }} in scope</span>
+        </div>
+        <div class="funnel-list">
+          <div class="funnel-item" *ngFor="let item of funnelItems; trackBy: trackByItem">
+            <div class="funnel-item__copy">
+              <strong>{{ item.label }}</strong>
+              <span>{{ item.value }} tracked</span>
+            </div>
+            <span class="funnel-item__value" [class]="'funnel-item__value funnel-item__value--' + item.tone">
+              {{ item.value }}
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>Pipeline Intelligence</h2>
+        <p>Charts render immediately with the dashboard response so the page never waits for an extra click.</p>
+      </div>
+    </div>
+
+    <app-recruiter-loader
+      *ngIf="loading && !chartsReady"
+      label="Loading recruiter charts..."
+      variant="charts"
+      [count]="4"
+    />
+
+    <div class="chart-grid chart-grid--wide" *ngIf="chartsReady">
       <app-recruiter-performance-chart
         title="Candidate Score Distribution"
         tone="cyan"
@@ -102,6 +201,15 @@
         [trendLabel]="successRateLabel"
       />
     </div>
+  </section>
+
+  <section class="section-shell" *ngIf="insightsReady">
+    <div class="section-head">
+      <div>
+        <h2>Priority Queues</h2>
+        <p>Shortlists, jobs, and match follow-ups are grouped for faster triage.</p>
+      </div>
+    </div>
 
     <div class="insight-grid">
       <article class="list-card">
@@ -111,7 +219,7 @@
         <div class="list-card__body" *ngIf="topCandidates.length; else noTopCandidates">
           <div
             class="list-row list-row--candidate"
-            *ngFor="let candidate of topCandidates; let index = index"
+            *ngFor="let candidate of topCandidates; let index = index; trackBy: trackByItem"
           >
             <span class="list-rank">{{ index + 1 }}</span>
             <div class="list-avatar">{{ initialFor(candidate?.name || candidate?.fullName) }}</div>
@@ -132,7 +240,7 @@
           <h2>Recent Jobs</h2>
         </div>
         <div class="list-card__body" *ngIf="recentJobs.length; else noRecentJobs">
-          <div class="list-row list-row--job" *ngFor="let job of recentJobs">
+          <div class="list-row list-row--job" *ngFor="let job of recentJobs; trackBy: trackByItem">
             <div class="list-main">
               <strong>{{ job?.title || 'Untitled job' }}</strong>
               <span>{{ job?.location || 'Remote' }}</span>
@@ -152,7 +260,7 @@
           <h2>Recent AI Matches</h2>
         </div>
         <div class="list-card__body" *ngIf="recentMatches.length; else noRecentMatches">
-          <div class="list-row list-row--match" *ngFor="let match of recentMatches">
+          <div class="list-row list-row--match" *ngFor="let match of recentMatches; trackBy: trackByItem">
             <div class="list-avatar">
               {{ initialFor(match?.candidate?.name || match?.candidate?.fullName || 'C') }}
             </div>
@@ -175,7 +283,7 @@
           <h2>Pending Follow-ups</h2>
         </div>
         <div class="list-card__body" *ngIf="pendingFollowUps.length; else noFollowUps">
-          <div class="list-row list-row--follow" *ngFor="let item of pendingFollowUps">
+          <div class="list-row list-row--follow" *ngFor="let item of pendingFollowUps; trackBy: trackByItem">
             <div class="list-main">
               <strong>{{
                 item?.candidate?.name || item?.candidate?.fullName || 'Candidate'
@@ -190,5 +298,5 @@
         </ng-template>
       </article>
     </div>
-  </ng-container>
+  </section>
 </section>

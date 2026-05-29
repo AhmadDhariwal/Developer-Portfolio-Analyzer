@@ -14,6 +14,33 @@
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="All Jobs"
+      [value]="jobs.length"
+      tone="blue"
+      hint="Current recruiter-owned roles"
+    />
+    <app-recruiter-stat-card
+      label="Open"
+      [value]="openJobsCount"
+      tone="green"
+      hint="Actively hiring"
+    />
+    <app-recruiter-stat-card
+      label="Draft"
+      [value]="draftJobsCount"
+      tone="orange"
+      hint="Pending publish"
+    />
+    <app-recruiter-stat-card
+      label="Closed"
+      [value]="closedJobsCount"
+      tone="purple"
+      hint="Archived or filled"
+    />
+  </div>
+
   <form class="glass-form" [formGroup]="jobForm" (ngSubmit)="saveJob()">
     <div class="field">
       <label for="job-title">
@@ -153,11 +180,16 @@
     </div>
   </form>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading jobs..." />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading jobs..."
+    variant="cards"
+    [count]="4"
+  />
 
   <div class="card-grid" *ngIf="!loading && jobs.length > 0">
     <app-job-card
-      *ngFor="let job of jobs"
+      *ngFor="let job of jobs; trackBy: trackByJob"
       [job]="job"
       (view)="openJob(job)"
       (edit)="editJob(job)"

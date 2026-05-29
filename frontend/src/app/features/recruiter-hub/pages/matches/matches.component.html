@@ -13,6 +13,33 @@
     </div>
   </header>
 
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="Open Jobs"
+      [value]="openJobsCount"
+      tone="blue"
+      hint="Available for AI matching"
+    />
+    <app-recruiter-stat-card
+      label="Candidate Pool"
+      [value]="candidates.length"
+      tone="cyan"
+      hint="Scoped profiles ready to rank"
+    />
+    <app-recruiter-stat-card
+      label="Shortlisted"
+      [value]="shortlistedCount"
+      tone="green"
+      hint="Converted from match results"
+    />
+    <app-recruiter-stat-card
+      label="Rejected"
+      [value]="rejectedCount"
+      tone="orange"
+      hint="Explicitly deprioritized"
+    />
+  </div>
+
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
@@ -30,19 +57,34 @@
       <label>Candidate pool</label>
       <div class="selection-chip">{{ selectedCandidateIds.size || 0 }} selected</div>
     </div>
-    <div class="form-actions">
-      <button type="button" class="ghost-btn" (click)="clearSelection()">Clear Selection</button>
-      <button type="button" class="primary-btn" [disabled]="!selectedJobId" (click)="runMatches()">
-        Generate Matches
-      </button>
+    <div class="field field--actions">
+      <label>Pipeline actions</label>
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" (click)="clearSelection()">Clear Selection</button>
+        <button
+          type="button"
+          class="primary-btn"
+          [disabled]="!selectedJobId || generating"
+          (click)="runMatches()"
+        >
+          {{ generating ? 'Generating...' : 'Generate Matches' }}
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="candidate-picker" *ngIf="candidates.length > 0">
+  <app-recruiter-loader
+    *ngIf="candidatesLoading"
+    label="Loading candidate pool..."
+    variant="pills"
+    [count]="8"
+  />
+
+  <div class="candidate-picker" *ngIf="!candidatesLoading && candidates.length > 0">
     <button
       type="button"
       class="candidate-pill"
-      *ngFor="let candidate of candidates"
+      *ngFor="let candidate of candidates; trackBy: trackByItem"
       [class.candidate-pill--active]="isCandidateSelected(candidate)"
       (click)="toggleCandidate(candidate)"
     >
@@ -54,19 +96,26 @@
     </button>
   </div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading matches..." />
+  <app-recruiter-loader
+    *ngIf="matchesLoading"
+    label="Loading matches..."
+    variant="cards"
+    [count]="3"
+  />
 
-  <div class="card-grid" *ngIf="!loading && matches.length > 0">
+  <div class="card-grid" *ngIf="!matchesLoading && matches.length > 0">
     <app-match-card
-      *ngFor="let match of matches"
+      *ngFor="let match of matches; trackBy: trackByItem"
       [match]="match"
       (shortlist)="shortlist(match)"
       (compare)="compare(match)"
+      (reject)="updateStatus(match, 'rejected')"
+      (reset)="updateStatus(match, 'generated')"
     />
   </div>
 
   <app-recruiter-empty-state
-    *ngIf="!loading && matches.length === 0"
+    *ngIf="!matchesLoading && matches.length === 0"
     title="No match results yet"
     message="Choose a job and run AI ranking to build live match results for your pipeline."
   />

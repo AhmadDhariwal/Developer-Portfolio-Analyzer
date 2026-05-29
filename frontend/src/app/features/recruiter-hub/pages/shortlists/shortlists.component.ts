@@ -37,6 +37,16 @@ export class ShortlistsComponent implements OnInit {
     this.loadShortlists();
   }
 
+  get activeCount(): number {
+    return this.shortlists.filter((item) => String(item?.status || '').toLowerCase() !== 'interview')
+      .length;
+  }
+
+  get interviewCount(): number {
+    return this.shortlists.filter((item) => String(item?.status || '').toLowerCase() === 'interview')
+      .length;
+  }
+
   loadShortlists(): void {
     this.loading = true;
     this.error = '';
@@ -129,5 +139,9 @@ export class ShortlistsComponent implements OnInit {
       message: '',
       confirmText: 'Confirm',
     });
+  }
+
+  trackByShortlist(index: number, item: any): string {
+    return String(item?._id || item?.candidateId || index);
   }
 }

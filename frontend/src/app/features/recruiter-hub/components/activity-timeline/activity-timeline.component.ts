@@ -19,4 +19,8 @@ export class ActivityTimelineComponent {
     if (!value) return 'Activity';
     return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
+
+  trackByItem(index: number, item: any): string {
+    return String(item?._id || item?.id || item?.timestamp || index);
+  }
 }

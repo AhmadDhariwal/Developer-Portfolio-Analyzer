@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
+import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
 @Component({
@@ -31,6 +32,7 @@ export class CandidatesComponent implements OnInit {
 
   constructor(
     private readonly candidateService: CandidateService,
+    private readonly hubService: RecruiterHubService,
     private readonly matchService: RecruiterMatchService,
     private readonly router: Router,
   ) {}
@@ -41,6 +43,20 @@ export class CandidatesComponent implements OnInit {
 
   get compareCount(): number {
     return this.compareIds.size;
+  }
+
+  get highReadinessCount(): number {
+    return this.candidates.filter((candidate) =>
+      Number(candidate?.readinessScore || candidate?.score || 0) >= 80,
+    ).length;
+  }
+
+  get remoteCount(): number {
+    return this.candidates.filter((candidate) =>
+      String(candidate?.location || '')
+        .toLowerCase()
+        .includes('remote'),
+    ).length;
   }
 
   get visiblePages(): number[] {
@@ -113,6 +129,8 @@ export class CandidatesComponent implements OnInit {
     this.matchService.addToShortlist({ candidateId }).subscribe({
       next: () => {
         this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
+        this.error = '';
+        this.hubService.clearCache();
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to shortlist this candidate.';
@@ -151,5 +169,9 @@ export class CandidatesComponent implements OnInit {
 
   private getCandidateId(candidate: any): string {
     return String(candidate?.id || candidate?.userId || '').trim();
+  }
+
+  trackByCandidate(index: number, candidate: any): string {
+    return String(candidate?.id || candidate?.userId || candidate?._id || index);
   }
 }

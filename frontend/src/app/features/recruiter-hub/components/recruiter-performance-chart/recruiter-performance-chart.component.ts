@@ -105,9 +105,18 @@ export class RecruiterPerformanceChartComponent {
   }
 
   widthFor(value: number): number {
+    if (Number(value || 0) <= 0) return 0;
     const max = this.maxValue();
     const ratio = max > 0 ? Number(value || 0) / max : 0;
     return Math.max(8, Math.round(Math.max(0, ratio) * 100));
+  }
+
+  trackByItem(index: number, item: any): string {
+    return String(item?.label || item?.date || index);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   private maxValue(): number {

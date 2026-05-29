@@ -66,6 +66,11 @@ h1 {
   border: 1px solid rgba(52, 211, 153, 0.2);
   color: #bbf7d0;
 }
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.95rem;
+}
 .glass-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -80,6 +85,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+}
+.field--actions {
+  align-self: stretch;
 }
 label {
   font-size: 0.72rem;
@@ -101,9 +109,10 @@ label {
 .form-actions {
   display: flex;
   gap: 0.75rem;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: flex-end;
   flex-wrap: wrap;
+  min-height: 44px;
 }
 .primary-btn,
 .ghost-btn {
@@ -156,4 +165,20 @@ label {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1rem;
+}
+@media (max-width: 780px) {
+  .metric-grid,
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+  .field--actions {
+    grid-column: 1/-1;
+  }
+  .form-actions {
+    justify-content: stretch;
+  }
+  .form-actions .ghost-btn,
+  .form-actions .primary-btn {
+    flex: 1 1 100%;
+  }
 }

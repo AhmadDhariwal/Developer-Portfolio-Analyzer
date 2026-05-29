@@ -11,8 +11,7 @@ export const superAdminGuard: CanActivateFn = (route, state) => {
     map((user) => {
       const role = String(user?.role || '').toLowerCase();
       if (role === 'super_admin' || role === 'superadmin') return true;
-      // If not super admin, redirect to standard dashboard
-      router.navigate(['/app/dashboard']);
+      router.navigateByUrl(auth.getHomeRoute(user));
       return false;
     })
   );

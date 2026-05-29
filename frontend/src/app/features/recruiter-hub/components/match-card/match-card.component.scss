@@ -145,6 +145,12 @@ p {
   transform: translateY(-1px);
   filter: brightness(1.07);
 }
+.match-card__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  filter: none;
+}
 .match-card__btn--ghost {
   background: rgba(30, 41, 59, 0.92);
   color: #e2e8f0;

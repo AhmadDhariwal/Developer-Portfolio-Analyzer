@@ -10,14 +10,40 @@
     </div>
   </header>
 
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="Shortlisted"
+      [value]="shortlists.length"
+      tone="blue"
+      hint="Candidates in your pipeline"
+    />
+    <app-recruiter-stat-card
+      label="Active Follow-up"
+      [value]="activeCount"
+      tone="cyan"
+      hint="Still moving through stages"
+    />
+    <app-recruiter-stat-card
+      label="Interviews"
+      [value]="interviewCount"
+      tone="green"
+      hint="Reached interview stage"
+    />
+  </div>
+
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading shortlists..." />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading shortlists..."
+    variant="cards"
+    [count]="3"
+  />
 
   <div class="card-grid" *ngIf="!loading && shortlists.length > 0">
     <app-shortlist-card
-      *ngFor="let item of shortlists"
+      *ngFor="let item of shortlists; trackBy: trackByShortlist"
       [item]="item"
       (edit)="advance(item)"
       (remove)="remove(item)"

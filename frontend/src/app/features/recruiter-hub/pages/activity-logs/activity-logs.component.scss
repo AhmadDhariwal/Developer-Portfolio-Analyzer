@@ -32,6 +32,11 @@
   color: #94a3b8;
   max-width: 760px;
 }
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.95rem;
+}
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -67,4 +72,9 @@ button {
   background: rgba(127, 29, 29, 0.45);
   border: 1px solid rgba(248, 113, 113, 0.24);
   color: #fecaca;
+}
+@media (max-width: 780px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
 }

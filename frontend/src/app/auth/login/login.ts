@@ -1,6 +1,6 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
@@ -25,6 +25,7 @@ export class Login {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -60,11 +61,12 @@ export class Login {
     this.authService.login({ email: this.email.trim(), password: this.password }).subscribe({
       next: () => {
         this.isLoading = false;
-        // Redirect based on role: super_admin to the new console, others to app dashboard
         const current = this.authService.getCurrentUser();
-        const role = String(current?.role || '').toLowerCase();
-        const target = (role === 'super_admin' || role === 'superadmin') ? '/super-admin' : '/app/dashboard';
-        this.router.navigate([target]);
+        const returnUrl = String(this.route.snapshot.queryParamMap.get('returnUrl') || '').trim();
+        const target = this.authService.canAccessUrl(returnUrl, current)
+          ? returnUrl
+          : this.authService.getHomeRoute(current);
+        this.router.navigateByUrl(target);
       },
       error: (err) => {
         this.isLoading = false;

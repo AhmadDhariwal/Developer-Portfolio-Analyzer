@@ -8,10 +8,23 @@
   </header>
 
   <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <app-recruiter-loader *ngIf="loading" label="Loading recruiter analytics..." />
 
-  <ng-container *ngIf="!loading && analytics">
-    <div class="metric-grid">
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>KPI Overview</h2>
+        <p>Summary cards render as soon as analytics data arrives.</p>
+      </div>
+    </div>
+
+    <app-recruiter-loader
+      *ngIf="loading && !metricsReady"
+      label="Loading analytics summary..."
+      variant="stats"
+      [count]="6"
+    />
+
+    <div class="metric-grid" *ngIf="metricsReady">
       <app-recruiter-stat-card
         label="Viewed"
         [value]="analytics.metrics.candidatesViewed"
@@ -49,8 +62,83 @@
         hint="Weekly recruiter velocity"
       />
     </div>
+  </section>
 
-    <div class="content-grid">
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>Executive Snapshot</h2>
+        <p>Highlights and pipeline totals now show immediately with the analytics response.</p>
+      </div>
+    </div>
+
+    <app-recruiter-loader
+      *ngIf="loading && !highlightsReady"
+      label="Loading analytics highlights..."
+      variant="table"
+      [count]="4"
+    />
+
+    <div class="split-grid" *ngIf="highlightsReady">
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Top Performing Jobs</h2>
+          <span>{{ topJobs.length }} tracked</span>
+        </div>
+        <div class="job-rank-list" *ngIf="topJobs.length; else noTopJobs">
+          <div class="job-rank-list__item" *ngFor="let job of topJobs; let index = index; trackBy: trackByItem">
+            <strong>#{{ index + 1 }} {{ job.label || job.name || 'Untitled job' }}</strong>
+            <span>{{ job.count || 0 }} activity signals</span>
+          </div>
+        </div>
+        <ng-template #noTopJobs>
+          <p class="empty">No job performance data yet.</p>
+        </ng-template>
+      </article>
+
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Weekly / Monthly Snapshot</h2>
+          <span>Live metrics</span>
+        </div>
+        <div class="snapshot-grid">
+          <div>
+            <label>Weekly Matches</label>
+            <strong>{{ totalFor(analytics.charts.matchGenerationTrend) }}</strong>
+          </div>
+          <div>
+            <label>Weekly Candidate Activity</label>
+            <strong>{{ totalFor(analytics.charts.candidateActivityTrend) }}</strong>
+          </div>
+          <div>
+            <label>AI Actions</label>
+            <strong>{{ totalFor(analytics.charts.aiUsageGraph) }}</strong>
+          </div>
+          <div>
+            <label>Open Jobs</label>
+            <strong>{{ analytics.metrics.openJobs || 0 }}</strong>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-shell">
+    <div class="section-head">
+      <div>
+        <h2>Trend Analysis</h2>
+        <p>Full-width visual sections bind directly to the loaded API data without needing any extra interaction.</p>
+      </div>
+    </div>
+
+    <app-recruiter-loader
+      *ngIf="loading && !chartsReady"
+      label="Loading analytics charts..."
+      variant="charts"
+      [count]="4"
+    />
+
+    <div class="content-grid content-grid--wide" *ngIf="chartsReady">
       <app-recruiter-performance-chart
         title="Recruiter Activity Trend"
         tone="blue"
@@ -98,48 +186,5 @@
         [items]="successGaugeItems"
       />
     </div>
-
-    <div class="split-grid">
-      <article class="panel">
-        <div class="panel__head">
-          <h2>Top Performing Jobs</h2>
-          <span>{{ topJobs.length }} tracked</span>
-        </div>
-        <div class="job-rank-list" *ngIf="topJobs.length; else noTopJobs">
-          <div class="job-rank-list__item" *ngFor="let job of topJobs; let index = index">
-            <strong>#{{ index + 1 }} {{ job.label || job.name || 'Untitled job' }}</strong>
-            <span>{{ job.count || 0 }} activity signals</span>
-          </div>
-        </div>
-        <ng-template #noTopJobs>
-          <p class="empty">No job performance data yet.</p>
-        </ng-template>
-      </article>
-
-      <article class="panel">
-        <div class="panel__head">
-          <h2>Weekly / Monthly Snapshot</h2>
-          <span>Live metrics</span>
-        </div>
-        <div class="snapshot-grid">
-          <div>
-            <label>Weekly Matches</label>
-            <strong>{{ totalFor(analytics.charts.matchGenerationTrend) }}</strong>
-          </div>
-          <div>
-            <label>Weekly Candidate Activity</label>
-            <strong>{{ totalFor(analytics.charts.candidateActivityTrend) }}</strong>
-          </div>
-          <div>
-            <label>AI Actions</label>
-            <strong>{{ totalFor(analytics.charts.aiUsageGraph) }}</strong>
-          </div>
-          <div>
-            <label>Open Jobs</label>
-            <strong>{{ analytics.metrics.openJobs || 0 }}</strong>
-          </div>
-        </div>
-      </article>
-    </div>
-  </ng-container>
+  </section>
 </section>

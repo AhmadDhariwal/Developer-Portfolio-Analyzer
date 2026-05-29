@@ -68,6 +68,18 @@ export class JobsComponent implements OnInit {
     return this.saving || this.jobForm.invalid;
   }
 
+  get openJobsCount(): number {
+    return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'open').length;
+  }
+
+  get draftJobsCount(): number {
+    return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'draft').length;
+  }
+
+  get closedJobsCount(): number {
+    return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'closed').length;
+  }
+
   loadJobs(): void {
     this.loading = true;
     this.error = '';
@@ -324,5 +336,9 @@ export class JobsComponent implements OnInit {
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
+  }
+
+  trackByJob(index: number, job: any): string {
+    return String(job?._id || index);
   }
 }

@@ -1,11 +1,65 @@
-<div class="loader">
-  <span class="loader__spinner"></span>
-  <div class="loader__content">
+<div class="loader" [class]="'loader loader--' + variant" role="status" aria-live="polite">
+  <div class="loader__label">
+    <span class="loader__pulse"></span>
     <p>{{ label }}</p>
-    <div class="loader__skeleton">
-      <i></i>
-      <i></i>
-      <i></i>
-    </div>
   </div>
+
+  <ng-container [ngSwitch]="variant">
+    <div class="loader__stats" *ngSwitchCase="'stats'">
+      <article class="loader__card" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="loader__line loader__line--sm"></i>
+        <i class="loader__line loader__line--lg"></i>
+        <i class="loader__line loader__line--md"></i>
+      </article>
+    </div>
+
+    <div class="loader__grid" *ngSwitchCase="'charts'">
+      <article class="loader__panel loader__panel--chart" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="loader__line loader__line--md"></i>
+        <div class="loader__chart-bars">
+          <span *ngFor="let bar of [0, 1, 2, 3, 4, 5]; trackBy: trackByIndex"></span>
+        </div>
+      </article>
+    </div>
+
+    <div class="loader__pills" *ngSwitchCase="'pills'">
+      <i class="loader__pill" *ngFor="let item of items; trackBy: trackByIndex"></i>
+    </div>
+
+    <div class="loader__table" *ngSwitchCase="'table'">
+      <article class="loader__table-card">
+        <div class="loader__table-head">
+          <i class="loader__line loader__line--md"></i>
+          <i class="loader__line loader__line--sm"></i>
+        </div>
+        <div class="loader__table-row" *ngFor="let item of items; trackBy: trackByIndex">
+          <i class="loader__avatar"></i>
+          <div class="loader__table-copy">
+            <i class="loader__line loader__line--md"></i>
+            <i class="loader__line loader__line--sm"></i>
+          </div>
+          <i class="loader__badge"></i>
+        </div>
+      </article>
+    </div>
+
+    <div class="loader__timeline" *ngSwitchCase="'timeline'">
+      <article class="loader__timeline-item" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="loader__dot"></i>
+        <div class="loader__timeline-copy">
+          <i class="loader__line loader__line--md"></i>
+          <i class="loader__line loader__line--lg"></i>
+          <i class="loader__line loader__line--sm"></i>
+        </div>
+      </article>
+    </div>
+
+    <div class="loader__grid" *ngSwitchDefault>
+      <article class="loader__panel" *ngFor="let item of items; trackBy: trackByIndex">
+        <i class="loader__line loader__line--md"></i>
+        <i class="loader__line loader__line--lg"></i>
+        <i class="loader__line loader__line--sm"></i>
+      </article>
+    </div>
+  </ng-container>
 </div>

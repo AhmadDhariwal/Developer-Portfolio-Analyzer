@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchableSelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { CandidateService } from '../../services/candidate.service';
+import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -12,7 +13,10 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   styleUrl: './matches.component.scss',
 })
 export class MatchesComponent implements OnInit {
-  loading = true;
+  jobsLoading = true;
+  candidatesLoading = true;
+  matchesLoading = true;
+  generating = false;
   error = '';
   notice = '';
   jobs: any[] = [];
@@ -25,6 +29,7 @@ export class MatchesComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly hubService: RecruiterHubService,
     private readonly jobService: RecruiterJobService,
     private readonly candidateService: CandidateService,
     private readonly matchService: RecruiterMatchService,
@@ -36,47 +41,78 @@ export class MatchesComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedJobId = this.route.snapshot.queryParamMap.get('jobId') || '';
-    this.loadReferenceData();
+    this.loadJobs();
+    this.loadCandidates();
   }
 
-  loadReferenceData(): void {
-    this.loading = true;
-    this.error = '';
-    Promise.all([
-      new Promise<void>((resolve) => {
-        this.jobService.listJobs().subscribe({
-          next: (response) => {
-            this.jobs = response?.jobs || [];
-            resolve();
-          },
-          error: () => resolve(),
-        });
-      }),
-      new Promise<void>((resolve) => {
-        this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).subscribe({
-          next: (response) => {
-            this.candidates = response?.candidates || [];
-            resolve();
-          },
-          error: () => resolve(),
-        });
-      }),
-    ]).then(() => this.loadMatches());
+  get openJobsCount(): number {
+    return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'open').length;
+  }
+
+  get shortlistedCount(): number {
+    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'shortlisted')
+      .length;
+  }
+
+  get rejectedCount(): number {
+    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'rejected')
+      .length;
+  }
+
+  loadJobs(): void {
+    this.jobsLoading = true;
+    this.jobService.listJobs().subscribe({
+      next: (response) => {
+        this.jobs = response?.jobs || [];
+        if (!this.selectedJobId && this.jobs.length) {
+          const preferredJob =
+            this.jobs.find((job) => String(job?.status || '').toLowerCase() === 'open') ||
+            this.jobs.find((job) => String(job?.status || '').toLowerCase() === 'draft') ||
+            this.jobs[0];
+          this.selectedJobId = String(preferredJob?._id || '');
+        }
+        this.jobsLoading = false;
+        this.loadMatches();
+      },
+      error: (err) => {
+        this.jobs = [];
+        this.jobsLoading = false;
+        this.error = err?.error?.message || 'Unable to load jobs. Existing matches may still be available.';
+        this.loadMatches();
+      },
+    });
+  }
+
+  loadCandidates(): void {
+    this.candidatesLoading = true;
+    this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).subscribe({
+      next: (response) => {
+        this.candidates = response?.candidates || [];
+        this.candidatesLoading = false;
+      },
+      error: (err) => {
+        this.candidates = [];
+        this.candidatesLoading = false;
+        this.error =
+          this.error || err?.error?.message || 'Unable to load candidate suggestions right now.';
+      },
+    });
   }
 
   loadMatches(): void {
-    this.loading = true;
+    this.matchesLoading = true;
     this.matchService
       .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
       .subscribe({
         next: (response) => {
           this.matches = response?.matches || [];
-          this.loading = false;
+          this.error = '';
+          this.matchesLoading = false;
         },
         error: (err) => {
           this.matches = [];
           this.error = err?.error?.message || 'Unable to load match results.';
-          this.loading = false;
+          this.matchesLoading = false;
         },
       });
   }
@@ -107,7 +143,8 @@ export class MatchesComponent implements OnInit {
 
   runMatches(): void {
     if (!this.selectedJobId) return;
-    this.loading = true;
+    this.generating = true;
+    this.matchesLoading = true;
     this.error = '';
     this.notice = '';
     const candidateIds = Array.from(this.selectedCandidateIds);
@@ -120,11 +157,14 @@ export class MatchesComponent implements OnInit {
         next: (response) => {
           this.matches = response?.matches || [];
           this.notice = `Generated ${this.matches.length} match results.`;
-          this.loading = false;
+          this.hubService.clearCache();
+          this.generating = false;
+          this.matchesLoading = false;
         },
         error: (err) => {
           this.error = err?.error?.message || 'Unable to generate matches.';
-          this.loading = false;
+          this.generating = false;
+          this.matchesLoading = false;
         },
       });
   }
@@ -138,14 +178,37 @@ export class MatchesComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notice = `${match?.candidate?.name || 'Candidate'} added to shortlist.`;
+          this.error = '';
           this.matches = this.matches.map((entry) =>
             entry === match ? { ...entry, status: 'shortlisted', shortlisted: true } : entry,
           );
+          this.hubService.clearCache();
         },
         error: (err) => {
           this.error = err?.error?.message || 'Unable to shortlist this match.';
         },
       });
+  }
+
+  updateStatus(match: any, status: 'generated' | 'rejected'): void {
+    const matchId = String(match?._id || '').trim();
+    if (!matchId) return;
+
+    this.notice = '';
+    this.error = '';
+    this.matchService.updateMatchStatus(matchId, status).subscribe({
+      next: (response) => {
+        const nextMatch = response?.match || { ...match, status };
+        this.matches = this.matches.map((entry) =>
+          String(entry?._id || '') === matchId ? { ...entry, ...nextMatch } : entry,
+        );
+        this.notice = status === 'rejected' ? 'Match marked as rejected.' : 'Match reset to generated.';
+        this.hubService.clearCache();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Unable to update this match status.';
+      },
+    });
   }
 
   compare(match: any): void {
@@ -172,5 +235,11 @@ export class MatchesComponent implements OnInit {
 
   private getCandidateId(candidate: any): string {
     return String(candidate?.id || candidate?.userId || '').trim();
+  }
+
+  trackByItem(index: number, item: any): string {
+    return String(
+      item?._id || item?.id || item?.candidateId || item?.jobId || item?.userId || index,
+    );
   }
 }

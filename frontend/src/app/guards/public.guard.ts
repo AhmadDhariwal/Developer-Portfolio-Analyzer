@@ -11,11 +11,9 @@ export const publicGuard: CanActivateFn = () => {
     take(1),
     map((isLoggedIn) => {
       if (isLoggedIn) {
-        // If already logged in, redirect to dashboard
-        router.navigate(['/app/dashboard']);
+        router.navigateByUrl(authService.getHomeRoute());
         return false;
       } else {
-        // Allow access to login/signup pages
         return true;
       }
     })

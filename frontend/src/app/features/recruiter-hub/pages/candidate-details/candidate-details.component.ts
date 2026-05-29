@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
+import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
 @Component({
@@ -19,6 +20,7 @@ export class CandidateDetailsComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly candidateService: CandidateService,
+    private readonly hubService: RecruiterHubService,
     private readonly matchService: RecruiterMatchService,
   ) {}
 
@@ -69,6 +71,8 @@ export class CandidateDetailsComponent implements OnInit {
     this.matchService.addToShortlist({ candidateId }).subscribe({
       next: () => {
         this.notice = `${this.candidate?.name || 'Candidate'} added to shortlist.`;
+        this.error = '';
+        this.hubService.clearCache();
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to shortlist this candidate.';

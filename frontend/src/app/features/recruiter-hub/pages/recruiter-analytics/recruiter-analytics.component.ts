@@ -10,14 +10,30 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
 export class RecruiterAnalyticsComponent implements OnInit {
   loading = true;
   error = '';
+  metricsReady = false;
+  highlightsReady = false;
+  chartsReady = false;
   analytics: any = this.defaultAnalytics();
 
   constructor(private readonly hubService: RecruiterHubService) {}
 
   ngOnInit(): void {
+    this.loadAnalytics();
+  }
+
+  loadAnalytics(): void {
+    this.loading = true;
+    this.error = '';
+    this.metricsReady = false;
+    this.highlightsReady = false;
+    this.chartsReady = false;
+
     this.hubService.getAnalytics().subscribe({
       next: (analytics) => {
         this.analytics = this.normalizeAnalytics(analytics);
+        this.metricsReady = true;
+        this.highlightsReady = true;
+        this.chartsReady = true;
         this.loading = false;
       },
       error: (err) => {
@@ -55,6 +71,10 @@ export class RecruiterAnalyticsComponent implements OnInit {
       const value = Number(item?.count ?? item?.value ?? 0);
       return sum + (Number.isFinite(value) ? value : 0);
     }, 0);
+  }
+
+  trackByItem(index: number, item: any): string {
+    return String(item?._id || item?.id || item?.label || item?.name || item?.date || index);
   }
 
   private normalizeAnalytics(response: any): any {

@@ -3,6 +3,30 @@ const RecruiterMatch = require('../../models/RecruiterMatch');
 const { getRecruiterCandidateDetails } = require('./candidateService');
 const { getRecruiterJobDetails } = require('./recruiterJobService');
 
+const SHORTLIST_STATUSES = new Set(['shortlisted', 'reviewing', 'contacted', 'interview', 'rejected']);
+
+const normalizeStatus = (value, fallback = 'shortlisted') => {
+  const status = String(value || fallback).trim().toLowerCase();
+  if (!SHORTLIST_STATUSES.has(status)) {
+    const error = new Error('Shortlist status is invalid.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return status;
+};
+
+const hydrateShortlist = async ({ recruiterId, organizationId, item }) => {
+  if (!item) return null;
+
+  return {
+    ...item,
+    candidate: await getRecruiterCandidateDetails(item.candidateId, organizationId),
+    job: item.jobId
+      ? await getRecruiterJobDetails({ recruiterId, organizationId, jobId: item.jobId })
+      : null
+  };
+};
+
 const addToShortlist = async ({ recruiterId, organizationId, teamIds = [], payload = {} }) => {
   const candidateId = String(payload.candidateId || '').trim();
   const jobId = String(payload.jobId || '').trim() || null;
@@ -39,7 +63,7 @@ const addToShortlist = async ({ recruiterId, organizationId, teamIds = [], paylo
       $set: {
         teamId: teamIds[0] || null,
         notes: String(payload.notes || '').trim(),
-        status: String(payload.status || 'shortlisted').trim()
+        status: normalizeStatus(payload.status, 'shortlisted')
       }
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -64,30 +88,55 @@ const listShortlists = async ({ recruiterId, organizationId, query = {} }) => {
     .sort({ updatedAt: -1 })
     .lean();
 
-  const hydrated = await Promise.all(items.map(async (item) => ({
-    ...item,
-    candidate: await getRecruiterCandidateDetails(item.candidateId, organizationId),
-    job: item.jobId ? await getRecruiterJobDetails({ recruiterId, organizationId, jobId: item.jobId }) : null
-  })));
+  const hydrated = await Promise.all(
+    items.map((item) => hydrateShortlist({ recruiterId, organizationId, item })),
+  );
 
   return hydrated;
 };
 
 const updateShortlist = async ({ recruiterId, organizationId, shortlistId, payload = {} }) => {
-  return RecruiterShortlist.findOneAndUpdate(
+  const update = {};
+
+  if (payload.notes !== undefined) {
+    update.notes = String(payload.notes || '').trim();
+  }
+
+  if (payload.status !== undefined) {
+    update.status = normalizeStatus(payload.status, 'shortlisted');
+  }
+
+  const shortlist = await RecruiterShortlist.findOneAndUpdate(
     { _id: shortlistId, recruiterId, organizationId },
-    {
-      $set: {
-        notes: payload.notes !== undefined ? String(payload.notes || '').trim() : undefined,
-        status: payload.status !== undefined ? String(payload.status || 'shortlisted').trim() : undefined
-      }
-    },
-    { new: true }
+    Object.keys(update).length > 0 ? { $set: update } : {},
+    { new: true, runValidators: true }
   ).lean();
+
+  if (!shortlist) return null;
+
+  if (shortlist.jobId) {
+    const nextMatchStatus = shortlist.status === 'rejected' ? 'rejected' : 'shortlisted';
+    await RecruiterMatch.updateMany(
+      { recruiterId, organizationId, candidateId: shortlist.candidateId, jobId: shortlist.jobId },
+      { $set: { status: nextMatchStatus } }
+    );
+  }
+
+  return hydrateShortlist({ recruiterId, organizationId, item: shortlist });
 };
 
 const removeShortlist = async ({ recruiterId, organizationId, shortlistId }) => {
-  return RecruiterShortlist.findOneAndDelete({ _id: shortlistId, recruiterId, organizationId }).lean();
+  const shortlist = await RecruiterShortlist.findOneAndDelete({ _id: shortlistId, recruiterId, organizationId }).lean();
+  if (!shortlist) return null;
+
+  if (shortlist.jobId) {
+    await RecruiterMatch.updateMany(
+      { recruiterId, organizationId, candidateId: shortlist.candidateId, jobId: shortlist.jobId },
+      { $set: { status: 'generated' } }
+    );
+  }
+
+  return shortlist;
 };
 
 module.exports = {

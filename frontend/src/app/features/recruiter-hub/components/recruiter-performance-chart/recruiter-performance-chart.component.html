@@ -7,10 +7,13 @@
   <ng-container *ngIf="items.length; else emptyBlock">
     <ng-container [ngSwitch]="resolvedMode">
       <div class="chart-row chart-row--heatmap" *ngSwitchCase="'heatmap'">
-        <div class="heat-row" *ngFor="let item of items">
+        <div class="heat-row" *ngFor="let item of items; trackBy: trackByItem">
           <span>{{ item.label || item.date || '-' }}</span>
           <div class="heat-row__cells">
-            <i *ngFor="let level of heatCellsFor(item)" [style.opacity]="level"></i>
+            <i
+              *ngFor="let level of heatCellsFor(item); trackBy: trackByIndex"
+              [style.opacity]="level"
+            ></i>
           </div>
           <strong>{{ numericValue(item) }}</strong>
         </div>
@@ -24,7 +27,7 @@
           </div>
         </div>
         <div class="legend-list">
-          <div class="legend-item" *ngFor="let item of donutItems; let index = index">
+          <div class="legend-item" *ngFor="let item of donutItems; let index = index; trackBy: trackByItem">
             <span class="legend-dot" [style.background]="legendColor(index)"></span>
             <span class="legend-label">{{ item.label || item.date || '-' }}</span>
             <strong>{{ numericValue(item) }}</strong>
@@ -42,7 +45,7 @@
       </div>
 
       <ng-container *ngSwitchDefault>
-        <div class="chart-row" *ngFor="let item of items; let index = index">
+        <div class="chart-row" *ngFor="let item of items; let index = index; trackBy: trackByItem">
           <span class="chart-row__label">{{ item.label || item.date || '-' }}</span>
 
           <ng-container *ngIf="isDual(item); else singleSeries">

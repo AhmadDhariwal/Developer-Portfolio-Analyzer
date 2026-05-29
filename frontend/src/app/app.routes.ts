@@ -54,6 +54,10 @@ export const routes: Routes = [
   { path: 'news', redirectTo: 'app/news', pathMatch: 'full' },
   { path: 'landing', redirectTo: '', pathMatch: 'full' },
   { path: 'app/recruiter-dashboard', redirectTo: 'app/recruiter', pathMatch: 'full' },
+  { path: 'app/admin-console', redirectTo: 'app/admin-console/overview', pathMatch: 'full' },
+  { path: 'app/admin-console/overview', redirectTo: 'app/admin/dashboard', pathMatch: 'full' },
+  { path: 'app/super-admin', redirectTo: 'app/super-admin/dashboard', pathMatch: 'full' },
+  { path: 'app/super-admin/dashboard', redirectTo: 'super-admin/dashboard', pathMatch: 'full' },
 
   // Auth pages (only when NOT logged in)
   { path: 'auth/login',            component: Login,                    canActivate: [publicGuard] },
@@ -100,7 +104,12 @@ export const routes: Routes = [
 
       // Org Admin Console — now lives inside /app/admin/console
       { path: 'admin-console', redirectTo: 'admin/console', pathMatch: 'full' },
+      { path: 'admin-console/overview', redirectTo: 'admin/dashboard', pathMatch: 'full' },
       { path: 'admin-console/performance-statistics', redirectTo: 'admin/console/performance-statistics', pathMatch: 'full' },
+
+      // Super Admin aliases under /app to preserve role-based landing URLs
+      { path: 'super-admin', redirectTo: '/super-admin/dashboard', pathMatch: 'full' },
+      { path: 'super-admin/dashboard', redirectTo: '/super-admin/dashboard', pathMatch: 'full' },
 
       // Admin hiring workspace
       {

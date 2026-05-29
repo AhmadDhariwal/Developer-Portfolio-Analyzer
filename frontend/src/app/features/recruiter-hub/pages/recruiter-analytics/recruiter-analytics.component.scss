@@ -43,6 +43,27 @@
   border: 1px solid rgba(248, 113, 113, 0.24);
   color: #fecaca;
 }
+.section-shell {
+  display: grid;
+  gap: 0.9rem;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+.section-head h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.12rem;
+}
+.section-head p {
+  margin: 0.28rem 0 0;
+  color: #94a3b8;
+  max-width: 760px;
+}
 .metric-grid,
 .content-grid,
 .split-grid {
@@ -52,6 +73,9 @@
 }
 .content-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.content-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 .split-grid {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -134,6 +158,9 @@
 @media (max-width: 780px) {
   .hero h1 {
     font-size: 1.58rem;
+  }
+  .section-head {
+    align-items: flex-start;
   }
   .split-grid {
     grid-template-columns: 1fr;

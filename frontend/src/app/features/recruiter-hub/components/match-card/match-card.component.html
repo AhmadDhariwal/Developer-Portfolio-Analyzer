@@ -37,13 +37,31 @@
   </div>
 
   <div class="match-card__actions" *ngIf="!hideActions">
-    <button type="button" class="match-card__btn" (click)="shortlist.emit(match)">Shortlist</button>
+    <button type="button" class="match-card__btn" [disabled]="isShortlisted" (click)="shortlist.emit(match)">
+      {{ isShortlisted ? 'Shortlisted' : 'Shortlist' }}
+    </button>
     <button
       type="button"
       class="match-card__btn match-card__btn--ghost"
       (click)="compare.emit(match)"
     >
       Compare
+    </button>
+    <button
+      type="button"
+      class="match-card__btn match-card__btn--ghost"
+      *ngIf="!isRejected"
+      (click)="reject.emit(match)"
+    >
+      Reject
+    </button>
+    <button
+      type="button"
+      class="match-card__btn match-card__btn--ghost"
+      *ngIf="isRejected"
+      (click)="reset.emit(match)"
+    >
+      Reset
     </button>
   </div>
 </article>

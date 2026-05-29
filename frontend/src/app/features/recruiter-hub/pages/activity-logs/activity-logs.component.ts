@@ -22,6 +22,14 @@ export class RecruiterActivityLogsComponent implements OnInit {
     this.loadActivity();
   }
 
+  get shortlistActions(): number {
+    return this.logs.filter((item) => String(item?.action || '').includes('SHORTLIST')).length;
+  }
+
+  get aiActions(): number {
+    return this.logs.filter((item) => String(item?.action || '').includes('AI')).length;
+  }
+
   loadActivity(): void {
     this.loading = true;
     this.error = '';
@@ -48,5 +56,9 @@ export class RecruiterActivityLogsComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  trackByLog(index: number, item: any): string {
+    return String(item?._id || item?.id || item?.timestamp || index);
   }
 }

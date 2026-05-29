@@ -5,6 +5,8 @@ const { listCandidates } = require('../recruiter/matchingService');
 const { generateMatches } = require('../../utils/recruiter-hub/matchCalculator');
 const { getRecruiterCandidateDetails } = require('./candidateService');
 
+const MATCH_STATUSES = new Set(['generated', 'shortlisted', 'rejected']);
+
 const mapJobSummary = (job = {}) => ({
   _id: String(job?._id || ''),
   title: String(job?.title || ''),
@@ -161,10 +163,17 @@ const getRecruiterMatchDetails = async ({ recruiterId, organizationId, matchId }
 };
 
 const updateMatchStatus = async ({ recruiterId, organizationId, matchId, status }) => {
+  const normalizedStatus = String(status || 'generated').trim().toLowerCase();
+  if (!MATCH_STATUSES.has(normalizedStatus)) {
+    const error = new Error('Match status is invalid.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const match = await RecruiterMatch.findOneAndUpdate(
     { _id: matchId, recruiterId, organizationId },
-    { $set: { status } },
-    { new: true }
+    { $set: { status: normalizedStatus } },
+    { new: true, runValidators: true }
   ).lean();
   if (!match) return null;
 

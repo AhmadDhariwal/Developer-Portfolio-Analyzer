@@ -10,6 +10,27 @@
     </div>
   </header>
 
+  <div class="metric-grid">
+    <app-recruiter-stat-card
+      label="Activity Events"
+      [value]="logs.length"
+      tone="blue"
+      hint="Visible recruiter-scoped records"
+    />
+    <app-recruiter-stat-card
+      label="Shortlist Actions"
+      [value]="shortlistActions"
+      tone="green"
+      hint="Pipeline progression activity"
+    />
+    <app-recruiter-stat-card
+      label="AI Actions"
+      [value]="aiActions"
+      tone="purple"
+      hint="Analysis and ranking events"
+    />
+  </div>
+
   <div class="filter-bar">
     <app-searchable-select
       [options]="actionOptions"
@@ -35,7 +56,12 @@
   </div>
 
   <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <app-recruiter-loader *ngIf="loading" label="Loading recruiter activity..." />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading recruiter activity..."
+    variant="timeline"
+    [count]="4"
+  />
   <app-activity-timeline *ngIf="!loading && logs.length > 0" [items]="logs" />
   <app-recruiter-empty-state
     *ngIf="!loading && logs.length === 0"

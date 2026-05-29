@@ -3,6 +3,13 @@
   flex-direction: column;
   gap: 1rem;
 }
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
 .hub-kicker {
   display: inline-flex;
   margin-bottom: 0.45rem;
@@ -40,8 +47,22 @@ h1 {
   border: 1px solid rgba(52, 211, 153, 0.2);
   color: #bbf7d0;
 }
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.95rem;
+}
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1rem;
+}
+@media (max-width: 780px) {
+  .metric-grid,
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+  .hub-header h1 {
+    font-size: 1.6rem;
+  }
 }

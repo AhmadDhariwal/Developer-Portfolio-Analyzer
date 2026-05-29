@@ -27,6 +27,13 @@ export interface SessionUser {
 export type OtpType = 'email' | 'phone';
 export type OtpPurpose = 'signup' | 'forgot-password';
 
+const normalizeRole = (role: unknown): string => {
+  const value = String(role || '').trim().toLowerCase();
+  if (value === 'user' || value === 'guest') return 'developer';
+  if (value === 'super-admin' || value === 'superadmin') return 'super_admin';
+  return value;
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,6 +71,8 @@ export class AuthService {
             myRole: 'recruiter'
           });
         }
+      } else if (normalizeRole(user?.role) === 'super_admin') {
+        this.tenantContext.clearAll();
       }
     }
   }
@@ -218,7 +227,9 @@ export class AuthService {
     const orgId = String(response.organizationId || '');
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(orgId);
 
-    if (response.role === 'admin') {
+    if (normalizeRole(response.role) === 'super_admin') {
+      this.tenantContext.clearAll();
+    } else if (response.role === 'admin') {
       // Admin: use real org id if available, otherwise leave empty so the
       // backend resolves it from the Organization collection (avoids "local" cast error)
       this.tenantContext.setOrganization({
@@ -307,6 +318,7 @@ export class AuthService {
     }
     this.clearStorage();
     localStorage.removeItem(CAREER_PROFILE_STORAGE_KEY);
+    this.tenantContext.clearAll();
     this.isLoggedInSubject.next(false);
   }
 
@@ -341,5 +353,47 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return this.checkToken();
+  }
+
+  getHomeRoute(user: SessionUser | null = this.getCurrentUser()): string {
+    const role = normalizeRole(user?.role);
+
+    switch (role) {
+      case 'super_admin':
+        return '/app/super-admin/dashboard';
+      case 'admin':
+        return '/app/admin-console/overview';
+      case 'recruiter':
+        return '/app/recruiter/dashboard';
+      case 'developer':
+      default:
+        return '/app/dashboard';
+    }
+  }
+
+  canAccessUrl(url: string, user: SessionUser | null = this.getCurrentUser()): boolean {
+    const target = String(url || '').trim();
+    if (!target) return false;
+
+    const role = normalizeRole(user?.role);
+    if (role === 'super_admin') {
+      return target.startsWith('/super-admin') || target.startsWith('/app/super-admin');
+    }
+
+    if (role === 'admin') {
+      return target.startsWith('/app/admin') || target.startsWith('/app/admin-console');
+    }
+
+    if (role === 'recruiter') {
+      return target.startsWith('/app/recruiter');
+    }
+
+    return !(
+      target.startsWith('/app/recruiter') ||
+      target.startsWith('/app/admin') ||
+      target.startsWith('/app/admin-console') ||
+      target.startsWith('/super-admin') ||
+      target.startsWith('/app/super-admin')
+    );
   }
 }

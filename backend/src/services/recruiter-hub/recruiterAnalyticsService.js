@@ -152,6 +152,7 @@ const listRecruiterAnalytics = async (req) => {
   ]);
 
   const candidates = candidatesResponse?.candidates || [];
+  const totalCandidates = Number(candidatesResponse?.meta?.total || candidates.length || 0);
   const allDemandSkills = jobs.flatMap((job) => [...(job.requiredSkills || []), ...(job.preferredSkills || [])]);
 
   const recentMatches = await Promise.all(
@@ -180,7 +181,7 @@ const listRecruiterAnalytics = async (req) => {
 
   return {
     metrics: {
-      totalCandidates: candidates.length,
+      totalCandidates,
       avgCandidateScore: average(candidates.map((candidate) => candidate.readinessScore || candidate.score || 0)),
       openJobs: jobs.filter((job) => job.status === 'open').length,
       draftJobs: jobs.filter((job) => job.status === 'draft').length,
@@ -224,10 +225,17 @@ const listRecruiterAnalytics = async (req) => {
         .slice(0, 5)
         .map(mapJobSummary),
       recentMatches,
-      pendingFollowUps: shortlists
-        .filter((entry) => ['shortlisted', 'reviewing', 'contacted'].includes(String(entry.status || '')))
-        .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
-        .slice(0, 6),
+      pendingFollowUps: await Promise.all(
+        shortlists
+          .filter((entry) => ['shortlisted', 'reviewing', 'contacted'].includes(String(entry.status || '')))
+          .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
+          .slice(0, 6)
+          .map(async (entry) => ({
+            ...entry,
+            candidate: await getRecruiterCandidateDetails(entry.candidateId, organizationId),
+            job: entry.jobId ? mapJobSummary(jobs.find((job) => String(job._id) === String(entry.jobId)) || {}) : null
+          }))
+      ),
       topCandidates: [...candidates]
         .sort((left, right) => Number(right.readinessScore || right.score || 0) - Number(left.readinessScore || left.score || 0))
         .slice(0, 5)

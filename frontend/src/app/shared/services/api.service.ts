@@ -527,6 +527,10 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/recruiter-hub/matches/generate`, payload);
   }
 
+  updateRecruiterHubMatchStatus(id: string, payload: Record<string, unknown>): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/recruiter-hub/matches/${encodeURIComponent(id)}/status`, payload);
+  }
+
   getRecruiterHubShortlists(params: Record<string, string | number> = {}): Observable<any> {
     const query = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
