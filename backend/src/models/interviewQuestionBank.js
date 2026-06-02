@@ -76,13 +76,13 @@ const interviewQuestionBankSchema = new mongoose.Schema({
   tags: [{ type: String, trim: true, lowercase: true }],
   source: {
     type: String,
-    enum: ['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
-    default: 'prebuilt'
+    enum: ['verified_seed', 'prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
+    default: 'verified_seed'
   },
   sourceType: {
     type: String,
-    enum: ['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
-    default: 'prebuilt',
+    enum: ['verified_seed', 'prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked'],
+    default: 'verified_seed',
     index: true
   },
   sourceMeta: {

@@ -20,12 +20,27 @@ const MIN_APPROVED_RELEVANCE = 0.75;
 const MIN_TOP_CONFIDENCE = 0.78;
 const MIN_TOP_RELEVANCE = 0.78;
 const TOP_CATEGORY_FILTER = ['conceptual', 'best_practice'];
-const VALID_SOURCES = new Set(['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked']);
+const VALID_SOURCES = new Set(['verified_seed', 'prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked']);
 const VALID_CATEGORIES = new Set(['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral']);
+const SOURCE_PRIORITY = {
+  verified_seed: 4,
+  prebuilt: 4,
+  ai_generated: 3,
+  user_asked: 3,
+  ai: 2,
+  scraped: 1
+};
 const toQuestionHash = (value = '') => crypto
   .createHash('sha256')
   .update(normalizeComparableText(value))
   .digest('hex');
+
+const normalizeSourceType = (value = '') => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'prebuilt') return 'verified_seed';
+  if (VALID_SOURCES.has(normalized)) return normalized;
+  return 'ai_generated';
+};
 
 const approvedQualityCriteria = (minConfidence = MIN_APPROVED_CONFIDENCE, minRelevance = MIN_APPROVED_RELEVANCE) => ([
   { qualityState: { $ne: 'rejected' } },
@@ -122,8 +137,8 @@ const upsertQuestions = async (records = []) => {
     const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
     const normalizedQuestionHash = String(record.normalizedQuestionHash || toQuestionHash(normalizedQuestion)).trim().toLowerCase();
     const normalizedAnswer = normalizeComparableText(record.normalizedAnswer || record.answer);
-    const rawSourceType = String(record.sourceType || record.source || 'prebuilt').trim().toLowerCase();
-    const sourceType = VALID_SOURCES.has(rawSourceType) ? rawSourceType : 'ai_generated';
+    const rawSourceType = String(record.sourceType || record.source || 'verified_seed').trim().toLowerCase();
+    const sourceType = normalizeSourceType(rawSourceType);
     const category = String(record.category || 'conceptual').trim().toLowerCase();
     const answerSections = record.answerSections && typeof record.answerSections === 'object'
       ? record.answerSections
@@ -205,11 +220,21 @@ const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', ta
   ];
 
   const rows = await InterviewQuestionBank.find(filter)
-    .sort({ usageCount: -1, qualityScore: -1, confidenceScore: -1, popularity: -1, lastUsedAt: -1, createdAt: -1 })
-    .limit(Math.min(60, Math.max(1, Number(limit || 30))))
+    .sort({ usageCount: -1, qualityScore: -1, confidenceScore: -1, relevanceScore: -1, popularity: -1, lastUsedAt: -1, createdAt: -1 })
+    .limit(Math.min(120, Math.max(30, Number(limit || 30) * 4)))
     .lean();
 
-  return rows;
+  return rows
+    .sort((left, right) => {
+      const sourceDelta = (SOURCE_PRIORITY[right.sourceType] || 0) - (SOURCE_PRIORITY[left.sourceType] || 0);
+      if (sourceDelta !== 0) return sourceDelta;
+      if (Number(right.usageCount || 0) !== Number(left.usageCount || 0)) return Number(right.usageCount || 0) - Number(left.usageCount || 0);
+      if (Number(right.confidenceScore || 0) !== Number(left.confidenceScore || 0)) return Number(right.confidenceScore || 0) - Number(left.confidenceScore || 0);
+      if (Number(right.relevanceScore || 0) !== Number(left.relevanceScore || 0)) return Number(right.relevanceScore || 0) - Number(left.relevanceScore || 0);
+      if (Number(right.popularity || 0) !== Number(left.popularity || 0)) return Number(right.popularity || 0) - Number(left.popularity || 0);
+      return new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+    })
+    .slice(0, Math.min(30, Math.max(1, Number(limit || 30))));
 };
 
 const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, difficulty = '', tags = '', category = '', source = '' } = {}) => {
@@ -219,7 +244,7 @@ const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, diffi
   if (normalizedCategory) filter.category = normalizedCategory;
   if (normalizedSource) {
     if (normalizedSource === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
-    else if (normalizedSource === 'seed') filter.sourceType = 'prebuilt';
+    else if (normalizedSource === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
     else if (normalizedSource !== 'database') filter.sourceType = normalizedSource;
   }
 
@@ -429,5 +454,6 @@ module.exports = {
   incrementQuestionUsage,
   toQuestionHash,
   countQuestionsByTopic,
-  countQuestionsByTopicAndSeedVersion
+  countQuestionsByTopicAndSeedVersion,
+  normalizeSourceType
 };

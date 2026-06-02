@@ -17,12 +17,19 @@ const VALID_CATEGORIES = new Set([
 
 const normalizeStructuredAnswer = (answer = {}) => {
   if (typeof answer === 'string') {
+    const shortAnswer = normalizeAnswerText(answer).split(/[.!?]\s/)[0] || normalizeAnswerText(answer);
     return {
-      summary: normalizeAnswerText(answer).split(/[.!?]\s/)[0] || normalizeAnswerText(answer),
+      shortAnswer,
+      summary: shortAnswer,
       explanation: normalizeAnswerText(answer),
+      keyPoints: [],
       bulletPoints: [],
+      example: '',
       codeExample: '',
-      realWorldContext: ''
+      realWorldUseCase: '',
+      realWorldContext: '',
+      commonMistakes: [],
+      interviewTip: ''
     };
   }
 
@@ -35,12 +42,21 @@ const normalizeStructuredAnswer = (answer = {}) => {
     ? answer.commonMistakes.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 5)
     : [];
 
+  const shortAnswer = normalizeAnswerText(answer.shortAnswer || answer.summary || answer.directAnswer || '');
+  const keyPoints = bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6);
+  const example = String(answer.example || answer.codeExample || '').trim();
+  const realWorldUseCase = normalizeAnswerText(answer.realWorldUseCase || answer.realWorldContext || answer.productionContext || '');
+
   return {
-    summary: normalizeAnswerText(answer.shortAnswer || answer.summary || answer.directAnswer || ''),
+    shortAnswer,
+    summary: shortAnswer,
     explanation: normalizeAnswerText(answer.explanation || ''),
-    bulletPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
-    codeExample: String(answer.example || answer.codeExample || '').trim(),
-    realWorldContext: normalizeAnswerText(answer.realWorldUseCase || answer.realWorldContext || answer.productionContext || ''),
+    keyPoints,
+    bulletPoints: keyPoints,
+    example,
+    codeExample: example,
+    realWorldUseCase,
+    realWorldContext: realWorldUseCase,
     commonMistakes,
     interviewTip: normalizeAnswerText(answer.interviewTip || '')
   };
@@ -49,11 +65,11 @@ const normalizeStructuredAnswer = (answer = {}) => {
 const structuredAnswerToText = (answer = {}) => {
   const structured = normalizeStructuredAnswer(answer);
   return normalizeAnswerText([
-    structured.summary ? `Summary: ${structured.summary}` : '',
+    structured.shortAnswer ? `Short answer: ${structured.shortAnswer}` : '',
+    structured.keyPoints.length ? `Key points:\n${structured.keyPoints.map((point) => `- ${point}`).join('\n')}` : '',
     structured.explanation ? `Explanation: ${structured.explanation}` : '',
-    structured.bulletPoints.length ? `Key points:\n${structured.bulletPoints.map((point) => `- ${point}`).join('\n')}` : '',
-    structured.codeExample ? `Code example:\n${structured.codeExample}` : '',
-    structured.realWorldContext ? `Real-world context: ${structured.realWorldContext}` : '',
+    structured.example ? `Example:\n${structured.example}` : '',
+    structured.realWorldUseCase ? `Real-world use case: ${structured.realWorldUseCase}` : '',
     structured.commonMistakes?.length ? `Common mistakes:\n${structured.commonMistakes.map((point) => `- ${point}`).join('\n')}` : '',
     structured.interviewTip ? `Interview tip: ${structured.interviewTip}` : ''
   ].filter(Boolean).join('\n\n'));
@@ -163,11 +179,13 @@ const buildEnrichmentPrompt = ({ question = '', currentAnswer = '' }) => [
   `Current answer: ${currentAnswer}`,
   'Return ONLY valid JSON:',
   '{',
-  "  summary: 'one sentence direct answer',",
+  "  shortAnswer: 'one sentence direct answer',",
   "  explanation: 'detailed explanation in 2-3 paragraphs',",
-  "  bulletPoints: ['point1', 'point2', 'point3'],",
-  "  codeExample: 'only if relevant, else empty string',",
-  "  realWorldContext: 'production-level context'",
+  "  keyPoints: ['point1', 'point2', 'point3'],",
+  "  example: 'only if relevant, else empty string',",
+  "  realWorldUseCase: 'production-level context',",
+  "  commonMistakes: ['mistake1', 'mistake2'],",
+  "  interviewTip: 'one concise interview tip'",
   '}',
   'No markdown. No extra text. JSON only.'
 ].join('\n');

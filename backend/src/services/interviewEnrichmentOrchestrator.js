@@ -27,6 +27,7 @@ const withTimeout = async (promise, timeoutMs = 5000, fallbackValue = []) => {
 };
 
 const sectionTitles = [
+  'Short answer',
   'Short direct answer',
   'Key points',
   'Explanation',
@@ -39,7 +40,7 @@ const sectionTitles = [
 const normalizeStructuredSections = (sections = {}, answer = '') => {
   const incoming = sections && typeof sections === 'object' ? sections : {};
   const extracted = extractAnswerSections(answer);
-  const summary = incoming.shortAnswer || incoming.summary || incoming['Short direct answer'] || extracted['Short direct answer'] || '';
+  const shortAnswer = incoming.shortAnswer || incoming.summary || incoming['Short answer'] || incoming['Short direct answer'] || extracted['Short answer'] || extracted['Short direct answer'] || '';
   const explanation = incoming.explanation || incoming.Explanation || extracted.Explanation || answer;
   const bulletPoints = Array.isArray(incoming.keyPoints)
     ? incoming.keyPoints
@@ -54,10 +55,16 @@ const normalizeStructuredSections = (sections = {}, answer = '') => {
     : [];
 
   return {
-    summary: normalizeAnswerText(summary),
+    shortAnswer: normalizeAnswerText(shortAnswer),
+    summary: normalizeAnswerText(shortAnswer),
     explanation: normalizeAnswerText(explanation),
+    keyPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
     bulletPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
+    example: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
     codeExample: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
+    realWorldUseCase: normalizeAnswerText(
+      incoming.realWorldUseCase || incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
+    ),
     realWorldContext: normalizeAnswerText(
       incoming.realWorldUseCase || incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
     ),
@@ -67,13 +74,13 @@ const normalizeStructuredSections = (sections = {}, answer = '') => {
 };
 
 const toStructuredText = (sections = {}) => normalizeAnswerText([
-  sections.summary ? `Summary: ${sections.summary}` : '',
-  sections.explanation ? `Explanation: ${sections.explanation}` : '',
-  Array.isArray(sections.bulletPoints) && sections.bulletPoints.length
-    ? `Key points:\n${sections.bulletPoints.map((point) => `- ${point}`).join('\n')}`
+  sections.shortAnswer ? `Short answer: ${sections.shortAnswer}` : '',
+  Array.isArray(sections.keyPoints) && sections.keyPoints.length
+    ? `Key points:\n${sections.keyPoints.map((point) => `- ${point}`).join('\n')}`
     : '',
-  sections.codeExample ? `Code example:\n${sections.codeExample}` : '',
-  sections.realWorldContext ? `Real-world context: ${sections.realWorldContext}` : '',
+  sections.explanation ? `Explanation: ${sections.explanation}` : '',
+  sections.example ? `Example:\n${sections.example}` : '',
+  sections.realWorldUseCase ? `Real-world use case: ${sections.realWorldUseCase}` : '',
   Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
     ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
     : '',

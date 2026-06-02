@@ -17,12 +17,24 @@ const TOPIC_TOKEN_ALIASES = {
   redis: ['redis', 'cache', 'ttl', 'pubsub', 'sorted', 'lua'],
   'rest-apis': ['rest', 'api', 'apis', 'http'],
   graphql: ['graphql', 'resolver', 'schema', 'query', 'mutation'],
+  html: ['html', 'semantic', 'element', 'form', 'dom', 'aria'],
+  css: ['css', 'layout', 'grid', 'flexbox', 'selector', 'cascade'],
+  'git-github': ['git', 'github', 'branch', 'commit', 'rebase', 'pull', 'merge'],
+  oop: ['oop', 'class', 'object', 'encapsulation', 'inheritance', 'polymorphism'],
+  dsa: ['dsa', 'algorithm', 'complexity', 'array', 'hash', 'tree', 'graph'],
+  aws: ['aws', 'amazon', 'iam', 's3', 'lambda', 'ec2', 'cloud'],
+  'generative-ai': ['generative', 'genai', 'prompt', 'embedding', 'inference', 'model'],
+  'ai-agents': ['agent', 'tool', 'planner', 'memory', 'orchestration', 'workflow'],
+  llm: ['llm', 'token', 'transformer', 'prompt', 'context', 'model'],
+  rag: ['rag', 'retrieval', 'embedding', 'vector', 'rerank', 'chunk'],
+  langchain: ['langchain', 'chain', 'agent', 'retriever', 'prompt', 'tool'],
   'system-design': ['system', 'design', 'distributed', 'scalability'],
   mern: ['mern', 'mongo', 'express', 'react', 'node'],
   mean: ['mean', 'mongo', 'express', 'angular', 'node'],
   'full-stack-web-development': ['frontend', 'backend', 'api', 'database', 'web']
 };
 const SOURCE_QUALITY_BASE = {
+  verified_seed: 0.95,
   prebuilt: 0.94,
   ai: 0.88,
   ai_generated: 0.88,
@@ -134,6 +146,7 @@ const computeConfidenceScore = ({ sourceType = 'ai', answer = '', question = '' 
   const questionLength = normalizeQuestionText(question).length;
 
   let base = 0.6;
+  if (sourceType === 'verified_seed') base = 0.95;
   if (sourceType === 'prebuilt') base = 0.95;
   if (sourceType === 'ai') base = 0.72;
   if (sourceType === 'scraped') base = 0.7;

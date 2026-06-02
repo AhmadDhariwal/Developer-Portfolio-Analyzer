@@ -37,11 +37,23 @@ export class InterviewPrepComponent implements OnInit {
     'redis',
     'rest-apis',
     'graphql',
+    'html',
+    'css',
+    'git-github',
+    'oop',
+    'dsa',
+    'aws',
+    'generative-ai',
+    'ai-agents',
+    'llm',
+    'rag',
+    'langchain',
     'system-design',
     'mern',
     'mean',
     'full-stack-web-development'
   ];
+  readonly practiceCounts = [1, 2, 3];
   readonly tabs: Array<{ id: InterviewTab; label: string }> = [
     { id: 'search', label: 'Search & Questions' },
     { id: 'ai', label: 'AI Generated & Recent' }
@@ -63,8 +75,19 @@ export class InterviewPrepComponent implements OnInit {
     redis: 'Redis',
     'rest-apis': 'REST APIs',
     graphql: 'GraphQL',
+    html: 'HTML',
+    css: 'CSS',
+    'git-github': 'Git/GitHub',
+    oop: 'OOP',
+    dsa: 'DSA',
+    aws: 'AWS',
+    'generative-ai': 'Generative AI',
+    'ai-agents': 'AI Agents',
+    llm: 'LLM',
+    rag: 'RAG',
+    langchain: 'LangChain',
     'system-design': 'System Design',
-    mern: 'MERN',
+    mern: 'Full Stack / MERN',
     mean: 'MEAN',
     'full-stack-web-development': 'Full Stack Web Development'
   };
@@ -76,7 +99,8 @@ export class InterviewPrepComponent implements OnInit {
   selectedCategory = '';
   selectedSource = '';
   aiPromptQuery = '';
-  practiceCount = 10;
+  aiDifficulty = '';
+  practiceCount = 3;
   customQuestion = '';
   customResult: InterviewQuestion | null = null;
   searchMatches: InterviewQuestion[] = [];
@@ -116,11 +140,11 @@ export class InterviewPrepComponent implements OnInit {
   highlightedQuestions: SafeHtml[] = [];
   highlightedAnswers: SafeHtml[] = [];
   readonly answerSectionTitles = [
-    'Summary',
+    'Short answer',
     'Explanation',
     'Key Points',
-    'Code Example',
-    'Real-world Context',
+    'Example',
+    'Real-world Use Case',
     'Common Mistakes',
     'Interview Tip'
   ];
@@ -215,6 +239,8 @@ export class InterviewPrepComponent implements OnInit {
     this.tagsInput = '';
     this.customQuestion = '';
     this.aiPromptQuery = '';
+    this.aiDifficulty = '';
+    this.practiceCount = 3;
     this.searchMatches = [];
     this.searchAttempted = false;
     this.canAskAI = false;
@@ -276,7 +302,7 @@ export class InterviewPrepComponent implements OnInit {
     this.prepService.generateQuestions({
       skill: this.selectedSkill,
       query: this.aiPromptQuery.trim(),
-      difficulty: this.selectedDifficulty || undefined,
+      difficulty: this.aiDifficulty || undefined,
       page: 1,
       limit: this.practiceCount,
       target: this.practiceCount
@@ -547,7 +573,7 @@ export class InterviewPrepComponent implements OnInit {
   sourceLabel(item: InterviewQuestion): string {
     if (item.sourceLabel) return item.sourceLabel;
     const source = String(item.sourceType || item.source || 'db').toLowerCase();
-    if (source === 'prebuilt' || source === 'seed') return 'Seed';
+    if (source === 'verified_seed' || source === 'prebuilt' || source === 'seed') return 'Verified Seed';
     if (source === 'scraped' || source === 'scrape') return 'Scraped';
     if (source === 'ai' || source === 'ai_generated' || source === 'user_asked') return 'AI Generated';
     if (source === 'hybrid') return 'Hybrid';
@@ -620,12 +646,15 @@ export class InterviewPrepComponent implements OnInit {
   get activeFilterChips(): string[] {
     return [
       this.selectedTopicLabel,
-      this.selectedDifficulty ? `${this.selectedDifficulty} difficulty` : '',
-      this.selectedCategory ? `Category: ${this.selectedCategory.replace('_', ' ')}` : '',
-      this.selectedSource ? `Source: ${this.selectedSource}` : '',
-      ...this.parseTags().map((tag) => `#${tag}`),
+      this.activeTab === 'ai'
+        ? (this.aiDifficulty ? `${this.aiDifficulty} difficulty` : '')
+        : (this.selectedDifficulty ? `${this.selectedDifficulty} difficulty` : ''),
+      this.activeTab === 'search' && this.selectedCategory ? `Category: ${this.selectedCategory.replace('_', ' ')}` : '',
+      this.activeTab === 'search' && this.selectedSource ? `Source: ${this.selectedSource}` : '',
+      ...(this.activeTab === 'search' ? this.parseTags().map((tag) => `#${tag}`) : []),
       this.activeTab === 'search' && this.customQuestion.trim() ? `"${this.customQuestion.trim()}"` : '',
-      this.activeTab === 'ai' && this.aiPromptQuery.trim() ? `Focus: ${this.aiPromptQuery.trim()}` : ''
+      this.activeTab === 'ai' && this.aiPromptQuery.trim() ? `Focus: ${this.aiPromptQuery.trim()}` : '',
+      this.activeTab === 'ai' ? `Count: ${this.practiceCount}` : ''
     ].filter(Boolean);
   }
 
@@ -640,20 +669,32 @@ export class InterviewPrepComponent implements OnInit {
   answerSections(item: InterviewQuestion): AnswerSection[] {
     const structured = item.answerSections || {};
     const sections: AnswerSection[] = [];
-    if (typeof structured.summary === 'string' && structured.summary) {
-      sections.push({ title: 'Summary', body: structured.summary });
+    const shortAnswer = typeof structured.shortAnswer === 'string' && structured.shortAnswer
+      ? structured.shortAnswer
+      : typeof structured.summary === 'string' ? structured.summary : '';
+    if (shortAnswer) {
+      sections.push({ title: 'Short Answer', body: shortAnswer });
     }
-    if (Array.isArray(structured.bulletPoints) && structured.bulletPoints.length) {
-      sections.push({ title: 'Key Points', body: '', kind: 'list', items: structured.bulletPoints });
+    const keyPoints = Array.isArray(structured.keyPoints) && structured.keyPoints.length
+      ? structured.keyPoints
+      : Array.isArray(structured.bulletPoints) ? structured.bulletPoints : [];
+    if (keyPoints.length) {
+      sections.push({ title: 'Key Points', body: '', kind: 'list', items: keyPoints });
     }
     if (typeof structured.explanation === 'string' && structured.explanation) {
       sections.push({ title: 'Explanation', body: structured.explanation });
     }
-    if (typeof structured.codeExample === 'string' && structured.codeExample) {
-      sections.push({ title: 'Code Example', body: structured.codeExample, kind: 'code' });
+    const example = typeof structured.example === 'string' && structured.example
+      ? structured.example
+      : typeof structured.codeExample === 'string' ? structured.codeExample : '';
+    if (example) {
+      sections.push({ title: 'Example', body: example, kind: 'code' });
     }
-    if (typeof structured.realWorldContext === 'string' && structured.realWorldContext) {
-      sections.push({ title: 'Real-world Context', body: structured.realWorldContext, kind: 'context' });
+    const realWorldUseCase = typeof structured.realWorldUseCase === 'string' && structured.realWorldUseCase
+      ? structured.realWorldUseCase
+      : typeof structured.realWorldContext === 'string' ? structured.realWorldContext : '';
+    if (realWorldUseCase) {
+      sections.push({ title: 'Real-world Use Case', body: realWorldUseCase, kind: 'context' });
     }
     const commonMistakes = structured['commonMistakes'];
     if (Array.isArray(commonMistakes) && commonMistakes.length) {

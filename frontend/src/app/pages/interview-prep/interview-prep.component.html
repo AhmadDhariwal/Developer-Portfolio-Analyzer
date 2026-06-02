@@ -1,11 +1,14 @@
 <div class="interview-prep">
-  <div class="page-header">
-    <div>
-      <h2>Interview Preparation Hub</h2>
+  <header class="page-header">
+    <div class="header-copy">
+      <span class="eyebrow">Interview Prep</span>
+      <h1>Interview Preparation Hub</h1>
       <p>Search the question bank, browse technology-specific answers, and generate focused practice sets only when needed.</p>
-      <span class="profile-context">Personalized for {{ personalizedContext }}. Topic changes here are temporary.</span>
+      <div class="header-meta">
+        <span class="profile-context">Personalized for {{ personalizedContext }}. Topic changes here are temporary.</span>
+      </div>
     </div>
-  </div>
+  </header>
 
   <div class="card tab-shell">
     <button
@@ -21,10 +24,10 @@
   <ng-container *ngIf="activeTab === 'search'">
   <section class="card block-card">
     <div class="block-heading">
-      <div>
-        <span class="block-kicker">Block 1</span>
-        <h3>Search & All Questions</h3>
-        <p class="meta">Search checks exact saved answers first. If no strong match exists, ask AI explicitly for the selected technology.</p>
+      <div class="block-copy">
+        <span class="eyebrow">Block 1</span>
+        <h2>Search & All Questions</h2>
+        <p class="meta">Search checks saved technology-specific answers first. If no strong match exists, ask AI explicitly and the result is saved automatically.</p>
       </div>
       <div class="topic-summary compact">
         <span class="summary-kicker">Showing</span>
@@ -35,7 +38,7 @@
 
     <div class="filter-panel compact-filter">
       <label>
-        Skill
+        Technology
         <select [(ngModel)]="selectedSkill" (ngModelChange)="onSkillChange()" title="Skill">
           <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
         </select>
@@ -69,9 +72,8 @@
         <select [(ngModel)]="selectedSource" (ngModelChange)="markFiltersChanged()" title="Source">
           <option value="">All</option>
           <option value="database">Database</option>
-          <option value="seed">Seed</option>
+          <option value="seed">Verified Seed</option>
           <option value="ai">AI Generated</option>
-          <option value="scraped">Scraped</option>
         </select>
       </label>
 
@@ -82,9 +84,9 @@
 
       <div class="filter-actions">
         <button class="primary-btn small-btn" type="button" (click)="applyFilters()">
-          {{ filtersDirty ? 'Apply' : 'Refresh' }}
+          {{ filtersDirty ? 'Apply Filters' : 'Refresh Questions' }}
         </button>
-        <button class="ghost-btn small-btn" type="button" (click)="clearFilters()">Clear</button>
+        <button class="ghost-btn small-btn" type="button" (click)="clearFilters()">Clear Filters</button>
       </div>
     </div>
 
@@ -92,6 +94,8 @@
       <span class="filter-chip" *ngFor="let chip of activeFilterChips">{{ chip }}</span>
       <span class="filter-dirty" *ngIf="filtersDirty">Filters changed. Apply to refresh.</span>
     </div>
+
+    <p class="meta">Difficulty and tags affect Top 30 plus All Questions. Category and source refine the All Questions list only.</p>
 
     <div class="custom-question-panel">
       <div class="custom-grid">
@@ -101,11 +105,11 @@
             [(ngModel)]="customQuestion"
             (ngModelChange)="onQuestionDraftChange($event)"
             maxlength="500"
-            placeholder="e.g. How does Redis prevent a cache stampede in production?"
+            placeholder="e.g. How does React reconciliation use keys during list updates?"
             title="Custom interview question"></textarea>
         </label>
         <button class="primary-btn ask-btn" type="button" (click)="searchStoredQuestions()" [disabled]="isSearchingMatches || customQuestion.trim().length < 3">
-          {{ isSearchingMatches ? 'Searching...' : 'Search DB' }}
+          {{ isSearchingMatches ? 'Searching...' : 'Search Question Bank' }}
         </button>
       </div>
 
@@ -194,17 +198,17 @@
       </button>
     </div>
 
-    <p class="meta" *ngIf="!isLoadingAll && !allQuestions.length">No questions match these filters yet.</p>
+    <p class="meta" *ngIf="!isLoadingAll && !allQuestions.length">No complete answered questions match these filters yet.</p>
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <p class="success-note" *ngIf="copyMessage">{{ copyMessage }}</p>
   </section>
 
   <section class="card block-card">
     <div class="block-heading">
-      <div>
-        <span class="block-kicker">Block 2</span>
-        <h3>Top 30 for {{ selectedTopicLabel }}</h3>
-        <p class="meta">Fixed high-quality set from MongoDB, shown 10 at a time without extra API calls.</p>
+      <div class="block-copy">
+        <span class="eyebrow">Block 2</span>
+        <h2>Top 30 for {{ selectedTopicLabel }}</h2>
+        <p class="meta">Fixed verified top 30 from the question bank, shown 10 at a time without extra API calls.</p>
       </div>
       <span class="page-indicator">Page {{ topPage }} of {{ topTotalPages }} | {{ topRangeLabel }}</span>
     </div>
@@ -246,17 +250,17 @@
       <button class="ghost-btn small-btn" type="button" (click)="nextTopPage()" [disabled]="!canLoadMore">Next</button>
     </div>
 
-    <p class="meta" *ngIf="!isLoading && !hasQuestions">No Top 30 questions are available for these filters yet.</p>
+    <p class="meta" *ngIf="!isLoading && !hasQuestions">No verified top questions are available for these filters yet.</p>
   </section>
   </ng-container>
 
   <ng-container *ngIf="activeTab === 'ai'">
   <section class="card block-card">
     <div class="block-heading">
-      <div>
-        <span class="block-kicker">Block 3</span>
-        <h3>AI Generated Practice Set</h3>
-        <p class="meta">Generate a focused set for the selected skill/topic. Saved generated questions are reused before AI is called.</p>
+      <div class="block-copy">
+        <span class="eyebrow">Block 3</span>
+        <h2>AI Generated Practice Set</h2>
+        <p class="meta">Generate a focused practice set for the selected technology. Saved approved questions are reused before AI is called.</p>
       </div>
       <span class="page-indicator" *ngIf="currentSource">New saved: {{ aiGeneratedCount }}</span>
     </div>
@@ -267,12 +271,18 @@
         <input [(ngModel)]="aiPromptQuery" (ngModelChange)="markFiltersChanged(false)" placeholder="e.g. hooks performance" title="AI focus" />
       </label>
       <label class="count-field">
+        Difficulty
+        <select [(ngModel)]="aiDifficulty" (ngModelChange)="markFiltersChanged(false)" title="AI difficulty">
+          <option value="">Balanced</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </label>
+      <label class="count-field">
         Count
         <select [(ngModel)]="practiceCount" (ngModelChange)="markFiltersChanged(false)" title="Practice count">
-          <option [ngValue]="5">5</option>
-          <option [ngValue]="10">10</option>
-          <option [ngValue]="15">15</option>
-          <option [ngValue]="20">20</option>
+          <option *ngFor="let count of practiceCounts" [ngValue]="count">{{ count }}</option>
         </select>
       </label>
       <button class="primary-btn" type="button" (click)="generateAIQuestions()" [disabled]="isGeneratingAI">
@@ -308,8 +318,13 @@
   </section>
 
   <section class="card recent-card">
-    <h3>Recent Asked Questions</h3>
-    <p class="meta">Your earlier Search / Ask answers remain here for this session.</p>
+    <div class="block-heading">
+      <div class="block-copy">
+        <span class="eyebrow">Block 4</span>
+        <h2>Recent Asked Questions</h2>
+        <p class="meta">Your earlier Search / Ask answers remain here for this session.</p>
+      </div>
+    </div>
     <div class="qa-list" *ngIf="recentQuestions.length">
       <article class="qa-card compact-card" *ngFor="let item of recentQuestions; let i = index; trackBy: trackByQuestion">
         <div class="qa-header">

@@ -10,11 +10,17 @@ export interface InterviewQuestion {
   question: string;
   answer: string;
   answerSections?: {
+    shortAnswer?: string;
     summary?: string;
+    keyPoints?: string[];
     explanation?: string;
     bulletPoints?: string[];
+    example?: string;
     codeExample?: string;
+    realWorldUseCase?: string;
     realWorldContext?: string;
+    commonMistakes?: string[];
+    interviewTip?: string;
     [key: string]: string | string[] | undefined;
   };
   difficulty: 'easy' | 'medium' | 'hard';
@@ -23,8 +29,8 @@ export interface InterviewQuestion {
   answerFormat?: 'structured' | 'plain';
   isEnriched?: boolean;
   tags: string[];
-  source?: 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
-  sourceType?: 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  source?: 'verified_seed' | 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
+  sourceType?: 'verified_seed' | 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
   sourceLabel?: string;
   popularity?: number;
   confidenceScore?: number;
