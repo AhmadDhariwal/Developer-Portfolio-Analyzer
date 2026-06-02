@@ -24,7 +24,7 @@
       <div>
         <span class="block-kicker">Block 1</span>
         <h3>Search & All Questions</h3>
-        <p class="meta">Search checks saved answers first. If no match exists, AI generates a structured answer and saves it automatically.</p>
+        <p class="meta">Search checks exact saved answers first. If no strong match exists, ask AI explicitly for the selected technology.</p>
       </div>
       <div class="topic-summary compact">
         <span class="summary-kicker">Showing</span>
@@ -105,7 +105,7 @@
             title="Custom interview question"></textarea>
         </label>
         <button class="primary-btn ask-btn" type="button" (click)="searchStoredQuestions()" [disabled]="isSearchingMatches || customQuestion.trim().length < 3">
-          {{ isSearchingMatches ? 'Searching...' : 'Search / Ask' }}
+          {{ isSearchingMatches ? 'Searching...' : 'Search DB' }}
         </button>
       </div>
 
@@ -123,6 +123,13 @@
         </button>
       </div>
 
+      <div class="no-match-panel" *ngIf="!isSearchingMatches && canAskAI && searchAttempted && !customResult">
+        <p class="meta">No exact answer found for {{ selectedTopicLabel }}.</p>
+        <button class="primary-btn small-btn" type="button" (click)="askCustomQuestion()" [disabled]="isAskingQuestion">
+          {{ isAskingQuestion ? 'Asking AI...' : 'Ask AI for Answer' }}
+        </button>
+      </div>
+
       <article class="qa-card custom-result" *ngIf="customResult">
         <div class="result-label">Current Answer</div>
         <div class="qa-header">
@@ -131,6 +138,7 @@
             <span class="badge source-badge">{{ sourceLabel(customResult) }}</span>
             <span class="badge">{{ customResult.difficulty | titlecase }}</span>
             <span class="badge confidence-badge" *ngIf="confidenceLabel(customResult)">{{ confidenceLabel(customResult) }}</span>
+            <span class="badge confidence-badge" *ngIf="relevanceLabel(customResult)">{{ relevanceLabel(customResult) }}</span>
           </div>
         </div>
         <div class="tag-row" *ngIf="customResult.tags.length">
@@ -156,6 +164,7 @@
             <span class="badge source-badge">{{ sourceLabel(item) }}</span>
             <span class="badge">{{ item.difficulty | titlecase }}</span>
             <span class="badge confidence-badge" *ngIf="confidenceLabel(item)">{{ confidenceLabel(item) }}</span>
+            <span class="badge confidence-badge" *ngIf="relevanceLabel(item)">{{ relevanceLabel(item) }}</span>
           </div>
         </div>
         <div class="tag-row" *ngIf="item.tags.length">
@@ -194,7 +203,7 @@
     <div class="block-heading">
       <div>
         <span class="block-kicker">Block 2</span>
-        <h3>{{ selectedTopicLabel }} Top 30 Questions</h3>
+        <h3>Top 30 for {{ selectedTopicLabel }}</h3>
         <p class="meta">Fixed high-quality set from MongoDB, shown 10 at a time without extra API calls.</p>
       </div>
       <span class="page-indicator">Page {{ topPage }} of {{ topTotalPages }} | {{ topRangeLabel }}</span>
@@ -211,6 +220,7 @@
             <span class="badge source-badge">{{ sourceLabel(item) }}</span>
             <span class="badge">{{ item.difficulty | titlecase }}</span>
             <span class="badge confidence-badge" *ngIf="confidenceLabel(item)">{{ confidenceLabel(item) }}</span>
+            <span class="badge confidence-badge" *ngIf="relevanceLabel(item)">{{ relevanceLabel(item) }}</span>
           </div>
         </div>
         <div class="tag-row" *ngIf="item.tags.length">
@@ -278,6 +288,7 @@
             <span class="badge source-badge">{{ sourceLabel(item) }}</span>
             <span class="badge">{{ item.difficulty | titlecase }}</span>
             <span class="badge confidence-badge" *ngIf="confidenceLabel(item)">{{ confidenceLabel(item) }}</span>
+            <span class="badge confidence-badge" *ngIf="relevanceLabel(item)">{{ relevanceLabel(item) }}</span>
           </div>
         </div>
         <div class="tag-row" *ngIf="item.tags.length">

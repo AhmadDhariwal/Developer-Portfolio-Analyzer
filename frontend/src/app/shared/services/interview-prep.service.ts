@@ -28,6 +28,7 @@ export interface InterviewQuestion {
   sourceLabel?: string;
   popularity?: number;
   confidenceScore?: number;
+  relevanceScore?: number;
   createdAt?: string;
   stored?: boolean;
   duplicate?: boolean;

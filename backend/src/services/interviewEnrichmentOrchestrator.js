@@ -2,6 +2,7 @@ const logger = require('../utils/logger');
 const {
   dedupeQuestions,
   isQualityQuestionAnswer,
+  validateInterviewQuestionQuality,
   computeConfidenceScore,
   normalizeAnswerText,
   normalizeComparableText,
@@ -38,23 +39,30 @@ const sectionTitles = [
 const normalizeStructuredSections = (sections = {}, answer = '') => {
   const incoming = sections && typeof sections === 'object' ? sections : {};
   const extracted = extractAnswerSections(answer);
-  const summary = incoming.summary || incoming['Short direct answer'] || extracted['Short direct answer'] || '';
+  const summary = incoming.shortAnswer || incoming.summary || incoming['Short direct answer'] || extracted['Short direct answer'] || '';
   const explanation = incoming.explanation || incoming.Explanation || extracted.Explanation || answer;
-  const bulletPoints = Array.isArray(incoming.bulletPoints)
-    ? incoming.bulletPoints
+  const bulletPoints = Array.isArray(incoming.keyPoints)
+    ? incoming.keyPoints
+    : Array.isArray(incoming.bulletPoints)
+      ? incoming.bulletPoints
     : String(incoming['Key points'] || extracted['Key points'] || '')
       .split(/\n|-/)
       .map((point) => point.trim())
       .filter(Boolean);
+  const commonMistakes = Array.isArray(incoming.commonMistakes)
+    ? incoming.commonMistakes.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 5)
+    : [];
 
   return {
     summary: normalizeAnswerText(summary),
     explanation: normalizeAnswerText(explanation),
     bulletPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
-    codeExample: String(incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
+    codeExample: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
     realWorldContext: normalizeAnswerText(
-      incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
-    )
+      incoming.realWorldUseCase || incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
+    ),
+    commonMistakes,
+    interviewTip: normalizeAnswerText(incoming.interviewTip || '')
   };
 };
 
@@ -65,7 +73,11 @@ const toStructuredText = (sections = {}) => normalizeAnswerText([
     ? `Key points:\n${sections.bulletPoints.map((point) => `- ${point}`).join('\n')}`
     : '',
   sections.codeExample ? `Code example:\n${sections.codeExample}` : '',
-  sections.realWorldContext ? `Real-world context: ${sections.realWorldContext}` : ''
+  sections.realWorldContext ? `Real-world context: ${sections.realWorldContext}` : '',
+  Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
+    ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
+    : '',
+  sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : ''
 ].filter(Boolean).join('\n\n'));
 
 const sanitizeCategory = (value = '') => {
@@ -98,6 +110,20 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
     ? toStructuredText(answerSections)
     : item.answer);
   const confidenceScore = computeConfidenceScore({ sourceType, question, answer });
+  const quality = validateInterviewQuestionQuality({
+    question,
+    answer,
+    answerSections,
+    topicKey: topic.topicKey,
+    difficulty: item.difficulty,
+    expectedDifficulty: sourceMeta.expectedDifficulty || '',
+    tags: item.tags,
+    sourceType,
+    confidenceScore,
+    qualityScore: item.qualityScore,
+    minimumScore: sourceType === 'scraped' ? 0.8 : 0.75
+  });
+  const approved = qualityState === 'approved' && quality.isValid;
 
   return {
     topicKey: topic.topicKey,
@@ -115,11 +141,15 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
     sourceType,
     sourceMeta,
     confidenceScore,
+    relevanceScore: quality.relevanceScore,
     category: sanitizeCategory(item.category),
     qualityScore: sanitizeQualityScore(item.qualityScore || (confidenceScore >= 0.85 ? 4 : 3)),
     answerFormat: item.answerSections || item.answerFormat === 'structured' ? 'structured' : 'plain',
     isEnriched: Boolean(item.isEnriched || item.answerSections || item.answerFormat === 'structured'),
-    qualityState,
+    qualityState: approved ? 'approved' : 'rejected',
+    isApproved: approved,
+    qualityStatus: approved ? 'approved' : 'rejected',
+    rejectedReason: approved ? '' : quality.reasons.join(', '),
     popularity,
     usageCount: 0,
     lastUsedAt: null
@@ -137,7 +167,9 @@ const createInterviewEnrichmentOrchestrator = ({
     existingQuestions = [],
     requestedCount = 20,
     maxScrapeTimeoutMs = 5000,
-    initiatedBy = 'runtime'
+    initiatedBy = 'runtime',
+    allowScraper = true,
+    difficulty = ''
   }) => {
     const target = Math.max(0, Number(requestedCount || 0));
     if (target === 0) {
@@ -168,33 +200,42 @@ const createInterviewEnrichmentOrchestrator = ({
     let scrapeCandidates = [];
     let aiCandidates = [];
 
-    try {
-      scrapeCandidates = await withTimeout(
-        scraperProvider.scrapeQuestionsForTopic({
+    if (allowScraper) {
+      try {
+        scrapeCandidates = await withTimeout(
+          scraperProvider.scrapeQuestionsForTopic({
+            topicKey: topic.topicKey,
+            topicType: topic.topicType,
+            count: missing
+          }),
+          maxScrapeTimeoutMs,
+          []
+        );
+      } catch (error) {
+        logger.warn('interview-prep scrape enrichment failed', {
           topicKey: topic.topicKey,
-          topicType: topic.topicType,
-          count: missing
-        }),
-        maxScrapeTimeoutMs,
-        []
-      );
-    } catch (error) {
-      logger.warn('interview-prep scrape enrichment failed', {
-        topicKey: topic.topicKey,
-        message: error.message,
-        initiatedBy
-      });
+          message: error.message,
+          initiatedBy
+        });
+      }
     }
 
     const dedupedScrape = dedupeQuestions({
       questions: scrapeCandidates.filter((item) => {
-        if (!isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey })) return false;
         const confidenceScore = computeConfidenceScore({
           sourceType: 'scraped',
           question: item.question,
           answer: item.answer
         });
-        return confidenceScore >= 0.7;
+        const quality = validateInterviewQuestionQuality({
+          ...item,
+          topicKey: topic.topicKey,
+          expectedDifficulty: difficulty,
+          sourceType: 'scraped',
+          confidenceScore,
+          minimumScore: 0.8
+        });
+        return isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey }) && quality.isValid;
       }),
       existingComparableQuestions
     });
@@ -207,6 +248,7 @@ const createInterviewEnrichmentOrchestrator = ({
           topicKey: topic.topicKey,
           topicType: topic.topicType,
           query,
+          difficulty,
           count: remainingAfterScrape
         });
       } catch (error) {
@@ -219,7 +261,22 @@ const createInterviewEnrichmentOrchestrator = ({
     }
 
     const validAi = dedupeQuestions({
-      questions: aiCandidates.filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey })),
+      questions: aiCandidates.filter((item) => {
+        const confidenceScore = computeConfidenceScore({
+          sourceType: 'ai',
+          question: item.question,
+          answer: item.answer
+        });
+        const quality = validateInterviewQuestionQuality({
+          ...item,
+          topicKey: topic.topicKey,
+          expectedDifficulty: difficulty,
+          sourceType: 'ai',
+          confidenceScore,
+          minimumScore: 0.75
+        });
+        return isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey }) && quality.isValid;
+      }),
       existingComparableQuestions: [
         ...existingComparableQuestions,
         ...dedupedScrape.map((item) => normalizeComparableText(item.question))
@@ -231,17 +288,17 @@ const createInterviewEnrichmentOrchestrator = ({
         item,
         topic,
         sourceType: 'scraped',
-        sourceMeta: { query, initiatedBy },
+        sourceMeta: { query, initiatedBy, expectedDifficulty: difficulty },
         popularity: 12
       })),
       ...validAi.map((item) => toStorableRecord({
         item,
         topic,
         sourceType: 'ai',
-        sourceMeta: { query, initiatedBy },
+        sourceMeta: { query, initiatedBy, expectedDifficulty: difficulty },
         popularity: 10
       }))
-    ];
+    ].filter((record) => record.isApproved && record.qualityStatus === 'approved');
 
     if (storable.length === 0) {
       return {

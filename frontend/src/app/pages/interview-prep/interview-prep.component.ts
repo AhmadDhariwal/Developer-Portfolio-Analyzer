@@ -120,7 +120,9 @@ export class InterviewPrepComponent implements OnInit {
     'Explanation',
     'Key Points',
     'Code Example',
-    'Real-world Context'
+    'Real-world Context',
+    'Common Mistakes',
+    'Interview Tip'
   ];
 
   constructor(
@@ -428,7 +430,7 @@ export class InterviewPrepComponent implements OnInit {
       tags: this.parseTags(),
       page: 1,
       limit: 5,
-      lookupOnly: false
+      lookupOnly: true
     }).subscribe({
       next: (response) => {
         const matches = response.questions || [];
@@ -440,7 +442,8 @@ export class InterviewPrepComponent implements OnInit {
             ...this.allQuestions.filter((item) => (item._id || item.question) !== (this.customResult?._id || this.customResult?.question))
           ];
         }
-        this.canAskAI = false;
+        this.canAskAI = !this.customResult;
+        this.customErrorMessage = this.customResult ? '' : 'No exact answer found in the question bank.';
         this.isSearchingMatches = false;
         this.filtersDirty = false;
         this.cdr.markForCheck();
@@ -556,6 +559,11 @@ export class InterviewPrepComponent implements OnInit {
     return value > 0 ? `${Math.round(value * 100)}% confidence` : '';
   }
 
+  relevanceLabel(item: InterviewQuestion): string {
+    const value = Number(item.relevanceScore || 0);
+    return value > 0 ? `${Math.round(value * 100)}% relevance` : '';
+  }
+
   async copyAnswer(item: InterviewQuestion): Promise<void> {
     try {
       await navigator.clipboard.writeText(`${item.question}\n\n${item.answer}`);
@@ -646,6 +654,14 @@ export class InterviewPrepComponent implements OnInit {
     }
     if (typeof structured.realWorldContext === 'string' && structured.realWorldContext) {
       sections.push({ title: 'Real-world Context', body: structured.realWorldContext, kind: 'context' });
+    }
+    const commonMistakes = structured['commonMistakes'];
+    if (Array.isArray(commonMistakes) && commonMistakes.length) {
+      sections.push({ title: 'Common Mistakes', body: '', kind: 'list', items: commonMistakes });
+    }
+    const interviewTip = structured['interviewTip'];
+    if (typeof interviewTip === 'string' && interviewTip) {
+      sections.push({ title: 'Interview Tip', body: interviewTip, kind: 'context' });
     }
     if (sections.length) return sections;
 

@@ -15,6 +15,10 @@ const DEFAULT_SORT = {
   lastUsedAt: -1,
   createdAt: -1
 };
+const MIN_APPROVED_CONFIDENCE = 0.72;
+const MIN_APPROVED_RELEVANCE = 0.75;
+const MIN_TOP_CONFIDENCE = 0.78;
+const MIN_TOP_RELEVANCE = 0.78;
 const TOP_CATEGORY_FILTER = ['conceptual', 'best_practice'];
 const VALID_SOURCES = new Set(['prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked']);
 const VALID_CATEGORIES = new Set(['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral']);
@@ -23,9 +27,28 @@ const toQuestionHash = (value = '') => crypto
   .update(normalizeComparableText(value))
   .digest('hex');
 
+const approvedQualityCriteria = (minConfidence = MIN_APPROVED_CONFIDENCE, minRelevance = MIN_APPROVED_RELEVANCE) => ([
+  { qualityState: { $ne: 'rejected' } },
+  {
+    $or: [
+      { qualityStatus: 'approved' },
+      { qualityStatus: { $exists: false } },
+      { qualityStatus: '' }
+    ]
+  },
+  { isApproved: { $ne: false } },
+  { confidenceScore: { $gte: minConfidence } },
+  {
+    $or: [
+      { relevanceScore: { $gte: minRelevance } },
+      { relevanceScore: { $exists: false } }
+    ]
+  }
+]);
+
 const buildQuestionFilter = ({ topicKey = '', skill = '', topicType = '', difficulty = '', tags = '', query = '', excludeGenericSeeds = false } = {}) => {
   const filter = {
-    qualityState: { $ne: 'rejected' }
+    $and: approvedQualityCriteria()
   };
   const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
   const normalizedSkill = String(skill || '').trim().toLowerCase();
@@ -107,6 +130,9 @@ const upsertQuestions = async (records = []) => {
       : {};
     const hasStructuredAnswer = Object.keys(answerSections).length > 0 || record.answerFormat === 'structured';
     const normalizedSkill = String(record.skill || topicKey || '').trim().toLowerCase();
+    const rawQualityStatus = String(record.qualityStatus || record.qualityState || 'approved').trim().toLowerCase();
+    const qualityStatus = rawQualityStatus === 'review' ? 'pending' : rawQualityStatus;
+    const confidenceScore = Number(record.confidenceScore || 0.7);
 
     return {
       updateOne: {
@@ -138,12 +164,16 @@ const upsertQuestions = async (records = []) => {
             source: sourceType === 'user_asked' ? 'ai_generated' : sourceType,
             sourceType,
             sourceMeta: record.sourceMeta || {},
-            confidenceScore: Number(record.confidenceScore || 0.7),
+            confidenceScore,
+            relevanceScore: Number(record.relevanceScore || Math.min(0.95, Math.max(0.75, confidenceScore))),
             category: VALID_CATEGORIES.has(category) ? category : 'conceptual',
             qualityScore: Math.min(5, Math.max(1, Number(record.qualityScore || 3))),
             answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
             isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
             qualityState: String(record.qualityState || 'approved').trim().toLowerCase(),
+            isApproved: record.isApproved !== false,
+            qualityStatus,
+            rejectedReason: String(record.rejectedReason || '').trim(),
             popularity: Number(record.popularity || 0),
             topicDimensions: record.topicDimensions || {}
           }
@@ -169,6 +199,10 @@ const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', ta
   });
   filter.category = { $in: TOP_CATEGORY_FILTER };
   filter.qualityScore = { $gte: 4 };
+  filter.$and = [
+    ...(filter.$and || []),
+    ...approvedQualityCriteria(MIN_TOP_CONFIDENCE, MIN_TOP_RELEVANCE)
+  ];
 
   const rows = await InterviewQuestionBank.find(filter)
     .sort({ usageCount: -1, qualityScore: -1, confidenceScore: -1, popularity: -1, lastUsedAt: -1, createdAt: -1 })
@@ -186,8 +220,7 @@ const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, diffi
   if (normalizedSource) {
     if (normalizedSource === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
     else if (normalizedSource === 'seed') filter.sourceType = 'prebuilt';
-    else if (normalizedSource === 'database') filter.sourceType = { $nin: ['ai', 'ai_generated', 'scraped', 'prebuilt'] };
-    else filter.sourceType = normalizedSource;
+    else if (normalizedSource !== 'database') filter.sourceType = normalizedSource;
   }
 
   const skip = (Math.max(1, Number(page || 1)) - 1) * Math.max(1, Number(limit || 10));
@@ -224,7 +257,7 @@ const findAiGeneratedByTopic = async ({ topicKey = '', topic = '', limit = 10 } 
   const filter = {
     topicKey: normalizedTopicKey,
     sourceType: { $in: ['ai', 'ai_generated', 'user_asked'] },
-    qualityState: { $ne: 'rejected' }
+    $and: approvedQualityCriteria()
   };
   if (normalizedTopic) {
     filter.$or = [
@@ -246,7 +279,7 @@ const countAiGeneratedByTopic = async ({ topicKey = '', topic = '' } = {}) => {
   const filter = {
     topicKey: normalizedTopicKey,
     sourceType: { $in: ['ai', 'ai_generated', 'user_asked'] },
-    qualityState: { $ne: 'rejected' }
+    $and: approvedQualityCriteria()
   };
   if (normalizedTopic) {
     filter.$or = [
@@ -281,8 +314,7 @@ const findExactReusableQuestion = async ({ topicKey = '', question = '', minConf
 
   return InterviewQuestionBank.findOne({
     topicKey: String(topicKey || '').trim().toLowerCase(),
-    qualityState: { $ne: 'rejected' },
-    confidenceScore: { $gte: minConfidence },
+    $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE),
     $or: [
       { normalizedQuestionHash: toQuestionHash(normalizedQuestion) },
       { normalizedQuestion }
@@ -293,14 +325,13 @@ const findExactReusableQuestion = async ({ topicKey = '', question = '', minConf
 const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, minConfidence = 0.6 } = {}) => {
   const filter = {
     topicKey: String(topicKey || '').trim().toLowerCase(),
-    qualityState: { $ne: 'rejected' },
-    confidenceScore: { $gte: minConfidence }
+    $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE)
   };
   const safeTags = sanitizeTags(tags);
   if (safeTags.length) filter.tags = { $in: safeTags };
 
   return InterviewQuestionBank.find(filter)
-    .sort({ usageCount: -1, popularity: -1, createdAt: -1 })
+    .sort({ relevanceScore: -1, confidenceScore: -1, usageCount: -1, popularity: -1, createdAt: -1 })
     .limit(limit)
     .lean();
 };
@@ -363,14 +394,19 @@ const incrementUsageStats = async (ids = []) => {
 
 const countQuestionsByTopic = async (topicKey = '') => {
   if (!topicKey) return 0;
-  return InterviewQuestionBank.countDocuments({ topicKey: String(topicKey || '').trim().toLowerCase() });
+  return InterviewQuestionBank.countDocuments({
+    topicKey: String(topicKey || '').trim().toLowerCase(),
+    $and: approvedQualityCriteria()
+  });
 };
 
 const countQuestionsByTopicAndSeedVersion = async (topicKey = '', seedVersion = '') => {
   if (!topicKey || !seedVersion) return 0;
   return InterviewQuestionBank.countDocuments({
     topicKey: String(topicKey || '').trim().toLowerCase(),
-    'sourceMeta.seedVersion': seedVersion
+    'sourceMeta.seedVersion': seedVersion,
+    qualityState: { $ne: 'rejected' },
+    isApproved: { $ne: false }
   });
 };
 

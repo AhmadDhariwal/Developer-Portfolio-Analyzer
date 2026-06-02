@@ -56,7 +56,11 @@ test('orchestrator uses AI first and persists enriched records', async () => {
       generateQuestionsFromAI: async () => ([
         {
           question: 'Explain the event loop in JavaScript',
-          answer: 'The event loop manages asynchronous callbacks by coordinating call stack and task queues.',
+          answer: 'The JavaScript event loop coordinates the call stack, microtask queue, and macrotask queue so asynchronous callbacks run after synchronous code completes. In browsers and Node.js, this explains why Promise callbacks run before timers and why blocking the stack delays async work.',
+          answerSections: {
+            summary: 'The JavaScript event loop schedules async callbacks around the call stack and task queues.',
+            explanation: 'Promises, timers, and I/O callbacks are ordered by JavaScript runtime queues.'
+          },
           difficulty: 'medium',
           tags: ['javascript', 'async']
         }
@@ -93,7 +97,11 @@ test('orchestrator falls back to scrape when AI is insufficient', async () => {
       generateQuestionsFromAI: async () => ([
         {
           question: 'What is JavaScript?',
-          answer: 'A language for web development and server-side applications with Node.js.',
+          answer: 'JavaScript is a programming language used for browser interactivity and server-side applications with Node.js. It supports functions, objects, promises, and event-driven asynchronous programming, which are common interview fundamentals.',
+          answerSections: {
+            summary: 'JavaScript is a language for browser and Node.js application logic.',
+            explanation: 'Core JavaScript concepts include objects, functions, promises, and asynchronous event handling.'
+          },
           difficulty: 'easy',
           tags: ['javascript']
         }
@@ -103,7 +111,7 @@ test('orchestrator falls back to scrape when AI is insufficient', async () => {
       scrapeQuestionsForTopic: async () => ([
         {
           question: 'How does garbage collection work in JavaScript engines?',
-          answer: 'Modern engines use mark-and-sweep style algorithms with optimization techniques to reclaim unused memory and reduce pause time.',
+          answer: 'JavaScript engines such as V8 use tracing garbage collectors, commonly mark-and-sweep with generational optimizations, to find unreachable objects and reclaim memory. This matters in interviews because lingering references, closures, and global caches can keep objects alive and create memory leaks.',
           difficulty: 'medium',
           tags: ['javascript', 'memory']
         }

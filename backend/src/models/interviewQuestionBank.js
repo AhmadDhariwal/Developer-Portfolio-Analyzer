@@ -121,6 +121,29 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     enum: ['approved', 'review', 'rejected'],
     default: 'approved'
   },
+  isApproved: {
+    type: Boolean,
+    default: true,
+    index: true
+  },
+  qualityStatus: {
+    type: String,
+    enum: ['approved', 'pending', 'rejected'],
+    default: 'approved',
+    index: true
+  },
+  rejectedReason: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  relevanceScore: {
+    type: Number,
+    default: 0.75,
+    min: 0,
+    max: 1,
+    index: true
+  },
   popularity: {
     type: Number,
     default: 0
@@ -152,6 +175,7 @@ interviewQuestionBankSchema.index({ topicKey: 1, popularity: -1, createdAt: -1 }
 interviewQuestionBankSchema.index({ topicKey: 1, sourceType: 1 });
 // NEW: Supports Block 1 Top 30 filters and ranking.
 interviewQuestionBankSchema.index({ topicKey: 1, category: 1, qualityScore: -1, usageCount: -1 });
+interviewQuestionBankSchema.index({ topicKey: 1, isApproved: 1, qualityStatus: 1, confidenceScore: -1, relevanceScore: -1 });
 // NEW: Supports finding legacy/plain answers that need one-time enrichment.
 interviewQuestionBankSchema.index({ topicKey: 1, isEnriched: 1, answerFormat: 1 });
 

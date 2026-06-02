@@ -26,16 +26,23 @@ const normalizeStructuredAnswer = (answer = {}) => {
     };
   }
 
-  const bulletPoints = Array.isArray(answer.bulletPoints)
-    ? answer.bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6)
+  const bulletPoints = Array.isArray(answer.keyPoints)
+    ? answer.keyPoints
+    : Array.isArray(answer.bulletPoints)
+      ? answer.bulletPoints
+      : [];
+  const commonMistakes = Array.isArray(answer.commonMistakes)
+    ? answer.commonMistakes.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 5)
     : [];
 
   return {
-    summary: normalizeAnswerText(answer.summary || answer.directAnswer || ''),
+    summary: normalizeAnswerText(answer.shortAnswer || answer.summary || answer.directAnswer || ''),
     explanation: normalizeAnswerText(answer.explanation || ''),
-    bulletPoints,
-    codeExample: String(answer.codeExample || '').trim(),
-    realWorldContext: normalizeAnswerText(answer.realWorldContext || answer.productionContext || '')
+    bulletPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
+    codeExample: String(answer.example || answer.codeExample || '').trim(),
+    realWorldContext: normalizeAnswerText(answer.realWorldUseCase || answer.realWorldContext || answer.productionContext || ''),
+    commonMistakes,
+    interviewTip: normalizeAnswerText(answer.interviewTip || '')
   };
 };
 
@@ -46,7 +53,9 @@ const structuredAnswerToText = (answer = {}) => {
     structured.explanation ? `Explanation: ${structured.explanation}` : '',
     structured.bulletPoints.length ? `Key points:\n${structured.bulletPoints.map((point) => `- ${point}`).join('\n')}` : '',
     structured.codeExample ? `Code example:\n${structured.codeExample}` : '',
-    structured.realWorldContext ? `Real-world context: ${structured.realWorldContext}` : ''
+    structured.realWorldContext ? `Real-world context: ${structured.realWorldContext}` : '',
+    structured.commonMistakes?.length ? `Common mistakes:\n${structured.commonMistakes.map((point) => `- ${point}`).join('\n')}` : '',
+    structured.interviewTip ? `Interview tip: ${structured.interviewTip}` : ''
   ].filter(Boolean).join('\n\n'));
 };
 
@@ -66,7 +75,7 @@ const normalizeArray = (questions = []) => {
   return safe
     .map((item, idx) => {
       const question = normalizeQuestionText(item.question || item.title || `Interview question ${idx + 1}`);
-      const answerSections = normalizeStructuredAnswer(item.answer || item.sampleAnswer || {});
+      const answerSections = normalizeStructuredAnswer(item.answer || item.sampleAnswer || item);
       const answer = structuredAnswerToText(answerSections);
       return {
         question,
@@ -75,7 +84,8 @@ const normalizeArray = (questions = []) => {
         category: sanitizeCategory(item.category),
         qualityScore: sanitizeQualityScore(item.qualityScore),
         difficulty: sanitizeDifficulty(item.difficulty),
-        tags: sanitizeTags(item.tags)
+        tags: sanitizeTags(item.tags),
+        confidenceScore: Number(item.confidenceScore || 0)
       };
     })
     .filter((item) => item.question && item.answer);
@@ -94,23 +104,25 @@ const buildQuestionGenerationPrompt = ({ topicKey, topicType, query = '', diffic
     'You are a senior software engineer creating interview questions.',
     `Skill: ${topicKey}, Topic: ${query || topicKey}`,
     `Generate ${count} interview questions.`,
-    'Return ONLY a valid JSON array. Each object:',
+    'Return ONLY a valid JSON array. Each object must use exactly this schema:',
     '{',
-    "  question: 'the question text',",
-    '  answer: {',
-    "    summary: 'one sentence direct answer',",
-    "    explanation: 'detailed 2-3 paragraph explanation',",
-    "    bulletPoints: ['point1', 'point2', 'point3'],",
-    "    codeExample: 'only if relevant, else empty string',",
-    "    realWorldContext: 'how this works in production'",
-    '  },',
-    "  category: 'conceptual|scenario_based|code_output|best_practice|system_design|behavioral',",
+    "  question: 'technology-specific interview question',",
+    "  shortAnswer: 'one sentence direct answer',",
+    "  keyPoints: ['point1', 'point2', 'point3'],",
+    "  explanation: 'detailed 2-3 paragraph explanation',",
+    "  example: 'specific code/config/example if relevant, else empty string',",
+    "  realWorldUseCase: 'how this applies in production',",
+    "  commonMistakes: ['mistake1', 'mistake2'],",
+    "  interviewTip: 'one concise interview tip',",
     "  difficulty: 'easy|medium|hard',",
-    '  qualityScore: number 1-5,',
-    "  tags: ['tag1', 'tag2']",
+    `  technology: '${topicKey}',`,
+    `  topicKey: '${topicKey}',`,
+    "  tags: ['tag1', 'tag2'],",
+    '  confidenceScore: number between 0 and 1',
     '}',
     'No markdown. No extra text. JSON array only.',
     `Every question and answer must reference concrete ${topicKey} concepts, APIs, patterns, failure modes, or production tradeoffs.`,
+    `Reject generic questions that could apply to a different technology.`,
     difficultyRules,
     difficulty ? `Target difficulty: ${difficulty}.` : 'Use balanced difficulty levels.',
     `Topic type: ${topicType}.`
@@ -124,19 +136,22 @@ const buildCustomAnswerPrompt = ({ topicKey, topicType, question = '' }) => {
     `Question: ${question}`,
     'Return ONLY valid JSON:',
     '{',
-    '  answer: {',
-    "    summary: 'one sentence direct answer',",
-    "    explanation: 'detailed 2-3 paragraph explanation',",
-    "    bulletPoints: ['point1', 'point2', 'point3'],",
-    "    codeExample: 'only if relevant, else empty string',",
-    "    realWorldContext: 'how this works in production'",
-    '  },',
-    "  category: 'conceptual|scenario_based|code_output|best_practice|system_design|behavioral',",
+    "  question: 'repeat the exact user question',",
+    "  shortAnswer: 'one sentence direct answer to the exact question',",
+    "  keyPoints: ['point1', 'point2', 'point3'],",
+    "  explanation: 'detailed 2-3 paragraph explanation',",
+    "  example: 'specific code/config/example if relevant, else empty string',",
+    "  realWorldUseCase: 'how this applies in production',",
+    "  commonMistakes: ['mistake1', 'mistake2'],",
+    "  interviewTip: 'one concise interview tip',",
     "  difficulty: 'easy|medium|hard',",
-    '  qualityScore: number 1-5,',
-    "  tags: ['tag1', 'tag2']",
+    `  technology: '${topicKey}',`,
+    `  topicKey: '${topicKey}',`,
+    "  tags: ['tag1', 'tag2'],",
+    '  confidenceScore: number between 0 and 1',
     '}',
     'No markdown. No extra text. JSON only.',
+    `The answer must directly answer the exact question and mention concrete ${topicKey} concepts.`,
     `Topic type: ${topicType}.`
   ].join('\n');
 };
@@ -166,7 +181,8 @@ const normalizeGeneratedResult = ({ result = {}, fallbackQuestion = '', fallback
     category: sanitizeCategory(result.category),
     qualityScore: sanitizeQualityScore(result.qualityScore),
     difficulty: sanitizeDifficulty(result.difficulty || 'medium'),
-    tags: sanitizeTags(Array.isArray(result.tags) ? result.tags : fallbackTags)
+    tags: sanitizeTags(Array.isArray(result.tags) ? result.tags : fallbackTags),
+    confidenceScore: Number(result.confidenceScore || 0)
   };
 };
 
@@ -177,16 +193,19 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
       {
         question: `How would you explain the core concepts of ${topicKey} in an interview?`,
         answer: {
-          summary: `Explain the core ${topicKey} concepts clearly and connect them to practical engineering choices.`,
+          shortAnswer: `Explain the core ${topicKey} concepts clearly and connect them to practical engineering choices.`,
           explanation: `A strong answer should define the main ${topicKey} concepts, explain how they are used in real applications, and describe the tradeoffs that matter in production. Interviewers usually look for whether you can connect the concept to debugging, maintainability, performance, and team decision-making.`,
-          bulletPoints: [`Define the primary ${topicKey} concept`, 'Explain when it is useful', 'Mention a production tradeoff'],
-          codeExample: '',
-          realWorldContext: `Production teams use ${topicKey} decisions to improve reliability, developer velocity, and runtime behavior.`
+          keyPoints: [`Define the primary ${topicKey} concept`, 'Explain when it is useful', 'Mention a production tradeoff'],
+          example: '',
+          realWorldUseCase: `Production teams use ${topicKey} decisions to improve reliability, developer velocity, and runtime behavior.`,
+          commonMistakes: ['Giving a generic answer without technology-specific details'],
+          interviewTip: `Name concrete ${topicKey} APIs or patterns when possible.`
         },
         category: 'conceptual',
         qualityScore: 4,
         difficulty: 'medium',
-        tags: [topicKey, topicType]
+        tags: [topicKey, topicType],
+        confidenceScore: 0.78
       }
     ]
   };
@@ -204,16 +223,19 @@ const answerCustomQuestionFromAI = async ({ topicKey, topicType, question }) => 
   const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question });
   const fallback = {
     answer: {
-      summary: `Explain the relevant ${topicKey} concept precisely and relate it to real implementation choices.`,
+      shortAnswer: `Explain the relevant ${topicKey} concept precisely and relate it to real implementation choices.`,
       explanation: `A useful interview answer should define the concept, show how it behaves in practice, and explain the tradeoffs behind using it. For ${topicKey}, strong answers avoid generic theory and mention concrete APIs, patterns, or failure modes where possible.`,
-      bulletPoints: ['Define the concept', 'Explain when to use it', 'Mention one tradeoff'],
-      codeExample: '',
-      realWorldContext: `In production, ${topicKey} choices affect reliability, performance, maintainability, and debugging workflows.`
+      keyPoints: ['Define the concept', 'Explain when to use it', 'Mention one tradeoff'],
+      example: '',
+      realWorldUseCase: `In production, ${topicKey} choices affect reliability, performance, maintainability, and debugging workflows.`,
+      commonMistakes: ['Answering with generic theory instead of technology-specific details'],
+      interviewTip: `Tie the answer to concrete ${topicKey} behavior.`
     },
     category: 'conceptual',
     qualityScore: 4,
     difficulty: 'medium',
-    tags: [topicKey, topicType, 'ai_generated']
+    tags: [topicKey, topicType, 'ai_generated'],
+    confidenceScore: 0.78
   };
 
   const result = await aiService.runAIAnalysis(prompt, fallback);
