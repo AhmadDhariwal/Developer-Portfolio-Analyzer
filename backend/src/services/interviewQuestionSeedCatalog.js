@@ -6,8 +6,8 @@ const {
   sanitizeTags
 } = require('./interviewQuestionQualityService');
 
-const SEED_VERSION = 'v4-verified-top30';
-const MIN_VERIFIED_SEED_COUNT = 30;
+const SEED_VERSION = 'v5-expanded-top30';
+const MIN_VERIFIED_SEED_COUNT = 31;
 
 const TOPIC_GUIDES = {
   javascript: {
@@ -295,59 +295,87 @@ const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
   const guide = TOPIC_GUIDES[topicKey] || { label: topicKey, useCase: 'production systems', interviewTip: '' };
   const specs = [];
 
-  concepts.slice(0, 10).forEach((concept) => {
+  concepts.forEach((concept) => {
     const conceptLabel = concept.concept;
+    const conceptDisplay = `${conceptLabel.charAt(0).toUpperCase()}${conceptLabel.slice(1)}`;
+    const isPluralConcept = /\b(and|collections|comprehensions|primitives|boundaries|flows|queries|actions)\b/i.test(conceptLabel)
+      || /s$/i.test(conceptLabel);
+    const definitionVerb = isPluralConcept ? 'are' : 'is';
+    const matterVerb = isPluralConcept ? 'matter' : 'matters';
+    const doVerb = isPluralConcept ? 'do' : 'does';
     const baseTags = sanitizeTags([...(concept.tags || []), topicKey, conceptLabel]);
     const baseUseCase = concept.useCase || guide.useCase;
     const example = concept.example || guide.example || '';
+    const exampleSnippet = example ? example.replace(/[.\s]+$/g, '') : '';
     const commonMistakes = concept.commonMistakes || [
-      `Keeping the answer generic instead of naming concrete ${guide.label} behavior around ${conceptLabel}.`,
-      `Skipping the main tradeoff, limitation, or operational risk tied to ${conceptLabel}.`
+      `Defining ${conceptDisplay} without explaining how it changes real ${guide.label} implementation decisions.`,
+      `Skipping the main tradeoff, limitation, or operational risk tied to ${conceptLabel}.`,
+      example
+        ? `Not backing the answer with a concrete ${guide.label} example such as ${exampleSnippet}.`
+        : `Keeping the answer generic instead of tying ${conceptDisplay} to a real production workflow.`
     ];
+    const interviewTip = concept.interviewTip
+      || `State what ${conceptDisplay} ${doVerb} in ${guide.label}, then connect it to ${baseUseCase}.`;
+    const fundamentalsQuestion = concept.fundamentalsQuestion
+      || `What ${definitionVerb} ${conceptLabel} in ${guide.label}, and when should a team reach for ${isPluralConcept ? 'them' : 'it'}?`;
+    const fundamentalsAnswer = concept.fundamentalsAnswer
+      || `${conceptDisplay} ${matterVerb} in ${guide.label} because ${isPluralConcept ? 'they' : 'it'} directly affect${isPluralConcept ? '' : 's'} ${baseUseCase}. A strong answer should define the concept clearly, name when ${isPluralConcept ? 'they are' : 'it is'} a good fit, and explain the practical outcome ${isPluralConcept ? 'they improve' : 'it improves'}.`;
+    const practicalQuestion = concept.practicalQuestion
+      || `How would you use ${conceptLabel} for ${baseUseCase} in a real ${guide.label} project?`;
+    const practicalAnswer = concept.practicalAnswer
+      || `In a real ${guide.label} project, you would use ${conceptLabel} to support ${baseUseCase}. The best answer explains how ${isPluralConcept ? 'they are' : 'it is'} wired into the codebase, what benefit ${isPluralConcept ? 'they provide' : 'it provides'}, and what guardrails keep the implementation maintainable in production.`;
+    const advancedQuestion = concept.advancedQuestion
+      || `What mistakes, tradeoffs, or follow-up interview points matter when discussing ${conceptLabel} in ${guide.label}?`;
+    const advancedAnswer = concept.advancedAnswer
+      || `Interviewers expect you to discuss the upside of ${conceptLabel} in ${guide.label} along with ${isPluralConcept ? 'their' : 'its'} limits, debugging cost, and operational tradeoffs. Strong answers compare ${isPluralConcept ? 'them' : 'it'} with simpler alternatives and explain when the extra complexity is justified.`;
 
     specs.push(seed(
       concept.fundamentalsDifficulty || 'medium',
-      concept.fundamentalsQuestion || `What is ${conceptLabel} in ${guide.label}, and why does it matter?`,
-      concept.fundamentalsAnswer || `${conceptLabel} is important in ${guide.label} because it directly affects how teams build, debug, and scale real applications.`,
+      fundamentalsQuestion,
+      fundamentalsAnswer,
       baseTags,
       {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        interviewTip: concept.interviewTip || guide.interviewTip
+        explanation: `${conceptDisplay} ${isPluralConcept ? 'come up' : 'comes up'} in ${guide.label} interviews because teams use ${isPluralConcept ? 'them' : 'it'} for ${baseUseCase}. A strong explanation should cover what ${isPluralConcept ? 'they do' : 'it does'}, when ${isPluralConcept ? 'they help' : 'it helps'}, and what can go wrong if ${isPluralConcept ? 'they are' : 'it is'} used without clear boundaries.`,
+        interviewTip,
+        category: concept.category || 'conceptual'
       }
     ));
 
     specs.push(seed(
       concept.practicalDifficulty || 'medium',
-      concept.practicalQuestion || `How would you use ${conceptLabel} in a production ${guide.label} workflow?`,
-      concept.practicalAnswer || `In production ${guide.label} systems, ${conceptLabel} should be applied in a way that improves reliability, maintainability, or delivery speed rather than adding unnecessary complexity.`,
+      practicalQuestion,
+      practicalAnswer,
       sanitizeTags([...baseTags, 'production']),
       {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        interviewTip: concept.interviewTip || guide.interviewTip,
+        explanation: `This question tests whether you can move from definition to delivery. In ${guide.label}, ${conceptLabel} should be explained in terms of how ${isPluralConcept ? 'they are' : 'it is'} introduced into the code, what problem ${isPluralConcept ? 'they solve' : 'it solves'} for ${baseUseCase}, and how you would validate that the implementation is behaving correctly.`,
+        interviewTip,
         category: concept.category || 'scenario_based'
       }
     ));
 
     specs.push(seed(
       concept.advancedDifficulty || 'hard',
-      concept.advancedQuestion || `What tradeoffs or failure modes should you discuss when ${conceptLabel} comes up in a ${guide.label} interview?`,
-      concept.advancedAnswer || `The strongest ${guide.label} answers on ${conceptLabel} explain both the upside and the tradeoffs, including failure modes, scaling concerns, or maintenance costs.`,
+      advancedQuestion,
+      advancedAnswer,
       sanitizeTags([...baseTags, 'tradeoffs']),
       {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        interviewTip: concept.interviewTip || guide.interviewTip,
+        explanation: `Advanced ${guide.label} questions on ${conceptLabel} are really checking judgment. You should name the benefit, the main tradeoff, the debugging or scaling risk, and the point where a simpler design would be the better call.`,
+        interviewTip,
         category: concept.category || 'best_practice'
       }
     ));
   });
 
-  return specs.slice(0, 30);
+  return specs;
 };
 
 const verifiedSeedCatalog = {
@@ -1088,12 +1116,347 @@ const generatedTopicConfigs = {
   ]
 };
 
+const moreConcept = (concept, tags, useCase, example) => ({ concept, tags, useCase, example });
+
+const additionalGeneratedTopicConcepts = {
+  python: [
+    moreConcept('dataclasses', ['dataclasses', 'modeling'], 'building lightweight typed data containers without verbose classes', 'Use @dataclass for DTO-style objects with generated init and repr methods.'),
+    moreConcept('iterators and iterables', ['iterators', 'iteration'], 'creating memory-efficient custom loops and pipelines', 'Implement __iter__ when an object should be consumed in a for loop.'),
+    moreConcept('lambda functions', ['lambda', 'functional'], 'writing short callback or transformation functions when readability stays clear', 'sorted(users, key=lambda user: user.created_at)'),
+    moreConcept('exception handling', ['exceptions', 'errors'], 'communicating recoverable failures cleanly across Python layers', 'Catch specific exceptions instead of swallowing every Exception.'),
+    moreConcept('modules and packages', ['modules', 'packages'], 'organizing Python code so imports and deployment remain predictable', 'Place reusable code in a package with __init__.py and clear public modules.'),
+    moreConcept('dependency management', ['dependencies', 'packaging'], 'pinning and upgrading Python packages safely across environments', 'Use lock files or constraints to avoid surprise dependency changes.'),
+    moreConcept('multiprocessing', ['multiprocessing', 'performance'], 'running CPU-heavy Python work outside the GIL bottleneck', 'Use a process pool for image processing or numeric batch jobs.'),
+    moreConcept('threading', ['threading', 'concurrency'], 'coordinating I/O-bound work that waits on external systems', 'Use threads for blocking network calls only when the shared state is controlled.'),
+    moreConcept('type hints', ['typing', 'type-hints'], 'documenting contracts and helping tools catch Python bugs earlier', 'def get_user(user_id: str) -> User | None: ...'),
+    moreConcept('Pydantic models', ['pydantic', 'validation'], 'validating API payloads and configuration in Python services', 'Use BaseModel to parse and validate request bodies.'),
+    moreConcept('FastAPI basics', ['fastapi', 'api'], 'building typed Python APIs with validation and documentation support', 'Declare request models and response models on FastAPI routes.'),
+    moreConcept('Django ORM', ['django', 'orm'], 'mapping relational data into Python application models', 'Use select_related to avoid avoidable database queries.'),
+    moreConcept('Flask applications', ['flask', 'api'], 'building lightweight Python web services with explicit routing', 'Register blueprints for feature-level route organization.'),
+    moreConcept('SQLAlchemy sessions', ['sqlalchemy', 'database'], 'managing database unit-of-work boundaries in Python apps', 'Open a session per request and commit or roll back deliberately.'),
+    moreConcept('logging', ['logging', 'observability'], 'capturing production diagnostics without relying on print statements', 'Use structured logs with request identifiers.'),
+    moreConcept('fixtures', ['pytest', 'fixtures'], 'reusing test setup cleanly across Python test suites', 'Use pytest fixtures for database records or mocked services.'),
+    moreConcept('monkeypatching', ['testing', 'mocks'], 'isolating external dependencies in Python tests', 'Patch an environment variable or client method in a focused test.'),
+    moreConcept('serialization', ['json', 'serialization'], 'moving Python objects across APIs, queues, and storage boundaries', 'Convert datetime and Decimal values deliberately before JSON output.'),
+    moreConcept('performance profiling', ['profiling', 'performance'], 'finding real Python bottlenecks before optimizing code', 'Use cProfile or sampling profilers on the slow path.'),
+    moreConcept('PEP 8 and readability', ['style', 'maintainability'], 'keeping Python code consistent across teams', 'Prefer clear names and simple functions over clever one-liners.'),
+    moreConcept('dependency injection in Python', ['dependency-injection', 'architecture'], 'making Python services testable without global state', 'Pass collaborators into classes or functions instead of constructing them everywhere.')
+  ],
+  java: [
+    moreConcept('records', ['records', 'immutability'], 'modeling immutable data carriers in modern Java', 'public record UserDto(String id, String email) {}'),
+    moreConcept('sealed classes', ['sealed-classes', 'domain-modeling'], 'restricting allowed subtype hierarchies for safer domain modeling', 'Use sealed interfaces when only known variants should exist.'),
+    moreConcept('Optional', ['optional', 'null-safety'], 'representing possibly missing values without returning raw null', 'return Optional.ofNullable(user);'),
+    moreConcept('CompletableFuture', ['completablefuture', 'async'], 'composing asynchronous Java work without blocking request threads', 'CompletableFuture.allOf(profileFuture, ordersFuture)'),
+    moreConcept('synchronized blocks', ['synchronized', 'concurrency'], 'protecting shared mutable state in Java code', 'Synchronize only the critical section that touches shared state.'),
+    moreConcept('volatile', ['volatile', 'memory-model'], 'ensuring visibility for shared state across Java threads', 'Use volatile for simple visibility, not compound atomic operations.'),
+    moreConcept('ExecutorService', ['executorservice', 'threads'], 'controlling thread pools for background or parallel work', 'Submit bounded tasks to a fixed thread pool.'),
+    moreConcept('Spring Boot starters', ['spring-boot', 'configuration'], 'bootstrapping common Java service capabilities quickly', 'Add spring-boot-starter-web for MVC API support.'),
+    moreConcept('Spring profiles', ['spring', 'configuration'], 'switching environment-specific Java configuration safely', 'Use profiles for local, test, and production settings.'),
+    moreConcept('JPA entity lifecycle', ['jpa', 'orm'], 'understanding how Java persistence objects are loaded and saved', 'Know when an entity is transient, managed, detached, or removed.'),
+    moreConcept('Hibernate lazy loading', ['hibernate', 'performance'], 'avoiding unnecessary database reads while preventing runtime surprises', 'Fetch needed associations before leaving the transaction boundary.'),
+    moreConcept('equals and hashCode', ['objects', 'collections'], 'making Java objects behave correctly in sets and maps', 'Keep equals and hashCode consistent for value-like objects.'),
+    moreConcept('try-with-resources', ['resource-management', 'exceptions'], 'closing Java resources reliably even when failures occur', 'try (var stream = Files.lines(path)) { ... }'),
+    moreConcept('checked versus unchecked exceptions', ['exceptions', 'api-design'], 'choosing how Java APIs communicate failure to callers', 'Use checked exceptions only when callers can reasonably recover.'),
+    moreConcept('Maven versus Gradle', ['build-tools', 'dependencies'], 'managing Java builds and dependencies predictably', 'Choose the build tool that matches team conventions and automation needs.'),
+    moreConcept('unit testing with JUnit', ['junit', 'testing'], 'verifying Java behavior with focused repeatable tests', 'Use assertions around behavior rather than implementation details.'),
+    moreConcept('Mockito mocks', ['mockito', 'testing'], 'isolating Java collaborators in service tests', 'Mock external gateways and keep domain logic real.'),
+    moreConcept('dependency injection scopes', ['spring', 'dependency-injection'], 'controlling Java object lifetime and shared state', 'Understand singleton beans versus request-scoped beans.'),
+    moreConcept('REST controllers', ['spring-mvc', 'api'], 'exposing Java service behavior through HTTP contracts', 'Map DTOs at the controller boundary.'),
+    moreConcept('transaction management', ['transactions', 'spring'], 'keeping multi-step Java persistence operations atomic', 'Put transaction boundaries around service methods that change related data.'),
+    moreConcept('JVM tuning', ['jvm', 'operations'], 'adjusting Java runtime behavior based on measured production needs', 'Inspect heap, GC pauses, and thread usage before changing flags.')
+  ],
+  cpp: [
+    moreConcept('the rule of zero', ['rule-of-zero', 'resource-management'], 'designing C++ types that avoid manual ownership code', 'Prefer standard containers and smart pointers so special members are unnecessary.'),
+    moreConcept('the rule of three', ['rule-of-three', 'copy-control'], 'managing resources safely in older C++ ownership patterns', 'If a class owns a raw resource, define copy constructor, assignment, and destructor carefully.'),
+    moreConcept('the rule of five', ['rule-of-five', 'move-semantics'], 'supporting correct copy and move behavior for resource-owning C++ types', 'Add move constructor and move assignment when ownership can transfer.'),
+    moreConcept('const correctness', ['const', 'api-design'], 'communicating mutation guarantees in C++ APIs', 'Mark methods const when they do not modify observable object state.'),
+    moreConcept('std::vector performance', ['vector', 'performance'], 'choosing contiguous storage for cache-friendly C++ collections', 'Reserve capacity when the final size is known.'),
+    moreConcept('std::map versus std::unordered_map', ['maps', 'containers'], 'choosing ordered or hash-based lookups in C++', 'Use unordered_map for average fast lookup and map when ordering matters.'),
+    moreConcept('operator overloading', ['operators', 'api-design'], 'making C++ types expressive without surprising callers', 'Overload operators only when the behavior matches normal expectations.'),
+    moreConcept('exception safety', ['exceptions', 'reliability'], 'keeping C++ objects valid when operations fail', 'Use RAII so cleanup still happens during stack unwinding.'),
+    moreConcept('undefined behavior', ['undefined-behavior', 'correctness'], 'avoiding C++ code paths the compiler may optimize unpredictably', 'Do not read out-of-bounds memory or use dangling references.'),
+    moreConcept('memory alignment', ['memory', 'performance'], 'understanding layout constraints in low-level C++ systems', 'Alignment can affect SIMD, structs, and hardware interaction.'),
+    moreConcept('constexpr', ['constexpr', 'compile-time'], 'moving safe computations to compile time in C++', 'Use constexpr for constants and functions that can be evaluated during compilation.'),
+    moreConcept('template specialization', ['templates', 'generic-programming'], 'customizing C++ generic behavior for specific types', 'Specialize only when the generic implementation is truly wrong for a type.'),
+    moreConcept('SFINAE and concepts', ['templates', 'concepts'], 'constraining C++ templates to meaningful type capabilities', 'Use concepts in modern C++ for clearer constraints.'),
+    moreConcept('virtual destructors', ['polymorphism', 'destructors'], 'destroying derived C++ objects correctly through base pointers', 'Make base destructors virtual when deleting through a base pointer.'),
+    moreConcept('object slicing', ['inheritance', 'correctness'], 'avoiding loss of derived state when copying polymorphic C++ objects by value', 'Pass polymorphic objects by reference or pointer.'),
+    moreConcept('mutex deadlocks', ['mutex', 'concurrency'], 'preventing stuck C++ programs caused by conflicting lock order', 'Acquire locks in a consistent order or use scoped_lock.'),
+    moreConcept('atomic operations', ['atomic', 'concurrency'], 'coordinating simple shared state without full mutexes', 'Use std::atomic for counters and flags when the memory semantics are understood.'),
+    moreConcept('condition variables', ['condition-variable', 'threads'], 'waiting efficiently for state changes between C++ threads', 'Always wait with a predicate to handle spurious wakeups.'),
+    moreConcept('linking errors', ['linking', 'build'], 'diagnosing unresolved symbols and one-definition-rule problems', 'Check declarations, definitions, and linked libraries together.'),
+    moreConcept('CMake targets', ['cmake', 'build'], 'organizing C++ builds around libraries and executable targets', 'Prefer target_link_libraries and target_include_directories over global flags.'),
+    moreConcept('profiling native code', ['profiling', 'performance'], 'finding real C++ hot paths before low-level optimization', 'Use a profiler before rewriting code for performance.')
+  ],
+  nextjs: [
+    moreConcept('layout nesting', ['layouts', 'app-router'], 'sharing UI and data boundaries across related Next.js routes', 'Use nested layouts for dashboard shells and section navigation.'),
+    moreConcept('loading and error files', ['loading-ui', 'errors'], 'handling async route states directly in the Next.js route tree', 'Create loading.tsx and error.tsx beside the route segment.'),
+    moreConcept('dynamic routes', ['routing', 'dynamic-routes'], 'rendering pages from URL parameters in Next.js', 'Use app/products/[id]/page.tsx for product detail pages.'),
+    moreConcept('generateStaticParams', ['ssg', 'routing'], 'prebuilding dynamic Next.js pages when known paths are available', 'Return product slugs at build time for static catalog pages.'),
+    moreConcept('metadata API', ['metadata', 'seo'], 'managing titles, descriptions, and social previews in Next.js', 'Use generateMetadata for data-driven detail pages.'),
+    moreConcept('client components', ['client-components', 'interactivity'], 'adding browser-only interactivity to Next.js screens', 'Mark interactive components with use client.'),
+    moreConcept('hydration mismatches', ['hydration', 'debugging'], 'debugging differences between server-rendered and client-rendered output', 'Avoid rendering Date.now differently on server and client.'),
+    moreConcept('fetch caching', ['fetch', 'caching'], 'controlling data freshness in Next.js server-side requests', 'Use cache options or revalidate based on the data source.'),
+    moreConcept('revalidatePath', ['revalidation', 'mutations'], 'refreshing cached Next.js routes after mutations', 'Call revalidatePath after a form updates visible data.'),
+    moreConcept('route segment config', ['configuration', 'rendering'], 'controlling runtime and rendering behavior per route', 'Set dynamic or runtime only where the route needs it.'),
+    moreConcept('edge runtime', ['edge', 'runtime'], 'running lightweight Next.js logic closer to users', 'Use edge middleware for simple auth or redirect checks.'),
+    moreConcept('cookies and headers', ['cookies', 'headers'], 'reading request context safely in Next.js server code', 'Use cookies() for session-aware server components.'),
+    moreConcept('forms with server actions', ['forms', 'server-actions'], 'submitting data without building a separate client API call', 'Bind a server action directly to a form action.'),
+    moreConcept('optimistic updates', ['optimistic-ui', 'ux'], 'making Next.js mutations feel fast while the server confirms changes', 'Use optimistic UI only with clear rollback behavior.'),
+    moreConcept('parallel routes', ['parallel-routes', 'routing'], 'rendering multiple route areas at the same time in Next.js', 'Use slots for dashboards with independent panels.'),
+    moreConcept('intercepting routes', ['intercepting-routes', 'modals'], 'showing route-backed modal experiences in Next.js', 'Open photo detail as a modal while preserving the feed route.'),
+    moreConcept('bundle analysis', ['bundle-size', 'performance'], 'finding client JavaScript cost in Next.js apps', 'Use bundle analyzer before moving code to the client.'),
+    moreConcept('server-only modules', ['server-only', 'security'], 'preventing secrets or backend code from entering client bundles', 'Import server-only in modules that must never run in the browser.'),
+    moreConcept('environment variables', ['configuration', 'deployment'], 'separating public and server-only configuration in Next.js', 'Use NEXT_PUBLIC only for values safe to expose to browsers.'),
+    moreConcept('deployment on Vercel', ['deployment', 'vercel'], 'shipping Next.js apps with platform-aware rendering and caching', 'Understand how functions, static assets, and revalidation are deployed.'),
+    moreConcept('Next.js testing', ['testing', 'quality'], 'covering routing, data fetching, and component behavior in Next.js apps', 'Test server logic separately from client interactions.')
+  ],
+  redis: [
+    moreConcept('strings', ['strings', 'data-structures'], 'storing simple counters, flags, and cached values in Redis', 'Use GET and SET for compact key-value data.'),
+    moreConcept('hashes', ['hashes', 'data-structures'], 'storing small object-like records without many separate keys', 'HSET user:42 name Ahmad role admin'),
+    moreConcept('lists', ['lists', 'queues'], 'building simple ordered queues or recent activity feeds in Redis', 'LPUSH events and LRANGE the newest items.'),
+    moreConcept('sets', ['sets', 'membership'], 'tracking unique membership efficiently in Redis', 'SADD online-users user:42'),
+    moreConcept('HyperLogLog', ['hyperloglog', 'analytics'], 'estimating large unique counts with small memory cost', 'PFADD visitors user:42'),
+    moreConcept('bitmaps', ['bitmaps', 'analytics'], 'tracking compact boolean activity over many users or days', 'SETBIT active:2026-06-03 42 1'),
+    moreConcept('geospatial indexes', ['geo', 'location'], 'querying location-based data with Redis commands', 'GEOADD stores longitude latitude store:42'),
+    moreConcept('pipelines', ['pipelines', 'performance'], 'reducing Redis round trips for batches of commands', 'Pipeline many GET calls instead of awaiting each one.'),
+    moreConcept('Lua scripts', ['lua', 'atomicity'], 'running multi-step Redis logic atomically on the server', 'Use Lua for check-and-set workflows that must not race.'),
+    moreConcept('transactions with MULTI', ['transactions', 'multi'], 'grouping Redis commands so they execute together', 'MULTI, INCR, EXPIRE, EXEC for simple rate counters.'),
+    moreConcept('key naming conventions', ['keys', 'best-practice'], 'keeping Redis data understandable and maintainable', 'Use service:entity:id:field style prefixes.'),
+    moreConcept('memory fragmentation', ['memory', 'operations'], 'diagnosing Redis memory pressure beyond raw dataset size', 'Watch used_memory and fragmentation ratio together.'),
+    moreConcept('hot keys', ['hot-keys', 'scalability'], 'avoiding overloaded Redis keys that receive too much traffic', 'Shard very hot counters or cache entries when needed.'),
+    moreConcept('cache stampede', ['cache-stampede', 'resilience'], 'preventing many callers from rebuilding the same expired cache', 'Use jitter, locks, or stale-while-revalidate patterns.'),
+    moreConcept('write-through caching', ['caching', 'consistency'], 'keeping Redis updated as writes happen', 'Update cache and database through a consistent service path.'),
+    moreConcept('write-behind caching', ['caching', 'durability'], 'buffering writes for speed while accepting durability tradeoffs', 'Use only when delayed persistence is acceptable.'),
+    moreConcept('session storage', ['sessions', 'auth'], 'sharing login state across stateless application instances', 'Store session IDs with TTLs and secure cookie references.'),
+    moreConcept('leaderboards', ['sorted-sets', 'ranking'], 'using Redis sorted sets for ordered scores', 'ZREVRANGE leaderboard 0 9 WITHSCORES'),
+    moreConcept('consumer groups', ['streams', 'consumer-groups'], 'coordinating stream processing across multiple workers', 'Use XREADGROUP to distribute events among consumers.'),
+    moreConcept('Sentinel failover', ['sentinel', 'high-availability'], 'automating Redis primary failover for high availability', 'Sentinel monitors Redis nodes and promotes replicas.'),
+    moreConcept('Redis security', ['security', 'operations'], 'protecting Redis from accidental or hostile access', 'Use private networking, ACLs, and no public exposure.')
+  ],
+  aws: [
+    moreConcept('CloudFront', ['cloudfront', 'cdn'], 'serving cached content globally with lower latency', 'Put CloudFront in front of S3 assets or APIs.'),
+    moreConcept('Route 53', ['route53', 'dns'], 'managing DNS and traffic routing for AWS-hosted systems', 'Use weighted records for controlled traffic shifting.'),
+    moreConcept('Elastic Load Balancing', ['elb', 'load-balancing'], 'distributing traffic across healthy AWS compute targets', 'Use an ALB for HTTP services behind multiple tasks.'),
+    moreConcept('Auto Scaling', ['autoscaling', 'scalability'], 'adjusting AWS capacity based on demand', 'Scale ECS tasks or EC2 instances from CPU or queue depth.'),
+    moreConcept('DynamoDB', ['dynamodb', 'nosql'], 'building low-latency key-value and document workloads on AWS', 'Model tables from access patterns, not relational joins.'),
+    moreConcept('SNS', ['sns', 'messaging'], 'faning out event notifications to multiple subscribers', 'Publish order events to SNS for independent consumers.'),
+    moreConcept('EventBridge', ['eventbridge', 'events'], 'routing application and AWS events between services', 'Use event rules to trigger workflows from domain events.'),
+    moreConcept('Step Functions', ['step-functions', 'workflows'], 'orchestrating multi-step AWS workflows with retries and state', 'Coordinate Lambda tasks with explicit failure handling.'),
+    moreConcept('EKS', ['eks', 'kubernetes'], 'running Kubernetes workloads on AWS-managed control planes', 'Use EKS when Kubernetes portability or ecosystem tooling matters.'),
+    moreConcept('Fargate', ['fargate', 'containers'], 'running containers without managing EC2 hosts', 'Run ECS tasks on Fargate for simpler operations.'),
+    moreConcept('Secrets Manager', ['secrets-manager', 'security'], 'storing and rotating sensitive credentials in AWS', 'Load database credentials from Secrets Manager at runtime.'),
+    moreConcept('KMS', ['kms', 'encryption'], 'managing encryption keys and access policies in AWS', 'Use KMS keys for S3, RDS, and application encryption needs.'),
+    moreConcept('WAF', ['waf', 'security'], 'filtering malicious HTTP traffic before it reaches applications', 'Attach WAF rules to CloudFront or an ALB.'),
+    moreConcept('CloudTrail', ['cloudtrail', 'audit'], 'auditing AWS API activity across accounts', 'Use CloudTrail logs for security investigations.'),
+    moreConcept('CloudFormation', ['cloudformation', 'iac'], 'defining AWS infrastructure as repeatable templates', 'Review infrastructure changes before stack updates.'),
+    moreConcept('CDK', ['cdk', 'iac'], 'modeling AWS infrastructure with programming languages', 'Use CDK constructs to package reusable infrastructure patterns.'),
+    moreConcept('multi-account strategy', ['accounts', 'governance'], 'separating AWS environments and blast radius', 'Use separate accounts for production, staging, and security tooling.'),
+    moreConcept('Well-Architected Framework', ['well-architected', 'architecture'], 'reviewing AWS systems against reliability, security, and cost pillars', 'Use pillar reviews to find operational risks.'),
+    moreConcept('cost optimization', ['cost', 'finops'], 'controlling AWS spend without hurting reliability', 'Right-size resources and remove idle infrastructure.'),
+    moreConcept('backup and disaster recovery', ['backup', 'dr'], 'recovering AWS workloads after failures or data loss', 'Define RTO and RPO before choosing backup patterns.'),
+    moreConcept('observability across AWS', ['observability', 'operations'], 'connecting logs, metrics, traces, and alarms in cloud systems', 'Correlate Lambda logs, API Gateway metrics, and X-Ray traces.')
+  ],
+  'generative-ai': [
+    moreConcept('structured outputs', ['structured-output', 'json'], 'making model responses safer for application code to parse', 'Ask for schema-shaped JSON and validate it before use.'),
+    moreConcept('system prompts', ['system-prompts', 'prompting'], 'setting stable behavior and boundaries for AI applications', 'Keep system instructions separate from user-provided content.'),
+    moreConcept('few-shot examples', ['few-shot', 'prompting'], 'showing the model the desired pattern through examples', 'Include two or three representative input-output examples.'),
+    moreConcept('zero-shot prompting', ['zero-shot', 'prompting'], 'asking a model to perform a task without examples', 'Use zero-shot only when the task is simple and unambiguous.'),
+    moreConcept('prompt injection', ['prompt-injection', 'security'], 'protecting AI apps from malicious user or document instructions', 'Treat retrieved text as data, not trusted instructions.'),
+    moreConcept('grounding', ['grounding', 'trust'], 'anchoring generated answers in supplied evidence', 'Require answers to cite retrieved context.'),
+    moreConcept('multimodal generation', ['multimodal', 'images'], 'using models that process or produce text, images, audio, or video', 'Send image context with text instructions for visual QA.'),
+    moreConcept('function calling', ['function-calling', 'tools'], 'letting a model request structured actions through trusted code', 'Validate tool arguments before executing any action.'),
+    moreConcept('agentic workflows', ['agents', 'workflows'], 'combining generation with planning and tool use', 'Use bounded steps and checkpoints for risky actions.'),
+    moreConcept('human review', ['human-in-the-loop', 'safety'], 'adding approval for high-risk generated outputs', 'Route legal, financial, or destructive actions to a reviewer.'),
+    moreConcept('red teaming', ['red-teaming', 'safety'], 'testing AI systems against misuse and failure cases', 'Probe jailbreaks, data leakage, and unsafe completion patterns.'),
+    moreConcept('content moderation', ['moderation', 'safety'], 'screening inputs or outputs for unsafe content', 'Run moderation checks around user-facing generation.'),
+    moreConcept('data privacy', ['privacy', 'security'], 'protecting sensitive data sent to or produced by AI systems', 'Minimize PII in prompts and logs.'),
+    moreConcept('prompt versioning', ['prompt-versioning', 'operations'], 'tracking prompt changes like product code', 'Store prompt versions with evaluation results.'),
+    moreConcept('A/B testing AI outputs', ['experimentation', 'evaluation'], 'comparing prompt or model variants with real success metrics', 'Measure task success rather than only subjective preference.'),
+    moreConcept('token budgeting', ['tokens', 'cost'], 'controlling prompt size, context quality, and inference cost', 'Trim irrelevant history before sending a model request.'),
+    moreConcept('streaming responses', ['streaming', 'ux'], 'improving perceived latency for generated answers', 'Stream partial output while the final answer is still being produced.'),
+    moreConcept('semantic caching', ['caching', 'embeddings'], 'reusing AI answers for similar requests when correctness allows', 'Cache stable support answers by normalized intent.'),
+    moreConcept('synthetic data', ['synthetic-data', 'training'], 'creating generated examples for testing or training workflows', 'Review synthetic data for bias and leakage before use.'),
+    moreConcept('model monitoring', ['monitoring', 'operations'], 'tracking AI quality, drift, latency, and cost after release', 'Alert on rising refusal, correction, or escalation rates.'),
+    moreConcept('fallback behavior', ['fallbacks', 'reliability'], 'handling model failures without breaking the user workflow', 'Use deterministic fallback copy or escalation when generation fails.')
+  ],
+  'ai-agents': [
+    moreConcept('agent loops', ['agent-loops', 'architecture'], 'running observe-plan-act cycles with clear stopping conditions', 'Cap the number of tool iterations per task.'),
+    moreConcept('task decomposition', ['planning', 'decomposition'], 'breaking broad goals into executable subtasks', 'Split research, synthesis, and final formatting into separate steps.'),
+    moreConcept('tool schemas', ['tools', 'schemas'], 'describing tool inputs so agents call them safely', 'Use strict JSON schemas for tool arguments.'),
+    moreConcept('tool permissions', ['permissions', 'security'], 'limiting which actions an agent can perform', 'Allow read tools by default and gate write tools behind approval.'),
+    moreConcept('state machines', ['state-machines', 'workflow'], 'controlling agent workflows with deterministic transitions', 'Use states for draft, review, approved, and executed.'),
+    moreConcept('reflection steps', ['reflection', 'quality'], 'letting an agent review its own output before finalizing', 'Ask the agent to check missing requirements against the task.'),
+    moreConcept('planner-executor pattern', ['planner-executor', 'agents'], 'separating planning from action execution', 'Have one step create a plan and another execute approved steps.'),
+    moreConcept('retrieval-augmented agents', ['rag', 'agents'], 'giving agents grounded knowledge before tool decisions', 'Retrieve policy docs before the agent answers compliance questions.'),
+    moreConcept('long-running jobs', ['long-running', 'operations'], 'managing agent tasks that outlive one request', 'Persist task state and resume from checkpoints.'),
+    moreConcept('checkpoints', ['checkpoints', 'recovery'], 'saving progress so agent workflows can recover safely', 'Store completed tool calls before continuing to the next step.'),
+    moreConcept('idempotent tool calls', ['idempotency', 'tools'], 'preventing duplicate side effects during retries', 'Use request IDs for payment or ticket creation tools.'),
+    moreConcept('sandboxing', ['sandboxing', 'security'], 'running agent code or tools in constrained environments', 'Restrict filesystem and network access for code execution tools.'),
+    moreConcept('approval gates', ['approval', 'human-in-the-loop'], 'pausing risky agent actions for user confirmation', 'Ask before sending emails, deleting records, or spending money.'),
+    moreConcept('agent memory stores', ['memory', 'storage'], 'persisting useful context without leaking irrelevant chat history', 'Store preferences and task facts separately.'),
+    moreConcept('multi-agent handoffs', ['multi-agent', 'handoffs'], 'passing work between specialized agents cleanly', 'A research agent hands structured notes to a writing agent.'),
+    moreConcept('agent evaluation datasets', ['evaluation', 'datasets'], 'testing agent reliability on repeatable tasks', 'Run the same task suite before changing prompts or tools.'),
+    moreConcept('cost controls', ['cost', 'operations'], 'keeping agent workflows from making too many expensive calls', 'Set per-task token and tool-call budgets.'),
+    moreConcept('latency controls', ['latency', 'performance'], 'keeping agent workflows responsive enough for users', 'Run independent tool calls in parallel when safe.'),
+    moreConcept('audit trails', ['audit', 'observability'], 'recording what an agent did and why', 'Log tool calls, inputs, outputs, approvals, and final state.'),
+    moreConcept('failure escalation', ['failure-handling', 'operations'], 'moving unresolved agent tasks to a human or fallback path', 'Escalate when confidence or tool reliability is too low.'),
+    moreConcept('agent product fit', ['product', 'tradeoffs'], 'deciding whether an agent is better than a simpler workflow', 'Use agents only when flexible multi-step reasoning is actually needed.')
+  ],
+  llm: [
+    moreConcept('pretraining', ['pretraining', 'foundation-models'], 'understanding how LLMs learn broad language patterns', 'Pretraining predicts tokens over huge text corpora.'),
+    moreConcept('RLHF', ['rlhf', 'alignment'], 'aligning model behavior with human preferences', 'Use preference feedback to tune response helpfulness and safety.'),
+    moreConcept('context stuffing', ['context-window', 'anti-pattern'], 'recognizing when too much prompt context hurts quality and cost', 'Do not paste every document when retrieval can select the useful parts.'),
+    moreConcept('prompt hierarchy', ['prompting', 'instructions'], 'understanding how system, developer, and user instructions interact', 'Keep durable behavior in higher-priority instructions.'),
+    moreConcept('log probabilities', ['logprobs', 'confidence'], 'interpreting token likelihoods for classification or uncertainty signals', 'Use logprobs carefully because they are not full truth confidence.'),
+    moreConcept('top-p sampling', ['sampling', 'top-p'], 'controlling randomness through nucleus sampling', 'Lower top-p when outputs need to stay focused.'),
+    moreConcept('beam search', ['decoding', 'search'], 'comparing deterministic decoding strategies for text generation', 'Beam search is more common in translation-style tasks than chat UX.'),
+    moreConcept('embedding models', ['embeddings', 'retrieval'], 'turning text into vectors for semantic comparison', 'Use embeddings for similarity search, clustering, and deduplication.'),
+    moreConcept('cross-encoders', ['reranking', 'models'], 'scoring query-document pairs more precisely after retrieval', 'Rerank retrieved chunks before sending context to the LLM.'),
+    moreConcept('distillation', ['distillation', 'optimization'], 'training smaller models to mimic larger model behavior', 'Distill a high-quality workflow into a faster model when volume grows.'),
+    moreConcept('model routing', ['routing', 'cost'], 'choosing different LLMs for different task complexity', 'Send extraction to a small model and hard reasoning to a stronger one.'),
+    moreConcept('guardrail models', ['guardrails', 'safety'], 'using separate checks around the main model output', 'Run a policy classifier before displaying sensitive output.'),
+    moreConcept('context compression', ['compression', 'context-window'], 'summarizing or filtering context before an LLM call', 'Compress old chat history into task-relevant facts.'),
+    moreConcept('long-context tradeoffs', ['long-context', 'latency'], 'using large context windows without assuming they solve retrieval quality', 'Long context can increase cost and still bury the key evidence.'),
+    moreConcept('JSON mode', ['json-mode', 'structured-output'], 'getting machine-readable LLM responses', 'Validate JSON output before trusting it in code.'),
+    moreConcept('tool-use reliability', ['tools', 'reliability'], 'making LLM tool calls predictable enough for products', 'Constrain tools and validate arguments server-side.'),
+    moreConcept('safety refusals', ['safety', 'refusals'], 'handling cases where an LLM should not comply', 'Design user messaging for rejected or redirected requests.'),
+    moreConcept('benchmark limitations', ['benchmarks', 'evaluation'], 'knowing why public scores do not guarantee product performance', 'Evaluate models on your own tasks and data.'),
+    moreConcept('data leakage', ['privacy', 'security'], 'preventing sensitive prompt or training data exposure', 'Avoid logging secrets and role-restricted content.'),
+    moreConcept('prompt regression testing', ['testing', 'prompts'], 'catching quality drops when prompts or models change', 'Run a saved evaluation set before release.'),
+    moreConcept('LLM observability', ['observability', 'operations'], 'tracking prompts, outputs, latency, cost, and quality signals', 'Log model version and prompt version with each request.')
+  ],
+  rag: [
+    moreConcept('query rewriting', ['query-rewriting', 'retrieval'], 'improving retrieval by transforming user questions', 'Rewrite vague follow-up questions into standalone search queries.'),
+    moreConcept('metadata filtering', ['metadata', 'security'], 'scoping retrieval by tenant, role, type, or freshness', 'Filter documents by account ID before vector search.'),
+    moreConcept('document ingestion', ['ingestion', 'pipelines'], 'turning raw files into searchable RAG content', 'Extract text, clean it, chunk it, embed it, and store metadata.'),
+    moreConcept('deduplication', ['dedupe', 'quality'], 'removing repeated chunks that waste context budget', 'Hash normalized chunks before embedding.'),
+    moreConcept('semantic chunking', ['chunking', 'quality'], 'splitting documents by meaning instead of arbitrary length alone', 'Chunk by headings, paragraphs, or sections when possible.'),
+    moreConcept('overlap strategy', ['chunk-overlap', 'retrieval'], 'preserving context across chunk boundaries', 'Use moderate overlap so answers do not lose surrounding definitions.'),
+    moreConcept('top-k tuning', ['top-k', 'retrieval'], 'choosing how many retrieved chunks to send forward', 'Tune top-k from evaluation instead of guessing.'),
+    moreConcept('similarity thresholds', ['thresholds', 'quality'], 'deciding when retrieved context is too weak to answer', 'Abstain or ask for clarification when scores are low.'),
+    moreConcept('answer faithfulness', ['faithfulness', 'evaluation'], 'checking whether answers stay supported by retrieved evidence', 'Compare final claims against source snippets.'),
+    moreConcept('lost-in-the-middle', ['context-window', 'quality'], 'handling models missing important evidence in long prompts', 'Put the most relevant chunks near important instruction boundaries.'),
+    moreConcept('knowledge freshness', ['freshness', 'indexing'], 'keeping retrieved content current after source updates', 'Track source version and reindex changed documents.'),
+    moreConcept('access-controlled retrieval', ['access-control', 'security'], 'preventing users from retrieving unauthorized content', 'Apply permission filters before ranking and generation.'),
+    moreConcept('multi-vector retrieval', ['multi-vector', 'retrieval'], 'representing documents with multiple embeddings for better recall', 'Embed title, summary, and body chunks separately.'),
+    moreConcept('parent-child retrieval', ['parent-child', 'retrieval'], 'retrieving small chunks but returning larger source context', 'Search child chunks and pass parent sections to the model.'),
+    moreConcept('knowledge graphs with RAG', ['knowledge-graph', 'hybrid'], 'combining structured relationships with semantic retrieval', 'Use graph edges for entities and vector search for unstructured detail.'),
+    moreConcept('RAG versus fine-tuning', ['fine-tuning', 'tradeoffs'], 'choosing retrieval for knowledge and training for behavior', 'Use RAG for changing policy docs and fine-tuning for style.'),
+    moreConcept('citation UX', ['citations', 'ux'], 'presenting sources so users can verify generated answers', 'Link answer claims to exact source snippets.'),
+    moreConcept('retrieval latency', ['latency', 'performance'], 'keeping search plus generation fast enough for users', 'Cache embeddings and parallelize independent lookups.'),
+    moreConcept('vector index updates', ['indexing', 'operations'], 'updating embeddings without breaking search availability', 'Use rolling index updates or versioned indexes.'),
+    moreConcept('RAG hallucinations', ['hallucinations', 'quality'], 'recognizing that retrieval reduces but does not eliminate false claims', 'Require the model to say when sources do not answer the question.'),
+    moreConcept('RAG production monitoring', ['monitoring', 'operations'], 'tracking retrieval and answer quality after launch', 'Monitor no-answer rate, citation clicks, and user corrections.')
+  ],
+  langchain: [
+    moreConcept('runnables', ['runnables', 'lcel'], 'building composable LangChain execution units', 'Use runnable sequences for predictable chain composition.'),
+    moreConcept('RunnableParallel', ['parallelism', 'lcel'], 'running independent LangChain steps at the same time', 'Fetch profile and orders in parallel before summarizing.'),
+    moreConcept('configurable runnables', ['configuration', 'lcel'], 'switching models or parameters without rewriting chains', 'Expose model choice through runtime configuration.'),
+    moreConcept('vector store integrations', ['vector-store', 'rag'], 'connecting LangChain retrieval to vector databases', 'Create a retriever from a vector store integration.'),
+    moreConcept('text splitters', ['text-splitters', 'chunking'], 'preparing documents for retrieval workflows', 'Use recursive splitters for mixed markdown or prose.'),
+    moreConcept('tool calling agents', ['tool-calling', 'agents'], 'letting LangChain agents call external functions', 'Define clear tool names, descriptions, and argument schemas.'),
+    moreConcept('agent executors', ['agent-executor', 'agents'], 'running agent loops with tools and stopping rules', 'Set max iterations for agent executors.'),
+    moreConcept('conversation memory', ['memory', 'chat'], 'carrying relevant chat context across turns', 'Summarize history before it becomes too large.'),
+    moreConcept('retrieval chains', ['retrieval-chain', 'rag'], 'combining document retrieval with answer generation', 'Use createRetrievalChain for grounded QA flows.'),
+    moreConcept('structured output chains', ['structured-output', 'parsers'], 'returning validated objects instead of free text', 'Pair prompts with schema-aware output parsing.'),
+    moreConcept('fallbacks', ['fallbacks', 'reliability'], 'recovering when one model or chain step fails', 'Use a cheaper fallback only when quality remains acceptable.'),
+    moreConcept('retry policies', ['retries', 'resilience'], 'handling transient model or API failures', 'Retry idempotent model calls with backoff.'),
+    moreConcept('streaming callbacks', ['streaming', 'callbacks'], 'showing partial LangChain output to users', 'Stream tokens into the UI while tracing the run.'),
+    moreConcept('tracing metadata', ['tracing', 'observability'], 'making LangChain runs debuggable in production', 'Attach user, session, and feature metadata to runs.'),
+    moreConcept('LangSmith datasets', ['langsmith', 'datasets'], 'saving test cases for repeatable LLM workflow evaluation', 'Run prompt changes against a dataset before release.'),
+    moreConcept('prompt hub usage', ['prompt-hub', 'prompts'], 'reusing or versioning prompts in LangChain workflows', 'Pull known prompts but review them before production use.'),
+    moreConcept('custom tools', ['custom-tools', 'integration'], 'wrapping application capabilities for LangChain agents', 'Expose only safe narrow operations as tools.'),
+    moreConcept('retriever evaluation', ['evaluation', 'retrievers'], 'checking whether LangChain retrieval finds the right context', 'Measure hit rate before tuning generation prompts.'),
+    moreConcept('framework boundaries', ['architecture', 'boundaries'], 'keeping business logic outside LangChain glue code', 'Call domain services from chains rather than embedding rules in prompts.'),
+    moreConcept('migration risk', ['migration', 'maintenance'], 'managing LangChain version changes in production systems', 'Pin versions and regression test chains before upgrading.'),
+    moreConcept('LangChain alternatives', ['tradeoffs', 'architecture'], 'knowing when direct SDK calls are simpler than LangChain', 'Use direct model calls for one-step workflows.')
+  ],
+  mean: [
+    moreConcept('Angular routing in MEAN', ['angular', 'routing'], 'organizing feature navigation in MEAN applications', 'Lazy load admin or dashboard routes.'),
+    moreConcept('Angular reactive forms in MEAN', ['angular', 'forms'], 'collecting and validating user input before API submission', 'Mirror server validation errors back into form controls.'),
+    moreConcept('RxJS API streams', ['rxjs', 'api'], 'coordinating async frontend data flow in MEAN apps', 'Use switchMap for cancellable search calls.'),
+    moreConcept('HTTP interceptors', ['angular', 'http'], 'adding auth headers and error handling to Angular API calls', 'Attach tokens through an interceptor rather than every service method.'),
+    moreConcept('Express controllers', ['express', 'controllers'], 'keeping MEAN route handling organized', 'Move request orchestration into controllers and domain work into services.'),
+    moreConcept('service layer design', ['services', 'architecture'], 'centralizing business logic in the Node side of a MEAN app', 'Keep MongoDB calls behind service or repository boundaries.'),
+    moreConcept('Mongoose schemas', ['mongoose', 'mongodb'], 'modeling MongoDB documents in MEAN applications', 'Define indexes and validation in schema definitions.'),
+    moreConcept('aggregation pipelines', ['mongodb', 'aggregation'], 'building reporting or dashboard queries in MEAN products', 'Use $match early to reduce pipeline work.'),
+    moreConcept('JWT handling', ['jwt', 'auth'], 'securing stateless MEAN API requests', 'Validate token signature and claims on every protected request.'),
+    moreConcept('role-based access control', ['authorization', 'security'], 'protecting MEAN routes and backend actions by permission', 'Check roles on the server, not only in Angular guards.'),
+    moreConcept('CORS configuration', ['cors', 'security'], 'allowing Angular and Express to communicate safely across origins', 'Permit only known frontend origins and credential rules.'),
+    moreConcept('file uploads', ['uploads', 'api'], 'moving files from Angular forms through Express safely', 'Limit file size and store metadata separately.'),
+    moreConcept('pagination contracts', ['pagination', 'api'], 'keeping large MEAN lists fast and predictable', 'Return items with cursor or page metadata.'),
+    moreConcept('error response shapes', ['errors', 'contracts'], 'letting Angular render backend failures consistently', 'Use stable error codes and messages from Express.'),
+    moreConcept('environment variables', ['configuration', 'deployment'], 'separating browser-safe config from server secrets', 'Never expose database credentials in Angular builds.'),
+    moreConcept('Dockerizing MEAN apps', ['docker', 'deployment'], 'packaging Angular, Node, and Mongo-backed services consistently', 'Build Angular assets separately from the API image.'),
+    moreConcept('CI pipelines', ['ci-cd', 'quality'], 'testing and building MEAN changes before deployment', 'Run Angular tests, API tests, and lint checks in CI.'),
+    moreConcept('logging and tracing', ['observability', 'operations'], 'debugging requests that cross Angular, Express, and MongoDB', 'Propagate request IDs from frontend to backend logs.'),
+    moreConcept('caching MEAN APIs', ['caching', 'performance'], 'reducing repeated backend and database work', 'Cache read-heavy endpoints with explicit invalidation.'),
+    moreConcept('websocket updates', ['websockets', 'realtime'], 'pushing live changes into Angular views', 'Use socket events plus server-side authorization checks.'),
+    moreConcept('MEAN scalability tradeoffs', ['scalability', 'tradeoffs'], 'explaining how each layer scales under growth', 'Scale API instances separately from MongoDB capacity.')
+  ],
+  'full-stack-web-development': [
+    moreConcept('HTTP request lifecycle', ['http', 'web'], 'understanding how browser requests reach backend code and return responses', 'Trace DNS, TLS, request routing, handler logic, and response rendering.'),
+    moreConcept('RESTful resource design', ['rest', 'api'], 'building clear backend contracts for frontend clients', 'Use nouns for resources and verbs through HTTP methods.'),
+    moreConcept('GraphQL tradeoffs', ['graphql', 'api'], 'choosing client-shaped data fetching when it is worth the operational cost', 'Use GraphQL when multiple clients need flexible data shapes.'),
+    moreConcept('database transactions', ['transactions', 'database'], 'keeping related writes consistent in full-stack features', 'Wrap order creation and payment state updates in a transaction when needed.'),
+    moreConcept('ORM tradeoffs', ['orm', 'database'], 'balancing developer speed with SQL visibility', 'Use ORM abstractions but inspect generated queries for hot paths.'),
+    moreConcept('server-side validation', ['validation', 'security'], 'protecting data integrity beyond frontend form checks', 'Reject invalid payloads even if the UI already validated them.'),
+    moreConcept('client-side validation', ['forms', 'ux'], 'giving users fast feedback before submitting data', 'Show inline errors while keeping backend validation authoritative.'),
+    moreConcept('session versus token auth', ['auth', 'security'], 'choosing how identity is stored and verified across requests', 'Use secure cookies or tokens based on product and deployment constraints.'),
+    moreConcept('CSRF protection', ['csrf', 'security'], 'protecting authenticated browser actions from forged requests', 'Use SameSite cookies and CSRF tokens where appropriate.'),
+    moreConcept('XSS prevention', ['xss', 'security'], 'stopping untrusted content from executing in users browsers', 'Escape output and avoid dangerously injecting HTML.'),
+    moreConcept('CORS', ['cors', 'browser'], 'controlling browser access to backend APIs across origins', 'Allow only trusted origins and required headers.'),
+    moreConcept('responsive design', ['responsive', 'frontend'], 'making full-stack products usable across screen sizes', 'Use fluid layouts and test real mobile breakpoints.'),
+    moreConcept('accessibility testing', ['accessibility', 'quality'], 'ensuring UI flows work for keyboard and assistive technology users', 'Check labels, focus order, contrast, and semantic structure.'),
+    moreConcept('frontend performance', ['performance', 'frontend'], 'reducing load time and interaction delays', 'Measure bundle size, render cost, and Core Web Vitals.'),
+    moreConcept('backend performance', ['performance', 'backend'], 'reducing API latency and resource usage', 'Profile database queries, serialization, and external calls.'),
+    moreConcept('caching layers', ['caching', 'architecture'], 'using browser, CDN, API, and database caches appropriately', 'Cache static assets differently from user-specific data.'),
+    moreConcept('queues and background jobs', ['queues', 'background-jobs'], 'moving slow work out of request-response flows', 'Send email or report generation to workers.'),
+    moreConcept('feature flags', ['feature-flags', 'deployment'], 'releasing full-stack features gradually', 'Gate a new checkout flow by account or percentage rollout.'),
+    moreConcept('database migrations', ['migrations', 'database'], 'changing schemas without breaking running applications', 'Deploy additive changes before code that depends on them.'),
+    moreConcept('monitoring and alerting', ['monitoring', 'operations'], 'detecting user-facing failures across the stack', 'Alert on error rate, latency, and business-critical failures.'),
+    moreConcept('incident debugging', ['debugging', 'operations'], 'tracing bugs across frontend, backend, and persistence layers', 'Follow one request ID through browser logs, API logs, and database queries.')
+  ]
+};
+
 Object.assign(
   verifiedSeedCatalog,
   Object.fromEntries(
-    Object.entries(generatedTopicConfigs).map(([topicKey, concepts]) => [topicKey, buildGeneratedTopicSeeds({ topicKey, concepts })])
+    Object.entries(generatedTopicConfigs).map(([topicKey, concepts]) => [
+      topicKey,
+      buildGeneratedTopicSeeds({
+        topicKey,
+        concepts: [...concepts, ...(additionalGeneratedTopicConcepts[topicKey] || [])]
+      })
+    ])
   )
 );
+
+listImportantTopics().forEach((topic) => {
+  const topicSeeds = verifiedSeedCatalog[topic.key] || [];
+  if (topicSeeds.length >= MIN_VERIFIED_SEED_COUNT) return;
+
+  const label = TOPIC_GUIDES[topic.key]?.label || topic.label || topic.key;
+  topicSeeds.push(seed(
+    'hard',
+    `How do you explain ${label} architecture decisions in a senior interview?`,
+    `A strong ${label} answer connects the technology choice to requirements, tradeoffs, operational risk, and the point where a simpler option would be better.`,
+    [topic.key, 'architecture', 'interview-strategy', 'tradeoffs'],
+    {
+      explanation: `This question checks whether the candidate can reason beyond definitions. The answer should cover why ${label} is being used, what alternatives exist, and how the decision affects reliability, cost, maintainability, and delivery.`,
+      example: `Compare a ${label} design with one simpler alternative and explain why the tradeoff is acceptable for the product constraints.`,
+      realWorldUseCase: `Senior-level interview discussions where ${label} choices must be justified against product and production constraints.`,
+      commonMistakes: [
+        `Only defining ${label} without explaining the decision behind using it.`,
+        'Ignoring operational tradeoffs such as cost, latency, debugging, ownership, or scaling.'
+      ],
+      interviewTip: 'Start with requirements, name the tradeoff, and finish with how you would validate the decision in production.',
+      category: 'system_design'
+    }
+  ));
+  verifiedSeedCatalog[topic.key] = topicSeeds;
+});
 
 const validateVerifiedSeedCoverage = () => {
   const missingCoverage = listImportantTopics()

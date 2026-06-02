@@ -28,12 +28,12 @@ test('resolveTopic handles stack aliases and important topics list is populated'
   assert.ok(topics.length >= 15);
 });
 
-test('every supported interview topic has at least 30 verified top questions', () => {
+test('every supported interview topic has more than 30 verified top questions', () => {
   for (const topic of listImportantTopics()) {
     const count = verifiedSeedCatalog[topic.key]?.length || 0;
     assert.ok(
       count >= MIN_VERIFIED_SEED_COUNT,
-      `Expected ${topic.key} to have at least ${MIN_VERIFIED_SEED_COUNT} verified questions, received ${count}`
+      `Expected ${topic.key} to have more than 30 verified questions, received ${count}`
     );
   }
 });
