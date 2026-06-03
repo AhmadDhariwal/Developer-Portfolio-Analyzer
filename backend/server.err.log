@@ -1,0 +1,2 @@
+[AIService] OPENAI error [model=gpt-4.1-mini, status=404]: Request failed with status code 404 | body: {"error":{"message":"The model `gpt-4.1-mini` does not exist or you do not have access to it.","type":"invalid_request_error","code":"model_not_found"}}
+{"ts":"2026-06-03T10:39:13.160Z","level":"warn","message":"latency alert threshold breached","alertType":"latency","method":"POST","route":"/skill-gap","statusCode":200,"durationMs":3538.3229,"thresholdMs":1800}

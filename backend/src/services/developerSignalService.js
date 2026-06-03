@@ -54,27 +54,29 @@ const flattenResumeSkills = (skillsMap = {}) => {
 };
 
 const deriveResumeStrengths = (analysis = {}) => {
+  const safeAnalysis = analysis || {};
   const strengths = [];
 
-  if (Number(analysis.atsScore || 0) >= 75) strengths.push('Strong ATS structure');
-  if (Number(analysis.keywordDensity || 0) >= 70) strengths.push('Good keyword coverage');
-  if (Number(analysis.formatScore || 0) >= 70) strengths.push('Clear formatting');
-  if (Number(analysis.contentQuality || 0) >= 70) strengths.push('Strong content quality');
-  if (Array.isArray(analysis.keyAchievements) && analysis.keyAchievements.length) strengths.push('Quantified achievements present');
-  if (Array.isArray(analysis.certifications) && analysis.certifications.length) strengths.push('Certifications highlighted');
+  if (Number(safeAnalysis.atsScore || 0) >= 75) strengths.push('Strong ATS structure');
+  if (Number(safeAnalysis.keywordDensity || 0) >= 70) strengths.push('Good keyword coverage');
+  if (Number(safeAnalysis.formatScore || 0) >= 70) strengths.push('Clear formatting');
+  if (Number(safeAnalysis.contentQuality || 0) >= 70) strengths.push('Strong content quality');
+  if (Array.isArray(safeAnalysis.keyAchievements) && safeAnalysis.keyAchievements.length) strengths.push('Quantified achievements present');
+  if (Array.isArray(safeAnalysis.certifications) && safeAnalysis.certifications.length) strengths.push('Certifications highlighted');
 
   return safeStrings(strengths, 8);
 };
 
 const deriveResumeWeaknesses = (analysis = {}) => {
+  const safeAnalysis = analysis || {};
   const weaknesses = [];
 
-  if (Number(analysis.atsScore || 0) < 70) weaknesses.push('ATS structure needs improvement');
-  if (Number(analysis.keywordDensity || 0) < 65) weaknesses.push('Keyword coverage is thin');
-  if (Number(analysis.formatScore || 0) < 65) weaknesses.push('Formatting could be clearer');
-  if (Number(analysis.contentQuality || 0) < 65) weaknesses.push('Content lacks strong impact language');
+  if (Number(safeAnalysis.atsScore || 0) < 70) weaknesses.push('ATS structure needs improvement');
+  if (Number(safeAnalysis.keywordDensity || 0) < 65) weaknesses.push('Keyword coverage is thin');
+  if (Number(safeAnalysis.formatScore || 0) < 65) weaknesses.push('Formatting could be clearer');
+  if (Number(safeAnalysis.contentQuality || 0) < 65) weaknesses.push('Content lacks strong impact language');
 
-  (Array.isArray(analysis.suggestions) ? analysis.suggestions : []).forEach((suggestion) => {
+  (Array.isArray(safeAnalysis.suggestions) ? safeAnalysis.suggestions : []).forEach((suggestion) => {
     const title = String(suggestion?.title || '').trim();
     if (title) weaknesses.push(title);
   });
@@ -83,6 +85,7 @@ const deriveResumeWeaknesses = (analysis = {}) => {
 };
 
 const deriveMissingResumeSections = (analysis = {}) => {
+  const safeAnalysis = analysis || {};
   const catalog = [
     { label: 'Professional Summary', patterns: ['professional summary', 'summary section', 'summary'] },
     { label: 'Projects', patterns: ['project section', 'projects section', 'project'] },
@@ -94,9 +97,9 @@ const deriveMissingResumeSections = (analysis = {}) => {
   ];
 
   const evidenceText = [
-    ...Object.values(analysis.scoreBreakdown || {}),
-    ...(Array.isArray(analysis.suggestions)
-      ? analysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
+    ...Object.values(safeAnalysis.scoreBreakdown || {}),
+    ...(Array.isArray(safeAnalysis.suggestions)
+      ? safeAnalysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
       : [])
   ].map((value) => String(value || '').toLowerCase());
 
@@ -104,7 +107,7 @@ const deriveMissingResumeSections = (analysis = {}) => {
     .filter(({ patterns }) => evidenceText.some((text) => patterns.some((pattern) => text.includes(pattern))))
     .map(({ label }) => label);
 
-  if (!Array.isArray(analysis.keyAchievements) || !analysis.keyAchievements.length) {
+  if (!Array.isArray(safeAnalysis.keyAchievements) || !safeAnalysis.keyAchievements.length) {
     detected.push('Achievements');
   }
 
@@ -112,7 +115,7 @@ const deriveMissingResumeSections = (analysis = {}) => {
 };
 
 const deriveResumeImprovementSuggestions = (analysis = {}) => safeStrings(
-  (Array.isArray(analysis.suggestions) ? analysis.suggestions : [])
+  (Array.isArray((analysis || {}).suggestions) ? (analysis || {}).suggestions : [])
     .flatMap((suggestion) => [suggestion?.title, suggestion?.description]),
   10
 );

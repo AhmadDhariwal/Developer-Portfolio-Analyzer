@@ -460,12 +460,11 @@ const analyzeSkillGap = async (req, res) => {
     if (cached?.analysisData) {
       const cachedResult = {
         ...cached.analysisData,
-        analysisBasedOn: cached.analysisData.analysisBasedOn || buildAnalysisBasedOn({
+        analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
           experienceLevel,
-          resumeInsights,
-          lastAnalyzedAt: cached.updatedAt || cached.createdAt || null
+          resumeInsights
         }),
         resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
         fromCache: true
@@ -632,8 +631,7 @@ const analyzeSkillGap = async (req, res) => {
         username,
         careerStack,
         experienceLevel,
-        resumeInsights,
-        lastAnalyzedAt: new Date().toISOString()
+        resumeInsights
       }),
       resumeStatusMessage: resumeInsights.statusMessage
     };

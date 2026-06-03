@@ -598,12 +598,11 @@ const runRecommendationPipeline = async ({
     if (cached?.analysisData?.projects?.length) {
       const cachedResult = {
         ...normalizeRecommendationPayload(cached.analysisData),
-        analysisBasedOn: cached.analysisData.analysisBasedOn || buildAnalysisBasedOn({
+        analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
           experienceLevel,
-          resumeInsights,
-          lastAnalyzedAt: cached.updatedAt || cached.createdAt || null
+          resumeInsights
         }),
         resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
         fromCache: true
@@ -660,8 +659,7 @@ const runRecommendationPipeline = async ({
       username,
       careerStack,
       experienceLevel,
-      resumeInsights,
-      lastAnalyzedAt: new Date().toISOString()
+      resumeInsights
     }),
     recommendationEvidence
   });

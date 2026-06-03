@@ -56,7 +56,13 @@
       Viewing temporary skill-gap analysis for <strong>@{{ viewedUsername }}</strong>. The rest of the platform still uses <strong>@{{ defaultUsername }}</strong>.
     </span>
     <span *ngIf="!isTemporaryView">
-      Using your default GitHub profile <strong>@{{ viewedUsername || defaultUsername }}</strong> and saved default resume.
+      Using your default GitHub profile <strong>@{{ viewedUsername || defaultUsername }}</strong>
+      <ng-container *ngIf="result.analysisBasedOn?.resumeAnalyzed; else noResumeFallback">
+        and saved default resume.
+      </ng-container>
+      <ng-template #noResumeFallback>
+        with GitHub and profile data until a resume is analyzed.
+      </ng-template>
     </span>
     <button class="btn-analyze" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">
       Return to My Profile
