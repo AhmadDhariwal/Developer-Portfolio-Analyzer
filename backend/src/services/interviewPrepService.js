@@ -95,7 +95,7 @@ const toTagFilter = (tags = '') => {
 };
 
 const makeQuestionsCacheKey = ({ topicKey, page, limit, difficulty = '', tags = '', block = 'top', category = '', source = '' }) => {
-  return `interview:questions:bank=v7:block=${block}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:source=${String(source || '').toLowerCase()}`;
+  return `interview:questions:bank=v9:block=${block}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:source=${String(source || '').toLowerCase()}`;
 };
 
 const makeSearchCacheKey = ({ query, topicKey, page, limit, difficulty = '', tags = '', lookupOnly = false }) => {
@@ -290,7 +290,7 @@ const formatSourceLabel = ({ prebuiltGeneratedCount = 0, aiGeneratedCount = 0, s
   return labels.join('+');
 };
 
-const ensurePrebuiltTopicBaseline = async ({ topicKey, minimumCount = MIN_TOPIC_QUESTION_POOL }) => {
+const ensurePrebuiltTopicBaseline = async ({ topicKey, minimumCount = MIN_TOPIC_QUESTION_POOL, forceSync = false }) => {
   const importantTopic = getImportantTopicByKey(topicKey);
   if (!importantTopic) {
     return { attempted: false, insertedCount: 0 };
@@ -309,7 +309,7 @@ const ensurePrebuiltTopicBaseline = async ({ topicKey, minimumCount = MIN_TOPIC_
   );
   const expectedSeedCount = getTopicSeedItems(importantTopic.key).length;
 
-  if (expectedSeedCount === 0 || existingTopicSpecificSeedCount >= expectedSeedCount) {
+  if (!forceSync && (expectedSeedCount === 0 || existingTopicSpecificSeedCount >= expectedSeedCount)) {
     const existingCount = await questionRepository.countQuestionsByTopic(importantTopic.key);
     if (existingCount >= minimumCount) {
       return { attempted: false, insertedCount: 0 };
@@ -560,7 +560,7 @@ const getQuestionBank = async ({
   interviewEngineMetrics.dbReads += 1;
   await ensurePrebuiltTopicBaseline({
     topicKey: topicInput.topicKey,
-    minimumCount: normalizedBlock === 'top' ? MIN_TOPIC_QUESTION_POOL : 1
+    minimumCount: MIN_TOPIC_QUESTION_POOL
   });
 
   if (normalizedBlock === 'all') {
@@ -574,19 +574,14 @@ const getQuestionBank = async ({
       source
     });
 
-    const requiredForRequestedPage = normalizedPage * normalizedLimit;
-    if (!category && !source && !normalizedTags && pageResult.total < requiredForRequestedPage) {
-      const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topicInput.topicKey, 600);
-      const enrichment = await enrichmentOrchestrator.enrichTopicQuestionPool({
-        topic: topicInput,
-        query: '',
-        existingQuestions: existingComparableQuestions.map((normalizedQuestion) => ({ normalizedQuestion })),
-        requestedCount: requiredForRequestedPage,
-        initiatedBy: 'all-questions-fill',
-        allowScraper: false,
-        difficulty: difficulty ? sanitizeDifficulty(difficulty) : ''
+    const topicSeedCount = getTopicSeedItems(topicInput.topicKey).length;
+    if (!category && !source && !normalizedTags && pageResult.total < topicSeedCount) {
+      const baselineResult = await ensurePrebuiltTopicBaseline({
+        topicKey: topicInput.topicKey,
+        minimumCount: topicSeedCount,
+        forceSync: true
       });
-      if (enrichment.insertedCount > 0) {
+      if (baselineResult.insertedCount > 0 || baselineResult.attempted) {
         await invalidateInterviewPrepCache();
         pageResult = await questionRepository.findAllQuestionsPage({
           topicKey: topicInput.topicKey,
@@ -620,6 +615,24 @@ const getQuestionBank = async ({
     difficulty,
     tags: normalizedTags
   });
+
+  const topicSeedCount = getTopicSeedItems(topicInput.topicKey).length;
+  if (!normalizedTags && rows.length < Math.min(30, topicSeedCount || 30)) {
+    const baselineResult = await ensurePrebuiltTopicBaseline({
+      topicKey: topicInput.topicKey,
+      minimumCount: Math.max(MIN_TOPIC_QUESTION_POOL, topicSeedCount),
+      forceSync: true
+    });
+    if (baselineResult.insertedCount > 0 || baselineResult.attempted) {
+      await invalidateInterviewPrepCache();
+      rows = await questionRepository.findTopQuestions({
+        topicKey: topicInput.topicKey,
+        limit: Math.min(30, Number(limit || 30)),
+        difficulty,
+        tags: normalizedTags
+      });
+    }
+  }
 
   const questions = (await enrichQuestionListOnce(rows)).slice(0, 30);
   const payload = makeQuestionPayload({
