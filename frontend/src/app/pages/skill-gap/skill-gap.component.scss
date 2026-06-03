@@ -149,6 +149,57 @@
   font-size: 0.9rem;
 }
 
+.analysis-based-on {
+  background: #131929;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 620px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.8rem 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+
+    span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    strong {
+      color: #fff;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__note {
+    margin: 0.85rem 0 0;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.8rem;
+  }
+}
+
 .insight-grid {
   display: grid;
   grid-template-columns: 1.05fr 1.25fr;
@@ -353,6 +404,20 @@
   }
 }
 
+.skill-buckets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .skills-card {
   &__header {
     display: flex;
@@ -384,6 +449,56 @@
     background: rgba(248, 113, 113, 0.15);
     color: #f87171;
   }
+
+  &--blue {
+    background: rgba(96, 165, 250, 0.15);
+    color: #93c5fd;
+  }
+
+  &--amber {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+  }
+}
+
+.bucket-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.bucket-chip {
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  color: #bfdbfe;
+  border-radius: 999px;
+  padding: 0.24rem 0.65rem;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+
+  &--green {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.22);
+    color: #86efac;
+  }
+
+  &--red {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.22);
+    color: #fca5a5;
+  }
+
+  &--amber {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.22);
+    color: #fcd34d;
+  }
+}
+
+.bucket-empty {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.82rem;
 }
 
 .skill-row {

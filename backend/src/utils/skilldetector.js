@@ -73,6 +73,61 @@ const LANGUAGE_TO_SKILL = {
   'HCL':         'Terraform',
 };
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const normalizeKey = (value = '') => String(value)
+  .toLowerCase()
+  .replace(/[^a-z0-9+#]+/g, ' ')
+  .trim();
+
+const SKILL_ALIAS_LOOKUP = (() => {
+  const map = new Map();
+  INDUSTRY_SKILLS.forEach((skill) => {
+    [skill.name, ...(skill.aliases || [])].forEach((candidate) => {
+      const key = normalizeKey(candidate);
+      if (key && !map.has(key)) {
+        map.set(key, skill.name);
+      }
+    });
+  });
+
+  Object.entries(LANGUAGE_TO_SKILL).forEach(([language, mappedSkill]) => {
+    const key = normalizeKey(language);
+    if (key && !map.has(key)) {
+      map.set(key, mappedSkill);
+    }
+  });
+
+  return map;
+})();
+
+const SKILL_PATTERNS = INDUSTRY_SKILLS.map((skill) => {
+  const candidates = [skill.name, ...(skill.aliases || [])]
+    .map((candidate) => escapeRegex(candidate).replace(/\s+/g, '\\s+'))
+    .filter(Boolean);
+
+  return {
+    name: skill.name,
+    pattern: new RegExp(`(^|[^a-z0-9+#])(?:${candidates.join('|')})(?=$|[^a-z0-9+#])`, 'i')
+  };
+});
+
+const uniqueStrings = (values = []) => {
+  const seen = new Set();
+  return values.filter((value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+};
+
+const canonicalizeSkillName = (value = '') => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return SKILL_ALIAS_LOOKUP.get(normalizeKey(raw)) || raw;
+};
+
 /**
  * Given a list of skill names (strings), return which INDUSTRY_SKILLS are present vs missing.
  * Returns { currentSkills, missingSkills } — both typed as INDUSTRY_SKILLS entries.
@@ -103,11 +158,49 @@ const detectSkillGaps = (currentSkillNames = []) => {
 const skillsFromLanguages = (languageDistribution = []) => {
   const skills = new Set();
   languageDistribution.forEach(({ language }) => {
-    const mapped = LANGUAGE_TO_SKILL[language];
+    const mapped = canonicalizeSkillName(LANGUAGE_TO_SKILL[language] || language);
     if (mapped) skills.add(mapped);
   });
   return [...skills];
 };
 
-module.exports = { detectSkillGaps, skillsFromLanguages, INDUSTRY_SKILLS, LANGUAGE_TO_SKILL };
+const extractSkillsFromText = (sources = []) => {
+  const haystack = (Array.isArray(sources) ? sources : [sources])
+    .flatMap((source) => Array.isArray(source) ? source : [source])
+    .map((source) => String(source || '').trim())
+    .filter(Boolean)
+    .join('\n');
+
+  if (!haystack) return [];
+
+  const matches = SKILL_PATTERNS
+    .filter(({ pattern }) => pattern.test(haystack))
+    .map(({ name }) => name);
+
+  return uniqueStrings(matches);
+};
+
+const extractSkillsFromRepositories = (repositories = [], languageDistribution = []) => {
+  const repoSources = (Array.isArray(repositories) ? repositories : []).flatMap((repo) => ([
+    repo?.name,
+    repo?.description,
+    ...(Array.isArray(repo?.topics) ? repo.topics : []),
+    repo?.language
+  ]));
+
+  return uniqueStrings([
+    ...skillsFromLanguages(languageDistribution),
+    ...extractSkillsFromText(repoSources)
+  ]).map((skill) => canonicalizeSkillName(skill)).filter(Boolean);
+};
+
+module.exports = {
+  detectSkillGaps,
+  skillsFromLanguages,
+  extractSkillsFromText,
+  extractSkillsFromRepositories,
+  canonicalizeSkillName,
+  INDUSTRY_SKILLS,
+  LANGUAGE_TO_SKILL
+};
 

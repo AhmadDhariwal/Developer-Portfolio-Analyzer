@@ -64,6 +64,37 @@
   </div>
 
   <ng-container *ngIf="result">
+    <div class="analysis-based-on">
+      <div class="card-heading">
+        <h2>Analysis Based On</h2>
+      </div>
+
+      <div class="analysis-based-on__grid">
+        <div class="analysis-based-on__item">
+          <span>GitHub username</span>
+          <strong>@{{ result.analysisBasedOn?.githubUsername || viewedUsername || defaultUsername }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Resume analyzed</span>
+          <strong>{{ result.analysisBasedOn?.resumeAnalyzed ? 'Yes' : 'No' }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Career stack</span>
+          <strong>{{ result.analysisBasedOn?.careerStack || currentCareerStack }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Experience level</span>
+          <strong>{{ result.analysisBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Last analyzed date</span>
+          <strong>{{ analysisLastUpdatedLabel }}</strong>
+        </div>
+      </div>
+
+      <p class="analysis-based-on__note">{{ resumeStatusLabel }}</p>
+    </div>
+
     <div class="insight-grid">
       <div class="sg-card insight-card" *ngIf="result.analysisSummary">
         <div class="card-heading">
@@ -139,6 +170,50 @@
           </div>
         </div>
         <span class="bar-label bar-label--right">100%</span>
+      </div>
+    </div>
+
+    <div class="skill-buckets-grid">
+      <div class="sg-card skills-card">
+        <div class="skills-card__header">
+          <h3>Resume Skills</h3>
+          <span class="skills-badge skills-badge--blue">{{ result.resumeSkills?.length || 0 }}</span>
+        </div>
+        <div class="bucket-list" *ngIf="result.resumeSkills?.length; else noResumeSkills">
+          <span class="bucket-chip" *ngFor="let skill of result.resumeSkills">{{ skill }}</span>
+        </div>
+      </div>
+
+      <div class="sg-card skills-card">
+        <div class="skills-card__header">
+          <h3>GitHub Skills</h3>
+          <span class="skills-badge skills-badge--green">{{ result.githubSkills?.length || 0 }}</span>
+        </div>
+        <div class="bucket-list" *ngIf="result.githubSkills?.length; else noGithubSkills">
+          <span class="bucket-chip bucket-chip--green" *ngFor="let skill of result.githubSkills">{{ skill }}</span>
+        </div>
+      </div>
+
+      <div class="sg-card skills-card">
+        <div class="skills-card__header">
+          <h3>Missing Skills</h3>
+          <span class="skills-badge skills-badge--red">{{ result.missingSkills.length }}</span>
+        </div>
+        <div class="bucket-list" *ngIf="result.missingSkills.length; else noMissingSkills">
+          <span class="bucket-chip bucket-chip--red" *ngFor="let skill of result.missingSkills; let i = index">
+            {{ skill.name }}
+          </span>
+        </div>
+      </div>
+
+      <div class="sg-card skills-card">
+        <div class="skills-card__header">
+          <h3>Claimed but not proven</h3>
+          <span class="skills-badge skills-badge--amber">{{ result.claimedButNotProvenSkills?.length || 0 }}</span>
+        </div>
+        <div class="bucket-list" *ngIf="result.claimedButNotProvenSkills?.length; else noClaimedSkills">
+          <span class="bucket-chip bucket-chip--amber" *ngFor="let skill of result.claimedButNotProvenSkills">{{ skill }}</span>
+        </div>
       </div>
     </div>
 
@@ -290,6 +365,22 @@
       </div>
     </div>
   </ng-container>
+
+  <ng-template #noResumeSkills>
+    <p class="bucket-empty">Resume not analyzed yet.</p>
+  </ng-template>
+
+  <ng-template #noGithubSkills>
+    <p class="bucket-empty">No GitHub skills detected yet.</p>
+  </ng-template>
+
+  <ng-template #noMissingSkills>
+    <p class="bucket-empty">No missing skills detected.</p>
+  </ng-template>
+
+  <ng-template #noClaimedSkills>
+    <p class="bucket-empty">No resume-only skills right now.</p>
+  </ng-template>
 
   <div class="sg-empty" *ngIf="!result && !isLoading && !errorMessage">
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"

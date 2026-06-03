@@ -36,6 +36,10 @@ export interface SkillGapResult {
   missing:         number;
   yourSkills:      CurrentSkill[];
   missingSkills:   MissingSkill[];
+  resumeSkills?:   string[];
+  githubSkills?:   string[];
+  provenSkills?:   string[];
+  claimedButNotProvenSkills?: string[];
   levelAssessment: string;
   analysisSummary?: string;
   roadmap:         RoadmapPhase[];
@@ -53,8 +57,17 @@ export interface SkillGapResult {
     };
     resume: {
       analyzed: boolean;
+      analysisId?: string;
       atsScore: number;
       experienceLevel: string;
+      fileName?: string;
+      lastAnalyzedAt?: string | null;
+      extractedSkills?: string[];
+      experienceKeywords?: string[];
+      strengths?: string[];
+      weaknesses?: string[];
+      missingSections?: string[];
+      statusMessage?: string;
     };
     portfolio: {
       present: boolean;
@@ -78,6 +91,15 @@ export interface SkillGapResult {
       activeLearningFocus: string;
     };
   };
+  analysisBasedOn?: {
+    githubUsername: string;
+    resumeAnalyzed: boolean;
+    resumeStatus: string;
+    careerStack: string;
+    experienceLevel: string;
+    lastAnalyzedAt?: string | null;
+  };
+  resumeStatusMessage?: string;
   totalWeeks:      string;
 }
 

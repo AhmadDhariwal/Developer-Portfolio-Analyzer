@@ -35,6 +35,10 @@ const analysisCacheSchema = new mongoose.Schema({
         type: String,
         required: true // SHA-256 hash of the extracted resume text
     },
+    resumeAnalysisId: {
+        type: String,
+        default: 'no-resume'
+    },
     signalHash: {
         type: String,
         default: 'no-signals'
@@ -50,7 +54,14 @@ const analysisCacheSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// All 4 fields required for a correct cache hit
-analysisCacheSchema.index({ githubUsername: 1, careerStack: 1, experienceLevel: 1, analysisVersion: 1, resumeHash: 1, signalHash: 1 });
+analysisCacheSchema.index({
+    githubUsername: 1,
+    careerStack: 1,
+    experienceLevel: 1,
+    analysisVersion: 1,
+    resumeHash: 1,
+    resumeAnalysisId: 1,
+    signalHash: 1
+});
 
 module.exports = mongoose.model('AnalysisCache', analysisCacheSchema);

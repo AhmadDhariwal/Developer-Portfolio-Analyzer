@@ -1,4 +1,3 @@
-const crypto = require('node:crypto');
 const aiService = require('../services/aiservice');
 const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
 const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
@@ -9,11 +8,21 @@ const { createVersion } = require('../services/aiVersionService');
 const {
   getDeveloperSignals,
   buildSignalHash,
-  buildSignalsUsedSummary
+  buildSignalsUsedSummary,
+  buildResumeAnalysisSignals,
+  buildResumeCacheIdentity,
+  buildAnalysisBasedOn
 } = require('../services/developerSignalService');
+const { extractSkillsFromRepositories, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const RECOMMENDATION_ANALYSIS_VERSION = 'v3-signals';
 const SKILL_GAP_LOOKUP_VERSION = 'v4-signals';
+const STACK_PROJECT_HINTS = {
+  Frontend: ['React', 'TypeScript', 'Accessibility', 'Deployment'],
+  Backend: ['Node.js', 'REST APIs', 'SQL', 'Deployment'],
+  'Full Stack': ['React', 'Node.js', 'SQL', 'Deployment'],
+  'AI/ML': ['Python', 'SQL', 'Deployment', 'Docker']
+};
 
 const isValidUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 const toSearchUrl = (query) => `https://www.google.com/search?q=${encodeURIComponent(String(query || 'software engineering'))}`;
@@ -33,14 +42,6 @@ const normalizeCareerPathLink = (path) => {
 };
 
 const toSkillName = (value) => (typeof value === 'string' ? value : value?.name || '').trim();
-
-const flattenResumeSkills = (skillsMap = {}) => {
-  if (!skillsMap) return [];
-  const values = skillsMap instanceof Map
-    ? Array.from(skillsMap.values())
-    : Object.values(skillsMap);
-  return values.flat().map(String).map((value) => value.trim()).filter(Boolean);
-};
 
 const uniqueBy = (values = [], keyFn) => {
   const seen = new Set();
@@ -157,26 +158,59 @@ const getGitHubData = async (username) => {
   }
 };
 
-const buildResumeInsights = (analysis, fallbackExperienceLevel = '') => {
-  const resumeSkills = flattenResumeSkills(analysis?.skills);
-  return {
-    experienceLevel: analysis?.experienceLevel || fallbackExperienceLevel || '',
-    experienceYears: analysis?.experienceYears || 0,
-    atsScore: analysis?.atsScore || 0,
-    keywordDensity: analysis?.keywordDensity || 0,
-    skills: resumeSkills.slice(0, 25),
-    keyAchievements: (analysis?.keyAchievements || []).slice(0, 8)
-  };
-};
-
 const buildGithubInsights = (githubData = {}) => ({
   repoCount: githubData?.repoCount || 0,
   developerLevel: githubData?.developerLevel || '',
   strengths: githubData?.strengths || [],
   weakAreas: githubData?.weakAreas || [],
   languageDistribution: githubData?.languageDistribution || [],
+  repositories: githubData?.repositories || [],
   scores: githubData?.scores || {}
 });
+
+const buildGithubSkills = (githubData = {}) => uniqueStrings(
+  extractSkillsFromRepositories(githubData?.repositories || [], githubData?.languageDistribution || [])
+    .concat((githubData?.languageDistribution || []).map((entry) => entry?.language))
+    .map((skill) => canonicalizeSkillName(skill))
+    .filter(Boolean),
+  25
+);
+
+const buildRecommendationEvidence = ({ resumeInsights, githubData, careerStack }) => {
+  const resumeSkills = uniqueStrings((resumeInsights?.technicalSkills || resumeInsights?.skills || []).map((skill) => canonicalizeSkillName(skill)).filter(Boolean), 25);
+  const githubSkills = buildGithubSkills(githubData);
+  const githubLookup = new Set(githubSkills.map((skill) => skill.toLowerCase()));
+  const claimedButNotProvenSkills = resumeSkills.filter((skill) => !githubLookup.has(skill.toLowerCase()));
+  const provenSkills = resumeSkills.filter((skill) => githubLookup.has(skill.toLowerCase()));
+  const deploymentKeywords = ['deployment', 'aws', 'docker', 'kubernetes', 'ci/cd', 'cloud'];
+  const resumeKeywordLookup = new Set(
+    [
+      ...(resumeInsights?.experienceKeywords || []),
+      ...(resumeInsights?.skills || []),
+      ...(resumeInsights?.weaknesses || []),
+      ...(resumeInsights?.missingSections || [])
+    ].map((value) => String(value || '').toLowerCase())
+  );
+  const hasDeploymentSignal = deploymentKeywords.some((keyword) => {
+    const normalized = keyword.toLowerCase();
+    return resumeKeywordLookup.has(normalized)
+      || githubSkills.some((skill) => skill.toLowerCase().includes(normalized))
+      || (resumeInsights?.skills || []).some((skill) => String(skill || '').toLowerCase().includes(normalized));
+  });
+
+  return {
+    resumeSkills,
+    githubSkills,
+    provenSkills,
+    claimedButNotProvenSkills,
+    hasDeploymentSignal,
+    preferredProjectTech: uniqueStrings([
+      ...(STACK_PROJECT_HINTS[careerStack] || STACK_PROJECT_HINTS['Full Stack']),
+      ...provenSkills,
+      ...githubSkills
+    ], 8)
+  };
+};
 
 const buildRecommendationFallback = ({
   username,
@@ -186,7 +220,8 @@ const buildRecommendationFallback = ({
   missingSkills,
   resumeInsights,
   githubInsights,
-  developerSignals
+  developerSignals,
+  recommendationEvidence
 }) => {
   const sprintSignal = developerSignals.careerSprintSignal || {};
   const weeklySignal = developerSignals.weeklyReportSignal || {};
@@ -194,12 +229,17 @@ const buildRecommendationFallback = ({
   const integrationSignal = developerSignals.integrationSignal || {};
 
   const focusSkills = uniqueStrings([
+    ...(recommendationEvidence?.claimedButNotProvenSkills || []),
     ...missingSkills,
     ...(weeklySignal.repeatedWeakAreas || []),
     ...(sprintSignal.repeatedIncompleteSkills || []),
     ...(integrationSignal.weakProof || [])
   ], 6);
-  const baseTech = uniqueStrings(knownSkills, 5);
+  const baseTech = uniqueStrings(recommendationEvidence?.preferredProjectTech?.length
+    ? recommendationEvidence.preferredProjectTech
+    : knownSkills, 5);
+  const firstProofGap = recommendationEvidence?.claimedButNotProvenSkills?.[0] || '';
+  const missingKeywordHint = resumeInsights?.weaknesses?.[0] || resumeInsights?.missingSections?.[0] || '';
   const summaryParts = [
     githubInsights.repoCount > 0 ? `${username} has ${githubInsights.repoCount} repositories contributing live code evidence` : 'GitHub signal is currently limited',
     resumeInsights.atsScore ? `resume ATS signal is ${resumeInsights.atsScore}` : 'resume ATS signal is limited',
@@ -207,7 +247,13 @@ const buildRecommendationFallback = ({
     weeklySignal.weeklyProgressScore ? `weekly progress is ${weeklySignal.weeklyProgressScore}%` : 'weekly progress data is limited'
   ];
 
-  const projectTemplates = focusSkills.slice(0, 3).map((skill, index) => ({
+  const projectFocusSkills = uniqueStrings([
+    firstProofGap,
+    ...focusSkills,
+    ...(recommendationEvidence?.hasDeploymentSignal ? [] : ['Deployment'])
+  ], 4);
+
+  const projectTemplates = projectFocusSkills.slice(0, 3).map((skill, index) => ({
     id: `p_${index + 1}`,
     title: `${careerStack} ${skill} Builder`,
     description: `Ship a scoped ${careerStack.toLowerCase()} project that proves ${skill} with measurable functionality and clean delivery.`,
@@ -276,25 +322,30 @@ const buildRecommendationFallback = ({
   ];
 
   return normalizeRecommendationPayload({
-    analysisSummary: `${summaryParts[0]}, ${summaryParts[1]}, ${summaryParts[2]}, and ${summaryParts[3]}. Recommendations therefore prioritize ${focusSkills[0] || 'the highest-value missing proof'} through realistic next steps.`,
+    analysisSummary: `${summaryParts[0]}, ${summaryParts[1]}, ${summaryParts[2]}, and ${summaryParts[3]}. Recommendations therefore prioritize ${projectFocusSkills[0] || 'the highest-value missing proof'} through realistic next steps.`,
     projects: projectTemplates,
     technologies: technologyTemplates,
     careerPaths,
     portfolioRecommendations: normalizeActionList([
       portfolioSignal.completenessScore < 60 ? 'Add 2 polished project case studies with outcomes and screenshots' : '',
       portfolioSignal.liveLinks < Math.min(2, portfolioSignal.listedProjects || 0) ? 'Add working live links for your strongest public projects' : '',
-      !portfolioSignal.present ? 'Create a public portfolio page that highlights your strongest shipped work' : ''
+      !portfolioSignal.present ? 'Create a public portfolio page that highlights your strongest shipped work' : '',
+      !recommendationEvidence?.hasDeploymentSignal ? 'Add at least one deployed project so cloud and delivery proof shows up in your portfolio' : ''
     ], ['Refresh project summaries so recruiters can scan impact quickly'], 2, 4),
     resumeRecommendations: normalizeActionList([
       resumeInsights.atsScore < 70 ? 'Increase ATS alignment by mirroring target-role keywords naturally in experience bullets' : '',
       !resumeInsights.keyAchievements?.length ? 'Add quantified impact bullets for your most relevant projects and roles' : '',
-      resumeInsights.keywordDensity < 55 ? 'Tighten skill-to-experience alignment so core stack keywords appear with evidence' : ''
+      resumeInsights.keywordDensity < 55 ? 'Tighten skill-to-experience alignment so core stack keywords appear with evidence' : '',
+      firstProofGap ? `If you claim ${firstProofGap} on the resume, add a GitHub project that clearly proves it` : '',
+      missingKeywordHint ? `Address this resume gap explicitly: ${missingKeywordHint}` : '',
+      resumeInsights.missingSections?.length ? `Fill missing resume sections such as ${resumeInsights.missingSections.slice(0, 2).join(' and ')}` : ''
     ], ['Review resume bullets for stronger measurable outcomes'], 2, 4),
     learningActions: normalizeActionList([
       sprintSignal.consistencyScore < 45 ? `Break ${focusSkills[0] || 'your next gap'} into 30-45 minute sessions instead of one large weekly task` : '',
       weeklySignal.weeklyProgressScore < 50 ? 'Pick one priority gap and finish a proof-of-work artifact before adding another topic' : '',
       sprintSignal.repeatedIncompleteSkills?.[0] ? `Resolve the repeated incomplete area around ${sprintSignal.repeatedIncompleteSkills[0]}` : '',
-      focusSkills[0] ? `Practice ${focusSkills[0]} inside a real repository rather than isolated notes only` : ''
+      focusSkills[0] ? `Practice ${focusSkills[0]} inside a real repository rather than isolated notes only` : '',
+      firstProofGap ? `Turn your claimed ${firstProofGap} experience into visible GitHub proof this month` : ''
     ], ['Stay consistent with one focused learning goal this week'], 3, 6),
     interviewReadinessActions: normalizeActionList([
       integrationSignal.usedProviders.includes('leetcode') ? '' : 'Start a lightweight DSA routine to strengthen coding interview readiness',
@@ -302,13 +353,6 @@ const buildRecommendationFallback = ({
       resumeInsights.keyAchievements?.[0] ? `Turn "${resumeInsights.keyAchievements[0]}" into a STAR-style interview story` : 'Prepare two project stories with measurable outcomes'
     ], ['Practice explaining one shipped project end-to-end'], 2, 4)
   });
-};
-
-const buildResumeHash = (resumeText = '') => {
-  const cleanResume = String(resumeText || '').trim();
-  return cleanResume
-    ? crypto.createHash('sha256').update(cleanResume).digest('hex')
-    : 'no-resume';
 };
 
 const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, githubInsights, allowSignals }) => {
@@ -359,12 +403,13 @@ const resolveKnownAndMissingSkills = async ({
   username,
   careerStack,
   experienceLevel,
-  resumeText,
+  resumeCacheIdentity,
   resumeSkills,
   githubData,
   resumeInsights,
   githubInsights,
   developerSignals,
+  recommendationEvidence,
   providedKnownSkills,
   providedMissingSkills
 }) => {
@@ -372,13 +417,13 @@ const resolveKnownAndMissingSkills = async ({
   let missingSkills = Array.isArray(providedMissingSkills) ? providedMissingSkills : null;
 
   if (!knownSkills || !missingSkills) {
-    const lookupHash = buildResumeHash(resumeText);
     const cachedGap = await AnalysisCache.findOne({
       ...(userId ? { userId } : {}),
       githubUsername: username,
       careerStack,
       experienceLevel,
-      resumeHash: lookupHash,
+      resumeHash: resumeCacheIdentity.resumeHash,
+      resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
       analysisVersion: SKILL_GAP_LOOKUP_VERSION
     }).lean();
 
@@ -422,14 +467,19 @@ const resolveKnownAndMissingSkills = async ({
   return {
     knownSkills: uniqueStrings([
       ...(knownSkills || []),
+      ...(recommendationEvidence?.provenSkills || []),
       ...resumeSkills,
+      ...(recommendationEvidence?.githubSkills || []),
       ...(githubData?.languageDistribution || []).map((language) => language.language),
       ...integrationSkills,
       ...sprintEvidenceSkills,
       ...portfolioSkills
     ], 30),
     missingSkills: uniqueStrings(
-      (missingSkills || []).map((skill) => toSkillName(skill)).filter(Boolean),
+      [
+        ...(recommendationEvidence?.claimedButNotProvenSkills || []),
+        ...((missingSkills || []).map((skill) => toSkillName(skill)).filter(Boolean))
+      ],
       20
     )
   };
@@ -443,7 +493,9 @@ const finalizeRecommendationResult = ({
   fallback,
   resumeInsights,
   githubInsights,
-  signalsUsed
+  signalsUsed,
+  analysisBasedOn,
+  recommendationEvidence
 }) => {
   const projects = uniqueBy(Array.isArray(rawResult.projects) ? rawResult.projects : [], (item) => String(item?.title || '').toLowerCase());
   const technologies = uniqueBy(Array.isArray(rawResult.technologies) ? rawResult.technologies : [], (item) => String(item?.name || '').toLowerCase());
@@ -467,7 +519,12 @@ const finalizeRecommendationResult = ({
     interviewReadinessActions: normalizeActionList(rawResult.interviewReadinessActions, fallback.interviewReadinessActions, 2, 4),
     resumeInsights,
     githubInsights,
-    signalsUsed
+    signalsUsed,
+    analysisBasedOn,
+    resumeStatusMessage: resumeInsights.statusMessage,
+    claimedButNotProvenSkills: recommendationEvidence?.claimedButNotProvenSkills || [],
+    githubSkills: recommendationEvidence?.githubSkills || [],
+    resumeSkills: recommendationEvidence?.resumeSkills || []
   });
 };
 
@@ -487,8 +544,17 @@ const runRecommendationPipeline = async ({
 }) => {
   const githubData = await getGitHubData(username);
   const latestResumeAnalysis = await loadResumeAnalysis(userId);
-  const resumeInsights = buildResumeInsights(latestResumeAnalysis, experienceLevel);
+  const resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
   const githubInsights = buildGithubInsights(githubData);
+  const resumeCacheIdentity = buildResumeCacheIdentity({
+    resumeText,
+    resumeAnalysis: latestResumeAnalysis
+  });
+  const recommendationEvidence = buildRecommendationEvidence({
+    resumeInsights,
+    githubData,
+    careerStack
+  });
   const { developerSignals, signalHash, signalsUsed } = await loadDeveloperSignalsSafely({
     userId,
     username,
@@ -502,22 +568,23 @@ const runRecommendationPipeline = async ({
     username,
     careerStack,
     experienceLevel,
-    resumeText,
+    resumeCacheIdentity,
     resumeSkills: resumeInsights.skills,
     githubData,
     resumeInsights,
     githubInsights,
     developerSignals,
+    recommendationEvidence,
     providedKnownSkills: knownSkills,
     providedMissingSkills: missingSkills
   });
 
-  const resumeHash = buildResumeHash(resumeText);
   const cacheKey = {
     githubUsername: username,
     careerStack,
     experienceLevel,
-    resumeHash,
+    resumeHash: resumeCacheIdentity.resumeHash,
+    resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
     signalHash,
     analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
   };
@@ -529,12 +596,30 @@ const runRecommendationPipeline = async ({
   if (scopedCacheKey) {
     const cached = await AnalysisCache.findOne(scopedCacheKey).lean();
     if (cached?.analysisData?.projects?.length) {
-      const cachedResult = { ...normalizeRecommendationPayload(cached.analysisData), fromCache: true };
+      const cachedResult = {
+        ...normalizeRecommendationPayload(cached.analysisData),
+        analysisBasedOn: cached.analysisData.analysisBasedOn || buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights,
+          lastAnalyzedAt: cached.updatedAt || cached.createdAt || null
+        }),
+        resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+        fromCache: true
+      };
       await saveAIVersionSnapshot({
         req,
         source,
         output: cachedResult,
-        metadata: { fromCache: true, username, careerStack, experienceLevel, signalHash }
+        metadata: {
+          fromCache: true,
+          username,
+          careerStack,
+          experienceLevel,
+          signalHash,
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+        }
       });
       return res.json(cachedResult);
     }
@@ -548,7 +633,8 @@ const runRecommendationPipeline = async ({
     missingSkills: resolvedSkills.missingSkills,
     resumeInsights,
     githubInsights,
-    developerSignals
+    developerSignals,
+    recommendationEvidence
   });
   const prompt = getRecommendationPrompt(
     careerStack,
@@ -569,7 +655,15 @@ const runRecommendationPipeline = async ({
     fallback,
     resumeInsights,
     githubInsights,
-    signalsUsed
+    signalsUsed,
+    analysisBasedOn: buildAnalysisBasedOn({
+      username,
+      careerStack,
+      experienceLevel,
+      resumeInsights,
+      lastAnalyzedAt: new Date().toISOString()
+    }),
+    recommendationEvidence
   });
 
   if (scopedCacheKey) {
@@ -589,7 +683,14 @@ const runRecommendationPipeline = async ({
     req,
     source,
     output: fullResult,
-    metadata: { fromCache: false, username, careerStack, experienceLevel, signalHash }
+    metadata: {
+      fromCache: false,
+      username,
+      careerStack,
+      experienceLevel,
+      signalHash,
+      resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+    }
   });
 
   return res.json(fullResult);

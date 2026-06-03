@@ -100,6 +100,10 @@ export class SkillGapComponent implements OnInit, OnDestroy {
           missing:         (typeof raw?.missing  === 'number') ? raw.missing  : 0,
           yourSkills:      Array.isArray(raw?.yourSkills)    ? raw.yourSkills    : [],
           missingSkills:   Array.isArray(raw?.missingSkills) ? raw.missingSkills : [],
+          resumeSkills:    Array.isArray(raw?.resumeSkills) ? raw.resumeSkills : [],
+          githubSkills:    Array.isArray(raw?.githubSkills) ? raw.githubSkills : [],
+          provenSkills:    Array.isArray(raw?.provenSkills) ? raw.provenSkills : [],
+          claimedButNotProvenSkills: Array.isArray(raw?.claimedButNotProvenSkills) ? raw.claimedButNotProvenSkills : [],
           levelAssessment: raw?.levelAssessment || '',
           analysisSummary: raw?.analysisSummary || '',
           roadmap:         Array.isArray(raw?.roadmap) ? raw.roadmap : [],
@@ -108,6 +112,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
             : { nodes: [], edges: [] },
           weeklyRoadmap:   Array.isArray(raw?.weeklyRoadmap) ? raw.weeklyRoadmap : [],
           signalsUsed: this.normalizeSignalsUsed(raw?.signalsUsed, user),
+          analysisBasedOn: this.normalizeAnalysisBasedOn(raw?.analysisBasedOn, user, careerStack, experienceLevel),
+          resumeStatusMessage: typeof raw?.resumeStatusMessage === 'string' ? raw.resumeStatusMessage : '',
           totalWeeks:      raw?.totalWeeks || 'N/A'
         };
 
@@ -183,6 +189,18 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   coverageWidth(pct: number): string {
     return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  get analysisLastUpdatedLabel(): string {
+    const value = this.result?.analysisBasedOn?.lastAnalyzedAt;
+    if (!value) return 'Not available';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not available';
+    return date.toLocaleString();
+  }
+
+  get resumeStatusLabel(): string {
+    return this.result?.analysisBasedOn?.resumeStatus || this.result?.resumeStatusMessage || 'Resume not analyzed yet';
   }
 
   getResourceTitle(resource: { title?: string; url?: string } | string): string {
@@ -263,8 +281,17 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       },
       resume: {
         analyzed: Boolean(raw?.resume?.analyzed),
+        analysisId: raw?.resume?.analysisId || '',
         atsScore: Number(raw?.resume?.atsScore || 0),
-        experienceLevel: raw?.resume?.experienceLevel || ''
+        experienceLevel: raw?.resume?.experienceLevel || '',
+        fileName: raw?.resume?.fileName || '',
+        lastAnalyzedAt: raw?.resume?.lastAnalyzedAt || null,
+        extractedSkills: Array.isArray(raw?.resume?.extractedSkills) ? raw.resume.extractedSkills : [],
+        experienceKeywords: Array.isArray(raw?.resume?.experienceKeywords) ? raw.resume.experienceKeywords : [],
+        strengths: Array.isArray(raw?.resume?.strengths) ? raw.resume.strengths : [],
+        weaknesses: Array.isArray(raw?.resume?.weaknesses) ? raw.resume.weaknesses : [],
+        missingSections: Array.isArray(raw?.resume?.missingSections) ? raw.resume.missingSections : [],
+        statusMessage: raw?.resume?.statusMessage || ''
       },
       portfolio: {
         present: Boolean(raw?.portfolio?.present),
@@ -287,6 +314,17 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         streak: Number(raw?.careerSprint?.streak || 0),
         activeLearningFocus: raw?.careerSprint?.activeLearningFocus || ''
       }
+    };
+  }
+
+  private normalizeAnalysisBasedOn(raw: any, username: string, careerStack: string, experienceLevel: string): SkillGapResult['analysisBasedOn'] {
+    return {
+      githubUsername: raw?.githubUsername || username,
+      resumeAnalyzed: Boolean(raw?.resumeAnalyzed),
+      resumeStatus: raw?.resumeStatus || 'Resume not analyzed yet',
+      careerStack: raw?.careerStack || careerStack,
+      experienceLevel: raw?.experienceLevel || experienceLevel,
+      lastAnalyzedAt: raw?.lastAnalyzedAt || null
     };
   }
 }

@@ -403,6 +403,8 @@ const analyzeGitHubProfile = async (username) => {
     commitMap,
     repositories: repos.map(r => ({
         name: r.name,
+        description: r.description || '',
+        topics: Array.isArray(r.topics) ? r.topics : [],
         language: r.language || 'Unknown',
         stars: r.stargazers_count,
         forks: r.forks_count,

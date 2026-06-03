@@ -74,6 +74,45 @@
   </div>
 
   <ng-container *ngIf="result">
+    <div class="analysis-based-on">
+      <div class="section-header">
+        <div class="section-header__icon section-header__icon--blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20V10"/>
+            <path d="M18 20V4"/>
+            <path d="M6 20v-4"/>
+          </svg>
+        </div>
+        <h2>Analysis Based On</h2>
+      </div>
+
+      <div class="analysis-based-on__grid">
+        <div class="analysis-based-on__item">
+          <span>GitHub username</span>
+          <strong>@{{ result.analysisBasedOn?.githubUsername || viewedUsername || defaultUsername }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Resume analyzed</span>
+          <strong>{{ result.analysisBasedOn?.resumeAnalyzed ? 'Yes' : 'No' }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Career stack</span>
+          <strong>{{ result.analysisBasedOn?.careerStack || currentCareerStack }}</strong>
+        </div>
+        <div class="analysis-based-on__item">
+          <span>Experience level</span>
+          <strong>{{ result.analysisBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
+        </div>
+        <div class="analysis-based-on__item analysis-based-on__item--wide">
+          <span>Last analyzed date</span>
+          <strong>{{ analysisLastUpdatedLabel }}</strong>
+        </div>
+      </div>
+
+      <p class="analysis-based-on__note">{{ resumeStatusLabel }}</p>
+    </div>
+
     <div class="tab-bar">
       <button
         *ngFor="let tab of tabs"

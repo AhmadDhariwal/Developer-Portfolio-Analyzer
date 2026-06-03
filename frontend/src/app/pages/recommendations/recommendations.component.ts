@@ -8,6 +8,7 @@ import {
   RecommendedTechnology,
   CareerPath,
   RecommendationSignalsUsed,
+  AnalysisBasedOn,
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -101,7 +102,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
           resumeRecommendations: Array.isArray(data?.resumeRecommendations) ? data.resumeRecommendations : [],
           learningActions: Array.isArray(data?.learningActions) ? data.learningActions : [],
           interviewReadinessActions: Array.isArray(data?.interviewReadinessActions) ? data.interviewReadinessActions : [],
-          signalsUsed: this.normalizeSignalsUsed(data?.signalsUsed, user)
+          signalsUsed: this.normalizeSignalsUsed(data?.signalsUsed, user),
+          analysisBasedOn: this.normalizeAnalysisBasedOn(data?.analysisBasedOn, user, careerStack, experienceLevel),
+          resumeStatusMessage: typeof data?.resumeStatusMessage === 'string' ? data.resumeStatusMessage : '',
+          claimedButNotProvenSkills: Array.isArray(data?.claimedButNotProvenSkills) ? data.claimedButNotProvenSkills : [],
+          githubSkills: Array.isArray(data?.githubSkills) ? data.githubSkills : [],
+          resumeSkills: Array.isArray(data?.resumeSkills) ? data.resumeSkills : []
         };
 
         this.result = normalized;
@@ -192,6 +198,18 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return this.result?.signalsUsed?.careerSprint?.activeLearningFocus || 'No active sprint focus';
   }
 
+  get analysisLastUpdatedLabel(): string {
+    const value = this.result?.analysisBasedOn?.lastAnalyzedAt;
+    if (!value) return 'Not available';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not available';
+    return date.toLocaleString();
+  }
+
+  get resumeStatusLabel(): string {
+    return this.result?.analysisBasedOn?.resumeStatus || this.result?.resumeStatusMessage || 'Resume not analyzed yet';
+  }
+
   getProjectStartUrl(project: RecommendedProject): string {
     const url = String(project?.startUrl || '').trim();
     if (/^https?:\/\//i.test(url)) return url;
@@ -224,8 +242,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       },
       resume: {
         analyzed: Boolean(raw?.resume?.analyzed),
+        analysisId: raw?.resume?.analysisId || '',
         atsScore: Number(raw?.resume?.atsScore || 0),
-        experienceLevel: raw?.resume?.experienceLevel || ''
+        experienceLevel: raw?.resume?.experienceLevel || '',
+        fileName: raw?.resume?.fileName || '',
+        lastAnalyzedAt: raw?.resume?.lastAnalyzedAt || null,
+        extractedSkills: Array.isArray(raw?.resume?.extractedSkills) ? raw.resume.extractedSkills : [],
+        experienceKeywords: Array.isArray(raw?.resume?.experienceKeywords) ? raw.resume.experienceKeywords : [],
+        strengths: Array.isArray(raw?.resume?.strengths) ? raw.resume.strengths : [],
+        weaknesses: Array.isArray(raw?.resume?.weaknesses) ? raw.resume.weaknesses : [],
+        missingSections: Array.isArray(raw?.resume?.missingSections) ? raw.resume.missingSections : [],
+        statusMessage: raw?.resume?.statusMessage || ''
       },
       portfolio: {
         present: Boolean(raw?.portfolio?.present),
@@ -248,6 +275,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         streak: Number(raw?.careerSprint?.streak || 0),
         activeLearningFocus: raw?.careerSprint?.activeLearningFocus || ''
       }
+    };
+  }
+
+  private normalizeAnalysisBasedOn(raw: any, username: string, careerStack: string, experienceLevel: string): AnalysisBasedOn {
+    return {
+      githubUsername: raw?.githubUsername || username,
+      resumeAnalyzed: Boolean(raw?.resumeAnalyzed),
+      resumeStatus: raw?.resumeStatus || 'Resume not analyzed yet',
+      careerStack: raw?.careerStack || careerStack,
+      experienceLevel: raw?.experienceLevel || experienceLevel,
+      lastAnalyzedAt: raw?.lastAnalyzedAt || null
     };
   }
 }

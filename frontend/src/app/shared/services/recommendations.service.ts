@@ -47,8 +47,17 @@ export interface RecommendationSignalsUsed {
   };
   resume: {
     analyzed: boolean;
+    analysisId?: string;
     atsScore: number;
     experienceLevel: string;
+    fileName?: string;
+    lastAnalyzedAt?: string | null;
+    extractedSkills?: string[];
+    experienceKeywords?: string[];
+    strengths?: string[];
+    weaknesses?: string[];
+    missingSections?: string[];
+    statusMessage?: string;
   };
   portfolio: {
     present: boolean;
@@ -73,6 +82,15 @@ export interface RecommendationSignalsUsed {
   };
 }
 
+export interface AnalysisBasedOn {
+  githubUsername: string;
+  resumeAnalyzed: boolean;
+  resumeStatus: string;
+  careerStack: string;
+  experienceLevel: string;
+  lastAnalyzedAt?: string | null;
+}
+
 export interface RecommendationsResult {
   username:        string;
   careerStack:     string;
@@ -86,6 +104,11 @@ export interface RecommendationsResult {
   learningActions?: string[];
   interviewReadinessActions?: string[];
   signalsUsed?: RecommendationSignalsUsed;
+  analysisBasedOn?: AnalysisBasedOn;
+  resumeStatusMessage?: string;
+  claimedButNotProvenSkills?: string[];
+  githubSkills?: string[];
+  resumeSkills?: string[];
 }
 
 @Injectable({ providedIn: 'root' })

@@ -5,6 +5,7 @@ const PublicProfile = require('../models/publicProfile');
 const User = require('../models/user');
 const { buildPublicProfilePayload } = require('./publicProfileService');
 const { getIntegrationInsight } = require('./integrationInsightService');
+const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const TOPIC_STOP_WORDS = new Set([
   'the', 'and', 'for', 'with', 'from', 'into', 'your', 'this', 'that', 'task',
@@ -45,6 +46,184 @@ const safeStrings = (values = [], limit = 6) => uniqLower(
     .map((value) => String(value || '').trim())
     .filter(Boolean)
 ).slice(0, limit);
+
+const flattenResumeSkills = (skillsMap = {}) => {
+  if (!skillsMap) return [];
+  const values = skillsMap instanceof Map ? Array.from(skillsMap.values()) : Object.values(skillsMap);
+  return safeStrings(values.flat().map((value) => canonicalizeSkillName(value)).filter(Boolean), 30);
+};
+
+const deriveResumeStrengths = (analysis = {}) => {
+  const strengths = [];
+
+  if (Number(analysis.atsScore || 0) >= 75) strengths.push('Strong ATS structure');
+  if (Number(analysis.keywordDensity || 0) >= 70) strengths.push('Good keyword coverage');
+  if (Number(analysis.formatScore || 0) >= 70) strengths.push('Clear formatting');
+  if (Number(analysis.contentQuality || 0) >= 70) strengths.push('Strong content quality');
+  if (Array.isArray(analysis.keyAchievements) && analysis.keyAchievements.length) strengths.push('Quantified achievements present');
+  if (Array.isArray(analysis.certifications) && analysis.certifications.length) strengths.push('Certifications highlighted');
+
+  return safeStrings(strengths, 8);
+};
+
+const deriveResumeWeaknesses = (analysis = {}) => {
+  const weaknesses = [];
+
+  if (Number(analysis.atsScore || 0) < 70) weaknesses.push('ATS structure needs improvement');
+  if (Number(analysis.keywordDensity || 0) < 65) weaknesses.push('Keyword coverage is thin');
+  if (Number(analysis.formatScore || 0) < 65) weaknesses.push('Formatting could be clearer');
+  if (Number(analysis.contentQuality || 0) < 65) weaknesses.push('Content lacks strong impact language');
+
+  (Array.isArray(analysis.suggestions) ? analysis.suggestions : []).forEach((suggestion) => {
+    const title = String(suggestion?.title || '').trim();
+    if (title) weaknesses.push(title);
+  });
+
+  return safeStrings(weaknesses, 10);
+};
+
+const deriveMissingResumeSections = (analysis = {}) => {
+  const catalog = [
+    { label: 'Professional Summary', patterns: ['professional summary', 'summary section', 'summary'] },
+    { label: 'Projects', patterns: ['project section', 'projects section', 'project'] },
+    { label: 'Skills', patterns: ['skills section', 'skill section'] },
+    { label: 'Experience', patterns: ['experience section', 'work experience', 'experience'] },
+    { label: 'Education', patterns: ['education section', 'education'] },
+    { label: 'Contact Info', patterns: ['contact information', 'contact info', 'email', 'phone'] },
+    { label: 'Achievements', patterns: ['achievement', 'quantified', 'metrics', 'measurable results'] }
+  ];
+
+  const evidenceText = [
+    ...Object.values(analysis.scoreBreakdown || {}),
+    ...(Array.isArray(analysis.suggestions)
+      ? analysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
+      : [])
+  ].map((value) => String(value || '').toLowerCase());
+
+  const detected = catalog
+    .filter(({ patterns }) => evidenceText.some((text) => patterns.some((pattern) => text.includes(pattern))))
+    .map(({ label }) => label);
+
+  if (!Array.isArray(analysis.keyAchievements) || !analysis.keyAchievements.length) {
+    detected.push('Achievements');
+  }
+
+  return safeStrings(detected, 8);
+};
+
+const deriveResumeImprovementSuggestions = (analysis = {}) => safeStrings(
+  (Array.isArray(analysis.suggestions) ? analysis.suggestions : [])
+    .flatMap((suggestion) => [suggestion?.title, suggestion?.description]),
+  10
+);
+
+const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
+  const resumeSkills = flattenResumeSkills(analysis?.skills);
+  const skillEntries = analysis?.skills instanceof Map
+    ? Array.from(analysis.skills.entries())
+    : Object.entries(analysis?.skills || {});
+  const technicalSkills = safeStrings(
+    skillEntries
+      .filter(([category]) => String(category || '').toLowerCase() !== 'soft skills')
+      .flatMap(([, values]) => Array.isArray(values) ? values : [])
+      .map((value) => canonicalizeSkillName(value))
+      .filter(Boolean),
+    25
+  );
+  const experienceKeywords = safeStrings([
+    ...extractSkillsFromText([
+      ...(analysis?.keyAchievements || []),
+      ...(Array.isArray(analysis?.suggestions)
+        ? analysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
+        : []),
+      ...Object.values(analysis?.scoreBreakdown || {})
+    ]),
+    ...resumeSkills
+  ], 16);
+
+  const analyzedAt = analysis?.analyzedAt || analysis?.createdAt || null;
+  const analyzed = Boolean(analysis?._id);
+
+  return {
+    analyzed,
+    analysisId: analysis?._id ? String(analysis._id) : 'no-resume',
+    fileId: analysis?.fileId ? String(analysis.fileId) : '',
+    fileName: String(analysis?.fileName || '').trim(),
+    experienceLevel: analysis?.experienceLevel || fallbackExperienceLevel || '',
+    experienceYears: Number(analysis?.experienceYears || 0),
+    atsScore: Number(analysis?.atsScore || 0),
+    keywordDensity: Number(analysis?.keywordDensity || 0),
+    formatScore: Number(analysis?.formatScore || 0),
+    contentQuality: Number(analysis?.contentQuality || 0),
+    skills: resumeSkills.slice(0, 25),
+    technicalSkills,
+    extractedSkills: resumeSkills.slice(0, 25),
+    experienceKeywords,
+    strengths: deriveResumeStrengths(analysis),
+    weaknesses: deriveResumeWeaknesses(analysis),
+    missingSections: deriveMissingResumeSections(analysis),
+    improvementSuggestions: deriveResumeImprovementSuggestions(analysis),
+    keyAchievements: safeStrings(analysis?.keyAchievements || [], 8),
+    certifications: safeStrings(analysis?.certifications || [], 8),
+    lastAnalyzedAt: analyzedAt,
+    statusMessage: analyzed
+      ? `Resume analyzed${analysis?.fileName ? `: ${analysis.fileName}` : ''}`
+      : 'Resume not analyzed yet'
+  };
+};
+
+const buildResumeCacheIdentity = ({ resumeText = '', resumeAnalysis = null } = {}) => {
+  const cleanResume = String(resumeText || '').trim();
+  if (cleanResume) {
+    return {
+      resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex'),
+      resumeAnalysisId: resumeAnalysis?._id ? String(resumeAnalysis._id) : 'manual-resume-text'
+    };
+  }
+
+  if (resumeAnalysis?._id) {
+    const payload = {
+      id: String(resumeAnalysis._id),
+      fileId: resumeAnalysis.fileId ? String(resumeAnalysis.fileId) : '',
+      fileName: String(resumeAnalysis.fileName || '').trim(),
+      atsScore: Number(resumeAnalysis.atsScore || 0),
+      keywordDensity: Number(resumeAnalysis.keywordDensity || 0),
+      formatScore: Number(resumeAnalysis.formatScore || 0),
+      contentQuality: Number(resumeAnalysis.contentQuality || 0),
+      experienceYears: Number(resumeAnalysis.experienceYears || 0),
+      experienceLevel: String(resumeAnalysis.experienceLevel || '').trim(),
+      skills: flattenResumeSkills(resumeAnalysis.skills),
+      suggestions: deriveResumeImprovementSuggestions(resumeAnalysis),
+      keyAchievements: safeStrings(resumeAnalysis.keyAchievements || [], 8),
+      analyzedAt: resumeAnalysis.analyzedAt || resumeAnalysis.createdAt || null
+    };
+
+    return {
+      resumeHash: crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex'),
+      resumeAnalysisId: String(resumeAnalysis._id)
+    };
+  }
+
+  return {
+    resumeHash: 'no-resume',
+    resumeAnalysisId: 'no-resume'
+  };
+};
+
+const buildAnalysisBasedOn = ({
+  username = '',
+  careerStack = '',
+  experienceLevel = '',
+  resumeInsights = {},
+  lastAnalyzedAt = null
+} = {}) => ({
+  githubUsername: String(username || '').trim(),
+  resumeAnalyzed: Boolean(resumeInsights?.analyzed),
+  resumeStatus: String(resumeInsights?.statusMessage || 'Resume not analyzed yet'),
+  careerStack: String(careerStack || '').trim(),
+  experienceLevel: String(experienceLevel || '').trim(),
+  lastAnalyzedAt: lastAnalyzedAt || resumeInsights?.lastAnalyzedAt || null
+});
 
 const scoreToStatus = (score) => {
   const numeric = clamp(score);
@@ -320,13 +499,18 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
       developerLevel: String(githubInsights.developerLevel || '').trim()
     },
     resume: {
-      analyzed: Boolean(
-        Number(resumeInsights.atsScore || 0) > 0 ||
-        Number(resumeInsights.experienceYears || 0) > 0 ||
-        (Array.isArray(resumeInsights.skills) && resumeInsights.skills.length)
-      ),
+      analyzed: Boolean(resumeInsights.analyzed),
+      analysisId: String(resumeInsights.analysisId || 'no-resume'),
+      fileName: String(resumeInsights.fileName || '').trim(),
+      lastAnalyzedAt: resumeInsights.lastAnalyzedAt || null,
       atsScore: Number(resumeInsights.atsScore || 0),
-      experienceLevel: String(resumeInsights.experienceLevel || '').trim()
+      experienceLevel: String(resumeInsights.experienceLevel || '').trim(),
+      extractedSkills: safeStrings(resumeInsights.skills || [], 12),
+      experienceKeywords: safeStrings(resumeInsights.experienceKeywords || [], 12),
+      strengths: safeStrings(resumeInsights.strengths || [], 6),
+      weaknesses: safeStrings(resumeInsights.weaknesses || [], 6),
+      missingSections: safeStrings(resumeInsights.missingSections || [], 6),
+      statusMessage: String(resumeInsights.statusMessage || '').trim()
     },
     portfolio: {
       present: Boolean(portfolioSignal.present),
@@ -355,5 +539,8 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
 module.exports = {
   getDeveloperSignals,
   buildSignalHash,
-  buildSignalsUsedSummary
+  buildSignalsUsedSummary,
+  buildResumeAnalysisSignals,
+  buildResumeCacheIdentity,
+  buildAnalysisBasedOn
 };

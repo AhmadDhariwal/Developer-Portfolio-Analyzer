@@ -1,4 +1,3 @@
-const crypto = require('node:crypto');
 const { analyzeGitHubProfile } = require('../services/githubservice');
 const aiService = require('../services/aiservice');
 const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
@@ -10,8 +9,12 @@ const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/
 const {
   getDeveloperSignals,
   buildSignalHash,
-  buildSignalsUsedSummary
+  buildSignalsUsedSummary,
+  buildResumeAnalysisSignals,
+  buildResumeCacheIdentity,
+  buildAnalysisBasedOn
 } = require('../services/developerSignalService');
+const { extractSkillsFromRepositories, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const ANALYSIS_VERSION = 'v4-signals';
 const MIN_MISSING_SKILLS = 12;
@@ -34,6 +37,23 @@ const DEFAULT_MISSING_SKILLS = [
   'Accessibility',
   'Documentation'
 ];
+
+const STACK_SKILL_HINTS = {
+  Frontend: ['React', 'TypeScript', 'Next.js', 'Accessibility', 'Testing', 'CI/CD', 'Deployment'],
+  Backend: ['Node.js', 'REST APIs', 'SQL', 'PostgreSQL', 'Docker', 'CI/CD', 'Caching Strategies', 'Deployment'],
+  'Full Stack': ['React', 'TypeScript', 'Node.js', 'REST APIs', 'SQL', 'Docker', 'CI/CD', 'Deployment'],
+  'AI/ML': ['Python', 'SQL', 'Docker', 'AWS', 'CI/CD', 'Deployment', 'Monitoring and Observability']
+};
+
+const EXPERIENCE_SKILL_HINTS = {
+  Student: ['Git', 'Testing', 'Documentation', 'Deployment'],
+  Intern: ['Git', 'Testing', 'Documentation', 'Deployment'],
+  '0-1 years': ['Testing', 'SQL', 'Deployment', 'Documentation'],
+  '1-2 years': ['Testing', 'SQL', 'CI/CD', 'Deployment'],
+  '2-3 years': ['System Design', 'CI/CD', 'Docker', 'Performance Optimization'],
+  '3-5 years': ['System Design', 'CI/CD', 'Monitoring and Observability', 'Security Basics'],
+  '5+ years': ['System Design', 'Scalability Patterns', 'Security Basics', 'Monitoring and Observability']
+};
 
 const isValidUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
@@ -127,14 +147,6 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
 
 const toSkillName = (value) => (typeof value === 'string' ? value : value?.name || '').trim();
 
-const flattenResumeSkills = (skillsMap = {}) => {
-  if (!skillsMap) return [];
-  const values = skillsMap instanceof Map
-    ? Array.from(skillsMap.values())
-    : Object.values(skillsMap);
-  return values.flat().map(String).map((value) => value.trim()).filter(Boolean);
-};
-
 const uniqueByLower = (values = []) => {
   const seen = new Set();
   return values.filter((value) => {
@@ -175,11 +187,6 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
   }
 };
 
-const buildResumeHash = (resumeText = '') => {
-  const cleanResume = String(resumeText || '').trim();
-  return crypto.createHash('sha256').update(cleanResume).digest('hex');
-};
-
 const loadResumeAnalysis = async (userId) => {
   if (!userId) return null;
   const userContext = await User.findById(userId).select('defaultResumeFileId').lean();
@@ -210,25 +217,44 @@ const getGitHubData = async (username) => {
   }
 };
 
-const buildResumeInsights = (analysis, fallbackExperienceLevel = '') => {
-  const resumeSkills = flattenResumeSkills(analysis?.skills);
-  return {
-    experienceLevel: analysis?.experienceLevel || fallbackExperienceLevel || '',
-    experienceYears: analysis?.experienceYears || 0,
-    atsScore: analysis?.atsScore || 0,
-    keywordDensity: analysis?.keywordDensity || 0,
-    skills: resumeSkills.slice(0, 25),
-    keyAchievements: (analysis?.keyAchievements || []).slice(0, 8)
-  };
-};
-
 const buildGithubInsights = (githubData = {}) => ({
   repoCount: githubData?.repoCount || 0,
   developerLevel: githubData?.developerLevel || '',
   strengths: githubData?.strengths || [],
   weakAreas: githubData?.weakAreas || [],
+  languageDistribution: githubData?.languageDistribution || [],
+  repositories: githubData?.repositories || [],
   scores: githubData?.scores || {}
 });
+
+const getExpectedSkills = (careerStack = 'Full Stack', experienceLevel = 'Student') => uniqueByLower([
+  ...(STACK_SKILL_HINTS[careerStack] || STACK_SKILL_HINTS['Full Stack']),
+  ...(EXPERIENCE_SKILL_HINTS[experienceLevel] || EXPERIENCE_SKILL_HINTS.Student),
+  ...DEFAULT_MISSING_SKILLS
+]).map((skill) => canonicalizeSkillName(skill)).filter(Boolean);
+
+const buildGithubSkills = (githubData = {}) => uniqueByLower(
+  extractSkillsFromRepositories(githubData?.repositories || [], githubData?.languageDistribution || [])
+    .concat((githubData?.languageDistribution || []).map((entry) => entry?.language))
+    .map((skill) => canonicalizeSkillName(skill))
+    .filter(Boolean)
+).slice(0, 25);
+
+const buildSkillEvidenceBreakdown = ({ resumeInsights, githubData, careerStack, experienceLevel }) => {
+  const resumeSkills = uniqueByLower((resumeInsights?.technicalSkills || resumeInsights?.skills || []).map((skill) => canonicalizeSkillName(skill)).filter(Boolean));
+  const githubSkills = buildGithubSkills(githubData);
+  const githubLookup = new Set(githubSkills.map((skill) => skill.toLowerCase()));
+  const resumeLookup = new Set(resumeSkills.map((skill) => skill.toLowerCase()));
+  const expectedSkills = getExpectedSkills(careerStack, experienceLevel);
+
+  return {
+    resumeSkills,
+    githubSkills,
+    provenSkills: resumeSkills.filter((skill) => githubLookup.has(skill.toLowerCase())),
+    claimedButNotProvenSkills: resumeSkills.filter((skill) => !githubLookup.has(skill.toLowerCase())),
+    missingExpectedSkills: expectedSkills.filter((skill) => !resumeLookup.has(skill.toLowerCase()) && !githubLookup.has(skill.toLowerCase()))
+  };
+};
 
 const emptySignals = {
   careerSprintSignal: { present: false, completedTasks: 0, missedTasks: 0, streak: 0, consistencyScore: 0, activeLearningFocus: '', repeatedIncompleteSkills: [], completedSkillSignals: [], progressPercent: 0, status: 'Unavailable', updatedAt: null },
@@ -283,21 +309,32 @@ const buildEvidenceBuckets = (signals = {}) => {
 const buildFallbackSkillGap = ({
   resumeInsights,
   githubInsights,
-  developerSignals
+  developerSignals,
+  evidenceBreakdown,
+  careerStack,
+  experienceLevel
 }) => {
   const focusSkills = uniqueByLower([
+    ...(evidenceBreakdown?.missingExpectedSkills || []),
+    ...(evidenceBreakdown?.claimedButNotProvenSkills || []),
     ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
     ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []),
     ...(developerSignals.integrationSignal?.weakProof || []),
-    ...DEFAULT_MISSING_SKILLS
+    ...getExpectedSkills(careerStack, experienceLevel)
   ]);
 
   return {
-    analysisSummary: `Primary evidence comes from GitHub activity, resume skill coverage, and supporting progress signals. Missing areas are prioritized where code evidence is thin and the same topics keep reappearing in progress or sprint signals.`,
-    yourSkills: resumeInsights.skills.slice(0, 8).map((skill) => ({
+    analysisSummary: `Primary evidence comes from resume claims, GitHub proof, and supporting progress signals. Missing areas are prioritized where stack expectations are not yet visible in code or the resume still needs stronger coverage.`,
+    yourSkills: uniqueByLower([
+      ...(evidenceBreakdown?.provenSkills || []),
+      ...(resumeInsights.skills || []),
+      ...(evidenceBreakdown?.githubSkills || [])
+    ]).slice(0, 8).map((skill) => ({
       name: skill,
-      category: 'General',
-      proficiency: 62,
+      category: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase())
+        ? 'Proven by GitHub'
+        : 'Resume Signal',
+      proficiency: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 72 : 60,
       isFoundational: true
     })),
     missingSkills: focusSkills.slice(0, MIN_MISSING_SKILLS).map((skill, index) => ({
@@ -381,28 +418,37 @@ const analyzeSkillGap = async (req, res) => {
       resumeText = analysis?.resumeText || '';
     }
 
-    const cleanResume = String(resumeText || '').trim();
-    const resumeHash = buildResumeHash(cleanResume);
-
     const [githubData, latestResumeAnalysis] = await Promise.all([
       getGitHubData(username.trim()),
       loadResumeAnalysis(req.user?._id || null)
     ]);
 
-    const resumeInsights = buildResumeInsights(latestResumeAnalysis, experienceLevel);
+    const cleanResume = String(resumeText || '').trim();
+    const resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
     const githubInsights = buildGithubInsights(githubData);
+    const resumeCacheIdentity = buildResumeCacheIdentity({
+      resumeText: cleanResume,
+      resumeAnalysis: latestResumeAnalysis
+    });
     const { developerSignals, signalHash, signalsUsed } = await loadDeveloperSignalsSafely({
       userId: req.user?._id || null,
       username,
       resumeInsights,
       githubInsights
     });
+    const evidenceBreakdown = buildSkillEvidenceBreakdown({
+      resumeInsights,
+      githubData,
+      careerStack,
+      experienceLevel
+    });
 
     const cacheKey = {
       githubUsername: username,
       careerStack,
       experienceLevel,
-      resumeHash,
+      resumeHash: resumeCacheIdentity.resumeHash,
+      resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
       signalHash,
       analysisVersion: ANALYSIS_VERSION
     };
@@ -412,12 +458,30 @@ const analyzeSkillGap = async (req, res) => {
       : null;
     const cached = scopedCacheKey ? await AnalysisCache.findOne(scopedCacheKey).lean() : null;
     if (cached?.analysisData) {
-      const cachedResult = { ...cached.analysisData, fromCache: true };
+      const cachedResult = {
+        ...cached.analysisData,
+        analysisBasedOn: cached.analysisData.analysisBasedOn || buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights,
+          lastAnalyzedAt: cached.updatedAt || cached.createdAt || null
+        }),
+        resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+        fromCache: true
+      };
       await saveAIVersionSnapshot({
         req,
         source: 'skill_gap',
         output: cachedResult,
-        metadata: { fromCache: true, username, careerStack, experienceLevel, signalHash }
+        metadata: {
+          fromCache: true,
+          username,
+          careerStack,
+          experienceLevel,
+          signalHash,
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+        }
       });
       return res.json(cachedResult);
     }
@@ -433,7 +497,10 @@ const analyzeSkillGap = async (req, res) => {
     const fallback = buildFallbackSkillGap({
       resumeInsights,
       githubInsights,
-      developerSignals
+      developerSignals,
+      evidenceBreakdown,
+      careerStack,
+      experienceLevel
     });
     const prompt = getSkillGapPrompt(
       careerStack,
@@ -465,7 +532,9 @@ const analyzeSkillGap = async (req, res) => {
       .filter((skill) => skill.name);
 
     const detectedKnown = uniqueByLower([
+      ...evidenceBreakdown.provenSkills,
       ...resumeInsights.skills,
+      ...evidenceBreakdown.githubSkills,
       ...(githubData.repositories || []).map((repo) => repo.language || '').filter(Boolean),
       ...(developerSignals.integrationSignal?.detectedSkills || []),
       ...(developerSignals.careerSprintSignal?.completedSkillSignals || []),
@@ -492,12 +561,14 @@ const analyzeSkillGap = async (req, res) => {
       .filter((skill) => skill.name);
 
     const derivedGapCandidates = uniqueByLower([
+      ...evidenceBreakdown.missingExpectedSkills,
+      ...evidenceBreakdown.claimedButNotProvenSkills,
       ...missingSkills.map((skill) => skill.name),
       ...(githubInsights.weakAreas || []),
       ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
       ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []),
       ...(developerSignals.integrationSignal?.weakProof || []),
-      ...DEFAULT_MISSING_SKILLS
+      ...getExpectedSkills(careerStack, experienceLevel)
     ]);
     const existingMissing = new Set(missingSkills.map((skill) => skill.name.toLowerCase()));
     for (const fallbackSkill of derivedGapCandidates) {
@@ -545,6 +616,10 @@ const analyzeSkillGap = async (req, res) => {
       analysisSummary: String(aiResult.analysisSummary || fallback.analysisSummary || '').trim(),
       yourSkills,
       missingSkills,
+      resumeSkills: evidenceBreakdown.resumeSkills,
+      githubSkills: evidenceBreakdown.githubSkills,
+      provenSkills: evidenceBreakdown.provenSkills,
+      claimedButNotProvenSkills: evidenceBreakdown.claimedButNotProvenSkills,
       coverage,
       missing,
       levelAssessment: String(aiResult.levelAssessment || fallback.levelAssessment || '').trim(),
@@ -552,7 +627,15 @@ const analyzeSkillGap = async (req, res) => {
       totalWeeks: String(aiResult.totalWeeks || fallback.totalWeeks || '8 weeks').trim(),
       resumeInsights,
       githubStats: githubData,
-      signalsUsed
+      signalsUsed,
+      analysisBasedOn: buildAnalysisBasedOn({
+        username,
+        careerStack,
+        experienceLevel,
+        resumeInsights,
+        lastAnalyzedAt: new Date().toISOString()
+      }),
+      resumeStatusMessage: resumeInsights.statusMessage
     };
 
     const skillGraph = buildSkillGraph({
@@ -575,7 +658,14 @@ const analyzeSkillGap = async (req, res) => {
       req,
       source: 'skill_gap',
       output: fullResult,
-      metadata: { fromCache: false, username, careerStack, experienceLevel, signalHash }
+      metadata: {
+        fromCache: false,
+        username,
+        careerStack,
+        experienceLevel,
+        signalHash,
+        resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+      }
     });
 
     return res.json(fullResult);
