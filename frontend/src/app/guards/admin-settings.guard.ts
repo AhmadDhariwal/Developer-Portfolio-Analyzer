@@ -30,7 +30,13 @@ export const adminSettingsGuard: CanActivateFn = () => {
 
       // Fallback: check role stored in localStorage user object
       if (storedUser?.role === 'admin') {
-        tenantContext.setOrganization({ id: 'local', name: 'local', myRole: 'admin' });
+        const organizationId = String(storedUser['organizationId'] || '');
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(organizationId);
+        tenantContext.setOrganization({
+          id: isValidObjectId ? organizationId : '',
+          name: String(storedUser['organizationName'] || ''),
+          myRole: 'admin'
+        });
         return of(true);
       }
 

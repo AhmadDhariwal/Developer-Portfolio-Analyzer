@@ -84,7 +84,8 @@ export class AdminActivityLogsComponent implements OnInit {
   ngOnInit(): void {
     const currentUser = this.authService.getCurrentUser();
     this.currentUserId = String(currentUser?._id || '');
-    this.selectedActorId = this.currentUserId;
+    const role = String(currentUser?.role || '').toLowerCase();
+    this.selectedActorId = role === 'admin' ? '' : this.currentUserId;
     this.ensureDefaultDateRange();
 
     this.tenantContext.state$
@@ -198,7 +199,7 @@ export class AdminActivityLogsComponent implements OnInit {
   }
 
   onTeamChange(): void {
-    this.selectedActorId = this.selectedTeamId ? '' : this.currentUserId;
+    this.selectedActorId = '';
     this.refreshActorSelection();
     this.cdr.markForCheck();
   }
@@ -232,7 +233,9 @@ export class AdminActivityLogsComponent implements OnInit {
 
   resetFilters(): void {
     this.selectedTeamId = '';
-    this.selectedActorId = this.currentUserId;
+    const currentUser = this.authService.getCurrentUser();
+    const role = String(currentUser?.role || '').toLowerCase();
+    this.selectedActorId = role === 'admin' ? '' : this.currentUserId;
     this.action = '';
     this.actionOptions = [];
     const today = new Date();

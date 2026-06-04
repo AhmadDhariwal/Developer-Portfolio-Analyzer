@@ -20,6 +20,25 @@ const { normalizeSlug } = require('../services/tenantService');
 
 // ── helpers ───────────────────────────────────────────────────────────────
 const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v || 0)));
+const DEFAULT_DASHBOARD_DATE_RANGE = 30;
+const ALLOWED_DASHBOARD_DATE_RANGES = [7, 14, 30, 60, 90];
+const DEFAULT_JOB_STATUSES = ['open', 'draft', 'closed'];
+
+const normalizeDashboardConfig = (value = {}) => {
+  const preferredDateRangeDays = Number.parseInt(String(value?.preferredDateRangeDays || DEFAULT_DASHBOARD_DATE_RANGE), 10);
+
+  return {
+    preferredDateRangeDays: ALLOWED_DASHBOARD_DATE_RANGES.includes(preferredDateRangeDays)
+      ? preferredDateRangeDays
+      : DEFAULT_DASHBOARD_DATE_RANGE,
+    defaultTeamId: value?.defaultTeamId ? String(value.defaultTeamId) : '',
+    showKpiCards: value?.showKpiCards !== false,
+    showTeamAnalytics: value?.showTeamAnalytics !== false,
+    showRecruiterPerformance: value?.showRecruiterPerformance !== false,
+    showJobTrends: value?.showJobTrends !== false,
+    showActivityFeed: value?.showActivityFeed !== false
+  };
+};
 
 const validate = (req, res) => {
   const errors = validationResult(req);
@@ -161,24 +180,50 @@ const upsertRecruiterTeamMemberships = async ({ organizationId, teamId, recruite
 const getConsoleOverview = async (req, res) => {
   try {
     const orgId = req.organizationId;
+    const activeMembershipsQuery = { organizationId: orgId, status: 'active' };
+    const organizationUsersQuery = { organizationId: orgId, role: { $in: ['admin', 'recruiter'] } };
 
     const [
       organization,
       recruitersCount,
       activeRecruitersCount,
       teamsCount,
+      activeTeamsCount,
       jobsCount,
       pendingInvitationsCount,
-      membersCount
+      memberships,
+      organizationUsers
     ] = await Promise.all([
       Organization.findById(orgId).select('name slug description createdAt').lean(),
       User.countDocuments({ role: 'recruiter', organizationId: orgId }),
       User.countDocuments({ role: 'recruiter', organizationId: orgId, isActive: true }),
       Team.countDocuments({ organizationId: orgId }),
+      Team.countDocuments({ organizationId: orgId, isActive: { $ne: false } }),
       Job.countDocuments({ organizationId: orgId }),
       Invitation.countDocuments({ organizationId: orgId, status: 'pending', expiresAt: { $gt: new Date() } }),
-      Membership.countDocuments({ organizationId: orgId, status: 'active', teamId: null })
+      Membership.find(activeMembershipsQuery).select('userId role').lean(),
+      User.find(organizationUsersQuery).select('_id role isActive').lean()
     ]);
+
+    const internalMemberIds = new Set();
+    memberships.forEach((membership) => {
+      if (membership?.userId) internalMemberIds.add(String(membership.userId));
+    });
+    organizationUsers.forEach((user) => {
+      if (user?._id) internalMemberIds.add(String(user._id));
+    });
+
+    const adminCount = organizationUsers.filter((user) => String(user.role || '') === 'admin').length;
+    const recruiterUserIds = new Set(
+      organizationUsers
+        .filter((user) => String(user.role || '') === 'recruiter')
+        .map((user) => String(user._id))
+    );
+    const memberOnlyIds = new Set(
+      memberships
+        .filter((membership) => String(membership.role || '') === 'member')
+        .map((membership) => String(membership.userId))
+    );
 
     return res.json({
       organization,
@@ -187,9 +232,17 @@ const getConsoleOverview = async (req, res) => {
         activeRecruitersCount,
         inactiveRecruitersCount: recruitersCount - activeRecruitersCount,
         teamsCount,
+        activeTeamsCount,
         jobsCount,
         pendingInvitationsCount,
-        membersCount
+        membersCount: internalMemberIds.size
+      },
+      membershipSummary: {
+        internalMembersCount: internalMemberIds.size,
+        adminCount,
+        recruiterCount: recruiterUserIds.size,
+        memberCount: memberOnlyIds.size,
+        publicDevelopersIncluded: false
       }
     });
   } catch (error) {
@@ -567,14 +620,19 @@ const getConsolePreferences = async (req, res) => {
   try {
     const orgId = req.organizationId;
     const organization = await Organization.findById(orgId)
-      .select('name slug description createdAt ownerId')
+      .select('name slug description createdAt ownerId dashboardConfig')
       .lean();
 
     if (!organization) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
 
-    return res.json({ organization });
+    return res.json({
+      organization: {
+        ...organization,
+        dashboardConfig: normalizeDashboardConfig(organization.dashboardConfig)
+      }
+    });
   } catch (error) {
     console.error('Admin console preferences error:', error.message);
     return res.status(500).json({ message: 'Failed to load organization preferences.' });
@@ -587,22 +645,54 @@ const updateConsolePreferences = async (req, res) => {
     const orgId = req.organizationId;
     const name = String(req.body?.name || '').trim();
     const description = String(req.body?.description || '').trim();
+    const requestedConfig = normalizeDashboardConfig(req.body?.dashboardConfig || {});
 
     if (!name) {
       return res.status(400).json({ message: 'Organization name is required.' });
     }
 
+    let defaultTeamId = null;
+    if (requestedConfig.defaultTeamId) {
+      const team = await Team.findOne({
+        _id: requestedConfig.defaultTeamId,
+        organizationId: orgId
+      })
+        .select('_id')
+        .lean();
+
+      if (!team) {
+        return res.status(400).json({ message: 'Default dashboard team is not part of this organization.' });
+      }
+
+      defaultTeamId = team._id;
+    }
+
     const organization = await Organization.findByIdAndUpdate(
       orgId,
-      { $set: { name, description } },
+      {
+        $set: {
+          name,
+          description,
+          dashboardConfig: {
+            ...requestedConfig,
+            defaultTeamId
+          }
+        }
+      },
       { new: true }
-    ).select('name slug description createdAt').lean();
+    ).select('name slug description createdAt ownerId dashboardConfig').lean();
 
     if (!organization) {
       return res.status(404).json({ message: 'Organization not found.' });
     }
 
-    return res.json({ organization, message: 'Organization preferences updated.' });
+    return res.json({
+      organization: {
+        ...organization,
+        dashboardConfig: normalizeDashboardConfig(organization.dashboardConfig)
+      },
+      message: 'Organization preferences updated.'
+    });
   } catch (error) {
     console.error('Admin console update preferences error:', error.message);
     return res.status(500).json({ message: 'Failed to update organization preferences.' });
@@ -612,15 +702,17 @@ const updateConsolePreferences = async (req, res) => {
 // ── GET /api/admin-console/performance ───────────────────────────────────
 const getConsolePerformance = async (req, res) => {
   try {
-    const orgId = req.organizationId || req.user?.organizationId || null;
+    const orgId = req.organizationId || null;
     if (!orgId) {
       return res.status(403).json({ message: 'Organization context is required for this resource.' });
     }
-    const days = Math.min(90, Math.max(7, Number.parseInt(String(req.query.days || '30'), 10)));
+    const days = Math.min(90, Math.max(7, Number.parseInt(String(req.query.days || String(DEFAULT_DASHBOARD_DATE_RANGE)), 10)));
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const selectedTeamId = String(req.query.teamId || '').trim();
     const selectedRecruiterId = String(req.query.recruiterId || '').trim();
     const selectedStack = String(req.query.stack || '').trim();
+    const rawJobStatus = String(req.query.jobStatus || '').trim().toLowerCase();
+    const selectedJobStatus = DEFAULT_JOB_STATUSES.includes(rawJobStatus) ? rawJobStatus : '';
 
     const [recruiters, teams, memberships, invitations] = await Promise.all([
       User.find({ role: 'recruiter', organizationId: orgId }).select('_id name email isActive createdAt').lean(),
@@ -638,56 +730,115 @@ const getConsolePerformance = async (req, res) => {
     }, new Map());
 
     const allRecruiterIds = recruiters.map((r) => String(r._id));
-    let scopedRecruiterIds = allRecruiterIds;
+    let teamScopedRecruiterIds = [...allRecruiterIds];
     if (selectedTeamId) {
-      scopedRecruiterIds = (membersByTeam.get(selectedTeamId) || []).filter((id) => allRecruiterIds.includes(id));
+      teamScopedRecruiterIds = (membersByTeam.get(selectedTeamId) || []).filter((id) => allRecruiterIds.includes(id));
     }
+    let scopedRecruiterIds = [...teamScopedRecruiterIds];
     if (selectedRecruiterId) {
       scopedRecruiterIds = scopedRecruiterIds.filter((id) => id === selectedRecruiterId);
     }
+    const availableRecruiterSet = new Set(teamScopedRecruiterIds);
+    const availableRecruiters = recruiters.filter((r) => availableRecruiterSet.has(String(r._id)));
     const scopedSet = new Set(scopedRecruiterIds);
     const scopedRecruiters = recruiters.filter((r) => scopedSet.has(String(r._id)));
 
+    const recruiterById = recruiters.reduce((map, recruiter) => {
+      map.set(String(recruiter._id), recruiter);
+      return map;
+    }, new Map());
+
     const jobMatch = { organizationId: orgId, recruiterId: { $in: scopedRecruiterIds } };
     if (selectedStack) jobMatch.stack = selectedStack;
-    const allJobs = await Job.find(jobMatch).select('_id recruiterId status createdAt stack').lean();
-
-    // Recruiter operational activity (real usage) comes from mutation audit logs.
-    const activityLogs = await AuditLog.find({
-      actor: { $in: scopedRecruiterIds },
-      timestamp: { $gte: since },
-      route: { $regex: /\/api\/recruiter\/(match|ai-rank)/ }
-    })
-      .select('actor route timestamp statusCode')
+    if (selectedJobStatus) jobMatch.status = selectedJobStatus;
+    const allJobs = await Job.find(jobMatch)
+      .select('_id recruiterId teamId title role status createdAt updatedAt stack')
+      .sort({ createdAt: -1 })
       .lean();
+
+    const detailedActivityLogs = await AuditLog.find({
+      organizationId: orgId,
+      actor: { $in: scopedRecruiterIds },
+      timestamp: { $gte: since }
+    })
+      .sort({ timestamp: -1 })
+      .limit(400)
+      .select('_id actor action method route statusCode timestamp')
+      .lean();
+
+    const activityLogs = detailedActivityLogs.filter((log) => /\/api\/recruiter\/(match|ai-rank)/.test(String(log.route || '')));
 
     // Candidate pool created/managed by recruiters (if your org is using it).
     const candidateMatch = { createdBy: { $in: scopedRecruiterIds } };
     if (selectedStack) candidateMatch.stack = selectedStack;
     const recentCandidates = await Candidate.find({ ...candidateMatch, createdAt: { $gte: since } })
-      .select('createdBy createdAt stack githubScore resumeScore growthPotentialScore skillGaps aiInsight')
+      .select('createdBy fullName createdAt stack githubScore resumeScore growthPotentialScore skillGaps aiInsight')
+      .sort({ createdAt: -1 })
       .lean();
+
+    const pushLimited = (map, key, value, limit = 5) => {
+      if (!key) return;
+      const current = map.get(key) || [];
+      if (current.length < limit) {
+        current.push(value);
+        map.set(key, current);
+      }
+    };
+
+    const teamByRecruiter = new Map();
+    memberships.forEach((m) => { teamByRecruiter.set(String(m.userId), String(m.teamId)); });
 
     const jobsByRecruiter = new Map();
     const recentJobsByRecruiter = new Map();
     const lastJobAtByRecruiter = new Map();
+    const openJobsByRecruiter = new Map();
+    const draftJobsByRecruiter = new Map();
+    const closedJobsByRecruiter = new Map();
+    const recentJobsListByRecruiter = new Map();
+    const recentJobsListByTeam = new Map();
     allJobs.forEach((job) => {
       const key = String(job.recruiterId || '');
       if (!key) return;
+      const teamKey = String(job.teamId || teamByRecruiter.get(key) || '');
       jobsByRecruiter.set(key, (jobsByRecruiter.get(key) || 0) + 1);
       if (!lastJobAtByRecruiter.get(key) || new Date(job.createdAt) > lastJobAtByRecruiter.get(key)) {
         lastJobAtByRecruiter.set(key, new Date(job.createdAt));
       }
       if (new Date(job.createdAt) >= since) recentJobsByRecruiter.set(key, (recentJobsByRecruiter.get(key) || 0) + 1);
+      if (job.status === 'open') openJobsByRecruiter.set(key, (openJobsByRecruiter.get(key) || 0) + 1);
+      if (job.status === 'draft') draftJobsByRecruiter.set(key, (draftJobsByRecruiter.get(key) || 0) + 1);
+      if (job.status === 'closed') closedJobsByRecruiter.set(key, (closedJobsByRecruiter.get(key) || 0) + 1);
+      const jobSummary = {
+        _id: job._id,
+        title: String(job.title || job.role || 'Untitled role').trim(),
+        status: String(job.status || 'open'),
+        stack: String(job.stack || 'Other').trim() || 'Other',
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt || job.createdAt
+      };
+      pushLimited(recentJobsListByRecruiter, key, jobSummary);
+      pushLimited(recentJobsListByTeam, teamKey, jobSummary);
     });
 
     const matchCallsByRecruiter = new Map();
     const aiRankCallsByRecruiter = new Map();
     const lastActivityAtByRecruiter = new Map();
-    activityLogs.forEach((log) => {
+    const recentActivityByRecruiter = new Map();
+    const recentActivityByTeam = new Map();
+    detailedActivityLogs.forEach((log) => {
       const id = String(log.actor || '');
       if (!id) return;
       const route = String(log.route || '');
+      const recruiter = recruiterById.get(id);
+      const activityItem = {
+        _id: log._id,
+        action: String(log.action || route || 'Activity').trim() || 'Activity',
+        method: String(log.method || '').trim(),
+        route,
+        statusCode: Number(log.statusCode || 0),
+        timestamp: log.timestamp,
+        actorName: recruiter?.name || recruiter?.email || 'Recruiter'
+      };
       if (route.includes('/api/recruiter/match')) {
         matchCallsByRecruiter.set(id, (matchCallsByRecruiter.get(id) || 0) + 1);
       }
@@ -698,18 +849,22 @@ const getConsolePerformance = async (req, res) => {
       if (ts && (!lastActivityAtByRecruiter.get(id) || ts > lastActivityAtByRecruiter.get(id))) {
         lastActivityAtByRecruiter.set(id, ts);
       }
+      pushLimited(recentActivityByRecruiter, id, activityItem);
+      pushLimited(recentActivityByTeam, String(teamByRecruiter.get(id) || ''), activityItem);
     });
 
     const candidatesByRecruiter = new Map();
     const aiEnhancedCandidatesByRecruiter = new Map();
     const lastCandidateAtByRecruiter = new Map();
+    const recentCandidatesByRecruiter = new Map();
+    const recentCandidatesByTeam = new Map();
     const skillGapCounts = new Map();
-    const stackCountsFromCandidates = new Map();
     let portfolioQualitySum = { github: 0, resume: 0, growth: 0, count: 0 };
 
     recentCandidates.forEach((c) => {
       const rid = String(c.createdBy || '');
       if (!rid) return;
+      const teamKey = String(teamByRecruiter.get(rid) || '');
 
       candidatesByRecruiter.set(rid, (candidatesByRecruiter.get(rid) || 0) + 1);
 
@@ -725,8 +880,13 @@ const getConsolePerformance = async (req, res) => {
         lastCandidateAtByRecruiter.set(rid, ts);
       }
 
-      const stack = String(c.stack || '').trim();
-      if (stack) stackCountsFromCandidates.set(stack, (stackCountsFromCandidates.get(stack) || 0) + 1);
+      const candidateSummary = {
+        fullName: String(c.fullName || 'Candidate').trim() || 'Candidate',
+        stack: String(c.stack || 'Other').trim() || 'Other',
+        createdAt: c.createdAt
+      };
+      pushLimited(recentCandidatesByRecruiter, rid, candidateSummary);
+      pushLimited(recentCandidatesByTeam, teamKey, candidateSummary);
 
       const gaps = Array.isArray(c.skillGaps) ? c.skillGaps : [];
       gaps.forEach((g) => {
@@ -744,20 +904,17 @@ const getConsolePerformance = async (req, res) => {
       portfolioQualitySum.count += 1;
     });
 
-    const teamByRecruiter = new Map();
-    memberships.forEach((m) => { teamByRecruiter.set(String(m.userId), String(m.teamId)); });
-
     const recruiterMetrics = scopedRecruiters.map((r) => {
       const id = String(r._id);
       const totalJobs = jobsByRecruiter.get(id) || 0;
       const recentJobs = recentJobsByRecruiter.get(id) || 0;
-      const closedJobs = allJobs.filter((j) => String(j.recruiterId || '') === id && j.status === 'closed').length;
+      const closedJobs = closedJobsByRecruiter.get(id) || 0;
       const matchCalls = matchCallsByRecruiter.get(id) || 0;
       const aiRankCalls = aiRankCallsByRecruiter.get(id) || 0;
       const totalAnalyses = matchCalls + aiRankCalls;
       const candidatesAnalyzed = candidatesByRecruiter.get(id) || 0;
       const aiEnhancedCandidates = aiEnhancedCandidatesByRecruiter.get(id) || 0;
-      const matchesGenerated = 0; // no persisted match artifacts yet; keep stable and truthful
+      const matchesGenerated = matchCalls;
       const hiringSuccessRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
       const aiUsage = totalAnalyses;
       const lastActiveAt = lastActivityAtByRecruiter.get(id) || lastCandidateAtByRecruiter.get(id) || lastJobAtByRecruiter.get(id) || null;
@@ -775,6 +932,7 @@ const getConsolePerformance = async (req, res) => {
         resumeAnalyses: 0,
         hiringSuccessRate,
         matchesGenerated,
+        shortlists: matchesGenerated,
         aiUsage,
         activityScore,
         lastActiveAt,
@@ -782,6 +940,12 @@ const getConsolePerformance = async (req, res) => {
         aiRankCalls,
         matchCalls,
         aiEnhancedCandidates,
+        openJobs: openJobsByRecruiter.get(id) || 0,
+        draftJobs: draftJobsByRecruiter.get(id) || 0,
+        closedJobs,
+        recentJobsList: recentJobsListByRecruiter.get(id) || [],
+        recentCandidates: recentCandidatesByRecruiter.get(id) || [],
+        recentActivity: recentActivityByRecruiter.get(id) || [],
         score: clamp(totalJobs * 8 + recentJobs * 8 + totalAnalyses * 3 + hiringSuccessRate * 0.5, 0, 100),
         joinedAt: r.createdAt
       };
@@ -790,25 +954,49 @@ const getConsolePerformance = async (req, res) => {
     const scopedTeams = selectedTeamId ? teams.filter((t) => String(t._id) === selectedTeamId) : teams;
     const teamMetrics = scopedTeams.map((t) => {
       const id = String(t._id);
-      const memberIds = (membersByTeam.get(id) || []).filter((mid) => scopedSet.has(mid));
-      const teamJobs = allJobs.filter((j) => memberIds.includes(String(j.recruiterId)));
+      const allMemberIds = membersByTeam.get(id) || [];
+      const scopedMemberIds = allMemberIds.filter((mid) => scopedSet.has(mid));
+      const recruiterIdsForTeam = allMemberIds.filter((mid) => allRecruiterIds.includes(String(mid)));
+      const teamJobs = allJobs.filter((j) => {
+        const recruiterId = String(j.recruiterId || '');
+        const jobTeamId = String(j.teamId || '');
+        return scopedMemberIds.includes(recruiterId) || (!!jobTeamId && jobTeamId === id);
+      });
       const recentTeamJobs = teamJobs.filter((j) => new Date(j.createdAt) >= since);
-      const activeMembers = memberIds.filter((mid) => recruiters.find((r) => String(r._id) === mid && r.isActive !== false)).length;
+      const activeMembers = recruiterIdsForTeam.filter((mid) => recruiters.find((r) => String(r._id) === mid && r.isActive !== false)).length;
       const closedTeamJobs = teamJobs.filter((j) => j.status === 'closed').length;
+      const openTeamJobs = teamJobs.filter((j) => j.status === 'open').length;
+      const draftTeamJobs = teamJobs.filter((j) => j.status === 'draft').length;
       const hiringPerformance = teamJobs.length > 0 ? Math.round((closedTeamJobs / teamJobs.length) * 100) : 0;
-      const teamCandidates = memberIds.reduce((sum, rid) => sum + (candidatesByRecruiter.get(String(rid)) || 0), 0);
-      const teamAiCalls = memberIds.reduce((sum, rid) => sum + (aiRankCallsByRecruiter.get(String(rid)) || 0), 0);
+      const teamCandidates = scopedMemberIds.reduce((sum, rid) => sum + (candidatesByRecruiter.get(String(rid)) || 0), 0);
+      const teamAiCalls = scopedMemberIds.reduce((sum, rid) => sum + (aiRankCallsByRecruiter.get(String(rid)) || 0), 0);
+      const teamMatchCalls = scopedMemberIds.reduce((sum, rid) => sum + (matchCallsByRecruiter.get(String(rid)) || 0), 0);
+      const teamRecentActions = recentActivityByTeam.get(id) || [];
+      const engagementScore = clamp(recentTeamJobs.length * 12 + teamCandidates * 5 + teamAiCalls * 8 + activeMembers * 10 + hiringPerformance * 0.35, 0, 100);
+      const performanceScore = Math.round((engagementScore + hiringPerformance) / 2);
       return {
         _id: t._id,
         name: t.name,
         isActive: t.isActive !== false,
-        memberCount: memberIds.length,
+        memberCount: allMemberIds.length,
         activeMembers,
-        recruiterCount: memberIds.length,
+        recruiterCount: recruiterIdsForTeam.length,
         totalJobs: teamJobs.length,
         recentJobs: recentTeamJobs.length,
+        openJobs: openTeamJobs,
+        draftJobs: draftTeamJobs,
+        closedJobs: closedTeamJobs,
+        candidatesAnalyzed: teamCandidates,
+        aiUsage: teamAiCalls,
+        matchesGenerated: teamMatchCalls,
         hiringPerformance,
-        engagementScore: clamp(recentTeamJobs.length * 12 + teamCandidates * 5 + teamAiCalls * 8 + activeMembers * 10 + hiringPerformance * 0.35, 0, 100),
+        engagementScore,
+        performanceScore,
+        activityCount: teamRecentActions.length,
+        activityTimeline: teamRecentActions,
+        recentActions: teamRecentActions,
+        recentJobsList: recentJobsListByTeam.get(id) || [],
+        recentCandidates: recentCandidatesByTeam.get(id) || [],
         createdAt: t.createdAt
       };
     }).sort((a, b) => b.engagementScore - a.engagementScore);
@@ -846,8 +1034,20 @@ const getConsolePerformance = async (req, res) => {
       monthlyTrend.push({ label, count });
     }
 
-    const totalAnalyses = activityLogs.length;
+    const allTimeAnalysisLogs = await AuditLog.find({
+      actor: { $in: scopedRecruiterIds },
+      route: { $regex: /\/api\/recruiter\/(match|ai-rank)/ }
+    })
+      .select('actor route')
+      .lean();
+    const totalAnalyses = allTimeAnalysisLogs.length;
     const recentAnalyses = activityLogs.length;
+    const allTimeAnalysesByRecruiter = new Map();
+    allTimeAnalysisLogs.forEach((log) => {
+      const id = String(log.actor || '');
+      if (!id) return;
+      allTimeAnalysesByRecruiter.set(id, (allTimeAnalysesByRecruiter.get(id) || 0) + 1);
+    });
 
     // Stack options should not disappear when a stack filter is selected.
     const [jobStacks, candidateStacks] = await Promise.all([
@@ -876,6 +1076,15 @@ const getConsolePerformance = async (req, res) => {
     const totalAiEnhancedCandidates = Array.from(aiEnhancedCandidatesByRecruiter.values()).reduce((sum, v) => sum + Number(v || 0), 0);
     const totalAiRankCalls = Array.from(aiRankCallsByRecruiter.values()).reduce((sum, v) => sum + Number(v || 0), 0);
     const totalMatchCalls = Array.from(matchCallsByRecruiter.values()).reduce((sum, v) => sum + Number(v || 0), 0);
+    const organizationPerformanceScore = Math.round((
+      (teamMetrics.length > 0
+        ? teamMetrics.reduce((sum, team) => sum + Number(team.performanceScore || 0), 0) / teamMetrics.length
+        : 0) +
+      (recruiterMetrics.length > 0
+        ? recruiterMetrics.reduce((sum, recruiter) => sum + Number(recruiter.score || 0), 0) / recruiterMetrics.length
+        : 0) +
+      acceptanceRate
+    ) / 3);
 
     // Engagement heatmap (operational intensity) for the selected date range.
     // Uses recruiter-scoped events: job creation, candidate creation, and recruiter AI/match mutation calls.
@@ -927,9 +1136,11 @@ const getConsolePerformance = async (req, res) => {
         selectedTeamId,
         selectedRecruiterId,
         selectedStack,
+        selectedJobStatus,
         teams: teams.map((t) => ({ _id: t._id, name: t.name })),
-        recruiters: recruiters.map((r) => ({ _id: r._id, name: r.name })),
-        stacks
+        recruiters: availableRecruiters.map((r) => ({ _id: r._id, name: r.name })),
+        stacks,
+        jobStatuses: DEFAULT_JOB_STATUSES
       },
       recruiterMetrics,
       teamMetrics,
@@ -947,8 +1158,25 @@ const getConsolePerformance = async (req, res) => {
       aiStats: {
         totalAnalyses,
         recentAnalyses,
-        analysesByRecruiter: recruiterMetrics.map((r) => ({ name: r.name, count: r.totalAnalyses }))
+        analysesByRecruiter: recruiterMetrics.map((r) => ({
+          name: r.name,
+          count: allTimeAnalysesByRecruiter.get(String(r._id)) || 0,
+          recentCount: r.totalAnalyses
+        }))
       },
+      recentActivity: detailedActivityLogs.slice(0, 8).map((log) => {
+        const actorId = String(log.actor || '');
+        const actor = recruiterById.get(actorId);
+        return {
+          _id: log._id,
+          action: String(log.action || log.route || 'Activity').trim() || 'Activity',
+          method: String(log.method || '').trim(),
+          route: String(log.route || '').trim(),
+          statusCode: Number(log.statusCode || 0),
+          timestamp: log.timestamp,
+          actorName: actor?.name || actor?.email || 'Recruiter'
+        };
+      }),
       engagementMeta: {
         // Keep this human-readable so admins understand why engagementScore is low/high.
         formula: 'clamp(recentJobs*12 + candidatesAnalyzed*5 + aiRankCalls*8 + activeRecruiters*10 + hiringPerformance*0.35, 0..100)',
@@ -974,7 +1202,16 @@ const getConsolePerformance = async (req, res) => {
       summary: {
         totalRecruiters: scopedRecruiters.length,
         activeRecruiters: scopedRecruiters.filter((r) => r.isActive !== false).length,
+        inactiveRecruiters: scopedRecruiters.filter((r) => r.isActive === false).length,
         totalTeams: scopedTeams.length,
+        pendingInvitations: invFunnel.pending,
+        totalJobs: allJobs.length,
+        openJobs,
+        draftJobs,
+        closedJobs,
+        matchesGenerated: totalMatchCalls,
+        aiRankUsage: totalAiRankCalls,
+        organizationPerformanceScore: clamp(organizationPerformanceScore, 0, 100),
         topRecruiter: recruiterMetrics[0]?.name || null,
         topTeam: teamMetrics[0]?.name || null
       }

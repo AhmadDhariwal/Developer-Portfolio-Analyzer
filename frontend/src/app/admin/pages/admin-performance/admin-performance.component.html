@@ -11,19 +11,23 @@
       <p class="ps-header__sub">Recruiter performance, team metrics, hiring analytics and AI usage.</p>
     </div>
     <div class="ps-header__right">
-      <select class="ps-select" [(ngModel)]="selectedTeamId" (change)="load()" title="Team filter">
+      <select class="ps-select" [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team filter">
         <option value="">All teams</option>
         <option *ngFor="let t of data?.filters?.teams || []" [value]="t._id">{{ t.name }}</option>
       </select>
-      <select class="ps-select" [(ngModel)]="selectedRecruiterId" (change)="load()" title="Recruiter filter">
+      <select class="ps-select" [(ngModel)]="selectedRecruiterId" (change)="onRecruiterChange()" title="Recruiter filter">
         <option value="">All recruiters</option>
         <option *ngFor="let r of data?.filters?.recruiters || []" [value]="r._id">{{ r.name }}</option>
       </select>
-      <select class="ps-select" [(ngModel)]="selectedStack" (change)="load()" title="Stack filter">
+      <select class="ps-select" [(ngModel)]="selectedStack" (change)="onStackChange()" title="Stack filter">
         <option value="">All stacks</option>
         <option *ngFor="let s of data?.filters?.stacks || []" [value]="s">{{ s }}</option>
       </select>
-      <select class="ps-select" [(ngModel)]="selectedDays" (change)="load()" title="Date range">
+      <select class="ps-select" [(ngModel)]="selectedJobStatus" (change)="onJobStatusChange()" title="Job status filter">
+        <option value="">All job statuses</option>
+        <option *ngFor="let status of data?.filters?.jobStatuses || []" [value]="status">{{ status | titlecase }}</option>
+      </select>
+      <select class="ps-select" [(ngModel)]="selectedDays" (change)="onDaysChange()" title="Date range">
         <option *ngFor="let d of dayOptions" [value]="d">Last {{ d }} days</option>
       </select>
       <button type="button" class="ps-btn-ghost" (click)="resetFilters()" title="Reset filters">Reset</button>
@@ -114,7 +118,7 @@
               <div class="ps-leaderboard__avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
               <div class="ps-leaderboard__info">
                 <span class="ps-leaderboard__name">{{ r.name }}</span>
-                <span class="ps-leaderboard__meta">{{ r.totalJobs }} jobs · {{ r.totalAnalyses }} analyses</span>
+                <span class="ps-leaderboard__meta">{{ r.totalJobs }} jobs - {{ r.totalAnalyses }} analyses</span>
               </div>
               <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(r.score)==='green'" [class.ps-score-pill--amber]="scoreColor(r.score)==='amber'" [class.ps-score-pill--red]="scoreColor(r.score)==='red'">
                 {{ r.score }}
@@ -135,7 +139,7 @@
               <div class="ps-leaderboard__avatar ps-leaderboard__avatar--team">{{ t.name.charAt(0).toUpperCase() }}</div>
               <div class="ps-leaderboard__info">
                 <span class="ps-leaderboard__name">{{ t.name }}</span>
-                <span class="ps-leaderboard__meta">{{ t.memberCount }} members · {{ t.totalJobs }} jobs</span>
+                <span class="ps-leaderboard__meta">{{ t.memberCount }} members - {{ t.totalJobs }} jobs</span>
               </div>
               <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(t.engagementScore)==='green'" [class.ps-score-pill--amber]="scoreColor(t.engagementScore)==='amber'" [class.ps-score-pill--red]="scoreColor(t.engagementScore)==='red'">
                 {{ t.engagementScore }}
@@ -567,9 +571,11 @@
         </h3>
         <div class="ps-hbar-chart">
           <div class="ps-hbar-chart__row" *ngFor="let a of data.aiStats.analysesByRecruiter">
-            <span class="ps-hbar-chart__label">{{ a.name }}</span>
+            <span class="ps-hbar-chart__label" [attr.title]="'All time: ' + a.count + ' | Last ' + selectedDays + 'd: ' + (a.recentCount || 0)">
+              {{ a.name }} ({{ a.recentCount || 0 }} recent)
+            </span>
             <div class="ps-hbar-chart__track">
-              <div class="ps-hbar-chart__fill ps-hbar-chart__fill--purple" [style.width.%]="barPct(a.count, data.aiStats.totalAnalyses || 1)"></div>
+              <div class="ps-hbar-chart__fill ps-hbar-chart__fill--purple" [style.width.%]="barPct(a.count, maxAnalysisCount(data.aiStats.analysesByRecruiter))"></div>
             </div>
             <span class="ps-hbar-chart__val">{{ a.count }}</span>
           </div>

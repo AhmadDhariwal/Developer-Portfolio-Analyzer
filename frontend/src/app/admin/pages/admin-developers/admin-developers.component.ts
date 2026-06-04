@@ -25,9 +25,46 @@ export class AdminDevelopersPageComponent implements OnInit {
     if (!needle) return this.developers;
 
     return this.developers.filter((developer) => {
-      const haystack = `${developer.name} ${developer.email} ${developer.githubUsername} ${developer.jobTitle}`.toLowerCase();
+      const haystack = [
+        developer.name,
+        developer.email,
+        developer.githubUsername,
+        developer.jobTitle,
+        developer.headline,
+        developer.summary,
+        developer.stack,
+        developer.experienceLevel,
+        developer.location,
+        developer.linkedin,
+        developer.website,
+        ...(developer.skills || []),
+        ...(developer.projects || []).flatMap((project) => [project.title, project.description, ...(project.tech || [])])
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
       return haystack.includes(needle);
     });
+  }
+
+  trackByDeveloperId(_: number, developer: AdminDeveloper): string {
+    return developer._id;
+  }
+
+  profileTitle(developer: AdminDeveloper): string {
+    return developer.headline || developer.jobTitle || 'Developer';
+  }
+
+  portfolioLink(developer: AdminDeveloper): string | null {
+    if (developer.website) {
+      return developer.website;
+    }
+
+    return developer.publicProfileSlug ? `/p/${developer.publicProfileSlug}` : null;
+  }
+
+  scoreValue(value?: number): number {
+    return Math.round(Number(value || 0));
   }
 
   loadDevelopers(): void {

@@ -19,7 +19,7 @@
       </span>
     </div>
     <div class="oc-header__right">
-      <button type="button" class="oc-btn-ghost-sm" (click)="loadOverview()" aria-label="Refresh page data">
+      <button type="button" class="oc-btn-ghost-sm" (click)="refreshActiveTab()" aria-label="Refresh page data">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="23 4 23 10 17 10"/>
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -215,6 +215,33 @@
           <span class="oc-stat-card__label">Total Recruiters</span>
         </div>
 
+      </div>
+
+      <div class="oc-section" *ngIf="overview.membershipSummary as membershipSummary">
+        <h3 class="oc-section__title">Membership Summary</h3>
+        <div class="oc-stats-grid">
+          <div class="oc-stat-card oc-stat-card--indigo">
+            <div class="oc-stat-card__accent"></div>
+            <span class="oc-stat-card__value">{{ membershipSummary.internalMembersCount }}</span>
+            <span class="oc-stat-card__label">Internal Members</span>
+          </div>
+          <div class="oc-stat-card oc-stat-card--blue">
+            <div class="oc-stat-card__accent"></div>
+            <span class="oc-stat-card__value">{{ membershipSummary.adminCount }}</span>
+            <span class="oc-stat-card__label">Admins</span>
+          </div>
+          <div class="oc-stat-card oc-stat-card--green">
+            <div class="oc-stat-card__accent"></div>
+            <span class="oc-stat-card__value">{{ membershipSummary.recruiterCount }}</span>
+            <span class="oc-stat-card__label">Recruiters</span>
+          </div>
+          <div class="oc-stat-card oc-stat-card--amber">
+            <div class="oc-stat-card__accent"></div>
+            <span class="oc-stat-card__value">{{ membershipSummary.memberCount }}</span>
+            <span class="oc-stat-card__label">Team Members</span>
+          </div>
+        </div>
+        <p class="oc-text-muted">Public developers stay in the separate global talent pool and are not counted as organization members.</p>
       </div>
 
       <!-- Quick Actions -->
@@ -787,6 +814,48 @@
         <div class="oc-form-group">
           <label class="oc-label" for="pref-desc">Description</label>
           <textarea id="pref-desc" class="oc-input oc-textarea" [(ngModel)]="prefForm.description" name="prefDesc" rows="4" placeholder="Describe your organization..."></textarea>
+        </div>
+        <div class="oc-form-group">
+          <label class="oc-label" for="pref-range">Default Dashboard Range</label>
+          <select id="pref-range" class="oc-input" [(ngModel)]="prefForm.preferredDateRangeDays" name="prefRange">
+            <option [ngValue]="7">Last 7 days</option>
+            <option [ngValue]="14">Last 14 days</option>
+            <option [ngValue]="30">Last 30 days</option>
+            <option [ngValue]="60">Last 60 days</option>
+            <option [ngValue]="90">Last 90 days</option>
+          </select>
+        </div>
+        <div class="oc-form-group">
+          <label class="oc-label" for="pref-team">Default Team Filter</label>
+          <select id="pref-team" class="oc-input" [(ngModel)]="prefForm.defaultTeamId" name="prefDefaultTeam">
+            <option value="">All teams</option>
+            <option *ngFor="let team of teamOptions" [value]="team._id">{{ team.name }}</option>
+          </select>
+        </div>
+        <div class="oc-form-group">
+          <label class="oc-label">Dashboard Sections</label>
+          <div class="oc-edit-grid">
+            <label class="oc-detail-row">
+              <input type="checkbox" [(ngModel)]="prefForm.showKpiCards" name="showKpiCards" />
+              <span class="oc-detail-row__value">KPI Cards</span>
+            </label>
+            <label class="oc-detail-row">
+              <input type="checkbox" [(ngModel)]="prefForm.showTeamAnalytics" name="showTeamAnalytics" />
+              <span class="oc-detail-row__value">Team Analytics</span>
+            </label>
+            <label class="oc-detail-row">
+              <input type="checkbox" [(ngModel)]="prefForm.showRecruiterPerformance" name="showRecruiterPerformance" />
+              <span class="oc-detail-row__value">Recruiter Performance</span>
+            </label>
+            <label class="oc-detail-row">
+              <input type="checkbox" [(ngModel)]="prefForm.showJobTrends" name="showJobTrends" />
+              <span class="oc-detail-row__value">Job Trends</span>
+            </label>
+            <label class="oc-detail-row">
+              <input type="checkbox" [(ngModel)]="prefForm.showActivityFeed" name="showActivityFeed" />
+              <span class="oc-detail-row__value">Activity Feed</span>
+            </label>
+          </div>
         </div>
         <button type="button" class="oc-btn-primary-sm" (click)="savePreferences()">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
+import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 
 @Component({
   selector: 'app-recruiter-dashboard',
@@ -19,6 +20,7 @@ export class RecruiterDashboardComponent implements OnInit {
   constructor(
     private readonly hubService: RecruiterHubService,
     private readonly router: Router,
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   ngOnInit(): void {
@@ -35,6 +37,13 @@ export class RecruiterDashboardComponent implements OnInit {
     this.hubService.getDashboard().subscribe({
       next: (dashboard) => {
         this.dashboard = this.normalizeDashboard(dashboard);
+        if (this.dashboard?.profile?.organizationId || this.dashboard?.profile?.organizationName) {
+          this.tenantContext.syncOrganization({
+            id: String(this.dashboard?.profile?.organizationId || this.tenantContext.snapshot.organizationId || ''),
+            name: String(this.dashboard?.profile?.organizationName || this.tenantContext.snapshot.organizationName || ''),
+            myRole: 'recruiter'
+          });
+        }
         this.metricsReady = true;
         this.insightsReady = true;
         this.chartsReady = true;
@@ -182,7 +191,7 @@ export class RecruiterDashboardComponent implements OnInit {
 
   private defaultDashboard(): any {
     return {
-      profile: { name: 'Recruiter' },
+      profile: { name: 'Recruiter', organizationId: '', organizationName: '', organizationDescription: '' },
       metrics: {
         totalCandidates: 0,
         avgCandidateScore: 0,

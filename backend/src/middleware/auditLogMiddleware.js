@@ -46,6 +46,8 @@ const resolveScope = async (req) => {
     req.body?.organizationId,
     req.query?.organizationId,
     req.params?.organizationId,
+    req.organizationId,
+    req.tenantContext?.organizationId,
     req.user?.organizationId,
     parseObjectIdFromUrl(req.originalUrl, 'organizations')
   );

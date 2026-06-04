@@ -22,6 +22,13 @@ export interface RecruiterMetric {
   aiRankCalls: number;
   matchCalls: number;
   aiEnhancedCandidates: number;
+  openJobs?: number;
+  draftJobs?: number;
+  closedJobs?: number;
+  shortlists?: number;
+  recentJobsList?: Array<{ _id: string; title: string; status: string; stack: string; createdAt: string; updatedAt: string }>;
+  recentCandidates?: Array<{ fullName: string; stack: string; createdAt: string }>;
+  recentActivity?: Array<{ _id: string; action: string; method: string; route: string; statusCode: number; timestamp: string; actorName: string }>;
   score: number;
   joinedAt: string;
 }
@@ -35,13 +42,26 @@ export interface TeamMetric {
   recruiterCount: number;
   totalJobs: number;
   recentJobs: number;
+  openJobs?: number;
+  draftJobs?: number;
+  closedJobs?: number;
+  candidatesAnalyzed?: number;
+  aiUsage?: number;
+  matchesGenerated?: number;
   hiringPerformance: number;
   engagementScore: number;
+  performanceScore?: number;
+  activityCount?: number;
+  activityTimeline?: Array<{ _id: string; action: string; method: string; route: string; statusCode: number; timestamp: string; actorName: string }>;
+  recentActions?: Array<{ _id: string; action: string; method: string; route: string; statusCode: number; timestamp: string; actorName: string }>;
+  recentJobsList?: Array<{ _id: string; title: string; status: string; stack: string; createdAt: string; updatedAt: string }>;
+  recentCandidates?: Array<{ fullName: string; stack: string; createdAt: string }>;
   createdAt: string;
 }
 
 export interface StackItem { stack: string; count: number; }
 export interface TrendItem { label: string; count: number; }
+export interface RecruiterAnalysisUsage { name: string; count: number; recentCount?: number; }
 
 export interface PerformanceData {
   period: { days: number; since: string };
@@ -49,9 +69,11 @@ export interface PerformanceData {
     selectedTeamId: string;
     selectedRecruiterId: string;
     selectedStack: string;
+    selectedJobStatus: string;
     teams: Array<{ _id: string; name: string }>;
     recruiters: Array<{ _id: string; name: string }>;
     stacks: string[];
+    jobStatuses: string[];
   };
   recruiterMetrics: RecruiterMetric[];
   teamMetrics: TeamMetric[];
@@ -65,8 +87,17 @@ export interface PerformanceData {
   aiStats: {
     totalAnalyses: number;
     recentAnalyses: number;
-    analysesByRecruiter: Array<{ name: string; count: number }>;
+    analysesByRecruiter: RecruiterAnalysisUsage[];
   };
+  recentActivity?: Array<{
+    _id: string;
+    action: string;
+    method: string;
+    route: string;
+    statusCode: number;
+    timestamp: string;
+    actorName: string;
+  }>;
   candidateAnalytics?: { candidatesAnalyzed: number; aiEnhancedCandidates: number };
   aiEffectiveness?: { aiRankCalls: number; matchCalls: number; aiEnhancedRate: number };
   engagementMeta?: { formula?: string; notes?: string[] };
@@ -76,7 +107,16 @@ export interface PerformanceData {
   summary: {
     totalRecruiters: number;
     activeRecruiters: number;
+    inactiveRecruiters?: number;
     totalTeams: number;
+    pendingInvitations?: number;
+    totalJobs?: number;
+    openJobs?: number;
+    draftJobs?: number;
+    closedJobs?: number;
+    matchesGenerated?: number;
+    aiRankUsage?: number;
+    organizationPerformanceScore?: number;
     topRecruiter: string | null;
     topTeam: string | null;
   };
@@ -90,13 +130,14 @@ export class AdminPerformanceService {
 
   getPerformance(
     days = 30,
-    filters: { teamId?: string; recruiterId?: string; stack?: string } = {}
+    filters: { teamId?: string; recruiterId?: string; stack?: string; jobStatus?: string } = {}
   ): Observable<PerformanceData> {
     const params = new URLSearchParams();
     params.set('days', String(days));
     if (filters.teamId) params.set('teamId', filters.teamId);
     if (filters.recruiterId) params.set('recruiterId', filters.recruiterId);
     if (filters.stack) params.set('stack', filters.stack);
+    if (filters.jobStatus) params.set('jobStatus', filters.jobStatus);
     return this.http.get<PerformanceData>(`${this.base}/performance?${params.toString()}`);
   }
 }

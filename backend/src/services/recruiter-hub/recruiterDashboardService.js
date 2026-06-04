@@ -1,12 +1,16 @@
 const { listRecruiterAnalytics } = require('./recruiterAnalyticsService');
 const { listRecruiterActivities } = require('./recruiterActivityService');
 const { getRecruiterScope } = require('../../utils/recruiter-hub/recruiterAccess');
+const Organization = require('../../models/organization');
 
 const getRecruiterDashboard = async (req) => {
   const scope = await getRecruiterScope(req);
-  const [analytics, activities] = await Promise.all([
+  const [analytics, activities, organization] = await Promise.all([
     listRecruiterAnalytics(req),
-    listRecruiterActivities({ recruiterId: scope.recruiterId, organizationId: scope.organizationId, query: { limit: 12 } })
+    listRecruiterActivities({ recruiterId: scope.recruiterId, organizationId: scope.organizationId, query: { limit: 12 } }),
+    scope.organizationId
+      ? Organization.findById(scope.organizationId).select('_id name description').lean()
+      : null
   ]);
 
   return {
@@ -24,6 +28,8 @@ const getRecruiterDashboard = async (req) => {
     profile: {
       recruiterId: scope.recruiterId,
       organizationId: scope.organizationId,
+      organizationName: organization?.name || '',
+      organizationDescription: organization?.description || '',
       name: req.user?.name || 'Recruiter',
       teams: scope.teams
     }

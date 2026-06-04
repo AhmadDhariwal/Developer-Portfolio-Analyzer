@@ -193,6 +193,16 @@ export class Navbar implements OnInit {
           this.tenantContext.clearAll();
         }
 
+        const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
+        if (selectedOrg) {
+          this.selectedRole = selectedOrg.myRole;
+          this.tenantContext.syncOrganization({
+            id: selectedOrg._id,
+            name: selectedOrg.name,
+            myRole: selectedOrg.myRole
+          });
+        }
+
         if (this.selectedOrganizationId) {
           this.loadTeams(this.selectedOrganizationId);
         }

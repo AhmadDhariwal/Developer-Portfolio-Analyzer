@@ -1,6 +1,4 @@
 <section class="admin-page">
-
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <header class="page-header">
     <div class="page-header__text">
       <div class="page-header__eyebrow">
@@ -20,14 +18,25 @@
 
   <app-shared-message [visible]="!!message" type="error" [text]="message" (dismiss)="message = ''"></app-shared-message>
 
-  <!-- ── Search toolbar ────────────────────────────────────────────────── -->
+  <div class="notice-card">
+    <div class="notice-card__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="notice-card__text">
+      <strong>Public talent pool only.</strong>
+      <span>These developers are globally visible candidates, not members of your organization.</span>
+    </div>
+  </div>
+
   <div class="toolbar">
     <div class="search-wrap">
       <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input
         type="text"
         [(ngModel)]="search"
-        placeholder="Search by name, email, GitHub, or job title…"
+        placeholder="Search by name, stack, skill, GitHub, or experience"
         class="search-input"
       />
       <button type="button" class="search-clear" *ngIf="search" (click)="search = ''" title="Clear search">
@@ -41,9 +50,8 @@
 
   <app-shared-loader [loading]="loading" label="Loading developer pool"></app-shared-loader>
 
-  <!-- ── Developer grid ────────────────────────────────────────────────── -->
   <div class="dev-grid" *ngIf="!loading && filteredDevelopers.length > 0">
-    <article class="dev-card" *ngFor="let dev of filteredDevelopers">
+    <article class="dev-card" *ngFor="let dev of filteredDevelopers; trackBy: trackByDeveloperId">
       <div class="dev-card__header">
         <div class="dev-card__avatar" [class.dev-card__avatar--img]="dev.avatar">
           <img *ngIf="dev.avatar" [src]="dev.avatar" [alt]="dev.name" title="Developer avatar" />
@@ -51,12 +59,18 @@
         </div>
         <div class="dev-card__meta">
           <h3 class="dev-card__name">{{ dev.name }}</h3>
-          <p class="dev-card__title">{{ dev.jobTitle || 'Developer' }}</p>
+          <p class="dev-card__title">{{ profileTitle(dev) }}</p>
+          <p class="dev-card__summary" *ngIf="dev.summary">{{ dev.summary }}</p>
         </div>
         <span class="dev-card__public-badge" *ngIf="dev.isPublic">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Public
         </span>
+      </div>
+
+      <div class="chip-row" *ngIf="dev.stack || dev.experienceLevel">
+        <span class="chip" *ngIf="dev.stack">{{ dev.stack }}</span>
+        <span class="chip chip--muted" *ngIf="dev.experienceLevel">{{ dev.experienceLevel }}</span>
       </div>
 
       <div class="dev-card__details">
@@ -72,12 +86,53 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span>{{ dev.location }}</span>
         </div>
+        <div class="dev-detail" *ngIf="dev.linkedin">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          <span>LinkedIn profile available</span>
+        </div>
+      </div>
+
+      <div class="score-grid" *ngIf="dev.githubScore || dev.resumeScore || dev.readinessScore">
+        <div class="score-card">
+          <span class="score-card__label">GitHub</span>
+          <span class="score-card__value">{{ scoreValue(dev.githubScore) }}</span>
+        </div>
+        <div class="score-card">
+          <span class="score-card__label">Resume</span>
+          <span class="score-card__value">{{ scoreValue(dev.resumeScore) }}</span>
+        </div>
+        <div class="score-card">
+          <span class="score-card__label">Readiness</span>
+          <span class="score-card__value">{{ scoreValue(dev.readinessScore) }}</span>
+        </div>
+      </div>
+
+      <div class="chip-row" *ngIf="(dev.skills?.length || 0) > 0">
+        <span class="chip" *ngFor="let skill of (dev.skills || []).slice(0, 5)">{{ skill }}</span>
+        <span class="chip chip--muted" *ngIf="(dev.skills?.length || 0) > 5">+{{ (dev.skills?.length || 0) - 5 }} more</span>
+      </div>
+
+      <div class="project-list" *ngIf="(dev.projects?.length || 0) > 0">
+        <div class="project-list__title">Projects</div>
+        <div class="project-list__item" *ngFor="let project of (dev.projects || []).slice(0, 2)">
+          <strong>{{ project.title }}</strong>
+          <span *ngIf="project.tech.length">{{ project.tech.slice(0, 3).join(', ') }}</span>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <a *ngIf="dev.githubUsername" [href]="'https://github.com/' + dev.githubUsername" target="_blank" rel="noopener" class="dev-card__portfolio-link">GitHub</a>
+        <a *ngIf="dev.linkedin" [href]="dev.linkedin" target="_blank" rel="noopener" class="dev-card__portfolio-link">LinkedIn</a>
+        <a *ngIf="dev.website" [href]="dev.website" target="_blank" rel="noopener" class="dev-card__portfolio-link">Website</a>
       </div>
 
       <div class="dev-card__footer">
-        <span class="dev-card__joined">Joined {{ dev.createdAt | date: 'MMM y' }}</span>
-        <a *ngIf="dev.publicProfileSlug"
-           [href]="'/p/' + dev.publicProfileSlug"
+        <div class="dev-card__timestamps">
+          <span class="dev-card__joined">Joined {{ dev.createdAt | date: 'MMM y' }}</span>
+          <span class="dev-card__joined" *ngIf="dev.lastAnalyzedAt">Last analyzed {{ dev.lastAnalyzedAt | date: 'MMM d, y' }}</span>
+        </div>
+        <a *ngIf="portfolioLink(dev)"
+           [href]="portfolioLink(dev)"
            target="_blank"
            rel="noopener"
            class="dev-card__portfolio-link">
@@ -88,11 +143,9 @@
     </article>
   </div>
 
-  <!-- ── Empty state ────────────────────────────────────────────────────── -->
   <app-shared-empty-state
     *ngIf="!loading && filteredDevelopers.length === 0"
     [title]="search ? 'No results found' : 'No public developers yet'"
     [subtitle]="search ? 'Try a different search term.' : 'Developers must enable profile visibility before appearing in the global talent pool.'"
   ></app-shared-empty-state>
-
 </section>

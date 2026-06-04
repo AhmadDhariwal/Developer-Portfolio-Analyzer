@@ -362,7 +362,7 @@ export class AuthService {
       case 'super_admin':
         return '/app/super-admin/dashboard';
       case 'admin':
-        return '/app/admin-console/overview';
+        return '/app/admin/dashboard';
       case 'recruiter':
         return '/app/recruiter/dashboard';
       case 'developer':

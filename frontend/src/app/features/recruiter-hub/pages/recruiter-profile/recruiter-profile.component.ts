@@ -178,6 +178,14 @@ export class RecruiterProfileComponent implements OnInit {
   }
 
   private patchForm(profile: RecruiterProfile | null): void {
+    if (profile?.organization?._id || profile?.organization?.name) {
+      this.tenantContext.syncOrganization({
+        id: String(profile?.organization?._id || this.tenantContext.snapshot.organizationId || ''),
+        name: String(profile?.organization?.name || this.tenantContext.snapshot.organizationName || ''),
+        myRole: 'recruiter'
+      });
+    }
+
     this.organizationName =
       profile?.organization?.name ||
       this.tenantContext.snapshot.organizationName ||

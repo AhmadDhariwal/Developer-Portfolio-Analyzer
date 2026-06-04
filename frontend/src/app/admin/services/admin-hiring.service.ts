@@ -9,6 +9,18 @@ export interface AdminOverview {
   recruitersCount: number;
   jobsCount: number;
   globalDevelopersCount: number;
+  pendingInvitationsCount: number;
+  activeTeamsCount: number;
+  recentActivityCount: number;
+  recentActivity: Array<{
+    _id: string;
+    action: string;
+    method: string;
+    route: string;
+    statusCode: number;
+    timestamp: string;
+    actorName: string;
+  }>;
 }
 
 export interface AdminRecruiter {
@@ -65,6 +77,25 @@ export interface AdminDeveloper {
   avatar: string;
   isPublic: boolean;
   publicProfileSlug: string | null;
+  headline?: string;
+  summary?: string;
+  stack?: string;
+  experienceLevel?: string;
+  linkedin?: string;
+  website?: string;
+  githubScore?: number;
+  readinessScore?: number;
+  resumeScore?: number;
+  skills?: string[];
+  projects?: Array<{
+    title: string;
+    description: string;
+    tech: string[];
+    url: string;
+    repoUrl: string;
+  }>;
+  projectsCount?: number;
+  lastAnalyzedAt?: string | null;
   createdAt: string;
 }
 
@@ -113,7 +144,11 @@ export class AdminHiringService {
           organizationId: '',
           recruitersCount: 0,
           jobsCount: 0,
-          globalDevelopersCount: 0
+          globalDevelopersCount: 0,
+          pendingInvitationsCount: 0,
+          activeTeamsCount: 0,
+          recentActivityCount: 0,
+          recentActivity: []
         };
       })
     );

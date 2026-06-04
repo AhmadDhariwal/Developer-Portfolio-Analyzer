@@ -15,9 +15,17 @@ export interface ConsoleOverview {
     activeRecruitersCount: number;
     inactiveRecruitersCount: number;
     teamsCount: number;
+    activeTeamsCount: number;
     jobsCount: number;
     pendingInvitationsCount: number;
     membersCount: number;
+  };
+  membershipSummary?: {
+    internalMembersCount: number;
+    adminCount: number;
+    recruiterCount: number;
+    memberCount: number;
+    publicDevelopersIncluded: boolean;
   };
 }
 
@@ -89,6 +97,15 @@ export interface ConsolePreferences {
     description: string;
     createdAt: string;
     ownerId: string;
+    dashboardConfig?: {
+      preferredDateRangeDays: number;
+      defaultTeamId: string;
+      showKpiCards: boolean;
+      showTeamAnalytics: boolean;
+      showRecruiterPerformance: boolean;
+      showJobTrends: boolean;
+      showActivityFeed: boolean;
+    };
   };
 }
 
@@ -142,7 +159,19 @@ export class AdminConsoleService {
     return this.http.get<ConsolePreferences>(`${this.base}/preferences`);
   }
 
-  updatePreferences(payload: { name: string; description: string }): Observable<ConsolePreferences & { message: string }> {
+  updatePreferences(payload: {
+    name: string;
+    description: string;
+    dashboardConfig?: {
+      preferredDateRangeDays: number;
+      defaultTeamId: string;
+      showKpiCards: boolean;
+      showTeamAnalytics: boolean;
+      showRecruiterPerformance: boolean;
+      showJobTrends: boolean;
+      showActivityFeed: boolean;
+    };
+  }): Observable<ConsolePreferences & { message: string }> {
     return this.http.patch<any>(`${this.base}/preferences`, payload);
   }
 }

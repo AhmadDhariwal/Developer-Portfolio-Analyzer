@@ -1,222 +1,628 @@
 <section class="admin-dash">
-
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
-  <header class="dash-header">
-    <div class="dash-header__text">
-      <div class="dash-header__eyebrow">
-        <span class="eyebrow-dot"></span>
-        Admin Control Center
+  <header class="hero">
+    <div class="hero__copy">
+      <div class="hero__eyebrow">
+        <span class="hero__dot"></span>
+        Organization Command Center
       </div>
-      <h1>Organization Dashboard</h1>
-      <p>Manage recruiters, jobs, and monitor your developer talent pool in real time.</p>
+      <h1>{{ orgName }}</h1>
+      <p>Real organization analytics across teams, recruiters, jobs, public developers, and activity. Every widget stays within the current organization scope.</p>
     </div>
-    <div class="dash-header__actions">
-      <a class="btn-outline" routerLink="/app/admin/recruiters">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Invite Recruiter
-      </a>
-      <a class="btn-primary" routerLink="/app/admin/jobs">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        Post a Job
-      </a>
+
+    <div class="hero__actions">
+      <a class="btn btn--ghost" routerLink="/app/admin/console">Org Console</a>
+      <a class="btn btn--ghost" routerLink="/app/admin/console/performance-statistics">Deep Analytics</a>
+      <button type="button" class="btn btn--primary" (click)="refreshAll()">Refresh</button>
     </div>
   </header>
 
   <app-shared-message [visible]="!!error" type="error" [text]="error" (dismiss)="error = ''"></app-shared-message>
 
-  <!-- ── Skeleton loader ────────────────────────────────────────────────── -->
-  <div class="skeleton-grid" *ngIf="loading">
-    <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+  <section class="panel panel--filters">
+    <div class="panel__header">
+      <div>
+        <h2>Filters</h2>
+        <p>These filters update the dashboard widgets and detail views.</p>
+      </div>
+      <button type="button" class="btn btn--ghost btn--sm" (click)="resetFilters()">Reset</button>
+    </div>
+
+    <div class="filters">
+      <label class="field">
+        <span>Date range</span>
+        <select [(ngModel)]="selectedDays" (change)="onDaysChange()">
+          <option *ngFor="let days of dayOptions" [ngValue]="days">Last {{ days }} days</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Team</span>
+        <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()">
+          <option value="">All teams</option>
+          <option *ngFor="let team of performance?.filters?.teams || []" [value]="team._id">{{ team.name }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Recruiter</span>
+        <select [(ngModel)]="selectedRecruiterId" (change)="onRecruiterChange()">
+          <option value="">All recruiters</option>
+          <option *ngFor="let recruiter of performance?.filters?.recruiters || []" [value]="recruiter._id">{{ recruiter.name }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Stack</span>
+        <select [(ngModel)]="selectedStack" (change)="onStackChange()">
+          <option value="">All stacks</option>
+          <option *ngFor="let stack of performance?.filters?.stacks || []" [value]="stack">{{ stack }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Job status</span>
+        <select [(ngModel)]="selectedJobStatus" (change)="onJobStatusChange()">
+          <option value="">All job statuses</option>
+          <option *ngFor="let status of performance?.filters?.jobStatuses || []" [value]="status">{{ status | titlecase }}</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <div class="skeleton-grid" *ngIf="loading && !performance">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
   </div>
 
-  <!-- ── Metric cards ───────────────────────────────────────────────────── -->
-  <div class="metrics-grid" *ngIf="!loading">
-
-    <a class="metric-card metric-card--purple" routerLink="/app/admin/recruiters">
-      <div class="metric-card__top">
-        <div class="metric-card__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+  <ng-container *ngIf="performance">
+    <section class="panel panel--overview">
+      <div class="panel__header">
+        <div>
+          <h2>Organization Overview</h2>
+          <p>{{ preferences?.organization?.description || 'No organization description added yet.' }}</p>
         </div>
-        <span class="metric-card__trend metric-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-          Active
-        </span>
+        <div class="summary-pill">
+          <span class="summary-pill__label">Performance Score</span>
+          <span class="summary-pill__value">{{ organizationPerformanceScore }}</span>
+        </div>
       </div>
-      <div class="metric-card__body">
-        <span class="metric-card__value">{{ overview.recruitersCount }}</span>
-        <span class="metric-card__label">Total Recruiters</span>
+
+      <div class="overview-band">
+        <div class="overview-band__item">
+          <span class="overview-band__label">Org ID</span>
+          <span class="overview-band__value">{{ overview.organizationId || preferences?.organization?._id }}</span>
+        </div>
+        <div class="overview-band__item">
+          <span class="overview-band__label">Pending Invitations</span>
+          <span class="overview-band__value">{{ performance.summary.pendingInvitations || overview.pendingInvitationsCount }}</span>
+        </div>
+        <div class="overview-band__item">
+          <span class="overview-band__label">Recent Activity</span>
+          <span class="overview-band__value">{{ recentActivityFeed.length }}</span>
+        </div>
+        <div class="overview-band__item">
+          <span class="overview-band__label">Top Team</span>
+          <span class="overview-band__value">{{ performance.summary.topTeam || 'No team data' }}</span>
+        </div>
       </div>
-      <div class="metric-card__footer">
-        <span>Manage team →</span>
+    </section>
+
+    <section class="kpi-grid" *ngIf="dashboardConfig.showKpiCards">
+      <article class="kpi-card kpi-card--indigo">
+        <span class="kpi-card__label">Teams</span>
+        <span class="kpi-card__value">{{ performance.summary.totalTeams }}</span>
+        <span class="kpi-card__meta">{{ overview.activeTeamsCount }} active in organization</span>
+      </article>
+
+      <article class="kpi-card kpi-card--cyan">
+        <span class="kpi-card__label">Recruiters</span>
+        <span class="kpi-card__value">{{ performance.summary.totalRecruiters }}</span>
+        <span class="kpi-card__meta">{{ performance.summary.activeRecruiters }} active / {{ performance.summary.inactiveRecruiters || 0 }} inactive</span>
+      </article>
+
+      <article class="kpi-card kpi-card--amber">
+        <span class="kpi-card__label">Jobs</span>
+        <span class="kpi-card__value">{{ performance.summary.totalJobs || performance.hiringAnalytics.total }}</span>
+        <span class="kpi-card__meta">{{ performance.summary.openJobs || performance.hiringAnalytics.open }} open / {{ performance.summary.closedJobs || performance.hiringAnalytics.closed }} closed</span>
+      </article>
+
+      <article class="kpi-card kpi-card--teal">
+        <span class="kpi-card__label">Public Developers</span>
+        <span class="kpi-card__value">{{ overview.globalDevelopersCount }}</span>
+        <span class="kpi-card__meta">Safe public profiles only</span>
+      </article>
+
+      <article class="kpi-card kpi-card--slate">
+        <span class="kpi-card__label">Candidates Analyzed</span>
+        <span class="kpi-card__value">{{ performance.candidateAnalytics?.candidatesAnalyzed || 0 }}</span>
+        <span class="kpi-card__meta">{{ performance.candidateAnalytics?.aiEnhancedCandidates || 0 }} AI-enhanced</span>
+      </article>
+
+      <article class="kpi-card kpi-card--rose">
+        <span class="kpi-card__label">Matches Generated</span>
+        <span class="kpi-card__value">{{ performance.summary.matchesGenerated || performance.aiEffectiveness?.matchCalls || 0 }}</span>
+        <span class="kpi-card__meta">{{ performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0 }} AI rank calls</span>
+      </article>
+    </section>
+
+    <section class="dashboard-grid" *ngIf="dashboardConfig.showTeamAnalytics">
+      <div class="panel panel--focus">
+        <div class="panel__header">
+          <div>
+            <h2>Team Performance Overview</h2>
+            <p>Selected team focus with hiring, activity, and AI signals.</p>
+          </div>
+          <button *ngIf="focusTeam" type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(focusTeam)">View Details</button>
+        </div>
+
+        <ng-container *ngIf="focusTeam as team; else noTeamData">
+          <div class="focus-card">
+            <div class="focus-card__header">
+              <div>
+                <h3>{{ team.name }}</h3>
+                <span class="badge" [class.badge--green]="team.isActive" [class.badge--red]="!team.isActive">
+                  {{ team.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="score-ring">
+                <span>{{ team.performanceScore || team.engagementScore }}</span>
+              </div>
+            </div>
+
+            <div class="mini-stats">
+              <div class="mini-stats__item">
+                <span>Recruiters</span>
+                <strong>{{ team.recruiterCount }}</strong>
+              </div>
+              <div class="mini-stats__item">
+                <span>Jobs</span>
+                <strong>{{ team.totalJobs }}</strong>
+              </div>
+              <div class="mini-stats__item">
+                <span>AI Usage</span>
+                <strong>{{ team.aiUsage || 0 }}</strong>
+              </div>
+              <div class="mini-stats__item">
+                <span>Candidates</span>
+                <strong>{{ team.candidatesAnalyzed || 0 }}</strong>
+              </div>
+            </div>
+
+            <div class="funnel-grid">
+              <div class="funnel-grid__item">
+                <span>Open</span>
+                <strong>{{ team.openJobs || 0 }}</strong>
+              </div>
+              <div class="funnel-grid__item">
+                <span>Draft</span>
+                <strong>{{ team.draftJobs || 0 }}</strong>
+              </div>
+              <div class="funnel-grid__item">
+                <span>Closed</span>
+                <strong>{{ team.closedJobs || 0 }}</strong>
+              </div>
+              <div class="funnel-grid__item">
+                <span>Matches</span>
+                <strong>{{ team.matchesGenerated || 0 }}</strong>
+              </div>
+            </div>
+          </div>
+        </ng-container>
       </div>
-    </a>
 
-    <a class="metric-card metric-card--blue" routerLink="/app/admin/jobs">
-      <div class="metric-card__top">
-        <div class="metric-card__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-          </svg>
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Team Activity Graph</h2>
+            <p>Engagement score, candidate engagement, and AI usage per team.</p>
+          </div>
         </div>
-        <span class="metric-card__trend metric-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-          Open
-        </span>
+
+        <div class="bar-list" *ngIf="performance.teamMetrics.length > 0; else noTeamData">
+          <article class="bar-list__row" *ngFor="let team of performance.teamMetrics; trackBy: trackByTeamId">
+            <div class="bar-list__head">
+              <div>
+                <strong>{{ team.name }}</strong>
+                <span>{{ team.recruiterCount }} recruiters • {{ team.totalJobs }} jobs</span>
+              </div>
+              <button type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(team)">Details</button>
+            </div>
+
+            <div class="metric-line">
+              <span>Performance</span>
+              <div class="metric-line__track">
+                <div class="metric-line__fill metric-line__fill--indigo" [style.width.%]="scorePct(team.performanceScore || team.engagementScore)"></div>
+              </div>
+              <strong>{{ team.performanceScore || team.engagementScore }}</strong>
+            </div>
+
+            <div class="metric-line">
+              <span>Candidate Engagement</span>
+              <div class="metric-line__track">
+                <div class="metric-line__fill metric-line__fill--cyan" [style.width.%]="barPct(team.candidatesAnalyzed || 0, maxTeamCandidates())"></div>
+              </div>
+              <strong>{{ team.candidatesAnalyzed || 0 }}</strong>
+            </div>
+
+            <div class="metric-line">
+              <span>AI Usage</span>
+              <div class="metric-line__track">
+                <div class="metric-line__fill metric-line__fill--teal" [style.width.%]="barPct(team.aiUsage || 0, maxTeamAiUsage())"></div>
+              </div>
+              <strong>{{ team.aiUsage || 0 }}</strong>
+            </div>
+          </article>
+        </div>
       </div>
-      <div class="metric-card__body">
-        <span class="metric-card__value">{{ overview.jobsCount }}</span>
-        <span class="metric-card__label">Active Jobs</span>
+    </section>
+
+    <section class="dashboard-grid" *ngIf="dashboardConfig.showTeamAnalytics">
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Top Performing Teams</h2>
+            <p>Highest combined performance and engagement.</p>
+          </div>
+        </div>
+        <div class="leader-list">
+          <button type="button" class="leader-list__item" *ngFor="let team of topTeams; let i = index" (click)="openTeamDetail(team)">
+            <span class="leader-list__rank">0{{ i + 1 }}</span>
+            <div class="leader-list__body">
+              <strong>{{ team.name }}</strong>
+              <span>{{ team.totalJobs }} jobs • {{ team.candidatesAnalyzed || 0 }} candidates</span>
+            </div>
+            <span class="leader-list__score">{{ team.performanceScore || team.engagementScore }}</span>
+          </button>
+        </div>
       </div>
-      <div class="metric-card__footer">
-        <span>View all jobs →</span>
+
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Low Activity Teams</h2>
+            <p>Teams that may need attention or more recruiter support.</p>
+          </div>
+        </div>
+        <div class="leader-list">
+          <button type="button" class="leader-list__item leader-list__item--muted" *ngFor="let team of lowActivityTeams; let i = index" (click)="openTeamDetail(team)">
+            <span class="leader-list__rank">0{{ i + 1 }}</span>
+            <div class="leader-list__body">
+              <strong>{{ team.name }}</strong>
+              <span>{{ team.recentJobs }} recent jobs • {{ team.aiUsage || 0 }} AI usage</span>
+            </div>
+            <span class="leader-list__score">{{ team.engagementScore }}</span>
+          </button>
+        </div>
       </div>
-    </a>
+    </section>
 
-    <a class="metric-card metric-card--green" routerLink="/app/admin/developers">
-      <div class="metric-card__top">
-        <div class="metric-card__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="16 18 22 12 16 6"/>
-            <polyline points="8 6 2 12 8 18"/>
-          </svg>
+    <section class="panel" *ngIf="dashboardConfig.showRecruiterPerformance">
+      <div class="panel__header">
+        <div>
+          <h2>Recruiter Performance</h2>
+          <p>Real recruiter output based on jobs, AI usage, candidate analysis, and recent activity.</p>
         </div>
-        <span class="metric-card__trend metric-card__trend--neutral">
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Public
-        </span>
+        <a class="btn btn--ghost btn--sm" routerLink="/app/admin/recruiters">Manage Recruiters</a>
       </div>
-      <div class="metric-card__body">
-        <span class="metric-card__value">{{ overview.globalDevelopersCount }}</span>
-        <span class="metric-card__label">Public Developers</span>
+
+      <div class="recruiter-grid" *ngIf="recruiterHighlights.length > 0; else noRecruiterData">
+        <article class="recruiter-card" *ngFor="let recruiter of recruiterHighlights; trackBy: trackByRecruiterId">
+          <div class="recruiter-card__header">
+            <div>
+              <h3>{{ recruiter.name }}</h3>
+              <span>{{ recruiter.email }}</span>
+            </div>
+            <span class="badge" [class.badge--green]="recruiter.isActive" [class.badge--red]="!recruiter.isActive">
+              {{ recruiter.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="recruiter-card__stats">
+            <div><span>Jobs</span><strong>{{ recruiter.totalJobs }}</strong></div>
+            <div><span>AI Calls</span><strong>{{ recruiter.totalAnalyses }}</strong></div>
+            <div><span>Candidates</span><strong>{{ recruiter.candidatesAnalyzed }}</strong></div>
+            <div><span>Score</span><strong>{{ recruiter.score }}</strong></div>
+          </div>
+
+          <button type="button" class="btn btn--ghost btn--sm" (click)="openRecruiterDetail(recruiter)">View Details</button>
+        </article>
       </div>
-      <div class="metric-card__footer">
-        <span>Browse talent pool →</span>
+    </section>
+
+    <section class="dashboard-grid" *ngIf="dashboardConfig.showJobTrends">
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Job Trends</h2>
+            <p>Monthly jobs trend and stack mix for the current filters.</p>
+          </div>
+        </div>
+
+        <div class="trend-chart">
+          <div class="trend-chart__col" *ngFor="let trend of performance.hiringAnalytics.monthlyTrend">
+            <span class="trend-chart__value" *ngIf="trend.count > 0">{{ trend.count }}</span>
+            <div class="trend-chart__bar-wrap">
+              <div class="trend-chart__bar" [style.height.%]="barPct(trend.count, maxMonthlyTrend())"></div>
+            </div>
+            <span class="trend-chart__label">{{ trend.label }}</span>
+          </div>
+        </div>
       </div>
-    </a>
 
-  </div>
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Hiring Funnel</h2>
+            <p>Pipeline and invitation health for the selected scope.</p>
+          </div>
+        </div>
 
-  <!-- ── Quick actions ──────────────────────────────────────────────────── -->
-  <div class="quick-actions" *ngIf="!loading">
-    <h3 class="section-title">Quick Actions</h3>
-    <div class="quick-actions__grid">
+        <div class="funnel-grid funnel-grid--wide">
+          <div class="funnel-grid__item">
+            <span>Open Jobs</span>
+            <strong>{{ performance.hiringAnalytics.open }}</strong>
+          </div>
+          <div class="funnel-grid__item">
+            <span>Draft Jobs</span>
+            <strong>{{ performance.hiringAnalytics.draft }}</strong>
+          </div>
+          <div class="funnel-grid__item">
+            <span>Closed Jobs</span>
+            <strong>{{ performance.hiringAnalytics.closed }}</strong>
+          </div>
+          <div class="funnel-grid__item">
+            <span>Accepted Invites</span>
+            <strong>{{ performance.hiringAnalytics.invitationFunnel.accepted }}</strong>
+          </div>
+        </div>
 
-      <a class="quick-card" routerLink="/app/admin/recruiters">
-        <div class="quick-card__icon quick-card__icon--purple">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <line x1="19" y1="8" x2="19" y2="14"/>
-            <line x1="22" y1="11" x2="16" y2="11"/>
-          </svg>
+        <div class="stack-list" *ngIf="performance.hiringAnalytics.stackDistribution.length > 0">
+          <div class="stack-list__row" *ngFor="let item of performance.hiringAnalytics.stackDistribution">
+            <span>{{ item.stack }}</span>
+            <div class="stack-list__track">
+              <div class="stack-list__fill" [style.width.%]="barPct(item.count, maxStackDistribution())"></div>
+            </div>
+            <strong>{{ item.count }}</strong>
+          </div>
         </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">Invite Recruiter</span>
-          <span class="quick-card__sub">Send secure email invite</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
+      </div>
+    </section>
 
-      <a class="quick-card" routerLink="/app/admin/jobs">
-        <div class="quick-card__icon quick-card__icon--blue">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+    <section class="dashboard-grid">
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Public Developer Signals</h2>
+            <p>Public-only portfolio data with safe profile details.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" routerLink="/app/admin/developers">Open Talent Pool</a>
         </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">Post a Job</span>
-          <span class="quick-card__sub">Create new job listing</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
 
-      <a class="quick-card" routerLink="/app/admin/developers">
-        <div class="quick-card__icon quick-card__icon--green">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">Browse Talent Pool</span>
-          <span class="quick-card__sub">{{ overview.globalDevelopersCount }} public profiles</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
+        <div class="developer-grid" *ngIf="recentPublicDevelopers.length > 0; else noDeveloperData">
+          <article class="developer-card" *ngFor="let developer of recentPublicDevelopers; trackBy: trackByDeveloperId">
+            <div class="developer-card__header">
+              <div>
+                <h3>{{ developer.name }}</h3>
+                <span>{{ developer.headline || developer.jobTitle || 'Public profile' }}</span>
+              </div>
+              <button type="button" class="btn btn--ghost btn--sm" (click)="openDeveloperDetail(developer)">Details</button>
+            </div>
 
-      <a class="quick-card" routerLink="/app/admin/jobs">
-        <div class="quick-card__icon quick-card__icon--orange">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">AI Candidate Ranking</span>
-          <span class="quick-card__sub">Match top talent to jobs</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
+            <div class="chip-row">
+              <span class="chip" *ngIf="developer.stack">{{ developer.stack }}</span>
+              <span class="chip" *ngIf="developer.experienceLevel">{{ developer.experienceLevel }}</span>
+              <span class="chip" *ngIf="developer.location">{{ developer.location }}</span>
+            </div>
 
-      <a class="quick-card" routerLink="/app/admin/console">
-        <div class="quick-card__icon quick-card__icon--teal">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+            <div class="score-row">
+              <div><span>GitHub</span><strong>{{ developer.githubScore || 0 }}</strong></div>
+              <div><span>Resume</span><strong>{{ developer.resumeScore || 0 }}</strong></div>
+              <div><span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong></div>
+            </div>
+          </article>
         </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">User Management</span>
-          <span class="quick-card__sub">Org overview, teams, roles & invitations</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
+      </div>
 
-      <a class="quick-card" routerLink="/app/admin/activity-logs">
-        <div class="quick-card__icon quick-card__icon--slate">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
+      <div class="panel" *ngIf="dashboardConfig.showActivityFeed">
+        <div class="panel__header">
+          <div>
+            <h2>Recent Activity</h2>
+            <p>Latest org-scoped operational events for the current filters.</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" routerLink="/app/admin/activity-logs">Open Logs</a>
         </div>
-        <div class="quick-card__text">
-          <span class="quick-card__title">Activity Logs</span>
-          <span class="quick-card__sub">My logs, team logs, and date filters</span>
-        </div>
-        <svg class="quick-card__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
 
+        <div class="activity-list" *ngIf="recentActivityFeed.length > 0; else noActivityData">
+          <article class="activity-list__item" *ngFor="let activity of recentActivityFeed; trackBy: trackByActivityId">
+            <div class="activity-list__main">
+              <strong>{{ activity.actorName }}</strong>
+              <span>{{ activity.action }}</span>
+            </div>
+            <div class="activity-list__meta">
+              <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+              <span class="status-pill">{{ activity.statusCode }}</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #noTeamData>
+    <div class="empty-state">
+      <p>No team analytics available for the selected filters.</p>
     </div>
-  </div>
+  </ng-template>
 
-  <!-- ── Status bar ─────────────────────────────────────────────────────── -->
-  <div class="status-bar" *ngIf="!loading">
-    <div class="status-bar__item">
-      <span class="status-dot status-dot--green"></span>
-      <span>Organization Active</span>
+  <ng-template #noRecruiterData>
+    <div class="empty-state">
+      <p>No recruiter performance data available for the selected filters.</p>
     </div>
-    <div class="status-bar__item">
-      <span class="status-dot status-dot--blue"></span>
-      <span>{{ overview.recruitersCount }} Recruiter{{ overview.recruitersCount !== 1 ? 's' : '' }} Onboarded</span>
-    </div>
-    <div class="status-bar__item">
-      <span class="status-dot status-dot--purple"></span>
-      <span>{{ overview.jobsCount }} Job{{ overview.jobsCount !== 1 ? 's' : '' }} Listed</span>
-    </div>
-    <div class="status-bar__item">
-      <span class="status-dot status-dot--teal"></span>
-      <span>{{ overview.globalDevelopersCount }} Developers in Pool</span>
-    </div>
-  </div>
+  </ng-template>
 
+  <ng-template #noDeveloperData>
+    <div class="empty-state">
+      <p>No public developer data is available right now.</p>
+    </div>
+  </ng-template>
+
+  <ng-template #noActivityData>
+    <div class="empty-state">
+      <p>No activity events were found for the selected filters.</p>
+    </div>
+  </ng-template>
+
+  <div class="drawer-backdrop" *ngIf="detailView" (click)="closeDetail()"></div>
+  <aside class="drawer" *ngIf="detailView" (click)="$event.stopPropagation()">
+    <button type="button" class="drawer__close" (click)="closeDetail()">Close</button>
+
+    <ng-container *ngIf="detailView === 'team' && selectedTeam as team">
+      <div class="drawer__header">
+        <h2>{{ team.name }}</h2>
+        <span class="badge" [class.badge--green]="team.isActive" [class.badge--red]="!team.isActive">{{ team.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+
+      <div class="drawer-stats">
+        <div><span>Recruiters Assigned</span><strong>{{ teamRecruiters(team).length }}</strong></div>
+        <div><span>Jobs Linked</span><strong>{{ team.totalJobs }}</strong></div>
+        <div><span>Candidates Analyzed</span><strong>{{ team.candidatesAnalyzed || 0 }}</strong></div>
+        <div><span>AI Usage</span><strong>{{ team.aiUsage || 0 }}</strong></div>
+        <div><span>Matches Generated</span><strong>{{ team.matchesGenerated || 0 }}</strong></div>
+        <div><span>Performance Score</span><strong>{{ team.performanceScore || team.engagementScore }}</strong></div>
+      </div>
+
+      <section class="drawer-section">
+        <h3>Assigned Recruiters</h3>
+        <div class="drawer-list" *ngIf="teamRecruiters(team).length > 0; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let recruiter of teamRecruiters(team)">
+            <strong>{{ recruiter.name }}</strong>
+            <span>{{ recruiter.email }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Recent Jobs</h3>
+        <div class="drawer-list" *ngIf="team.recentJobsList?.length; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let job of team.recentJobsList">
+            <strong>{{ job.title }}</strong>
+            <span>{{ job.status | titlecase }} • {{ job.stack }} • {{ job.createdAt | date:'MMM d' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Recent Actions</h3>
+        <div class="drawer-list" *ngIf="team.recentActions?.length; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let action of team.recentActions">
+            <strong>{{ action.actorName }}</strong>
+            <span>{{ action.action }} • {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="detailView === 'recruiter' && selectedRecruiterMetric as metric">
+      <div class="drawer__header">
+        <h2>{{ recruiterProfile(metric)?.name || metric.name }}</h2>
+        <span class="badge" [class.badge--green]="metric.isActive" [class.badge--red]="!metric.isActive">{{ metric.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+
+      <div class="drawer-stats">
+        <div><span>Email</span><strong>{{ recruiterProfile(metric)?.email || metric.email }}</strong></div>
+        <div><span>Phone</span><strong>{{ recruiterProfile(metric)?.phoneNumber || 'Not provided' }}</strong></div>
+        <div><span>Jobs Created</span><strong>{{ metric.totalJobs }}</strong></div>
+        <div><span>Matches Generated</span><strong>{{ metric.matchesGenerated }}</strong></div>
+        <div><span>Candidates Analyzed</span><strong>{{ metric.candidatesAnalyzed }}</strong></div>
+        <div><span>AI Calls</span><strong>{{ metric.totalAnalyses }}</strong></div>
+        <div><span>Shortlists</span><strong>{{ metric.shortlists || 0 }}</strong></div>
+        <div><span>Activity Score</span><strong>{{ metric.activityScore }}</strong></div>
+      </div>
+
+      <section class="drawer-section">
+        <h3>Assigned Teams</h3>
+        <div class="chip-row">
+          <span class="chip" *ngFor="let team of recruiterProfile(metric)?.teams || []">{{ team.name }}</span>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Recent Jobs</h3>
+        <div class="drawer-list" *ngIf="metric.recentJobsList?.length; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let job of metric.recentJobsList">
+            <strong>{{ job.title }}</strong>
+            <span>{{ job.status | titlecase }} • {{ job.stack }} • {{ job.createdAt | date:'MMM d' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Recent Activity</h3>
+        <div class="drawer-list" *ngIf="metric.recentActivity?.length; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let activity of metric.recentActivity">
+            <strong>{{ activity.action }}</strong>
+            <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="detailView === 'developer' && selectedDeveloper as developer">
+      <div class="drawer__header">
+        <h2>{{ developer.name }}</h2>
+        <span class="badge badge--green">Public Safe Data</span>
+      </div>
+
+      <div class="drawer-stats">
+        <div><span>Stack</span><strong>{{ developer.stack || 'Not set' }}</strong></div>
+        <div><span>Experience</span><strong>{{ developer.experienceLevel || 'Not set' }}</strong></div>
+        <div><span>GitHub Score</span><strong>{{ developer.githubScore || 0 }}</strong></div>
+        <div><span>Resume Score</span><strong>{{ developer.resumeScore || 0 }}</strong></div>
+        <div><span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong></div>
+        <div><span>Projects</span><strong>{{ developer.projectsCount || 0 }}</strong></div>
+      </div>
+
+      <section class="drawer-section">
+        <h3>Professional Links</h3>
+        <div class="drawer-list">
+          <div class="drawer-list__item">
+            <strong>GitHub</strong>
+            <span>{{ developer.githubUsername || 'Not provided' }}</span>
+          </div>
+          <div class="drawer-list__item">
+            <strong>LinkedIn</strong>
+            <a *ngIf="hasExternalLink(developer.linkedin)" [href]="developer.linkedin" target="_blank" rel="noopener">Open Profile</a>
+            <span *ngIf="!hasExternalLink(developer.linkedin)">Not provided</span>
+          </div>
+          <div class="drawer-list__item">
+            <strong>Portfolio</strong>
+            <a *ngIf="hasExternalLink(developer.website)" [href]="developer.website" target="_blank" rel="noopener">Open Portfolio</a>
+            <span *ngIf="!hasExternalLink(developer.website)">Not provided</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Skills</h3>
+        <div class="chip-row">
+          <span class="chip" *ngFor="let skill of developer.skills || []">{{ skill }}</span>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <h3>Projects</h3>
+        <div class="drawer-list" *ngIf="developer.projects?.length; else emptyDrawerBlock">
+          <div class="drawer-list__item" *ngFor="let project of developer.projects">
+            <strong>{{ project.title }}</strong>
+            <span>{{ project.description || 'No project description provided.' }}</span>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-template #emptyDrawerBlock>
+      <div class="empty-state empty-state--drawer">
+        <p>No detail data available for this section.</p>
+      </div>
+    </ng-template>
+  </aside>
 </section>

@@ -1,5 +1,43 @@
 const mongoose = require('mongoose');
 
+const dashboardConfigSchema = new mongoose.Schema(
+  {
+    preferredDateRangeDays: {
+      type: Number,
+      default: 30
+    },
+    defaultTeamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      default: null
+    },
+    showKpiCards: {
+      type: Boolean,
+      default: true
+    },
+    showTeamAnalytics: {
+      type: Boolean,
+      default: true
+    },
+    showRecruiterPerformance: {
+      type: Boolean,
+      default: true
+    },
+    showJobTrends: {
+      type: Boolean,
+      default: true
+    },
+    showActivityFeed: {
+      type: Boolean,
+      default: true
+    }
+  },
+  {
+    _id: false,
+    versionKey: false
+  }
+);
+
 const organizationSchema = new mongoose.Schema(
   {
     name: {
@@ -38,6 +76,10 @@ const organizationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
       index: true
+    },
+    dashboardConfig: {
+      type: dashboardConfigSchema,
+      default: () => ({})
     }
   },
   {

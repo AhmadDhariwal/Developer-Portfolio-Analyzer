@@ -11,6 +11,11 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
     take(1),
     map((isLoggedIn) => {
       if (isLoggedIn) {
+        const user = authService.getCurrentUser();
+        if (!authService.canAccessUrl(state.url, user)) {
+          router.navigateByUrl(authService.getHomeRoute(user));
+          return false;
+        }
         return true;
       } else {
         // Store the URL the user was trying to access

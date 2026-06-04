@@ -224,6 +224,38 @@ export class Sidebar implements OnInit {
     const isRecruiter = role === 'recruiter' || this.tenantContext.snapshot.myRole === 'recruiter';
     const isAdmin = role === 'admin' || this.tenantContext.snapshot.myRole === 'admin';
 
+    if (isAdmin) {
+      this.openGroups.add('Admin Workspace');
+      this.openGroups.add('Organization');
+      this.visibleNavItems = [];
+      this.visibleNavGroups = [
+        {
+          label: 'Admin Workspace',
+          route: '',
+          icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8"></path><path d="M12 18v2"></path></svg>`),
+          items: [
+            { label: 'Dashboard', route: '/app/admin/dashboard', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`) },
+            { label: 'Recruiters', route: '/app/admin/recruiters', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`) },
+            { label: 'Developers', route: '/app/admin/developers', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`) },
+            { label: 'Jobs', route: '/app/admin/jobs', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg>`) }
+          ]
+        },
+        {
+          label: 'Organization',
+          route: '',
+          icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`),
+          items: [
+            { label: 'Org Console', route: '/app/admin/console', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`) },
+            { label: 'Performance & Statistics', route: '/app/admin/console/performance-statistics', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`) },
+            { label: 'Activity Logs', route: '/app/admin/activity-logs', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`) },
+            { label: 'Integrations', route: '/app/integrations', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><line x1="10" y1="6.5" x2="14" y2="6.5"></line><line x1="17.5" y1="10" x2="17.5" y2="14"></line></svg>`) },
+            { label: 'Profile', route: '/app/profile', icon: this.trustSvg(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`) }
+          ]
+        }
+      ];
+      return;
+    }
+
     if (isRecruiter) {
       this.openGroups.add('Recruiter Hub');
       this.openGroups.add('Workspace');

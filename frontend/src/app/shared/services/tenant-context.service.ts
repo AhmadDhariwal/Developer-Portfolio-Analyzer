@@ -41,6 +41,17 @@ export class TenantContextService {
     this.persist(next);
   }
 
+  syncOrganization(update: { id?: string; name?: string; myRole?: 'admin' | 'manager' | 'member' | 'recruiter' | '' }): void {
+    const current = this.snapshot;
+    const next: TenantContextState = {
+      ...current,
+      organizationId: update.id !== undefined ? update.id : current.organizationId,
+      organizationName: update.name !== undefined ? update.name : current.organizationName,
+      myRole: update.myRole !== undefined ? update.myRole : current.myRole
+    };
+    this.persist(next);
+  }
+
   setTeam(team: { id: string; name: string }): void {
     const current = this.snapshot;
     const next: TenantContextState = {

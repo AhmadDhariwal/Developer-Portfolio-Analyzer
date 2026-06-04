@@ -7,6 +7,7 @@ import {
   AdminPerformanceService,
   PerformanceData,
   RecruiterMetric,
+  RecruiterAnalysisUsage,
   TeamMetric,
   StackItem,
   TrendItem
@@ -30,6 +31,7 @@ export class AdminPerformanceComponent implements OnInit {
   selectedTeamId = '';
   selectedRecruiterId = '';
   selectedStack = '';
+  selectedJobStatus = '';
   readonly dayOptions = [7, 14, 30, 60, 90];
 
   constructor(
@@ -37,7 +39,9 @@ export class AdminPerformanceComponent implements OnInit {
     private readonly cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+  }
 
   load(): void {
     this.loading = true;
@@ -45,26 +49,55 @@ export class AdminPerformanceComponent implements OnInit {
     this.svc.getPerformance(this.selectedDays, {
       teamId: this.selectedTeamId || undefined,
       recruiterId: this.selectedRecruiterId || undefined,
-      stack: this.selectedStack || undefined
+      stack: this.selectedStack || undefined,
+      jobStatus: this.selectedJobStatus || undefined
     }).pipe(
       finalize(() => { this.loading = false; this.cdr.detectChanges(); })
     ).subscribe({
-      next: (d) => { this.data = d; },
+      next: (d) => {
+        if (this.normalizeSelectedFilters(d)) {
+          this.load();
+          return;
+        }
+        this.data = d;
+      },
       error: (e) => { this.error = e?.error?.message || 'Failed to load performance data.'; }
     });
   }
 
-  setSection(s: Section): void { this.activeSection = s; }
+  setSection(section: Section): void {
+    this.activeSection = section;
+  }
+
+  onTeamChange(): void {
+    this.selectedRecruiterId = '';
+    this.load();
+  }
+
+  onRecruiterChange(): void {
+    this.load();
+  }
+
+  onStackChange(): void {
+    this.load();
+  }
+
+  onJobStatusChange(): void {
+    this.load();
+  }
+
+  onDaysChange(): void {
+    this.load();
+  }
+
   resetFilters(): void {
     this.selectedTeamId = '';
     this.selectedRecruiterId = '';
     this.selectedStack = '';
+    this.selectedJobStatus = '';
     this.load();
   }
 
-  // ── Chart helpers ─────────────────────────────────────────────────────
-
-  /** Width % for a bar relative to the max value in the set */
   barPct(value: number, max: number): number {
     return max > 0 ? Math.round((value / max) * 100) : 0;
   }
@@ -74,19 +107,23 @@ export class AdminPerformanceComponent implements OnInit {
   }
 
   maxStack(items: StackItem[]): number {
-    return Math.max(1, ...items.map((s) => s.count));
+    return Math.max(1, ...items.map((item) => item.count));
   }
 
   maxRecruiterJobs(metrics: RecruiterMetric[]): number {
-    return Math.max(1, ...metrics.map((r) => r.totalJobs));
+    return Math.max(1, ...metrics.map((metric) => metric.totalJobs));
   }
 
   maxTeamScore(metrics: TeamMetric[]): number {
-    return Math.max(1, ...metrics.map((t) => t.engagementScore));
+    return Math.max(1, ...metrics.map((metric) => metric.engagementScore));
   }
 
   max2(a: number, b: number): number {
     return Math.max(1, Number(a || 0), Number(b || 0));
+  }
+
+  maxAnalysisCount(items: RecruiterAnalysisUsage[]): number {
+    return Math.max(1, ...items.map((item) => item.count));
   }
 
   funnelPct(part: number, total: number): number {
@@ -103,14 +140,39 @@ export class AdminPerformanceComponent implements OnInit {
     return 'ps-heatmap__cell ps-heatmap__cell--1';
   }
 
-  /** Rank medal for leaderboard */
   medal(i: number): string {
-    return ['🥇', '🥈', '🥉'][i] ?? `#${i + 1}`;
+    return ['01', '02', '03'][i] ?? `#${i + 1}`;
   }
 
   scoreColor(score: number): string {
     if (score >= 70) return 'green';
     if (score >= 40) return 'amber';
     return 'red';
+  }
+
+  private normalizeSelectedFilters(data: PerformanceData): boolean {
+    let changed = false;
+
+    if (this.selectedTeamId && !data.filters.teams.some((team) => team._id === this.selectedTeamId)) {
+      this.selectedTeamId = '';
+      changed = true;
+    }
+
+    if (this.selectedRecruiterId && !data.filters.recruiters.some((recruiter) => recruiter._id === this.selectedRecruiterId)) {
+      this.selectedRecruiterId = '';
+      changed = true;
+    }
+
+    if (this.selectedStack && !data.filters.stacks.includes(this.selectedStack)) {
+      this.selectedStack = '';
+      changed = true;
+    }
+
+    if (this.selectedJobStatus && !(data.filters.jobStatuses || []).includes(this.selectedJobStatus)) {
+      this.selectedJobStatus = '';
+      changed = true;
+    }
+
+    return changed;
   }
 }
