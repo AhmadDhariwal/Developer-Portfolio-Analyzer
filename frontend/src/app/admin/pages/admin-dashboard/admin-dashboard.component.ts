@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 import {
   AdminDeveloper,
@@ -24,8 +26,14 @@ type DetailView = 'team' | 'recruiter' | 'developer' | '';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardPageComponent implements OnInit {
+export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, OnDestroy {
+  @ViewChild('teamActivityChart') private teamActivityChartRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('recruiterPerformanceChart') private recruiterPerformanceChartRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('hiringFunnelChart') private hiringFunnelChartRef?: ElementRef<HTMLCanvasElement>;
+
   loading = false;
+  refreshing = false;
+  initialized = false;
   error = '';
 
   overview: AdminOverview = {
@@ -57,15 +65,33 @@ export class AdminDashboardPageComponent implements OnInit {
   selectedDeveloper: AdminDeveloper | null = null;
 
   private configApplied = false;
+  private chartsNeedRender = false;
+  private teamChart: Chart | null = null;
+  private recruiterChart: Chart | null = null;
+  private funnelChart: Chart | null = null;
 
   constructor(
     private readonly adminService: AdminHiringService,
     private readonly consoleService: AdminConsoleService,
-    private readonly performanceService: AdminPerformanceService
-  ) {}
+    private readonly performanceService: AdminPerformanceService,
+    private readonly router: Router
+  ) {
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.loadDashboard();
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.chartsNeedRender) {
+      this.chartsNeedRender = false;
+      this.renderCharts();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyCharts();
   }
 
   get dashboardConfig(): Required<NonNullable<ConsolePreferences['organization']['dashboardConfig']>> {
@@ -87,6 +113,24 @@ export class AdminDashboardPageComponent implements OnInit {
 
   get organizationPerformanceScore(): number {
     return Number(this.performance?.summary?.organizationPerformanceScore || 0);
+  }
+
+  get showInitialSkeleton(): boolean {
+    return this.loading && !this.initialized;
+  }
+
+  get showRefreshState(): boolean {
+    return this.refreshing && !!this.performance;
+  }
+
+  get hasPerformanceData(): boolean {
+    return Boolean(this.performance && (
+      this.performance.teamMetrics.length ||
+      this.performance.recruiterMetrics.length ||
+      this.performance.hiringAnalytics.total ||
+      this.performance.candidateAnalytics?.candidatesAnalyzed ||
+      this.recentActivityFeed.length
+    ));
   }
 
   get recentActivityFeed(): Array<{ _id: string; action: string; method?: string; route?: string; statusCode: number; timestamp: string; actorName: string }> {
@@ -132,6 +176,7 @@ export class AdminDashboardPageComponent implements OnInit {
 
   loadDashboard(): void {
     this.loading = true;
+    this.refreshing = this.initialized;
     this.error = '';
 
     forkJoin({
@@ -157,6 +202,7 @@ export class AdminDashboardPageComponent implements OnInit {
       error: () => {
         this.error = 'Failed to load organization dashboard.';
         this.loading = false;
+        this.refreshing = false;
       }
     });
   }
@@ -170,6 +216,8 @@ export class AdminDashboardPageComponent implements OnInit {
     }).pipe(
       finalize(() => {
         this.loading = false;
+        this.refreshing = false;
+        this.initialized = true;
       })
     ).subscribe({
       next: (data) => {
@@ -178,6 +226,7 @@ export class AdminDashboardPageComponent implements OnInit {
           return;
         }
         this.performance = data;
+        this.chartsNeedRender = true;
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to load organization analytics.';
@@ -216,8 +265,52 @@ export class AdminDashboardPageComponent implements OnInit {
   }
 
   refreshAll(): void {
-    this.configApplied = true;
+    this.configApplied = false;
     this.loadDashboard();
+  }
+
+  openTeamsView(): void {
+    this.router.navigate(['/app/admin/console'], { queryParams: { tab: 'teams' } });
+  }
+
+  openRecruitersView(): void {
+    this.router.navigate(['/app/admin/recruiters']);
+  }
+
+  openJobsView(): void {
+    this.router.navigate(['/app/admin/jobs']);
+  }
+
+  openDevelopersView(): void {
+    this.router.navigate(['/app/admin/developers']);
+  }
+
+  openActivityView(): void {
+    this.router.navigate(['/app/admin/activity-logs']);
+  }
+
+  openPerformanceView(): void {
+    this.router.navigate(['/app/admin/console/performance-statistics']);
+  }
+
+  applyStackFilter(stack: string): void {
+    if (!stack || this.selectedStack === stack) {
+      return;
+    }
+    this.selectedStack = stack;
+    this.loadPerformance();
+  }
+
+  openTrendDetail(_label: string): void {
+    this.openPerformanceView();
+  }
+
+  openTopTeam(): void {
+    if (this.focusTeam) {
+      this.openTeamDetail(this.focusTeam);
+    } else {
+      this.openTeamsView();
+    }
   }
 
   openTeamDetail(team: TeamMetric): void {
@@ -297,6 +390,42 @@ export class AdminDashboardPageComponent implements OnInit {
     return this.maxValue((this.performance?.hiringAnalytics?.stackDistribution || []).map((item) => item.count));
   }
 
+  leaderboardTooltip(team: TeamMetric): string {
+    return `${team.name}: ${team.totalJobs} jobs, ${team.candidatesAnalyzed || 0} candidates, score ${team.performanceScore || team.engagementScore}`;
+  }
+
+  formatActivityAction(action?: string, route?: string): string {
+    const raw = String(action || route || 'Activity').trim();
+    if (!raw) {
+      return 'Activity';
+    }
+
+    if (raw.startsWith('/api/')) {
+      return raw
+        .split('/')
+        .filter(Boolean)
+        .slice(-2)
+        .join(' ')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    return raw
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  shortStatusLabel(code: number): string {
+    if (code >= 400) {
+      return `Error ${code}`;
+    }
+    if (code >= 200) {
+      return `OK ${code}`;
+    }
+    return String(code || '');
+  }
+
   trackByActivityId(_: number, activity: { _id: string }): string {
     return activity._id;
   }
@@ -337,5 +466,239 @@ export class AdminDashboardPageComponent implements OnInit {
     }
 
     return changed;
+  }
+
+  private renderCharts(): void {
+    if (!this.performance) {
+      return;
+    }
+
+    this.renderTeamActivityChart();
+    this.renderRecruiterPerformanceChart();
+    this.renderHiringFunnelChart();
+  }
+
+  private renderTeamActivityChart(): void {
+    const canvas = this.teamActivityChartRef?.nativeElement;
+    if (!canvas || !this.performance?.teamMetrics.length) {
+      this.teamChart?.destroy();
+      this.teamChart = null;
+      return;
+    }
+
+    this.teamChart?.destroy();
+    const teams = this.performance.teamMetrics.slice(0, 8);
+    const config: ChartConfiguration<'bar' | 'line'> = {
+      type: 'bar',
+      data: {
+        labels: teams.map((team) => team.name),
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Engagement Score',
+            data: teams.map((team) => team.engagementScore),
+            backgroundColor: 'rgba(99, 102, 241, 0.72)',
+            borderRadius: 8,
+            maxBarThickness: 28
+          },
+          {
+            type: 'line',
+            label: 'Candidates Analyzed',
+            data: teams.map((team) => team.candidatesAnalyzed || 0),
+            borderColor: '#22d3ee',
+            backgroundColor: 'rgba(34, 211, 238, 0.18)',
+            tension: 0.35,
+            fill: false,
+            pointRadius: 3,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: this.buildChartOptions({
+        leftTitle: 'Score',
+        rightTitle: 'Candidates'
+      })
+    };
+
+    this.teamChart = new Chart(canvas, config);
+  }
+
+  private renderRecruiterPerformanceChart(): void {
+    const canvas = this.recruiterPerformanceChartRef?.nativeElement;
+    if (!canvas || !this.performance?.recruiterMetrics.length) {
+      this.recruiterChart?.destroy();
+      this.recruiterChart = null;
+      return;
+    }
+
+    this.recruiterChart?.destroy();
+    const recruiters = this.performance.recruiterMetrics.slice(0, 8);
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: recruiters.map((recruiter) => recruiter.name),
+        datasets: [
+          {
+            label: 'Jobs',
+            data: recruiters.map((recruiter) => recruiter.totalJobs),
+            backgroundColor: 'rgba(14, 165, 233, 0.76)',
+            borderRadius: 8,
+            maxBarThickness: 22
+          },
+          {
+            label: 'Matches',
+            data: recruiters.map((recruiter) => recruiter.matchesGenerated),
+            backgroundColor: 'rgba(45, 212, 191, 0.76)',
+            borderRadius: 8,
+            maxBarThickness: 22
+          },
+          {
+            label: 'AI Calls',
+            data: recruiters.map((recruiter) => recruiter.totalAnalyses),
+            backgroundColor: 'rgba(244, 114, 182, 0.76)',
+            borderRadius: 8,
+            maxBarThickness: 22
+          }
+        ]
+      },
+      options: this.buildChartOptions()
+    };
+
+    this.recruiterChart = new Chart(canvas, config);
+  }
+
+  private renderHiringFunnelChart(): void {
+    const canvas = this.hiringFunnelChartRef?.nativeElement;
+    if (!canvas || !this.performance) {
+      this.funnelChart?.destroy();
+      this.funnelChart = null;
+      return;
+    }
+
+    this.funnelChart?.destroy();
+    const data = this.performance.hiringAnalytics;
+    const config: ChartConfiguration<'doughnut'> = {
+      type: 'doughnut',
+      data: {
+        labels: ['Open Jobs', 'Draft Jobs', 'Closed Jobs', 'Accepted Invites'],
+        datasets: [
+          {
+            data: [
+              data.open,
+              data.draft,
+              data.closed,
+              data.invitationFunnel.accepted
+            ],
+            backgroundColor: ['#6366f1', '#22d3ee', '#14b8a6', '#f59e0b'],
+            borderColor: '#091426',
+            borderWidth: 2,
+            hoverOffset: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              boxWidth: 12,
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.96)',
+            borderColor: 'rgba(71, 85, 105, 0.45)',
+            borderWidth: 1,
+            titleColor: '#f8fafc',
+            bodyColor: '#e2e8f0'
+          }
+        }
+      }
+    };
+
+    this.funnelChart = new Chart(canvas, config);
+  }
+
+  private buildChartOptions(axisTitles?: { leftTitle?: string; rightTitle?: string }): ChartConfiguration<'bar' | 'line'>['options'] {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#cbd5e1',
+            boxWidth: 12,
+            padding: 16
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.96)',
+          borderColor: 'rgba(71, 85, 105, 0.45)',
+          borderWidth: 1,
+          titleColor: '#f8fafc',
+          bodyColor: '#e2e8f0'
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#94a3b8'
+          },
+          grid: {
+            color: 'rgba(51, 65, 85, 0.25)'
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: '#94a3b8'
+          },
+          title: axisTitles?.leftTitle
+            ? {
+                display: true,
+                text: axisTitles.leftTitle,
+                color: '#94a3b8'
+              }
+            : undefined,
+          grid: {
+            color: 'rgba(51, 65, 85, 0.25)'
+          }
+        },
+        y1: axisTitles?.rightTitle
+          ? {
+              beginAtZero: true,
+              position: 'right',
+              ticks: {
+                color: '#94a3b8'
+              },
+              title: {
+                display: true,
+                text: axisTitles.rightTitle,
+                color: '#94a3b8'
+              },
+              grid: {
+                drawOnChartArea: false
+              }
+            }
+          : undefined
+      }
+    };
+  }
+
+  private destroyCharts(): void {
+    this.teamChart?.destroy();
+    this.recruiterChart?.destroy();
+    this.funnelChart?.destroy();
+    this.teamChart = null;
+    this.recruiterChart = null;
+    this.funnelChart = null;
   }
 }

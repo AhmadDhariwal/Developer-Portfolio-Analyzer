@@ -951,7 +951,15 @@ const getConsolePerformance = async (req, res) => {
       };
     }).sort((a, b) => b.score - a.score);
 
-    const scopedTeams = selectedTeamId ? teams.filter((t) => String(t._id) === selectedTeamId) : teams;
+    let scopedTeamIds = selectedTeamId
+      ? [selectedTeamId]
+      : [...new Set(scopedRecruiterIds.map((recruiterId) => String(teamByRecruiter.get(recruiterId) || '')).filter(Boolean))];
+
+    if (!selectedTeamId && !selectedRecruiterId) {
+      scopedTeamIds = teams.map((team) => String(team._id));
+    }
+
+    const scopedTeams = teams.filter((team) => scopedTeamIds.includes(String(team._id)));
     const teamMetrics = scopedTeams.map((t) => {
       const id = String(t._id);
       const allMemberIds = membersByTeam.get(id) || [];

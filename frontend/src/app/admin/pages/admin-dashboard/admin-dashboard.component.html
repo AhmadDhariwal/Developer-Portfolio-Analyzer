@@ -16,6 +16,10 @@
     </div>
   </header>
 
+  <div class="loading-strip" *ngIf="showRefreshState">
+    <span></span>
+  </div>
+
   <app-shared-message [visible]="!!error" type="error" [text]="error" (dismiss)="error = ''"></app-shared-message>
 
   <section class="panel panel--filters">
@@ -59,21 +63,18 @@
         </select>
       </label>
 
-      <label class="field">
-        <span>Job status</span>
-        <select [(ngModel)]="selectedJobStatus" (change)="onJobStatusChange()">
-          <option value="">All job statuses</option>
-          <option *ngFor="let status of performance?.filters?.jobStatuses || []" [value]="status">{{ status | titlecase }}</option>
-        </select>
-      </label>
     </div>
   </section>
 
-  <div class="skeleton-grid" *ngIf="loading && !performance">
+  <div class="skeleton-grid" *ngIf="showInitialSkeleton">
     <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
   </div>
 
-  <ng-container *ngIf="performance">
+  <div class="empty-state" *ngIf="initialized && !loading && !hasPerformanceData">
+    <p>No dashboard analytics are available for the current filters yet.</p>
+  </div>
+
+  <ng-container *ngIf="performance && hasPerformanceData">
     <section class="panel panel--overview">
       <div class="panel__header">
         <div>
@@ -101,47 +102,49 @@
         </div>
         <div class="overview-band__item">
           <span class="overview-band__label">Top Team</span>
-          <span class="overview-band__value">{{ performance.summary.topTeam || 'No team data' }}</span>
+          <button type="button" class="overview-band__action" (click)="openTopTeam()">
+            {{ performance.summary.topTeam || 'No team data' }}
+          </button>
         </div>
       </div>
     </section>
 
     <section class="kpi-grid" *ngIf="dashboardConfig.showKpiCards">
-      <article class="kpi-card kpi-card--indigo">
+      <button type="button" class="kpi-card kpi-card--indigo kpi-card--button" (click)="openTeamsView()">
         <span class="kpi-card__label">Teams</span>
         <span class="kpi-card__value">{{ performance.summary.totalTeams }}</span>
         <span class="kpi-card__meta">{{ overview.activeTeamsCount }} active in organization</span>
-      </article>
+      </button>
 
-      <article class="kpi-card kpi-card--cyan">
+      <button type="button" class="kpi-card kpi-card--cyan kpi-card--button" (click)="openRecruitersView()">
         <span class="kpi-card__label">Recruiters</span>
         <span class="kpi-card__value">{{ performance.summary.totalRecruiters }}</span>
         <span class="kpi-card__meta">{{ performance.summary.activeRecruiters }} active / {{ performance.summary.inactiveRecruiters || 0 }} inactive</span>
-      </article>
+      </button>
 
-      <article class="kpi-card kpi-card--amber">
+      <button type="button" class="kpi-card kpi-card--amber kpi-card--button" (click)="openJobsView()">
         <span class="kpi-card__label">Jobs</span>
         <span class="kpi-card__value">{{ performance.summary.totalJobs || performance.hiringAnalytics.total }}</span>
         <span class="kpi-card__meta">{{ performance.summary.openJobs || performance.hiringAnalytics.open }} open / {{ performance.summary.closedJobs || performance.hiringAnalytics.closed }} closed</span>
-      </article>
+      </button>
 
-      <article class="kpi-card kpi-card--teal">
+      <button type="button" class="kpi-card kpi-card--teal kpi-card--button" (click)="openDevelopersView()">
         <span class="kpi-card__label">Public Developers</span>
         <span class="kpi-card__value">{{ overview.globalDevelopersCount }}</span>
         <span class="kpi-card__meta">Safe public profiles only</span>
-      </article>
+      </button>
 
-      <article class="kpi-card kpi-card--slate">
+      <button type="button" class="kpi-card kpi-card--slate kpi-card--button" (click)="openPerformanceView()">
         <span class="kpi-card__label">Candidates Analyzed</span>
         <span class="kpi-card__value">{{ performance.candidateAnalytics?.candidatesAnalyzed || 0 }}</span>
         <span class="kpi-card__meta">{{ performance.candidateAnalytics?.aiEnhancedCandidates || 0 }} AI-enhanced</span>
-      </article>
+      </button>
 
-      <article class="kpi-card kpi-card--rose">
+      <button type="button" class="kpi-card kpi-card--rose kpi-card--button" (click)="openPerformanceView()">
         <span class="kpi-card__label">Matches Generated</span>
         <span class="kpi-card__value">{{ performance.summary.matchesGenerated || performance.aiEffectiveness?.matchCalls || 0 }}</span>
         <span class="kpi-card__meta">{{ performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0 }} AI rank calls</span>
-      </article>
+      </button>
     </section>
 
     <section class="dashboard-grid" *ngIf="dashboardConfig.showTeamAnalytics">
@@ -206,6 +209,16 @@
               </div>
             </div>
           </div>
+
+          <div class="chart-card">
+            <div class="chart-card__header">
+              <h3>Hiring Funnel</h3>
+              <span>Jobs and accepted invitations</span>
+            </div>
+            <div class="chart-card__canvas">
+              <canvas #hiringFunnelChart></canvas>
+            </div>
+          </div>
         </ng-container>
       </div>
 
@@ -214,6 +227,12 @@
           <div>
             <h2>Team Activity Graph</h2>
             <p>Engagement score, candidate engagement, and AI usage per team.</p>
+          </div>
+        </div>
+
+        <div class="chart-card chart-card--panel" *ngIf="performance.teamMetrics.length > 0; else noTeamData">
+          <div class="chart-card__canvas chart-card__canvas--lg">
+            <canvas #teamActivityChart></canvas>
           </div>
         </div>
 
@@ -264,7 +283,7 @@
           </div>
         </div>
         <div class="leader-list">
-          <button type="button" class="leader-list__item" *ngFor="let team of topTeams; let i = index" (click)="openTeamDetail(team)">
+          <button type="button" class="leader-list__item" *ngFor="let team of topTeams; let i = index" (click)="openTeamDetail(team)" [attr.title]="leaderboardTooltip(team)">
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
@@ -283,7 +302,7 @@
           </div>
         </div>
         <div class="leader-list">
-          <button type="button" class="leader-list__item leader-list__item--muted" *ngFor="let team of lowActivityTeams; let i = index" (click)="openTeamDetail(team)">
+          <button type="button" class="leader-list__item leader-list__item--muted" *ngFor="let team of lowActivityTeams; let i = index" (click)="openTeamDetail(team)" [attr.title]="leaderboardTooltip(team)">
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
@@ -302,6 +321,16 @@
           <p>Real recruiter output based on jobs, AI usage, candidate analysis, and recent activity.</p>
         </div>
         <a class="btn btn--ghost btn--sm" routerLink="/app/admin/recruiters">Manage Recruiters</a>
+      </div>
+
+      <div class="chart-card chart-card--panel" *ngIf="recruiterHighlights.length > 0; else noRecruiterData">
+        <div class="chart-card__header">
+          <h3>Recruiter Comparison</h3>
+          <span>Jobs, matches, and AI calls</span>
+        </div>
+        <div class="chart-card__canvas chart-card__canvas--lg">
+          <canvas #recruiterPerformanceChart></canvas>
+        </div>
       </div>
 
       <div class="recruiter-grid" *ngIf="recruiterHighlights.length > 0; else noRecruiterData">
@@ -338,13 +367,13 @@
         </div>
 
         <div class="trend-chart">
-          <div class="trend-chart__col" *ngFor="let trend of performance.hiringAnalytics.monthlyTrend">
+          <button type="button" class="trend-chart__col trend-chart__col--button" *ngFor="let trend of performance.hiringAnalytics.monthlyTrend" (click)="openTrendDetail(trend.label)" [attr.title]="'Open detailed analytics for ' + trend.label">
             <span class="trend-chart__value" *ngIf="trend.count > 0">{{ trend.count }}</span>
             <div class="trend-chart__bar-wrap">
               <div class="trend-chart__bar" [style.height.%]="barPct(trend.count, maxMonthlyTrend())"></div>
             </div>
             <span class="trend-chart__label">{{ trend.label }}</span>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -376,13 +405,13 @@
         </div>
 
         <div class="stack-list" *ngIf="performance.hiringAnalytics.stackDistribution.length > 0">
-          <div class="stack-list__row" *ngFor="let item of performance.hiringAnalytics.stackDistribution">
+          <button type="button" class="stack-list__row stack-list__row--button" *ngFor="let item of performance.hiringAnalytics.stackDistribution" (click)="applyStackFilter(item.stack)" [attr.title]="'Filter dashboard by ' + item.stack">
             <span>{{ item.stack }}</span>
             <div class="stack-list__track">
               <div class="stack-list__fill" [style.width.%]="barPct(item.count, maxStackDistribution())"></div>
             </div>
             <strong>{{ item.count }}</strong>
-          </div>
+          </button>
         </div>
       </div>
     </section>
@@ -428,20 +457,82 @@
             <h2>Recent Activity</h2>
             <p>Latest org-scoped operational events for the current filters.</p>
           </div>
-          <a class="btn btn--ghost btn--sm" routerLink="/app/admin/activity-logs">Open Logs</a>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="openActivityView()">Open Logs</button>
         </div>
 
         <div class="activity-list" *ngIf="recentActivityFeed.length > 0; else noActivityData">
           <article class="activity-list__item" *ngFor="let activity of recentActivityFeed; trackBy: trackByActivityId">
             <div class="activity-list__main">
               <strong>{{ activity.actorName }}</strong>
-              <span>{{ activity.action }}</span>
+              <span>{{ formatActivityAction(activity.action, activity.route) }}</span>
             </div>
             <div class="activity-list__meta">
               <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
-              <span class="status-pill">{{ activity.statusCode }}</span>
+              <span class="status-pill">{{ shortStatusLabel(activity.statusCode) }}</span>
             </div>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Recent Actions</h2>
+            <p>Latest actions from the current recruiter scope.</p>
+          </div>
+        </div>
+        <div class="activity-list" *ngIf="focusRecruiterMetric?.recentActivity?.length; else noRecentActions">
+          <article class="activity-list__item" *ngFor="let activity of focusRecruiterMetric?.recentActivity || []; trackBy: trackByActivityId">
+            <div class="activity-list__main">
+              <strong>{{ activity.actorName }}</strong>
+              <span>{{ formatActivityAction(activity.action, activity.route) }}</span>
+            </div>
+            <div class="activity-list__meta">
+              <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+              <span class="status-pill">{{ shortStatusLabel(activity.statusCode) }}</span>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          <div>
+            <h2>Recruiter Spotlight</h2>
+            <p>Current recruiter filter focus with direct drill-in.</p>
+          </div>
+        </div>
+        <div class="focus-card" *ngIf="focusRecruiterMetric as recruiter; else noRecruiterData">
+          <div class="focus-card__header">
+            <div>
+              <h3>{{ recruiter.name }}</h3>
+              <span class="badge" [class.badge--green]="recruiter.isActive" [class.badge--red]="!recruiter.isActive">
+                {{ recruiter.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openRecruiterDetail(recruiter)">View Details</button>
+          </div>
+
+          <div class="mini-stats">
+            <div class="mini-stats__item">
+              <span>Jobs</span>
+              <strong>{{ recruiter.totalJobs }}</strong>
+            </div>
+            <div class="mini-stats__item">
+              <span>Matches</span>
+              <strong>{{ recruiter.matchesGenerated }}</strong>
+            </div>
+            <div class="mini-stats__item">
+              <span>AI Calls</span>
+              <strong>{{ recruiter.totalAnalyses }}</strong>
+            </div>
+            <div class="mini-stats__item">
+              <span>Activity Score</span>
+              <strong>{{ recruiter.activityScore }}</strong>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -471,9 +562,17 @@
     </div>
   </ng-template>
 
+  <ng-template #noRecentActions>
+    <div class="empty-state">
+      <p>No recent recruiter actions were found for the current filters.</p>
+    </div>
+  </ng-template>
+
   <div class="drawer-backdrop" *ngIf="detailView" (click)="closeDetail()"></div>
   <aside class="drawer" *ngIf="detailView" (click)="$event.stopPropagation()">
-    <button type="button" class="drawer__close" (click)="closeDetail()">Close</button>
+    <button type="button" class="drawer__close" (click)="closeDetail()" aria-label="Close details drawer">
+      <span>&times;</span>
+    </button>
 
     <ng-container *ngIf="detailView === 'team' && selectedTeam as team">
       <div class="drawer__header">
@@ -515,7 +614,7 @@
         <div class="drawer-list" *ngIf="team.recentActions?.length; else emptyDrawerBlock">
           <div class="drawer-list__item" *ngFor="let action of team.recentActions">
             <strong>{{ action.actorName }}</strong>
-            <span>{{ action.action }} - {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
+            <span>{{ formatActivityAction(action.action, action.route) }} - {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
           </div>
         </div>
       </section>
@@ -559,7 +658,7 @@
         <h3>Recent Activity</h3>
         <div class="drawer-list" *ngIf="metric.recentActivity?.length; else emptyDrawerBlock">
           <div class="drawer-list__item" *ngFor="let activity of metric.recentActivity">
-            <strong>{{ activity.action }}</strong>
+            <strong>{{ formatActivityAction(activity.action, activity.route) }}</strong>
             <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
           </div>
         </div>
