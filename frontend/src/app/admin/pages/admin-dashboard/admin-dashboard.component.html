@@ -222,7 +222,7 @@
             <div class="bar-list__head">
               <div>
                 <strong>{{ team.name }}</strong>
-                <span>{{ team.recruiterCount }} recruiters • {{ team.totalJobs }} jobs</span>
+                <span>{{ team.recruiterCount }} recruiters - {{ team.totalJobs }} jobs</span>
               </div>
               <button type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(team)">Details</button>
             </div>
@@ -268,7 +268,7 @@
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
-              <span>{{ team.totalJobs }} jobs • {{ team.candidatesAnalyzed || 0 }} candidates</span>
+              <span>{{ team.totalJobs }} jobs - {{ team.candidatesAnalyzed || 0 }} candidates</span>
             </div>
             <span class="leader-list__score">{{ team.performanceScore || team.engagementScore }}</span>
           </button>
@@ -287,7 +287,7 @@
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
-              <span>{{ team.recentJobs }} recent jobs • {{ team.aiUsage || 0 }} AI usage</span>
+              <span>{{ team.recentJobs }} recent jobs - {{ team.aiUsage || 0 }} AI usage</span>
             </div>
             <span class="leader-list__score">{{ team.engagementScore }}</span>
           </button>
@@ -505,7 +505,7 @@
         <div class="drawer-list" *ngIf="team.recentJobsList?.length; else emptyDrawerBlock">
           <div class="drawer-list__item" *ngFor="let job of team.recentJobsList">
             <strong>{{ job.title }}</strong>
-            <span>{{ job.status | titlecase }} • {{ job.stack }} • {{ job.createdAt | date:'MMM d' }}</span>
+            <span>{{ job.status | titlecase }} - {{ job.stack }} - {{ job.createdAt | date:'MMM d' }}</span>
           </div>
         </div>
       </section>
@@ -515,7 +515,7 @@
         <div class="drawer-list" *ngIf="team.recentActions?.length; else emptyDrawerBlock">
           <div class="drawer-list__item" *ngFor="let action of team.recentActions">
             <strong>{{ action.actorName }}</strong>
-            <span>{{ action.action }} • {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
+            <span>{{ action.action }} - {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
           </div>
         </div>
       </section>
@@ -550,7 +550,7 @@
         <div class="drawer-list" *ngIf="metric.recentJobsList?.length; else emptyDrawerBlock">
           <div class="drawer-list__item" *ngFor="let job of metric.recentJobsList">
             <strong>{{ job.title }}</strong>
-            <span>{{ job.status | titlecase }} • {{ job.stack }} • {{ job.createdAt | date:'MMM d' }}</span>
+            <span>{{ job.status | titlecase }} - {{ job.stack }} - {{ job.createdAt | date:'MMM d' }}</span>
           </div>
         </div>
       </section>
