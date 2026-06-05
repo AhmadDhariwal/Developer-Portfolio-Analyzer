@@ -6,6 +6,10 @@ const Invitation = require('../../models/invitation');
 const Organization = require('../../models/organization');
 const Team = require('../../models/team');
 const Membership = require('../../models/membership');
+const Job = require('../../models/Job');
+const RecruiterMatch = require('../../models/RecruiterMatch');
+const RecruiterShortlist = require('../../models/RecruiterShortlist');
+const AuditLog = require('../../models/auditLog');
 const { sendRecruiterInvitationEmail } = require('../../services/emailService');
 const {
   getOrganizationSettingsSync,
@@ -19,6 +23,20 @@ const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeLinkedIn = (value) => String(value || '').trim();
 const sanitizeText = (value) => String(value || '').trim();
+const average = (values = []) => {
+  const numeric = values.map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
+  if (!numeric.length) return 0;
+  return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
+};
+
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value || 0)));
+const formatAction = (value) => String(value || '')
+  .trim()
+  .replace(/^RECRUITER_/, '')
+  .split('_')
+  .filter(Boolean)
+  .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+  .join(' ');
 const buildRecruiterProfileCompleted = (user = {}) => {
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
@@ -32,7 +50,7 @@ const buildRecruiterProfileCompleted = (user = {}) => {
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo && hasBackground;
 };
 
-const sanitizeRecruiter = (user, teams = [], organization = null) => ({
+const sanitizeRecruiter = (user, teams = [], organization = null, metrics = {}) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
@@ -58,7 +76,22 @@ const sanitizeRecruiter = (user, teams = [], organization = null) => ({
   isActive: user.isActive !== false,
   profileCompleted: buildRecruiterProfileCompleted(user),
   teams,
-  createdAt: user.createdAt
+  createdAt: user.createdAt,
+  metrics: {
+    profileCompletion: Number(metrics.profileCompletion || 0),
+    jobsCreated: Number(metrics.jobsCreated || 0),
+    activeJobs: Number(metrics.activeJobs || 0),
+    matchesGenerated: Number(metrics.matchesGenerated || 0),
+    candidatesAnalyzed: Number(metrics.candidatesAnalyzed || 0),
+    aiUsageCount: Number(metrics.aiUsageCount || 0),
+    shortlists: Number(metrics.shortlists || 0),
+    activityScore: Number(metrics.activityScore || 0),
+    recruiterScore: Number(metrics.recruiterScore || 0),
+    hiringEffectiveness: Number(metrics.hiringEffectiveness || 0),
+    teamContribution: Number(metrics.teamContribution || 0),
+    lastActive: metrics.lastActive || null,
+    recentActivity: Array.isArray(metrics.recentActivity) ? metrics.recentActivity : []
+  }
 });
 
 const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
@@ -80,7 +113,8 @@ const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
     const team = membership.teamId ? {
       _id: membership.teamId._id,
       name: membership.teamId.name,
-      isActive: membership.teamId.isActive !== false
+      isActive: membership.teamId.isActive !== false,
+      role: membership.role || 'member'
     } : null;
     if (!userId || !team) {
       return map;
@@ -92,6 +126,141 @@ const loadRecruiterTeams = async (organizationId, recruiterIds = []) => {
       current.push(team);
       map.set(userId, current);
     }
+    return map;
+  }, new Map());
+};
+
+const buildRecruiterMetricsMap = async (organizationId, recruiters = [], teamMap = new Map()) => {
+  const recruiterIds = recruiters.map((recruiter) => recruiter._id);
+  if (!organizationId || recruiterIds.length === 0) {
+    return new Map();
+  }
+
+  const [jobs, matches, shortlists, logs] = await Promise.all([
+    Job.find({ organizationId, recruiterId: { $in: recruiterIds } })
+      .select('_id recruiterId status createdAt updatedAt')
+      .lean(),
+    RecruiterMatch.find({ organizationId, recruiterId: { $in: recruiterIds } })
+      .select('_id recruiterId status matchScore confidenceScore createdAt updatedAt')
+      .lean(),
+    RecruiterShortlist.find({ organizationId, recruiterId: { $in: recruiterIds } })
+      .select('_id recruiterId status createdAt updatedAt')
+      .lean(),
+    AuditLog.find({ organizationId, actor: { $in: recruiterIds } })
+      .select('_id actor action method route statusCode timestamp')
+      .sort({ timestamp: -1 })
+      .limit(Math.max(recruiterIds.length * 30, 120))
+      .lean()
+  ]);
+
+  const jobsByRecruiter = new Map();
+  const matchesByRecruiter = new Map();
+  const shortlistsByRecruiter = new Map();
+  const logsByRecruiter = new Map();
+
+  jobs.forEach((job) => {
+    const key = String(job.recruiterId || '');
+    if (!key) return;
+    const current = jobsByRecruiter.get(key) || [];
+    current.push(job);
+    jobsByRecruiter.set(key, current);
+  });
+
+  matches.forEach((match) => {
+    const key = String(match.recruiterId || '');
+    if (!key) return;
+    const current = matchesByRecruiter.get(key) || [];
+    current.push(match);
+    matchesByRecruiter.set(key, current);
+  });
+
+  shortlists.forEach((entry) => {
+    const key = String(entry.recruiterId || '');
+    if (!key) return;
+    const current = shortlistsByRecruiter.get(key) || [];
+    current.push(entry);
+    shortlistsByRecruiter.set(key, current);
+  });
+
+  logs.forEach((log) => {
+    const key = String(log.actor || '');
+    if (!key) return;
+    const current = logsByRecruiter.get(key) || [];
+    current.push(log);
+    logsByRecruiter.set(key, current);
+  });
+
+  const maxJobs = Math.max(1, ...[...jobsByRecruiter.values()].map((items) => items.length));
+  const maxMatches = Math.max(1, ...[...matchesByRecruiter.values()].map((items) => items.length));
+  const maxAiUsage = Math.max(1, ...[...logsByRecruiter.values()].map((items) => items.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length));
+
+  return recruiters.reduce((map, recruiter) => {
+    const recruiterId = String(recruiter._id || '');
+    const recruiterJobs = jobsByRecruiter.get(recruiterId) || [];
+    const recruiterMatches = matchesByRecruiter.get(recruiterId) || [];
+    const recruiterShortlists = shortlistsByRecruiter.get(recruiterId) || [];
+    const recruiterLogs = logsByRecruiter.get(recruiterId) || [];
+    const viewedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
+    const analyzedCount = recruiterLogs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
+    const aiUsageCount = recruiterLogs.filter((log) => /ANALYZED|MATCH/.test(String(log.action || ''))).length;
+    const activeJobs = recruiterJobs.filter((job) => String(job.status || '') === 'open').length;
+    const shortlistedCount = recruiterShortlists.length;
+    const shortlistedMatches = recruiterMatches.filter((match) => String(match.status || '') === 'shortlisted').length;
+    const activityScore = clamp(viewedCount * 2 + analyzedCount * 5 + recruiterJobs.length * 6 + recruiterMatches.length * 3 + shortlistedCount * 4);
+    const hiringEffectiveness = recruiterMatches.length
+      ? clamp(Math.round((shortlistedMatches / recruiterMatches.length) * 100))
+      : 0;
+    const recruiterScore = clamp(Math.round(average([
+      activityScore,
+      hiringEffectiveness,
+      (recruiterJobs.length / maxJobs) * 100,
+      (recruiterMatches.length / maxMatches) * 100,
+      (aiUsageCount / maxAiUsage) * 100
+    ])));
+    const teamContribution = clamp(Math.round(average([
+      recruiterJobs.length / maxJobs * 100,
+      recruiterMatches.length / maxMatches * 100,
+      activityScore
+    ])));
+    const profileCompletion = buildRecruiterProfileCompleted(recruiter) ? 100 : clamp(
+      [
+        Boolean(String(recruiter.name || '').trim()),
+        Boolean(normalizePhone(recruiter.phoneNumber)),
+        Boolean(String(recruiter.githubUsername || '').trim() || normalizeLinkedIn(recruiter.linkedin)),
+        Boolean(String(recruiter.jobTitle || '').trim() || String(recruiter.bio || '').trim()),
+        Boolean(
+          sanitizeText(recruiter.recruiterDetails?.education) ||
+          Number(recruiter.recruiterDetails?.yearsOfExperience || 0) > 0 ||
+          (Array.isArray(recruiter.recruiterDetails?.certifications) && recruiter.recruiterDetails.certifications.length > 0)
+        )
+      ].filter(Boolean).length * 20
+    );
+
+    map.set(recruiterId, {
+      profileCompletion,
+      jobsCreated: recruiterJobs.length,
+      activeJobs,
+      matchesGenerated: recruiterMatches.length,
+      candidatesAnalyzed: analyzedCount,
+      aiUsageCount,
+      shortlists: shortlistedCount,
+      activityScore,
+      recruiterScore,
+      hiringEffectiveness,
+      teamContribution,
+      lastActive: recruiterLogs[0]?.timestamp || recruiter.updatedAt || recruiter.createdAt || null,
+      recentActivity: recruiterLogs.slice(0, 8).map((log) => ({
+        _id: log._id,
+        action: log.action,
+        actionLabel: formatAction(log.action),
+        method: log.method,
+        route: log.route,
+        statusCode: log.statusCode,
+        timestamp: log.timestamp
+      })),
+      teamCount: (teamMap.get(recruiterId) || []).length
+    });
+
     return map;
   }, new Map());
 };
@@ -110,6 +279,7 @@ const getRecruiters = async (req, res) => {
     ]);
 
     const teamMap = await loadRecruiterTeams(req.organizationId, recruiters.map((recruiter) => recruiter._id));
+    const metricsMap = await buildRecruiterMetricsMap(req.organizationId, recruiters, teamMap);
     const organizationPayload = organization?._id
       ? { _id: organization._id, name: organization.name || '' }
       : null;
@@ -119,7 +289,8 @@ const getRecruiters = async (req, res) => {
         sanitizeRecruiter(
           recruiter,
           teamMap.get(String(recruiter._id)) || [],
-          organizationPayload
+          organizationPayload,
+          metricsMap.get(String(recruiter._id)) || {}
         )
       )
     });
@@ -539,7 +710,9 @@ const getPendingInvitations = async (req, res) => {
       role: 'recruiter',
       status: 'pending'
     })
-      .select('_id name email role status expiresAt createdAt invitedBy')
+      .select('_id name email role status expiresAt createdAt invitedBy teamId')
+      .populate('invitedBy', 'name email')
+      .populate('teamId', 'name')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -547,6 +720,45 @@ const getPendingInvitations = async (req, res) => {
   } catch (error) {
     console.error('Admin pending invitations error:', error.message);
     return res.status(500).json({ message: 'Failed to load pending invitations.' });
+  }
+};
+
+const resendInvitation = async (req, res) => {
+  try {
+    const invitation = await Invitation.findOne({
+      _id: req.params.id,
+      organizationId: req.organizationId,
+      role: 'recruiter',
+      status: 'pending'
+    }).lean();
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Pending invitation not found.' });
+    }
+
+    const organization = await Organization.findById(req.organizationId).select('name').lean();
+    const frontendBase = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
+    const invitationLink = `${frontendBase}/invitations/accept/${invitation.token}`;
+    const emailResult = await sendRecruiterInvitationEmail({
+      to: invitation.email,
+      inviteeName: invitation.name,
+      organizationName: organization?.name || 'DevInsight Organization',
+      invitationLink
+    });
+
+    return res.status(200).json({
+      message: emailResult.sent
+        ? 'Invitation resent successfully.'
+        : 'Invitation resend attempted but email was not sent automatically.',
+      invitationLink,
+      email: {
+        sent: emailResult.sent,
+        reason: emailResult.reason || null
+      }
+    });
+  } catch (error) {
+    console.error('Admin resend invitation error:', error.message);
+    return res.status(500).json({ message: 'Failed to resend invitation.' });
   }
 };
 
@@ -626,6 +838,7 @@ module.exports = {
   revokeRecruiterAccess,
   deleteRecruiter,
   getPendingInvitations,
+  resendInvitation,
   revokeInvitation,
   expireInvitation,
   deleteInvitation

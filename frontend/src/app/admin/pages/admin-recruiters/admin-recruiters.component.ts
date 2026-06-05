@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { AdminHiringService, AdminRecruiter, AdminTeamOption, PendingInvitation } from '../../services/admin-hiring.service';
+import { AdminConsoleService } from '../admin-console/admin-console.service';
 import { SharedLoaderComponent } from '../../../shared/components/loader/loader.component';
 import { SharedMessageComponent } from '../../../shared/components/message/message.component';
 import { SharedEmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
@@ -29,6 +32,10 @@ export class AdminRecruitersPageComponent implements OnInit {
   searchTerm = '';
   teamFilter = '';
   statusFilter: 'all' | 'active' | 'inactive' | 'profile-complete' | 'profile-pending' = 'all';
+  sortOption: 'name-asc' | 'newest' | 'last-active' | 'activity' | 'jobs' | 'matches' = 'activity';
+  selectedRecruiterId = '';
+  detailTeamId = '';
+  savingTeamAssignment = false;
 
   visibleRecruiters: AdminRecruiter[] = [];
   visibleInvitations: PendingInvitation[] = [];
@@ -36,6 +43,8 @@ export class AdminRecruitersPageComponent implements OnInit {
   activeCount = 0;
   inactiveCount = 0;
   profilePendingCount = 0;
+  totalAiAnalyses = 0;
+  totalMatchesGenerated = 0;
 
   // ── Confirm dialog state ────────────────────────────────────────────────
   confirmOpen = false;
@@ -66,6 +75,7 @@ export class AdminRecruitersPageComponent implements OnInit {
 
   constructor(
     private readonly adminService: AdminHiringService,
+    private readonly consoleService: AdminConsoleService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -168,6 +178,12 @@ export class AdminRecruitersPageComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  onSortOptionChange(value: 'name-asc' | 'newest' | 'last-active' | 'activity' | 'jobs' | 'matches'): void {
+    this.sortOption = value;
+    this.recomputeViews();
+    this.cdr.markForCheck();
+  }
+
   private recomputeViews(): void {
     const term = this.searchTerm.trim().toLowerCase();
 
@@ -197,6 +213,24 @@ export class AdminRecruitersPageComponent implements OnInit {
       return matchesSearch && matchesTeam && matchesStatus;
     });
 
+    this.visibleRecruiters = [...this.visibleRecruiters].sort((left, right) => {
+      switch (this.sortOption) {
+        case 'name-asc':
+          return left.name.localeCompare(right.name);
+        case 'newest':
+          return new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+        case 'last-active':
+          return new Date(right.metrics?.lastActive || 0).getTime() - new Date(left.metrics?.lastActive || 0).getTime();
+        case 'jobs':
+          return Number(right.metrics?.jobsCreated || 0) - Number(left.metrics?.jobsCreated || 0);
+        case 'matches':
+          return Number(right.metrics?.matchesGenerated || 0) - Number(left.metrics?.matchesGenerated || 0);
+        case 'activity':
+        default:
+          return Number(right.metrics?.activityScore || 0) - Number(left.metrics?.activityScore || 0);
+      }
+    });
+
     this.visibleInvitations = this.pendingInvitations.filter((inv) => {
       if (!term) return true;
       return [inv.name, inv.email, inv.role, inv.status].some((value) => String(value || '').toLowerCase().includes(term));
@@ -216,6 +250,7 @@ export class AdminRecruitersPageComponent implements OnInit {
     this.searchTerm = '';
     this.teamFilter = '';
     this.statusFilter = 'all';
+    this.sortOption = 'activity';
     this.recomputeViews();
     this.cdr.markForCheck();
   }
@@ -226,6 +261,45 @@ export class AdminRecruitersPageComponent implements OnInit {
 
   teamLabel(recruiter: AdminRecruiter): string {
     return (recruiter.teams || []).map((team) => team.name).join(', ') || 'Organization only';
+  }
+
+  openRecruiterDetails(recruiter: AdminRecruiter): void {
+    this.selectedRecruiterId = recruiter._id;
+    this.detailTeamId = recruiter.teams?.[0]?._id || '';
+    this.cdr.markForCheck();
+  }
+
+  closeRecruiterDetails(): void {
+    this.selectedRecruiterId = '';
+    this.detailTeamId = '';
+    this.savingTeamAssignment = false;
+    this.cdr.markForCheck();
+  }
+
+  get selectedRecruiter(): AdminRecruiter | null {
+    return this.recruiters.find((recruiter) => recruiter._id === this.selectedRecruiterId) || null;
+  }
+
+  recruiterInitial(recruiter: AdminRecruiter | null): string {
+    return recruiter?.name?.charAt(0)?.toUpperCase() || '?';
+  }
+
+  recruiterMetric(recruiter: AdminRecruiter | null, key: keyof NonNullable<AdminRecruiter['metrics']>): number {
+    return Number(recruiter?.metrics?.[key] || 0);
+  }
+
+  recruiterLastActive(recruiter: AdminRecruiter | null): string | null {
+    return recruiter?.metrics?.lastActive || null;
+  }
+
+  formatTeamRole(role?: string): string {
+    if (!role) return 'Member';
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  }
+
+  currentDetailTeamLabel(): string {
+    const team = this.teams.find((item) => item._id === this.detailTeamId);
+    return team?.name || 'Organization only';
   }
 
   inviteRecruiter(): void {
@@ -426,6 +500,26 @@ export class AdminRecruitersPageComponent implements OnInit {
     });
   }
 
+  resendInvitation(inv: PendingInvitation): void {
+    this.loading = true;
+    this.adminService.resendInvitation(inv._id).subscribe({
+      next: (result) => {
+        this.messageType = 'success';
+        this.message = result.emailSent
+          ? `Invitation resent to ${inv.email}.`
+          : `Invitation link is ready to share manually: ${result.invitationLink}`;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.messageType = 'error';
+        this.message = String(err?.error?.message || 'Failed to resend invitation.');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   expireInvitation(inv: PendingInvitation): void {
     this.loading = true;
     this.adminService.expireInvitation(inv._id).subscribe({
@@ -484,6 +578,49 @@ export class AdminRecruitersPageComponent implements OnInit {
     this.activeCount = active;
     this.inactiveCount = inactive;
     this.profilePendingCount = profilePending;
+    this.totalAiAnalyses = this.recruiters.reduce((sum, recruiter) => sum + Number(recruiter.metrics?.aiUsageCount || 0), 0);
+    this.totalMatchesGenerated = this.recruiters.reduce((sum, recruiter) => sum + Number(recruiter.metrics?.matchesGenerated || 0), 0);
+  }
+
+  saveRecruiterTeamAssignment(): void {
+    const recruiter = this.selectedRecruiter;
+    if (!recruiter) {
+      return;
+    }
+
+    const existingTeamIds = (recruiter.teams || []).map((team) => team._id);
+    const nextTeamId = this.detailTeamId;
+    const removeCalls = existingTeamIds
+      .filter((teamId) => teamId !== nextTeamId)
+      .map((teamId) => this.consoleService.removeRecruiterFromTeam(teamId, recruiter._id));
+
+    this.savingTeamAssignment = true;
+
+    forkJoin(removeCalls.length ? removeCalls : [of(null)])
+      .pipe(
+        switchMap(() => {
+          if (!nextTeamId || existingTeamIds.includes(nextTeamId)) {
+            return of(null);
+          }
+          return this.consoleService.assignRecruiterToTeam(nextTeamId, recruiter._id);
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.messageType = 'success';
+          this.message = nextTeamId
+            ? `Recruiter assigned to ${this.currentDetailTeamLabel()}.`
+            : 'Recruiter moved to organization-only scope.';
+          this.savingTeamAssignment = false;
+          this.loadAll();
+        },
+        error: (err) => {
+          this.messageType = 'error';
+          this.message = String(err?.error?.message || 'Failed to update recruiter team assignment.');
+          this.savingTeamAssignment = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   // ── Confirm dialog helpers ──────────────────────────────────────────────

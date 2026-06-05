@@ -13,6 +13,7 @@ const {
 	revokeRecruiterAccess,
 	deleteRecruiter,
 	getPendingInvitations,
+	resendInvitation,
 	revokeInvitation,
 	expireInvitation,
 	deleteInvitation
@@ -31,6 +32,7 @@ router.patch('/recruiters/:id/active', setRecruiterActive);
 router.patch('/recruiters/:id/revoke', revokeRecruiterAccess);
 router.delete('/recruiters/:id', deleteRecruiter);
 router.get('/invitations/pending', getPendingInvitations);
+router.post('/invitations/:id/resend', resendInvitation);
 router.patch('/invitations/:id/revoke', revokeInvitation);
 router.patch('/invitations/:id/expire', expireInvitation);
 router.delete('/invitations/:id', deleteInvitation);

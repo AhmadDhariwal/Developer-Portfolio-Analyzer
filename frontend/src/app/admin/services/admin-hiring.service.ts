@@ -48,8 +48,31 @@ export interface AdminRecruiter {
   };
   isActive: boolean;
   profileCompleted: boolean;
-  teams: Array<{ _id: string; name: string; isActive?: boolean }>;
+  teams: Array<{ _id: string; name: string; isActive?: boolean; role?: string }>;
   createdAt: string;
+  metrics?: {
+    profileCompletion: number;
+    jobsCreated: number;
+    activeJobs: number;
+    matchesGenerated: number;
+    candidatesAnalyzed: number;
+    aiUsageCount: number;
+    shortlists: number;
+    activityScore: number;
+    recruiterScore: number;
+    hiringEffectiveness: number;
+    teamContribution: number;
+    lastActive: string | null;
+    recentActivity: Array<{
+      _id: string;
+      action: string;
+      actionLabel: string;
+      method: string;
+      route: string;
+      statusCode: number;
+      timestamp: string;
+    }>;
+  };
 }
 
 export interface PendingInvitation {
@@ -60,6 +83,8 @@ export interface PendingInvitation {
   status: string;
   expiresAt: string;
   createdAt: string;
+  invitedBy?: { _id?: string; name?: string; email?: string } | null;
+  teamId?: { _id?: string; name?: string } | null;
 }
 
 export interface AdminTeamOption {
@@ -223,6 +248,15 @@ export class AdminHiringService {
 
   revokeInvitation(id: string): Observable<void> {
     return this.api.revokeAdminInvitation(id).pipe(map(() => void 0));
+  }
+
+  resendInvitation(id: string): Observable<{ invitationLink: string; emailSent: boolean }> {
+    return this.api.resendAdminInvitation(id).pipe(
+      map((res: { invitationLink?: string; email?: { sent?: boolean } }) => ({
+        invitationLink: String(res?.invitationLink || ''),
+        emailSent: Boolean(res?.email?.sent)
+      }))
+    );
   }
 
   expireInvitation(id: string): Observable<void> {

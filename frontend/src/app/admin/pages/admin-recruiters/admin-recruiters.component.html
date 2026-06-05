@@ -19,6 +19,39 @@
 
   <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
 
+  <section class="summary-grid" *ngIf="!loading">
+    <article class="summary-card">
+      <span class="summary-card__label">Total Recruiters</span>
+      <strong class="summary-card__value">{{ recruiters.length }}</strong>
+      <span class="summary-card__hint">Organization-scoped recruiter accounts</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Active Recruiters</span>
+      <strong class="summary-card__value">{{ activeCount }}</strong>
+      <span class="summary-card__hint">{{ inactiveCount }} inactive</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Pending Invitations</span>
+      <strong class="summary-card__value">{{ pendingInvitations.length }}</strong>
+      <span class="summary-card__hint">Invite flow still open</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Total AI Analyses</span>
+      <strong class="summary-card__value">{{ totalAiAnalyses }}</strong>
+      <span class="summary-card__hint">Recruiter AI actions</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Matches Generated</span>
+      <strong class="summary-card__value">{{ totalMatchesGenerated }}</strong>
+      <span class="summary-card__hint">Across all recruiters</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Profile Pending</span>
+      <strong class="summary-card__value">{{ profilePendingCount }}</strong>
+      <span class="summary-card__hint">Recruiters needing profile cleanup</span>
+    </article>
+  </section>
+
   <div class="console-grid">
     <article class="console-card console-card--invite">
       <div class="console-card__header">
@@ -96,7 +129,7 @@
       <div class="console-card__actions">
         <button type="button" class="btn-primary btn-primary--success" (click)="addRecruiterDirect()" [disabled]="directLoading || loading">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          {{ directLoading ? 'Adding…' : 'Add Recruiter' }}
+          {{ directLoading ? 'Adding...' : 'Add Recruiter' }}
         </button>
       </div>
     </article>
@@ -133,6 +166,17 @@
           <option value="profile-pending">Profile pending</option>
         </select>
       </div>
+      <div class="form-field">
+        <label for="sort-filter">Sort</label>
+        <select id="sort-filter" [(ngModel)]="sortOption" (ngModelChange)="onSortOptionChange($event)">
+          <option value="activity">Highest activity</option>
+          <option value="matches">Most matches</option>
+          <option value="jobs">Most jobs</option>
+          <option value="last-active">Recently active</option>
+          <option value="newest">Recently created</option>
+          <option value="name-asc">Name A-Z</option>
+        </select>
+      </div>
     </div>
   </section>
 
@@ -162,11 +206,18 @@
           <span class="badge badge--amber">Pending</span>
           <span class="badge badge--red" *ngIf="invitationExpired[inv._id]">Expired</span>
         </div>
+        <div class="invitation-card__details">
+          <span><strong>Invited:</strong> {{ inv.createdAt | date: 'MMM d, y' }}</span>
+          <span><strong>Expires:</strong> <span [class.text-red]="invitationExpired[inv._id]">{{ inv.expiresAt | date: 'MMM d, y' }}</span></span>
+          <span *ngIf="inv.invitedBy?.name"><strong>By:</strong> {{ inv.invitedBy?.name }}</span>
+          <span *ngIf="inv.teamId?.name"><strong>Team:</strong> {{ inv.teamId?.name }}</span>
+        </div>
         <div class="invitation-card__foot">
-          <span>{{ inv.createdAt | date: 'MMM d, y' }}</span>
-          <span [class.text-red]="invitationExpired[inv._id]">{{ inv.expiresAt | date: 'MMM d, y' }}</span>
+          <span>{{ inv.role | titlecase }}</span>
+          <span>{{ invitationExpired[inv._id] ? 'Needs resend' : 'Awaiting acceptance' }}</span>
         </div>
         <div class="action-group">
+          <button type="button" class="btn-action btn-action--icon" (click)="resendInvitation(inv)">Resend</button>
           <button type="button" class="btn-action btn-action--ghost" (click)="revokeInvitation(inv)">Revoke</button>
           <button type="button" class="btn-action btn-action--ghost" (click)="expireInvitation(inv)">Expire</button>
           <button type="button" class="btn-action btn-action--danger" (click)="deleteInvitation(inv)">Delete</button>
@@ -229,22 +280,49 @@
           <div class="recruiter-card__section">
             <div class="section-label">Teams</div>
             <div class="chip-row" *ngIf="(recruiter.teams.length || 0) > 0; else orgOnly">
-              <span class="chip" *ngFor="let team of recruiter.teams || []">{{ team.name }}</span>
+              <span class="chip" *ngFor="let team of recruiter.teams || []">
+                {{ team.name }}
+                <small>{{ formatTeamRole(team.role) }}</small>
+              </span>
             </div>
             <ng-template #orgOnly>
               <span class="chip chip--muted">Organization only</span>
             </ng-template>
           </div>
 
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <span>Jobs</span>
+              <strong>{{ recruiter.metrics?.jobsCreated || 0 }}</strong>
+            </div>
+            <div class="metric-tile">
+              <span>Matches</span>
+              <strong>{{ recruiter.metrics?.matchesGenerated || 0 }}</strong>
+            </div>
+            <div class="metric-tile">
+              <span>AI Usage</span>
+              <strong>{{ recruiter.metrics?.aiUsageCount || 0 }}</strong>
+            </div>
+            <div class="metric-tile">
+              <span>Activity</span>
+              <strong>{{ recruiter.metrics?.activityScore || 0 }}</strong>
+            </div>
+          </div>
+
           <div class="recruiter-card__section recruiter-contact">
             <span *ngIf="recruiter.githubUsername" class="contact-item"><strong>GitHub:</strong> @{{ recruiter.githubUsername }}</span>
+            <span *ngIf="recruiter.linkedin" class="contact-item"><strong>LinkedIn:</strong> {{ recruiter.linkedin }}</span>
             <span *ngIf="recruiter.phoneNumber" class="contact-item"><strong>Phone:</strong> {{ recruiter.phoneNumber }}</span>
             <span *ngIf="!recruiter.githubUsername && !recruiter.phoneNumber" class="contact-item contact-item--muted">No contact info</span>
           </div>
 
           <div class="recruiter-card__footer">
-            <div class="table-meta">Joined {{ recruiter.createdAt | date: 'MMM d, y' }}</div>
+            <div class="table-meta">
+              Joined {{ recruiter.createdAt | date: 'MMM d, y' }}
+              <span *ngIf="recruiter.metrics?.lastActive"> • Active {{ recruiter.metrics?.lastActive | date: 'MMM d, y, h:mm a' }}</span>
+            </div>
             <div class="action-group action-group--wrap">
+              <button type="button" class="btn-action btn-action--icon" (click)="openRecruiterDetails(recruiter)">View Details</button>
               <button type="button" class="btn-action btn-action--icon" title="Edit recruiter" (click)="startEdit(recruiter)">Edit</button>
               <button type="button" class="btn-action" [class.btn-action--amber]="recruiter.isActive" [class.btn-action--green]="!recruiter.isActive" (click)="toggleActive(recruiter)">{{ recruiter.isActive ? 'Deactivate' : 'Activate' }}</button>
               <button type="button" class="btn-action btn-action--ghost" (click)="revokeAccess(recruiter)">Revoke</button>
@@ -302,4 +380,103 @@
     (confirmed)="onConfirmed()"
     (cancelled)="onCancelled()"
   ></app-confirm-dialog>
+
+  <div class="drawer-backdrop" *ngIf="selectedRecruiter" (click)="closeRecruiterDetails()"></div>
+
+  <aside class="detail-drawer" *ngIf="selectedRecruiter as recruiter">
+    <div class="detail-drawer__header">
+      <div class="detail-drawer__identity">
+        <div class="recruiter-avatar" [class.recruiter-avatar--inactive]="!recruiter.isActive">{{ recruiterInitial(recruiter) }}</div>
+        <div>
+          <h3>{{ recruiter.name }}</h3>
+          <p>{{ recruiter.email }}</p>
+        </div>
+      </div>
+      <button type="button" class="drawer-close" (click)="closeRecruiterDetails()" aria-label="Close recruiter details">&times;</button>
+    </div>
+
+    <div class="detail-drawer__body">
+      <section class="drawer-section">
+        <div class="drawer-section__title">Profile</div>
+        <div class="detail-grid">
+          <div><span class="detail-label">Phone</span><strong>{{ recruiter.phoneNumber || 'Not set' }}</strong></div>
+          <div><span class="detail-label">GitHub</span><strong>{{ recruiter.githubUsername ? '@' + recruiter.githubUsername : 'Not set' }}</strong></div>
+          <div><span class="detail-label">LinkedIn</span><strong>{{ recruiter.linkedin || 'Not set' }}</strong></div>
+          <div><span class="detail-label">Profile Completion</span><strong>{{ recruiter.metrics?.profileCompletion || 0 }}%</strong></div>
+          <div><span class="detail-label">Created</span><strong>{{ recruiter.createdAt | date: 'MMM d, y' }}</strong></div>
+          <div><span class="detail-label">Last Active</span><strong>{{ recruiter.metrics?.lastActive ? (recruiter.metrics?.lastActive | date: 'MMM d, y, h:mm a') : 'No activity yet' }}</strong></div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Team Visibility</div>
+        <div class="chip-row" *ngIf="recruiter.teams.length; else detailOrgOnly">
+          <span class="chip" *ngFor="let team of recruiter.teams">
+            {{ team.name }}
+            <small>{{ formatTeamRole(team.role) }}</small>
+          </span>
+        </div>
+        <ng-template #detailOrgOnly>
+          <span class="chip chip--muted">Organization only</span>
+        </ng-template>
+
+        <div class="team-assignment">
+          <div class="form-field">
+            <label for="detail-team-assignment">Assign / Move Team</label>
+            <select id="detail-team-assignment" [(ngModel)]="detailTeamId">
+              <option value="">Organization only</option>
+              <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+            </select>
+          </div>
+          <button type="button" class="btn-primary btn-sm" [disabled]="savingTeamAssignment" (click)="saveRecruiterTeamAssignment()">
+            {{ savingTeamAssignment ? 'Saving...' : 'Save Team Assignment' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Performance</div>
+        <div class="metric-grid metric-grid--drawer">
+          <div class="metric-tile"><span>Jobs Created</span><strong>{{ recruiter.metrics?.jobsCreated || 0 }}</strong></div>
+          <div class="metric-tile"><span>Active Jobs</span><strong>{{ recruiter.metrics?.activeJobs || 0 }}</strong></div>
+          <div class="metric-tile"><span>Matches</span><strong>{{ recruiter.metrics?.matchesGenerated || 0 }}</strong></div>
+          <div class="metric-tile"><span>Candidates Analyzed</span><strong>{{ recruiter.metrics?.candidatesAnalyzed || 0 }}</strong></div>
+          <div class="metric-tile"><span>AI Analyses</span><strong>{{ recruiter.metrics?.aiUsageCount || 0 }}</strong></div>
+          <div class="metric-tile"><span>Shortlists</span><strong>{{ recruiter.metrics?.shortlists || 0 }}</strong></div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Statistics</div>
+        <div class="detail-grid">
+          <div><span class="detail-label">Recruiter Score</span><strong>{{ recruiter.metrics?.recruiterScore || 0 }}</strong></div>
+          <div><span class="detail-label">Activity Score</span><strong>{{ recruiter.metrics?.activityScore || 0 }}</strong></div>
+          <div><span class="detail-label">Hiring Effectiveness</span><strong>{{ recruiter.metrics?.hiringEffectiveness || 0 }}%</strong></div>
+          <div><span class="detail-label">Team Contribution</span><strong>{{ recruiter.metrics?.teamContribution || 0 }}%</strong></div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Recent Activity</div>
+        <app-shared-empty-state
+          *ngIf="!(recruiter.metrics?.recentActivity?.length)"
+          title="No recent recruiter activity"
+          subtitle="Activity will appear here once this recruiter starts working."
+        ></app-shared-empty-state>
+        <div class="timeline" *ngIf="recruiter.metrics?.recentActivity?.length">
+          <article class="timeline-item" *ngFor="let item of recruiter.metrics?.recentActivity">
+            <div class="timeline-item__row">
+              <strong>{{ item.actionLabel }}</strong>
+              <span>{{ item.timestamp | date: 'MMM d, y, h:mm a' }}</span>
+            </div>
+            <div class="timeline-item__meta">
+              <span>{{ item.method }}</span>
+              <span>{{ item.route }}</span>
+              <span>Status {{ item.statusCode }}</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </aside>
 </section>

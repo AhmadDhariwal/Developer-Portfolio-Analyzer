@@ -602,6 +602,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/invitations/pending`);
   }
 
+  resendAdminInvitation(id: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/resend`, {});
+  }
+
   revokeAdminInvitation(id: string): Observable<any> {
     return this.http.patch(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/revoke`, {});
   }
