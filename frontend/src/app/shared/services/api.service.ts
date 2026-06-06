@@ -618,8 +618,13 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}`);
   }
 
-  getAdminDevelopers(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/admin/developers`);
+  getAdminDevelopers(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/admin/developers?${suffix}` : `${this.baseUrl}/admin/developers`);
   }
 
   getAdminJobs(limit = 200): Observable<any> {

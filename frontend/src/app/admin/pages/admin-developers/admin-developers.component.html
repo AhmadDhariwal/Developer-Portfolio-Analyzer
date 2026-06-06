@@ -3,149 +3,353 @@
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
-        Talent Pool
+        Global Talent Pool
       </div>
       <h1>Public Developer Profiles</h1>
-      <p>Browse developers who have made their profiles publicly visible across all organizations.</p>
+      <p>Browse the shared public developer pool across organizations with production-grade filters, score visibility, and read-only details.</p>
     </div>
+
     <div class="page-header__meta" *ngIf="!loading">
-      <span class="stat-pill stat-pill--green">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        {{ filteredDevelopers.length }} Developer{{ filteredDevelopers.length !== 1 ? 's' : '' }}
-      </span>
+      <span class="stat-pill stat-pill--emerald">{{ total }} Developer{{ total !== 1 ? 's' : '' }}</span>
+      <span class="stat-pill stat-pill--slate">{{ rangeStart }}-{{ rangeEnd }} visible</span>
+      <span class="stat-pill stat-pill--violet">10 per page</span>
     </div>
   </header>
 
   <app-shared-message [visible]="!!message" type="error" [text]="message" (dismiss)="message = ''"></app-shared-message>
 
-  <div class="notice-card">
+  <section class="hero-grid">
+    <article class="summary-card summary-card--accent">
+      <span class="summary-card__label">Talent Pool Scope</span>
+      <strong class="summary-card__value">Public only</strong>
+      <span class="summary-card__hint">Developers appear here only when User is Public or their public profile visibility is enabled.</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Pagination</span>
+      <strong class="summary-card__value">{{ totalPages }}</strong>
+      <span class="summary-card__hint">Page{{ totalPages !== 1 ? 's' : '' }} available with server-side loading.</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-card__label">Sort Mode</span>
+      <strong class="summary-card__value">{{ activeSort.label }}</strong>
+      <span class="summary-card__hint">Ordering is handled by backend queries to keep the page scalable.</span>
+    </article>
+  </section>
+
+  <section class="notice-card">
     <div class="notice-card__icon">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4"/>
+        <path d="M12 16h.01"/>
       </svg>
     </div>
     <div class="notice-card__text">
-      <strong>Public talent pool only.</strong>
-      <span>These developers are globally visible candidates, not members of your organization.</span>
+      <strong>Read-only public talent pool.</strong>
+      <span>These developers are globally visible candidates, not members of your organization. Only safe professional information is shown.</span>
     </div>
-  </div>
+  </section>
 
-  <div class="toolbar">
-    <div class="search-wrap">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input
-        type="text"
-        [(ngModel)]="search"
-        placeholder="Search by name, stack, skill, GitHub, or experience"
-        class="search-input"
-      />
-      <button type="button" class="search-clear" *ngIf="search" (click)="search = ''" title="Clear search">
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  <section class="filters-card">
+    <div class="filters-card__header">
+      <div>
+        <h2>Search and Filter</h2>
+        <p>Every filter runs on the backend and resets pagination to page 1.</p>
+      </div>
+      <button type="button" class="btn-ghost btn-sm" (click)="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div class="filters-grid">
+      <div class="form-field form-field--search">
+        <label for="developer-search">Search</label>
+        <div class="search-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            id="developer-search"
+            type="text"
+            [ngModel]="searchInput"
+            (ngModelChange)="onSearchChange($event)"
+            placeholder="Search name, email, GitHub, stack, skills, or projects"
+          />
+          <button type="button" class="search-clear" *ngIf="searchInput" (click)="clearSearch()" aria-label="Clear search">&times;</button>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="stack-filter">Stack</label>
+        <select id="stack-filter" [ngModel]="stackFilter" (ngModelChange)="onStackChange($event)">
+          <option value="">All stacks</option>
+          <option *ngFor="let stack of stackOptions" [value]="stack">{{ stack }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="experience-filter">Experience</label>
+        <select id="experience-filter" [ngModel]="experienceLevelFilter" (ngModelChange)="onExperienceLevelChange($event)">
+          <option value="">All levels</option>
+          <option *ngFor="let level of experienceOptions" [value]="level">{{ level }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="score-filter">Min score</label>
+        <select id="score-filter" [ngModel]="minScoreFilter" (ngModelChange)="onMinScoreChange($event)">
+          <option value="">Any score</option>
+          <option *ngFor="let score of minScoreOptions" [value]="score">{{ score }}+</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="sort-filter">Sort</label>
+        <select id="sort-filter" [ngModel]="sortValue" (ngModelChange)="onSortChange($event)">
+          <option *ngFor="let option of sortOptions" [value]="option.sortBy + ':' + option.sortOrder">{{ option.label }}</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <app-shared-loader [loading]="loading" label="Loading public developers"></app-shared-loader>
+
+  <section class="results-shell" *ngIf="!loading">
+    <div class="results-bar" *ngIf="total > 0">
+      <div class="results-bar__meta">
+        <strong>Showing {{ rangeStart }}-{{ rangeEnd }}</strong>
+        <span>of {{ total }} developers</span>
+      </div>
+      <div class="results-bar__meta">
+        <span>Sorted by {{ activeSort.label }}</span>
+      </div>
+    </div>
+
+    <div class="developer-grid" *ngIf="developers.length > 0">
+      <article class="developer-card" *ngFor="let dev of developers; trackBy: trackByDeveloperId">
+        <div class="developer-card__top">
+          <div class="identity">
+            <div class="identity__avatar" [class.identity__avatar--image]="dev.avatar">
+              <img *ngIf="dev.avatar" [src]="dev.avatar" [alt]="dev.name" />
+              <span *ngIf="!dev.avatar">{{ developerInitial(dev) }}</span>
+            </div>
+            <div class="identity__content">
+              <div class="identity__name-row">
+                <h3>{{ dev.name }}</h3>
+                <span class="visibility-badge" *ngIf="dev.isPublic">Public</span>
+              </div>
+              <p class="identity__title">{{ profileTitle(dev) }}</p>
+              <p class="identity__summary" *ngIf="dev.summary">{{ dev.summary }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-chip" *ngIf="dev.stack">{{ dev.stack }}</span>
+          <span class="meta-chip meta-chip--muted" *ngIf="dev.experienceLevel">{{ dev.experienceLevel }}</span>
+          <span class="meta-chip meta-chip--muted">{{ dev.projectsCount || 0 }} project{{ (dev.projectsCount || 0) !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span class="contact-item__label">Email</span>
+            <strong [title]="dev.email">{{ dev.email }}</strong>
+          </div>
+          <div class="contact-item" *ngIf="dev.githubUsername">
+            <span class="contact-item__label">GitHub</span>
+            <strong>@{{ dev.githubUsername }}</strong>
+          </div>
+          <div class="contact-item" *ngIf="dev.linkedin">
+            <span class="contact-item__label">LinkedIn</span>
+            <strong>Available</strong>
+          </div>
+          <div class="contact-item" *ngIf="dev.website">
+            <span class="contact-item__label">Website</span>
+            <strong>Available</strong>
+          </div>
+        </div>
+
+        <div class="score-grid">
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.githubScore)">
+            <span>GitHub</span>
+            <strong>{{ scoreValue(dev.githubScore) }}</strong>
+          </div>
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.resumeScore)">
+            <span>Resume</span>
+            <strong>{{ scoreValue(dev.resumeScore) }}</strong>
+          </div>
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.readinessScore)">
+            <span>Readiness</span>
+            <strong>{{ scoreValue(dev.readinessScore) }}</strong>
+          </div>
+        </div>
+
+        <div class="skills-block" *ngIf="(dev.skills?.length || 0) > 0">
+          <div class="skills-block__label">Skills</div>
+          <div class="skill-chip-row">
+            <span class="skill-chip" *ngFor="let skill of (dev.skills || []).slice(0, 8)">{{ skill }}</span>
+          </div>
+        </div>
+
+        <div class="projects-preview" *ngIf="(dev.projects?.length || 0) > 0">
+          <div class="projects-preview__label">Recent projects</div>
+          <div class="projects-preview__list">
+            <div class="project-pill" *ngFor="let project of (dev.projects || []).slice(0, 2)">
+              <strong>{{ project.title }}</strong>
+              <span *ngIf="project.tech.length">{{ project.tech.slice(0, 3).join(', ') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="developer-card__footer">
+          <div class="timestamp-stack">
+            <span>Joined {{ dev.createdAt | date: 'MMM d, y' }}</span>
+            <span *ngIf="dev.lastAnalyzedAt">Analyzed {{ dev.lastAnalyzedAt | date: 'MMM d, y' }}</span>
+            <span *ngIf="!dev.lastAnalyzedAt">Analysis pending</span>
+          </div>
+
+          <div class="action-row">
+            <a *ngIf="dev.githubUsername" [href]="'https://github.com/' + dev.githubUsername" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+            <a *ngIf="dev.linkedin" [href]="dev.linkedin" target="_blank" rel="noopener" class="btn-link">LinkedIn</a>
+            <a *ngIf="portfolioLink(dev)" [href]="portfolioLink(dev)" target="_blank" rel="noopener" class="btn-link btn-link--primary">View Portfolio</a>
+            <button type="button" class="btn-secondary" (click)="openDeveloperDetails(dev)">View Details</button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <app-shared-empty-state
+      *ngIf="developers.length === 0"
+      [title]="searchInput || stackFilter || experienceLevelFilter || minScoreFilter ? 'No developers match the current filters' : 'No public developers yet'"
+      [subtitle]="searchInput || stackFilter || experienceLevelFilter || minScoreFilter ? 'Try broadening the search, lowering the score threshold, or clearing filters.' : 'Developers will appear here once they enable their public visibility.'"
+    ></app-shared-empty-state>
+
+    <nav class="pagination" *ngIf="developers.length > 0 && totalPages > 1" aria-label="Developer pagination">
+      <button type="button" class="pagination__button" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+
+      <button
+        *ngFor="let item of pageItems; trackBy: trackByPageItem"
+        type="button"
+        class="pagination__page"
+        [class.pagination__page--active]="item === page"
+        [class.pagination__page--ellipsis]="typeof item !== 'number'"
+        [disabled]="typeof item !== 'number'"
+        (click)="typeof item === 'number' && goToPage(item)"
+      >
+        {{ typeof item === 'number' ? item : '...' }}
       </button>
+
+      <button type="button" class="pagination__button" [disabled]="!hasMore" (click)="goToPage(page + 1)">Next</button>
+    </nav>
+  </section>
+
+  <div class="drawer-backdrop" *ngIf="selectedDeveloper" (click)="closeDeveloperDetails()"></div>
+
+  <aside class="detail-drawer" *ngIf="selectedDeveloper as dev" (click)="$event.stopPropagation()">
+    <div class="detail-drawer__header">
+      <div class="drawer-identity">
+        <div class="drawer-identity__avatar" [class.drawer-identity__avatar--image]="dev.avatar">
+          <img *ngIf="dev.avatar" [src]="dev.avatar" [alt]="dev.name" />
+          <span *ngIf="!dev.avatar">{{ developerInitial(dev) }}</span>
+        </div>
+        <div>
+          <h3>{{ dev.name }}</h3>
+          <p>{{ profileTitle(dev) }}</p>
+          <span class="visibility-badge" *ngIf="dev.isPublic">Public profile visible</span>
+        </div>
+      </div>
+      <button type="button" class="drawer-close" (click)="closeDeveloperDetails()" aria-label="Close developer details">&times;</button>
     </div>
-    <span class="result-count" *ngIf="search">
-      {{ filteredDevelopers.length }} result{{ filteredDevelopers.length !== 1 ? 's' : '' }}
-    </span>
-  </div>
 
-  <app-shared-loader [loading]="loading" label="Loading developer pool"></app-shared-loader>
+    <div class="detail-drawer__body">
+      <section class="drawer-section">
+        <div class="drawer-section__title">Professional Snapshot</div>
+        <div class="detail-grid">
+          <div>
+            <span class="detail-label">Email</span>
+            <strong>{{ dev.email }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Stack</span>
+            <strong>{{ dev.stack || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Experience</span>
+            <strong>{{ dev.experienceLevel || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Projects</span>
+            <strong>{{ dev.projectsCount || 0 }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">GitHub</span>
+            <strong>{{ dev.githubUsername ? '@' + dev.githubUsername : 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="detail-label">Last analyzed</span>
+            <strong>{{ dev.lastAnalyzedAt ? (dev.lastAnalyzedAt | date: 'MMM d, y, h:mm a') : 'Not analyzed yet' }}</strong>
+          </div>
+        </div>
+        <p class="drawer-summary" *ngIf="dev.summary">{{ dev.summary }}</p>
+      </section>
 
-  <div class="dev-grid" *ngIf="!loading && filteredDevelopers.length > 0">
-    <article class="dev-card" *ngFor="let dev of filteredDevelopers; trackBy: trackByDeveloperId">
-      <div class="dev-card__header">
-        <div class="dev-card__avatar" [class.dev-card__avatar--img]="dev.avatar">
-          <img *ngIf="dev.avatar" [src]="dev.avatar" [alt]="dev.name" title="Developer avatar" />
-          <span *ngIf="!dev.avatar">{{ dev.name.charAt(0).toUpperCase() }}</span>
+      <section class="drawer-section">
+        <div class="drawer-section__title">Scores</div>
+        <div class="score-grid score-grid--drawer">
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.githubScore)">
+            <span>GitHub score</span>
+            <strong>{{ scoreValue(dev.githubScore) }}</strong>
+          </div>
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.resumeScore)">
+            <span>Resume score</span>
+            <strong>{{ scoreValue(dev.resumeScore) }}</strong>
+          </div>
+          <div class="score-card" [attr.data-tone]="scoreTone(dev.readinessScore)">
+            <span>Readiness score</span>
+            <strong>{{ scoreValue(dev.readinessScore) }}</strong>
+          </div>
         </div>
-        <div class="dev-card__meta">
-          <h3 class="dev-card__name">{{ dev.name }}</h3>
-          <p class="dev-card__title">{{ profileTitle(dev) }}</p>
-          <p class="dev-card__summary" *ngIf="dev.summary">{{ dev.summary }}</p>
-        </div>
-        <span class="dev-card__public-badge" *ngIf="dev.isPublic">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Public
-        </span>
-      </div>
+      </section>
 
-      <div class="chip-row" *ngIf="dev.stack || dev.experienceLevel">
-        <span class="chip" *ngIf="dev.stack">{{ dev.stack }}</span>
-        <span class="chip chip--muted" *ngIf="dev.experienceLevel">{{ dev.experienceLevel }}</span>
-      </div>
+      <section class="drawer-section">
+        <div class="drawer-section__title">Links</div>
+        <div class="link-grid">
+          <a *ngIf="dev.githubUsername" [href]="'https://github.com/' + dev.githubUsername" target="_blank" rel="noopener" class="link-tile">GitHub profile</a>
+          <a *ngIf="dev.linkedin" [href]="dev.linkedin" target="_blank" rel="noopener" class="link-tile">LinkedIn profile</a>
+          <a *ngIf="dev.website" [href]="dev.website" target="_blank" rel="noopener" class="link-tile">Website</a>
+          <a *ngIf="portfolioLink(dev)" [href]="portfolioLink(dev)" target="_blank" rel="noopener" class="link-tile">Public portfolio</a>
+        </div>
+      </section>
 
-      <div class="dev-card__details">
-        <div class="dev-detail">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <span>{{ dev.email }}</span>
+      <section class="drawer-section" *ngIf="(dev.skills?.length || 0) > 0">
+        <div class="drawer-section__title">Skills</div>
+        <div class="skill-chip-row">
+          <span class="skill-chip" *ngFor="let skill of dev.skills || []">{{ skill }}</span>
         </div>
-        <div class="dev-detail" *ngIf="dev.githubUsername">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          <span>@{{ dev.githubUsername }}</span>
-        </div>
-        <div class="dev-detail" *ngIf="dev.location">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span>{{ dev.location }}</span>
-        </div>
-        <div class="dev-detail" *ngIf="dev.linkedin">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-          <span>LinkedIn profile available</span>
-        </div>
-      </div>
+      </section>
 
-      <div class="score-grid" *ngIf="dev.githubScore || dev.resumeScore || dev.readinessScore">
-        <div class="score-card">
-          <span class="score-card__label">GitHub</span>
-          <span class="score-card__value">{{ scoreValue(dev.githubScore) }}</span>
+      <section class="drawer-section">
+        <div class="drawer-section__title">Projects</div>
+        <app-shared-empty-state
+          *ngIf="!(dev.projects?.length)"
+          title="No public projects"
+          subtitle="This developer has not published project details in the public portfolio."
+        ></app-shared-empty-state>
+        <div class="project-stack" *ngIf="dev.projects?.length">
+          <article class="project-card" *ngFor="let project of dev.projects">
+            <div class="project-card__head">
+              <strong>{{ project.title || 'Untitled project' }}</strong>
+              <div class="project-card__links">
+                <a *ngIf="project.url" [href]="project.url" target="_blank" rel="noopener">Live</a>
+                <a *ngIf="project.repoUrl" [href]="project.repoUrl" target="_blank" rel="noopener">Repo</a>
+              </div>
+            </div>
+            <p *ngIf="project.description">{{ project.description }}</p>
+            <div class="skill-chip-row" *ngIf="project.tech.length">
+              <span class="skill-chip skill-chip--soft" *ngFor="let tech of project.tech">{{ tech }}</span>
+            </div>
+          </article>
         </div>
-        <div class="score-card">
-          <span class="score-card__label">Resume</span>
-          <span class="score-card__value">{{ scoreValue(dev.resumeScore) }}</span>
-        </div>
-        <div class="score-card">
-          <span class="score-card__label">Readiness</span>
-          <span class="score-card__value">{{ scoreValue(dev.readinessScore) }}</span>
-        </div>
-      </div>
-
-      <div class="chip-row" *ngIf="(dev.skills?.length || 0) > 0">
-        <span class="chip" *ngFor="let skill of (dev.skills || []).slice(0, 5)">{{ skill }}</span>
-        <span class="chip chip--muted" *ngIf="(dev.skills?.length || 0) > 5">+{{ (dev.skills?.length || 0) - 5 }} more</span>
-      </div>
-
-      <div class="project-list" *ngIf="(dev.projects?.length || 0) > 0">
-        <div class="project-list__title">Projects</div>
-        <div class="project-list__item" *ngFor="let project of (dev.projects || []).slice(0, 2)">
-          <strong>{{ project.title }}</strong>
-          <span *ngIf="project.tech.length">{{ project.tech.slice(0, 3).join(', ') }}</span>
-        </div>
-      </div>
-
-      <div class="link-row">
-        <a *ngIf="dev.githubUsername" [href]="'https://github.com/' + dev.githubUsername" target="_blank" rel="noopener" class="dev-card__portfolio-link">GitHub</a>
-        <a *ngIf="dev.linkedin" [href]="dev.linkedin" target="_blank" rel="noopener" class="dev-card__portfolio-link">LinkedIn</a>
-        <a *ngIf="dev.website" [href]="dev.website" target="_blank" rel="noopener" class="dev-card__portfolio-link">Website</a>
-      </div>
-
-      <div class="dev-card__footer">
-        <div class="dev-card__timestamps">
-          <span class="dev-card__joined">Joined {{ dev.createdAt | date: 'MMM y' }}</span>
-          <span class="dev-card__joined" *ngIf="dev.lastAnalyzedAt">Last analyzed {{ dev.lastAnalyzedAt | date: 'MMM d, y' }}</span>
-        </div>
-        <a *ngIf="portfolioLink(dev)"
-           [href]="portfolioLink(dev)"
-           target="_blank"
-           rel="noopener"
-           class="dev-card__portfolio-link">
-          View Portfolio
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
-      </div>
-    </article>
-  </div>
-
-  <app-shared-empty-state
-    *ngIf="!loading && filteredDevelopers.length === 0"
-    [title]="search ? 'No results found' : 'No public developers yet'"
-    [subtitle]="search ? 'Try a different search term.' : 'Developers must enable profile visibility before appearing in the global talent pool.'"
-  ></app-shared-empty-state>
+      </section>
+    </div>
+  </aside>
 </section>

@@ -183,13 +183,13 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
       overview: this.adminService.getOverview(),
       preferences: this.consoleService.getPreferences(),
       recruiters: this.adminService.getRecruiters(),
-      developers: this.adminService.getDevelopers()
+      developers: this.adminService.getDevelopers({ page: 1, limit: 4, sortBy: 'lastAnalyzedAt', sortOrder: 'desc' })
     }).subscribe({
       next: ({ overview, preferences, recruiters, developers }) => {
         this.overview = overview;
         this.preferences = preferences;
         this.recruiters = recruiters;
-        this.developers = developers;
+        this.developers = developers.developers || [];
 
         if (!this.configApplied) {
           this.selectedDays = this.dashboardConfig.preferredDateRangeDays || 30;

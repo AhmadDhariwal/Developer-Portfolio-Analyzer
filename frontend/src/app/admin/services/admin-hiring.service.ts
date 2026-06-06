@@ -124,6 +124,26 @@ export interface AdminDeveloper {
   createdAt: string;
 }
 
+export interface AdminDeveloperQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  stack?: string;
+  experienceLevel?: string;
+  minScore?: number | null;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface AdminDeveloperPage {
+  developers: AdminDeveloper[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export interface AdminJob {
   _id: string;
   title: string;
@@ -267,9 +287,26 @@ export class AdminHiringService {
     return this.api.deleteAdminInvitation(id).pipe(map(() => void 0));
   }
 
-  getDevelopers(): Observable<AdminDeveloper[]> {
-    return this.api.getAdminDevelopers().pipe(
-      map((res: { developers?: AdminDeveloper[] }) => res?.developers || [])
+  getDevelopers(query: AdminDeveloperQuery = {}): Observable<AdminDeveloperPage> {
+    const params: Record<string, string | number> = {};
+    if (query.page) params['page'] = query.page;
+    if (query.limit) params['limit'] = query.limit;
+    if (query.search) params['search'] = query.search;
+    if (query.stack) params['stack'] = query.stack;
+    if (query.experienceLevel) params['experienceLevel'] = query.experienceLevel;
+    if (query.minScore !== undefined && query.minScore !== null) params['minScore'] = query.minScore;
+    if (query.sortBy) params['sortBy'] = query.sortBy;
+    if (query.sortOrder) params['sortOrder'] = query.sortOrder;
+
+    return this.api.getAdminDevelopers(params).pipe(
+      map((res: Partial<AdminDeveloperPage>) => ({
+        developers: res?.developers || [],
+        page: Number(res?.page || query.page || 1),
+        limit: Number(res?.limit || query.limit || 10),
+        total: Number(res?.total || 0),
+        totalPages: Number(res?.totalPages || 1),
+        hasMore: Boolean(res?.hasMore)
+      }))
     );
   }
 
