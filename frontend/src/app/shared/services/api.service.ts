@@ -627,12 +627,29 @@ export class ApiService {
     return this.http.get(suffix ? `${this.baseUrl}/admin/developers?${suffix}` : `${this.baseUrl}/admin/developers`);
   }
 
-  getAdminJobs(limit = 200): Observable<any> {
-    return this.http.get(`${this.baseUrl}/admin/jobs?limit=${encodeURIComponent(String(limit))}`);
+  getAdminJobs(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    });
+    const suffix = query.toString();
+    return this.http.get(suffix ? `${this.baseUrl}/admin/jobs?${suffix}` : `${this.baseUrl}/admin/jobs`);
   }
 
   createAdminJob(payload: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/jobs`, payload);
+  }
+
+  updateAdminJob(id: string, payload: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/jobs/${encodeURIComponent(id)}`, payload);
+  }
+
+  closeAdminJob(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/admin/jobs/${encodeURIComponent(id)}/close`, {});
+  }
+
+  deleteAdminJob(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/jobs/${encodeURIComponent(id)}`);
   }
 
   runAdminAiRanking(payload: { jobId: string; candidateIds?: string[]; candidates?: any[] }): Observable<any> {

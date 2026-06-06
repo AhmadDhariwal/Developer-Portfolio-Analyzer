@@ -18,7 +18,7 @@ const {
 	expireInvitation,
 	deleteInvitation
 } = require('../controllers/admin/recruiterController');
-const { getAdminJobs, createAdminJob, aiRankCandidates } = require('../controllers/admin/jobController');
+const { getAdminJobs, createAdminJob, updateAdminJob, closeAdminJob, deleteAdminJob, aiRankCandidates } = require('../controllers/admin/jobController');
 
 router.use(protect, authorizeRoles('admin'), requireOrganizationContext(['admin']));
 
@@ -39,6 +39,9 @@ router.delete('/invitations/:id', deleteInvitation);
 router.get('/developers', getDevelopers);
 router.get('/jobs', getAdminJobs);
 router.post('/jobs', createAdminJob);
+router.put('/jobs/:id', updateAdminJob);
+router.patch('/jobs/:id/close', closeAdminJob);
+router.delete('/jobs/:id', deleteAdminJob);
 router.post('/ai-rank', aiRankCandidates);
 
 module.exports = router;

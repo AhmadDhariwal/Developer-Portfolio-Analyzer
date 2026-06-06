@@ -1,37 +1,102 @@
 <section class="admin-page">
-
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <header class="page-header">
     <div class="page-header__text">
       <div class="page-header__eyebrow">
         <span class="eyebrow-dot"></span>
-        Jobs & AI Ranking
+        Jobs And AI Ranking
       </div>
       <h1>Organization Jobs</h1>
-      <p>Create job listings and run AI-powered candidate ranking against the global developer pool.</p>
+      <p>Create and manage organization-scoped jobs, then run AI ranking manually against the public developer pool.</p>
     </div>
-    <div class="page-header__meta" *ngIf="!loading">
-      <span class="stat-pill stat-pill--blue">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        {{ jobs.length }} Job{{ jobs.length !== 1 ? 's' : '' }}
-      </span>
+    <div class="page-header__meta" *ngIf="!jobsLoading">
+      <span class="stat-pill stat-pill--blue">{{ total }} Job{{ total !== 1 ? 's' : '' }}</span>
+      <span class="stat-pill stat-pill--slate">{{ rangeStart }}-{{ rangeEnd }} visible</span>
+      <span class="stat-pill stat-pill--amber">10 per page</span>
     </div>
   </header>
 
   <app-shared-message [visible]="!!message" [type]="messageType" [text]="message" (dismiss)="message = ''"></app-shared-message>
-  <app-shared-loader [loading]="loading" [label]="selectedJobId ? 'Running AI ranking...' : 'Processing jobs'"></app-shared-loader>
+
+  <section class="filters-card">
+    <div class="filters-card__header">
+      <div>
+        <h2>Filters</h2>
+        <p>Server-side filtering keeps the jobs list fast and stable as your organization grows.</p>
+      </div>
+      <button type="button" class="btn-ghost btn-sm" (click)="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div class="filters-grid">
+      <div class="form-field form-field--search">
+        <label for="jobs-search">Search</label>
+        <div class="search-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            id="jobs-search"
+            type="text"
+            [ngModel]="searchInput"
+            (ngModelChange)="onSearchChange($event)"
+            placeholder="Search title, role, description, skills, stack, or location"
+          />
+          <button type="button" class="search-clear" *ngIf="searchInput" (click)="clearSearch()" aria-label="Clear search">&times;</button>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="jobs-stack">Stack</label>
+        <select id="jobs-stack" [ngModel]="stackFilter" (ngModelChange)="onStackChange($event)">
+          <option value="">All stacks</option>
+          <option *ngFor="let stack of stackOptions" [value]="stack">{{ stack }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="jobs-status">Status</label>
+        <select id="jobs-status" [ngModel]="statusFilter" (ngModelChange)="onStatusChange($event)">
+          <option value="">All statuses</option>
+          <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="jobs-employment">Employment</label>
+        <select id="jobs-employment" [ngModel]="employmentTypeFilter" (ngModelChange)="onEmploymentTypeChange($event)">
+          <option value="">All types</option>
+          <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="jobs-location">Location</label>
+        <input id="jobs-location" type="text" [ngModel]="locationFilter" (ngModelChange)="onLocationChange($event)" placeholder="Remote, Lahore, NYC" />
+      </div>
+
+      <div class="form-field">
+        <label for="jobs-sort">Sort</label>
+        <select id="jobs-sort" [ngModel]="sortValue" (ngModelChange)="onSortChange($event)">
+          <option *ngFor="let option of sortOptions" [value]="option.sortBy + ':' + option.sortOrder">{{ option.label }}</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <app-shared-loader [loading]="jobsLoading" label="Loading organization jobs"></app-shared-loader>
 
   <div class="jobs-layout">
-
-    <!-- ── Left: Create job form ─────────────────────────────────────────── -->
-    <div class="create-panel">
+    <section class="create-panel">
       <div class="panel-header">
         <div class="panel-header__icon panel-header__icon--blue">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
         </div>
         <div>
           <h3>Create Job Listing</h3>
-          <p>Fill in the details to post a new position.</p>
+          <p>Keep the job creation flow in place, with tighter validation and cleaner spacing.</p>
         </div>
       </div>
 
@@ -40,133 +105,337 @@
           <label for="job-title">Job Title <span class="required">*</span></label>
           <input id="job-title" type="text" [(ngModel)]="form.title" placeholder="e.g. Senior Frontend Engineer" />
         </div>
+
         <div class="form-field">
           <label for="job-role">Role Label</label>
           <input id="job-role" type="text" [(ngModel)]="form.role" placeholder="e.g. IC4 / Lead" />
         </div>
+
         <div class="form-field">
-          <label for="job-stack">Tech Stack</label>
-          <input id="job-stack" type="text" [(ngModel)]="form.stack" placeholder="Full Stack, Frontend…" />
+          <label for="job-stack-input">Tech Stack</label>
+          <input id="job-stack-input" type="text" [(ngModel)]="form.stack" placeholder="Frontend, Backend, Full Stack" />
         </div>
+
         <div class="form-field">
-          <label for="job-location">Location</label>
-          <input id="job-location" type="text" [(ngModel)]="form.location" placeholder="Remote / City" />
+          <label for="job-location-input">Location</label>
+          <input id="job-location-input" type="text" [(ngModel)]="form.location" placeholder="Remote / Hybrid / City" />
         </div>
+
         <div class="form-field">
-          <label for="job-exp">Min. Experience (yrs)</label>
-          <input id="job-exp" type="number" min="0" [(ngModel)]="form.minExperienceYears" placeholder="0" />
+          <label for="job-exp">Min Experience</label>
+          <input id="job-exp" type="number" min="0" [(ngModel)]="form.minExperienceYears" />
         </div>
+
         <div class="form-field">
           <label for="job-type">Employment Type</label>
-          <select id="job-type" [(ngModel)]="form.employmentType" title="Employment type">
-            <option value="full-time">Full-time</option>
-            <option value="part-time">Part-time</option>
-            <option value="contract">Contract</option>
-            <option value="internship">Internship</option>
+          <select id="job-type" [(ngModel)]="form.employmentType">
+            <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
           </select>
         </div>
+
         <div class="form-field">
-          <label for="job-status">Status</label>
-          <select id="job-status" [(ngModel)]="form.status" title="Job status">
-            <option value="open">Open</option>
-            <option value="draft">Draft</option>
-            <option value="closed">Closed</option>
+          <label for="job-status-input">Status</label>
+          <select id="job-status-input" [(ngModel)]="form.status">
+            <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
           </select>
         </div>
+
         <div class="form-field form-field--full">
-          <label for="job-required">Required Skills <span class="hint">(comma separated)</span></label>
+          <label for="job-required">Required Skills</label>
           <input id="job-required" type="text" [(ngModel)]="form.requiredSkills" placeholder="React, TypeScript, Node.js" />
         </div>
+
         <div class="form-field form-field--full">
-          <label for="job-preferred">Preferred Skills <span class="hint">(comma separated)</span></label>
+          <label for="job-preferred">Preferred Skills</label>
           <input id="job-preferred" type="text" [(ngModel)]="form.preferredSkills" placeholder="GraphQL, Docker, AWS" />
         </div>
+
         <div class="form-field form-field--full">
           <label for="job-desc">Job Description <span class="required">*</span></label>
-          <textarea id="job-desc" [(ngModel)]="form.description" rows="5" placeholder="Describe the role, responsibilities, and expectations…"></textarea>
+          <textarea id="job-desc" [(ngModel)]="form.description" rows="6" placeholder="Describe responsibilities, expectations, scope, and core evaluation criteria."></textarea>
         </div>
       </div>
 
-      <button type="button" class="btn-primary" (click)="createJob()" [disabled]="loading">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <button type="button" class="btn-primary" (click)="createJob()" [disabled]="actionLoading || jobsLoading">
         Create Job
       </button>
-    </div>
+    </section>
 
-    <!-- ── Right: AI Ranking ──────────────────────────────────────────────── -->
-    <div class="ranking-panel">
-      <div class="panel-header">
-        <div class="panel-header__icon panel-header__icon--orange">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </div>
+    <section class="list-panel">
+      <div class="panel-header panel-header--spread">
         <div>
-          <h3>AI Candidate Ranking</h3>
-          <p>Match top developers to a job using AI analysis.</p>
+          <h3>Jobs List</h3>
+          <p>Organization-scoped jobs with pagination, stable actions, and clean summaries.</p>
+        </div>
+        <div class="results-meta" *ngIf="!jobsLoading && total > 0">
+          <strong>{{ rangeStart }}-{{ rangeEnd }}</strong>
+          <span>of {{ total }}</span>
         </div>
       </div>
 
-      <div class="rank-controls">
-        <div class="form-field">
-          <label for="rank-job">Select Job</label>
-          <select id="rank-job" [(ngModel)]="selectedJobId" title="Select job for ranking">
-            <option value="">Choose a job listing…</option>
+      <app-shared-empty-state
+        *ngIf="!jobsLoading && hasLoadedJobs && jobs.length === 0"
+        [title]="searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter ? 'No jobs match the current filters' : 'No jobs created yet'"
+        [subtitle]="searchInput || stackFilter || statusFilter || employmentTypeFilter || locationFilter ? 'Try broader filters or clear the current search to see more jobs.' : 'Create your first organization job to start ranking candidates.'"
+      ></app-shared-empty-state>
+
+      <div class="job-list" *ngIf="!jobsLoading && jobs.length > 0">
+        <article class="job-card" *ngFor="let job of jobs; trackBy: trackByJobId">
+          <div class="job-card__top">
+            <div class="job-card__title-wrap">
+              <h4>{{ job.title }}</h4>
+              <p>{{ job.role || 'Role label not set' }}</p>
+            </div>
+            <span class="status-badge"
+              [class.status-badge--open]="job.status === 'open'"
+              [class.status-badge--draft]="job.status === 'draft'"
+              [class.status-badge--closed]="job.status === 'closed'">
+              {{ job.status | titlecase }}
+            </span>
+          </div>
+
+          <div class="meta-row">
+            <span class="meta-chip">{{ job.stack || 'Full Stack' }}</span>
+            <span class="meta-chip meta-chip--muted">{{ formatEmploymentType(job.employmentType) }}</span>
+            <span class="meta-chip meta-chip--muted">{{ job.location || 'Location not set' }}</span>
+            <span class="meta-chip meta-chip--muted">{{ job.minExperienceYears || 0 }}+ years</span>
+          </div>
+
+          <div class="skills-block" *ngIf="(job.requiredSkills.length || 0) > 0">
+            <div class="skills-block__label">Required</div>
+            <div class="skill-chip-row">
+              <span class="skill-chip" *ngFor="let skill of (job.requiredSkills || []).slice(0, 6)">{{ skill }}</span>
+            </div>
+          </div>
+
+          <div class="skills-block" *ngIf="(job.preferredSkills.length || 0) > 0">
+            <div class="skills-block__label">Preferred</div>
+            <div class="skill-chip-row">
+              <span class="skill-chip skill-chip--soft" *ngFor="let skill of (job.preferredSkills || []).slice(0, 6)">{{ skill }}</span>
+            </div>
+          </div>
+
+          <p class="job-card__description">{{ job.description }}</p>
+
+          <div class="job-card__footer">
+            <div class="timestamp-stack">
+              <span>Created {{ job.createdAt | date: 'MMM d, y' }}</span>
+              <span>Updated {{ (job.updatedAt || job.createdAt) | date: 'MMM d, y' }}</span>
+            </div>
+            <div class="action-row">
+              <button type="button" class="btn-secondary btn-secondary--soft" (click)="selectJobForRanking(job._id)">Select For Ranking</button>
+              <button type="button" class="btn-secondary" (click)="openJobDetails(job)">View Details</button>
+              <button type="button" class="btn-secondary" (click)="openJobEdit(job)">Edit</button>
+              <button type="button" class="btn-secondary btn-secondary--warn" *ngIf="job.status !== 'closed'" (click)="closeJob(job)">Close Job</button>
+              <button type="button" class="btn-secondary btn-secondary--danger" (click)="deleteJob(job)">Delete</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <nav class="pagination" *ngIf="!jobsLoading && jobs.length > 0 && totalPages > 1" aria-label="Jobs pagination">
+        <button type="button" class="pagination__button" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+
+        <button
+          *ngFor="let item of pageItems; trackBy: trackByPageItem"
+          type="button"
+          class="pagination__page"
+          [class.pagination__page--active]="item === page"
+          [class.pagination__page--ellipsis]="typeof item !== 'number'"
+          [disabled]="typeof item !== 'number'"
+          (click)="typeof item === 'number' && goToPage(item)"
+        >
+          {{ typeof item === 'number' ? item : '...' }}
+        </button>
+
+        <button type="button" class="pagination__button" [disabled]="!hasMore" (click)="goToPage(page + 1)">Next</button>
+      </nav>
+    </section>
+  </div>
+
+  <section class="ranking-panel" #rankingResults>
+    <div class="panel-header panel-header--spread">
+      <div>
+        <h3>AI Candidate Ranking</h3>
+        <p>Ranking runs only when you click the button, using the existing admin AI rank flow.</p>
+      </div>
+      <div class="ranking-actions">
+        <div class="form-field form-field--compact">
+          <label for="ranking-job">Selected Job</label>
+          <select id="ranking-job" [ngModel]="selectedJobId" (ngModelChange)="selectJobForRanking($event)">
+            <option value="">Choose a job</option>
             <option *ngFor="let job of jobs" [value]="job._id">{{ job.title }} · {{ job.stack }}</option>
           </select>
         </div>
-        <button type="button" class="btn-rank" (click)="runRanking()" [disabled]="loading || !selectedJobId">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <button type="button" class="btn-rank" (click)="runRanking()" [disabled]="rankingLoading || !selectedJobId || jobsLoading">
           Run AI Ranking
         </button>
       </div>
+    </div>
 
-      <!-- Empty state -->
-      <app-shared-empty-state
-        *ngIf="!loading && ranking.length === 0"
-        title="No ranking results yet"
-        subtitle="Select a job and run AI ranking to see top candidate matches."
-      ></app-shared-empty-state>
+    <app-shared-message [visible]="!!rankingMessage" [type]="rankingMessageType" [text]="rankingMessage" (dismiss)="rankingMessage = ''"></app-shared-message>
+    <app-shared-loader [loading]="rankingLoading" label="Running AI ranking"></app-shared-loader>
 
-      <!-- Ranking results -->
-      <div class="ranking-list" #rankingResults *ngIf="ranking.length > 0">
-        <div class="rank-card" *ngFor="let item of ranking">
-          <div class="rank-card__position">
-            <span class="rank-number" [class.rank-number--gold]="item.rank === 1" [class.rank-number--silver]="item.rank === 2" [class.rank-number--bronze]="item.rank === 3">
+    <app-shared-empty-state
+      *ngIf="!rankingLoading && ranking.length === 0"
+      title="No ranking results yet"
+      subtitle="Choose a job and run AI ranking to review matched candidates, breakdowns, and recommendations."
+    ></app-shared-empty-state>
+
+    <div class="ranking-list" *ngIf="!rankingLoading && ranking.length > 0">
+      <article class="rank-card" *ngFor="let item of ranking">
+        <div class="rank-card__top">
+          <div class="rank-card__identity">
+            <span class="rank-number"
+              [class.rank-number--gold]="item.rank === 1"
+              [class.rank-number--silver]="item.rank === 2"
+              [class.rank-number--bronze]="item.rank === 3">
               #{{ item.rank }}
             </span>
+            <div>
+              <h4>{{ item.candidate.fullName }}</h4>
+              <p>{{ item.candidate.stack || 'Stack not set' }} · @{{ item.candidate.githubUsername || 'unknown' }}</p>
+            </div>
           </div>
-          <div class="rank-card__info">
-            <div class="rank-card__name">{{ item.candidate.fullName }}</div>
-            <div class="rank-card__sub">{{ item.candidate.stack }} · @{{ item.candidate.githubUsername }}</div>
-            <p class="rank-card__summary">{{ item.aiInsight.summary }}</p>
-          </div>
-          <div class="rank-card__score">
-            <span class="score-value">{{ item.rankScore | number: '1.0-1' }}</span>
-            <span class="score-label">Score</span>
+          <div class="rank-score">
+            <strong>{{ item.rankScore | number: '1.0-1' }}</strong>
+            <span>Rank Score</span>
           </div>
         </div>
-      </div>
 
-      <!-- Jobs list -->
-      <div class="jobs-list" *ngIf="!loading && jobs.length > 0">
-        <div class="jobs-list__header">
-          <span>Posted Jobs</span>
-          <span class="jobs-count">{{ jobs.length }}</span>
-        </div>
-        <div class="job-row" *ngFor="let job of jobs">
-          <div class="job-row__info">
-            <span class="job-row__title">{{ job.title }}</span>
-            <span class="job-row__meta">{{ job.stack }} · {{ job.employmentType }}</span>
-          </div>
-          <span class="job-status-badge"
-                [class.job-status-badge--open]="job.status === 'open'"
-                [class.job-status-badge--draft]="job.status === 'draft'"
-                [class.job-status-badge--closed]="job.status === 'closed'">
-            {{ job.status }}
-          </span>
-        </div>
-      </div>
+        <p class="rank-summary">{{ item.aiInsight.summary }}</p>
 
+        <div class="breakdown-grid" *ngIf="scoreBreakdownItems(item).length > 0">
+          <div class="breakdown-item" *ngFor="let metric of scoreBreakdownItems(item)">
+            <span>{{ metric.label }}</span>
+            <strong>{{ metric.value | number: '1.0-1' }}</strong>
+          </div>
+        </div>
+
+        <div class="insight-grid">
+          <div class="insight-block">
+            <div class="insight-block__label">Strengths</div>
+            <div class="bullet-chip-row">
+              <span class="bullet-chip bullet-chip--positive" *ngFor="let item of item.aiInsight.strengths">{{ item }}</span>
+            </div>
+          </div>
+
+          <div class="insight-block">
+            <div class="insight-block__label">Weaknesses</div>
+            <div class="bullet-chip-row">
+              <span class="bullet-chip bullet-chip--negative" *ngFor="let issue of item.aiInsight.weaknesses">{{ issue }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recommendation-box">
+          <span class="recommendation-box__label">Recommendation</span>
+          <strong>{{ item.aiInsight.recommendation }}</strong>
+        </div>
+      </article>
     </div>
-  </div>
+  </section>
 
+  <div class="drawer-backdrop" *ngIf="drawerJob" (click)="closeDrawer()"></div>
+  <aside class="detail-drawer" *ngIf="drawerJob as job" (click)="$event.stopPropagation()">
+    <div class="detail-drawer__header">
+      <div>
+        <h3>{{ job.title }}</h3>
+        <p>{{ job.role || 'Role label not set' }}</p>
+      </div>
+      <button type="button" class="drawer-close" (click)="closeDrawer()" aria-label="Close job details">&times;</button>
+    </div>
+
+    <div class="detail-drawer__body" *ngIf="drawerMode === 'details'">
+      <section class="drawer-section">
+        <div class="drawer-section__title">Overview</div>
+        <div class="detail-grid">
+          <div><span class="detail-label">Stack</span><strong>{{ job.stack || 'Full Stack' }}</strong></div>
+          <div><span class="detail-label">Status</span><strong>{{ job.status | titlecase }}</strong></div>
+          <div><span class="detail-label">Employment</span><strong>{{ formatEmploymentType(job.employmentType) }}</strong></div>
+          <div><span class="detail-label">Location</span><strong>{{ job.location || 'Not set' }}</strong></div>
+          <div><span class="detail-label">Min experience</span><strong>{{ job.minExperienceYears || 0 }}+ years</strong></div>
+          <div><span class="detail-label">Updated</span><strong>{{ (job.updatedAt || job.createdAt) | date: 'MMM d, y, h:mm a' }}</strong></div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Required Skills</div>
+        <div class="skill-chip-row" *ngIf="job.requiredSkills.length; else noRequiredSkills">
+          <span class="skill-chip" *ngFor="let skill of job.requiredSkills">{{ skill }}</span>
+        </div>
+        <ng-template #noRequiredSkills><p class="muted-copy">No required skills set.</p></ng-template>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Preferred Skills</div>
+        <div class="skill-chip-row" *ngIf="job.preferredSkills.length; else noPreferredSkills">
+          <span class="skill-chip skill-chip--soft" *ngFor="let skill of job.preferredSkills">{{ skill }}</span>
+        </div>
+        <ng-template #noPreferredSkills><p class="muted-copy">No preferred skills set.</p></ng-template>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section__title">Description</div>
+        <p class="drawer-description">{{ job.description }}</p>
+      </section>
+    </div>
+
+    <div class="detail-drawer__body" *ngIf="drawerMode === 'edit'">
+      <section class="drawer-section">
+        <div class="drawer-section__title">Edit Job</div>
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="edit-job-title">Job Title <span class="required">*</span></label>
+            <input id="edit-job-title" type="text" [(ngModel)]="editForm.title" />
+          </div>
+          <div class="form-field">
+            <label for="edit-job-role">Role Label</label>
+            <input id="edit-job-role" type="text" [(ngModel)]="editForm.role" />
+          </div>
+          <div class="form-field">
+            <label for="edit-job-stack">Tech Stack</label>
+            <input id="edit-job-stack" type="text" [(ngModel)]="editForm.stack" />
+          </div>
+          <div class="form-field">
+            <label for="edit-job-location">Location</label>
+            <input id="edit-job-location" type="text" [(ngModel)]="editForm.location" />
+          </div>
+          <div class="form-field">
+            <label for="edit-job-exp">Min Experience</label>
+            <input id="edit-job-exp" type="number" min="0" [(ngModel)]="editForm.minExperienceYears" />
+          </div>
+          <div class="form-field">
+            <label for="edit-job-type">Employment Type</label>
+            <select id="edit-job-type" [(ngModel)]="editForm.employmentType">
+              <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ formatEmploymentType(type) }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="edit-job-status">Status</label>
+            <select id="edit-job-status" [(ngModel)]="editForm.status">
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status | titlecase }}</option>
+            </select>
+          </div>
+          <div class="form-field form-field--full">
+            <label for="edit-job-required">Required Skills</label>
+            <input id="edit-job-required" type="text" [(ngModel)]="editForm.requiredSkills" />
+          </div>
+          <div class="form-field form-field--full">
+            <label for="edit-job-preferred">Preferred Skills</label>
+            <input id="edit-job-preferred" type="text" [(ngModel)]="editForm.preferredSkills" />
+          </div>
+          <div class="form-field form-field--full">
+            <label for="edit-job-description">Description <span class="required">*</span></label>
+            <textarea id="edit-job-description" rows="6" [(ngModel)]="editForm.description"></textarea>
+          </div>
+        </div>
+
+        <div class="drawer-actions">
+          <button type="button" class="btn-primary" (click)="saveJobEdit()" [disabled]="actionLoading">Save Changes</button>
+          <button type="button" class="btn-secondary" (click)="closeDrawer()">Cancel</button>
+        </div>
+      </section>
+    </div>
+  </aside>
 </section>

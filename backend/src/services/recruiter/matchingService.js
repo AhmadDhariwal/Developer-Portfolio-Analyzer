@@ -21,8 +21,26 @@ const EXPERIENCE_LEVEL_TO_YEARS = {
   '3-5 years': 5,
   '5+ years': 7
 };
+const JOB_DEFAULT_PAGE = 1;
+const JOB_DEFAULT_LIMIT = 10;
+const JOB_MAX_LIMIT = 50;
+const JOB_ALLOWED_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'title',
+  'stack',
+  'status',
+  'employmentType',
+  'location',
+  'minExperienceYears'
+]);
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value) || 0));
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const toPositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 const flattenResumeSkills = (skillsMap = {}) => {
   if (!skillsMap) return [];
@@ -509,7 +527,8 @@ const updateJob = async ({ organizationId, jobId, payload }) => {
     minExperienceYears: payload.minExperienceYears,
     location: payload.location,
     employmentType: payload.employmentType,
-    status: payload.status
+    status: payload.status,
+    archivedAt: Object.prototype.hasOwnProperty.call(payload || {}, 'archivedAt') ? payload.archivedAt : undefined
   };
 
   Object.entries(patch).forEach(([key, value]) => {
@@ -518,6 +537,17 @@ const updateJob = async ({ organizationId, jobId, payload }) => {
     }
   });
 
+  await job.save();
+  return job;
+};
+
+const closeJob = async ({ organizationId, jobId }) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const job = await Job.findOne({ _id: jobId, organizationId: safeOrganizationId });
+  if (!job) return null;
+
+  job.status = 'closed';
+  job.archivedAt = new Date();
   await job.save();
   return job;
 };
@@ -541,6 +571,70 @@ const listOrganizationJobs = async ({ organizationId, limit = 100 }) => {
     .sort({ updatedAt: -1 })
     .limit(Math.max(1, Math.min(500, Number(limit) || 100)))
     .lean();
+};
+
+const listOrganizationJobsPage = async ({
+  organizationId,
+  page = JOB_DEFAULT_PAGE,
+  limit = JOB_DEFAULT_LIMIT,
+  search = '',
+  stack = '',
+  status = '',
+  employmentType = '',
+  location = '',
+  sortBy = 'updatedAt',
+  sortOrder = 'desc'
+} = {}) => {
+  const safeOrganizationId = assertOrganizationScope(organizationId);
+  const safePage = toPositiveInt(page, JOB_DEFAULT_PAGE);
+  const safeLimit = Math.min(toPositiveInt(limit, JOB_DEFAULT_LIMIT), JOB_MAX_LIMIT);
+  const safeSortBy = JOB_ALLOWED_SORT_FIELDS.has(String(sortBy || '').trim()) ? String(sortBy).trim() : 'updatedAt';
+  const safeSortOrder = String(sortOrder || '').toLowerCase() === 'asc' ? 1 : -1;
+
+  const query = { organizationId: safeOrganizationId };
+  const normalizedSearch = String(search || '').trim();
+  const normalizedStack = String(stack || '').trim();
+  const normalizedStatus = String(status || '').trim();
+  const normalizedEmploymentType = String(employmentType || '').trim();
+  const normalizedLocation = String(location || '').trim();
+
+  if (normalizedSearch) {
+    const regex = new RegExp(escapeRegex(normalizedSearch), 'i');
+    query.$or = [
+      { title: regex },
+      { role: regex },
+      { description: regex },
+      { stack: regex },
+      { location: regex },
+      { requiredSkills: regex },
+      { preferredSkills: regex }
+    ];
+  }
+
+  if (normalizedStack) query.stack = normalizedStack;
+  if (normalizedStatus) query.status = normalizedStatus;
+  if (normalizedEmploymentType) query.employmentType = normalizedEmploymentType;
+  if (normalizedLocation) query.location = new RegExp(escapeRegex(normalizedLocation), 'i');
+
+  const [jobs, total] = await Promise.all([
+    Job.find(query)
+      .select('title role description stack requiredSkills preferredSkills minExperienceYears location employmentType status createdAt updatedAt archivedAt')
+      .sort({ [safeSortBy]: safeSortOrder, _id: 1 })
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit)
+      .lean(),
+    Job.countDocuments(query)
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  return {
+    jobs,
+    page: safePage,
+    limit: safeLimit,
+    total,
+    totalPages,
+    hasMore: safePage < totalPages
+  };
 };
 
 const matchCandidatesToJob = async ({ organizationId, jobId, candidateIds = [] }) => {
@@ -580,8 +674,10 @@ module.exports = {
   getCandidateById,
   createJob,
   updateJob,
+  closeJob,
   deleteJob,
   listJobs,
   listOrganizationJobs,
+  listOrganizationJobsPage,
   matchCandidatesToJob
 };

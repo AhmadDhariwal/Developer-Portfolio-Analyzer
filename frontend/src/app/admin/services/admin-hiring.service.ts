@@ -156,7 +156,30 @@ export interface AdminJob {
   location: string;
   employmentType: 'full-time' | 'part-time' | 'contract' | 'internship';
   status: 'draft' | 'open' | 'closed';
+  createdAt?: string;
   updatedAt?: string;
+  archivedAt?: string | null;
+}
+
+export interface AdminJobQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  stack?: string;
+  status?: string;
+  employmentType?: string;
+  location?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface AdminJobPage {
+  jobs: AdminJob[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
 }
 
 export interface AdminRankedCandidate {
@@ -168,6 +191,7 @@ export interface AdminRankedCandidate {
     githubUsername: string;
     stack: string;
   };
+  scoreBreakdown?: Record<string, number>;
   aiInsight: {
     summary: string;
     strengths: string[];
@@ -310,15 +334,51 @@ export class AdminHiringService {
     );
   }
 
-  getJobs(): Observable<AdminJob[]> {
-    return this.api.getAdminJobs().pipe(
-      map((res: { jobs?: AdminJob[] }) => res?.jobs || [])
+  getJobs(query: AdminJobQuery = {}): Observable<AdminJobPage> {
+    const params: Record<string, string | number> = {};
+    if (query.page) params['page'] = query.page;
+    if (query.limit) params['limit'] = query.limit;
+    if (query.search) params['search'] = query.search;
+    if (query.stack) params['stack'] = query.stack;
+    if (query.status) params['status'] = query.status;
+    if (query.employmentType) params['employmentType'] = query.employmentType;
+    if (query.location) params['location'] = query.location;
+    if (query.sortBy) params['sortBy'] = query.sortBy;
+    if (query.sortOrder) params['sortOrder'] = query.sortOrder;
+
+    return this.api.getAdminJobs(params).pipe(
+      map((res: Partial<AdminJobPage>) => ({
+        jobs: res?.jobs || [],
+        page: Number(res?.page || query.page || 1),
+        limit: Number(res?.limit || query.limit || 10),
+        total: Number(res?.total || 0),
+        totalPages: Number(res?.totalPages || 1),
+        hasMore: Boolean(res?.hasMore)
+      }))
     );
   }
 
   createJob(payload: Partial<AdminJob>): Observable<AdminJob> {
     return this.api.createAdminJob(payload).pipe(
       map((res: { job: AdminJob }) => res.job)
+    );
+  }
+
+  updateJob(id: string, payload: Partial<AdminJob>): Observable<AdminJob> {
+    return this.api.updateAdminJob(id, payload).pipe(
+      map((res: { job: AdminJob }) => res.job)
+    );
+  }
+
+  closeJob(id: string): Observable<AdminJob> {
+    return this.api.closeAdminJob(id).pipe(
+      map((res: { job: AdminJob }) => res.job)
+    );
+  }
+
+  deleteJob(id: string): Observable<void> {
+    return this.api.deleteAdminJob(id).pipe(
+      map(() => void 0)
     );
   }
 
