@@ -4,11 +4,57 @@ const Team = require('../models/team');
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
+const SENSITIVE_KEY_PATTERNS = [
+  /password/i,
+  /token/i,
+  /secret/i,
+  /api[_-]?key/i,
+  /authorization/i,
+  /otp/i,
+  /passcode/i,
+  /pwd/i,
+  /pass[_-]?phrase/i,
+  /private[_-]?key/i,
+  /access[_-]?token/i,
+  /refresh[_-]?token/i
+];
+
+const maskValue = (key, value) => {
+  if (typeof key === 'string' && SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key))) {
+    return '***MASKED***';
+  }
+  if (typeof value === 'object' && value !== null) {
+    return deepMask(value);
+  }
+  return value;
+};
+
+const deepMask = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => (typeof item === 'object' && item !== null ? deepMask(item) : maskValue('', item)));
+  }
+  if (typeof obj !== 'object' || obj === null) return obj;
+
+  const masked = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const isSensitive = typeof key === 'string' && SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+    if (isSensitive) {
+      masked[key] = '***MASKED***';
+    } else if (typeof value === 'object' && value !== null) {
+      masked[key] = deepMask(value);
+    } else {
+      masked[key] = value;
+    }
+  }
+  return masked;
+};
+
 const trimPayload = (value, maxLen = 5000) => {
   if (value === null || value === undefined) return value;
+  const masked = deepMask(value);
   try {
-    const text = JSON.stringify(value);
-    if (text.length <= maxLen) return value;
+    const text = JSON.stringify(masked);
+    if (text.length <= maxLen) return masked;
     return { __truncated: true, preview: text.slice(0, maxLen) };
   } catch {
     return { __nonSerializable: true };
@@ -72,6 +118,9 @@ const auditLogMiddleware = (req, res, next) => {
   if (!req.originalUrl.startsWith('/api/')) return next();
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
+  const ipAddress = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
+  const userAgent = req.headers['user-agent']?.slice(0, 500) || null;
+
   const before = {
     params: req.params || {},
     query: req.query || {},
@@ -100,6 +149,8 @@ const auditLogMiddleware = (req, res, next) => {
         before: trimPayload(before),
         after: trimPayload(responseBody),
         statusCode: res.statusCode,
+        ipAddress,
+        userAgent,
         timestamp: new Date()
       });
     } catch (error) {

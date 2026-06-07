@@ -169,6 +169,9 @@ export class ApiService {
     organizationId?: string;
     teamId?: string;
     role?: string;
+    method?: string;
+    statusCode?: string | number;
+    actionCategory?: string;
     from?: string;
     to?: string;
     page?: number;

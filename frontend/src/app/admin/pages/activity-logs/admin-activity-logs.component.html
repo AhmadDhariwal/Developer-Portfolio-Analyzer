@@ -6,13 +6,17 @@
         Org Admin Console
       </div>
       <h1>Activity Logs</h1>
-      <p>Default view shows your own activity. Use team, user, and date filters to expand within {{ orgName }}.</p>
+      <p>Organization-scoped audit center. View, filter, and archive action logs within {{ orgName }}.</p>
     </div>
-    <div class="page-header__meta" *ngIf="total > 0">
-      <span class="stat-pill">
+    <div class="page-header__meta">
+      <span class="stat-pill" *ngIf="total > 0">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         {{ total }} Records
       </span>
+      <button type="button" class="btn-export" *ngIf="filteredLogs.length > 0" (click)="exportCSV()" [disabled]="exporting" title="Export filtered results as CSV">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        {{ exporting ? 'Exporting...' : 'Export CSV' }}
+      </button>
     </div>
   </div>
 
@@ -59,6 +63,34 @@
         />
       </div>
       <div class="filter-field">
+        <label>Method</label>
+        <app-searchable-select
+          [options]="methodSelectOptions"
+          [value]="selectedMethod"
+          (valueChange)="selectedMethod = $event"
+          [emptyOptionLabel]="'All methods'"
+          [placeholder]="'Select method'"
+          [searchPlaceholder]="'Search methods'"
+          [emptyStateLabel]="'No methods found'"
+        />
+      </div>
+      <div class="filter-field">
+        <label>Status Code</label>
+        <input [(ngModel)]="selectedStatusCode" type="number" min="100" max="599" step="1" placeholder="200" title="HTTP status code" />
+      </div>
+      <div class="filter-field">
+        <label>Category</label>
+        <app-searchable-select
+          [options]="actionCategorySelectOptions"
+          [value]="selectedActionCategory"
+          (valueChange)="selectedActionCategory = $event"
+          [emptyOptionLabel]="'All categories'"
+          [placeholder]="'Select category'"
+          [searchPlaceholder]="'Search categories'"
+          [emptyStateLabel]="'No categories found'"
+        />
+      </div>
+      <div class="filter-field">
         <label>From</label>
         <input [(ngModel)]="from" type="date" title="From date" />
       </div>
@@ -69,10 +101,27 @@
       <div class="filter-actions">
         <button type="button" class="btn-apply" (click)="applyFilters()">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Apply
+          Apply Filters
         </button>
-        <button type="button" class="btn-reset" (click)="resetFilters()">Reset</button>
+        <button type="button" class="btn-reset" (click)="resetFilters()">Clear Filters</button>
       </div>
+    </div>
+
+    <!-- Active filter chips -->
+    <div class="filter-chips" *ngIf="hasActiveFilters">
+      <span class="filter-chips__label">Active:</span>
+      <button
+        type="button"
+        class="filter-chip"
+        *ngFor="let f of activeFilters"
+        [attr.title]="'Remove ' + f.type + ' filter'"
+        (click)="f.clear()"
+      >
+        <span class="filter-chip__type">{{ f.type }}:</span>
+        <span class="filter-chip__label">{{ f.label }}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button type="button" class="filter-chip filter-chip--clear-all" (click)="resetFilters()">Clear all</button>
     </div>
   </div>
 
@@ -88,7 +137,20 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Audit Logs
         </span>
-        <span class="logs-panel__count">{{ total }} records</span>
+        <div class="logs-panel__right">
+          <div class="quick-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              [(ngModel)]="quickSearch"
+              (ngModelChange)="onQuickSearchChange()"
+              placeholder="Search loaded results..."
+              class="quick-search__input"
+              title="Search within currently loaded log entries"
+            />
+          </div>
+          <span class="logs-panel__count">{{ filteredLogs.length }} of {{ total }} records</span>
+        </div>
       </div>
 
       <div class="logs-loading" *ngIf="loading && logs.length === 0">
@@ -97,46 +159,43 @@
       </div>
 
       <div class="logs-empty" *ngIf="!loading && logs.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <p>No logs found. Audit entries are created after successful POST, PUT, PATCH, or DELETE API actions.</p>
       </div>
 
-      <div class="table-wrap" *ngIf="logs.length > 0">
+      <div class="logs-empty" *ngIf="!loading && logs.length > 0 && filteredLogs.length === 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>No results match your search. Try different keywords.</p>
+      </div>
+
+      <div class="table-wrap" *ngIf="filteredLogs.length > 0">
         <table>
           <thead>
             <tr>
               <th>Time</th>
               <th>User</th>
               <th>Action</th>
-              <th>Delivery</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              *ngFor="let log of logs"
+              *ngFor="let log of filteredLogs"
               (click)="openDetail(log)"
               (keydown.enter)="openDetail(log)"
               (keydown.space)="openDetail(log)"
               [class.active]="selectedLog?._id === log._id"
               tabindex="0"
             >
-              <td class="td-time">{{ log.timestamp | date:'MMM d, HH:mm' }}</td>
+              <td class="td-time" [title]="getFullTimestamp(log)">{{ log.timestamp | date:'MMM d, HH:mm' }}</td>
               <td class="td-user">{{ fmtActor(log.actor) }}</td>
               <td class="td-action">
-                <span class="method-badge" [class.method-badge--post]="log.method === 'POST'" [class.method-badge--put]="log.method === 'PUT'" [class.method-badge--delete]="log.method === 'DELETE'">{{ log.method }}</span>
+                <span class="method-badge" [class]="methodBadgeClass(log.method)">{{ log.method }}</span>
                 <span class="action-text">{{ log.action }}</span>
+                <span class="log-category" *ngIf="log.actionCategory">{{ titleCase(log.actionCategory) }}</span>
               </td>
               <td>
-                <span *ngIf="getEmailDeliveryDetails(log) as delivery" class="delivery-badge" [ngClass]="deliveryBadgeClass(delivery.deliveryStatus)">
-                  {{ formatDeliveryLabel(delivery.deliveryStatus) }}
-                </span>
-                <span *ngIf="!getEmailDeliveryDetails(log)" class="td-dash">—</span>
-              </td>
-              <td>
-                <span class="status-code" [class.status-code--ok]="log.statusCode < 300" [class.status-code--err]="log.statusCode >= 400">
-                  {{ log.statusCode }}
-                </span>
+                <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{ log.statusCode }}</span>
               </td>
             </tr>
           </tbody>
@@ -159,19 +218,20 @@
     <div class="detail-panel" *ngIf="selectedLog as log">
       <div class="detail-panel__header">
         <div class="detail-panel__title">
-          <span class="method-badge" [class.method-badge--post]="log.method === 'POST'" [class.method-badge--put]="log.method === 'PUT'" [class.method-badge--delete]="log.method === 'DELETE'">{{ log.method }}</span>
+          <span class="method-badge method-badge--lg" [class]="methodBadgeClass(log.method)">{{ log.method }}</span>
           <span>{{ log.action }}</span>
+          <span class="log-category log-category--detail" *ngIf="log.actionCategory">{{ titleCase(log.actionCategory) }}</span>
         </div>
-        <button type="button" class="btn-delete-log" (click)="deleteLog(log)" title="Delete this log entry">
+        <button type="button" class="btn-archive-log" (click)="deleteLog(log)" title="Archive this log entry">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Delete
+          Archive
         </button>
       </div>
 
       <div class="detail-meta">
         <div class="detail-meta__row">
           <span class="detail-meta__label">Timestamp</span>
-          <span class="detail-meta__value">{{ log.timestamp | date:'medium' }}</span>
+          <span class="detail-meta__value" [title]="getFullTimestamp(log)">{{ log.timestamp | date:'medium' }}</span>
         </div>
         <div class="detail-meta__row">
           <span class="detail-meta__label">User</span>
@@ -181,20 +241,18 @@
           <span class="detail-meta__label">Route</span>
           <span class="detail-meta__value detail-meta__value--mono">{{ log.route }}</span>
         </div>
+        <div class="detail-meta__row" *ngIf="log.userAgent">
+          <span class="detail-meta__label">User Agent</span>
+          <span class="detail-meta__value detail-meta__value--mono detail-meta__value--wrap">{{ log.userAgent }}</span>
+        </div>
         <div class="detail-meta__row">
           <span class="detail-meta__label">Status Code</span>
-          <span class="status-code" [class.status-code--ok]="log.statusCode < 300" [class.status-code--err]="log.statusCode >= 400">{{ log.statusCode }}</span>
+          <span class="status-code" [class]="statusBadgeClass(log.statusCode)">{{ log.statusCode }}</span>
         </div>
-        <ng-container *ngIf="getEmailDeliveryDetails(log) as delivery">
-          <div class="detail-meta__row">
-            <span class="detail-meta__label">Email Provider</span>
-            <span class="detail-meta__value">{{ delivery.provider || 'Not configured' }}</span>
-          </div>
-          <div class="detail-meta__row">
-            <span class="detail-meta__label">Delivery</span>
-            <span class="delivery-badge" [ngClass]="deliveryBadgeClass(delivery.deliveryStatus)">{{ formatDeliveryLabel(delivery.deliveryStatus) }}</span>
-          </div>
-        </ng-container>
+        <div class="detail-meta__row" *ngIf="log.ipAddress">
+          <span class="detail-meta__label">IP Address</span>
+          <span class="detail-meta__value detail-meta__value--mono">{{ log.ipAddress }}</span>
+        </div>
       </div>
 
       <div class="detail-payload">

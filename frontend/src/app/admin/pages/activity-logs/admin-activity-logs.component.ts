@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../shared/services/api.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
@@ -21,17 +22,15 @@ interface AuditLogItem {
   _id: string;
   actor: AuditActor | null;
   action: string;
+  actionCategory?: string;
   method: string;
   route: string;
   before: unknown;
   after: unknown;
   statusCode: number;
+  ipAddress?: string;
+  userAgent?: string;
   timestamp: string;
-}
-
-interface EmailDeliveryDetails {
-  provider: string | null;
-  deliveryStatus: string;
 }
 
 interface UserOption {
@@ -42,35 +41,69 @@ interface UserOption {
   role?: string;
 }
 
+interface ActiveFilter {
+  type: string;
+  label: string;
+  clear: () => void;
+}
+
+const SENSITIVE_KEY_PATTERNS = [
+  /password/i,
+  /token/i,
+  /secret/i,
+  /api[_-]?key/i,
+  /authorization/i,
+  /otp/i,
+  /passcode/i,
+  /pwd/i,
+  /pass[_-]?phrase/i,
+  /private[_-]?key/i,
+  /access[_-]?token/i,
+  /refresh[_-]?token/i
+];
+
 @Component({
   selector: 'app-admin-activity-logs',
   standalone: true,
   imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './admin-activity-logs.component.html',
-  styleUrl: '../../../pages/activity-logs/activity-logs.component.scss'
+  styleUrls: [
+    '../../../pages/activity-logs/activity-logs.component.scss',
+    './admin-activity-logs.component.scss'
+  ]
 })
 export class AdminActivityLogsComponent implements OnInit {
   logs: AuditLogItem[] = [];
+  filteredLogs: AuditLogItem[] = [];
   selectedLog: AuditLogItem | null = null;
   teams: ConsoleTeam[] = [];
   userOptions: UserOption[] = [];
   actionOptions: string[] = [];
+  readonly actionCategoryOptions = ['auth', 'organization', 'team', 'job', 'candidate', 'invitation', 'ai', 'email', 'settings', 'admin', 'recruiter', 'developer', 'system', 'other'];
+  readonly methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
   selectedTeamId = '';
   selectedActorId = '';
   page = 1;
   totalPages = 1;
   total = 0;
+  limit = 20;
   loading = false;
+  exporting = false;
   statusMessage = '';
 
   action = '';
+  selectedMethod = '';
+  selectedStatusCode = '';
+  selectedActionCategory = '';
   from = '';
   to = '';
+  quickSearch = '';
 
   orgName = 'Organization';
   organizationId = '';
   currentUserId = '';
 
+  private pendingRequest: Subscription | null = null;
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -95,6 +128,69 @@ export class AdminActivityLogsComponent implements OnInit {
         this.orgName = state.organizationName || 'Organization';
         this.loadTeams();
       });
+  }
+
+  get activeFilters(): ActiveFilter[] {
+    const filters: ActiveFilter[] = [];
+    if (this.selectedTeamId) {
+      const team = this.teams.find((t) => t._id === this.selectedTeamId);
+      filters.push({ type: 'Team', label: team?.name || 'Team', clear: () => { this.selectedTeamId = ''; this.applyFilters(); } });
+    }
+    if (this.selectedActorId && this.selectedActorId !== this.currentUserId) {
+      const user = this.userOptions.find((u) => u._id === this.selectedActorId);
+      filters.push({ type: 'User', label: user?.name || user?.email || 'User', clear: () => { this.selectedActorId = ''; this.applyFilters(); } });
+    }
+    if (this.action) {
+      filters.push({ type: 'Action', label: this.action, clear: () => { this.action = ''; this.applyFilters(); } });
+    }
+    if (this.selectedMethod) {
+      filters.push({ type: 'Method', label: this.selectedMethod, clear: () => { this.selectedMethod = ''; this.applyFilters(); } });
+    }
+    if (this.selectedStatusCode) {
+      filters.push({ type: 'Status', label: this.selectedStatusCode, clear: () => { this.selectedStatusCode = ''; this.applyFilters(); } });
+    }
+    if (this.selectedActionCategory) {
+      filters.push({ type: 'Category', label: this.titleCase(this.selectedActionCategory), clear: () => { this.selectedActionCategory = ''; this.applyFilters(); } });
+    }
+    if (this.from || this.to) {
+      filters.push({
+        type: 'Date',
+        label: `${this.from || 'Any'} to ${this.to || 'Any'}`,
+        clear: () => {
+          const today = new Date();
+          this.from = this.toDateString(today);
+          this.to = this.toDateString(today);
+          this.applyFilters();
+        }
+      });
+    }
+    return filters;
+  }
+
+  get hasActiveFilters(): boolean {
+    return !!this.selectedTeamId
+      || (!!this.selectedActorId && this.selectedActorId !== this.currentUserId)
+      || !!this.action
+      || !!this.selectedMethod
+      || !!this.selectedStatusCode
+      || !!this.selectedActionCategory;
+  }
+
+  methodBadgeClass(method: string): string {
+    switch (method?.toUpperCase()) {
+      case 'POST': return 'method-badge--post';
+      case 'PUT':
+      case 'PATCH': return 'method-badge--put';
+      case 'DELETE': return 'method-badge--delete';
+      default: return 'method-badge--get';
+    }
+  }
+
+  statusBadgeClass(code: number): string {
+    if (code >= 200 && code < 300) return 'status-code--ok';
+    if (code >= 300 && code < 400) return 'status-code--warn';
+    if (code >= 400) return 'status-code--err';
+    return '';
   }
 
   private ensureDefaultDateRange(): void {
@@ -128,7 +224,6 @@ export class AdminActivityLogsComponent implements OnInit {
     if (!this.selectedTeamId) {
       return this.userOptions;
     }
-
     const team = this.teams.find((item) => item._id === this.selectedTeamId);
     return Array.isArray(team?.members)
       ? team.members.map((member) => ({
@@ -227,7 +322,41 @@ export class AdminActivityLogsComponent implements OnInit {
     }));
   }
 
+  get methodSelectOptions(): SearchableSelectOption[] {
+    return this.methodOptions.map((method) => ({
+      value: method,
+      label: method
+    }));
+  }
+
+  get actionCategorySelectOptions(): SearchableSelectOption[] {
+    return this.actionCategoryOptions.map((category) => ({
+      value: category,
+      label: this.titleCase(category)
+    }));
+  }
+
+  onQuickSearchChange(): void {
+    this.filteredLogs = this.performQuickSearch();
+  }
+
+  private performQuickSearch(): AuditLogItem[] {
+    const query = this.quickSearch.trim().toLowerCase();
+    if (!query) return [...this.logs];
+    return this.logs.filter(
+      (log) =>
+        this.fmtActor(log.actor).toLowerCase().includes(query) ||
+        (log.action || '').toLowerCase().includes(query) ||
+        (log.actionCategory || '').toLowerCase().includes(query) ||
+        (log.method || '').toLowerCase().includes(query) ||
+        (log.route || '').toLowerCase().includes(query) ||
+        String(log.statusCode || '').includes(query)
+    );
+  }
+
   applyFilters(): void {
+    this.quickSearch = '';
+    this.page = 1;
     this.fetchLogs(1);
   }
 
@@ -237,7 +366,11 @@ export class AdminActivityLogsComponent implements OnInit {
     const role = String(currentUser?.role || '').toLowerCase();
     this.selectedActorId = role === 'admin' ? '' : this.currentUserId;
     this.action = '';
+    this.selectedMethod = '';
+    this.selectedStatusCode = '';
+    this.selectedActionCategory = '';
     this.actionOptions = [];
+    this.quickSearch = '';
     const today = new Date();
     this.from = this.toDateString(today);
     this.to = this.toDateString(today);
@@ -245,6 +378,12 @@ export class AdminActivityLogsComponent implements OnInit {
   }
 
   fetchLogs(page = this.page): void {
+    // Prevent duplicate API calls
+    if (this.pendingRequest) {
+      this.pendingRequest.unsubscribe();
+      this.pendingRequest = null;
+    }
+
     this.ensureDefaultDateRange();
     this.loading = true;
     this.cdr.markForCheck();
@@ -253,8 +392,10 @@ export class AdminActivityLogsComponent implements OnInit {
     const params: {
       actor?: string;
       action?: string;
-      organizationId?: string;
       teamId?: string;
+      method?: string;
+      statusCode?: string;
+      actionCategory?: string;
       from?: string;
       to?: string;
       page: number;
@@ -262,27 +403,32 @@ export class AdminActivityLogsComponent implements OnInit {
     } = {
       actor: this.selectedActorId || undefined,
       action: this.action || undefined,
-      organizationId: this.organizationId || undefined,
       teamId: this.selectedTeamId || undefined,
+      method: this.selectedMethod || undefined,
+      statusCode: this.selectedStatusCode || undefined,
+      actionCategory: this.selectedActionCategory || undefined,
       page: this.page,
-      limit: 20
+      limit: this.limit
     };
 
     if (this.from) params.from = this.toStartOfDayIso(this.from);
     if (this.to) params.to = this.toEndOfDayIso(this.to);
 
-    this.apiService.getAuditLogs(params)
+    this.pendingRequest = this.apiService.getAuditLogs(params)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.loading = false;
+          this.pendingRequest = null;
           this.cdr.markForCheck();
         })
       )
       .subscribe({
         next: (res) => {
           this.logs = Array.isArray(res?.logs) ? res.logs : [];
+          this.filteredLogs = this.performQuickSearch();
           this.total = Number(res?.total || 0);
+          this.limit = Number(res?.limit || 20);
           this.totalPages = Number(res?.totalPages || 1);
           this.actionOptions = Array.isArray(res?.actionOptions)
             ? res.actionOptions.map((value: unknown) => String(value || '')).filter(Boolean)
@@ -306,11 +452,13 @@ export class AdminActivityLogsComponent implements OnInit {
             this.userOptions = Array.from(scopedUsers.values());
             this.refreshActorSelection();
           }
-          this.selectedLog = this.logs[0] || null;
+          const selectedLogId = this.selectedLog?._id;
+          this.selectedLog = this.logs.find((entry) => entry._id === selectedLogId) || this.logs[0] || null;
           this.statusMessage = '';
         },
         error: (err) => {
           this.logs = [];
+          this.filteredLogs = [];
           this.selectedLog = null;
           this.statusMessage = err?.error?.message || 'Failed to load activity logs.';
         }
@@ -323,16 +471,15 @@ export class AdminActivityLogsComponent implements OnInit {
 
   deleteLog(log: AuditLogItem): void {
     if (!log?._id) return;
-    const confirmed = globalThis.confirm('Delete this activity log?');
+    const confirmed = globalThis.confirm('Archive this activity log entry?');
     if (!confirmed) return;
 
-    this.apiService.deleteAuditLog(log._id, {
-      organizationId: this.organizationId || undefined
-    })
+    this.apiService.deleteAuditLog(log._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.logs = this.logs.filter((item) => item._id !== log._id);
+          this.filteredLogs = this.performQuickSearch();
           if (this.selectedLog?._id === log._id) {
             this.selectedLog = this.logs[0] || null;
           }
@@ -343,10 +490,39 @@ export class AdminActivityLogsComponent implements OnInit {
           }
         },
         error: (err) => {
-          this.statusMessage = err?.error?.message || 'Failed to delete log.';
+          this.statusMessage = err?.error?.message || 'Failed to archive log.';
           this.cdr.markForCheck();
         }
       });
+  }
+
+  exportCSV(): void {
+    if (this.filteredLogs.length === 0) return;
+    this.exporting = true;
+    try {
+      const headers = ['Timestamp', 'User', 'Method', 'Action', 'Route', 'Status Code', 'IP Address'];
+      const rows = this.filteredLogs.map((log) => [
+        log.timestamp,
+        this.fmtActor(log.actor),
+        log.method,
+        log.action,
+        log.route,
+        String(log.statusCode),
+        log.ipAddress || ''
+      ]);
+      const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const csv = [headers.map(escape).join(','), ...rows.map((r) => r.map(escape).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      this.exporting = false;
+      this.cdr.markForCheck();
+    }
   }
 
   fmtActor(actor: AuditActor | null): string {
@@ -358,9 +534,54 @@ export class AdminActivityLogsComponent implements OnInit {
     return actor.name || actor.githubUsername || actor.email || 'User';
   }
 
+  getFullTimestamp(log: AuditLogItem): string {
+    if (!log?.timestamp) return '';
+    const date = new Date(log.timestamp);
+    return date.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    });
+  }
+
+  titleCase(value: string): string {
+    return String(value || '')
+      .split(/[\s_-]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  maskSensitive = (data: unknown): unknown => {
+    if (data === null || data === undefined) return data;
+    if (Array.isArray(data)) {
+      return data.map((item) => (typeof item === 'object' && item !== null ? this.maskSensitive(item) : item));
+    }
+    if (typeof data !== 'object') return data;
+
+    const masked: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      const isSensitive = SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+      if (isSensitive) {
+        masked[key] = '***MASKED***';
+      } else if (typeof value === 'object' && value !== null) {
+        masked[key] = this.maskSensitive(value);
+      } else {
+        masked[key] = value;
+      }
+    }
+    return masked;
+  };
+
   toJson(data: unknown): string {
     try {
-      return JSON.stringify(data, null, 2);
+      const safe = this.maskSensitive(data);
+      return JSON.stringify(safe, null, 2);
     } catch {
       return 'Unable to render payload';
     }
@@ -368,29 +589,5 @@ export class AdminActivityLogsComponent implements OnInit {
 
   isEmailDeliveryLog(log: AuditLogItem): boolean {
     return String(log?.action || '') === 'EMAIL_INVITATION_DELIVERY';
-  }
-
-  getEmailDeliveryDetails(log: AuditLogItem): EmailDeliveryDetails | null {
-    if (!this.isEmailDeliveryLog(log)) return null;
-    const after = (log?.after as Record<string, unknown>) || {};
-    const provider = typeof after['provider'] === 'string' ? after['provider'] : null;
-    let deliveryStatus = 'failed';
-    if (typeof after['deliveryStatus'] === 'string') {
-      deliveryStatus = after['deliveryStatus'];
-    } else if (after['sent']) {
-      deliveryStatus = 'delivered';
-    }
-
-    return { provider, deliveryStatus };
-  }
-
-  formatDeliveryLabel(status: string): string {
-    return status.replaceAll('_', ' ');
-  }
-
-  deliveryBadgeClass(status: string): string {
-    if (status === 'delivered') return 'delivery-delivered';
-    if (status === 'provider_not_configured') return 'delivery-provider-not-configured';
-    return 'delivery-failed';
   }
 }
