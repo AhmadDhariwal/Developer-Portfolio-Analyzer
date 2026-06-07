@@ -570,10 +570,16 @@
 
   <div class="drawer-backdrop" *ngIf="detailView" (click)="closeDetail()"></div>
   <aside class="drawer" *ngIf="detailView" (click)="$event.stopPropagation()">
-    <button type="button" class="drawer__close" (click)="closeDetail()" aria-label="Close details drawer">
-      <span>&times;</span>
-    </button>
+    <div class="drawer__close-bar">
+      <span class="drawer__close-bar-title">
+        {{ detailView === 'team' ? 'Team Details' : detailView === 'recruiter' ? 'Recruiter Details' : 'Developer Details' }}
+      </span>
+      <button type="button" class="drawer__close" (click)="closeDetail()" aria-label="Close details drawer">
+        <span>&times;</span>
+      </button>
+    </div>
 
+    <div class="drawer__body">
     <ng-container *ngIf="detailView === 'team' && selectedTeam as team">
       <div class="drawer__header">
         <h2>{{ team.name }}</h2>
@@ -723,5 +729,6 @@
         <p>No detail data available for this section.</p>
       </div>
     </ng-template>
+    </div>
   </aside>
 </section>

@@ -293,7 +293,10 @@
         <div class="ps-card__head">
           <div>
             <h3 class="ps-card__title">Team Performance <span class="ps-badge">{{ data.teamMetrics.length }}</span></h3>
-            <div class="ps-meta" *ngIf="data.engagementMeta?.formula" [attr.title]="data.engagementMeta?.notes?.join(' | ') || ''">Engagement score: {{ data.engagementMeta?.formula }}</div>
+            <div class="ps-meta" *ngIf="data.engagementMeta?.formula">
+              <span class="ps-info-dot" [attr.title]="'Formula: ' + data.engagementMeta?.formula + (data.engagementMeta?.notes?.length ? '\n\n' + data.engagementMeta?.notes?.join('\n') : '')">&#9432;</span>
+              Engagement score: weighted composite
+            </div>
           </div>
           <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="exportTeams()" [disabled]="data.teamMetrics.length===0">Export CSV</button>
         </div>
@@ -301,7 +304,7 @@
         <div class="ps-empty-sm" *ngIf="data.teamMetrics.length===0">No teams found for these filters.</div>
 
         <div class="ps-team-grid" *ngIf="data.teamMetrics.length>0">
-          <button type="button" class="ps-team-card ps-row-btn" *ngFor="let t of data.teamMetrics; let i=index" (click)="openTeamDetails(t)">
+          <div class="ps-team-card" *ngFor="let t of data.teamMetrics; let i=index">
             <div class="ps-team-card__header">
               <div class="ps-team-card__avatar">{{ t.name.charAt(0).toUpperCase() }}</div>
               <div class="ps-min-w-0">
@@ -326,7 +329,10 @@
               <div class="ps-progress"><div class="ps-progress__fill ps-progress__fill--green" [style.width.%]="t.hiringPerformance"></div></div>
               <span class="ps-team-card__score-val">{{ t.hiringPerformance }}%</span>
             </div>
-          </button>
+            <div class="ps-team-card__action">
+              <button type="button" class="ps-team-card__action-link" (click)="openTeamDetails(t)">View Team Details →</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -474,7 +480,7 @@
 
   <div class="ps-drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
 
-  <aside class="ps-drawer" *ngIf="drawerOpen">
+  <aside class="ps-drawer" *ngIf="drawerOpen" (click)="$event.stopPropagation()">
     <div class="ps-drawer__head">
       <div>
         <h3 class="ps-card__title" *ngIf="drawerType==='recruiter'">{{ selectedRecruiterDetail?.name }}</h3>
@@ -482,7 +488,7 @@
         <div class="ps-meta" *ngIf="drawerType==='recruiter'">{{ selectedRecruiterDetail?.email }}</div>
         <div class="ps-meta" *ngIf="drawerType==='team'">Team drill-down</div>
       </div>
-      <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="closeDrawer()">Close</button>
+      <button type="button" class="ps-drawer-close" (click)="closeDrawer()" aria-label="Close drawer">&times;</button>
     </div>
 
     <div class="ps-drawer__body" *ngIf="drawerType==='recruiter' && selectedRecruiterDetail as recruiter">
