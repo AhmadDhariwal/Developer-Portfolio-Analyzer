@@ -17,7 +17,7 @@
   <nav class="sidebar-nav">
     <ul class="nav-menu">
       <li *ngFor="let item of visibleNavItems">
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-link">
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-link" (click)="collapse.emit()" [attr.title]="item.label">
           <span class="nav-icon" [innerHTML]="item.icon"></span>
           <span class="nav-label">{{ item.label }}</span>
         </a>
@@ -26,13 +26,13 @@
       <li *ngFor="let group of visibleNavGroups" class="nav-group">
         <div class="nav-group-header" (click)="!group.route && toggleGroup(group.label)">
           <ng-container *ngIf="group.route; else noRouteHeader">
-            <a [routerLink]="group.route" routerLinkActive="active" class="nav-link nav-group-link">
+            <a [routerLink]="group.route" routerLinkActive="active" class="nav-link nav-group-link" (click)="collapse.emit()" [attr.title]="group.label">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
             </a>
           </ng-container>
           <ng-template #noRouteHeader>
-            <div class="nav-link nav-group-link clickable">
+            <div class="nav-link nav-group-link clickable" [attr.title]="group.label">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
             </div>
@@ -50,7 +50,9 @@
               <a
                 [routerLink]="item.route"
                 class="nav-link nav-sublink"
-                [class.active]="isAdminConsoleActive()">
+                [class.active]="isAdminConsoleActive()"
+                (click)="collapse.emit()"
+                [attr.title]="item.label">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -60,7 +62,9 @@
                 [routerLink]="item.route"
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: item.route === '/app/admin/console' }"
-                class="nav-link nav-sublink">
+                class="nav-link nav-sublink"
+                (click)="collapse.emit()"
+                [attr.title]="item.label">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -89,7 +93,7 @@
       </div>
     </div>
 
-    <button class="logout-btn" (click)="logout()">
+    <button class="logout-btn" (click)="logout()" title="Logout">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

@@ -16,7 +16,7 @@
   transition: left var(--transition-base);
 
   &.sidebar-closed {
-    left: 0;
+    left: 68px; // sidebar-collapsed-width: icon-only strip still visible
   }
 
   /* ─── Left ─── */

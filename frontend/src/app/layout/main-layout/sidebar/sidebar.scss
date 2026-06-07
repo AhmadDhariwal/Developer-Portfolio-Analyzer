@@ -1,4 +1,5 @@
 .sidebar {
+  --sidebar-collapsed-width: 68px;
   width: var(--sidebar-width);
   height: 100vh;
   position: fixed;
@@ -9,16 +10,23 @@
   z-index: 200;
   display: flex;
   flex-direction: column;
-  transition: transform var(--transition-base), width var(--transition-base);
+  transition: width 0.25s ease;
   overflow: hidden;
 
   &.closed {
-    transform: translateX(-100%);
+    width: var(--sidebar-collapsed-width);
   }
 
   @media (max-width: 768px) {
     transform: translateX(-100%);
-    &.open { transform: translateX(0); }
+    &.open { 
+      transform: translateX(0); 
+      width: var(--sidebar-width);
+    }
+    &.closed {
+      transform: translateX(-100%);
+      width: var(--sidebar-width);
+    }
   }
 
   /* ─── Logo ─── */
@@ -29,6 +37,7 @@
     padding: 20px 20px 18px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     min-height: 70px;
+    transition: padding 0.25s ease;
 
     .logo-icon {
       width: 34px;
@@ -54,6 +63,7 @@
       font-family: 'Poppins', sans-serif;
       color: var(--text-primary);
       white-space: nowrap;
+      transition: opacity 0.2s, visibility 0.2s;
 
       .ai-tag {
         background: linear-gradient(135deg, #6366F1, #8B5CF6);
@@ -81,6 +91,7 @@
       svg {
         width: 16px;
         height: 16px;
+        transition: transform 0.25s ease;
       }
 
       &:hover {
@@ -93,7 +104,7 @@
   /* ─── Nav ─── */
   .sidebar-nav {
     flex: 1;
-    padding: 16px 12px;
+    padding: 16px 8px;
     overflow-y: auto;
 
     &::-webkit-scrollbar { width: 0; }
@@ -131,6 +142,7 @@
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+    flex-shrink: 0;
 
     svg {
       width: 16px;
@@ -164,7 +176,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    transition: max-height var(--transition-base), opacity var(--transition-base);
+    transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
     max-height: 600px;
     opacity: 1;
     overflow: hidden;
@@ -184,6 +196,77 @@
     .nav-icon {
       width: 18px;
       height: 18px;
+    }
+  }
+
+  /* ─── Collapsed / icon-only mode (no hover expand) ─── */
+  &.closed {
+    .nav-label,
+    .logo-text,
+    .sidebar-user-name,
+    .sidebar-user-handle,
+    .logout-btn .nav-label {
+      display: none;
+    }
+
+    .group-toggle {
+      opacity: 0;
+      width: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .nav-submenu {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .nav-link {
+      justify-content: center;
+      padding: 11px 0;
+    }
+
+    .nav-icon {
+      margin: 0;
+    }
+
+    .nav-group-header {
+      justify-content: center;
+    }
+
+    .sidebar-logo {
+      justify-content: center;
+      padding: 20px 8px 18px;
+    }
+
+    .collapse-btn {
+      margin-left: 0;
+    }
+
+    .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+
+    .sidebar-user-card {
+      justify-content: center;
+      padding: 10px 6px;
+    }
+
+    .sidebar-user-avatar {
+      margin: 0;
+    }
+
+    .logout-btn {
+      justify-content: center;
+      padding: 11px 0;
+    }
+
+    .nav-group-link {
+      padding-right: 0;
     }
   }
 
@@ -245,8 +328,9 @@
 
   /* ─── Footer / Logout ─── */
   .sidebar-footer {
-    padding: 12px 12px 20px;
+    padding: 12px 8px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+    transition: padding 0.25s ease;
   }
 
   .sidebar-user-card {
@@ -258,6 +342,7 @@
     border-radius: 12px;
     background: rgba(99, 102, 241, 0.08);
     border: 1px solid rgba(99, 102, 241, 0.2);
+    transition: padding 0.25s ease;
   }
 
   .sidebar-user-avatar {
@@ -287,6 +372,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    transition: opacity 0.2s, visibility 0.2s;
   }
 
   .sidebar-user-name {
@@ -333,6 +419,10 @@
       flex-shrink: 0;
 
       svg { width: 18px; height: 18px; }
+    }
+
+    .nav-label {
+      transition: opacity 0.2s, visibility 0.2s;
     }
 
     &:hover {

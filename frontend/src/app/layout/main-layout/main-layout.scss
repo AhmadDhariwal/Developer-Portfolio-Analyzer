@@ -17,7 +17,7 @@
   }
 
   &.sidebar-closed {
-    margin-left: 0;
+    margin-left: 68px; // sidebar-collapsed-width: icon-only strip still visible
   }
 }
 

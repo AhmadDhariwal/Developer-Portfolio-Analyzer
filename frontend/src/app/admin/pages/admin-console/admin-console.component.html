@@ -91,12 +91,7 @@
       </svg>
       Invitations
     </button>
-    <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'activity'" (click)="setTab('activity')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-      </svg>
-      Activity
-    </button>
+    <!-- Activity tab removed — redirects to /app/admin/activity-logs -->
     <button type="button" class="oc-tab" [class.oc-tab--active]="activeTab === 'preferences'" (click)="setTab('preferences')">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3"></circle>
@@ -689,22 +684,37 @@
 
   <div class="oc-tab-panel" role="tabpanel" aria-label="Preferences" *ngIf="activeTab === 'preferences'">
     <div class="oc-section-header">
-      <h2 class="oc-section-header__title">Organization Preferences</h2>
+      <h2 class="oc-section-header__title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+        Organization Preferences
+      </h2>
     </div>
 
     <div class="oc-prefs-layout" *ngIf="preferences; else preferencesEmpty">
+      <!-- Left column: Editable form -->
       <div class="oc-prefs-edit">
-        <h3 class="oc-prefs-edit__title">Edit Details</h3>
-        <div class="oc-form-group">
+        <div class="oc-prefs-edit__head">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <h3 class="oc-prefs-edit__title">Organization Settings</h3>
+        </div>
+
+        <div class="oc-prefs-form-group">
           <label class="oc-label" for="pref-name">Organization Name</label>
+          <p class="oc-prefs-hint">Displayed across the dashboard and console</p>
           <input id="pref-name" class="oc-input" type="text" [(ngModel)]="prefForm.name" name="prefName" placeholder="My Organization" />
         </div>
-        <div class="oc-form-group">
+
+        <div class="oc-prefs-form-group">
           <label class="oc-label" for="pref-desc">Description</label>
-          <textarea id="pref-desc" class="oc-input oc-textarea" [(ngModel)]="prefForm.description" name="prefDesc" rows="4" placeholder="Describe your organization..."></textarea>
+          <p class="oc-prefs-hint">Brief summary shown in the dashboard header</p>
+          <textarea id="pref-desc" class="oc-input oc-textarea" [(ngModel)]="prefForm.description" name="prefDesc" rows="3" placeholder="Describe your organization..."></textarea>
         </div>
-        <div class="oc-form-group">
-          <label class="oc-label" for="pref-range">Default Dashboard Range</label>
+
+        <div class="oc-prefs-divider"></div>
+
+        <div class="oc-prefs-form-group">
+          <label class="oc-label" for="pref-range">Default Dashboard Date Range</label>
+          <p class="oc-prefs-hint">Controls the default time window for all dashboard widgets</p>
           <select id="pref-range" class="oc-input" [(ngModel)]="prefForm.preferredDateRangeDays" name="prefRange">
             <option [ngValue]="7">Last 7 days</option>
             <option [ngValue]="14">Last 14 days</option>
@@ -713,61 +723,117 @@
             <option [ngValue]="90">Last 90 days</option>
           </select>
         </div>
-        <div class="oc-form-group">
+
+        <div class="oc-prefs-form-group">
           <label class="oc-label" for="pref-team">Default Team Filter</label>
+          <p class="oc-prefs-hint">Pre-selected team when the dashboard loads</p>
           <select id="pref-team" class="oc-input" [(ngModel)]="prefForm.defaultTeamId" name="prefDefaultTeam">
             <option value="">All teams</option>
             <option *ngFor="let team of teamOptions" [value]="team._id">{{ team.name }}</option>
           </select>
         </div>
-        <div class="oc-form-group">
-          <label class="oc-label">Dashboard Sections</label>
-          <div class="oc-edit-grid">
-            <label class="oc-detail-row">
-              <input type="checkbox" [(ngModel)]="prefForm.showKpiCards" name="showKpiCards" />
-              <span class="oc-detail-row__value">KPI Cards</span>
+
+        <div class="oc-prefs-divider"></div>
+
+        <div class="oc-prefs-form-group">
+          <label class="oc-label">Dashboard Widget Visibility</label>
+          <p class="oc-prefs-hint">Toggle which sections appear on the admin dashboard</p>
+          <div class="oc-toggle-grid">
+            <label class="oc-toggle-row">
+              <div class="oc-toggle-info">
+                <span class="oc-toggle-info__title">KPI Cards</span>
+                <span class="oc-toggle-info__sub">Organization metrics summary</span>
+              </div>
+              <div class="oc-toggle-switch">
+                <input type="checkbox" [(ngModel)]="prefForm.showKpiCards" name="showKpiCards" />
+                <span class="oc-toggle-switch__slider"></span>
+              </div>
             </label>
-            <label class="oc-detail-row">
-              <input type="checkbox" [(ngModel)]="prefForm.showTeamAnalytics" name="showTeamAnalytics" />
-              <span class="oc-detail-row__value">Team Analytics</span>
+            <label class="oc-toggle-row">
+              <div class="oc-toggle-info">
+                <span class="oc-toggle-info__title">Team Analytics</span>
+                <span class="oc-toggle-info__sub">Team performance and members</span>
+              </div>
+              <div class="oc-toggle-switch">
+                <input type="checkbox" [(ngModel)]="prefForm.showTeamAnalytics" name="showTeamAnalytics" />
+                <span class="oc-toggle-switch__slider"></span>
+              </div>
             </label>
-            <label class="oc-detail-row">
-              <input type="checkbox" [(ngModel)]="prefForm.showRecruiterPerformance" name="showRecruiterPerformance" />
-              <span class="oc-detail-row__value">Recruiter Performance</span>
+            <label class="oc-toggle-row">
+              <div class="oc-toggle-info">
+                <span class="oc-toggle-info__title">Recruiter Performance</span>
+                <span class="oc-toggle-info__sub">Recruiter output and activity</span>
+              </div>
+              <div class="oc-toggle-switch">
+                <input type="checkbox" [(ngModel)]="prefForm.showRecruiterPerformance" name="showRecruiterPerformance" />
+                <span class="oc-toggle-switch__slider"></span>
+              </div>
             </label>
-            <label class="oc-detail-row">
-              <input type="checkbox" [(ngModel)]="prefForm.showJobTrends" name="showJobTrends" />
-              <span class="oc-detail-row__value">Job Trends</span>
+            <label class="oc-toggle-row">
+              <div class="oc-toggle-info">
+                <span class="oc-toggle-info__title">Job Trends</span>
+                <span class="oc-toggle-info__sub">Monthly job charts and stack distribution</span>
+              </div>
+              <div class="oc-toggle-switch">
+                <input type="checkbox" [(ngModel)]="prefForm.showJobTrends" name="showJobTrends" />
+                <span class="oc-toggle-switch__slider"></span>
+              </div>
             </label>
-            <label class="oc-detail-row">
-              <input type="checkbox" [(ngModel)]="prefForm.showActivityFeed" name="showActivityFeed" />
-              <span class="oc-detail-row__value">Activity Feed</span>
+            <label class="oc-toggle-row">
+              <div class="oc-toggle-info">
+                <span class="oc-toggle-info__title">Activity Feed</span>
+                <span class="oc-toggle-info__sub">Recent actions and events</span>
+              </div>
+              <div class="oc-toggle-switch">
+                <input type="checkbox" [(ngModel)]="prefForm.showActivityFeed" name="showActivityFeed" />
+                <span class="oc-toggle-switch__slider"></span>
+              </div>
             </label>
           </div>
         </div>
+
+        <div class="oc-prefs-divider"></div>
+
         <div class="oc-panel-actions">
-          <button type="button" class="oc-btn-primary-sm" (click)="savePreferences()">Save Preferences</button>
-          <button type="button" class="oc-btn-ghost-sm" (click)="goToPerformanceStatistics()">Open Performance</button>
+          <button type="button" class="oc-btn-primary-sm" (click)="savePreferences()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Preferences
+          </button>
+          <button type="button" class="oc-btn-ghost-sm" (click)="goToPerformanceStatistics()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Open Performance
+          </button>
         </div>
       </div>
 
+      <!-- Right column: Readonly organization details -->
       <div class="oc-prefs-readonly">
-        <h3 class="oc-prefs-readonly__title">Organization Details</h3>
-        <div class="oc-detail-row">
-          <span class="oc-detail-row__label">Slug</span>
-          <span class="oc-detail-row__value oc-code">{{ preferences.organization.slug }}</span>
+        <div class="oc-prefs-readonly__head">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <h3 class="oc-prefs-readonly__title">Organization Details</h3>
         </div>
-        <div class="oc-detail-row">
-          <span class="oc-detail-row__label">Created</span>
-          <span class="oc-detail-row__value">{{ preferences.organization.createdAt | date:'mediumDate' }}</span>
-        </div>
-        <div class="oc-detail-row">
-          <span class="oc-detail-row__label">Organization ID</span>
-          <span class="oc-detail-row__value oc-code">{{ preferences.organization._id }}</span>
-        </div>
-        <div class="oc-detail-row">
-          <span class="oc-detail-row__label">Owner ID</span>
-          <span class="oc-detail-row__value oc-code">{{ preferences.organization.ownerId }}</span>
+
+        <div class="oc-readonly-grid">
+          <div class="oc-readonly-card">
+            <span class="oc-readonly-card__label">Organization Slug</span>
+            <span class="oc-readonly-card__value oc-code">{{ preferences.organization.slug }}</span>
+            <span class="oc-readonly-card__hint">Unique URL-safe identifier</span>
+          </div>
+          <div class="oc-readonly-card">
+            <span class="oc-readonly-card__label">Created On</span>
+            <span class="oc-readonly-card__value">{{ preferences.organization.createdAt | date:'mediumDate' }}</span>
+            <span class="oc-readonly-card__hint">{{ preferences.organization.createdAt | date:'yyyy' }}</span>
+          </div>
+          <div class="oc-readonly-card oc-readonly-card--span">
+            <span class="oc-readonly-card__label">Organization ID</span>
+            <span class="oc-readonly-card__value oc-code">{{ preferences.organization._id }}</span>
+            <span class="oc-readonly-card__hint">Unique database identifier</span>
+          </div>
+          <div class="oc-readonly-card oc-readonly-card--span">
+            <span class="oc-readonly-card__label">Owner ID</span>
+            <span class="oc-readonly-card__value oc-code">{{ preferences.organization.ownerId }}</span>
+            <span class="oc-readonly-card__hint">Account that owns this organization</span>
+          </div>
         </div>
       </div>
     </div>
