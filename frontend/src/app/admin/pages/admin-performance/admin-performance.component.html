@@ -1,6 +1,4 @@
 <div class="ps-shell">
-
-  <!-- Header -->
   <header class="ps-header">
     <div class="ps-header__left">
       <div class="ps-header__eyebrow">
@@ -8,154 +6,172 @@
         Performance & Statistics
       </div>
       <h1 class="ps-header__title">Analytics Dashboard</h1>
-      <p class="ps-header__sub">Recruiter performance, team metrics, hiring analytics and AI usage.</p>
+      <p class="ps-header__sub">Organization-scoped recruiter, team, hiring, and AI analytics with strict live filters.</p>
     </div>
+
     <div class="ps-header__right">
       <select class="ps-select" [(ngModel)]="selectedTeamId" (change)="onTeamChange()" title="Team filter">
         <option value="">All teams</option>
         <option *ngFor="let t of data?.filters?.teams || []" [value]="t._id">{{ t.name }}</option>
       </select>
+
       <select class="ps-select" [(ngModel)]="selectedRecruiterId" (change)="onRecruiterChange()" title="Recruiter filter">
         <option value="">All recruiters</option>
         <option *ngFor="let r of data?.filters?.recruiters || []" [value]="r._id">{{ r.name }}</option>
       </select>
+
       <select class="ps-select" [(ngModel)]="selectedStack" (change)="onStackChange()" title="Stack filter">
         <option value="">All stacks</option>
         <option *ngFor="let s of data?.filters?.stacks || []" [value]="s">{{ s }}</option>
       </select>
+
       <select class="ps-select" [(ngModel)]="selectedJobStatus" (change)="onJobStatusChange()" title="Job status filter">
         <option value="">All job statuses</option>
         <option *ngFor="let status of data?.filters?.jobStatuses || []" [value]="status">{{ status | titlecase }}</option>
       </select>
+
       <select class="ps-select" [(ngModel)]="selectedDays" (change)="onDaysChange()" title="Date range">
         <option *ngFor="let d of dayOptions" [value]="d">Last {{ d }} days</option>
       </select>
-      <button type="button" class="ps-btn-ghost" (click)="resetFilters()" title="Reset filters">Reset</button>
-      <button type="button" class="ps-btn-ghost" (click)="load()" [disabled]="loading" title="Refresh">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+
+      <button type="button" class="ps-btn-ghost" (click)="resetFilters()">Reset</button>
+      <button type="button" class="ps-btn-ghost" (click)="refresh()" [disabled]="loading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
         Refresh
       </button>
-      <a class="ps-btn-ghost" routerLink="/app/admin/console" title="Back to console">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+      <a class="ps-btn-ghost" routerLink="/app/admin/console">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"></polyline></svg>
         Console
       </a>
     </div>
   </header>
 
-  <!-- Loading bar -->
   <div class="ps-loading-bar" *ngIf="loading"><div class="ps-loading-bar__fill"></div></div>
 
-  <!-- Error -->
   <div class="ps-alert ps-alert--error" *ngIf="error" role="alert">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
     {{ error }}
   </div>
 
-  <!-- Section nav -->
-  <nav class="ps-nav" *ngIf="data">
-    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='overview'"   (click)="setSection('overview')">Overview</button>
+  <nav class="ps-nav" *ngIf="data || loading">
+    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='overview'" (click)="setSection('overview')">Overview</button>
     <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='recruiters'" (click)="setSection('recruiters')">Recruiters</button>
-    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='teams'"      (click)="setSection('teams')">Teams</button>
-    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='hiring'"     (click)="setSection('hiring')">Hiring</button>
-    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='ai'"         (click)="setSection('ai')">AI Usage</button>
+    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='teams'" (click)="setSection('teams')">Teams</button>
+    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='hiring'" (click)="setSection('hiring')">Hiring</button>
+    <button type="button" class="ps-nav__btn" [class.ps-nav__btn--active]="activeSection==='ai'" (click)="setSection('ai')">AI Usage</button>
   </nav>
 
-  <div *ngIf="data && !loading">
+  <section class="ps-skeleton" *ngIf="loading && !data">
+    <div class="ps-kpi-grid">
+      <div class="ps-skeleton-card" *ngFor="let _ of skeletonCards"></div>
+    </div>
+    <div class="ps-row">
+      <div class="ps-card">
+        <div class="ps-skeleton-line ps-skeleton-line--lg"></div>
+        <div class="ps-skeleton-line" *ngFor="let _ of skeletonRows"></div>
+      </div>
+      <div class="ps-card">
+        <div class="ps-skeleton-line ps-skeleton-line--lg"></div>
+        <div class="ps-skeleton-line" *ngFor="let _ of skeletonRows"></div>
+      </div>
+    </div>
+  </section>
 
-    <!-- ══ OVERVIEW ══════════════════════════════════════════════════════ -->
+  <div *ngIf="data">
     <section *ngIf="activeSection==='overview'">
-
-      <!-- KPI cards -->
       <div class="ps-kpi-grid">
         <div class="ps-kpi ps-kpi--indigo">
           <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Total Recruiters</span>
+          <span class="ps-kpi__label">Recruiters</span>
           <span class="ps-kpi__value">{{ data.summary.totalRecruiters }}</span>
           <span class="ps-kpi__sub">{{ data.summary.activeRecruiters }} active</span>
         </div>
         <div class="ps-kpi ps-kpi--green">
           <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Total Teams</span>
+          <span class="ps-kpi__label">Teams</span>
           <span class="ps-kpi__value">{{ data.summary.totalTeams }}</span>
-          <span class="ps-kpi__sub">Organization teams</span>
+          <span class="ps-kpi__sub">{{ data.summary.topTeam || 'No top team yet' }}</span>
         </div>
         <div class="ps-kpi ps-kpi--blue">
           <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Total Jobs</span>
-          <span class="ps-kpi__value">{{ data.hiringAnalytics.total }}</span>
-          <span class="ps-kpi__sub">{{ data.hiringAnalytics.recentJobs }} in last {{ selectedDays }}d</span>
+          <span class="ps-kpi__label">Jobs In Period</span>
+          <span class="ps-kpi__value">{{ data.hiringAnalytics.recentJobs }}</span>
+          <span class="ps-kpi__sub">{{ data.hiringAnalytics.total }} total in scope</span>
+          <span class="ps-delta" [class.ps-delta--positive]="comparisonTone(comparison('jobsCreated'))==='positive'" [class.ps-delta--negative]="comparisonTone(comparison('jobsCreated'))==='negative'">
+            {{ comparisonLabel(comparison('jobsCreated')) }}
+          </span>
         </div>
         <div class="ps-kpi ps-kpi--amber">
           <div class="ps-kpi__accent"></div>
           <span class="ps-kpi__label">Acceptance Rate</span>
           <span class="ps-kpi__value">{{ data.hiringAnalytics.acceptanceRate }}%</span>
-          <span class="ps-kpi__sub">Invitation funnel</span>
+          <span class="ps-kpi__sub">{{ data.hiringAnalytics.invitationFunnel.accepted }} accepted</span>
+          <span class="ps-delta" [class.ps-delta--positive]="comparisonTone(comparison('invitationAcceptanceRate'))==='positive'" [class.ps-delta--negative]="comparisonTone(comparison('invitationAcceptanceRate'))==='negative'">
+            {{ comparisonLabel(comparison('invitationAcceptanceRate'), '%') }}
+          </span>
         </div>
         <div class="ps-kpi ps-kpi--purple">
           <div class="ps-kpi__accent"></div>
           <span class="ps-kpi__label">AI Analyses</span>
-          <span class="ps-kpi__value">{{ data.aiStats.totalAnalyses }}</span>
-          <span class="ps-kpi__sub">{{ data.aiStats.recentAnalyses }} recent</span>
+          <span class="ps-kpi__value">{{ data.aiStats.recentAnalyses }}</span>
+          <span class="ps-kpi__sub">{{ data.aiStats.totalAnalyses }} all time</span>
+          <span class="ps-delta" [class.ps-delta--positive]="comparisonTone(comparison('aiAnalyses'))==='positive'" [class.ps-delta--negative]="comparisonTone(comparison('aiAnalyses'))==='negative'">
+            {{ comparisonLabel(comparison('aiAnalyses')) }}
+          </span>
         </div>
         <div class="ps-kpi ps-kpi--teal">
           <div class="ps-kpi__accent"></div>
-          <span class="ps-kpi__label">Open Jobs</span>
-          <span class="ps-kpi__value">{{ data.hiringAnalytics.open }}</span>
-          <span class="ps-kpi__sub">{{ data.hiringAnalytics.closed }} closed</span>
+          <span class="ps-kpi__label">Org Score</span>
+          <span class="ps-kpi__value">{{ data.summary.organizationPerformanceScore }}</span>
+          <span class="ps-kpi__sub">{{ data.summary.topRecruiter || 'No leader yet' }}</span>
+          <span class="ps-delta" [class.ps-delta--positive]="comparisonTone(comparison('organizationPerformanceScore'))==='positive'" [class.ps-delta--negative]="comparisonTone(comparison('organizationPerformanceScore'))==='negative'">
+            {{ comparisonLabel(comparison('organizationPerformanceScore')) }}
+          </span>
         </div>
       </div>
 
-      <!-- Top performers row -->
       <div class="ps-row">
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            Top Recruiters
-          </h3>
+          <div class="ps-card__head">
+            <h3 class="ps-card__title">Recruiter Leaderboard</h3>
+            <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="setSection('recruiters')">Open tab</button>
+          </div>
           <div class="ps-leaderboard">
-            <div class="ps-leaderboard__row" *ngFor="let r of data.recruiterMetrics.slice(0,5); let i=index">
+            <button type="button" class="ps-leaderboard__row ps-row-btn" *ngFor="let r of data.recruiterMetrics.slice(0,5); let i=index" (click)="openRecruiterDetails(r)">
               <span class="ps-leaderboard__rank">{{ medal(i) }}</span>
               <div class="ps-leaderboard__avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
               <div class="ps-leaderboard__info">
                 <span class="ps-leaderboard__name">{{ r.name }}</span>
-                <span class="ps-leaderboard__meta">{{ r.totalJobs }} jobs - {{ r.totalAnalyses }} analyses</span>
+                <span class="ps-leaderboard__meta">{{ r.totalJobs }} jobs • {{ r.totalAnalyses }} AI calls • {{ r.candidatesAnalyzed }} candidates</span>
               </div>
-              <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(r.score)==='green'" [class.ps-score-pill--amber]="scoreColor(r.score)==='amber'" [class.ps-score-pill--red]="scoreColor(r.score)==='red'">
-                {{ r.score }}
-              </div>
-            </div>
-            <div class="ps-empty-sm" *ngIf="data.recruiterMetrics.length===0">No recruiter data yet.</div>
+              <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(r.score)==='green'" [class.ps-score-pill--amber]="scoreColor(r.score)==='amber'" [class.ps-score-pill--red]="scoreColor(r.score)==='red'">{{ r.score }}</div>
+            </button>
+            <div class="ps-empty-sm" *ngIf="data.recruiterMetrics.length===0">No recruiter activity for these filters.</div>
           </div>
         </div>
 
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Team Leaderboard
-          </h3>
+          <div class="ps-card__head">
+            <h3 class="ps-card__title">Team Leaderboard</h3>
+            <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="setSection('teams')">Open tab</button>
+          </div>
           <div class="ps-leaderboard">
-            <div class="ps-leaderboard__row" *ngFor="let t of data.teamMetrics.slice(0,5); let i=index">
+            <button type="button" class="ps-leaderboard__row ps-row-btn" *ngFor="let t of data.teamMetrics.slice(0,5); let i=index" (click)="openTeamDetails(t)">
               <span class="ps-leaderboard__rank">{{ medal(i) }}</span>
               <div class="ps-leaderboard__avatar ps-leaderboard__avatar--team">{{ t.name.charAt(0).toUpperCase() }}</div>
               <div class="ps-leaderboard__info">
                 <span class="ps-leaderboard__name">{{ t.name }}</span>
-                <span class="ps-leaderboard__meta">{{ t.memberCount }} members - {{ t.totalJobs }} jobs</span>
+                <span class="ps-leaderboard__meta">{{ t.memberCount }} members • {{ t.totalJobs }} jobs • {{ t.candidatesAnalyzed || 0 }} candidates</span>
               </div>
-              <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(t.engagementScore)==='green'" [class.ps-score-pill--amber]="scoreColor(t.engagementScore)==='amber'" [class.ps-score-pill--red]="scoreColor(t.engagementScore)==='red'">
-                {{ t.engagementScore }}
-              </div>
-            </div>
-            <div class="ps-empty-sm" *ngIf="data.teamMetrics.length===0">No team data yet.</div>
+              <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(t.engagementScore)==='green'" [class.ps-score-pill--amber]="scoreColor(t.engagementScore)==='amber'" [class.ps-score-pill--red]="scoreColor(t.engagementScore)==='red'">{{ t.engagementScore }}</div>
+            </button>
+            <div class="ps-empty-sm" *ngIf="data.teamMetrics.length===0">No team activity for these filters.</div>
           </div>
         </div>
       </div>
 
-      <!-- Monthly trend chart -->
       <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Monthly Job Trend
-        </h3>
+        <h3 class="ps-card__title">Monthly Job Trend</h3>
         <div class="ps-bar-chart">
           <div class="ps-bar-chart__col" *ngFor="let t of data.hiringAnalytics.monthlyTrend">
             <div class="ps-bar-chart__bar-wrap">
@@ -169,28 +185,20 @@
 
       <div class="ps-row">
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-            Skill Gap Trends
-          </h3>
-          <div class="ps-empty-sm" *ngIf="(data.skillGapTrends?.length || 0) === 0">No skill gap data yet.</div>
+          <h3 class="ps-card__title">Skill Gap Trends</h3>
+          <div class="ps-empty-sm" *ngIf="(data.skillGapTrends?.length || 0) === 0">No skill gap data in this period.</div>
           <div class="ps-hbar-chart" *ngIf="(data.skillGapTrends?.length || 0) > 0">
             <div class="ps-hbar-chart__row" *ngFor="let s of data.skillGapTrends || []">
               <span class="ps-hbar-chart__label">{{ s.skill }}</span>
-              <div class="ps-hbar-chart__track">
-                <div class="ps-hbar-chart__fill" [style.width.%]="barPct(s.count, data.skillGapTrends?.[0]?.count || 1)"></div>
-              </div>
+              <div class="ps-hbar-chart__track"><div class="ps-hbar-chart__fill" [style.width.%]="barPct(s.count, data.skillGapTrends?.[0]?.count || 1)"></div></div>
               <span class="ps-hbar-chart__val">{{ s.count }}</span>
             </div>
           </div>
         </div>
 
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
-            Portfolio Quality (Recent)
-          </h3>
-          <div class="ps-empty-sm" *ngIf="(data.portfolioQuality?.sampleSize || 0) === 0">No portfolio data yet.</div>
+          <h3 class="ps-card__title">Portfolio Quality</h3>
+          <div class="ps-empty-sm" *ngIf="(data.portfolioQuality?.sampleSize || 0) === 0">No portfolio analyses in this period.</div>
           <div *ngIf="(data.portfolioQuality?.sampleSize || 0) > 0">
             <div class="ps-funnel">
               <div class="ps-funnel__row">
@@ -209,15 +217,12 @@
                 <span class="ps-funnel__val">{{ data.portfolioQuality?.avgGrowthPotential || 0 }}</span>
               </div>
             </div>
-            <div class="ps-meta" style="margin-top:8px;">Sample size: {{ data.portfolioQuality?.sampleSize }}</div>
+            <div class="ps-meta">Sample size: {{ data.portfolioQuality?.sampleSize }}</div>
           </div>
         </div>
 
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M3 3v18h18"/><path d="M7 15h2v2H7z"/><path d="M11 11h2v6h-2z"/><path d="M15 7h2v10h-2z"/></svg>
-            Engagement Heatmap
-          </h3>
+          <h3 class="ps-card__title">Engagement Heatmap</h3>
           <div class="ps-empty-sm" *ngIf="(data.engagementHeatmap?.max || 0)===0">No engagement events in this period.</div>
           <div class="ps-heatmap" *ngIf="(data.engagementHeatmap?.max || 0)>0">
             <div class="ps-heatmap__axis ps-heatmap__axis--top">
@@ -226,32 +231,25 @@
             </div>
             <div class="ps-heatmap__row" *ngFor="let day of data.engagementHeatmap?.days || []; let di=index">
               <span class="ps-heatmap__day">{{ day }}</span>
-              <div class="ps-heatmap__cell"
-                   *ngFor="let v of (data.engagementHeatmap?.grid?.[di] || []); let bi=index"
-                   [class]="heatClass(v, data.engagementHeatmap?.max || 1)"
-                   [attr.title]="day + ' ' + (data.engagementHeatmap?.buckets?.[bi] || '') + ': ' + v">
-              </div>
+              <div *ngFor="let v of (data.engagementHeatmap?.grid?.[di] || []); let bi=index" [class]="heatClass(v, data.engagementHeatmap?.max || 1)" [attr.title]="day + ' ' + (data.engagementHeatmap?.buckets?.[bi] || '') + ': ' + v"></div>
             </div>
-            <div class="ps-meta" style="margin-top:8px;">
-              Includes job creation + candidate creation + AI/match calls in last {{ selectedDays }} days.
-            </div>
+            <div class="ps-meta">Jobs, candidate creation, and AI recruiter actions for the selected period.</div>
           </div>
         </div>
       </div>
-
     </section>
 
-    <!-- ══ RECRUITERS ════════════════════════════════════════════════════ -->
     <section *ngIf="activeSection==='recruiters'">
-
       <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Recruiter Performance
-          <span class="ps-badge">{{ data.recruiterMetrics.length }}</span>
-        </h3>
+        <div class="ps-card__head">
+          <div>
+            <h3 class="ps-card__title">Recruiter Performance <span class="ps-badge">{{ data.recruiterMetrics.length }}</span></h3>
+            <div class="ps-meta">Click a recruiter row for drill-down details.</div>
+          </div>
+          <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="exportRecruiters()" [disabled]="data.recruiterMetrics.length===0">Export CSV</button>
+        </div>
 
-        <div class="ps-empty-sm" *ngIf="data.recruiterMetrics.length===0">No recruiters found.</div>
+        <div class="ps-empty-sm" *ngIf="data.recruiterMetrics.length===0">No recruiters found for these filters.</div>
 
         <div class="ps-recruiter-table" *ngIf="data.recruiterMetrics.length>0">
           <div class="ps-recruiter-table__head">
@@ -265,296 +263,184 @@
             <span>Last Active</span>
             <span>Score</span>
           </div>
-          <div class="ps-recruiter-table__row" *ngFor="let r of data.recruiterMetrics; let i=index">
+          <button type="button" class="ps-recruiter-table__row ps-row-btn" *ngFor="let r of data.recruiterMetrics; let i=index" (click)="openRecruiterDetails(r)">
             <div class="ps-recruiter-table__name">
-              <span class="ps-rank-num">{{ i+1 }}</span>
+              <span class="ps-rank-num">{{ i + 1 }}</span>
               <div class="ps-avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
-              <div>
+              <div class="ps-min-w-0">
                 <span class="ps-name">{{ r.name }}</span>
-                <span class="ps-meta">{{ r.email }}</span>
+                <span class="ps-meta ps-truncate">{{ r.email }}</span>
               </div>
             </div>
-            <span>
-              <span class="ps-pill" [class.ps-pill--green]="r.isActive" [class.ps-pill--red]="!r.isActive">
-                {{ r.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </span>
+            <span><span class="ps-pill" [class.ps-pill--green]="r.isActive" [class.ps-pill--red]="!r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span></span>
             <div class="ps-bar-cell">
               <span class="ps-bar-cell__val">{{ r.totalJobs }}</span>
               <div class="ps-bar-cell__track"><div class="ps-bar-cell__fill ps-bar-cell__fill--indigo" [style.width.%]="barPct(r.totalJobs, maxRecruiterJobs(data.recruiterMetrics))"></div></div>
             </div>
             <span class="ps-num">{{ r.recentJobs }}</span>
             <span class="ps-num">{{ r.totalAnalyses }}</span>
-            <span class="ps-num" [attr.title]="'AI-enhanced: ' + (r.aiEnhancedCandidates || 0)">{{ r.candidatesAnalyzed }}</span>
+            <span class="ps-num">{{ r.candidatesAnalyzed }}</span>
             <span class="ps-num">{{ r.hiringSuccessRate }}%</span>
             <span class="ps-meta">{{ r.lastActiveAt ? (r.lastActiveAt | date:'short') : 'No recent activity' }}</span>
-            <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(r.score)==='green'" [class.ps-score-pill--amber]="scoreColor(r.score)==='amber'" [class.ps-score-pill--red]="scoreColor(r.score)==='red'">
-              {{ r.score }}
-            </div>
-          </div>
+            <div class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(r.score)==='green'" [class.ps-score-pill--amber]="scoreColor(r.score)==='amber'" [class.ps-score-pill--red]="scoreColor(r.score)==='red'">{{ r.score }}</div>
+          </button>
         </div>
       </div>
-
     </section>
 
-    <!-- ══ TEAMS ═════════════════════════════════════════════════════════ -->
     <section *ngIf="activeSection==='teams'">
-
       <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Team Performance
-          <span class="ps-badge">{{ data.teamMetrics.length }}</span>
-        </h3>
-        <div class="ps-meta" *ngIf="data.engagementMeta?.formula" [attr.title]="data.engagementMeta?.notes?.join(' | ') || ''">
-          Engagement score: {{ data.engagementMeta?.formula }}
+        <div class="ps-card__head">
+          <div>
+            <h3 class="ps-card__title">Team Performance <span class="ps-badge">{{ data.teamMetrics.length }}</span></h3>
+            <div class="ps-meta" *ngIf="data.engagementMeta?.formula" [attr.title]="data.engagementMeta?.notes?.join(' | ') || ''">Engagement score: {{ data.engagementMeta?.formula }}</div>
+          </div>
+          <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="exportTeams()" [disabled]="data.teamMetrics.length===0">Export CSV</button>
         </div>
 
-        <div class="ps-empty-sm" *ngIf="data.teamMetrics.length===0">No teams found.</div>
+        <div class="ps-empty-sm" *ngIf="data.teamMetrics.length===0">No teams found for these filters.</div>
 
         <div class="ps-team-grid" *ngIf="data.teamMetrics.length>0">
-          <div class="ps-team-card" *ngFor="let t of data.teamMetrics; let i=index">
+          <button type="button" class="ps-team-card ps-row-btn" *ngFor="let t of data.teamMetrics; let i=index" (click)="openTeamDetails(t)">
             <div class="ps-team-card__header">
               <div class="ps-team-card__avatar">{{ t.name.charAt(0).toUpperCase() }}</div>
-              <div>
+              <div class="ps-min-w-0">
                 <span class="ps-team-card__name">{{ medal(i) }} {{ t.name }}</span>
                 <span class="ps-pill" [class.ps-pill--green]="t.isActive" [class.ps-pill--red]="!t.isActive">{{ t.isActive ? 'Active' : 'Inactive' }}</span>
               </div>
             </div>
             <div class="ps-team-card__stats">
-              <div class="ps-team-card__stat">
-                <span class="ps-team-card__stat-val">{{ t.memberCount }}</span>
-                <span class="ps-team-card__stat-lbl">Members</span>
-              </div>
-              <div class="ps-team-card__stat">
-                <span class="ps-team-card__stat-val">{{ t.activeMembers }}</span>
-                <span class="ps-team-card__stat-lbl">Active</span>
-              </div>
-              <div class="ps-team-card__stat">
-                <span class="ps-team-card__stat-val">{{ t.recruiterCount }}</span>
-                <span class="ps-team-card__stat-lbl">Recruiters</span>
-              </div>
-              <div class="ps-team-card__stat">
-                <span class="ps-team-card__stat-val">{{ t.totalJobs }}</span>
-                <span class="ps-team-card__stat-lbl">Jobs</span>
-              </div>
-              <div class="ps-team-card__stat">
-                <span class="ps-team-card__stat-val">{{ t.recentJobs }}</span>
-                <span class="ps-team-card__stat-lbl">Recent</span>
-              </div>
+              <div class="ps-team-card__stat"><span class="ps-team-card__stat-val">{{ t.memberCount }}</span><span class="ps-team-card__stat-lbl">Members</span></div>
+              <div class="ps-team-card__stat"><span class="ps-team-card__stat-val">{{ t.activeMembers }}</span><span class="ps-team-card__stat-lbl">Active</span></div>
+              <div class="ps-team-card__stat"><span class="ps-team-card__stat-val">{{ t.recruiterCount }}</span><span class="ps-team-card__stat-lbl">Recruiters</span></div>
+              <div class="ps-team-card__stat"><span class="ps-team-card__stat-val">{{ t.totalJobs }}</span><span class="ps-team-card__stat-lbl">Jobs</span></div>
+              <div class="ps-team-card__stat"><span class="ps-team-card__stat-val">{{ t.recentJobs }}</span><span class="ps-team-card__stat-lbl">Recent</span></div>
             </div>
             <div class="ps-team-card__score-row">
               <span class="ps-team-card__score-lbl">Engagement</span>
-              <div class="ps-progress">
-                <div class="ps-progress__fill" [class.ps-progress__fill--green]="scoreColor(t.engagementScore)==='green'" [class.ps-progress__fill--amber]="scoreColor(t.engagementScore)==='amber'" [class.ps-progress__fill--red]="scoreColor(t.engagementScore)==='red'" [style.width.%]="t.engagementScore"></div>
-              </div>
+              <div class="ps-progress"><div class="ps-progress__fill" [class.ps-progress__fill--green]="scoreColor(t.engagementScore)==='green'" [class.ps-progress__fill--amber]="scoreColor(t.engagementScore)==='amber'" [class.ps-progress__fill--red]="scoreColor(t.engagementScore)==='red'" [style.width.%]="t.engagementScore"></div></div>
               <span class="ps-team-card__score-val">{{ t.engagementScore }}</span>
             </div>
             <div class="ps-team-card__score-row">
               <span class="ps-team-card__score-lbl">Hiring Perf.</span>
-              <div class="ps-progress">
-                <div class="ps-progress__fill ps-progress__fill--green" [style.width.%]="t.hiringPerformance"></div>
-              </div>
+              <div class="ps-progress"><div class="ps-progress__fill ps-progress__fill--green" [style.width.%]="t.hiringPerformance"></div></div>
               <span class="ps-team-card__score-val">{{ t.hiringPerformance }}%</span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
-
     </section>
 
-    <!-- ══ HIRING ═════════════════════════════════════════════════════════ -->
     <section *ngIf="activeSection==='hiring'">
-
-      <!-- Funnel -->
       <div class="ps-row">
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-            Invitation Funnel
-          </h3>
+          <h3 class="ps-card__title">Invitation Funnel</h3>
           <div class="ps-funnel">
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Total Sent</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--indigo" style="width:100%"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--indigo" style="width:100%"></div></div>
               <span class="ps-funnel__val">{{ data.hiringAnalytics.invitationFunnel.total }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Accepted</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--green" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.accepted, data.hiringAnalytics.invitationFunnel.total)"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--green" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.accepted, data.hiringAnalytics.invitationFunnel.total)"></div></div>
               <span class="ps-funnel__val">{{ data.hiringAnalytics.invitationFunnel.accepted }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Pending</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--amber" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.pending, data.hiringAnalytics.invitationFunnel.total)"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--amber" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.pending, data.hiringAnalytics.invitationFunnel.total)"></div></div>
               <span class="ps-funnel__val">{{ data.hiringAnalytics.invitationFunnel.pending }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Expired</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--red" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.expired, data.hiringAnalytics.invitationFunnel.total)"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--red" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.expired, data.hiringAnalytics.invitationFunnel.total)"></div></div>
               <span class="ps-funnel__val">{{ data.hiringAnalytics.invitationFunnel.expired }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Revoked</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--slate" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.revoked, data.hiringAnalytics.invitationFunnel.total)"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--slate" [style.width.%]="funnelPct(data.hiringAnalytics.invitationFunnel.revoked, data.hiringAnalytics.invitationFunnel.total)"></div></div>
               <span class="ps-funnel__val">{{ data.hiringAnalytics.invitationFunnel.revoked }}</span>
             </div>
           </div>
           <div class="ps-acceptance-rate">
             <span class="ps-acceptance-rate__label">Acceptance Rate</span>
-            <span class="ps-acceptance-rate__val" [class.ps-acceptance-rate__val--green]="data.hiringAnalytics.acceptanceRate>=50">
-              {{ data.hiringAnalytics.acceptanceRate }}%
-            </span>
+            <span class="ps-acceptance-rate__val" [class.ps-acceptance-rate__val--green]="data.hiringAnalytics.acceptanceRate>=50">{{ data.hiringAnalytics.acceptanceRate }}%</span>
           </div>
         </div>
 
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            Job Status Breakdown
-          </h3>
+          <h3 class="ps-card__title">Job Status Breakdown</h3>
           <div class="ps-donut-wrap">
             <div class="ps-donut-legend">
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--green"></span>
-                <span>Open</span>
-                <strong>{{ data.hiringAnalytics.open }}</strong>
-              </div>
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--amber"></span>
-                <span>Draft</span>
-                <strong>{{ data.hiringAnalytics.draft }}</strong>
-              </div>
-              <div class="ps-donut-legend__item">
-                <span class="ps-donut-legend__dot ps-donut-legend__dot--red"></span>
-                <span>Closed</span>
-                <strong>{{ data.hiringAnalytics.closed }}</strong>
-              </div>
-              <div class="ps-donut-legend__item ps-donut-legend__item--total">
-                <span>Total</span>
-                <strong>{{ data.hiringAnalytics.total }}</strong>
-              </div>
+              <div class="ps-donut-legend__item"><span class="ps-donut-legend__dot ps-donut-legend__dot--green"></span><span>Open</span><strong>{{ data.hiringAnalytics.open }}</strong></div>
+              <div class="ps-donut-legend__item"><span class="ps-donut-legend__dot ps-donut-legend__dot--amber"></span><span>Draft</span><strong>{{ data.hiringAnalytics.draft }}</strong></div>
+              <div class="ps-donut-legend__item"><span class="ps-donut-legend__dot ps-donut-legend__dot--red"></span><span>Closed</span><strong>{{ data.hiringAnalytics.closed }}</strong></div>
+              <div class="ps-donut-legend__item ps-donut-legend__item--total"><span>Total</span><strong>{{ data.hiringAnalytics.total }}</strong></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Candidate funnel -->
       <div class="ps-row">
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Candidate Funnel
-          </h3>
+          <h3 class="ps-card__title">Candidate Funnel</h3>
           <div class="ps-empty-sm" *ngIf="(data.candidateAnalytics?.candidatesAnalyzed || 0)===0">No candidates analyzed in this period.</div>
           <div class="ps-funnel" *ngIf="(data.candidateAnalytics?.candidatesAnalyzed || 0)>0">
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Analyzed</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--indigo" style="width:100%"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--indigo" style="width:100%"></div></div>
               <span class="ps-funnel__val">{{ data.candidateAnalytics?.candidatesAnalyzed || 0 }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">AI Enhanced</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--green"
-                     [style.width.%]="funnelPct((data.candidateAnalytics?.aiEnhancedCandidates || 0), (data.candidateAnalytics?.candidatesAnalyzed || 0))"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--green" [style.width.%]="funnelPct((data.candidateAnalytics?.aiEnhancedCandidates || 0), (data.candidateAnalytics?.candidatesAnalyzed || 0))"></div></div>
               <span class="ps-funnel__val">{{ data.candidateAnalytics?.aiEnhancedCandidates || 0 }}</span>
             </div>
           </div>
           <div class="ps-acceptance-rate">
             <span class="ps-acceptance-rate__label">AI Enhanced Rate</span>
-            <span class="ps-acceptance-rate__val" [class.ps-acceptance-rate__val--green]="(data.aiEffectiveness?.aiEnhancedRate || 0)>=50">
-              {{ data.aiEffectiveness?.aiEnhancedRate || 0 }}%
-            </span>
+            <span class="ps-acceptance-rate__val" [class.ps-acceptance-rate__val--green]="(data.aiEffectiveness?.aiEnhancedRate || 0)>=50">{{ data.aiEffectiveness?.aiEnhancedRate || 0 }}%</span>
           </div>
         </div>
 
         <div class="ps-card ps-card--half">
-          <h3 class="ps-card__title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
-            AI Effectiveness (Period)
-          </h3>
-            <div class="ps-funnel">
+          <h3 class="ps-card__title">AI Effectiveness</h3>
+          <div class="ps-funnel">
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">AI Rank</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--indigo" [style.width.%]="barPct((data.aiEffectiveness?.aiRankCalls || 0), max2((data.aiEffectiveness?.aiRankCalls || 0), (data.aiEffectiveness?.matchCalls || 0)))"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--indigo" [style.width.%]="barPct((data.aiEffectiveness?.aiRankCalls || 0), max2((data.aiEffectiveness?.aiRankCalls || 0), (data.aiEffectiveness?.matchCalls || 0)))"></div></div>
               <span class="ps-funnel__val">{{ data.aiEffectiveness?.aiRankCalls || 0 }}</span>
             </div>
             <div class="ps-funnel__row">
               <span class="ps-funnel__label">Match</span>
-              <div class="ps-funnel__bar-wrap">
-                <div class="ps-funnel__bar ps-funnel__bar--blue" [style.width.%]="barPct((data.aiEffectiveness?.matchCalls || 0), max2((data.aiEffectiveness?.aiRankCalls || 0), (data.aiEffectiveness?.matchCalls || 0)))"></div>
-              </div>
+              <div class="ps-funnel__bar-wrap"><div class="ps-funnel__bar ps-funnel__bar--blue" [style.width.%]="barPct((data.aiEffectiveness?.matchCalls || 0), max2((data.aiEffectiveness?.aiRankCalls || 0), (data.aiEffectiveness?.matchCalls || 0)))"></div></div>
               <span class="ps-funnel__val">{{ data.aiEffectiveness?.matchCalls || 0 }}</span>
             </div>
           </div>
-          <div class="ps-meta" style="margin-top:8px;">
-            Counts based on recruiter POST calls to AI Rank and Match endpoints.
-          </div>
+          <div class="ps-meta">Counts are based on recruiter AI Rank and Match endpoint calls in the selected period.</div>
         </div>
       </div>
 
-      <!-- Stack distribution -->
       <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Jobs by Tech Stack
-        </h3>
+        <h3 class="ps-card__title">Jobs by Tech Stack</h3>
         <div class="ps-hbar-chart">
           <div class="ps-hbar-chart__row" *ngFor="let s of data.hiringAnalytics.stackDistribution">
             <span class="ps-hbar-chart__label">{{ s.stack }}</span>
-            <div class="ps-hbar-chart__track">
-              <div class="ps-hbar-chart__fill" [style.width.%]="barPct(s.count, maxStack(data.hiringAnalytics.stackDistribution))"></div>
-            </div>
+            <div class="ps-hbar-chart__track"><div class="ps-hbar-chart__fill" [style.width.%]="barPct(s.count, maxStack(data.hiringAnalytics.stackDistribution))"></div></div>
             <span class="ps-hbar-chart__val">{{ s.count }}</span>
           </div>
           <div class="ps-empty-sm" *ngIf="data.hiringAnalytics.stackDistribution.length===0">No stack data yet.</div>
         </div>
       </div>
-
-      <!-- Monthly trend -->
-      <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Monthly Job Trend (6 months)
-        </h3>
-        <div class="ps-bar-chart">
-          <div class="ps-bar-chart__col" *ngFor="let t of data.hiringAnalytics.monthlyTrend">
-            <div class="ps-bar-chart__bar-wrap">
-              <span class="ps-bar-chart__val" *ngIf="t.count>0">{{ t.count }}</span>
-              <div class="ps-bar-chart__bar ps-bar-chart__bar--blue" [style.height.%]="barPct(t.count, maxTrend(data.hiringAnalytics.monthlyTrend))"></div>
-            </div>
-            <span class="ps-bar-chart__label">{{ t.label }}</span>
-          </div>
-        </div>
-      </div>
-
     </section>
 
-    <!-- ══ AI USAGE ═══════════════════════════════════════════════════════ -->
     <section *ngIf="activeSection==='ai'">
-
       <div class="ps-kpi-grid ps-kpi-grid--2">
         <div class="ps-kpi ps-kpi--purple">
           <div class="ps-kpi__accent"></div>
           <span class="ps-kpi__label">Total Analyses</span>
           <span class="ps-kpi__value">{{ data.aiStats.totalAnalyses }}</span>
-          <span class="ps-kpi__sub">All time</span>
+          <span class="ps-kpi__sub">Scoped all-time usage</span>
         </div>
         <div class="ps-kpi ps-kpi--indigo">
           <div class="ps-kpi__accent"></div>
@@ -565,33 +451,142 @@
       </div>
 
       <div class="ps-card">
-        <h3 class="ps-card__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          AI Usage by Recruiter
-        </h3>
+        <h3 class="ps-card__title">AI Usage by Recruiter</h3>
         <div class="ps-hbar-chart">
           <div class="ps-hbar-chart__row" *ngFor="let a of data.aiStats.analysesByRecruiter">
             <span class="ps-hbar-chart__label" [attr.title]="'All time: ' + a.count + ' | Last ' + selectedDays + 'd: ' + (a.recentCount || 0)">
               {{ a.name }} ({{ a.recentCount || 0 }} recent)
             </span>
-            <div class="ps-hbar-chart__track">
-              <div class="ps-hbar-chart__fill ps-hbar-chart__fill--purple" [style.width.%]="barPct(a.count, maxAnalysisCount(data.aiStats.analysesByRecruiter))"></div>
-            </div>
+            <div class="ps-hbar-chart__track"><div class="ps-hbar-chart__fill ps-hbar-chart__fill--purple" [style.width.%]="barPct(a.count, maxAnalysisCount(data.aiStats.analysesByRecruiter))"></div></div>
             <span class="ps-hbar-chart__val">{{ a.count }}</span>
           </div>
           <div class="ps-empty-sm" *ngIf="data.aiStats.analysesByRecruiter.length===0">No AI usage data yet.</div>
         </div>
       </div>
-
     </section>
-
   </div>
 
-  <!-- Empty state when no data -->
   <div class="ps-empty" *ngIf="!data && !loading && !error">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <p>No performance data available yet.</p>
-    <button type="button" class="ps-btn-ghost" (click)="load()">Retry</button>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    <p>No performance data available for these filters.</p>
+    <button type="button" class="ps-btn-ghost" (click)="refresh()">Retry</button>
   </div>
 
+  <div class="ps-drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+
+  <aside class="ps-drawer" *ngIf="drawerOpen">
+    <div class="ps-drawer__head">
+      <div>
+        <h3 class="ps-card__title" *ngIf="drawerType==='recruiter'">{{ selectedRecruiterDetail?.name }}</h3>
+        <h3 class="ps-card__title" *ngIf="drawerType==='team'">{{ selectedTeamDetail?.name }}</h3>
+        <div class="ps-meta" *ngIf="drawerType==='recruiter'">{{ selectedRecruiterDetail?.email }}</div>
+        <div class="ps-meta" *ngIf="drawerType==='team'">Team drill-down</div>
+      </div>
+      <button type="button" class="ps-btn-ghost ps-btn-ghost--sm" (click)="closeDrawer()">Close</button>
+    </div>
+
+    <div class="ps-drawer__body" *ngIf="drawerType==='recruiter' && selectedRecruiterDetail as recruiter">
+      <div class="ps-chip-row">
+        <span class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(recruiter.score)==='green'" [class.ps-score-pill--amber]="scoreColor(recruiter.score)==='amber'" [class.ps-score-pill--red]="scoreColor(recruiter.score)==='red'">Score {{ recruiter.score }}</span>
+        <span class="ps-pill" [class.ps-pill--green]="recruiter.isActive" [class.ps-pill--red]="!recruiter.isActive">{{ recruiter.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+      <div class="ps-drawer-stats">
+        <div><strong>{{ recruiter.totalJobs }}</strong><span>Total jobs</span></div>
+        <div><strong>{{ recruiter.recentJobs }}</strong><span>Recent jobs</span></div>
+        <div><strong>{{ recruiter.totalAnalyses }}</strong><span>AI calls</span></div>
+        <div><strong>{{ recruiter.candidatesAnalyzed }}</strong><span>Candidates</span></div>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent jobs</h4>
+        <div class="ps-detail-list" *ngIf="recruiter.recentJobsList?.length; else recruiterJobsEmpty">
+          <div class="ps-detail-item" *ngFor="let job of recruiter.recentJobsList">
+            <div class="ps-detail-item__main">
+              <span>{{ job.title }}</span>
+              <span class="ps-meta">{{ job.stack }} • {{ job.status | titlecase }}</span>
+            </div>
+            <span class="ps-meta">{{ job.updatedAt | date:'shortDate' }}</span>
+          </div>
+        </div>
+        <ng-template #recruiterJobsEmpty><div class="ps-empty-sm">No recent jobs.</div></ng-template>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent candidates</h4>
+        <div class="ps-detail-list" *ngIf="recruiter.recentCandidates?.length; else recruiterCandidatesEmpty">
+          <div class="ps-detail-item" *ngFor="let candidate of recruiter.recentCandidates">
+            <div class="ps-detail-item__main">
+              <span>{{ candidate.fullName }}</span>
+              <span class="ps-meta">{{ candidate.stack }}</span>
+            </div>
+            <span class="ps-meta">{{ candidate.createdAt | date:'shortDate' }}</span>
+          </div>
+        </div>
+        <ng-template #recruiterCandidatesEmpty><div class="ps-empty-sm">No recent candidates.</div></ng-template>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent activity</h4>
+        <div class="ps-detail-list" *ngIf="recruiter.recentActivity?.length; else recruiterActivityEmpty">
+          <div class="ps-detail-item" *ngFor="let item of recruiter.recentActivity">
+            <div class="ps-detail-item__main">
+              <span>{{ item.action }}</span>
+              <span class="ps-meta">{{ item.method }} {{ item.route }}</span>
+            </div>
+            <span class="ps-meta">{{ item.timestamp | date:'short' }}</span>
+          </div>
+        </div>
+        <ng-template #recruiterActivityEmpty><div class="ps-empty-sm">No recent activity.</div></ng-template>
+      </div>
+    </div>
+
+    <div class="ps-drawer__body" *ngIf="drawerType==='team' && selectedTeamDetail as team">
+      <div class="ps-chip-row">
+        <span class="ps-score-pill" [class.ps-score-pill--green]="scoreColor(team.engagementScore)==='green'" [class.ps-score-pill--amber]="scoreColor(team.engagementScore)==='amber'" [class.ps-score-pill--red]="scoreColor(team.engagementScore)==='red'">Engagement {{ team.engagementScore }}</span>
+        <span class="ps-pill" [class.ps-pill--green]="team.isActive" [class.ps-pill--red]="!team.isActive">{{ team.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+      <div class="ps-drawer-stats">
+        <div><strong>{{ team.memberCount }}</strong><span>Members</span></div>
+        <div><strong>{{ team.totalJobs }}</strong><span>Total jobs</span></div>
+        <div><strong>{{ team.candidatesAnalyzed || 0 }}</strong><span>Candidates</span></div>
+        <div><strong>{{ team.aiUsage || 0 }}</strong><span>AI usage</span></div>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent jobs</h4>
+        <div class="ps-detail-list" *ngIf="team.recentJobsList?.length; else teamJobsEmpty">
+          <div class="ps-detail-item" *ngFor="let job of team.recentJobsList">
+            <div class="ps-detail-item__main">
+              <span>{{ job.title }}</span>
+              <span class="ps-meta">{{ job.stack }} • {{ job.status | titlecase }}</span>
+            </div>
+            <span class="ps-meta">{{ job.updatedAt | date:'shortDate' }}</span>
+          </div>
+        </div>
+        <ng-template #teamJobsEmpty><div class="ps-empty-sm">No recent jobs.</div></ng-template>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent candidates</h4>
+        <div class="ps-detail-list" *ngIf="team.recentCandidates?.length; else teamCandidatesEmpty">
+          <div class="ps-detail-item" *ngFor="let candidate of team.recentCandidates">
+            <div class="ps-detail-item__main">
+              <span>{{ candidate.fullName }}</span>
+              <span class="ps-meta">{{ candidate.stack }}</span>
+            </div>
+            <span class="ps-meta">{{ candidate.createdAt | date:'shortDate' }}</span>
+          </div>
+        </div>
+        <ng-template #teamCandidatesEmpty><div class="ps-empty-sm">No recent candidates.</div></ng-template>
+      </div>
+      <div class="ps-detail-block">
+        <h4>Recent activity</h4>
+        <div class="ps-detail-list" *ngIf="team.recentActions?.length; else teamActivityEmpty">
+          <div class="ps-detail-item" *ngFor="let item of team.recentActions">
+            <div class="ps-detail-item__main">
+              <span>{{ item.action }}</span>
+              <span class="ps-meta">{{ item.method }} {{ item.route }}</span>
+            </div>
+            <span class="ps-meta">{{ item.timestamp | date:'short' }}</span>
+          </div>
+        </div>
+        <ng-template #teamActivityEmpty><div class="ps-empty-sm">No recent activity.</div></ng-template>
+      </div>
+    </div>
+  </aside>
 </div>

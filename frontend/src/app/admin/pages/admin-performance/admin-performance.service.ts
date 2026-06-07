@@ -62,9 +62,10 @@ export interface TeamMetric {
 export interface StackItem { stack: string; count: number; }
 export interface TrendItem { label: string; count: number; }
 export interface RecruiterAnalysisUsage { name: string; count: number; recentCount?: number; }
+export interface PerformanceComparison { current: number; previous: number; delta: number; deltaPct: number; }
 
 export interface PerformanceData {
-  period: { days: number; since: string };
+  period: { days: number; since: string; until?: string; previousSince?: string };
   filters: {
     selectedTeamId: string;
     selectedRecruiterId: string;
@@ -104,6 +105,17 @@ export interface PerformanceData {
   skillGapTrends?: Array<{ skill: string; count: number }>;
   portfolioQuality?: { avgGithubScore: number; avgResumeScore: number; avgGrowthPotential: number; sampleSize: number };
   engagementHeatmap?: { days: string[]; buckets: string[]; grid: number[][]; max: number };
+  comparisons?: {
+    jobsCreated?: PerformanceComparison;
+    invitationsAccepted?: PerformanceComparison;
+    invitationAcceptanceRate?: PerformanceComparison;
+    candidatesAnalyzed?: PerformanceComparison;
+    aiAnalyses?: PerformanceComparison;
+    aiEnhancedCandidates?: PerformanceComparison;
+    aiRankCalls?: PerformanceComparison;
+    matchCalls?: PerformanceComparison;
+    organizationPerformanceScore?: PerformanceComparison;
+  };
   summary: {
     totalRecruiters: number;
     activeRecruiters: number;
