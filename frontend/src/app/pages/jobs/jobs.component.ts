@@ -145,8 +145,6 @@ export class JobsComponent implements OnInit, OnDestroy {
         )
       ).subscribe(() => this.resetAndFetch())
     );
-
-    this.resetAndFetch();
   }
 
   ngOnDestroy(): void {
