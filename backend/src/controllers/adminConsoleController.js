@@ -17,6 +17,7 @@ const AnalysisCache = require('../models/analysisCache');
 const Job = require('../models/Job');
 const Candidate = require('../models/Candidate');
 const { normalizeSlug } = require('../services/tenantService');
+const teamAnalyticsService = require('../services/admin/teamAnalyticsService');
 
 // ── helpers ───────────────────────────────────────────────────────────────
 const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v || 0)));
@@ -442,6 +443,83 @@ const getConsoleActivity = async (req, res) => {
 const getConsoleTeams = async (req, res) => {
   try {
     const orgId = req.organizationId;
+
+    if (req.query.page) {
+      const page = Math.max(1, Number.parseInt(String(req.query.page || '1'), 10));
+      const limit = Math.max(1, Math.min(50, Number.parseInt(String(req.query.limit || '10'), 10)));
+      
+      const search = String(req.query.search || '').trim().toLowerCase();
+      const status = String(req.query.status || 'all').trim().toLowerCase();
+      const recruiterId = String(req.query.recruiterId || '').trim();
+      const sortBy = String(req.query.sortBy || 'score').trim().toLowerCase();
+      const sortOrder = String(req.query.sortOrder || 'desc').trim().toLowerCase();
+
+      const { teamMetrics } = await teamAnalyticsService.computeOrgTeamsMetrics(orgId);
+
+      let filteredTeams = teamMetrics;
+
+      // 1. Search term filter (name or description)
+      if (search) {
+        filteredTeams = filteredTeams.filter(
+          (t) =>
+            t.name.toLowerCase().includes(search) ||
+            t.description.toLowerCase().includes(search)
+        );
+      }
+
+      // 2. Status filter
+      if (status === 'active') {
+        filteredTeams = filteredTeams.filter((t) => t.isActive === true);
+      } else if (status === 'inactive') {
+        filteredTeams = filteredTeams.filter((t) => t.isActive === false);
+      }
+
+      // 3. Recruiter filter
+      if (recruiterId) {
+        filteredTeams = filteredTeams.filter((t) =>
+          t.members.some((m) => String(m._id) === recruiterId)
+        );
+      }
+
+      // Sort
+      filteredTeams.sort((a, b) => {
+        let valA, valB;
+        if (sortBy === 'recruiters') {
+          valA = a.recruiterCount;
+          valB = b.recruiterCount;
+        } else if (sortBy === 'jobs') {
+          valA = a.totalJobs;
+          valB = b.totalJobs;
+        } else if (sortBy === 'newest') {
+          valA = new Date(a.createdAt).getTime();
+          valB = new Date(b.createdAt).getTime();
+        } else {
+          // Default: score
+          valA = a.performanceScore;
+          valB = b.performanceScore;
+        }
+
+        if (sortOrder === 'asc') {
+          return valA > valB ? 1 : valA < valB ? -1 : 0;
+        } else {
+          return valA < valB ? 1 : valA > valB ? -1 : 0;
+        }
+      });
+
+      const total = filteredTeams.length;
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      const skip = (page - 1) * limit;
+      const paginatedTeams = filteredTeams.slice(skip, skip + limit);
+
+      return res.json({
+        teams: paginatedTeams,
+        page,
+        limit,
+        total,
+        totalPages,
+        hasMore: page < totalPages
+      });
+    }
 
     const teams = await Team.find({ organizationId: orgId })
       .sort({ createdAt: -1 })

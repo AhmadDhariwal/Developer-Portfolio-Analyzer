@@ -14,6 +14,7 @@ import { AdminDevelopersPageComponent } from './pages/admin-developers/admin-dev
 import { AdminJobsPageComponent } from './pages/admin-jobs/admin-jobs.component';
 import { AdminConsolePageComponent } from './pages/admin-console/admin-console.component';
 import { AdminActivityLogsComponent } from './pages/activity-logs/admin-activity-logs.component';
+import { AdminTeamsPageComponent } from './pages/admin-teams/admin-teams.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { AdminActivityLogsComponent } from './pages/activity-logs/admin-activity
     AdminRecruitersPageComponent,
     AdminConsolePageComponent,
     AdminActivityLogsComponent,
+    AdminTeamsPageComponent,
     RecruiterSharedModule
   ]
 })

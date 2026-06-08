@@ -131,6 +131,35 @@ export class AdminConsoleService {
     return this.http.get<{ teams: ConsoleTeam[] }>(`${this.base}/teams`);
   }
 
+  getTeamsPaginated(params: Record<string, string | number> = {}): Observable<{
+    teams: any[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  }> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.set(key, String(value));
+      }
+    });
+    const suffix = query.toString();
+    return this.http.get<any>(suffix ? `${this.base}/teams?${suffix}` : `${this.base}/teams`);
+  }
+
+  getPerformance(params: Record<string, string | number> = {}): Observable<any> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.set(key, String(value));
+      }
+    });
+    const suffix = query.toString();
+    return this.http.get<any>(suffix ? `${this.base}/performance?${suffix}` : `${this.base}/performance`);
+  }
+
   createTeam(payload: { name: string; slug?: string; description?: string; recruiterId?: string }): Observable<{ team: ConsoleTeam }> {
     return this.http.post<{ team: ConsoleTeam }>(`${this.base}/teams`, payload);
   }

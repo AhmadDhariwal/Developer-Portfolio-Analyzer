@@ -1,0 +1,513 @@
+<div class="teams-page">
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header__text">
+      <span class="page-header__eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Organization Teams
+      </span>
+      <h1>Teams</h1>
+      <p class="page-header__sub">Manage, monitor, and scale your organization teams</p>
+    </div>
+    <div class="page-header__actions">
+      <div class="view-toggle">
+        <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid view" aria-label="Grid view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="viewMode === 'table'" (click)="viewMode = 'table'" title="Table view" aria-label="Table view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+      <button type="button" class="btn-primary" (click)="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Team
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Alerts ──────────────────────────────────────────────────────── -->
+  <output class="teams-alert" [class.teams-alert--success]="messageType === 'success'" [class.teams-alert--error]="messageType === 'error'" *ngIf="message" role="alert">
+    <span>{{ message }}</span>
+    <button type="button" class="teams-alert__close" (click)="message = ''" title="Dismiss" aria-label="Dismiss">✕</button>
+  </output>
+
+  <!-- ── Filters Bar ─────────────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <div class="filters-bar__search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="filters-bar__search-icon" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="filters-bar__search-input" placeholder="Search teams by name or description..." [value]="searchInput" (input)="onSearchChange($any($event.target).value)" aria-label="Search teams" />
+    </div>
+
+    <select class="filters-bar__select" [value]="statusFilter" (change)="onStatusChange($any($event.target).value)" aria-label="Filter by status">
+      <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+    </select>
+
+    <select class="filters-bar__select" [value]="recruiterFilter" (change)="onRecruiterChange($any($event.target).value)" aria-label="Filter by recruiter">
+      <option value="">All Recruiters</option>
+      <option *ngFor="let r of recruiters" [value]="r._id">{{ r.name }}</option>
+    </select>
+
+    <select class="filters-bar__select" [value]="queryState$.value.sortBy + ':' + queryState$.value.sortOrder" (change)="onSortChange($any($event.target).value)" aria-label="Sort teams">
+      <option *ngFor="let opt of sortOptions" [value]="opt.sortBy + ':' + opt.sortOrder">{{ opt.label }}</option>
+    </select>
+
+    <button type="button" class="filters-bar__reset" (click)="resetFilters()" title="Reset filters" aria-label="Reset filters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/></svg>
+      Reset
+    </button>
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  <progress class="teams-progress" *ngIf="loading"></progress>
+
+  <!-- ── Empty State ──────────────────────────────────────────────────── -->
+  <div class="teams-empty" *ngIf="!loading && teams.length === 0">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" class="teams-empty__icon" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <h3>No Teams Found</h3>
+    <p>Create your first team to start organizing recruiters and tracking performance.</p>
+    <button type="button" class="btn-primary" (click)="openCreateModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create Team
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       GRID VIEW
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="teams-grid" *ngIf="!loading && teams.length > 0 && viewMode === 'grid'">
+    <div class="team-card" *ngFor="let team of teams; trackBy: trackByTeamId" (click)="viewDetails(team)" role="button" tabindex="0" [attr.aria-label]="'View details for ' + team.name">
+      <div class="team-card__top">
+        <div class="team-card__icon" [class.team-card__icon--healthy]="team.health === 'Healthy'" [class.team-card__icon--warning]="team.health === 'Warning'" [class.team-card__icon--critical]="team.health === 'Critical' || !team.health" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="team-card__actions" (click)="$event.stopPropagation()">
+          <button type="button" class="team-card__action-btn" (click)="viewDetails(team)" title="View details" aria-label="View team details">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button type="button" class="team-card__action-btn" (click)="openEditModal(team)" title="Edit team" aria-label="Edit team">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button type="button" class="team-card__action-btn" [class.team-card__action-btn--danger]="team.isActive" (click)="toggleActive(team)" [title]="team.isActive ? 'Deactivate team' : 'Activate team'" [attr.aria-label]="team.isActive ? 'Deactivate team' : 'Activate team'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" *ngIf="team.isActive"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" *ngIf="!team.isActive"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </button>
+          <button type="button" class="team-card__action-btn team-card__action-btn--danger" (click)="confirmDelete(team, $event)" title="Delete team" aria-label="Delete team">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="team-card__body">
+        <h3 class="team-card__name">{{ team.name }}</h3>
+        <p class="team-card__desc" *ngIf="team.description">{{ team.description }}</p>
+        <div class="team-card__tags">
+          <span class="team-card__tag" [class.team-card__tag--active]="team.isActive" [class.team-card__tag--inactive]="!team.isActive">
+            <span class="team-card__tag-dot" [class.team-card__tag-dot--active]="team.isActive" [class.team-card__tag-dot--inactive]="!team.isActive" aria-hidden="true"></span>
+            {{ team.isActive ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="team-card__tag" [ngClass]="getHealthClass(team.health)">{{ team.health || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="team-card__stats">
+        <div class="team-card__stat">
+          <span class="team-card__stat-value">{{ team.recruiterCount }}</span>
+          <span class="team-card__stat-label">Recruiters</span>
+        </div>
+        <div class="team-card__stat">
+          <span class="team-card__stat-value">{{ team.totalJobs }}</span>
+          <span class="team-card__stat-label">Jobs</span>
+        </div>
+        <div class="team-card__stat">
+          <span class="team-card__stat-value">{{ team.candidatesAnalyzed }}</span>
+          <span class="team-card__stat-label">Candidates</span>
+        </div>
+        <div class="team-card__stat">
+          <span class="team-card__stat-value">{{ team.matchesGenerated }}</span>
+          <span class="team-card__stat-label">Matches</span>
+        </div>
+      </div>
+
+      <div class="team-card__footer">
+        <div class="team-card__score" [attr.data-score]="teamTone(team.performanceScore)">
+          <span class="team-card__score-value">{{ team.performanceScore }}</span>
+          <span class="team-card__score-label">Team Score</span>
+        </div>
+        <div class="team-card__date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>{{ team.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TABLE VIEW
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="teams-table-wrap" *ngIf="!loading && teams.length > 0 && viewMode === 'table'">
+    <table class="teams-table" aria-label="Teams list">
+      <thead>
+        <tr>
+          <th scope="col">Team Name</th>
+          <th scope="col">Status</th>
+          <th scope="col">Recruiters</th>
+          <th scope="col">Jobs</th>
+          <th scope="col">Candidates</th>
+          <th scope="col">Matches</th>
+          <th scope="col">Score</th>
+          <th scope="col">Created</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let team of teams; trackBy: trackByTeamId" class="teams-table__row" (click)="viewDetails(team)" role="button" tabindex="0" [attr.aria-label]="'View details for ' + team.name">
+          <td>
+            <div class="teams-table__name-cell">
+              <span class="teams-table__avatar" aria-hidden="true">{{ team.name.charAt(0).toUpperCase() }}</span>
+              <div>
+                <span class="teams-table__name">{{ team.name }}</span>
+                <span class="teams-table__slug" *ngIf="team.slug">{{ team.slug }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="teams-table__pill" [class.teams-table__pill--active]="team.isActive" [class.teams-table__pill--inactive]="!team.isActive">
+              <span class="teams-table__pill-dot" [class.teams-table__pill-dot--active]="team.isActive" [class.teams-table__pill-dot--inactive]="!team.isActive" aria-hidden="true"></span>
+              {{ team.isActive ? 'Active' : 'Inactive' }}
+            </span>
+            <span class="teams-table__pill teams-table__pill--health ml-2" [ngClass]="getHealthClass(team.health)">{{ team.health || 'N/A' }}</span>
+          </td>
+          <td class="teams-table__count">{{ team.recruiterCount }}</td>
+          <td class="teams-table__count">{{ team.totalJobs }}</td>
+          <td class="teams-table__count">{{ team.candidatesAnalyzed }}</td>
+          <td class="teams-table__count">{{ team.matchesGenerated }}</td>
+          <td>
+            <div class="teams-table__score-badge" [attr.data-score]="teamTone(team.performanceScore)">{{ team.performanceScore }}</div>
+          </td>
+          <td class="teams-table__date">{{ team.createdAt | date:'mediumDate' }}</td>
+          <td (click)="$event.stopPropagation()">
+            <div class="teams-table__actions">
+              <button type="button" class="teams-table__action" (click)="viewDetails(team)" title="View details" aria-label="View team details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button type="button" class="teams-table__action" (click)="openEditModal(team)" title="Edit" aria-label="Edit team">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button type="button" class="teams-table__action" (click)="toggleActive(team)" [title]="team.isActive ? 'Deactivate' : 'Activate'" [attr.aria-label]="team.isActive ? 'Deactivate team' : 'Activate team'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" *ngIf="team.isActive"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" *ngIf="!team.isActive"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </button>
+              <button type="button" class="teams-table__action teams-table__action--danger" (click)="confirmDelete(team, $event)" title="Delete" aria-label="Delete team">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Pagination ───────────────────────────────────────────────────── -->
+  <nav class="teams-pagination" *ngIf="!loading && teams.length > 0" aria-label="Teams pagination">
+    <span class="teams-pagination__info">{{ total === 0 ? '0' : rangeStart }} – {{ rangeEnd }} of {{ total }}</span>
+    <div class="teams-pagination__controls">
+      <button type="button" class="teams-pagination__btn" (click)="goToPage(page - 1)" [disabled]="page <= 1" aria-label="Previous page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <ng-container *ngFor="let item of pageItems; trackBy: trackByPageItem">
+        <span class="teams-pagination__ellipsis" *ngIf="(item | json) !== item; else pageBtn">…</span>
+        <ng-template #pageBtn>
+          <button type="button" class="teams-pagination__btn" [class.teams-pagination__btn--active]="item === page" (click)="goToPage($any(item))" [attr.aria-label]="'Page ' + item" [attr.aria-current]="item === page ? 'page' : undefined">{{ item }}</button>
+        </ng-template>
+      </ng-container>
+      <button type="button" class="teams-pagination__btn" (click)="goToPage(page + 1)" [disabled]="page >= totalPages" aria-label="Next page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ANALYTICS SECTION (lightweight)
+  ════════════════════════════════════════════════════════════════════ -->
+  <section class="teams-analytics" *ngIf="!loading && teams.length > 0">
+    <h2 class="teams-analytics__title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Team Analytics
+    </h2>
+    <div class="teams-analytics__grid">
+      <!-- Top Teams -->
+      <div class="teams-analytics__card">
+        <h3 class="teams-analytics__card-title">Top Teams</h3>
+        <div class="teams-analytics__list" *ngIf="topTeams.length > 0; else noDataTop">
+          <div class="teams-analytics__item" *ngFor="let t of topTeams; let i = index">
+            <span class="teams-analytics__rank">#{{ i + 1 }}</span>
+            <span class="teams-analytics__item-name">{{ t.name }}</span>
+            <div class="teams-analytics__item-bar">
+              <span class="teams-analytics__item-fill" [style.width.%]="t.performanceScore"></span>
+            </div>
+            <span class="teams-analytics__item-score">{{ t.performanceScore }}</span>
+          </div>
+        </div>
+        <ng-template #noDataTop><p class="teams-analytics__empty">No data yet</p></ng-template>
+      </div>
+
+      <!-- Recruiter Distribution -->
+      <div class="teams-analytics__card">
+        <h3 class="teams-analytics__card-title">Recruiter Distribution</h3>
+        <div class="teams-analytics__list" *ngIf="recruiterDistribution.length > 0; else noDataDist">
+          <div class="teams-analytics__item" *ngFor="let d of recruiterDistribution">
+            <span class="teams-analytics__item-name">{{ d.name }}</span>
+            <span class="teams-analytics__item-badge">{{ d.count }} recruiter{{ d.count !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+        <ng-template #noDataDist><p class="teams-analytics__empty">No data yet</p></ng-template>
+      </div>
+
+      <!-- Activity Trend -->
+      <div class="teams-analytics__card">
+        <h3 class="teams-analytics__card-title">Team Activity Trend</h3>
+        <div class="teams-analytics__list" *ngIf="teamActivityTrend.length > 0; else noDataTrend">
+          <div class="teams-analytics__item" *ngFor="let a of teamActivityTrend">
+            <span class="teams-analytics__item-name">{{ a.name }}</span>
+            <span class="teams-analytics__item-activity">{{ a.activityCount }} actions</span>
+            <span class="teams-analytics__item-pill" [ngClass]="getHealthClass(a.health)">{{ a.health || 'N/A' }}</span>
+          </div>
+        </div>
+        <ng-template #noDataTrend><p class="teams-analytics__empty">No data yet</p></ng-template>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DETAIL DRAWER
+═══════════════════════════════════════════════════════════════════ -->
+<aside class="drawer-overlay" *ngIf="selectedTeam" (click)="closeDrawer()" role="dialog" aria-modal="true" [attr.aria-label]="'Team details: ' + selectedTeam.name">
+  <div class="drawer" (click)="$event.stopPropagation()">
+    <div class="drawer__header">
+      <div>
+        <h2 class="drawer__title">{{ selectedTeam.name }}</h2>
+        <span class="drawer__badge" [class.drawer__badge--active]="selectedTeam.isActive" [class.drawer__badge--inactive]="!selectedTeam.isActive">{{ selectedTeam.isActive ? 'Active' : 'Inactive' }}</span>
+      </div>
+      <button type="button" class="drawer__close" (click)="closeDrawer()" title="Close drawer" aria-label="Close drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Drawer Tabs -->
+    <nav class="drawer__tabs" aria-label="Team detail sections">
+      <button type="button" class="drawer__tab" [class.drawer__tab--active]="drawerActiveTab === 'overview'" (click)="drawerActiveTab = 'overview'">Overview</button>
+      <button type="button" class="drawer__tab" [class.drawer__tab--active]="drawerActiveTab === 'recruiters'" (click)="drawerActiveTab = 'recruiters'">Recruiters</button>
+      <button type="button" class="drawer__tab" [class.drawer__tab--active]="drawerActiveTab === 'jobs'" (click)="drawerActiveTab = 'jobs'">Jobs</button>
+      <button type="button" class="drawer__tab" [class.drawer__tab--active]="drawerActiveTab === 'performance'" (click)="drawerActiveTab = 'performance'">Performance</button>
+      <button type="button" class="drawer__tab" [class.drawer__tab--active]="drawerActiveTab === 'activity'" (click)="drawerActiveTab = 'activity'">Activity</button>
+    </nav>
+
+    <div class="drawer__body">
+      <!-- TAB: Overview -->
+      <div *ngIf="drawerActiveTab === 'overview'" class="drawer__section">
+        <div class="drawer__kv">
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Name</span>
+            <span class="drawer__kv-value">{{ selectedTeam.name }}</span>
+          </div>
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Slug</span>
+            <span class="drawer__kv-value drawer__kv-value--mono">{{ selectedTeam.slug || '—' }}</span>
+          </div>
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Description</span>
+            <span class="drawer__kv-value">{{ selectedTeam.description || 'No description provided.' }}</span>
+          </div>
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Created</span>
+            <span class="drawer__kv-value">{{ selectedTeam.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Team Health</span>
+            <span class="drawer__kv-value">
+              <span class="drawer__pill" [ngClass]="getHealthClass(selectedTeam.health)">{{ selectedTeam.health || 'N/A' }}</span>
+            </span>
+          </div>
+          <div class="drawer__kv-item">
+            <span class="drawer__kv-label">Team Score</span>
+            <span class="drawer__kv-value drawer__kv-value--score" [attr.data-score]="teamTone(selectedTeam.performanceScore)">{{ selectedTeam.performanceScore }}/100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Recruiters -->
+      <div *ngIf="drawerActiveTab === 'recruiters'" class="drawer__section">
+        <div class="drawer__assign" *ngIf="getAvailableRecruitersForAssignment().length > 0">
+          <select class="drawer__select" [(ngModel)]="newRecruiterId" aria-label="Select recruiter to assign">
+            <option value="" disabled>Select a recruiter…</option>
+            <option *ngFor="let r of getAvailableRecruitersForAssignment()" [value]="r._id">{{ r.name }} ({{ r.email }})</option>
+          </select>
+          <button type="button" class="btn-primary-sm" (click)="assignRecruiter()" [disabled]="!newRecruiterId || saving">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Assign
+          </button>
+        </div>
+        <div class="drawer__empty" *ngIf="!selectedTeam.members || selectedTeam.members.length === 0">
+          <p>No recruiters assigned to this team.</p>
+        </div>
+        <table class="drawer__table" *ngIf="selectedTeam.members && selectedTeam.members.length > 0" aria-label="Team recruiters">
+          <thead>
+            <tr>
+              <th scope="col">Recruiter</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let member of selectedTeam.members">
+              <td>
+                <div class="drawer__member-cell">
+                  <span class="drawer__avatar" aria-hidden="true">{{ member.name.charAt(0).toUpperCase() }}</span>
+                  <span>{{ member.name }}</span>
+                </div>
+              </td>
+              <td class="drawer__text-muted">{{ member.email }}</td>
+              <td>
+                <span class="drawer__role-badge" [class.drawer__role-badge--admin]="member.role === 'admin'" [class.drawer__role-badge--member]="member.role === 'member'">{{ member.role }}</span>
+              </td>
+              <td>
+                <span class="drawer__status-dot" [class.drawer__status-dot--green]="member.isActive" [class.drawer__status-dot--red]="!member.isActive" aria-hidden="true"></span>
+                {{ member.isActive ? 'Active' : 'Inactive' }}
+              </td>
+              <td>
+                <button type="button" class="btn-ghost-sm btn-ghost-sm--danger" (click)="removeRecruiter(member._id)" [disabled]="saving" title="Remove recruiter" aria-label="Remove recruiter">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB: Jobs -->
+      <div *ngIf="drawerActiveTab === 'jobs'" class="drawer__section">
+        <div class="drawer__stats-row">
+          <div class="drawer__stat">
+            <span class="drawer__stat-value drawer__stat-value--green">{{ selectedTeam.openJobs || 0 }}</span>
+            <span class="drawer__stat-label">Active Jobs</span>
+          </div>
+          <div class="drawer__stat">
+            <span class="drawer__stat-value drawer__stat-value--red">{{ selectedTeam.closedJobs || 0 }}</span>
+            <span class="drawer__stat-label">Closed Jobs</span>
+          </div>
+          <div class="drawer__stat">
+            <span class="drawer__stat-value">{{ selectedTeam.totalJobs || 0 }}</span>
+            <span class="drawer__stat-label">Total Jobs</span>
+          </div>
+        </div>
+        <div class="drawer__subtitle">Recent Jobs</div>
+        <div class="drawer__empty" *ngIf="!selectedTeam.recentJobsList || selectedTeam.recentJobsList.length === 0">
+          <p>No recent jobs found.</p>
+        </div>
+        <div class="drawer__job-list" *ngIf="selectedTeam.recentJobsList && selectedTeam.recentJobsList.length > 0">
+          <div class="drawer__job-item" *ngFor="let job of selectedTeam.recentJobsList">
+            <div class="drawer__job-info">
+              <span class="drawer__job-title">{{ job.title }}</span>
+              <span class="drawer__job-meta">{{ job.stack }}</span>
+            </div>
+            <span class="drawer__job-status" [class.drawer__job-status--open]="job.status === 'open'" [class.drawer__job-status--closed]="job.status === 'closed'" [class.drawer__job-status--draft]="job.status === 'draft'">{{ job.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Performance -->
+      <div *ngIf="drawerActiveTab === 'performance'" class="drawer__section">
+        <div class="drawer__stats-grid">
+          <div class="drawer__stat-card">
+            <span class="drawer__stat-card-value">{{ selectedTeam.candidatesAnalyzed || 0 }}</span>
+            <span class="drawer__stat-card-label">Candidates Analyzed</span>
+          </div>
+          <div class="drawer__stat-card">
+            <span class="drawer__stat-card-value">{{ selectedTeam.matchesGenerated || 0 }}</span>
+            <span class="drawer__stat-card-label">Matches Generated</span>
+          </div>
+          <div class="drawer__stat-card">
+            <span class="drawer__stat-card-value">{{ selectedTeam.aiUsage || 0 }}</span>
+            <span class="drawer__stat-card-label">AI Usage</span>
+          </div>
+          <div class="drawer__stat-card">
+            <span class="drawer__stat-card-value">{{ selectedTeam.hiringPerformance || 0 }}%</span>
+            <span class="drawer__stat-card-label">Hiring Performance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Activity -->
+      <div *ngIf="drawerActiveTab === 'activity'" class="drawer__section">
+        <div class="drawer__activity-timeline" *ngIf="selectedTeam.activityTimeline && selectedTeam.activityTimeline.length > 0; else noActivity">
+          <div class="drawer__activity-item" *ngFor="let act of selectedTeam.activityTimeline">
+            <div class="drawer__activity-dot" aria-hidden="true"></div>
+            <div class="drawer__activity-content">
+              <p class="drawer__activity-action">{{ act.timelineEvent || act.action }}</p>
+              <p class="drawer__activity-meta">{{ act.actorName }} · {{ act.timestamp | date:'short' }}</p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noActivity>
+          <div class="drawer__empty"><p>No activity recorded for this team.</p></div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CREATE / EDIT MODAL
+═══════════════════════════════════════════════════════════════════ -->
+<dialog class="modal-overlay" *ngIf="showCreateModal || showEditModal" open aria-modal="true" [attr.aria-labelledby]="'modal-title'" [attr.aria-describedby]="'modal-desc'">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 id="modal-title" class="modal__title">{{ showCreateModal ? 'Create New Team' : 'Edit Team' }}</h3>
+      <p id="modal-desc" class="modal__desc">{{ showCreateModal ? 'Fill in the details for the new team.' : 'Update the team details below.' }}</p>
+    </div>
+    <div class="modal__body">
+      <label class="modal__field">
+        <span class="modal__label">Team Name <span class="modal__required">*</span></span>
+        <input type="text" class="modal__input" placeholder="Engineering Team" [(ngModel)]="modalTeamForm.name" name="teamName" required />
+      </label>
+      <label class="modal__field">
+        <span class="modal__label">Slug</span>
+        <input type="text" class="modal__input" placeholder="engineering-team" [(ngModel)]="modalTeamForm.slug" name="teamSlug" />
+      </label>
+      <label class="modal__field">
+        <span class="modal__label">Description</span>
+        <textarea class="modal__input modal__textarea" placeholder="Brief description of the team…" [(ngModel)]="modalTeamForm.description" name="teamDesc" rows="3"></textarea>
+      </label>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-ghost" (click)="closeModals()" [disabled]="saving">Cancel</button>
+      <button type="button" class="btn-primary" (click)="showCreateModal ? createTeam() : saveTeam()" [disabled]="saving || !modalTeamForm.name">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true" *ngIf="saving" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        {{ saving ? 'Saving…' : (showCreateModal ? 'Create Team' : 'Save Changes') }}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CONFIRM DELETE DIALOG
+═══════════════════════════════════════════════════════════════════ -->
+<dialog class="modal-overlay" *ngIf="showConfirmDelete" open aria-modal="true" aria-labelledby="confirm-delete-title" aria-describedby="confirm-delete-desc">
+  <div class="modal modal--confirm">
+    <div class="modal__header">
+      <div class="modal__confirm-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 id="confirm-delete-title" class="modal__title">Delete Team</h3>
+      <p id="confirm-delete-desc" class="modal__desc">Are you sure you want to delete <strong>{{ teamToDelete?.name }}</strong>? This action cannot be undone. All memberships and pending invitations for this team will also be removed.</p>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-ghost" (click)="cancelDelete()" [disabled]="loading">Cancel</button>
+      <button type="button" class="btn-danger" (click)="deleteTeam()" [disabled]="loading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Delete Team
+      </button>
+    </div>
+  </div>
+</dialog>
