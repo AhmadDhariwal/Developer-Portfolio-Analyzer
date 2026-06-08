@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { NavigationEnd, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -22,7 +22,8 @@ type RawNavGroup = { label: string; route?: string; icon: string; items: RawNavI
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar implements OnInit {
-  @Input() isOpen: boolean = true;
+  @Input() isOpen: boolean = false;
+  @Input() isMobile: boolean = false;
   @Output() collapse = new EventEmitter<void>();
 
   openGroups = new Set<string>(['Analysis', 'Growth', 'Opportunities', 'Insights', 'System']);
@@ -33,6 +34,7 @@ export class Sidebar implements OnInit {
   avatarSrc = '';
   avatarVersion = Date.now();
   currentUrl = '';
+  hoveredGroup = '';
   private readonly destroyRef = inject(DestroyRef);
   private currentRole = '';
 
@@ -149,7 +151,7 @@ export class Sidebar implements OnInit {
         {
           label: 'Org Console',
           route: '/app/admin/console',
-          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>`
+          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-4h6v4"></path></svg>`
         },
         {
           label: 'Performance & Statistics',
@@ -198,6 +200,7 @@ export class Sidebar implements OnInit {
       )
       .subscribe((event) => {
         this.currentUrl = event.urlAfterRedirects || event.url || '';
+        this.syncOpenGroupFromRoute();
         this.cdr.markForCheck();
       });
 
@@ -208,7 +211,6 @@ export class Sidebar implements OnInit {
         this.syncUserState(user);
       });
 
-    // Subscribe to avatar version changes to force refresh
     this.authService.avatarVersion$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((version) => {
@@ -216,6 +218,91 @@ export class Sidebar implements OnInit {
         this.updateAvatarSrc();
         this.cdr.markForCheck();
       });
+  }
+
+  @HostListener('document:keydown.escape')
+  clearHoveredGroup(): void {
+    this.hoveredGroup = '';
+  }
+
+  onNavigate(): void {
+    this.hoveredGroup = '';
+    if (this.isMobile && this.isOpen) {
+      this.collapse.emit();
+    }
+  }
+
+  onGroupHeaderClick(group: NavGroup): void {
+    if (this.isOpen || this.isMobile) {
+      if (!group.route) {
+        this.toggleGroup(group.label);
+      }
+      return;
+    }
+
+    this.hoveredGroup = this.hoveredGroup === group.label ? '' : group.label;
+  }
+
+  onGroupMouseEnter(label: string): void {
+    if (!this.isOpen && !this.isMobile) {
+      this.hoveredGroup = label;
+      this.cdr.markForCheck();
+    }
+  }
+
+  onGroupMouseLeave(label: string): void {
+    if (!this.isOpen && !this.isMobile && this.hoveredGroup === label) {
+      this.hoveredGroup = '';
+      this.cdr.markForCheck();
+    }
+  }
+
+  isGroupFlyoutOpen(label: string): boolean {
+    return false;
+  }
+
+  toggleGroup(label: string): void {
+    if (this.openGroups.has(label)) {
+      this.openGroups.delete(label);
+    } else {
+      this.openGroups.add(label);
+    }
+  }
+
+  isGroupOpen(label: string): boolean {
+    return this.openGroups.has(label);
+  }
+
+  isRouteActive(route: string): boolean {
+    const path = this.normalizePath(this.currentUrl || this.router.url || '');
+    const target = this.normalizePath(route);
+
+    if (target === '/app/admin/console') {
+      return path === target;
+    }
+
+    return path === target || path.startsWith(`${target}/`);
+  }
+
+  isGroupActive(group: NavGroup): boolean {
+    return group.items.some((item) => this.isItemActive(item));
+  }
+
+  isItemActive(item: NavItem): boolean {
+    if (item.route === '/app/admin') {
+      return this.isAdminConsoleActive();
+    }
+    return this.isRouteActive(item.route);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
+  }
+
+  isAdminConsoleActive(): boolean {
+    const path = this.normalizePath(this.currentUrl || this.router.url || '');
+    return path.startsWith('/app/admin') && !path.startsWith('/app/admin/console');
   }
 
   private recomputeNav(): void {
@@ -254,6 +341,7 @@ export class Sidebar implements OnInit {
           ]
         }
       ];
+      this.syncOpenGroupFromRoute();
       return;
     }
 
@@ -289,6 +377,7 @@ export class Sidebar implements OnInit {
           ]
         }
       ];
+      this.syncOpenGroupFromRoute();
       return;
     }
 
@@ -305,23 +394,19 @@ export class Sidebar implements OnInit {
     this.visibleNavGroups = this.baseNavGroups.map((group) => {
       let filteredItems: NavItem[] = group.items
         .filter((item) => {
-        // Special logic for Super Admin
-        if (isSuperAdmin) {
-          // Hide Recruiter Hub and Admin Console for Super Admin in the main project
-          if (item.route === '/app/recruiter' || item.route === '/app/admin' || item.route === '/app/admin/console') {
-            return false;
+          if (isSuperAdmin) {
+            if (item.route === '/app/recruiter' || item.route === '/app/admin' || item.route === '/app/admin/console') {
+              return false;
+            }
+            return true;
           }
-          // Everything else is visible to Super Admin
+
+          if (item.route === '/app/recruiter') return isRecruiter;
+          if (item.route === '/app/admin') return isAdmin;
+          if (item.route === '/app/admin/console' || item.route === '/app/admin/console/performance-statistics') return isAdmin;
+          if (item.route === '/app/settings') return false;
+
           return true;
-        }
-
-        // Standard RBAC for other roles
-        if (item.route === '/app/recruiter') return isRecruiter;
-        if (item.route === '/app/admin') return isAdmin;
-        if (item.route === '/app/admin/console' || item.route === '/app/admin/console/performance-statistics') return isAdmin;
-        if (item.route === '/app/settings') return false;
-
-        return true;
         })
         .map((item) => ({
           label: item.label,
@@ -329,7 +414,6 @@ export class Sidebar implements OnInit {
           icon: this.trustSvg(item.icon),
         }));
 
-      // If this is the 'System' group and user is Super Admin, add the Super Admin Dashboard link
       if (group.label === 'System' && isSuperAdmin) {
         const hasSaLink = filteredItems.some((i) => i.route === '/super-admin/dashboard');
         if (!hasSaLink) {
@@ -351,28 +435,16 @@ export class Sidebar implements OnInit {
         items: filteredItems,
       };
     });
+
+    this.syncOpenGroupFromRoute();
   }
 
-  toggleGroup(label: string): void {
-    if (this.openGroups.has(label)) {
-      this.openGroups.delete(label);
-    } else {
-      this.openGroups.add(label);
-    }
-  }
-
-  isGroupOpen(label: string): boolean {
-    return this.openGroups.has(label);
-  }
-
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
-  }
-
-  isAdminConsoleActive(): boolean {
-    const path = this.normalizePath(this.currentUrl || this.router.url || '');
-    return path.startsWith('/app/admin') && !path.startsWith('/app/admin/console');
+  private syncOpenGroupFromRoute(): void {
+    this.visibleNavGroups.forEach((group) => {
+      if (this.isGroupActive(group)) {
+        this.openGroups.add(group.label);
+      }
+    });
   }
 
   private updateAvatarSrc(): void {
@@ -393,7 +465,6 @@ export class Sidebar implements OnInit {
   onAvatarError(event: Event): void {
     const img = event.target as HTMLImageElement;
     console.error('[Sidebar] Avatar failed to load:', img.src);
-    // Hide broken img and show initials fallback
     this.userAvatar = '';
     this.updateAvatarSrc();
     this.cdr.markForCheck();
@@ -427,7 +498,6 @@ export class Sidebar implements OnInit {
     this.updateAvatarSrc();
     this.recomputeNav();
 
-    // Bump version if avatar changed
     if (previousAvatar !== this.userAvatar) {
       this.bumpAvatarVersion();
       this.updateAvatarSrc();

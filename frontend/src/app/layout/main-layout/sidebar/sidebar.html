@@ -1,49 +1,84 @@
-<aside class="sidebar" [class.open]="isOpen" [class.closed]="!isOpen">
-  <!-- Logo area inside sidebar -->
+<aside
+  class="sidebar"
+  [class.open]="isOpen"
+  [class.closed]="!isOpen"
+  [class.mobile]="isMobile"
+  [class.mobile-open]="isMobile && isOpen">
   <div class="sidebar-logo">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
       </svg>
     </div>
-    <span class="logo-text">DevInsight <span class="ai-tag">AI</span></span>
-    <button class="collapse-btn" (click)="collapse.emit()" title="Collapse sidebar" aria-label="Collapse sidebar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
+    <div class="logo-copy">
+      <span class="logo-text">DevInsight <span class="ai-tag">AI</span></span>
+      <span class="logo-subtitle">Workspace</span>
+    </div>
   </div>
 
   <nav class="sidebar-nav">
     <ul class="nav-menu">
       <li *ngFor="let item of visibleNavItems">
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-link" (click)="collapse.emit()" [attr.title]="item.label">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-link"
+          [attr.aria-label]="item.label"
+          [attr.title]="!isOpen && !isMobile ? item.label : null"
+          (click)="onNavigate()">
           <span class="nav-icon" [innerHTML]="item.icon"></span>
           <span class="nav-label">{{ item.label }}</span>
+          <span class="tooltip-text">{{ item.label }}</span>
         </a>
       </li>
 
-      <li *ngFor="let group of visibleNavGroups" class="nav-group">
-        <div class="nav-group-header" (click)="!group.route && toggleGroup(group.label)">
-          <ng-container *ngIf="group.route; else noRouteHeader">
-            <a [routerLink]="group.route" routerLinkActive="active" class="nav-link nav-group-link" (click)="collapse.emit()" [attr.title]="group.label">
+      <li
+        *ngFor="let group of visibleNavGroups"
+        class="nav-group"
+        [class.nav-group--active]="isGroupActive(group)"
+        (mouseenter)="onGroupMouseEnter(group.label)"
+        (mouseleave)="onGroupMouseLeave(group.label)">
+        <div class="nav-group-header" (click)="onGroupHeaderClick(group)">
+          <ng-container *ngIf="group.route; else groupToggleOnly">
+            <a
+              [routerLink]="group.route"
+              routerLinkActive="active"
+              class="nav-link nav-group-link"
+              [class.active]="isGroupActive(group)"
+              [attr.aria-label]="group.label"
+              [attr.title]="!isOpen && !isMobile ? group.label : null"
+              (click)="onNavigate()">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
+              <span class="tooltip-text">{{ group.label }}</span>
             </a>
           </ng-container>
-          <ng-template #noRouteHeader>
-            <div class="nav-link nav-group-link clickable" [attr.title]="group.label">
+          <ng-template #groupToggleOnly>
+            <button
+              type="button"
+              class="nav-link nav-group-link nav-group-link--button"
+              [class.active]="isGroupActive(group)"
+              [attr.aria-label]="group.label"
+              [attr.title]="!isOpen && !isMobile ? group.label : null">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
-            </div>
+              <span class="tooltip-text">{{ group.label }}</span>
+            </button>
           </ng-template>
-          
-          <button class="group-toggle" (click)="$event.stopPropagation(); toggleGroup(group.label)" [attr.aria-expanded]="isGroupOpen(group.label)" title="Toggle menu">
+
+          <button
+            *ngIf="isOpen || isMobile"
+            class="group-toggle"
+            type="button"
+            (click)="$event.stopPropagation(); toggleGroup(group.label)"
+            [attr.aria-expanded]="isGroupOpen(group.label)"
+            [attr.aria-label]="'Toggle ' + group.label">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
         </div>
+
         <ul class="nav-submenu" [class.collapsed]="!isGroupOpen(group.label)">
           <li *ngFor="let item of group.items">
             <ng-container *ngIf="item.route === '/app/admin'; else normalSubLink">
@@ -51,10 +86,11 @@
                 [routerLink]="item.route"
                 class="nav-link nav-sublink"
                 [class.active]="isAdminConsoleActive()"
-                (click)="collapse.emit()"
-                [attr.title]="item.label">
+                [attr.title]="!isOpen && !isMobile ? item.label : null"
+                (click)="onNavigate()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
+                <span class="tooltip-text">{{ item.label }}</span>
               </a>
             </ng-container>
             <ng-template #normalSubLink>
@@ -63,14 +99,28 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: item.route === '/app/admin/console' }"
                 class="nav-link nav-sublink"
-                (click)="collapse.emit()"
-                [attr.title]="item.label">
+                [attr.title]="!isOpen && !isMobile ? item.label : null"
+                (click)="onNavigate()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
+                <span class="tooltip-text">{{ item.label }}</span>
               </a>
             </ng-template>
           </li>
         </ul>
+
+        <div class="nav-group-flyout" *ngIf="isGroupFlyoutOpen(group.label)">
+          <div class="nav-group-flyout__label">{{ group.label }}</div>
+          <a
+            *ngFor="let item of group.items"
+            [routerLink]="item.route"
+            class="nav-group-flyout-item"
+            [class.flyout-item-active]="isItemActive(item)"
+            (click)="onNavigate()">
+            <span class="flyout-icon" [innerHTML]="item.icon"></span>
+            <span>{{ item.label }}</span>
+          </a>
+        </div>
       </li>
     </ul>
   </nav>
@@ -93,7 +143,7 @@
       </div>
     </div>
 
-    <button class="logout-btn" (click)="logout()" title="Logout">
+    <button class="logout-btn" type="button" (click)="logout()" [attr.title]="!isOpen && !isMobile ? 'Logout' : null">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -102,6 +152,7 @@
         </svg>
       </span>
       <span class="nav-label">Logout</span>
+      <span class="tooltip-text">Logout</span>
     </button>
   </div>
 </aside>

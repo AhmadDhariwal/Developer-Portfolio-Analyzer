@@ -7,8 +7,6 @@ import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from '
 
 import { AdminConsoleService, ConsoleTeam } from '../admin-console/admin-console.service';
 import { AdminHiringService, AdminRecruiter } from '../../services/admin-hiring.service';
-import { SharedLoaderComponent } from '../../../shared/components/loader/loader.component';
-import { SharedMessageComponent } from '../../../shared/components/message/message.component';
 import { RecruiterSharedModule } from '../../../supervisors/recruiter-shared/recruiter-shared.module';
 
 type SortOption = {
@@ -23,8 +21,6 @@ type SortOption = {
   imports: [
     CommonModule,
     FormsModule,
-    SharedLoaderComponent,
-    SharedMessageComponent,
     RecruiterSharedModule
   ],
   templateUrl: './admin-teams.component.html',

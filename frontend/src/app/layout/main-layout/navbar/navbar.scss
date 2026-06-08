@@ -9,14 +9,19 @@
   padding: 0 28px;
   position: fixed;
   top: 0;
-  left: var(--sidebar-width);
+  left: 260px;
   right: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: left var(--transition-base);
 
   &.sidebar-closed {
-    left: 68px; // sidebar-collapsed-width: icon-only strip still visible
+    left: 72px;
+  }
+
+  @media (max-width: 768px) {
+    left: 0;
+    padding: 0 16px;
   }
 
   /* ─── Left ─── */

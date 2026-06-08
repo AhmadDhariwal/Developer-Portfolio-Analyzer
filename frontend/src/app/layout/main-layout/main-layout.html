@@ -1,7 +1,19 @@
 <div class="dashboard-shell">
-  <app-sidebar [isOpen]="sidebarOpen()" (collapse)="toggleSidebar()"></app-sidebar>
+  <div
+    class="shell-backdrop"
+    *ngIf="isMobile() && sidebarOpen()"
+    (click)="closeSidebar()"
+    aria-hidden="true"></div>
 
-  <div class="shell-body" [class.sidebar-closed]="!sidebarOpen()">
+  <app-sidebar
+    [isOpen]="sidebarOpen()"
+    [isMobile]="isMobile()"
+    (collapse)="closeSidebar()"></app-sidebar>
+
+  <div
+    class="shell-body"
+    [class.sidebar-closed]="!sidebarOpen()"
+    [class.shell-body--mobile]="isMobile()">
     <app-navbar [sidebarOpen]="sidebarOpen()" (sidebarToggle)="toggleSidebar()"></app-navbar>
     <main class="main-content">
       <router-outlet></router-outlet>
