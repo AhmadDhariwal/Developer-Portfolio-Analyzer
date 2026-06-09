@@ -1,7 +1,5 @@
 const axios = require('axios');
 const crypto = require('node:crypto');
-const aiService = require('./aiservice');
-const { getJobPrompt } = require('../prompts/jobPrompt');
 const { rankJobs } = require('../utils/jobRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 
@@ -9,7 +7,10 @@ const JSEARCH_HOST = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE = 'https://jsearch.p.rapidapi.com/search';
 const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '10000', 10);
 const JSEARCH_RETRIES = Number.parseInt(process.env.JSEARCH_RETRIES || '1', 10);
-const JSEARCH_PRIMARY_MIN = Number.parseInt(process.env.JSEARCH_PRIMARY_MIN || '30', 10);
+const JOOBLE_BASE = 'https://jooble.org/api';
+const REMOTIVE_BASE = 'https://remotive.com/api/remote-jobs';
+const ARBEITNOW_BASE = 'https://www.arbeitnow.com/api/job-board-api';
+const SECONDARY_SOURCE_TIMEOUT_MS = Number.parseInt(process.env.JOB_SOURCE_TIMEOUT_MS || '9000', 10);
 const JOB_LIMITS = {
   defaultPage: 1,
   minPage: 1,
@@ -23,6 +24,10 @@ const PLATFORM_COLORS = {
   Rozee: { bg: '#e8282f', text: '#ffffff' },
   Glassdoor: { bg: '#0CAA41', text: '#ffffff' },
   RemoteOK: { bg: '#14b8a6', text: '#ffffff' },
+  JSearch: { bg: '#2563eb', text: '#ffffff' },
+  Jooble: { bg: '#f97316', text: '#111827' },
+  Remotive: { bg: '#22c55e', text: '#052e16' },
+  Arbeitnow: { bg: '#38bdf8', text: '#082f49' },
   Other: { bg: '#6366f1', text: '#ffffff' }
 };
 
@@ -34,7 +39,7 @@ const LOCATION_ALIASES = {
   europe: 'Europe'
 };
 
-const VALID_PLATFORMS = ['All', 'LinkedIn', 'Indeed', 'Rozee', 'Glassdoor', 'RemoteOK'];
+const VALID_PLATFORMS = ['All', 'JSearch', 'Jooble', 'Remotive', 'Arbeitnow', 'LinkedIn', 'Indeed', 'Rozee', 'Glassdoor', 'RemoteOK'];
 const VALID_JOB_TYPES = ['All', 'Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
 const VALID_EXP_LEVELS = ['All', 'Intern', 'Entry', '1-2 years', '3-5 years', '5+ years'];
 const VALID_LOCATIONS = ['All', 'Remote', 'Pakistan', 'USA', 'Europe'];
@@ -60,6 +65,10 @@ const uniqueStrings = (values = [], limit = 12) => {
 function normalisePlatform(raw) {
   const value = toText(raw).toLowerCase();
   if (!value || value === 'all') return 'All';
+  if (value.includes('jsearch')) return 'JSearch';
+  if (value.includes('jooble')) return 'Jooble';
+  if (value.includes('remotive')) return 'Remotive';
+  if (value.includes('arbeitnow') || value.includes('arbeit now')) return 'Arbeitnow';
   if (value.includes('linkedin')) return 'LinkedIn';
   if (value.includes('indeed')) return 'Indeed';
   if (value.includes('rozee')) return 'Rozee';
@@ -123,7 +132,11 @@ function stableId(prefix, values = []) {
 
 function inferPlatform(url = '', preferred = '') {
   const lower = toText(url).toLowerCase();
-  if (preferred && VALID_PLATFORMS.includes(preferred) && preferred !== 'All') return preferred;
+  const normalizedPreferred = normalisePlatform(preferred);
+  if (normalizedPreferred && normalizedPreferred !== 'All') return normalizedPreferred;
+  if (lower.includes('jooble.org')) return 'Jooble';
+  if (lower.includes('remotive.com')) return 'Remotive';
+  if (lower.includes('arbeitnow.com')) return 'Arbeitnow';
   if (lower.includes('linkedin.com')) return 'LinkedIn';
   if (lower.includes('indeed.com')) return 'Indeed';
   if (lower.includes('rozee.pk')) return 'Rozee';
@@ -146,27 +159,74 @@ function normaliseExperienceLabel(raw) {
   return normalized === 'All' ? 'Entry' : normalized;
 }
 
+function isHttpUrl(value) {
+  return /^https?:\/\//i.test(toText(value));
+}
+
+function stripHtml(value = '') {
+  return toText(value)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|li|div|h\d)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
+function normalizeStringList(values = [], limit = 12) {
+  if (Array.isArray(values)) return uniqueStrings(values, limit);
+  const text = stripHtml(values);
+  if (!text) return [];
+  return uniqueStrings(text.split(/\n|,|•|;|\|/), limit);
+}
+
+function extractSkillsFromText(...parts) {
+  const catalog = [
+    'Angular', 'React', 'Vue.js', 'Next.js', 'Node.js', 'Express', 'TypeScript', 'JavaScript',
+    'Python', 'Django', 'Flask', 'Java', 'Spring Boot', 'PHP', 'Laravel', '.NET', 'C#',
+    'Ruby', 'Rails', 'Go', 'Golang', 'GraphQL', 'REST APIs', 'MongoDB', 'PostgreSQL',
+    'MySQL', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'CI/CD', 'Git',
+    'Tailwind CSS', 'SCSS', 'HTML', 'CSS', 'Redux', 'RxJS', 'Jest', 'Cypress',
+    'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Science', 'LLM'
+  ];
+  const haystack = parts.map(stripHtml).join(' ').toLowerCase();
+  return uniqueStrings(
+    catalog.filter((skill) => haystack.includes(skill.toLowerCase())),
+    10
+  );
+}
+
 function normaliseJob(job = {}, index = 0, source = 'Unknown') {
   const title = toText(job.title) || 'Software Engineer';
   const company = toText(job.company) || 'Technology Company';
   const location = toText(job.location) || 'Remote';
-  const description = toText(job.description) || 'Opportunity to contribute to modern software products with a collaborative engineering team.';
+  const description = stripHtml(job.description) || 'Opportunity details were not provided by the source.';
+  const applyUrl = isHttpUrl(job.applyUrl) ? toText(job.applyUrl) : (isHttpUrl(job.url) ? toText(job.url) : '');
+  const url = isHttpUrl(job.url) ? toText(job.url) : applyUrl;
   const platform = inferPlatform(job.url, job.platform);
-  const skills = uniqueStrings(Array.isArray(job.skills) ? job.skills : [], 8);
+  const skills = uniqueStrings(
+    Array.isArray(job.skills) && job.skills.length ? job.skills : extractSkillsFromText(title, description, job.requirements),
+    10
+  );
   const jobType = normaliseJobType(job.jobType) === 'All'
     ? (location.toLowerCase().includes('remote') ? 'Remote' : 'Full Time')
     : normaliseJobType(job.jobType);
   const postedDate = /\d{4}-\d{2}-\d{2}/.test(toText(job.postedDate))
     ? toText(job.postedDate)
     : new Date().toISOString().split('T')[0];
-  const url = /^https?:\/\//i.test(toText(job.url))
-    ? toText(job.url)
-    : `https://www.google.com/search?q=${encodeURIComponent(`${title} ${company} job`)}`;
   const experienceLevel = normaliseExperienceLabel(job.experienceLevel);
   const salary = toText(job.salary) || 'Competitive';
+  const requirements = normalizeStringList(job.requirements, 12);
+  const benefits = normalizeStringList(job.benefits, 10);
 
   return {
     id: toText(job.id) || stableId('job', [source, title, company, location, platform, index]),
+    externalJobId: toText(job.externalJobId || job.id),
     title,
     company,
     companyLogo: toText(job.companyLogo),
@@ -176,51 +236,19 @@ function normaliseJob(job = {}, index = 0, source = 'Unknown') {
     skills,
     postedDate,
     description,
+    requirements,
+    benefits,
     platform,
     url,
+    applyUrl,
     experienceLevel,
     source,
+    matchScore: Number(job.matchScore || 0),
+    whyMatched: toText(job.whyMatched),
+    missingSkills: uniqueStrings(job.missingSkills || [], 5),
     logoFallback: company.charAt(0).toUpperCase(),
     platformColor: PLATFORM_COLORS[platform] || PLATFORM_COLORS.Other
   };
-}
-
-function buildFallbackPool(count = 20) {
-  const today = new Date();
-  const daysAgo = (days) => new Date(today - (days * 86400000)).toISOString().split('T')[0];
-  const base = [
-    { id: 'fb_001', title: 'Senior Full Stack Developer', company: 'Arbisoft', location: 'Lahore, Pakistan', salary: 'PKR 300,000 - 450,000/month', jobType: 'Full Time', skills: ['Node.js', 'React', 'MongoDB', 'TypeScript', 'AWS'], postedDate: daysAgo(2), description: 'Arbisoft is hiring a senior full stack engineer to ship product features across scalable SaaS systems used by international clients.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100001', experienceLevel: '3-5 years' },
-    { id: 'fb_002', title: 'Frontend Engineer (Angular)', company: 'Systems Limited', location: 'Karachi, Pakistan', salary: 'PKR 200,000 - 320,000/month', jobType: 'Full Time', skills: ['Angular', 'TypeScript', 'RxJS', 'SCSS', 'REST APIs'], postedDate: daysAgo(5), description: 'Build enterprise Angular apps for high-scale finance and telecom products with a mature engineering team.', platform: 'Rozee', url: 'https://rozee.pk/job/frontend-angular-sl', experienceLevel: '1-2 years' },
-    { id: 'fb_003', title: 'Node.js Backend Developer', company: 'Netsol Technologies', location: 'Islamabad, Pakistan', salary: 'PKR 250,000 - 380,000/month', jobType: 'Full Time', skills: ['Node.js', 'Express', 'PostgreSQL', 'Docker', 'REST APIs'], postedDate: daysAgo(3), description: 'Netsol needs a backend developer to build API services for global financial software products.', platform: 'Indeed', url: 'https://pk.indeed.com/job/nodejs-netsol-001', experienceLevel: '3-5 years' },
-    { id: 'fb_004', title: 'React Developer', company: 'Turing', location: 'Remote', salary: '$4,000 - $6,000/month', jobType: 'Remote', skills: ['React', 'TypeScript', 'Redux', 'GraphQL', 'Jest'], postedDate: daysAgo(1), description: 'Join a distributed product team building a modern fintech experience for a fast-growing US startup.', platform: 'RemoteOK', url: 'https://remoteok.com/remote-jobs/react-turing-001', experienceLevel: '3-5 years' },
-    { id: 'fb_005', title: 'Full Stack Engineer', company: '10Pearls', location: 'Lahore, Pakistan', salary: 'PKR 280,000 - 420,000/month', jobType: 'Full Time', skills: ['Angular', 'Node.js', 'MongoDB', 'AWS', 'Docker'], postedDate: daysAgo(7), description: 'Design cloud-native web solutions for international healthcare and education products.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100005', experienceLevel: '3-5 years' },
-    { id: 'fb_006', title: 'Junior React Developer', company: 'Contour Software', location: 'Karachi, Pakistan', salary: 'PKR 120,000 - 180,000/month', jobType: 'Full Time', skills: ['React', 'JavaScript', 'HTML', 'CSS', 'Git'], postedDate: daysAgo(4), description: 'Support established enterprise software products while growing your frontend engineering depth.', platform: 'Rozee', url: 'https://rozee.pk/job/junior-react-contour', experienceLevel: 'Entry' },
-    { id: 'fb_007', title: 'DevOps Engineer', company: 'Automattic', location: 'Remote', salary: '$5,000 - $8,000/month', jobType: 'Remote', skills: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Terraform'], postedDate: daysAgo(6), description: 'Help scale remote-first infrastructure and developer workflows for widely used publishing platforms.', platform: 'RemoteOK', url: 'https://remoteok.com/remote-jobs/devops-automattic-001', experienceLevel: '3-5 years' },
-    { id: 'fb_008', title: 'Software Engineer - TypeScript/Node', company: 'GitLab', location: 'Remote', salary: '$6,000 - $10,000/month', jobType: 'Remote', skills: ['Node.js', 'TypeScript', 'GraphQL', 'PostgreSQL', 'CI/CD'], postedDate: daysAgo(2), description: 'Ship tooling and automation features for developers working at scale inside an all-remote product company.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100008', experienceLevel: '3-5 years' },
-    { id: 'fb_009', title: 'MERN Stack Developer', company: 'TechVista', location: 'Rawalpindi, Pakistan', salary: 'PKR 150,000 - 250,000/month', jobType: 'Full Time', skills: ['MongoDB', 'Express', 'React', 'Node.js', 'Redux'], postedDate: daysAgo(9), description: 'Own platform features end-to-end for an education-focused startup scaling its student portal.', platform: 'Indeed', url: 'https://pk.indeed.com/job/mern-techvista-002', experienceLevel: '1-2 years' },
-    { id: 'fb_010', title: 'Software Engineer Intern - Frontend', company: 'Google', location: 'Remote', salary: '$6,000/month', jobType: 'Internship', skills: ['JavaScript', 'TypeScript', 'React', 'HTML', 'CSS'], postedDate: daysAgo(3), description: 'Work on real frontend engineering tasks under mentorship in a global internship program.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100010', experienceLevel: 'Intern' },
-    { id: 'fb_011', title: 'Backend Engineer - Python/Django', company: 'Toptal', location: 'Remote', salary: '$5,500 - $9,000/month', jobType: 'Contract', skills: ['Python', 'Django', 'PostgreSQL', 'REST APIs', 'Docker'], postedDate: daysAgo(5), description: 'Join a contract fintech project focused on core API layers, system reliability, and delivery speed.', platform: 'Glassdoor', url: 'https://glassdoor.com/job-listing/backend-toptal-001', experienceLevel: '5+ years' },
-    { id: 'fb_012', title: 'Angular Developer (Mid-Level)', company: 'i2c Inc', location: 'Lahore, Pakistan', salary: 'PKR 220,000 - 340,000/month', jobType: 'Full Time', skills: ['Angular', 'TypeScript', 'RxJS', 'NgRx', 'SCSS'], postedDate: daysAgo(8), description: 'Build digital banking interfaces with a global payments technology team.', platform: 'Rozee', url: 'https://rozee.pk/job/angular-i2c-003', experienceLevel: '1-2 years' },
-    { id: 'fb_013', title: 'Senior Software Engineer - Node.js', company: 'Meta', location: 'Remote', salary: '$12,000 - $18,000/month', jobType: 'Full Time', skills: ['Node.js', 'GraphQL', 'React', 'TypeScript', 'Distributed Systems'], postedDate: daysAgo(1), description: 'Design high-throughput backend systems supporting global messaging and collaboration products.', platform: 'Indeed', url: 'https://pk.indeed.com/job/senior-meta-001', experienceLevel: '5+ years' },
-    { id: 'fb_014', title: 'Cloud Engineer - AWS', company: 'Comverse', location: 'Karachi, Pakistan', salary: 'PKR 260,000 - 400,000/month', jobType: 'Full Time', skills: ['AWS', 'Terraform', 'Docker', 'Python', 'CI/CD'], postedDate: daysAgo(11), description: 'Own deployment pipelines and cloud infrastructure for digital telecom platforms.', platform: 'LinkedIn', url: 'https://linkedin.com/jobs/view/100014', experienceLevel: '3-5 years' },
-    { id: 'fb_015', title: 'TypeScript / Vue.js Developer', company: 'Shopify', location: 'Remote', salary: '$7,000 - $11,000/month', jobType: 'Remote', skills: ['Vue.js', 'TypeScript', 'GraphQL', 'Node.js', 'PostgreSQL'], postedDate: daysAgo(4), description: 'Build storefront experiences and developer tooling in a globally distributed commerce company.', platform: 'RemoteOK', url: 'https://remoteok.com/remote-jobs/vue-shopify-001', experienceLevel: '3-5 years' }
-  ];
-
-  const expanded = [];
-  let cycle = 0;
-  while (expanded.length < count) {
-    for (const job of base) {
-      if (expanded.length >= count) break;
-      expanded.push(normaliseJob({
-        ...job,
-        id: `${job.id}_${cycle}`,
-        url: cycle === 0 ? job.url : `${job.url}${job.url.includes('?') ? '&' : '?'}variant=${cycle}`
-      }, expanded.length, 'Fallback'));
-    }
-    cycle += 1;
-  }
-
-  return expanded.slice(0, count);
 }
 
 function mapJSearchJob(job = {}, index = 0) {
@@ -229,15 +257,17 @@ function mapJSearchJob(job = {}, index = 0) {
   const salary = job.job_min_salary && job.job_max_salary
     ? `$${job.job_min_salary}-${job.job_max_salary}/${job.job_salary_period || 'year'}`
     : 'Competitive';
+  const highlights = job.job_highlights || {};
   const skills = Array.isArray(job.job_required_skills)
     ? job.job_required_skills
-    : [];
+    : extractSkillsFromText(job.job_title, job.job_description, highlights.Qualifications);
   const experienceLevel = typeof job.job_required_experience?.required_experience_in_months === 'number'
     ? mapExperienceMonthsToLabel(job.job_required_experience.required_experience_in_months)
     : 'Entry';
 
   return normaliseJob({
     id: stableId('jsearch', [job.job_id || index, job.job_title, job.employer_name, applyLink]),
+    externalJobId: job.job_id,
     title: job.job_title,
     company: job.employer_name,
     companyLogo: job.employer_logo || '',
@@ -246,9 +276,12 @@ function mapJSearchJob(job = {}, index = 0) {
     jobType: String(job.job_employment_type || '').replace('_', ' '),
     skills,
     postedDate: job.job_posted_at_datetime_utc ? String(job.job_posted_at_datetime_utc).split('T')[0] : '',
-    description: String(job.job_description || '').replace(/\s+/g, ' ').slice(0, 360),
-    platform: inferPlatform(applyLink),
+    description: job.job_description,
+    requirements: highlights.Qualifications || [],
+    benefits: highlights.Benefits || [],
+    platform: 'JSearch',
     url: applyLink,
+    applyUrl: applyLink,
     experienceLevel
   }, index, 'JSearch');
 }
@@ -308,35 +341,129 @@ async function fetchJSearchJobs(query, maxResults = 80) {
   return [];
 }
 
-async function generateAIJobs(options = {}) {
-  const prompt = getJobPrompt({
-    ...options,
-    totalCount: options.aiCount || 30
-  });
-  const fallback = JSON.stringify(buildFallbackPool(options.aiCount || 30));
+function mapJoobleJob(job = {}, index = 0) {
+  const url = toText(job.link || job.url);
+  const description = stripHtml(job.snippet || job.description);
+  return normaliseJob({
+    id: stableId('jooble', [job.id || index, job.title, job.company, url]),
+    externalJobId: job.id,
+    title: job.title,
+    company: job.company,
+    companyLogo: '',
+    location: job.location || 'Remote',
+    salary: job.salary,
+    jobType: job.type,
+    skills: extractSkillsFromText(job.title, description),
+    postedDate: job.updated ? String(job.updated).split('T')[0] : '',
+    description,
+    requirements: [],
+    benefits: [],
+    platform: 'Jooble',
+    url,
+    applyUrl: url,
+    experienceLevel: job.experienceLevel
+  }, index, 'Jooble');
+}
+
+async function fetchJoobleJobs(query, filters = {}, maxResults = 40) {
+  const apiKey = toText(process.env.JOOBLE_API_KEY);
+  if (!apiKey) return [];
 
   try {
-    const rawResult = await aiService.runAIAnalysis(prompt, fallback);
-    let parsed;
-
-    if (typeof rawResult === 'string') {
-      const match = /\[[\s\S]*\]/.exec(rawResult);
-      if (!match) throw new Error('No JSON array found in AI job response.');
-      parsed = JSON.parse(match[0]);
-    } else if (Array.isArray(rawResult)) {
-      parsed = rawResult;
-    } else {
-      throw new Error('Unexpected AI job response type.');
-    }
-
-    return parsed
-      .filter((job) => job?.title && job?.company)
-      .map((job, index) => normaliseJob({
-        ...job,
-        id: toText(job.id) || stableId('ai', [job.title, job.company, job.location, index])
-      }, index, 'AI'));
+    const response = await axios.post(`${JOOBLE_BASE}/${apiKey}`, {
+      keywords: query,
+      location: filters.location && filters.location !== 'All' ? filters.location : '',
+      page: 1
+    }, {
+      timeout: SECONDARY_SOURCE_TIMEOUT_MS,
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const jobs = Array.isArray(response.data?.jobs) ? response.data.jobs : [];
+    return jobs.slice(0, maxResults).map((job, index) => mapJoobleJob(job, index));
   } catch (error) {
-    console.warn('[JobService] AI generation failed:', error.message);
+    console.warn(`[JobService] Jooble failed: ${error?.response?.status || ''} ${error.message}`);
+    return [];
+  }
+}
+
+function mapRemotiveJob(job = {}, index = 0) {
+  const description = stripHtml(job.description);
+  return normaliseJob({
+    id: stableId('remotive', [job.id || index, job.title, job.company_name, job.url]),
+    externalJobId: job.id,
+    title: job.title,
+    company: job.company_name,
+    companyLogo: job.company_logo,
+    location: job.candidate_required_location || 'Remote',
+    salary: job.salary,
+    jobType: job.job_type,
+    skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
+    postedDate: job.publication_date ? String(job.publication_date).split('T')[0] : '',
+    description,
+    requirements: [],
+    benefits: [],
+    platform: 'Remotive',
+    url: job.url,
+    applyUrl: job.url,
+    experienceLevel: job.experienceLevel
+  }, index, 'Remotive');
+}
+
+async function fetchRemotiveJobs(query, maxResults = 40) {
+  try {
+    const response = await axios.get(REMOTIVE_BASE, {
+      params: { search: query },
+      timeout: SECONDARY_SOURCE_TIMEOUT_MS
+    });
+    const jobs = Array.isArray(response.data?.jobs) ? response.data.jobs : [];
+    return jobs.slice(0, maxResults).map((job, index) => mapRemotiveJob(job, index));
+  } catch (error) {
+    console.warn(`[JobService] Remotive failed: ${error?.response?.status || ''} ${error.message}`);
+    return [];
+  }
+}
+
+function mapArbeitnowJob(job = {}, index = 0) {
+  const createdAt = Number(job.created_at);
+  const postedDate = Number.isFinite(createdAt) && createdAt > 0
+    ? new Date(createdAt * 1000).toISOString().split('T')[0]
+    : '';
+  const description = stripHtml(job.description);
+
+  return normaliseJob({
+    id: stableId('arbeitnow', [job.slug || index, job.title, job.company_name, job.url]),
+    externalJobId: job.slug,
+    title: job.title,
+    company: job.company_name,
+    companyLogo: '',
+    location: job.location || (job.remote ? 'Remote' : 'Europe'),
+    salary: job.salary,
+    jobType: Array.isArray(job.job_types) ? job.job_types[0] : job.job_types,
+    skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
+    postedDate,
+    description,
+    requirements: [],
+    benefits: [],
+    platform: 'Arbeitnow',
+    url: job.url,
+    applyUrl: job.url,
+    experienceLevel: job.experienceLevel
+  }, index, 'Arbeitnow');
+}
+
+async function fetchArbeitnowJobs(query, maxResults = 40) {
+  try {
+    const response = await axios.get(ARBEITNOW_BASE, {
+      timeout: SECONDARY_SOURCE_TIMEOUT_MS
+    });
+    const jobs = Array.isArray(response.data?.data) ? response.data.data : [];
+    const needle = toText(query).toLowerCase();
+    const filtered = needle
+      ? jobs.filter((job) => `${job.title || ''} ${job.company_name || ''} ${(job.tags || []).join(' ')} ${stripHtml(job.description)}`.toLowerCase().includes(needle.split(' ')[0]))
+      : jobs;
+    return filtered.slice(0, maxResults).map((job, index) => mapArbeitnowJob(job, index));
+  } catch (error) {
+    console.warn(`[JobService] Arbeitnow failed: ${error?.response?.status || ''} ${error.message}`);
     return [];
   }
 }
@@ -360,7 +487,7 @@ function matchesLocation(job, filterLocation) {
 function matchesSkill(job, filterSkills) {
   if (!filterSkills) return true;
   const needle = filterSkills.toLowerCase();
-  return [job.title, job.description, ...(job.skills || [])]
+  return [job.title, job.description, ...(job.skills || []), ...(job.requirements || [])]
     .some((value) => String(value || '').toLowerCase().includes(needle));
 }
 
@@ -378,11 +505,33 @@ function applyFilters(jobs = [], filters = {}) {
 function dedupeJobs(jobs = []) {
   const seen = new Set();
   return jobs.filter((job) => {
-    const key = `${job.title}|${job.company}|${job.location}|${job.platform}`.toLowerCase();
+    const urlKey = toText(job.applyUrl || job.url).toLowerCase().replace(/\/$/, '');
+    const key = `${job.title}|${job.company}|${urlKey}`.toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+}
+
+function isUsableJob(job = {}) {
+  return Boolean(toText(job.title) && toText(job.company) && isHttpUrl(job.applyUrl || job.url));
+}
+
+async function fetchLiveJobSources(query, filters) {
+  const liveJobs = [];
+
+  const append = (jobs) => {
+    if (Array.isArray(jobs) && jobs.length) liveJobs.push(...jobs);
+  };
+
+  append(await fetchJSearchJobs(query, 40));
+  append(await fetchJoobleJobs(query, filters, 35));
+  append(await fetchRemotiveJobs(query, 35));
+  append(await fetchArbeitnowJobs(query, 35));
+
+  return dedupeJobs(liveJobs
+    .map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Unknown'))
+    .filter(isUsableJob));
 }
 
 async function buildJobPool(options = {}) {
@@ -401,27 +550,11 @@ async function buildJobPool(options = {}) {
     filters.skills
   ].map(toText).filter(Boolean).join(' ').slice(0, 90);
 
-  const jsearchJobs = await fetchJSearchJobs(query, 40);
-  let aiJobs = [];
-  if (jsearchJobs.length < JSEARCH_PRIMARY_MIN) {
-    const aiNeeded = Math.max(20, 60 - jsearchJobs.length);
-    aiJobs = await generateAIJobs({
-      careerStack,
-      experienceLevel,
-      skillGaps,
-      knownSkills,
-      resumeSkills,
-      githubSkills,
-      platform: filters.platform,
-      location: filters.location,
-      jobType: filters.jobType,
-      skills: filters.skills,
-      aiCount: aiNeeded
-    });
-  }
-
-  const combined = dedupeJobs([...jsearchJobs, ...aiJobs].map((job, index) => normaliseJob(job, index, job.source || 'Unknown')));
-  let pool = combined.length >= 5 ? combined : buildFallbackPool(80);
+  const liveJobs = await fetchLiveJobSources(query, filters);
+  const cachedFallbackJobs = dedupeJobs((options.cachedFallbackJobs || [])
+    .map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Cached'))
+    .filter(isUsableJob));
+  let pool = liveJobs;
   const hasActiveFilters = [filters.platform, filters.location, filters.jobType, filters.expLevel]
     .some((value) => value && value !== 'All')
     || Boolean(filters.skills);
@@ -429,10 +562,10 @@ async function buildJobPool(options = {}) {
   pool = hasActiveFilters ? filteredPool : pool;
 
   if (!pool.length) {
-    pool = applyFilters(buildFallbackPool(60), filters);
+    pool = hasActiveFilters ? applyFilters(cachedFallbackJobs, filters) : cachedFallbackJobs;
   }
 
-  return rankJobs(pool, {
+  return rankJobs(dedupeJobs(pool).filter(isUsableJob), {
     careerStack,
     experienceLevel,
     skillGaps,
@@ -444,5 +577,8 @@ async function buildJobPool(options = {}) {
 
 module.exports = {
   buildJobPool,
-  normaliseJobFilters
+  normaliseJobFilters,
+  normaliseJob,
+  applyFilters,
+  isUsableJob
 };

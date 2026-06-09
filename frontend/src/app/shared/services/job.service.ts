@@ -41,6 +41,12 @@ export class JobService {
     );
   }
 
+  getJobById(id: string): Observable<Job> {
+    return this.http.get<{ job?: Partial<Job> }>(`${this.baseUrl}/jobs/${encodeURIComponent(id)}`).pipe(
+      map((response) => this.normalizeJob(response?.job, 0))
+    );
+  }
+
   private normalizeResponse(response: JobsResponse | null | undefined, filters: JobFilters, requestedPage: number): JobsResponse {
     const jobs = Array.isArray(response?.jobs)
       ? response!.jobs.map((job, index) => this.normalizeJob(job, index))
@@ -81,8 +87,12 @@ export class JobService {
   }
 
   private normalizeJob(job: Partial<Job> | null | undefined, index: number): Job {
+    const url = String(job?.url || '').trim();
+    const applyUrl = String(job?.applyUrl || url || '').trim();
+
     return {
       id: String(job?.id || `job-${index}`).trim(),
+      externalJobId: String(job?.externalJobId || '').trim(),
       title: String(job?.title || 'Software Engineer').trim(),
       company: String(job?.company || 'Technology Company').trim(),
       companyLogo: String(job?.companyLogo || '').trim(),
@@ -94,8 +104,15 @@ export class JobService {
         : [],
       postedDate: String(job?.postedDate || '').trim(),
       description: String(job?.description || 'Explore a role aligned with your developer profile.').trim(),
+      requirements: Array.isArray(job?.requirements)
+        ? job!.requirements.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 14)
+        : [],
+      benefits: Array.isArray(job?.benefits)
+        ? job!.benefits.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 10)
+        : [],
       platform: (job?.platform || 'Other') as Job['platform'],
-      url: String(job?.url || '#').trim(),
+      url,
+      applyUrl,
       experienceLevel: String(job?.experienceLevel || 'Entry').trim(),
       source: String(job?.source || '').trim(),
       score: Number(job?.score ?? 0) || 0,

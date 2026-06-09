@@ -1,4 +1,4 @@
-export type JobPlatform = 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
+export type JobPlatform = 'JSearch' | 'Jooble' | 'Remotive' | 'Arbeitnow' | 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
 export type JobType = 'Full Time' | 'Part Time' | 'Contract' | 'Internship' | 'Remote' | 'All';
 export type JobExperienceFilter = 'Intern' | 'Entry' | '1-2 years' | '3-5 years' | '5+ years' | 'All';
 export type JobLocation = 'Pakistan' | 'Remote' | 'USA' | 'Europe' | 'All';
@@ -10,6 +10,7 @@ export interface PlatformColor {
 
 export interface Job {
   id: string;
+  externalJobId?: string;
   title: string;
   company: string;
   companyLogo: string;
@@ -19,8 +20,11 @@ export interface Job {
   skills: string[];
   postedDate: string;
   description: string;
+  requirements: string[];
+  benefits: string[];
   platform: JobPlatform;
   url: string;
+  applyUrl: string;
   experienceLevel: string;
   source?: string;
   score?: number;
@@ -93,7 +97,11 @@ export const DEFAULT_JOB_FILTERS: JobFilters = {
 };
 
 export const JOB_PLATFORM_OPTIONS: { value: JobPlatform | 'All'; label: string }[] = [
-  { value: 'All', label: 'All Platforms' },
+  { value: 'All', label: 'All Sources' },
+  { value: 'JSearch', label: 'JSearch' },
+  { value: 'Jooble', label: 'Jooble' },
+  { value: 'Remotive', label: 'Remotive' },
+  { value: 'Arbeitnow', label: 'Arbeitnow' },
   { value: 'LinkedIn', label: 'LinkedIn' },
   { value: 'Indeed', label: 'Indeed' },
   { value: 'Rozee', label: 'Rozee.pk' },
@@ -136,6 +144,10 @@ export const JOB_SKILL_OPTIONS = [
 ];
 
 export const JOB_PLATFORM_COLOR_MAP: Record<string, PlatformColor> = {
+  JSearch: { bg: '#2563eb', text: '#ffffff' },
+  Jooble: { bg: '#f97316', text: '#111827' },
+  Remotive: { bg: '#22c55e', text: '#052e16' },
+  Arbeitnow: { bg: '#38bdf8', text: '#082f49' },
   LinkedIn: { bg: '#0077B5', text: '#ffffff' },
   Indeed: { bg: '#003A9B', text: '#ffffff' },
   Rozee: { bg: '#e8282f', text: '#ffffff' },

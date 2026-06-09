@@ -1,0 +1,104 @@
+<section class="job-details-page">
+  <a class="back-link" routerLink="/app/jobs">
+    <span aria-hidden="true">&larr;</span>
+    Back to Jobs Hub
+  </a>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="shimmer hero"></div>
+    <div class="shimmer line"></div>
+    <div class="shimmer line short"></div>
+  </div>
+
+  <div class="error-state" *ngIf="!isLoading && errorMessage">
+    <div class="state-icon">!</div>
+    <h1>Job details unavailable</h1>
+    <p>{{ errorMessage }}</p>
+    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !errorMessage && job">
+    <header class="details-hero">
+      <div class="company-logo">
+        <img *ngIf="job.companyLogo" [src]="job.companyLogo" [alt]="job.company" />
+        <span *ngIf="!job.companyLogo">{{ job.company.charAt(0) }}</span>
+      </div>
+
+      <div class="hero-copy">
+        <div class="badge-row">
+          <span class="source-badge">{{ job.platform }}</span>
+          <span class="source-badge muted">{{ job.source || 'Live source' }}</span>
+          <span class="match-badge" *ngIf="job.matchScore">{{ job.matchScore }}% Match</span>
+        </div>
+        <h1>{{ job.title }}</h1>
+        <p>{{ job.company }} | {{ job.location }} | {{ job.jobType }} | {{ job.experienceLevel }}</p>
+      </div>
+
+      <button
+        class="primary-action"
+        type="button"
+        [disabled]="!hasApplyLink"
+        [title]="hasApplyLink ? 'Open external application link' : 'Apply link unavailable'"
+        (click)="applyNow()"
+      >
+        {{ hasApplyLink ? 'Apply Now' : 'Apply link unavailable' }}
+      </button>
+    </header>
+
+    <div class="details-grid">
+      <main class="details-main">
+        <article class="panel">
+          <span class="eyebrow">Job Description</span>
+          <p class="description">{{ job.description }}</p>
+        </article>
+
+        <article class="panel" *ngIf="job.requirements.length">
+          <span class="eyebrow">Requirements</span>
+          <ul class="detail-list">
+            <li *ngFor="let requirement of job.requirements">{{ requirement }}</li>
+          </ul>
+        </article>
+
+        <article class="panel" *ngIf="job.benefits.length">
+          <span class="eyebrow">Benefits</span>
+          <ul class="detail-list">
+            <li *ngFor="let benefit of job.benefits">{{ benefit }}</li>
+          </ul>
+        </article>
+      </main>
+
+      <aside class="details-side">
+        <article class="panel stat-panel">
+          <span class="eyebrow">Role Snapshot</span>
+          <div class="stat-row">
+            <span>Salary</span>
+            <strong>{{ job.salary || 'Competitive' }}</strong>
+          </div>
+          <div class="stat-row">
+            <span>Posted</span>
+            <strong>{{ postedLabel }}</strong>
+          </div>
+          <div class="stat-row">
+            <span>Source</span>
+            <strong>{{ job.source || job.platform }}</strong>
+          </div>
+        </article>
+
+        <article class="panel" *ngIf="job.skills.length">
+          <span class="eyebrow">Skills</span>
+          <div class="chips">
+            <span class="skill-chip" *ngFor="let skill of job.skills">{{ skill }}</span>
+          </div>
+        </article>
+
+        <article class="panel" *ngIf="job.whyMatched || job.missingSkills?.length">
+          <span class="eyebrow">Match Insight</span>
+          <p class="why" *ngIf="job.whyMatched">{{ job.whyMatched }}</p>
+          <div class="chips missing" *ngIf="job.missingSkills?.length">
+            <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
+          </div>
+        </article>
+      </aside>
+    </div>
+  </ng-container>
+</section>

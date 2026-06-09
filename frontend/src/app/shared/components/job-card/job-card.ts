@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { JOB_PLATFORM_COLOR_MAP, Job, JobUiState } from '../../models/job.model';
 
 @Component({
   selector: 'app-job-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './job-card.html',
   styleUrl: './job-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -54,19 +55,22 @@ export class JobCardComponent {
     return source || 'Suggested';
   }
 
+  get applyLink(): string {
+    return String(this.job.applyUrl || this.job.url || '').trim();
+  }
+
+  get hasApplyLink(): boolean {
+    return /^https?:\/\//i.test(this.applyLink);
+  }
+
   onLogoError(): void {
     this.logoError = true;
   }
 
-  viewJob(): void {
-    if (this.job.url) {
-      window.open(this.job.url, '_blank', 'noopener,noreferrer');
-    }
-  }
-
   applyNow(): void {
+    if (!this.hasApplyLink) return;
     this.markApplied.emit(this.job);
-    this.viewJob();
+    window.open(this.applyLink, '_blank', 'noopener,noreferrer');
   }
 
   onSave(event: Event): void {

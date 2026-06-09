@@ -8,6 +8,7 @@ import { RecommendationsComponent } from './pages/recommendations/recommendation
 import { ProfileComponent } from './pages/profile/profile.component';
 import { CoursesComponent } from './pages/courses/courses.component';
 import { JobsComponent } from './pages/jobs/jobs.component';
+import { JobDetailsComponent } from './pages/job-details/job-details.component';
 import { ActivityLogsComponent } from './pages/activity-logs/activity-logs.component';
 import { AiVersionsComponent } from './pages/ai-versions/ai-versions.component';
 import { TeamManagementComponent } from './pages/team-management/team-management.component';
@@ -83,6 +84,7 @@ export const routes: Routes = [
       { path: 'recommendations',    component: RecommendationsComponent },
       { path: 'courses',            component: CoursesComponent },
       { path: 'jobs',               component: JobsComponent },
+      { path: 'jobs/:id',            component: JobDetailsComponent },
       { path: 'integrations',       component: IntegrationsMarketplaceComponent },
       { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
       { path: 'profile',            component: ProfileComponent },

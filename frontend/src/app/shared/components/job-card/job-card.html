@@ -85,7 +85,15 @@
   </div>
 
   <div class="job-actions">
-    <button class="btn-view" type="button" (click)="viewJob()">View</button>
-    <button class="btn-apply" type="button" (click)="applyNow()">Apply</button>
+    <a class="btn-view" [routerLink]="['/app/jobs', job.id]">View Details</a>
+    <button
+      class="btn-apply"
+      type="button"
+      [disabled]="!hasApplyLink"
+      [title]="hasApplyLink ? 'Open external application link' : 'Apply link unavailable'"
+      (click)="applyNow()"
+    >
+      {{ hasApplyLink ? 'Apply Now' : 'Apply link unavailable' }}
+    </button>
   </div>
 </article>

@@ -308,11 +308,17 @@
 
 .btn-view,
 .btn-apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 1 1 140px;
   min-height: 44px;
+  padding: 0 14px;
   border-radius: 14px;
   font-size: 0.84rem;
   font-weight: 700;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -336,6 +342,15 @@
 
   &:hover {
     transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+    background: rgba(51, 65, 85, 0.82);
+    color: #cbd5e1;
+    box-shadow: none;
   }
 }
 

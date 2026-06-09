@@ -1,11 +1,11 @@
 const crypto = require('node:crypto');
-const { buildJobPool, normaliseJobFilters } = require('../services/jobService');
+const { buildJobPool, normaliseJobFilters, applyFilters, isUsableJob } = require('../services/jobService');
 const AnalysisCache = require('../models/analysisCache');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const { getIntegrationSecretsSync } = require('../services/platformSettingsService');
 
-const JOB_POOL_VERSION = 'jobs_pool_v2';
+const JOB_POOL_VERSION = 'jobs_pool_v3_real_sources';
 
 const uniqueStrings = (values = [], limit = 12) => {
   const seen = new Set();
@@ -119,18 +119,19 @@ const buildSourceMeta = (jobs = []) => {
 
   const jsearchConfigured = hasJSearchConfig();
   const jsearchCount = Number(sourceSummary.JSearch || 0);
-  const aiCount = Number(sourceSummary.AI || 0);
-  const fallbackCount = Number(sourceSummary.Fallback || 0);
-  let sourceMessage = 'Showing curated fallback jobs because live source coverage is limited for these filters.';
+  const secondaryCount = Number(sourceSummary.Jooble || 0) + Number(sourceSummary.Remotive || 0) + Number(sourceSummary.Arbeitnow || 0);
+  let sourceMessage = 'Showing real jobs from live sources and cached real-source results when needed.';
 
   if (jsearchConfigured === false) {
-    sourceMessage = 'Live job source is disabled right now. Showing AI-expanded and curated suggestions instead.';
+    sourceMessage = 'JSearch is disabled right now. Showing real jobs from secondary sources and cached real-source results only.';
   } else if (jsearchCount > 0) {
-    sourceMessage = aiCount > 0 || fallbackCount > 0
-      ? `Showing live jobs from JSearch with ${aiCount ? 'AI-expanded' : 'curated'} support for fuller coverage.`
+    sourceMessage = secondaryCount > 0
+      ? 'Showing live jobs from JSearch plus secondary real job sources.'
       : 'Showing live jobs from JSearch.';
-  } else if (aiCount > 0) {
-    sourceMessage = 'Live source is unavailable for these filters. Showing AI-expanded suggestions and curated jobs.';
+  } else if (secondaryCount > 0) {
+    sourceMessage = 'Showing real jobs from secondary job sources because JSearch returned limited coverage.';
+  } else if (!jobs.length) {
+    sourceMessage = 'No real jobs were available for these filters right now. Try broader filters or refresh later.';
   }
 
   return {
@@ -139,6 +140,21 @@ const buildSourceMeta = (jobs = []) => {
     jsearchConfigured,
     sourceMessage
   };
+};
+
+const loadCachedFallbackJobs = async (filters) => {
+  const recentCaches = await AnalysisCache.find({
+    analysisVersion: JOB_POOL_VERSION,
+    'analysisData.allJobs.0': { $exists: true }
+  })
+    .sort({ updatedAt: -1 })
+    .limit(6)
+    .lean();
+
+  const jobs = recentCaches.flatMap((cache) => Array.isArray(cache?.analysisData?.allJobs) ? cache.analysisData.allJobs : [])
+    .filter(isUsableJob);
+
+  return applyFilters(jobs, filters);
 };
 
 const buildRecommendedBasedOn = ({
@@ -203,11 +219,15 @@ const fetchJobs = async (req, res) => {
     let fromCache = false;
     const cached = await AnalysisCache.findOne(cacheLookup).lean();
     if (Array.isArray(cached?.analysisData?.allJobs)) {
-      allJobs = cached.analysisData.allJobs;
-      fromCache = true;
+      const cachedJobs = cached.analysisData.allJobs.filter(isUsableJob);
+      if (cachedJobs.length) {
+        allJobs = cachedJobs;
+        fromCache = true;
+      }
     }
 
     if (!allJobs) {
+      const cachedFallbackJobs = await loadCachedFallbackJobs(filters);
       allJobs = await buildJobPool({
         careerStack,
         experienceLevel,
@@ -215,25 +235,30 @@ const fetchJobs = async (req, res) => {
         knownSkills: developerSignals.knownSkills,
         resumeSkills: developerSignals.resumeSkills,
         githubSkills: developerSignals.githubSkills,
+        cachedFallbackJobs,
         ...filters
-      });
+      }).then((jobs) => jobs.filter(isUsableJob));
 
-      AnalysisCache.findOneAndUpdate(
-        cacheLookup,
-        {
-          $set: {
-            userId: req.user?._id,
-            githubUsername: cacheLookup.githubUsername,
-            careerStack,
-            experienceLevel,
-            analysisVersion: JOB_POOL_VERSION,
-            resumeHash: 'no-resume',
-            signalHash,
-            analysisData: { allJobs }
-          }
-        },
-        { upsert: true }
-      ).catch(() => null);
+      if (allJobs.length) {
+        await AnalysisCache.findOneAndUpdate(
+          cacheLookup,
+          {
+            $set: {
+              userId: req.user?._id,
+              githubUsername: cacheLookup.githubUsername,
+              careerStack,
+              experienceLevel,
+              analysisVersion: JOB_POOL_VERSION,
+              resumeHash: 'no-resume',
+              signalHash,
+              analysisData: { allJobs }
+            }
+          },
+          { upsert: true }
+        ).catch((error) => {
+          console.warn('[JobController] Failed to cache job pool:', error.message);
+        });
+      }
     }
 
     const total = Array.isArray(allJobs) ? allJobs.length : 0;
@@ -268,4 +293,37 @@ const fetchJobs = async (req, res) => {
   }
 };
 
-module.exports = { fetchJobs };
+const getJobById = async (req, res) => {
+  try {
+    const id = decodeURIComponent(String(req.params.id || '').trim());
+    if (!id) {
+      return res.status(400).json({ message: 'Job id is required.' });
+    }
+
+    const caches = await AnalysisCache.find({
+      analysisVersion: JOB_POOL_VERSION,
+      'analysisData.allJobs.0': { $exists: true }
+    })
+      .sort({ updatedAt: -1 })
+      .limit(12)
+      .lean();
+
+    for (const cache of caches) {
+      const jobs = Array.isArray(cache?.analysisData?.allJobs) ? cache.analysisData.allJobs : [];
+      const job = jobs.find((item) =>
+        String(item?.id || '') === id
+        || String(item?.externalJobId || '') === id
+      );
+      if (job && isUsableJob(job)) {
+        return res.json({ job });
+      }
+    }
+
+    return res.status(404).json({ message: 'Job details are no longer available. Refresh Jobs Hub and try again.' });
+  } catch (error) {
+    console.error('[JobController] Failed to fetch job details:', error.message);
+    return res.status(500).json({ message: 'Failed to fetch job details. Please try again.' });
+  }
+};
+
+module.exports = { fetchJobs, getJobById };
