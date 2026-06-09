@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const { buildCoursePool, normaliseCourseFilters } = require('../services/courseService');
 const AnalysisCache = require('../models/analysisCache');
 
-const COURSE_POOL_VERSION = 'courses_pool_v2';
+const COURSE_POOL_VERSION = 'courses_pool_v3';
 
 const uniqueStrings = (values = [], limit = 8) => {
   const seen = new Set();

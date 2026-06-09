@@ -238,6 +238,13 @@ function matchesTopic(course, topicFilter) {
     .some((value) => String(value || '').toLowerCase().includes(topic));
 }
 
+function matchesLevel(course, levelFilter) {
+  if (!levelFilter || levelFilter === 'All') return true;
+  if (course.level === levelFilter) return true;
+  if (course.level === 'All Levels') return true;
+  return false;
+}
+
 function applyCourseFilters(courses = [], filters = {}) {
   const minRating = Number.parseFloat(filters.rating);
 
@@ -245,7 +252,7 @@ function applyCourseFilters(courses = [], filters = {}) {
     if (!course) return false;
     if (!matchesPlatform(course, filters.platform)) return false;
     if (Number.isFinite(minRating) && Number(course.rating || 0) < minRating) return false;
-    if (filters.level && filters.level !== 'All' && course.level !== filters.level) return false;
+    if (!matchesLevel(course, filters.level)) return false;
     if (!matchesTopic(course, filters.topic)) return false;
     if (!matchesDuration(course, filters.duration)) return false;
     return true;
@@ -521,7 +528,13 @@ function buildFallbackPool(platform = 'All', count = 20) {
     { id: 'fb_f1', title: 'JavaScript Algorithms and Data Structures Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.8, reviewCount: 500000, duration: '30h 00m', durationHours: 30, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/', topics: ['JavaScript', 'Algorithms', 'Data Structures'], popularity: 93, description: 'Master JavaScript fundamentals, data structures, and algorithm interview patterns.', thumbnail: '' },
     { id: 'fb_f2', title: 'Responsive Web Design Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.6, reviewCount: 600000, duration: '20h 00m', durationHours: 20, level: 'Beginner', url: 'https://www.freecodecamp.org/learn/2022/responsive-web-design/', topics: ['HTML', 'CSS', 'Flexbox', 'Grid'], popularity: 92, description: 'Modern responsive design with HTML5, CSS3, Flexbox, Grid, and accessibility foundations.', thumbnail: '' },
     { id: 'fb_f3', title: 'Back End Development and APIs Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.7, reviewCount: 300000, duration: '30h 00m', durationHours: 30, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/back-end-development-and-apis/', topics: ['Node.js', 'Express', 'MongoDB', 'APIs'], popularity: 88, description: 'Build REST APIs with Node.js, Express, MongoDB, and practical backend workflows.', thumbnail: '' },
-    { id: 'fb_f4', title: 'Front End Development Libraries Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.6, reviewCount: 400000, duration: '25h 00m', durationHours: 25, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/front-end-development-libraries/', topics: ['React', 'Redux', 'Bootstrap', 'jQuery'], popularity: 85, description: 'Learn React, Redux, component architecture, and project-based frontend development.', thumbnail: '' }
+    { id: 'fb_f4', title: 'Front End Development Libraries Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.6, reviewCount: 400000, duration: '25h 00m', durationHours: 25, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/front-end-development-libraries/', topics: ['React', 'Redux', 'Bootstrap', 'jQuery'], popularity: 85, description: 'Learn React, Redux, component architecture, and project-based frontend development.', thumbnail: '' },
+    { id: 'fb_u8', title: 'Microservices with Node.js and React', platform: 'Udemy', instructor: 'Stephen Grider', rating: 4.7, reviewCount: 48000, duration: '54h 00m', durationHours: 54, level: 'Advanced', url: 'https://www.udemy.com/course/microservices-with-node-js-and-react/', topics: ['Microservices', 'Node.js', 'Docker', 'Kubernetes'], popularity: 82, description: 'Build and deploy scalable microservices architectures using Node.js, React, Docker, and Kubernetes.', thumbnail: '' },
+    { id: 'fb_u9', title: 'System Design Interview – An Insider\'s Guide', platform: 'Udemy', instructor: 'Alex Xu', rating: 4.8, reviewCount: 42000, duration: '32h 00m', durationHours: 32, level: 'Advanced', url: 'https://www.udemy.com/course/system-design-interview-an-insiders-guide/', topics: ['System Design', 'Architecture', 'Databases', 'Scalability'], popularity: 84, description: 'Master system design interview patterns covering large-scale distributed systems and design tradeoffs.', thumbnail: '' },
+    { id: 'fb_c6', title: 'Cloud Architecture with Google Cloud Professional Certificate', platform: 'Coursera', instructor: 'Google Cloud', rating: 4.7, reviewCount: 38000, duration: '70h 00m', durationHours: 70, level: 'Advanced', url: 'https://www.coursera.org/professional-certificates/gcp-cloud-architect', topics: ['GCP', 'Cloud Architecture', 'DevOps', 'Kubernetes'], popularity: 80, description: 'Design and implement production-grade cloud architectures on Google Cloud Platform.', thumbnail: '' },
+    { id: 'fb_e6', title: 'Software Construction in Java', platform: 'edX', instructor: 'MIT', rating: 4.9, reviewCount: 28000, duration: '120h 00m', durationHours: 120, level: 'Advanced', url: 'https://www.edx.org/learn/software-construction/massachusetts-institute-of-technology-software-construction-in-java', topics: ['Java', 'Testing', 'Design Patterns', 'Architecture'], popularity: 78, description: 'Learn advanced software engineering techniques: correctness, design patterns, testing, and concurrent programming.', thumbnail: '' },
+    { id: 'fb_e7', title: 'Data Science: Inference and Modeling', platform: 'edX', instructor: 'Harvard', rating: 4.8, reviewCount: 32000, duration: '80h 00m', durationHours: 80, level: 'Advanced', url: 'https://www.edx.org/learn/data-science/harvard-university-data-science-inference-and-modeling', topics: ['Data Science', 'Statistics', 'Machine Learning', 'R'], popularity: 76, description: 'Advanced statistical inference, predictive modeling, and Bayesian analysis for data-driven decision making.', thumbnail: '' },
+    { id: 'fb_f5', title: 'Information Security Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.7, reviewCount: 220000, duration: '40h 00m', durationHours: 40, level: 'Advanced', url: 'https://www.freecodecamp.org/learn/information-security/', topics: ['Security', 'Penetration Testing', 'Python', 'Networking'], popularity: 79, description: 'Advanced cybersecurity concepts including penetration testing, secure coding, and threat modeling.', thumbnail: '' }
   ].map((course, index) => normaliseCourse(course, index));
 
   let pool = allCourses;
