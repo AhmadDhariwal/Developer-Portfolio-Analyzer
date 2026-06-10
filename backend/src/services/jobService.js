@@ -40,14 +40,23 @@ const LOCATION_ALIASES = {
   all: 'All',
   remote: 'Remote',
   pakistan: 'Pakistan',
-  usa: 'USA',
-  europe: 'Europe'
+  asia: 'Asia',
+  'middle east': 'Middle East',
+  middleeast: 'Middle East',
+  'united states': 'United States',
+  usa: 'United States',
+  'united kingdom': 'United Kingdom',
+  uk: 'United Kingdom',
+  europe: 'Europe',
+  worldwide: 'Worldwide',
+  global: 'Worldwide',
+  anywhere: 'Worldwide'
 };
 
 const VALID_PLATFORMS = ['All', 'JSearch', 'Jooble', 'Adzuna', 'Remotive', 'Arbeitnow', 'LinkedIn', 'Indeed', 'Rozee', 'Glassdoor', 'RemoteOK'];
 const VALID_JOB_TYPES = ['All', 'Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
 const VALID_EXP_LEVELS = ['All', 'Intern', 'Entry', '1-2 years', '3-5 years', '5+ years'];
-const VALID_LOCATIONS = ['All', 'Remote', 'Pakistan', 'USA', 'Europe'];
+const VALID_LOCATIONS = ['All', 'Pakistan', 'Asia', 'Middle East', 'United States', 'United Kingdom', 'Europe', 'Remote', 'Worldwide'];
 const LIVE_SOURCE_KEYS = ['jsearch', 'jooble', 'adzuna', 'remotive', 'arbeitnow', 'remoteok'];
 const SOURCE_DISPLAY_NAMES = {
   jsearch: 'JSearch',
@@ -684,7 +693,7 @@ function normaliseJobType(raw) {
 }
 
 function normaliseLocation(raw) {
-  const value = toText(raw).toLowerCase();
+  const value = toText(raw).toLowerCase().replace(/[^a-z0-9 ]/g, '');
   return LOCATION_ALIASES[value] || 'All';
 }
 
@@ -1409,20 +1418,65 @@ async function fetchRemoteOkJobs(query, maxResults = 40) {
   }
 }
 
+const LOCATION_BUCKETS = {
+  Pakistan: ['pakistan', 'lahore', 'karachi', 'islamabad', 'rawalpindi'],
+  Asia: [
+    'pakistan', 'lahore', 'karachi', 'islamabad', 'rawalpindi',
+    'india', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'chennai', 'pune',
+    'bangladesh', 'dhaka',
+    'sri lanka', 'colombo',
+    'nepal', 'kathmandu',
+    'malaysia', 'kuala lumpur',
+    'singapore',
+    'indonesia', 'jakarta',
+    'thailand', 'bangkok',
+    'philippines', 'manila',
+    'vietnam', 'ho chi minh', 'hanoi',
+    'japan', 'tokyo',
+    'south korea', 'seoul',
+    'china', 'beijing', 'shanghai', 'hong kong'
+  ],
+  'Middle East': [
+    'uae', 'dubai', 'abu dhabi', 'united arab emirates',
+    'saudi arabia', 'ksa', 'riyadh', 'jeddah',
+    'qatar', 'doha',
+    'kuwait',
+    'bahrain',
+    'oman', 'muscat',
+    'jordan', 'amman',
+    'egypt', 'cairo'
+  ],
+  'United States': ['usa', 'united states', 'new york', 'san francisco', 'seattle', 'austin', 'chicago', 'boston', 'los angeles'],
+  'United Kingdom': ['uk', 'united kingdom', 'england', 'london', 'manchester', 'birmingham', 'edinburgh', 'glasgow'],
+  Europe: [
+    'europe', 'germany', 'berlin', 'munich', 'france', 'paris',
+    'netherlands', 'amsterdam', 'spain', 'madrid', 'barcelona',
+    'italy', 'rome', 'milan', 'sweden', 'stockholm',
+    'denmark', 'copenhagen', 'norway', 'oslo',
+    'finland', 'helsinki', 'austria', 'vienna',
+    'belgium', 'brussels', 'ireland', 'dublin',
+    'poland', 'warsaw', 'czech', 'prague',
+    'portugal', 'lisbon', 'greece', 'athens',
+    'switzerland', 'zurich'
+  ]
+};
+
 function matchesLocation(job, filterLocation) {
   if (!filterLocation || filterLocation === 'All') return true;
   const location = toText(job.location).toLowerCase();
+
   if (filterLocation === 'Remote') return location.includes('remote');
-  if (filterLocation === 'Pakistan') {
-    return ['pakistan', 'lahore', 'karachi', 'islamabad', 'rawalpindi'].some((value) => location.includes(value));
+
+  if (filterLocation === 'Worldwide') {
+    return /(worldwide|global|anywhere|world.?wide|multiple.?location)/.test(location);
   }
-  if (filterLocation === 'USA') {
-    return ['usa', 'united states', 'new york', 'san francisco', 'seattle', 'austin'].some((value) => location.includes(value));
+
+  const bucket = LOCATION_BUCKETS[filterLocation];
+  if (bucket) {
+    return bucket.some((value) => location.includes(value));
   }
-  if (filterLocation === 'Europe') {
-    return ['europe', 'uk', 'london', 'germany', 'berlin', 'amsterdam', 'remote eu'].some((value) => location.includes(value));
-  }
-  return true;
+
+  return false;
 }
 
 function matchesSkill(job, filterSkills) {

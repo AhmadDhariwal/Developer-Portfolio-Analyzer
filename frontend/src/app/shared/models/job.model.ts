@@ -1,7 +1,7 @@
 export type JobPlatform = 'JSearch' | 'Jooble' | 'Adzuna' | 'Remotive' | 'Arbeitnow' | 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
 export type JobType = 'Full Time' | 'Part Time' | 'Contract' | 'Internship' | 'Remote' | 'All';
 export type JobExperienceFilter = 'Intern' | 'Entry' | '1-2 years' | '3-5 years' | '5+ years' | 'All';
-export type JobLocation = 'Pakistan' | 'Remote' | 'USA' | 'Europe' | 'All';
+export type JobLocation = 'Pakistan' | 'Asia' | 'Middle East' | 'United States' | 'United Kingdom' | 'Europe' | 'Remote' | 'Worldwide' | 'All';
 
 export interface PlatformColor {
   bg: string;
@@ -194,9 +194,13 @@ export const JOB_TYPE_OPTIONS: { value: JobType | 'All'; label: string }[] = [
 export const JOB_LOCATION_OPTIONS: { value: JobLocation | 'All'; label: string }[] = [
   { value: 'All', label: 'All Locations' },
   { value: 'Pakistan', label: 'Pakistan' },
+  { value: 'Asia', label: 'Asia' },
+  { value: 'Middle East', label: 'Middle East' },
+  { value: 'United States', label: 'United States' },
+  { value: 'United Kingdom', label: 'United Kingdom' },
+  { value: 'Europe', label: 'Europe' },
   { value: 'Remote', label: 'Remote' },
-  { value: 'USA', label: 'USA' },
-  { value: 'Europe', label: 'Europe' }
+  { value: 'Worldwide', label: 'Worldwide' }
 ];
 
 export const JOB_SKILL_OPTIONS = [
