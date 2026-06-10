@@ -17,6 +17,13 @@
     <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
   </div>
 
+  <div class="error-state" *ngIf="!isLoading && !errorMessage && !job">
+    <div class="state-icon">?</div>
+    <h1>No job details found</h1>
+    <p>This job is not available in JobCache right now.</p>
+    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
+  </div>
+
   <ng-container *ngIf="!isLoading && !errorMessage && job">
     <header class="details-hero">
       <div class="company-logo">
@@ -82,6 +89,13 @@
             <span>Source</span>
             <strong>{{ job.source || job.platform }}</strong>
           </div>
+          <div class="stat-row">
+            <span>Apply URL</span>
+            <strong>
+              <a *ngIf="hasApplyLink" [href]="applyLink" target="_blank" rel="noopener noreferrer">{{ applyLink }}</a>
+              <ng-container *ngIf="!hasApplyLink">Unavailable</ng-container>
+            </strong>
+          </div>
         </article>
 
         <article class="panel" *ngIf="job.skills.length">
@@ -96,6 +110,28 @@
           <p class="why" *ngIf="job.whyMatched">{{ job.whyMatched }}</p>
           <div class="chips missing" *ngIf="job.missingSkills?.length">
             <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
+          </div>
+        </article>
+
+        <article class="panel" *ngIf="job.recommendedCourse || job.recommendedSprintTask">
+          <span class="eyebrow">Career Signals</span>
+          <div class="signal-list">
+            <a
+              class="signal-row"
+              *ngIf="job.recommendedCourse as course"
+              [href]="course.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>Recommended Course</span>
+              <strong>{{ course.title }}</strong>
+              <small *ngIf="course.whyRecommended">{{ course.whyRecommended }}</small>
+            </a>
+            <div class="signal-row" *ngIf="job.recommendedSprintTask as task">
+              <span>Recommended Sprint Task</span>
+              <strong>{{ task.title }}</strong>
+              <small *ngIf="task.description">{{ task.description }}</small>
+            </div>
           </div>
         </article>
       </aside>

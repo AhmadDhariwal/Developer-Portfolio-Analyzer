@@ -201,6 +201,13 @@
   strong {
     color: #f8fafc;
     text-align: right;
+    min-width: 0;
+
+    a {
+      color: #bfdbfe;
+      overflow-wrap: anywhere;
+      text-decoration: none;
+    }
   }
 }
 
@@ -222,6 +229,41 @@
 .missing-chip {
   background: rgba(239, 68, 68, 0.13);
   color: #fecaca;
+}
+
+.signal-list {
+  display: grid;
+  gap: 10px;
+}
+
+.signal-row {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border-radius: 15px;
+  border: 1px solid rgba(14, 165, 233, 0.16);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  text-decoration: none;
+
+  span {
+    color: #93c5fd;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: #f8fafc;
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+
+  small {
+    color: #94a3b8;
+    line-height: 1.5;
+  }
 }
 
 .loading-state,

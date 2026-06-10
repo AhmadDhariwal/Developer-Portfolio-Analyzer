@@ -23,10 +23,19 @@ import {
 } from '../../shared/models/job.model';
 import { JobCardComponent } from '../../shared/components/job-card/job-card';
 import { JobFiltersComponent } from '../../shared/components/job-filters/job-filters';
+import { AuthService } from '../../shared/services/auth.service';
 
 const INITIAL_DISPLAY = 10;
 const PAGE_SIZE = 10;
 const JOB_STATE_STORAGE_KEY = 'devinsight_public_jobs_state';
+const SOURCE_LABELS: Record<string, string> = {
+  jsearch: 'JSearch',
+  jooble: 'Jooble',
+  adzuna: 'Adzuna',
+  remotive: 'Remotive',
+  arbeitnow: 'ArbeitNow',
+  remoteok: 'RemoteOK'
+};
 
 @Component({
   selector: 'app-jobs',
@@ -51,6 +60,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   sourceMessage = '';
   primarySource = '';
   sourceSummary: Record<string, number> = {};
+  sourceFailures: JobsResponse['sourceFailures'] = [];
   jsearchConfigured = true;
   fromCache = false;
   isMobileFiltersOpen = false;
@@ -65,6 +75,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly jobService: JobService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly authService: AuthService,
     private readonly cdr: ChangeDetectorRef
   ) {
     this.hydrateUiState();
@@ -111,7 +122,22 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   get sourceSummaryItems(): Array<{ label: string; count: number }> {
-    return Object.entries(this.sourceSummary || {}).map(([label, count]) => ({ label, count: Number(count || 0) }));
+    return Object.entries(this.sourceSummary || {})
+      .map(([label, count]) => ({
+        label: SOURCE_LABELS[label] || label,
+        count: Number(count || 0)
+      }))
+      .filter((item) => item.count > 0);
+  }
+
+  get sourceFailureItems(): Array<{ label: string; reason: string }> {
+    return (this.sourceFailures || [])
+      .map((failure) => ({
+        label: SOURCE_LABELS[String(failure?.source || '').toLowerCase()] || String(failure?.source || 'Source').trim(),
+        reason: String(failure?.reason || failure?.detail || 'failed').trim()
+      }))
+      .filter((item) => item.label)
+      .slice(0, 4);
   }
 
   get activeFilterChips(): ActiveJobFilterChip[] {
@@ -285,6 +311,7 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.sourceMessage = response.sourceMessage || '';
     this.primarySource = response.primarySource || '';
     this.sourceSummary = response.sourceSummary || {};
+    this.sourceFailures = response.sourceFailures || [];
     this.jsearchConfigured = response.jsearchConfigured ?? true;
     this.fromCache = Boolean(response.fromCache);
     this.displayCount = append ? this.visibleJobs.length : Math.min(INITIAL_DISPLAY, this.visibleJobs.length);
@@ -309,7 +336,7 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   private hydrateUiState(): void {
     try {
-      const raw = localStorage.getItem(JOB_STATE_STORAGE_KEY);
+      const raw = localStorage.getItem(this.stateStorageKey);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Record<string, JobUiState>;
       Object.entries(parsed).forEach(([id, state]) => this.uiStateMap.set(id, state));
@@ -320,7 +347,13 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   private setUiState(jobId: string, state: JobUiState): void {
     this.uiStateMap.set(jobId, state);
-    localStorage.setItem(JOB_STATE_STORAGE_KEY, JSON.stringify(Object.fromEntries(this.uiStateMap.entries())));
+    localStorage.setItem(this.stateStorageKey, JSON.stringify(Object.fromEntries(this.uiStateMap.entries())));
     this.cdr.markForCheck();
+  }
+
+  private get stateStorageKey(): string {
+    const user = this.authService.getCurrentUser() as { _id?: string; id?: string; email?: string } | null;
+    const userKey = String(user?._id || user?.id || user?.email || 'anonymous').trim() || 'anonymous';
+    return `${JOB_STATE_STORAGE_KEY}:${userKey}`;
   }
 }

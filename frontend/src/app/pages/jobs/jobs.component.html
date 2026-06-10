@@ -107,6 +107,9 @@
       <span class="source-pill" *ngFor="let item of sourceSummaryItems">
         {{ item.label }}: {{ item.count }}
       </span>
+      <span class="source-pill warning" *ngFor="let failure of sourceFailureItems" [title]="failure.reason">
+        {{ failure.label }} failed
+      </span>
     </div>
   </div>
 

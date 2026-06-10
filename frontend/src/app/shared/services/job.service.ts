@@ -65,7 +65,12 @@ export class JobService {
       sourceMessage: String(response?.sourceMessage || '').trim(),
       primarySource: String(response?.primarySource || '').trim(),
       sourceSummary: response?.sourceSummary || {},
+      sourceFailures: Array.isArray(response?.sourceFailures) ? response.sourceFailures : [],
+      cacheCount: Number(response?.cacheCount ?? 0) || 0,
+      warning: String(response?.warning || '').trim(),
       jsearchConfigured: response?.jsearchConfigured,
+      joobleConfigured: response?.joobleConfigured,
+      diagnostics: response?.diagnostics,
       recommendedBasedOn: response?.recommendedBasedOn
         ? {
             ...response.recommendedBasedOn,
@@ -89,6 +94,23 @@ export class JobService {
   private normalizeJob(job: Partial<Job> | null | undefined, index: number): Job {
     const url = String(job?.url || '').trim();
     const applyUrl = String(job?.applyUrl || url || '').trim();
+    const recommendedCourse = job?.recommendedCourse
+      ? {
+          title: String(job.recommendedCourse.title || '').trim(),
+          platform: String(job.recommendedCourse.platform || '').trim(),
+          url: String(job.recommendedCourse.url || '').trim(),
+          whyRecommended: String(job.recommendedCourse.whyRecommended || '').trim()
+        }
+      : null;
+    const recommendedSprintTask = job?.recommendedSprintTask
+      ? {
+          title: String(job.recommendedSprintTask.title || '').trim(),
+          description: String(job.recommendedSprintTask.description || '').trim(),
+          category: String(job.recommendedSprintTask.category || '').trim(),
+          priority: String(job.recommendedSprintTask.priority || '').trim(),
+          points: Number(job.recommendedSprintTask.points || 0)
+        }
+      : null;
 
     return {
       id: String(job?.id || `job-${index}`).trim(),
@@ -123,6 +145,8 @@ export class JobService {
         ? job!.missingSkills.map((skill) => String(skill || '').trim()).filter(Boolean).slice(0, 5)
         : [],
       whyMatched: String(job?.whyMatched || '').trim(),
+      recommendedCourse,
+      recommendedSprintTask,
       platformColor: job?.platformColor
     };
   }

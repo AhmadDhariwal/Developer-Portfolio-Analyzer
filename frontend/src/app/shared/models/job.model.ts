@@ -1,4 +1,4 @@
-export type JobPlatform = 'JSearch' | 'Jooble' | 'Remotive' | 'Arbeitnow' | 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
+export type JobPlatform = 'JSearch' | 'Jooble' | 'Adzuna' | 'Remotive' | 'Arbeitnow' | 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
 export type JobType = 'Full Time' | 'Part Time' | 'Contract' | 'Internship' | 'Remote' | 'All';
 export type JobExperienceFilter = 'Intern' | 'Entry' | '1-2 years' | '3-5 years' | '5+ years' | 'All';
 export type JobLocation = 'Pakistan' | 'Remote' | 'USA' | 'Europe' | 'All';
@@ -33,6 +33,19 @@ export interface Job {
   skillMatch?: number;
   missingSkills?: string[];
   whyMatched?: string;
+  recommendedCourse?: {
+    title: string;
+    platform: string;
+    url: string;
+    whyRecommended?: string;
+  } | null;
+  recommendedSprintTask?: {
+    title: string;
+    description?: string;
+    category?: string;
+    priority?: string;
+    points?: number;
+  } | null;
   platformColor?: PlatformColor;
 }
 
@@ -72,7 +85,57 @@ export interface JobsResponse {
   sourceMessage?: string;
   primarySource?: string;
   sourceSummary?: Record<string, number>;
+  sourceFailures?: Array<{
+    source: string;
+    reason: string;
+    status?: number;
+    configured?: boolean;
+    detail?: string;
+  }>;
+  cacheCount?: number;
+  warning?: string;
   jsearchConfigured?: boolean;
+  joobleConfigured?: boolean;
+  diagnostics?: {
+    query?: string;
+    sourceSummaryFetched?: Record<string, number>;
+    sourceSummaryUsable?: Record<string, number>;
+    sourceSummaryAfterSourceDedupe?: Record<string, number>;
+    sourceSummaryBeforeRank?: Record<string, number>;
+    sourceSummaryFinal?: Record<string, number>;
+    sourceFailures?: Array<{
+      source: string;
+      reason: string;
+      status?: number;
+      configured?: boolean;
+      detail?: string;
+    }>;
+    sourceConfigs?: Record<string, { configured: boolean }>;
+    applyFilters?: {
+      before: number;
+      after: number;
+      removed: number;
+      removedBySkill: number;
+      removedByExperience: number;
+      removedByLocation: number;
+      removedByPlatform: number;
+      warning?: string;
+    };
+    dedupeJobs?: { before: number; after: number; removed: number };
+    rankJobs?: { inputCount: number; sourceSummary?: Record<string, number> };
+    cacheFallback?: { available: number; used: boolean };
+    cacheWrite?: {
+      attempted: number;
+      synced: number;
+      upserted: number;
+      modified: number;
+      matched: number;
+      failed: boolean;
+      error?: string;
+    };
+    cacheCount?: number;
+    fromCacheOnly?: boolean;
+  };
   recommendedBasedOn?: JobRecommendedBasedOn | null;
 }
 
@@ -100,6 +163,7 @@ export const JOB_PLATFORM_OPTIONS: { value: JobPlatform | 'All'; label: string }
   { value: 'All', label: 'All Sources' },
   { value: 'JSearch', label: 'JSearch' },
   { value: 'Jooble', label: 'Jooble' },
+  { value: 'Adzuna', label: 'Adzuna' },
   { value: 'Remotive', label: 'Remotive' },
   { value: 'Arbeitnow', label: 'Arbeitnow' },
   { value: 'LinkedIn', label: 'LinkedIn' },
@@ -146,6 +210,7 @@ export const JOB_SKILL_OPTIONS = [
 export const JOB_PLATFORM_COLOR_MAP: Record<string, PlatformColor> = {
   JSearch: { bg: '#2563eb', text: '#ffffff' },
   Jooble: { bg: '#f97316', text: '#111827' },
+  Adzuna: { bg: '#0ea5e9', text: '#082f49' },
   Remotive: { bg: '#22c55e', text: '#052e16' },
   Arbeitnow: { bg: '#38bdf8', text: '#082f49' },
   LinkedIn: { bg: '#0077B5', text: '#ffffff' },

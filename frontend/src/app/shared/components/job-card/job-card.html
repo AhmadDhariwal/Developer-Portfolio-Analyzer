@@ -73,6 +73,23 @@
     <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
   </div>
 
+  <div class="career-signals" *ngIf="job.recommendedCourse || job.recommendedSprintTask">
+    <a
+      class="signal-row"
+      *ngIf="job.recommendedCourse as course"
+      [href]="course.url"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span>Recommended course</span>
+      <strong>{{ course.title }}</strong>
+    </a>
+    <div class="signal-row" *ngIf="job.recommendedSprintTask as task">
+      <span>Recommended sprint task</span>
+      <strong>{{ task.title }}</strong>
+    </div>
+  </div>
+
   <div class="secondary-actions">
     <button class="secondary-btn" type="button" (click)="onSave($event)">
       {{ uiState.saved ? 'Saved' : 'Save Job' }}

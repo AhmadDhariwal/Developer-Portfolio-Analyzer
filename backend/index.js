@@ -41,6 +41,7 @@ const { initTracing, shutdownTracing } = require('./src/services/tracingService'
 const superAdminRoutes = require('./src/routes/super-admin.routes');
 const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
 const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
+const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncService');
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
 const { initRedisCache } = require('./src/services/redisCacheService');
 const { startInterviewQuestionIngestionScheduler } = require('./src/services/interviewQuestionIngestionService');
@@ -154,6 +155,7 @@ app.listen(PORT, () => {
     initRedisCache();
     startEmailRetryWorker();
     startIntegrationSyncWorker();
+    startJobSourceSyncWorker();
     initTracing();
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
@@ -167,6 +169,26 @@ app.listen(PORT, () => {
     } else {
         logger.info('GitHub token detected; using authenticated API quota.');
     }
+
+    // ── Jobs Hub source startup validation ──────────────────────────────────
+    const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
+    const integrations = getIntegrationSecretsSync();
+    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
+
+    const jsearchConfigured = integrations?.jobsEnabled !== false && Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
+    const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
+    const adzunaConfigured = Boolean(String(process.env.ADZUNA_APP_ID || '').trim() && String(process.env.ADZUNA_APP_KEY || '').trim());
+
+    // ── Jobs Hub cache health startup check ─────────────────────────────────
+    const { getCacheHealth } = require('./src/services/jobService');
+    getCacheHealth().then((health) => {
+      console.log(`[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`);
+      if (health.cacheStatus === 'LOW') {
+        console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
+      }
+    }).catch((err) => {
+      console.warn('[JobsHub] Cache health check skipped:', err.message);
+    });
 });
 
 process.on('SIGTERM', () => {
