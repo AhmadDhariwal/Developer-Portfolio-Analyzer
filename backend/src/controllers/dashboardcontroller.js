@@ -5,7 +5,7 @@ const Repository = require('../models/repository');
 const AnalysisCache = require('../models/analysisCache');
 const Recommendation = require('../models/recommendation');
 const ResumeAnalysis = require('../models/resumeAnalysis');
-const { analyzeGitHubProfile, fetchGitHubUser, fetchMonthlyCommitActivity } = require('../services/githubservice');
+const { ANALYSIS_VERSION: GITHUB_ANALYSIS_VERSION, analyzeGitHubProfile, fetchMonthlyCommitActivity } = require('../services/githubservice');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
@@ -97,14 +97,6 @@ const normalizeLanguageMap = (languageDistribution = {}) => {
     }, {});
 };
 
-const safeFetchGitHubUser = async (githubUsername) => {
-  try {
-    return await fetchGitHubUser(githubUsername);
-  } catch {
-    return {};
-  }
-};
-
 const safeGetIntegrationInsight = async (userId) => {
   try {
     return await getIntegrationInsight(userId);
@@ -138,6 +130,50 @@ const persistRepositories = async (userId, repositories = []) => {
       ownerId: userId
     }))
   );
+};
+
+const buildGithubHistorySnapshot = (githubResult = {}) => ({
+  analyzedAt: new Date(),
+  healthScore: Number(githubResult.githubHealthScore || githubResult.activityScore || 0),
+  repos: Number(githubResult.repoCount || 0),
+  stars: Number(githubResult.totalStars || 0),
+  forks: Number(githubResult.totalForks || 0),
+  followers: Number(githubResult.followers || 0),
+  topLanguages: (githubResult.mainLanguageDistribution || githubResult.languageDistribution || [])
+    .slice(0, 5)
+    .map((entry) => entry.language),
+  topTechnologies: (githubResult.technologies || [])
+    .slice(0, 8)
+    .map((tech) => tech.name || tech.technology || tech)
+});
+
+const persistGithubResultToAnalysis = async ({ userId, analysis, githubResult, monthlyActivity = null }) => {
+  const nextAnalysis = analysis || createEmptyAnalysis(userId);
+  nextAnalysis.githubScore = Number(githubResult.githubHealthScore || githubResult.activityScore || 0);
+  nextAnalysis.githubStats = {
+    repos: Number(githubResult.repoCount || 0),
+    stars: Number(githubResult.totalStars || 0),
+    forks: Number(githubResult.totalForks || 0),
+    followers: Number(githubResult.followers || 0)
+  };
+  nextAnalysis.githubAnalysisVersion = githubResult.analysisVersion || GITHUB_ANALYSIS_VERSION;
+  nextAnalysis.githubSignals = githubResult.githubSignals || {};
+  nextAnalysis.languageDistribution = normalizeLanguageMap(
+    Array.isArray(githubResult.mainLanguageDistribution) && githubResult.mainLanguageDistribution.length
+      ? githubResult.mainLanguageDistribution
+      : githubResult.languageDistribution
+  );
+  if (Array.isArray(monthlyActivity) && monthlyActivity.length) {
+    nextAnalysis.contributionActivity = monthlyActivity;
+  }
+  nextAnalysis.githubAnalysisHistory = [
+    ...(Array.isArray(nextAnalysis.githubAnalysisHistory) ? nextAnalysis.githubAnalysisHistory : []),
+    buildGithubHistorySnapshot(githubResult)
+  ].slice(-12);
+  nextAnalysis.updatedAt = new Date();
+  await nextAnalysis.save();
+  await persistRepositories(userId, githubResult.repositories || []);
+  return nextAnalysis;
 };
 
 const latestCacheByPredicate = async (userId, predicate) =>
@@ -267,6 +303,22 @@ const ensureAnalysis = async (userId, githubUsername, options = {}) => {
       };
     }
 
+    if (githubUsername) {
+      try {
+        const githubResult = await analyzeGitHubProfile(githubUsername, { forceRefresh: false });
+        analysis = await persistGithubResultToAnalysis({ userId, analysis, githubResult });
+        return {
+          analysis,
+          rateLimited: Boolean(githubResult.rateLimited),
+          noUsername: false,
+          githubStatus: githubResult.cache?.hit ? 'fresh' : 'fresh',
+          languageSource: githubResult.languageDistributionSource || githubResult.cache?.source || 'github_cache'
+        };
+      } catch (error) {
+        console.warn('Dashboard cached GitHub hydrate failed:', error.message);
+      }
+    }
+
     return {
       analysis: createEmptyAnalysis(userId),
       rateLimited: false,
@@ -287,30 +339,18 @@ const ensureAnalysis = async (userId, githubUsername, options = {}) => {
   }
 
   try {
-    const githubResult = await analyzeGitHubProfile(githubUsername);
-    const userData = await safeFetchGitHubUser(githubUsername);
+    const githubResult = await analyzeGitHubProfile(githubUsername, { forceRefresh: true });
     const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, githubResult.repositories || []);
-
-    analysis = analysis || createEmptyAnalysis(userId);
-    analysis.githubScore = Number(githubResult.activityScore || 0);
-    analysis.githubStats = {
-      repos: Number(githubResult.repoCount || 0),
-      stars: Number(githubResult.totalStars || 0),
-      forks: Number(githubResult.totalForks || 0),
-      followers: Number(userData?.followers || 0)
-    };
-    analysis.languageDistribution = normalizeLanguageMap(githubResult.languageDistribution);
-    analysis.contributionActivity = monthlyActivity.length ? monthlyActivity : emptyContributionActivity();
-    analysis.updatedAt = new Date();
-
-    await Promise.all([
-      analysis.save(),
-      persistRepositories(userId, githubResult.repositories || [])
-    ]);
+    analysis = await persistGithubResultToAnalysis({
+      userId,
+      analysis,
+      githubResult,
+      monthlyActivity: monthlyActivity.length ? monthlyActivity : emptyContributionActivity()
+    });
 
     return {
       analysis,
-      rateLimited: false,
+      rateLimited: Boolean(githubResult.rateLimited),
       noUsername: false,
       githubStatus: 'fresh',
       languageSource: githubResult.languageDistributionSource || 'language_bytes'

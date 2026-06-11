@@ -15,15 +15,15 @@ import {
   GitHubAnalysisResult,
   LanguageDistribution,
   RepositoryActivity,
-  Repository
+  Repository,
+  TechnologySignal
 } from '../../shared/services/github.service';
 
 Chart.register(...registerables);
 
-// Colour palette for language chart segments and table badges
 const LANG_COLOURS = [
-  '#6366F1', '#8B5CF6', '#22C55E', '#F59E0B', '#3B82F6',
-  '#EC4899', '#14B8A6', '#F97316', '#EF4444', '#06B6D4'
+  '#2563EB', '#16A34A', '#F59E0B', '#DC2626', '#7C3AED',
+  '#0891B2', '#DB2777', '#65A30D', '#EA580C', '#475569'
 ];
 
 @Component({
@@ -34,25 +34,27 @@ const LANG_COLOURS = [
   styleUrl: './github-analyzer.component.scss'
 })
 export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('donutCanvas') donutCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('barCanvas') barCanvasRef!: ElementRef<HTMLCanvasElement>;
 
-  @ViewChild('donutCanvas')  donutCanvasRef!:  ElementRef<HTMLCanvasElement>;
-  @ViewChild('barCanvas')    barCanvasRef!:    ElementRef<HTMLCanvasElement>;
-
-  username      = '';
+  username = '';
   defaultUsername = '';
   viewedUsername = '';
-  isAnalyzing   = false;
+  isAnalyzing = false;
   analysisReady = false;
-  errorMessage  = '';
+  errorMessage = '';
   isInitLoading = true;
   isTemporaryView = false;
   result: GitHubAnalysisResult | null = null;
+  lastAnalyzedLabel = '';
+  cacheStatusLabel = '';
 
   private donutChart: Chart | null = null;
-  private barChart:   Chart | null = null;
+  private barChart: Chart | null = null;
   private viewReady = false;
   private pendingLangs: LanguageDistribution[] | null = null;
   private pendingActivity: RepositoryActivity[] | null = null;
+  private activeRequestKey = '';
 
   constructor(
     private readonly github: GithubService,
@@ -60,18 +62,15 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   ) {}
 
   ngOnInit(): void {
-    // On component load, fetch the active username (last searched or signup default)
     this.isInitLoading = true;
     this.github.getActiveUsername().subscribe({
       next: (data) => {
         this.defaultUsername = data.username || '';
         this.username = this.defaultUsername;
-        this.isInitLoading = false;
-        this.isTemporaryView = false;
         this.viewedUsername = this.defaultUsername;
-        if (this.username) {
-          this.analyze();
-        }
+        this.isTemporaryView = false;
+        this.isInitLoading = false;
+        if (this.username) this.analyze(false);
       },
       error: () => {
         this.isInitLoading = false;
@@ -85,63 +84,79 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy(): void {
-    this.donutChart?.destroy();
-    this.barChart?.destroy();
+    this.destroyCharts();
   }
 
-  // ── Main trigger ────────────────────────────────────────────────────────────
-  analyze(): void {
-    const trimmed = this.username.trim();
-    if (!trimmed || this.isAnalyzing) return;
+  analyze(forceRefresh = false): void {
+    const trimmed = this.username.trim().replace(/^@/, '');
+    if (!trimmed) return;
+
     const normalizedDefault = this.defaultUsername.trim().toLowerCase();
     const normalizedCurrent = trimmed.toLowerCase();
     const isDefaultProfileAnalysis = Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
+    const mode: 'public' | 'save' = isDefaultProfileAnalysis ? 'save' : 'public';
+    const requestKey = `${mode}:${normalizedCurrent}:${forceRefresh ? 'refresh' : 'normal'}`;
 
-    this.isAnalyzing   = true;
-    this.analysisReady = false;
-    this.errorMessage  = '';
-    this.result        = null;
-    this.destroyCharts();
+    if (this.isAnalyzing && this.activeRequestKey === requestKey) return;
+
+    const cached = !forceRefresh ? this.github.getCachedAnalysis(trimmed, mode) : null;
+    if (cached) {
+      this.applyResult(cached, trimmed, isDefaultProfileAnalysis);
+    }
+
+    this.isAnalyzing = true;
+    this.activeRequestKey = requestKey;
+    this.errorMessage = '';
+    if (!cached) {
+      this.analysisReady = false;
+      this.result = null;
+      this.destroyCharts();
+    }
 
     const request$ = isDefaultProfileAnalysis
-      ? this.github.analyzeAndSave(trimmed)
-      : this.github.analyzeProfile(trimmed);
+      ? this.github.analyzeAndSave(trimmed, forceRefresh)
+      : this.github.analyzeProfile(trimmed, forceRefresh);
 
     request$.subscribe({
       next: (data) => {
-        this.result = data;
-        this.viewedUsername = trimmed;
-        this.isTemporaryView = !isDefaultProfileAnalysis;
+        this.applyResult(data, trimmed, isDefaultProfileAnalysis);
         this.isAnalyzing = false;
-        this.analysisReady = true;
-
-        // Queue chart data and flush only when canvases are guaranteed present
-        this.pendingLangs = data.languageDistribution ?? [];
-        this.pendingActivity = data.repositoryActivity ?? [];
-
-        this.cdr.detectChanges();
-        setTimeout(() => this.flushPendingCharts(), 0);
+        this.activeRequestKey = '';
       },
       error: (err) => {
         this.isAnalyzing = false;
-        this.analysisReady = false;
+        this.activeRequestKey = '';
+        this.analysisReady = Boolean(this.result);
         this.errorMessage = err.error?.message ?? 'Failed to analyze GitHub profile. Please check the username and try again.';
         this.cdr.detectChanges();
       }
     });
   }
 
+  refreshAnalysis(): void {
+    this.analyze(true);
+  }
+
   returnToDefaultProfile(): void {
     if (!this.defaultUsername || this.isAnalyzing) return;
     this.username = this.defaultUsername;
-    this.analyze();
+    this.analyze(false);
   }
 
-  // ── Chart builders ──────────────────────────────────────────────────────────
-  private buildCharts(): void {
-    if (!this.result) return;
-    this.buildDonutChart(this.result.languageDistribution);
-    this.buildBarChart(this.result.repositoryActivity);
+  private applyResult(data: GitHubAnalysisResult, username: string, isDefaultProfileAnalysis: boolean): void {
+    this.result = data;
+    this.viewedUsername = username;
+    this.isTemporaryView = !isDefaultProfileAnalysis;
+    this.analysisReady = true;
+    this.lastAnalyzedLabel = this.formatDateTime(data.cache?.cachedAt || data.githubSignals?.analyzedAt || new Date().toISOString());
+    this.cacheStatusLabel = data.cache?.hit
+      ? data.cache.source === 'stale-cache' ? 'Cached fallback' : 'Cached'
+      : 'Fresh';
+
+    this.pendingLangs = this.displayLanguages;
+    this.pendingActivity = data.repositoryActivity ?? [];
+    this.cdr.detectChanges();
+    setTimeout(() => this.flushPendingCharts(), 0);
   }
 
   private flushPendingCharts(): void {
@@ -157,8 +172,6 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.buildBarChart(this.pendingActivity);
       this.pendingActivity = null;
     }
-
-    this.cdr.detectChanges();
   }
 
   private buildDonutChart(langs: LanguageDistribution[]): void {
@@ -166,16 +179,17 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!ctx) return;
     this.donutChart?.destroy();
 
+    const safeLangs = langs.length ? langs : [{ language: 'No data', percentage: 100 }];
     const cfg: ChartConfiguration<'doughnut'> = {
       type: 'doughnut',
       data: {
-        labels: langs.map(l => l.language),
+        labels: safeLangs.map((lang) => lang.language),
         datasets: [{
-          data:            langs.map(l => l.percentage),
-          backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
-          borderColor:     '#0B0F19',
-          borderWidth:     3,
-          hoverOffset:     8
+          data: safeLangs.map((lang) => lang.percentage),
+          backgroundColor: safeLangs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+          borderColor: '#111827',
+          borderWidth: 3,
+          hoverOffset: 6
         }]
       },
       options: {
@@ -186,7 +200,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+              label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%`
             }
           }
         }
@@ -200,46 +214,44 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!ctx) return;
     this.barChart?.destroy();
 
-    // Show top 7 repos sorted by commits
-    const top = [...activity].sort((a, b) => b.commits - a.commits).slice(0, 7);
-
+    const top = [...(activity || [])].sort((a, b) => b.commits - a.commits).slice(0, 7);
+    const safe = top.length ? top : [{ repo: 'No commit data', commits: 0 }];
     const cfg: ChartConfiguration<'bar'> = {
       type: 'bar',
       data: {
-        labels: top.map(r => r.repo),
+        labels: safe.map((repo) => repo.repo),
         datasets: [{
-          label:           'Commits',
-          data:            top.map(r => r.commits),
-          backgroundColor: top.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length] + 'CC'),
-          borderColor:     top.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
-          borderWidth:     1,
-          borderRadius:    4,
-          barThickness:    16
+          label: 'Commits',
+          data: safe.map((repo) => repo.commits),
+          backgroundColor: safe.map((_, i) => `${LANG_COLOURS[i % LANG_COLOURS.length]}CC`),
+          borderColor: safe.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+          borderWidth: 1,
+          borderRadius: 4,
+          barThickness: 16
         }]
       },
       options: {
-        indexAxis: 'y',          // horizontal bars (matches screenshot)
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: { label: ctx => ` ${ctx.parsed.x} commits` }
-          }
+          tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.x} commits` } }
         },
         scales: {
           x: {
-            grid:  { color: 'rgba(255,255,255,0.05)' },
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.05)' },
             ticks: { color: '#94A3B8', font: { size: 11 } }
           },
           y: {
-            grid:  { display: false },
+            grid: { display: false },
             ticks: {
               color: '#94A3B8',
-              font:  { size: 11 },
-              callback: function(val, idx) {
+              font: { size: 11 },
+              callback: function(_val, idx) {
                 const label = this.getLabelForValue(idx);
-                return label.length > 18 ? label.slice(0, 17) + '…' : label;
+                return label.length > 18 ? `${label.slice(0, 17)}...` : label;
               }
             }
           }
@@ -249,12 +261,44 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.barChart = new Chart(ctx, cfg);
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
   private destroyCharts(): void {
     this.donutChart?.destroy();
     this.barChart?.destroy();
     this.donutChart = null;
-    this.barChart   = null;
+    this.barChart = null;
+  }
+
+  get displayLanguages(): LanguageDistribution[] {
+    const main = this.result?.mainLanguageDistribution || [];
+    return main.length ? main : (this.result?.languageDistribution || []);
+  }
+
+  get supportLanguages(): LanguageDistribution[] {
+    return this.result?.supportLanguageDistribution || [];
+  }
+
+  get topTechnologies(): TechnologySignal[] {
+    return (this.result?.technologies || []).slice(0, 16);
+  }
+
+  get technologyCategories(): Array<{ category: string; items: TechnologySignal[] }> {
+    const categories = this.result?.technologyCategories || {};
+    return Object.keys(categories)
+      .map((category) => ({ category, items: (categories[category] || []).slice(0, 6) }))
+      .filter((group) => group.items.length > 0);
+  }
+
+  get repositoryRows(): Repository[] {
+    return [...(this.result?.repositories || [])]
+      .sort((a, b) => Number(b.qualityScore || b.activityScore || 0) - Number(a.qualityScore || a.activityScore || 0));
+  }
+
+  get healthScore(): number {
+    return Number(this.result?.githubHealthScore || this.result?.activityScore || 0);
+  }
+
+  get hasChartData(): boolean {
+    return this.displayLanguages.length > 0 || (this.result?.repositoryActivity || []).length > 0;
   }
 
   getLangColour(index: number): string {
@@ -268,12 +312,25 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   getScoreBarWidth(score: number): string {
-    return Math.min(score, 100) + '%';
+    return `${Math.min(Math.max(Number(score || 0), 0), 100)}%`;
   }
 
-  formatNumber(n: number): string {
-    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  formatNumber(value: number | undefined | null): string {
+    const n = Number(value || 0);
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
     return n.toString();
   }
-}
 
+  formatDateTime(value: string | Date | null | undefined): string {
+    if (!value) return 'Not analyzed yet';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not analyzed yet';
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+}

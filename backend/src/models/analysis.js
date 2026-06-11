@@ -30,6 +30,24 @@ const analysisSchema = new mongoose.Schema({
         forks: { type: Number, default: 0 },
         followers: { type: Number, default: 0 }
     },
+    githubAnalysisVersion: {
+        type: String,
+        default: 'github-v1'
+    },
+    githubSignals: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
+    githubAnalysisHistory: [{
+        analyzedAt: { type: Date, default: Date.now },
+        healthScore: { type: Number, default: 0 },
+        repos: { type: Number, default: 0 },
+        stars: { type: Number, default: 0 },
+        forks: { type: Number, default: 0 },
+        followers: { type: Number, default: 0 },
+        topLanguages: [{ type: String }],
+        topTechnologies: [{ type: String }]
+    }],
     languageDistribution: {
         type: Map,
         of: Number,

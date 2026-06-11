@@ -1,9 +1,35 @@
 const Repository = require('../models/repository');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
-const { analyzeGitHubProfile, fetchGitHubUser } = require('../services/githubservice');
+const { ANALYSIS_VERSION, analyzeGitHubProfile, isRateLimitError } = require('../services/githubservice');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
+
+const toForceRefresh = (req) =>
+    String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true';
+
+const buildLanguageMap = (languageDistribution = []) => {
+    const langMap = {};
+    (Array.isArray(languageDistribution) ? languageDistribution : []).forEach((entry) => {
+        if (entry?.language) langMap[entry.language] = Number(entry.percentage || 0);
+    });
+    return langMap;
+};
+
+const buildHistorySnapshot = (data = {}) => ({
+    analyzedAt: new Date(),
+    healthScore: Number(data.githubHealthScore || data.activityScore || 0),
+    repos: Number(data.repoCount || 0),
+    stars: Number(data.totalStars || 0),
+    forks: Number(data.totalForks || 0),
+    followers: Number(data.followers || 0),
+    topLanguages: (data.mainLanguageDistribution || data.languageDistribution || [])
+        .slice(0, 5)
+        .map((entry) => entry.language),
+    topTechnologies: (data.technologies || [])
+        .slice(0, 8)
+        .map((tech) => tech.name || tech.technology || tech)
+});
 
 // @desc    Publicly analyze any GitHub username
 // @route   POST /api/github/analyze
@@ -16,16 +42,12 @@ const analyzeGitHub = async (req, res) => {
             return res.status(400).json({ message: 'GitHub username is required.' });
         }
 
-        const data = await analyzeGitHubProfile(username.trim());
+        const data = await analyzeGitHubProfile(username.trim(), { forceRefresh: toForceRefresh(req) });
         res.json(data);
     } catch (error) {
         console.error('GitHub Analyzer Error:', error.message);
         const msg = error.message || '';
-        if (
-          error.response?.status === 403 ||
-          error.response?.status === 429 ||
-          msg.toLowerCase().includes('rate limit')
-        ) {
+        if (isRateLimitError(error)) {
           return res.status(429).json({
             message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
           });
@@ -53,12 +75,11 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             });
         }
 
-        const data = await analyzeGitHubProfile(githubUsername.trim());
-        const userData = await fetchGitHubUser(githubUsername.trim()).catch(() => ({}));
+        const data = await analyzeGitHubProfile(githubUsername.trim(), { forceRefresh: toForceRefresh(req) });
 
         // Persist repositories
         await Repository.deleteMany({ ownerId: req.user._id });
-        if (data.repositories.length > 0) {
+        if (Array.isArray(data.repositories) && data.repositories.length > 0) {
             await Repository.insertMany(
                 data.repositories.map(r => ({
                     repoName: r.name,
@@ -76,18 +97,21 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
         let analysis = await Analysis.findOne({ userId: req.user._id });
         if (!analysis) analysis = new Analysis({ userId: req.user._id });
 
-        analysis.githubScore = data.activityScore;
+        analysis.githubScore = Number(data.githubHealthScore || data.activityScore || 0);
         analysis.githubStats = {
-            repos: data.repoCount,
-            stars: data.totalStars,
-            forks: data.totalForks,
-            followers: Number(userData?.followers || 0)
+            repos: Number(data.repoCount || 0),
+            stars: Number(data.totalStars || 0),
+            forks: Number(data.totalForks || 0),
+            followers: Number(data.followers || 0)
         };
-
-        // Store language distribution as a plain object for Mongoose Map
-        const langMap = {};
-        data.languageDistribution.forEach(l => { langMap[l.language] = l.percentage; });
-        analysis.languageDistribution = langMap;
+        analysis.githubAnalysisVersion = data.analysisVersion || ANALYSIS_VERSION;
+        analysis.githubSignals = data.githubSignals || {};
+        analysis.languageDistribution = buildLanguageMap(data.mainLanguageDistribution?.length ? data.mainLanguageDistribution : data.languageDistribution);
+        analysis.contributionActivity = Array.isArray(data.monthlyCommitActivity) ? data.monthlyCommitActivity : analysis.contributionActivity;
+        analysis.githubAnalysisHistory = [
+            ...(Array.isArray(analysis.githubAnalysisHistory) ? analysis.githubAnalysisHistory : []),
+            buildHistorySnapshot(data)
+        ].slice(-12);
         analysis.updatedAt = new Date();
 
         await analysis.save();
@@ -114,11 +138,7 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
     } catch (error) {
         console.error('GitHub Save Error:', error.message);
         const msg = error.message || '';
-        if (
-          error.response?.status === 403 ||
-          error.response?.status === 429 ||
-          msg.toLowerCase().includes('rate limit')
-        ) {
+        if (isRateLimitError(error)) {
           return res.status(429).json({
             message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
           });
