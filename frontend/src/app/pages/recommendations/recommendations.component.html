@@ -70,73 +70,145 @@
       </button>
     </div>
 
-    <section class="advisor-section" *ngIf="show('Overview')">
+    <section class="advisor-section flagship-overview" *ngIf="show('Career Overview')">
+      <div class="executive-hero">
+        <div class="executive-hero__copy">
+          <span class="eyebrow">Career Overview</span>
+          <h2>Recommendation strategy</h2>
+          <p title="{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}">{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}</p>
+          <div class="career-summary-row">
+            <span>Goal: {{ careerGoalLabel }}</span>
+            <span>Path: {{ recommendedCareerPath }}</span>
+            <span>Updated: {{ analysisLastUpdatedLabel }}</span>
+          </div>
+          <div class="hero-progress">
+            <div>
+              <span>Readiness Score</span>
+              <strong>{{ currentReadiness }}% to {{ targetReadiness }}%</strong>
+            </div>
+            <div class="score-bar"><i [style.width]="barWidth(currentReadiness)"></i></div>
+          </div>
+        </div>
+        <div class="executive-hero__score">
+          <span>Readiness Score</span>
+          <strong>{{ currentReadiness }}%</strong>
+          <small>{{ targetReadiness - currentReadiness > 0 ? (targetReadiness - currentReadiness) + ' point gap remaining' : 'Target score reached' }}</small>
+        </div>
+      </div>
+
+      <div class="executive-metric-grid">
+        <button
+          class="executive-metric"
+          [class.executive-metric--featured]="metric.featured"
+          *ngFor="let metric of executiveHeroMetrics"
+          (click)="jumpTo(metric.target)">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.hint }}</small>
+        </button>
+      </div>
+
       <div class="section-header">
         <div>
-          <h2>Overview</h2>
-          <p>Current action plan for moving from profile signal to job-ready proof.</p>
+          <h2>Key Insights</h2>
+          <p>Strategic readout of what is helping, what can block hiring readiness, and where the best upside is.</p>
         </div>
-        <span class="section-count">{{ currentReadiness }}% ready</span>
+      </div>
+      <div class="executive-insights">
+        <article class="insight-card" [attr.data-tone]="insight.tone" *ngFor="let insight of executiveInsights">
+          <h3>{{ insight.label }}</h3>
+          <ul>
+            <li *ngFor="let item of insight.items">{{ item }}</li>
+          </ul>
+        </article>
       </div>
 
-      <div class="overview-command">
-        <div class="readiness-panel">
-          <span class="eyebrow">Readiness Gap</span>
-          <div class="readiness-score">
-            <strong>{{ currentReadiness }}%</strong>
-            <span>target {{ targetReadiness }}%</span>
+      <div class="section-header">
+        <div>
+          <h2>Priority Actions</h2>
+          <p>High-leverage actions with impact, effort, and sprint-ready execution.</p>
+        </div>
+        <span class="section-count">{{ priorityActions.length }} actions</span>
+      </div>
+      <div class="action-center-grid">
+        <article class="advisor-card advisor-card--action" *ngFor="let card of priorityActions.slice(0, 4); trackBy: trackById">
+          <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
+        </article>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <h2>Career Roadmap</h2>
+          <p>Week-by-week milestones tied to progress indicators and Career Sprint handoff.</p>
+        </div>
+        <button class="btn-secondary" (click)="jumpTo('Career Roadmap')">View Full Roadmap</button>
+      </div>
+      <div class="roadmap-rail">
+        <article class="roadmap-step" *ngFor="let week of roadmapWeeks">
+          <div class="roadmap-step__top">
+            <span>{{ week.label }}</span>
+            <strong>{{ week.progress }}%</strong>
           </div>
-          <div class="score-bar"><i [style.width]="barWidth(currentReadiness)"></i></div>
-          <p>{{ priorityActions[0]?.reason || result.analysisSummary || 'Use the roadmap to close the highest-impact career gaps first.' }}</p>
-        </div>
-        <div class="command-grid">
-          <button class="command-card" *ngFor="let item of overviewActionMetrics" (click)="jumpTo(item.target)">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
-            <small>{{ item.hint }}</small>
-          </button>
-        </div>
+          <h3>{{ week.milestone }}</h3>
+          <div class="score-bar"><i [style.width]="barWidth(week.progress)"></i></div>
+          <p>{{ week.sprint }}</p>
+        </article>
       </div>
 
-      <div class="score-grid compact">
-        <div class="score-card" *ngFor="let score of overviewScores">
-          <span>{{ score.label }}</span>
-          <strong>{{ score.value }}</strong>
-          <div class="score-bar"><i [style.width]="barWidth(score.value)"></i></div>
-          <small>{{ score.hint }}</small>
-        </div>
-      </div>
-
-      <div class="insight-grid">
-        <div class="insight-card">
-          <h3>Analysis Based On</h3>
-          <div class="fact-grid">
-            <div><span>GitHub</span><strong>@{{ result.analysisBasedOn?.githubUsername || viewedUsername }}</strong></div>
-            <div><span>Resume</span><strong>{{ result.analysisBasedOn?.resumeAnalyzed ? 'Analyzed' : 'Not analyzed' }}</strong></div>
-            <div><span>Stack</span><strong>{{ result.analysisBasedOn?.careerStack || currentCareerStack }}</strong></div>
-            <div><span>Level</span><strong>{{ result.analysisBasedOn?.experienceLevel || currentExperienceLevel }}</strong></div>
-            <div><span>Updated</span><strong>{{ analysisLastUpdatedLabel }}</strong></div>
+      <div class="two-column-centers">
+        <section class="center-panel">
+          <div class="section-header">
+            <div>
+              <h2>Key Insights</h2>
+              <p>Operational scores across the five systems that determine job readiness.</p>
+            </div>
           </div>
-          <p>{{ resumeStatusLabel }}</p>
-        </div>
-
-        <div class="insight-card">
-          <h3>Signals Used</h3>
-          <div class="signal-grid">
-            <div class="signal-pill"><span>GitHub</span><strong>{{ result.signalsUsed?.github?.repoCount || 0 }} repos</strong><small>{{ result.signalsUsed?.github?.developerLevel || 'Signal ready' }}</small></div>
-            <div class="signal-pill"><span>Resume</span><strong>ATS {{ result.signalsUsed?.resume?.atsScore || 0 }}</strong><small>{{ result.signalsUsed?.resume?.analyzed ? 'Analyzed' : 'Not analyzed' }}</small></div>
-            <div class="signal-pill"><span>Skill Gap</span><strong>{{ result.signalsUsed?.skillGap?.coverage || 0 }}%</strong><small>{{ result.signalsUsed?.skillGap?.missingSkills?.length || 0 }} gaps</small></div>
-            <div class="signal-pill"><span>Jobs Hub</span><strong>{{ result.signalsUsed?.jobsDemand?.sampledJobs || 0 }}</strong><small>market samples</small></div>
-            <div class="signal-pill"><span>Sprint</span><strong>{{ result.signalsUsed?.careerSprint?.consistencyScore || 0 }}%</strong><small>{{ getSprintFocus() }}</small></div>
-            <div class="signal-pill"><span>Integrations</span><strong>{{ result.signalsUsed?.integrations?.score || 0 }}%</strong><small>{{ signalProviderList }}</small></div>
+          <div class="readiness-center-list">
+            <button class="readiness-center-row" *ngFor="let item of readinessCenterMetrics" (click)="jumpTo(item.target)">
+              <div>
+                <span>{{ item.label }}</span>
+                <small>{{ item.hint }}</small>
+              </div>
+              <strong>{{ item.score }}%</strong>
+              <div class="score-bar"><i [style.width]="barWidth(item.score)"></i></div>
+            </button>
           </div>
-          <p>Strongest proof: {{ signalProofList }}. Weekly trend: {{ weeklyTrendLabel }}.</p>
-        </div>
+        </section>
+
+        <section class="center-panel">
+          <div class="section-header">
+            <div>
+              <h2>Skills to Improve</h2>
+              <p>Market demand, role fit, skill demand, and expected growth in one view.</p>
+            </div>
+          </div>
+          <div class="opportunity-grid">
+            <div class="opportunity-tile" *ngFor="let item of opportunityCenterMetrics">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.hint }}</small>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="summary-card" *ngIf="result.analysisSummary">
-        <h3>Advisor Summary</h3>
-        <p>{{ result.analysisSummary }}</p>
+      <div class="signal-ledger">
+        <div>
+          <span>GitHub</span>
+          <strong>@{{ result.analysisBasedOn?.githubUsername || viewedUsername }}</strong>
+        </div>
+        <div>
+          <span>Resume</span>
+          <strong>{{ result.analysisBasedOn?.resumeAnalyzed ? 'Analyzed' : 'Not analyzed' }}</strong>
+        </div>
+        <div>
+          <span>Sprint</span>
+          <strong>{{ result.signalsUsed?.careerSprint?.consistencyScore || 0 }}%</strong>
+        </div>
+        <div>
+          <span>Weekly trend</span>
+          <strong>{{ weeklyTrendLabel }}</strong>
+        </div>
       </div>
     </section>
 
@@ -172,28 +244,13 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Portfolio Improvements')">
+    <section class="advisor-section" *ngIf="show('Recommended Projects')">
       <div class="section-header">
         <div>
-          <h2>Portfolio Improvements</h2>
-          <p>Actions that turn your work into recruiter-visible proof.</p>
+          <h2>Recommended Projects</h2>
+          <p>Project ideas that convert gaps into visible proof.</p>
         </div>
-        <span class="section-count">{{ result.signalsUsed?.portfolio?.completenessScore || result.recommendationScores?.portfolioScore || 0 }}% score</span>
-      </div>
-      <div class="section-metrics">
-        <div class="metric-tile" *ngFor="let metric of portfolioMetrics">
-          <span>{{ metric.label }}</span>
-          <strong>{{ metric.value }}</strong>
-          <small>{{ metric.hint }}</small>
-        </div>
-      </div>
-      <div class="skill-strip">
-        <span *ngFor="let item of portfolioMissingSections">Missing: {{ item }}</span>
-      </div>
-      <div class="card-grid">
-        <article class="advisor-card" *ngFor="let card of portfolioActionCards; trackBy: trackById">
-          <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
-        </article>
+        <span class="section-count">{{ result.projects.length }}</span>
       </div>
       <div class="projects-grid" *ngIf="result.projects.length">
         <div class="project-card" *ngFor="let proj of result.projects; trackBy: trackById">
@@ -201,11 +258,23 @@
             <span class="difficulty-badge" [ngClass]="getDifficultyClass(proj.difficulty)">{{ proj.difficulty }}</span>
             <span class="priority-badge" [ngClass]="getPriorityClass(proj.priority || 'Medium')">{{ proj.priority || 'Medium' }}</span>
           </div>
-          <h3>{{ proj.title }}</h3>
-          <p>{{ proj.description }}</p>
+          <h3 title="{{ proj.title }}">{{ proj.title }}</h3>
+          <p title="{{ proj.description }}">{{ proj.description }}</p>
           <div class="tech-tags"><span class="tech-tag" *ngFor="let t of proj.tech">{{ t }}</span></div>
+          <details class="card-details">
+            <summary>View details</summary>
+            <div class="details-body">
+              <p>{{ proj.whyThisProject || proj.reason || proj.description }}</p>
+              <div class="source-row"><span *ngFor="let skill of proj.triggerSkills">{{ skill }}</span></div>
+            </div>
+          </details>
           <a [href]="getProjectStartUrl(proj)" target="_blank" rel="noopener noreferrer" class="project-start-link">Start Project</a>
         </div>
+      </div>
+      <div class="card-grid" *ngIf="!result.projects.length">
+        <article class="advisor-card" *ngFor="let card of portfolioActionCards; trackBy: trackById">
+          <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
+        </article>
       </div>
     </section>
 
@@ -234,10 +303,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Jobs Readiness')">
+    <section class="advisor-section" *ngIf="show('Skills to Improve')">
       <div class="section-header">
         <div>
-          <h2>Jobs Readiness</h2>
+          <h2>Skills to Improve</h2>
           <p>Market alignment from Jobs Hub demand, matched roles, and skill gaps.</p>
         </div>
         <span class="section-count">{{ result.recommendationScores?.marketReadinessScore || 0 }}% market</span>
@@ -315,38 +384,35 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Career Paths')">
+    <section class="advisor-section" *ngIf="show('Portfolio Improvements')">
       <div class="section-header">
         <div>
-          <h2>Career Paths</h2>
-          <p>Best-fit paths with match strength, hiring signals, and next actions.</p>
+          <h2>Portfolio Improvements</h2>
+          <p>Actions that turn your work into recruiter-visible proof.</p>
         </div>
-        <span class="section-count">{{ recommendedCareerPath }}</span>
+        <span class="section-count">{{ result.signalsUsed?.portfolio?.completenessScore || result.recommendationScores?.portfolioScore || 0 }}% score</span>
       </div>
-      <div class="career-grid" *ngIf="result.careerPaths.length">
-        <div class="career-card" *ngFor="let path of result.careerPaths; trackBy: trackById">
-          <div class="career-card__top">
-            <h3>{{ path.title }}</h3>
-            <span class="match-pct" [ngClass]="getMatchClass(path.match)">{{ path.match }}%</span>
-          </div>
-          <p class="career-card__salary">{{ path.salaryRange }}</p>
-          <p>{{ path.description }}</p>
-          <div class="career-companies"><span class="company-chip" *ngFor="let co of path.hiringCompanies">{{ co }}</span></div>
-          <ul class="actions-list"><li *ngFor="let item of path.actionItems">{{ item }}</li></ul>
-          <a [href]="getCareerExploreUrl(path)" target="_blank" rel="noopener noreferrer" class="explore-link">Explore</a>
+      <div class="section-metrics">
+        <div class="metric-tile" *ngFor="let metric of portfolioMetrics">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.hint }}</small>
         </div>
       </div>
-      <div class="card-grid" *ngIf="!result.careerPaths.length">
-        <article class="advisor-card" *ngFor="let card of careerCards; trackBy: trackById">
+      <div class="skill-strip">
+        <span *ngFor="let item of portfolioMissingSections">Missing: {{ item }}</span>
+      </div>
+      <div class="card-grid">
+        <article class="advisor-card" *ngFor="let card of portfolioActionCards; trackBy: trackById">
           <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
         </article>
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Roadmap Timeline')">
+    <section class="advisor-section" *ngIf="show('Career Roadmap')">
       <div class="section-header">
         <div>
-          <h2>Roadmap Timeline</h2>
+          <h2>Career Roadmap</h2>
           <p>Six-week execution plan with milestones and concrete actions.</p>
         </div>
         <span class="section-count">{{ estimatedCompletionTime }}</span>
@@ -357,6 +423,8 @@
             <span>{{ week.label }}</span>
             <strong>{{ week.milestone }}</strong>
           </div>
+          <div class="score-bar"><i [style.width]="barWidth(week.progress)"></i></div>
+          <p class="week-sprint">{{ week.sprint }}</p>
           <ul><li *ngFor="let item of week.actions">{{ item }}</li></ul>
         </div>
       </div>
@@ -370,39 +438,33 @@
   <ng-template #advisorCard let-card="card">
     <div class="advisor-card__top">
       <span class="priority-badge" [ngClass]="getPriorityClass(card.priority)">{{ card.priority }}</span>
-      <span>{{ card.confidenceScore }}% confidence</span>
+      <span class="impact-badge">{{ card.estimatedImpact }}% impact</span>
     </div>
-    <h3>{{ card.title }}</h3>
-    <p class="card-description">{{ card.description }}</p>
-    <div class="action-metrics">
-      <div>
-        <span>Impact</span>
-        <strong>{{ card.estimatedImpact }}%</strong>
-      </div>
-      <div>
-        <span>Effort</span>
-        <strong>{{ card.estimatedEffort }}</strong>
-      </div>
+    <h3 title="{{ card.title }}">{{ card.title }}</h3>
+    <p class="card-description" title="{{ card.reason || card.description }}">{{ card.reason || card.description }}</p>
+    <div class="effort-row">
+      <span>Effort</span>
+      <strong>{{ card.estimatedEffort }}</strong>
     </div>
-    <div class="action-explain">
-      <div>
-        <strong>Why</strong>
-        <span>{{ card.reason || card.description }}</span>
+    <details class="card-details">
+      <summary>View details</summary>
+      <div class="details-body">
+        <p>{{ card.description }}</p>
+        <div>
+          <strong>Evidence</strong>
+          <span>{{ card.evidence.length ? card.evidence.join(', ') : 'Relevant platform signals' }}</span>
+        </div>
+        <div>
+          <strong>Expected Outcome</strong>
+          <span>{{ getExpectedOutcome(card) }}</span>
+        </div>
+        <div class="source-row">
+          <span *ngFor="let source of card.sourceSignalsUsed">{{ source }}</span>
+        </div>
       </div>
-      <div>
-        <strong>Evidence</strong>
-        <span>{{ card.evidence.length ? card.evidence.join(', ') : 'Relevant platform signals' }}</span>
-      </div>
-      <div>
-        <strong>Expected Outcome</strong>
-        <span>{{ getExpectedOutcome(card) }}</span>
-      </div>
-    </div>
-    <div class="source-row">
-      <span *ngFor="let source of card.sourceSignalsUsed">{{ source }}</span>
-    </div>
+    </details>
     <div class="card-actions">
-      <button class="btn-secondary" (click)="actionToSprint(card)">Create Career Sprint Task</button>
+      <button class="btn-secondary" (click)="actionToSprint(card)">Add to Sprint</button>
       <button class="btn-analyze btn-analyze--small" *ngIf="card.actionUrl" (click)="runAction(card)">{{ card.actionLabel || 'Open' }}</button>
     </div>
   </ng-template>
