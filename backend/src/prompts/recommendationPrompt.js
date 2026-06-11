@@ -2,6 +2,8 @@ const { getExperienceConfig } = require('../utils/experienceMapper');
 
 /**
  * Recommendation prompt - context-aware with strict difficulty and new-tech rules.
+ * The caller must pass summarized reusable signals only. Do not pass raw GitHub
+ * repositories, raw resume text, or full skill-gap analysis payloads here.
  * @param {string} careerStack
  * @param {string} experienceLevel
  * @param {string[]} knownSkills
@@ -29,9 +31,9 @@ const getRecommendationPrompt = (
     Experience Level: "${experienceLevel}"
     Known Skills:     ${JSON.stringify(knownSkills)}
     Skill Gaps:       ${JSON.stringify(missingSkills)}
-    Resume Insights:  ${JSON.stringify(resumeInsights)}
-    GitHub Insights:  ${JSON.stringify(githubInsights)}
-    Developer Signals:${JSON.stringify(developerSignals)}
+    Resume Signals Summary:  ${JSON.stringify(resumeInsights)}
+    GitHub Signals Summary:  ${JSON.stringify(githubInsights)}
+    Developer Signals Summary:${JSON.stringify(developerSignals)}
 
     STRICT RULES - you MUST follow ALL of these:
     1. Every project MUST primarily use technologies from "Known Skills".
@@ -51,6 +53,8 @@ const getRecommendationPrompt = (
     11. Use portfolio and integration signals only as supporting evidence. Do not treat them as stronger than GitHub plus resume.
     12. Avoid generic filler. Every recommendation should connect to a real signal from the input.
     13. Keep the tone specific, realistic, and recruiter-useful.
+    14. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
+    15. Use AI only for prioritization, explanation, roadmap wording, and career strategy. Deterministic platform scoring will happen outside this prompt.
 
     Return ONLY valid JSON (no markdown, no code fences):
 

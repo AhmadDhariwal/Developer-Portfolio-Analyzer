@@ -379,6 +379,32 @@ const ensureAnalysis = async (userId, githubUsername, options = {}) => {
 };
 
 const buildRecommendationPreview = (recommendationData = {}) => {
+  const signalItems = recommendationData.recommendationSignals?.priorityRecommendations;
+  if (Array.isArray(signalItems) && signalItems.length) {
+    return signalItems.slice(0, 4).map((item) => ({
+      title: String(item.title || 'Recommendation').trim(),
+      priority: item.priority || 'High',
+      priorityType: String(item.priority || 'high').toLowerCase(),
+      category: item.category || 'Career Action',
+      confidenceScore: Number(item.confidenceScore || 0),
+      estimatedImpact: Number(item.estimatedImpact || 0),
+      sourceSignalsUsed: item.sourceSignalsUsed || []
+    }));
+  }
+
+  const structured = Object.values(recommendationData.structuredRecommendations || {}).flat();
+  if (structured.length) {
+    return structured.slice(0, 4).map((item) => ({
+      title: String(item.title || 'Recommendation').trim(),
+      priority: item.priority || 'High',
+      priorityType: String(item.priority || 'high').toLowerCase(),
+      category: item.category || 'Career Action',
+      confidenceScore: Number(item.confidenceScore || 0),
+      estimatedImpact: Number(item.estimatedImpact || 0),
+      sourceSignalsUsed: item.sourceSignalsUsed || []
+    }));
+  }
+
   const projects = Array.isArray(recommendationData.projects) ? recommendationData.projects : [];
   return projects.slice(0, 4).map((project) => ({
     title: String(project.title || 'Recommendation').trim(),

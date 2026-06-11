@@ -80,13 +80,17 @@ const resolveDeveloperSignals = async (userId) => {
     };
   }
 
-  const [latestCache, latestResume, latestAnalysis] = await Promise.all([
+  const [latestCache, latestResume, latestAnalysis, latestRecommendationCache] = await Promise.all([
     AnalysisCache.findOne({
       userId,
       'analysisData.missingSkills.0': { $exists: true }
     }).sort({ updatedAt: -1 }).lean(),
     loadDefaultResumeAnalysis(userId),
-    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean()
+    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean(),
+    AnalysisCache.findOne({
+      userId,
+      'analysisData.recommendationSignals.priorityRecommendations.0': { $exists: true }
+    }).sort({ updatedAt: -1 }).lean()
   ]);
 
   const skillGaps = Array.isArray(latestCache?.analysisData?.missingSkills)
@@ -102,12 +106,19 @@ const resolveDeveloperSignals = async (userId) => {
           : latestAnalysis.languageDistribution
       )
     : [];
+  const recommendationSignals = latestRecommendationCache?.analysisData?.recommendationSignals || {};
+  const recommendationSkills = uniqueStrings([
+    ...(recommendationSignals.skills?.recommendedTechnologies || []),
+    ...(recommendationSignals.skills?.missingSkills || []),
+    ...(recommendationSignals.skills?.weakSkills || [])
+  ], 16);
 
   return {
-    skillGaps: uniqueStrings(skillGaps, 12),
-    knownSkills: uniqueStrings(knownSkills, 20),
+    skillGaps: uniqueStrings([...skillGaps, ...(recommendationSignals.skills?.missingSkills || [])], 12),
+    knownSkills: uniqueStrings([...knownSkills, ...recommendationSkills], 20),
     resumeSkills: flattenResumeSignals(latestResume),
-    githubSkills: uniqueStrings(githubSkills, 12)
+    githubSkills: uniqueStrings(githubSkills, 12),
+    recommendationSkills
   };
 };
 

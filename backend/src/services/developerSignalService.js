@@ -1,5 +1,9 @@
 const crypto = require('node:crypto');
+const Analysis = require('../models/analysis');
+const AnalysisCache = require('../models/analysisCache');
 const CareerSprint = require('../models/careerSprint');
+const Repository = require('../models/repository');
+const ResumeAnalysis = require('../models/resumeAnalysis');
 const WeeklyReport = require('../models/weeklyReport');
 const PublicProfile = require('../models/publicProfile');
 const User = require('../models/user');
@@ -553,9 +557,169 @@ const summarizeJobsDemandSignal = async () => {
   };
 };
 
+const toPlainLanguageDistribution = (languageDistribution = {}) => {
+  const raw = languageDistribution instanceof Map
+    ? Object.fromEntries(languageDistribution)
+    : languageDistribution && typeof languageDistribution === 'object'
+      ? languageDistribution
+      : {};
+
+  return Object.entries(raw)
+    .map(([language, percentage]) => ({
+      language,
+      percentage: clamp(percentage)
+    }))
+    .filter((entry) => entry.language && entry.percentage > 0)
+    .sort((left, right) => right.percentage - left.percentage);
+};
+
+const summarizeGithubSignal = async (userId) => {
+  const analysis = userId
+    ? await Analysis.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+    : null;
+
+  if (!analysis) {
+    return {
+      present: false,
+      username: '',
+      repoCount: 0,
+      developerLevel: '',
+      strengths: [],
+      weakAreas: [],
+      languageDistribution: [],
+      technologies: [],
+      repositories: [],
+      scores: {},
+      updatedAt: null
+    };
+  }
+
+  const stored = analysis.githubSignals && typeof analysis.githubSignals === 'object'
+    ? analysis.githubSignals
+    : {};
+  const repositories = await Repository.find({ ownerId: userId })
+    .select('repoName language stars forks commits lastUpdated')
+    .sort({ lastUpdated: -1 })
+    .limit(24)
+    .lean()
+    .catch(() => []);
+
+  const storedRepositories = Array.isArray(stored.repositories) ? stored.repositories : [];
+  const normalizedRepositories = (repositories.length ? repositories : storedRepositories).map((repo) => ({
+    name: repo.repoName || repo.name || '',
+    language: repo.language || '',
+    stars: Number(repo.stars || 0),
+    forks: Number(repo.forks || 0),
+    commits: Number(repo.commits || 0),
+    pushedAt: repo.lastUpdated || repo.pushedAt || repo.updatedAt || null,
+    description: repo.description || '',
+    technologies: Array.isArray(repo.technologies) ? repo.technologies : []
+  }));
+
+  const languageDistribution = Array.isArray(stored?.languages?.main) && stored.languages.main.length
+    ? stored.languages.main
+    : toPlainLanguageDistribution(analysis.languageDistribution);
+
+  return {
+    present: true,
+    username: String(stored.username || '').trim(),
+    repoCount: Number(stored.stats?.repos || analysis.githubStats?.repos || normalizedRepositories.length || 0),
+    developerLevel: String(stored.developerLevel || '').trim(),
+    strengths: safeStrings(stored.recruiterInsights?.proofPoints || [], 8),
+    weakAreas: safeStrings(stored.weakAreas || [], 8),
+    languageDistribution,
+    technologies: Array.isArray(stored.technologies) ? stored.technologies.slice(0, 18) : [],
+    technologyCategories: stored.technologyCategories || {},
+    repositories: normalizedRepositories,
+    scores: {
+      healthScore: Number(stored.healthScore || analysis.githubScore || 0),
+      activity: Number(stored.healthScore || analysis.githubScore || 0)
+    },
+    recruiterInsights: stored.recruiterInsights || {},
+    updatedAt: stored.analyzedAt || analysis.updatedAt || analysis.createdAt || null
+  };
+};
+
+const loadDefaultResumeAnalysis = async (userId) => {
+  const user = userId
+    ? await User.findById(userId).select('defaultResumeFileId').lean()
+    : null;
+
+  if (user?.defaultResumeFileId) {
+    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
+      .sort({ analyzedAt: -1 })
+      .lean();
+    if (activeAnalysis) return activeAnalysis;
+  }
+
+  return userId
+    ? ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
+    : null;
+};
+
+const summarizeResumeSignal = async (userId) => {
+  const latestResume = await loadDefaultResumeAnalysis(userId);
+  return buildResumeAnalysisSignals(latestResume);
+};
+
+const normalizeSkillItems = (values = [], limit = 16) => safeStrings(
+  (Array.isArray(values) ? values : [])
+    .map((item) => item?.name || item?.skill || item)
+    .filter(Boolean),
+  limit
+);
+
+const summarizeSkillGapSignal = async (userId) => {
+  const cache = userId
+    ? await AnalysisCache.findOne({
+        userId,
+        'analysisData.missingSkills.0': { $exists: true }
+      }).sort({ updatedAt: -1 }).lean()
+    : null;
+
+  if (!cache?.analysisData) {
+    return {
+      present: false,
+      knownSkills: [],
+      missingSkills: [],
+      weakSkills: [],
+      highDemandSkills: [],
+      coverage: 0,
+      updatedAt: null,
+      signalHash: ''
+    };
+  }
+
+  const data = cache.analysisData;
+  const storedSignals = data.skillGapSignals && typeof data.skillGapSignals === 'object'
+    ? data.skillGapSignals
+    : {};
+
+  return {
+    present: true,
+    knownSkills: normalizeSkillItems(data.yourSkills || storedSignals.knownSkills, 24),
+    missingSkills: normalizeSkillItems(storedSignals.missingSkills || data.missingSkills, 20),
+    weakSkills: normalizeSkillItems(storedSignals.weakSkills || data.weakSkills, 12),
+    highDemandSkills: Array.isArray(storedSignals.highDemandSkills)
+      ? storedSignals.highDemandSkills.slice(0, 12)
+      : (Array.isArray(data.highDemandSkills) ? data.highDemandSkills.slice(0, 12) : []),
+    immediateSkills: safeStrings(storedSignals.immediateSkills || data.immediateSkills?.map((skill) => skill?.name || skill), 8),
+    shortTermSkills: safeStrings(storedSignals.shortTermSkills || data.shortTermSkills?.map((skill) => skill?.name || skill), 8),
+    coverage: clamp(storedSignals.coverage || data.coverage || 0),
+    coverageBreakdown: storedSignals.coverageBreakdown || data.coverageBreakdown || {},
+    provenSkills: safeStrings(storedSignals.provenSkills || data.provenSkills || [], 16),
+    claimedButNotProvenSkills: safeStrings(storedSignals.claimedButNotProvenSkills || data.claimedButNotProvenSkills || [], 16),
+    updatedAt: cache.updatedAt || cache.createdAt || null,
+    signalHash: storedSignals.signalHash || cache.signalHash || ''
+  };
+};
+
 const getDeveloperSignals = async (userId) => {
   if (!userId) {
-    const [careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+    const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+      summarizeGithubSignal(null),
+      summarizeResumeSignal(null),
+      summarizeSkillGapSignal(null),
       summarizeCareerSprintSignal(null),
       summarizeWeeklyReportSignal(null),
       summarizePortfolioSignal(null),
@@ -564,16 +728,27 @@ const getDeveloperSignals = async (userId) => {
       summarizeJobsDemandSignal()
     ]);
     return {
+      githubSignals,
+      resumeSignals,
+      skillGapSignals,
       careerSprintSignal,
       weeklyReportSignal,
       portfolioSignal,
       integrationSignal,
       careerProfileSignal,
-      jobsDemandSignal
+      jobsDemandSignal,
+      portfolioSignals: portfolioSignal,
+      careerSprintSignals: careerSprintSignal,
+      weeklyReportSignals: weeklyReportSignal,
+      integrationSignals: integrationSignal,
+      careerProfile: careerProfileSignal
     };
   }
 
-  const [careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+  const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+    summarizeGithubSignal(userId),
+    summarizeResumeSignal(userId),
+    summarizeSkillGapSignal(userId),
     summarizeCareerSprintSignal(userId),
     summarizeWeeklyReportSignal(userId),
     summarizePortfolioSignal(userId),
@@ -583,12 +758,20 @@ const getDeveloperSignals = async (userId) => {
   ]);
 
   return {
+    githubSignals,
+    resumeSignals,
+    skillGapSignals,
     careerSprintSignal,
     weeklyReportSignal,
     portfolioSignal,
     integrationSignal,
     careerProfileSignal,
-    jobsDemandSignal
+    jobsDemandSignal,
+    portfolioSignals: portfolioSignal,
+    careerSprintSignals: careerSprintSignal,
+    weeklyReportSignals: weeklyReportSignal,
+    integrationSignals: integrationSignal,
+    careerProfile: careerProfileSignal
   };
 };
 
@@ -599,13 +782,19 @@ const buildSignalHash = (signals = {}) => {
     portfolioSignal: signals.portfolioSignal || {},
     integrationSignal: signals.integrationSignal || {},
     careerProfileSignal: signals.careerProfileSignal || {},
-    jobsDemandSignal: signals.jobsDemandSignal || {}
+    jobsDemandSignal: signals.jobsDemandSignal || {},
+    githubSignals: signals.githubSignals || {},
+    resumeSignals: signals.resumeSignals || {},
+    skillGapSignals: signals.skillGapSignals || {}
   };
 
   return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 };
 
 const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubInsights = {}, signals = {} } = {}) => {
+  const githubSignal = signals.githubSignals || {};
+  const resumeSignal = signals.resumeSignals || {};
+  const skillGapSignal = signals.skillGapSignals || {};
   const careerSprintSignal = signals.careerSprintSignal || {};
   const weeklyReportSignal = signals.weeklyReportSignal || {};
   const portfolioSignal = signals.portfolioSignal || {};
@@ -617,22 +806,33 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
     github: {
       connected: Boolean(String(username || '').trim()),
       username: String(username || '').trim(),
-      repoCount: Number(githubInsights.repoCount || 0),
-      developerLevel: String(githubInsights.developerLevel || '').trim()
+      repoCount: Number(githubInsights.repoCount || githubSignal.repoCount || 0),
+      developerLevel: String(githubInsights.developerLevel || githubSignal.developerLevel || '').trim(),
+      source: githubSignal.present ? 'githubSignals' : 'fallback'
     },
     resume: {
-      analyzed: Boolean(resumeInsights.analyzed),
-      analysisId: String(resumeInsights.analysisId || 'no-resume'),
-      fileName: String(resumeInsights.fileName || '').trim(),
-      lastAnalyzedAt: resumeInsights.lastAnalyzedAt || null,
-      atsScore: Number(resumeInsights.atsScore || 0),
-      experienceLevel: String(resumeInsights.experienceLevel || '').trim(),
-      extractedSkills: safeStrings(resumeInsights.skills || [], 12),
-      experienceKeywords: safeStrings(resumeInsights.experienceKeywords || [], 12),
-      strengths: safeStrings(resumeInsights.strengths || [], 6),
-      weaknesses: safeStrings(resumeInsights.weaknesses || [], 6),
-      missingSections: safeStrings(resumeInsights.missingSections || [], 6),
-      statusMessage: String(resumeInsights.statusMessage || '').trim()
+      analyzed: Boolean(resumeInsights.analyzed || resumeSignal.analyzed),
+      analysisId: String(resumeInsights.analysisId || resumeSignal.analysisId || 'no-resume'),
+      fileName: String(resumeInsights.fileName || resumeSignal.fileName || '').trim(),
+      lastAnalyzedAt: resumeInsights.lastAnalyzedAt || resumeSignal.lastAnalyzedAt || null,
+      atsScore: Number(resumeInsights.atsScore || resumeSignal.atsScore || 0),
+      experienceLevel: String(resumeInsights.experienceLevel || resumeSignal.experienceLevel || '').trim(),
+      extractedSkills: safeStrings(resumeInsights.skills || resumeSignal.skills || [], 12),
+      experienceKeywords: safeStrings(resumeInsights.experienceKeywords || resumeSignal.experienceKeywords || [], 12),
+      strengths: safeStrings(resumeInsights.strengths || resumeSignal.strengths || [], 6),
+      weaknesses: safeStrings(resumeInsights.weaknesses || resumeSignal.weaknesses || [], 6),
+      missingSections: safeStrings(resumeInsights.missingSections || resumeSignal.missingSections || [], 6),
+      statusMessage: String(resumeInsights.statusMessage || resumeSignal.statusMessage || '').trim(),
+      source: resumeSignal.analyzed ? 'resumeSignals' : 'fallback'
+    },
+    skillGap: {
+      present: Boolean(skillGapSignal.present),
+      coverage: Number(skillGapSignal.coverage || 0),
+      knownSkills: safeStrings(skillGapSignal.knownSkills || [], 10),
+      missingSkills: safeStrings(skillGapSignal.missingSkills || [], 10),
+      weakSkills: safeStrings(skillGapSignal.weakSkills || [], 8),
+      highDemandSkills: Array.isArray(skillGapSignal.highDemandSkills) ? skillGapSignal.highDemandSkills.slice(0, 8) : [],
+      updatedAt: skillGapSignal.updatedAt || null
     },
     portfolio: {
       present: Boolean(portfolioSignal.present),
