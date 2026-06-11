@@ -26,6 +26,13 @@ const toSkillName = (skill) => {
 
 const toNodeId = (name) => String(name || '').trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, '-');
 
+const difficultyFromSkill = ({ kind, demandScore, proficiency, priority }) => {
+  if (kind === 'current') return proficiency >= 75 ? 'Applied' : 'Needs Proof';
+  if (priority === 'High' || demandScore >= 85) return 'Hard';
+  if (demandScore >= 65) return 'Medium';
+  return 'Easy';
+};
+
 const buildPrereqsByTarget = (edges = []) => {
   const prereqsByTarget = new Map();
   edges.filter((edge) => edge.type === 'prerequisite').forEach((edge) => {
@@ -127,14 +134,25 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
     const demandFromSkill = typeof skill === 'object' ? skill.jobDemand : 0;
     const proficiency = typeof skill === 'object' ? skill.proficiency : 0;
     const category = typeof skill === 'object' ? skill.category : 'General';
+    const priority = typeof skill === 'object' ? skill.priority : 'Medium';
+    const demandScore = clamp(demandFromSkill || (kind === 'missing' ? 72 : 58), 0, 100);
+    const normalizedProficiency = clamp(proficiency || (kind === 'current' ? 70 : 35), 0, 100);
 
     nodesById.set(id, {
       id,
       name,
       category: category || 'General',
-      demandScore: clamp(demandFromSkill || (kind === 'missing' ? 72 : 58), 0, 100),
-      proficiency: clamp(proficiency || (kind === 'current' ? 70 : 35), 0, 100),
+      demandScore,
+      jobDemand: demandScore,
+      proficiency: normalizedProficiency,
       kind,
+      priority,
+      confidenceScore: typeof skill === 'object' ? clamp(skill.confidenceScore || 0, 0, 100) : 0,
+      source: typeof skill === 'object' ? String(skill.source || '').trim() : '',
+      evidence: typeof skill === 'object' && Array.isArray(skill.evidence) ? skill.evidence.slice(0, 4) : [],
+      prerequisites: [],
+      difficulty: difficultyFromSkill({ kind, demandScore, proficiency: normalizedProficiency, priority }),
+      learningOrder: 0,
       relatedSkills: []
     });
   };
@@ -161,6 +179,7 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
       const prereqId = nodeNameToId.get(prereqName.toLowerCase());
       if (prereqId) {
         addEdge(prereqId, node.id, 'prerequisite', 0.92);
+        if (!node.prerequisites.includes(prereqName)) node.prerequisites.push(prereqName);
         const prereqNode = nodesById.get(prereqId);
         if (prereqNode && !prereqNode.relatedSkills.includes(node.name)) {
           prereqNode.relatedSkills.push(node.name);
@@ -186,7 +205,17 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
     });
   });
 
-  return { nodes, edges };
+  const rankedNodes = nodes
+    .slice()
+    .sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === 'current' ? -1 : 1;
+      return (b.demandScore - a.demandScore) || (b.confidenceScore - a.confidenceScore) || a.name.localeCompare(b.name);
+    });
+  rankedNodes.forEach((node, index) => {
+    node.learningOrder = node.kind === 'missing' ? index + 1 : 0;
+  });
+
+  return { nodes: rankedNodes, edges };
 };
 
 const generateWeeklyLearningRoadmap = (graph, weeks = 8) => {

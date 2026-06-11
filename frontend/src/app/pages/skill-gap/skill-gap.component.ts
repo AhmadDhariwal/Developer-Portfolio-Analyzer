@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   SkillGapService,
   SkillGapResult,
@@ -19,7 +20,7 @@ import { distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-skill-gap',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './skill-gap.component.html',
   styleUrl: './skill-gap.component.scss',
 })
@@ -76,63 +77,33 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  analyze(): void {
+  analyze(forceRefresh = false): void {
     const user = this.username.trim();
     if (!user) return;
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
+    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+    const cached = !forceRefresh && !isTemporary
+      ? this.skillGapService.getCachedResult(user, careerStack, experienceLevel)
+      : null;
 
     this.isLoading = true;
     this.errorMessage = '';
-    this.result = null;
+    if (cached) {
+      this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
+    } else {
+      this.result = null;
+      this.graphLayout = [];
+      this.graphEdges = [];
+    }
     this.cdr.detectChanges();
 
-    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
-
-    this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary).subscribe({
+    this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary, forceRefresh).subscribe({
       next: (data: any) => {
         const raw = data?.data || data?.result || data;
-
-        const normalized: SkillGapResult = {
-          username:        raw?.username        || user,
-          careerStack:     raw?.careerStack     || careerStack,
-          experienceLevel: raw?.experienceLevel || experienceLevel,
-          coverage:        (typeof raw?.coverage === 'number') ? raw.coverage : 0,
-          missing:         (typeof raw?.missing  === 'number') ? raw.missing  : 0,
-          yourSkills:      Array.isArray(raw?.yourSkills)    ? raw.yourSkills    : [],
-          missingSkills:   Array.isArray(raw?.missingSkills) ? raw.missingSkills : [],
-          resumeSkills:    Array.isArray(raw?.resumeSkills) ? raw.resumeSkills : [],
-          githubSkills:    Array.isArray(raw?.githubSkills) ? raw.githubSkills : [],
-          provenSkills:    Array.isArray(raw?.provenSkills) ? raw.provenSkills : [],
-          claimedButNotProvenSkills: Array.isArray(raw?.claimedButNotProvenSkills) ? raw.claimedButNotProvenSkills : [],
-          levelAssessment: raw?.levelAssessment || '',
-          analysisSummary: raw?.analysisSummary || '',
-          roadmap:         Array.isArray(raw?.roadmap) ? raw.roadmap : [],
-          skillGraph:      raw?.skillGraph?.nodes && raw?.skillGraph?.edges
-            ? raw.skillGraph
-            : { nodes: [], edges: [] },
-          weeklyRoadmap:   Array.isArray(raw?.weeklyRoadmap) ? raw.weeklyRoadmap : [],
-          signalsUsed: this.normalizeSignalsUsed(raw?.signalsUsed, user),
-          analysisBasedOn: this.normalizeAnalysisBasedOn(raw?.analysisBasedOn, user, careerStack, experienceLevel),
-          resumeStatusMessage: typeof raw?.resumeStatusMessage === 'string' ? raw.resumeStatusMessage : '',
-          totalWeeks:      raw?.totalWeeks || 'N/A'
-        };
-
-        const yourCount = Array.isArray(normalized.yourSkills) ? normalized.yourSkills.length : 0;
-        const missingCount = Array.isArray(normalized.missingSkills) ? normalized.missingSkills.length : 0;
-        const denom = yourCount + missingCount;
-        const derivedCoverage = denom > 0 ? Math.round((yourCount / denom) * 100) : 0;
-
-        const validCoverage = Number.isFinite(Number(normalized.coverage))
-          ? Math.max(0, Math.min(100, Math.round(Number(normalized.coverage))))
-          : derivedCoverage;
-
-        normalized.coverage = validCoverage;
-        normalized.missing = Math.max(0, Math.min(100, 100 - validCoverage));
-
-        this.result = normalized;
-        this.viewedUsername = user;
-        this.isTemporaryView = isTemporary;
-        this.refreshGraphLayout();
+        this.applyResult(raw, user, careerStack, experienceLevel, isTemporary);
+        if (!isTemporary) {
+          this.skillGapService.cacheResult(this.result as SkillGapResult, false);
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -147,7 +118,65 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     });
   }
 
+  refreshAnalysis(): void {
+    this.analyze(true);
+  }
+
   /* ── Helpers ──────────────────────────────────────────────────── */
+
+  private applyResult(raw: any, user: string, careerStack: string, experienceLevel: string, isTemporary: boolean): void {
+    const normalized: SkillGapResult = {
+      username: raw?.username || user,
+      careerStack: raw?.careerStack || careerStack,
+      experienceLevel: raw?.experienceLevel || experienceLevel,
+      coverage: (typeof raw?.coverage === 'number') ? raw.coverage : 0,
+      missing: (typeof raw?.missing === 'number') ? raw.missing : 0,
+      yourSkills: Array.isArray(raw?.yourSkills) ? raw.yourSkills : [],
+      missingSkills: Array.isArray(raw?.missingSkills) ? raw.missingSkills : [],
+      resumeSkills: Array.isArray(raw?.resumeSkills) ? raw.resumeSkills : [],
+      githubSkills: Array.isArray(raw?.githubSkills) ? raw.githubSkills : [],
+      provenSkills: Array.isArray(raw?.provenSkills) ? raw.provenSkills : [],
+      claimedButNotProvenSkills: Array.isArray(raw?.claimedButNotProvenSkills) ? raw.claimedButNotProvenSkills : [],
+      weakSkills: Array.isArray(raw?.weakSkills) ? raw.weakSkills : [],
+      highDemandSkills: Array.isArray(raw?.highDemandSkills) ? raw.highDemandSkills : [],
+      immediateSkills: Array.isArray(raw?.immediateSkills) ? raw.immediateSkills : [],
+      shortTermSkills: Array.isArray(raw?.shortTermSkills) ? raw.shortTermSkills : [],
+      midTermSkills: Array.isArray(raw?.midTermSkills) ? raw.midTermSkills : [],
+      longTermSkills: Array.isArray(raw?.longTermSkills) ? raw.longTermSkills : [],
+      prerequisites: raw?.prerequisites && typeof raw.prerequisites === 'object' ? raw.prerequisites : {},
+      estimatedWeeks: Number(raw?.estimatedWeeks || 0),
+      suggestedProjects: Array.isArray(raw?.suggestedProjects) ? raw.suggestedProjects : [],
+      coverageBreakdown: raw?.coverageBreakdown || undefined,
+      cacheMetadata: raw?.cacheMetadata || undefined,
+      skillGapSignals: raw?.skillGapSignals || undefined,
+      fromCache: Boolean(raw?.fromCache),
+      fromFrontendCache: Boolean(raw?.fromFrontendCache),
+      levelAssessment: raw?.levelAssessment || '',
+      analysisSummary: raw?.analysisSummary || '',
+      roadmap: Array.isArray(raw?.roadmap) ? raw.roadmap : [],
+      skillGraph: raw?.skillGraph?.nodes && raw?.skillGraph?.edges ? raw.skillGraph : { nodes: [], edges: [] },
+      weeklyRoadmap: Array.isArray(raw?.weeklyRoadmap) ? raw.weeklyRoadmap : [],
+      signalsUsed: this.normalizeSignalsUsed(raw?.signalsUsed, user),
+      analysisBasedOn: this.normalizeAnalysisBasedOn(raw?.analysisBasedOn, user, careerStack, experienceLevel),
+      resumeStatusMessage: typeof raw?.resumeStatusMessage === 'string' ? raw.resumeStatusMessage : '',
+      totalWeeks: raw?.totalWeeks || 'N/A'
+    };
+
+    const yourCount = normalized.yourSkills.length;
+    const missingCount = normalized.missingSkills.length;
+    const denom = yourCount + missingCount;
+    const derivedCoverage = denom > 0 ? Math.round((yourCount / denom) * 100) : 0;
+    const validCoverage = Number.isFinite(Number(normalized.coverage))
+      ? Math.max(0, Math.min(100, Math.round(Number(normalized.coverage))))
+      : derivedCoverage;
+
+    normalized.coverage = validCoverage;
+    normalized.missing = Math.max(0, Math.min(100, 100 - validCoverage));
+    this.result = normalized;
+    this.viewedUsername = user;
+    this.isTemporaryView = isTemporary;
+    this.refreshGraphLayout();
+  }
 
   get currentCareerStack(): string  { return this.careerProfileService.careerStack; }
   get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
@@ -189,6 +218,26 @@ export class SkillGapComponent implements OnInit, OnDestroy {
 
   coverageWidth(pct: number): string {
     return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  getConfidenceClass(score = 0): string {
+    if (score >= 75) return 'confidence-high';
+    if (score >= 55) return 'confidence-medium';
+    return 'confidence-low';
+  }
+
+  get cacheStatusLabel(): string {
+    if (this.result?.fromFrontendCache) return 'Loaded instantly from local cache';
+    if (this.result?.fromCache || this.result?.cacheMetadata?.loadedFromCache) return 'Backend cache hit';
+    return 'Fresh signal analysis';
+  }
+
+  get coverageFormulaLabel(): string {
+    return this.result?.coverageBreakdown?.formula || 'Deterministic score from known skills, missing gaps, proficiency, resume, and integrations.';
+  }
+
+  getSkillEvidence(skill: CurrentSkill | MissingSkill): string[] {
+    return Array.isArray(skill.evidence) ? skill.evidence.slice(0, 3) : [];
   }
 
   get analysisLastUpdatedLabel(): string {
@@ -313,6 +362,15 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         consistencyScore: Number(raw?.careerSprint?.consistencyScore || 0),
         streak: Number(raw?.careerSprint?.streak || 0),
         activeLearningFocus: raw?.careerSprint?.activeLearningFocus || ''
+      },
+      careerProfile: {
+        careerStack: raw?.careerProfile?.careerStack || '',
+        experienceLevel: raw?.careerProfile?.experienceLevel || '',
+        careerGoal: raw?.careerProfile?.careerGoal || ''
+      },
+      jobsDemand: {
+        sampledJobs: Number(raw?.jobsDemand?.sampledJobs || 0),
+        topSkills: Array.isArray(raw?.jobsDemand?.topSkills) ? raw.jobsDemand.topSkills : []
       }
     };
   }

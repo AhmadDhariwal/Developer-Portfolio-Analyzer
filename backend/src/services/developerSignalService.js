@@ -3,6 +3,7 @@ const CareerSprint = require('../models/careerSprint');
 const WeeklyReport = require('../models/weeklyReport');
 const PublicProfile = require('../models/publicProfile');
 const User = require('../models/user');
+const JobCache = require('../models/jobCache');
 const { buildPublicProfilePayload } = require('./publicProfileService');
 const { getIntegrationInsight } = require('./integrationInsightService');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
@@ -499,28 +500,95 @@ const summarizeIntegrationSignal = async (userId) => {
   };
 };
 
+const summarizeCareerProfileSignal = async (userId) => {
+  const user = userId
+    ? await User.findById(userId).select('careerStack experienceLevel careerGoal githubUsername updatedAt').lean()
+    : null;
+
+  return {
+    present: Boolean(user),
+    careerStack: String(user?.careerStack || '').trim(),
+    experienceLevel: String(user?.experienceLevel || '').trim(),
+    careerGoal: String(user?.careerGoal || '').trim(),
+    githubUsername: String(user?.githubUsername || '').trim(),
+    updatedAt: user?.updatedAt || null
+  };
+};
+
+const summarizeJobsDemandSignal = async () => {
+  const now = new Date();
+  const records = await JobCache.find({ expiresAt: { $gt: now } })
+    .select('skills title updatedAt lastSynced')
+    .sort({ lastSynced: -1, updatedAt: -1 })
+    .limit(250)
+    .lean();
+
+  const counts = new Map();
+  records.forEach((record) => {
+    safeStrings(record.skills || [], 20)
+      .map((skill) => canonicalizeSkillName(skill))
+      .filter(Boolean)
+      .forEach((skill) => {
+        const key = skill.toLowerCase();
+        const current = counts.get(key) || { skill, count: 0 };
+        current.count += 1;
+        counts.set(key, current);
+      });
+  });
+
+  const topSkills = Array.from(counts.values())
+    .sort((a, b) => b.count - a.count || a.skill.localeCompare(b.skill))
+    .slice(0, 18)
+    .map((entry) => ({
+      name: entry.skill,
+      demandScore: clamp((entry.count / Math.max(records.length, 1)) * 420),
+      postings: entry.count
+    }));
+
+  return {
+    present: records.length > 0,
+    sampledJobs: records.length,
+    topSkills,
+    updatedAt: records[0]?.lastSynced || records[0]?.updatedAt || null
+  };
+};
+
 const getDeveloperSignals = async (userId) => {
   if (!userId) {
+    const [careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+      summarizeCareerSprintSignal(null),
+      summarizeWeeklyReportSignal(null),
+      summarizePortfolioSignal(null),
+      summarizeIntegrationSignal(null),
+      summarizeCareerProfileSignal(null),
+      summarizeJobsDemandSignal()
+    ]);
     return {
-      careerSprintSignal: await summarizeCareerSprintSignal(null),
-      weeklyReportSignal: await summarizeWeeklyReportSignal(null),
-      portfolioSignal: await summarizePortfolioSignal(null),
-      integrationSignal: await summarizeIntegrationSignal(null)
+      careerSprintSignal,
+      weeklyReportSignal,
+      portfolioSignal,
+      integrationSignal,
+      careerProfileSignal,
+      jobsDemandSignal
     };
   }
 
-  const [careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal] = await Promise.all([
+  const [careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
     summarizeCareerSprintSignal(userId),
     summarizeWeeklyReportSignal(userId),
     summarizePortfolioSignal(userId),
-    summarizeIntegrationSignal(userId)
+    summarizeIntegrationSignal(userId),
+    summarizeCareerProfileSignal(userId),
+    summarizeJobsDemandSignal()
   ]);
 
   return {
     careerSprintSignal,
     weeklyReportSignal,
     portfolioSignal,
-    integrationSignal
+    integrationSignal,
+    careerProfileSignal,
+    jobsDemandSignal
   };
 };
 
@@ -529,7 +597,9 @@ const buildSignalHash = (signals = {}) => {
     careerSprintSignal: signals.careerSprintSignal || {},
     weeklyReportSignal: signals.weeklyReportSignal || {},
     portfolioSignal: signals.portfolioSignal || {},
-    integrationSignal: signals.integrationSignal || {}
+    integrationSignal: signals.integrationSignal || {},
+    careerProfileSignal: signals.careerProfileSignal || {},
+    jobsDemandSignal: signals.jobsDemandSignal || {}
   };
 
   return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -540,6 +610,8 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
   const weeklyReportSignal = signals.weeklyReportSignal || {};
   const portfolioSignal = signals.portfolioSignal || {};
   const integrationSignal = signals.integrationSignal || {};
+  const careerProfileSignal = signals.careerProfileSignal || {};
+  const jobsDemandSignal = signals.jobsDemandSignal || {};
 
   return {
     github: {
@@ -582,6 +654,15 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
       consistencyScore: Number(careerSprintSignal.consistencyScore || 0),
       streak: Number(careerSprintSignal.streak || 0),
       activeLearningFocus: String(careerSprintSignal.activeLearningFocus || '').trim()
+    },
+    careerProfile: {
+      careerStack: String(careerProfileSignal.careerStack || '').trim(),
+      experienceLevel: String(careerProfileSignal.experienceLevel || '').trim(),
+      careerGoal: String(careerProfileSignal.careerGoal || '').trim()
+    },
+    jobsDemand: {
+      sampledJobs: Number(jobsDemandSignal.sampledJobs || 0),
+      topSkills: Array.isArray(jobsDemandSignal.topSkills) ? jobsDemandSignal.topSkills.slice(0, 10) : []
     }
   };
 };

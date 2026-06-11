@@ -16,7 +16,7 @@ const {
 const { extractSkillsFromRepositories, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const RECOMMENDATION_ANALYSIS_VERSION = 'v3-signals';
-const SKILL_GAP_LOOKUP_VERSION = 'v4-signals';
+const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const STACK_PROJECT_HINTS = {
   Frontend: ['React', 'TypeScript', 'Accessibility', 'Deployment'],
   Backend: ['Node.js', 'REST APIs', 'SQL', 'Deployment'],
