@@ -36,6 +36,9 @@
       <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName">
         <p>Default Resume: <strong>{{ defaultResumeFileName || 'Not set' }}</strong></p>
         <p>Viewing Resume: <strong>{{ viewedResumeFileName || defaultResumeFileName || activeResumeFileName || 'Not set' }}</strong></p>
+        <p *ngIf="analysis?.analyzedAt">Last Analyzed: <strong>{{ formatDate(analysis?.analyzedAt || '') }}</strong></p>
+        <p *ngIf="analysis?.analysisVersion">Analysis Version: <strong>{{ analysis?.analysisVersion }}</strong></p>
+        <p *ngIf="cacheState === 'cache-hit' || cacheState === 'server-cache-hit'">Loaded From Cache: <strong>{{ cacheState === 'cache-hit' ? 'Frontend cache' : 'Backend cache' }}</strong></p>
       </div>
 
       <div class="resume-switcher" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
@@ -47,6 +50,22 @@
         </select>
         <button class="file-input-label" (click)="useSelectedResume(false)">Preview Selected</button>
         <button class="file-input-label" (click)="useSelectedResume(true)">Set as Default</button>
+        <button class="file-input-label secondary" (click)="forceRefreshSelected()" [disabled]="isLoadingAnalysis || isAnalyzing">Force Refresh</button>
+      </div>
+
+      <div class="resume-file-list" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
+        <div class="resume-file-row" *ngFor="let file of resumeFiles">
+          <div>
+            <strong>{{ file.fileName }}</strong>
+            <span>{{ formatFileSize(file.fileSize || 0) }} | uploaded {{ formatDate(file.uploadDate) }}</span>
+          </div>
+          <div class="resume-file-badges">
+            <span *ngIf="file.isDefault">Default</span>
+            <span *ngIf="file.isActive">Active</span>
+            <span *ngIf="file.isAnalyzed">Analyzed</span>
+            <small *ngIf="file.lastAnalyzed">Last {{ formatDate(file.lastAnalyzed) }}</small>
+          </div>
+        </div>
       </div>
 
       <svg *ngIf="!analysisComplete" class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -74,20 +93,20 @@
       </div>
 
       <div *ngIf="!analysisComplete" class="upload-prompt">
-        <h3>{{ isAnalyzing ? 'Analyzing your resume...' : 'Upload your resume' }}</h3>
+        <h3>{{ isAnalyzing || isLoadingAnalysis ? 'Analyzing your resume...' : 'Upload your resume' }}</h3>
         <p *ngIf="!isAnalyzing">Drag and drop or click to browse</p>
         <span *ngIf="!isAnalyzing" class="file-hint">PDF format accepted</span>
 
-        <div *ngIf="isAnalyzing" class="analyzing-spinner">
+        <div *ngIf="isAnalyzing || isLoadingAnalysis" class="analyzing-spinner">
           <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
           </svg>
-          <p class="analyzing-text">Parsing PDF and extracting skills...</p>
+          <p class="analyzing-text">{{ cacheState === 'loading' ? 'Checking resume intelligence cache...' : 'Parsing PDF and extracting deterministic signals...' }}</p>
         </div>
 
-        <input *ngIf="!isAnalyzing" type="file" accept=".pdf" (change)="onFileSelected($event)" id="fileInput" [disabled]="isAnalyzing" hidden>
-        <label *ngIf="!isAnalyzing" for="fileInput" class="file-input-label" [class.disabled]="isAnalyzing">
+        <input *ngIf="!isAnalyzing && !isLoadingAnalysis" type="file" accept=".pdf" (change)="onFileSelected($event)" id="fileInput" [disabled]="isAnalyzing || isLoadingAnalysis" hidden>
+        <label *ngIf="!isAnalyzing && !isLoadingAnalysis" for="fileInput" class="file-input-label" [class.disabled]="isAnalyzing || isLoadingAnalysis">
           Select File
         </label>
       </div>
@@ -116,6 +135,42 @@
   </div>
 
   <div *ngIf="analysisComplete && analysis" class="analysis-flow">
+    <app-ui-card class="overview-panel">
+      <div class="section-head">
+        <div>
+          <h2>Overview</h2>
+          <p>{{ analysis.recruiterPerspective?.resumeSummary || 'Structured resume intelligence generated from deterministic signals and validated AI insights.' }}</p>
+        </div>
+        <app-ui-badge variant="success" size="sm">{{ analysis.recruiterPerspective?.hiringReadiness || 'Analyzed' }}</app-ui-badge>
+      </div>
+
+      <div class="personal-grid">
+        <div class="personal-item" *ngFor="let item of getPersonalInfoEntries()">
+          <span>{{ item.label }}</span>
+          <strong [class.missing]="item.value === 'Missing'">{{ item.value }}</strong>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="quality-panel">
+      <div class="section-head">
+        <div>
+          <h2>ATS Breakdown</h2>
+          <p>Deterministic scoring with an explanation for every score used by platform-wide resume signals.</p>
+        </div>
+      </div>
+
+      <div class="quality-grid">
+        <div class="quality-item" *ngFor="let score of getQualityScoreEntries()">
+          <div class="quality-item__top">
+            <strong>{{ score.label }}</strong>
+            <span>{{ score.value }}/100</span>
+          </div>
+          <p>{{ score.explanation }}</p>
+        </div>
+      </div>
+    </app-ui-card>
+
     <app-ui-card class="skills-panel">
       <div class="section-head">
         <div>
@@ -144,6 +199,126 @@
           <ng-template #noSkillsForGroup>
             <div class="empty-inline">None detected in this category yet.</div>
           </ng-template>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="technology-panel">
+      <div class="section-head">
+        <div>
+          <h2>Technology Categories</h2>
+          <p>Normalized technologies detected from skills, projects, experience, and achievements.</p>
+        </div>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-group" *ngFor="let group of getTechnologyGroups()">
+          <h3>{{ group.category }}</h3>
+          <div class="chip-row">
+            <span *ngFor="let skill of group.skills">{{ skill }}</span>
+          </div>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="details-panel">
+      <div class="section-head">
+        <div>
+          <h2>Resume Intelligence</h2>
+          <p>Normalized sections that other platform modules can reuse without re-parsing the resume.</p>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <div>
+          <h3>Projects</h3>
+          <p *ngFor="let item of getNormalizedList('projects')">{{ item }}</p>
+          <span *ngIf="!getNormalizedList('projects').length" class="empty-inline">No projects detected.</span>
+        </div>
+        <div>
+          <h3>Experience</h3>
+          <p *ngFor="let item of getNormalizedList('experience')">{{ item }}</p>
+          <span *ngIf="!getNormalizedList('experience').length" class="empty-inline">No experience bullets detected.</span>
+        </div>
+        <div>
+          <h3>Achievements</h3>
+          <p *ngFor="let item of getNormalizedList('achievements')">{{ item }}</p>
+          <span *ngIf="!getNormalizedList('achievements').length" class="empty-inline">No quantified achievements detected.</span>
+        </div>
+        <div>
+          <h3>Certifications</h3>
+          <p *ngFor="let item of getNormalizedList('certifications')">{{ item }}</p>
+          <span *ngIf="!getNormalizedList('certifications').length" class="empty-inline">No certifications detected.</span>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="recruiter-panel">
+      <div class="section-head">
+        <div>
+          <h2>Recruiter Perspective</h2>
+          <p>Reusable strengths, concerns, interview risks, and hiring readiness for recruiter modules.</p>
+        </div>
+      </div>
+
+      <div class="recruiter-grid">
+        <div>
+          <h3>Strengths</h3>
+          <p *ngFor="let item of getRecruiterList('strengths')">{{ item }}</p>
+          <span *ngIf="!getRecruiterList('strengths').length" class="empty-inline">No strengths generated yet.</span>
+        </div>
+        <div>
+          <h3>Concerns</h3>
+          <p *ngFor="let item of getRecruiterList('concerns')">{{ item }}</p>
+          <span *ngIf="!getRecruiterList('concerns').length" class="empty-inline">No major concerns detected.</span>
+        </div>
+        <div>
+          <h3>Interview Risks</h3>
+          <p *ngFor="let item of getRecruiterList('interviewRisks')">{{ item }}</p>
+          <span *ngIf="!getRecruiterList('interviewRisks').length" class="empty-inline">No interview risks generated.</span>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="warnings-panel" *ngIf="getWarnings().length > 0">
+      <div class="section-head">
+        <div>
+          <h2>Consistency Warnings</h2>
+          <p>Structured checks for contact gaps, weak project evidence, missing metrics, and skill stuffing.</p>
+        </div>
+      </div>
+
+      <div class="warning-list">
+        <div class="warning-item" *ngFor="let warning of getWarnings()" [class.high]="warning.severity === 'high'">
+          <strong>{{ warning.message }}</strong>
+          <span>{{ warning.severity }}</span>
+          <p *ngIf="warning.evidence">{{ warning.evidence }}</p>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card class="growth-panel">
+      <div class="section-head">
+        <div>
+          <h2>Resume Growth</h2>
+          <p>{{ analysis.improvementDelta?.['summary'] || 'Growth tracking starts after the next analysis snapshot.' }}</p>
+        </div>
+      </div>
+
+      <div class="growth-grid">
+        <div>
+          <h3>New Skills Added</h3>
+          <div class="chip-row" *ngIf="(analysis.newSkillsAdded || []).length; else noNewSkills">
+            <span *ngFor="let skill of analysis.newSkillsAdded">{{ skill }}</span>
+          </div>
+          <ng-template #noNewSkills><span class="empty-inline">No new skills in this snapshot.</span></ng-template>
+        </div>
+        <div>
+          <h3>Score Changes</h3>
+          <p *ngFor="let change of getScoreChangeEntries()">
+            {{ change.label }}: <strong>{{ change.value > 0 ? '+' : '' }}{{ change.value }}</strong>
+          </p>
+          <span *ngIf="!getScoreChangeEntries().length" class="empty-inline">No previous score snapshot yet.</span>
         </div>
       </div>
     </app-ui-card>

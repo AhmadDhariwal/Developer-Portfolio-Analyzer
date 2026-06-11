@@ -49,8 +49,8 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/resume/upload`, formData);
   }
 
-  analyzeResume(fileId: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId });
+  analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
+    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh });
   }
 
   getResumeAnalysis(fileId?: string): Observable<any> {

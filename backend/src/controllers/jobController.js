@@ -2,6 +2,7 @@ const { buildJobPool, refreshJobCache, findCachedJobById, getSourceHealth, getCa
 const AnalysisCache = require('../models/analysisCache');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
+const User = require('../models/user');
 const Recommendation = require('../models/recommendation');
 const CareerSprint = require('../models/careerSprint');
 const { getIntegrationSecretsSync } = require('../services/platformSettingsService');
@@ -49,6 +50,26 @@ const flattenResumeSkills = (skillsMap = {}) => {
   return uniqueStrings(values.flat(), 18);
 };
 
+const flattenResumeSignals = (resumeAnalysis = {}) => {
+  const signals = resumeAnalysis?.resumeSignals || {};
+  if (Array.isArray(signals.skills) && signals.skills.length) return uniqueStrings(signals.skills, 18);
+  if (signals.technologyCategories && typeof signals.technologyCategories === 'object') {
+    return uniqueStrings(Object.values(signals.technologyCategories).flat(), 18);
+  }
+  return flattenResumeSkills(resumeAnalysis?.skills);
+};
+
+const loadDefaultResumeAnalysis = async (userId) => {
+  const user = await User.findById(userId).select('defaultResumeFileId').lean();
+  if (user?.defaultResumeFileId) {
+    const analysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
+      .sort({ analyzedAt: -1 })
+      .lean();
+    if (analysis) return analysis;
+  }
+  return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
+};
+
 const resolveDeveloperSignals = async (userId) => {
   if (!userId) {
     return {
@@ -64,7 +85,7 @@ const resolveDeveloperSignals = async (userId) => {
       userId,
       'analysisData.missingSkills.0': { $exists: true }
     }).sort({ updatedAt: -1 }).lean(),
-    ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean(),
+    loadDefaultResumeAnalysis(userId),
     Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean()
   ]);
 
@@ -85,7 +106,7 @@ const resolveDeveloperSignals = async (userId) => {
   return {
     skillGaps: uniqueStrings(skillGaps, 12),
     knownSkills: uniqueStrings(knownSkills, 20),
-    resumeSkills: flattenResumeSkills(latestResume?.skills),
+    resumeSkills: flattenResumeSignals(latestResume),
     githubSkills: uniqueStrings(githubSkills, 12)
   };
 };

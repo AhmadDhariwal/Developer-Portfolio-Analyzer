@@ -7,6 +7,7 @@ import { TenantContextService } from './tenant-context.service';
 
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
 const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
+const RESUME_ANALYSIS_CACHE_PREFIX = 'resume_analysis_cache:';
 
 export interface SessionUser {
   _id?: string;
@@ -124,6 +125,9 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('loginExpiry');
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(RESUME_ANALYSIS_CACHE_PREFIX))
+      .forEach((key) => localStorage.removeItem(key));
     this.currentUserSubject?.next(null);
   }
 

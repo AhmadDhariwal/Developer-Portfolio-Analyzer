@@ -121,6 +121,53 @@ const deriveResumeImprovementSuggestions = (analysis = {}) => safeStrings(
 );
 
 const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
+  if (analysis?.resumeSignals && typeof analysis.resumeSignals === 'object') {
+    const stored = analysis.resumeSignals;
+    const analyzedAt = analysis.analyzedAt || analysis.createdAt || stored.updatedAt || null;
+    return {
+      analyzed: Boolean(analysis?._id),
+      analysisId: analysis?._id ? String(analysis._id) : 'no-resume',
+      fileId: analysis?.fileId ? String(analysis.fileId) : '',
+      fileName: String(analysis?.fileName || '').trim(),
+      experienceLevel: analysis?.experienceLevel || stored.experienceLevel || fallbackExperienceLevel || '',
+      experienceYears: Number(analysis?.experienceYears || stored.experienceYears || 0),
+      atsScore: Number(analysis?.atsScore || stored.scores?.atsScore || 0),
+      keywordDensity: Number(analysis?.keywordDensity || stored.scores?.keywordDensity || stored.scores?.keywordCoverage || 0),
+      formatScore: Number(analysis?.formatScore || stored.scores?.formatScore || stored.scores?.formattingScore || 0),
+      contentQuality: Number(analysis?.contentQuality || stored.scores?.contentQuality || 0),
+      skills: safeStrings(stored.skills || [], 25),
+      technicalSkills: safeStrings(stored.skills || [], 25),
+      extractedSkills: safeStrings(stored.skills || [], 25),
+      experienceKeywords: safeStrings([
+        ...(stored.skills || []),
+        ...(stored.achievements || []),
+        ...(stored.projects || [])
+      ], 16),
+      strengths: safeStrings(stored.recruiterPerspective?.strengths || deriveResumeStrengths(analysis), 8),
+      weaknesses: safeStrings([
+        ...(stored.recruiterPerspective?.concerns || []),
+        ...(Array.isArray(stored.warnings) ? stored.warnings.map((warning) => warning?.message) : [])
+      ], 10),
+      missingSections: safeStrings(
+        Array.isArray(stored.warnings)
+          ? stored.warnings.filter((warning) => String(warning?.code || '').startsWith('missing_')).map((warning) => warning.message)
+          : deriveMissingResumeSections(analysis),
+        8
+      ),
+      improvementSuggestions: deriveResumeImprovementSuggestions(analysis),
+      keyAchievements: safeStrings(analysis?.keyAchievements || stored.achievements || [], 8),
+      certifications: safeStrings(analysis?.certifications || stored.certifications || [], 8),
+      technologyCategories: stored.technologyCategories || {},
+      recruiterPerspective: stored.recruiterPerspective || {},
+      resumeHash: stored.resumeHash || analysis.resumeHash || '',
+      analysisVersion: stored.analysisVersion || analysis.analysisVersion || '',
+      lastAnalyzedAt: analyzedAt,
+      statusMessage: analysis?._id
+        ? `Resume analyzed${analysis?.fileName ? `: ${analysis.fileName}` : ''}`
+        : 'Resume not analyzed yet'
+    };
+  }
+
   const resumeSkills = flattenResumeSkills(analysis?.skills);
   const skillEntries = analysis?.skills instanceof Map
     ? Array.from(analysis.skills.entries())

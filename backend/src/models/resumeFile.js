@@ -30,6 +30,18 @@ const resumeFileSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  resumeHash: {
+    type: String,
+    default: ''
+  },
+  lastAnalyzedAt: {
+    type: Date,
+    default: null
+  },
+  analysisVersion: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

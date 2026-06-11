@@ -1,4 +1,4 @@
-const { extractTextFromPDF, analyzeResume } = require('../services/resumeservice');
+const { extractTextFromPDF, analyzeResume, ANALYSIS_VERSION } = require('../services/resumeservice');
 const { generateResumeGuide } = require('../services/resumeGuideService');
 const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
@@ -6,6 +6,10 @@ const ResumeAnalysis = require('../models/resumeAnalysis');
 const User = require('../models/user');
 const fs = require('fs');
 const { createNotification } = require('../services/notificationService');
+
+const toForceRefresh = (req) => (
+  String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true'
+);
 
 const ensureResumeContext = async (userId) => {
   const user = await User.findById(userId).select('defaultResumeFileId activeResumeFileId');
@@ -78,6 +82,7 @@ const uploadResume = async (req, res) => {
 const analyzeResumeFile = async (req, res) => {
   try {
     const { fileId } = req.body;
+    const forceRefresh = toForceRefresh(req);
 
     if (!fileId) {
       return res.status(400).json({ message: 'fileId is required' });
@@ -92,45 +97,88 @@ const analyzeResumeFile = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    // Extract text from PDF
     const text = await extractTextFromPDF(resumeFile.fileUrl);
+    const [userContext, previousAnalysis] = await Promise.all([
+      User.findById(req.user._id).select('name email phoneNumber location website linkedin githubUsername defaultResumeFileId activeResumeFileId'),
+      ResumeAnalysis.findOne({ userId: req.user._id }).sort({ analyzedAt: -1 }).lean()
+    ]);
 
-    // AI analysis
-    const analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize);
-
-    // Persist to DB
-    const resumeAnalysis = new ResumeAnalysis({
+    const analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize, {
       userId: req.user._id,
-      fileId: resumeFile._id,
-      fileName: analysis.fileName,
-      fileSize: analysis.fileSize,
-      atsScore: analysis.atsScore,
-      keywordDensity: analysis.keywordDensity,
-      formatScore: analysis.formatScore,
-      contentQuality: analysis.contentQuality,
-      skills: new Map(Object.entries(analysis.skills)),
-      experienceYears: analysis.experienceYears,
-      experienceLevel: analysis.experienceLevel,
-      certifications: analysis.certifications,
-      keyAchievements: analysis.keyAchievements,
-      scoreBreakdown: analysis.scoreBreakdown,
-      suggestions: analysis.suggestions,
-      uploadDate: resumeFile.uploadDate,
-      analyzedAt: new Date()
+      resumeFileId: resumeFile._id,
+      forceRefresh,
+      previousAnalysis,
+      userFallback: {
+        name: userContext?.name || '',
+        email: userContext?.email || '',
+        phone: userContext?.phoneNumber || '',
+        location: userContext?.location || '',
+        portfolio: userContext?.website || '',
+        linkedIn: userContext?.linkedin || '',
+        github: userContext?.githubUsername ? `https://github.com/${userContext.githubUsername}` : ''
+      }
     });
 
-    await resumeAnalysis.save();
+    let resumeAnalysis = null;
+    if (analysis.cacheMetadata?.loadedFromCache && !forceRefresh) {
+      resumeAnalysis = await ResumeAnalysis.findOne({
+        userId: req.user._id,
+        fileId: resumeFile._id,
+        resumeHash: analysis.resumeHash,
+        analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION
+      }).sort({ analyzedAt: -1 });
+    }
+
+    if (!resumeAnalysis) {
+      resumeAnalysis = new ResumeAnalysis({
+        userId: req.user._id,
+        fileId: resumeFile._id,
+        fileName: analysis.fileName,
+        fileSize: analysis.fileSize,
+        atsScore: analysis.atsScore,
+        keywordDensity: analysis.keywordDensity,
+        formatScore: analysis.formatScore,
+        contentQuality: analysis.contentQuality,
+        skills: new Map(Object.entries(analysis.skills || {})),
+        experienceYears: analysis.experienceYears,
+        experienceLevel: analysis.experienceLevel,
+        certifications: analysis.certifications,
+        keyAchievements: analysis.keyAchievements,
+        scoreBreakdown: analysis.scoreBreakdown,
+        suggestions: analysis.suggestions,
+        resumeHash: analysis.resumeHash,
+        analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+        normalized: analysis.normalized,
+        qualityScores: analysis.qualityScores,
+        technologyCategories: analysis.technologyCategories,
+        consistencyWarnings: analysis.consistencyWarnings,
+        recruiterPerspective: analysis.recruiterPerspective,
+        resumeSignals: analysis.resumeSignals,
+        aiInsights: analysis.aiInsights,
+        cacheMetadata: analysis.cacheMetadata,
+        previousAnalysisId: analysis.previousAnalysisId,
+        improvementDelta: analysis.improvementDelta,
+        scoreChanges: analysis.scoreChanges,
+        newSkillsAdded: analysis.newSkillsAdded,
+        uploadDate: resumeFile.uploadDate,
+        analyzedAt: new Date()
+      });
+
+      await resumeAnalysis.save();
+    }
 
     resumeFile.isAnalyzed = true;
+    resumeFile.resumeHash = analysis.resumeHash || resumeFile.resumeHash || '';
+    resumeFile.lastAnalyzedAt = resumeAnalysis.analyzedAt || new Date();
+    resumeFile.analysisVersion = analysis.analysisVersion || ANALYSIS_VERSION;
     await resumeFile.save();
 
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.activeResumeFileId = resumeFile._id;
-      if (!user.defaultResumeFileId) {
-        user.defaultResumeFileId = resumeFile._id;
+    if (userContext) {
+      userContext.activeResumeFileId = resumeFile._id;
+      if (!userContext.defaultResumeFileId) {
+        userContext.defaultResumeFileId = resumeFile._id;
       }
-      await user.save();
+      await userContext.save();
     }
 
     await createNotification({
@@ -157,7 +205,23 @@ const analyzeResumeFile = async (req, res) => {
       suggestions: analysis.suggestions,
       fileName: analysis.fileName,
       fileSize: analysis.fileSize,
-      uploadDate: resumeFile.uploadDate
+      fileId: resumeFile._id,
+      uploadDate: resumeFile.uploadDate,
+      analyzedAt: resumeAnalysis.analyzedAt,
+      resumeHash: analysis.resumeHash,
+      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+      normalized: analysis.normalized,
+      qualityScores: analysis.qualityScores,
+      technologyCategories: analysis.technologyCategories,
+      consistencyWarnings: analysis.consistencyWarnings,
+      recruiterPerspective: analysis.recruiterPerspective,
+      resumeSignals: analysis.resumeSignals,
+      aiInsights: analysis.aiInsights,
+      cacheMetadata: analysis.cacheMetadata,
+      previousAnalysisId: analysis.previousAnalysisId,
+      improvementDelta: analysis.improvementDelta,
+      scoreChanges: analysis.scoreChanges,
+      newSkillsAdded: analysis.newSkillsAdded
     });
   } catch (error) {
     console.error('Resume Analysis Error:', error);
@@ -174,6 +238,44 @@ const mapToObj = (skills) => {
   }
   return Object.assign({}, skills);
 };
+
+const serializeAnalysis = (analysis) => ({
+  atsScore: analysis.atsScore,
+  keywordDensity: analysis.keywordDensity,
+  formatScore: analysis.formatScore,
+  contentQuality: analysis.contentQuality,
+  skills: mapToObj(analysis.skills),
+  experienceYears: analysis.experienceYears,
+  experienceLevel: analysis.experienceLevel,
+  certifications: analysis.certifications,
+  keyAchievements: analysis.keyAchievements,
+  scoreBreakdown: analysis.scoreBreakdown,
+  suggestions: analysis.suggestions,
+  fileId: analysis.fileId,
+  fileName: analysis.fileName,
+  fileSize: analysis.fileSize,
+  uploadDate: analysis.uploadDate,
+  analyzedAt: analysis.analyzedAt,
+  resumeHash: analysis.resumeHash || '',
+  analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+  normalized: analysis.normalized || {},
+  qualityScores: analysis.qualityScores || {},
+  technologyCategories: analysis.technologyCategories || {},
+  consistencyWarnings: analysis.consistencyWarnings || [],
+  recruiterPerspective: analysis.recruiterPerspective || {},
+  resumeSignals: analysis.resumeSignals || {},
+  aiInsights: analysis.aiInsights || {},
+  cacheMetadata: {
+    ...(analysis.cacheMetadata || {}),
+    loadedFromCache: false,
+    analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+    resumeHash: analysis.resumeHash || ''
+  },
+  previousAnalysisId: analysis.previousAnalysisId || null,
+  improvementDelta: analysis.improvementDelta || {},
+  scoreChanges: analysis.scoreChanges || {},
+  newSkillsAdded: analysis.newSkillsAdded || []
+});
 
 // @desc    Get resume analysis for current user
 // @route   GET /api/resume/result
@@ -197,23 +299,7 @@ const getResumeAnalysis = async (req, res) => {
       return res.status(404).json({ message: 'No analysis found' });
     }
 
-    res.json({
-      atsScore: analysis.atsScore,
-      keywordDensity: analysis.keywordDensity,
-      formatScore: analysis.formatScore,
-      contentQuality: analysis.contentQuality,
-      skills: mapToObj(analysis.skills),
-      experienceYears: analysis.experienceYears,
-      experienceLevel: analysis.experienceLevel,
-      certifications: analysis.certifications,
-      keyAchievements: analysis.keyAchievements,
-      scoreBreakdown: analysis.scoreBreakdown,
-      suggestions: analysis.suggestions,
-      fileId: analysis.fileId,
-      fileName: analysis.fileName,
-      fileSize: analysis.fileSize,
-      uploadDate: analysis.uploadDate
-    });
+    res.json(serializeAnalysis(analysis));
   } catch (error) {
     console.error('Get Analysis Error:', error);
     res.status(500).json({ message: error.message || 'Server Error' });
@@ -234,23 +320,7 @@ const getResumeAnalysisByUserId = async (req, res) => {
       return res.status(404).json({ message: 'No analysis found for this user' });
     }
 
-    res.json({
-      atsScore: analysis.atsScore,
-      keywordDensity: analysis.keywordDensity,
-      formatScore: analysis.formatScore,
-      contentQuality: analysis.contentQuality,
-      skills: mapToObj(analysis.skills),
-      experienceYears: analysis.experienceYears,
-      experienceLevel: analysis.experienceLevel,
-      certifications: analysis.certifications,
-      keyAchievements: analysis.keyAchievements,
-      scoreBreakdown: analysis.scoreBreakdown,
-      suggestions: analysis.suggestions,
-      fileId: analysis.fileId,
-      fileName: analysis.fileName,
-      fileSize: analysis.fileSize,
-      uploadDate: analysis.uploadDate
-    });
+    res.json(serializeAnalysis(analysis));
   } catch (error) {
     console.error('Get Analysis Error:', error);
     res.status(500).json({ message: error.message || 'Server Error' });
@@ -303,6 +373,10 @@ const getResumeFiles = async (req, res) => {
         fileSize: f.fileSize,
         uploadDate: f.uploadDate,
         isAnalyzed: !!f.isAnalyzed,
+        lastAnalyzed: f.lastAnalyzedAt || null,
+        resumeHash: f.resumeHash || '',
+        analysisVersion: f.analysisVersion || '',
+        fileSize: f.fileSize,
         isDefault: String(user?.defaultResumeFileId || '') === String(f._id),
         isActive: String(user?.activeResumeFileId || '') === String(f._id)
       }))
@@ -331,13 +405,19 @@ const getActiveResumeContext = async (req, res) => {
         fileId: defaultFile._id,
         fileName: defaultFile.fileName,
         uploadDate: defaultFile.uploadDate,
-        isAnalyzed: !!defaultFile.isAnalyzed
+        isAnalyzed: !!defaultFile.isAnalyzed,
+        lastAnalyzed: defaultFile.lastAnalyzedAt || null,
+        resumeHash: defaultFile.resumeHash || '',
+        analysisVersion: defaultFile.analysisVersion || ''
       } : null,
       activeResume: activeFile ? {
         fileId: activeFile._id,
         fileName: activeFile.fileName,
         uploadDate: activeFile.uploadDate,
-        isAnalyzed: !!activeFile.isAnalyzed
+        isAnalyzed: !!activeFile.isAnalyzed,
+        lastAnalyzed: activeFile.lastAnalyzedAt || null,
+        resumeHash: activeFile.resumeHash || '',
+        analysisVersion: activeFile.analysisVersion || ''
       } : null
     });
   } catch (error) {

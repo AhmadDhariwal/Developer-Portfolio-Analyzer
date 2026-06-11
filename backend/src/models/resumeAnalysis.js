@@ -83,6 +83,65 @@ const resumeAnalysisSchema = new mongoose.Schema({
     formatScore:    { type: String, default: '' },
     contentQuality: { type: String, default: '' }
   },
+  resumeHash: {
+    type: String,
+    default: '',
+    index: true
+  },
+  analysisVersion: {
+    type: String,
+    default: 'resume-intel-v2',
+    index: true
+  },
+  normalized: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  qualityScores: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  technologyCategories: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  consistencyWarnings: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
+  recruiterPerspective: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  resumeSignals: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  aiInsights: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  cacheMetadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  previousAnalysisId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ResumeAnalysis',
+    default: null
+  },
+  improvementDelta: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  scoreChanges: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  newSkillsAdded: {
+    type: [String],
+    default: []
+  },
   uploadDate: {
     type: Date,
     default: Date.now
@@ -96,5 +155,7 @@ const resumeAnalysisSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+resumeAnalysisSchema.index({ userId: 1, fileId: 1, resumeHash: 1, analysisVersion: 1, analyzedAt: -1 });
 
 module.exports = mongoose.model('ResumeAnalysis', resumeAnalysisSchema);

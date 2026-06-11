@@ -179,12 +179,23 @@ const persistGithubResultToAnalysis = async ({ userId, analysis, githubResult, m
 const latestCacheByPredicate = async (userId, predicate) =>
   AnalysisCache.findOne({ userId, ...predicate }).sort({ updatedAt: -1 }).lean();
 
+const loadDefaultResumeAnalysis = async (userId) => {
+  const user = await User.findById(userId).select('defaultResumeFileId').lean();
+  if (user?.defaultResumeFileId) {
+    const analysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
+      .sort({ analyzedAt: -1 })
+      .lean();
+    if (analysis) return analysis;
+  }
+  return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
+};
+
 const getCachedDashboardContext = async (userId) => {
   const [latestPortfolioCache, latestSkillGapCache, latestRecommendationCache, latestResume] = await Promise.all([
     latestCacheByPredicate(userId, { 'analysisData.portfolioScore.overallScore': { $exists: true } }),
     latestCacheByPredicate(userId, { 'analysisData.missingSkills': { $exists: true } }),
     latestCacheByPredicate(userId, { 'analysisData.projects': { $exists: true } }),
-    ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
+    loadDefaultResumeAnalysis(userId)
   ]);
 
   return {
