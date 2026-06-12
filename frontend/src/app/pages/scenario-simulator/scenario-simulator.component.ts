@@ -34,6 +34,7 @@ interface ScenarioRange {
 }
 
 interface SimResult {
+  scenarioHash: string;
   baseline: { hiringScore: number; jobMatch: number };
   predicted: { hiringScore: number; jobMatch: number };
   improvements: { hiringScore: number; jobMatch: number };
@@ -49,6 +50,12 @@ interface SimResult {
   insights: string[];
   warnings: string[];
   suggestions: string[];
+  explainability?: {
+    scoreDrivers: string[];
+    penalties: string[];
+    confidenceReason: string;
+    effortVsDuration: string;
+  };
   assumptions: {
     skillsConsidered: string[];
     projectsConsidered: ProjectInput[];
@@ -92,6 +99,7 @@ interface ScenarioContext {
     sprintFocus: string[];
     connectedProviders: string[];
     portfolioProjects: string[];
+    topDemandedSkills?: string[];
   };
   suggestedInputs: {
     role: string;
@@ -103,6 +111,9 @@ interface ScenarioContext {
     projects: ProjectInput[];
   };
   summary: string;
+  signalHash?: string;
+  sourceContextSummary?: Record<string, unknown>;
+  cache?: { hit: boolean; key: string; version: string };
 }
 
 interface SavedScenario {
@@ -119,6 +130,11 @@ interface SavedScenario {
   predicted: { hiringScore: number; jobMatch: number };
   improvements: { hiringScore: number; jobMatch: number };
   result: SimResult;
+  scenarioHash?: string;
+  sourceContextSummary?: Record<string, unknown>;
+  warnings?: string[];
+  uncertaintyRange?: SimResult['uncertaintyRange'];
+  breakdown?: SimResult['breakdown'];
   createdAt: string;
 }
 
@@ -163,6 +179,8 @@ export class ScenarioSimulatorComponent implements OnInit {
   scenarioHistory: SavedScenario[] = [];
   compareScenario: SavedScenario | null = null;
   deletingScenarioId = '';
+  contextCacheHit = false;
+  historyCacheHit = false;
 
   readonly roleOptions = [
     { value: 'frontend', label: 'Frontend Developer' },
@@ -266,23 +284,34 @@ export class ScenarioSimulatorComponent implements OnInit {
     return error?.error?.message || fallback;
   }
 
-  loadBootstrapData(): void {
+  loadBootstrapData(forceRefresh = false): void {
     this.isLoadingContext = true;
     this.isLoadingHistory = true;
     this.contextError = '';
+    if (forceRefresh) {
+      this.actionTone = 'info';
+      this.actionMessage = 'Refreshing simulator signals and saved scenarios...';
+    }
 
     forkJoin({
-      context: this.apiService.getScenarioSimulatorContext().pipe(catchError(() => of(null))),
-      history: this.apiService.getScenarioSimulationHistory(8).pipe(catchError(() => of({ history: [] })))
+      context: this.apiService.getScenarioSimulatorContext(forceRefresh).pipe(catchError(() => of(null))),
+      history: this.apiService.getScenarioSimulationHistory(8, forceRefresh).pipe(catchError(() => of({ history: [] })))
     }).subscribe({
       next: ({ context, history }) => {
         if (context?.context) {
           this.applyContext(context.context, true);
+          this.contextCacheHit = !!context.context.cache?.hit;
         } else {
           this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
+          this.contextCacheHit = false;
         }
 
         this.scenarioHistory = Array.isArray(history?.history) ? history.history : [];
+        this.historyCacheHit = !!history?.cache?.hit;
+        if (forceRefresh && !this.contextError) {
+          this.actionMessage = 'Simulator signals refreshed.';
+          this.actionTone = 'success';
+        }
         this.isLoadingContext = false;
         this.isLoadingHistory = false;
         this.cdr.markForCheck();
@@ -307,7 +336,19 @@ export class ScenarioSimulatorComponent implements OnInit {
     if (this.baselineJobMatch < 0 || this.baselineJobMatch > 100) return 'Job match must be between 0 and 100.';
     if (this.durationWeeks < 1 || this.durationWeeks > 24) return 'Duration must be between 1 and 24 weeks.';
     if (!this.skills.length && !this.validProjects.length) return 'Add at least one skill or project.';
+    const projectNames = this.validProjects.map((project) => project.name.trim().toLowerCase());
+    if (new Set(projectNames).size !== projectNames.length) return 'Remove duplicate project names before running the simulation.';
     return null;
+  }
+
+  get contextCacheLabel(): string {
+    if (this.isLoadingContext) return 'Loading context';
+    return this.contextCacheHit ? 'Cached context' : 'Fresh context';
+  }
+
+  get historyCacheLabel(): string {
+    if (this.isLoadingHistory) return 'Loading history';
+    return this.historyCacheHit ? 'Cached history' : 'Fresh history';
   }
 
   get hiringDelta(): number {
@@ -410,6 +451,10 @@ export class ScenarioSimulatorComponent implements OnInit {
         this.hasSimulated = !!this.result;
         this.isRunning = false;
         if (!this.scenarioName.trim()) this.scenarioName = this.generateScenarioName();
+        if (this.result?.warnings?.length) {
+          this.actionTone = 'info';
+          this.actionMessage = 'Simulation completed with realism warnings. Review the warning panel before committing this plan.';
+        }
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -431,6 +476,7 @@ export class ScenarioSimulatorComponent implements OnInit {
         const scenario = response?.scenario as SavedScenario | undefined;
         if (scenario) {
           this.scenarioHistory = [scenario, ...this.scenarioHistory.filter((item) => item._id !== scenario._id)].slice(0, 8);
+          this.historyCacheHit = false;
         }
         this.actionTone = 'success';
         this.actionMessage = 'Scenario saved to your personal history.';
@@ -476,6 +522,7 @@ export class ScenarioSimulatorComponent implements OnInit {
     this.apiService.deleteScenarioSimulation(id).subscribe({
       next: () => {
         this.scenarioHistory = this.scenarioHistory.filter((scenario) => scenario._id !== id);
+        this.historyCacheHit = false;
         if (this.compareScenario?._id === id) this.compareScenario = null;
         this.deletingScenarioId = '';
         this.actionTone = 'success';
@@ -501,7 +548,8 @@ export class ScenarioSimulatorComponent implements OnInit {
       next: (response) => {
         this.isCreatingSprint = false;
         this.actionTone = 'success';
-        this.actionMessage = response?.message || 'Scenario tasks were added to your Career Sprint.';
+        const sprint = response?.sprint || {};
+        this.actionMessage = response?.message || `Scenario sprint updated: ${sprint.tasksCreated || 0} created, ${sprint.tasksMerged || 0} merged, ${sprint.tasksSkipped || 0} skipped.`;
         this.cdr.markForCheck();
       },
       error: (error) => {

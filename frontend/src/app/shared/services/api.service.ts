@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private readonly baseUrl = 'http://localhost:5000/api';
+  private scenarioContextCache: any | null = null;
+  private scenarioHistoryCache = new Map<number, any>();
 
   constructor(private readonly http: HttpClient) {}
 
@@ -37,20 +39,28 @@ export class ApiService {
 
   /* ── Career Profile ── */
   updateCareerProfile(careerStack: string, experienceLevel: string, careerGoal?: string): Observable<any> {
-    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal });
+    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/github/analyze`, { username });
+    return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   uploadResume(formData: FormData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/resume/upload`, formData);
+    return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
-    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh });
+    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   getResumeAnalysis(fileId?: string): Observable<any> {
@@ -67,7 +77,9 @@ export class ApiService {
   }
 
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
-    return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault });
+    return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   downloadResumeGuide(): Observable<Blob> {
@@ -84,7 +96,9 @@ export class ApiService {
   ): Observable<any> {
     return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, {
       username, careerStack, experienceLevel, resumeText, isTemporary
-    });
+    }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   getRecommendations(
@@ -109,7 +123,9 @@ export class ApiService {
       experienceLevel,
       knownSkills,
       missingSkills
-    });
+    }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   getPortfolioScore(
@@ -321,7 +337,9 @@ export class ApiService {
   }
 
   triggerIntegrationSync(provider?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {});
+    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {}).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   runWhatIfSimulation(payload: {
@@ -336,8 +354,14 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 
-  getScenarioSimulatorContext(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/simulator/context`);
+  getScenarioSimulatorContext(forceRefresh = false): Observable<any> {
+    if (!forceRefresh && this.scenarioContextCache) {
+      return of(this.scenarioContextCache);
+    }
+    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
+    return this.http.get(url).pipe(tap((response) => {
+      this.scenarioContextCache = response;
+    }));
   }
 
   saveScenarioSimulation(payload: {
@@ -350,15 +374,33 @@ export class ApiService {
     skills: string[];
     projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/save`, payload);
+    return this.http.post(`${this.baseUrl}/simulator/save`, payload).pipe(tap(() => {
+      this.invalidateScenarioHistoryCache();
+    }));
   }
 
-  getScenarioSimulationHistory(limit = 8): Observable<any> {
-    return this.http.get(`${this.baseUrl}/simulator/history?limit=${encodeURIComponent(String(limit))}`);
+  getScenarioSimulationHistory(limit = 8, forceRefresh = false): Observable<any> {
+    if (!forceRefresh && this.scenarioHistoryCache.has(limit)) {
+      return of(this.scenarioHistoryCache.get(limit));
+    }
+    const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
+    return this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(tap((response) => {
+      this.scenarioHistoryCache.set(limit, response);
+    }));
   }
 
   deleteScenarioSimulation(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`);
+    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(tap(() => {
+      this.invalidateScenarioHistoryCache();
+    }));
+  }
+
+  invalidateScenarioHistoryCache(): void {
+    this.scenarioHistoryCache.clear();
+  }
+
+  invalidateScenarioContextCache(): void {
+    this.scenarioContextCache = null;
   }
 
   createSprintFromScenario(payload: {
@@ -370,7 +412,9 @@ export class ApiService {
     skills: string[];
     projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload);
+    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   /* ── Public Profiles ── */
@@ -728,15 +772,21 @@ export class ApiService {
   }
 
   createCareerSprint(payload: { title?: string; weeklyGoal?: number; tasks?: Array<{ title: string; description?: string; points?: number }> }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints`, payload);
+    return this.http.post(`${this.baseUrl}/career-sprints`, payload).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   addCareerSprintTask(sprintId: string, payload: { title: string; description?: string; points?: number }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/tasks`, payload);
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/tasks`, payload).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   updateCareerSprintTask(sprintId: string, taskId: string, isCompleted: boolean): Observable<any> {
-    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted });
+    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   getCareerSprintHistory(limit = 6): Observable<any> {
@@ -756,15 +806,21 @@ export class ApiService {
   }
 
   saveCareerSprintAiPlan(sprintId: string, payload: Record<string, unknown>): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/ai-plans`, payload);
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/ai-plans`, payload).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   importCareerSprintScenarioPlan(sprintId: string, scenarioId?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/import-scenario`, scenarioId ? { scenarioId } : {});
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/import-scenario`, scenarioId ? { scenarioId } : {}).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<any> {
-    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/dates`, { sprintStartDate, sprintEndDate });
+    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/dates`, { sprintStartDate, sprintEndDate }).pipe(tap(() => {
+      this.invalidateScenarioContextCache();
+    }));
   }
 
   private withQuery(url: string, params: Record<string, string | undefined>): string {

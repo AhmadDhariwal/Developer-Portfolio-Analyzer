@@ -470,13 +470,18 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}) => {
 };
 
 const buildScenarioTasks = (scenario) => {
+  const sourceFields = {
+    sourceScenarioId: scenario?._id || null,
+    sourceScenarioHash: scenario?.scenarioHash || scenario?.result?.scenarioHash || ''
+  };
   const skillTasks = (scenario?.skills || []).slice(0, 4).map((skill, index) => ({
     title: `Learn ${skill}`,
     description: `Scenario Simulator suggests building momentum in ${skill} for your target role. Keep this task focused and measurable.`,
     points: index < 2 ? 5 : 4,
     priority: index === 0 ? 'high' : 'medium',
     category: 'learning',
-    taskType: 'ai'
+    taskType: 'ai',
+    ...sourceFields
   }));
 
   const projectTasks = (scenario?.projects || []).slice(0, 2).map((project) => ({
@@ -485,7 +490,8 @@ const buildScenarioTasks = (scenario) => {
     points: project.complexity === 'high' ? 6 : project.complexity === 'medium' ? 5 : 4,
     priority: project.impact >= 80 ? 'high' : 'medium',
     category: 'project',
-    taskType: 'ai'
+    taskType: 'ai',
+    ...sourceFields
   }));
 
   return dedupeTasks([...skillTasks, ...projectTasks]).slice(0, 6);

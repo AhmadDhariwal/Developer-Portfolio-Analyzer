@@ -87,6 +87,12 @@
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
+
+  &:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+    transform: none;
+  }
 }
 
 .ghost-inline-btn {
@@ -403,6 +409,12 @@
   &.accent {
     border-color: rgba(16, 185, 129, 0.24);
     background: rgba(6, 78, 59, 0.42);
+  }
+
+  &.market {
+    border-color: rgba(245, 158, 11, 0.24);
+    background: rgba(120, 53, 15, 0.34);
+    color: #fde68a;
   }
 }
 
@@ -1279,6 +1291,18 @@
   margin: 0;
 
   li {
+    color: rgba(226, 232, 240, 0.8);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+}
+
+.explain-stack {
+  display: grid;
+  gap: 10px;
+
+  p {
+    margin: 0;
     color: rgba(226, 232, 240, 0.8);
     font-size: 13px;
     line-height: 1.65;

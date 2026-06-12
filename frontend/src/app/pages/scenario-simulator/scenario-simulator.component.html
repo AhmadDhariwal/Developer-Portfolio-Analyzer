@@ -14,8 +14,8 @@
       <button class="ghost-btn" type="button" (click)="showInfoPanel = !showInfoPanel">
         {{ showInfoPanel ? 'Hide Assumptions Guide' : 'How the Simulator Works' }}
       </button>
-      <button class="ghost-btn" type="button" (click)="loadBootstrapData()">
-        Refresh Signals
+      <button class="ghost-btn" type="button" (click)="loadBootstrapData(true)" [disabled]="isLoadingContext || isLoadingHistory">
+        {{ isLoadingContext || isLoadingHistory ? 'Refreshing...' : 'Force Refresh' }}
       </button>
     </div>
   </header>
@@ -77,7 +77,7 @@
             <span class="section-kicker">Signals</span>
             <h2>Scenario Prefill Context</h2>
           </div>
-          <span class="loading-chip" *ngIf="isLoadingContext">Loading</span>
+          <span class="loading-chip">{{ contextCacheLabel }}</span>
         </div>
 
         <div class="context-summary" *ngIf="context as ctx; else contextSkeleton">
@@ -114,6 +114,15 @@
           <span class="signal-label">Top missing skills</span>
           <div class="signal-chips">
             <button type="button" class="signal-chip" *ngFor="let skill of context?.signals?.missingSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
+              {{ skill }}
+            </button>
+          </div>
+        </div>
+
+        <div class="signal-group" *ngIf="context?.signals?.topDemandedSkills?.length">
+          <span class="signal-label">Top demanded skills</span>
+          <div class="signal-chips">
+            <button type="button" class="signal-chip market" *ngFor="let skill of context?.signals?.topDemandedSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
               {{ skill }}
             </button>
           </div>
@@ -334,7 +343,7 @@
             <span class="section-kicker">History</span>
             <h2>Saved Scenarios</h2>
           </div>
-          <span class="loading-chip" *ngIf="isLoadingHistory">Loading</span>
+          <span class="loading-chip">{{ historyCacheLabel }}</span>
         </div>
 
         <div class="history-list" *ngIf="scenarioHistory.length; else historyEmpty">
@@ -354,6 +363,7 @@
               <span>{{ formatRole(scenario.role) }}</span>
               <span>{{ scenario.durationWeeks }}w</span>
               <span>{{ scenario.confidenceScore || scenario.result.confidenceScore }}% confidence</span>
+              <span *ngIf="scenario.scenarioHash">Hash {{ scenario.scenarioHash.slice(0, 8) }}</span>
             </div>
 
             <div class="history-actions">
@@ -448,6 +458,44 @@
               <strong>{{ result.meta.suggestedDurationWeeks }}w</strong>
             </div>
             <span class="metric-delta">Current plan: {{ result.meta.durationWeeks }}w</span>
+          </article>
+        </section>
+
+        <section class="result-split-grid">
+          <article class="card-block">
+            <div class="block-head">
+              <h3>Confidence Reason</h3>
+              <span class="block-tag">Scenario {{ result.scenarioHash.slice(0, 8) }}</span>
+            </div>
+
+            <div class="explain-stack">
+              <p>{{ result.explainability?.confidenceReason }}</p>
+              <p>{{ result.explainability?.effortVsDuration }}</p>
+            </div>
+          </article>
+
+          <article class="card-block tone-info" *ngIf="result.explainability?.scoreDrivers?.length">
+            <div class="block-head">
+              <h3>What Improved the Score</h3>
+              <span class="block-tag">Drivers</span>
+            </div>
+
+            <ul class="bullet-list">
+              <li *ngFor="let item of result.explainability?.scoreDrivers">{{ item }}</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="result-split-grid" *ngIf="result.explainability?.penalties?.length">
+          <article class="card-block tone-warning">
+            <div class="block-head">
+              <h3>What Caused Penalties</h3>
+              <span class="block-tag">Trade-offs</span>
+            </div>
+
+            <ul class="bullet-list">
+              <li *ngFor="let item of result.explainability?.penalties">{{ item }}</li>
+            </ul>
           </article>
         </section>
 

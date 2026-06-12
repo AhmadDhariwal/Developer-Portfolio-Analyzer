@@ -23,14 +23,14 @@ import { distinctUntilChanged } from 'rxjs/operators';
 
 type AdvisorSection =
   | 'Career Overview'
-  | 'Priority Actions'
-  | 'Recommended Projects'
-  | 'Skills to Improve'
-  | 'Learning Plan'
+  | 'Career Growth Priorities'
+  | 'Learning Roadmap'
   | 'Interview Readiness'
-  | 'Resume Improvements'
-  | 'Portfolio Improvements'
-  | 'Career Roadmap';
+  | 'Job Market Readiness'
+  | 'Resume Optimization'
+  | 'Portfolio Optimization'
+  | 'Recommended Projects'
+  | 'Career Timeline';
 type LoadingState = 'empty' | 'loading' | 'refreshing' | 'cache-hit' | 'error' | 'ready';
 const REQUIRED_CARD_CATEGORIES = [
   'Learning Recommendations',
@@ -64,14 +64,14 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   activeSection: AdvisorSection = 'Career Overview';
   readonly sections: AdvisorSection[] = [
     'Career Overview',
-    'Priority Actions',
-    'Recommended Projects',
-    'Skills to Improve',
-    'Learning Plan',
+    'Career Growth Priorities',
+    'Learning Roadmap',
     'Interview Readiness',
-    'Resume Improvements',
-    'Portfolio Improvements',
-    'Career Roadmap'
+    'Job Market Readiness',
+    'Resume Optimization',
+    'Portfolio Optimization',
+    'Recommended Projects',
+    'Career Timeline'
   ];
 
   constructor(
@@ -214,12 +214,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       {
         label: 'Top Priority Actions',
         value: this.priorityActions.slice(0, 2).map((card) => card.title).join(' | ') || 'Review priority actions',
-        target: 'Priority Actions'
+        target: 'Career Growth Priorities'
       },
       {
         label: 'Top Missing Skills',
         value: this.topMissingSkills.join(', ') || 'Open Skill Gap for latest gaps',
-        target: 'Learning Plan'
+        target: 'Learning Roadmap'
       },
       {
         label: 'Recommended Career Path',
@@ -295,14 +295,14 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const gap = Math.max(0, target - current);
     const immediate = this.priorityActions[0];
     return [
-      { label: 'Current Readiness', value: `${current}%`, hint: 'Composite score from resume, portfolio, jobs, learning, and interview signals.', target: 'Priority Actions' },
-      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Career Roadmap' },
-      { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Close this gap through the priority roadmap.' : 'You are at the current readiness target.', target: 'Priority Actions' },
-      { label: 'Priority Level', value: this.priorityLevel, hint: 'Based on readiness gap and highest-impact actions.', target: 'Priority Actions' },
-      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Career Roadmap' },
-      { label: 'Top Missing Skills', value: this.topMissingSkills.join(', ') || 'No critical gaps detected', hint: 'Deduplicated from skill gap, recommendation, and market signals.', target: 'Learning Plan' },
+      { label: 'Current Readiness', value: `${current}%`, hint: 'Composite score from resume, portfolio, jobs, learning, and interview signals.', target: 'Career Growth Priorities' },
+      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Career Timeline' },
+      { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Close this gap through the priority roadmap.' : 'You are at the current readiness target.', target: 'Career Growth Priorities' },
+      { label: 'Priority Level', value: this.priorityLevel, hint: 'Based on readiness gap and highest-impact actions.', target: 'Career Growth Priorities' },
+      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Career Timeline' },
+      { label: 'Top Missing Skills', value: this.topMissingSkills.join(', ') || 'No critical gaps detected', hint: 'Deduplicated from skill gap, recommendation, and market signals.', target: 'Learning Roadmap' },
       { label: 'Top Opportunities', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: 'Career paths with the strongest match and market alignment.', target: 'Career Overview' },
-      { label: 'Immediate Next Action', value: immediate?.title || 'Review priority actions', hint: immediate?.reason || 'Start with the highest-impact recommendation.', target: 'Priority Actions' },
+      { label: 'Immediate Next Action', value: immediate?.title || 'Review priority actions', hint: immediate?.reason || 'Start with the highest-impact recommendation.', target: 'Career Growth Priorities' },
       { label: 'Last Updated', value: this.analysisLastUpdatedLabel, hint: this.cacheStateLabel, target: 'Career Overview' }
     ];
   }
@@ -311,12 +311,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const gap = Math.max(0, this.targetReadiness - this.currentReadiness);
     const immediate = this.priorityActions[0];
     return [
-      { label: 'Readiness Score', value: `${this.currentReadiness}%`, hint: 'Current composite career readiness.', target: 'Priority Actions', featured: true },
-      { label: 'Target Score', value: `${this.targetReadiness}%`, hint: 'Near-term target band.', target: 'Career Roadmap', featured: true },
-      { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Points to close.' : 'At target band.', target: 'Priority Actions', featured: true },
-      { label: 'Top Focus Area', value: this.highestPrioritySkill, hint: 'Primary area to improve next.', target: 'Skills to Improve' },
-      { label: 'Estimated Time', value: this.estimatedCompletionTime, hint: 'Expected execution window.', target: 'Career Roadmap' },
-      { label: 'Next Best Action', value: immediate?.title || 'Review priority actions', hint: immediate?.estimatedEffort || 'Start with the top card.', target: 'Priority Actions' }
+      { label: 'Readiness Score', value: `${this.currentReadiness}%`, hint: 'Current composite career readiness.', target: 'Career Growth Priorities', featured: true },
+      { label: 'Target Score', value: `${this.targetReadiness}%`, hint: 'Near-term target band.', target: 'Career Timeline', featured: true },
+      { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Points to close.' : 'At target band.', target: 'Career Growth Priorities', featured: true },
+      { label: 'Priority Focus Area', value: this.highestPrioritySkill, hint: 'Primary area to improve next.', target: 'Job Market Readiness' },
+      { label: 'Timeline Estimate', value: this.estimatedCompletionTime, hint: 'Expected execution window.', target: 'Career Timeline' },
+      { label: 'Next Best Action', value: immediate?.title || 'Review priority actions', hint: immediate?.estimatedEffort || 'Start with the top card.', target: 'Career Growth Priorities' }
     ];
   }
 
@@ -357,11 +357,11 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get readinessCenterMetrics(): Array<{ label: string; score: number; hint: string; target: AdvisorSection }> {
     const scores = this.result?.recommendationScores;
     return [
-      { label: 'Resume', score: Number(this.result?.signalsUsed?.resume?.atsScore || scores?.readinessScore || 0), hint: this.resumeStatusLabel, target: 'Resume Improvements' },
-      { label: 'Portfolio', score: Number(this.result?.signalsUsed?.portfolio?.completenessScore || scores?.portfolioScore || 0), hint: `${this.result?.signalsUsed?.portfolio?.projectCount || 0} projects, ${this.result?.signalsUsed?.portfolio?.liveLinkCount || 0} live links`, target: 'Portfolio Improvements' },
+      { label: 'Resume', score: Number(this.result?.signalsUsed?.resume?.atsScore || scores?.readinessScore || 0), hint: this.resumeStatusLabel, target: 'Resume Optimization' },
+      { label: 'Portfolio', score: Number(this.result?.signalsUsed?.portfolio?.completenessScore || scores?.portfolioScore || 0), hint: `${this.result?.signalsUsed?.portfolio?.projectCount || 0} projects, ${this.result?.signalsUsed?.portfolio?.liveLinkCount || 0} live links`, target: 'Portfolio Optimization' },
       { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Interview Readiness' },
-      { label: 'Jobs', score: Number(scores?.marketReadinessScore || 0), hint: `${this.jobsReadinessMetrics[0]?.value || 0} matched jobs`, target: 'Skills to Improve' },
-      { label: 'Learning', score: Number(scores?.learningScore || this.result?.signalsUsed?.skillGap?.coverage || 0), hint: this.recommendedNextSkills.slice(0, 2).join(', ') || this.getSprintFocus(), target: 'Learning Plan' }
+      { label: 'Jobs', score: Number(scores?.marketReadinessScore || 0), hint: `${this.jobsReadinessMetrics[0]?.value || 0} matched jobs`, target: 'Job Market Readiness' },
+      { label: 'Learning', score: Number(scores?.learningScore || this.result?.signalsUsed?.skillGap?.coverage || 0), hint: this.recommendedNextSkills.slice(0, 2).join(', ') || this.getSprintFocus(), target: 'Learning Roadmap' }
     ];
   }
 
@@ -369,11 +369,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const sampled = this.result?.signalsUsed?.jobsDemand?.sampledJobs || this.result?.careerPaths?.length || 0;
     const strong = (this.result?.careerPaths || []).filter((path) => Number(path.match || 0) >= 75).length;
     return [
-      { label: 'Jobs matched', value: String(sampled), hint: 'Jobs Hub and career path signal volume.' },
-      { label: 'Strong matches', value: String(strong), hint: 'Paths at 75% match or better.' },
-      { label: 'Top markets', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: 'Best-aligned role families.' },
+      { label: 'Matched jobs', value: String(sampled), hint: 'Jobs Hub and career path signal volume.' },
       { label: 'Top demanded skills', value: this.topDemandedSkills.slice(0, 3).join(', ') || this.highestPrioritySkill, hint: 'Most useful skills to reinforce now.' },
-      { label: 'Estimated growth', value: this.estimatedGrowthLabel, hint: 'Projected lift after top roadmap actions.' }
+      { label: 'Strongest opportunities', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: `${strong} paths at 75% match or better.` },
+      { label: 'Growth potential', value: this.estimatedGrowthLabel, hint: 'Projected lift after top roadmap actions.' }
     ];
   }
 

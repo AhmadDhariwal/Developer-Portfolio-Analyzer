@@ -19,7 +19,10 @@ const runScenarioSimulation = async (req, res) => {
     if (!normalized.isValid) return validationResponse(res, normalized.errors);
 
     const context = await getScenarioContext(req.user._id);
-    const result = simulateHiringOutcome(normalized.value, {
+    const result = simulateHiringOutcome({
+      ...normalized.value,
+      inputWarnings: normalized.warnings || []
+    }, {
       resumeConnected: context.sources.some((source) => source.key === 'resume' && source.connected),
       githubConnected: context.sources.some((source) => source.key === 'github' && source.connected),
       sources: context.sources
@@ -37,7 +40,9 @@ const runScenarioSimulation = async (req, res) => {
 
 const getScenarioSimulatorContext = async (req, res) => {
   try {
-    const context = await getScenarioContext(req.user._id);
+    const context = await getScenarioContext(req.user._id, {
+      forceRefresh: String(req.query.forceRefresh || '').toLowerCase() === 'true'
+    });
     return res.json({ context });
   } catch (error) {
     console.error('Scenario simulator context error:', error.message);
@@ -62,8 +67,10 @@ const saveScenarioSimulation = async (req, res) => {
 const getScenarioSimulationHistory = async (req, res) => {
   try {
     const limit = Number(req.query.limit || 8);
-    const history = await getScenarioHistoryForUser(req.user._id, limit);
-    return res.json({ history });
+    const payload = await getScenarioHistoryForUser(req.user._id, limit, {
+      forceRefresh: String(req.query.forceRefresh || '').toLowerCase() === 'true'
+    });
+    return res.json(payload);
   } catch (error) {
     console.error('Scenario history error:', error.message);
     return res.status(500).json({ message: 'Failed to load scenario history.' });
@@ -88,8 +95,8 @@ const createSprintFromScenarioController = async (req, res) => {
     const sprint = await createSprintFromScenario(req.user._id, req.body || {});
     return res.json({
       message: sprint.tasksAdded
-        ? 'Scenario tasks were added to your Career Sprint.'
-        : 'This scenario is already reflected in your current Career Sprint.',
+        ? `Scenario sprint updated: ${sprint.tasksCreated} created, ${sprint.tasksMerged} merged, ${sprint.tasksSkipped} skipped.`
+        : `This scenario is already reflected in your current Career Sprint: 0 created, 0 merged, ${sprint.tasksSkipped || 0} skipped.`,
       sprint
     });
   } catch (error) {

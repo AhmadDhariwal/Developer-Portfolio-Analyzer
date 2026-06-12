@@ -15,6 +15,8 @@ const sprintTaskSchema = new mongoose.Schema({
   // Legacy aliases kept for backward compat
   dueDate:     { type: Date, default: null },
   deadline:    { type: Date, default: null },
+  sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
+  sourceScenarioHash: { type: String, default: '' }
 }, { _id: true });
 
 const aiPlanTaskSchema = new mongoose.Schema({
@@ -25,7 +27,9 @@ const aiPlanTaskSchema = new mongoose.Schema({
   category: { type: String, enum: ['learning', 'project', 'practice'], default: 'learning' },
   taskType: { type: String, enum: ['ai', 'manual'], default: 'ai' },
   startDate: { type: Date, default: null },
-  endDate: { type: Date, default: null }
+  endDate: { type: Date, default: null },
+  sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
+  sourceScenarioHash: { type: String, default: '' }
 }, { _id: false });
 
 const aiPlanSchema = new mongoose.Schema({

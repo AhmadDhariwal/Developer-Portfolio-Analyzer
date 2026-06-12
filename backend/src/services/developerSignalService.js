@@ -6,6 +6,8 @@ const Repository = require('../models/repository');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const WeeklyReport = require('../models/weeklyReport');
 const PublicProfile = require('../models/publicProfile');
+const Recommendation = require('../models/recommendation');
+const ScenarioSimulation = require('../models/scenarioSimulation');
 const User = require('../models/user');
 const JobCache = require('../models/jobCache');
 const { buildPublicProfilePayload } = require('./publicProfileService');
@@ -557,6 +559,70 @@ const summarizeJobsDemandSignal = async () => {
   };
 };
 
+const summarizeRecommendationSignal = async (userId) => {
+  const recommendations = userId
+    ? await Recommendation.find({ userId }).sort({ createdAt: -1 }).limit(12).lean()
+    : [];
+
+  const priorityRecommendations = recommendations
+    .map((recommendation) => ({
+      title: String(recommendation.title || '').trim(),
+      category: String(recommendation.category || '').trim(),
+      priority: String(recommendation.priority || '').trim(),
+      impact: String(recommendation.impact || '').trim(),
+      techStack: safeStrings(recommendation.techStack || [], 8),
+      createdAt: recommendation.createdAt || null
+    }))
+    .filter((recommendation) => recommendation.title);
+
+  return {
+    present: priorityRecommendations.length > 0,
+    priorityRecommendations,
+    skills: {
+      recommendedTechnologies: safeStrings(priorityRecommendations.flatMap((item) => item.techStack), 16),
+      missingSkills: safeStrings(
+        priorityRecommendations
+          .filter((item) => /skill|learn|gap/i.test(`${item.category} ${item.title}`))
+          .flatMap((item) => item.techStack.length ? item.techStack : [item.title]),
+        12
+      ),
+      weakSkills: []
+    },
+    updatedAt: priorityRecommendations[0]?.createdAt || null
+  };
+};
+
+const summarizeScenarioSimulatorSignal = async (userId) => {
+  const scenarios = userId
+    ? await ScenarioSimulation.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .select('name role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash createdAt')
+      .lean()
+    : [];
+
+  return {
+    present: scenarios.length > 0,
+    savedCount: scenarios.length,
+    latestScenarioHash: scenarios[0]?.scenarioHash || '',
+    latestCreatedAt: scenarios[0]?.createdAt || null,
+    savedScenarios: scenarios.map((scenario) => ({
+      id: String(scenario._id),
+      name: scenario.name,
+      role: scenario.role,
+      experienceLevel: scenario.experienceLevel,
+      durationWeeks: scenario.durationWeeks,
+      skills: safeStrings(scenario.skills || [], 8),
+      projectNames: safeStrings((scenario.projects || []).map((project) => project.name), 6),
+      predicted: scenario.predicted || {},
+      improvements: scenario.improvements || {},
+      confidenceScore: Number(scenario.confidenceScore || 0),
+      scenarioHash: scenario.scenarioHash || '',
+      createdAt: scenario.createdAt || null
+    }))
+  };
+};
+
 const toPlainLanguageDistribution = (languageDistribution = {}) => {
   const raw = languageDistribution instanceof Map
     ? Object.fromEntries(languageDistribution)
@@ -716,7 +782,7 @@ const summarizeSkillGapSignal = async (userId) => {
 
 const getDeveloperSignals = async (userId) => {
   if (!userId) {
-    const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+    const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
       summarizeGithubSignal(null),
       summarizeResumeSignal(null),
       summarizeSkillGapSignal(null),
@@ -725,7 +791,9 @@ const getDeveloperSignals = async (userId) => {
       summarizePortfolioSignal(null),
       summarizeIntegrationSignal(null),
       summarizeCareerProfileSignal(null),
-      summarizeJobsDemandSignal()
+      summarizeJobsDemandSignal(),
+      summarizeRecommendationSignal(null),
+      summarizeScenarioSimulatorSignal(null)
     ]);
     return {
       githubSignals,
@@ -741,11 +809,16 @@ const getDeveloperSignals = async (userId) => {
       careerSprintSignals: careerSprintSignal,
       weeklyReportSignals: weeklyReportSignal,
       integrationSignals: integrationSignal,
-      careerProfile: careerProfileSignal
+      careerProfile: careerProfileSignal,
+      jobsDemandSignals: jobsDemandSignal,
+      recommendationSignal,
+      recommendationSignals: recommendationSignal,
+      scenarioSimulatorSignal,
+      scenarioSimulatorSignals: scenarioSimulatorSignal
     };
   }
 
-  const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal] = await Promise.all([
+  const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
     summarizeGithubSignal(userId),
     summarizeResumeSignal(userId),
     summarizeSkillGapSignal(userId),
@@ -754,7 +827,9 @@ const getDeveloperSignals = async (userId) => {
     summarizePortfolioSignal(userId),
     summarizeIntegrationSignal(userId),
     summarizeCareerProfileSignal(userId),
-    summarizeJobsDemandSignal()
+    summarizeJobsDemandSignal(),
+    summarizeRecommendationSignal(userId),
+    summarizeScenarioSimulatorSignal(userId)
   ]);
 
   return {
@@ -771,7 +846,12 @@ const getDeveloperSignals = async (userId) => {
     careerSprintSignals: careerSprintSignal,
     weeklyReportSignals: weeklyReportSignal,
     integrationSignals: integrationSignal,
-    careerProfile: careerProfileSignal
+    careerProfile: careerProfileSignal,
+    jobsDemandSignals: jobsDemandSignal,
+    recommendationSignal,
+    recommendationSignals: recommendationSignal,
+    scenarioSimulatorSignal,
+    scenarioSimulatorSignals: scenarioSimulatorSignal
   };
 };
 
@@ -783,6 +863,7 @@ const buildSignalHash = (signals = {}) => {
     integrationSignal: signals.integrationSignal || {},
     careerProfileSignal: signals.careerProfileSignal || {},
     jobsDemandSignal: signals.jobsDemandSignal || {},
+    recommendationSignal: signals.recommendationSignal || signals.recommendationSignals || {},
     githubSignals: signals.githubSignals || {},
     resumeSignals: signals.resumeSignals || {},
     skillGapSignals: signals.skillGapSignals || {}
@@ -801,6 +882,8 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
   const integrationSignal = signals.integrationSignal || {};
   const careerProfileSignal = signals.careerProfileSignal || {};
   const jobsDemandSignal = signals.jobsDemandSignal || {};
+  const recommendationSignal = signals.recommendationSignal || signals.recommendationSignals || {};
+  const scenarioSimulatorSignal = signals.scenarioSimulatorSignal || signals.scenarioSimulatorSignals || {};
 
   return {
     github: {
@@ -863,6 +946,20 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
     jobsDemand: {
       sampledJobs: Number(jobsDemandSignal.sampledJobs || 0),
       topSkills: Array.isArray(jobsDemandSignal.topSkills) ? jobsDemandSignal.topSkills.slice(0, 10) : []
+    },
+    recommendations: {
+      present: Boolean(recommendationSignal.present),
+      priorityRecommendations: Array.isArray(recommendationSignal.priorityRecommendations)
+        ? recommendationSignal.priorityRecommendations.slice(0, 6)
+        : []
+    },
+    scenarioSimulator: {
+      present: Boolean(scenarioSimulatorSignal.present),
+      savedCount: Number(scenarioSimulatorSignal.savedCount || 0),
+      latestScenarioHash: String(scenarioSimulatorSignal.latestScenarioHash || '').trim(),
+      savedScenarios: Array.isArray(scenarioSimulatorSignal.savedScenarios)
+        ? scenarioSimulatorSignal.savedScenarios.slice(0, 6)
+        : []
     }
   };
 };

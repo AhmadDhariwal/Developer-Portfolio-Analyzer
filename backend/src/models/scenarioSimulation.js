@@ -74,6 +74,24 @@ const scenarioSimulationSchema = new mongoose.Schema(
       min: 0,
       max: 100
     },
+    scenarioHash: {
+      type: String,
+      default: '',
+      index: true
+    },
+    breakdown: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    uncertaintyRange: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    warnings: [{ type: String }],
+    sourceContextSummary: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
     result: {
       type: mongoose.Schema.Types.Mixed,
       default: {}

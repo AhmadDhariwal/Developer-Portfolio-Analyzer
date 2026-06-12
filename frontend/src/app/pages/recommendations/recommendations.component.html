@@ -74,25 +74,37 @@
       <div class="executive-hero">
         <div class="executive-hero__copy">
           <span class="eyebrow">Career Overview</span>
-          <h2>Recommendation strategy</h2>
+          <h2 title="{{ recommendedCareerPath }}">{{ recommendedCareerPath }}</h2>
           <p title="{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}">{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}</p>
           <div class="career-summary-row">
             <span>Goal: {{ careerGoalLabel }}</span>
-            <span>Path: {{ recommendedCareerPath }}</span>
+            <span>Timeline: {{ estimatedCompletionTime }}</span>
+            <span>Focus: {{ highestPrioritySkill }}</span>
             <span>Updated: {{ analysisLastUpdatedLabel }}</span>
           </div>
           <div class="hero-progress">
             <div>
-              <span>Readiness Score</span>
-              <strong>{{ currentReadiness }}% to {{ targetReadiness }}%</strong>
+              <span>Readiness Progress</span>
+              <strong>{{ currentReadiness }}% / {{ targetReadiness }}%</strong>
             </div>
             <div class="score-bar"><i [style.width]="barWidth(currentReadiness)"></i></div>
           </div>
         </div>
         <div class="executive-hero__score">
-          <span>Readiness Score</span>
-          <strong>{{ currentReadiness }}%</strong>
-          <small>{{ targetReadiness - currentReadiness > 0 ? (targetReadiness - currentReadiness) + ' point gap remaining' : 'Target score reached' }}</small>
+          <div class="readiness-orbit" [style.--score]="barWidth(currentReadiness)">
+            <strong>{{ currentReadiness }}%</strong>
+            <span>Ready</span>
+          </div>
+          <div class="hero-score-grid">
+            <div>
+              <span>Target</span>
+              <strong>{{ targetReadiness }}%</strong>
+            </div>
+            <div>
+              <span>Gap</span>
+              <strong>{{ targetReadiness - currentReadiness > 0 ? targetReadiness - currentReadiness : 0 }} pts</strong>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -125,7 +137,7 @@
 
       <div class="section-header">
         <div>
-          <h2>Priority Actions</h2>
+          <h2>Career Growth Priorities</h2>
           <p>High-leverage actions with impact, effort, and sprint-ready execution.</p>
         </div>
         <span class="section-count">{{ priorityActions.length }} actions</span>
@@ -138,10 +150,10 @@
 
       <div class="section-header">
         <div>
-          <h2>Career Roadmap</h2>
+          <h2>Career Timeline</h2>
           <p>Week-by-week milestones tied to progress indicators and Career Sprint handoff.</p>
         </div>
-        <button class="btn-secondary" (click)="jumpTo('Career Roadmap')">View Full Roadmap</button>
+        <button class="btn-secondary" (click)="jumpTo('Career Timeline')">View Full Roadmap</button>
       </div>
       <div class="roadmap-rail">
         <article class="roadmap-step" *ngFor="let week of roadmapWeeks">
@@ -178,7 +190,7 @@
         <section class="center-panel">
           <div class="section-header">
             <div>
-              <h2>Skills to Improve</h2>
+              <h2>Job Market Readiness</h2>
               <p>Market demand, role fit, skill demand, and expected growth in one view.</p>
             </div>
           </div>
@@ -212,10 +224,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Priority Actions')">
+    <section class="advisor-section" *ngIf="show('Career Growth Priorities')">
       <div class="section-header">
         <div>
-          <h2>Priority Actions</h2>
+          <h2>Career Growth Priorities</h2>
           <p>Highest-impact actions ranked by readiness gap, market demand, and profile proof.</p>
         </div>
         <span class="section-count">{{ priorityActions.length }}</span>
@@ -278,10 +290,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Resume Improvements')">
+    <section class="advisor-section" *ngIf="show('Resume Optimization')">
       <div class="section-header">
         <div>
-          <h2>Resume Improvements</h2>
+          <h2>Resume Optimization</h2>
           <p>ATS, recruiter visibility, and proof-alignment actions.</p>
         </div>
         <span class="section-count">{{ result.signalsUsed?.resume?.atsScore || 0 }}% resume</span>
@@ -303,16 +315,16 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Skills to Improve')">
+    <section class="advisor-section" *ngIf="show('Job Market Readiness')">
       <div class="section-header">
         <div>
-          <h2>Skills to Improve</h2>
+          <h2>Job Market Readiness</h2>
           <p>Market alignment from Jobs Hub demand, matched roles, and skill gaps.</p>
         </div>
         <span class="section-count">{{ result.recommendationScores?.marketReadinessScore || 0 }}% market</span>
       </div>
       <div class="section-metrics">
-        <div class="metric-tile" *ngFor="let metric of jobsReadinessMetrics">
+        <div class="metric-tile" *ngFor="let metric of opportunityCenterMetrics">
           <span>{{ metric.label }}</span>
           <strong>{{ metric.value }}</strong>
           <small>{{ metric.hint }}</small>
@@ -359,10 +371,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Learning Plan')">
+    <section class="advisor-section" *ngIf="show('Learning Roadmap')">
       <div class="section-header">
         <div>
-          <h2>Learning Plan</h2>
+          <h2>Learning Roadmap</h2>
           <p>Focused skill investments that avoid completed work and prioritize market demand.</p>
         </div>
         <span class="section-count">{{ result.recommendationScores?.learningScore || 0 }}% learning</span>
@@ -384,10 +396,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Portfolio Improvements')">
+    <section class="advisor-section" *ngIf="show('Portfolio Optimization')">
       <div class="section-header">
         <div>
-          <h2>Portfolio Improvements</h2>
+          <h2>Portfolio Optimization</h2>
           <p>Actions that turn your work into recruiter-visible proof.</p>
         </div>
         <span class="section-count">{{ result.signalsUsed?.portfolio?.completenessScore || result.recommendationScores?.portfolioScore || 0 }}% score</span>
@@ -409,10 +421,10 @@
       </div>
     </section>
 
-    <section class="advisor-section" *ngIf="show('Career Roadmap')">
+    <section class="advisor-section" *ngIf="show('Career Timeline')">
       <div class="section-header">
         <div>
-          <h2>Career Roadmap</h2>
+          <h2>Career Timeline</h2>
           <p>Six-week execution plan with milestones and concrete actions.</p>
         </div>
         <span class="section-count">{{ estimatedCompletionTime }}</span>
