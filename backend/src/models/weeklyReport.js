@@ -130,6 +130,23 @@ const weeklyReportSchema = new mongoose.Schema({
         status: { type: String, default: 'Unavailable' }
       }
     },
+    signalHash: {
+      type: String,
+      default: ''
+    },
+    reportHash: {
+      type: String,
+      default: ''
+    },
+    narrativeSource: {
+      type: String,
+      enum: ['ai-enhanced', 'deterministic', 'cached'],
+      default: 'deterministic'
+    },
+    scoreBreakdown: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
     snapshot: {
       type: mongoose.Schema.Types.Mixed,
       default: {}

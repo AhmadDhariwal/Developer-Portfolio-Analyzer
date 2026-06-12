@@ -7,6 +7,10 @@
     </div>
 
     <div class="header-actions">
+      <div class="cache-indicator" *ngIf="loadedAt">
+        <strong>{{ loadSourceLabel }}</strong>
+        <span>{{ formatDate(loadedAt.toISOString()) }}</span>
+      </div>
       <button class="generate-btn" type="button" (click)="generateReport()" [disabled]="isGenerating">
         {{ isGenerating ? 'Refreshing report...' : 'Generate Weekly Report' }}
       </button>
@@ -54,6 +58,14 @@
             <strong>Updated</strong>
             {{ formatDate(report.updatedAt || report.weekEndDate) }}
           </span>
+          <span>
+            <strong>Narrative</strong>
+            {{ narrativeSourceLabel }}
+          </span>
+          <span *ngIf="report.meta.signalHash">
+            <strong>Signal</strong>
+            {{ report.meta.signalHash.slice(0, 10) }}
+          </span>
         </div>
       </article>
 
@@ -88,6 +100,29 @@
         <strong>{{ report.meta.interview.questionsGenerated }}</strong>
         <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{ formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs') }}</small>
       </article>
+    </section>
+
+    <section class="breakdown-card" *ngIf="scoreBreakdown.length">
+      <div class="panel-head">
+        <div>
+          <h3>Score Breakdown</h3>
+          <span class="panel-subtitle">Deterministic weighted inputs used before AI polish</span>
+        </div>
+        <small>{{ report.score }}% total</small>
+      </div>
+
+      <div class="breakdown-grid">
+        <article class="breakdown-row" *ngFor="let item of scoreBreakdown">
+          <div>
+            <strong>{{ item.label }}</strong>
+            <span>{{ item.weight }}% weight</span>
+          </div>
+          <div class="breakdown-meter">
+            <span [style.width.%]="item.score"></span>
+          </div>
+          <small>{{ item.score }}% - {{ item.contribution }} pts</small>
+        </article>
+      </div>
     </section>
 
     <section class="analytics-grid">
@@ -204,6 +239,7 @@
             <strong>{{ source.label }}</strong>
             <span>{{ source.status.status }}</span>
           </div>
+          <small>{{ sourceFreshness(source.status) }}</small>
           <small>{{ formatDate(source.status.lastAnalyzedAt) }}</small>
         </article>
       </div>

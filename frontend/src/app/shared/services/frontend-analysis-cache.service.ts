@@ -15,6 +15,8 @@ export interface FrontendAnalysisCacheKey {
   experienceLevel?: string;
   signalHash?: string;
   version?: string;
+  weekStartDate?: string;
+  limit?: number | string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,7 +37,13 @@ export class FrontendAnalysisCacheService {
         localStorage.removeItem(indexKey);
         return null;
       }
-      return { ...parsed.value, fromFrontendCache: true, cacheState: 'cache-hit' } as T;
+      return {
+        ...parsed.value,
+        fromFrontendCache: true,
+        cacheState: 'cache-hit',
+        cachedAt: parsed.cachedAt || null,
+        cacheExpiresAt: parsed.expiresAt || null
+      } as T;
     } catch {
       localStorage.removeItem(exactKey);
       localStorage.removeItem(indexKey);
@@ -67,7 +75,10 @@ export class FrontendAnalysisCacheService {
       userId,
       this.clean(key.githubUsername || 'no-github'),
       this.clean(key.careerStack || 'Full Stack'),
-      this.clean(key.experienceLevel || 'Student')
+      this.clean(key.experienceLevel || 'Student'),
+      this.clean(key.weekStartDate || 'no-week'),
+      this.clean(String(key.limit || 'no-limit')),
+      this.clean(key.version || 'unknown')
     ].join(':');
   }
 
@@ -82,6 +93,8 @@ export class FrontendAnalysisCacheService {
       this.clean(key.careerStack || 'Full Stack'),
       this.clean(key.experienceLevel || 'Student'),
       this.clean(key.signalHash || 'no-signals'),
+      this.clean(key.weekStartDate || 'no-week'),
+      this.clean(String(key.limit || 'no-limit')),
       this.clean(key.version || 'unknown')
     ].join(':');
   }
