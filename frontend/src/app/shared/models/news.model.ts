@@ -30,6 +30,11 @@ export interface NewsItem {
   relevanceScore: number;
   rankScore: number;
   tags: string[];
+  relevanceReasons?: string[];
+  relatedSkills?: string[];
+  relatedSkillGaps?: string[];
+  relatedCareerGoals?: string[];
+  demandTags?: string[];
 }
 
 export interface NewsFilters {
@@ -43,8 +48,13 @@ export interface NewsFilters {
 
 export interface PersonalizedNewsContext {
   careerStack: string;
+  experienceLevel?: string;
+  targetRole?: string;
+  signalHash?: string;
   detectedSkills: string[];
   skillGaps: string[];
+  jobDemandSkills?: string[];
+  recommendationTechnologies?: string[];
   activeFilters: {
     tab: NewsTab;
     category: NewsCategory;
@@ -63,7 +73,19 @@ export interface NewsTelemetry {
   cacheHit: boolean;
   providerFailureCount: number;
   providerUsed: string[];
+  providerDiagnostics?: NewsProviderDiagnostic[];
+  signalHash?: string;
   responseTimeMs: number;
+}
+
+export interface NewsProviderDiagnostic {
+  provider: string;
+  enabled: boolean;
+  configured: boolean;
+  reachable: boolean;
+  articlesFetched: number;
+  lastSuccess: string | null;
+  lastFailure: string | null;
 }
 
 export interface NewsResponse {

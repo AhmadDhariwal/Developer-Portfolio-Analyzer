@@ -20,6 +20,13 @@
       <span class="score-fill" [style.width.%]="scoreWidth"></span>
     </div>
 
+    <div class="relevance-block" *ngIf="relevanceReasons.length || signalPills.length">
+      <p *ngIf="relevanceReasons.length">{{ relevanceReasons[0] }}</p>
+      <div class="signal-tags" *ngIf="signalPills.length">
+        <span *ngFor="let signal of signalPills">{{ signal }}</span>
+      </div>
+    </div>
+
     <div class="tags" *ngIf="news.tags.length">
       <span *ngFor="let tag of news.tags">{{ tag }}</span>
     </div>

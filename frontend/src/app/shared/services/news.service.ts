@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { finalize, map, Observable, shareReplay } from 'rxjs';
 import {
   NewsFilters,
   NewsItem,
@@ -13,10 +13,11 @@ import {
 @Injectable({ providedIn: 'root' })
 export class NewsService {
   private readonly baseUrl = 'http://localhost:5000/api/news';
+  private readonly pendingRequests = new Map<string, Observable<unknown>>();
 
   constructor(private readonly http: HttpClient) {}
 
-  getNews(filters: NewsFilters, page = 1, limit = 12): Observable<NewsResponse> {
+  getNews(filters: NewsFilters, page = 1, limit = 12, options: { refresh?: boolean } = {}): Observable<NewsResponse> {
     const normalizedFilters = normalizeNewsFilters(filters);
     let params = new HttpParams()
       .set('tab', normalizedFilters.tab)
@@ -28,8 +29,13 @@ export class NewsService {
     if (normalizedFilters.category !== 'All') params = params.set('category', normalizedFilters.category);
     if (normalizedFilters.source !== 'All') params = params.set('source', normalizedFilters.source);
     if (normalizedFilters.search) params = params.set('search', normalizedFilters.search);
+    if (options.refresh) params = params.set('refresh', 'true');
 
-    return this.http.get<NewsResponse>(this.baseUrl, { params }).pipe(
+    const key = `feed:${params.toString()}`;
+    const existing = this.pendingRequests.get(key) as Observable<NewsResponse> | undefined;
+    if (existing) return existing;
+
+    const request$ = this.http.get<NewsResponse>(this.baseUrl, { params }).pipe(
       map((response) => ({
         items: this.normalizeItems(response?.items, page),
         total: Number(response?.total || 0),
@@ -45,25 +51,32 @@ export class NewsService {
           cacheHit: false,
           providerFailureCount: 0,
           providerUsed: [],
+          providerDiagnostics: [],
+          signalHash: '',
           responseTimeMs: 0
         }
-      }))
+      })),
+      finalize(() => this.pendingRequests.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+    this.pendingRequests.set(key, request$);
+    return request$;
   }
 
   getSavedNews(): Observable<SavedNewsItem[]> {
-    return this.http.get<{ items?: SavedNewsItem[] }>(`${this.baseUrl}/saved`).pipe(
+    return this.dedupe(`saved:all`, this.http.get<{ items?: SavedNewsItem[] }>(`${this.baseUrl}/saved`).pipe(
       map((response) => this.normalizeSavedItems(response?.items))
-    );
+    ));
   }
 
   getSavedNewsByType(type: NewsSavedType): Observable<SavedNewsItem[]> {
-    return this.http.get<{ items?: SavedNewsItem[] }>(`${this.baseUrl}/saved?type=${encodeURIComponent(type)}`).pipe(
+    return this.dedupe(`saved:${type}`, this.http.get<{ items?: SavedNewsItem[] }>(`${this.baseUrl}/saved?type=${encodeURIComponent(type)}`).pipe(
       map((response) => this.normalizeSavedItems(response?.items))
-    );
+    ));
   }
 
   saveNews(article: NewsItem, type: NewsSavedType): Observable<SavedNewsItem> {
+    this.clearSavedPending();
     return this.http
       .post<{ item?: SavedNewsItem }>(`${this.baseUrl}/save`, {
         articleId: article.id,
@@ -79,12 +92,14 @@ export class NewsService {
   }
 
   removeSavedNews(savedId: string): Observable<{ id: string }> {
+    this.clearSavedPending();
     return this.http.delete<{ id?: string }>(`${this.baseUrl}/save/${savedId}`).pipe(
       map((response) => ({ id: String(response?.id || savedId) }))
     );
   }
 
   markSavedNewsAsRead(savedId: string): Observable<SavedNewsItem> {
+    this.clearSavedPending();
     return this.http.patch<{ item?: SavedNewsItem }>(`${this.baseUrl}/save/${savedId}/read`, {}).pipe(
       map((response) => this.normalizeSavedItem(response?.item, '', 'read_later'))
     );
@@ -107,7 +122,12 @@ export class NewsService {
         popularity: Number(item.popularity || 0),
         relevanceScore: Number(item.relevanceScore || 0),
         rankScore: Number(item.rankScore || item.relevanceScore || 0),
-        tags: Array.isArray(item.tags) ? item.tags.filter(Boolean).slice(0, 4) : []
+        tags: Array.isArray(item.tags) ? item.tags.filter(Boolean).slice(0, 4) : [],
+        relevanceReasons: Array.isArray(item.relevanceReasons) ? item.relevanceReasons.filter(Boolean).slice(0, 3) : [],
+        relatedSkills: Array.isArray(item.relatedSkills) ? item.relatedSkills.filter(Boolean).slice(0, 5) : [],
+        relatedSkillGaps: Array.isArray(item.relatedSkillGaps) ? item.relatedSkillGaps.filter(Boolean).slice(0, 4) : [],
+        relatedCareerGoals: Array.isArray(item.relatedCareerGoals) ? item.relatedCareerGoals.filter(Boolean).slice(0, 3) : [],
+        demandTags: Array.isArray(item.demandTags) ? item.demandTags.filter(Boolean).slice(0, 4) : []
       }));
   }
 
@@ -130,5 +150,22 @@ export class NewsService {
       createdAt: item?.createdAt || null,
       readAt: item?.readAt || null
     };
+  }
+
+  private dedupe<T>(key: string, source$: Observable<T>): Observable<T> {
+    const existing = this.pendingRequests.get(key) as Observable<T> | undefined;
+    if (existing) return existing;
+    const request$ = source$.pipe(
+      finalize(() => this.pendingRequests.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.pendingRequests.set(key, request$);
+    return request$;
+  }
+
+  private clearSavedPending(): void {
+    Array.from(this.pendingRequests.keys())
+      .filter((key) => key.startsWith('saved:'))
+      .forEach((key) => this.pendingRequests.delete(key));
   }
 }

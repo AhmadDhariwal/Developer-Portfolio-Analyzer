@@ -135,6 +135,41 @@
   background: linear-gradient(90deg, #38bdf8, #8b5cf6, #22c55e);
 }
 
+.relevance-block {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.72rem;
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 0.85rem;
+  background: rgba(8, 47, 73, 0.3);
+
+  p {
+    margin: 0;
+    color: #dbeafe;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+}
+
+.signal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+
+  span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.28rem 0.52rem;
+    border-radius: 999px;
+    background: rgba(14, 165, 233, 0.16);
+    color: #bae6fd;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

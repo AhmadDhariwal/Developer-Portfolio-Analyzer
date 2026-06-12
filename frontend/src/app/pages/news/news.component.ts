@@ -7,8 +7,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
 import { NewsService } from '../../shared/services/news.service';
 import { NewsCardComponent } from '../../shared/components/news-card/news-card';
 import { NewsFiltersComponent } from '../../shared/components/news-filters/news-filters';
@@ -18,6 +19,7 @@ import {
   NewsFilters,
   NewsHubView,
   NewsItem,
+  NewsProviderDiagnostic,
   NewsSavedType,
   NewsTelemetry,
   PersonalizedNewsContext,
@@ -26,12 +28,17 @@ import {
 } from '../../shared/models/news.model';
 
 const PAGE_SIZE = 12;
+const FEED_CACHE_TTL_MS = 20 * 60 * 1000;
+const SAVED_CACHE_TTL_MS = 5 * 60 * 1000;
+const SIGNAL_HASH_KEY = 'devinsight_news_signal_hash';
 const BOOKMARK_KEY = 'devinsight_news_bookmarks';
 const READ_LATER_KEY = 'devinsight_news_read_later';
 const DEFAULT_TELEMETRY: NewsTelemetry = {
   cacheHit: false,
   providerFailureCount: 0,
   providerUsed: [],
+  providerDiagnostics: [],
+  signalHash: '',
   responseTimeMs: 0
 };
 
@@ -91,11 +98,13 @@ export class NewsComponent implements OnInit, OnDestroy {
   private pendingSignature = '';
   private lastCompletedSignature = '';
   private profileSignature = '';
+  private currentSignalHash = '';
   private toastTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private readonly newsService: NewsService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -106,10 +115,12 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
         .pipe(
+          debounceTime(180),
           map((profile) =>
             JSON.stringify({
               careerStack: profile?.careerStack || '',
-              experienceLevel: profile?.experienceLevel || ''
+              experienceLevel: profile?.experienceLevel || '',
+              careerGoal: profile?.careerGoal || ''
             })
           ),
           distinctUntilChanged()
@@ -119,7 +130,7 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.profileSignature = signature;
           if (this.isFeedView) {
             this.page = 1;
-            this.fetch(false, true);
+            this.fetch(false);
           }
         })
     );
@@ -160,6 +171,10 @@ export class NewsComponent implements OnInit, OnDestroy {
       .filter(([, count]) => Number(count) > 0)
       .sort((left, right) => right[1] - left[1])
       .map(([label, count]) => ({ label, count: Number(count) }));
+  }
+
+  get sourceDiagnostics(): NewsProviderDiagnostic[] {
+    return Array.isArray(this.telemetry.providerDiagnostics) ? this.telemetry.providerDiagnostics : [];
   }
 
   get activeFilterChips(): ActiveNewsFilterChip[] {
@@ -217,7 +232,7 @@ export class NewsComponent implements OnInit, OnDestroy {
 
     this.filters = normalizeNewsFilters({ ...this.filters, tab: view });
     this.page = 1;
-    this.fetch(false, true);
+    this.fetch(false);
   }
 
   onFiltersChange(nextFilters: NewsFilters): void {
@@ -410,6 +425,10 @@ export class NewsComponent implements OnInit, OnDestroy {
     return item.label;
   }
 
+  trackByProvider(_: number, item: NewsProviderDiagnostic): string {
+    return item.provider;
+  }
+
   trackByValue(_: number, value: string | number): string | number {
     return value;
   }
@@ -429,6 +448,14 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (!force && this.pendingSignature === requestSignature) return;
     if (!force && !append && this.lastCompletedSignature === requestSignature && !this.errorMessage) return;
 
+    if (!force) {
+      const cached = this.readFeedCache(normalizedFilters, this.page);
+      if (cached) {
+        this.applyFeedResponse(cached, append, requestSignature);
+        return;
+      }
+    }
+
     this.activeRequest?.unsubscribe();
     this.pendingSignature = requestSignature;
     const requestId = ++this.requestNonce;
@@ -441,26 +468,11 @@ export class NewsComponent implements OnInit, OnDestroy {
     }
     this.cdr.markForCheck();
 
-    this.activeRequest = this.newsService.getNews(normalizedFilters, this.page, PAGE_SIZE).subscribe({
+    this.activeRequest = this.newsService.getNews(normalizedFilters, this.page, PAGE_SIZE, { refresh: force }).subscribe({
       next: (response) => {
         if (requestId !== this.requestNonce) return;
-
-        const incomingItems = Array.isArray(response.items) ? response.items : [];
-        this.items = append ? this.mergeUniqueItems(this.items, incomingItems) : incomingItems;
-        this.total = Number(response.total || this.items.length);
-        this.totalPages = Math.max(1, Number(response.totalPages || 1));
-        this.trendingTopics = Array.isArray(response.trendingTopics) ? response.trendingTopics : [];
-        this.sourceSummary = response.sourceSummary || {};
-        this.recommendedBasedOn = response.recommendedBasedOn || null;
-        this.telemetry = response.telemetry || { ...DEFAULT_TELEMETRY };
-        this.sourceBannerMessage = this.buildSourceBanner();
-        this.lastUpdatedLabel = this.formatLastUpdated(this.recommendedBasedOn?.lastUpdated);
-        this.errorMessage = '';
-        this.isLoading = false;
-        this.isLoadingMore = false;
-        this.pendingSignature = '';
-        this.lastCompletedSignature = requestSignature;
-        this.cdr.markForCheck();
+        this.applyFeedResponse(response, append, requestSignature);
+        this.writeFeedCache(normalizedFilters, this.page, response);
       },
       error: (error) => {
         if (requestId !== this.requestNonce) return;
@@ -474,11 +486,54 @@ export class NewsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private applyFeedResponse(response: any, append: boolean, requestSignature: string): void {
+    const incomingItems = Array.isArray(response.items) ? response.items : [];
+    this.items = append ? this.mergeUniqueItems(this.items, incomingItems) : incomingItems;
+    this.total = Number(response.total || this.items.length);
+    this.totalPages = Math.max(1, Number(response.totalPages || 1));
+    this.trendingTopics = Array.isArray(response.trendingTopics) ? response.trendingTopics : [];
+    this.sourceSummary = response.sourceSummary || {};
+    this.recommendedBasedOn = response.recommendedBasedOn || null;
+    this.telemetry = {
+      ...(response.telemetry || { ...DEFAULT_TELEMETRY }),
+      cacheHit: Boolean(response?.fromFrontendCache || response?.telemetry?.cacheHit)
+    };
+    this.rememberSignalHash(this.recommendedBasedOn?.signalHash || this.telemetry.signalHash || '');
+    this.sourceBannerMessage = this.buildSourceBanner();
+    this.lastUpdatedLabel = this.formatLastUpdated(this.recommendedBasedOn?.lastUpdated);
+    this.errorMessage = '';
+    this.isLoading = false;
+    this.isLoadingMore = false;
+    this.pendingSignature = '';
+    this.lastCompletedSignature = requestSignature;
+    this.cdr.markForCheck();
+  }
+
+  private readFeedCache(filters: NewsFilters, page: number): any | null {
+    return this.frontendCache.get<any>(this.buildFeedCacheKey(filters, page));
+  }
+
+  private writeFeedCache(filters: NewsFilters, page: number, response: any): void {
+    this.frontendCache.set(this.buildFeedCacheKey(filters, page), response);
+  }
+
   private loadSavedItems(): void {
+    const cached = this.readSavedCache('all');
+    if (cached) {
+      this.replaceSavedMaps(cached);
+      if (!this.isFeedView && this.selectedSavedType) {
+        this.refreshSavedViewCollection(this.selectedSavedType);
+      }
+      return;
+    }
+
     this.subscriptions.add(
       this.newsService.getSavedNews().subscribe({
         next: (items) => {
           this.replaceSavedMaps(items);
+          this.writeSavedCache('all', items);
+          this.writeSavedCache('bookmark', Array.from(this.savedItemsByType.bookmark.values()));
+          this.writeSavedCache('read_later', Array.from(this.savedItemsByType.read_later.values()));
           if (!this.isFeedView && this.selectedSavedType) {
             this.refreshSavedViewCollection(this.selectedSavedType);
           }
@@ -497,6 +552,16 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   private loadSavedView(type: NewsSavedType, force = false): void {
+    const cached = !force ? this.readSavedCache(type) : null;
+    if (cached) {
+      this.savedItemsByType[type].clear();
+      cached.forEach((item) => this.savedItemsByType[type].set(item.articleId, item));
+      this.savedViewLoaded[type] = true;
+      this.syncSavedSetsFromMaps();
+      this.refreshSavedViewCollection(type);
+      return;
+    }
+
     if (!force && this.savedViewLoaded[type]) {
       this.refreshSavedViewCollection(type);
       return;
@@ -511,6 +576,11 @@ export class NewsComponent implements OnInit, OnDestroy {
         next: (items) => {
           this.savedItemsByType[type].clear();
           items.forEach((item) => this.savedItemsByType[type].set(item.articleId, item));
+          this.writeSavedCache(type, items);
+          this.writeSavedCache('all', [
+            ...Array.from(this.savedItemsByType.bookmark.values()),
+            ...Array.from(this.savedItemsByType.read_later.values())
+          ]);
           this.savedViewLoaded[type] = true;
           this.syncSavedSetsFromMaps();
           this.refreshSavedViewCollection(type);
@@ -618,6 +688,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.readLater = new Set(Array.from(this.savedItemsByType.read_later.keys()));
     this.persistClientState(BOOKMARK_KEY, this.bookmarks);
     this.persistClientState(READ_LATER_KEY, this.readLater);
+    this.writeAllSavedCaches();
   }
 
   private patchSavedItemLocal(item: SavedNewsItem): void {
@@ -625,6 +696,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (this.selectedSavedType === item.type) {
       this.savedItemsView = this.savedItemsView.map((entry) => (entry.articleId === item.articleId ? item : entry));
     }
+    this.writeAllSavedCaches();
   }
 
   private findSavedItem(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
@@ -681,6 +753,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.savedItemsView = [...snapshot.savedItemsView];
     this.persistClientState(BOOKMARK_KEY, this.bookmarks);
     this.persistClientState(READ_LATER_KEY, this.readLater);
+    this.writeAllSavedCaches();
   }
 
   private syncSavedMapFromLocalFallback(): void {
@@ -778,7 +851,71 @@ export class NewsComponent implements OnInit, OnDestroy {
     return JSON.stringify(normalizeNewsFilters(filters));
   }
 
+  private buildFeedCacheKey(filters: NewsFilters, page: number): FrontendAnalysisCacheKey {
+    const profile = this.careerProfileService.snapshot;
+    const normalized = normalizeNewsFilters(filters);
+    const filterHash = this.stableHash(JSON.stringify({ ...normalized, page, limit: PAGE_SIZE }));
+    const profileHash = this.stableHash(this.profileSignature || JSON.stringify(profile));
+    const signalHash = this.stableHash(`${this.currentSignalHash || 'no-server-signal'}:${profileHash}`);
+    return {
+      module: 'news-feed',
+      careerStack: profile.careerStack,
+      experienceLevel: profile.experienceLevel,
+      signalHash,
+      limit: PAGE_SIZE,
+      version: `${normalized.tab}:${page}:${filterHash}:${signalHash}`,
+      ttlMs: FEED_CACHE_TTL_MS
+    };
+  }
+
+  private buildSavedCacheKey(type: NewsSavedType | 'all'): FrontendAnalysisCacheKey {
+    const profile = this.careerProfileService.snapshot;
+    return {
+      module: 'news-saved',
+      careerStack: profile.careerStack,
+      experienceLevel: profile.experienceLevel,
+      signalHash: this.currentSignalHash || 'saved',
+      version: `${type}:${this.currentSignalHash || 'saved'}`,
+      ttlMs: SAVED_CACHE_TTL_MS
+    };
+  }
+
+  private readSavedCache(type: NewsSavedType | 'all'): SavedNewsItem[] | null {
+    const cached = this.frontendCache.get<{ items?: SavedNewsItem[] }>(this.buildSavedCacheKey(type));
+    if (Array.isArray(cached?.items)) return cached.items;
+    return null;
+  }
+
+  private writeSavedCache(type: NewsSavedType | 'all', items: SavedNewsItem[]): void {
+    this.frontendCache.set(this.buildSavedCacheKey(type), { items });
+  }
+
+  private writeAllSavedCaches(): void {
+    const bookmarks = Array.from(this.savedItemsByType.bookmark.values());
+    const readLater = Array.from(this.savedItemsByType.read_later.values());
+    this.writeSavedCache('bookmark', bookmarks);
+    this.writeSavedCache('read_later', readLater);
+    this.writeSavedCache('all', [...bookmarks, ...readLater]);
+  }
+
+  private rememberSignalHash(value: string): void {
+    const normalized = String(value || '').trim();
+    if (!normalized || normalized === this.currentSignalHash) return;
+    this.currentSignalHash = normalized;
+    localStorage.setItem(SIGNAL_HASH_KEY, normalized);
+  }
+
+  private stableHash(value: string): string {
+    let hash = 2166136261;
+    for (let index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return Math.abs(hash >>> 0).toString(36);
+  }
+
   private restoreClientState(): void {
+    this.currentSignalHash = localStorage.getItem(SIGNAL_HASH_KEY) || '';
     this.bookmarks = this.readSet(BOOKMARK_KEY);
     this.readLater = this.readSet(READ_LATER_KEY);
   }

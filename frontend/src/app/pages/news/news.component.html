@@ -64,6 +64,10 @@
             {{ recommendedBasedOn?.careerStack || 'Developer' }}
           </span>
           <span>
+            <strong>Goal</strong>
+            {{ recommendedBasedOn?.targetRole || 'Career growth' }}
+          </span>
+          <span>
             <strong>Active tab</strong>
             {{ selectedViewLabel }}
           </span>
@@ -87,6 +91,22 @@
             <div class="chip-row">
               <span *ngFor="let skill of recommendedBasedOn?.skillGaps || []; trackBy: trackByValue">{{ skill }}</span>
               <span *ngIf="!(recommendedBasedOn?.skillGaps?.length)">No urgent gaps detected</span>
+            </div>
+          </div>
+
+          <div class="signal-group">
+            <h3>Market demand</h3>
+            <div class="chip-row">
+              <span *ngFor="let skill of recommendedBasedOn?.jobDemandSkills || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngIf="!(recommendedBasedOn?.jobDemandSkills?.length)">Using general demand signals</span>
+            </div>
+          </div>
+
+          <div class="signal-group">
+            <h3>Recommendations</h3>
+            <div class="chip-row">
+              <span *ngFor="let skill of recommendedBasedOn?.recommendationTechnologies || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngIf="!(recommendedBasedOn?.recommendationTechnologies?.length)">No active recommendation tags</span>
             </div>
           </div>
         </div>
@@ -116,6 +136,18 @@
             <strong>{{ telemetry.responseTimeMs }}</strong>
             ms response
           </span>
+        </div>
+
+        <div class="provider-health" *ngIf="sourceDiagnostics.length">
+          <div
+            class="provider-health__item"
+            *ngFor="let source of sourceDiagnostics; trackBy: trackByProvider"
+            [class.provider-health__item--warning]="!source.reachable || !source.enabled || !source.configured"
+          >
+            <strong>{{ source.provider }}</strong>
+            <span>{{ source.enabled ? source.configured ? source.reachable ? 'Reachable' : 'Unavailable' : 'Missing key' : 'Disabled' }}</span>
+            <small>{{ source.articlesFetched }} articles</small>
+          </div>
         </div>
       </article>
     </section>

@@ -13,7 +13,12 @@ const normalizedNewsSchema = new mongoose.Schema(
     popularity: { type: Number, default: 0 },
     relevanceScore: { type: Number, default: 0 },
     rankScore: { type: Number, default: 0 },
-    tags: [{ type: String }]
+    tags: [{ type: String }],
+    relevanceReasons: [{ type: String }],
+    relatedSkills: [{ type: String }],
+    relatedSkillGaps: [{ type: String }],
+    relatedCareerGoals: [{ type: String }],
+    demandTags: [{ type: String }]
   },
   { _id: false }
 );
@@ -28,6 +33,7 @@ const newsCacheSchema = new mongoose.Schema(
     trendingTopics: [{ type: String }],
     recommendedBasedOn: { type: Object, default: {} },
     providerUsed: [{ type: String }],
+    providerDiagnostics: [{ type: Object }],
     providerFailureCount: { type: Number, default: 0 },
     responseTimeMs: { type: Number, default: 0 },
     lastUpdated: { type: Date, default: Date.now },

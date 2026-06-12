@@ -17,6 +17,7 @@ export interface FrontendAnalysisCacheKey {
   version?: string;
   weekStartDate?: string;
   limit?: number | string;
+  ttlMs?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -57,7 +58,7 @@ export class FrontendAnalysisCacheService {
     localStorage.setItem(indexKey, exactKey);
     localStorage.setItem(exactKey, JSON.stringify({
       cachedAt: Date.now(),
-      expiresAt: Date.now() + TTL_MS,
+      expiresAt: Date.now() + Math.max(60_000, Number(lookup.ttlMs || TTL_MS)),
       value
     }));
   }

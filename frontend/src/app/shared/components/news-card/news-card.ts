@@ -43,6 +43,17 @@ export class NewsCardComponent {
     return 'source-newsapi';
   }
 
+  get relevanceReasons(): string[] {
+    return Array.isArray(this.news?.relevanceReasons) ? this.news.relevanceReasons.filter(Boolean).slice(0, 2) : [];
+  }
+
+  get signalPills(): string[] {
+    const skills = Array.isArray(this.news?.relatedSkills) ? this.news.relatedSkills : [];
+    const gaps = Array.isArray(this.news?.relatedSkillGaps) ? this.news.relatedSkillGaps : [];
+    const demand = Array.isArray(this.news?.demandTags) ? this.news.demandTags : [];
+    return [...skills.slice(0, 2), ...gaps.slice(0, 1), ...demand.slice(0, 2)].filter(Boolean).slice(0, 5);
+  }
+
   onBookmarkToggle(): void {
     if (this.bookmarkLoading) return;
     this.bookmarkToggle.emit(this.news);

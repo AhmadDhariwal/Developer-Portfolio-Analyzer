@@ -21,10 +21,60 @@ const deriveKeywordSet = (context = {}) => {
   const set = new Set();
   const stack = normalizeCareerStack(context.careerStack);
   (STACK_KEYWORDS[stack] || []).forEach((kw) => set.add(String(kw).toLowerCase()));
+  String(context.targetRole || '').split(/[^a-z0-9+#.]+/i).forEach((kw) => {
+    if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
+  });
   (context.githubTechnologies || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.resumeSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
+  (context.knownSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.skillGaps || []).forEach((kw) => set.add(String(kw).toLowerCase()));
+  (context.jobDemandSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
+  (context.recommendationTechnologies || []).forEach((kw) => set.add(String(kw).toLowerCase()));
+  String(context.activeLearningFocus || '').split(/[^a-z0-9+#.]+/i).forEach((kw) => {
+    if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
+  });
   return set;
+};
+
+const findMatches = (item, values = [], limit = 4) => {
+  const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
+  const seen = new Set();
+  const matches = [];
+  values.forEach((value) => {
+    const label = String(value?.name || value?.skill || value || '').trim();
+    const key = label.toLowerCase();
+    if (!key || seen.has(key) || !text.includes(key)) return;
+    seen.add(key);
+    matches.push(label);
+  });
+  return matches.slice(0, limit);
+};
+
+const buildRelevanceMetadata = (item, context = {}) => {
+  const relatedSkills = findMatches(item, [
+    ...(context.knownSkills || []),
+    ...(context.githubTechnologies || []),
+    ...(context.resumeSkills || []),
+    ...(context.recommendationTechnologies || [])
+  ], 5);
+  const relatedGaps = findMatches(item, context.skillGaps || [], 4);
+  const demandTags = findMatches(item, context.jobDemandSkills || [], 4);
+  const goalMatches = findMatches(item, [context.targetRole, context.careerStack, context.activeLearningFocus], 3);
+  const reasons = [];
+
+  if (relatedSkills.length) reasons.push(`Matches your proven skills: ${relatedSkills.slice(0, 3).join(', ')}`);
+  if (relatedGaps.length) reasons.push(`Supports current growth gaps: ${relatedGaps.slice(0, 3).join(', ')}`);
+  if (demandTags.length) reasons.push(`Connects to job-market demand: ${demandTags.slice(0, 3).join(', ')}`);
+  if (goalMatches.length) reasons.push(`Aligned with ${goalMatches[0]}`);
+  if (!reasons.length && item.category === context.careerStack) reasons.push(`Aligned with your ${context.careerStack} track`);
+
+  return {
+    relevanceReasons: reasons.slice(0, 3),
+    relatedSkills,
+    relatedSkillGaps: relatedGaps,
+    relatedCareerGoals: goalMatches,
+    demandTags
+  };
 };
 
 const relevanceScore = (item, keywords) => {
@@ -59,7 +109,8 @@ const scoreItem = (item, context = {}) => {
   return {
     ...item,
     relevanceScore: Number((relevance * 100).toFixed(2)),
-    rankScore: Number((total * 100).toFixed(2))
+    rankScore: Number((total * 100).toFixed(2)),
+    ...buildRelevanceMetadata(item, context)
   };
 };
 

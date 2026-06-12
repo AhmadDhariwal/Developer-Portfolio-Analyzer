@@ -70,6 +70,8 @@ const getNews = async (req, res) => {
         cacheHit: false,
         providerFailureCount: 0,
         providerUsed: [],
+        providerDiagnostics: [],
+        signalHash: '',
         responseTimeMs: 0
       }
     });
