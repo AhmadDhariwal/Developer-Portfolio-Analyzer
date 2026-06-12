@@ -10,7 +10,7 @@ const trimValue = (value) => String(value || '').trim();
 
 const getFrontendBaseUrl = () => {
   const fromEnv = trimValue(process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
-  return fromEnv || 'http://localhost:4200';
+  return fromEnv;
 };
 
 const resolveProviderRedirectUri = (provider, requestedRedirectUri) => {

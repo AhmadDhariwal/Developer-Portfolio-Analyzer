@@ -14,6 +14,7 @@ import {
 } from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -41,6 +42,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     private readonly skillGapService:    SkillGapService,
     private readonly githubService:      GithubService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly authService:        AuthService,
     private readonly cdr:                ChangeDetectorRef
   ) {}
 
@@ -56,21 +58,40 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Fetch the active GitHub username then trigger initial analysis
     this.isInitLoading = true;
-    this.githubService.getActiveUsername().subscribe({
-      next: (data) => {
-        this.defaultUsername = data.username || '';
-        this.username = this.defaultUsername;
-        this.isInitLoading = false;
-        if (this.username) this.analyze();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isInitLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    const storedUsername = this.getStoredActiveUsername();
+    if (storedUsername) {
+      this.applyDefaultUsername(storedUsername);
+      this.isInitLoading = false;
+      this.analyze();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.subscriptions.add(
+      this.githubService.getActiveUsername().subscribe({
+        next: (data) => {
+          this.applyDefaultUsername(data.username || '');
+          this.isInitLoading = false;
+          if (this.username) this.analyze();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isInitLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
+
+  private getStoredActiveUsername(): string {
+    const user = this.authService.getCurrentUser();
+    return String(user?.activeGithubUsername || user?.githubUsername || '').trim().replace(/^@/, '');
+  }
+
+  private applyDefaultUsername(username: string): void {
+    this.defaultUsername = String(username || '').trim().replace(/^@/, '');
+    this.username = this.defaultUsername;
   }
 
   ngOnDestroy(): void {
@@ -86,15 +107,18 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       ? this.skillGapService.getCachedResult(user, careerStack, experienceLevel)
       : null;
 
-    this.isLoading = true;
     this.errorMessage = '';
     if (cached) {
       this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
-    } else {
-      this.result = null;
-      this.graphLayout = [];
-      this.graphEdges = [];
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
     }
+
+    this.isLoading = true;
+    this.result = null;
+    this.graphLayout = [];
+    this.graphEdges = [];
     this.cdr.detectChanges();
 
     this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary, forceRefresh).subscribe({

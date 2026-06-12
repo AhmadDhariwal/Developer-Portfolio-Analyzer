@@ -18,6 +18,7 @@ import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { ApiService } from '../../shared/services/api.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -80,6 +81,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     private readonly careerProfileService: CareerProfileService,
     private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly api: ApiService,
+    private readonly authService: AuthService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {}
@@ -99,17 +101,36 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.githubService.getActiveUsername().subscribe({
-      next: (res: { username: string; isDefault?: boolean } | null) => {
-        if (res?.username) {
-          this.defaultUsername = res.username;
-          this.username = this.defaultUsername;
-          this.analyze();
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => this.cdr.detectChanges()
-    });
+    const storedUsername = this.getStoredActiveUsername();
+    if (storedUsername) {
+      this.applyDefaultUsername(storedUsername);
+      this.analyze();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.subscriptions.add(
+      this.githubService.getActiveUsername().subscribe({
+        next: (res: { username: string; isDefault?: boolean } | null) => {
+          if (res?.username) {
+            this.applyDefaultUsername(res.username);
+            this.analyze();
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => this.cdr.detectChanges()
+      })
+    );
+  }
+
+  private getStoredActiveUsername(): string {
+    const user = this.authService.getCurrentUser();
+    return String(user?.activeGithubUsername || user?.githubUsername || '').trim().replace(/^@/, '');
+  }
+
+  private applyDefaultUsername(username: string): void {
+    this.defaultUsername = String(username || '').trim().replace(/^@/, '');
+    this.username = this.defaultUsername;
   }
 
   ngOnDestroy(): void {
@@ -125,9 +146,15 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
 
     if (!isTemporary && !forceRefresh) {
+      const signalHash = this.frontendCache.getLatestSignalHash({
+        module: 'recommendations',
+        careerStack,
+        experienceLevel
+      });
       const cached = this.frontendCache.get<RecommendationsResult>({
         module: 'recommendations',
-        githubUsername: user,
+        canonicalSignalKey: true,
+        signalHash: signalHash || undefined,
         careerStack,
         experienceLevel
       });
@@ -151,15 +178,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         this.applyResult(normalized, user, careerStack, experienceLevel, isTemporary, normalized.fromCache ? 'cache-hit' : 'ready');
         if (!isTemporary && normalized.cacheMetadata) {
           const key = normalized.cacheMetadata.cacheKey || {};
+          const signalHash = key.signalHash || normalized.cacheMetadata.signalHash;
           this.frontendCache.set({
             module: 'recommendations',
-            githubUsername: key.githubUsername || normalized.username,
-            resumeHash: key.resumeHash,
-            resumeAnalysisId: key.resumeAnalysisId,
+            canonicalSignalKey: true,
             careerStack: key.careerStack || normalized.careerStack,
             experienceLevel: key.experienceLevel || normalized.experienceLevel,
-            signalHash: key.signalHash || normalized.cacheMetadata.signalHash,
-            version: key.analysisVersion || normalized.cacheMetadata.recommendationVersion || normalized.cacheMetadata.analysisVersion
+            signalHash
           }, normalized);
         }
       },

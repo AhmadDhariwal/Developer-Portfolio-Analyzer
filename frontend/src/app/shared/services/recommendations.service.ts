@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { finalize, shareReplay } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface RecommendedProject {
   id:             string;
@@ -227,7 +228,7 @@ export interface RecommendationsResult {
 
 @Injectable({ providedIn: 'root' })
 export class RecommendationsService {
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<RecommendationsResult>>();
 
   constructor(private readonly http: HttpClient) {}

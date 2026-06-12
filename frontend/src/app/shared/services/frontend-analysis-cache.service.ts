@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 
 const CACHE_PREFIX = 'frontend_analysis_cache:';
 const INDEX_PREFIX = 'frontend_analysis_cache_index:';
+const SIGNAL_INDEX_PREFIX = 'frontend_analysis_cache_signal_index:';
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface FrontendAnalysisCacheKey {
@@ -18,6 +19,7 @@ export interface FrontendAnalysisCacheKey {
   weekStartDate?: string;
   limit?: number | string;
   ttlMs?: number;
+  canonicalSignalKey?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,8 +27,9 @@ export class FrontendAnalysisCacheService {
   constructor(private readonly auth: AuthService) {}
 
   get<T>(lookup: FrontendAnalysisCacheKey): T | null {
-    const indexKey = this.buildIndexKey(lookup);
-    const exactKey = localStorage.getItem(indexKey);
+    const exactKey = lookup.canonicalSignalKey
+      ? this.buildCanonicalSignalKey(lookup)
+      : localStorage.getItem(this.buildIndexKey(lookup));
     if (!exactKey) return null;
 
     try {
@@ -35,7 +38,8 @@ export class FrontendAnalysisCacheService {
       const parsed = JSON.parse(raw);
       if (!parsed?.value || Number(parsed.expiresAt || 0) <= Date.now()) {
         localStorage.removeItem(exactKey);
-        localStorage.removeItem(indexKey);
+        if (lookup.canonicalSignalKey) this.clearSignalIndexIfCurrent(lookup, exactKey);
+        else localStorage.removeItem(this.buildIndexKey(lookup));
         return null;
       }
       return {
@@ -47,15 +51,19 @@ export class FrontendAnalysisCacheService {
       } as T;
     } catch {
       localStorage.removeItem(exactKey);
-      localStorage.removeItem(indexKey);
+      if (lookup.canonicalSignalKey) this.clearSignalIndexIfCurrent(lookup, exactKey);
+      else localStorage.removeItem(this.buildIndexKey(lookup));
       return null;
     }
   }
 
   set<T>(lookup: FrontendAnalysisCacheKey, value: T): void {
-    const exactKey = this.buildExactKey(lookup);
-    const indexKey = this.buildIndexKey(lookup);
-    localStorage.setItem(indexKey, exactKey);
+    const exactKey = lookup.canonicalSignalKey ? this.buildCanonicalSignalKey(lookup) : this.buildExactKey(lookup);
+    if (lookup.canonicalSignalKey) {
+      localStorage.setItem(this.buildSignalIndexKey(lookup), this.clean(lookup.signalHash || 'no-signals'));
+    } else {
+      localStorage.setItem(this.buildIndexKey(lookup), exactKey);
+    }
     localStorage.setItem(exactKey, JSON.stringify({
       cachedAt: Date.now(),
       expiresAt: Date.now() + Math.max(60_000, Number(lookup.ttlMs || TTL_MS)),
@@ -65,8 +73,16 @@ export class FrontendAnalysisCacheService {
 
   clearModule(module: string): void {
     Object.keys(localStorage)
-      .filter((key) => key.startsWith(`${CACHE_PREFIX}${module}:`) || key.startsWith(`${INDEX_PREFIX}${module}:`))
+      .filter((key) =>
+        key.startsWith(`${CACHE_PREFIX}${module}:`) ||
+        key.startsWith(`${INDEX_PREFIX}${module}:`) ||
+        key.startsWith(`${SIGNAL_INDEX_PREFIX}${module}:`)
+      )
       .forEach((key) => localStorage.removeItem(key));
+  }
+
+  getLatestSignalHash(lookup: FrontendAnalysisCacheKey): string | null {
+    return localStorage.getItem(this.buildSignalIndexKey(lookup));
   }
 
   private buildIndexKey(key: FrontendAnalysisCacheKey): string {
@@ -80,6 +96,16 @@ export class FrontendAnalysisCacheService {
       this.clean(key.weekStartDate || 'no-week'),
       this.clean(String(key.limit || 'no-limit')),
       this.clean(key.version || 'unknown')
+    ].join(':');
+  }
+
+  private buildSignalIndexKey(key: FrontendAnalysisCacheKey): string {
+    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    return [
+      `${SIGNAL_INDEX_PREFIX}${key.module}`,
+      userId,
+      this.clean(key.careerStack || 'Full Stack'),
+      this.clean(key.experienceLevel || 'Student')
     ].join(':');
   }
 
@@ -98,6 +124,25 @@ export class FrontendAnalysisCacheService {
       this.clean(String(key.limit || 'no-limit')),
       this.clean(key.version || 'unknown')
     ].join(':');
+  }
+
+  private buildCanonicalSignalKey(key: FrontendAnalysisCacheKey): string {
+    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    return [
+      `${CACHE_PREFIX}${key.module}`,
+      userId,
+      this.clean(key.signalHash || 'no-signals'),
+      this.clean(key.careerStack || 'Full Stack'),
+      this.clean(key.experienceLevel || 'Student')
+    ].join(':');
+  }
+
+  private clearSignalIndexIfCurrent(lookup: FrontendAnalysisCacheKey, exactKey: string): void {
+    const indexKey = this.buildSignalIndexKey(lookup);
+    const signalHash = localStorage.getItem(indexKey);
+    if (!signalHash) return;
+    const indexedKey = this.buildCanonicalSignalKey({ ...lookup, signalHash });
+    if (indexedKey === exactKey) localStorage.removeItem(indexKey);
   }
 
   private clean(value: string): string {

@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { TenantContextService } from './tenant-context.service';
+import { environment } from '../../../environments/environment';
 
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
 const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
@@ -39,8 +40,8 @@ const normalizeRole = (role: unknown): string => {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = 'http://localhost:5000/api';
-  private readonly apiOrigin = this.baseUrl.replace(/\/api$/, '');
+  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly apiOrigin = environment.apiOrigin;
   private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());

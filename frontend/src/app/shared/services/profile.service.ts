@@ -5,6 +5,7 @@ import { map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { CareerProfileService } from './career-profile.service';
 import { CareerStack, ExperienceLevel, CareerGoal } from '../models/career-profile.model';
+import { environment } from '../../../environments/environment';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────
 
@@ -87,8 +88,8 @@ export interface AvatarUploadResponse {
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private readonly baseUrl = 'http://localhost:5000/api/profile';
-  private readonly apiOrigin = this.baseUrl.replace(/\/api\/profile$/, '');
+  private readonly baseUrl = `${environment.apiBaseUrl}/profile`;
+  private readonly apiOrigin = environment.apiOrigin;
 
   constructor(
     private readonly http:                HttpClient,

@@ -55,6 +55,30 @@ connectDB();
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
+const parseCsv = (value = '') => String(value || '')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean);
+const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
+const configuredFrontendOrigins = parseCsv(process.env.FRONTEND_BASE_URL);
+const configuredApiOrigins = parseCsv(process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN);
+const localDevOrigins = isProduction ? [] : ['http://localhost:*', 'http://127.0.0.1:*'];
+const cspConnectSources = [
+  "'self'",
+  ...configuredFrontendOrigins,
+  ...configuredApiOrigins,
+  ...parseCsv(process.env.CSP_CONNECT_SRC),
+  ...localDevOrigins
+];
+const cspImageSources = [
+  "'self'",
+  'data:',
+  'https:',
+  ...configuredFrontendOrigins,
+  ...configuredApiOrigins,
+  ...parseCsv(process.env.CSP_IMG_SRC),
+  ...localDevOrigins
+];
 
 // Middleware
 app.use(helmet({
@@ -62,8 +86,8 @@ app.use(helmet({
         useDefaults: true,
         directives: {
             defaultSrc: ["'self'"],
-            connectSrc: ["'self'", 'http://localhost:*', 'http://127.0.0.1:*', 'http://localhost:5000'],
-            imgSrc: ["'self'", 'data:', 'https:', 'http://localhost:5000', 'http://localhost:*'],
+            connectSrc: [...new Set(cspConnectSources)],
+            imgSrc: [...new Set(cspImageSources)],
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             frameAncestors: ["'none'"]

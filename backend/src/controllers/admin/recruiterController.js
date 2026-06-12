@@ -369,8 +369,8 @@ const inviteRecruiter = async (req, res) => {
       expiresAt
     });
 
-    const frontendBase = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
-    const invitationLink = `${frontendBase}/invitations/accept/${token}`;
+    const frontendBase = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
+    const invitationLink = frontendBase ? `${frontendBase}/invitations/accept/${token}` : `/invitations/accept/${token}`;
 
     const emailResult = await sendRecruiterInvitationEmail({
       to: email,
@@ -737,8 +737,8 @@ const resendInvitation = async (req, res) => {
     }
 
     const organization = await Organization.findById(req.organizationId).select('name').lean();
-    const frontendBase = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
-    const invitationLink = `${frontendBase}/invitations/accept/${invitation.token}`;
+    const frontendBase = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
+    const invitationLink = frontendBase ? `${frontendBase}/invitations/accept/${invitation.token}` : `/invitations/accept/${invitation.token}`;
     const emailResult = await sendRecruiterInvitationEmail({
       to: invitation.email,
       inviteeName: invitation.name,

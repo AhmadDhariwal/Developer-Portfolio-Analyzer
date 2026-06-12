@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface LanguageDistribution {
   language: string;
@@ -99,7 +100,7 @@ export interface ActiveUsername {
 
 @Injectable({ providedIn: 'root' })
 export class GithubService {
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
   private readonly ttlMs = 24 * 60 * 60 * 1000;
   private readonly memoryCache = new Map<string, { result: GitHubAnalysisResult; expiresAt: number }>();
   private readonly inflight = new Map<string, Observable<GitHubAnalysisResult>>();

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   CareerProfile,
   CareerStack,
@@ -13,7 +14,7 @@ const STORAGE_KEY = 'devinsight_career_profile';
 
 @Injectable({ providedIn: 'root' })
 export class CareerProfileService {
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   private readonly profileSubject = new BehaviorSubject<CareerProfile>(
     this.loadFromStorage()

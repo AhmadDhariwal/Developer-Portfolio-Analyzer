@@ -19,7 +19,7 @@ const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
 
-const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
+const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
 
 const clamp = (value, min = 0, max = 100) => {
