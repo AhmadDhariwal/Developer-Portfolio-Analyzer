@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,10 @@ export class ApiService {
   private scenarioContextCache: any | null = null;
   private scenarioHistoryCache = new Map<number, any>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly frontendCache: FrontendAnalysisCacheService
+  ) {}
 
   /* ── Auth ── */
   register(userData: any): Observable<any> {
@@ -40,28 +44,28 @@ export class ApiService {
 
   /* ── Career Profile ── */
   updateCareerProfile(careerStack: string, experienceLevel: string, careerGoal?: string): Observable<any> {
-    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal }).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   uploadResume(formData: FormData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
-    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   getResumeAnalysis(fileId?: string): Observable<any> {
@@ -78,9 +82,9 @@ export class ApiService {
   }
 
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
-    return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   downloadResumeGuide(): Observable<Blob> {
@@ -97,9 +101,9 @@ export class ApiService {
   ): Observable<any> {
     return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, {
       username, careerStack, experienceLevel, resumeText, isTemporary
-    }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    }).pipe(
+      tap(() => this.invalidateScenarioContextCache())
+    );
   }
 
   getRecommendations(
@@ -124,9 +128,9 @@ export class ApiService {
       experienceLevel,
       knownSkills,
       missingSkills
-    }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    }).pipe(
+      tap(() => this.invalidateScenarioContextCache())
+    );
   }
 
   getPortfolioScore(
@@ -338,9 +342,9 @@ export class ApiService {
   }
 
   triggerIntegrationSync(provider?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {}).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {}).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   runWhatIfSimulation(payload: {
@@ -404,6 +408,11 @@ export class ApiService {
     this.scenarioContextCache = null;
   }
 
+  private invalidateDeveloperSignalState(): void {
+    this.frontendCache.clearCurrentSignalHash();
+    this.invalidateScenarioContextCache();
+  }
+
   createSprintFromScenario(payload: {
     baselineHiringScore: number;
     baselineJobMatch: number;
@@ -413,9 +422,9 @@ export class ApiService {
     skills: string[];
     projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload).pipe(
+      tap(() => this.invalidateDeveloperSignalState())
+    );
   }
 
   /* ── Public Profiles ── */

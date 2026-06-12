@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { finalize, shareReplay } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 const SKILL_GAP_CACHE_PREFIX = 'skill_gap_cache:';
 const SKILL_GAP_CACHE_INDEX_PREFIX = 'skill_gap_cache_index:';
@@ -218,7 +219,8 @@ export class SkillGapService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly frontendCache: FrontendAnalysisCacheService
   ) {}
 
   analyze(
@@ -271,11 +273,30 @@ export class SkillGapService {
     const key = this.buildCacheKey(signalHash, result.careerStack, result.experienceLevel);
 
     localStorage.setItem(this.buildSignalIndexKey(result.careerStack, result.experienceLevel), signalHash);
+    this.frontendCache.setCurrentSignalHash({
+      module: 'developer-signals',
+      careerStack: result.careerStack,
+      experienceLevel: result.experienceLevel
+    }, signalHash);
     localStorage.setItem(key, JSON.stringify({
       cachedAt: Date.now(),
       expiresAt: Date.now() + SKILL_GAP_TTL_MS,
       result
     }));
+  }
+
+  invalidateCachedResult(careerStack: string, experienceLevel: string): void {
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    const suffix = `:${this.clean(careerStack || 'Full Stack')}:${this.clean(experienceLevel || 'Student')}`;
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(`${SKILL_GAP_CACHE_PREFIX}${userId}:`) && key.endsWith(suffix))
+      .forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem(this.buildSignalIndexKey(careerStack, experienceLevel));
+  }
+
+  extractSignalHash(result: SkillGapResult | null | undefined): string {
+    if (!result) return '';
+    return this.resultSignalHash(result);
   }
 
   private buildRequestKey(

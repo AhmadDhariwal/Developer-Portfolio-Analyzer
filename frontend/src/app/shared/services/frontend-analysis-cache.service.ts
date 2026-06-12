@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 const CACHE_PREFIX = 'frontend_analysis_cache:';
 const INDEX_PREFIX = 'frontend_analysis_cache_index:';
 const SIGNAL_INDEX_PREFIX = 'frontend_analysis_cache_signal_index:';
+const CURRENT_SIGNAL_PREFIX = 'frontend_analysis_current_signal:';
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface FrontendAnalysisCacheKey {
@@ -85,6 +86,44 @@ export class FrontendAnalysisCacheService {
     return localStorage.getItem(this.buildSignalIndexKey(lookup));
   }
 
+  getCurrentSignalHash(lookup: FrontendAnalysisCacheKey): string | null {
+    return localStorage.getItem(this.buildCurrentSignalKey(lookup));
+  }
+
+  setCurrentSignalHash(lookup: FrontendAnalysisCacheKey, signalHash: string): void {
+    const normalized = this.clean(signalHash || '');
+    if (!normalized || normalized === 'no-signals') return;
+    localStorage.setItem(this.buildCurrentSignalKey(lookup), normalized);
+  }
+
+  clearCurrentSignalHash(lookup?: FrontendAnalysisCacheKey): void {
+    if (lookup) {
+      localStorage.removeItem(this.buildCurrentSignalKey(lookup));
+      return;
+    }
+
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(`${CURRENT_SIGNAL_PREFIX}${userId}:`))
+      .forEach((key) => localStorage.removeItem(key));
+  }
+
+  clear(lookup: FrontendAnalysisCacheKey): void {
+    if (lookup.canonicalSignalKey) {
+      const signalHash = localStorage.getItem(this.buildSignalIndexKey(lookup));
+      if (signalHash) {
+        localStorage.removeItem(this.buildCanonicalSignalKey({ ...lookup, signalHash }));
+      }
+      localStorage.removeItem(this.buildSignalIndexKey(lookup));
+      return;
+    }
+
+    const indexKey = this.buildIndexKey(lookup);
+    const exactKey = localStorage.getItem(indexKey);
+    if (exactKey) localStorage.removeItem(exactKey);
+    localStorage.removeItem(indexKey);
+  }
+
   private buildIndexKey(key: FrontendAnalysisCacheKey): string {
     const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
     return [
@@ -104,6 +143,15 @@ export class FrontendAnalysisCacheService {
     return [
       `${SIGNAL_INDEX_PREFIX}${key.module}`,
       userId,
+      this.clean(key.careerStack || 'Full Stack'),
+      this.clean(key.experienceLevel || 'Student')
+    ].join(':');
+  }
+
+  private buildCurrentSignalKey(key: FrontendAnalysisCacheKey): string {
+    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    return [
+      `${CURRENT_SIGNAL_PREFIX}${userId}`,
       this.clean(key.careerStack || 'Full Stack'),
       this.clean(key.experienceLevel || 'Student')
     ].join(':');

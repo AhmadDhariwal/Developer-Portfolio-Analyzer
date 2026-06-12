@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 export interface LanguageDistribution {
   language: string;
@@ -105,7 +106,10 @@ export class GithubService {
   private readonly memoryCache = new Map<string, { result: GitHubAnalysisResult; expiresAt: number }>();
   private readonly inflight = new Map<string, Observable<GitHubAnalysisResult>>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly frontendCache: FrontendAnalysisCacheService
+  ) {}
 
   getCachedAnalysis(username: string, mode: 'public' | 'save'): GitHubAnalysisResult | null {
     const entry = this.memoryCache.get(this.cacheKey(username, mode));
@@ -121,6 +125,7 @@ export class GithubService {
   }
 
   analyzeAndSave(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
+    this.frontendCache.clearCurrentSignalHash();
     return this.cachedRequest('save', username, forceRefresh, () => this.http.post<GitHubAnalysisResult>(
       `${this.baseUrl}/github/analyze-save`,
       { username, forceRefresh }

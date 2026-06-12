@@ -323,7 +323,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.cachedDashboardRequest(
       'dashboardSummary',
-      () => this.apiService.getDashboardSummary(false),
+      () => this.apiService.getDashboardSummary(forceRefresh),
       forceRefresh
     ).subscribe({
       next: (data: any) => {
@@ -344,9 +344,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const context = data?.dashboardContext || data?.signalMetadata || {};
     this.signalHash = String(context.signalHash || data?.signalHash || '');
+    const dependencySignalHash = String(context.dependencySignalHash || data?.dependencySignalHash || '');
     this.contextVersion = String(context.contextVersion || '');
     this.dashboardStale = Boolean(context.stale || context.refreshRecommended || data?.signalMetadata?.staleSources?.length);
     this.dashboardRefreshMessage = this.dashboardStale ? 'Analysis refresh recommended' : '';
+    if (dependencySignalHash) {
+      this.frontendCache.setCurrentSignalHash({
+        module: 'developer-signals',
+        careerStack: String(context.careerStack || this.selectedCareerStack || ''),
+        experienceLevel: String(context.experienceLevel || this.selectedExperienceLevel || '')
+      }, dependencySignalHash);
+    }
 
     this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
     this.lastAnalyzedAt = data.lastAnalyzedAt || context.lastUpdated || null;
@@ -404,7 +412,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadActivityAndLanguage(forceRefresh = false, cycle = this.requestCycle): void {
-    this.cachedDashboardRequest('dashboardContributions', () => this.apiService.getDashboardContributions(false), forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardContributions', () => this.apiService.getDashboardContributions(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
         const data = Array.isArray(payload?.data) ? payload.data : [];
@@ -420,7 +428,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {}
     });
 
-    this.cachedDashboardRequest('dashboardLanguages', () => this.apiService.getDashboardLanguages(false), forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardLanguages', () => this.apiService.getDashboardLanguages(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
         const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
@@ -446,7 +454,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadSkills(forceRefresh = false, cycle = this.requestCycle): void {
-    this.cachedDashboardRequest('dashboardSkills', () => this.apiService.getDashboardSkills(false), forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardSkills', () => this.apiService.getDashboardSkills(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
 

@@ -146,21 +146,35 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
 
     if (!isTemporary && !forceRefresh) {
-      const signalHash = this.frontendCache.getLatestSignalHash({
+      const cachedSignalHash = this.frontendCache.getLatestSignalHash({
         module: 'recommendations',
+        careerStack,
+        experienceLevel
+      });
+      const currentSignalHash = this.frontendCache.getCurrentSignalHash({
+        module: 'developer-signals',
         careerStack,
         experienceLevel
       });
       const cached = this.frontendCache.get<RecommendationsResult>({
         module: 'recommendations',
         canonicalSignalKey: true,
-        signalHash: signalHash || undefined,
+        signalHash: cachedSignalHash || undefined,
         careerStack,
         experienceLevel
       });
-      if (cached) {
+      const cachedResultSignalHash = this.extractSignalHash(cached);
+      if (cached && currentSignalHash && cachedResultSignalHash === currentSignalHash) {
         this.applyResult(cached, user, careerStack, experienceLevel, isTemporary, 'cache-hit');
         return;
+      }
+      if (cached && currentSignalHash && cachedResultSignalHash && cachedResultSignalHash !== currentSignalHash) {
+        this.frontendCache.clear({
+          module: 'recommendations',
+          canonicalSignalKey: true,
+          careerStack,
+          experienceLevel
+        });
       }
     }
 
@@ -179,6 +193,11 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         if (!isTemporary && normalized.cacheMetadata) {
           const key = normalized.cacheMetadata.cacheKey || {};
           const signalHash = key.signalHash || normalized.cacheMetadata.signalHash;
+          this.frontendCache.setCurrentSignalHash({
+            module: 'developer-signals',
+            careerStack: key.careerStack || normalized.careerStack,
+            experienceLevel: key.experienceLevel || normalized.experienceLevel
+          }, signalHash || '');
           this.frontendCache.set({
             module: 'recommendations',
             canonicalSignalKey: true,
@@ -208,6 +227,11 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   setSection(section: AdvisorSection): void { this.activeSection = section; }
+
+  private extractSignalHash(result: RecommendationsResult | null | undefined): string {
+    const meta = result?.cacheMetadata?.cacheKey || {};
+    return String(meta.signalHash || result?.cacheMetadata?.signalHash || '').trim().toLowerCase();
+  }
 
   jumpTo(section: AdvisorSection): void {
     this.activeSection = section;

@@ -361,82 +361,24 @@ const maybeSendNotModified = (req, res, payload) => {
 };
 
 const ensureAnalysis = async (userId, githubUsername, options = {}) => {
-  const { forceRefresh = false } = options;
-  let analysis = await Analysis.findOne({ userId });
-
-  if (!forceRefresh) {
-    if (analysis) {
-      return {
-        analysis,
-        rateLimited: false,
-        noUsername: !githubUsername,
-        githubStatus: analysis.githubStats?.repos > 0 ? toFreshness(analysis.updatedAt || analysis.createdAt) : 'stale',
-        languageSource: 'cached_snapshot'
-      };
-    }
-
-    if (githubUsername) {
-      try {
-        const githubResult = await analyzeGitHubProfile(githubUsername, { forceRefresh: false });
-        analysis = await persistGithubResultToAnalysis({ userId, analysis, githubResult });
-        return {
-          analysis,
-          rateLimited: Boolean(githubResult.rateLimited),
-          noUsername: false,
-          githubStatus: githubResult.cache?.hit ? 'fresh' : 'fresh',
-          languageSource: githubResult.languageDistributionSource || githubResult.cache?.source || 'github_cache'
-        };
-      } catch (error) {
-        console.warn('Dashboard cached GitHub hydrate failed:', error.message);
-      }
-    }
-
+  const analysis = await Analysis.findOne({ userId });
+  if (analysis) {
     return {
-      analysis: createEmptyAnalysis(userId),
+      analysis,
       rateLimited: false,
       noUsername: !githubUsername,
-      githubStatus: 'missing',
-      languageSource: 'missing'
-    };
-  }
-
-  if (!githubUsername) {
-    return {
-      analysis: analysis || createEmptyAnalysis(userId),
-      rateLimited: false,
-      noUsername: true,
-      githubStatus: 'missing',
-      languageSource: 'missing'
-    };
-  }
-
-  try {
-    const githubResult = await analyzeGitHubProfile(githubUsername, { forceRefresh: true });
-    const monthlyActivity = await fetchMonthlyCommitActivity(githubUsername, githubResult.repositories || []);
-    analysis = await persistGithubResultToAnalysis({
-      userId,
-      analysis,
-      githubResult,
-      monthlyActivity: monthlyActivity.length ? monthlyActivity : emptyContributionActivity()
-    });
-
-    return {
-      analysis,
-      rateLimited: Boolean(githubResult.rateLimited),
-      noUsername: false,
-      githubStatus: 'fresh',
-      languageSource: githubResult.languageDistributionSource || 'language_bytes'
-    };
-  } catch (error) {
-    console.warn('Dashboard GitHub refresh failed:', error.message);
-    return {
-      analysis: analysis || createEmptyAnalysis(userId),
-      rateLimited: isRateLimitError(error),
-      noUsername: false,
-      githubStatus: analysis ? 'stale' : 'missing',
+      githubStatus: analysis.githubStats?.repos > 0 ? toFreshness(analysis.updatedAt || analysis.createdAt) : 'stale',
       languageSource: 'cached_snapshot'
     };
   }
+
+  return {
+    analysis: createEmptyAnalysis(userId),
+    rateLimited: false,
+    noUsername: !githubUsername,
+    githubStatus: githubUsername ? 'stale' : 'missing',
+    languageSource: 'missing'
+  };
 };
 
 const buildRecommendationPreview = (recommendationData = {}) => {

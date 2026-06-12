@@ -15,6 +15,7 @@ import {
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -43,6 +44,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     private readonly githubService:      GithubService,
     private readonly careerProfileService: CareerProfileService,
     private readonly authService:        AuthService,
+    private readonly frontendCache:      FrontendAnalysisCacheService,
     private readonly cdr:                ChangeDetectorRef
   ) {}
 
@@ -103,16 +105,24 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     if (!user) return;
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+    const currentSignalHash = !isTemporary
+      ? this.frontendCache.getCurrentSignalHash({ module: 'developer-signals', careerStack, experienceLevel })
+      : null;
     const cached = !forceRefresh && !isTemporary
       ? this.skillGapService.getCachedResult(user, careerStack, experienceLevel)
       : null;
+    const cachedSignalHash = this.skillGapService.extractSignalHash(cached);
 
     this.errorMessage = '';
-    if (cached) {
+    if (cached && currentSignalHash && cachedSignalHash === currentSignalHash) {
       this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
       this.isLoading = false;
       this.cdr.detectChanges();
       return;
+    }
+
+    if (cached && currentSignalHash && cachedSignalHash && cachedSignalHash !== currentSignalHash) {
+      this.skillGapService.invalidateCachedResult(careerStack, experienceLevel);
     }
 
     this.isLoading = true;
