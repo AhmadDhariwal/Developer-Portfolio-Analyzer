@@ -221,12 +221,12 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     if (view === 'bookmarks') {
-      this.loadSavedView('bookmark', true);
+      this.loadSavedView('bookmark');
       return;
     }
 
     if (view === 'read_later') {
-      this.loadSavedView('read_later', true);
+      this.loadSavedView('read_later');
       return;
     }
 
