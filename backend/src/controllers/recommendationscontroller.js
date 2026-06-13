@@ -478,7 +478,6 @@ const buildRecommendationFallback = ({
 
   // Note: No generic third path is added. If insufficient evidence exists,
   // careerPaths remains minimal (0-2 items) instead of showing hardcoded templates.
- REPLACE
 
   return normalizeRecommendationPayload({
     analysisSummary: `${summaryParts[0]}, ${summaryParts[1]}, ${summaryParts[2]}, and ${summaryParts[3]}. Recommendations therefore prioritize ${projectFocusSkills[0] || 'the highest-value missing proof'} through realistic next steps.`,
