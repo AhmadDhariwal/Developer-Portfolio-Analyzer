@@ -16,6 +16,7 @@ import { ProjectCardComponent } from './components/project-card/project-card.com
 import { UpcomingProjectsSectionComponent } from './components/upcoming-projects-section/upcoming-projects-section.component';
 import { TestimonialsSectionComponent } from './components/testimonials-section/testimonials-section.component';
 import { CtaSectionComponent } from './components/cta-section/cta-section.component';
+import { environment } from '../../../environments/environment';
 
 type SectionId = 'home' | 'about' | 'projects' | 'upcoming' | 'testimonials' | 'cta' | 'contact';
 type LinkableProject = { url?: string; repoUrl?: string; imageUrl?: string };
@@ -54,7 +55,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   private observer: IntersectionObserver | null = null;
   private readonly sectionIds: SectionId[] = ['home', 'about', 'projects', 'upcoming', 'testimonials', 'cta', 'contact'];
   private avatarVersion = Date.now();
-  private readonly backendOrigin = 'http://localhost:5000';
+  private readonly backendOrigin = environment.apiOrigin;
 
   constructor(
     private readonly route: ActivatedRoute,

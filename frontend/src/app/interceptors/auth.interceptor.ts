@@ -4,8 +4,9 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../shared/services/auth.service';
 import { Router } from '@angular/router';
 import { MaintenanceModeService } from '../shared/services/maintenance-mode.service';
+import { environment } from '../../environments/environment';
 
-const BACKEND_ORIGINS = ['http://localhost:5000', 'http://localhost:3000'];
+const BACKEND_ORIGINS = [environment.apiOrigin].filter(Boolean);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isBackend = req.url.startsWith('/api') || BACKEND_ORIGINS.some((origin) => req.url.startsWith(origin));

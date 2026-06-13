@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface RecruiterMetric {
   _id: string;
@@ -136,7 +137,7 @@ export interface PerformanceData {
 
 @Injectable({ providedIn: 'root' })
 export class AdminPerformanceService {
-  private readonly base = 'http://localhost:5000/api/admin-console';
+  private readonly base = `${environment.apiBaseUrl}/admin-console`;
 
   constructor(private readonly http: HttpClient) {}
 

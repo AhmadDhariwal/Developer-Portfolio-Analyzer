@@ -18,6 +18,7 @@ import {
   Repository,
   TechnologySignal
 } from '../../shared/services/github.service';
+import { AuthService } from '../../shared/services/auth.service';
 
 Chart.register(...registerables);
 
@@ -58,17 +59,23 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
   constructor(
     private readonly github: GithubService,
+    private readonly authService: AuthService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.isInitLoading = true;
+    const storedUsername = this.getStoredActiveUsername();
+    if (storedUsername) {
+      this.applyDefaultUsername(storedUsername);
+      this.isInitLoading = false;
+      this.analyze(false);
+      return;
+    }
+
     this.github.getActiveUsername().subscribe({
       next: (data) => {
-        this.defaultUsername = data.username || '';
-        this.username = this.defaultUsername;
-        this.viewedUsername = this.defaultUsername;
-        this.isTemporaryView = false;
+        this.applyDefaultUsername(data.username || '');
         this.isInitLoading = false;
         if (this.username) this.analyze(false);
       },
@@ -76,6 +83,18 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         this.isInitLoading = false;
       }
     });
+  }
+
+  private getStoredActiveUsername(): string {
+    const user = this.authService.getCurrentUser();
+    return String(user?.activeGithubUsername || user?.githubUsername || '').trim().replace(/^@/, '');
+  }
+
+  private applyDefaultUsername(username: string): void {
+    this.defaultUsername = String(username || '').trim().replace(/^@/, '');
+    this.username = this.defaultUsername;
+    this.viewedUsername = this.defaultUsername;
+    this.isTemporaryView = false;
   }
 
   ngAfterViewInit(): void {

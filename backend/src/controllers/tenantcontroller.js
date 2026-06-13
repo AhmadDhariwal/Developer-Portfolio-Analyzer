@@ -10,6 +10,9 @@ const Invitation = require('../models/invitation');
 const User = require('../models/user');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
+const Job = require('../models/Job');
+const RecruiterMatch = require('../models/RecruiterMatch');
+const RecruiterShortlist = require('../models/RecruiterShortlist');
 const { sendInvitationEmail, buildInvitationPayload, getEmailProviderStatus } = require('../services/invitationEmailService');
 const { enqueueInvitationRetry } = require('../services/emailRetryQueueService');
 const { logEmailDeliveryAudit } = require('../services/emailAuditService');
@@ -337,7 +340,8 @@ const inviteUser = async (req, res) => {
       actorId: req.user._id
     });
 
-    const invitationLink = `${process.env.FRONTEND_BASE_URL || 'http://localhost:4200'}/invitations/accept/${token}`;
+    const frontendBaseUrl = String(process.env.FRONTEND_BASE_URL || '').replace(/\/+$/, '');
+    const invitationLink = frontendBaseUrl ? `${frontendBaseUrl}/invitations/accept/${token}` : `/invitations/accept/${token}`;
 
     // If no email provider, return success with the invitation link for manual sharing
     if (!emailProviderStatus.configured) {
@@ -933,7 +937,12 @@ const getTeamAnalytics = async (req, res) => {
     const memberships = await Membership.find({ teamId: team._id, status: 'active' }).lean();
     const userIds = memberships.map((m) => m.userId);
 
-    const analyses = await Analysis.find({ userId: { $in: userIds } }).lean();
+    const [analyses, openJobs, recruiterMatches, shortlists] = await Promise.all([
+      Analysis.find({ userId: { $in: userIds } }).lean(),
+      Job.find({ teamId: team._id, status: 'open', archivedAt: null }).lean(),
+      RecruiterMatch.find({ teamId: team._id }).sort({ updatedAt: -1 }).limit(100).lean(),
+      RecruiterShortlist.find({ teamId: team._id }).sort({ updatedAt: -1 }).limit(100).lean()
+    ]);
 
     let totalRepos = 0;
     let totalStars = 0;
@@ -972,16 +981,28 @@ const getTeamAnalytics = async (req, res) => {
       .slice(0, 8)
       .map(([skill, count]) => ({ skill, count }));
 
+    const averageReadinessScore = readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
+    const teamActivity = Math.round(Math.min(100, ((analyses.length / Math.max(memberships.length, 1)) * 55) + Math.min(totalRepos, 45)));
+    const recruiterEngagement = Math.round(Math.min(100, (recruiterMatches.length * 4) + (shortlists.length * 6)));
+    const hiringPerformance = Math.round(Math.min(100, (openJobs.length * 12) + (shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length * 10)));
+
     return res.json({
       teamId: team._id,
       teamName: team.name,
       totalMembers: memberships.length,
       roleDistribution,
-      averageReadinessScore: readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0,
+      averageReadinessScore,
+      teamScore: Math.round((averageReadinessScore * 0.55) + (teamActivity * 0.2) + (recruiterEngagement * 0.15) + (hiringPerformance * 0.1)),
+      teamActivity,
+      recruiterEngagement,
+      hiringPerformance,
       totals: {
         repositories: totalRepos,
         stars: totalStars,
-        forks: totalForks
+        forks: totalForks,
+        openJobs: openJobs.length,
+        recruiterMatches: recruiterMatches.length,
+        shortlists: shortlists.length
       },
       topMissingSkills
     });

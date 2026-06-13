@@ -7,6 +7,7 @@ import { timeout, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TenantContextService } from '../../shared/services/tenant-context.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-accept-invitation',
@@ -16,7 +17,7 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrl: './accept-invitation.component.scss'
 })
 export class AcceptInvitationComponent implements OnInit {
-  private readonly apiBase = 'http://localhost:5000/api';
+  private readonly apiBase = environment.apiBaseUrl;
 
   token = '';
   loading = true;

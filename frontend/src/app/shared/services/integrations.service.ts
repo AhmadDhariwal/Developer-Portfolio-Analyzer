@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export type ProviderName =
   | 'linkedin'
@@ -103,7 +104,7 @@ export interface IntegrationInsightsResponse {
 
 @Injectable({ providedIn: 'root' })
 export class IntegrationsService {
-  private readonly baseUrl = 'http://localhost:5000/api/integrations';
+  private readonly baseUrl = `${environment.apiBaseUrl}/integrations`;
 
   constructor(private readonly http: HttpClient) {}
 

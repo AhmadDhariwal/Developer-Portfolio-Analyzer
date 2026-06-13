@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../shared/services/api.service';
@@ -8,6 +8,7 @@ import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.comp
 import { ScoreCardComponent } from '../../shared/components/score-card/score-card.component';
 import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
 import { SuggestionCardComponent } from '../../shared/components/suggestion-card/suggestion-card.component';
+import { Subscription } from 'rxjs';
 
 import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
 
@@ -26,7 +27,7 @@ import { ResumeFile, ResumeService } from '../../shared/services/resume.service'
   templateUrl: './resume-analyzer.component.html',
   styleUrl: './resume-analyzer.component.scss'
 })
-export class ResumeAnalyzerComponent implements OnInit {
+export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   isAnalyzing: boolean = false;
   isDownloading: boolean = false;
@@ -43,6 +44,8 @@ export class ResumeAnalyzerComponent implements OnInit {
   isTemporaryView = false;
   cacheState: 'idle' | 'loading' | 'cache-hit' | 'server-cache-hit' | 're-analysis' | 'error' = 'idle';
   private activeAnalysisRequestKey = '';
+  private readonly subscriptions = new Subscription();
+  private bootstrapAnalysisResolved = false;
 
   // Resume analysis data
   analysis: ResumeAnalysis | null = null;
@@ -84,44 +87,34 @@ export class ResumeAnalyzerComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadResumeContext();
-    this.loadPreviousAnalysis();
+    this.subscriptions.add(
+      this.resumeService.profile$.subscribe((profile) => {
+        this.syncResumeContext(profile?.defaultResume?.fileId || '', profile?.defaultResume?.fileName || '', profile?.activeResume?.fileName || '');
+      })
+    );
+
+    this.subscriptions.add(
+      this.resumeService.resumes$.subscribe((files) => {
+        this.resumeFiles = Array.isArray(files) ? files : [];
+        this.syncResumeContext(this.defaultResumeFileId, this.defaultResumeFileName, this.activeResumeFileName);
+      })
+    );
+
+    this.subscriptions.add(
+      this.resumeService.loading$.subscribe((loading) => {
+        if (!loading && !this.bootstrapAnalysisResolved) {
+          this.loadPreviousAnalysis();
+        }
+      })
+    );
+
+    if (!this.resumeService.loadingSubjectValue() && !this.resumeFiles.length && !this.resumeService.profileSubjectValue()) {
+      this.resumeService.refresh();
+    }
   }
 
-  loadResumeContext() {
-    this.apiService.getActiveResumeContext().subscribe({
-      next: (ctx) => {
-        this.defaultResumeFileId = ctx?.defaultResume?.fileId || '';
-        this.defaultResumeFileName = ctx?.defaultResume?.fileName || '';
-        this.activeResumeFileName = ctx?.defaultResume?.fileName || ctx?.activeResume?.fileName || '';
-        if (!this.selectedResumeFileId) {
-          this.selectedResumeFileId = this.defaultResumeFileId || ctx?.activeResume?.fileId || '';
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.defaultResumeFileId = '';
-        this.defaultResumeFileName = '';
-        this.activeResumeFileName = '';
-        this.cdr.detectChanges();
-      }
-    });
-
-    this.apiService.getResumeFiles().subscribe({
-      next: (res) => {
-        this.resumeFiles = Array.isArray(res?.files) ? res.files : [];
-        if (!this.selectedResumeFileId) {
-          this.selectedResumeFileId = this.resumeFiles.find((f) => f.isDefault)?.fileId
-            || this.resumeFiles.find((f) => f.isActive)?.fileId
-            || '';
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.resumeFiles = [];
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   useSelectedResume(setAsDefault = false) {
@@ -175,8 +168,12 @@ export class ResumeAnalyzerComponent implements OnInit {
         this.isTemporaryView = false;
         this.viewedResumeFileId = this.selectedResumeFileId;
         this.cacheState = 're-analysis';
-        this.loadResumeContext();
-        this.loadPreviousAnalysis();
+        if (this.analysis?.fileId === this.selectedResumeFileId) {
+          this.defaultResumeFileId = this.selectedResumeFileId;
+          this.defaultResumeFileName = this.analysis?.fileName || this.defaultResumeFileName;
+          this.syncResumeViewState(this.selectedResumeFileId, this.analysis?.fileName || this.viewedResumeFileName);
+        }
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMessage = err?.error?.message || 'Failed to switch resume context.';
@@ -190,6 +187,44 @@ export class ResumeAnalyzerComponent implements OnInit {
    */
   loadPreviousAnalysis() {
     if (this.isLoadingAnalysis) return;
+    const expectedFile = this.getDefaultOrSelectedResumeFile();
+    const expectedFileId = String(expectedFile?.fileId || this.selectedResumeFileId || this.defaultResumeFileId || '').trim();
+    const current = this.resumeService.getCurrentAnalysis<ResumeAnalysis>();
+    if (current && this.matchesAnalysisFile(current, expectedFileId)) {
+      this.applyAnalysis({
+        ...current,
+        cacheMetadata: {
+          ...(current.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheHit: true,
+          frontendCacheHit: true
+        }
+      }, 'cache-hit');
+      this.syncResumeViewState(current?.fileId || expectedFileId, current?.fileName || expectedFile?.fileName || '');
+      this.bootstrapAnalysisResolved = true;
+      this.isLoadingAnalysis = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const cached = expectedFile ? this.resumeService.getCachedAnalysis<ResumeAnalysis>(expectedFile) : null;
+    if (cached && this.matchesAnalysisFile(cached, expectedFileId)) {
+      this.applyAnalysis({
+        ...cached,
+        cacheMetadata: {
+          ...(cached.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheHit: true,
+          frontendCacheHit: true
+        }
+      }, 'cache-hit');
+      this.syncResumeViewState(cached?.fileId || expectedFileId, cached?.fileName || expectedFile?.fileName || '');
+      this.bootstrapAnalysisResolved = true;
+      this.isLoadingAnalysis = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.isLoadingAnalysis = true;
     this.cacheState = 'loading';
     this.apiService.getResumeAnalysis().subscribe({
@@ -201,7 +236,9 @@ export class ResumeAnalyzerComponent implements OnInit {
           // API returned but no meaningful data
           this.analysisComplete = false;
           this.hasNoData = true;
+          this.resumeService.setCurrentAnalysis(null);
         }
+        this.bootstrapAnalysisResolved = true;
         this.isLoadingAnalysis = false;
         this.cdr.detectChanges();
       },
@@ -211,7 +248,9 @@ export class ResumeAnalyzerComponent implements OnInit {
         if (!this.analysis) {
           this.analysisComplete = false;
           this.hasNoData = true;
+          this.resumeService.setCurrentAnalysis(null);
         }
+        this.bootstrapAnalysisResolved = true;
         this.isLoadingAnalysis = false;
         this.cacheState = 'error';
         this.cdr.detectChanges();
@@ -256,7 +295,6 @@ export class ResumeAnalyzerComponent implements OnInit {
             this.applyAnalysis(analysisRes, analysisRes?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 're-analysis');
             this.selectedFile = null;
             this.syncResumeViewState(analysisRes?.fileId || uploadRes.fileId, analysisRes?.fileName || uploadRes.fileName || '');
-            this.loadResumeContext();
             this.cdr.detectChanges();
           },
           error: (err) => {
@@ -452,7 +490,7 @@ export class ResumeAnalyzerComponent implements OnInit {
       next: (res) => {
         this.applyAnalysis(res, 're-analysis');
         this.syncResumeViewState(res?.fileId || this.selectedResumeFileId, res?.fileName || '');
-        this.loadResumeContext();
+        this.resumeService.refresh();
         this.isLoadingAnalysis = false;
         this.activeAnalysisRequestKey = '';
         this.cdr.detectChanges();
@@ -508,8 +546,42 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.isTemporaryView = Boolean(this.defaultResumeFileId && this.viewedResumeFileId && this.viewedResumeFileId !== this.defaultResumeFileId);
   }
 
+  private syncResumeContext(defaultFileId: string, defaultFileName: string, activeFileName: string): void {
+    this.defaultResumeFileId = String(defaultFileId || this.resumeFiles.find((file) => file.isDefault)?.fileId || '').trim();
+    this.defaultResumeFileName = String(defaultFileName || this.resumeFiles.find((file) => file.fileId === this.defaultResumeFileId)?.fileName || '').trim();
+    this.activeResumeFileName = String(
+      defaultFileName
+      || activeFileName
+      || this.resumeFiles.find((file) => file.fileId === this.defaultResumeFileId)?.fileName
+      || this.resumeFiles.find((file) => file.isActive)?.fileName
+      || ''
+    ).trim();
+
+    if (!this.selectedResumeFileId) {
+      this.selectedResumeFileId = this.defaultResumeFileId
+        || this.resumeFiles.find((file) => file.isDefault)?.fileId
+        || this.resumeFiles.find((file) => file.isActive)?.fileId
+        || '';
+    }
+
+    this.cdr.detectChanges();
+  }
+
   private getSelectedResumeFile(): ResumeFile | undefined {
     return this.resumeFiles.find((file) => file.fileId === this.selectedResumeFileId);
+  }
+
+  private getDefaultOrSelectedResumeFile(): ResumeFile | undefined {
+    return this.getSelectedResumeFile()
+      || this.resumeFiles.find((file) => file.fileId === this.defaultResumeFileId)
+      || this.resumeFiles.find((file) => file.isDefault)
+      || this.resumeFiles.find((file) => file.isActive);
+  }
+
+  private matchesAnalysisFile(res: ResumeAnalysis | null | undefined, expectedFileId: string): boolean {
+    const resolvedExpected = String(expectedFileId || '').trim();
+    if (!resolvedExpected) return Boolean(res);
+    return String(res?.fileId || '').trim() === resolvedExpected;
   }
 
   private applyAnalysis(res: ResumeAnalysis, cacheState: typeof this.cacheState): void {
@@ -518,6 +590,7 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.hasNoData = false;
     this.errorMessage = '';
     this.cacheState = cacheState;
+    this.resumeService.setCurrentAnalysis(res);
     this.resumeService.cacheAnalysis({
       fileId: res.fileId || this.selectedResumeFileId,
       resumeHash: res.resumeHash || res.cacheMetadata?.resumeHash || '',

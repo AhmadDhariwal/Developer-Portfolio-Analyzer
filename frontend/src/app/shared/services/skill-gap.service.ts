@@ -1,10 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { finalize, shareReplay } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 const SKILL_GAP_CACHE_PREFIX = 'skill_gap_cache:';
 const SKILL_GAP_CACHE_INDEX_PREFIX = 'skill_gap_cache_index:';
+const SKILL_GAP_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type SkillPriority = 'High' | 'Medium' | 'Low';
 
@@ -210,11 +214,13 @@ export interface WeeklyRoadmapWeek {
 
 @Injectable({ providedIn: 'root' })
 export class SkillGapService {
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly inflight = new Map<string, Observable<SkillGapResult>>();
 
   constructor(
     private readonly http: HttpClient,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly frontendCache: FrontendAnalysisCacheService
   ) {}
 
   analyze(
@@ -224,55 +230,132 @@ export class SkillGapService {
     isTemporary = false,
     forceRefresh = false
   ): Observable<SkillGapResult> {
-    return this.http.post<SkillGapResult>(
+    const requestKey = this.buildRequestKey(username, careerStack, experienceLevel, isTemporary, forceRefresh);
+    const existing = this.inflight.get(requestKey);
+    if (existing) return existing;
+
+    const request$ = this.http.post<SkillGapResult>(
       `${this.baseUrl}/skillgap/skill-gap`,
       { username, careerStack, experienceLevel, isTemporary, forceRefresh }
+    ).pipe(
+      finalize(() => this.inflight.delete(requestKey)),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    this.inflight.set(requestKey, request$);
+    return request$;
   }
 
   getCachedResult(username: string, careerStack: string, experienceLevel: string): SkillGapResult | null {
-    const indexKey = this.buildIndexKey(username, careerStack, experienceLevel);
-    const cacheKey = localStorage.getItem(indexKey);
-    if (!cacheKey) return null;
+    const signalHash = this.getLatestSignalHash(careerStack, experienceLevel);
+    const cacheKey = this.buildCacheKey(signalHash || 'no-signals', careerStack, experienceLevel);
 
     try {
       const raw = localStorage.getItem(cacheKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (!parsed?.result) return null;
+      if (!parsed?.result || Number(parsed.expiresAt || 0) <= Date.now()) {
+        localStorage.removeItem(cacheKey);
+        this.clearSignalIndexIfCurrent(careerStack, experienceLevel, cacheKey);
+        return null;
+      }
       return { ...parsed.result, fromFrontendCache: true } as SkillGapResult;
     } catch {
       localStorage.removeItem(cacheKey);
-      localStorage.removeItem(indexKey);
+      this.clearSignalIndexIfCurrent(careerStack, experienceLevel, cacheKey);
       return null;
     }
   }
 
   cacheResult(result: SkillGapResult, isTemporary = false): void {
     if (isTemporary || result.cacheMetadata?.temporary) return;
-    const key = this.buildResultCacheKey(result);
-    if (!key) return;
+    const signalHash = this.resultSignalHash(result);
+    const key = this.buildCacheKey(signalHash, result.careerStack, result.experienceLevel);
 
-    const indexKey = this.buildIndexKey(result.username, result.careerStack, result.experienceLevel);
-    localStorage.setItem(indexKey, key);
-    localStorage.setItem(key, JSON.stringify({ cachedAt: Date.now(), result }));
+    localStorage.setItem(this.buildSignalIndexKey(result.careerStack, result.experienceLevel), signalHash);
+    this.frontendCache.setCurrentSignalHash({
+      module: 'developer-signals',
+      careerStack: result.careerStack,
+      experienceLevel: result.experienceLevel
+    }, signalHash);
+    localStorage.setItem(key, JSON.stringify({
+      cachedAt: Date.now(),
+      expiresAt: Date.now() + SKILL_GAP_TTL_MS,
+      result
+    }));
   }
 
-  private buildIndexKey(username: string, careerStack: string, experienceLevel: string): string {
+  invalidateCachedResult(careerStack: string, experienceLevel: string): void {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
-    return `${SKILL_GAP_CACHE_INDEX_PREFIX}${userId}:${String(username || '').toLowerCase()}:${careerStack}:${experienceLevel}`;
+    const suffix = `:${this.clean(careerStack || 'Full Stack')}:${this.clean(experienceLevel || 'Student')}`;
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(`${SKILL_GAP_CACHE_PREFIX}${userId}:`) && key.endsWith(suffix))
+      .forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem(this.buildSignalIndexKey(careerStack, experienceLevel));
   }
 
-  private buildResultCacheKey(result: SkillGapResult): string {
+  extractSignalHash(result: SkillGapResult | null | undefined): string {
+    if (!result) return '';
+    return this.resultSignalHash(result);
+  }
+
+  private buildRequestKey(
+    username: string,
+    careerStack: string,
+    experienceLevel: string,
+    isTemporary: boolean,
+    forceRefresh: boolean
+  ): string {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    const signalHash = this.getLatestSignalHash(careerStack, experienceLevel) || 'no-signals';
+    return [
+      isTemporary ? this.clean(username || 'temporary') : userId,
+      this.clean(signalHash),
+      this.clean(careerStack || 'Full Stack'),
+      this.clean(experienceLevel || 'Student'),
+      isTemporary ? 'temporary' : 'saved',
+      forceRefresh ? 'refresh' : 'normal'
+    ].join(':');
+  }
+
+  private buildSignalIndexKey(careerStack: string, experienceLevel: string): string {
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    return [
+      `${SKILL_GAP_CACHE_INDEX_PREFIX}${userId}`,
+      this.clean(careerStack || 'Full Stack'),
+      this.clean(experienceLevel || 'Student')
+    ].join(':');
+  }
+
+  private getLatestSignalHash(careerStack: string, experienceLevel: string): string | null {
+    return localStorage.getItem(this.buildSignalIndexKey(careerStack, experienceLevel));
+  }
+
+  private buildCacheKey(signalHash: string, careerStack: string, experienceLevel: string): string {
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    return [
+      `${SKILL_GAP_CACHE_PREFIX}${userId}`,
+      this.clean(signalHash || 'no-signals'),
+      this.clean(careerStack || 'Full Stack'),
+      this.clean(experienceLevel || 'Student')
+    ].join(':');
+  }
+
+  private resultSignalHash(result: SkillGapResult): string {
     const meta = result.cacheMetadata?.cacheKey || {};
-    const githubUsername = meta.githubUsername || result.username || 'no-github';
-    const careerStack = meta.careerStack || result.careerStack || 'Full Stack';
-    const experienceLevel = meta.experienceLevel || result.experienceLevel || 'Student';
-    const resumeHash = meta.resumeHash || 'no-resume';
-    const resumeId = meta.resumeAnalysisId || 'no-resume';
-    const signalHash = meta.signalHash || result.cacheMetadata?.signalHash || 'no-signals';
-    const version = meta.analysisVersion || result.cacheMetadata?.analysisVersion || 'unknown';
-    return `${SKILL_GAP_CACHE_PREFIX}${userId}:${githubUsername}:${resumeId}:${resumeHash}:${careerStack}:${experienceLevel}:${signalHash}:${version}`;
+    return this.clean(meta.signalHash || result.cacheMetadata?.signalHash || 'no-signals');
+  }
+
+  private clearSignalIndexIfCurrent(careerStack: string, experienceLevel: string, cacheKey: string): void {
+    const indexKey = this.buildSignalIndexKey(careerStack, experienceLevel);
+    const signalHash = localStorage.getItem(indexKey);
+    if (!signalHash) return;
+    if (this.buildCacheKey(signalHash, careerStack, experienceLevel) === cacheKey) {
+      localStorage.removeItem(indexKey);
+    }
+  }
+
+  private clean(value: string): string {
+    return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_.+-]+/g, '-');
   }
 }

@@ -20,7 +20,7 @@ const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
 const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older than this are considered stale
 
-const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
+const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
 
 const clamp = (value, min = 0, max = 100) => {

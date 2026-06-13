@@ -14,6 +14,8 @@ import {
 } from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -41,6 +43,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     private readonly skillGapService:    SkillGapService,
     private readonly githubService:      GithubService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly authService:        AuthService,
+    private readonly frontendCache:      FrontendAnalysisCacheService,
     private readonly cdr:                ChangeDetectorRef
   ) {}
 
@@ -56,21 +60,40 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Fetch the active GitHub username then trigger initial analysis
     this.isInitLoading = true;
-    this.githubService.getActiveUsername().subscribe({
-      next: (data) => {
-        this.defaultUsername = data.username || '';
-        this.username = this.defaultUsername;
-        this.isInitLoading = false;
-        if (this.username) this.analyze();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isInitLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    const storedUsername = this.getStoredActiveUsername();
+    if (storedUsername) {
+      this.applyDefaultUsername(storedUsername);
+      this.isInitLoading = false;
+      this.analyze();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.subscriptions.add(
+      this.githubService.getActiveUsername().subscribe({
+        next: (data) => {
+          this.applyDefaultUsername(data.username || '');
+          this.isInitLoading = false;
+          if (this.username) this.analyze();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isInitLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
+
+  private getStoredActiveUsername(): string {
+    const user = this.authService.getCurrentUser();
+    return String(user?.activeGithubUsername || user?.githubUsername || '').trim().replace(/^@/, '');
+  }
+
+  private applyDefaultUsername(username: string): void {
+    this.defaultUsername = String(username || '').trim().replace(/^@/, '');
+    this.username = this.defaultUsername;
   }
 
   ngOnDestroy(): void {
@@ -82,19 +105,30 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     if (!user) return;
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+    const currentSignalHash = !isTemporary
+      ? this.frontendCache.getCurrentSignalHash({ module: 'developer-signals', careerStack, experienceLevel })
+      : null;
     const cached = !forceRefresh && !isTemporary
       ? this.skillGapService.getCachedResult(user, careerStack, experienceLevel)
       : null;
+    const cachedSignalHash = this.skillGapService.extractSignalHash(cached);
+
+    this.errorMessage = '';
+    if (cached && currentSignalHash && cachedSignalHash === currentSignalHash) {
+      this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (cached && currentSignalHash && cachedSignalHash && cachedSignalHash !== currentSignalHash) {
+      this.skillGapService.invalidateCachedResult(careerStack, experienceLevel);
+    }
 
     this.isLoading = true;
-    this.errorMessage = '';
-    if (cached) {
-      this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
-    } else {
-      this.result = null;
-      this.graphLayout = [];
-      this.graphEdges = [];
-    }
+    this.result = null;
+    this.graphLayout = [];
+    this.graphEdges = [];
     this.cdr.detectChanges();
 
     this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary, forceRefresh).subscribe({

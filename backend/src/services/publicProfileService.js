@@ -42,7 +42,7 @@ const buildBackendOrigin = (req = null) => {
     return `${protocol}://${host}`;
   }
 
-  return String(process.env.PUBLIC_API_ORIGIN || process.env.API_BASE_URL || 'http://localhost:5000')
+  return String(process.env.PUBLIC_API_ORIGIN || process.env.API_BASE_URL || '')
     .trim()
     .replace(/\/+$/, '');
 };

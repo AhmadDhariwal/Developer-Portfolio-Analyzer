@@ -4,11 +4,11 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Chart, registerables } from 'chart.js';
-import { Subscription, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, Subscription, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, shareReplay, skip, tap } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
-import { IntegrationsService, ProviderName } from '../../shared/services/integrations.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
 import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
@@ -49,7 +49,7 @@ export interface IntegrationAnalyticsCard {
 }
 
 interface IntegrationInsightProvider {
-  provider: ProviderName | string;
+  provider: string;
   profileScore: number;
   activityScore: number;
   confidence: number;
@@ -87,6 +87,30 @@ interface DashboardSourcesUsed {
   skillGap?: { connected?: boolean; available?: boolean; status?: string };
   recommendations?: { connected?: boolean; available?: boolean; status?: string };
   integrations?: { connected?: boolean; available?: boolean; status?: string };
+}
+
+interface ReadinessCenterItem {
+  key: string;
+  label: string;
+  value: number;
+  tone?: string;
+}
+
+interface CommandCenterAction {
+  key: string;
+  label: string;
+  value: string;
+  source: string;
+  route: string;
+}
+
+interface SourceFreshnessEntry {
+  key: string;
+  label: string;
+  lastUpdated: string | null;
+  status: string;
+  refreshRecommended: boolean;
+  reason?: string;
 }
 
 @Component({
@@ -137,7 +161,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   integrationInsightsByProvider: Record<string, IntegrationInsightProvider> = {};
   tenantOrgName = '';
   tenantTeamName = '';
-  tenantTeamAnalytics: { totalMembers: number; averageReadinessScore: number } | null = null;
+  tenantTeamAnalytics: {
+    totalMembers: number;
+    averageReadinessScore: number;
+    teamScore?: number;
+    teamActivity?: number;
+    recruiterEngagement?: number;
+    hiringPerformance?: number;
+  } | null = null;
+  readinessCenter: ReadinessCenterItem[] = [];
+  commandCenter: CommandCenterAction[] = [];
+  sourceFreshnessRows: SourceFreshnessEntry[] = [];
+  signalHash = '';
+  contextVersion = '';
+  dashboardStale = false;
+  dashboardRefreshMessage = '';
+  fromFrontendCache = false;
   resumeMetrics = {
     atsScore: 0,
     keywordDensity: 0,
@@ -155,6 +194,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private requestCycle = 0;
   private sourcesUsed: DashboardSourcesUsed = {};
   private languageSource = 'cached_snapshot';
+  private readonly cacheVersion = 'dashboard-v3';
+  private readonly activeRequests = new Map<string, Observable<any>>();
 
   readonly statIconHtml: Record<string, SafeHtml>;
   readonly recIconHtml: Record<string, SafeHtml>;
@@ -164,7 +205,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly careerProfileService: CareerProfileService,
     private readonly cdr: ChangeDetectorRef,
     private readonly tenantContext: TenantContextService,
-    private readonly integrationsService: IntegrationsService,
+    private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly sanitizer: DomSanitizer
   ) {
     const statIcons: Record<string, string> = {
@@ -192,9 +233,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
+        skip(1),
         debounceTime(250),
         distinctUntilChanged((a, b) => a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel)
       ).subscribe(() => {
+        this.clearDashboardCache();
         this.loadDashboardData();
       })
     );
@@ -217,7 +260,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           ).subscribe((res: any) => {
             this.tenantTeamAnalytics = res ? {
               totalMembers: Number(res.totalMembers || 0),
-              averageReadinessScore: Number(res.averageReadinessScore || 0)
+              averageReadinessScore: Number(res.averageReadinessScore || 0),
+              teamScore: Number(res.teamScore || res.averageReadinessScore || 0),
+              teamActivity: Number(res.teamActivity || 0),
+              recruiterEngagement: Number(res.recruiterEngagement || 0),
+              hiringPerformance: Number(res.hiringPerformance || 0)
             } : null;
             this.cdr.detectChanges();
           });
@@ -254,63 +301,35 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   reanalyze(): void {
+    this.clearDashboardCache();
     this.loadDashboardData(true);
   }
 
   loadDashboardData(forceRefresh = false): void {
     const cycle = ++this.requestCycle;
     this.isLoading = true;
+    this.fromFrontendCache = false;
     this.cdr.detectChanges();
 
-    this.apiService.getDashboardSummary(forceRefresh).subscribe({
+    if (!forceRefresh) {
+      const cached = this.frontendCache.get<any>(this.dashboardCacheKey('dashboardSummary'));
+      if (cached) {
+        this.fromFrontendCache = true;
+        this.applyDashboardSummary(cached, cycle);
+        this.loadSecondaryDashboardData(false, cycle);
+        return;
+      }
+    }
+
+    this.cachedDashboardRequest(
+      'dashboardSummary',
+      () => this.apiService.getDashboardSummary(forceRefresh),
+      forceRefresh
+    ).subscribe({
       next: (data: any) => {
         if (!this.isActiveCycle(cycle)) return;
-
-        this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
-        this.lastAnalyzedAt = data.lastAnalyzedAt || null;
-        this.lastAnalyzed = this.formatLastAnalyzed(this.lastAnalyzedAt);
-        this.rateLimitWarning = data.rateLimited === true || data.syncStatus === 'rate_limited';
-        this.noGithubUsername = data.noUsername === true;
-        this.githubScore = Number(data.score || 0);
-        this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
-        this.developerScore = Number(data.readinessScore || 0);
-        this.integrationScore = Number(data?.integration?.score || 0);
-        this.sourcesUsed = data?.sourcesUsed || {};
-        this.languageSource = String(data?.languageSource || 'cached_snapshot');
-
-        this.resumeMetrics = {
-          atsScore: Number(data?.resume?.atsScore || 0),
-          keywordDensity: Number(data?.resume?.keywordDensity || 0),
-          formatScore: Number(data?.resume?.formatScore || 0),
-          contentQuality: Number(data?.resume?.contentQuality || 0)
-        };
-
-        this.aiBreakdown = this.normalizeBreakdown(data?.readinessBreakdown);
-        this.explainabilityBreakdown = {
-          weights: this.getBreakdownWeights(),
-          featureScores: this.aiBreakdown
-        };
-        this.confidenceScore = this.buildConfidenceScore();
-        this.scoreReasons = this.buildScoreReasons();
-
-        this.statCards = [
-          { label: 'Repositories', value: Number(data.repositories || 0), growth: '', iconType: 'repos' },
-          { label: 'Total Stars', value: Number(data.stars || 0), growth: '', iconType: 'stars' },
-          { label: 'Total Forks', value: Number(data.forks || 0), growth: '', iconType: 'forks' },
-          { label: 'Followers', value: Number(data.followers || 0), growth: '', iconType: 'followers' }
-        ];
-
-        this.loadActivityAndLanguage(forceRefresh, cycle);
-        this.loadSkills(forceRefresh, cycle);
-        this.loadRecommendations(forceRefresh, cycle);
-        this.loadIntegrationAnalytics(cycle);
-        this.loadIntegrationInsights();
-
-        if (this.viewInitialized) {
-          this.initRadarChart();
-        }
-
-        this.cdr.detectChanges();
+        this.applyDashboardSummary(data, cycle);
+        setTimeout(() => this.loadSecondaryDashboardData(forceRefresh, cycle), 0);
       },
       error: () => {
         if (!this.isActiveCycle(cycle)) return;
@@ -320,8 +339,80 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private applyDashboardSummary(data: any, cycle: number): void {
+    if (!this.isActiveCycle(cycle)) return;
+
+    const context = data?.dashboardContext || data?.signalMetadata || {};
+    this.signalHash = String(context.signalHash || data?.signalHash || '');
+    const dependencySignalHash = String(context.dependencySignalHash || data?.dependencySignalHash || '');
+    this.contextVersion = String(context.contextVersion || '');
+    this.dashboardStale = Boolean(context.stale || context.refreshRecommended || data?.signalMetadata?.staleSources?.length);
+    this.dashboardRefreshMessage = this.dashboardStale ? 'Analysis refresh recommended' : '';
+    if (dependencySignalHash) {
+      this.frontendCache.setCurrentSignalHash({
+        module: 'developer-signals',
+        careerStack: String(context.careerStack || this.selectedCareerStack || ''),
+        experienceLevel: String(context.experienceLevel || this.selectedExperienceLevel || '')
+      }, dependencySignalHash);
+    }
+
+    this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
+    this.lastAnalyzedAt = data.lastAnalyzedAt || context.lastUpdated || null;
+    this.lastAnalyzed = this.formatLastAnalyzed(this.lastAnalyzedAt);
+    this.rateLimitWarning = data.rateLimited === true || data.syncStatus === 'rate_limited';
+    this.noGithubUsername = data.noUsername === true;
+    this.githubScore = Number(data.score || 0);
+    this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
+    this.developerScore = Number(data.readinessScore || 0);
+    this.integrationScore = Number(data?.integration?.score || 0);
+    this.sourcesUsed = data?.sourcesUsed || {};
+    this.languageSource = String(data?.languageSource || 'cached_snapshot');
+
+    this.resumeMetrics = {
+      atsScore: Number(data?.resume?.atsScore || 0),
+      keywordDensity: Number(data?.resume?.keywordDensity || 0),
+      formatScore: Number(data?.resume?.formatScore || 0),
+      contentQuality: Number(data?.resume?.contentQuality || 0)
+    };
+
+    this.aiBreakdown = this.normalizeBreakdown(data?.readinessBreakdown);
+    this.readinessCenter = this.normalizeReadinessCenter(data?.readinessCenter);
+    this.commandCenter = this.normalizeCommandCenter(data?.commandCenter);
+    this.sourceFreshnessRows = this.normalizeSourceFreshness(data?.sourceFreshness || data?.signalMetadata?.sourceFreshness);
+    this.explainabilityBreakdown = {
+      weights: this.getBreakdownWeights(),
+      featureScores: this.aiBreakdown
+    };
+    this.confidenceScore = this.buildConfidenceScore();
+    this.scoreReasons = this.buildScoreReasons();
+
+    this.statCards = [
+      { label: 'Repositories', value: Number(data.repositories || 0), growth: '', iconType: 'repos' },
+      { label: 'Total Stars', value: Number(data.stars || 0), growth: '', iconType: 'stars' },
+      { label: 'Total Forks', value: Number(data.forks || 0), growth: '', iconType: 'forks' },
+      { label: 'Followers', value: Number(data.followers || 0), growth: '', iconType: 'followers' }
+    ];
+
+    this.applySkillsSnapshot(data?.skillsSnapshot);
+    this.applyRecommendationsSnapshot(data?.recommendationSnapshot);
+
+    if (this.viewInitialized) {
+      this.initRadarChart();
+    }
+
+    this.isLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  private loadSecondaryDashboardData(forceRefresh: boolean, cycle: number): void {
+    if (!this.isActiveCycle(cycle)) return;
+    this.loadActivityAndLanguage(forceRefresh, cycle);
+    this.loadSkills(forceRefresh, cycle);
+    this.loadIntegrationAnalytics(cycle, forceRefresh);
+  }
+
   loadActivityAndLanguage(forceRefresh = false, cycle = this.requestCycle): void {
-    this.apiService.getDashboardContributions(forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardContributions', () => this.apiService.getDashboardContributions(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
         const data = Array.isArray(payload?.data) ? payload.data : [];
@@ -337,7 +428,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {}
     });
 
-    this.apiService.getDashboardLanguages(forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardLanguages', () => this.apiService.getDashboardLanguages(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
         const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
@@ -363,13 +454,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadSkills(forceRefresh = false, cycle = this.requestCycle): void {
-    this.apiService.getDashboardSkills(forceRefresh).subscribe({
+    this.cachedDashboardRequest('dashboardSkills', () => this.apiService.getDashboardSkills(forceRefresh), forceRefresh).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
 
-        this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : [];
-        this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : [];
-        this.coveragePercentage = Math.max(0, Math.min(100, Number(payload?.coveragePercentage || 0)));
+        this.applySkillsSnapshot(payload);
         this.aiBreakdown = this.buildRadarBreakdown();
         this.explainabilityBreakdown = {
           weights: this.getBreakdownWeights(),
@@ -395,31 +484,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  loadRecommendations(forceRefresh = false, cycle = this.requestCycle): void {
-    this.apiService.getDashboardRecommendations(forceRefresh).subscribe({
-      next: (payload: any) => {
-        if (!this.isActiveCycle(cycle)) return;
-
-        const items = Array.isArray(payload?.items) ? payload.items : [];
-        this.recommendations = items.slice(0, 4).map((item: any) => ({
-          title: String(item?.title || 'Recommendation'),
-          priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
-          category: String(item?.category || 'Technology'),
-          priorityType: item?.priorityType === 'low' || item?.priorityType === 'medium' ? item.priorityType : 'high',
-          icon: this.iconForCategory(item?.category)
-        }));
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        if (!this.isActiveCycle(cycle)) return;
-        this.recommendations = [];
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  loadIntegrationAnalytics(cycle = this.requestCycle): void {
-    this.apiService.getDashboardIntegrationAnalytics(7).subscribe({
+  loadIntegrationAnalytics(cycle = this.requestCycle, forceRefresh = false): void {
+    this.cachedDashboardRequest('dashboardIntegrationAnalytics', () => this.apiService.getDashboardIntegrationAnalytics(7), forceRefresh, { limit: 7 }).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
 
@@ -445,31 +511,151 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  loadIntegrationInsights(): void {
-    this.integrationsService.getInsights().subscribe({
-      next: (payload) => {
-        const providers = Array.isArray(payload?.providers) ? payload.providers : [];
-        const mapped: Record<string, IntegrationInsightProvider> = {};
-        providers.forEach((provider) => {
-          const key = String(provider?.provider || '').toLowerCase();
-          if (!key) return;
-          mapped[key] = {
-            provider: provider.provider,
-            profileScore: Number(provider.profileScore || 0),
-            activityScore: Number(provider.activityScore || 0),
-            confidence: Number(provider.confidence || 0),
-            inferredSkills: Array.isArray(provider.inferredSkills) ? provider.inferredSkills : [],
-            normalized: provider.normalized || {},
-            syncedAt: provider.syncedAt || null
-          };
-        });
-        this.integrationInsightsByProvider = mapped;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.integrationInsightsByProvider = {};
-        this.cdr.detectChanges();
-      }
+  private applySkillsSnapshot(payload: any): void {
+    if (!payload) return;
+    this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : this.topSkills;
+    this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : this.missingSkills;
+    this.coveragePercentage = Math.max(0, Math.min(100, Number(payload?.coveragePercentage ?? this.coveragePercentage ?? 0)));
+    if (payload?.stale) {
+      this.dashboardStale = true;
+      this.dashboardRefreshMessage = 'Analysis refresh recommended';
+    }
+  }
+
+  private applyRecommendationsSnapshot(payload: any): void {
+    if (!payload) return;
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    this.recommendations = items.slice(0, 4).map((item: any) => ({
+      title: String(item?.title || 'Recommendation'),
+      priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
+      category: String(item?.category || 'Technology'),
+      priorityType: item?.priorityType === 'low' || item?.priorityType === 'medium' ? item.priorityType : 'high',
+      icon: this.iconForCategory(item?.category)
+    }));
+    if (payload?.stale) {
+      this.dashboardStale = true;
+      this.dashboardRefreshMessage = 'Analysis refresh recommended';
+    }
+  }
+
+  private cachedDashboardRequest<T>(
+    module: string,
+    producer: () => Observable<T>,
+    forceRefresh = false,
+    extra: Partial<FrontendAnalysisCacheKey> = {}
+  ): Observable<T> {
+    const key = this.dashboardCacheKey(module, extra);
+    const requestKey = `${module}:${key.signalHash || 'latest'}:${key.careerStack}:${key.experienceLevel}:${forceRefresh ? 'refresh' : 'cache'}:${key.limit || ''}`;
+
+    if (!forceRefresh) {
+      const cached = this.frontendCache.get<T>(key);
+      if (cached) return of(cached);
+      const active = this.activeRequests.get(requestKey);
+      if (active) return active as Observable<T>;
+    }
+
+    const request$ = producer().pipe(
+      tap((payload: any) => {
+        const payloadSignalHash = payload?.dashboardContext?.signalHash
+          || payload?.signalMetadata?.signalHash
+          || payload?.signalHash
+          || this.signalHash
+          || key.signalHash;
+        this.frontendCache.set({
+          ...key,
+          signalHash: payloadSignalHash || 'no-signals',
+          version: this.dashboardCacheVersion(module, payloadSignalHash)
+        }, payload);
+      }),
+      finalize(() => this.activeRequests.delete(requestKey)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    if (!forceRefresh) this.activeRequests.set(requestKey, request$);
+    return request$;
+  }
+
+  private dashboardCacheKey(module: string, extra: Partial<FrontendAnalysisCacheKey> = {}): FrontendAnalysisCacheKey {
+    return {
+      module,
+      careerStack: this.selectedCareerStack,
+      experienceLevel: this.selectedExperienceLevel,
+      signalHash: extra.signalHash || this.signalHash || '',
+      version: extra.version || this.dashboardCacheVersion(module, extra.signalHash || this.signalHash),
+      ...extra
+    };
+  }
+
+  private dashboardCacheVersion(module: string, signalHash?: string): string {
+    return `${this.cacheVersion}:${module}`;
+  }
+
+  private clearDashboardCache(): void {
+    [
+      'dashboardSummary',
+      'dashboardContributions',
+      'dashboardLanguages',
+      'dashboardSkills',
+      'dashboardRecommendations',
+      'dashboardIntegrationAnalytics'
+    ].forEach((module) => this.frontendCache.clearModule(module));
+    this.activeRequests.clear();
+  }
+
+  private normalizeReadinessCenter(raw: any): ReadinessCenterItem[] {
+    const items = Array.isArray(raw) ? raw : [];
+    if (items.length) {
+      return items.map((item) => ({
+        key: String(item?.key || item?.label || ''),
+        label: String(item?.label || 'Readiness'),
+        value: this.normalizePercent(Number(item?.value || 0)),
+        tone: String(item?.tone || 'primary')
+      }));
+    }
+
+    return [
+      { key: 'overall', label: 'Overall Readiness', value: this.normalizePercent(this.developerScore), tone: 'primary' },
+      { key: 'resume', label: 'Resume Readiness', value: this.normalizePercent(this.resumeMetrics.atsScore), tone: 'blue' },
+      { key: 'portfolio', label: 'Portfolio Readiness', value: this.normalizePercent(this.aiBreakdown?.projectImpact || 0), tone: 'green' },
+      { key: 'interview', label: 'Interview Readiness', value: this.normalizePercent(this.aiBreakdown?.industryReadiness || 0), tone: 'amber' },
+      { key: 'market', label: 'Market Readiness', value: this.normalizePercent(this.coveragePercentage), tone: 'cyan' },
+      { key: 'integration', label: 'Integration Readiness', value: this.normalizePercent(this.integrationScore), tone: 'violet' }
+    ];
+  }
+
+  private normalizeCommandCenter(raw: any): CommandCenterAction[] {
+    const items = Array.isArray(raw) ? raw : [];
+    return items.map((item) => ({
+      key: String(item?.key || item?.label || ''),
+      label: String(item?.label || 'Priority'),
+      value: String(item?.value || 'Not available yet'),
+      source: String(item?.source || 'Dashboard'),
+      route: String(item?.route || '/app/dashboard')
+    })).slice(0, 6);
+  }
+
+  private normalizeSourceFreshness(raw: any): SourceFreshnessEntry[] {
+    const labels: Record<string, string> = {
+      github: 'GitHub',
+      resume: 'Resume',
+      skillGap: 'Skill Gap',
+      recommendations: 'Recommendations',
+      weeklyReports: 'Weekly Reports',
+      jobs: 'Jobs',
+      news: 'News'
+    };
+    const source = raw && typeof raw === 'object' ? raw : {};
+    return Object.keys(labels).map((key) => {
+      const item = source[key] || source[key === 'weeklyReports' ? 'weekly' : key] || {};
+      const status = String(item.status || 'missing');
+      return {
+        key,
+        label: labels[key],
+        lastUpdated: item.lastUpdated || item.updatedAt || null,
+        status,
+        refreshRecommended: Boolean(item.refreshRecommended ?? status !== 'fresh'),
+        reason: String(item.reason || '')
+      };
     });
   }
 

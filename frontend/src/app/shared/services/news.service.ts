@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize, map, Observable, shareReplay } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   NewsFilters,
   NewsItem,
@@ -12,7 +13,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class NewsService {
-  private readonly baseUrl = 'http://localhost:5000/api/news';
+  private readonly baseUrl = `${environment.apiBaseUrl}/news`;
   private readonly pendingRequests = new Map<string, Observable<unknown>>();
 
   constructor(private readonly http: HttpClient) {}

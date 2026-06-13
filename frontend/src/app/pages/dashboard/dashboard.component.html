@@ -11,15 +11,31 @@
   
   <div class="header-actions">
     <div class="role-selector">
-      <span class="role-label">Career Stack:</span>
-      <span class="role-value">{{ selectedCareerStack }}</span>
+      <label class="role-label" for="dashboard-career-stack">Career Stack</label>
+      <select
+        id="dashboard-career-stack"
+        class="role-dropdown"
+        [ngModel]="selectedCareerStack"
+        (ngModelChange)="onCareerStackChange($event)"
+        [disabled]="isLoading"
+      >
+        <option *ngFor="let stack of careerStacks" [ngValue]="stack">{{ stack }}</option>
+      </select>
     </div>
     <div class="role-selector">
-      <span class="role-label">Experience:</span>
-      <span class="role-value">{{ selectedExperienceLevel }}</span>
+      <label class="role-label" for="dashboard-experience">Experience</label>
+      <select
+        id="dashboard-experience"
+        class="role-dropdown"
+        [ngModel]="selectedExperienceLevel"
+        (ngModelChange)="onExperienceLevelChange($event)"
+        [disabled]="isLoading"
+      >
+        <option *ngFor="let level of experienceLevels" [ngValue]="level">{{ level }}</option>
+      </select>
     </div>
 
-    <button class="reanalyze-btn" (click)="reanalyze()">
+    <button class="reanalyze-btn" (click)="reanalyze()" [disabled]="isLoading">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="23 4 23 10 17 10"></polyline>
         <polyline points="1 20 1 14 7 14"></polyline>
@@ -32,8 +48,15 @@
 
 <div class="alert-banner alert-info" *ngIf="tenantTeamAnalytics && tenantTeamName">
   <span>
-    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} | Team Avg Readiness: {{ tenantTeamAnalytics.averageReadinessScore }}
+    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} | Team Score: {{ tenantTeamAnalytics.teamScore || tenantTeamAnalytics.averageReadinessScore }} | Activity: {{ tenantTeamAnalytics.teamActivity || 0 }} | Recruiter Engagement: {{ tenantTeamAnalytics.recruiterEngagement || 0 }} | Hiring Performance: {{ tenantTeamAnalytics.hiringPerformance || 0 }}
   </span>
+</div>
+
+<div *ngIf="dashboardStale && !isLoading" class="alert-banner alert-warning">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>{{ dashboardRefreshMessage || 'Analysis refresh recommended' }}</span>
 </div>
 
 <div *ngIf="rateLimitWarning" class="alert-banner alert-warning">
@@ -90,6 +113,44 @@
       <div class="stat-label">{{ card.label }}</div>
       <div class="stat-growth">{{ card.growth }}</div>
     </div>
+  </div>
+</div>
+
+<div class="readiness-center">
+  <div class="section-title-row">
+    <div>
+      <h3>Readiness Center</h3>
+      <p>One profile-wide view of resume, portfolio, market, and integration readiness</p>
+    </div>
+    <span class="context-pill" *ngIf="contextVersion">{{ contextVersion }}</span>
+  </div>
+  <div class="readiness-grid">
+    <div class="card readiness-card" *ngFor="let item of readinessCenter" [class]="'card readiness-card tone-' + (item.tone || 'primary')">
+      <div class="readiness-card__top">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}%</strong>
+      </div>
+      <div class="readiness-track">
+        <div class="readiness-fill" [style.width.%]="item.value"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="command-center">
+  <div class="section-title-row">
+    <div>
+      <h3>Career Command Center</h3>
+      <p>Actionable priorities sourced from your existing modules</p>
+    </div>
+    <span class="context-pill" *ngIf="fromFrontendCache">Cache hit</span>
+  </div>
+  <div class="command-grid">
+    <a class="card command-card" *ngFor="let item of commandCenter" [routerLink]="[item.route]">
+      <span class="command-source">{{ item.source }}</span>
+      <strong>{{ item.label }}</strong>
+      <p>{{ item.value }}</p>
+    </a>
   </div>
 </div>
 
@@ -246,6 +307,24 @@
       </div>
       <p class="rec-title">{{ rec.title }}</p>
       <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="freshness-section">
+  <div class="section-title-row">
+    <div>
+      <h3>Source Freshness</h3>
+      <p>Dashboard context updates without mixing fresh and stale dependent analysis</p>
+    </div>
+  </div>
+  <div class="freshness-grid">
+    <div class="card freshness-card" *ngFor="let source of sourceFreshnessRows" [class.is-stale]="source.refreshRecommended">
+      <div class="freshness-card__top">
+        <strong>{{ source.label }}</strong>
+        <span>{{ source.status === 'fresh' ? 'Fresh' : 'Refresh Recommended' }}</span>
+      </div>
+      <p>Last Updated: {{ formatIntegrationDate(source.lastUpdated) }}</p>
     </div>
   </div>
 </div>

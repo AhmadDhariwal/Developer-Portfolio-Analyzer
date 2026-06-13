@@ -36,6 +36,8 @@ export class ResumeService {
 
   private readonly loadingSubject = new BehaviorSubject<boolean>(false);
   loading$ = this.loadingSubject.asObservable();
+  private readonly currentAnalysisSubject = new BehaviorSubject<any | null>(null);
+  currentAnalysis$ = this.currentAnalysisSubject.asObservable();
 
   constructor() {
     // Initial fetch
@@ -65,6 +67,18 @@ export class ResumeService {
 
   resumesSubjectValue(): ResumeFile[] {
     return this.resumesSubject.value;
+  }
+
+  loadingSubjectValue(): boolean {
+    return this.loadingSubject.value;
+  }
+
+  getCurrentAnalysis<T = any>(): T | null {
+    return (this.currentAnalysisSubject.value as T | null) ?? null;
+  }
+
+  setCurrentAnalysis<T = any>(analysis: T | null): void {
+    this.currentAnalysisSubject.next(analysis);
   }
 
   getCurrentUserId(): string {
@@ -111,12 +125,14 @@ export class ResumeService {
       analysisVersion: analysis?.analysisVersion || file?.analysisVersion || 'resume-intel-v2'
     });
     localStorage.setItem(key, JSON.stringify({ cachedAt: Date.now(), analysis }));
+    this.currentAnalysisSubject.next(analysis || null);
   }
 
   clearResumeAnalysisCache(): void {
     Object.keys(localStorage)
       .filter((key) => key.startsWith(RESUME_ANALYSIS_CACHE_PREFIX))
       .forEach((key) => localStorage.removeItem(key));
+    this.currentAnalysisSubject.next(null);
   }
 
   // Update a single resume to default
