@@ -73,7 +73,14 @@ const average = (values = []) => {
 const sourceList = (...sources) => uniqueStrings(sources.flat().filter(Boolean), 8);
 
 const isCacheFresh = (cache) => {
-  const updatedAt = cache?.updatedAt || cache?.createdAt;
+  if (!cache) return false;
+  // Check explicit expiresAt if present on the cache document
+  if (cache.expiresAt) {
+    const expiresTimestamp = new Date(cache.expiresAt).getTime();
+    if (Number.isFinite(expiresTimestamp) && Date.now() > expiresTimestamp) return false;
+  }
+  // Fall back to updatedAt / createdAt with TTL
+  const updatedAt = cache.updatedAt || cache.createdAt;
   if (!updatedAt) return false;
   const timestamp = new Date(updatedAt).getTime();
   return Number.isFinite(timestamp) && (Date.now() - timestamp) <= RECOMMENDATION_TTL_MS;
@@ -401,69 +408,77 @@ const buildRecommendationFallback = ({
     sourceSignalsUsed: sourceList('skillGapSignals', 'weeklyReportSignals', 'careerSprintSignals', highDemandSkills.includes(skill) ? 'jobMarketSignals' : '')
   }));
 
-  const roleLabel = `${careerStack} Engineer`;
-  const careerPaths = [
-    {
+  // Build signal-derived career paths instead of hardcoded templates.
+  // Paths are only included when backed by real signals: careerStack, experienceLevel,
+  // skillGap, jobs demand, and recommendation evidence.
+  const careerPaths = [];
+  const hasSufficientEvidence =
+    (knownSkills.length >= 1 || githubInsights.repoCount > 0 || resumeInsights.atsScore > 0) &&
+    (jobsDemandSignal.present || skillGapSignal.present || githubInsights.repoCount > 0);
+
+  // Primary path: derived from careerStack and experienceLevel
+  if (hasSufficientEvidence) {
+    const primaryEvidence = uniqueStrings([
+      careerStack,
+      experienceLevel,
+      ...(jobsDemandSignal.topSkills || []).slice(0, 3).map((skill) => skill?.name || skill),
+      ...(skillGapSignal.immediateSkills || []).slice(0, 2)
+    ], 5);
+    careerPaths.push({
       id: 'c_1',
-      title: roleLabel,
-      match: clamp(76 + Math.min(12, knownSkills.length)),
+      title: `${careerStack} Engineer`,
+      match: clamp(72 + Math.min(14, knownSkills.length) + (jobsDemandSignal.present ? 6 : 0)),
       salaryRange: 'Market dependent',
-      description: `Best-fit target path based on current stack evidence from GitHub, resume, and recent learning focus.`,
+      description: `Primary career path derived from your ${careerStack} stack alignment, ${experienceLevel} experience level, and ${knownSkills.length} detected skills.`,
       timeline: sprintSignal.consistencyScore < 45 ? '4-8 months' : '3-6 months',
-      hiringCompanies: ['Product teams', 'SaaS companies', 'Startups'],
+      hiringCompanies: [],
       actionItems: normalizeActionList([
-        `Convert ${focusSkills[0] || 'your main gap'} into a shipped project`,
-        `Quantify ${resumeInsights.keyAchievements?.[0] || 'recent outcomes'} on your resume`
-      ], [], 2, 4),
-      evidence: uniqueStrings([careerStack, experienceLevel, focusSkills[0], `${knownSkills.length} known skills`], 5),
-      sourceSignalsUsed: sourceList('careerProfile', 'skillGapSignals', 'resumeSignals', 'githubSignals', 'jobMarketSignals'),
+        focusSkills[0] ? `Convert ${focusSkills[0]} into a shipped project` : '',
+        resumeInsights.keyAchievements?.[0] ? `Quantify ${resumeInsights.keyAchievements[0]} on your resume` : '',
+        jobsDemandSignal.topSkills?.[0] ? `Align your portfolio with in-demand skills like ${jobsDemandSignal.topSkills[0]?.name || jobsDemandSignal.topSkills[0]}` : ''
+      ], [], 1, 4),
+      evidence: primaryEvidence,
+      sourceSignalsUsed: sourceList('careerProfile', 'skillGapSignals', 'resumeSignals', 'githubSignals', jobsDemandSignal.present ? 'jobMarketSignals' : ''),
       priority: 'High',
-      confidenceScore: clamp(72 + Math.min(14, knownSkills.length)),
+      confidenceScore: clamp(72 + Math.min(14, knownSkills.length) + (jobsDemandSignal.present ? 8 : 0)),
       estimatedImpact: 82,
       estimatedEffort: sprintSignal.consistencyScore < 45 ? '4-8 months' : '3-6 months',
       exploreUrl: toSearchUrl(`${careerStack} engineer roadmap`)
-    },
-    {
+    });
+  }
+
+  // Secondary path: only if jobs demand data exists with alternative stack alignment
+  if (jobsDemandSignal.present && jobsDemandSignal.topSkills?.length >= 3) {
+    const altSkills = jobsDemandSignal.topSkills
+      .map((skill) => skill?.name || skill)
+      .filter(Boolean)
+      .slice(0, 5);
+    const altSkillStr = altSkills.slice(0, 3).join(', ');
+    careerPaths.push({
       id: 'c_2',
-      title: `${careerStack} Platform Contributor`,
-      match: clamp(64 + (githubInsights.scores?.architecture || 0)),
+      title: `${careerStack} Specialist`,
+      match: clamp(60 + Math.min(10, altSkills.length * 6)),
       salaryRange: 'Market dependent',
-      description: 'Good secondary path if you deepen delivery, reliability, and collaboration proof.',
-      timeline: '6-9 months',
-      hiringCompanies: ['Growth-stage startups', 'Platform teams'],
+      description: `A specialized path for ${careerStack} developers focusing on high-demand market skills: ${altSkillStr}.`,
+      timeline: '4-8 months',
+      hiringCompanies: [],
       actionItems: normalizeActionList([
-        `Improve ${focusSkills[1] || 'delivery quality'} through a production-like build`,
-        'Add clearer architectural tradeoffs in project documentation'
+        `Focus learning on ${altSkills[0] || 'a high-demand skill'} to improve market visibility`,
+        `Add ${altSkillStr} proof to your GitHub repositories`
       ], [], 2, 4),
-      evidence: uniqueStrings([githubInsights.scores?.architecture ? 'Architecture score signal' : '', focusSkills[1]], 4),
-      sourceSignalsUsed: sourceList('githubSignals', 'portfolioSignals', 'skillGapSignals'),
+      evidence: altSkills,
+      sourceSignalsUsed: sourceList('jobMarketSignals', 'skillGapSignals'),
       priority: 'Medium',
-      confidenceScore: 68,
-      estimatedImpact: 74,
-      estimatedEffort: '6-9 months',
-      exploreUrl: toSearchUrl(`${careerStack} platform engineer roadmap`)
-    },
-    {
-      id: 'c_3',
-      title: 'Solution-Focused Developer',
-      match: clamp(58 + portfolioSignal.projectPresentationQuality),
-      salaryRange: 'Market dependent',
-      description: 'A practical alternative path for developers growing stronger product and communication proof.',
-      timeline: '6-12 months',
-      hiringCompanies: ['Consultancies', 'Service companies'],
-      actionItems: normalizeActionList([
-        'Polish portfolio case studies with clearer outcomes',
-        'Add stronger external proof through integrations and shipped demos'
-      ], [], 2, 4),
-      evidence: uniqueStrings([`Portfolio quality ${portfolioSignal.projectPresentationQuality || 0}%`, `${portfolioSignal.liveLinks || 0} live links`], 4),
-      sourceSignalsUsed: sourceList('portfolioSignals', 'integrationSignals', 'resumeSignals'),
-      priority: portfolioSignal.completenessScore < 60 ? 'High' : 'Medium',
-      confidenceScore: clamp(62 + portfolioSignal.projectPresentationQuality / 4),
-      estimatedImpact: 70,
-      estimatedEffort: '6-12 months',
-      exploreUrl: toSearchUrl('software consultant developer roadmap')
-    }
-  ];
+      confidenceScore: clamp(58 + Math.min(10, altSkills.length * 6)),
+      estimatedImpact: 72,
+      estimatedEffort: '4-8 months',
+      exploreUrl: toSearchUrl(`${careerStack} ${altSkills[0] || ''} specialist roadmap`)
+    });
+  }
+
+  // Note: No generic third path is added. If insufficient evidence exists,
+  // careerPaths remains minimal (0-2 items) instead of showing hardcoded templates.
+ REPLACE
 
   return normalizeRecommendationPayload({
     analysisSummary: `${summaryParts[0]}, ${summaryParts[1]}, ${summaryParts[2]}, and ${summaryParts[3]}. Recommendations therefore prioritize ${projectFocusSkills[0] || 'the highest-value missing proof'} through realistic next steps.`,

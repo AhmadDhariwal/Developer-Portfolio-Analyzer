@@ -18,6 +18,7 @@ const { getDeveloperSignals, buildSignalsUsedSummary } = require('./developerSig
 const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
+const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older than this are considered stale
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || 'http://localhost:4200').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
@@ -41,10 +42,10 @@ const toCleanStrings = (values = [], limit = 6) => {
 
 const escapeHtml = (value = '') => {
   return String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
+    .replaceAll('&', '&')
+    .replaceAll('<', '<')
+    .replaceAll('>', '>')
+    .replaceAll('"', '"')
     .replaceAll("'", '&#39;');
 };
 
@@ -121,6 +122,8 @@ const buildEmailHtml = ({
   topAchievements,
   biggestRiskArea,
   predictedHiringReadiness,
+  staleWarning = null,
+  staleRecommendation = '',
   reportLink
 }) => {
   const safeRecommendations = toCleanStrings(recommendations, 5);
@@ -140,6 +143,12 @@ const buildEmailHtml = ({
   const achievementsList = safeAchievements.map((achievement) => `
     <li style="margin-bottom:10px; color:#dee5ff; line-height:1.6;">${escapeHtml(achievement)}</li>`).join('');
 
+  const staleHtml = staleWarning ? `
+    <div style="background:rgba(251, 191, 36, 0.08); border-radius:16px; padding:20px; margin-bottom:24px; border:1px solid rgba(251, 191, 36, 0.2);">
+      <div style="font-size:14px; font-weight:700; color:#fbbf24; margin-bottom:8px;">⚠️  Analysis Refresh Recommended</div>
+      <p style="margin:0; font-size:14px; line-height:1.5; color:#dee5ff;">${escapeHtml(staleWarning)}${escapeHtml(staleRecommendation)}</p>
+    </div>` : '';
+
   return `
     <!DOCTYPE html>
     <html>
@@ -154,6 +163,8 @@ const buildEmailHtml = ({
           <h1 style="font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:700; color:#a3a6ff; margin:0; text-transform:uppercase; letter-spacing:1px;">Weekly Insight</h1>
           <p style="margin:8px 0 0 0; color:#a3aac4; font-size:14px;">Your AI Career Momentum Report</p>
         </div>
+
+        ${staleHtml}
 
         <div style="background:linear-gradient(135deg, #091328 0%, #0f1930 100%); border-radius:24px; padding:32px; text-align:center; margin-bottom:24px; border:1px solid rgba(163, 166, 255, 0.1);">
           <div style="font-family:'Space Grotesk', sans-serif; font-size:64px; font-weight:700; color:#a3a6ff; line-height:1; margin-bottom:8px;">${clampPercent(score)}%</div>
@@ -224,16 +235,25 @@ const buildEmailText = ({
   topAchievements,
   biggestRiskArea,
   predictedHiringReadiness,
+  staleWarning = null,
+  staleRecommendation = '',
   reportLink
 }) => {
   const safeRecommendations = toCleanStrings(recommendations, 5);
   const safeAchievements = toCleanStrings(topAchievements, 3);
   const readiness = predictedHiringReadiness || { score: 0, reason: '' };
 
+  const staleSection = staleWarning ? [
+    '',
+    '⚠️  ANALYSIS REFRESH RECOMMENDED',
+    `${staleWarning}${staleRecommendation}`,
+  ] : [];
+
   return [
     `Hi ${name || 'there'},`,
     '',
     'Your weekly AI coach report is ready.',
+    ...staleSection,
     '',
     `Summary: ${String(summary || '').trim()}`,
     '',
@@ -476,6 +496,13 @@ const loadDefaultResumeAnalysis = async (userId, user = {}) => {
     .lean();
 };
 
+const toSourceFreshness = (lastAnalyzedAt) => {
+  if (!lastAnalyzedAt) return 'unavailable';
+  const timestamp = new Date(lastAnalyzedAt).getTime();
+  if (!Number.isFinite(timestamp)) return 'unavailable';
+  return (Date.now() - timestamp) <= SOURCE_STALE_MS ? 'fresh' : 'stale';
+};
+
 const buildDataSourcesUsed = ({
   analysis,
   resumeAnalysis,
@@ -491,7 +518,7 @@ const buildDataSourcesUsed = ({
   const integrationSignal = developerSignals?.integrationSignal || {};
   const sprintSignal = developerSignals?.careerSprintSignal || {};
 
-  return {
+  const sources = {
     github: {
       connected: Boolean(analysis),
       lastAnalyzedAt: analysis?.updatedAt || analysis?.createdAt || null,
@@ -534,6 +561,38 @@ const buildDataSourcesUsed = ({
         ? `${integrationConnections.filter((connection) => connection?.status === 'connected').length} connected`
         : 'Unavailable'
     }
+  };
+
+  // Attach freshness to each source
+  Object.keys(sources).forEach((key) => {
+    sources[key].freshness = toSourceFreshness(sources[key].lastAnalyzedAt);
+  });
+
+  return sources;
+};
+
+const buildSourceFreshnessWarning = (dataSourcesUsed) => {
+  const staleSources = [];
+  const criticalSources = ['github', 'resume', 'skillGap'];
+
+  criticalSources.forEach((key) => {
+    const source = dataSourcesUsed[key];
+    if (source && source.connected && source.freshness === 'stale') {
+      staleSources.push(key);
+    }
+  });
+
+  if (staleSources.length === 0) return null;
+
+  const labels = { github: 'GitHub analysis', resume: 'Resume analysis', skillGap: 'Skill gap analysis' };
+  const staleLabels = staleSources.map((key) => labels[key] || key);
+
+  return {
+    detection: true,
+    staleSources: staleLabels,
+    message: `${staleLabels.join(', ')} data is over 7 days old. Analysis refresh is recommended before trusting this report's insights.`,
+    severity: staleSources.length >= 2 ? 'high' : 'medium',
+    recommendation: 'Run a fresh analysis from the Dashboard to update your GitHub, resume, and skill gap data before generating the next weekly report.'
   };
 };
 
@@ -1213,6 +1272,7 @@ const generateWeeklyReport = async (userId, options = {}) => {
       reportHash,
       narrativeSource,
       scoreBreakdown,
+      sourceFreshness: buildSourceFreshnessWarning(dataSourcesUsed),
       snapshot: userData
     }
   };
@@ -1246,8 +1306,17 @@ const sendWeeklyReportEmail = async (report, user) => {
     return { sent: false, reason: 'No email provider configured.' };
   }
 
+  const staleWarning = report.meta?.sourceFreshness?.detection
+    ? report.meta.sourceFreshness.message
+    : null;
+  const staleRecommendation = report.meta?.sourceFreshness?.detection
+    ? `\n\n${report.meta.sourceFreshness.recommendation}`
+    : '';
+
   const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports`;
-  const subject = `[Insight] Your Weekly Performance Report: ${report.score}%`;
+  const subject = staleWarning
+    ? `[Insight] ${report.score}% Weekly — Refresh Recommended`
+    : `[Insight] Your Weekly Performance Report: ${report.score}%`;
   const html = buildEmailHtml({
     name: user.name,
     score: report.score,
@@ -1258,6 +1327,8 @@ const sendWeeklyReportEmail = async (report, user) => {
     topAchievements: report.topAchievements,
     biggestRiskArea: report.biggestRiskArea,
     predictedHiringReadiness: report.predictedHiringReadiness,
+    staleWarning,
+    staleRecommendation,
     reportLink
   });
   const text = buildEmailText({
@@ -1267,6 +1338,8 @@ const sendWeeklyReportEmail = async (report, user) => {
     topAchievements: report.topAchievements,
     biggestRiskArea: report.biggestRiskArea,
     predictedHiringReadiness: report.predictedHiringReadiness,
+    staleWarning,
+    staleRecommendation,
     reportLink
   });
 

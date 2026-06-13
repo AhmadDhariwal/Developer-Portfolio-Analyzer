@@ -19,6 +19,7 @@ const { extractSkillsFromRepositories, canonicalizeSkillName, INDUSTRY_SKILLS } 
 const ANALYSIS_VERSION = 'v5-skill-intelligence';
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
+const DETERMINISTIC_CONFIDENCE_THRESHOLD = 70;
 
 const DEFAULT_MISSING_SKILLS = [
   'Testing',
@@ -307,6 +308,23 @@ const clamp = (value, min = 0, max = 100) => {
   const numeric = Number(value || 0);
   if (!Number.isFinite(numeric)) return min;
   return Math.max(min, Math.min(max, Math.round(numeric)));
+};
+
+const computeDeterministicConfidence = ({ evidenceBreakdown, resumeInsights, githubData, developerSignals }) => {
+  const provenCount = (evidenceBreakdown?.provenSkills || []).length;
+  const claimedNotProven = (evidenceBreakdown?.claimedButNotProvenSkills || []).length;
+  const missingExpected = (evidenceBreakdown?.missingExpectedSkills || []).length;
+  const totalGap = provenCount + claimedNotProven + missingExpected;
+  const evidenceRatio = totalGap > 0
+    ? (provenCount + claimedNotProven * 0.5) / totalGap
+    : 0.3;
+  const resumeFactor = clamp(resumeInsights?.atsScore || 0) / 100;
+  const githubFactor = Math.min(1, (githubData?.repoCount || 0) / 10);
+  const integrationFactor = developerSignals?.integrationSignal?.present ? 0.8 : 0.4;
+  const jobsFactor = developerSignals?.jobsDemandSignal?.present ? 0.8 : 0.4;
+  return clamp(
+    (evidenceRatio * 40) + (resumeFactor * 20) + (githubFactor * 20) + (integrationFactor * 10) + (jobsFactor * 10)
+  );
 };
 
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
@@ -761,6 +779,14 @@ const analyzeSkillGap = async (req, res) => {
       experienceLevel
     });
 
+    const deterministicConfidence = computeDeterministicConfidence({
+      evidenceBreakdown,
+      resumeInsights,
+      githubData,
+      developerSignals
+    });
+    const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
+
     const cacheKey = {
       githubUsername: username,
       careerStack,
@@ -772,7 +798,7 @@ const analyzeSkillGap = async (req, res) => {
     };
 
     const scopedCacheKey = req.user?._id && !isTemporaryMode
-      ? { ...cacheKey, userId: req.user._id }
+      ? { userId: req.user._id, githubUsername: username, careerStack, experienceLevel, resumeHash: resumeCacheIdentity.resumeHash, resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId, signalHash, analysisVersion: ANALYSIS_VERSION }
       : null;
     const cached = scopedCacheKey && !forceRefresh ? await AnalysisCache.findOne(scopedCacheKey).lean() : null;
     if (cached?.analysisData) {
@@ -786,6 +812,8 @@ const analyzeSkillGap = async (req, res) => {
         }),
         resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
         fromCache: true,
+        aiUsed: Boolean(cached.analysisData.aiUsed),
+        deterministicConfidence: cached.analysisData.deterministicConfidence || 0,
         cacheMetadata: {
           ...(cached.analysisData.cacheMetadata || {}),
           loadedFromCache: true,
@@ -809,66 +837,170 @@ const analyzeSkillGap = async (req, res) => {
       return res.json(cachedResult);
     }
 
-    const detectedSkills = {
-      github: uniqueByLower([
-        ...evidenceBreakdown.githubSkills,
-        ...resumeInsights.skills.slice(0, 12),
-        ...(developerSignals.integrationSignal?.detectedSkills || []).slice(0, 10)
-      ]),
-      repoQuality: githubData.scores || {},
-      evidenceSummary: {
-        repoCount: githubData.repoCount || 0,
-        topLanguages: (githubData.languageDistribution || []).slice(0, 8),
-        provenSkills: evidenceBreakdown.provenSkills,
-        claimedButNotProvenSkills: evidenceBreakdown.claimedButNotProvenSkills,
-        highDemandSkills: (developerSignals.jobsDemandSignal?.topSkills || []).slice(0, 10)
-      }
-    };
-
-    const fallback = buildFallbackSkillGap({
+    // Build deterministic groups first — these always anchor the result.
+    const deterministicGroups = buildDeterministicSkillGroups({
       resumeInsights,
-      githubInsights,
+      githubData,
       developerSignals,
       evidenceBreakdown,
       careerStack,
-      experienceLevel
-    });
-    const prompt = getSkillGapPrompt(
-      careerStack,
       experienceLevel,
-      detectedSkills,
-      resumeInsights,
-      {
-        repoCount: githubInsights.repoCount,
-        developerLevel: githubInsights.developerLevel,
-        strengths: (githubInsights.strengths || []).slice(0, 8),
-        weakAreas: (githubInsights.weakAreas || []).slice(0, 8),
-        languageDistribution: (githubInsights.languageDistribution || []).slice(0, 8),
-        scores: githubInsights.scores || {}
-      },
-      developerSignals
-    );
-
-    const aiResult = await aiService.runAIAnalysis(prompt, {
-      yourSkills: fallback.yourSkills,
-      missingSkills: fallback.missingSkills,
-      coverage: fallback.coverage,
-      missing: fallback.missing,
-      levelAssessment: fallback.levelAssessment,
-      roadmap: fallback.roadmap,
-      totalWeeks: fallback.totalWeeks,
-      analysisSummary: fallback.analysisSummary
+      aiKnownSkills: [],
+      aiMissingSkills: []
     });
 
-    let yourSkills = (Array.isArray(aiResult.yourSkills) ? aiResult.yourSkills : [])
-      .map((skill) => ({
-        name: toSkillName(skill),
-        category: skill?.category || 'General',
-        proficiency: clamp(skill?.proficiency || 50),
-        isFoundational: Boolean(skill?.isFoundational)
-      }))
-      .filter((skill) => skill.name);
+    let aiUsed = false;
+    let aiResult = null;
 
+    if (!skipAI) {
+      const detectedSkills = {
+        github: uniqueByLower([
+          ...evidenceBreakdown.githubSkills,
+          ...resumeInsights.skills.slice(0, 12),
+          ...(developerSignals.integrationSignal?.detectedSkills || []).slice(0, 10)
+        ]),
+        repoQuality: githubData.scores || {},
+        evidenceSummary: {
+          repoCount: githubData.repoCount || 0,
+          topLanguages: (githubData.languageDistribution || []).slice(0, 8),
+          provenSkills: evidenceBreakdown.provenSkills,
+          claimedButNotProvenSkills: evidenceBreakdown.claimedButNotProvenSkills,
+          highDemandSkills: (developerSignals.jobsDemandSignal?.topSkills || []).slice(0, 10)
+        }
+      };
+
+      const fallback = buildFallbackSkillGap({
+        resumeInsights,
+        githubInsights,
+        developerSignals,
+        evidenceBreakdown,
+        careerStack,
+        experienceLevel
+      });
+      const prompt = getSkillGapPrompt(
+        careerStack,
+        experienceLevel,
+        detectedSkills,
+        resumeInsights,
+        {
+          repoCount: githubInsights.repoCount,
+          developerLevel: githubInsights.developerLevel,
+          strengths: (githubInsights.strengths || []).slice(0, 8),
+          weakAreas: (githubInsights.weakAreas || []).slice(0, 8),
+          languageDistribution: (githubInsights.languageDistribution || []).slice(0, 8),
+          scores: githubInsights.scores || {}
+        },
+        developerSignals
+      );
+
+      aiResult = await aiService.runAIAnalysis(prompt, {
+        yourSkills: fallback.yourSkills,
+        missingSkills: fallback.missingSkills,
+        coverage: fallback.coverage,
+        missing: fallback.missing,
+        levelAssessment: fallback.levelAssessment,
+        roadmap: fallback.roadmap,
+        totalWeeks: fallback.totalWeeks,
+        analysisSummary: fallback.analysisSummary
+      });
+
+      aiUsed = aiResult && typeof aiResult === 'object' && aiResult.__fallback !== true;
+    } else {
+      aiResult = {
+        __fallback: true,
+        yourSkills: [],
+        missingSkills: [],
+        coverage: 0,
+        missing: 0,
+        levelAssessment: '',
+        roadmap: [],
+        totalWeeks: '',
+        analysisSummary: ''
+      };
+    }
+
+    // Merge AI output into deterministic groups.
+    // Deterministic evidence always anchors the result; AI adds only where evidence agrees or stack is relevant.
+
+    let yourSkills = [...(deterministicGroups.yourSkills || [])];
+    let missingSkills = [...(deterministicGroups.missingSkills || [])];
+    const weakSkills = [...(deterministicGroups.weakSkills || [])];
+    const highDemandSkills = [...(deterministicGroups.highDemandSkills || [])];
+
+    const existingSkillNames = new Set([
+      ...yourSkills.map((skill) => String(skill.name || '').toLowerCase()).filter(Boolean),
+      ...missingSkills.map((skill) => String(skill.name || '').toLowerCase()).filter(Boolean)
+    ]);
+
+    // Build evidence lookup: which skill names have corroborating signals across the platform
+    const evidenceSkillNames = new Set([
+      ...(evidenceBreakdown.provenSkills || []).map((value) => value.toLowerCase()),
+      ...(evidenceBreakdown.githubSkills || []).map((value) => value.toLowerCase()),
+      ...(evidenceBreakdown.resumeSkills || []).map((value) => value.toLowerCase()),
+      ...(evidenceBreakdown.claimedButNotProvenSkills || []).map((value) => value.toLowerCase()),
+      ...(developerSignals.integrationSignal?.detectedSkills || []).map((value) => String(value).toLowerCase()),
+      ...(developerSignals.careerSprintSignal?.completedSkillSignals || []).map((value) => String(value).toLowerCase()),
+      ...(developerSignals.portfolioSignal?.portfolioSkills || []).map((value) => String(value).toLowerCase()),
+      ...(developerSignals.jobsDemandSignal?.topSkills || []).map((value) => String(value?.name || value).toLowerCase()),
+      ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []).map((value) => String(value).toLowerCase()),
+      ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []).map((value) => String(value).toLowerCase())
+    ]);
+
+    // Merge AI yourSkills: add only if not already present and has evidence backing
+    if (aiUsed && Array.isArray(aiResult.yourSkills)) {
+      aiResult.yourSkills.forEach((skill) => {
+        const name = toSkillName(skill);
+        if (!name || existingSkillNames.has(name.toLowerCase())) return;
+        const proficiency = clamp(skill?.proficiency || 50);
+        if (proficiency < 35) return;
+        const skillLower = name.toLowerCase();
+        const hasEvidence = evidenceSkillNames.has(skillLower);
+        existingSkillNames.add(name.toLowerCase());
+        yourSkills.push({
+          name,
+          category: skill?.category || 'General',
+          proficiency: hasEvidence ? clamp(proficiency + 8) : proficiency,
+          isFoundational: Boolean(skill?.isFoundational),
+          confidenceScore: hasEvidence ? clamp(proficiency + 12) : clamp(proficiency - 10),
+          source: hasEvidence ? 'AI + Evidence' : 'AI'
+        });
+      });
+    }
+
+    // Merge AI missingSkills: add only if not already present AND has evidence or is stack-relevant
+    if (aiUsed && Array.isArray(aiResult.missingSkills)) {
+      aiResult.missingSkills.forEach((skill) => {
+        const name = toSkillName(skill);
+        if (!name || existingSkillNames.has(name.toLowerCase())) return;
+        const skillLower = name.toLowerCase();
+        const hasEvidence = evidenceSkillNames.has(skillLower) || (evidenceBreakdown.missingExpectedSkills || []).some(
+          (expected) => String(expected).toLowerCase() === skillLower
+        );
+        const isStackRelevant = isRelevantForStack(name, careerStack);
+        if (!hasEvidence && !isStackRelevant) return;
+        existingSkillNames.add(name.toLowerCase());
+        missingSkills.push({
+          name,
+          category: skill?.category || 'General',
+          priority: hasEvidence ? (skill?.priority || 'Medium') : 'Low',
+          jobDemand: clamp(skill?.jobDemand || 60),
+          levelRelevance: skill?.levelRelevance || 'Current',
+          confidenceScore: hasEvidence ? clamp((skill?.jobDemand || 60) + 10) : 40,
+          source: hasEvidence ? 'AI + Evidence' : 'AI (stack-relevant)'
+        });
+      });
+    }
+
+    // Apply evidence adjustments to enrich proficiency and priority
+    const evidenceAdjusted = applySkillEvidence({
+      yourSkills,
+      missingSkills,
+      signals: developerSignals
+    });
+    yourSkills = evidenceAdjusted.yourSkills;
+    missingSkills = evidenceAdjusted.missingSkills;
+
+    // Ensure minimum counts with stack-aligned fallback
     const detectedKnown = uniqueByLower([
       ...evidenceBreakdown.provenSkills,
       ...resumeInsights.skills,
@@ -880,72 +1012,44 @@ const analyzeSkillGap = async (req, res) => {
     ]);
 
     while (yourSkills.length < MIN_KNOWN_SKILLS && detectedKnown[yourSkills.length]) {
-      yourSkills.push({
-        name: detectedKnown[yourSkills.length],
-        category: 'General',
-        proficiency: 60,
-        isFoundational: true
-      });
+      const skillName = detectedKnown[yourSkills.length];
+      if (!existingSkillNames.has(skillName.toLowerCase())) {
+        existingSkillNames.add(skillName.toLowerCase());
+        yourSkills.push({
+          name: skillName,
+          category: 'General',
+          proficiency: 60,
+          isFoundational: true,
+          confidenceScore: 60,
+          source: 'Evidence fallback'
+        });
+      }
     }
 
-    let missingSkills = (Array.isArray(aiResult.missingSkills) ? aiResult.missingSkills : [])
-      .map((skill) => ({
-        name: toSkillName(skill),
-        category: skill?.category || 'General',
-        priority: skill?.priority || 'Medium',
-        jobDemand: clamp(skill?.jobDemand || 60),
-        levelRelevance: skill?.levelRelevance || 'Current'
-      }))
-      .filter((skill) => skill.name);
-
-    const derivedGapCandidates = uniqueByLower([
-      ...evidenceBreakdown.missingExpectedSkills,
-      ...evidenceBreakdown.claimedButNotProvenSkills,
-      ...missingSkills.map((skill) => skill.name),
-      ...(githubInsights.weakAreas || []),
-      ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
-      ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []),
-      ...(developerSignals.integrationSignal?.weakProof || []),
-      ...getExpectedSkills(careerStack, experienceLevel)
-    ]);
-    const existingMissing = new Set(missingSkills.map((skill) => skill.name.toLowerCase()));
-    for (const fallbackSkill of derivedGapCandidates) {
+    const stackFilteredExpected = getExpectedSkills(careerStack, experienceLevel);
+    const existingMissing = new Set(missingSkills.map((skill) => String(skill.name || '').toLowerCase()));
+    for (const fallbackSkill of stackFilteredExpected) {
       if (missingSkills.length >= MIN_MISSING_SKILLS) break;
-      if (existingMissing.has(fallbackSkill.toLowerCase())) continue;
+      const lower = fallbackSkill.toLowerCase();
+      if (existingMissing.has(lower) || existingSkillNames.has(lower)) continue;
+      if (!isRelevantForStack(fallbackSkill, careerStack)) continue;
+      existingMissing.add(lower);
+      existingSkillNames.add(lower);
       missingSkills.push({
         name: fallbackSkill,
-        category: 'General',
+        category: getSkillMeta(fallbackSkill).category || 'General',
         priority: 'Medium',
-        jobDemand: 70,
-        levelRelevance: 'Current'
+        jobDemand: clamp(getSkillMeta(fallbackSkill).jobDemand || 65),
+        levelRelevance: 'Current',
+        confidenceScore: 56,
+        source: 'Stack expectation'
       });
-      existingMissing.add(fallbackSkill.toLowerCase());
     }
 
-    const evidenceAdjusted = applySkillEvidence({
-      yourSkills,
-      missingSkills,
-      signals: developerSignals
-    });
-
-    yourSkills = evidenceAdjusted.yourSkills;
-    missingSkills = evidenceAdjusted.missingSkills;
-
-    const deterministicGroups = buildDeterministicSkillGroups({
-      resumeInsights,
-      githubData,
-      developerSignals,
-      evidenceBreakdown,
-      careerStack,
-      experienceLevel,
-      aiKnownSkills: yourSkills,
-      aiMissingSkills: missingSkills
-    });
-
-    yourSkills = deterministicGroups.yourSkills.length ? deterministicGroups.yourSkills : yourSkills;
-    missingSkills = deterministicGroups.missingSkills.length ? deterministicGroups.missingSkills : missingSkills;
-    const weakSkills = deterministicGroups.weakSkills || [];
-    const highDemandSkills = deterministicGroups.highDemandSkills || [];
+    // Sort: yourSkills by proficiency + confidence, missingSkills by priority then jobDemand
+    yourSkills.sort((a, b) => (clamp(b.proficiency || 0) + clamp(b.confidenceScore || 0)) - (clamp(a.proficiency || 0) + clamp(a.confidenceScore || 0)));
+    const priorityRank = { High: 3, Medium: 2, Low: 1 };
+    missingSkills.sort((a, b) => (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) || clamp(b.jobDemand || 0) - clamp(a.jobDemand || 0));
 
     const knownCount = yourSkills.length;
     const missingCount = missingSkills.length;
@@ -954,12 +1058,14 @@ const analyzeSkillGap = async (req, res) => {
       : 0;
     const balanceFactor = (knownCount + missingCount) > 0 ? (knownCount / (knownCount + missingCount)) : 0;
     const proficiencyFactor = avgProficiency / 100;
-    const resumeFactor = clamp(resumeInsights.atsScore || 0) / 100;
-    const aiCoverage = clamp(aiResult.coverage || 0);
+    const resumeFactorVal = clamp(resumeInsights.atsScore || 0) / 100;
+    const aiCoverage = clamp((aiResult && aiUsed) ? (aiResult.coverage || 0) : 0);
     const integrationFactor = clamp(developerSignals.integrationSignal?.integrationScore || 0) / 100;
 
-    const computedCoverage = Math.round(((balanceFactor * 0.57) + (proficiencyFactor * 0.23) + (resumeFactor * 0.1) + (integrationFactor * 0.1)) * 100);
-    const blendedCoverage = Math.round((computedCoverage * 0.94) + (aiCoverage * 0.06));
+    const computedCoverage = Math.round(((balanceFactor * 0.57) + (proficiencyFactor * 0.23) + (resumeFactorVal * 0.1) + (integrationFactor * 0.1)) * 100);
+    const aiWeight = aiUsed ? 0.06 : 0;
+    const deterministicWeight = 1 - aiWeight;
+    const blendedCoverage = Math.round((computedCoverage * deterministicWeight) + (aiCoverage * aiWeight));
     const coverage = clamp(blendedCoverage);
     const missing = clamp(100 - coverage);
     const coverageBreakdown = {
@@ -967,16 +1073,32 @@ const analyzeSkillGap = async (req, res) => {
       missingSkillCount: missingCount,
       averageProficiency: avgProficiency,
       balanceFactor: clamp(balanceFactor * 100),
-      resumeFactor: clamp(resumeFactor * 100),
+      resumeFactor: clamp(resumeFactorVal * 100),
       integrationFactor: clamp(integrationFactor * 100),
-      formula: 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10%, with 6% AI smoothing'
+      deterministicConfidence,
+      aiUsed,
+      formula: aiUsed
+        ? 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10%, with 6% AI smoothing'
+        : 'coverage = known/missing balance 60% + proficiency 24% + resume 11% + integrations 11% (deterministic only, AI skipped)'
     };
+
+    const fallback = buildFallbackSkillGap({
+      resumeInsights,
+      githubInsights,
+      developerSignals,
+      evidenceBreakdown,
+      careerStack,
+      experienceLevel
+    });
 
     const fullResult = {
       username,
       careerStack,
       experienceLevel,
-      analysisSummary: String(aiResult.analysisSummary || fallback.analysisSummary || '').trim(),
+      analysisSummary: String((aiUsed && aiResult?.analysisSummary) || fallback.analysisSummary || '').trim(),
+      aiUsed,
+      deterministicConfidence,
+      skipAI,
       yourSkills,
       missingSkills,
       resumeSkills: deterministicGroups.resumeSkills,
@@ -988,9 +1110,9 @@ const analyzeSkillGap = async (req, res) => {
       coverage,
       missing,
       coverageBreakdown,
-      levelAssessment: String(aiResult.levelAssessment || fallback.levelAssessment || '').trim(),
-      roadmap: normalizeRoadmap(aiResult.roadmap, 3),
-      totalWeeks: String(aiResult.totalWeeks || fallback.totalWeeks || '8 weeks').trim(),
+      levelAssessment: String((aiUsed && aiResult?.levelAssessment) || fallback.levelAssessment || '').trim(),
+      roadmap: normalizeRoadmap((aiUsed && aiResult?.roadmap) || fallback.roadmap, 3),
+      totalWeeks: String((aiUsed && aiResult?.totalWeeks) || fallback.totalWeeks || '8 weeks').trim(),
       resumeInsights,
       githubStats: githubData,
       signalsUsed,
