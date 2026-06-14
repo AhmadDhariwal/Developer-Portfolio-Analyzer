@@ -92,6 +92,18 @@ export class CareerSprintComponent implements OnInit {
   }
 
   loadData(): void {
+    const cachedSprint = this.sprintService.getCurrentCached();
+    const cachedHistory = this.sprintService.getHistoryCached();
+
+    // If both caches are warm, render immediately and skip API calls
+    if (cachedSprint && cachedHistory) {
+      this.applySprintState(cachedSprint);
+      this.history = cachedHistory;
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
 

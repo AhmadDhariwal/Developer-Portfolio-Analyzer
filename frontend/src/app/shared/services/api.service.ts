@@ -794,9 +794,7 @@ export class ApiService {
   }
 
   updateCareerSprintTask(sprintId: string, taskId: string, isCompleted: boolean): Observable<any> {
-    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted });
   }
 
   getCareerSprintHistory(limit = 6): Observable<any> {

@@ -286,17 +286,27 @@ const findPreviousSprint = async (userId, sprint) => {
 
 const getCurrentSprint = async (userId) => {
   const now = new Date();
-  let sprint = await CareerSprint.findOne({
-    userId,
-    $or: [
-      { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
-      { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
-    ]
-  });
+  const weekStart = startOfWeek();
+  const weekEnd = endOfWeek(weekStart);
 
-  if (!sprint) {
-    sprint = await CareerSprint.create(buildSprintPayload({ userId }));
-  }
+  // Atomic create-or-return: prevents duplicate sprints under race conditions
+  let sprint = await CareerSprint.findOneAndUpdate(
+    {
+      userId,
+      $or: [
+        { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
+        { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
+      ]
+    },
+    {
+      $setOnInsert: {
+        ...buildSprintPayload({ userId }),
+        weekStartDate: weekStart,
+        weekEndDate: weekEnd
+      }
+    },
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+  );
 
   const { changed } = checkInactivity(sprint);
   if (changed) await sprint.save();
@@ -329,10 +339,8 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
   const nextCompleted = Boolean(isCompleted);
   const wasCompleted = Boolean(task.isCompleted);
   if (nextCompleted === wasCompleted) {
-    return serializeSprint(sprint, {
-      previousSprint: await findPreviousSprint(userId, sprint),
-      signals: await getDeveloperSignals(userId)
-    });
+    const previousSprint = await findPreviousSprint(userId, sprint);
+    return serializeSprint(sprint, { previousSprint, signals: null });
   }
 
   task.isCompleted = nextCompleted;
@@ -348,12 +356,9 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
   sprint.level = levelFromXp(sprint.xpPoints);
   await sprint.save();
 
-  const [previousSprint, signals] = await Promise.all([
-    findPreviousSprint(userId, sprint),
-    getDeveloperSignals(userId)
-  ]);
-
-  return serializeSprint(sprint, { previousSprint, signals });
+  // Task toggle only needs previous sprint for comparison — skip full signal reload
+  const previousSprint = await findPreviousSprint(userId, sprint);
+  return serializeSprint(sprint, { previousSprint, signals: null });
 };
 
 const addTaskToSprint = async (userId, sprintId, task) => {
@@ -364,12 +369,9 @@ const addTaskToSprint = async (userId, sprintId, task) => {
   sprint.tasks.push(normalizeTask(task));
   await sprint.save();
 
-  const [previousSprint, signals] = await Promise.all([
-    findPreviousSprint(userId, sprint),
-    getDeveloperSignals(userId)
-  ]);
-
-  return serializeSprint(sprint, { previousSprint, signals });
+  // Task addition doesn't need full developer signal enrichment — skip signal reload
+  const previousSprint = await findPreviousSprint(userId, sprint);
+  return serializeSprint(sprint, { previousSprint, signals: null });
 };
 
 const restoreStreak = async (userId, sprintId) => {

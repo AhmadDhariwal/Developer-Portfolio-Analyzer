@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { finalize, Observable, shareReplay, tap } from 'rxjs';
 import { ApiService } from './api.service';
 
 export type TaskPriority = 'high' | 'medium' | 'low';
@@ -153,10 +153,39 @@ export interface GenerateAiTasksResponse {
 
 @Injectable({ providedIn: 'root' })
 export class CareerSprintService {
+  private readonly inflight = new Map<string, Observable<any>>();
+  private currentCache: CareerSprint | null = null;
+  private historyCache: CareerSprint[] | null = null;
+
   constructor(private readonly api: ApiService) {}
 
+  private dedupe<T>(key: string, source$: Observable<T>): Observable<T> {
+    const existing = this.inflight.get(key) as Observable<T> | undefined;
+    if (existing) return existing;
+    const shared$ = source$.pipe(
+      shareReplay({ bufferSize: 1, refCount: false }),
+      finalize(() => this.inflight.delete(key))
+    );
+    this.inflight.set(key, shared$);
+    return shared$;
+  }
+
   getCurrent(): Observable<CareerSprint> {
-    return this.api.getCurrentCareerSprint();
+    return this.dedupe('current', this.api.getCurrentCareerSprint()).pipe(
+      tap((sprint) => { this.currentCache = sprint; })
+    );
+  }
+
+  getCurrentCached(): CareerSprint | null {
+    return this.currentCache;
+  }
+
+  invalidateCurrentCache(): void {
+    this.currentCache = null;
+  }
+
+  invalidateHistoryCache(): void {
+    this.historyCache = null;
   }
 
   create(payload: {
@@ -191,7 +220,13 @@ export class CareerSprintService {
   }
 
   getHistory(limit = 6): Observable<{ history: CareerSprint[] }> {
-    return this.api.getCareerSprintHistory(limit);
+    return this.dedupe(`history:${limit}`, this.api.getCareerSprintHistory(limit)).pipe(
+      tap((data) => { this.historyCache = data.history || []; })
+    );
+  }
+
+  getHistoryCached(): CareerSprint[] | null {
+    return this.historyCache ? [...this.historyCache] : null;
   }
 
   restoreStreak(sprintId: string): Observable<CareerSprint> {

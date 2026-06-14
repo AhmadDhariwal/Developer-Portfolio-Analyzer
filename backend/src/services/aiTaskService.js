@@ -74,11 +74,19 @@ const enhanceDescription = (task, contextLabel, rationale) => {
 
 const classifyGithubWeaknesses = (analysis) => {
   if (!analysis) return [];
+  const repoCount = Number(analysis.githubStats?.repos || 0);
   const weaknesses = [];
   const totalCommits = (analysis.contributionActivity || []).reduce((sum, item) => sum + Number(item?.count || 0), 0);
-  if (totalCommits < 10) weaknesses.push('low_commits');
-  if ((analysis.githubScore || 0) < 50) weaknesses.push('poor_readme');
-  if ((analysis.readinessScore || 0) < 45) weaknesses.push('no_tests');
+
+  // Only flag low commits when the user actually has repositories to commit to
+  if (repoCount > 0 && totalCommits < 10) weaknesses.push('low_commits');
+
+  // Only flag README/test issues when the user has at least 1 repository
+  if (repoCount > 0) {
+    if ((analysis.githubScore || 0) < 50) weaknesses.push('poor_readme');
+    if ((analysis.readinessScore || 0) < 45) weaknesses.push('no_tests');
+  }
+
   return weaknesses;
 };
 
