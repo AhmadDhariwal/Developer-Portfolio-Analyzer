@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 
 export interface InterviewQuestion {
@@ -61,22 +62,66 @@ export interface InterviewQuestionListResponse {
   providedIn: 'root'
 })
 export class InterviewPrepService {
+  /** 
+   * Shared-replay cache. Keys are deterministic (params-based).
+   * refCount: false ensures the replay survives when the component is destroyed
+   * and recreated — no duplicate API calls when navigating back.
+   */
+  private readonly cache = new Map<string, Observable<any>>();
+
   constructor(private readonly api: ApiService) {}
 
+  /** Build a deterministic cache key from params, stripping undefined values. */
+  private buildKey(prefix: string, params: Record<string, unknown>): string {
+    const sorted = Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(',') : String(value)}`)
+      .join('&');
+    return `${prefix}:${sorted}`;
+  }
+
+  /** Returns a cached shared observable, or creates one with refCount: false. */
+  private once<T>(key: string, source$: Observable<T>): Observable<T> {
+    const existing = this.cache.get(key) as Observable<T> | undefined;
+    if (existing) return existing;
+
+    const shared$ = source$.pipe(
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    this.cache.set(key, shared$);
+    return shared$;
+  }
+
+  /** Invalidate specific prefixes (called on filter change so stale data is refetched). */
+  invalidate(prefixes: string[] = ['top', 'all']): void {
+    for (const [key] of this.cache) {
+      if (prefixes.some((prefix) => key.startsWith(prefix + ':'))) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /** Clear all cached responses (called on logout / full reset). */
+  reset(): void {
+    this.cache.clear();
+  }
+
   getTopQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
-    return this.api.getInterviewPrepQuestions({ ...params, block: 'top' });
+    return this.once(this.buildKey('top', params), this.api.getInterviewPrepQuestions({ ...params, block: 'top' }));
   }
 
   getAllQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[]; category?: string; source?: string }): Observable<InterviewQuestionListResponse> {
-    return this.api.getInterviewPrepQuestions({ ...params, block: 'all' });
+    return this.once(this.buildKey('all', params), this.api.getInterviewPrepQuestions({ ...params, block: 'all' }));
   }
 
   searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[]; lookupOnly?: boolean }): Observable<InterviewQuestionListResponse> {
-    return this.api.searchInterviewPrepQuestions(params);
+    return this.once(this.buildKey('search', params), this.api.searchInterviewPrepQuestions(params));
   }
 
   generateQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number; target?: number }): Observable<InterviewQuestionListResponse> {
-    return this.api.generateInterviewPrepQuestions(payload);
+    return this.once(this.buildKey('generate', payload), this.api.generateInterviewPrepQuestions(payload));
   }
 
   askQuestion(payload: {
@@ -88,6 +133,6 @@ export class InterviewPrepService {
     language?: string;
     framework?: string;
   }): Observable<InterviewQuestion> {
-    return this.api.askInterviewPrepQuestion(payload);
+    return this.once(this.buildKey('ask', payload), this.api.askInterviewPrepQuestion(payload));
   }
 }

@@ -1,12 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 import { InterviewPrepService, InterviewQuestion, InterviewQuestionListResponse } from '../../shared/services/interview-prep.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 
 type InterviewTab = 'search' | 'ai';
 type AnswerSection = { title: string; body: string; kind?: 'text' | 'list' | 'code' | 'context'; items?: string[] };
+
+const LOW_CONFIDENCE_WARN_THRESHOLD = 0.6;
+const VIEWED_QUESTIONS_KEY = 'devinsight_interview_viewed';
+const MAX_VIEWED_ENTRIES = 200;
+
+interface ViewedEntry {
+  questionId: string;
+  question: string;
+  topicKey: string;
+  viewedAt: number;
+  answerViewed: boolean;
+}
 
 @Component({
   selector: 'app-interview-prep',
@@ -16,7 +29,9 @@ type AnswerSection = { title: string; body: string; kind?: 'text' | 'list' | 'co
   styleUrl: './interview-prep.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InterviewPrepComponent implements OnInit {
+export class InterviewPrepComponent implements OnInit, OnDestroy {
+  private readonly subscriptions = new Subscription();
+
   readonly pageSize = 10;
   readonly topQuestionLimit = 30;
   readonly allQuestionBatchLimit = 50;
@@ -149,6 +164,14 @@ export class InterviewPrepComponent implements OnInit {
     'Interview Tip'
   ];
 
+  /** ── Learning Intelligence ── */
+  private readonly viewedEntries = this.loadViewedEntries();
+  viewedTopicKeys = new Set<string>();
+  /** AI reuse vs new-generation tracking for the current session. */
+  sessionAiHitCount = 0;
+  sessionAiNewCount = 0;
+  sessionDbLookupCount = 0;
+
   constructor(
     private readonly prepService: InterviewPrepService,
     private readonly careerProfileService: CareerProfileService,
@@ -157,10 +180,106 @@ export class InterviewPrepComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.selectedSkill = this.mapCareerProfileToSkill(this.careerProfileService.snapshot.careerStack);
+    this.selectedSkill = this.resolveDefaultSkill();
     this.fetchTopQuestions(true);
     this.fetchAllQuestions(true);
   }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.viewedTopicKeys.clear();
+  }
+
+  /** Resolve the default skill using career profile + skill-gap weakness signals if available. */
+  private resolveDefaultSkill(): string {
+    const base = this.mapCareerProfileToSkill(this.careerProfileService.snapshot.careerStack);
+    return base;
+  }
+
+  /** Attempt to surface the user's weakest topic from the viewed-tracking as a suggested skill. */
+  get suggestedWeakSkill(): string | null {
+    const topicCounts = new Map<string, number>();
+    for (const entry of this.viewedEntries) {
+      if (!entry.topicKey) continue;
+      topicCounts.set(entry.topicKey, (topicCounts.get(entry.topicKey) || 0) + 1);
+    }
+    if (topicCounts.size === 0) return null;
+
+    let leastViewedTopic = '';
+    let leastViewedCount = Infinity;
+    for (const skillKey of this.skills) {
+      const count = topicCounts.get(skillKey) || 0;
+      if (count < leastViewedCount) {
+        leastViewedCount = count;
+        leastViewedTopic = skillKey;
+      }
+    }
+    return leastViewedTopic && leastViewedTopic !== this.selectedSkill ? leastViewedTopic : null;
+  }
+
+  /** ── Viewed / Mastery Tracking ── */
+
+  private loadViewedEntries(): ViewedEntry[] {
+    try {
+      const raw = localStorage.getItem(VIEWED_QUESTIONS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.slice(0, MAX_VIEWED_ENTRIES) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private persistViewedEntries(): void {
+    try {
+      const trimmed = this.viewedEntries.slice(0, MAX_VIEWED_ENTRIES);
+      localStorage.setItem(VIEWED_QUESTIONS_KEY, JSON.stringify(trimmed));
+    } catch {
+      // storage full or unavailable — silently discard
+    }
+  }
+
+  recordQuestionViewed(item: InterviewQuestion, answerVisible: boolean): void {
+    const id = item._id || item.question;
+    const existing = this.viewedEntries.findIndex(
+      (entry) => entry.questionId === id || entry.question === item.question
+    );
+    if (existing >= 0) {
+      this.viewedEntries[existing].viewedAt = Date.now();
+      this.viewedEntries[existing].answerViewed = this.viewedEntries[existing].answerViewed || answerVisible;
+    } else {
+      this.viewedEntries.push({
+        questionId: id,
+        question: item.question,
+        topicKey: item.topicKey || this.selectedSkill,
+        viewedAt: Date.now(),
+        answerViewed: answerVisible
+      });
+    }
+    if (item.topicKey) {
+      this.viewedTopicKeys.add(item.topicKey);
+    }
+    this.persistViewedEntries();
+  }
+
+  countViewedForTopic(topicKey: string): number {
+    return this.viewedEntries.filter((entry) => entry.topicKey === topicKey).length;
+  }
+
+  countAnswerViewedForTopic(topicKey: string): number {
+    return this.viewedEntries.filter((entry) => entry.topicKey === topicKey && entry.answerViewed).length;
+  }
+
+  /** Tracks whether a question's confidence is low enough to warrant a warning. */
+  isLowConfidence(item: InterviewQuestion): boolean {
+    return (
+      Number(item.confidenceScore || 0) > 0 &&
+      Number(item.confidenceScore) < LOW_CONFIDENCE_WARN_THRESHOLD &&
+      (item.sourceType === 'ai' || item.sourceType === 'ai_generated' || item.sourceType === 'scraped')
+    );
+  }
+
+  /** ── View helpers ── */
 
   get canLoadMore(): boolean {
     return this.topPage < this.topTotalPages;
@@ -206,6 +325,13 @@ export class InterviewPrepComponent implements OnInit {
     return Math.max(1, Math.ceil(this.allQuestions.length / this.pageSize));
   }
 
+  /** AI reuse-rate metric for the current session. */
+  get aiReuseRate(): string {
+    const total = this.sessionAiHitCount + this.sessionAiNewCount;
+    if (total === 0) return '—';
+    return `${Math.round((this.sessionAiHitCount / total) * 100)}% reuse (${this.sessionAiHitCount}/${total})`;
+  }
+
   onTabChange(tab: InterviewTab): void {
     if (this.activeTab === tab) return;
 
@@ -227,6 +353,7 @@ export class InterviewPrepComponent implements OnInit {
   applyFilters(): void {
     this.openAnswers.clear();
     this.filtersDirty = false;
+    this.prepService.invalidate(['top', 'all']);
     this.fetchTopQuestions(true);
     this.fetchAllQuestions(true);
     this.cdr.markForCheck();
@@ -299,7 +426,7 @@ export class InterviewPrepComponent implements OnInit {
     this.currentSource = '';
     this.cdr.markForCheck();
 
-    this.prepService.generateQuestions({
+    const sub = this.prepService.generateQuestions({
       skill: this.selectedSkill,
       query: this.aiPromptQuery.trim(),
       difficulty: this.aiDifficulty || undefined,
@@ -308,15 +435,16 @@ export class InterviewPrepComponent implements OnInit {
       target: this.practiceCount
     }).subscribe({
       next: (response) => {
+        const aiGenCount = Number(response.aiGeneratedCount || 0);
         this.generatedQuestions = Array.isArray(response.questions) ? response.questions : [];
-        this.aiGeneratedCount = Number(response.aiGeneratedCount || 0);
+        this.aiGeneratedCount = aiGenCount;
         this.currentSource = String(response.source || 'db');
-        this.allQuestions = [
-          ...this.generatedQuestions,
-          ...this.allQuestions.filter((item) => !this.generatedQuestions.some((generated) => (
-            (generated._id || generated.question) === (item._id || item.question)
-          )))
-        ];
+        if (aiGenCount > 0) {
+          this.sessionAiNewCount += aiGenCount;
+        } else {
+          this.sessionAiHitCount += this.generatedQuestions.length;
+        }
+        this.allQuestions = this.dedupeAndPrepend(this.generatedQuestions, this.allQuestions);
         this.isGeneratingAI = false;
         this.openAnswers.clear();
         this.cdr.markForCheck();
@@ -327,6 +455,7 @@ export class InterviewPrepComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+    this.subscriptions.add(sub);
   }
 
   askCustomQuestion(): void {
@@ -347,9 +476,16 @@ export class InterviewPrepComponent implements OnInit {
     this.customResult = null;
     this.cdr.markForCheck();
 
-    this.prepService.askQuestion({ question, skill: this.selectedSkill }).subscribe({
+    const sub = this.prepService.askQuestion({ question, skill: this.selectedSkill }).subscribe({
       next: (response) => {
         this.customResult = response;
+        if (response.stored) {
+          this.sessionAiNewCount += 1;
+          this.allQuestions = this.dedupeAndPrepend([response], this.allQuestions);
+        } else if (response.duplicate || response.fromCache) {
+          this.sessionDbLookupCount += 1;
+        }
+        this.recordQuestionViewed(response, true);
         this.searchMatches = [];
         this.isAskingQuestion = false;
         this.cdr.markForCheck();
@@ -360,16 +496,16 @@ export class InterviewPrepComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+    this.subscriptions.add(sub);
   }
 
   fetchTopQuestions(reset: boolean): void {
-    const page = reset ? 1 : this.currentPage + 1;
     this.isLoading = reset;
     this.isLoadingMore = !reset;
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.prepService.getTopQuestions({
+    const sub = this.prepService.getTopQuestions({
       skill: this.selectedSkill,
       page: 1,
       limit: this.topQuestionLimit,
@@ -387,6 +523,7 @@ export class InterviewPrepComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+    this.subscriptions.add(sub);
   }
 
   fetchAllQuestions(reset: boolean): void {
@@ -400,7 +537,7 @@ export class InterviewPrepComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.prepService.getAllQuestions({
+    const sub = this.prepService.getAllQuestions({
       skill: this.selectedSkill,
       page,
       limit: this.allQuestionBatchLimit,
@@ -427,6 +564,7 @@ export class InterviewPrepComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+    this.subscriptions.add(sub);
   }
 
   searchStoredQuestions(): void {
@@ -449,7 +587,7 @@ export class InterviewPrepComponent implements OnInit {
     this.customErrorMessage = '';
     this.cdr.markForCheck();
 
-    this.prepService.searchQuestions({
+    const sub = this.prepService.searchQuestions({
       q: query,
       skill: this.selectedSkill,
       difficulty: this.selectedDifficulty || undefined,
@@ -463,10 +601,9 @@ export class InterviewPrepComponent implements OnInit {
         this.searchMatches = matches;
         this.customResult = matches[0] || null;
         if (this.customResult) {
-          this.allQuestions = [
-            this.customResult,
-            ...this.allQuestions.filter((item) => (item._id || item.question) !== (this.customResult?._id || this.customResult?.question))
-          ];
+          this.sessionDbLookupCount += 1;
+          this.recordQuestionViewed(this.customResult, false);
+          this.allQuestions = this.dedupeAndPrepend([this.customResult], this.allQuestions);
         }
         this.canAskAI = !this.customResult;
         this.customErrorMessage = this.customResult ? '' : 'No exact answer found in the question bank.';
@@ -481,6 +618,15 @@ export class InterviewPrepComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+    this.subscriptions.add(sub);
+  }
+
+  private dedupeAndPrepend(newItems: InterviewQuestion[], existing: InterviewQuestion[]): InterviewQuestion[] {
+    const newKeys = new Set(newItems.map((item) => item._id || item.question));
+    return [
+      ...newItems,
+      ...existing.filter((item) => !newKeys.has(item._id || item.question))
+    ];
   }
 
   private consumeResponse(response: InterviewQuestionListResponse, reset: boolean): void {
@@ -527,10 +673,10 @@ export class InterviewPrepComponent implements OnInit {
 
   private escapeHtml(value: string): string {
     return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
       .replace(/'/g, '&#39;');
   }
 
@@ -559,10 +705,31 @@ export class InterviewPrepComponent implements OnInit {
   }
 
   toggleAnswer(index: number): void {
-    if (this.openAnswers.has(index)) {
+    const isCurrentlyOpen = this.openAnswers.has(index);
+    if (isCurrentlyOpen) {
       this.openAnswers.delete(index);
     } else {
       this.openAnswers.add(index);
+    }
+    // Record view when answer is opened
+    if (!isCurrentlyOpen) {
+      let item: InterviewQuestion | undefined;
+      if (index < 1000) {
+        // Top 30 block — indices 0..len-1
+        item = this.questions[index];
+      } else if (index < 2000) {
+        // Recent block — offset 1000
+        item = this.recentQuestions[index - 1000];
+      } else if (index < 3000) {
+        // All questions block — offset 2000
+        item = this.visibleAllQuestions[index - 2000];
+      } else {
+        // Generated block — offset 3000
+        item = this.generatedQuestions[index - 3000];
+      }
+      if (item) {
+        this.recordQuestionViewed(item, true);
+      }
     }
   }
 
@@ -582,7 +749,10 @@ export class InterviewPrepComponent implements OnInit {
 
   confidenceLabel(item: InterviewQuestion): string {
     const value = Number(item.confidenceScore || 0);
-    return value > 0 ? `${Math.round(value * 100)}% confidence` : '';
+    if (value <= 0) return '';
+    const percent = Math.round(value * 100);
+    if (value < LOW_CONFIDENCE_WARN_THRESHOLD) return `${percent}% confidence ⚠`;
+    return `${percent}% confidence`;
   }
 
   relevanceLabel(item: InterviewQuestion): string {
@@ -623,6 +793,7 @@ export class InterviewPrepComponent implements OnInit {
     this.customResult = item;
     this.canAskAI = false;
     this.searchAttempted = true;
+    this.recordQuestionViewed(item, false);
     this.cdr.markForCheck();
   }
 

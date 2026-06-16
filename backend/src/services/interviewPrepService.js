@@ -42,13 +42,25 @@ const MIN_APPROVED_CONFIDENCE = 0.72;
 const MIN_APPROVED_RELEVANCE = 0.75;
 const MIN_STRONG_SEARCH_RELEVANCE = 0.78;
 
+/** Differentiated cache TTLs in seconds. */
+const CACHE_TTL_TOP = 12 * 60 * 60;       // 12 hours — verified seed top-30 rarely changes
+const CACHE_TTL_ALL = 3 * 60 * 60;         // 3 hours — all-questions list can grow via enrichment
+const CACHE_TTL_SEARCH = 1 * 60 * 60;       // 1 hour — search results, including AI fallback
+const CACHE_TTL_CUSTOM = 24 * 60 * 60;      // 24 hours — exact Q&A pairs are deterministic
+const CACHE_TTL_DEFAULT = 1 * 60 * 60;
+
+const LOW_CONFIDENCE_FLAG_THRESHOLD = 0.6;
+
 const interviewEngineMetrics = {
   totalRequests: 0,
   cacheHits: 0,
   dbReads: 0,
   enrichmentRuns: 0,
   aiFallbackRuns: 0,
-  scrapeFallbackRuns: 0
+  scrapeFallbackRuns: 0,
+  /** AiReuse tracks how many requests found existing AI-generated answers instead of generating new ones. */
+  aiReuseHits: 0,
+  aiNewGenerations: 0
 };
 
 const enrichmentOrchestrator = createInterviewEnrichmentOrchestrator({
@@ -275,10 +287,13 @@ const metricSnapshot = () => {
   const reads = interviewEngineMetrics.dbReads + interviewEngineMetrics.cacheHits;
   const dbHitRatio = reads > 0 ? Number((interviewEngineMetrics.dbReads / reads).toFixed(3)) : 0;
   const cacheHitRatio = reads > 0 ? Number((interviewEngineMetrics.cacheHits / reads).toFixed(3)) : 0;
+  const aiTotal = interviewEngineMetrics.aiReuseHits + interviewEngineMetrics.aiNewGenerations;
+  const aiReuseRate = aiTotal > 0 ? Number((interviewEngineMetrics.aiReuseHits / aiTotal).toFixed(3)) : 0;
   return {
     ...interviewEngineMetrics,
     dbHitRatio,
-    cacheHitRatio
+    cacheHitRatio,
+    aiReuseRate
   };
 };
 
@@ -503,7 +518,7 @@ const loadQuestionBankWithEnrichment = async ({
     metrics: metricSnapshot()
   };
 
-  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  await setCacheJson(cacheKey, payload, CACHE_TTL_DEFAULT);
 
   logger.info('interview-prep query served', {
     topicKey: topicInput.topicKey,
@@ -563,7 +578,7 @@ const getQuestionBank = async ({
     minimumCount: MIN_TOPIC_QUESTION_POOL
   });
 
-  if (normalizedBlock === 'all') {
+    if (normalizedBlock === 'all') {
     let pageResult = await questionRepository.findAllQuestionsPage({
       topicKey: topicInput.topicKey,
       page: normalizedPage,
@@ -605,7 +620,7 @@ const getQuestionBank = async ({
       topicInput,
       sourceMix: await questionRepository.getSourceMixByTopic(topicInput.topicKey)
     });
-    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, payload, CACHE_TTL_ALL);
     return payload;
   }
 
@@ -644,7 +659,7 @@ const getQuestionBank = async ({
     topicInput,
     sourceMix: await questionRepository.getSourceMixByTopic(topicInput.topicKey)
   });
-  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  await setCacheJson(cacheKey, payload, CACHE_TTL_TOP);
   return payload;
 };
 
@@ -1008,6 +1023,7 @@ const generateFreshInterviewQuestions = async ({
   });
 
   if (existing.length >= targetCount) {
+    interviewEngineMetrics.aiReuseHits += targetCount;
     const questions = await enrichQuestionListOnce(existing.slice(0, targetCount));
     return makeQuestionPayload({
       questions,
