@@ -59,6 +59,7 @@ const getInterviewPrepQuestions = async (req, res) => {
       difficulty = '',
       tags = '',
       block = 'top',
+      top = '',
       category = '',
       source = ''
     } = req.query;
@@ -75,7 +76,7 @@ const getInterviewPrepQuestions = async (req, res) => {
       limit,
       difficulty,
       tags,
-      block,
+      block: String(top).toLowerCase() === 'true' ? 'top' : block,
       category,
       source
     });

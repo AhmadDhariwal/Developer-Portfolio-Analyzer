@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { normalizeTopicInput, resolveTopic, listImportantTopics } = require('../services/interviewTopicNormalizer');
-const { verifiedSeedCatalog, MIN_VERIFIED_SEED_COUNT } = require('../services/interviewQuestionSeedCatalog');
+const { verifiedSeedCatalog, TOP_QUESTION_COUNT, MIN_VERIFIED_SEED_COUNT } = require('../services/interviewQuestionSeedCatalog');
 
 test('normalizeTopicInput resolves known aliases to canonical topic keys', () => {
   const node = normalizeTopicInput({ framework: 'Node JS' });
@@ -28,12 +28,10 @@ test('resolveTopic handles stack aliases and important topics list is populated'
   assert.ok(topics.length >= 15);
 });
 
-test('every supported interview topic has more than 30 verified top questions', () => {
+test('every supported interview topic has exactly 30 top questions and a larger seed pool', () => {
   for (const topic of listImportantTopics()) {
-    const count = verifiedSeedCatalog[topic.key]?.length || 0;
-    assert.ok(
-      count >= MIN_VERIFIED_SEED_COUNT,
-      `Expected ${topic.key} to have more than 30 verified questions, received ${count}`
-    );
+    const records = verifiedSeedCatalog[topic.key] || [];
+    assert.equal(records.filter((record) => record.isTopQuestion).length, TOP_QUESTION_COUNT);
+    assert.ok(records.length >= MIN_VERIFIED_SEED_COUNT);
   }
 });

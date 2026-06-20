@@ -3,11 +3,22 @@ const {
   normalizeComparableText,
   normalizeQuestionText,
   normalizeAnswerText,
-  sanitizeTags
+  sanitizeCategory,
+  sanitizeTags,
+  normalizeQualityScore,
+  computeJaccardSimilarity,
+  containsWeakOrPlaceholderContent,
+  INTERVIEW_CATEGORY_SET,
+  DIFFICULTY_SET
 } = require('./interviewQuestionQualityService');
 
-const SEED_VERSION = 'v5-expanded-top30';
+const SEED_VERSION = 'v6-ranked-verified-bank';
+const TOP_QUESTION_COUNT = 30;
 const MIN_VERIFIED_SEED_COUNT = 31;
+const MIN_TOP_QUALITY_SCORE = 90;
+const MIN_APPROVED_QUALITY_SCORE = 80;
+const NEAR_DUPLICATE_THRESHOLD = 0.75;
+const REQUIRED_ANSWER_SECTION_KEYS = ['shortAnswer', 'explanation', 'example', 'pitfalls', 'followUps'];
 
 const TOPIC_GUIDES = {
   javascript: {
@@ -207,6 +218,7 @@ const seed = (difficulty, question, shortAnswer, tags, options = {}) => ({
   example: options.example || '',
   realWorldUseCase: options.realWorldUseCase || '',
   commonMistakes: Array.isArray(options.commonMistakes) ? options.commonMistakes : [],
+  followUps: Array.isArray(options.followUps) ? options.followUps : [],
   interviewTip: options.interviewTip || '',
   category: options.category || '',
   confidenceScore: Number(options.confidenceScore || 95)
@@ -261,6 +273,17 @@ const toAnswerSections = (topicKey, spec) => {
   const realWorldUseCase = buildUseCase(topicKey, spec);
   const commonMistakes = buildCommonMistakes(topicKey, spec);
   const interviewTip = buildInterviewTip(topicKey, spec);
+  const guideLabel = TOPIC_GUIDES[topicKey]?.label || topicKey;
+  const focusLabel = normalizeAnswerText(spec.focusLabel || sanitizeTags(spec.tags || [])
+    .find((tag) => ![topicKey, 'production', 'verified_seed'].includes(tag)) || 'this decision');
+  const followUps = (Array.isArray(spec.followUps) && spec.followUps.length >= 2
+    ? spec.followUps
+    : [
+      `How would you validate ${focusLabel} in a production ${guideLabel} codebase?`,
+      `What simpler alternative would you compare against ${focusLabel}, and why?`
+    ])
+    .map((item) => normalizeAnswerText(item))
+    .filter(Boolean);
 
   return {
     shortAnswer,
@@ -270,6 +293,8 @@ const toAnswerSections = (topicKey, spec) => {
     explanation,
     example,
     codeExample: example,
+    pitfalls: commonMistakes,
+    followUps,
     realWorldUseCase,
     realWorldContext: realWorldUseCase,
     commonMistakes,
@@ -284,6 +309,12 @@ const structuredAnswerToText = (sections = {}) => normalizeAnswerText([
     : '',
   sections.explanation ? `Explanation: ${sections.explanation}` : '',
   sections.example ? `Example:\n${sections.example}` : '',
+  Array.isArray(sections.pitfalls) && sections.pitfalls.length
+    ? `Pitfalls:\n${sections.pitfalls.map((point) => `- ${point}`).join('\n')}`
+    : '',
+  Array.isArray(sections.followUps) && sections.followUps.length
+    ? `Follow-ups:\n${sections.followUps.map((point) => `- ${point}`).join('\n')}`
+    : '',
   sections.realWorldUseCase ? `Real-world use case: ${sections.realWorldUseCase}` : '',
   Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
     ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
@@ -291,22 +322,66 @@ const structuredAnswerToText = (sections = {}) => normalizeAnswerText([
   sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : ''
 ].filter(Boolean).join('\n\n'));
 
+const GENERATED_QUESTION_FRAMES = {
+  fundamentals: [
+    ({ conceptLabel, guide, baseUseCase }) => `Why does ${conceptLabel} matter for ${baseUseCase} in ${guide.label}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `When is ${conceptLabel} the right choice for ${baseUseCase} in ${guide.label}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `Explain ${conceptLabel} through the production problem it addresses for ${baseUseCase}.`,
+    ({ conceptLabel, guide, baseUseCase }) => `What behavior should a developer understand before using ${conceptLabel} for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How does ${conceptLabel} change implementation choices when the goal is ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `Which production signals show ${conceptLabel} is the right tool for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `What responsibility does ${conceptLabel} own when a ${guide.label} system supports ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `Where does ${conceptLabel} fit when designing ${guide.label} architecture for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you teach ${conceptLabel} to a teammate debugging ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `What should an interviewer hear when you define ${conceptLabel} for ${baseUseCase}?`
+  ],
+  practical: [
+    ({ conceptLabel, guide, baseUseCase }) => `How would you implement ${conceptLabel} for ${baseUseCase} without making the ${guide.label} codebase brittle?`,
+    ({ conceptLabel, guide, baseUseCase }) => `Walk me through a production use case where ${conceptLabel} improves ${baseUseCase}.`,
+    ({ conceptLabel, baseUseCase }) => `How would ${conceptLabel} show up in a real feature that needs ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `What would you build first when adding ${conceptLabel} to support ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you test that ${conceptLabel} protects the ${baseUseCase} workflow?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How do you keep ${conceptLabel} maintainable while ${baseUseCase} grows?`,
+    ({ conceptLabel, baseUseCase }) => `What implementation details matter most when ${conceptLabel} supports ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you introduce ${conceptLabel} into an existing codebase built around ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `What production guardrails should surround ${conceptLabel} for ${baseUseCase}?`,
+    ({ conceptLabel, baseUseCase }) => `How would you explain the delivery plan for ${conceptLabel} when the goal is ${baseUseCase}?`
+  ],
+  advanced: [
+    ({ conceptLabel, guide, baseUseCase }) => `What failure modes make ${conceptLabel} difficult to use safely for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you debug a production issue where ${conceptLabel} breaks ${baseUseCase}?`,
+    ({ conceptLabel, baseUseCase }) => `What tradeoff should a senior engineer mention before choosing ${conceptLabel} for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `When would you avoid ${conceptLabel} even if a ${guide.label} feature needs ${baseUseCase}?`,
+    ({ conceptLabel, baseUseCase }) => `How would you compare ${conceptLabel} with a simpler alternative for ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How does ${conceptLabel} affect performance, reliability, or security around ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `What operational signal would prove ${conceptLabel} helps the ${baseUseCase} path?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you design ownership boundaries around ${conceptLabel} for ${baseUseCase}?`,
+    ({ conceptLabel, baseUseCase }) => `What follow-up question would expose shallow understanding of ${conceptLabel} in ${baseUseCase}?`,
+    ({ conceptLabel, guide, baseUseCase }) => `How would you evolve ${guide.label} architecture if ${conceptLabel} bottlenecks ${baseUseCase}?`
+  ]
+};
+
+const pickGeneratedQuestion = (variant, index, context) => {
+  const frames = GENERATED_QUESTION_FRAMES[variant] || GENERATED_QUESTION_FRAMES.fundamentals;
+  return frames[index % frames.length](context);
+};
+
 const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
   const guide = TOPIC_GUIDES[topicKey] || { label: topicKey, useCase: 'production systems', interviewTip: '' };
-  const specs = [];
+  const fundamentalsSpecs = [];
+  const practicalSpecs = [];
+  const advancedSpecs = [];
 
-  concepts.forEach((concept) => {
-    const conceptLabel = concept.concept;
+  concepts.forEach((concept, conceptIndex) => {
+    const conceptLabel = normalizeAnswerText(concept.concept || `${guide.label} concept ${conceptIndex + 1}`);
     const conceptDisplay = `${conceptLabel.charAt(0).toUpperCase()}${conceptLabel.slice(1)}`;
     const isPluralConcept = /\b(and|collections|comprehensions|primitives|boundaries|flows|queries|actions)\b/i.test(conceptLabel)
       || /s$/i.test(conceptLabel);
-    const definitionVerb = isPluralConcept ? 'are' : 'is';
-    const matterVerb = isPluralConcept ? 'matter' : 'matters';
-    const doVerb = isPluralConcept ? 'do' : 'does';
     const baseTags = sanitizeTags([...(concept.tags || []), topicKey, conceptLabel]);
     const baseUseCase = concept.useCase || guide.useCase;
     const example = concept.example || guide.example || '';
     const exampleSnippet = example ? example.replace(/[.\s]+$/g, '') : '';
+    const context = { conceptLabel, conceptDisplay, guide, baseUseCase, isPluralConcept };
     const commonMistakes = concept.commonMistakes || [
       `Defining ${conceptDisplay} without explaining how it changes real ${guide.label} implementation decisions.`,
       `Skipping the main tradeoff, limitation, or operational risk tied to ${conceptLabel}.`,
@@ -315,21 +390,25 @@ const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
         : `Keeping the answer generic instead of tying ${conceptDisplay} to a real production workflow.`
     ];
     const interviewTip = concept.interviewTip
-      || `State what ${conceptDisplay} ${doVerb} in ${guide.label}, then connect it to ${baseUseCase}.`;
+      || `Start with the production problem, then show how ${conceptLabel} changes the ${guide.label} implementation.`;
+    const followUps = concept.followUps || [
+      `How would you prove ${conceptLabel} is working correctly in production ${guide.label}?`,
+      `What would make ${conceptLabel} the wrong choice for ${baseUseCase}?`
+    ];
     const fundamentalsQuestion = concept.fundamentalsQuestion
-      || `What ${definitionVerb} ${conceptLabel} in ${guide.label}, and when should a team reach for ${isPluralConcept ? 'them' : 'it'}?`;
+      || pickGeneratedQuestion('fundamentals', conceptIndex, context);
     const fundamentalsAnswer = concept.fundamentalsAnswer
-      || `${conceptDisplay} ${matterVerb} in ${guide.label} because ${isPluralConcept ? 'they' : 'it'} directly affect${isPluralConcept ? '' : 's'} ${baseUseCase}. A strong answer should define the concept clearly, name when ${isPluralConcept ? 'they are' : 'it is'} a good fit, and explain the practical outcome ${isPluralConcept ? 'they improve' : 'it improves'}.`;
+      || `${conceptDisplay} is important in ${guide.label} when teams need ${baseUseCase}. A production-level answer defines the mechanism, names the signal that makes it useful, and explains the outcome it improves without pretending it is always the right choice.`;
     const practicalQuestion = concept.practicalQuestion
-      || `How would you use ${conceptLabel} for ${baseUseCase} in a real ${guide.label} project?`;
+      || pickGeneratedQuestion('practical', conceptIndex, context);
     const practicalAnswer = concept.practicalAnswer
-      || `In a real ${guide.label} project, you would use ${conceptLabel} to support ${baseUseCase}. The best answer explains how ${isPluralConcept ? 'they are' : 'it is'} wired into the codebase, what benefit ${isPluralConcept ? 'they provide' : 'it provides'}, and what guardrails keep the implementation maintainable in production.`;
+      || `${conceptDisplay} should be introduced around a concrete ${guide.label} workflow, not added as ceremony. The answer should describe where it lives in the codebase, how it supports ${baseUseCase}, what tests or metrics prove it works, and which guardrails keep ownership clear.`;
     const advancedQuestion = concept.advancedQuestion
-      || `What mistakes, tradeoffs, or follow-up interview points matter when discussing ${conceptLabel} in ${guide.label}?`;
+      || pickGeneratedQuestion('advanced', conceptIndex, context);
     const advancedAnswer = concept.advancedAnswer
-      || `Interviewers expect you to discuss the upside of ${conceptLabel} in ${guide.label} along with ${isPluralConcept ? 'their' : 'its'} limits, debugging cost, and operational tradeoffs. Strong answers compare ${isPluralConcept ? 'them' : 'it'} with simpler alternatives and explain when the extra complexity is justified.`;
+      || `${conceptDisplay} becomes a senior-level discussion when the answer covers failure modes, debugging cost, ownership, and the point where a simpler design wins. A strong response compares the benefit against operational risk and explains how the team would monitor or reverse the decision.`;
 
-    specs.push(seed(
+    fundamentalsSpecs.push(seed(
       concept.fundamentalsDifficulty || 'medium',
       fundamentalsQuestion,
       fundamentalsAnswer,
@@ -338,13 +417,15 @@ const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        explanation: `${conceptDisplay} ${isPluralConcept ? 'come up' : 'comes up'} in ${guide.label} interviews because teams use ${isPluralConcept ? 'them' : 'it'} for ${baseUseCase}. A strong explanation should cover what ${isPluralConcept ? 'they do' : 'it does'}, when ${isPluralConcept ? 'they help' : 'it helps'}, and what can go wrong if ${isPluralConcept ? 'they are' : 'it is'} used without clear boundaries.`,
+        followUps,
+        focusLabel: conceptLabel,
+        explanation: `${conceptDisplay} comes up in ${guide.label} interviews because it connects a named concept to ${baseUseCase}. The explanation should cover the runtime or design behavior, the moment it becomes useful, and the failure mode that appears when the team applies it without clear boundaries.`,
         interviewTip,
         category: concept.category || 'conceptual'
       }
     ));
 
-    specs.push(seed(
+    practicalSpecs.push(seed(
       concept.practicalDifficulty || 'medium',
       practicalQuestion,
       practicalAnswer,
@@ -353,13 +434,15 @@ const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        explanation: `This question tests whether you can move from definition to delivery. In ${guide.label}, ${conceptLabel} should be explained in terms of how ${isPluralConcept ? 'they are' : 'it is'} introduced into the code, what problem ${isPluralConcept ? 'they solve' : 'it solves'} for ${baseUseCase}, and how you would validate that the implementation is behaving correctly.`,
+        followUps,
+        focusLabel: conceptLabel,
+        explanation: `${conceptDisplay} is practical only when the candidate can describe the implementation path. In ${guide.label}, that means naming where the code or configuration belongs, how it solves ${baseUseCase}, how it is tested, and what signals show the change is safe after release.`,
         interviewTip,
         category: concept.category || 'scenario_based'
       }
     ));
 
-    specs.push(seed(
+    advancedSpecs.push(seed(
       concept.advancedDifficulty || 'hard',
       advancedQuestion,
       advancedAnswer,
@@ -368,14 +451,25 @@ const buildGeneratedTopicSeeds = ({ topicKey, concepts = [] } = {}) => {
         example,
         realWorldUseCase: baseUseCase,
         commonMistakes,
-        explanation: `Advanced ${guide.label} questions on ${conceptLabel} are really checking judgment. You should name the benefit, the main tradeoff, the debugging or scaling risk, and the point where a simpler design would be the better call.`,
+        followUps,
+        focusLabel: conceptLabel,
+        explanation: `${conceptDisplay} is the kind of ${guide.label} topic where senior candidates should separate usefulness from overuse. The answer should name the benefit, the main tradeoff, the debugging or scaling risk, and the condition that would push the design toward a simpler alternative.`,
         interviewTip,
         category: concept.category || 'best_practice'
       }
     ));
   });
 
-  return specs;
+  const orderedTopSeeds = [
+    ...fundamentalsSpecs.slice(0, 10),
+    ...practicalSpecs.slice(0, 10),
+    ...advancedSpecs.slice(0, 10)
+  ];
+  const topSeedSet = new Set(orderedTopSeeds);
+  return [
+    ...orderedTopSeeds,
+    ...[...fundamentalsSpecs, ...practicalSpecs, ...advancedSpecs].filter((item) => !topSeedSet.has(item))
+  ];
 };
 
 const verifiedSeedCatalog = {
@@ -1458,21 +1552,6 @@ listImportantTopics().forEach((topic) => {
   verifiedSeedCatalog[topic.key] = topicSeeds;
 });
 
-const validateVerifiedSeedCoverage = () => {
-  const missingCoverage = listImportantTopics()
-    .map((topic) => ({ key: topic.key, count: verifiedSeedCatalog[topic.key]?.length || 0 }))
-    .filter((topic) => topic.count < MIN_VERIFIED_SEED_COUNT);
-
-  if (missingCoverage.length > 0) {
-    const summary = missingCoverage.map((topic) => `${topic.key}:${topic.count}`).join(', ');
-    throw new Error(`Interview verified seed coverage is incomplete. Expected at least ${MIN_VERIFIED_SEED_COUNT} questions for every topic. Missing: ${summary}`);
-  }
-};
-
-validateVerifiedSeedCoverage();
-
-const getTopicSeedItems = (topicKey = '') => verifiedSeedCatalog[String(topicKey || '').trim().toLowerCase()] || [];
-
 const buildTopicDimensions = (topic) => ({
   stack: topic.type === 'stack' ? [topic.key] : [],
   technology: topic.type === 'technology' ? [topic.key] : [],
@@ -1480,16 +1559,326 @@ const buildTopicDimensions = (topic) => ({
   framework: topic.type === 'framework' ? [topic.key] : []
 });
 
-const buildPopularity = (index) => 100 - (index % 30);
+const categoryForRank = (rank, spec = {}) => {
+  const tags = sanitizeTags(spec.tags || []).join(' ');
+  if (rank <= 10) return 'core-concepts';
+  if (rank <= 20) return 'practical-implementation';
+  if (rank <= 25) {
+    if (/security|auth|csrf|xss|iam|permission/.test(tags)) return 'security';
+    if (/performance|optimization|latency|memory|cache|scalability/.test(tags)) return 'performance';
+    if (/test|testing|quality/.test(tags)) return 'testing';
+    if (/debug|error|incident|leak/.test(tags)) return 'debugging';
+    return ['debugging', 'performance', 'security', 'testing', 'real-world-scenarios'][rank - 21];
+  }
+  return rank >= 29 ? 'system-design' : 'architecture';
+};
+
+const normalizeSeedCategory = (spec = {}, rank = 0) => {
+  if (rank > 0 && rank <= TOP_QUESTION_COUNT) return categoryForRank(rank, spec);
+  const inferred = spec.category || inferCategory(spec.tags || []);
+  return sanitizeCategory(inferred);
+};
+
+const normalizeSeedDifficulty = (spec = {}, rank = 0) => {
+  if (rank >= 26 && rank <= TOP_QUESTION_COUNT) return 'senior';
+  const normalized = String(spec.difficulty || '').trim().toLowerCase();
+  return DIFFICULTY_SET.has(normalized) ? normalized : 'medium';
+};
+
+const qualityScoreForSeed = ({ spec = {}, rank = 0, isTopQuestion = false } = {}) => {
+  if (isTopQuestion) {
+    return 100 - Math.floor(((rank - 1) / Math.max(1, TOP_QUESTION_COUNT - 1)) * 10);
+  }
+  return Math.max(MIN_APPROVED_QUALITY_SCORE, normalizeQualityScore(spec.confidenceScore || 84));
+};
+
+const buildExpectedSignals = ({ topic, category, answerSections }) => sanitizeTags([
+  topic.key,
+  category,
+  ...(answerSections.keyPoints || []).slice(0, 3)
+]).slice(0, 6);
+
+const buildBadAnswerSignals = (answerSections = {}) => {
+  const pitfalls = Array.isArray(answerSections.pitfalls) ? answerSections.pitfalls : [];
+  return pitfalls.length
+    ? pitfalls.slice(0, 5)
+    : ['Gives a generic definition without technology-specific tradeoffs.'];
+};
+
+const calculateRankScore = (record = {}) => {
+  const category = String(record.category || '').toLowerCase();
+  const difficulty = String(record.difficulty || 'medium').toLowerCase();
+  const interviewFrequencyWeight = record.isTopQuestion
+    ? Math.max(70, 101 - Number(record.rank || 30))
+    : Math.max(40, 75 - Math.min(25, Math.max(0, Number(record.rank || 31) - 31)));
+  const coreConceptWeight = category === 'core-concepts'
+    ? 100
+    : ['architecture', 'system-design'].includes(category) ? 82 : 68;
+  const practicalUseWeight = ['practical-implementation', 'real-world-scenarios'].includes(category)
+    ? 100
+    : ['debugging', 'performance', 'security', 'testing'].includes(category) ? 86 : 72;
+  const difficultyBalanceWeight = {
+    easy: 82,
+    medium: 100,
+    hard: 92,
+    senior: 88
+  }[difficulty] || 90;
+  const answerQualityWeight = normalizeQualityScore(record.qualityScore || MIN_APPROVED_QUALITY_SCORE);
+
+  return Number((
+    interviewFrequencyWeight * 0.35
+    + coreConceptWeight * 0.25
+    + practicalUseWeight * 0.20
+    + difficultyBalanceWeight * 0.10
+    + answerQualityWeight * 0.10
+  ).toFixed(2));
+};
+
+const buildStructuredSeedQuestion = ({ topic, spec, index }) => {
+  const rank = index + 1;
+  const isTopQuestion = rank <= TOP_QUESTION_COUNT;
+  const answerSections = toAnswerSections(topic.key, spec);
+  const category = normalizeSeedCategory(spec, rank);
+  const difficulty = normalizeSeedDifficulty(spec, rank);
+  const qualityScore = qualityScoreForSeed({ spec, rank, isTopQuestion });
+  const question = normalizeQuestionText(spec.question);
+  const record = {
+    id: `${topic.key}-${String(rank).padStart(3, '0')}`,
+    topic: topic.key,
+    topicType: topic.type,
+    category,
+    difficulty,
+    rank,
+    isTopQuestion,
+    tags: sanitizeTags([topic.key, topic.type, category, difficulty, 'verified_seed', SEED_VERSION, ...(spec.tags || [])]),
+    question,
+    answerSections,
+    expectedSignals: buildExpectedSignals({ topic, category, answerSections }),
+    badAnswerSignals: buildBadAnswerSignals(answerSections),
+    qualityScore,
+    sourceType: 'verified_seed',
+    reviewStatus: 'approved',
+    version: SEED_VERSION
+  };
+  return {
+    ...record,
+    rankScore: calculateRankScore(record)
+  };
+};
+
+const buildRankedSeedCatalog = (rawCatalog = {}) => {
+  return Object.fromEntries(listImportantTopics().map((topic) => {
+    const rawSeeds = rawCatalog[topic.key] || [];
+    return [
+      topic.key,
+      rawSeeds.map((spec, index) => buildStructuredSeedQuestion({ topic, spec, index }))
+    ];
+  }));
+};
+
+const hasCompleteAnswerSections = (answerSections = {}) => REQUIRED_ANSWER_SECTION_KEYS.every((key) => {
+  const value = answerSections[key];
+  if (Array.isArray(value)) return value.length > 0 && value.every((item) => normalizeAnswerText(item));
+  return Boolean(normalizeAnswerText(value));
+});
+
+const validateSeedQuestionRecord = (record = {}, topic = {}) => {
+  const errors = [];
+  const requiredFields = [
+    'id',
+    'topic',
+    'topicType',
+    'category',
+    'difficulty',
+    'rank',
+    'isTopQuestion',
+    'tags',
+    'question',
+    'answerSections',
+    'expectedSignals',
+    'badAnswerSignals',
+    'qualityScore',
+    'sourceType',
+    'reviewStatus',
+    'version'
+  ];
+
+  for (const field of requiredFields) {
+    if (record[field] === undefined || record[field] === null || record[field] === '') {
+      errors.push(`missing_${field}`);
+    }
+  }
+
+  if (record.topic !== topic.key) errors.push('topic_mismatch');
+  if (record.topicType !== topic.type) errors.push('topic_type_mismatch');
+  if (!INTERVIEW_CATEGORY_SET.has(record.category)) errors.push('invalid_category');
+  if (!DIFFICULTY_SET.has(record.difficulty)) errors.push('invalid_difficulty');
+  if (!Array.isArray(record.tags) || record.tags.length < 3) errors.push('insufficient_tags');
+  if (!hasCompleteAnswerSections(record.answerSections)) errors.push('incomplete_answer_sections');
+  if (!Array.isArray(record.expectedSignals) || record.expectedSignals.length === 0) errors.push('missing_expected_signals');
+  if (!Array.isArray(record.badAnswerSignals) || record.badAnswerSignals.length === 0) errors.push('missing_bad_answer_signals');
+  if (record.sourceType !== 'verified_seed') errors.push('invalid_source_type');
+  if (record.reviewStatus !== 'approved') errors.push('invalid_review_status');
+  if (record.isTopQuestion && Number(record.qualityScore || 0) < MIN_TOP_QUALITY_SCORE) errors.push('top_quality_too_low');
+  if (!record.isTopQuestion && record.reviewStatus === 'approved' && Number(record.qualityScore || 0) < MIN_APPROVED_QUALITY_SCORE) errors.push('approved_quality_too_low');
+
+  const combinedAnswer = structuredAnswerToText(record.answerSections);
+  if (containsWeakOrPlaceholderContent(`${record.question} ${combinedAnswer}`)) {
+    errors.push('weak_or_placeholder_content');
+  }
+
+  return errors;
+};
+
+function validateSeedCatalog(catalog = rankedVerifiedSeedCatalog, topics = listImportantTopics(), options = {}) {
+  const { throwOnError = true, returnResult = false } = options || {};
+  const failures = [];
+
+  for (const topic of topics) {
+    const records = catalog[topic.key] || [];
+    if (records.length < MIN_VERIFIED_SEED_COUNT) {
+      failures.push(`${topic.key}: expected at least ${MIN_VERIFIED_SEED_COUNT} questions, received ${records.length}`);
+      continue;
+    }
+
+    const topRecords = records.filter((record) => record.isTopQuestion);
+    if (topRecords.length !== TOP_QUESTION_COUNT) {
+      failures.push(`${topic.key}: expected exactly ${TOP_QUESTION_COUNT} top questions, received ${topRecords.length}`);
+    }
+
+    const topRanks = topRecords.map((record) => Number(record.rank)).sort((left, right) => left - right);
+    const expectedRanks = Array.from({ length: TOP_QUESTION_COUNT }, (_item, index) => index + 1);
+    if (topRanks.join(',') !== expectedRanks.join(',')) {
+      failures.push(`${topic.key}: top ranks must be exactly 1-${TOP_QUESTION_COUNT}`);
+    }
+
+    const seenQuestions = new Map();
+    const comparableQuestions = [];
+    for (const record of records) {
+      const recordErrors = validateSeedQuestionRecord(record, topic);
+      if (recordErrors.length) {
+        failures.push(`${topic.key}:${record.id}: ${recordErrors.join(', ')}`);
+      }
+
+      const comparable = normalizeComparableText(record.question);
+      if (seenQuestions.has(comparable)) {
+        failures.push(`${topic.key}:${record.id}: duplicate question text with ${seenQuestions.get(comparable)}`);
+      }
+
+      for (const existing of comparableQuestions) {
+        if (computeJaccardSimilarity(comparable, existing.comparable) >= NEAR_DUPLICATE_THRESHOLD) {
+          failures.push(`${topic.key}:${record.id}: near duplicate question with ${existing.id}`);
+          break;
+        }
+      }
+
+      seenQuestions.set(comparable, record.id);
+      comparableQuestions.push({ comparable, id: record.id });
+    }
+  }
+
+  const result = {
+    isValid: failures.length === 0,
+    failures,
+    topicsChecked: topics.length,
+    duplicateWarnings: failures.filter((failure) => /duplicate question/i.test(failure)).length
+  };
+
+  if (failures.length > 0 && throwOnError) {
+    throw new Error(`Invalid interview question seed catalog:\n${failures.join('\n')}`);
+  }
+
+  return returnResult ? result : failures.length === 0;
+}
+
+const rankedVerifiedSeedCatalog = buildRankedSeedCatalog(verifiedSeedCatalog);
+
+const buildSeedCatalogBootValidationReport = () => {
+  const failures = [];
+  for (const topic of listImportantTopics()) {
+    const records = rankedVerifiedSeedCatalog[topic.key] || [];
+    const topRecords = records.filter((record) => record.isTopQuestion);
+    if (records.length < MIN_VERIFIED_SEED_COUNT) {
+      failures.push(`${topic.key}: expected at least ${MIN_VERIFIED_SEED_COUNT} questions, received ${records.length}`);
+    }
+    if (topRecords.length !== TOP_QUESTION_COUNT) {
+      failures.push(`${topic.key}: expected exactly ${TOP_QUESTION_COUNT} top questions, received ${topRecords.length}`);
+    }
+    const topRanks = topRecords.map((record) => Number(record.rank)).sort((left, right) => left - right);
+    const expectedRanks = Array.from({ length: TOP_QUESTION_COUNT }, (_item, index) => index + 1);
+    if (topRanks.join(',') !== expectedRanks.join(',')) {
+      failures.push(`${topic.key}: top ranks must be exactly 1-${TOP_QUESTION_COUNT}`);
+    }
+  }
+
+  return {
+    isValid: failures.length === 0,
+    failures,
+    topicsChecked: listImportantTopics().length,
+    duplicateWarnings: 0,
+    fullValidation: false
+  };
+};
+
+let cachedSeedCatalogValidationReport = null;
+
+const getSeedCatalogValidationReport = () => {
+  if (!cachedSeedCatalogValidationReport) {
+    cachedSeedCatalogValidationReport = validateSeedCatalog(
+      rankedVerifiedSeedCatalog,
+      listImportantTopics(),
+      { throwOnError: false, returnResult: true }
+    );
+  }
+  return cachedSeedCatalogValidationReport;
+};
+
+const seedCatalogBootValidation = buildSeedCatalogBootValidationReport();
+if (!seedCatalogBootValidation.isValid && process.env.NODE_ENV !== 'test') {
+  console.error('[interview-question-seed-catalog] invalid catalog loaded; seeding and runtime baseline sync will fail until fixed.');
+  console.error(seedCatalogBootValidation.failures.slice(0, 10).join('\n'));
+}
+
+const validateInterviewSeedCatalog = (options = {}) => {
+  const result = validateSeedCatalog(
+    rankedVerifiedSeedCatalog,
+    listImportantTopics(),
+    options
+  );
+  if (options?.returnResult) {
+    cachedSeedCatalogValidationReport = result;
+  }
+  return result;
+};
+
+const assertSeedCatalogValidForUse = () => {
+  if (!seedCatalogBootValidation.isValid) {
+    validateInterviewSeedCatalog();
+    return;
+  }
+  const report = cachedSeedCatalogValidationReport || validateInterviewSeedCatalog({
+    throwOnError: false,
+    returnResult: true
+  });
+  if (!report.isValid) {
+    validateInterviewSeedCatalog();
+  }
+};
+
+const getTopicSeedItems = (topicKey = '') => rankedVerifiedSeedCatalog[String(topicKey || '').trim().toLowerCase()] || [];
+
+const buildPopularity = (record) => (record.isTopQuestion ? 200 - Number(record.rank || 0) : Math.round(record.rankScore || 0));
 
 const buildSeedRecordsForTopic = (topic) => {
-  return getTopicSeedItems(topic.key).map((spec, index) => {
-    const question = normalizeQuestionText(spec.question);
-    const answerSections = toAnswerSections(topic.key, spec);
+  assertSeedCatalogValidForUse();
+  return getTopicSeedItems(topic.key).map((seedRecord) => {
+    const question = normalizeQuestionText(seedRecord.question);
+    const answerSections = seedRecord.answerSections;
     const answer = structuredAnswerToText(answerSections);
-    const confidenceScore = Number(spec.confidenceScore || 95);
+    const confidenceScore = Number((Math.max(0.8, seedRecord.qualityScore / 100)).toFixed(2));
 
     return {
+      seedId: seedRecord.id,
       topicKey: topic.key,
       topicType: topic.type,
       topicDimensions: buildTopicDimensions(topic),
@@ -1499,21 +1888,37 @@ const buildSeedRecordsForTopic = (topic) => {
       answerSections,
       normalizedQuestion: normalizeComparableText(question),
       normalizedAnswer: normalizeComparableText(answer),
-      difficulty: spec.difficulty,
-      tags: sanitizeTags([topic.key, topic.type, 'verified_seed', SEED_VERSION, ...(spec.tags || [])]),
+      difficulty: seedRecord.difficulty,
+      tags: seedRecord.tags,
       source: 'verified_seed',
-      sourceType: 'verified_seed',
+      sourceType: seedRecord.sourceType,
       sourceMeta: {
-        seedVersion: SEED_VERSION,
-        seededAt: new Date().toISOString()
+        seedId: seedRecord.id,
+        seedVersion: seedRecord.version,
+        rank: seedRecord.rank,
+        rankScore: seedRecord.rankScore,
+        isTopQuestion: seedRecord.isTopQuestion,
+        expectedSignals: seedRecord.expectedSignals,
+        badAnswerSignals: seedRecord.badAnswerSignals
       },
-      confidenceScore: confidenceScore > 1 ? Number((confidenceScore / 100).toFixed(2)) : confidenceScore,
-      category: spec.category || inferCategory(spec.tags),
-      qualityScore: 5,
+      confidenceScore,
+      relevanceScore: confidenceScore,
+      category: seedRecord.category,
+      qualityScore: seedRecord.qualityScore,
+      rank: seedRecord.rank,
+      rankScore: seedRecord.rankScore,
+      isTopQuestion: seedRecord.isTopQuestion,
+      expectedSignals: seedRecord.expectedSignals,
+      badAnswerSignals: seedRecord.badAnswerSignals,
+      reviewStatus: seedRecord.reviewStatus,
+      version: seedRecord.version,
       answerFormat: 'structured',
       isEnriched: true,
       qualityState: 'approved',
-      popularity: buildPopularity(index),
+      isApproved: true,
+      qualityStatus: 'approved',
+      rejectedReason: '',
+      popularity: buildPopularity(seedRecord),
       usageCount: 0,
       lastUsedAt: null,
       createdAt: new Date()
@@ -1551,8 +1956,17 @@ const findSeedRecordByQuestion = (topicKey = '', question = '') => {
 
 module.exports = {
   SEED_VERSION,
+  TOP_QUESTION_COUNT,
   MIN_VERIFIED_SEED_COUNT,
-  verifiedSeedCatalog,
+  MIN_TOP_QUALITY_SCORE,
+  MIN_APPROVED_QUALITY_SCORE,
+  REQUIRED_ANSWER_SECTION_KEYS,
+  verifiedSeedCatalog: rankedVerifiedSeedCatalog,
+  calculateRankScore,
+  validateSeedCatalog,
+  validateInterviewSeedCatalog,
+  getSeedCatalogValidationReport,
+  validateSeedQuestionRecord,
   getTopicSeedItems,
   buildSeedRecordsForTopic,
   getImportantTopicByKey,

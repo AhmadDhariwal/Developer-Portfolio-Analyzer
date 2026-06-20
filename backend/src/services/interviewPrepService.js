@@ -23,6 +23,8 @@ const {
   normalizeQuestionText,
   normalizeAnswerText,
   normalizeComparableText,
+  normalizeQualityScore,
+  sanitizeCategory,
   sanitizeDifficulty,
   sanitizeTags,
   dedupeQuestions,
@@ -135,8 +137,12 @@ const validateRecordForApproval = ({ record, topicInput, expectedDifficulty = ''
 
 const withApprovalFields = ({ record, topicInput, expectedDifficulty = '', minimumScore = MIN_APPROVED_RELEVANCE } = {}) => {
   const approval = validateRecordForApproval({ record, topicInput, expectedDifficulty, minimumScore });
+  const sourceType = String(record?.sourceType || record?.source || '').trim().toLowerCase();
+  const qualityScore = normalizeQualityScore(record?.qualityScore || (sourceType === 'verified_seed' ? 90 : 80));
   return {
     ...record,
+    category: sanitizeCategory(record?.category || 'core-concepts'),
+    qualityScore,
     relevanceScore: approval.relevanceScore,
     qualityState: approval.isApproved ? 'approved' : 'rejected',
     qualityStatus: approval.isApproved ? 'approved' : 'rejected',
@@ -179,8 +185,8 @@ const enrichQuestionIfNeeded = async (item = {}) => {
       answerSections: seedRecord.answerSections,
       answerFormat: 'structured',
       isEnriched: true,
-      qualityScore: Math.max(5, Number(item.qualityScore || 4)),
-      category: item.category || seedRecord.category || 'conceptual',
+      qualityScore: Math.max(normalizeQualityScore(item.qualityScore || 80), normalizeQualityScore(seedRecord.qualityScore || 90)),
+      category: seedRecord.category || sanitizeCategory(item.category || 'core-concepts'),
       confidenceScore: Math.max(Number(item.confidenceScore || 0), Number(seedRecord.confidenceScore || 0.95)),
       source: seedRecord.source,
       sourceType: seedRecord.sourceType,
@@ -196,8 +202,8 @@ const enrichQuestionIfNeeded = async (item = {}) => {
       answerSections: seedRecord.answerSections,
       answerFormat: 'structured',
       isEnriched: true,
-      qualityScore: Math.max(5, Number(item.qualityScore || 4)),
-      category: item.category || seedRecord.category || 'conceptual',
+      qualityScore: Math.max(normalizeQualityScore(item.qualityScore || 80), normalizeQualityScore(seedRecord.qualityScore || 90)),
+      category: seedRecord.category || sanitizeCategory(item.category || 'core-concepts'),
       confidenceScore: Math.max(Number(item.confidenceScore || 0), Number(seedRecord.confidenceScore || 0.95)),
       source: seedRecord.source,
       sourceType: seedRecord.sourceType
@@ -214,8 +220,8 @@ const enrichQuestionIfNeeded = async (item = {}) => {
     answerSections: enrichedAnswer,
     answerFormat: 'structured',
     isEnriched: true,
-    qualityScore: Math.max(4, Number(item.qualityScore || 4)),
-    category: item.category || 'conceptual'
+    qualityScore: Math.max(80, normalizeQualityScore(item.qualityScore || 80)),
+    category: sanitizeCategory(item.category || 'core-concepts')
   });
 
   return updated || {
@@ -224,8 +230,8 @@ const enrichQuestionIfNeeded = async (item = {}) => {
     answerSections: enrichedAnswer,
     answerFormat: 'structured',
     isEnriched: true,
-    qualityScore: Math.max(4, Number(item.qualityScore || 4)),
-    category: item.category || 'conceptual'
+    qualityScore: Math.max(80, normalizeQualityScore(item.qualityScore || 80)),
+    category: sanitizeCategory(item.category || 'core-concepts')
   };
 };
 
@@ -649,7 +655,9 @@ const getQuestionBank = async ({
     }
   }
 
-  const questions = (await enrichQuestionListOnce(rows)).slice(0, 30);
+  const questions = (await enrichQuestionListOnce(rows))
+    .sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999))
+    .slice(0, 30);
   const payload = makeQuestionPayload({
     questions,
     total: questions.length,
@@ -844,7 +852,7 @@ const searchQuestionBank = async ({
     expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
     minimumScore: MIN_STRONG_SEARCH_RELEVANCE
   });
-  const approved = approvedRecord.isApproved && Number(approvedRecord.qualityScore || 0) >= 3;
+  const approved = approvedRecord.isApproved && normalizeQualityScore(approvedRecord.qualityScore || 0) >= 80;
   if (!approved) {
     const error = new Error('A reliable answer could not be generated right now. Please try again.');
     error.statusCode = 503;
@@ -1050,8 +1058,8 @@ const generateFreshInterviewQuestions = async ({
       .map((item, index) => ({
         ...item,
         answerSections: generated[index]?.answerSections || item.answerSections,
-        category: generated[index]?.category || item.category || 'conceptual',
-        qualityScore: generated[index]?.qualityScore || 4,
+        category: generated[index]?.category || item.category || 'core-concepts',
+        qualityScore: generated[index]?.qualityScore || 80,
         confidenceScore: generated[index]?.confidenceScore,
         answerFormat: 'structured',
         isEnriched: true,

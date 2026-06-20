@@ -4,7 +4,20 @@ const { getAdapter, marketplace } = require('../services/integrations');
 
 test('marketplace exposes expected providers', () => {
   const providers = marketplace.map((item) => item.provider).sort();
-  assert.deepEqual(providers, ['github', 'kaggle', 'leetcode', 'linkedin']);
+  assert.deepEqual(providers, [
+    'certifications',
+    'devblogs',
+    'github',
+    'hackerrank',
+    'kaggle',
+    'leetcode',
+    'linkedin',
+    'portfolio',
+    'stackoverflow'
+  ]);
+  providers.forEach((provider) => {
+    assert.ok(getAdapter(provider), `Expected adapter for ${provider}`);
+  });
 });
 
 test('oauth providers expose oauth2 auth mode', () => {

@@ -2,9 +2,13 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   normalizeQuestionText,
+  sanitizeCategory,
+  sanitizeDifficulty,
+  normalizeQualityScore,
   computeJaccardSimilarity,
   dedupeQuestions,
-  isQualityQuestionAnswer
+  isQualityQuestionAnswer,
+  validateInterviewQuestionQuality
 } = require('../services/interviewQuestionQualityService');
 
 test('normalizeQuestionText appends question mark when missing', () => {
@@ -38,4 +42,25 @@ test('isQualityQuestionAnswer enforces minimum useful length', () => {
     question: 'How would you optimize React rendering performance in a dashboard?',
     answer: 'I would profile rendering hotspots, memoize expensive computations, split large components, virtualize heavy lists, and validate improvements with production metrics.'
   }), true);
+});
+
+test('production category and difficulty sanitizers support ranked bank values', () => {
+  assert.equal(sanitizeCategory('scenario_based'), 'real-world-scenarios');
+  assert.equal(sanitizeCategory('system-design'), 'system-design');
+  assert.equal(sanitizeDifficulty('senior'), 'senior');
+  assert.equal(normalizeQualityScore(4), 80);
+  assert.equal(normalizeQualityScore(93), 93);
+});
+
+test('validateInterviewQuestionQuality rejects placeholder or AI-disclaimer content', () => {
+  const result = validateInterviewQuestionQuality({
+    question: 'How does React state batching affect rendering behavior?',
+    answer: 'As an AI language model, TODO placeholder answer for React rendering behavior.',
+    topicKey: 'react',
+    tags: ['react', 'state', 'rendering'],
+    category: 'core-concepts'
+  });
+
+  assert.equal(result.isValid, false);
+  assert.ok(result.reasons.includes('placeholder_or_weak_ai_content'));
 });

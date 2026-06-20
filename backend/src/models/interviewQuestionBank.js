@@ -29,6 +29,13 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     language: [{ type: String, trim: true, lowercase: true }],
     framework: [{ type: String, trim: true, lowercase: true }]
   },
+  seedId: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    default: '',
+    index: true
+  },
   question: {
     type: String,
     required: true,
@@ -63,14 +70,24 @@ const interviewQuestionBankSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['easy', 'medium', 'hard'],
+    enum: ['easy', 'medium', 'hard', 'senior'],
     default: 'medium'
   },
-  // NEW: Used by Interview Prep blocks to filter conceptual, scenario, code, and system-design questions.
   category: {
     type: String,
-    enum: ['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral'],
-    default: 'conceptual',
+    enum: [
+      'core-concepts',
+      'practical-implementation',
+      'debugging',
+      'performance',
+      'security',
+      'architecture',
+      'testing',
+      'real-world-scenarios',
+      'behavioral-technical',
+      'system-design'
+    ],
+    default: 'core-concepts',
     index: true
   },
   tags: [{ type: String, trim: true, lowercase: true }],
@@ -98,10 +115,38 @@ const interviewQuestionBankSchema = new mongoose.Schema({
   // NEW: Human/product quality score used for Top 30 eligibility and ranking.
   qualityScore: {
     type: Number,
-    default: 3,
-    min: 1,
-    max: 5,
+    default: 80,
+    min: 0,
+    max: 100,
     index: true
+  },
+  rank: {
+    type: Number,
+    default: 0,
+    index: true
+  },
+  rankScore: {
+    type: Number,
+    default: 0,
+    index: true
+  },
+  isTopQuestion: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  expectedSignals: [{ type: String, trim: true }],
+  badAnswerSignals: [{ type: String, trim: true }],
+  reviewStatus: {
+    type: String,
+    enum: ['approved', 'pending', 'rejected'],
+    default: 'approved',
+    index: true
+  },
+  version: {
+    type: String,
+    trim: true,
+    default: ''
   },
   // NEW: Tracks whether `answer`/`answerSections` are structured or legacy plain text.
   answerFormat: {
@@ -171,10 +216,16 @@ interviewQuestionBankSchema.index(
   { topicKey: 1, normalizedQuestionHash: 1 },
   { unique: true, partialFilterExpression: { normalizedQuestionHash: { $type: 'string' } } }
 );
+interviewQuestionBankSchema.index(
+  { topicKey: 1, seedId: 1 },
+  { unique: true, partialFilterExpression: { seedId: { $type: 'string', $ne: '' } } }
+);
 interviewQuestionBankSchema.index({ topicKey: 1, popularity: -1, createdAt: -1 });
 interviewQuestionBankSchema.index({ topicKey: 1, sourceType: 1 });
 // NEW: Supports Block 1 Top 30 filters and ranking.
 interviewQuestionBankSchema.index({ topicKey: 1, category: 1, qualityScore: -1, usageCount: -1 });
+interviewQuestionBankSchema.index({ topicKey: 1, isTopQuestion: 1, rank: 1 });
+interviewQuestionBankSchema.index({ topicKey: 1, qualityScore: -1, rankScore: -1, usageCount: -1, createdAt: -1 });
 interviewQuestionBankSchema.index({ topicKey: 1, isApproved: 1, qualityStatus: 1, confidenceScore: -1, relevanceScore: -1 });
 // NEW: Supports finding legacy/plain answers that need one-time enrichment.
 interviewQuestionBankSchema.index({ topicKey: 1, isEnriched: 1, answerFormat: 1 });

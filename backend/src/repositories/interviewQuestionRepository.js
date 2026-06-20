@@ -5,13 +5,16 @@ const {
   normalizeQuestionText,
   normalizeAnswerText,
   sanitizeDifficulty,
-  sanitizeTags
+  sanitizeCategory,
+  sanitizeTags,
+  normalizeQualityScore,
+  INTERVIEW_CATEGORY_SET
 } = require('../services/interviewQuestionQualityService');
 
 const DEFAULT_SORT = {
+  qualityScore: -1,
+  rankScore: -1,
   usageCount: -1,
-  confidenceScore: -1,
-  popularity: -1,
   lastUsedAt: -1,
   createdAt: -1
 };
@@ -20,7 +23,7 @@ const MIN_APPROVED_RELEVANCE = 0.75;
 const MIN_TOP_CONFIDENCE = 0.78;
 const MIN_TOP_RELEVANCE = 0.78;
 const VALID_SOURCES = new Set(['verified_seed', 'prebuilt', 'ai', 'ai_generated', 'scraped', 'user_asked']);
-const VALID_CATEGORIES = new Set(['conceptual', 'scenario_based', 'code_output', 'best_practice', 'system_design', 'behavioral']);
+const VALID_CATEGORIES = INTERVIEW_CATEGORY_SET;
 const SOURCE_PRIORITY = {
   verified_seed: 4,
   prebuilt: 4,
@@ -36,13 +39,16 @@ const toQuestionHash = (value = '') => crypto
   .digest('hex');
 
 const compareQuestionPriority = (left, right) => {
+  if (left.isTopQuestion && right.isTopQuestion) {
+    const leftRank = Number(left.rank || Number.MAX_SAFE_INTEGER);
+    const rightRank = Number(right.rank || Number.MAX_SAFE_INTEGER);
+    if (leftRank !== rightRank) return leftRank - rightRank;
+  }
+  if (Number(right.qualityScore || 0) !== Number(left.qualityScore || 0)) return Number(right.qualityScore || 0) - Number(left.qualityScore || 0);
+  if (Number(right.rankScore || 0) !== Number(left.rankScore || 0)) return Number(right.rankScore || 0) - Number(left.rankScore || 0);
+  if (Number(right.usageCount || 0) !== Number(left.usageCount || 0)) return Number(right.usageCount || 0) - Number(left.usageCount || 0);
   const sourceDelta = (SOURCE_PRIORITY[right.sourceType] || 0) - (SOURCE_PRIORITY[left.sourceType] || 0);
   if (sourceDelta !== 0) return sourceDelta;
-  if (Number(right.qualityScore || 0) !== Number(left.qualityScore || 0)) return Number(right.qualityScore || 0) - Number(left.qualityScore || 0);
-  if (Number(right.usageCount || 0) !== Number(left.usageCount || 0)) return Number(right.usageCount || 0) - Number(left.usageCount || 0);
-  if (Number(right.confidenceScore || 0) !== Number(left.confidenceScore || 0)) return Number(right.confidenceScore || 0) - Number(left.confidenceScore || 0);
-  if (Number(right.relevanceScore || 0) !== Number(left.relevanceScore || 0)) return Number(right.relevanceScore || 0) - Number(left.relevanceScore || 0);
-  if (Number(right.popularity || 0) !== Number(left.popularity || 0)) return Number(right.popularity || 0) - Number(left.popularity || 0);
   return new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
 };
 
@@ -64,6 +70,7 @@ const approvedQualityCriteria = (minConfidence = MIN_APPROVED_CONFIDENCE, minRel
   },
   { isApproved: { $ne: false } },
   { confidenceScore: { $gte: minConfidence } },
+  { qualityScore: { $gte: 80 } },
   { question: { $not: NOISY_CONTENT_REGEX } },
   { answer: { $not: NOISY_CONTENT_REGEX } },
   {
@@ -149,10 +156,11 @@ const upsertQuestions = async (records = []) => {
     const topicKey = String(record.topicKey || record.skill || '').trim().toLowerCase();
     const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
     const normalizedQuestionHash = String(record.normalizedQuestionHash || toQuestionHash(normalizedQuestion)).trim().toLowerCase();
+    const seedId = String(record.seedId || record.sourceMeta?.seedId || '').trim().toLowerCase();
     const normalizedAnswer = normalizeComparableText(record.normalizedAnswer || record.answer);
     const rawSourceType = String(record.sourceType || record.source || 'verified_seed').trim().toLowerCase();
     const sourceType = normalizeSourceType(rawSourceType);
-    const category = String(record.category || 'conceptual').trim().toLowerCase();
+    const category = sanitizeCategory(record.category || 'core-concepts');
     const answerSections = record.answerSections && typeof record.answerSections === 'object'
       ? record.answerSections
       : {};
@@ -161,15 +169,19 @@ const upsertQuestions = async (records = []) => {
     const rawQualityStatus = String(record.qualityStatus || record.qualityState || 'approved').trim().toLowerCase();
     const qualityStatus = rawQualityStatus === 'review' ? 'pending' : rawQualityStatus;
     const confidenceScore = Number(record.confidenceScore || 0.7);
+    const qualityScore = normalizeQualityScore(record.qualityScore || (sourceType === 'verified_seed' ? 90 : 80));
+
+    const identityClauses = [];
+    if (seedId) {
+      identityClauses.push({ seedId }, { 'sourceMeta.seedId': seedId });
+    }
+    identityClauses.push({ normalizedQuestionHash }, { normalizedQuestion });
 
     return {
       updateOne: {
         filter: {
           topicKey,
-          $or: [
-            { normalizedQuestionHash },
-            { normalizedQuestion }
-          ]
+          $or: identityClauses
         },
         update: {
           $setOnInsert: {
@@ -181,6 +193,7 @@ const upsertQuestions = async (records = []) => {
             topicKey,
             topicType: String(record.topicType || '').trim().toLowerCase() || 'technology',
             skill: normalizedSkill,
+            seedId,
             question: normalizeQuestionText(record.question),
             answer: normalizeAnswerText(record.answer),
             answerSections,
@@ -194,8 +207,15 @@ const upsertQuestions = async (records = []) => {
             sourceMeta: record.sourceMeta || {},
             confidenceScore,
             relevanceScore: Number(record.relevanceScore || Math.min(0.95, Math.max(0.75, confidenceScore))),
-            category: VALID_CATEGORIES.has(category) ? category : 'conceptual',
-            qualityScore: Math.min(5, Math.max(1, Number(record.qualityScore || 3))),
+            category: VALID_CATEGORIES.has(category) ? category : 'core-concepts',
+            qualityScore,
+            rank: Number(record.rank || 0),
+            rankScore: Number(record.rankScore || 0),
+            isTopQuestion: Boolean(record.isTopQuestion),
+            expectedSignals: Array.isArray(record.expectedSignals) ? record.expectedSignals : [],
+            badAnswerSignals: Array.isArray(record.badAnswerSignals) ? record.badAnswerSignals : [],
+            reviewStatus: String(record.reviewStatus || qualityStatus || 'approved').trim().toLowerCase(),
+            version: String(record.version || record.sourceMeta?.seedVersion || '').trim(),
             answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
             isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
             qualityState: String(record.qualityState || 'approved').trim().toLowerCase(),
@@ -225,14 +245,16 @@ const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', ta
     tags,
     excludeGenericSeeds: true
   });
-  filter.qualityScore = { $gte: 4 };
+  filter.isTopQuestion = true;
+  filter.sourceType = 'verified_seed';
+  filter.qualityScore = { $gte: 90 };
   filter.$and = [
     ...(filter.$and || []),
     ...approvedQualityCriteria(MIN_TOP_CONFIDENCE, MIN_TOP_RELEVANCE)
   ];
 
   const rows = await InterviewQuestionBank.find(filter)
-    .sort({ usageCount: -1, qualityScore: -1, confidenceScore: -1, relevanceScore: -1, popularity: -1, lastUsedAt: -1, createdAt: -1 })
+    .sort({ rank: 1, rankScore: -1, qualityScore: -1, usageCount: -1, createdAt: -1 })
     .limit(Math.min(120, Math.max(30, Number(limit || 30) * 4)))
     .lean();
 
@@ -258,7 +280,7 @@ const findApprovedQuestionsByNormalizedQuestions = async ({ topicKey = '', norma
 
 const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, difficulty = '', tags = '', category = '', source = '' } = {}) => {
   const filter = buildQuestionFilter({ topicKey, difficulty, tags, excludeGenericSeeds: true });
-  const normalizedCategory = String(category || '').trim().toLowerCase();
+  const normalizedCategory = category ? sanitizeCategory(category) : '';
   const normalizedSource = String(source || '').trim().toLowerCase();
   if (normalizedCategory) filter.category = normalizedCategory;
   if (normalizedSource) {
@@ -272,7 +294,7 @@ const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, diffi
   const skip = (currentPage - 1) * pageSize;
   const [rows, total] = await Promise.all([
     InterviewQuestionBank.find(filter)
-      .sort({ qualityScore: -1, usageCount: -1, confidenceScore: -1, relevanceScore: -1, popularity: -1, createdAt: -1 })
+      .sort({ qualityScore: -1, rankScore: -1, usageCount: -1, createdAt: -1 })
       .limit(500)
       .lean(),
     InterviewQuestionBank.countDocuments(filter)

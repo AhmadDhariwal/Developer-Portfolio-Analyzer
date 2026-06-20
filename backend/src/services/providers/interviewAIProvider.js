@@ -2,18 +2,11 @@ const aiService = require('../aiservice');
 const {
   normalizeQuestionText,
   normalizeAnswerText,
+  sanitizeCategory,
   sanitizeDifficulty,
-  sanitizeTags
+  sanitizeTags,
+  normalizeQualityScore: normalizeSharedQualityScore
 } = require('../interviewQuestionQualityService');
-
-const VALID_CATEGORIES = new Set([
-  'conceptual',
-  'scenario_based',
-  'code_output',
-  'best_practice',
-  'system_design',
-  'behavioral'
-]);
 
 const normalizeStructuredAnswer = (answer = {}) => {
   if (typeof answer === 'string') {
@@ -75,15 +68,8 @@ const structuredAnswerToText = (answer = {}) => {
   ].filter(Boolean).join('\n\n'));
 };
 
-const sanitizeCategory = (value = '') => {
-  const normalized = String(value || '').trim().toLowerCase();
-  return VALID_CATEGORIES.has(normalized) ? normalized : 'conceptual';
-};
-
 const sanitizeQualityScore = (value = 4) => {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return 4;
-  return Math.min(5, Math.max(1, Math.round(numeric)));
+  return normalizeSharedQualityScore(value || 80);
 };
 
 const normalizeArray = (questions = []) => {
