@@ -94,6 +94,10 @@ const normalizeArray = (questions = []) => {
 };
 
 const buildQuestionGenerationPrompt = ({ topicKey, topicType, query = '', difficulty = '', count = 10 }) => {
+  const normalizedFocus = String(query || '').replace(/\s+/g, ' ').trim();
+  const focusedQuestionTarget = normalizedFocus
+    ? Math.max(1, Math.ceil(Number(count || 10) * 0.8))
+    : 0;
   const difficultyRules = [
     'Difficulty standards:',
     'easy = definitions, basic concepts, syntax, and beginner examples only.',
@@ -125,10 +129,19 @@ const buildQuestionGenerationPrompt = ({ topicKey, topicType, query = '', diffic
     'No markdown. No extra text. JSON array only.',
     `Every question and answer must reference concrete ${topicKey} concepts, APIs, patterns, failure modes, or production tradeoffs.`,
     `Reject generic questions that could apply to a different technology.`,
+    normalizedFocus
+      ? `Practice focus: ${normalizedFocus}. At least ${focusedQuestionTarget} of the ${count} questions must explicitly target this focus, its production failure modes, debugging cases, optimization tradeoffs, or implementation details.`
+      : '',
+    normalizedFocus
+      ? 'Do not drift into broad skill trivia unless one question is needed as a prerequisite for the exact focus.'
+      : '',
+    normalizedFocus
+      ? 'Use the practice focus words directly in the question text, explanation, tags, or examples whenever they are relevant.'
+      : '',
     difficultyRules,
     difficulty ? `Target difficulty: ${difficulty}.` : 'Use balanced difficulty levels.',
     `Topic type: ${topicType}.`
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 };
 
 const buildCustomAnswerPrompt = ({ topicKey, topicType, question = '' }) => {
@@ -192,23 +205,36 @@ const normalizeGeneratedResult = ({ result = {}, fallbackQuestion = '', fallback
 
 const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', difficulty = '', count = 10 }) => {
   const prompt = buildQuestionGenerationPrompt({ topicKey, topicType, query, difficulty, count });
+  const focusLabel = String(query || topicKey || '').replace(/\s+/g, ' ').trim();
   const fallback = {
     questions: [
       {
-        question: `How would you explain the core concepts of ${topicKey} in an interview?`,
+        question: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+          ? `How would you handle ${focusLabel} in ${topicKey} during a production interview discussion?`
+          : `How would you explain the core concepts of ${topicKey} in an interview?`,
         answer: {
-          shortAnswer: `Explain the core ${topicKey} concepts clearly and connect them to practical engineering choices.`,
-          explanation: `A strong answer should define the main ${topicKey} concepts, explain how they are used in real applications, and describe the tradeoffs that matter in production. Interviewers usually look for whether you can connect the concept to debugging, maintainability, performance, and team decision-making.`,
-          keyPoints: [`Define the primary ${topicKey} concept`, 'Explain when it is useful', 'Mention a production tradeoff'],
+          shortAnswer: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+            ? `Explain ${focusLabel} in ${topicKey} with concrete implementation details and production tradeoffs.`
+            : `Explain the core ${topicKey} concepts clearly and connect them to practical engineering choices.`,
+          explanation: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+            ? `A strong answer should define how ${focusLabel} works in ${topicKey}, show where it appears in real systems, and explain the tradeoffs that matter in production. Interviewers usually look for whether you can connect the focus area to debugging, maintainability, performance, and team decision-making.`
+            : `A strong answer should define the main ${topicKey} concepts, explain how they are used in real applications, and describe the tradeoffs that matter in production. Interviewers usually look for whether you can connect the concept to debugging, maintainability, performance, and team decision-making.`,
+          keyPoints: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+            ? [`Define ${focusLabel} in ${topicKey}`, 'Explain when it matters in production', 'Mention one debugging or performance tradeoff']
+            : [`Define the primary ${topicKey} concept`, 'Explain when it is useful', 'Mention a production tradeoff'],
           example: '',
-          realWorldUseCase: `Production teams use ${topicKey} decisions to improve reliability, developer velocity, and runtime behavior.`,
-          commonMistakes: ['Giving a generic answer without technology-specific details'],
-          interviewTip: `Name concrete ${topicKey} APIs or patterns when possible.`
+          realWorldUseCase: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+            ? `Production teams rely on strong ${topicKey} understanding of ${focusLabel} to improve reliability, debugging speed, and runtime behavior.`
+            : `Production teams use ${topicKey} decisions to improve reliability, developer velocity, and runtime behavior.`,
+          commonMistakes: [focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase() ? `Giving a generic ${topicKey} answer without addressing ${focusLabel}` : 'Giving a generic answer without technology-specific details'],
+          interviewTip: focusLabel && focusLabel.toLowerCase() !== String(topicKey || '').toLowerCase()
+            ? `Name concrete ${topicKey} APIs, debugging steps, or tradeoffs tied to ${focusLabel}.`
+            : `Name concrete ${topicKey} APIs or patterns when possible.`
         },
         category: 'conceptual',
         qualityScore: 4,
         difficulty: 'medium',
-        tags: [topicKey, topicType],
+        tags: sanitizeTags([topicKey, topicType, focusLabel]),
         confidenceScore: 0.78
       }
     ]

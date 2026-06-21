@@ -135,8 +135,11 @@ const generateInterviewPrepQuestions = async (req, res) => {
 
     return res.json(payload);
   } catch (error) {
-    console.error('Interview prep hybrid generate error:', error.message);
-    return res.status(500).json({ message: 'Failed to generate interview questions.' });
+    console.error('Generate questions error:', error);
+    return res.status(500).json({
+      message: 'Failed to generate interview questions.',
+      error: error.message
+    });
   }
 };
 

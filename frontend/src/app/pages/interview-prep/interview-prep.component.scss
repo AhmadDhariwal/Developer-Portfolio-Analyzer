@@ -562,6 +562,75 @@
     background: rgba(15, 23, 42, 0.34);
   }
 
+  .generated-results-shell {
+    position: relative;
+    min-height: 0;
+  }
+
+  .generated-results-shell.loading .qa-list {
+    opacity: 0.42;
+    pointer-events: none;
+  }
+
+  .generated-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    background: rgba(2, 6, 23, 0.62);
+    backdrop-filter: blur(5px);
+  }
+
+  .generated-overlay__content {
+    display: grid;
+    justify-items: center;
+    gap: 0.65rem;
+    text-align: center;
+    padding: 1.1rem 1.25rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: rgba(15, 23, 42, 0.82);
+
+    strong {
+      color: var(--text-primary);
+      font-family: 'Manrope', sans-serif;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+  }
+
+  .search-skill-panel {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.95rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: rgba(15, 23, 42, 0.34);
+  }
+
+  .search-skill-field {
+    max-width: 280px;
+  }
+
+  .generated-overlay__spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 3px solid rgba(165, 180, 252, 0.2);
+    border-top-color: #c7d2fe;
+    animation: generated-spin 0.9s linear infinite;
+  }
+
   .question-title {
     display: flex;
     align-items: flex-start;
@@ -798,6 +867,11 @@
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes generated-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   @media (max-width: 920px) {

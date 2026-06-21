@@ -334,7 +334,8 @@ const findAiGeneratedByTopic = async ({ topicKey = '', topic = '', limit = 10 } 
     filter.$or = [
       { tags: normalizedTopic },
       { question: new RegExp(normalizedTopic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
-      { 'sourceMeta.topic': normalizedTopic }
+      { 'sourceMeta.topic': normalizedTopic },
+      { 'sourceMeta.query': normalizedTopic }
     ];
   }
 

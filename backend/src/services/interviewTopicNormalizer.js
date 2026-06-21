@@ -181,6 +181,43 @@ const normalizeTopicInput = ({
   };
 };
 
+const detectTopicsInText = (value = '') => {
+  const normalizedText = normalizeAlias(value);
+  if (!normalizedText) return [];
+
+  const haystack = ` ${normalizedText} `;
+  const seen = new Set();
+  const matches = [];
+
+  const candidates = IMPORTANT_TOPICS
+    .map((topic) => ({
+      topic,
+      aliases: [...new Set([topic.key, topic.label, ...(topic.aliases || [])]
+        .map((alias) => normalizeAlias(alias))
+        .filter(Boolean))]
+    }))
+    .sort((left, right) => {
+      const leftLongest = Math.max(...left.aliases.map((alias) => alias.length), 0);
+      const rightLongest = Math.max(...right.aliases.map((alias) => alias.length), 0);
+      return rightLongest - leftLongest;
+    });
+
+  for (const candidate of candidates) {
+    const matchedAlias = candidate.aliases.find((alias) => haystack.includes(` ${alias} `));
+    if (!matchedAlias || seen.has(candidate.topic.key)) continue;
+
+    seen.add(candidate.topic.key);
+    matches.push({
+      topicKey: candidate.topic.key,
+      topicType: candidate.topic.type,
+      topicLabel: candidate.topic.label,
+      matchedAlias
+    });
+  }
+
+  return matches;
+};
+
 const listImportantTopics = () => IMPORTANT_TOPICS.map((item) => ({ ...item }));
 
 module.exports = {
@@ -190,5 +227,6 @@ module.exports = {
   normalizeAlias,
   slugify,
   resolveTopic,
-  normalizeTopicInput
+  normalizeTopicInput,
+  detectTopicsInText
 };

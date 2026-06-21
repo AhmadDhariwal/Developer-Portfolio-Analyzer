@@ -12,6 +12,39 @@ type AnswerSection = { title: string; body: string; kind?: 'text' | 'list' | 'co
 const LOW_CONFIDENCE_WARN_THRESHOLD = 0.6;
 const VIEWED_QUESTIONS_KEY = 'devinsight_interview_viewed';
 const MAX_VIEWED_ENTRIES = 200;
+const SKILL_MATCH_ALIASES: Record<string, string[]> = {
+  javascript: ['javascript', 'js', 'ecmascript'],
+  typescript: ['typescript', 'ts'],
+  python: ['python', 'py'],
+  java: ['java'],
+  cpp: ['cpp', 'c++', 'cplusplus', 'c plus plus'],
+  angular: ['angular', 'angularjs'],
+  react: ['react', 'reactjs', 'react.js'],
+  nodejs: ['nodejs', 'node', 'node.js', 'node js'],
+  expressjs: ['expressjs', 'express', 'express.js', 'express js'],
+  nextjs: ['nextjs', 'next', 'next.js', 'next js'],
+  mongodb: ['mongodb', 'mongo', 'mongo db'],
+  mysql: ['mysql', 'my sql'],
+  postgresql: ['postgresql', 'postgres', 'postgresql db', 'postgres sql'],
+  redis: ['redis'],
+  'rest-apis': ['rest-apis', 'rest', 'rest api', 'restful api', 'restful apis'],
+  graphql: ['graphql', 'graph ql'],
+  html: ['html', 'hypertext markup language'],
+  css: ['css', 'cascading style sheets'],
+  'git-github': ['git-github', 'git', 'github', 'git github', 'git and github'],
+  oop: ['oop', 'object oriented programming', 'object-oriented programming'],
+  dsa: ['dsa', 'data structures and algorithms', 'data structures', 'algorithms'],
+  aws: ['aws', 'amazon web services', 'amazon services', 'aws cloud'],
+  'generative-ai': ['generative-ai', 'gen ai', 'genai', 'generative ai'],
+  'ai-agents': ['ai-agents', 'agents', 'agentic ai', 'agent systems'],
+  llm: ['llm', 'large language model', 'large language models', 'llms'],
+  rag: ['rag', 'retrieval augmented generation', 'retrieval-augmented generation'],
+  langchain: ['langchain', 'lang chain'],
+  'system-design': ['system-design', 'system design', 'systems design', 'distributed systems'],
+  mern: ['mern', 'mongo express react node', 'mern stack'],
+  mean: ['mean', 'mongo express angular node', 'mean stack'],
+  'full-stack-web-development': ['full-stack-web-development', 'fullstack', 'full stack', 'full stack web', 'full stack development']
+};
 
 interface ViewedEntry {
   questionId: string;
@@ -68,7 +101,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     'mean',
     'full-stack-web-development'
   ];
-  readonly practiceCounts = [1, 2, 3];
+  readonly practiceCounts = [5, 10];
   readonly tabs: Array<{ id: InterviewTab; label: string }> = [
     { id: 'search', label: 'Search & Questions' },
     { id: 'ai', label: 'AI Generated & Recent' }
@@ -108,14 +141,15 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   };
 
   activeTab: InterviewTab = 'search';
-  selectedSkill = 'javascript';
+  selectedSkill = '';
+  localQuestionSkill = '';
   selectedDifficulty = '';
   tagsInput = '';
   selectedCategory = '';
   selectedSource = '';
   aiPromptQuery = '';
   aiDifficulty = '';
-  practiceCount = 3;
+  practiceCount = 5;
   customQuestion = '';
   customResult: InterviewQuestion | null = null;
   searchMatches: InterviewQuestion[] = [];
@@ -180,7 +214,6 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.selectedSkill = this.resolveDefaultSkill();
     this.fetchTopQuestions(true);
     this.fetchAllQuestions(true);
   }
@@ -214,7 +247,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         leastViewedTopic = skillKey;
       }
     }
-    return leastViewedTopic && leastViewedTopic !== this.selectedSkill ? leastViewedTopic : null;
+    return leastViewedTopic && leastViewedTopic !== this.activeCatalogSkill ? leastViewedTopic : null;
   }
 
   /** ── Viewed / Mastery Tracking ── */
@@ -251,7 +284,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       this.viewedEntries.push({
         questionId: id,
         question: item.question,
-        topicKey: item.topicKey || this.selectedSkill,
+        topicKey: item.topicKey || this.effectiveQuestionSkill || this.activeCatalogSkill,
         viewedAt: Date.now(),
         answerViewed: answerVisible
       });
@@ -291,6 +324,51 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   get hasQuestions(): boolean {
     return this.questions.length > 0;
+  }
+
+  get defaultSkill(): string {
+    return this.resolveDefaultSkill();
+  }
+
+  get activeCatalogSkill(): string {
+    return this.selectedSkill || this.defaultSkill;
+  }
+
+  get isGlobalSkillSelected(): boolean {
+    return Boolean(this.selectedSkill);
+  }
+
+  get showLocalQuestionSkillSelector(): boolean {
+    return !this.isGlobalSkillSelected;
+  }
+
+  get effectiveQuestionSkill(): string {
+    return this.selectedSkill || this.localQuestionSkill;
+  }
+
+  get questionSkillLabel(): string {
+    return this.getSkillLabel(this.effectiveQuestionSkill || this.activeCatalogSkill);
+  }
+
+  get skillValidationMessage(): string {
+    return this.effectiveQuestionSkill ? '' : 'Please select a skill';
+  }
+
+  get canSearchQuestion(): boolean {
+    return Boolean(this.effectiveQuestionSkill) && this.customQuestion.trim().length >= 3 && !this.isSearchingMatches;
+  }
+
+  get canAskQuestion(): boolean {
+    return Boolean(this.effectiveQuestionSkill) && this.customQuestion.trim().length >= 12 && !this.isAskingQuestion;
+  }
+
+  get canGenerateAIQuestions(): boolean {
+    return Boolean(
+      this.selectedSkill
+      && this.aiPromptQuery.replace(/\s+/g, ' ').trim()
+      && this.aiDifficulty
+      && this.practiceCount
+    );
   }
 
   get visibleTopQuestions(): InterviewQuestion[] {
@@ -347,7 +425,31 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   onSkillChange(): void {
-    this.markFiltersChanged();
+    this.localQuestionSkill = '';
+    this.resetQuestionSearchState();
+    this.generatedQuestions = [];
+    this.aiGeneratedCount = 0;
+    this.currentSource = '';
+    this.prepService.invalidate(['top', 'all', 'search', 'ask', 'generate']);
+    this.filtersDirty = false;
+    this.fetchTopQuestions(true);
+    this.fetchAllQuestions(true);
+    this.cdr.markForCheck();
+  }
+
+  onLocalQuestionSkillChange(): void {
+    this.resetQuestionSearchState(false);
+    this.customErrorMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  onAiSkillChange(): void {
+    this.markFiltersChanged(false);
+    this.generatedQuestions = [];
+    this.aiGeneratedCount = 0;
+    this.currentSource = '';
+    this.errorMessage = '';
+    this.cdr.markForCheck();
   }
 
   applyFilters(): void {
@@ -359,7 +461,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  clearFilters(): void {
+  resetFilters(): void {
+    this.selectedSkill = '';
+    this.localQuestionSkill = '';
     this.selectedDifficulty = '';
     this.selectedCategory = '';
     this.selectedSource = '';
@@ -367,12 +471,17 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.customQuestion = '';
     this.aiPromptQuery = '';
     this.aiDifficulty = '';
-    this.practiceCount = 3;
-    this.searchMatches = [];
-    this.searchAttempted = false;
-    this.canAskAI = false;
-    this.customResult = null;
-    this.applyFilters();
+    this.practiceCount = 5;
+    this.resetQuestionSearchState();
+    this.generatedQuestions = [];
+    this.aiGeneratedCount = 0;
+    this.currentSource = '';
+    this.errorMessage = '';
+    this.filtersDirty = false;
+    this.prepService.invalidate(['top', 'all', 'search', 'ask', 'generate']);
+    this.fetchTopQuestions(true);
+    this.fetchAllQuestions(true);
+    this.cdr.markForCheck();
   }
 
   loadMore(): void {
@@ -418,7 +527,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   generateAIQuestions(): void {
-    if (!this.selectedSkill || this.isGeneratingAI) return;
+    if (!this.canGenerateAIQuestions || this.isGeneratingAI) return;
+
+    const trimmedFocus = this.aiPromptQuery.replace(/\s+/g, ' ').trim();
 
     this.isGeneratingAI = true;
     this.errorMessage = '';
@@ -428,8 +539,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
     const sub = this.prepService.generateQuestions({
       skill: this.selectedSkill,
-      query: this.aiPromptQuery.trim(),
-      difficulty: this.aiDifficulty || undefined,
+      query: trimmedFocus,
+      difficulty: this.aiDifficulty,
       page: 1,
       limit: this.practiceCount,
       target: this.practiceCount
@@ -460,8 +571,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   askCustomQuestion(): void {
     const question = this.customQuestion.replace(/\s+/g, ' ').trim();
-    if (question.length < 12 || this.isAskingQuestion) {
-      this.customErrorMessage = question.length < 12 ? 'Enter a complete interview question (at least 12 characters).' : '';
+    const validationMessage = this.validateQuestionAgainstSkill(question, 12);
+    if (validationMessage || this.isAskingQuestion) {
+      this.customErrorMessage = validationMessage;
       this.cdr.markForCheck();
       return;
     }
@@ -476,9 +588,10 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.customResult = null;
     this.cdr.markForCheck();
 
-    const sub = this.prepService.askQuestion({ question, skill: this.selectedSkill }).subscribe({
+    const sub = this.prepService.askQuestion({ question, skill: this.effectiveQuestionSkill }).subscribe({
       next: (response) => {
         this.customResult = response;
+        this.addRecentQuestion(response);
         if (response.stored) {
           this.sessionAiNewCount += 1;
           this.allQuestions = this.dedupeAndPrepend([response], this.allQuestions);
@@ -506,7 +619,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const sub = this.prepService.getTopQuestions({
-      skill: this.selectedSkill,
+      skill: this.activeCatalogSkill,
       page: 1,
       limit: this.topQuestionLimit,
       difficulty: this.selectedDifficulty || undefined,
@@ -538,7 +651,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const sub = this.prepService.getAllQuestions({
-      skill: this.selectedSkill,
+      skill: this.activeCatalogSkill,
       page,
       limit: this.allQuestionBatchLimit,
       difficulty: this.selectedDifficulty || undefined,
@@ -569,8 +682,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   searchStoredQuestions(): void {
     const query = this.customQuestion.replace(/\s+/g, ' ').trim();
-    if (query.length < 3 || this.isSearchingMatches) {
-      this.customErrorMessage = query.length < 3 ? 'Enter at least 3 characters to search the question bank.' : '';
+    const validationMessage = this.validateQuestionAgainstSkill(query, 3);
+    if (validationMessage || this.isSearchingMatches) {
+      this.customErrorMessage = validationMessage;
       this.cdr.markForCheck();
       return;
     }
@@ -589,7 +703,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
     const sub = this.prepService.searchQuestions({
       q: query,
-      skill: this.selectedSkill,
+      skill: this.effectiveQuestionSkill,
       difficulty: this.selectedDifficulty || undefined,
       tags: this.parseTags(),
       page: 1,
@@ -602,11 +716,12 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         this.customResult = matches[0] || null;
         if (this.customResult) {
           this.sessionDbLookupCount += 1;
+          this.addRecentQuestion(this.customResult);
           this.recordQuestionViewed(this.customResult, false);
           this.allQuestions = this.dedupeAndPrepend([this.customResult], this.allQuestions);
         }
         this.canAskAI = !this.customResult;
-        this.customErrorMessage = this.customResult ? '' : 'No exact answer found in the question bank.';
+        this.customErrorMessage = this.customResult ? '' : 'No results found. Ask AI instead.';
         this.isSearchingMatches = false;
         this.filtersDirty = false;
         this.cdr.markForCheck();
@@ -662,6 +777,49 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       .split(',')
       .map((tag) => tag.trim().toLowerCase())
       .filter(Boolean);
+  }
+
+  private normalizeSkillMatchText(value: string): string {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\+/g, ' plus ')
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private detectMentionedSkills(question: string): string[] {
+    const normalizedQuestion = this.normalizeSkillMatchText(question);
+    if (!normalizedQuestion) return [];
+
+    const haystack = ` ${normalizedQuestion} `;
+    return this.skills.filter((skill) => {
+      const aliases = SKILL_MATCH_ALIASES[skill] || [skill];
+      return aliases.some((alias) => {
+        const normalizedAlias = this.normalizeSkillMatchText(alias);
+        return normalizedAlias && haystack.includes(` ${normalizedAlias} `);
+      });
+    });
+  }
+
+  private validateQuestionAgainstSkill(question: string, minimumLength: number): string {
+    const normalizedQuestion = String(question || '').replace(/\s+/g, ' ').trim();
+    if (!this.effectiveQuestionSkill) {
+      return 'Please select a skill';
+    }
+    if (normalizedQuestion.length < minimumLength) {
+      return minimumLength >= 12
+        ? 'Enter a complete interview question (at least 12 characters).'
+        : 'Enter at least 3 characters to search the question bank.';
+    }
+
+    const detectedSkills = this.detectMentionedSkills(normalizedQuestion);
+    if (detectedSkills.length > 0 && !detectedSkills.includes(this.effectiveQuestionSkill)) {
+      return `This question does not match the selected skill. It looks closer to ${this.getSkillLabel(detectedSkills[0])}.`;
+    }
+    return '';
   }
 
   private mapCareerProfileToSkill(careerStack: string): string {
@@ -791,6 +949,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       this.addRecentQuestion(this.customResult);
     }
     this.customResult = item;
+    this.addRecentQuestion(item);
     this.canAskAI = false;
     this.searchAttempted = true;
     this.recordQuestionViewed(item, false);
@@ -811,12 +970,12 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   get selectedTopicLabel(): string {
-    return this.getSkillLabel(this.selectedSkill);
+    return this.getSkillLabel(this.activeCatalogSkill);
   }
 
   get activeFilterChips(): string[] {
     return [
-      this.selectedTopicLabel,
+      this.selectedSkill ? this.getSkillLabel(this.selectedSkill) : '',
       this.activeTab === 'ai'
         ? (this.aiDifficulty ? `${this.aiDifficulty} difficulty` : '')
         : (this.selectedDifficulty ? `${this.selectedDifficulty} difficulty` : ''),
@@ -906,6 +1065,17 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       this.customResult = null;
     }
     this.cdr.markForCheck();
+  }
+
+  private resetQuestionSearchState(clearQuestion = false): void {
+    if (clearQuestion) {
+      this.customQuestion = '';
+    }
+    this.searchMatches = [];
+    this.searchAttempted = false;
+    this.canAskAI = false;
+    this.customResult = null;
+    this.customErrorMessage = '';
   }
 
   private addRecentQuestion(item: InterviewQuestion): void {

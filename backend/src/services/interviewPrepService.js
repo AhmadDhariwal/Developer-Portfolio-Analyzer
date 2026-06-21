@@ -10,7 +10,8 @@ const {
 } = require('./redisCacheService');
 const {
   normalizeTopicInput,
-  listImportantTopics
+  listImportantTopics,
+  detectTopicsInText
 } = require('./interviewTopicNormalizer');
 const {
   SEED_VERSION,
@@ -1003,6 +1004,139 @@ const generateHybridInterviewQuestions = async ({
   };
 };
 
+const fallbackToQuestionBankForGeneration = async ({
+  topicInput,
+  skill = '',
+  topic = '',
+  stack = '',
+  technology = '',
+  language = '',
+  framework = '',
+  difficulty = '',
+  page = 1,
+  limit = DEFAULT_PAGE_LIMIT,
+  reason = 'unknown',
+  error = null
+} = {}) => {
+  const normalizedLimit = Math.max(MIN_GENERATE_RESULTS, normalizePagination({ page, limit }).limit);
+  const requestedSkill = sanitizeSkill(skill || topicInput?.skill || topicInput?.topicKey || topic || language || framework || technology || stack);
+  const fallbackSkill = requestedSkill || 'javascript';
+
+  console.warn(`AI generation fallback engaged for topic: ${topicInput?.topicKey || fallbackSkill}. Reason: ${reason}`);
+  logger.warn('interview-prep generate fallback to bank', {
+    topicKey: topicInput?.topicKey || fallbackSkill,
+    reason,
+    message: error?.message || ''
+  });
+
+  try {
+    const topPayload = await getQuestionBank({
+      skill: fallbackSkill,
+      topic,
+      stack,
+      technology,
+      language,
+      framework,
+      difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+      page: 1,
+      limit: normalizedLimit,
+      block: 'top'
+    });
+
+    if (Array.isArray(topPayload?.questions) && topPayload.questions.length > 0) {
+      console.log('Fallback question bank returned:', topPayload.questions.length);
+      return topPayload;
+    }
+
+    const allPayload = await getQuestionBank({
+      skill: fallbackSkill,
+      topic,
+      stack,
+      technology,
+      language,
+      framework,
+      difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+      page: 1,
+      limit: normalizedLimit,
+      block: 'all'
+    });
+
+    if (Array.isArray(allPayload?.questions) && allPayload.questions.length > 0) {
+      console.log('Fallback all-questions bank returned:', allPayload.questions.length);
+      return allPayload;
+    }
+
+    if (fallbackSkill !== 'javascript') {
+      const defaultPayload = await getQuestionBank({
+        skill: 'javascript',
+        page: 1,
+        limit: normalizedLimit,
+        block: 'top'
+      });
+
+      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length > 0) {
+        console.warn('Requested topic bank was empty; using javascript fallback bank');
+        return defaultPayload;
+      }
+    }
+  } catch (fallbackError) {
+    console.error('Fallback question bank lookup failed:', fallbackError);
+    logger.warn('interview-prep fallback bank lookup failed', {
+      topicKey: topicInput?.topicKey || fallbackSkill,
+      message: fallbackError.message
+    });
+  }
+
+  if (fallbackSkill !== 'javascript') {
+    try {
+      const defaultPayload = await getQuestionBank({
+        skill: 'javascript',
+        page: 1,
+        limit: normalizedLimit,
+        block: 'top'
+      });
+
+      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length > 0) {
+        console.warn('Requested topic bank was empty; using javascript fallback bank');
+        return defaultPayload;
+      }
+    } catch (defaultFallbackError) {
+      console.error('Default javascript fallback lookup failed:', defaultFallbackError);
+    }
+  }
+
+  const memoryFallbackTopic = getImportantTopicByKey(topicInput?.topicKey) || getImportantTopicByKey('javascript');
+  const memoryFallbackQuestions = memoryFallbackTopic
+    ? buildSeedRecordsForTopic(memoryFallbackTopic).filter((record) => record.isTopQuestion).slice(0, normalizedLimit)
+    : [];
+
+  if (memoryFallbackQuestions.length > 0) {
+    console.warn(`Using in-memory verified seed fallback for topic: ${memoryFallbackTopic.key}`);
+    return makeQuestionPayload({
+      questions: memoryFallbackQuestions,
+      total: memoryFallbackQuestions.length,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'db',
+      topicInput: normalizeTopicInput({ topic: memoryFallbackTopic.key }),
+      aiGeneratedCount: 0,
+      scrapedGeneratedCount: 0,
+      enrichedCount: 0,
+      sourceMix: { verified_seed: memoryFallbackQuestions.length },
+      partial: false
+    });
+  }
+
+  return makeQuestionPayload({
+    questions: [],
+    total: 0,
+    page: 1,
+    limit: normalizedLimit,
+    source: 'db',
+    topicInput: topicInput || normalizeTopicInput({ skill: fallbackSkill })
+  });
+};
+
 const generateFreshInterviewQuestions = async ({
   skill,
   topic = '',
@@ -1017,13 +1151,57 @@ const generateFreshInterviewQuestions = async ({
 } = {}) => {
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
   const normalizedSkill = sanitizeSkill(topicInput.topicKey);
-  if (!normalizedSkill) {
-    throw new Error('Skill is required.');
-  }
-
   const normalizedLimit = normalizePagination({ page, limit }).limit;
   const targetCount = Math.max(1, normalizedLimit);
-  const focusTopic = String(query || topic || topicInput.topicKey || '').trim().toLowerCase();
+  const focusQuery = String(query || topic || topicInput.topicKey || '').replace(/\s+/g, ' ').trim();
+  const focusTopic = focusQuery.toLowerCase();
+  const fallbackToBank = async (reason, error = null) => {
+    const payload = await fallbackToQuestionBankForGeneration({
+      topicInput,
+      skill: normalizedSkill || skill,
+      topic,
+      stack,
+      technology,
+      language,
+      framework,
+      difficulty,
+      page,
+      limit: targetCount,
+      reason,
+      error
+    });
+
+    if (Array.isArray(payload?.questions) && payload.questions.length > 0) {
+      return payload;
+    }
+
+    console.warn(`Fallback question bank returned empty for topic: ${topicInput.topicKey || normalizedSkill || 'javascript'}`);
+    return {
+      ...payload,
+      questions: [],
+      total: 0,
+      totalAvailable: 0,
+      page: 1,
+      limit: targetCount,
+      totalPages: 1,
+      fromCache: false,
+      source: 'db',
+      aiGeneratedCount: 0,
+      scrapedGeneratedCount: 0,
+      enrichedCount: 0,
+      sourceMix: payload?.sourceMix || {},
+      partial: false,
+      topicKey: payload?.topicKey || topicInput.topicKey,
+      topicType: payload?.topicType || topicInput.topicType,
+      metrics: metricSnapshot()
+    };
+  };
+
+  if (!normalizedSkill) {
+    return fallbackToBank('missing_skill');
+  }
+
+  console.log('Generating AI questions for topic:', topicInput.topicKey);
   const existing = await questionRepository.findAiGeneratedByTopic({
     topicKey: topicInput.topicKey,
     topic: focusTopic,
@@ -1033,6 +1211,11 @@ const generateFreshInterviewQuestions = async ({
   if (existing.length >= targetCount) {
     interviewEngineMetrics.aiReuseHits += targetCount;
     const questions = await enrichQuestionListOnce(existing.slice(0, targetCount));
+    console.log('Existing AI question reuse count:', existing.length);
+    console.log('After enrichment reuse count:', questions.length);
+    if (!questions || questions.length === 0) {
+      return fallbackToBank('existing_ai_reuse_empty');
+    }
     return makeQuestionPayload({
       questions,
       total: questions.length,
@@ -1049,10 +1232,11 @@ const generateFreshInterviewQuestions = async ({
   try {
     const generated = await aiProvider.generateStructuredQuestionSet({
       skill: normalizedSkill,
-      topic: focusTopic,
+      topic: focusQuery,
       difficulty,
       count: gap
     });
+    console.log('AI returned:', Array.isArray(generated) ? generated.length : 0);
     const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topicInput.topicKey, 600);
     const normalized = normalizeQuestions(generated)
       .map((item, index) => ({
@@ -1063,22 +1247,43 @@ const generateFreshInterviewQuestions = async ({
         confidenceScore: generated[index]?.confidenceScore,
         answerFormat: 'structured',
         isEnriched: true,
-        tags: sanitizeTags([...(item.tags || []), topicInput.topicKey, focusTopic, 'ai_generated'])
+        tags: sanitizeTags([
+          ...(item.tags || []),
+          topicInput.topicKey,
+          focusTopic,
+          ...focusTopic.split(/\s+/).filter(Boolean),
+          'ai_generated'
+        ])
       }))
       .filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topicInput.topicKey }));
+    console.log('After validation:', normalized.length);
+    console.log('Validation rejected:', Math.max(0, (Array.isArray(generated) ? generated.length : 0) - normalized.length));
     const deduped = dedupeQuestions({ questions: normalized, existingComparableQuestions });
+    console.log('After deduplication:', deduped.length);
     const records = deduped.map((item) => withApprovalFields({
       record: enrichmentOrchestrator.toStorableRecord({
         item,
         topic: topicInput,
         sourceType: 'ai_generated',
-        sourceMeta: { topic: focusTopic, query: focusTopic, mode: 'practice-set', generatedAt: new Date().toISOString(), expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '' },
+        sourceMeta: {
+          topic: focusTopic,
+          query: focusQuery,
+          mode: 'practice-set',
+          generatedAt: new Date().toISOString(),
+          expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : ''
+        },
         popularity: 14
       }),
       topicInput,
       expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
       minimumScore: 0.78
     })).filter((record) => record.isApproved);
+    console.log('After approval filter:', records.length);
+
+    if (!records || records.length === 0) {
+      console.warn('AI generation failed validation, using fallback questions');
+      return fallbackToBank('validated_questions_empty');
+    }
 
     if (records.length > 0) {
       await questionRepository.upsertQuestions(records);
@@ -1111,25 +1316,17 @@ const generateFreshInterviewQuestions = async ({
         metrics: metricSnapshot()
       };
     }
+
+    console.warn('Generated questions were stored but final payload was empty, using fallback questions');
+    return fallbackToBank('post_store_payload_empty');
   } catch (error) {
+    console.error('Generate fresh interview questions error:', error);
     logger.warn('interview-prep explicit generation failed; using saved bank', {
       topicKey: topicInput.topicKey,
       message: error.message
     });
+    return fallbackToBank('generation_exception', error);
   }
-
-  return generateHybridInterviewQuestions({
-    skill: normalizedSkill,
-    topic,
-    stack,
-    technology,
-    language,
-    framework,
-    query,
-    difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-    page,
-    limit
-  });
 };
 
 const answerCustomInterviewQuestion = async ({
@@ -1155,6 +1352,13 @@ const answerCustomInterviewQuestion = async ({
     language,
     framework
   });
+  const detectedTopics = detectTopicsInText(normalizedQuestion);
+  if (detectedTopics.length > 0 && !detectedTopics.some((item) => item.topicKey === topicInput.topicKey)) {
+    const detectedTopic = detectedTopics[0];
+    const error = new Error(`This question does not match the selected skill. It looks closer to ${detectedTopic.topicLabel}.`);
+    error.statusCode = 400;
+    throw error;
+  }
 
   const cacheKey = makeCustomQuestionCacheKey({ question: normalizedQuestion, topicKey: topicInput.topicKey });
   const cached = await getCacheJson(cacheKey);
