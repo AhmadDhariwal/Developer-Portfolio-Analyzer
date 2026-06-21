@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   Job,
@@ -12,11 +13,17 @@ import {
 @Injectable({ providedIn: 'root' })
 export class JobService {
   private readonly baseUrl = environment.apiBaseUrl;
+  private readonly cache = new Map<string, Observable<unknown>>();
 
   constructor(private readonly http: HttpClient) {}
 
   getJobs(filters: Partial<JobFilters> = {}, page = 1, limit = 10): Observable<JobsResponse> {
     const normalizedFilters = normalizeJobFilters(filters);
+    const cacheKey = this.buildKey('jobs', {
+      ...normalizedFilters,
+      page: Math.max(1, page),
+      limit: Math.max(1, limit)
+    });
     let params = new HttpParams()
       .set('page', String(Math.max(1, page)))
       .set('limit', String(Math.max(1, limit)));
@@ -37,15 +44,57 @@ export class JobService {
       params = params.set('expLevel', normalizedFilters.experienceLevel);
     }
 
-    return this.http.get<JobsResponse>(`${this.baseUrl}/jobs`, { params }).pipe(
-      map((response) => this.normalizeResponse(response, normalizedFilters, page))
+    return this.once(
+      cacheKey,
+      this.http.get<JobsResponse>(`${this.baseUrl}/jobs`, { params }).pipe(
+        map((response) => this.normalizeResponse(response, normalizedFilters, page))
+      )
     );
   }
 
   getJobById(id: string): Observable<Job> {
-    return this.http.get<{ job?: Partial<Job> }>(`${this.baseUrl}/jobs/${encodeURIComponent(id)}`).pipe(
-      map((response) => this.normalizeJob(response?.job, 0))
+    return this.once(
+      this.buildKey('job-detail', { id: String(id || '').trim() }),
+      this.http.get<{ job?: Partial<Job> }>(`${this.baseUrl}/jobs/${encodeURIComponent(id)}`).pipe(
+        map((response) => this.normalizeJob(response?.job, 0))
+      )
     );
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  invalidate(prefixes: string[] = ['jobs', 'job-detail']): void {
+    for (const [key] of this.cache) {
+      if (prefixes.some((prefix) => key.startsWith(`${prefix}:`))) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  private buildKey(prefix: string, params: Record<string, unknown>): string {
+    const normalized = Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(',') : String(value)}`)
+      .join('&');
+
+    return `${prefix}:${normalized}`;
+  }
+
+  private once<T>(key: string, source$: Observable<T>): Observable<T> {
+    const existing = this.cache.get(key) as Observable<T> | undefined;
+    if (existing) {
+      return existing;
+    }
+
+    const shared$ = source$.pipe(
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    this.cache.set(key, shared$);
+    return shared$;
   }
 
   private normalizeResponse(response: JobsResponse | null | undefined, filters: JobFilters, requestedPage: number): JobsResponse {

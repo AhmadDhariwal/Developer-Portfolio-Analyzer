@@ -71,6 +71,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
   private readonly uiStateMap = new Map<string, JobUiState>();
   private requestToken = 0;
+  private lastProfileSignature = '';
 
   constructor(
     private readonly jobService: JobService,
@@ -169,7 +170,14 @@ export class JobsComponent implements OnInit, OnDestroy {
         distinctUntilChanged(
           (left, right) => left.careerStack === right.careerStack && left.experienceLevel === right.experienceLevel
         )
-      ).subscribe(() => this.resetAndFetch())
+      ).subscribe((profile) => {
+        const nextSignature = `${profile.careerStack}|${profile.experienceLevel}`.toLowerCase();
+        if (this.lastProfileSignature && this.lastProfileSignature !== nextSignature) {
+          this.jobService.clearCache();
+        }
+        this.lastProfileSignature = nextSignature;
+        this.resetAndFetch();
+      })
     );
   }
 
@@ -191,6 +199,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   onFiltersReset(): void {
     this.pendingFilters = { ...DEFAULT_JOB_FILTERS };
     this.activeFilters = { ...DEFAULT_JOB_FILTERS };
+    this.jobService.clearCache();
     this.resetAndFetch();
   }
 
@@ -226,6 +235,12 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   retry(): void {
+    this.jobService.clearCache();
+    this.resetAndFetch();
+  }
+
+  refreshJobs(): void {
+    this.jobService.clearCache();
     this.resetAndFetch();
   }
 

@@ -55,6 +55,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
   private readonly filterChanges = new Subject<CourseFilters>();
   private requestToken = 0;
+  private lastProfileSignature = '';
 
   constructor(
     private readonly courseService: CourseService,
@@ -146,7 +147,14 @@ export class CoursesComponent implements OnInit, OnDestroy {
               && previous.experienceLevel === current.experienceLevel
           )
         )
-        .subscribe(() => this.resetAndFetch())
+        .subscribe((profile) => {
+          const nextSignature = `${profile.careerStack}|${profile.experienceLevel}`.toLowerCase();
+          if (this.lastProfileSignature && this.lastProfileSignature !== nextSignature) {
+            this.courseService.clearCache();
+          }
+          this.lastProfileSignature = nextSignature;
+          this.resetAndFetch();
+        })
     );
   }
 
@@ -161,6 +169,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   onFiltersReset(): void {
     this.activeFilters = { ...DEFAULT_FILTERS };
+    this.courseService.clearCache();
     this.resetAndFetch();
   }
 
@@ -205,6 +214,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   retryLoad(): void {
     this.errorMessage = '';
+    this.courseService.clearCache();
+    this.resetAndFetch();
+  }
+
+  refreshCourses(): void {
+    this.courseService.clearCache();
     this.resetAndFetch();
   }
 
