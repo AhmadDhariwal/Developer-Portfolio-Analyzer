@@ -2,8 +2,13 @@
 
   <!-- ── Page header ───────────────────────────────────────────── -->
   <div class="prof-page__header">
-    <h1>Profile Settings</h1>
-    <p>Manage your account and preferences</p>
+    <div>
+      <h1>Profile Settings</h1>
+      <p>Manage your account and preferences</p>
+    </div>
+    <button class="prof-refresh-btn" type="button" (click)="refreshProfile()" [disabled]="isLoading">
+      {{ isLoading ? 'Refreshing�' : 'Refresh' }}
+    </button>
   </div>
 
   <!-- Loading skeleton -->
@@ -543,3 +548,5 @@
   </div>
 
 </div>
+
+

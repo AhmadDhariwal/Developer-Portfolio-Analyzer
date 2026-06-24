@@ -25,6 +25,8 @@ export interface CareerProfile {
   experienceLevel: ExperienceLevel;
   careerGoal:      CareerGoal;
   isConfigured:    boolean;
+  activeCareerStack?: CareerStack;
+  activeExperienceLevel?: ExperienceLevel;
 }
 
 export const CAREER_STACKS: CareerStack[] = [

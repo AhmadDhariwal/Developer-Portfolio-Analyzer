@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { ApiService } from './api.service';
 import {
   CareerProfile,
   CareerStack,
@@ -20,13 +23,15 @@ export class CareerProfileService {
     this.loadFromStorage()
   );
 
-  /** Observable every module subscribes to for reactive updates */
   readonly careerProfile$: Observable<CareerProfile> =
     this.profileSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) {}
-
-  // ── Snapshots ────────────────────────────────────────────────────────────
+  constructor(
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly apiService: ApiService
+  ) {}
 
   get snapshot(): CareerProfile {
     return this.profileSubject.value;
@@ -44,12 +49,6 @@ export class CareerProfileService {
     return this.profileSubject.value.isConfigured;
   }
 
-  // ── Remote write ─────────────────────────────────────────────────────────
-
-  /**
-   * Persists the career profile to the server and then updates local state.
-   * Call this from the onboarding modal and the profile settings page.
-   */
   saveCareerProfile(
     careerStack: CareerStack,
     experienceLevel: ExperienceLevel,
@@ -61,7 +60,7 @@ export class CareerProfileService {
         experienceLevel,
         careerGoal
       })
-      .pipe(tap(response => this.applyAndPersist(response)));
+      .pipe(tap((response) => this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: true })));
   }
 
   setActiveCareerProfile(
@@ -73,15 +72,9 @@ export class CareerProfileService {
         careerStack,
         experienceLevel
       })
-      .pipe(tap(response => this.applyAndPersist(response)));
+      .pipe(tap((response) => this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: false })));
   }
 
-  // ── Hydration ────────────────────────────────────────────────────────────
-
-  /**
-   * Hydrates local state from the server response.
-   * Call this inside ProfileService.getProfile() after login or page refresh.
-   */
   hydrateFromServer(serverProfile: {
     careerStack?: CareerStack;
     experienceLevel?: ExperienceLevel;
@@ -90,44 +83,70 @@ export class CareerProfileService {
     careerGoal?: CareerGoal;
     isConfigured?: boolean;
   }): void {
-    this.applyAndPersist(serverProfile);
+    this.applyAndPersist(serverProfile, { invalidateCaches: false, syncBaseFields: true });
   }
 
-  // ── Optimistic local update ───────────────────────────────────────────────
-
-  /**
-   * Updates state locally without a server call.
-   * Use for immediate UI feedback before save completes.
-   */
   updateLocally(partial: Partial<CareerProfile>): void {
     const next = { ...this.profileSubject.value, ...partial };
     this.profileSubject.next(next);
     this.persistToStorage(next);
   }
 
-  // ── Reset ────────────────────────────────────────────────────────────────
-
   reset(): void {
     localStorage.removeItem(STORAGE_KEY);
     this.profileSubject.next({ ...DEFAULT_CAREER_PROFILE });
+    this.authService.updateCurrentUser({
+      careerStack: DEFAULT_CAREER_PROFILE.careerStack,
+      experienceLevel: DEFAULT_CAREER_PROFILE.experienceLevel,
+      activeCareerStack: DEFAULT_CAREER_PROFILE.careerStack,
+      activeExperienceLevel: DEFAULT_CAREER_PROFILE.experienceLevel,
+      careerGoal: DEFAULT_CAREER_PROFILE.careerGoal
+    });
   }
 
-  // ── Private helpers ──────────────────────────────────────────────────────
-
-  private applyAndPersist(data: Partial<CareerProfile>): void {
+  private applyAndPersist(
+    data: Partial<CareerProfile>,
+    options: { invalidateCaches?: boolean; syncBaseFields?: boolean } = {}
+  ): void {
     const incoming = data as Partial<CareerProfile> & {
       activeCareerStack?: CareerStack;
       activeExperienceLevel?: ExperienceLevel;
     };
     const current = this.profileSubject.value;
     const next: CareerProfile = {
-      careerStack:     incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
+      careerStack: incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
       experienceLevel: incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
-      careerGoal:      data.careerGoal      ?? current.careerGoal,
-      isConfigured:    data.isConfigured    ?? current.isConfigured
+      careerGoal: data.careerGoal ?? current.careerGoal,
+      isConfigured: data.isConfigured ?? current.isConfigured
     };
+
     this.profileSubject.next(next);
     this.persistToStorage(next);
+    this.authService.updateCurrentUser({
+      ...(options.syncBaseFields === false ? {} : {
+        careerStack: next.careerStack,
+        experienceLevel: next.experienceLevel
+      }),
+      activeCareerStack: next.careerStack,
+      activeExperienceLevel: next.experienceLevel,
+      careerGoal: next.careerGoal
+    });
+
+    if (options.invalidateCaches) {
+      this.frontendCache.clearCurrentSignalHash();
+      this.apiService.invalidateScenarioContextCache();
+      [
+        'dashboardSummary',
+        'dashboardContributions',
+        'dashboardLanguages',
+        'dashboardSkills',
+        'dashboardRecommendations',
+        'dashboardIntegrationAnalytics',
+        'recommendations',
+        'weeklyReports',
+        'news-feed'
+      ].forEach((module) => this.frontendCache.clearModule(module));
+    }
   }
 
   private persistToStorage(profile: CareerProfile): void {
@@ -144,3 +163,7 @@ export class CareerProfileService {
     }
   }
 }
+
+
+
+

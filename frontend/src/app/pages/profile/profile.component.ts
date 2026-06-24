@@ -14,8 +14,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   CAREER_STACKS,
   EXPERIENCE_LEVELS,
+  CAREER_GOALS,
   CareerStack,
   ExperienceLevel,
+  CareerGoal,
 } from '../../shared/models/career-profile.model';
 
 @Component({
@@ -26,29 +28,28 @@ import {
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent implements OnInit {
-  // ── Constants for template selects ────────────────────────────────────
-  readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
+  readonly careerStacks: CareerStack[] = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
+  readonly careerGoals: CareerGoal[] = CAREER_GOALS;
+  private readonly githubUsernamePattern = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
-  // ── State ──────────────────────────────────────────────────────────────
-  isLoading         = true;
-  isSaving          = false;
-  isSavingCareer    = false;
-  isChangingPwd     = false;
+  isLoading = true;
+  isSaving = false;
+  isSavingCareer = false;
+  isChangingPwd = false;
   showDeleteConfirm = false;
-  successMessage    = '';
-  errorMessage      = '';
-  pwdError          = '';
-  pwdSuccess        = '';
-  careerSuccess     = '';
+  successMessage = '';
+  errorMessage = '';
+  pwdError = '';
+  pwdSuccess = '';
+  careerSuccess = '';
   isUploadingAvatar = false;
-  avatarVersion     = Date.now();
+  avatarVersion = Date.now();
   isTogglingVisibility = false;
-  visibilityMessage    = '';
+  visibilityMessage = '';
   private avatarPreviewUrl: string | null = null;
   private readonly destroyRef = inject(DestroyRef);
 
-  // ── Profile data (bound to form) ───────────────────────────────────────
   profile: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
     phoneNumber: '',
@@ -56,58 +57,34 @@ export class ProfileComponent implements OnInit {
     activeGithubUsername: '',
     avatar: '', jobTitle: '', location: '', bio: '',
     website: '', twitter: '', linkedin: '',
-    careerStack:     'Full Stack',
+    careerStack: 'Full Stack',
     experienceLevel: 'Student',
-    careerGoal:      '',
-    isConfigured:    false,
-    isPublic:        false,
-    role:            'developer',
+    careerGoal: '',
+    isConfigured: false,
+    isPublic: false,
+    role: 'developer',
     profileCompleted: true,
     defaultResume: null,
     activeResume: null,
     notifications: {
-      weeklyScoreReport:  true,
-      skillTrendAlerts:   true,
+      weeklyScoreReport: true,
+      skillTrendAlerts: true,
       newRecommendations: false,
-      jobMatchAlerts:     true,
+      jobMatchAlerts: true,
     },
     stats: { developerScore: 0, reposAnalyzed: 0, skillsDetected: 0, memberSince: '' },
   };
 
-  // ── Password form ──────────────────────────────────────────────────────
   passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
-  private snapshot: UserProfile = {
-    _id: '', name: '', email: '', githubUsername: '',
-    phoneNumber: '',
-    countryCode: '',
-    activeGithubUsername: '',
-    avatar: '', jobTitle: '', location: '', bio: '',
-    website: '', twitter: '', linkedin: '',
-    careerStack:     'Full Stack',
-    experienceLevel: 'Student',
-    careerGoal:      '',
-    isConfigured:    false,
-    isPublic:        false,
-    role:            'developer',
-    profileCompleted: true,
-    defaultResume: null,
-    activeResume: null,
-    notifications: {
-      weeklyScoreReport:  true,
-      skillTrendAlerts:   true,
-      newRecommendations: false,
-      jobMatchAlerts:     true,
-    },
-    stats: { developerScore: 0, reposAnalyzed: 0, skillsDetected: 0, memberSince: '' },
-  };
+  private snapshot: UserProfile = this.cloneProfile(this.profile);
 
   constructor(
-    private readonly profileService:      ProfileService,
-    private readonly authService:         AuthService,
+    private readonly profileService: ProfileService,
+    private readonly authService: AuthService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly router:              Router,
-    private readonly cdr:                 ChangeDetectorRef,
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -127,95 +104,104 @@ export class ProfileComponent implements OnInit {
       });
   }
 
-  // ── Load from backend ──────────────────────────────────────────────────
-  loadProfile(): void {
+  loadProfile(forceRefresh = false): void {
     this.isLoading = true;
-    this.profileService.getProfile().subscribe({
+    this.profileService.getProfile({ forceRefresh }).subscribe({
       next: (data) => {
         this.profile = this.normalizeProfile(data);
+        this.snapshot = this.cloneProfile(this.profile);
         this.bumpAvatarVersion();
-        this.snapshot = { ...this.profile };
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         const cached = this.authService.getCurrentUser();
         if (cached) {
-          this.profile.name           = cached.name           ?? '';
-          this.profile.email          = cached.email          ?? '';
+          this.profile.name = cached.name ?? '';
+          this.profile.email = cached.email ?? '';
           this.profile.githubUsername = cached.githubUsername ?? '';
-          this.profile.avatar         = this.profileService.resolveAvatarUrl(String(cached.avatar || ''));
+          this.profile.activeGithubUsername = cached.activeGithubUsername ?? cached.githubUsername ?? '';
+          this.profile.avatar = this.profileService.resolveAvatarUrl(String(cached.avatar || ''));
+          this.profile.careerStack = (cached.careerStack as CareerStack) || this.profile.careerStack;
+          this.profile.experienceLevel = (cached.experienceLevel as ExperienceLevel) || this.profile.experienceLevel;
+          this.profile.activeCareerStack = (cached.activeCareerStack as CareerStack) || this.profile.activeCareerStack || this.profile.careerStack;
+          this.profile.activeExperienceLevel = (cached.activeExperienceLevel as ExperienceLevel) || this.profile.activeExperienceLevel || this.profile.experienceLevel;
+          this.profile.careerGoal = (cached.careerGoal as CareerGoal) || '';
           this.bumpAvatarVersion();
         }
         this.errorMessage = err?.error?.message || 'Could not load profile from server.';
-        this.isLoading    = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
     });
   }
 
-  // ── Save profile + notifications ───────────────────────────────────────
+  refreshProfile(): void {
+    if (this.isLoading) return;
+    this.loadProfile(true);
+  }
+
   saveChanges(): void {
-    if (!this.hasProfileChanges()) {
+    const githubUsername = this.normalizeGithubUsername(this.profile.githubUsername);
+    if (!githubUsername || !this.githubUsernamePattern.test(githubUsername)) {
+      this.errorMessage = 'Enter a valid GitHub username.';
+      this.successMessage = '';
+      return;
+    }
+
+    const payload: UpdateProfilePayload = {
+      name: this.sanitizeText(this.profile.name),
+      githubUsername,
+      jobTitle: this.sanitizeText(this.profile.jobTitle),
+      location: this.sanitizeText(this.profile.location),
+      bio: this.sanitizeText(this.profile.bio),
+      website: this.sanitizeText(this.profile.website),
+      twitter: this.sanitizeText(this.profile.twitter),
+      linkedin: this.sanitizeText(this.profile.linkedin),
+      phoneNumber: this.sanitizeText(this.profile.phoneNumber),
+      notifications: { ...(this.profile.notifications || {}) },
+    };
+
+    if (!payload.name) {
+      this.errorMessage = 'Full name is required.';
+      this.successMessage = '';
+      return;
+    }
+
+    if (!this.hasProfileChanges(payload)) {
       this.errorMessage = 'No changes detected to save.';
       this.successMessage = '';
       return;
     }
-    this.isSaving       = true;
-    this.successMessage = '';
-    this.errorMessage   = '';
 
-    const payload: UpdateProfilePayload = {
-      name:          this.profile.name,
-      githubUsername: this.profile.githubUsername,
-      jobTitle:      this.profile.jobTitle,
-      location:      this.profile.location,
-      bio:           this.profile.bio,
-      website:       this.profile.website,
-      twitter:       this.profile.twitter,
-      linkedin:      this.profile.linkedin,
-      phoneNumber:   this.profile.phoneNumber,
-      notifications: this.profile.notifications,
-    };
+    this.isSaving = true;
+    this.successMessage = '';
+    this.errorMessage = '';
 
     this.profileService.updateProfile(payload).subscribe({
-      next: () => {
+      next: (updated) => {
+        this.profile = this.normalizeProfile({
+          ...this.profile,
+          ...updated,
+          ...payload,
+          notifications: updated.notifications || payload.notifications || this.profile.notifications,
+        });
+        this.snapshot = this.cloneProfile(this.profile);
         this.successMessage = 'Profile saved successfully!';
-        this.isSaving       = false;
-        this.loadProfile(); // reload profile from backend for real-time sync
+        this.isSaving = false;
         this.cdr.detectChanges();
         setTimeout(() => { this.successMessage = ''; }, 3000);
       },
       error: (err) => {
         this.errorMessage = err?.error?.message || 'Failed to save profile.';
-        this.isSaving     = false;
+        this.isSaving = false;
         this.cdr.detectChanges();
       },
     });
   }
 
-  private hasProfileChanges(): boolean {
-    const current = this.profile;
-    const snapshot = this.snapshot;
-    const fields: Array<keyof UserProfile> = [
-      'name',
-      'githubUsername',
-      'jobTitle',
-      'location',
-      'bio',
-      'website',
-      'twitter',
-      'linkedin',
-      'phoneNumber'
-    ];
-
-    const fieldChanged = fields.some((key) => current[key] !== snapshot[key]);
-    const notificationsChanged = JSON.stringify(current.notifications || {}) !== JSON.stringify(snapshot.notifications || {});
-    return fieldChanged || notificationsChanged;
-  }
-  // Defensive normalization: always return object with expected keys
   normalizeProfile(data: any): UserProfile {
-    if (!data || typeof data !== 'object') return { ...this.snapshot };
+    if (!data || typeof data !== 'object') return this.cloneProfile(this.snapshot);
     return {
       _id: data._id || '',
       name: data.name || '',
@@ -231,67 +217,88 @@ export class ProfileComponent implements OnInit {
       website: data.website || '',
       twitter: data.twitter || '',
       linkedin: data.linkedin || '',
-      careerStack:     data.careerStack     || 'Full Stack',
+      careerStack: data.careerStack || 'Full Stack',
       experienceLevel: data.experienceLevel || 'Student',
       activeCareerStack: data.activeCareerStack || data.careerStack || 'Full Stack',
       activeExperienceLevel: data.activeExperienceLevel || data.experienceLevel || 'Student',
-      careerGoal:      data.careerGoal      || '',
-      isConfigured:    data.isConfigured    ?? false,
-      isPublic:        data.isPublic        ?? false,
-      role:            data.role            || 'developer',
+      careerGoal: data.careerGoal || '',
+      isConfigured: data.isConfigured ?? false,
+      isPublic: data.isPublic ?? false,
+      role: data.role || 'developer',
       profileCompleted: data.profileCompleted ?? true,
       defaultResume: data.defaultResume || null,
       activeResume: data.activeResume || null,
       notifications: {
-        weeklyScoreReport:  data.notifications?.weeklyScoreReport ?? true,
-        skillTrendAlerts:   data.notifications?.skillTrendAlerts ?? true,
+        weeklyScoreReport: data.notifications?.weeklyScoreReport ?? true,
+        skillTrendAlerts: data.notifications?.skillTrendAlerts ?? true,
         newRecommendations: data.notifications?.newRecommendations ?? false,
-        jobMatchAlerts:     data.notifications?.jobMatchAlerts ?? true,
+        jobMatchAlerts: data.notifications?.jobMatchAlerts ?? true,
       },
       stats: {
         developerScore: data.stats?.developerScore ?? 0,
-        reposAnalyzed:  data.stats?.reposAnalyzed ?? 0,
+        reposAnalyzed: data.stats?.reposAnalyzed ?? 0,
         skillsDetected: data.stats?.skillsDetected ?? 0,
-        memberSince:    data.stats?.memberSince ?? '',
+        memberSince: data.stats?.memberSince ?? '',
       },
     };
   }
 
-  // ── Save career profile ────────────────────────────────────────────────
   saveCareerProfile(): void {
-    this.isSavingCareer = true;
-    this.careerSuccess  = '';
+    const careerStack = this.profile.careerStack;
+    const experienceLevel = this.profile.experienceLevel;
+    const careerGoal = (this.profile.careerGoal || '') as CareerGoal;
 
-    this.careerProfileService.saveCareerProfile(
-      this.profile.careerStack,
-      this.profile.experienceLevel,
-      this.profile.careerGoal
-    ).subscribe({
-      next: () => {
-        this.isSavingCareer = true;
-        this.careerSuccess  = 'Career profile saved!';
+    if (!this.careerStacks.includes(careerStack) || !this.experienceLevels.includes(experienceLevel) || !['', ...this.careerGoals].includes(careerGoal)) {
+      this.errorMessage = 'Choose a valid career profile.';
+      this.careerSuccess = '';
+      return;
+    }
+
+    if (
+      careerStack === this.snapshot.careerStack &&
+      experienceLevel === this.snapshot.experienceLevel &&
+      careerGoal === this.snapshot.careerGoal
+    ) {
+      this.errorMessage = 'No career profile changes detected.';
+      this.careerSuccess = '';
+      return;
+    }
+
+    this.isSavingCareer = true;
+    this.careerSuccess = '';
+    this.errorMessage = '';
+
+    this.careerProfileService.saveCareerProfile(careerStack, experienceLevel, careerGoal).subscribe({
+      next: (response) => {
+        this.profile.careerStack = response.activeCareerStack || response.careerStack || this.profile.careerStack;
+        this.profile.experienceLevel = response.activeExperienceLevel || response.experienceLevel || this.profile.experienceLevel;
+        this.profile.activeCareerStack = response.activeCareerStack || response.careerStack || this.profile.activeCareerStack;
+        this.profile.activeExperienceLevel = response.activeExperienceLevel || response.experienceLevel || this.profile.activeExperienceLevel;
+        this.profile.careerGoal = response.careerGoal ?? this.profile.careerGoal;
+        this.profile.isConfigured = response.isConfigured ?? this.profile.isConfigured;
+        this.snapshot = this.cloneProfile(this.profile);
+        this.careerSuccess = 'Career profile saved!';
         this.isSavingCareer = false;
         this.cdr.detectChanges();
         setTimeout(() => { this.careerSuccess = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        this.errorMessage   = err?.error?.message || 'Failed to save career profile.';
+        this.errorMessage = err?.error?.message || 'Failed to save career profile.';
         this.isSavingCareer = false;
         this.cdr.detectChanges();
       },
     });
   }
 
-  // ── Change password ────────────────────────────────────────────────────
   toggleChangePassword(): void {
     this.isChangingPwd = !this.isChangingPwd;
-    this.passwordForm  = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    this.pwdError      = '';
-    this.pwdSuccess    = '';
+    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.pwdError = '';
+    this.pwdSuccess = '';
   }
 
   submitPasswordChange(): void {
-    this.pwdError   = '';
+    this.pwdError = '';
     this.pwdSuccess = '';
 
     if (!this.passwordForm.currentPassword || !this.passwordForm.newPassword) {
@@ -306,12 +313,12 @@ export class ProfileComponent implements OnInit {
 
     this.profileService.updatePassword({
       currentPassword: this.passwordForm.currentPassword,
-      newPassword:     this.passwordForm.newPassword,
+      newPassword: this.passwordForm.newPassword,
     }).subscribe({
       next: () => {
-        this.pwdSuccess    = 'Password updated successfully!';
+        this.pwdSuccess = 'Password updated successfully!';
         this.isChangingPwd = false;
-        this.passwordForm  = { currentPassword: '', newPassword: '', confirmPassword: '' };
+        this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
       },
       error: (err) => {
         this.pwdError = err?.error?.message || 'Failed to update password.';
@@ -319,7 +326,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // ── Delete account ─────────────────────────────────────────────────────
   confirmDelete(): void {
     this.profileService.deleteAccount().subscribe({
       next: () => {
@@ -327,13 +333,12 @@ export class ProfileComponent implements OnInit {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.errorMessage      = err?.error?.message || 'Failed to delete account.';
+        this.errorMessage = err?.error?.message || 'Failed to delete account.';
         this.showDeleteConfirm = false;
       },
     });
   }
 
-  // ── Profile visibility toggle ──────────────────────────────────────────
   get isAdmin(): boolean {
     return this.profile.role === 'admin';
   }
@@ -364,7 +369,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────
   getInitials(): string {
     return this.profileService.getInitials(this.profile.name || 'U');
   }
@@ -411,7 +415,7 @@ export class ProfileComponent implements OnInit {
         this.profile.avatar = this.profileService.resolveAvatarUrl(res.avatar);
         this.authService.updateCurrentUser({ avatar: this.profile.avatar });
         this.bumpAvatarVersion();
-        this.snapshot = { ...this.profile };
+        this.snapshot = this.cloneProfile(this.profile);
         this.isUploadingAvatar = false;
         this.successMessage = 'Profile photo updated successfully.';
         input.value = '';
@@ -442,6 +446,40 @@ export class ProfileComponent implements OnInit {
     console.error('[Profile] Avatar failed to load:', img.src);
     this.profile.avatar = '';
     this.cdr.detectChanges();
+  }
+
+  private hasProfileChanges(payload: UpdateProfilePayload): boolean {
+    const snapshot = this.snapshot;
+    return [
+      payload.name !== snapshot.name,
+      payload.githubUsername !== snapshot.githubUsername,
+      payload.jobTitle !== snapshot.jobTitle,
+      payload.location !== snapshot.location,
+      payload.bio !== snapshot.bio,
+      payload.website !== snapshot.website,
+      payload.twitter !== snapshot.twitter,
+      payload.linkedin !== snapshot.linkedin,
+      payload.phoneNumber !== snapshot.phoneNumber,
+      JSON.stringify(payload.notifications || {}) !== JSON.stringify(snapshot.notifications || {})
+    ].some(Boolean);
+  }
+
+  private normalizeGithubUsername(value: string): string {
+    return String(value || '').trim().replace(/^@+/, '');
+  }
+
+  private sanitizeText(value: string | undefined | null): string {
+    return String(value || '').trim();
+  }
+
+  private cloneProfile(profile: UserProfile): UserProfile {
+    return {
+      ...profile,
+      notifications: { ...(profile.notifications || {}) },
+      stats: { ...(profile.stats || {}) },
+      defaultResume: profile.defaultResume ? { ...profile.defaultResume } : null,
+      activeResume: profile.activeResume ? { ...profile.activeResume } : null
+    };
   }
 
   private bumpAvatarVersion(): void {

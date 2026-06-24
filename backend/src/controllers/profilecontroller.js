@@ -59,6 +59,13 @@ const computeDeveloperProfileCompletion = (user) => {
   const completed = fields.filter((value) => String(value || '').trim().length > 0).length;
   return Math.round((completed / fields.length) * 100);
 };
+const VALID_CAREER_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+const VALID_EXPERIENCE_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const VALID_CAREER_GOALS = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
+const GITHUB_USERNAME_PATTERN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
+const sanitizeText = (value) => String(value ?? '').trim();
+const sanitizeGithubUsername = (value) => sanitizeText(value).replace(/^@+/, '');
 
 // @desc  Get logged-in user profile + account stats
 // @route GET /api/profile/me
@@ -210,14 +217,24 @@ const updateProfile = async (req, res) => {
 
     let hasChanges = false;
 
-    if (name !== undefined && name !== user.name) {
-      user.name = name;
-      hasChanges = true;
+    if (name !== undefined) {
+      const normalizedName = sanitizeText(name);
+      if (!normalizedName) {
+        return res.status(400).json({ message: 'Full name is required.' });
+      }
+      if (normalizedName !== user.name) {
+        user.name = normalizedName;
+        hasChanges = true;
+      }
     }
+
     if (githubUsername !== undefined) {
-      const normalizedGithub = String(githubUsername || '').trim();
+      const normalizedGithub = sanitizeGithubUsername(githubUsername);
       if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
+      }
+      if (normalizedGithub && !GITHUB_USERNAME_PATTERN.test(normalizedGithub)) {
+        return res.status(400).json({ message: 'Invalid GitHub username.' });
       }
       if (normalizedGithub !== user.githubUsername) {
         user.githubUsername = normalizedGithub;
@@ -247,41 +264,31 @@ const updateProfile = async (req, res) => {
       }
     }
 
-    if (jobTitle !== undefined && jobTitle !== user.jobTitle) {
-      user.jobTitle = jobTitle;
-      hasChanges = true;
+    const textFields = [
+      ['jobTitle', jobTitle],
+      ['location', location],
+      ['bio', bio],
+      ['website', website],
+      ['twitter', twitter],
+      ['linkedin', linkedin],
+      ['phoneNumber', phoneNumber]
+    ];
+
+    for (const [field, value] of textFields) {
+      if (value === undefined) continue;
+      const normalizedValue = sanitizeText(value);
+      if (normalizedValue !== String(user[field] || '')) {
+        user[field] = normalizedValue;
+        hasChanges = true;
+      }
     }
-    if (location !== undefined && location !== user.location) {
-      user.location = location;
-      hasChanges = true;
-    }
-    if (bio !== undefined && bio !== user.bio) {
-      user.bio = bio;
-      hasChanges = true;
-    }
-    if (website !== undefined && website !== user.website) {
-      user.website = website;
-      hasChanges = true;
-    }
-    if (twitter !== undefined && twitter !== user.twitter) {
-      user.twitter = twitter;
-      hasChanges = true;
-    }
-    if (linkedin !== undefined && linkedin !== user.linkedin) {
-      user.linkedin = linkedin;
-      hasChanges = true;
-    }
-    if (phoneNumber !== undefined && phoneNumber !== user.phoneNumber) {
-      user.phoneNumber = String(phoneNumber || '').trim();
-      hasChanges = true;
-    }
+
     if (notifications !== undefined) {
-      // Merge only valid notification keys, fallback to defaults if missing
       const nextNotifications = {
         weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
-        skillTrendAlerts:  notifications.skillTrendAlerts  ?? user.notifications.skillTrendAlerts  ?? true,
-        newRecommendations:notifications.newRecommendations?? user.notifications.newRecommendations?? false,
-        jobMatchAlerts:    notifications.jobMatchAlerts    ?? user.notifications.jobMatchAlerts    ?? true
+        skillTrendAlerts: notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,
+        newRecommendations: notifications.newRecommendations ?? user.notifications.newRecommendations ?? false,
+        jobMatchAlerts: notifications.jobMatchAlerts ?? user.notifications.jobMatchAlerts ?? true
       };
 
       if (JSON.stringify(nextNotifications) !== JSON.stringify(user.notifications || {})) {
@@ -313,12 +320,12 @@ const updateProfile = async (req, res) => {
     ]);
 
     res.json({
-      _id:           updated._id,
-      name:          updated.name,
-      email:         updated.email,
-      phoneNumber:   updated.phoneNumber || '',
-      countryCode:   updated.countryCode || '',
-      githubUsername:updated.githubUsername,
+      _id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      phoneNumber: updated.phoneNumber || '',
+      countryCode: updated.countryCode || '',
+      githubUsername: updated.githubUsername,
       activeGithubUsername: updated.activeGithubUsername || updated.githubUsername,
       defaultResume: defaultResume ? {
         fileId: defaultResume._id,
@@ -332,12 +339,12 @@ const updateProfile = async (req, res) => {
         uploadDate: activeResume.uploadDate,
         isAnalyzed: activeResume.isAnalyzed
       } : null,
-      jobTitle:      updated.jobTitle,
-      location:      updated.location,
-      bio:           updated.bio,
-      website:       updated.website,
-      twitter:       updated.twitter,
-      linkedin:      updated.linkedin,
+      jobTitle: updated.jobTitle,
+      location: updated.location,
+      bio: updated.bio,
+      website: updated.website,
+      twitter: updated.twitter,
+      linkedin: updated.linkedin,
       profileCompleted: isRecruiterProfileComplete(updated),
       notifications: updated.notifications,
     });
@@ -409,32 +416,29 @@ const deleteAccount = async (req, res) => {
 // @access Private
 const updateCareerProfile = async (req, res) => {
   try {
-    const { careerStack, experienceLevel, careerGoal } = req.body;
+    const normalizedCareerStack = sanitizeText(req.body?.careerStack);
+    const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
+    const normalizedCareerGoal = req.body?.careerGoal === undefined ? undefined : sanitizeText(req.body.careerGoal);
 
-    const validStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-    const validLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
-    const validGoals  = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
-
-    if (!careerStack || !validStacks.includes(careerStack)) {
+    if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
-    if (!experienceLevel || !validLevels.includes(experienceLevel)) {
+    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
-    if (careerGoal !== undefined && !validGoals.includes(careerGoal)) {
+    if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
       return res.status(400).json({ message: 'Invalid careerGoal.' });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    user.careerStack     = careerStack;
-    user.experienceLevel = experienceLevel;
-    user.activeCareerStack = careerStack;
-    user.activeExperienceLevel = experienceLevel;
-    if (careerGoal !== undefined) user.careerGoal = careerGoal;
+    user.careerStack = normalizedCareerStack;
+    user.experienceLevel = normalizedExperienceLevel;
+    user.activeCareerStack = normalizedCareerStack;
+    user.activeExperienceLevel = normalizedExperienceLevel;
+    if (normalizedCareerGoal !== undefined) user.careerGoal = normalizedCareerGoal;
 
-    // Mark profile as configured on first save
     if (!user.careerProfileSetAt) {
       user.careerProfileSetAt = new Date();
     }
@@ -442,13 +446,13 @@ const updateCareerProfile = async (req, res) => {
     await user.save();
 
     res.json({
-      careerStack:        user.careerStack,
-      experienceLevel:    user.experienceLevel,
-      activeCareerStack:  user.activeCareerStack,
+      careerStack: user.careerStack,
+      experienceLevel: user.experienceLevel,
+      activeCareerStack: user.activeCareerStack,
       activeExperienceLevel: user.activeExperienceLevel,
-      careerGoal:         user.careerGoal,
+      careerGoal: user.careerGoal,
       careerProfileSetAt: user.careerProfileSetAt,
-      isConfigured:       !!user.careerProfileSetAt
+      isConfigured: !!user.careerProfileSetAt
     });
   } catch (error) {
     console.error('Career profile update error:', error.message);
@@ -461,23 +465,21 @@ const updateCareerProfile = async (req, res) => {
 // @access Private
 const updateActiveCareerProfile = async (req, res) => {
   try {
-    const { careerStack, experienceLevel } = req.body;
+    const normalizedCareerStack = sanitizeText(req.body?.careerStack);
+    const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
 
-    const validStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-    const validLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
-
-    if (!careerStack || !validStacks.includes(careerStack)) {
+    if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
-    if (!experienceLevel || !validLevels.includes(experienceLevel)) {
+    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    user.activeCareerStack = careerStack;
-    user.activeExperienceLevel = experienceLevel;
+    user.activeCareerStack = normalizedCareerStack;
+    user.activeExperienceLevel = normalizedExperienceLevel;
     await user.save();
 
     await createNotification({
@@ -607,3 +609,7 @@ const updateProfileVisibility = async (req, res) => {
 };
 
 module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };
+
+
+
+
