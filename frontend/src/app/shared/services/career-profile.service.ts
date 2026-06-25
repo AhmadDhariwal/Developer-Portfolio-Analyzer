@@ -2,13 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-<<<<<<< HEAD
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
-=======
 import { AuthService } from './auth.service';
-import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
-import { ApiService } from './api.service';
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 import {
   CareerProfile,
   CareerStack,
@@ -44,17 +39,9 @@ export class CareerProfileService {
 
   constructor(
     private readonly http: HttpClient,
-<<<<<<< HEAD
-    private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
-
-  // ── Snapshots ────────────────────────────────────────────────────────────
-=======
-    private readonly authService: AuthService,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly apiService: ApiService
+    private readonly authService: AuthService
   ) {}
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 
   get snapshot(): CareerProfile {
     return this.profileSubject.value;
@@ -148,7 +135,6 @@ export class CareerProfileService {
     const next: CareerProfile = {
       careerStack: incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
       experienceLevel: incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
-<<<<<<< HEAD
       careerGoal:      data.careerGoal      ?? current.careerGoal,
       activeGithubUsername: incoming.activeGithubUsername ?? data.activeGithubUsername ?? current.activeGithubUsername ?? '',
       activeCareerStack: incoming.activeCareerStack ?? data.activeCareerStack ?? data.careerStack ?? current.activeCareerStack ?? current.careerStack,
@@ -171,39 +157,6 @@ export class CareerProfileService {
     this.profileSubject.next(next);
     this.persistToStorage(next);
     if (personalizationChanged) this.invalidateDependentCaches();
-=======
-      careerGoal: data.careerGoal ?? current.careerGoal,
-      isConfigured: data.isConfigured ?? current.isConfigured
-    };
-
-    this.profileSubject.next(next);
-    this.persistToStorage(next);
-    this.authService.updateCurrentUser({
-      ...(options.syncBaseFields === false ? {} : {
-        careerStack: next.careerStack,
-        experienceLevel: next.experienceLevel
-      }),
-      activeCareerStack: next.careerStack,
-      activeExperienceLevel: next.experienceLevel,
-      careerGoal: next.careerGoal
-    });
-
-    if (options.invalidateCaches) {
-      this.frontendCache.clearCurrentSignalHash();
-      this.apiService.invalidateScenarioContextCache();
-      [
-        'dashboardSummary',
-        'dashboardContributions',
-        'dashboardLanguages',
-        'dashboardSkills',
-        'dashboardRecommendations',
-        'dashboardIntegrationAnalytics',
-        'recommendations',
-        'weeklyReports',
-        'news-feed'
-      ].forEach((module) => this.frontendCache.clearModule(module));
-    }
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
   }
 
   private persistToStorage(profile: CareerProfile): void {

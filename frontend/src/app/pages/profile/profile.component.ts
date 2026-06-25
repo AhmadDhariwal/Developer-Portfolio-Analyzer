@@ -30,13 +30,10 @@ import {
 export class ProfileComponent implements OnInit {
   readonly careerStacks: CareerStack[] = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
-<<<<<<< HEAD
   readonly targetTimelines = ['Immediately', '1-3 months', '3-6 months', '6+ months'];
   readonly learningPreferences = ['Project-based', 'Reading', 'Video courses', 'Mentorship', 'Mixed'];
-=======
   readonly careerGoals: CareerGoal[] = CAREER_GOALS;
   private readonly githubUsernamePattern = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 
   isLoading = true;
   isSaving = false;
@@ -64,7 +61,6 @@ export class ProfileComponent implements OnInit {
     website: '', twitter: '', linkedin: '',
     careerStack: 'Full Stack',
     experienceLevel: 'Student',
-<<<<<<< HEAD
     careerGoal:      '',
     targetTimeline:  '',
     learningPreference: '',
@@ -72,12 +68,6 @@ export class ProfileComponent implements OnInit {
     isConfigured:    false,
     isPublic:        false,
     role:            'developer',
-=======
-    careerGoal: '',
-    isConfigured: false,
-    isPublic: false,
-    role: 'developer',
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     profileCompleted: true,
     defaultResume: null,
     activeResume: null,
@@ -92,7 +82,7 @@ export class ProfileComponent implements OnInit {
 
   passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
-<<<<<<< HEAD
+
   private snapshot: UserProfile = {
     _id: '', name: '', email: '', githubUsername: '',
     phoneNumber: '',
@@ -120,9 +110,6 @@ export class ProfileComponent implements OnInit {
     },
     stats: { developerScore: 0, reposAnalyzed: 0, skillsDetected: 0, memberSince: '' },
   };
-=======
-  private snapshot: UserProfile = this.cloneProfile(this.profile);
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 
   constructor(
     private readonly profileService: ProfileService,
@@ -149,16 +136,10 @@ export class ProfileComponent implements OnInit {
       });
   }
 
-<<<<<<< HEAD
   // ── Load from backend ──────────────────────────────────────────────────
   loadProfile(forceRefresh = false): void {
     this.isLoading = true;
     this.profileService.getProfile(forceRefresh).subscribe({
-=======
-  loadProfile(forceRefresh = false): void {
-    this.isLoading = true;
-    this.profileService.getProfile({ forceRefresh }).subscribe({
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       next: (data) => {
         this.profile = this.normalizeProfile(data);
         this.snapshot = this.cloneProfile(this.profile);
@@ -226,49 +207,19 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-<<<<<<< HEAD
-    const payload: UpdateProfilePayload = {
-      name:          this.profile.name,
-      githubUsername: this.profile.githubUsername,
-      jobTitle:      this.profile.jobTitle,
-      location:      this.profile.location,
-      bio:           this.profile.bio,
-      website:       this.profile.website,
-      twitter:       this.profile.twitter,
-      linkedin:      this.profile.linkedin,
-      phoneNumber:   this.profile.phoneNumber,
-      notifications: this.profile.notifications,
-      targetTimeline: this.profile.targetTimeline,
-      learningPreference: this.profile.learningPreference,
-    };
-
-    this.profileService.updateProfile(payload).subscribe({
-      next: (updated) => {
-        this.profile = this.normalizeProfile({ ...this.profile, ...updated });
-        this.snapshot = { ...this.profile };
-        this.successMessage = 'Profile saved successfully!';
-        this.isSaving       = false;
-=======
     this.isSaving = true;
-    this.successMessage = '';
     this.errorMessage = '';
-
+    this.successMessage = '';
     this.profileService.updateProfile(payload).subscribe({
-      next: (updated) => {
-        this.profile = this.normalizeProfile({
-          ...this.profile,
-          ...updated,
-          ...payload,
-          notifications: updated.notifications || payload.notifications || this.profile.notifications,
-        });
+      next: (updated: Partial<UserProfile>) => {
+        this.profile = this.normalizeProfile({ ...this.profile, ...updated });
         this.snapshot = this.cloneProfile(this.profile);
         this.successMessage = 'Profile saved successfully!';
-        this.isSaving = false;
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
+        this.isSaving       = false;
         this.cdr.detectChanges();
         setTimeout(() => { this.successMessage = ''; }, 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.errorMessage = err?.error?.message || 'Failed to save profile.';
         this.isSaving = false;
         this.cdr.detectChanges();
@@ -276,31 +227,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-<<<<<<< HEAD
-  private hasProfileChanges(): boolean {
-    const current = this.profile;
-    const snapshot = this.snapshot;
-    const fields: Array<keyof UserProfile> = [
-      'name',
-      'githubUsername',
-      'jobTitle',
-      'location',
-      'bio',
-      'website',
-      'twitter',
-      'linkedin',
-      'phoneNumber',
-      'targetTimeline',
-      'learningPreference'
-    ];
-
-    const fieldChanged = fields.some((key) => current[key] !== snapshot[key]);
-    const notificationsChanged = JSON.stringify(current.notifications || {}) !== JSON.stringify(snapshot.notifications || {});
-    return fieldChanged || notificationsChanged;
-  }
   // Defensive normalization: always return object with expected keys
-=======
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
   normalizeProfile(data: any): UserProfile {
     if (!data || typeof data !== 'object') return this.cloneProfile(this.snapshot);
     return {
@@ -322,7 +249,6 @@ export class ProfileComponent implements OnInit {
       experienceLevel: data.experienceLevel || 'Student',
       activeCareerStack: data.activeCareerStack || data.careerStack || 'Full Stack',
       activeExperienceLevel: data.activeExperienceLevel || data.experienceLevel || 'Student',
-<<<<<<< HEAD
       careerGoal:      data.careerGoal      || '',
       targetTimeline:  data.targetTimeline  || '',
       learningPreference: data.learningPreference || '',
@@ -330,12 +256,6 @@ export class ProfileComponent implements OnInit {
       isConfigured:    data.isConfigured    ?? false,
       isPublic:        data.isPublic        ?? false,
       role:            data.role            || 'developer',
-=======
-      careerGoal: data.careerGoal || '',
-      isConfigured: data.isConfigured ?? false,
-      isPublic: data.isPublic ?? false,
-      role: data.role || 'developer',
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       profileCompleted: data.profileCompleted ?? true,
       defaultResume: data.defaultResume || null,
       activeResume: data.activeResume || null,
@@ -359,7 +279,6 @@ export class ProfileComponent implements OnInit {
     const experienceLevel = this.profile.experienceLevel;
     const careerGoal = (this.profile.careerGoal || '') as CareerGoal;
 
-<<<<<<< HEAD
     this.careerProfileService.saveCareerProfile(
       this.profile.careerStack,
       this.profile.experienceLevel,
@@ -372,38 +291,6 @@ export class ProfileComponent implements OnInit {
         this.snapshot = { ...this.profile };
         this.isSavingCareer = true;
         this.careerSuccess  = 'Career profile saved!';
-=======
-    if (!this.careerStacks.includes(careerStack) || !this.experienceLevels.includes(experienceLevel) || !['', ...this.careerGoals].includes(careerGoal)) {
-      this.errorMessage = 'Choose a valid career profile.';
-      this.careerSuccess = '';
-      return;
-    }
-
-    if (
-      careerStack === this.snapshot.careerStack &&
-      experienceLevel === this.snapshot.experienceLevel &&
-      careerGoal === this.snapshot.careerGoal
-    ) {
-      this.errorMessage = 'No career profile changes detected.';
-      this.careerSuccess = '';
-      return;
-    }
-
-    this.isSavingCareer = true;
-    this.careerSuccess = '';
-    this.errorMessage = '';
-
-    this.careerProfileService.saveCareerProfile(careerStack, experienceLevel, careerGoal).subscribe({
-      next: (response) => {
-        this.profile.careerStack = response.activeCareerStack || response.careerStack || this.profile.careerStack;
-        this.profile.experienceLevel = response.activeExperienceLevel || response.experienceLevel || this.profile.experienceLevel;
-        this.profile.activeCareerStack = response.activeCareerStack || response.careerStack || this.profile.activeCareerStack;
-        this.profile.activeExperienceLevel = response.activeExperienceLevel || response.experienceLevel || this.profile.activeExperienceLevel;
-        this.profile.careerGoal = response.careerGoal ?? this.profile.careerGoal;
-        this.profile.isConfigured = response.isConfigured ?? this.profile.isConfigured;
-        this.snapshot = this.cloneProfile(this.profile);
-        this.careerSuccess = 'Career profile saved!';
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
         this.isSavingCareer = false;
         this.cdr.detectChanges();
         setTimeout(() => { this.careerSuccess = ''; this.cdr.detectChanges(); }, 3000);
@@ -509,10 +396,6 @@ export class ProfileComponent implements OnInit {
     this.profile.notifications[key] = !this.profile.notifications[key];
   }
 
-  refreshProfile(): void {
-    this.loadProfile(true);
-  }
-
   onAvatarFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -590,6 +473,8 @@ export class ProfileComponent implements OnInit {
       payload.twitter !== snapshot.twitter,
       payload.linkedin !== snapshot.linkedin,
       payload.phoneNumber !== snapshot.phoneNumber,
+      payload.targetTimeline !== snapshot.targetTimeline,
+      payload.learningPreference !== snapshot.learningPreference,
       JSON.stringify(payload.notifications || {}) !== JSON.stringify(snapshot.notifications || {})
     ].some(Boolean);
   }

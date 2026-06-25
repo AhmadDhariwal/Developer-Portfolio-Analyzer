@@ -97,7 +97,6 @@ const VALID_EXPERIENCE_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', 
 const VALID_CAREER_GOALS = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
 const GITHUB_USERNAME_PATTERN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
-const sanitizeText = (value) => String(value ?? '').trim();
 const sanitizeGithubUsername = (value) => sanitizeText(value).replace(/^@+/, '');
 
 // @desc  Get logged-in user profile + account stats
@@ -256,11 +255,6 @@ const updateProfile = async (req, res) => {
 
     let hasChanges = false;
 
-<<<<<<< HEAD
-    if (name !== undefined && name !== user.name) {
-      user.name = sanitizeText(name, 120);
-      hasChanges = true;
-=======
     if (name !== undefined) {
       const normalizedName = sanitizeText(name);
       if (!normalizedName) {
@@ -270,23 +264,14 @@ const updateProfile = async (req, res) => {
         user.name = normalizedName;
         hasChanges = true;
       }
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     }
 
     if (githubUsername !== undefined) {
-<<<<<<< HEAD
-      const normalizedGithub = sanitizeText(githubUsername, 80);
-      if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
-        return res.status(400).json({ message: 'GitHub username cannot be empty.' });
-      }
-      if (normalizedGithub && !GITHUB_USERNAME_RE.test(normalizedGithub)) {
-=======
       const normalizedGithub = sanitizeGithubUsername(githubUsername);
       if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
       if (normalizedGithub && !GITHUB_USERNAME_PATTERN.test(normalizedGithub)) {
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
         return res.status(400).json({ message: 'Invalid GitHub username.' });
       }
       if (normalizedGithub !== user.githubUsername) {
@@ -316,8 +301,6 @@ const updateProfile = async (req, res) => {
         }
       }
     }
-
-<<<<<<< HEAD
     if (jobTitle !== undefined && jobTitle !== user.jobTitle) {
       user.jobTitle = sanitizeText(jobTitle, 120);
       hasChanges = true;
@@ -366,7 +349,6 @@ const updateProfile = async (req, res) => {
         hasChanges = true;
       }
     }
-=======
     const textFields = [
       ['jobTitle', jobTitle],
       ['location', location],
@@ -386,7 +368,6 @@ const updateProfile = async (req, res) => {
       }
     }
 
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     if (notifications !== undefined) {
       const nextNotifications = {
         weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
@@ -447,24 +428,20 @@ const updateProfile = async (req, res) => {
         uploadDate: activeResume.uploadDate,
         isAnalyzed: activeResume.isAnalyzed
       } : null,
-<<<<<<< HEAD
-      jobTitle:      updated.jobTitle,
-      location:      updated.location,
-      bio:           updated.bio,
-      website:       updated.website,
-      twitter:       updated.twitter,
-      linkedin:      updated.linkedin,
-      targetTimeline: updated.targetTimeline || '',
-      learningPreference: updated.learningPreference || '',
-      profileHash:   buildProfileHash(updated),
-=======
       jobTitle: updated.jobTitle,
       location: updated.location,
       bio: updated.bio,
       website: updated.website,
       twitter: updated.twitter,
       linkedin: updated.linkedin,
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
+      careerStack: updated.careerStack || 'Full Stack',
+      experienceLevel: updated.experienceLevel || 'Student',
+      activeCareerStack: updated.activeCareerStack || updated.careerStack || 'Full Stack',
+      activeExperienceLevel: updated.activeExperienceLevel || updated.experienceLevel || 'Student',
+      careerGoal: updated.careerGoal || '',
+      targetTimeline: updated.targetTimeline || '',
+      learningPreference: updated.learningPreference || '',
+      profileHash: nextProfileHash,
       profileCompleted: isRecruiterProfileComplete(updated),
       notifications: updated.notifications,
     });
@@ -536,20 +513,11 @@ const deleteAccount = async (req, res) => {
 // @access Private
 const updateCareerProfile = async (req, res) => {
   try {
-<<<<<<< HEAD
-    const { careerStack, experienceLevel, careerGoal, targetTimeline, learningPreference } = req.body;
-
-    if (!careerStack || !VALID_STACKS.includes(careerStack)) {
-      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
-    }
-    if (!experienceLevel || !VALID_LEVELS.includes(experienceLevel)) {
-      return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
-    }
-    if (careerGoal !== undefined && !VALID_GOALS.includes(sanitizeText(careerGoal, 80))) {
-=======
     const normalizedCareerStack = sanitizeText(req.body?.careerStack);
     const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
     const normalizedCareerGoal = req.body?.careerGoal === undefined ? undefined : sanitizeText(req.body.careerGoal);
+    const normalizedTimeline = req.body?.targetTimeline === undefined ? undefined : sanitizeText(req.body.targetTimeline, 40);
+    const normalizedLearningPreference = req.body?.learningPreference === undefined ? undefined : sanitizeText(req.body.learningPreference, 40);
 
     if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
@@ -558,13 +526,12 @@ const updateCareerProfile = async (req, res) => {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
     if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       return res.status(400).json({ message: 'Invalid careerGoal.' });
     }
-    if (targetTimeline !== undefined && !VALID_TIMELINES.includes(sanitizeText(targetTimeline, 40))) {
+    if (normalizedTimeline !== undefined && !VALID_TIMELINES.includes(normalizedTimeline)) {
       return res.status(400).json({ message: 'Invalid targetTimeline.' });
     }
-    if (learningPreference !== undefined && !VALID_LEARNING_PREFERENCES.includes(sanitizeText(learningPreference, 40))) {
+    if (normalizedLearningPreference !== undefined && !VALID_LEARNING_PREFERENCES.includes(normalizedLearningPreference)) {
       return res.status(400).json({ message: 'Invalid learningPreference.' });
     }
 
@@ -572,21 +539,13 @@ const updateCareerProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found.' });
     const previousProfileHash = buildProfileHash(user);
 
-<<<<<<< HEAD
-    user.careerStack     = careerStack;
-    user.experienceLevel = experienceLevel;
-    user.activeCareerStack = careerStack;
-    user.activeExperienceLevel = experienceLevel;
-    if (careerGoal !== undefined) user.careerGoal = sanitizeText(careerGoal, 80);
-    if (targetTimeline !== undefined) user.targetTimeline = sanitizeText(targetTimeline, 40);
-    if (learningPreference !== undefined) user.learningPreference = sanitizeText(learningPreference, 40);
-=======
     user.careerStack = normalizedCareerStack;
     user.experienceLevel = normalizedExperienceLevel;
     user.activeCareerStack = normalizedCareerStack;
     user.activeExperienceLevel = normalizedExperienceLevel;
     if (normalizedCareerGoal !== undefined) user.careerGoal = normalizedCareerGoal;
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
+    if (normalizedTimeline !== undefined) user.targetTimeline = normalizedTimeline;
+    if (normalizedLearningPreference !== undefined) user.learningPreference = normalizedLearningPreference;
 
     if (!user.careerProfileSetAt) {
       user.careerProfileSetAt = new Date();
@@ -602,14 +561,10 @@ const updateCareerProfile = async (req, res) => {
       experienceLevel: user.experienceLevel,
       activeCareerStack: user.activeCareerStack,
       activeExperienceLevel: user.activeExperienceLevel,
-<<<<<<< HEAD
-      careerGoal:         user.careerGoal,
-      targetTimeline:     user.targetTimeline || '',
-      learningPreference: user.learningPreference || '',
-      profileHash:        buildProfileHash(user),
-=======
       careerGoal: user.careerGoal,
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
+      targetTimeline: user.targetTimeline || '',
+      learningPreference: user.learningPreference || '',
+      profileHash: buildProfileHash(user),
       careerProfileSetAt: user.careerProfileSetAt,
       isConfigured: !!user.careerProfileSetAt
     });
@@ -627,17 +582,10 @@ const updateActiveCareerProfile = async (req, res) => {
     const normalizedCareerStack = sanitizeText(req.body?.careerStack);
     const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
 
-<<<<<<< HEAD
-    if (!careerStack || !VALID_STACKS.includes(careerStack)) {
-      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
-    }
-    if (!experienceLevel || !VALID_LEVELS.includes(experienceLevel)) {
-=======
     if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
     if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
->>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
 
