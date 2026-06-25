@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
+import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 
 interface ProjectInput {
   name: string;
@@ -152,7 +155,7 @@ interface TemplateOption {
   styleUrl: './scenario-simulator.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScenarioSimulatorComponent implements OnInit {
+export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   baselineHiringScore = 55;
   baselineJobMatch = 48;
   role = 'full stack';
@@ -181,6 +184,9 @@ export class ScenarioSimulatorComponent implements OnInit {
   deletingScenarioId = '';
   contextCacheHit = false;
   historyCacheHit = false;
+  private readonly subscriptions = new Subscription();
+  private lastProfileSignature = '';
+  private isRefreshingProfileContext = false;
 
   readonly roleOptions = [
     { value: 'frontend', label: 'Frontend Developer' },
@@ -218,11 +224,27 @@ export class ScenarioSimulatorComponent implements OnInit {
 
   constructor(
     private readonly apiService: ApiService,
+    private readonly careerProfileService: CareerProfileService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.lastProfileSignature = buildCareerProfileSignature(this.careerProfileService.snapshot);
+    this.subscriptions.add(
+      this.careerProfileService.careerProfile$.pipe(
+        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
+      ).subscribe((profile) => {
+        const nextSignature = buildCareerProfileSignature(profile);
+        if (nextSignature === this.lastProfileSignature) return;
+        this.lastProfileSignature = nextSignature;
+        this.reloadContextForProfileChange();
+      })
+    );
     this.loadBootstrapData();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   private createEmptyProject(): ProjectInput {
@@ -322,6 +344,28 @@ export class ScenarioSimulatorComponent implements OnInit {
         this.isLoadingHistory = false;
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  private reloadContextForProfileChange(): void {
+    if (this.isRefreshingProfileContext) return;
+    this.isRefreshingProfileContext = true;
+    this.isLoadingContext = true;
+    this.contextError = '';
+    this.apiService.invalidateScenarioContextCache();
+    this.apiService.getScenarioSimulatorContext(true).pipe(
+      catchError(() => of(null))
+    ).subscribe((context) => {
+      if (context?.context) {
+        this.applyContext(context.context, true);
+        this.contextCacheHit = !!context.context.cache?.hit;
+      } else {
+        this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
+        this.contextCacheHit = false;
+      }
+      this.isLoadingContext = false;
+      this.isRefreshingProfileContext = false;
+      this.cdr.markForCheck();
     });
   }
 

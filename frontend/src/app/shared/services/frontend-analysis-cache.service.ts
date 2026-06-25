@@ -82,6 +82,12 @@ export class FrontendAnalysisCacheService {
       .forEach((key) => localStorage.removeItem(key));
   }
 
+  clearPrefixes(prefixes: string[]): void {
+    Object.keys(localStorage)
+      .filter((key) => prefixes.some((prefix) => key.startsWith(prefix)))
+      .forEach((key) => localStorage.removeItem(key));
+  }
+
   getLatestSignalHash(lookup: FrontendAnalysisCacheKey): string | null {
     return localStorage.getItem(this.buildSignalIndexKey(lookup));
   }

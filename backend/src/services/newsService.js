@@ -175,6 +175,11 @@ const getCachedDeveloperSignals = async (userId) => {
   return value;
 };
 
+const invalidateNewsSignalCache = (userId) => {
+  if (!userId) return;
+  signalResolutionCache.delete(String(userId));
+};
+
 const buildUserContext = async (user) => {
   const defaults = {
     careerStack: user?.careerStack || 'Full Stack',
@@ -475,4 +480,4 @@ const getNewsFeed = async ({ user, query }) => {
   };
 };
 
-module.exports = { getNewsFeed, buildUserContext };
+module.exports = { getNewsFeed, buildUserContext, invalidateNewsSignalCache };

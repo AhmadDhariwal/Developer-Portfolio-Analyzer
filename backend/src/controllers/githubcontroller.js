@@ -61,7 +61,7 @@ const analyzeGitHub = async (req, res) => {
 // @access  Private
 const analyzeAndSaveGitHubProfile = async (req, res) => {
     try {
-        const defaultGithubUsername = String(req.user?.githubUsername || '').trim();
+        const defaultGithubUsername = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
         const requestedUsername = String(req.body.username || defaultGithubUsername).trim();
         const githubUsername = defaultGithubUsername || requestedUsername;
 
@@ -156,7 +156,7 @@ const getActiveUsername = async (req, res) => {
         const defaultUsername = String(user?.githubUsername || '').trim();
         const activeUsername = String(user?.activeGithubUsername || '').trim();
         res.json({
-            username: defaultUsername,
+            username: activeUsername || defaultUsername,
             isDefault: true,
             activeUsername: activeUsername || defaultUsername
         });

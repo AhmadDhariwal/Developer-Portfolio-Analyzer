@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
 import { NewsService } from '../../shared/services/news.service';
 import { NewsCardComponent } from '../../shared/components/news-card/news-card';
@@ -116,13 +117,7 @@ export class NewsComponent implements OnInit, OnDestroy {
       this.careerProfileService.careerProfile$
         .pipe(
           debounceTime(180),
-          map((profile) =>
-            JSON.stringify({
-              careerStack: profile?.careerStack || '',
-              experienceLevel: profile?.experienceLevel || '',
-              careerGoal: profile?.careerGoal || ''
-            })
-          ),
+          map((profile) => buildCareerProfileSignature(profile)),
           distinctUntilChanged()
         )
         .subscribe((signature) => {

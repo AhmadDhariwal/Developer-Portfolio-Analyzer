@@ -15,7 +15,11 @@ export class ApiService {
   constructor(
     private readonly http: HttpClient,
     private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
+  ) {
+    globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
+      this.invalidateScenarioContextCache();
+    });
+  }
 
   /* ── Auth ── */
   register(userData: any): Observable<any> {

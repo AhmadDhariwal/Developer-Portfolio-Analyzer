@@ -12,6 +12,11 @@
 
 /* ── Header ───────────────────────────────────────────────────── */
 .prof-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
   h1 {
     font-size: 1.85rem;
     font-weight: 700;
@@ -23,6 +28,11 @@
     font-size: .92rem;
     color: rgba(255, 255, 255, .5);
     margin: 0;
+  }
+
+  @media (max-width: 600px) {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

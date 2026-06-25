@@ -29,6 +29,8 @@ export class ProfileComponent implements OnInit {
   // ── Constants for template selects ────────────────────────────────────
   readonly careerStacks:     CareerStack[]     = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
+  readonly targetTimelines = ['Immediately', '1-3 months', '3-6 months', '6+ months'];
+  readonly learningPreferences = ['Project-based', 'Reading', 'Video courses', 'Mentorship', 'Mixed'];
 
   // ── State ──────────────────────────────────────────────────────────────
   isLoading         = true;
@@ -59,6 +61,9 @@ export class ProfileComponent implements OnInit {
     careerStack:     'Full Stack',
     experienceLevel: 'Student',
     careerGoal:      '',
+    targetTimeline:  '',
+    learningPreference: '',
+    profileHash:     '',
     isConfigured:    false,
     isPublic:        false,
     role:            'developer',
@@ -87,6 +92,9 @@ export class ProfileComponent implements OnInit {
     careerStack:     'Full Stack',
     experienceLevel: 'Student',
     careerGoal:      '',
+    targetTimeline:  '',
+    learningPreference: '',
+    profileHash:     '',
     isConfigured:    false,
     isPublic:        false,
     role:            'developer',
@@ -128,9 +136,9 @@ export class ProfileComponent implements OnInit {
   }
 
   // ── Load from backend ──────────────────────────────────────────────────
-  loadProfile(): void {
+  loadProfile(forceRefresh = false): void {
     this.isLoading = true;
-    this.profileService.getProfile().subscribe({
+    this.profileService.getProfile(forceRefresh).subscribe({
       next: (data) => {
         this.profile = this.normalizeProfile(data);
         this.bumpAvatarVersion();
@@ -176,13 +184,16 @@ export class ProfileComponent implements OnInit {
       linkedin:      this.profile.linkedin,
       phoneNumber:   this.profile.phoneNumber,
       notifications: this.profile.notifications,
+      targetTimeline: this.profile.targetTimeline,
+      learningPreference: this.profile.learningPreference,
     };
 
     this.profileService.updateProfile(payload).subscribe({
-      next: () => {
+      next: (updated) => {
+        this.profile = this.normalizeProfile({ ...this.profile, ...updated });
+        this.snapshot = { ...this.profile };
         this.successMessage = 'Profile saved successfully!';
         this.isSaving       = false;
-        this.loadProfile(); // reload profile from backend for real-time sync
         this.cdr.detectChanges();
         setTimeout(() => { this.successMessage = ''; }, 3000);
       },
@@ -206,7 +217,9 @@ export class ProfileComponent implements OnInit {
       'website',
       'twitter',
       'linkedin',
-      'phoneNumber'
+      'phoneNumber',
+      'targetTimeline',
+      'learningPreference'
     ];
 
     const fieldChanged = fields.some((key) => current[key] !== snapshot[key]);
@@ -236,6 +249,9 @@ export class ProfileComponent implements OnInit {
       activeCareerStack: data.activeCareerStack || data.careerStack || 'Full Stack',
       activeExperienceLevel: data.activeExperienceLevel || data.experienceLevel || 'Student',
       careerGoal:      data.careerGoal      || '',
+      targetTimeline:  data.targetTimeline  || '',
+      learningPreference: data.learningPreference || '',
+      profileHash:     data.profileHash     || '',
       isConfigured:    data.isConfigured    ?? false,
       isPublic:        data.isPublic        ?? false,
       role:            data.role            || 'developer',
@@ -265,9 +281,13 @@ export class ProfileComponent implements OnInit {
     this.careerProfileService.saveCareerProfile(
       this.profile.careerStack,
       this.profile.experienceLevel,
-      this.profile.careerGoal
+      this.profile.careerGoal,
+      this.profile.targetTimeline || '',
+      this.profile.learningPreference || ''
     ).subscribe({
-      next: () => {
+      next: (updated) => {
+        this.profile = this.normalizeProfile({ ...this.profile, ...updated });
+        this.snapshot = { ...this.profile };
         this.isSavingCareer = true;
         this.careerSuccess  = 'Career profile saved!';
         this.isSavingCareer = false;
@@ -377,6 +397,10 @@ export class ProfileComponent implements OnInit {
 
   toggleNotification(key: keyof NotificationPrefs): void {
     this.profile.notifications[key] = !this.profile.notifications[key];
+  }
+
+  refreshProfile(): void {
+    this.loadProfile(true);
   }
 
   onAvatarFileSelected(event: Event): void {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import {
   CareerProfile,
   CareerStack,
@@ -15,6 +16,18 @@ const STORAGE_KEY = 'devinsight_career_profile';
 @Injectable({ providedIn: 'root' })
 export class CareerProfileService {
   private readonly baseUrl = environment.apiBaseUrl;
+  private readonly dependentCacheModules = [
+    'dashboardSummary',
+    'dashboardContributions',
+    'dashboardLanguages',
+    'dashboardSkills',
+    'dashboardRecommendations',
+    'dashboardIntegrationAnalytics',
+    'skillGap',
+    'recommendations',
+    'news',
+    'weeklyReports'
+  ];
 
   private readonly profileSubject = new BehaviorSubject<CareerProfile>(
     this.loadFromStorage()
@@ -24,7 +37,10 @@ export class CareerProfileService {
   readonly careerProfile$: Observable<CareerProfile> =
     this.profileSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly frontendCache: FrontendAnalysisCacheService
+  ) {}
 
   // ── Snapshots ────────────────────────────────────────────────────────────
 
@@ -53,13 +69,17 @@ export class CareerProfileService {
   saveCareerProfile(
     careerStack: CareerStack,
     experienceLevel: ExperienceLevel,
-    careerGoal: CareerGoal = ''
+    careerGoal: CareerGoal = '',
+    targetTimeline = '',
+    learningPreference = ''
   ): Observable<CareerProfile> {
     return this.http
       .put<CareerProfile>(`${this.baseUrl}/profile/career`, {
         careerStack,
         experienceLevel,
-        careerGoal
+        careerGoal,
+        targetTimeline,
+        learningPreference
       })
       .pipe(tap(response => this.applyAndPersist(response)));
   }
@@ -85,9 +105,13 @@ export class CareerProfileService {
   hydrateFromServer(serverProfile: {
     careerStack?: CareerStack;
     experienceLevel?: ExperienceLevel;
+    activeGithubUsername?: string;
     activeCareerStack?: CareerStack;
     activeExperienceLevel?: ExperienceLevel;
     careerGoal?: CareerGoal;
+    targetTimeline?: string;
+    learningPreference?: string;
+    profileHash?: string;
     isConfigured?: boolean;
   }): void {
     this.applyAndPersist(serverProfile);
@@ -116,6 +140,7 @@ export class CareerProfileService {
 
   private applyAndPersist(data: Partial<CareerProfile>): void {
     const incoming = data as Partial<CareerProfile> & {
+      activeGithubUsername?: string;
       activeCareerStack?: CareerStack;
       activeExperienceLevel?: ExperienceLevel;
     };
@@ -124,10 +149,27 @@ export class CareerProfileService {
       careerStack:     incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
       experienceLevel: incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
       careerGoal:      data.careerGoal      ?? current.careerGoal,
+      activeGithubUsername: incoming.activeGithubUsername ?? data.activeGithubUsername ?? current.activeGithubUsername ?? '',
+      activeCareerStack: incoming.activeCareerStack ?? data.activeCareerStack ?? data.careerStack ?? current.activeCareerStack ?? current.careerStack,
+      activeExperienceLevel: incoming.activeExperienceLevel ?? data.activeExperienceLevel ?? data.experienceLevel ?? current.activeExperienceLevel ?? current.experienceLevel,
+      targetTimeline:  data.targetTimeline  ?? current.targetTimeline ?? '',
+      learningPreference: data.learningPreference ?? current.learningPreference ?? '',
+      profileHash:     data.profileHash     ?? current.profileHash ?? '',
       isConfigured:    data.isConfigured    ?? current.isConfigured
     };
+    const personalizationChanged =
+      next.activeGithubUsername !== current.activeGithubUsername ||
+      next.activeCareerStack !== current.activeCareerStack ||
+      next.activeExperienceLevel !== current.activeExperienceLevel ||
+      next.careerStack !== current.careerStack ||
+      next.experienceLevel !== current.experienceLevel ||
+      next.careerGoal !== current.careerGoal ||
+      next.targetTimeline !== current.targetTimeline ||
+      next.learningPreference !== current.learningPreference ||
+      Boolean(next.profileHash && current.profileHash && next.profileHash !== current.profileHash);
     this.profileSubject.next(next);
     this.persistToStorage(next);
+    if (personalizationChanged) this.invalidateDependentCaches();
   }
 
   private persistToStorage(profile: CareerProfile): void {
@@ -142,5 +184,12 @@ export class CareerProfileService {
     } catch {
       return { ...DEFAULT_CAREER_PROFILE };
     }
+  }
+
+  private invalidateDependentCaches(): void {
+    this.dependentCacheModules.forEach((module) => this.frontendCache.clearModule(module));
+    this.frontendCache.clearPrefixes(['skill_gap_cache:', 'skill_gap_cache_index:']);
+    this.frontendCache.clearCurrentSignalHash();
+    globalThis.dispatchEvent?.(new CustomEvent('devinsight:profile-personalization-changed'));
   }
 }

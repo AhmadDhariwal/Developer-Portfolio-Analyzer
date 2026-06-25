@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { CareerProfileService } from './career-profile.service';
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { CareerStack, ExperienceLevel, CareerGoal } from '../models/career-profile.model';
 import { environment } from '../../../environments/environment';
 
@@ -51,6 +52,9 @@ export interface UserProfile {
   activeCareerStack?: CareerStack;
   activeExperienceLevel?: ExperienceLevel;
   careerGoal:         CareerGoal;
+  targetTimeline?:    string;
+  learningPreference?: string;
+  profileHash?:       string;
   isConfigured:       boolean;
   isPublic?:          boolean;
   role?:              string;
@@ -72,6 +76,8 @@ export interface UpdateProfilePayload {
   linkedin?:      string;
   phoneNumber?:   string;
   notifications?: Partial<NotificationPrefs>;
+  targetTimeline?: string;
+  learningPreference?: string;
 }
 
 export interface PasswordPayload {
@@ -90,45 +96,45 @@ export interface AvatarUploadResponse {
 export class ProfileService {
   private readonly baseUrl = `${environment.apiBaseUrl}/profile`;
   private readonly apiOrigin = environment.apiOrigin;
+  private readonly cacheKey = 'devinsight_profile_cache';
+  private readonly dependentCacheModules = [
+    'dashboardSummary',
+    'dashboardContributions',
+    'dashboardLanguages',
+    'dashboardSkills',
+    'dashboardRecommendations',
+    'dashboardIntegrationAnalytics',
+    'skillGap',
+    'recommendations',
+    'news',
+    'weeklyReports'
+  ];
+  private inflightProfile$: Observable<UserProfile> | null = null;
+  private memoryProfile: UserProfile | null = null;
 
   constructor(
     private readonly http:                HttpClient,
     private readonly authService:         AuthService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly frontendCache:       FrontendAnalysisCacheService,
   ) {}
 
   // ── Fetch profile + stats from backend ────────────────────────────────
-  getProfile(): Observable<UserProfile> {
-    const cacheBust = Date.now();
-    return this.http.get<UserProfile>(`${this.baseUrl}/me?_=${cacheBust}`, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache'
-      }
-    }).pipe(
-      map((profile) => ({
-        ...profile,
-        avatar: this.resolveAvatarUrl(profile.avatar)
-      })),
-      tap(profile => {
-        this.syncStoredUser({
-          _id: profile._id,
-          name: profile.name,
-          githubUsername: profile.githubUsername,
-          avatar: profile.avatar
-        });
+  getProfile(forceRefresh = false): Observable<UserProfile> {
+    if (!forceRefresh) {
+      const cached = this.memoryProfile || this.readCachedProfile();
+      if (cached) return of(cached);
+      if (this.inflightProfile$) return this.inflightProfile$;
+    }
 
-        // Keep CareerProfileService in sync with the server truth on every profile load
-        this.careerProfileService.hydrateFromServer({
-          careerStack:     profile.careerStack     ?? 'Full Stack',
-          experienceLevel: profile.experienceLevel ?? 'Student',
-          activeCareerStack: profile.activeCareerStack ?? profile.careerStack ?? 'Full Stack',
-          activeExperienceLevel: profile.activeExperienceLevel ?? profile.experienceLevel ?? 'Student',
-          careerGoal:      profile.careerGoal      ?? '',
-          isConfigured:    profile.isConfigured    ?? false
-        });
-      })
+    this.inflightProfile$ = this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
+      map((profile) => this.normalizeProfile(profile)),
+      tap(profile => this.applyProfile(profile)),
+      finalize(() => { this.inflightProfile$ = null; }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    return this.inflightProfile$;
   }
 
   // ── Save profile fields + notification prefs ──────────────────────────
@@ -140,6 +146,7 @@ export class ProfileService {
           ...(typeof updated.avatar === 'string' ? { avatar: this.resolveAvatarUrl(updated.avatar) } : {})
         };
         this.authService.updateCurrentUser(next);
+        this.mergeProfileUpdate(next);
       })
     );
   }
@@ -160,6 +167,7 @@ export class ProfileService {
       })),
       tap((res) => {
         this.authService.updateCurrentUser({ avatar: res.avatar });
+        this.mergeProfileUpdate({ avatar: res.avatar });
       })
     );
   }
@@ -216,7 +224,109 @@ export class ProfileService {
     return raw;
   }
 
-  private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'avatar'>>): void {
+  private normalizeProfile(profile: UserProfile): UserProfile {
+    return {
+      ...profile,
+      avatar: this.resolveAvatarUrl(profile.avatar),
+      activeGithubUsername: profile.activeGithubUsername || profile.githubUsername || '',
+      activeCareerStack: profile.activeCareerStack || profile.careerStack || 'Full Stack',
+      activeExperienceLevel: profile.activeExperienceLevel || profile.experienceLevel || 'Student',
+      targetTimeline: profile.targetTimeline || '',
+      learningPreference: profile.learningPreference || '',
+      profileHash: profile.profileHash || this.stableProfileHash(profile)
+    };
+  }
+
+  private applyProfile(profile: UserProfile): void {
+    const previousHash = this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
+    this.memoryProfile = profile;
+    this.writeCachedProfile(profile);
+    this.syncStoredUser({
+      _id: profile._id,
+      name: profile.name,
+      githubUsername: profile.githubUsername,
+      activeGithubUsername: profile.activeGithubUsername,
+      avatar: profile.avatar
+    });
+
+    this.careerProfileService.hydrateFromServer({
+      careerStack: profile.careerStack ?? 'Full Stack',
+      experienceLevel: profile.experienceLevel ?? 'Student',
+      activeGithubUsername: profile.activeGithubUsername ?? profile.githubUsername ?? '',
+      activeCareerStack: profile.activeCareerStack ?? profile.careerStack ?? 'Full Stack',
+      activeExperienceLevel: profile.activeExperienceLevel ?? profile.experienceLevel ?? 'Student',
+      careerGoal: profile.careerGoal ?? '',
+      targetTimeline: profile.targetTimeline ?? '',
+      learningPreference: profile.learningPreference ?? '',
+      profileHash: profile.profileHash ?? '',
+      isConfigured: profile.isConfigured ?? false
+    });
+
+    if (previousHash && profile.profileHash && previousHash !== profile.profileHash) {
+      this.invalidateDependentCaches();
+    }
+  }
+
+  private mergeProfileUpdate(update: Partial<UserProfile>): void {
+    const base = this.memoryProfile || this.readCachedProfile();
+    if (!base) {
+      this.invalidateDependentCaches();
+      return;
+    }
+    const next = this.normalizeProfile({ ...base, ...update } as UserProfile);
+    this.applyProfile(next);
+  }
+
+  private readCachedProfile(): UserProfile | null {
+    try {
+      const raw = localStorage.getItem(this.cacheKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (Number(parsed?.expiresAt || 0) <= Date.now() || !parsed?.profile) {
+        localStorage.removeItem(this.cacheKey);
+        return null;
+      }
+      const profile = this.normalizeProfile(parsed.profile);
+      this.memoryProfile = profile;
+      return profile;
+    } catch {
+      localStorage.removeItem(this.cacheKey);
+      return null;
+    }
+  }
+
+  private writeCachedProfile(profile: UserProfile): void {
+    localStorage.setItem(this.cacheKey, JSON.stringify({
+      cachedAt: Date.now(),
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      profile
+    }));
+  }
+
+  private invalidateDependentCaches(): void {
+    this.dependentCacheModules.forEach((module) => this.frontendCache.clearModule(module));
+    this.frontendCache.clearPrefixes(['skill_gap_cache:', 'skill_gap_cache_index:']);
+    this.frontendCache.clearCurrentSignalHash();
+    globalThis.dispatchEvent?.(new CustomEvent('devinsight:profile-personalization-changed'));
+  }
+
+  private stableProfileHash(profile: Partial<UserProfile>): string {
+    const payload = JSON.stringify({
+      activeGithubUsername: String(profile.activeGithubUsername || profile.githubUsername || '').trim().toLowerCase(),
+      activeCareerStack: String(profile.activeCareerStack || profile.careerStack || 'Full Stack').trim(),
+      activeExperienceLevel: String(profile.activeExperienceLevel || profile.experienceLevel || 'Student').trim(),
+      careerGoal: String(profile.careerGoal || '').trim(),
+      targetTimeline: String(profile.targetTimeline || '').trim(),
+      learningPreference: String(profile.learningPreference || '').trim()
+    });
+    let hash = 0;
+    for (let i = 0; i < payload.length; i += 1) {
+      hash = ((hash << 5) - hash + payload.charCodeAt(i)) | 0;
+    }
+    return `profile-${Math.abs(hash)}`;
+  }
+
+  private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>>): void {
     this.authService.updateCurrentUser(partial);
   }
 }

@@ -9,7 +9,7 @@ import { catchError, debounceTime, distinctUntilChanged, finalize, shareReplay, 
 import { ApiService } from '../../shared/services/api.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
-import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
+import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel, buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { TenantContextService } from '../../shared/services/tenant-context.service';
@@ -235,7 +235,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.careerProfileService.careerProfile$.pipe(
         skip(1),
         debounceTime(250),
-        distinctUntilChanged((a, b) => a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel)
+        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
       ).subscribe(() => {
         this.clearDashboardCache();
         this.loadDashboardData();

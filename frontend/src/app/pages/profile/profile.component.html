@@ -2,8 +2,13 @@
 
   <!-- ── Page header ───────────────────────────────────────────── -->
   <div class="prof-page__header">
-    <h1>Profile Settings</h1>
-    <p>Manage your account and preferences</p>
+    <div>
+      <h1>Profile Settings</h1>
+      <p>Manage your account and preferences</p>
+    </div>
+    <button class="btn-cancel" type="button" (click)="refreshProfile()" [disabled]="isLoading || isSaving">
+      Refresh
+    </button>
   </div>
 
   <!-- Loading skeleton -->
@@ -316,6 +321,23 @@
             <option value="Prepare for interviews">Prepare for interviews</option>
             <option value="Switch tech stack">Switch tech stack</option>
           </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="profile-target-timeline">Target Timeline</label>
+            <select id="profile-target-timeline" [(ngModel)]="profile.targetTimeline" title="Target timeline">
+              <option value="">-- Select a timeline --</option>
+              <option *ngFor="let timeline of targetTimelines" [value]="timeline">{{ timeline }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="profile-learning-preference">Learning Preference</label>
+            <select id="profile-learning-preference" [(ngModel)]="profile.learningPreference" title="Learning preference">
+              <option value="">-- Select a preference --</option>
+              <option *ngFor="let preference of learningPreferences" [value]="preference">{{ preference }}</option>
+            </select>
+          </div>
         </div>
 
         <div class="career-actions">

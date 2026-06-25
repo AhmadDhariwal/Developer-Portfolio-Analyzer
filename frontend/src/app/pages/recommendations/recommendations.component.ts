@@ -16,6 +16,7 @@ import {
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../shared/services/auth.service';
@@ -89,14 +90,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel && a.careerGoal === b.careerGoal
-        )
+        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
       ).subscribe(() => {
-        const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
-        const nextKey = `${careerStack}:${experienceLevel}`;
+        const nextKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
         if (nextKey === this.lastProfileKey) return;
         this.lastProfileKey = nextKey;
+        const activeUsername = this.getStoredActiveUsername();
+        if (activeUsername) this.applyDefaultUsername(activeUsername);
         if (this.username && this.result) this.analyze(false);
       })
     );

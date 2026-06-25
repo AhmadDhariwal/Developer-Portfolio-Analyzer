@@ -142,6 +142,16 @@ const userSchema = new mongoose.Schema({
     enum: ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''],
     default: ''
   },
+  targetTimeline: {
+    type: String,
+    enum: ['Immediately', '1-3 months', '3-6 months', '6+ months', ''],
+    default: ''
+  },
+  learningPreference: {
+    type: String,
+    enum: ['Project-based', 'Reading', 'Video courses', 'Mentorship', 'Mixed', ''],
+    default: ''
+  },
   careerProfileSetAt: {
     type: Date,
     default: null

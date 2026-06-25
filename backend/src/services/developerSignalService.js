@@ -54,6 +54,15 @@ const safeStrings = (values = [], limit = 6) => uniqLower(
     .filter(Boolean)
 ).slice(0, limit);
 
+const buildProfileHash = (user = {}) => crypto.createHash('sha256').update(JSON.stringify({
+  activeGithubUsername: String(user.activeGithubUsername || user.githubUsername || '').trim().toLowerCase(),
+  activeCareerStack: String(user.activeCareerStack || user.careerStack || 'Full Stack').trim(),
+  activeExperienceLevel: String(user.activeExperienceLevel || user.experienceLevel || 'Student').trim(),
+  careerGoal: String(user.careerGoal || '').trim(),
+  targetTimeline: String(user.targetTimeline || '').trim(),
+  learningPreference: String(user.learningPreference || '').trim()
+})).digest('hex');
+
 const flattenResumeSkills = (skillsMap = {}) => {
   if (!skillsMap) return [];
   const values = skillsMap instanceof Map ? Array.from(skillsMap.values()) : Object.values(skillsMap);
@@ -508,15 +517,21 @@ const summarizeIntegrationSignal = async (userId) => {
 
 const summarizeCareerProfileSignal = async (userId) => {
   const user = userId
-    ? await User.findById(userId).select('careerStack experienceLevel careerGoal githubUsername updatedAt').lean()
+    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername updatedAt').lean()
     : null;
 
   return {
     present: Boolean(user),
-    careerStack: String(user?.careerStack || '').trim(),
-    experienceLevel: String(user?.experienceLevel || '').trim(),
+    careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
+    experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+    activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
+    activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
     careerGoal: String(user?.careerGoal || '').trim(),
-    githubUsername: String(user?.githubUsername || '').trim(),
+    targetTimeline: String(user?.targetTimeline || '').trim(),
+    learningPreference: String(user?.learningPreference || '').trim(),
+    githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+    activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+    profileHash: user ? buildProfileHash(user) : 'no-profile',
     updatedAt: user?.updatedAt || null
   };
 };
@@ -941,7 +956,10 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
     careerProfile: {
       careerStack: String(careerProfileSignal.careerStack || '').trim(),
       experienceLevel: String(careerProfileSignal.experienceLevel || '').trim(),
-      careerGoal: String(careerProfileSignal.careerGoal || '').trim()
+      careerGoal: String(careerProfileSignal.careerGoal || '').trim(),
+      targetTimeline: String(careerProfileSignal.targetTimeline || '').trim(),
+      learningPreference: String(careerProfileSignal.learningPreference || '').trim(),
+      profileHash: String(careerProfileSignal.profileHash || '').trim()
     },
     jobsDemand: {
       sampledJobs: Number(jobsDemandSignal.sampledJobs || 0),

@@ -14,6 +14,7 @@ import {
 } from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
+import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 import { AuthService } from '../../shared/services/auth.service';
 import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { Subscription } from 'rxjs';
@@ -49,13 +50,13 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to career profile changes — re-analyze whenever stack or level changes
+    // Subscribe to profile signal changes and re-analyze once per distinct profile hash/signature.
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.careerStack === b.careerStack && a.experienceLevel === b.experienceLevel
-        )
+        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
       ).subscribe(() => {
+        const activeUsername = this.getStoredActiveUsername();
+        if (activeUsername) this.applyDefaultUsername(activeUsername);
         if (this.username) this.analyze();
       })
     );

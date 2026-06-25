@@ -89,7 +89,7 @@ const buildContextCacheKey = ({ userId, signalHash, careerProfile }) => hashPayl
     careerStack: careerProfile?.careerStack || '',
     experienceLevel: careerProfile?.experienceLevel || '',
     careerGoal: careerProfile?.careerGoal || '',
-    githubUsername: careerProfile?.githubUsername || ''
+    githubUsername: careerProfile?.activeGithubUsername || careerProfile?.githubUsername || ''
   }
 });
 
@@ -793,7 +793,7 @@ const getScenarioContext = async (userId, options = {}) => {
     integrationConnections
   ] = await Promise.all([
     User.findById(userId)
-      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername defaultResumeFileId score jobTitle')
+      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle')
       .lean(),
     Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean(),
     ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1, createdAt: -1 }).lean(),
@@ -968,7 +968,7 @@ const getScenarioContext = async (userId, options = {}) => {
     profile: {
       careerStack: user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack',
       experienceLevel: user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'Student',
-      githubUsername: user?.githubUsername || careerProfile.githubUsername || '',
+      githubUsername: user?.activeGithubUsername || user?.githubUsername || careerProfile.activeGithubUsername || careerProfile.githubUsername || '',
       role,
       level,
       baselineHiringScore,
@@ -998,7 +998,7 @@ const getScenarioContext = async (userId, options = {}) => {
       skills: suggestedSkills,
       projects: suggestedProjects
     },
-    summary: `Recommendations are prefetched from your ${user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
+    summary: `Recommendations are prefetched from your ${user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
     signalHash,
     cache: { hit: false, key: contextCacheKey, version: SCENARIO_CONTEXT_VERSION }
   };

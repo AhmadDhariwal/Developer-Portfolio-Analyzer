@@ -566,7 +566,7 @@ const getDashboardSummary = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const githubUsername = user.githubUsername || '';
+    const githubUsername = user.activeGithubUsername || user.githubUsername || '';
     const careerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
     const experienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
     const [analysisState, cachedContext, integrationInsight] = await Promise.all([
@@ -841,8 +841,8 @@ const getDashboardSummary = async (req, res) => {
 const getDashboardContributions = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername').lean();
-    const githubUsername = user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
     const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
     const data = Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
       ? analysis.contributionActivity
@@ -862,8 +862,8 @@ const getDashboardContributions = async (req, res) => {
 const getDashboardLanguages = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername').lean();
-    const githubUsername = user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
     const { analysis, rateLimited, languageSource } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
 
     res.json({
@@ -881,8 +881,8 @@ const getDashboardLanguages = async (req, res) => {
 const getDashboardSkills = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
-    const user = await User.findById(req.user._id).select('githubUsername activeCareerStack careerStack activeExperienceLevel experienceLevel').lean();
-    const githubUsername = user?.githubUsername || '';
+    const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername activeCareerStack careerStack activeExperienceLevel experienceLevel').lean();
+    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
     const careerStack = user?.activeCareerStack || user?.careerStack || 'Full Stack';
     const experienceLevel = user?.activeExperienceLevel || user?.experienceLevel || 'Student';
 

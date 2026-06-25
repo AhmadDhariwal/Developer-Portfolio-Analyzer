@@ -24,6 +24,12 @@ export interface CareerProfile {
   careerStack:     CareerStack;
   experienceLevel: ExperienceLevel;
   careerGoal:      CareerGoal;
+  activeGithubUsername?: string;
+  activeCareerStack?: CareerStack;
+  activeExperienceLevel?: ExperienceLevel;
+  targetTimeline?: string;
+  learningPreference?: string;
+  profileHash?: string;
   isConfigured:    boolean;
 }
 
@@ -55,5 +61,21 @@ export const DEFAULT_CAREER_PROFILE: CareerProfile = {
   careerStack:     'Full Stack',
   experienceLevel: 'Student',
   careerGoal:      '',
+  activeGithubUsername: '',
+  activeCareerStack: 'Full Stack',
+  activeExperienceLevel: 'Student',
+  targetTimeline: '',
+  learningPreference: '',
+  profileHash: '',
   isConfigured:    false
 };
+
+export const buildCareerProfileSignature = (profile: Partial<CareerProfile> | null | undefined): string => JSON.stringify({
+  activeGithubUsername: String(profile?.activeGithubUsername || '').trim().toLowerCase(),
+  activeCareerStack: String(profile?.activeCareerStack || profile?.careerStack || 'Full Stack').trim(),
+  activeExperienceLevel: String(profile?.activeExperienceLevel || profile?.experienceLevel || 'Student').trim(),
+  careerGoal: String(profile?.careerGoal || '').trim(),
+  targetTimeline: String(profile?.targetTimeline || '').trim(),
+  learningPreference: String(profile?.learningPreference || '').trim(),
+  profileHash: String(profile?.profileHash || '').trim()
+});
