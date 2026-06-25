@@ -92,6 +92,13 @@ const computeDeveloperProfileCompletion = (user) => {
   const completed = fields.filter((value) => String(value || '').trim().length > 0).length;
   return Math.round((completed / fields.length) * 100);
 };
+const VALID_CAREER_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+const VALID_EXPERIENCE_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const VALID_CAREER_GOALS = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
+const GITHUB_USERNAME_PATTERN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
+const sanitizeText = (value) => String(value ?? '').trim();
+const sanitizeGithubUsername = (value) => sanitizeText(value).replace(/^@+/, '');
 
 // @desc  Get logged-in user profile + account stats
 // @route GET /api/profile/me
@@ -249,16 +256,37 @@ const updateProfile = async (req, res) => {
 
     let hasChanges = false;
 
+<<<<<<< HEAD
     if (name !== undefined && name !== user.name) {
       user.name = sanitizeText(name, 120);
       hasChanges = true;
+=======
+    if (name !== undefined) {
+      const normalizedName = sanitizeText(name);
+      if (!normalizedName) {
+        return res.status(400).json({ message: 'Full name is required.' });
+      }
+      if (normalizedName !== user.name) {
+        user.name = normalizedName;
+        hasChanges = true;
+      }
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     }
+
     if (githubUsername !== undefined) {
+<<<<<<< HEAD
       const normalizedGithub = sanitizeText(githubUsername, 80);
       if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
       if (normalizedGithub && !GITHUB_USERNAME_RE.test(normalizedGithub)) {
+=======
+      const normalizedGithub = sanitizeGithubUsername(githubUsername);
+      if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
+        return res.status(400).json({ message: 'GitHub username cannot be empty.' });
+      }
+      if (normalizedGithub && !GITHUB_USERNAME_PATTERN.test(normalizedGithub)) {
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
         return res.status(400).json({ message: 'Invalid GitHub username.' });
       }
       if (normalizedGithub !== user.githubUsername) {
@@ -289,6 +317,7 @@ const updateProfile = async (req, res) => {
       }
     }
 
+<<<<<<< HEAD
     if (jobTitle !== undefined && jobTitle !== user.jobTitle) {
       user.jobTitle = sanitizeText(jobTitle, 120);
       hasChanges = true;
@@ -337,13 +366,33 @@ const updateProfile = async (req, res) => {
         hasChanges = true;
       }
     }
+=======
+    const textFields = [
+      ['jobTitle', jobTitle],
+      ['location', location],
+      ['bio', bio],
+      ['website', website],
+      ['twitter', twitter],
+      ['linkedin', linkedin],
+      ['phoneNumber', phoneNumber]
+    ];
+
+    for (const [field, value] of textFields) {
+      if (value === undefined) continue;
+      const normalizedValue = sanitizeText(value);
+      if (normalizedValue !== String(user[field] || '')) {
+        user[field] = normalizedValue;
+        hasChanges = true;
+      }
+    }
+
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     if (notifications !== undefined) {
-      // Merge only valid notification keys, fallback to defaults if missing
       const nextNotifications = {
         weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
-        skillTrendAlerts:  notifications.skillTrendAlerts  ?? user.notifications.skillTrendAlerts  ?? true,
-        newRecommendations:notifications.newRecommendations?? user.notifications.newRecommendations?? false,
-        jobMatchAlerts:    notifications.jobMatchAlerts    ?? user.notifications.jobMatchAlerts    ?? true
+        skillTrendAlerts: notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,
+        newRecommendations: notifications.newRecommendations ?? user.notifications.newRecommendations ?? false,
+        jobMatchAlerts: notifications.jobMatchAlerts ?? user.notifications.jobMatchAlerts ?? true
       };
 
       if (JSON.stringify(nextNotifications) !== JSON.stringify(user.notifications || {})) {
@@ -379,12 +428,12 @@ const updateProfile = async (req, res) => {
     ]);
 
     res.json({
-      _id:           updated._id,
-      name:          updated.name,
-      email:         updated.email,
-      phoneNumber:   updated.phoneNumber || '',
-      countryCode:   updated.countryCode || '',
-      githubUsername:updated.githubUsername,
+      _id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      phoneNumber: updated.phoneNumber || '',
+      countryCode: updated.countryCode || '',
+      githubUsername: updated.githubUsername,
       activeGithubUsername: updated.activeGithubUsername || updated.githubUsername,
       defaultResume: defaultResume ? {
         fileId: defaultResume._id,
@@ -398,6 +447,7 @@ const updateProfile = async (req, res) => {
         uploadDate: activeResume.uploadDate,
         isAnalyzed: activeResume.isAnalyzed
       } : null,
+<<<<<<< HEAD
       jobTitle:      updated.jobTitle,
       location:      updated.location,
       bio:           updated.bio,
@@ -407,6 +457,14 @@ const updateProfile = async (req, res) => {
       targetTimeline: updated.targetTimeline || '',
       learningPreference: updated.learningPreference || '',
       profileHash:   buildProfileHash(updated),
+=======
+      jobTitle: updated.jobTitle,
+      location: updated.location,
+      bio: updated.bio,
+      website: updated.website,
+      twitter: updated.twitter,
+      linkedin: updated.linkedin,
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       profileCompleted: isRecruiterProfileComplete(updated),
       notifications: updated.notifications,
     });
@@ -478,6 +536,7 @@ const deleteAccount = async (req, res) => {
 // @access Private
 const updateCareerProfile = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { careerStack, experienceLevel, careerGoal, targetTimeline, learningPreference } = req.body;
 
     if (!careerStack || !VALID_STACKS.includes(careerStack)) {
@@ -487,6 +546,19 @@ const updateCareerProfile = async (req, res) => {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
     if (careerGoal !== undefined && !VALID_GOALS.includes(sanitizeText(careerGoal, 80))) {
+=======
+    const normalizedCareerStack = sanitizeText(req.body?.careerStack);
+    const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
+    const normalizedCareerGoal = req.body?.careerGoal === undefined ? undefined : sanitizeText(req.body.careerGoal);
+
+    if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
+      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
+    }
+    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
+      return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
+    }
+    if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       return res.status(400).json({ message: 'Invalid careerGoal.' });
     }
     if (targetTimeline !== undefined && !VALID_TIMELINES.includes(sanitizeText(targetTimeline, 40))) {
@@ -500,6 +572,7 @@ const updateCareerProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found.' });
     const previousProfileHash = buildProfileHash(user);
 
+<<<<<<< HEAD
     user.careerStack     = careerStack;
     user.experienceLevel = experienceLevel;
     user.activeCareerStack = careerStack;
@@ -507,8 +580,14 @@ const updateCareerProfile = async (req, res) => {
     if (careerGoal !== undefined) user.careerGoal = sanitizeText(careerGoal, 80);
     if (targetTimeline !== undefined) user.targetTimeline = sanitizeText(targetTimeline, 40);
     if (learningPreference !== undefined) user.learningPreference = sanitizeText(learningPreference, 40);
+=======
+    user.careerStack = normalizedCareerStack;
+    user.experienceLevel = normalizedExperienceLevel;
+    user.activeCareerStack = normalizedCareerStack;
+    user.activeExperienceLevel = normalizedExperienceLevel;
+    if (normalizedCareerGoal !== undefined) user.careerGoal = normalizedCareerGoal;
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 
-    // Mark profile as configured on first save
     if (!user.careerProfileSetAt) {
       user.careerProfileSetAt = new Date();
     }
@@ -519,16 +598,20 @@ const updateCareerProfile = async (req, res) => {
     }
 
     res.json({
-      careerStack:        user.careerStack,
-      experienceLevel:    user.experienceLevel,
-      activeCareerStack:  user.activeCareerStack,
+      careerStack: user.careerStack,
+      experienceLevel: user.experienceLevel,
+      activeCareerStack: user.activeCareerStack,
       activeExperienceLevel: user.activeExperienceLevel,
+<<<<<<< HEAD
       careerGoal:         user.careerGoal,
       targetTimeline:     user.targetTimeline || '',
       learningPreference: user.learningPreference || '',
       profileHash:        buildProfileHash(user),
+=======
+      careerGoal: user.careerGoal,
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       careerProfileSetAt: user.careerProfileSetAt,
-      isConfigured:       !!user.careerProfileSetAt
+      isConfigured: !!user.careerProfileSetAt
     });
   } catch (error) {
     console.error('Career profile update error:', error.message);
@@ -541,12 +624,20 @@ const updateCareerProfile = async (req, res) => {
 // @access Private
 const updateActiveCareerProfile = async (req, res) => {
   try {
-    const { careerStack, experienceLevel } = req.body;
+    const normalizedCareerStack = sanitizeText(req.body?.careerStack);
+    const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
 
+<<<<<<< HEAD
     if (!careerStack || !VALID_STACKS.includes(careerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
     if (!experienceLevel || !VALID_LEVELS.includes(experienceLevel)) {
+=======
+    if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
+      return res.status(400).json({ message: 'Invalid or missing careerStack.' });
+    }
+    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
 
@@ -554,8 +645,8 @@ const updateActiveCareerProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found.' });
     const previousProfileHash = buildProfileHash(user);
 
-    user.activeCareerStack = careerStack;
-    user.activeExperienceLevel = experienceLevel;
+    user.activeCareerStack = normalizedCareerStack;
+    user.activeExperienceLevel = normalizedExperienceLevel;
     await user.save();
     if (previousProfileHash !== buildProfileHash(user)) {
       invalidateProfileDependentRuntimeCaches(user._id);
@@ -694,3 +785,7 @@ const updateProfileVisibility = async (req, res) => {
 };
 
 module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };
+
+
+
+

@@ -7,8 +7,8 @@ import { CareerProfileService } from './career-profile.service';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { CareerStack, ExperienceLevel, CareerGoal } from '../models/career-profile.model';
 import { environment } from '../../../environments/environment';
-
-// ─── Interfaces ───────────────────────────────────────────────────────────
+import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { ApiService } from './api.service';
 
 export interface NotificationPrefs {
   weeklyScoreReport:  boolean;
@@ -90,12 +90,11 @@ export interface AvatarUploadResponse {
   avatar: string;
 }
 
-// ─── Service ──────────────────────────────────────────────────────────────
-
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
   private readonly baseUrl = `${environment.apiBaseUrl}/profile`;
   private readonly apiOrigin = environment.apiOrigin;
+<<<<<<< HEAD
   private readonly cacheKey = 'devinsight_profile_cache';
   private readonly dependentCacheModules = [
     'dashboardSummary',
@@ -111,11 +110,18 @@ export class ProfileService {
   ];
   private inflightProfile$: Observable<UserProfile> | null = null;
   private memoryProfile: UserProfile | null = null;
+=======
+  private readonly profileCacheTtlMs = 5 * 60 * 1000;
+  private readonly inflight = new Map<string, Observable<UserProfile>>();
+  private cachedProfile: UserProfile | null = null;
+  private cachedAt = 0;
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
 
   constructor(
-    private readonly http:                HttpClient,
-    private readonly authService:         AuthService,
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
     private readonly careerProfileService: CareerProfileService,
+<<<<<<< HEAD
     private readonly frontendCache:       FrontendAnalysisCacheService,
   ) {}
 
@@ -135,10 +141,52 @@ export class ProfileService {
     );
 
     return this.inflightProfile$;
+=======
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly apiService: ApiService,
+  ) {}
+
+  getProfile(options: { forceRefresh?: boolean } = {}): Observable<UserProfile> {
+    const forceRefresh = options.forceRefresh === true;
+    if (!forceRefresh && this.hasFreshCache()) {
+      return of(this.cloneProfile(this.cachedProfile as UserProfile));
+    }
+
+    const requestKey = forceRefresh ? 'refresh' : 'default';
+    const activeRequest = this.inflight.get(requestKey);
+    if (activeRequest) return activeRequest;
+
+    const cacheBust = Date.now();
+    const request$ = this.http.get<UserProfile>(`${this.baseUrl}/me?_=${cacheBust}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
+    }).pipe(
+      map((profile) => this.normalizeProfile(profile)),
+      tap((profile) => this.hydrateSharedState(profile)),
+      finalize(() => this.inflight.delete(requestKey)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.inflight.set(requestKey, request$);
+    return request$;
   }
 
-  // ── Save profile fields + notification prefs ──────────────────────────
+  refreshProfile(): Observable<UserProfile> {
+    return this.getProfile({ forceRefresh: true });
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
+  }
+
   updateProfile(payload: UpdateProfilePayload): Observable<Partial<UserProfile>> {
+    const previousGithubUsername = String(
+      this.cachedProfile?.activeGithubUsername
+      || this.cachedProfile?.githubUsername
+      || this.authService.getCurrentUser()?.activeGithubUsername
+      || this.authService.getCurrentUser()?.githubUsername
+      || ''
+    ).trim().toLowerCase();
+
     return this.http.put<Partial<UserProfile>>(`${this.baseUrl}/me`, payload).pipe(
       tap((updated) => {
         const next = {
@@ -146,12 +194,22 @@ export class ProfileService {
           ...(typeof updated.avatar === 'string' ? { avatar: this.resolveAvatarUrl(updated.avatar) } : {})
         };
         this.authService.updateCurrentUser(next);
+<<<<<<< HEAD
         this.mergeProfileUpdate(next);
+=======
+        this.patchCachedProfile(next);
+
+        const nextGithubUsername = String(next.activeGithubUsername || next.githubUsername || previousGithubUsername)
+          .trim()
+          .toLowerCase();
+        if (previousGithubUsername !== nextGithubUsername) {
+          this.invalidateDependentCaches();
+        }
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       })
     );
   }
 
-  // ── Change password ────────────────────────────────────────────────────
   updatePassword(payload: PasswordPayload): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.baseUrl}/password`, payload);
   }
@@ -167,26 +225,29 @@ export class ProfileService {
       })),
       tap((res) => {
         this.authService.updateCurrentUser({ avatar: res.avatar });
+<<<<<<< HEAD
         this.mergeProfileUpdate({ avatar: res.avatar });
+=======
+        this.patchCachedProfile({ avatar: res.avatar });
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
       })
     );
   }
 
-  // ── Delete account ─────────────────────────────────────────────────────
   deleteAccount(): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/me`);
   }
 
-  // ── Update profile visibility (talent pool opt-in) ────────────────────
   updateVisibility(isPublic: boolean): Observable<{ isPublic: boolean }> {
-    return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic });
+    return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic }).pipe(
+      tap((res) => this.patchCachedProfile({ isPublic: res.isPublic }))
+    );
   }
 
-  // ── Build initials avatar fallback ────────────────────────────────────
   getInitials(name: string): string {
     return name
       .split(' ')
-      .map(w => w[0])
+      .map((w) => w[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
@@ -202,7 +263,6 @@ export class ProfileService {
       try {
         const parsed = new URL(raw);
         if (parsed.pathname.startsWith('/uploads/')) {
-          // Strip query params — cache-busting ?v= is added at display time by getAvatarSrc()
           return `${this.apiOrigin}${parsed.pathname}`;
         }
       } catch {
@@ -227,6 +287,7 @@ export class ProfileService {
   private normalizeProfile(profile: UserProfile): UserProfile {
     return {
       ...profile,
+<<<<<<< HEAD
       avatar: this.resolveAvatarUrl(profile.avatar),
       activeGithubUsername: profile.activeGithubUsername || profile.githubUsername || '',
       activeCareerStack: profile.activeCareerStack || profile.careerStack || 'Full Stack',
@@ -327,6 +388,96 @@ export class ProfileService {
   }
 
   private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>>): void {
+=======
+      avatar: this.resolveAvatarUrl(profile.avatar)
+    };
+  }
+
+  private hydrateSharedState(profile: UserProfile): void {
+    this.cachedProfile = this.cloneProfile(profile);
+    this.cachedAt = Date.now();
+    this.syncStoredUser({
+      _id: profile._id,
+      name: profile.name,
+      email: profile.email,
+      role: profile.role,
+      githubUsername: profile.githubUsername,
+      activeGithubUsername: profile.activeGithubUsername || profile.githubUsername,
+      avatar: profile.avatar,
+      careerStack: profile.careerStack,
+      experienceLevel: profile.experienceLevel,
+      activeCareerStack: profile.activeCareerStack || profile.careerStack,
+      activeExperienceLevel: profile.activeExperienceLevel || profile.experienceLevel,
+      careerGoal: profile.careerGoal
+    });
+    this.careerProfileService.hydrateFromServer({
+      careerStack: profile.careerStack ?? 'Full Stack',
+      experienceLevel: profile.experienceLevel ?? 'Student',
+      activeCareerStack: profile.activeCareerStack ?? profile.careerStack ?? 'Full Stack',
+      activeExperienceLevel: profile.activeExperienceLevel ?? profile.experienceLevel ?? 'Student',
+      careerGoal: profile.careerGoal ?? '',
+      isConfigured: profile.isConfigured ?? false
+    });
+  }
+
+  private patchCachedProfile(partial: Partial<UserProfile>): void {
+    if (!this.cachedProfile) return;
+
+    this.cachedProfile = this.cloneProfile({
+      ...this.cachedProfile,
+      ...partial,
+      notifications: partial.notifications
+        ? {
+            ...(this.cachedProfile.notifications || {}),
+            ...partial.notifications
+          }
+        : this.cachedProfile.notifications,
+      stats: partial.stats
+        ? {
+            ...(this.cachedProfile.stats || {}),
+            ...partial.stats
+          }
+        : this.cachedProfile.stats
+    });
+    this.cachedAt = Date.now();
+  }
+
+  private invalidateDependentCaches(): void {
+    this.frontendCache.clearCurrentSignalHash();
+    this.apiService.invalidateScenarioContextCache();
+    [
+      'dashboardSummary',
+      'dashboardContributions',
+      'dashboardLanguages',
+      'dashboardSkills',
+      'dashboardRecommendations',
+      'dashboardIntegrationAnalytics',
+      'recommendations',
+      'weeklyReports',
+      'news-feed'
+    ].forEach((module) => this.frontendCache.clearModule(module));
+  }
+
+  private hasFreshCache(): boolean {
+    return Boolean(this.cachedProfile && Date.now() - this.cachedAt < this.profileCacheTtlMs);
+  }
+
+  private cloneProfile(profile: UserProfile): UserProfile {
+    return {
+      ...profile,
+      notifications: { ...(profile.notifications || {}) },
+      stats: { ...(profile.stats || {}) },
+      defaultResume: profile.defaultResume ? { ...profile.defaultResume } : null,
+      activeResume: profile.activeResume ? { ...profile.activeResume } : null
+    };
+  }
+
+  private syncStoredUser(partial: Partial<UserProfile>): void {
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     this.authService.updateCurrentUser(partial);
   }
 }
+
+
+
+

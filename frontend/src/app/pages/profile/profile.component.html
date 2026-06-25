@@ -6,8 +6,13 @@
       <h1>Profile Settings</h1>
       <p>Manage your account and preferences</p>
     </div>
+<<<<<<< HEAD
     <button class="btn-cancel" type="button" (click)="refreshProfile()" [disabled]="isLoading || isSaving">
       Refresh
+=======
+    <button class="prof-refresh-btn" type="button" (click)="refreshProfile()" [disabled]="isLoading">
+      {{ isLoading ? 'Refreshing…' : 'Refresh' }}
+>>>>>>> d84a3821e3ac7e5f8248ebe85bae0317ef5c6cc2
     </button>
   </div>
 
@@ -565,3 +570,5 @@
   </div>
 
 </div>
+
+

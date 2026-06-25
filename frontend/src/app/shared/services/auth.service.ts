@@ -22,6 +22,7 @@ export interface SessionUser {
   experienceLevel?: string;
   activeCareerStack?: string;
   activeExperienceLevel?: string;
+  careerGoal?: string;
   token?: string;
   [key: string]: unknown;
 }
@@ -402,3 +403,4 @@ export class AuthService {
     );
   }
 }
+

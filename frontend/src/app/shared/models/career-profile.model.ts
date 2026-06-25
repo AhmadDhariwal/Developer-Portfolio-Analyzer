@@ -31,6 +31,8 @@ export interface CareerProfile {
   learningPreference?: string;
   profileHash?: string;
   isConfigured:    boolean;
+  activeCareerStack?: CareerStack;
+  activeExperienceLevel?: ExperienceLevel;
 }
 
 export const CAREER_STACKS: CareerStack[] = [
