@@ -5,6 +5,10 @@ Implementation-driven guide for skill-gap analysis.
 ## Current Behavior
 Skill Gap compares GitHub, resume, profile, sprint, recommendations, and demand signals against the active career profile. Results are cached by signal hash and career profile.
 
+Displayed skill names are normalized through the shared industry skill catalog before they reach the response. Aliases such as `reactjs`, `node js`, and `Dockerfile` are canonicalized, while malformed tokens or non-skill text are filtered out. Current, missing, weak, and high-demand skills should include source and evidence text so the UI can explain why the skill is present, why it matters, and how it was detected.
+
+The current analysis version is `v6-skill-intelligence`. It uses the existing cache-key strategy but intentionally avoids reusing older `v5` cached payloads so stale malformed skill names do not bypass the stricter validation. Missing-skill objects may include additive metadata such as `businessImpact`, `learningEffort`, `recommendedResources`, `suggestedProject`, `whyExists`, and `whyItMatters`; existing consumers should continue using the original fields.
+
 ## Files To Modify
 | Change | Files |
 |---|---|

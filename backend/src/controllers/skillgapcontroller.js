@@ -14,9 +14,14 @@ const {
   buildResumeCacheIdentity,
   buildAnalysisBasedOn
 } = require('../services/developerSignalService');
-const { extractSkillsFromRepositories, canonicalizeSkillName, INDUSTRY_SKILLS } = require('../utils/skilldetector');
+const {
+  extractSkillsFromRepositories,
+  canonicalizeSkillName,
+  normalizeSkillList,
+  INDUSTRY_SKILLS
+} = require('../utils/skilldetector');
 
-const ANALYSIS_VERSION = 'v5-skill-intelligence';
+const ANALYSIS_VERSION = 'v6-skill-intelligence';
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
 const DETERMINISTIC_CONFIDENCE_THRESHOLD = 70;
@@ -73,6 +78,49 @@ const EXPERIENCE_SKILL_HINTS = {
   '5+ years': ['System Design', 'Scalability Patterns', 'Security Basics', 'Monitoring and Observability']
 };
 
+const SKILL_RESOURCE_HINTS = {
+  React: [
+    { title: 'React docs', url: 'https://react.dev/learn' },
+    { title: 'React Testing Library', url: 'https://testing-library.com/docs/react-testing-library/intro/' }
+  ],
+  JavaScript: [
+    { title: 'MDN JavaScript guide', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide' }
+  ],
+  TypeScript: [
+    { title: 'TypeScript handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' }
+  ],
+  'Node.js': [
+    { title: 'Node.js docs', url: 'https://nodejs.org/en/learn' }
+  ],
+  'REST APIs': [
+    { title: 'Microsoft REST API guidelines', url: 'https://github.com/microsoft/api-guidelines' }
+  ],
+  SQL: [
+    { title: 'PostgreSQL tutorial', url: 'https://www.postgresql.org/docs/current/tutorial.html' }
+  ],
+  Docker: [
+    { title: 'Docker docs', url: 'https://docs.docker.com/get-started/' }
+  ],
+  'CI/CD': [
+    { title: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }
+  ],
+  Testing: [
+    { title: 'Testing JavaScript guide', url: 'https://testingjavascript.com/' }
+  ],
+  'System Design': [
+    { title: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' }
+  ],
+  Accessibility: [
+    { title: 'WCAG quick reference', url: 'https://www.w3.org/WAI/WCAG22/quickref/' }
+  ],
+  'Security Basics': [
+    { title: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' }
+  ],
+  'Monitoring and Observability': [
+    { title: 'OpenTelemetry docs', url: 'https://opentelemetry.io/docs/' }
+  ]
+};
+
 const isValidUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
 const toDocSearchUrl = (topic) => {
@@ -106,7 +154,7 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
       title: 'Core Foundations',
       description: 'Build strong fundamentals for your current stack.',
       duration: '2-3 weeks',
-      skills: ['Core language fundamentals', 'Git workflows'],
+      skills: ['JavaScript', 'Git', 'Testing'],
       resources: [
         { title: 'Official language docs', url: 'https://developer.mozilla.org/' },
         { title: 'Git documentation', url: 'https://git-scm.com/doc' }
@@ -118,7 +166,7 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
       title: 'Project Depth',
       description: 'Apply missing skills in practical projects.',
       duration: '3-4 weeks',
-      skills: ['Build one production-like project', 'Add tests and CI'],
+      skills: ['Docker', 'CI/CD', 'Testing'],
       resources: [
         { title: 'Docker docs', url: 'https://docs.docker.com/' },
         { title: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }
@@ -130,7 +178,7 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
       title: 'Interview Readiness',
       description: 'Prepare portfolio and interview-focused practice.',
       duration: '2-3 weeks',
-      skills: ['System design practice', 'Behavioral storytelling'],
+      skills: ['System Design', 'Documentation'],
       resources: [
         { title: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' },
         { title: 'LeetCode', url: 'https://leetcode.com/' }
@@ -143,11 +191,15 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
   while (safe.length < min) safe.push(defaults[safe.length % defaults.length]);
 
   return safe.map((phase, index) => {
-    const phaseSkills = Array.isArray(phase.skills) ? phase.skills.map(String).map((value) => value.trim()).filter(Boolean) : [];
-    const firstSkill = phaseSkills[0] || 'software engineering';
+    const fallbackPhase = defaults[index % defaults.length];
+    const phaseSkills = uniqueSkillNames(Array.isArray(phase.skills) ? phase.skills : fallbackPhase.skills);
+    const firstSkill = phaseSkills[0] || fallbackPhase.skills[0] || 'Testing';
     const resources = Array.isArray(phase.resources)
       ? phase.resources.map((resource) => normalizeRoadmapResource(resource, firstSkill))
       : [];
+    const objective = String(phase.objective || `Build practical confidence in ${firstSkill} for the target role.`).trim();
+    const expectedOutcome = String(phase.expectedOutcome || `Use ${firstSkill} in a working, reviewable implementation.`).trim();
+    const measurableDeliverable = String(phase.measurableDeliverable || `Publish a commit, PR, or portfolio note showing ${firstSkill} with tests or documentation.`).trim();
 
     return {
       phase: String(phase.phase || `Phase ${index + 1}`).trim(),
@@ -155,15 +207,19 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
       description: String(phase.description || 'Complete focused practice for this milestone.').trim(),
       duration: String(phase.duration || '2-3 weeks').trim(),
       skills: phaseSkills,
-      resources: resources.length ? resources : [normalizeRoadmapResource(firstSkill, firstSkill)],
+      resources: resources.length ? resources : getSkillResources(firstSkill),
+      objective,
+      expectedOutcome,
+      measurableDeliverable,
+      topSkill: firstSkill,
       color: ['purple', 'blue', 'green', 'orange'].includes(String(phase.color || '').trim())
         ? String(phase.color).trim()
-        : defaults[index % defaults.length].color
+        : fallbackPhase.color
     };
   });
 };
 
-const toSkillName = (value) => (typeof value === 'string' ? value : value?.name || '').trim();
+const toSkillName = (value) => canonicalizeSkillName(typeof value === 'string' ? value : value?.name || value?.skill || '');
 
 const uniqueByLower = (values = []) => {
   const seen = new Set();
@@ -174,6 +230,8 @@ const uniqueByLower = (values = []) => {
     return true;
   });
 };
+
+const uniqueSkillNames = (values = []) => normalizeSkillList(values);
 
 const uniqueObjectsByName = (values = []) => {
   const seen = new Set();
@@ -187,6 +245,9 @@ const uniqueObjectsByName = (values = []) => {
 
 const getSkillMeta = (skillName = '') => {
   const canonical = canonicalizeSkillName(skillName);
+  if (!canonical) {
+    return { name: '', category: '', priority: '', jobDemand: 0 };
+  }
   const known = INDUSTRY_SKILLS.find((skill) => skill.name.toLowerCase() === canonical.toLowerCase());
   return {
     name: canonical,
@@ -248,6 +309,73 @@ const materializeSkillEvidence = (entry, overrides = {}) => {
   };
 };
 
+const evidenceSentenceForCurrent = (skill, careerStack) => {
+  const sources = String(skill.source || '').trim();
+  if (sources.includes('GitHub') && sources.includes('Resume')) {
+    return `${skill.name} appears in both GitHub evidence and resume analysis for ${careerStack}.`;
+  }
+  if (sources.includes('GitHub')) return `${skill.name} was detected from repository languages, topics, or descriptions.`;
+  if (sources.includes('Resume')) return `${skill.name} was extracted from the latest resume analysis.`;
+  if (sources.includes('Portfolio')) return `${skill.name} appears in portfolio project evidence.`;
+  if (sources.includes('Integration')) return `${skill.name} was detected through connected integration evidence.`;
+  return `${skill.name} is supported by available developer signals.`;
+};
+
+const evidenceSentenceForMissing = (skill, careerStack, experienceLevel) => {
+  const sources = String(skill.source || '').trim();
+  if (sources.includes('Career Profile')) {
+    return `${skill.name} is expected for ${careerStack} at ${experienceLevel} level but is not yet proven in the strongest signals.`;
+  }
+  if (sources.includes('Resume')) return `${skill.name} is claimed in the resume but needs project or GitHub proof.`;
+  if (sources.includes('Jobs')) return `${skill.name} appears in cached job-demand signals for the target profile.`;
+  if (sources.includes('Weekly Reports') || sources.includes('Career Sprint')) return `${skill.name} has appeared as a repeated weak or incomplete learning area.`;
+  return `${skill.name} is a recognized ${careerStack} skill that is not yet sufficiently evidenced.`;
+};
+
+const cleanSkillObjects = (skills = [], kind, careerStack, experienceLevel) => {
+  const seen = new Set();
+  return (Array.isArray(skills) ? skills : [])
+    .map((skill) => {
+      const name = toSkillName(skill);
+      if (!name) return null;
+      const key = name.toLowerCase();
+      if (seen.has(key)) return null;
+      seen.add(key);
+      const meta = getSkillMeta(name);
+      const demand = kind === 'missing' ? clamp(skill.jobDemand || meta.jobDemand || 60) : skill.jobDemand;
+      const confidenceScore = clamp(skill.confidenceScore || (kind === 'current' ? 58 : 52));
+      const priority = normalizePriority(skill.priority || meta.priority, demand || meta.jobDemand, confidenceScore);
+      const learningEffort = estimateLearningEffort({ ...skill, name, jobDemand: demand, priority, confidenceScore }, experienceLevel);
+      const evidence = uniqueByLower([
+        ...(Array.isArray(skill.evidence) ? skill.evidence : []),
+        kind === 'current'
+          ? evidenceSentenceForCurrent({ ...skill, name }, careerStack)
+          : evidenceSentenceForMissing({ ...skill, name }, careerStack, experienceLevel)
+      ]).slice(0, 5);
+
+      return {
+        ...skill,
+        name,
+        category: meta.category || skill.category || 'General',
+        priority,
+        jobDemand: demand,
+        confidenceScore,
+        evidence,
+        source: String(skill.source || '').trim() || (kind === 'current' ? 'Evidence' : 'Career Profile'),
+        detectionMethod: String(skill.source || '').trim() || (kind === 'current' ? 'Developer Evidence' : 'Career Profile'),
+        whyExists: kind === 'current'
+          ? evidenceSentenceForCurrent({ ...skill, name }, careerStack)
+          : evidenceSentenceForMissing({ ...skill, name }, careerStack, experienceLevel),
+        whyItMatters: businessImpactForSkill({ ...skill, name, category: meta.category, jobDemand: demand }, careerStack),
+        businessImpact: businessImpactForSkill({ ...skill, name, category: meta.category, jobDemand: demand }, careerStack),
+        learningEffort: kind === 'missing' ? learningEffort : undefined,
+        recommendedResources: kind === 'missing' ? getSkillResources(name) : undefined,
+        suggestedProject: kind === 'missing' ? buildSkillProject({ ...skill, name, jobDemand: demand, priority }, careerStack) : undefined
+      };
+    })
+    .filter(Boolean);
+};
+
 const isRelevantForStack = (skillName, careerStack) => {
   const meta = getSkillMeta(skillName);
   const allowed = STACK_ALLOWED_CATEGORIES[careerStack] || STACK_ALLOWED_CATEGORIES['Full Stack'];
@@ -263,14 +391,64 @@ const normalizePriority = (priority, demand = 0, confidence = 0) => {
   return 'Low';
 };
 
-const buildSuggestedProjects = (skills = [], careerStack = 'Full Stack') => skills.slice(0, 5).map((skill, index) => {
+const estimateLearningEffort = (skill, experienceLevel = 'Student') => {
+  const demand = clamp(skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60);
+  const priority = normalizePriority(skill.priority, demand, skill.confidenceScore);
+  const seniorLevels = new Set(['2-3 years', '3-5 years', '5+ years']);
+  const baseWeeks = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
+  const demandWeeks = demand >= 85 ? 1 : 0;
+  const experienceWeeks = seniorLevels.has(experienceLevel) ? 1 : 0;
+  const weeks = Math.max(1, Math.min(6, baseWeeks + demandWeeks + experienceWeeks));
+  return {
+    weeks,
+    label: weeks === 1 ? '1 focused week' : `${weeks} focused weeks`,
+    level: weeks >= 4 ? 'Deep practice' : weeks >= 2 ? 'Applied practice' : 'Quick validation'
+  };
+};
+
+const getSkillResources = (skillName) => {
+  const name = toSkillName(skillName);
+  const resources = SKILL_RESOURCE_HINTS[name] || [
+    { title: `${name} official documentation`, url: toDocSearchUrl(`${name} official documentation`) },
+    { title: `${name} practical project guide`, url: toDocSearchUrl(`${name} practical project guide`) }
+  ];
+  return resources.slice(0, 2).map((resource) => normalizeRoadmapResource(resource, name));
+};
+
+const businessImpactForSkill = (skill, careerStack) => {
+  const demand = clamp(skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60);
+  if (demand >= 85) {
+    return `${skill.name} is likely to improve match quality for ${careerStack} roles because demand is high and it appears in core hiring signals.`;
+  }
+  if (String(skill.category || '').includes('DevOps')) {
+    return `${skill.name} improves delivery reliability, deployment confidence, and production-readiness signals.`;
+  }
+  if (String(skill.category || '').includes('Testing')) {
+    return `${skill.name} reduces regression risk and makes portfolio projects more credible to reviewers.`;
+  }
+  if (String(skill.category || '').includes('Database')) {
+    return `${skill.name} improves data-modeling credibility and backend role alignment.`;
+  }
+  return `${skill.name} strengthens practical role fit and gives reviewers clearer evidence of production-ready engineering.`;
+};
+
+const buildSkillProject = (skill, careerStack = 'Full Stack') => {
   const name = toSkillName(skill);
   return {
     title: `${careerStack} ${name} proof project`,
     skill: name,
-    difficulty: index < 2 ? 'Intermediate' : 'Focused',
-    estimatedWeeks: index < 2 ? 2 : 1,
-    outcome: `Ship a small, reviewable feature that proves ${name} with tests or deployment notes.`
+    difficulty: (skill.jobDemand || 0) >= 84 ? 'Intermediate' : 'Focused',
+    estimatedWeeks: estimateLearningEffort(skill).weeks,
+    outcome: `Ship a small, reviewable feature that proves ${name} with tests, documentation, and deployment notes.`,
+    deliverable: `A repository PR or portfolio case study showing ${name} in a realistic workflow.`
+  };
+};
+
+const buildSuggestedProjects = (skills = [], careerStack = 'Full Stack') => skills.slice(0, 5).map((skill, index) => {
+  const name = toSkillName(skill);
+  return {
+    ...buildSkillProject({ ...skill, name }, careerStack),
+    difficulty: index < 2 ? 'Intermediate' : 'Focused'
   };
 });
 
@@ -381,21 +559,19 @@ const buildGithubInsights = (githubData = {}) => ({
   scores: githubData?.scores || {}
 });
 
-const getExpectedSkills = (careerStack = 'Full Stack', experienceLevel = 'Student') => uniqueByLower([
+const getExpectedSkills = (careerStack = 'Full Stack', experienceLevel = 'Student') => uniqueSkillNames([
   ...(STACK_SKILL_HINTS[careerStack] || STACK_SKILL_HINTS['Full Stack']),
   ...(EXPERIENCE_SKILL_HINTS[experienceLevel] || EXPERIENCE_SKILL_HINTS.Student),
   ...DEFAULT_MISSING_SKILLS
-]).map((skill) => canonicalizeSkillName(skill)).filter(Boolean);
+]);
 
-const buildGithubSkills = (githubData = {}) => uniqueByLower(
+const buildGithubSkills = (githubData = {}) => uniqueSkillNames(
   extractSkillsFromRepositories(githubData?.repositories || [], githubData?.languageDistribution || [])
     .concat((githubData?.languageDistribution || []).map((entry) => entry?.language))
-    .map((skill) => canonicalizeSkillName(skill))
-    .filter(Boolean)
 ).slice(0, 25);
 
 const buildSkillEvidenceBreakdown = ({ resumeInsights, githubData, careerStack, experienceLevel }) => {
-  const resumeSkills = uniqueByLower((resumeInsights?.technicalSkills || resumeInsights?.skills || []).map((skill) => canonicalizeSkillName(skill)).filter(Boolean));
+  const resumeSkills = uniqueSkillNames(resumeInsights?.technicalSkills || resumeInsights?.skills || []);
   const githubSkills = buildGithubSkills(githubData);
   const githubLookup = new Set(githubSkills.map((skill) => skill.toLowerCase()));
   const resumeLookup = new Set(resumeSkills.map((skill) => skill.toLowerCase()));
@@ -446,13 +622,13 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
 };
 
 const buildEvidenceBuckets = (signals = {}) => {
-  const integrationSkills = new Set((signals.integrationSignal?.detectedSkills || []).map((skill) => String(skill).toLowerCase()));
-  const sprintSkills = new Set((signals.careerSprintSignal?.completedSkillSignals || []).map((skill) => String(skill).toLowerCase()));
+  const integrationSkills = new Set(uniqueSkillNames(signals.integrationSignal?.detectedSkills || []).map((skill) => skill.toLowerCase()));
+  const sprintSkills = new Set(uniqueSkillNames(signals.careerSprintSignal?.completedSkillSignals || []).map((skill) => skill.toLowerCase()));
   const repeatedWeakSkills = new Set([
     ...(signals.careerSprintSignal?.repeatedIncompleteSkills || []),
     ...(signals.weeklyReportSignal?.repeatedWeakAreas || [])
-  ].map((skill) => String(skill).toLowerCase()));
-  const portfolioSkills = new Set((signals.portfolioSignal?.portfolioSkills || []).map((skill) => String(skill).toLowerCase()));
+  ].map((skill) => canonicalizeSkillName(skill)).filter(Boolean).map((skill) => skill.toLowerCase()));
+  const portfolioSkills = new Set(uniqueSkillNames(signals.portfolioSignal?.portfolioSkills || []).map((skill) => skill.toLowerCase()));
 
   return {
     integrationSkills,
@@ -470,7 +646,7 @@ const buildFallbackSkillGap = ({
   careerStack,
   experienceLevel
 }) => {
-  const focusSkills = uniqueByLower([
+  const focusSkills = uniqueSkillNames([
     ...(evidenceBreakdown?.missingExpectedSkills || []),
     ...(evidenceBreakdown?.claimedButNotProvenSkills || []),
     ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
@@ -481,7 +657,7 @@ const buildFallbackSkillGap = ({
 
   return {
     analysisSummary: `Primary evidence comes from resume claims, GitHub proof, and supporting progress signals. Missing areas are prioritized where stack expectations are not yet visible in code or the resume still needs stronger coverage.`,
-    yourSkills: uniqueByLower([
+    yourSkills: uniqueSkillNames([
       ...(evidenceBreakdown?.provenSkills || []),
       ...(resumeInsights.skills || []),
       ...(evidenceBreakdown?.githubSkills || [])
@@ -491,14 +667,24 @@ const buildFallbackSkillGap = ({
         ? 'Proven by GitHub'
         : 'Resume Signal',
       proficiency: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 72 : 60,
-      isFoundational: true
+      isFoundational: true,
+      source: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 'GitHub + Resume' : 'Resume',
+      confidenceScore: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 78 : 62,
+      evidence: [
+        (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase())
+          ? `${skill} appears in both resume analysis and GitHub evidence.`
+          : `${skill} appears in the available resume or GitHub signal.`
+      ]
     })),
     missingSkills: focusSkills.slice(0, MIN_MISSING_SKILLS).map((skill, index) => ({
       name: skill,
       category: index < 4 ? 'Priority Gap' : 'General',
       priority: index < 4 ? 'High' : index < 8 ? 'Medium' : 'Low',
       jobDemand: clamp(88 - (index * 3)),
-      levelRelevance: index < 6 ? 'Current' : 'Next Level'
+      levelRelevance: index < 6 ? 'Current' : 'Next Level',
+      source: 'Career Profile',
+      confidenceScore: clamp(76 - (index * 2), 45, 86),
+      evidence: [`${skill} is a recognized ${careerStack} skill not yet strongly proven for ${experienceLevel} level.`]
     })),
     coverage: clamp((resumeInsights.atsScore * 0.18) + ((githubInsights.repoCount || 0) * 4)),
     missing: 50,
@@ -609,7 +795,7 @@ const buildDeterministicSkillGroups = ({
   const expectedLookup = new Set(expectedSkills.map((skill) => skill.toLowerCase()));
   const jobsDemandLookup = new Map(
     (developerSignals.jobsDemandSignal?.topSkills || [])
-      .map((skill) => [String(skill?.name || '').toLowerCase(), skill])
+      .map((skill) => [canonicalizeSkillName(skill?.name || '').toLowerCase(), skill])
       .filter(([key]) => key)
   );
 
@@ -662,8 +848,9 @@ const buildDeterministicSkillGroups = ({
   });
 
   (developerSignals.jobsDemandSignal?.topSkills || []).forEach((skill) => {
-    if (expectedLookup.has(String(skill?.name || '').toLowerCase())) {
-      addMissing(skill.name, 'jobs', `High demand in ${developerSignals.jobsDemandSignal.sampledJobs || 0} cached jobs`, 66, 'High');
+    const demandName = canonicalizeSkillName(skill?.name || '');
+    if (demandName && expectedLookup.has(demandName.toLowerCase())) {
+      addMissing(demandName, 'jobs', `High demand in ${developerSignals.jobsDemandSignal.sampledJobs || 0} cached jobs`, 66, 'High');
     }
   });
 
@@ -701,15 +888,21 @@ const buildDeterministicSkillGroups = ({
 
   const highDemandSkills = uniqueObjectsByName([
     ...missingSkillObjects.filter((skill) => skill.jobDemand >= 78),
-    ...(developerSignals.jobsDemandSignal?.topSkills || []).map((skill) => ({
-      name: canonicalizeSkillName(skill.name),
-      category: getSkillMeta(skill.name).category,
-      priority: 'High',
-      jobDemand: clamp(skill.demandScore || getSkillMeta(skill.name).jobDemand),
-      source: 'Jobs',
-      confidenceScore: clamp(58 + Math.min(32, Number(skill.postings || 0) * 2)),
-      evidence: [`Appears across ${skill.postings || 0} cached job postings`]
-    }))
+    ...(developerSignals.jobsDemandSignal?.topSkills || [])
+      .map((skill) => {
+        const name = canonicalizeSkillName(skill.name);
+        if (!name) return null;
+        return {
+          name,
+          category: getSkillMeta(name).category,
+          priority: 'High',
+          jobDemand: clamp(skill.demandScore || getSkillMeta(name).jobDemand),
+          source: 'Jobs',
+          confidenceScore: clamp(58 + Math.min(32, Number(skill.postings || 0) * 2)),
+          evidence: [`Appears across ${skill.postings || 0} cached job postings`]
+        };
+      })
+      .filter(Boolean)
   ]).filter((skill) => isRelevantForStack(skill.name, careerStack)).slice(0, 10);
 
   const maxMissing = Math.max(MIN_MISSING_SKILLS, EXPERIENCE_PRIORITY_LIMITS[experienceLevel] || MIN_MISSING_SKILLS);
@@ -719,10 +912,10 @@ const buildDeterministicSkillGroups = ({
     missingSkills: uniqueObjectsByName(missingSkillObjects).slice(0, maxMissing),
     weakSkills,
     highDemandSkills,
-    provenSkills: uniqueByLower(evidenceBreakdown.provenSkills || []),
-    resumeSkills: uniqueByLower(evidenceBreakdown.resumeSkills || []),
-    githubSkills: uniqueByLower(evidenceBreakdown.githubSkills || []),
-    claimedButNotProvenSkills: uniqueByLower(evidenceBreakdown.claimedButNotProvenSkills || [])
+    provenSkills: uniqueSkillNames(evidenceBreakdown.provenSkills || []),
+    resumeSkills: uniqueSkillNames(evidenceBreakdown.resumeSkills || []),
+    githubSkills: uniqueSkillNames(evidenceBreakdown.githubSkills || []),
+    claimedButNotProvenSkills: uniqueSkillNames(evidenceBreakdown.claimedButNotProvenSkills || [])
   };
 };
 
@@ -924,8 +1117,8 @@ const analyzeSkillGap = async (req, res) => {
 
     let yourSkills = [...(deterministicGroups.yourSkills || [])];
     let missingSkills = [...(deterministicGroups.missingSkills || [])];
-    const weakSkills = [...(deterministicGroups.weakSkills || [])];
-    const highDemandSkills = [...(deterministicGroups.highDemandSkills || [])];
+    let weakSkills = [...(deterministicGroups.weakSkills || [])];
+    let highDemandSkills = [...(deterministicGroups.highDemandSkills || [])];
 
     const existingSkillNames = new Set([
       ...yourSkills.map((skill) => String(skill.name || '').toLowerCase()).filter(Boolean),
@@ -934,16 +1127,18 @@ const analyzeSkillGap = async (req, res) => {
 
     // Build evidence lookup: which skill names have corroborating signals across the platform
     const evidenceSkillNames = new Set([
-      ...(evidenceBreakdown.provenSkills || []).map((value) => value.toLowerCase()),
-      ...(evidenceBreakdown.githubSkills || []).map((value) => value.toLowerCase()),
-      ...(evidenceBreakdown.resumeSkills || []).map((value) => value.toLowerCase()),
-      ...(evidenceBreakdown.claimedButNotProvenSkills || []).map((value) => value.toLowerCase()),
-      ...(developerSignals.integrationSignal?.detectedSkills || []).map((value) => String(value).toLowerCase()),
-      ...(developerSignals.careerSprintSignal?.completedSkillSignals || []).map((value) => String(value).toLowerCase()),
-      ...(developerSignals.portfolioSignal?.portfolioSkills || []).map((value) => String(value).toLowerCase()),
-      ...(developerSignals.jobsDemandSignal?.topSkills || []).map((value) => String(value?.name || value).toLowerCase()),
-      ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []).map((value) => String(value).toLowerCase()),
-      ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []).map((value) => String(value).toLowerCase())
+      ...uniqueSkillNames([
+        ...(evidenceBreakdown.provenSkills || []),
+        ...(evidenceBreakdown.githubSkills || []),
+        ...(evidenceBreakdown.resumeSkills || []),
+        ...(evidenceBreakdown.claimedButNotProvenSkills || []),
+        ...(developerSignals.integrationSignal?.detectedSkills || []),
+        ...(developerSignals.careerSprintSignal?.completedSkillSignals || []),
+        ...(developerSignals.portfolioSignal?.portfolioSkills || []),
+        ...(developerSignals.jobsDemandSignal?.topSkills || []).map((value) => value?.name || value),
+        ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
+        ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || [])
+      ]).map((value) => value.toLowerCase())
     ]);
 
     // Merge AI yourSkills: add only if not already present and has evidence backing
@@ -962,7 +1157,8 @@ const analyzeSkillGap = async (req, res) => {
           proficiency: hasEvidence ? clamp(proficiency + 8) : proficiency,
           isFoundational: Boolean(skill?.isFoundational),
           confidenceScore: hasEvidence ? clamp(proficiency + 12) : clamp(proficiency - 10),
-          source: hasEvidence ? 'AI + Evidence' : 'AI'
+          source: hasEvidence ? 'AI + Evidence' : 'AI',
+          evidence: [hasEvidence ? `${name} matched existing GitHub, resume, or platform evidence.` : `${name} was suggested by AI and kept because it is a recognized skill.`]
         });
       });
     }
@@ -986,7 +1182,12 @@ const analyzeSkillGap = async (req, res) => {
           jobDemand: clamp(skill?.jobDemand || 60),
           levelRelevance: skill?.levelRelevance || 'Current',
           confidenceScore: hasEvidence ? clamp((skill?.jobDemand || 60) + 10) : 40,
-          source: hasEvidence ? 'AI + Evidence' : 'AI (stack-relevant)'
+          source: hasEvidence ? 'AI + Evidence' : 'AI (stack-relevant)',
+          evidence: [
+            hasEvidence
+              ? `${name} is missing from stronger proof signals and was reinforced by AI prioritization.`
+              : `${name} is a recognized ${careerStack} skill relevant to the selected career profile.`
+          ]
         });
       });
     }
@@ -1001,7 +1202,7 @@ const analyzeSkillGap = async (req, res) => {
     missingSkills = evidenceAdjusted.missingSkills;
 
     // Ensure minimum counts with stack-aligned fallback
-    const detectedKnown = uniqueByLower([
+    const detectedKnown = uniqueSkillNames([
       ...evidenceBreakdown.provenSkills,
       ...resumeInsights.skills,
       ...evidenceBreakdown.githubSkills,
@@ -1021,7 +1222,8 @@ const analyzeSkillGap = async (req, res) => {
           proficiency: 60,
           isFoundational: true,
           confidenceScore: 60,
-          source: 'Evidence fallback'
+          source: 'Evidence fallback',
+          evidence: [`${skillName} was detected in available GitHub, resume, integration, sprint, or portfolio signals.`]
         });
       }
     }
@@ -1042,9 +1244,15 @@ const analyzeSkillGap = async (req, res) => {
         jobDemand: clamp(getSkillMeta(fallbackSkill).jobDemand || 65),
         levelRelevance: 'Current',
         confidenceScore: 56,
-        source: 'Stack expectation'
+        source: 'Stack expectation',
+        evidence: [`${fallbackSkill} is a baseline ${careerStack} expectation for ${experienceLevel} level.`]
       });
     }
+
+    yourSkills = cleanSkillObjects(yourSkills, 'current', careerStack, experienceLevel);
+    missingSkills = cleanSkillObjects(missingSkills, 'missing', careerStack, experienceLevel);
+    weakSkills = cleanSkillObjects(weakSkills, 'missing', careerStack, experienceLevel).slice(0, 10);
+    highDemandSkills = cleanSkillObjects(highDemandSkills, 'missing', careerStack, experienceLevel).slice(0, 10);
 
     // Sort: yourSkills by proficiency + confidence, missingSkills by priority then jobDemand
     yourSkills.sort((a, b) => (clamp(b.proficiency || 0) + clamp(b.confidenceScore || 0)) - (clamp(a.proficiency || 0) + clamp(a.confidenceScore || 0)));

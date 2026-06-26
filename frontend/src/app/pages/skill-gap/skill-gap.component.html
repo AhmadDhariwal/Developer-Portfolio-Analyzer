@@ -45,10 +45,28 @@
       <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
-    {{ errorMessage }}
+    <div class="state-copy">
+      <strong>Analysis could not complete</strong>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button class="btn-analyze btn-analyze--secondary" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
+      Retry
+    </button>
   </div>
 
-  <div class="sg-error" *ngIf="!errorMessage && result">
+  <div class="sg-loading" *ngIf="isLoading && !result">
+    <div class="loading-copy">
+      <strong>Building career intelligence</strong>
+      <span>Normalizing skill names, checking evidence quality, and prioritizing realistic next steps.</span>
+    </div>
+    <div class="loading-grid">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <div class="sg-context" *ngIf="!errorMessage && result">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="10"/>
@@ -108,6 +126,24 @@
         <span *ngIf="result.cacheMetadata?.signalHash || result.cacheMetadata?.cacheKey?.signalHash">
           Signal {{ (result.cacheMetadata?.signalHash || result.cacheMetadata?.cacheKey?.signalHash || '').slice(0, 10) }}
         </span>
+      </div>
+    </div>
+
+    <div class="trust-strip">
+      <div>
+        <span>Skill Hygiene</span>
+        <strong>Recognized technical skills only</strong>
+        <small>Aliases are canonicalized before display.</small>
+      </div>
+      <div>
+        <span>Evidence Standard</span>
+        <strong>{{ result.yourSkills.length + result.missingSkills.length }} skills with rationale</strong>
+        <small>Each displayed skill includes source and evidence.</small>
+      </div>
+      <div>
+        <span>Next Action</span>
+        <strong>{{ topActionSkill }}</strong>
+        <small>Prioritized by demand, confidence, and current profile fit.</small>
       </div>
     </div>
 
@@ -283,23 +319,35 @@
           <h3>Your Skills</h3>
           <span class="skills-badge skills-badge--green">{{ result.yourSkills.length }} detected</span>
         </div>
-        <div class="skills-list">
+        <div class="skills-list skills-list--cards">
           <div class="skill-row" *ngFor="let skill of result.yourSkills; trackBy: trackByName">
-            <span class="skill-check">&#10003;</span>
-            <span class="skill-name">{{ skill.name }}</span>
-            <span class="skill-category">{{ skill.category }}</span>
-            <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
-              {{ skill.confidenceScore || 0 }}% confidence
-            </span>
-            <div class="skill-bar-wrap">
-              <div class="skill-bar"
-                   [ngClass]="getProficiencyClass(skill.proficiency)"
-                   [style.width]="coverageWidth(skill.proficiency)">
+            <div class="skill-row__main">
+              <span class="skill-check">&#10003;</span>
+              <div class="skill-row__title">
+                <span class="skill-name">{{ skill.name }}</span>
+                <small>{{ getSkillExplanation(skill, 'current') }}</small>
               </div>
+              <span class="skill-category">{{ skill.category }}</span>
+              <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
+                {{ skill.confidenceScore || 0 }}% confidence
+              </span>
             </div>
-            <span class="skill-pct">{{ skill.proficiency }}%</span>
-            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length">
-              <span *ngFor="let evidence of getSkillEvidence(skill)">{{ evidence }}</span>
+            <div class="skill-row__meter">
+              <span>Proficiency</span>
+              <div class="skill-bar-wrap">
+                <div class="skill-bar"
+                     [ngClass]="getProficiencyClass(skill.proficiency)"
+                     [style.width]="coverageWidth(skill.proficiency)">
+                </div>
+              </div>
+              <span class="skill-pct">{{ skill.proficiency }}%</span>
+            </div>
+            <div class="skill-row__evidence">
+              <span class="evidence-source">{{ getDetectionMethod(skill) }}</span>
+              <p>{{ getSkillReason(skill) }}</p>
+            </div>
+            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length > 1">
+              <span *ngFor="let evidence of getSkillEvidence(skill).slice(1)">{{ evidence }}</span>
             </div>
           </div>
         </div>
@@ -310,20 +358,54 @@
           <h3>Missing Skills</h3>
           <span class="skills-badge skills-badge--red">{{ result.missingSkills.length }} gaps</span>
         </div>
-        <div class="skills-list">
+        <div class="skills-list skills-list--cards">
           <div class="skill-row missing-row" *ngFor="let skill of result.missingSkills; trackBy: trackByName">
-            <span class="skill-cross">&#10005;</span>
-            <span class="skill-name">{{ skill.name }}</span>
-            <span class="skill-category">{{ skill.category }}</span>
-            <span class="skill-demand">&#8599; {{ skill.jobDemand }}% job demand</span>
-            <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
-              {{ skill.confidenceScore || 0 }}% confidence
-            </span>
-            <span class="priority-badge" [ngClass]="getPriorityClass(skill.priority)">
-              {{ skill.priority }}
-            </span>
-            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length">
-              <span *ngFor="let evidence of getSkillEvidence(skill)">{{ evidence }}</span>
+            <div class="skill-row__main">
+              <span class="skill-cross">&#10005;</span>
+              <div class="skill-row__title">
+                <span class="skill-name">{{ skill.name }}</span>
+                <small>{{ getSkillExplanation(skill, 'missing') }}</small>
+              </div>
+              <span class="skill-category">{{ skill.category }}</span>
+              <span class="skill-demand">&#8599; {{ skill.jobDemand }}% demand</span>
+              <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
+                {{ skill.confidenceScore || 0 }}% confidence
+              </span>
+              <span class="priority-badge" [ngClass]="getPriorityClass(skill.priority)">
+                {{ skill.priority }}
+              </span>
+            </div>
+            <div class="skill-row__evidence">
+              <span class="evidence-source">{{ getDetectionMethod(skill) }}</span>
+              <p>{{ getSkillReason(skill) }}</p>
+            </div>
+            <div class="skill-impact-grid">
+              <div>
+                <span>Business impact</span>
+                <strong>{{ getBusinessImpact(skill) }}</strong>
+              </div>
+              <div>
+                <span>Learning effort</span>
+                <strong>{{ getLearningEffort(skill) }}</strong>
+              </div>
+              <div *ngIf="skill.suggestedProject">
+                <span>Suggested project</span>
+                <strong>{{ skill.suggestedProject.title }}</strong>
+                <small>{{ skill.suggestedProject.deliverable || skill.suggestedProject.outcome }}</small>
+              </div>
+            </div>
+            <div class="resources-list resources-list--inline" *ngIf="getSkillResources(skill).length">
+              <a
+                *ngFor="let r of getSkillResources(skill)"
+                [href]="getResourceUrl(r)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="resource-link">
+                {{ getResourceTitle(r) }}
+              </a>
+            </div>
+            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length > 1">
+              <span *ngFor="let evidence of getSkillEvidence(skill).slice(1)">{{ evidence }}</span>
             </div>
           </div>
         </div>
@@ -398,6 +480,7 @@
         <div *ngFor="let project of result.suggestedProjects">
           <strong>{{ project.title }}</strong>
           <span>{{ project.outcome }}</span>
+          <small *ngIf="project.deliverable">{{ project.deliverable }}</small>
         </div>
       </div>
     </div>
@@ -441,6 +524,21 @@
 
           <h4 class="phase-title">{{ phase.title }}</h4>
           <p class="phase-desc">{{ phase.description }}</p>
+
+          <div class="phase-objectives">
+            <div>
+              <span>Objective</span>
+              <strong>{{ phase.objective || phase.description }}</strong>
+            </div>
+            <div>
+              <span>Expected outcome</span>
+              <strong>{{ phase.expectedOutcome || 'A working implementation that proves the focus skills.' }}</strong>
+            </div>
+            <div>
+              <span>Deliverable</span>
+              <strong>{{ phase.measurableDeliverable || 'A documented repository update or portfolio-ready case study.' }}</strong>
+            </div>
+          </div>
 
           <ul class="phase-skills">
             <li *ngFor="let s of phase.skills">{{ s }}</li>
@@ -506,5 +604,10 @@
     </svg>
     <h3>Enter a GitHub username to analyze skill gaps</h3>
     <p>We'll compare your GitHub activity, resume, and supporting signals to identify missing skills and the right next learning priorities.</p>
+    <div class="empty-hints">
+      <span>Filters malformed skill tokens</span>
+      <span>Explains every recommendation</span>
+      <span>Builds an actionable roadmap</span>
+    </div>
   </div>
 </div>

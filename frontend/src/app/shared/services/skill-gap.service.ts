@@ -16,6 +16,10 @@ export interface SkillEvidence {
   source?: string;
   confidenceScore?: number;
   evidence?: string[];
+  detectionMethod?: string;
+  whyExists?: string;
+  whyItMatters?: string;
+  businessImpact?: string;
 }
 
 export interface CurrentSkill extends SkillEvidence {
@@ -32,6 +36,13 @@ export interface MissingSkill extends SkillEvidence {
   priority: SkillPriority;
   jobDemand: number;
   levelRelevance: 'Current' | 'Next Level' | 'Advanced';
+  learningEffort?: {
+    weeks?: number;
+    label?: string;
+    level?: string;
+  };
+  recommendedResources?: Array<{ title: string; url: string } | string>;
+  suggestedProject?: SuggestedSkillProject;
 }
 
 export type SkillTimelineItem = CurrentSkill | MissingSkill;
@@ -45,6 +56,9 @@ export interface RoadmapPhase {
   resources: Array<{ title: string; url: string } | string>;
   color: 'purple' | 'blue' | 'green' | 'orange';
   topSkill: string;
+  objective?: string;
+  expectedOutcome?: string;
+  measurableDeliverable?: string;
 }
 
 export interface CoverageBreakdown {
@@ -80,6 +94,7 @@ export interface SuggestedSkillProject {
   difficulty?: string;
   estimatedWeeks?: number;
   outcome?: string;
+  deliverable?: string;
 }
 
 export interface SkillGapResult {

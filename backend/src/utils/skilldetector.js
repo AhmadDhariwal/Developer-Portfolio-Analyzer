@@ -5,25 +5,34 @@
 const INDUSTRY_SKILLS = [
   // Frontend
   { name: 'React',        category: 'Frontend',  priority: 'High',   jobDemand: 91, aliases: ['react.js', 'reactjs'] },
+  { name: 'JavaScript',   category: 'Language',  priority: 'High',   jobDemand: 89, aliases: ['js', 'ecmascript', 'es6'] },
   { name: 'TypeScript',   category: 'Language',  priority: 'High',   jobDemand: 88, aliases: ['ts'] },
   { name: 'Next.js',      category: 'Frontend',  priority: 'High',   jobDemand: 76, aliases: ['nextjs', 'next'] },
   { name: 'Angular',      category: 'Frontend',  priority: 'Medium', jobDemand: 62, aliases: [] },
   { name: 'Vue',          category: 'Frontend',  priority: 'Medium', jobDemand: 54, aliases: ['vue.js', 'vuejs'] },
+  { name: 'HTML',         category: 'Frontend',  priority: 'Medium', jobDemand: 63, aliases: ['html5'] },
+  { name: 'CSS',          category: 'Frontend',  priority: 'Medium', jobDemand: 66, aliases: ['css3'] },
   { name: 'Tailwind CSS', category: 'Frontend',  priority: 'Medium', jobDemand: 65, aliases: ['tailwind'] },
+  { name: 'Accessibility', category: 'Frontend', priority: 'Medium', jobDemand: 69, aliases: ['a11y', 'wcag'] },
   // Backend
-  { name: 'Node.js',      category: 'Backend',   priority: 'High',   jobDemand: 84, aliases: ['nodejs', 'node'] },
+  { name: 'Node.js',      category: 'Backend',   priority: 'High',   jobDemand: 84, aliases: ['nodejs', 'node', 'node js'] },
   { name: 'REST APIs',    category: 'Backend',   priority: 'High',   jobDemand: 88, aliases: ['rest', 'restful', 'rest api'] },
   { name: 'GraphQL',      category: 'Backend',   priority: 'Medium', jobDemand: 60, aliases: [] },
   { name: 'Python',       category: 'Language',  priority: 'High',   jobDemand: 82, aliases: [] },
   { name: 'Go',           category: 'Language',  priority: 'Medium', jobDemand: 75, aliases: ['golang'] },
   { name: 'Rust',         category: 'Language',  priority: 'Low',    jobDemand: 56, aliases: [] },
   { name: 'Java',         category: 'Language',  priority: 'Medium', jobDemand: 68, aliases: [] },
+  { name: 'SQL',          category: 'Database',  priority: 'High',   jobDemand: 85, aliases: ['relational sql'] },
   // DevOps / Cloud
   { name: 'Docker',       category: 'DevOps',    priority: 'High',   jobDemand: 87, aliases: ['dockerfile'] },
   { name: 'Kubernetes',   category: 'DevOps',    priority: 'High',   jobDemand: 94, aliases: ['k8s'] },
   { name: 'AWS',          category: 'Cloud',     priority: 'High',   jobDemand: 98, aliases: ['amazon web services'] },
+  { name: 'Cloud Basics', category: 'Cloud',     priority: 'Medium', jobDemand: 72, aliases: ['cloud fundamentals'] },
   { name: 'Terraform',    category: 'DevOps',    priority: 'Medium', jobDemand: 76, aliases: ['hcl'] },
   { name: 'CI/CD',        category: 'DevOps',    priority: 'High',   jobDemand: 83, aliases: ['cicd', 'github actions', 'jenkins', 'gitlab ci'] },
+  { name: 'Deployment',   category: 'DevOps',    priority: 'Medium', jobDemand: 74, aliases: ['deployments', 'release automation'] },
+  { name: 'Monitoring and Observability', category: 'DevOps', priority: 'Medium', jobDemand: 73, aliases: ['observability', 'monitoring'] },
+  { name: 'Linux',        category: 'DevOps',    priority: 'Medium', jobDemand: 68, aliases: ['unix', 'bash'] },
   { name: 'Kafka',        category: 'Backend',   priority: 'Medium', jobDemand: 71, aliases: ['apache kafka'] },
   { name: 'Prometheus',   category: 'DevOps',    priority: 'Low',    jobDemand: 55, aliases: [] },
   // Databases
@@ -33,10 +42,19 @@ const INDUSTRY_SKILLS = [
   // Tools
   { name: 'Git',          category: 'Tools',     priority: 'High',   jobDemand: 97, aliases: [] },
   { name: 'Jest',         category: 'Testing',   priority: 'Medium', jobDemand: 62, aliases: [] },
+  { name: 'Testing',      category: 'Testing',   priority: 'High',   jobDemand: 78, aliases: ['unit testing', 'integration testing', 'test automation'] },
+  { name: 'System Design', category: 'General',  priority: 'High',   jobDemand: 86, aliases: ['distributed systems design'] },
+  { name: 'Security Basics', category: 'General', priority: 'High',  jobDemand: 82, aliases: ['web security', 'owasp'] },
+  { name: 'Performance Optimization', category: 'General', priority: 'Medium', jobDemand: 76, aliases: ['performance tuning'] },
+  { name: 'Design Patterns', category: 'General', priority: 'Medium', jobDemand: 67, aliases: ['software design patterns'] },
+  { name: 'API Versioning', category: 'Backend', priority: 'Medium', jobDemand: 61, aliases: ['api compatibility'] },
+  { name: 'Caching Strategies', category: 'Backend', priority: 'Medium', jobDemand: 70, aliases: ['cache design', 'caching'] },
+  { name: 'Documentation', category: 'General', priority: 'Medium', jobDemand: 58, aliases: ['technical writing', 'docs'] },
   // Additional languages — recognised so they show up as "current skills"
   { name: 'C',            category: 'Language',  priority: 'Medium', jobDemand: 60, aliases: [] },
   { name: 'C++',          category: 'Language',  priority: 'Medium', jobDemand: 63, aliases: ['cpp'] },
   { name: 'C#',           category: 'Language',  priority: 'Medium', jobDemand: 65, aliases: ['csharp', 'dotnet', '.net'] },
+  { name: 'Dart',         category: 'Language',  priority: 'Low',    jobDemand: 42, aliases: [] },
   { name: 'Ruby',         category: 'Language',  priority: 'Low',    jobDemand: 48, aliases: ['ruby on rails', 'rails'] },
   { name: 'Swift',        category: 'Language',  priority: 'Low',    jobDemand: 52, aliases: [] },
   { name: 'Kotlin',       category: 'Language',  priority: 'Low',    jobDemand: 55, aliases: [] },
@@ -51,7 +69,7 @@ const INDUSTRY_SKILLS = [
  */
 const LANGUAGE_TO_SKILL = {
   'TypeScript':  'TypeScript',
-  'JavaScript':  'Node.js',
+  'JavaScript':  'JavaScript',
   'Python':      'Python',
   'Go':          'Go',
   'Rust':        'Rust',
@@ -66,8 +84,8 @@ const LANGUAGE_TO_SKILL = {
   'Scala':       'Scala',
   'Dart':        'Dart',
   'Assembly':    'Assembly',
-  'CSS':         'Tailwind CSS',
-  'HTML':        'React',   // HTML repos are usually frontend
+  'CSS':         'CSS',
+  'HTML':        'HTML',
   'Shell':       'CI/CD',
   'Dockerfile':  'Docker',
   'HCL':         'Terraform',
@@ -125,15 +143,23 @@ const uniqueStrings = (values = []) => {
 const canonicalizeSkillName = (value = '') => {
   const raw = String(value || '').trim();
   if (!raw) return '';
-  return SKILL_ALIAS_LOOKUP.get(normalizeKey(raw)) || raw;
+  return SKILL_ALIAS_LOOKUP.get(normalizeKey(raw)) || '';
 };
+
+const isRecognizedSkill = (value = '') => Boolean(canonicalizeSkillName(value));
+
+const normalizeSkillList = (values = []) => uniqueStrings(
+  (Array.isArray(values) ? values : [values])
+    .map((value) => canonicalizeSkillName(value))
+    .filter(Boolean)
+);
 
 /**
  * Given a list of skill names (strings), return which INDUSTRY_SKILLS are present vs missing.
  * Returns { currentSkills, missingSkills } — both typed as INDUSTRY_SKILLS entries.
  */
 const detectSkillGaps = (currentSkillNames = []) => {
-  const lowerNames = currentSkillNames.map(s => s.toLowerCase());
+  const lowerNames = normalizeSkillList(currentSkillNames).map(s => s.toLowerCase());
 
   const matched = [];
   const missing  = [];
@@ -200,6 +226,8 @@ module.exports = {
   extractSkillsFromText,
   extractSkillsFromRepositories,
   canonicalizeSkillName,
+  isRecognizedSkill,
+  normalizeSkillList,
   INDUSTRY_SKILLS,
   LANGUAGE_TO_SKILL
 };

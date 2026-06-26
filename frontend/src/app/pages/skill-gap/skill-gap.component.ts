@@ -275,6 +275,48 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     return Array.isArray(skill.evidence) ? skill.evidence.slice(0, 3) : [];
   }
 
+  getPrimaryEvidence(skill: CurrentSkill | MissingSkill): string {
+    return this.getSkillEvidence(skill)[0] || `${skill.name} is supported by the current analysis signals.`;
+  }
+
+  getDetectionMethod(skill: CurrentSkill | MissingSkill): string {
+    const source = String(skill.detectionMethod || skill.source || '').trim();
+    return source || ('jobDemand' in skill ? 'Career Profile' : 'Developer Evidence');
+  }
+
+  getSkillExplanation(skill: CurrentSkill | MissingSkill, kind: 'current' | 'missing'): string {
+    if (skill.whyItMatters) return skill.whyItMatters;
+    if (kind === 'current') {
+      return `${skill.name} is shown because it was recognized in your evidence, not inferred from free-form text alone.`;
+    }
+    const demand = 'jobDemand' in skill ? Number(skill.jobDemand || 0) : 0;
+    if (demand >= 80) return `${skill.name} matters because it is a high-demand capability for your target path.`;
+    if ((skill.confidenceScore || 0) >= 70) return `${skill.name} matters because multiple signals point to it as a practical next gap.`;
+    return `${skill.name} is lower priority until stronger market or profile evidence raises it.`;
+  }
+
+  getSkillReason(skill: CurrentSkill | MissingSkill): string {
+    return skill.whyExists || this.getPrimaryEvidence(skill);
+  }
+
+  getBusinessImpact(skill: CurrentSkill | MissingSkill): string {
+    return skill.businessImpact || skill.whyItMatters || this.getSkillExplanation(skill, 'jobDemand' in skill ? 'missing' : 'current');
+  }
+
+  getLearningEffort(skill: MissingSkill): string {
+    return skill.learningEffort?.label || '2 focused weeks';
+  }
+
+  getSkillResources(skill: MissingSkill): Array<{ title: string; url: string } | string> {
+    return Array.isArray(skill.recommendedResources) ? skill.recommendedResources.slice(0, 2) : [];
+  }
+
+  get topActionSkill(): string {
+    return this.result?.immediateSkills?.[0]?.name
+      || this.result?.missingSkills?.[0]?.name
+      || 'your top skill gap';
+  }
+
   get analysisLastUpdatedLabel(): string {
     const value = this.result?.analysisBasedOn?.lastAnalyzedAt;
     if (!value) return 'Not available';

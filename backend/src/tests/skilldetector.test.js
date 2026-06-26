@@ -12,6 +12,12 @@ test('canonicalizeSkillName resolves aliases to a shared skill name', () => {
   assert.equal(canonicalizeSkillName('Dockerfile'), 'Docker');
 });
 
+test('canonicalizeSkillName rejects malformed or non-skill tokens', () => {
+  assert.equal(canonicalizeSkillName('O2'), '');
+  assert.equal(canonicalizeSkillName('highly motivated'), '');
+  assert.equal(canonicalizeSkillName(''), '');
+});
+
 test('extractSkillsFromText detects common technology mentions', () => {
   const skills = extractSkillsFromText([
     'Built an Angular dashboard with TypeScript and CI/CD.',
