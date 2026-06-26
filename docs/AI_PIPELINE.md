@@ -148,6 +148,8 @@ Reusable prompt compaction helpers live in `backend/src/services/promptBuilderSe
 - Build compact prompt context only when AI is required.
 - Avoid raw objects, duplicate text, and repeated evidence.
 
+Skill Gap uses `SKILL_GAP_AI_THRESHOLD` to decide whether deterministic confidence is sufficient. The default is `70`. Prompt construction remains behind the result-cache miss and AI execution gate, so cached and deterministic-skip requests do not build prompts.
+
 ## JSON Extraction And Repair
 
 `aiservice.extractJson()`:
@@ -198,7 +200,7 @@ Provider-manager logs are structured JSON strings prefixed with `[AIProviderMana
 - `provider_error`
 - `retry_scheduled`
 
-Skill Gap request-stage logs are prefixed with `[SkillGapPipeline]` and include cache hit/miss, prompt generation size, AI skipped, stage timings, response size, and total request duration. AIService benchmark metrics include total AI request time, AI provider latency, Redis latency, prompt size, estimated tokens, cache hit/miss ratio, deterministic skip ratio, provider used, failover, and retry reasons.
+Skill Gap request-stage logs are prefixed with `[SkillGapPipeline]` and include cache hit/miss, GitHub cache status, stale cache served, GitHub refresh queued, prompt generation size, AI skipped, AI executed, stage timings, response size, and total request duration. GitHub SWR refresh logs are prefixed with `[GitHubSWR]` and include refresh started, refresh deduped, refresh completed, refresh failed, refresh duration, and TTL-index migration status. AIService benchmark metrics include total AI request time, AI provider latency, Redis latency, prompt size, estimated tokens, cache hit/miss ratio, deterministic skip ratio, provider used, failover, and retry reasons.
 
 ## Benchmark Utility
 

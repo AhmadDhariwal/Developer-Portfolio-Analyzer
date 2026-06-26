@@ -55,6 +55,7 @@ const analysisCacheSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 analysisCacheSchema.index({
+    userId: 1,
     githubUsername: 1,
     careerStack: 1,
     experienceLevel: 1,

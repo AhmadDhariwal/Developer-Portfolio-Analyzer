@@ -7,6 +7,8 @@ const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const ANALYSIS_VERSION = 'github-v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
+const refreshJobs = new Map();
+let swrIndexChecked = false;
 const SUPPORT_LANGUAGES = new Set([
   'HTML',
   'CSS',
@@ -669,6 +671,22 @@ const getCacheEntry = async (username) => {
     .lean();
 };
 
+const ensureSWRCacheIndex = async () => {
+  if (swrIndexChecked) return;
+  swrIndexChecked = true;
+  try {
+    const indexes = await GitHubAnalysisCache.collection.indexes();
+    const ttlIndex = indexes.find((index) => index.key?.expiresAt === 1 && Number.isFinite(index.expireAfterSeconds));
+    if (ttlIndex?.name) {
+      await GitHubAnalysisCache.collection.dropIndex(ttlIndex.name);
+      await GitHubAnalysisCache.collection.createIndex({ expiresAt: 1 });
+      console.log('[GitHubSWR]', JSON.stringify({ event: 'ttl_index_replaced', indexName: ttlIndex.name }));
+    }
+  } catch (error) {
+    console.warn('[GitHubSWR]', JSON.stringify({ event: 'ttl_index_check_failed', error: error.message }));
+  }
+};
+
 const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   const snapshots = Array.isArray(cacheEntry?.snapshots) ? cacheEntry.snapshots : [];
   return {
@@ -682,6 +700,38 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
     },
     analysisHistory: snapshots.slice(-6),
     comparison: result.comparison || compareSnapshots(snapshots[snapshots.length - 2], snapshots[snapshots.length - 1])
+  };
+};
+
+const getCachedGitHubAnalysis = async (username, { allowStale = true } = {}) => {
+  await ensureSWRCacheIndex();
+  const cacheEntry = await getCacheEntry(username);
+  const now = Date.now();
+  const expiresAtMs = cacheEntry?.expiresAt ? new Date(cacheEntry.expiresAt).getTime() : 0;
+  const isFresh = Boolean(cacheEntry?.result && expiresAtMs > now);
+  const isStale = Boolean(cacheEntry?.result && !isFresh);
+  const ageMs = cacheEntry?.updatedAt ? Math.max(0, now - new Date(cacheEntry.updatedAt).getTime()) : null;
+
+  if (cacheEntry?.result && (isFresh || allowStale)) {
+    return {
+      data: withCacheMetadata(cacheEntry.result, cacheEntry, isFresh ? 'cache' : 'stale-cache'),
+      cacheEntry,
+      status: isFresh ? 'fresh' : 'stale',
+      isFresh,
+      isStale,
+      ageMs,
+      expiresAt: cacheEntry.expiresAt || null
+    };
+  }
+
+  return {
+    data: null,
+    cacheEntry,
+    status: cacheEntry?.result ? 'stale_disallowed' : 'miss',
+    isFresh: false,
+    isStale,
+    ageMs,
+    expiresAt: cacheEntry?.expiresAt || null
   };
 };
 
@@ -1072,9 +1122,64 @@ const analyzeGitHubProfile = async (username, options = {}) => {
   }
 };
 
+const refreshGitHubAnalysisInBackground = (username, options = {}) => {
+  const trimmedUsername = String(username || '').trim().replace(/^@/, '');
+  const normalizedUsername = normalizeUsername(trimmedUsername);
+  if (!normalizedUsername) {
+    return { queued: false, running: false, reason: 'missing_username' };
+  }
+
+  const existing = refreshJobs.get(normalizedUsername);
+  if (existing) {
+    console.log('[GitHubSWR]', JSON.stringify({ event: 'refresh_deduped', username: trimmedUsername }));
+    return { queued: false, running: true, reason: 'already_running' };
+  }
+
+  const startedAt = Date.now();
+  console.log('[GitHubSWR]', JSON.stringify({
+    event: 'refresh_started',
+    username: trimmedUsername,
+    reason: options.reason || 'stale_cache'
+  }));
+
+  const job = (async () => {
+    try {
+      await ensureSWRCacheIndex();
+      const previousEntry = await getCacheEntry(trimmedUsername);
+      const fresh = await buildFreshAnalysis(trimmedUsername);
+      await saveCacheResult(trimmedUsername, fresh, previousEntry);
+      console.log('[GitHubSWR]', JSON.stringify({
+        event: 'refresh_completed',
+        username: trimmedUsername,
+        durationMs: Date.now() - startedAt
+      }));
+    } catch (error) {
+      console.warn('[GitHubSWR]', JSON.stringify({
+        event: 'refresh_failed',
+        username: trimmedUsername,
+        durationMs: Date.now() - startedAt,
+        error: error.message
+      }));
+    } finally {
+      refreshJobs.delete(normalizedUsername);
+    }
+  })();
+
+  refreshJobs.set(normalizedUsername, job);
+  return { queued: true, running: false, reason: 'queued' };
+};
+
+const getGitHubRefreshState = () => ({
+  running: refreshJobs.size,
+  usernames: Array.from(refreshJobs.keys())
+});
+
 module.exports = {
   ANALYSIS_VERSION,
   analyzeGitHubProfile,
+  getCachedGitHubAnalysis,
+  refreshGitHubAnalysisInBackground,
+  getGitHubRefreshState,
   fetchGitHubUser,
   fetchGitHubRepos,
   fetchMonthlyCommitActivity,

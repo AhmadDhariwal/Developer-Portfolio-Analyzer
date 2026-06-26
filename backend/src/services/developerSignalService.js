@@ -795,17 +795,21 @@ const summarizeSkillGapSignal = async (userId) => {
   };
 };
 
-const getDeveloperSignals = async (userId) => {
+const getDeveloperSignals = async (userId, overrides = {}) => {
+  const githubSignalOverride = overrides.githubSignals || overrides.githubSignal || null;
+  const resumeSignalOverride = overrides.resumeSignals || overrides.resumeSignal || null;
+  const careerProfileSignalOverride = overrides.careerProfileSignal || overrides.careerProfile || null;
+
   if (!userId) {
     const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
-      summarizeGithubSignal(null),
-      summarizeResumeSignal(null),
+      githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(null),
+      resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(null),
       summarizeSkillGapSignal(null),
       summarizeCareerSprintSignal(null),
       summarizeWeeklyReportSignal(null),
       summarizePortfolioSignal(null),
       summarizeIntegrationSignal(null),
-      summarizeCareerProfileSignal(null),
+      careerProfileSignalOverride ? Promise.resolve(careerProfileSignalOverride) : summarizeCareerProfileSignal(null),
       summarizeJobsDemandSignal(),
       summarizeRecommendationSignal(null),
       summarizeScenarioSimulatorSignal(null)
@@ -834,14 +838,14 @@ const getDeveloperSignals = async (userId) => {
   }
 
   const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
-    summarizeGithubSignal(userId),
-    summarizeResumeSignal(userId),
+    githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(userId),
+    resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(userId),
     summarizeSkillGapSignal(userId),
     summarizeCareerSprintSignal(userId),
     summarizeWeeklyReportSignal(userId),
     summarizePortfolioSignal(userId),
     summarizeIntegrationSignal(userId),
-    summarizeCareerProfileSignal(userId),
+    careerProfileSignalOverride ? Promise.resolve(careerProfileSignalOverride) : summarizeCareerProfileSignal(userId),
     summarizeJobsDemandSignal(),
     summarizeRecommendationSignal(userId),
     summarizeScenarioSimulatorSignal(userId)

@@ -189,8 +189,10 @@ Every domain follows: **Route → Controller → Service → Model** with `aiser
 
 5. **Compact Prompt Boundary**: AI features must summarize repositories, resumes, reports, sprint state, job demand, and developer signals through `promptBuilderService.js` before calling the provider manager. Raw provider routing and retry logic stays centralized.
 
-6. **RBAC via Middleware**: Role checks happen in `authmiddleware.js` after JWT verification. Super admin gets global bypass.
+6. **Skill Gap Stale-While-Revalidate**: Skill Gap checks its result cache before GitHub reads, signal aggregation, prompt construction, or AI execution. On cache miss it serves cached GitHub analysis immediately, including stale rows, and queues one background refresh per GitHub username. GitHub refresh failures do not fail Skill Gap requests.
 
-7. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
+7. **RBAC via Middleware**: Role checks happen in `authmiddleware.js` after JWT verification. Super admin gets global bypass.
 
-8. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().
+8. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
+
+9. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().

@@ -81,6 +81,12 @@ const cspImageSources = [
 ];
 
 // Middleware
+app.use((req, _res, next) => {
+  if (req.method === 'POST' && String(req.originalUrl || req.url || '').startsWith('/api/skillgap/skill-gap')) {
+    req.skillGapHttpStartedAt = Date.now();
+  }
+  next();
+});
 app.use(helmet({
     contentSecurityPolicy: {
         useDefaults: true,

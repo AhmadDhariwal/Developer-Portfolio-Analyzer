@@ -62,6 +62,22 @@ This cache does not replace `AnalysisCache`. It only avoids repeated determinist
 
 Skill Gap records deterministic AI skips through `AIService.recordDeterministicSkip('skill_gap')`, which lets the AI benchmark report how often production requests avoid provider calls.
 
+### Skill Gap Result Cache
+
+**Location**: `backend/src/controllers/skillgapcontroller.js` using `AIService.getSharedCache()`
+
+| Property | Value |
+|---|---|
+| Key | `skill_gap:result:<sha256(username, stack, level, resume identity, stable profile/cache signal, analysisVersion)>` |
+| Value | Full Skill Gap response payload plus cache timestamp |
+| Scope | Redis shared cache, with process-memory fallback |
+| TTL | 15 minutes |
+| Purpose | Return repeated same-identity requests before Mongo cache lookup, GitHub analysis, prompt building, or AI execution |
+
+`forceRefresh=true` bypasses this cache for the current request.
+
+Skill Gap checks this result cache before GitHub cache reads, developer signal aggregation, skill detection, prompt construction, or AI calls. The stable cache signal intentionally excludes prior Skill Gap output so saving a Skill Gap result does not invalidate the next identical request.
+
 ## Layer 2: Redis Cache
 
 **Location**: `services/redisCacheService.js`
@@ -87,15 +103,19 @@ Skill Gap records deterministic AI skips through `AIService.recordDeterministicS
 | `analysisVersion` | Version-based invalidation |
 | `result` | Full analysis payload |
 | `snapshots` | Up to 12 historical snapshots |
-| `expiresAt` | TTL (24 hours) |
+| `expiresAt` | Application freshness deadline (24 hours) |
 
 **Flow**:
-1. `githubservice.js` checks `GitHubAnalysisCache` before fetching from GitHub
-2. If cache hit and not expired: return with `source: 'cache'`
-3. If cache miss/expired: fetch fresh, upsert cache, return
+1. `githubservice.js` checks `GitHubAnalysisCache` before fetching from GitHub.
+2. GitHub Analyzer can still request fresh analysis when needed.
+3. Skill Gap uses Stale-While-Revalidate: fresh rows return with `source: 'cache'`; expired rows return with `source: 'stale-cache'` and queue a background refresh.
+4. If Skill Gap has no GitHub cache row, it returns a safe empty GitHub signal and queues a background refresh instead of blocking the request.
+5. Background refreshes are locked by normalized GitHub username in-process so duplicate requests do not start duplicate refresh jobs.
 
-**TTL**: 24 hours (configurable via `CACHE_TTL_MS` in githubservice.js)
+**Freshness TTL**: 24 hours (configurable via `CACHE_TTL_MS` in githubservice.js)
 **Force refresh**: `?forceRefresh=true` bypasses cache
+
+The cache keeps stale rows for SWR. The service checks for older Mongo TTL indexes on `expiresAt` and replaces them with a normal index so stale rows are not deleted by MongoDB before they can be served.
 
 ### Job Cache
 **Model**: `models/jobCache.js`
@@ -109,7 +129,7 @@ Cached job listing results from JSearch, Jooble, Adzuna.
 
 General-purpose analysis result cache for non-GitHub analyses.
 
-Skill Gap uses `AnalysisCache` with `githubUsername`, `careerStack`, `experienceLevel`, `resumeHash`, `resumeAnalysisId`, `signalHash`, and `analysisVersion`. A normal request checks this cache before building an AI prompt. `forceRefresh=true` bypasses the cached result once and repopulates it after fresh analysis.
+Skill Gap uses `AnalysisCache` with `githubUsername`, `careerStack`, `experienceLevel`, `resumeHash`, `resumeAnalysisId`, `signalHash`, and `analysisVersion`. A normal request checks this cache before GitHub SWR reads, developer signal aggregation, skill detection, or AI prompt building. `forceRefresh=true` bypasses the cached result once and repopulates it after fresh analysis.
 
 Prompt generation happens after this cache lookup and after deterministic confidence is evaluated. If the backend cache hits or deterministic confidence is sufficient, Skill Gap does not build an AI prompt and does not call a provider.
 

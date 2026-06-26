@@ -1,5 +1,8 @@
 const crypto = require('node:crypto');
-const { analyzeGitHubProfile } = require('../services/githubservice');
+const {
+  getCachedGitHubAnalysis,
+  refreshGitHubAnalysisInBackground
+} = require('../services/githubservice');
 const aiService = require('../services/aiservice');
 const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
 const AnalysisCache = require('../models/analysisCache');
@@ -30,7 +33,11 @@ const {
 const ANALYSIS_VERSION = 'v6-skill-intelligence';
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
-const DETERMINISTIC_CONFIDENCE_THRESHOLD = 70;
+const DETERMINISTIC_CONFIDENCE_THRESHOLD = Math.min(
+  100,
+  Math.max(0, Number.parseInt(process.env.SKILL_GAP_AI_THRESHOLD || '70', 10) || 70)
+);
+const inflightSkillGapRequests = new Map();
 
 const DEFAULT_MISSING_SKILLS = [
   'Testing',
@@ -525,9 +532,17 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
   }
 };
 
-const loadResumeAnalysis = async (userId) => {
+const queueAIVersionSnapshot = (payload) => {
+  const startedAt = Date.now();
+  setImmediate(() => {
+    saveAIVersionSnapshot(payload)
+      .then(() => logSkillGapPipeline('version_snapshot_saved', { durationMs: Date.now() - startedAt }))
+      .catch((error) => logSkillGapPipeline('version_snapshot_failed', { message: error.message }, 'warn'));
+  });
+};
+
+const loadResumeAnalysis = async (userId, userContext = null) => {
   if (!userId) return null;
-  const userContext = await User.findById(userId).select('defaultResumeFileId').lean();
   const defaultResumeFileId = userContext?.defaultResumeFileId || null;
   if (defaultResumeFileId) {
     const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
@@ -539,10 +554,54 @@ const loadResumeAnalysis = async (userId) => {
 };
 
 const getGitHubData = async (username) => {
+  const startedAt = Date.now();
   try {
-    return await analyzeGitHubProfile(String(username || '').trim());
+    const normalizedUsername = String(username || '').trim();
+    const cached = await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true });
+    const shouldRefresh = cached.status !== 'fresh';
+    let refreshState = { queued: false, running: false, reason: 'fresh' };
+
+    if (shouldRefresh) {
+      refreshState = refreshGitHubAnalysisInBackground(normalizedUsername, {
+        reason: cached.status === 'stale' ? 'stale_cache' : 'cache_miss'
+      });
+    }
+
+    console.log('[SkillGapPipeline]', JSON.stringify({
+      event: 'github_cache_status',
+      username: normalizedUsername,
+      status: cached.status,
+      staleServed: cached.status === 'stale',
+      cacheAgeMs: cached.ageMs,
+      refreshQueued: Boolean(refreshState.queued),
+      refreshAlreadyRunning: Boolean(refreshState.running),
+      durationMs: Date.now() - startedAt
+    }));
+
+    if (cached.data) return cached.data;
+
+    return {
+      repoCount: 0,
+      developerLevel: 'Unknown',
+      strengths: [],
+      weakAreas: ['GitHub analysis is being refreshed in the background.'],
+      scores: {},
+      languageDistribution: [],
+      repositories: [],
+      cache: {
+        source: 'miss-background-refresh',
+        hit: false,
+        expiresAt: null,
+        cachedAt: null
+      }
+    };
   } catch (error) {
-    console.warn('Skill gap GitHub fallback:', error.message);
+    console.warn('[SkillGapPipeline]', JSON.stringify({
+      event: 'github_swr_fallback',
+      username: String(username || '').trim(),
+      error: error.message,
+      durationMs: Date.now() - startedAt
+    }));
     return {
       repoCount: 0,
       developerLevel: 'Unknown',
@@ -556,13 +615,74 @@ const getGitHubData = async (username) => {
 };
 
 const buildGithubInsights = (githubData = {}) => ({
+  present: Boolean(githubData?.repoCount || (githubData?.repositories || []).length),
+  username: String(githubData?.githubSignals?.username || '').trim(),
   repoCount: githubData?.repoCount || 0,
   developerLevel: githubData?.developerLevel || '',
   strengths: githubData?.strengths || [],
   weakAreas: githubData?.weakAreas || [],
   languageDistribution: githubData?.languageDistribution || [],
   repositories: githubData?.repositories || [],
-  scores: githubData?.scores || {}
+  technologies: githubData?.technologies || githubData?.githubSignals?.technologies || [],
+  technologyCategories: githubData?.technologyCategories || githubData?.githubSignals?.technologyCategories || {},
+  scores: githubData?.scores || {},
+  recruiterInsights: githubData?.recruiterInsights || githubData?.githubSignals?.recruiterInsights || {},
+  updatedAt: githubData?.cache?.cachedAt || githubData?.githubSignals?.analyzedAt || null
+});
+
+const buildCompactGithubStats = (githubData = {}) => ({
+  repoCount: Number(githubData?.repoCount || 0),
+  repos: Number(githubData?.repoCount || 0),
+  totalStars: Number(githubData?.totalStars || 0),
+  stars: Number(githubData?.totalStars || 0),
+  totalForks: Number(githubData?.totalForks || 0),
+  forks: Number(githubData?.totalForks || 0),
+  followers: Number(githubData?.followers || 0),
+  developerLevel: String(githubData?.developerLevel || '').trim(),
+  githubHealthScore: Number(githubData?.githubHealthScore || githubData?.activityScore || githubData?.scores?.healthScore || 0),
+  activityScore: Number(githubData?.activityScore || githubData?.githubHealthScore || githubData?.scores?.healthScore || 0),
+  languageDistribution: Array.isArray(githubData?.languageDistribution) ? githubData.languageDistribution.slice(0, 12) : [],
+  mainLanguageDistribution: Array.isArray(githubData?.mainLanguageDistribution) ? githubData.mainLanguageDistribution.slice(0, 8) : [],
+  technologies: Array.isArray(githubData?.technologies) ? githubData.technologies.slice(0, 18) : [],
+  strengths: Array.isArray(githubData?.strengths) ? githubData.strengths.slice(0, 8) : [],
+  weakAreas: Array.isArray(githubData?.weakAreas) ? githubData.weakAreas.slice(0, 8) : [],
+  cache: githubData?.cache || null
+});
+
+const buildSkillGapCacheSignalHash = ({
+  username = '',
+  careerStack = '',
+  experienceLevel = '',
+  resumeCacheIdentity = {},
+  githubData = {},
+  user = {}
+} = {}) => crypto
+  .createHash('sha256')
+  .update(JSON.stringify({
+    username: String(username || '').trim().toLowerCase(),
+    careerStack,
+    experienceLevel,
+    resumeHash: resumeCacheIdentity.resumeHash || 'no-resume',
+    resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId || 'no-resume',
+    githubCachedAt: githubData?.cache?.cachedAt || null,
+    githubExpiresAt: githubData?.cache?.expiresAt || null,
+    profileUpdatedAt: user?.updatedAt || null,
+    analysisVersion: ANALYSIS_VERSION
+  }))
+  .digest('hex');
+
+const buildCareerProfileSignalFromUser = (user = {}) => ({
+  present: Boolean(user?._id),
+  careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
+  experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+  activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
+  activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+  careerGoal: String(user?.careerGoal || '').trim(),
+  targetTimeline: String(user?.targetTimeline || '').trim(),
+  learningPreference: String(user?.learningPreference || '').trim(),
+  githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+  activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+  updatedAt: user?.updatedAt || null
 });
 
 const getExpectedSkills = (careerStack = 'Full Stack', experienceLevel = 'Student') => uniqueSkillNames([
@@ -601,7 +721,7 @@ const emptySignals = {
   jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [], updatedAt: null }
 };
 
-const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, githubInsights }) => {
+const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, githubInsights, careerProfileSignal }) => {
   if (!userId) {
     return {
       developerSignals: emptySignals,
@@ -611,7 +731,11 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
   }
 
   try {
-    const developerSignals = await getDeveloperSignals(userId);
+    const developerSignals = await getDeveloperSignals(userId, {
+      resumeSignals: resumeInsights,
+      githubSignals: githubInsights,
+      careerProfileSignal
+    });
     return {
       developerSignals,
       signalHash: buildSignalHash(developerSignals),
@@ -948,9 +1072,73 @@ const createStageTimer = () => {
       stages[name] = Date.now() - stageStartedAt;
     },
     snapshot() {
-      return { ...stages, totalMs: Date.now() - startedAt };
+      const dbQueryMs = [
+        'storedResumeFetchMs',
+        'resumeFetchMs',
+        'signalAggregationMs',
+        'redisResultCacheLookupMs',
+        'cacheLookupMs',
+        'deterministicCacheLookupMs',
+        'deterministicCacheWriteMs',
+        'redisResultCacheWriteMs',
+        'cacheWriteMs'
+      ].reduce((sum, key) => sum + Number(stages[key] || 0), 0);
+      const aiPipelineMs = Number(stages.promptGenerationMs || 0) + Number(stages.aiResponseMs || 0);
+      return { ...stages, dbQueryMs, aiPipelineMs, totalMs: Date.now() - startedAt };
     }
   };
+};
+
+const buildSkillGapTimingSnapshot = (timer, req) => {
+  const snapshot = timer.snapshot();
+  const httpStartedAt = Number(req?.skillGapHttpStartedAt || 0);
+  const routeStartedAt = Number(req?.skillGapRouteStartedAt || 0);
+  const authCompletedAt = Number(req?.skillGapAuthCompletedAt || 0);
+  if (httpStartedAt > 0 && routeStartedAt >= httpStartedAt) {
+    snapshot.appMiddlewareMs = Math.max(0, routeStartedAt - httpStartedAt);
+  }
+  if (routeStartedAt > 0) {
+    snapshot.routeToControllerMs = Math.max(0, Date.now() - routeStartedAt - snapshot.totalMs);
+  }
+  if (routeStartedAt > 0 && authCompletedAt >= routeStartedAt) {
+    snapshot.authAndRouteMs = Math.max(0, authCompletedAt - routeStartedAt);
+  }
+  return snapshot;
+};
+
+const buildInflightRequestKey = ({ userId, username, careerStack, experienceLevel, resumeText, forceRefresh, isTemporaryMode }) => crypto
+  .createHash('sha256')
+  .update(JSON.stringify({
+    userId: userId ? String(userId) : 'anonymous',
+    username: String(username || '').trim().toLowerCase(),
+    careerStack,
+    experienceLevel,
+    resumeTextHash: resumeText ? crypto.createHash('sha256').update(String(resumeText)).digest('hex') : 'no-inline-resume',
+    forceRefresh: Boolean(forceRefresh),
+    isTemporaryMode: Boolean(isTemporaryMode),
+    analysisVersion: ANALYSIS_VERSION
+  }))
+  .digest('hex');
+
+const createInflightDeferred = () => {
+  let resolve;
+  let reject;
+  const promise = new Promise((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  promise.catch(() => {});
+  return { promise, resolve, reject };
+};
+
+const completeInflightRequest = (key, deferred, payload, status = 200) => {
+  if (deferred) deferred.resolve({ payload, status });
+  if (key) inflightSkillGapRequests.delete(key);
+};
+
+const failInflightRequest = (key, deferred, error) => {
+  if (deferred) deferred.reject(error);
+  if (key) inflightSkillGapRequests.delete(key);
 };
 
 /**
@@ -960,6 +1148,8 @@ const createStageTimer = () => {
 const analyzeSkillGap = async (req, res) => {
   const timer = createStageTimer();
   let usernameForLog = req.body?.username || '';
+  let inflightKey = '';
+  let inflightDeferred = null;
   try {
     let { username, resumeText } = req.body;
     const forceRefresh = req.body?.forceRefresh === true || req.body?.forceRefresh === 'true';
@@ -978,49 +1168,51 @@ const analyzeSkillGap = async (req, res) => {
       return res.status(400).json({ message: 'Username is required.' });
     }
 
-    const storedResumePromise = (!resumeText && req.user?._id)
-      ? timer.time('storedResumeFetchMs', () => Analysis.findOne({ userId: req.user._id }).select('resumeText').lean())
-      : Promise.resolve(null);
-
-    const [githubData, latestResumeAnalysis, storedResumeAnalysis] = await Promise.all([
-      timer.time('githubFetchMs', () => getGitHubData(username.trim())),
-      timer.time('resumeFetchMs', () => loadResumeAnalysis(req.user?._id || null)),
-      storedResumePromise
-    ]);
-    if (!resumeText && storedResumeAnalysis?.resumeText) {
-      resumeText = storedResumeAnalysis.resumeText;
+    inflightKey = buildInflightRequestKey({
+      userId: req.user?._id || null,
+      username,
+      careerStack,
+      experienceLevel,
+      resumeText,
+      forceRefresh,
+      isTemporaryMode
+    });
+    const existingInflight = inflightSkillGapRequests.get(inflightKey);
+    if (existingInflight) {
+      logSkillGapPipeline('inflight_deduped', {
+        username,
+        forceRefresh,
+        waiters: existingInflight.waiters + 1,
+        ageMs: Date.now() - existingInflight.startedAt
+      });
+      existingInflight.waiters += 1;
+      const completed = await existingInflight.deferred.promise;
+      return res.status(completed.status || 200).json(completed.payload);
     }
+
+    inflightDeferred = createInflightDeferred();
+    inflightSkillGapRequests.set(inflightKey, {
+      deferred: inflightDeferred,
+      startedAt: Date.now(),
+      waiters: 0
+    });
+
+    const userContext = req.user || {};
+    const latestResumeAnalysis = await timer.time('resumeFetchMs', () => loadResumeAnalysis(req.user?._id || null, userContext));
 
     const cleanResume = String(resumeText || '').trim();
     const resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
-    const githubInsights = buildGithubInsights(githubData);
     const resumeCacheIdentity = buildResumeCacheIdentity({
       resumeText: cleanResume,
       resumeAnalysis: latestResumeAnalysis
     });
-    const { developerSignals, signalHash, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
-      userId: req.user?._id || null,
+    const signalHash = buildSkillGapCacheSignalHash({
       username,
-      resumeInsights,
-      githubInsights
-    }));
-    const skillDetectionStartedAt = Date.now();
-    const evidenceBreakdown = buildSkillEvidenceBreakdown({
-      resumeInsights,
-      githubData,
       careerStack,
-      experienceLevel
+      experienceLevel,
+      resumeCacheIdentity,
+      user: req.user || {}
     });
-    timer.mark('skillDetectionMs', skillDetectionStartedAt);
-
-    const deterministicConfidence = computeDeterministicConfidence({
-      evidenceBreakdown,
-      resumeInsights,
-      githubData,
-      developerSignals
-    });
-    const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
-
     const cacheKey = {
       githubUsername: username,
       careerStack,
@@ -1034,10 +1226,67 @@ const analyzeSkillGap = async (req, res) => {
     const scopedCacheKey = req.user?._id && !isTemporaryMode
       ? { userId: req.user._id, githubUsername: username, careerStack, experienceLevel, resumeHash: resumeCacheIdentity.resumeHash, resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId, signalHash, analysisVersion: ANALYSIS_VERSION }
       : null;
+    const resultCacheKey = scopedCacheKey
+      ? crypto.createHash('sha256').update(JSON.stringify(cacheKey)).digest('hex')
+      : '';
+    const sharedCached = await timer.time('redisResultCacheLookupMs', () => (
+      resultCacheKey && !forceRefresh ? aiService.getSharedCache(resultCacheKey, 'skill_gap:result') : Promise.resolve(null)
+    ));
+    if (sharedCached?.analysisData) {
+      const cachedDeterministicConfidence = sharedCached.analysisData.deterministicConfidence || 0;
+      const cachedResult = {
+        ...sharedCached.analysisData,
+        analysisBasedOn: buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights
+        }),
+        resumeStatusMessage: sharedCached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+        fromCache: true,
+        aiUsed: Boolean(sharedCached.analysisData.aiUsed),
+        deterministicConfidence: cachedDeterministicConfidence,
+        cacheMetadata: {
+          ...(sharedCached.analysisData.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheLayer: 'redis_or_memory',
+          cacheKey,
+          cachedAt: sharedCached.updatedAt || null
+        }
+      };
+      queueAIVersionSnapshot({
+        req,
+        source: 'skill_gap',
+        output: cachedResult,
+        metadata: {
+          fromCache: true,
+          cacheLayer: 'redis_or_memory',
+          username,
+          careerStack,
+          experienceLevel,
+          signalHash,
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+        }
+      });
+      const serializationStartedAt = Date.now();
+      const responseSizeBytes = Buffer.byteLength(JSON.stringify(cachedResult), 'utf8');
+      timer.mark('responseSerializationMs', serializationStartedAt);
+      logSkillGapPipeline('request_complete', {
+        username,
+        cache: 'shared_hit',
+        aiUsed: Boolean(cachedResult.aiUsed),
+        deterministicConfidence: cachedDeterministicConfidence,
+        responseSizeBytes,
+        timings: buildSkillGapTimingSnapshot(timer, req)
+      });
+      completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
+      return res.json(cachedResult);
+    }
     const cached = await timer.time('cacheLookupMs', async () => (
       scopedCacheKey && !forceRefresh ? AnalysisCache.findOne(scopedCacheKey).lean() : null
     ));
     if (cached?.analysisData) {
+      const cachedDeterministicConfidence = cached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
         ...cached.analysisData,
         analysisBasedOn: buildAnalysisBasedOn({
@@ -1049,7 +1298,7 @@ const analyzeSkillGap = async (req, res) => {
         resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
         fromCache: true,
         aiUsed: Boolean(cached.analysisData.aiUsed),
-        deterministicConfidence: cached.analysisData.deterministicConfidence || 0,
+        deterministicConfidence: cachedDeterministicConfidence,
         cacheMetadata: {
           ...(cached.analysisData.cacheMetadata || {}),
           loadedFromCache: true,
@@ -1057,7 +1306,13 @@ const analyzeSkillGap = async (req, res) => {
           cachedAt: cached.updatedAt || cached.createdAt || null
         }
       };
-      await saveAIVersionSnapshot({
+      if (resultCacheKey) {
+        await timer.time('redisResultCacheWriteMs', () => aiService.setSharedCache(resultCacheKey, {
+          analysisData: cached.analysisData,
+          updatedAt: cached.updatedAt || cached.createdAt || new Date()
+        }, 900, 'skill_gap:result'));
+      }
+      queueAIVersionSnapshot({
         req,
         source: 'skill_gap',
         output: cachedResult,
@@ -1077,13 +1332,49 @@ const analyzeSkillGap = async (req, res) => {
         username,
         cache: 'backend_hit',
         aiUsed: Boolean(cachedResult.aiUsed),
-        deterministicConfidence,
+        deterministicConfidence: cachedDeterministicConfidence,
         responseSizeBytes,
-        timings: timer.snapshot()
+        timings: buildSkillGapTimingSnapshot(timer, req)
       });
+      completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
       return res.json(cachedResult);
     }
     logSkillGapPipeline('cache_miss', { username, forceRefresh, cacheEligible: Boolean(scopedCacheKey) });
+
+    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim()));
+    const githubInsights = buildGithubInsights(githubData);
+    const careerProfileSignal = buildCareerProfileSignalFromUser(req.user || {});
+    const { developerSignals, signalHash: aggregatedSignalHash, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
+      userId: req.user?._id || null,
+      username,
+      resumeInsights,
+      githubInsights,
+      careerProfileSignal
+    }));
+    if (aggregatedSignalHash !== signalHash) {
+      logSkillGapPipeline('self_signal_hash_normalized', {
+        username,
+        original: aggregatedSignalHash.slice(0, 12),
+        stable: signalHash.slice(0, 12)
+      });
+    }
+
+    const skillDetectionStartedAt = Date.now();
+    const evidenceBreakdown = buildSkillEvidenceBreakdown({
+      resumeInsights,
+      githubData,
+      careerStack,
+      experienceLevel
+    });
+    timer.mark('skillDetectionMs', skillDetectionStartedAt);
+
+    const deterministicConfidence = computeDeterministicConfidence({
+      evidenceBreakdown,
+      resumeInsights,
+      githubData,
+      developerSignals
+    });
+    const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
 
     // Build deterministic groups first — these always anchor the result.
     const deterministicIdentity = {
@@ -1096,7 +1387,7 @@ const analyzeSkillGap = async (req, res) => {
       analysisVersion: ANALYSIS_VERSION
     };
     const deterministicCacheKey = crypto.createHash('sha256').update(JSON.stringify(deterministicIdentity)).digest('hex');
-    let deterministicGroups = await aiService.getDeterministicSummary('skill_gap', deterministicIdentity);
+    let deterministicGroups = await timer.time('deterministicCacheLookupMs', () => aiService.getDeterministicSummary('skill_gap', deterministicIdentity));
     if (deterministicGroups) {
       logSkillGapPipeline('deterministic_summary_cache_hit', { username, cacheKey: deterministicCacheKey.slice(0, 12) });
     } else {
@@ -1110,7 +1401,7 @@ const analyzeSkillGap = async (req, res) => {
         aiKnownSkills: [],
         aiMissingSkills: []
       }));
-      await aiService.setDeterministicSummary('skill_gap', deterministicIdentity, deterministicGroups);
+      await timer.time('deterministicCacheWriteMs', () => aiService.setDeterministicSummary('skill_gap', deterministicIdentity, deterministicGroups));
       logSkillGapPipeline('deterministic_summary_cache_miss', { username, cacheKey: deterministicCacheKey.slice(0, 12) });
     }
 
@@ -1153,6 +1444,7 @@ const analyzeSkillGap = async (req, res) => {
         return promptText;
       });
 
+      const skillGapAiRetries = Math.max(0, Number.parseInt(process.env.SKILL_GAP_AI_RETRIES || '0', 10) || 0);
       aiResult = await timer.time('aiResponseMs', () => aiService.runAIAnalysis(prompt, {
         yourSkills: fallback.yourSkills,
         missingSkills: fallback.missingSkills,
@@ -1162,9 +1454,15 @@ const analyzeSkillGap = async (req, res) => {
         roadmap: fallback.roadmap,
         totalWeeks: fallback.totalWeeks,
         analysisSummary: fallback.analysisSummary
-      }));
+      }, skillGapAiRetries));
 
       aiUsed = aiResult && typeof aiResult === 'object' && aiResult.__fallback !== true;
+      logSkillGapPipeline('ai_executed', {
+        username,
+        deterministicConfidence,
+        threshold: DETERMINISTIC_CONFIDENCE_THRESHOLD,
+        aiUsed
+      });
     } else {
       aiService.recordDeterministicSkip('skill_gap');
       logSkillGapPipeline('ai_skipped', { username, deterministicConfidence, threshold: DETERMINISTIC_CONFIDENCE_THRESHOLD });
@@ -1391,7 +1689,7 @@ const analyzeSkillGap = async (req, res) => {
       roadmap: normalizeRoadmap((aiUsed && aiResult?.roadmap) || fallback.roadmap, 3),
       totalWeeks: String((aiUsed && aiResult?.totalWeeks) || fallback.totalWeeks || '8 weeks').trim(),
       resumeInsights,
-      githubStats: githubData,
+      githubStats: buildCompactGithubStats(githubData),
       signalsUsed,
       analysisBasedOn: buildAnalysisBasedOn({
         username,
@@ -1405,7 +1703,9 @@ const analyzeSkillGap = async (req, res) => {
         cacheKey,
         signalHash,
         analysisVersion: ANALYSIS_VERSION,
-        temporary: isTemporaryMode
+        temporary: isTemporaryMode,
+        githubCache: githubData?.cache || null,
+        aiThreshold: DETERMINISTIC_CONFIDENCE_THRESHOLD
       }
     };
 
@@ -1465,14 +1765,23 @@ const analyzeSkillGap = async (req, res) => {
     };
 
     if (scopedCacheKey) {
-      await timer.time('cacheWriteMs', () => AnalysisCache.findOneAndUpdate(
-        scopedCacheKey,
-        { $set: { analysisData: fullResult, userId: req.user._id } },
-        { upsert: true }
-      ));
+      const cachePayload = {
+        analysisData: fullResult,
+        updatedAt: new Date()
+      };
+      await Promise.all([
+        timer.time('cacheWriteMs', () => AnalysisCache.findOneAndUpdate(
+          scopedCacheKey,
+          { $set: { analysisData: fullResult, userId: req.user._id } },
+          { upsert: true }
+        )),
+        resultCacheKey
+          ? timer.time('redisResultCacheWriteMs', () => aiService.setSharedCache(resultCacheKey, cachePayload, 900, 'skill_gap:result'))
+          : Promise.resolve()
+      ]);
     }
 
-    await saveAIVersionSnapshot({
+    queueAIVersionSnapshot({
       req,
       source: 'skill_gap',
       output: fullResult,
@@ -1496,12 +1805,14 @@ const analyzeSkillGap = async (req, res) => {
       skipAI,
       deterministicConfidence,
       responseSizeBytes,
-      timings: timer.snapshot()
+      timings: buildSkillGapTimingSnapshot(timer, req)
     });
 
+    completeInflightRequest(inflightKey, inflightDeferred, fullResult);
     return res.json(fullResult);
   } catch (error) {
-    console.error('Skill Gap Error:', { message: error.message, username: usernameForLog || req.body?.username, timings: timer.snapshot() });
+    failInflightRequest(inflightKey, inflightDeferred, error);
+    console.error('Skill Gap Error:', { message: error.message, username: usernameForLog || req.body?.username, timings: buildSkillGapTimingSnapshot(timer, req) });
     return res.status(500).json({
       message: 'Analysis failed. GitHub profile may be private or AI is overloaded. Try again in 30 seconds.',
       error: error.message
