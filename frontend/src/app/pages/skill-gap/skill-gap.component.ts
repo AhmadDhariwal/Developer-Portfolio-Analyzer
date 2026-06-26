@@ -39,6 +39,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   graphLayout: Array<SkillGraphNode & { x: number; y: number }> = [];
   graphEdges: SkillGraphEdge[] = [];
   private readonly subscriptions: Subscription = new Subscription();
+  private activeAnalyzeKey = '';
 
   constructor(
     private readonly skillGapService:    SkillGapService,
@@ -106,6 +107,14 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     if (!user) return;
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
+    const analyzeKey = [
+      user.toLowerCase(),
+      careerStack,
+      experienceLevel,
+      isTemporary ? 'temporary' : 'saved',
+      forceRefresh ? 'refresh' : 'normal'
+    ].join('|');
+    if (this.isLoading && this.activeAnalyzeKey === analyzeKey) return;
     const currentSignalHash = !isTemporary
       ? this.frontendCache.getCurrentSignalHash({ module: 'developer-signals', careerStack, experienceLevel })
       : null;
@@ -127,6 +136,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+    this.activeAnalyzeKey = analyzeKey;
     this.result = null;
     this.graphLayout = [];
     this.graphEdges = [];
@@ -140,6 +150,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
           this.skillGapService.cacheResult(this.result as SkillGapResult, false);
         }
         this.isLoading = false;
+        if (this.activeAnalyzeKey === analyzeKey) this.activeAnalyzeKey = '';
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -148,6 +159,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         this.result = null;
         this.graphLayout = [];
         this.graphEdges = [];
+        if (this.activeAnalyzeKey === analyzeKey) this.activeAnalyzeKey = '';
         this.cdr.detectChanges();
       }
     });
@@ -338,11 +350,11 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     if (typeof resource === 'string') {
       return /^https?:\/\//i.test(resource)
         ? resource
-        : `https://www.google.com/search?q=${encodeURIComponent(resource)}`;
+        : 'https://roadmap.sh/';
     }
     const url = String(resource?.url || '').trim();
     if (/^https?:\/\//i.test(url)) return url;
-    return `https://www.google.com/search?q=${encodeURIComponent(this.getResourceTitle(resource))}`;
+    return 'https://roadmap.sh/';
   }
 
   trackByName(_: number, item: CurrentSkill | MissingSkill): string {

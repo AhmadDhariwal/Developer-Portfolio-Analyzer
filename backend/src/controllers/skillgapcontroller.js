@@ -7,8 +7,6 @@ const aiService = require('../services/aiservice');
 const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
-const Analysis = require('../models/analysis');
-const User = require('../models/user');
 const { createVersion } = require('../services/aiVersionService');
 const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/skillGraphService');
 const {
@@ -131,33 +129,72 @@ const SKILL_RESOURCE_HINTS = {
   ],
   'Monitoring and Observability': [
     { title: 'OpenTelemetry docs', url: 'https://opentelemetry.io/docs/' }
+  ],
+  Kubernetes: [
+    { title: 'Kubernetes docs', url: 'https://kubernetes.io/docs/home/' }
+  ],
+  AWS: [
+    { title: 'AWS getting started', url: 'https://aws.amazon.com/getting-started/' }
+  ],
+  Terraform: [
+    { title: 'Terraform docs', url: 'https://developer.hashicorp.com/terraform/docs' }
+  ],
+  PostgreSQL: [
+    { title: 'PostgreSQL docs', url: 'https://www.postgresql.org/docs/' }
+  ],
+  Redis: [
+    { title: 'Redis docs', url: 'https://redis.io/docs/latest/' }
+  ],
+  MongoDB: [
+    { title: 'MongoDB docs', url: 'https://www.mongodb.com/docs/' }
+  ],
+  Git: [
+    { title: 'Git documentation', url: 'https://git-scm.com/doc' }
+  ],
+  Jest: [
+    { title: 'Jest docs', url: 'https://jestjs.io/docs/getting-started' }
+  ],
+  Python: [
+    { title: 'Python tutorial', url: 'https://docs.python.org/3/tutorial/' }
+  ],
+  Go: [
+    { title: 'Go docs', url: 'https://go.dev/doc/' }
+  ],
+  Java: [
+    { title: 'Java tutorials', url: 'https://dev.java/learn/' }
+  ],
+  GraphQL: [
+    { title: 'GraphQL learn', url: 'https://graphql.org/learn/' }
+  ],
+  'Design Patterns': [
+    { title: 'Refactoring Guru design patterns', url: 'https://refactoring.guru/design-patterns' }
+  ],
+  Documentation: [
+    { title: 'Google technical writing courses', url: 'https://developers.google.com/tech-writing' }
   ]
 };
 
 const isValidUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
-const toDocSearchUrl = (topic) => {
-  const query = encodeURIComponent(String(topic || 'software engineering docs'));
-  return `https://www.google.com/search?q=${query}`;
-};
+const DEFAULT_RESOURCE = { title: 'Developer Roadmaps', url: 'https://roadmap.sh/' };
 
 const normalizeRoadmapResource = (resource, fallbackTopic = 'software engineering docs') => {
   if (typeof resource === 'object' && resource !== null) {
     const title = String(resource.title || resource.name || fallbackTopic).trim();
-    const url = isValidUrl(resource.url) ? resource.url.trim() : toDocSearchUrl(title || fallbackTopic);
+    const url = isValidUrl(resource.url) ? resource.url.trim() : DEFAULT_RESOURCE.url;
     return { title, url };
   }
 
   const text = String(resource || '').trim();
   if (!text) {
-    return { title: fallbackTopic, url: toDocSearchUrl(fallbackTopic) };
+    return { title: fallbackTopic, url: DEFAULT_RESOURCE.url };
   }
 
   if (isValidUrl(text)) {
     return { title: text.replace(/^https?:\/\//i, '').slice(0, 80), url: text };
   }
 
-  return { title: text, url: toDocSearchUrl(text) };
+  return { title: text, url: DEFAULT_RESOURCE.url };
 };
 
 const normalizeRoadmap = (roadmap = [], min = 3) => {
@@ -422,8 +459,8 @@ const estimateLearningEffort = (skill, experienceLevel = 'Student') => {
 const getSkillResources = (skillName) => {
   const name = toSkillName(skillName);
   const resources = SKILL_RESOURCE_HINTS[name] || [
-    { title: `${name} official documentation`, url: toDocSearchUrl(`${name} official documentation`) },
-    { title: `${name} practical project guide`, url: toDocSearchUrl(`${name} practical project guide`) }
+    DEFAULT_RESOURCE,
+    { title: 'freeCodeCamp curriculum', url: 'https://www.freecodecamp.org/learn/' }
   ];
   return resources.slice(0, 2).map((resource) => normalizeRoadmapResource(resource, name));
 };
@@ -553,17 +590,17 @@ const loadResumeAnalysis = async (userId, userContext = null) => {
   return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
 };
 
-const getGitHubData = async (username) => {
+const getGitHubData = async (username, { forceRefresh = false } = {}) => {
   const startedAt = Date.now();
   try {
     const normalizedUsername = String(username || '').trim();
     const cached = await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true });
-    const shouldRefresh = cached.status !== 'fresh';
+    const shouldRefresh = forceRefresh || cached.status !== 'fresh';
     let refreshState = { queued: false, running: false, reason: 'fresh' };
 
     if (shouldRefresh) {
       refreshState = refreshGitHubAnalysisInBackground(normalizedUsername, {
-        reason: cached.status === 'stale' ? 'stale_cache' : 'cache_miss'
+        reason: forceRefresh ? 'manual_refresh' : cached.status === 'stale' ? 'stale_cache' : 'cache_miss'
       });
     }
 
@@ -573,6 +610,7 @@ const getGitHubData = async (username) => {
       status: cached.status,
       staleServed: cached.status === 'stale',
       cacheAgeMs: cached.ageMs,
+      forceRefresh,
       refreshQueued: Boolean(refreshState.queued),
       refreshAlreadyRunning: Boolean(refreshState.running),
       durationMs: Date.now() - startedAt
@@ -1341,7 +1379,7 @@ const analyzeSkillGap = async (req, res) => {
     }
     logSkillGapPipeline('cache_miss', { username, forceRefresh, cacheEligible: Boolean(scopedCacheKey) });
 
-    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim()));
+    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim(), { forceRefresh }));
     const githubInsights = buildGithubInsights(githubData);
     const careerProfileSignal = buildCareerProfileSignalFromUser(req.user || {});
     const { developerSignals, signalHash: aggregatedSignalHash, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
@@ -1517,15 +1555,16 @@ const analyzeSkillGap = async (req, res) => {
         if (proficiency < 35) return;
         const skillLower = name.toLowerCase();
         const hasEvidence = evidenceSkillNames.has(skillLower);
+        if (!hasEvidence) return;
         existingSkillNames.add(name.toLowerCase());
         yourSkills.push({
           name,
           category: skill?.category || 'General',
-          proficiency: hasEvidence ? clamp(proficiency + 8) : proficiency,
+          proficiency: clamp(proficiency + 8),
           isFoundational: Boolean(skill?.isFoundational),
-          confidenceScore: hasEvidence ? clamp(proficiency + 12) : clamp(proficiency - 10),
-          source: hasEvidence ? 'AI + Evidence' : 'AI',
-          evidence: [hasEvidence ? `${name} matched existing GitHub, resume, or platform evidence.` : `${name} was suggested by AI and kept because it is a recognized skill.`]
+          confidenceScore: clamp(proficiency + 12),
+          source: 'AI + Evidence',
+          evidence: [`${name} matched existing GitHub, resume, or platform evidence.`]
         });
       });
     }
@@ -1539,21 +1578,18 @@ const analyzeSkillGap = async (req, res) => {
         const hasEvidence = evidenceSkillNames.has(skillLower) || (evidenceBreakdown.missingExpectedSkills || []).some(
           (expected) => String(expected).toLowerCase() === skillLower
         );
-        const isStackRelevant = isRelevantForStack(name, careerStack);
-        if (!hasEvidence && !isStackRelevant) return;
+        if (!hasEvidence) return;
         existingSkillNames.add(name.toLowerCase());
         missingSkills.push({
           name,
           category: skill?.category || 'General',
-          priority: hasEvidence ? (skill?.priority || 'Medium') : 'Low',
+          priority: skill?.priority || 'Medium',
           jobDemand: clamp(skill?.jobDemand || 60),
           levelRelevance: skill?.levelRelevance || 'Current',
-          confidenceScore: hasEvidence ? clamp((skill?.jobDemand || 60) + 10) : 40,
-          source: hasEvidence ? 'AI + Evidence' : 'AI (stack-relevant)',
+          confidenceScore: clamp((skill?.jobDemand || 60) + 10),
+          source: 'AI + Evidence',
           evidence: [
-            hasEvidence
-              ? `${name} is missing from stronger proof signals and was reinforced by AI prioritization.`
-              : `${name} is a recognized ${careerStack} skill relevant to the selected career profile.`
+            `${name} is missing from stronger proof signals and was reinforced by AI prioritization.`
           ]
         });
       });
@@ -1589,7 +1625,7 @@ const analyzeSkillGap = async (req, res) => {
           proficiency: 60,
           isFoundational: true,
           confidenceScore: 60,
-          source: 'Evidence fallback',
+          source: 'Developer Evidence',
           evidence: [`${skillName} was detected in available GitHub, resume, integration, sprint, or portfolio signals.`]
         });
       }

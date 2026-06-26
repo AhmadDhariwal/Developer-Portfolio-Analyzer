@@ -110,7 +110,8 @@ Skill Gap checks this result cache before GitHub cache reads, developer signal a
 2. GitHub Analyzer can still request fresh analysis when needed.
 3. Skill Gap uses Stale-While-Revalidate: fresh rows return with `source: 'cache'`; expired rows return with `source: 'stale-cache'` and queue a background refresh.
 4. If Skill Gap has no GitHub cache row, it returns a safe empty GitHub signal and queues a background refresh instead of blocking the request.
-5. Background refreshes are locked by normalized GitHub username in-process so duplicate requests do not start duplicate refresh jobs.
+5. Background refreshes are locked by normalized GitHub username. Redis provides a cross-process lock when enabled; otherwise the backend falls back to an in-process lock.
+6. After a successful background refresh, stored Skill Gap `AnalysisCache` rows for that GitHub username and `v6-skill-intelligence` are deleted, and shared `skill_gap:result` entries are invalidated.
 
 **Freshness TTL**: 24 hours (configurable via `CACHE_TTL_MS` in githubservice.js)
 **Force refresh**: `?forceRefresh=true` bypasses cache
@@ -129,7 +130,7 @@ Cached job listing results from JSearch, Jooble, Adzuna.
 
 General-purpose analysis result cache for non-GitHub analyses.
 
-Skill Gap uses `AnalysisCache` with `githubUsername`, `careerStack`, `experienceLevel`, `resumeHash`, `resumeAnalysisId`, `signalHash`, and `analysisVersion`. A normal request checks this cache before GitHub SWR reads, developer signal aggregation, skill detection, or AI prompt building. `forceRefresh=true` bypasses the cached result once and repopulates it after fresh analysis.
+Skill Gap uses `AnalysisCache` with `githubUsername`, `careerStack`, `experienceLevel`, `resumeHash`, `resumeAnalysisId`, `signalHash`, and `analysisVersion`. A normal request checks this cache before GitHub SWR reads, developer signal aggregation, skill detection, or AI prompt building. `forceRefresh=true` bypasses the cached result once, queues GitHub refresh in the background, and repopulates Skill Gap cache from currently available evidence.
 
 Prompt generation happens after this cache lookup and after deterministic confidence is evaluated. If the backend cache hits or deterministic confidence is sufficient, Skill Gap does not build an AI prompt and does not call a provider.
 

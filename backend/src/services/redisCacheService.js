@@ -98,6 +98,29 @@ const deleteByPrefix = async (prefix) => {
   }
 };
 
+const acquireCacheLock = async (key, token, ttlSeconds = 900) => {
+  if (!redisEnabled || !client) return false;
+  try {
+    const result = await client.set(key, token, { NX: true, EX: ttlSeconds });
+    return result === 'OK';
+  } catch (error) {
+    console.error('[redis] acquire lock failed:', error.message);
+    return false;
+  }
+};
+
+const releaseCacheLock = async (key, token) => {
+  if (!redisEnabled || !client) return;
+  try {
+    const current = await client.get(key);
+    if (current === token) {
+      await client.del(key);
+    }
+  } catch (error) {
+    console.error('[redis] release lock failed:', error.message);
+  }
+};
+
 const invalidateInterviewPrepCache = async () => {
   await Promise.all(INTERVIEW_CACHE_PREFIXES.map((prefix) => deleteByPrefix(prefix)));
 };
@@ -110,5 +133,7 @@ module.exports = {
   setCacheJson,
   deleteCacheKey,
   deleteByPrefix,
+  acquireCacheLock,
+  releaseCacheLock,
   invalidateInterviewPrepCache
 };

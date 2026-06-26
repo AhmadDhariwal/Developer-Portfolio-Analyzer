@@ -2,13 +2,16 @@ const axios = require('axios');
 const aiService = require('./aiservice');
 const { getGitHubPrompt } = require('../prompts/githubPrompt');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
+const { acquireCacheLock, releaseCacheLock, isRedisCacheEnabled } = require('./redisCacheService');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
+const AnalysisCache = require('../models/analysisCache');
 
 const ANALYSIS_VERSION = 'github-v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 const refreshJobs = new Map();
 let swrIndexChecked = false;
+const SKILL_GAP_ANALYSIS_VERSION = 'v6-skill-intelligence';
 const SUPPORT_LANGUAGES = new Set([
   'HTML',
   'CSS',
@@ -1136,6 +1139,8 @@ const refreshGitHubAnalysisInBackground = (username, options = {}) => {
   }
 
   const startedAt = Date.now();
+  const lockKey = `lock:github_swr:${normalizedUsername}`;
+  const lockToken = `${process.pid}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
   console.log('[GitHubSWR]', JSON.stringify({
     event: 'refresh_started',
     username: trimmedUsername,
@@ -1143,11 +1148,24 @@ const refreshGitHubAnalysisInBackground = (username, options = {}) => {
   }));
 
   const job = (async () => {
+    let lockAcquired = false;
     try {
+      if (isRedisCacheEnabled()) {
+        lockAcquired = await acquireCacheLock(lockKey, lockToken, 20 * 60);
+        if (!lockAcquired) {
+          console.log('[GitHubSWR]', JSON.stringify({
+            event: 'refresh_deduped',
+            username: trimmedUsername,
+            scope: 'redis_lock'
+          }));
+          return;
+        }
+      }
       await ensureSWRCacheIndex();
       const previousEntry = await getCacheEntry(trimmedUsername);
       const fresh = await buildFreshAnalysis(trimmedUsername);
       await saveCacheResult(trimmedUsername, fresh, previousEntry);
+      await invalidateSkillGapCachesForGitHub(trimmedUsername);
       console.log('[GitHubSWR]', JSON.stringify({
         event: 'refresh_completed',
         username: trimmedUsername,
@@ -1161,6 +1179,9 @@ const refreshGitHubAnalysisInBackground = (username, options = {}) => {
         error: error.message
       }));
     } finally {
+      if (lockAcquired) {
+        await releaseCacheLock(lockKey, lockToken);
+      }
       refreshJobs.delete(normalizedUsername);
     }
   })();
@@ -1173,6 +1194,21 @@ const getGitHubRefreshState = () => ({
   running: refreshJobs.size,
   usernames: Array.from(refreshJobs.keys())
 });
+
+const invalidateSkillGapCachesForGitHub = async (username) => {
+  const trimmedUsername = String(username || '').trim().replace(/^@/, '');
+  if (!trimmedUsername) return;
+  const deleted = await AnalysisCache.deleteMany({
+    githubUsername: new RegExp(`^${escapeRegex(trimmedUsername)}$`, 'i'),
+    analysisVersion: SKILL_GAP_ANALYSIS_VERSION
+  });
+  await aiService.invalidateCachePrefix('skill_gap:result:');
+  console.log('[GitHubSWR]', JSON.stringify({
+    event: 'skill_gap_cache_invalidated',
+    username: trimmedUsername,
+    mongoDeleted: Number(deleted?.deletedCount || 0)
+  }));
+};
 
 module.exports = {
   ANALYSIS_VERSION,

@@ -11,7 +11,7 @@ The current analysis version is `v6-skill-intelligence`. It uses the existing ca
 
 Skill Gap now builds AI prompts only after backend cache lookup and deterministic confidence checks. A normal request first builds the cheap identity pieces (resume identity, active profile, and stable cache signal hash), checks the shared Skill Gap result cache, then checks `AnalysisCache`. GitHub cache reads, developer signal aggregation, skill detection, prompt generation, and AI execution happen only after those cache layers miss or a manual refresh is requested. When AI is required, the prompt uses a compact context with summarized GitHub repositories, resume evidence, platform signals, job demand, and deterministic skill groups rather than raw source objects.
 
-GitHub analysis uses Stale-While-Revalidate in the Skill Gap path. If a GitHub analysis cache row exists, Skill Gap serves it immediately even when expired and queues a background refresh. If no row exists, Skill Gap returns a safe empty GitHub signal and queues a refresh instead of blocking the response on GitHub API calls. Only one background refresh can run per normalized GitHub username in a backend process; duplicate refresh attempts are logged and skipped.
+GitHub analysis uses Stale-While-Revalidate in the Skill Gap path. If a GitHub analysis cache row exists, Skill Gap serves it immediately even when expired and queues a background refresh. If no row exists, Skill Gap returns a safe empty GitHub signal and queues a refresh instead of blocking the response on GitHub API calls. Only one background refresh can run per normalized GitHub username; Redis provides the cross-process lock when enabled, with an in-process lock as fallback. Duplicate refresh attempts are logged and skipped. A successful GitHub background refresh invalidates stored Skill Gap results for that GitHub username and clears shared `skill_gap:result` entries so the next request can incorporate the refreshed evidence.
 
 The controller logs stage timings for shared result cache lookup, Mongo cache lookup, GitHub fetch, resume fetch, signal aggregation, skill detection, deterministic summary cache lookup/write, prompt generation, AI response, cache write, response serialization, derived DB time, AI pipeline time, and total request duration.
 
@@ -20,7 +20,7 @@ Latency controls:
 - `SKILL_GAP_AI_THRESHOLD` configures the deterministic-confidence threshold for skipping AI. The default remains `70`.
 - `skill_gap:result:<hash>` stores full result payloads in Redis when available, with process-memory fallback through `AIService`.
 - Deterministic summaries are stored via `AIService.getDeterministicSummary('skill_gap', identity)` and reused before rebuilding deterministic groups.
-- The Skill Gap result-cache key intentionally excludes previous Skill Gap output to prevent self-referential cache churn. It is based on the user/profile identity, active career profile, resume identity, GitHub username, and analysis version.
+- The Skill Gap result-cache key intentionally excludes previous Skill Gap output to prevent self-referential cache churn. It is based on the user/profile identity, active career profile, resume identity, GitHub username, and analysis version. Cached requests return before GitHub reads, signal aggregation, prompt generation, or AI execution.
 
 ## Files To Modify
 | Change | Files |
