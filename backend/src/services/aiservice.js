@@ -1,112 +1,158 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const crypto = require("node:crypto");
-const axios = require('axios');
-const { getAiSnapshotSync } = require('./platformSettingsService');
+const crypto = require('node:crypto');
+const aiProviderManager = require('./aiProviderManager');
+const {
+  getCacheJson,
+  setCacheJson,
+  deleteCacheKey,
+  deleteByPrefix,
+  isRedisCacheEnabled
+} = require('./redisCacheService');
 
-/**
- * AI Service: The central engine for all LLM interactions.
- * Handles Gemini API integration, retries, and JSON parsing.
- */
+const AI_RESPONSE_CACHE_TTL_SECONDS = Number.parseInt(process.env.AI_RESPONSE_CACHE_TTL_SECONDS || '86400', 10);
+const AI_DETERMINISTIC_CACHE_TTL_SECONDS = Number.parseInt(process.env.AI_DETERMINISTIC_CACHE_TTL_SECONDS || '600', 10);
+
 class AIService {
   constructor() {
-    this.cache = new Map(); // prompt hash -> parsed JSON result
-
-    this.openAIModels = this.getOpenAIModelCandidates();
-    this.geminiModels = this.getGeminiModelCandidates();
-    this.openAICooldownUntil = 0;
-    this.openAICooldownMs = Number.parseInt(process.env.OPENAI_COOLDOWN_MS || '1800000', 10);
-    this.geminiCooldownUntil = 0;
-    this.geminiCooldownMs = Number.parseInt(process.env.GEMINI_COOLDOWN_MS || '180000', 10);
-
-    const providers = this.getProviderState();
-    this.isEnabled = providers.hasOpenAI || providers.hasGemini;
-
-    if (this.isEnabled) {
-      const labels = [];
-      if (providers.hasOpenAI) labels.push('OpenAI');
-      if (providers.hasGemini) labels.push('Gemini');
-      console.log(`[AIService] Providers ready: ${labels.join(', ')}. Priority: OpenAI -> Gemini.`);
-    } else {
-      console.warn('[AIService] No valid AI key configured. Returning safe fallbacks.');
-    }
-  }
-
-  getProviderState() {
-    const aiSettings = getAiSnapshotSync();
-    const settingsKey = String(aiSettings?.apiKey || '').trim();
-    const provider = String(aiSettings?.provider || '').toLowerCase();
-
-    const openAIEnvKey = String(process.env.OPENAI_API_KEY || '').trim();
-    const geminiEnvKey = String(process.env.GEMINI_FALLBACK_API_KEY || process.env.GEMINI_API_KEY || '').trim();
-
-    const settingsLooksOpenAI = settingsKey.startsWith('sk-') || settingsKey.startsWith('gsk_');
-    const settingsOpenAIKey = provider === 'openai' || settingsLooksOpenAI ? settingsKey : '';
-    const settingsGeminiKey = provider === 'gemini' || (!settingsLooksOpenAI && settingsKey) ? settingsKey : '';
-
-    const openAIKey = settingsOpenAIKey || openAIEnvKey;
-    const geminiKey = settingsGeminiKey || geminiEnvKey;
-
-    const hasOpenAI = !!(openAIKey && openAIKey.length > 10 && !openAIKey.includes('your_'));
-    const hasGemini = !!(geminiKey && geminiKey.length > 10 && !geminiKey.includes('your_'));
-
-    return {
-      openAIKey,
-      geminiKey,
-      hasOpenAI,
-      hasGemini,
-      provider,
-      preferredModel: String(aiSettings?.model || '').trim()
+    this.memoryCache = new Map();
+    this.metrics = {
+      requests: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      redisHits: 0,
+      redisMisses: 0,
+      redisErrors: 0,
+      aiCalls: 0,
+      fallbacks: 0,
+      deterministicSkips: 0,
+      totalLatencyMs: 0,
+      aiLatencyMs: [],
+      redisLatencyMs: [],
+      promptTokens: []
     };
   }
 
-  getGeminiModelCandidates() {
-    const fromEnv = (process.env.GEMINI_MODEL || process.env.GEMINI_MODELS || '')
-      .split(',')
-      .map((m) => m.trim())
-      .filter(Boolean);
-
-    // Verified available models on v1beta as of 2025
-    const defaults = [
-      'gemini-2.0-flash',
-      'gemini-2.0-flash-lite',
-      'gemini-2.5-flash',
-    ];
-
-    return [...new Set([...fromEnv, ...defaults])];
+  log(event, data = {}, level = 'log') {
+    const line = `[AIService] ${JSON.stringify({ scope: 'AIService', event, ...data })}`;
+    if (level === 'warn') console.warn(line);
+    else if (level === 'error') console.error(line);
+    else console.log(line);
   }
 
-  getOpenAIModelCandidates() {
-    const fromEnv = (process.env.OPENAI_MODEL || process.env.OPENAI_MODELS || '')
-      .split(',')
-      .map((m) => m.trim())
-      .filter(Boolean);
+  estimatePrompt(prompt = '') {
+    const chars = Buffer.byteLength(String(prompt || ''), 'utf8');
+    return {
+      chars,
+      estimatedTokens: Math.ceil(chars / 4)
+    };
+  }
 
-    // Groq-hosted models (fast inference, OpenAI-compatible)
-    const defaults = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
-    return [...new Set([...fromEnv, ...defaults])];
+  hash(value = '') {
+    return crypto.createHash('sha256').update(String(value || '')).digest('hex');
+  }
+
+  recordRedisTiming(event, startedAt, extra = {}) {
+    const redisTimeMs = Date.now() - startedAt;
+    this.metrics.redisLatencyMs.push(redisTimeMs);
+    this.log(event, { redisTimeMs, ...extra });
+    return redisTimeMs;
+  }
+
+  memoryGet(key) {
+    const entry = this.memoryCache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && entry.expiresAt <= Date.now()) {
+      this.memoryCache.delete(key);
+      return null;
+    }
+    return entry.value;
+  }
+
+  memorySet(key, value, ttlSeconds) {
+    this.memoryCache.set(key, {
+      value,
+      expiresAt: ttlSeconds ? Date.now() + (ttlSeconds * 1000) : 0
+    });
+  }
+
+  async getSharedCache(key, namespace = 'ai:response') {
+    const cacheKey = `${namespace}:${key}`;
+    if (!isRedisCacheEnabled()) {
+      const localValue = this.memoryGet(cacheKey);
+      if (localValue !== null) return localValue;
+      return null;
+    }
+
+    const redisStartedAt = Date.now();
+    try {
+      const redisValue = await getCacheJson(cacheKey);
+      this.recordRedisTiming(redisValue ? 'redis_cache_hit' : 'redis_cache_miss', redisStartedAt, { cacheKey: key.slice(0, 12), namespace });
+      if (redisValue !== null) {
+        this.metrics.redisHits += 1;
+        return redisValue;
+      }
+      this.metrics.redisMisses += 1;
+    } catch (error) {
+      this.metrics.redisErrors += 1;
+      this.log('redis_cache_error', { namespace, message: error.message }, 'warn');
+    }
+    return null;
+  }
+
+  async setSharedCache(key, value, ttlSeconds = AI_RESPONSE_CACHE_TTL_SECONDS, namespace = 'ai:response') {
+    const cacheKey = `${namespace}:${key}`;
+    if (isRedisCacheEnabled()) {
+      const redisStartedAt = Date.now();
+      await setCacheJson(cacheKey, value, ttlSeconds);
+      this.recordRedisTiming('redis_cache_set', redisStartedAt, { cacheKey: key.slice(0, 12), namespace, ttlSeconds });
+      return;
+    }
+    this.memorySet(cacheKey, value, ttlSeconds);
+  }
+
+  async invalidateCacheKey(key, namespace = 'ai:response') {
+    const cacheKey = `${namespace}:${key}`;
+    if (isRedisCacheEnabled()) {
+      await deleteCacheKey(cacheKey);
+    }
+    this.memoryCache.delete(cacheKey);
+  }
+
+  async invalidateCachePrefix(prefix) {
+    if (isRedisCacheEnabled()) {
+      await deleteByPrefix(prefix);
+    }
+    for (const key of this.memoryCache.keys()) {
+      if (key.startsWith(prefix)) this.memoryCache.delete(key);
+    }
+  }
+
+  deterministicCacheKey(feature, identity = {}) {
+    return this.hash(JSON.stringify({ feature, identity }));
+  }
+
+  async getDeterministicSummary(feature, identity = {}) {
+    return this.getSharedCache(this.deterministicCacheKey(feature, identity), 'ai:deterministic');
+  }
+
+  async setDeterministicSummary(feature, identity = {}, value, ttlSeconds = AI_DETERMINISTIC_CACHE_TTL_SECONDS) {
+    return this.setSharedCache(this.deterministicCacheKey(feature, identity), value, ttlSeconds, 'ai:deterministic');
   }
 
   extractJson(text = '') {
-    // Strip markdown code fences if present
     const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
-    // Try direct parse first
     try {
       return JSON.parse(stripped);
     } catch (_) {}
 
-    // Try to extract the outermost JSON object or array
     const jsonMatch = /(\{[\s\S]*\}|\[[\s\S]*\])/.exec(stripped);
     if (!jsonMatch) throw new Error('No JSON found in AI response');
 
-    let candidate = jsonMatch[0];
-
-    // Try direct parse of extracted block
+    const candidate = jsonMatch[0];
     try {
       return JSON.parse(candidate);
     } catch (_) {}
 
-    // Attempt to repair truncated JSON by closing open brackets/braces
     try {
       return JSON.parse(this.repairJson(candidate));
     } catch (_) {}
@@ -115,7 +161,6 @@ class AIService {
   }
 
   repairJson(text) {
-    // Count unclosed braces and brackets, then close them
     const stack = [];
     let inString = false;
     let escape = false;
@@ -130,216 +175,115 @@ class AIService {
       else if (ch === '}' || ch === ']') stack.pop();
     }
 
-    // Remove trailing comma before we close
     let repaired = text.trimEnd().replace(/,\s*$/, '');
-    // Close all open structures in reverse order
     while (stack.length) repaired += stack.pop();
     return repaired;
   }
 
-  getStatusCode(error) {
-    const byResponse = error?.response?.status;
-    if (byResponse) return String(byResponse);
-    return String(error?.message?.match(/\[(\d{3})(?:[^\]]*)\]/)?.[1] || '');
+  recordDeterministicSkip(feature = 'unknown') {
+    this.metrics.deterministicSkips += 1;
+    this.log('ai_skipped_deterministic', { feature });
   }
 
-  isModelMissing(statusCode, message) {
-    const text = String(message || '').toLowerCase();
-    return statusCode === '404' || text.includes('model_not_found') || text.includes('not found') || text.includes('is not supported');
-  }
-
-  isQuotaError(statusCode, message) {
-    return statusCode === '429'
-      || message.includes('quota')
-      || message.includes('RESOURCE_EXHAUSTED')
-      || message.includes('insufficient_quota');
-  }
-
-  isOpenAICoolingDown() {
-    return Date.now() < this.openAICooldownUntil;
-  }
-
-  isGeminiCoolingDown() {
-    return Date.now() < this.geminiCooldownUntil;
-  }
-
-  startOpenAICooldown(reason = 'quota/rate-limit') {
-    this.openAICooldownUntil = Date.now() + this.openAICooldownMs;
-    const seconds = Math.ceil(this.openAICooldownMs / 1000);
-    console.warn(`[AIService] OpenAI paused for ${seconds}s due to ${reason}. Falling back to Gemini.`);
-  }
-
-  startGeminiCooldown(reason = 'quota/rate-limit') {
-    this.geminiCooldownUntil = Date.now() + this.geminiCooldownMs;
-    const seconds = Math.ceil(this.geminiCooldownMs / 1000);
-    console.warn(`[AIService] Gemini paused for ${seconds}s due to ${reason}. Returning fallback unless OpenAI recovers.`);
-  }
-
-  // Reasoning models (grok-*-mini, o1, o3, etc.) reject the temperature parameter
-  isReasoningModel(modelName) {
-    return /mini|o1|o3|reasoning/i.test(modelName);
-  }
-
-  async runOpenAI(prompt, modelName) {
-    const { openAIKey } = this.getProviderState();
-    const body = {
-      model: modelName,
-      max_tokens: 8000,
-      messages: [
-        {
-          role: 'system',
-          content: 'Return valid JSON only. No markdown, no commentary.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
+  getBenchmarkSnapshot() {
+    const totalCacheLookups = this.metrics.cacheHits + this.metrics.cacheMisses;
+    const averagePromptTokens = this.metrics.promptTokens.length
+      ? Math.round(this.metrics.promptTokens.reduce((sum, value) => sum + value, 0) / this.metrics.promptTokens.length)
+      : 0;
+    return {
+      requests: this.metrics.requests,
+      aiCalls: this.metrics.aiCalls,
+      fallbacks: this.metrics.fallbacks,
+      deterministicSkips: this.metrics.deterministicSkips,
+      averageLatencyMs: this.metrics.requests ? Math.round(this.metrics.totalLatencyMs / this.metrics.requests) : 0,
+      averageAiLatencyMs: this.metrics.aiLatencyMs.length
+        ? Math.round(this.metrics.aiLatencyMs.reduce((sum, value) => sum + value, 0) / this.metrics.aiLatencyMs.length)
+        : 0,
+      averageRedisLatencyMs: this.metrics.redisLatencyMs.length
+        ? Math.round(this.metrics.redisLatencyMs.reduce((sum, value) => sum + value, 0) / this.metrics.redisLatencyMs.length)
+        : 0,
+      averagePromptTokens,
+      cache: {
+        localFallbackSize: this.memoryCache.size,
+        redisEnabled: isRedisCacheEnabled(),
+        hits: this.metrics.cacheHits,
+        misses: this.metrics.cacheMisses,
+        redisHits: this.metrics.redisHits,
+        redisMisses: this.metrics.redisMisses,
+        redisErrors: this.metrics.redisErrors,
+        hitRatio: totalCacheLookups ? Number((this.metrics.cacheHits / totalCacheLookups).toFixed(3)) : 0
+      },
+      deterministicSkipRatio: this.metrics.requests + this.metrics.deterministicSkips
+        ? Number((this.metrics.deterministicSkips / (this.metrics.requests + this.metrics.deterministicSkips)).toFixed(3))
+        : 0,
+      providers: aiProviderManager.getStatus()
     };
-
-    // Reasoning models do not accept temperature — omit it entirely
-    if (!this.isReasoningModel(modelName)) {
-      body.temperature = 0.2;
-    }
-
-    const response = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
-      body,
-      {
-        headers: {
-          Authorization: `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      }
-    );
-
-    const text = response.data?.choices?.[0]?.message?.content || '';
-    return this.extractJson(text);
   }
 
-  async runGemini(prompt, modelName) {
-    const { geminiKey } = this.getProviderState();
-    const genAI = new GoogleGenerativeAI(geminiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    return this.extractJson(response.text());
+  getProviderStatus() {
+    return aiProviderManager.getStatus();
   }
 
-  async tryProvider(provider, prompt, retries, preferredModel = '') {
-    const baseModels = provider === 'openai' ? this.openAIModels : this.geminiModels;
-    const models = preferredModel ? [...new Set([preferredModel, ...baseModels])] : baseModels;
-
-    for (const modelName of models) {
-      for (let attempt = 0; attempt <= retries; attempt++) {
-        try {
-          const parsed = provider === 'openai'
-            ? await this.runOpenAI(prompt, modelName)
-            : await this.runGemini(prompt, modelName);
-
-          console.log(`[AIService] Using ${provider.toUpperCase()} model: ${modelName}`);
-          return { ok: true, parsed, quotaExhausted: false };
-        } catch (error) {
-          const message = error?.message || 'Unknown AI error';
-          const statusCode = this.getStatusCode(error);
-          const responseBody = error?.response?.data ? JSON.stringify(error.response.data) : '';
-
-          console.error(`[AIService] ${provider.toUpperCase()} error [model=${modelName}, status=${statusCode || 'n/a'}]: ${message}${responseBody ? ` | body: ${responseBody}` : ''}`);
-
-          if (this.isModelMissing(statusCode, message)) {
-            break;
-          }
-
-          if (this.isQuotaError(statusCode, message)) {
-            return { ok: false, quotaExhausted: true };
-          }
-
-          if (attempt < retries) {
-            await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
-          }
-        }
-      }
-    }
-
-    return { ok: false, quotaExhausted: false };
-  }
-
-  /**
-   * Run a prompt through the LLM with retry logic.
-   * Tries each model candidate in order.
-   * 404 = model not found → skip to next model.
-   * 429/quota = model quota exhausted → skip to next model.
-   * Other errors = retry with exponential backoff, then try next model.
-   * @param {string} prompt The full prompt string.
-   * @param {object} fallback Safe JSON fallback to return on failure.
-   * @param {number} retries Number of per-model retries on transient errors.
-   */
   async runAIAnalysis(prompt, fallback, retries = 2) {
-    const aiSettings = getAiSnapshotSync();
-    const providers = this.getProviderState();
-    if (aiSettings?.enabled === false) return fallback;
-    if (!providers.hasOpenAI && !providers.hasGemini) return fallback;
+    const startedAt = Date.now();
+    this.metrics.requests += 1;
 
-    const cacheKey = crypto.createHash('sha256').update(prompt).digest('hex');
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey);
+    const promptStats = this.estimatePrompt(prompt);
+    this.metrics.promptTokens.push(promptStats.estimatedTokens);
+    this.log('prompt_size', {
+      chars: promptStats.chars,
+      estimatedTokens: promptStats.estimatedTokens,
+      overTarget: promptStats.estimatedTokens > 5000
+    }, promptStats.estimatedTokens > 5000 ? 'warn' : 'log');
+
+    const cacheKey = this.hash(prompt);
+    const cachedValue = await this.getSharedCache(cacheKey);
+    if (cachedValue !== null) {
+      this.metrics.cacheHits += 1;
+      this.metrics.totalLatencyMs += Date.now() - startedAt;
+      this.log('prompt_cache_hit', { cacheKey: cacheKey.slice(0, 12), durationMs: Date.now() - startedAt });
+      return cachedValue;
     }
 
-    let openAIQuotaExhausted = false;
-    let geminiQuotaExhausted = false;
+    this.metrics.cacheMisses += 1;
+    this.log('prompt_cache_miss', { cacheKey: cacheKey.slice(0, 12) });
 
-    const preferredProvider = providers.provider;
-    const preferredModel = providers.preferredModel;
-
-    const runProvider = async (providerName) => {
-      if (providerName === 'openai' && providers.hasOpenAI && !this.isOpenAICoolingDown()) {
-        return this.tryProvider('openai', prompt, retries, preferredModel);
-      }
-      if (providerName === 'gemini' && providers.hasGemini && !this.isGeminiCoolingDown()) {
-        return this.tryProvider('gemini', prompt, retries, preferredModel);
-      }
-      return { ok: false, quotaExhausted: false };
-    };
-
-    const primary = preferredProvider === 'gemini' ? 'gemini' : 'openai';
-    const secondary = primary === 'openai' ? 'gemini' : 'openai';
-
-    const primaryResult = await runProvider(primary);
-    if (primaryResult.ok) {
-      this.cache.set(cacheKey, primaryResult.parsed);
-      return primaryResult.parsed;
-    }
-    if (primary === 'openai') {
-      openAIQuotaExhausted = primaryResult.quotaExhausted;
-      if (openAIQuotaExhausted) this.startOpenAICooldown('429/quota');
-    } else {
-      geminiQuotaExhausted = primaryResult.quotaExhausted;
-      if (geminiQuotaExhausted) this.startGeminiCooldown('429/quota');
+    const status = aiProviderManager.getStatus();
+    if (!status.enabledProviders.length) {
+      this.metrics.fallbacks += 1;
+      this.log('fallback_no_provider', {
+        disabledProviders: status.disabledProviders
+      }, 'warn');
+      return fallback;
     }
 
-    const secondaryResult = await runProvider(secondary);
-    if (secondaryResult.ok) {
-      this.cache.set(cacheKey, secondaryResult.parsed);
-      return secondaryResult.parsed;
-    }
-    if (secondary === 'openai') {
-      openAIQuotaExhausted = secondaryResult.quotaExhausted;
-      if (openAIQuotaExhausted) this.startOpenAICooldown('429/quota');
-    } else {
-      geminiQuotaExhausted = secondaryResult.quotaExhausted;
-      if (geminiQuotaExhausted) this.startGeminiCooldown('429/quota');
+    const result = await aiProviderManager.execute(prompt, {
+      retries,
+      parseJson: (text) => this.extractJson(text)
+    });
+
+    if (result.ok) {
+      this.metrics.aiCalls += 1;
+      this.metrics.aiLatencyMs.push(result.latencyMs || 0);
+      await this.setSharedCache(cacheKey, result.parsed);
+      this.metrics.totalLatencyMs += Date.now() - startedAt;
+      this.log('ai_request_complete', {
+        provider: result.provider,
+        model: result.model,
+        aiLatencyMs: result.latencyMs,
+        durationMs: Date.now() - startedAt
+      });
+      return result.parsed;
     }
 
-    if (openAIQuotaExhausted || geminiQuotaExhausted) {
-      console.warn('[AIService] Quota exhausted. Returning fallback response.');
-    } else {
-      console.warn('[AIService] Both providers unavailable for this request. Returning fallback response.');
-    }
-
+    this.metrics.fallbacks += 1;
+    this.metrics.totalLatencyMs += Date.now() - startedAt;
+    this.log('fallback_all_providers_failed', {
+      durationMs: Date.now() - startedAt,
+      reason: result.reason
+    }, 'warn');
     return fallback;
   }
 }
 
-// Singleton instance
 module.exports = new AIService();

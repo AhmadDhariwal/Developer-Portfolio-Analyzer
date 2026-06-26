@@ -93,4 +93,8 @@ const careerSprintSchema = new mongoose.Schema({
   aiPlans: [aiPlanSchema]
 }, { timestamps: true });
 
+careerSprintSchema.index({ userId: 1, updatedAt: -1 });
+careerSprintSchema.index({ userId: 1, weekStartDate: -1 });
+careerSprintSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 });
+
 module.exports = mongoose.model('CareerSprint', careerSprintSchema);

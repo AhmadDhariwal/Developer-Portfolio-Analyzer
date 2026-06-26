@@ -47,4 +47,7 @@ const recommendationSchema = new mongoose.Schema({
   }
 });
 
+recommendationSchema.index({ userId: 1, createdAt: -1 });
+recommendationSchema.index({ userId: 1, careerStack: 1, experienceLevel: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Recommendation', recommendationSchema);

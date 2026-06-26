@@ -1,3 +1,5 @@
+const { compactArray, truncateText } = require('../services/promptBuilderService');
+
 const getJobPrompt = ({
   careerStack = 'Full Stack',
   experienceLevel = 'Student',
@@ -36,10 +38,10 @@ const getJobPrompt = ({
     ? 'Mix of Full Time, Remote, Contract, Part Time, and Internship'
     : jobType;
   const topSignals = [
-    ...(knownSkills || []).slice(0, 5),
-    ...(resumeSkills || []).slice(0, 4),
-    ...(githubSkills || []).slice(0, 4),
-    ...(skillGaps || []).slice(0, 4)
+    ...compactArray(knownSkills, 5),
+    ...compactArray(resumeSkills, 4),
+    ...compactArray(githubSkills, 4),
+    ...compactArray(skillGaps, 4)
   ].filter(Boolean).join(', ') || careerStack;
   const platformLines = Object.entries(distribution)
     .map(([source, count]) => `- ${source}: exactly ${count} jobs`)
@@ -52,11 +54,11 @@ const getJobPrompt = ({
 TARGET PROFILE
 - Career Stack: ${careerStack}
 - Experience Level: ${experienceLevel}
-- Known Skills: ${(knownSkills || []).slice(0, 8).join(', ') || 'Not specified'}
-- Resume Skills: ${(resumeSkills || []).slice(0, 8).join(', ') || 'Not available'}
-- GitHub Technologies: ${(githubSkills || []).slice(0, 8).join(', ') || 'Not available'}
-- Skill Gaps to improve: ${(skillGaps || []).slice(0, 8).join(', ') || 'General improvement'}
-${skills ? `- Must include a strong ${skills} signal in title, description, or required skills` : ''}
+- Known Skills: ${compactArray(knownSkills, 8).join(', ') || 'Not specified'}
+- Resume Skills: ${compactArray(resumeSkills, 8).join(', ') || 'Not available'}
+- GitHub Technologies: ${compactArray(githubSkills, 8).join(', ') || 'Not available'}
+- Skill Gaps to improve: ${compactArray(skillGaps, 8).join(', ') || 'General improvement'}
+${skills ? `- Must include a strong ${truncateText(skills, 80)} signal in title, description, or required skills` : ''}
 
 STRICT SOURCE DISTRIBUTION
 ${platformLines}

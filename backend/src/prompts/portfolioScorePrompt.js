@@ -1,8 +1,12 @@
+const { compactJson, summarizeResume, summarizeGithub } = require('../services/promptBuilderService');
+
 /**
  * Prompt template for overall Portfolio Strength Scoring.
  * Scores are calibrated against level expectations, not absolute industry standards.
  */
 const getPortfolioScorePrompt = (resumeAnalysis, githubAnalysis, careerStack, experienceLevel) => {
+  const compactResume = summarizeResume(resumeAnalysis || {});
+  const compactGithub = summarizeGithub(githubAnalysis || {});
   return `
     You are a technical hiring manager.
     Score this developer's portfolio readiness.
@@ -10,8 +14,8 @@ const getPortfolioScorePrompt = (resumeAnalysis, githubAnalysis, careerStack, ex
     Career Stack:    "${careerStack}"
     Experience Level:"${experienceLevel}"
 
-    Resume Analysis: ${JSON.stringify(resumeAnalysis)}
-    GitHub Analysis: ${JSON.stringify(githubAnalysis)}
+    Resume Analysis Summary: ${compactJson(compactResume, 0)}
+    GitHub Analysis Summary: ${compactJson(compactGithub, 0)}
 
     IMPORTANT: Calibrate ALL scores relative to typical expectations for a
     "${experienceLevel}" developer targeting "${careerStack}" roles.

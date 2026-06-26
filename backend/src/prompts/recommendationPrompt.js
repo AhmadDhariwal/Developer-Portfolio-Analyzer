@@ -1,4 +1,5 @@
 const { getExperienceConfig } = require('../utils/experienceMapper');
+const { compactJson, compactArray } = require('../services/promptBuilderService');
 
 /**
  * Recommendation prompt - context-aware with strict difficulty and new-tech rules.
@@ -22,6 +23,11 @@ const getRecommendationPrompt = (
   developerSignals = {}
 ) => {
   const config = getExperienceConfig(experienceLevel);
+  const compactKnownSkills = compactArray(knownSkills, 20);
+  const compactMissingSkills = compactArray(missingSkills, 20);
+  const compactResume = compactJson(resumeInsights, 0);
+  const compactGithub = compactJson(githubInsights, 0);
+  const compactSignals = compactJson(developerSignals, 0);
 
   return `
     You are a senior software engineering mentor.
@@ -29,11 +35,11 @@ const getRecommendationPrompt = (
 
     Career Stack:     "${careerStack}"
     Experience Level: "${experienceLevel}"
-    Known Skills:     ${JSON.stringify(knownSkills)}
-    Skill Gaps:       ${JSON.stringify(missingSkills)}
-    Resume Signals Summary:  ${JSON.stringify(resumeInsights)}
-    GitHub Signals Summary:  ${JSON.stringify(githubInsights)}
-    Developer Signals Summary:${JSON.stringify(developerSignals)}
+    Known Skills:     ${JSON.stringify(compactKnownSkills)}
+    Skill Gaps:       ${JSON.stringify(compactMissingSkills)}
+    Resume Signals Summary:  ${compactResume}
+    GitHub Signals Summary:  ${compactGithub}
+    Developer Signals Summary:${compactSignals}
 
     STRICT RULES - you MUST follow ALL of these:
     1. Every project MUST primarily use technologies from "Known Skills".

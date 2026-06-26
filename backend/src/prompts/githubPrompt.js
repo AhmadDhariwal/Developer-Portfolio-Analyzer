@@ -1,11 +1,14 @@
+const { compactJson } = require('../services/promptBuilderService');
+
 const getGitHubPrompt = (githubData) => {
+  const compactSignals = compactJson(githubData, 0);
   return `
     Analyze the following compressed GitHub profile signals for a developer.
     The numeric scores are already calculated deterministically by the backend.
     Do not invent or recalculate scores.
     
     Compressed GitHub Signals:
-    ${JSON.stringify(githubData, null, 2)}
+    ${compactSignals}
     
     Return a structured JSON object with:
     1. "developerLevel": "Beginner", "Intermediate", or "Advanced".

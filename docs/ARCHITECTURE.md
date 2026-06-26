@@ -14,6 +14,8 @@ graph TB
         CTL[Controllers]
         SVC[Services]
         AI[AIService Singleton]
+        AIPM[AI Provider Manager]
+        PB[Prompt Builder]
         WKR[Background Workers]
     end
 
@@ -26,7 +28,10 @@ graph TB
     subgraph External["External APIs"]
         GH[GitHub API]
         GEM[Gemini API]
-        GROQ[Groq/OpenAI API]
+        GROQ[Groq API]
+        OAI[OpenAI API]
+        ANT[Anthropic API]
+        OR[OpenRouter API]
         JOB[JSearch / Jooble / Adzuna]
         SG[SendGrid]
         TW[Twilio SMS]
@@ -37,14 +42,19 @@ graph TB
     RTR --> CTL
     CTL --> SVC
     SVC --> AI
+    SVC --> PB
+    AI --> AIPM
     SVC --> MONGO
     SVC --> REDIS
     SVC --> GH
     SVC --> JOB
     SVC --> SG
     SVC --> TW
-    AI --> GROQ
-    AI --> GEM
+    AIPM --> GROQ
+    AIPM --> OAI
+    AIPM --> GEM
+    AIPM --> ANT
+    AIPM --> OR
     AI --> REDIS
     MID --> DISK
     WKR --> MONGO
@@ -75,9 +85,11 @@ graph TB
 - **File Storage**: Local disk at `backend/uploads/`
 
 ### AI Tier
-- **Primary Provider**: Groq-hosted OpenAI-compatible models (llama-3.3-70b, llama-3.1-8b)
-- **Fallback Provider**: Google Gemini (gemini-2.0-flash, gemini-2.5-flash)
-- **Orchestration**: `backend/src/services/aiservice.js` (singleton)
+- **Providers**: Groq, OpenAI, Google Gemini, Anthropic, and OpenRouter are configured separately.
+- **Provider Manager**: `backend/src/services/aiProviderManager.js` owns registration, provider priority, provider health, failover, retry policy, cooldown, and provider/model validation.
+- **Model Routing**: Provider-specific model env vars (`GROQ_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`, `ANTHROPIC_MODEL`, `OPENROUTER_MODEL`) are validated before use.
+- **Public Facade**: `backend/src/services/aiservice.js` preserves the shared `runAIAnalysis(prompt, fallback, retries)` contract and owns Redis-backed prompt cache, deterministic summary cache helpers, JSON parsing, fallbacks, and metrics.
+- **Prompt Builder**: `backend/src/services/promptBuilderService.js` contains reusable compaction helpers so features can summarize evidence before AI calls and keep prompts below the 5000-token target.
 
 ## Request Lifecycle
 
@@ -167,16 +179,18 @@ Every domain follows: **Route → Controller → Service → Model** with `aiser
 
 ## Key Architectural Decisions
 
-1. **Singleton AI Service**: One `AIService` instance handles all LLM calls with provider chaining, cooldown, and retry logic. All features share this single instance.
+1. **Singleton AI Facade + Provider Manager**: Features call one `AIService` singleton. Provider-specific logic is isolated in `AIProviderManager`, so business logic does not know which provider is used.
 
 2. **CommonJS over ESM**: The backend uses `require()` throughout. Import statements are not used in backend.
 
 3. **No Dependency Injection in Backend**: Services are plain modules that export singletons or constructor functions. No DI container.
 
-4. **Dual Cache Strategy**: In-memory Map (AIService prompt cache) + Redis (general caching) + MongoDB-based caches (GitHub analysis, job results).
+4. **Layered Cache Strategy**: Redis is the shared cache for AI responses, deterministic summaries, dashboard data, and general reusable values. AIService keeps only a process-memory fallback when Redis is unavailable. MongoDB-based caches remain the durable layer for GitHub analysis, resume analysis, job results, and feature analysis payloads.
 
-5. **RBAC via Middleware**: Role checks happen in `authmiddleware.js` after JWT verification. Super admin gets global bypass.
+5. **Compact Prompt Boundary**: AI features must summarize repositories, resumes, reports, sprint state, job demand, and developer signals through `promptBuilderService.js` before calling the provider manager. Raw provider routing and retry logic stays centralized.
 
-6. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
+6. **RBAC via Middleware**: Role checks happen in `authmiddleware.js` after JWT verification. Super admin gets global bypass.
 
-7. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().
+7. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
+
+8. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().

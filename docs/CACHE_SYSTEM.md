@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TB
-    Request[API Request] --> L1{L1: Prompt Cache?}
+    Request[API Request] --> L1{L1: Redis AI Cache?}
     L1 -->|Hit| Return1[Return Cached Result]
     L1 -->|Miss| L2{L2: Redis Cache?}
     L2 -->|Hit| Return2[Return Cached Result]
@@ -17,19 +17,50 @@ graph TB
     StoreRedis2 --> Return4[Return Fresh Result]
 ```
 
-## Layer 1: In-Memory Prompt Cache
+## Layer 1: Shared AI Cache
 
-**Location**: `services/aiservice.js` — `this.cache = new Map()`
+**Location**: `services/aiservice.js` plus `services/redisCacheService.js`
 
 | Property | Value |
 |----------|-------|
-| Key | SHA256 hash of full prompt string |
-| Value | Parsed JSON result |
-| Scope | Process memory (lost on restart) |
-| Expiration | None (permanent for process lifetime) |
-| Purpose | Avoid identical AI calls |
+| Key | `ai:response:<sha256(prompt)>` or `ai:deterministic:<sha256(feature identity)>` |
+| Value | Parsed AI JSON result or deterministic summary |
+| Scope | Redis when configured; process-memory fallback when Redis is unavailable |
+| Expiration | `AI_RESPONSE_CACHE_TTL_SECONDS` and `AI_DETERMINISTIC_CACHE_TTL_SECONDS` |
+| Purpose | Avoid identical AI calls and reuse deterministic computations |
 
-**Who manages it**: `aiservice.runAIAnalysis()` checks cache before calling AI providers
+**Who manages it**: `aiservice.runAIAnalysis()` checks the shared cache before calling AI providers. `AIService.getDeterministicSummary()` and `AIService.setDeterministicSummary()` manage deterministic summaries separately from AI responses.
+
+Prompt cache hits are logged as `prompt_cache_hit`; misses are logged as `prompt_cache_miss`. Redis timings are logged as `redis_cache_hit`, `redis_cache_miss`, and `redis_cache_set`. Prompt cache keys are still based on the final prompt string, but feature code should avoid building prompts until after DB/cache checks and deterministic skip gates.
+
+`services/aiservice.js` also keeps process-local benchmark counters:
+- request count
+- AI calls
+- fallbacks
+- deterministic skips
+- prompt-cache hit ratio and Redis hit/miss counters
+- average prompt size
+- average request latency
+- average AI latency
+- average Redis latency
+
+Run `node backend\src\scripts\benchmarkAIInfrastructure.js` for a dry benchmark summary. Add `--live` only when real provider calls are acceptable.
+
+### Skill Gap Deterministic Summary Cache
+
+**Location**: `backend/src/controllers/skillgapcontroller.js`
+
+| Property | Value |
+|---|---|
+| Key | SHA256 of username, career stack, experience level, resume hash, resume analysis id, signal hash, and analysis version |
+| Value | Deterministic skill groups used before AI merge |
+| Scope | Redis shared cache, with process-memory fallback |
+| TTL | `AI_DETERMINISTIC_CACHE_TTL_SECONDS` (default 10 minutes) |
+| Purpose | Reuse deterministic summaries separately from AI output for identical personalized signal states |
+
+This cache does not replace `AnalysisCache`. It only avoids repeated deterministic transformations on fresh requests that share the same resume/profile/signal identity. The cache key is managed through `AIService.getDeterministicSummary('skill_gap', identity)` and `AIService.setDeterministicSummary('skill_gap', identity, value)`.
+
+Skill Gap records deterministic AI skips through `AIService.recordDeterministicSkip('skill_gap')`, which lets the AI benchmark report how often production requests avoid provider calls.
 
 ## Layer 2: Redis Cache
 
@@ -78,6 +109,10 @@ Cached job listing results from JSearch, Jooble, Adzuna.
 
 General-purpose analysis result cache for non-GitHub analyses.
 
+Skill Gap uses `AnalysisCache` with `githubUsername`, `careerStack`, `experienceLevel`, `resumeHash`, `resumeAnalysisId`, `signalHash`, and `analysisVersion`. A normal request checks this cache before building an AI prompt. `forceRefresh=true` bypasses the cached result once and repopulates it after fresh analysis.
+
+Prompt generation happens after this cache lookup and after deterministic confidence is evaluated. If the backend cache hits or deterministic confidence is sufficient, Skill Gap does not build an AI prompt and does not call a provider.
+
 ### Resume Analysis Cache
 **Model**: `models/resumeAnalysisCache.js`
 
@@ -114,7 +149,8 @@ Profile changes may clear frontend caches for Dashboard, Skill Gap, Recommendati
 
 | Cache | Invalidation Trigger |
 |-------|---------------------|
-| In-Memory Prompt Cache | Process restart only |
+| AI Response Cache | TTL, process restart for memory fallback, or `AIService.invalidateCacheKey()`/`invalidateCachePrefix()` |
+| AI Deterministic Summary Cache | TTL, profile/signal identity changes, or `AIService.invalidateCacheKey()`/`invalidateCachePrefix()` |
 | Redis | TTL-based + explicit invalidation on write |
 | GitHub Analysis Cache | `forceRefresh=true`, 24h TTL, new analysis version |
 | Job Cache | Periodic worker refresh |
@@ -137,7 +173,9 @@ When a user saves a new GitHub or resume analysis, `dashboardcontroller.invalida
 
 | File | Role |
 |------|------|
-| `services/aiservice.js` | In-memory prompt cache |
+| `services/aiservice.js` | In-memory prompt cache, JSON parsing, AI fallback, and AI benchmark counters |
+| `services/aiProviderManager.js` | Provider health, priority, retry, failover, and model validation |
+| `services/promptBuilderService.js` | Reusable compact prompt summaries |
 | `services/redisCacheService.js` | Redis connection and general caching |
 | `models/githubAnalysisCache.js` | GitHub analysis persistence cache |
 | `models/jobCache.js` | Job listing cache |

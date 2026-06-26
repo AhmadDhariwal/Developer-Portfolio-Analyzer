@@ -1,8 +1,7 @@
+const { compactArray } = require('../services/promptBuilderService');
+
 const safeList = (values = [], limit = 8) =>
-  (Array.isArray(values) ? values : [])
-    .map((value) => String(value || '').trim())
-    .filter(Boolean)
-    .slice(0, limit);
+  compactArray(values, limit);
 
 const formatTasks = (tasks = []) =>
   tasks.slice(0, 8).map((task, index) => (

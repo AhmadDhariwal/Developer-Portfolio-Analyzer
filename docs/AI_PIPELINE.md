@@ -6,149 +6,212 @@
 sequenceDiagram
     participant Feature as Feature Service
     participant AISvc as AIService Singleton
-    participant Cache as In-Memory Cache
-    participant Groq as Groq/OpenAI
-    participant Gemini as Gemini API
-    participant Prompt as Prompt Template
+    participant Manager as AI Provider Manager
+    participant Cache as Redis Prompt Cache
+    participant Groq as Groq API
+    participant OpenAI as OpenAI API
+    participant Gemini as Gemini SDK
+    participant Anthropic as Anthropic API
+    participant OpenRouter as OpenRouter API
     participant Fallback as Static Fallback
 
-    Feature->>Prompt: Build prompt with user data
-    Prompt-->>Feature: Formatted prompt
     Feature->>AISvc: runAIAnalysis(prompt, fallback)
-    AISvc->>Cache: SHA256(prompt) → check cache
-    Cache-->>AISvc: Hit? Return cached result
-    AISvc->>AISvc: Check provider health
-    AISvc->>Groq: Primary: tryProvider('openai')
-    Groq-->>AISvc: Success / Quota / Model Missing
-    alt Groq Success
-        AISvc->>Cache: Store result
+    AISvc->>Cache: SHA256(prompt)
+    Cache-->>AISvc: Hit? Return cached JSON even if providers are unavailable
+    AISvc->>AISvc: Estimate prompt size + record metrics
+    AISvc->>Manager: execute(prompt)
+    Manager->>Manager: Select healthy provider by priority
+    Manager->>Groq: Try provider-native Groq config
+    alt Groq transient/permanent failure
+        Manager->>OpenAI: Switch provider when configured
+    end
+    alt OpenAI unavailable
+        Manager->>Gemini: Switch provider when configured
+    end
+    alt Gemini unavailable
+        Manager->>Anthropic: Switch provider when configured
+    end
+    alt Anthropic unavailable
+        Manager->>OpenRouter: Switch provider when configured
+    end
+    alt All providers fail
+        AISvc-->>Feature: Return static fallback
+    else Provider succeeds
+        AISvc->>Cache: Store parsed JSON
         AISvc-->>Feature: Parsed JSON result
-    else Groq Failed (quota/model)
-        AISvc->>Gemini: Fallback: tryProvider('gemini')
-        Gemini-->>AISvc: Success / Quota / Model Missing
-        alt Gemini Success
-            AISvc->>Cache: Store result
-            AISvc-->>Feature: Parsed JSON result
-        else Both Failed
-            AISvc-->>Feature: Return static fallback
-        end
     end
 ```
 
-## Provider Chain
+## Provider Configuration
 
-### Primary: OpenAI-compatible (Groq)
-- **Endpoint**: `https://api.groq.com/openai/v1/chat/completions`
-- **Models** (tried in order): llama-3.3-70b-versatile → llama-3.1-8b-instant
-- **Config**: max_tokens=8000, system: "Return valid JSON only"
-- **Non-reasoning models**: temperature=0.2
-- **Reasoning models** (grok-*-mini, o1, o3): temperature omitted
-- **Auth**: `Bearer $OPENAI_API_KEY`
-- **Timeout**: 30s
+Provider names and model names are separate. Do not put Groq models in `OPENAI_MODEL`.
 
-### Fallback: Google Gemini
-- **Models** (tried in order): gemini-2.0-flash → gemini-2.0-flash-lite → gemini-2.5-flash
-- **Config**: Using `@google/generative-ai` SDK
-- **Auth**: `GEMINI_API_KEY` or `GEMINI_FALLBACK_API_KEY`
+| Provider | API key env | Model env | SDK/client |
+|---|---|---|---|
+| Groq | `GROQ_API_KEY` | `GROQ_MODEL` or `GROQ_MODELS` | OpenAI-compatible HTTPS endpoint at `https://api.groq.com/openai/v1/chat/completions` |
+| Gemini | `GEMINI_API_KEY` | `GEMINI_MODEL` or `GEMINI_MODELS` | `@google/generative-ai` |
+| OpenAI | `OPENAI_API_KEY` | `OPENAI_MODEL` or `OPENAI_MODELS` | OpenAI chat completions endpoint |
+| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` or `ANTHROPIC_MODELS` | Anthropic Messages API |
+| OpenRouter | `OPENROUTER_API_KEY` | `OPENROUTER_MODEL` or `OPENROUTER_MODELS` | OpenAI-compatible HTTPS endpoint |
 
-## Cooldown Logic
+Default model candidates:
+- Groq: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`
+- OpenAI: `gpt-4.1-mini`, `gpt-4o-mini`
+- Gemini: `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`
+- Anthropic: `claude-3-7-sonnet-latest`
+- OpenRouter: no default model; configure `OPENROUTER_MODEL`.
 
-On quota exhaustion (429 / RESOURCE_EXHAUSTED):
-- **Groq cooldown**: 30 minutes (configurable via `OPENAI_COOLDOWN_MS`)
-- **Gemini cooldown**: 3 minutes (configurable via `GEMINI_COOLDOWN_MS`)
-- During cooldown, that provider is skipped
-- Leads to faster fallback or static response
+Provider priority is configured with `AI_PROVIDER_PRIORITY`, for example:
 
-## In-Memory Prompt Cache
-
-```javascript
-cache = new Map()  // SHA256(prompt) → parsed JSON result
+```env
+AI_PROVIDER_PRIORITY=groq,openai,gemini,anthropic,openrouter
 ```
 
-- No expiration (lives for process lifetime)
-- Keyed on full prompt content
-- Bypasses both AI providers entirely on cache hit
-- No Redis involved for this cache
+Admin Platform Settings can still select `provider`, `model`, and encrypted API key at runtime. Settings are validated against the selected provider. Incompatible models are ignored and logged.
+
+## Provider Routing
+
+`services/aiProviderManager.js` owns provider registration, routing, health, retries, model validation, and failover. Business features call `services/aiservice.js`, and `aiservice.js` only handles the stable public contract, prompt cache, JSON parsing, fallback behavior, and metrics.
+
+The provider manager:
+- Selects the SDK/client by provider, not by model string.
+- Rejects provider/model mismatches such as Gemini model names on OpenAI, Groq model names on OpenAI, or OpenAI model names on Gemini.
+- Logs startup configuration issues immediately.
+- Initializes only providers with valid API keys and model configuration.
+- Tracks runtime health: requests, success rate, failures, average latency, last success, last failure, and cooldown.
+- Logs provider selected, provider switched, provider disabled, retry reason, AI latency, and provider health.
+
+Startup status uses human-readable lines plus structured logs:
+
+```text
+[AIProviderManager] ✓ Groq Ready
+[AIProviderManager] ✗ Anthropic Disabled (missing_key)
+```
+
+## Retry Policy
+
+Permanent errors are not retried:
+- `400`
+- `401`
+- `403`
+- `404`
+- `413`
+
+Transient errors may be retried:
+- timeout
+- `429`
+- `500`
+- `502`
+- `503`
+- `504`
+
+`429` starts a provider cooldown and fails over to the next configured provider. Unknown permanent-looking provider/model errors fail over instead of burning retry time.
+
+## Shared AI Cache
+
+```javascript
+ai:response:<sha256(prompt)> -> parsed JSON result
+ai:deterministic:<sha256(feature identity)> -> deterministic summary
+```
+
+- Primary scope: Redis when `REDIS_URL` is configured and connected.
+- Fallback scope: process memory when Redis is disabled or unavailable.
+- Expiration: `AI_RESPONSE_CACHE_TTL_SECONDS` for AI responses, `AI_DETERMINISTIC_CACHE_TTL_SECONDS` for deterministic summaries.
+- Purpose: avoid identical AI calls and reuse deterministic computations across feature requests.
+- Invalidation: `AIService.invalidateCacheKey()` and `AIService.invalidateCachePrefix()`.
+- Logging: `prompt_cache_hit`, `prompt_cache_miss`, `redis_cache_hit`, `redis_cache_miss`, `redis_cache_set`.
 
 ## Prompt System
 
-Prompts are kept in `backend/src/prompts/` as template functions:
+Prompts are kept in `backend/src/prompts/` as template functions.
 
 | Prompt File | Used By | Purpose |
-|------------|---------|---------|
+|---|---|---|
 | `githubPrompt.js` | `githubservice.js` | GitHub profile AI insights |
 | `resumePrompt.js` | `resumeservice.js` | Resume scoring and feedback |
 | `skillGapPrompt.js` | `skillgapcontroller.js` | Skill gap analysis |
 | `recommendationPrompt.js` | `recommendationscontroller.js` | Career recommendations |
 | `portfolioScorePrompt.js` | `analysisservice.js` | Portfolio scoring |
 | `careerSprintPrompt.js` | `careerSprintService.js` | Sprint plan generation |
-| No current course prompt | `courseService.js` | Deterministic course pool/ranking; no AI prompt on normal course reads |
 | `jobPrompt.js` | `jobService.js` | Job matching |
 | `interviewPrepPrompt.js` | `interviewPrepService.js` | Interview Q&A generation |
 | `resumeGuidePrompt.js` | `resumeGuideService.js` | Resume improvement guide |
 | `weeklyReportPrompt.js` | `weeklyReportService.js` | Weekly report content |
 
-Each prompt template function takes structured data and returns a text prompt instructing the LLM to return specific JSON.
+AI prompt templates use `backend/src/services/promptBuilderService.js` for compact JSON, bounded text, and summarized evidence. Skill Gap, GitHub Analyzer, Resume Analysis, Recommendations, Career Sprint, Interview Prep, Portfolio Score, Weekly Reports, Resume Guide, Jobs, and Courses share the same compaction helpers.
 
-## JSON Extraction & Repair
+Skill Gap builds a compact context before calling `getSkillGapPrompt()`. It summarizes GitHub repositories, resume evidence, portfolio, sprint, weekly report, integration, and job-demand signals instead of sending raw source objects. Resume Analysis sends a bounded resume evidence summary instead of unbounded raw resume text. Prompt size is estimated before every AI request, with a target below 5000 input tokens.
+
+Reusable prompt compaction helpers live in `backend/src/services/promptBuilderService.js`. Feature code should:
+- Check feature-level caches first.
+- Skip AI when deterministic confidence is sufficient.
+- Build compact prompt context only when AI is required.
+- Avoid raw objects, duplicate text, and repeated evidence.
+
+## JSON Extraction And Repair
 
 `aiservice.extractJson()`:
-1. Strip markdown code fences
-2. Try `JSON.parse()` directly
-3. Try regex extraction of outermost `{...}` or `[...]`
-4. Auto-repair truncated JSON (close unclosed braces/brackets)
-5. Throw if all attempts fail
+1. Strips markdown code fences.
+2. Attempts direct `JSON.parse()`.
+3. Extracts the outermost JSON object or array.
+4. Repairs truncated JSON by closing unclosed braces/brackets.
+5. Throws if all parsing attempts fail.
 
 ## Fallback Strategy
 
-Every AI call requires a `fallback` parameter — a static JSON object that is returned when both providers fail. Fallback values are constructed with deterministic logic:
+Every AI call requires a deterministic fallback:
 
 ```javascript
-const fallback = { developerLevel: 'Beginner', strengths: [...], weakAreas: [...], summary: '...' }
-const result = await aiService.runAIAnalysis(prompt, fallback)
+const result = await aiService.runAIAnalysis(prompt, fallback);
 ```
 
-## Error Handling & Retry
+If AI is disabled, no provider is configured, providers fail, or JSON parsing fails after routing, the fallback is returned. The public method signature remains `runAIAnalysis(prompt, fallback, retries)`.
 
-Per-model retry with exponential backoff:
-- Attempt 0: immediate
-- Attempt 1: 1s delay
-- Attempt 2: 4s delay
-- Default retries: 2 per model
+## Observability
 
-Error types:
-- **404 / model_not_found**: Skip model, try next
-- **429 / quota**: Mark provider as exhausted, try fallback provider
-- **Network errors**: Retry, then skip model
+AI logs are structured JSON strings prefixed with `[AIService]`.
 
-## Critical File: `services/aiservice.js`
+Important events:
+- `providers_ready`
+- `provider_missing_key`
+- `provider_model_mismatch`
+- `settings_model_ignored`
+- `prompt_size`
+- `prompt_cache_hit`
+- `prompt_cache_miss`
+- `redis_cache_hit`
+- `redis_cache_miss`
+- `redis_cache_set`
+- `provider_selected`
+- `provider_switched`
+- `retry_scheduled`
+- `provider_success`
+- `provider_error`
+- `ai_request_complete`
+- `fallback_all_providers_failed`
 
-**Why it exists**: Central orchestrator for all LLM calls across every feature.
+Provider-manager logs are structured JSON strings prefixed with `[AIProviderManager]` and include:
+- `provider_selected`
+- `provider_switched`
+- `provider_disabled`
+- `provider_success`
+- `provider_error`
+- `retry_scheduled`
 
-**Who uses it**: githubservice, resumeservice, skillgapcontroller, recommendationscontroller, careerSprintService, courseService, interviewPrepService, scenarioSimulatorService, resumeGuideService, weeklyReportService
+Skill Gap request-stage logs are prefixed with `[SkillGapPipeline]` and include cache hit/miss, prompt generation size, AI skipped, stage timings, response size, and total request duration. AIService benchmark metrics include total AI request time, AI provider latency, Redis latency, prompt size, estimated tokens, cache hit/miss ratio, deterministic skip ratio, provider used, failover, and retry reasons.
 
-**What depends on it**: All AI-powered features (GitHub analysis, resume analysis, skill gap, recommendations, courses, jobs, interview prep, career sprints, scenario simulator, weekly reports)
+## Benchmark Utility
 
-**When to modify**: 
-- Adding a new AI provider
-- Changing provider priority
-- Adjusting retry/cooldown behavior
-- Changing model candidates
+Run the dry benchmark without making external AI calls:
 
-**What must remain backward compatible**: The `runAIAnalysis(prompt, fallback, retries)` method signature. All callers pass (prompt, fallback) and expect a parsed JSON object back.
+```powershell
+node backend\src\scripts\benchmarkAIInfrastructure.js
+```
 
-## Adding a New AI Feature
+Run the live benchmark only when API keys are configured and a real provider call is acceptable:
 
-1. Create prompt template in `src/prompts/newFeaturePrompt.js`
-2. Export a function that takes structured input, returns a text prompt
-3. In your service, call `aiService.runAIAnalysis(prompt, fallback)`
-4. Build a static fallback object that the feature can degrade to
-5. No need to modify `aiservice.js` itself
+```powershell
+node backend\src\scripts\benchmarkAIInfrastructure.js --live
+```
 
-## PlatformSettings Override
-
-Admin can configure AI provider at runtime:
-- `platformSettingsService.getAiSnapshotSync()` returns current settings
-- Settings include: `provider` (openai/gemini), `apiKey`, `model`, `enabled`
-- If `enabled === false`, all AI calls return fallback immediately
-- Settings are read from MongoDB `platformSettings` collection
+The report includes enabled/disabled providers, provider health, per-feature prompt size, average and p95 prompt tokens, AIService shared-cache metrics, deterministic skip ratio, database index additions, and live provider latency when `--live` is used.

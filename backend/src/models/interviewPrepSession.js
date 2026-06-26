@@ -20,4 +20,6 @@ const interviewPrepSessionSchema = new mongoose.Schema({
   questions: [interviewQuestionSchema]
 }, { timestamps: true });
 
+interviewPrepSessionSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = mongoose.model('InterviewPrepSession', interviewPrepSessionSchema);

@@ -67,4 +67,7 @@ const analysisSchema = new mongoose.Schema({
     }
 });
 
+analysisSchema.index({ userId: 1, updatedAt: -1, createdAt: -1 });
+analysisSchema.index({ userId: 1, githubAnalysisVersion: 1, updatedAt: -1 });
+
 module.exports = mongoose.model('Analysis', analysisSchema);

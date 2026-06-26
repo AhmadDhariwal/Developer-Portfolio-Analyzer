@@ -28,4 +28,6 @@ const integrationInsightSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+integrationInsightSchema.index({ updatedAt: -1 });
+
 module.exports = mongoose.model('IntegrationInsight', integrationInsightSchema);

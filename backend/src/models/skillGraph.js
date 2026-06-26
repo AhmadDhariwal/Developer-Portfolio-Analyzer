@@ -49,4 +49,7 @@ const skillGraphSchema = new mongoose.Schema({
   }
 });
 
+skillGraphSchema.index({ userId: 1, updatedAt: -1 });
+skillGraphSchema.index({ userId: 1, careerStack: 1, experienceLevel: 1 });
+
 module.exports = mongoose.model('SkillGraph', skillGraphSchema);

@@ -10,80 +10,37 @@ const getSkillGapPrompt = (
   githubInsights = {},
   developerSignals = {}
 ) => {
-  return `
-    You are a senior engineering career coach.
-    Analyze the skill gap for a developer with the following profile:
+  const compactContext = {
+    profile: { careerStack, experienceLevel },
+    skills: detectedSkills,
+    resume: resumeInsights,
+    github: githubInsights,
+    signals: developerSignals
+  };
 
-    Career Stack: "${careerStack}"
-    Experience Level: "${experienceLevel}"
-    GitHub Repos/Languages: ${JSON.stringify(detectedSkills.github, null, 2)}
-    Repo Quality Signals: ${JSON.stringify(detectedSkills.repoQuality, null, 2)}
-    Resume Insights: ${JSON.stringify(resumeInsights, null, 2)}
-    GitHub Summary: ${JSON.stringify(githubInsights, null, 2)}
-    Developer Signals: ${JSON.stringify(developerSignals, null, 2)}
+  return `You are a senior engineering career coach. Use only the compact evidence below; do not invent unsupported skills.
 
-    Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
+CONTEXT_JSON:
+${JSON.stringify(compactContext)}
 
-    {
-      "analysisSummary": string,
-      "yourSkills": [
-        {
-          "name": string,
-          "category": string,
-          "proficiency": number (0-100),
-          "isFoundational": boolean
-        }
-      ],
-      "missingSkills": [
-        {
-          "name": string,
-          "category": string,
-          "priority": "High" | "Medium" | "Low",
-          "jobDemand": number (0-100),
-          "levelRelevance": "Current" | "Next Level" | "Advanced"
-        }
-      ],
-      "coverage": number (0-100),
-      "missing": number (0-100),
-      "levelAssessment": string,
-      "roadmap": [
-        {
-          "phase": string,
-          "title": string,
-          "description": string,
-          "duration": string,
-          "skills": string[],
-          "resources": [
-            {
-              "title": string,
-              "url": string (must be a valid https URL)
-            }
-          ],
-          "color": "purple" | "blue" | "green" | "orange"
-        }
-      ],
-      "totalWeeks": string
-    }
+Return ONLY valid JSON with this shape:
+{
+  "analysisSummary": string,
+  "yourSkills": [{"name": string, "category": string, "proficiency": number, "isFoundational": boolean}],
+  "missingSkills": [{"name": string, "category": string, "priority": "High"|"Medium"|"Low", "jobDemand": number, "levelRelevance": "Current"|"Next Level"|"Advanced"}],
+  "coverage": number,
+  "missing": number,
+  "levelAssessment": string,
+  "roadmap": [{"phase": string, "title": string, "description": string, "duration": string, "skills": string[], "resources": [{"title": string, "url": string}], "color": "purple"|"blue"|"green"|"orange"}],
+  "totalWeeks": string
+}
 
-    Field rules:
-    - Use BOTH resume and GitHub signals. Do not ignore either source.
-    - Use integration signals as additional skill evidence.
-    - Use career sprint and weekly report signals only as progress evidence, not as primary proof.
-    - Public portfolio evidence is supporting only and must not outweigh code or resume evidence.
-    - "isFoundational": true if the skill is core to "${careerStack}" at any level.
-    - "levelRelevance":
-        "Current" = this gap needs to be closed now at "${experienceLevel}"
-        "Next Level" = needed to advance one step up from "${experienceLevel}"
-        "Advanced" = only relevant at senior/staff level
-    - Calibrate "priority" relative to "${experienceLevel}" expectations, not absolute industry standards.
-    - If a skill has repeated weak evidence across reports or sprint misses, increase its urgency.
-    - If a skill has consistent supporting evidence from completed tasks, integrations, or deployed portfolio projects, reflect slightly stronger proficiency.
-    - Return at least 6 items in "yourSkills" and at least 12 items in "missingSkills".
-    - Return at least 3 phases in "roadmap" with practical milestones.
-    - Every roadmap phase must include at least 2 resources and each resource URL must be directly clickable.
-    - Ensure coverage + missing is approximately 100.
-    - analysisSummary must be 2-3 sentences explaining the main evidence behind the gap analysis.
-  `;
+Rules:
+- Prioritize GitHub + resume proof; portfolio, sprint, weekly reports, integrations, and jobs are supporting signals.
+- Use only real technical skills from the provided evidence and target profile.
+- Calibrate priority for ${careerStack} at ${experienceLevel}; repeated weak/incomplete signals raise urgency.
+- Return at least 6 current skills, 12 missing skills, 3 roadmap phases, and keep coverage + missing near 100.
+- Roadmap resources must be valid https URLs.`;
 };
 
 module.exports = { getSkillGapPrompt };

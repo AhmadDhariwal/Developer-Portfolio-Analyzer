@@ -9,6 +9,8 @@ Displayed skill names are normalized through the shared industry skill catalog b
 
 The current analysis version is `v6-skill-intelligence`. It uses the existing cache-key strategy but intentionally avoids reusing older `v5` cached payloads so stale malformed skill names do not bypass the stricter validation. Missing-skill objects may include additive metadata such as `businessImpact`, `learningEffort`, `recommendedResources`, `suggestedProject`, `whyExists`, and `whyItMatters`; existing consumers should continue using the original fields.
 
+Skill Gap now builds AI prompts only after backend cache lookup and deterministic confidence checks. When AI is required, the prompt uses a compact context with summarized GitHub repositories, resume evidence, platform signals, job demand, and deterministic skill groups rather than raw source objects. The controller logs stage timings for GitHub fetch, resume fetch, signal aggregation, skill detection, cache lookup, prompt generation, AI response, cache write, response serialization, and total request duration.
+
 ## Files To Modify
 | Change | Files |
 |---|---|

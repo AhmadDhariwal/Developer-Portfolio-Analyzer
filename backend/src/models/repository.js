@@ -30,4 +30,7 @@ const repositorySchema = new mongoose.Schema({
   }
 });
 
+repositorySchema.index({ ownerId: 1, lastUpdated: -1 });
+repositorySchema.index({ ownerId: 1, repoName: 1 });
+
 module.exports = mongoose.model('Repository', repositorySchema);

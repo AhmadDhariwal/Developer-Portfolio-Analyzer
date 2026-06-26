@@ -1,3 +1,5 @@
+const { compactArray, truncateText } = require('../services/promptBuilderService');
+
 /**
  * Builds a Gemini prompt that requests a large, multi-platform course pool
  * in a single AI call.  Results are cached and paginated by the controller.
@@ -20,9 +22,9 @@ const getCoursePrompt = ({
   topic           = '',
   totalCount      = 20
 }) => {
-  const skills    = skillGaps.length   ? skillGaps.join(', ')   : 'core fundamentals';
-  const known     = knownSkills.length  ? knownSkills.join(', ') : 'basics';
-  const topicLine = topic ? `\nFocus primarily on the topic: ${topic}.` : '';
+  const skills    = skillGaps.length   ? compactArray(skillGaps, 12).join(', ')   : 'core fundamentals';
+  const known     = knownSkills.length  ? compactArray(knownSkills, 12).join(', ') : 'basics';
+  const topicLine = topic ? `\nFocus primarily on the topic: ${truncateText(topic, 120)}.` : '';
 
   // Per-platform distribution ─────────────────────────────────────────────────
   let distributionLine;

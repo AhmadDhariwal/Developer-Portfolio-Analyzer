@@ -1,3 +1,5 @@
+const { compactArray, truncateText } = require('../services/promptBuilderService');
+
 /**
  * Builds the AI prompt that generates a comprehensive, personalised resume improvement guide
  * from an existing ResumeAnalysis document.
@@ -18,11 +20,11 @@ const getResumeGuidePrompt = (analysis) => {
   } = analysis;
 
   const suggestionText = suggestions.length
-    ? suggestions.map((s, i) => `  ${i + 1}. ${s.title}: ${s.description}`).join('\n')
+    ? suggestions.slice(0, 8).map((s, i) => `  ${i + 1}. ${truncateText(s.title, 80)}: ${truncateText(s.description, 220)}`).join('\n')
     : '  No suggestions available.';
 
-  const certsLine = certifications.length ? certifications.join(', ') : 'None listed';
-  const achievementsLine = keyAchievements.length ? keyAchievements.join(' | ') : 'None listed';
+  const certsLine = certifications.length ? compactArray(certifications, 10).join(', ') : 'None listed';
+  const achievementsLine = keyAchievements.length ? compactArray(keyAchievements, 8).join(' | ') : 'None listed';
 
   return `
 You are a senior career coach and professional resume expert with 15+ years of experience helping software developers land top-tier roles.
@@ -36,7 +38,7 @@ Keyword Density:   ${keywordDensity}/100
 Format Score:      ${formatScore}/100
 Content Quality:   ${contentQuality}/100
 Experience Level:  ${experienceLevel} (${experienceYears} years)
-Current Skills:    ${skillsFlat || 'Not detected'}
+Current Skills:    ${truncateText(skillsFlat || 'Not detected', 1000)}
 Certifications:    ${certsLine}
 Key Achievements:  ${achievementsLine}
 

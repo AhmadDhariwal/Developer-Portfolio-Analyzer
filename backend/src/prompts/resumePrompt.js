@@ -1,17 +1,18 @@
+const { compactJson, summarizeResumeTextForPrompt } = require('../services/promptBuilderService');
+
 /**
  * Prompt template for resume text analysis.
  * Returns all fields required by the frontend, including score reasoning.
  */
 const getResumePrompt = (resumeText) => {
+  const resumeSummary = summarizeResumeTextForPrompt(resumeText);
   return `
 You are an expert resume analyst and ATS (Applicant Tracking System) evaluator with 10+ years of experience reviewing developer resumes.
 
-Carefully read the full resume below, then return a single valid JSON object with your analysis.
+Analyze the compact resume evidence below, then return a single valid JSON object with your analysis.
 
-Resume Text:
-"""
-${resumeText}
-"""
+Resume Evidence Summary:
+${compactJson(resumeSummary, 0)}
 
 Return ONLY a valid JSON object with exactly these fields — no markdown, no explanation outside the JSON:
 

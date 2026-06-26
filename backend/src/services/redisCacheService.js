@@ -58,12 +58,23 @@ const getCacheJson = async (key) => {
   }
 };
 
+const isRedisCacheEnabled = () => Boolean(redisEnabled && client);
+
 const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
   if (!redisEnabled || !client) return;
   try {
     await client.set(key, JSON.stringify(payload), { EX: ttlSeconds });
   } catch (error) {
     console.error('[redis] set cache failed:', error.message);
+  }
+};
+
+const deleteCacheKey = async (key) => {
+  if (!redisEnabled || !client) return;
+  try {
+    await client.del(key);
+  } catch (error) {
+    console.error('[redis] delete cache key failed:', error.message);
   }
 };
 
@@ -94,7 +105,10 @@ const invalidateInterviewPrepCache = async () => {
 module.exports = {
   CACHE_TTL_SECONDS,
   initRedisCache,
+  isRedisCacheEnabled,
   getCacheJson,
   setCacheJson,
+  deleteCacheKey,
+  deleteByPrefix,
   invalidateInterviewPrepCache
 };

@@ -1,4 +1,7 @@
+const { compactJson } = require('../services/promptBuilderService');
+
 const getWeeklyReportPrompt = ({ name, careerStack, experienceLevel, aiInput }) => {
+  const compactInput = compactJson(aiInput, 0);
   return `You are an AI career coach. Build a personalized weekly performance report for ${name || 'the developer'}.
 
 Return STRICT JSON only with these keys:
@@ -29,7 +32,7 @@ Profile context:
 - Experience level: ${experienceLevel}
 
 Input data (already transformed for analysis):
-${JSON.stringify(aiInput, null, 2)}
+${compactInput}
 `;
 };
 

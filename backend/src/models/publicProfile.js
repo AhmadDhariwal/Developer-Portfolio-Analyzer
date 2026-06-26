@@ -170,4 +170,6 @@ const publicProfileSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+publicProfileSchema.index({ updatedAt: -1 });
+
 module.exports = mongoose.model('PublicProfile', publicProfileSchema);

@@ -1,3 +1,5 @@
+const { compactArray, truncateText } = require('../services/promptBuilderService');
+
 const getInterviewPrepPrompt = ({
   careerStack,
   experienceLevel,
@@ -5,7 +7,7 @@ const getInterviewPrepPrompt = ({
 }) => {
   return `You are an interview coach. Generate practice questions for a ${careerStack} developer (${experienceLevel}).
 Return JSON with key: questions (array). Each question object: { question, answer, difficulty, tags }.
-Skill gaps to focus on: ${skillGaps.join(', ') || 'general software engineering'}.
+Skill gaps to focus on: ${compactArray(skillGaps, 12).join(', ') || 'general software engineering'}.
 Provide 8 questions, balanced between theory and practical scenarios.
 `; };
 
@@ -15,7 +17,7 @@ Return valid JSON only with key: questions (array).
 Each item format: { question, answer, difficulty, tags }.
 Difficulty must be one of: easy, medium, hard.
 Tags must be lowercase strings.
-${query ? `Focus context: ${query}.` : 'Focus on core concepts and practical interview scenarios.'}
+${query ? `Focus context: ${truncateText(query, 500)}.` : 'Focus on core concepts and practical interview scenarios.'}
 Avoid duplicates and keep answers short but useful.
 `; };
 
