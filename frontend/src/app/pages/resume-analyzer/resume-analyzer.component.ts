@@ -5,12 +5,47 @@ import { ApiService } from '../../shared/services/api.service';
 import { ResumeAnalysis, ResumeSuggestion } from '../../shared/models/resume.model';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
-import { ScoreCardComponent } from '../../shared/components/score-card/score-card.component';
 import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
 import { SuggestionCardComponent } from '../../shared/components/suggestion-card/suggestion-card.component';
 import { Subscription } from 'rxjs';
 
 import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
+
+type ScoreTone = 'purple' | 'pink' | 'green' | 'amber';
+type WarningSeverity = 'high' | 'medium' | 'low' | 'info';
+
+interface ScoreViewModel {
+  key: string;
+  label: string;
+  value: number;
+  explanation: string;
+  tone: ScoreTone;
+}
+
+interface SkillGroupViewModel {
+  category: string;
+  skills: string[];
+}
+
+interface WarningGroupViewModel {
+  severity: WarningSeverity;
+  label: string;
+  warnings: Array<{ code: string; message: string; evidence?: string }>;
+}
+
+interface TextSectionViewModel {
+  key: string;
+  title: string;
+  items: string[];
+}
+
+interface ScoreChangeViewModel {
+  key: string;
+  label: string;
+  previous: number;
+  current: number;
+  delta: number;
+}
 
 @Component({
   selector: 'app-resume-analyzer',
@@ -20,7 +55,6 @@ import { ResumeFile, ResumeService } from '../../shared/services/resume.service'
     FormsModule,
     UiCardComponent,
     UiBadgeComponent,
-    ScoreCardComponent,
     SkillBadgeComponent,
     SuggestionCardComponent
   ],
@@ -51,26 +85,25 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   analysis: ResumeAnalysis | null = null;
   errorMessage: string = '';
 
+  scoreCardViewModels: ScoreViewModel[] = [];
+  atsBreakdownViewModels: ScoreViewModel[] = [];
+  skillGroupViewModels: SkillGroupViewModel[] = [];
+  warningGroupViewModels: WarningGroupViewModel[] = [];
+  recruiterSectionViewModels: TextSectionViewModel[] = [];
+  intelligenceSectionViewModels: TextSectionViewModel[] = [];
+  personalInfoViewModels: Array<{ label: string; value: string }> = [];
+  suggestionViewModels: ResumeSuggestion[] = [];
+  growthScoreViewModels: ScoreChangeViewModel[] = [];
+  growthNewSkills: string[] = [];
+  growthSummary = '';
+  overviewSummary = '';
+  hiringReadiness = '';
+  detectedSkillCount = 0;
+
   // Snapshot backup used when a new upload/analyze fails
   private previousAnalysis: ResumeAnalysis | null = null;
   private previousAnalysisComplete = false;
   private previousHasNoData = false;
-
-  // Score card data
-  scoreCards = [
-    { title: 'ATS Compatibility', key: 'atsScore', color: 'purple' as const },
-    { title: 'Keyword Density', key: 'keywordDensity', color: 'pink' as const },
-    { title: 'Formatting Score', key: 'formatScore', color: 'green' as const },
-    { title: 'Content Quality', key: 'contentQuality', color: 'amber' as const }
-  ];
-
-  // Skill categories
-  skillCategories = [
-    'Programming Languages',
-    'Frameworks & Libraries',
-    'Technologies & Tools',
-    'Soft Skills'
-  ];
 
   readonly suggestionPriorityOrder: Record<ResumeSuggestion['color'], number> = {
     red: 0,
@@ -144,9 +177,11 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       this.cacheState = 'loading';
       this.apiService.getResumeAnalysis(this.selectedResumeFileId).subscribe({
         next: (res) => {
-          if (res && res.atsScore != null) {
+          if (res && res.atsScore != null && this.matchesAnalysisFile(res, this.selectedResumeFileId)) {
             this.applyAnalysis(res, res?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle');
             this.syncResumeViewState(res?.fileId || this.selectedResumeFileId, res?.fileName || '');
+          } else {
+            this.errorMessage = 'The selected resume does not have an analysis yet.';
           }
           this.isLoadingAnalysis = false;
           this.activeAnalysisRequestKey = '';
@@ -229,14 +264,14 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     this.cacheState = 'loading';
     this.apiService.getResumeAnalysis().subscribe({
       next: (res) => {
-        if (res && res.atsScore != null) {
+        if (res && res.atsScore != null && this.matchesAnalysisFile(res, expectedFileId)) {
           this.applyAnalysis(res, res?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle');
           this.syncResumeViewState(res?.fileId || this.defaultResumeFileId, res?.fileName || '');
         } else {
-          // API returned but no meaningful data
           this.analysisComplete = false;
           this.hasNoData = true;
           this.resumeService.setCurrentAnalysis(null);
+          if (expectedFileId) this.errorMessage = 'The selected default resume does not have an analysis yet.';
         }
         this.bootstrapAnalysisResolved = true;
         this.isLoadingAnalysis = false;
@@ -258,21 +293,27 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files?.[0];
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file?.type === 'application/pdf') {
+      if (this.isAnalyzing) return;
       this.selectedFile = file;
       this.errorMessage = '';
-      // Automatically start analysis after file selection
-      setTimeout(() => this.analyzeResume(), 100);
+      this.analyzeResume();
     } else {
       this.errorMessage = 'Please select a valid PDF file.';
       setTimeout(() => this.errorMessage = '', 5000);
     }
+    input.value = '';
   }
 
   analyzeResume() {
-    if (!this.selectedFile) return;
+    if (!this.selectedFile || this.isAnalyzing) return;
+    const selectedFile = this.selectedFile;
+    const requestKey = `upload:${selectedFile.name}:${selectedFile.size}:${selectedFile.lastModified}`;
+    if (this.activeAnalysisRequestKey === requestKey) return;
+    this.activeAnalysisRequestKey = requestKey;
 
     // Save a snapshot so we can restore previous data on failure
     this.previousAnalysis = this.analysis ? JSON.parse(JSON.stringify(this.analysis)) : null;
@@ -284,7 +325,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     
     const formData = new FormData();
-    formData.append('file', this.selectedFile);
+    formData.append('file', selectedFile);
 
     this.resumeService.uploadResume(formData).subscribe({
       next: (uploadRes) => {
@@ -292,6 +333,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         this.apiService.analyzeResume(uploadRes.fileId).subscribe({
           next: (analysisRes) => {
             this.isAnalyzing = false;
+            this.activeAnalysisRequestKey = '';
             this.applyAnalysis(analysisRes, analysisRes?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 're-analysis');
             this.selectedFile = null;
             this.syncResumeViewState(analysisRes?.fileId || uploadRes.fileId, analysisRes?.fileName || uploadRes.fileName || '');
@@ -299,6 +341,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.isAnalyzing = false;
+            this.activeAnalysisRequestKey = '';
             this.errorMessage = err.error?.message || 'Failed to analyze resume. Please try again.';
             // Restore previous successful analysis if available
             this.analysis = this.previousAnalysis;
@@ -311,6 +354,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isAnalyzing = false;
+        this.activeAnalysisRequestKey = '';
         this.errorMessage = err.error?.message || 'Failed to upload resume. Please ensure you are logged in.';
         // Restore previous successful analysis if available
         this.analysis = this.previousAnalysis;
@@ -322,127 +366,173 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Get score value from analysis
-   */
-  getScore(key: string): number {
-    if (!this.analysis) return 0;
-    return (this.analysis as any)[key] || 0;
-  }
+  private rebuildViewModels(analysis: ResumeAnalysis): void {
+    const qualityScores = analysis.qualityScores || {};
+    const explanations = (qualityScores['explanations'] || {}) as Record<string, unknown>;
+    const scoreBreakdown = (analysis as ResumeAnalysis & { scoreBreakdown?: Record<string, string> }).scoreBreakdown || {};
 
-  /**
-   * Get skills for a category
-   */
-  getSkillsForCategory(category: string): string[] {
-    if (!this.analysis || !this.analysis.skills) return [];
-    return this.analysis.skills[category] || [];
-  }
-
-  /**
-   * Get suggestions — only show real AI-generated suggestions from analysis
-   */
-  getSuggestions(): ResumeSuggestion[] {
-    if (!this.analysis || !this.analysis.suggestions) return [];
-    return [...this.analysis.suggestions].sort((left, right) => {
-      const leftRank = this.suggestionPriorityOrder[left.color] ?? 99;
-      const rightRank = this.suggestionPriorityOrder[right.color] ?? 99;
-      if (leftRank !== rightRank) return leftRank - rightRank;
-      return left.title.localeCompare(right.title);
-    });
-  }
-
-  /**
-   * Get total skills count
-   */
-  getTotalSkillsCount(): number {
-    if (!this.analysis || !this.analysis.skills) return 0;
-    return Object.values(this.analysis.skills).reduce((sum, skills) => sum + (skills?.length || 0), 0);
-  }
-
-  getDetectedSkillGroups(): Array<{ category: string; skills: string[] }> {
-    return this.skillCategories.map((category) => ({
-      category,
-      skills: this.getSkillsForCategory(category)
-    }));
-  }
-
-  getTechnologyGroups(): Array<{ category: string; skills: string[] }> {
-    const categories = this.analysis?.technologyCategories || {};
-    return Object.keys(categories)
-      .map((category) => ({ category, skills: categories[category] || [] }))
-      .filter((group) => group.skills.length > 0);
-  }
-
-  getQualityScoreEntries(): Array<{ label: string; value: number; explanation: string }> {
-    const scores = this.analysis?.qualityScores || {};
-    const explanations = scores['explanations'] || {};
-    const labels: Record<string, string> = {
-      overallResumeScore: 'Overall Resume Score',
-      atsScore: 'ATS Score',
-      keywordCoverage: 'Keyword Coverage',
-      formattingScore: 'Formatting Score',
-      contentQuality: 'Content Quality',
-      projectQuality: 'Project Quality',
-      experienceStrength: 'Experience Strength',
-      skillsCoverage: 'Skills Coverage',
-      technicalDepth: 'Technical Depth',
-      recruiterReadiness: 'Recruiter Readiness'
+    const makeScore = (
+      key: string,
+      label: string,
+      value: unknown,
+      explanation: unknown,
+      tone: ScoreTone
+    ): ScoreViewModel | null => {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return null;
+      return {
+        key,
+        label,
+        value: Math.max(0, Math.min(100, Math.round(parsed))),
+        explanation: String(explanation || '').trim(),
+        tone
+      };
     };
 
-    return Object.keys(labels)
-      .filter((key) => scores[key] !== undefined)
-      .map((key) => ({
-        label: labels[key],
-        value: Number(scores[key] || 0),
-        explanation: String(explanations[key] || '')
-      }));
-  }
+    this.scoreCardViewModels = [
+      makeScore('overallResumeScore', 'Overall Resume Score', qualityScores['overallResumeScore'], explanations['overallResumeScore'], 'purple'),
+      makeScore('atsScore', 'ATS Compatibility', analysis.atsScore, scoreBreakdown['atsScore'] || explanations['atsScore'], 'pink'),
+      makeScore('recruiterReadiness', 'Recruiter Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'green'),
+      makeScore('contentQuality', 'Content Quality', analysis.contentQuality, scoreBreakdown['contentQuality'] || explanations['contentQuality'], 'amber')
+    ].filter((item): item is ScoreViewModel => Boolean(item));
 
-  getWarnings(): Array<{ code: string; severity: string; message: string; evidence?: string }> {
-    return this.analysis?.consistencyWarnings || [];
-  }
+    this.atsBreakdownViewModels = [
+      makeScore('keywordCoverage', 'Keyword Coverage', qualityScores['keywordCoverage'] ?? analysis.keywordDensity, explanations['keywordCoverage'] || scoreBreakdown['keywordDensity'], 'pink'),
+      makeScore('formattingScore', 'ATS Formatting', qualityScores['formattingScore'] ?? analysis.formatScore, explanations['formattingScore'] || scoreBreakdown['formatScore'], 'green'),
+      makeScore('projectQuality', 'Project Evidence', qualityScores['projectQuality'], explanations['projectQuality'], 'purple'),
+      makeScore('experienceStrength', 'Experience Strength', qualityScores['experienceStrength'], explanations['experienceStrength'], 'amber'),
+      makeScore('skillsCoverage', 'Skills Coverage', qualityScores['skillsCoverage'], explanations['skillsCoverage'], 'green'),
+      makeScore('technicalDepth', 'Technical Depth', qualityScores['technicalDepth'], explanations['technicalDepth'], 'purple')
+    ].filter((item): item is ScoreViewModel => Boolean(item));
 
-  getPersonalInfoEntries(): Array<{ label: string; value: string }> {
-    const info = this.analysis?.normalized?.personalInfo || {};
-    const labels: Record<string, string> = {
-      name: 'Name',
+    const technologyGroups = this.toSkillGroups(analysis.technologyCategories);
+    this.skillGroupViewModels = technologyGroups.length ? technologyGroups : this.toSkillGroups(analysis.skills);
+    this.detectedSkillCount = new Set(
+      this.skillGroupViewModels.flatMap((group) => group.skills.map((skill) => skill.toLowerCase()))
+    ).size;
+
+    this.personalInfoViewModels = this.toLabelValueEntries(analysis.normalized?.personalInfo || {}, {
+      name: 'Candidate Name',
       email: 'Email',
       phone: 'Phone',
       location: 'Location',
       portfolio: 'Portfolio',
       linkedIn: 'LinkedIn',
       github: 'GitHub'
+    });
+
+    this.overviewSummary = String(analysis.recruiterPerspective?.resumeSummary || '').trim();
+    this.hiringReadiness = String(analysis.recruiterPerspective?.hiringReadiness || '').trim();
+    this.recruiterSectionViewModels = [
+      this.makeTextSection('strengths', 'Recruiter-Visible Strengths', analysis.recruiterPerspective?.strengths),
+      this.makeTextSection('concerns', 'Recruiter Concerns', analysis.recruiterPerspective?.concerns),
+      this.makeTextSection('interviewRisks', 'Interview Validation Areas', analysis.recruiterPerspective?.interviewRisks)
+    ].filter((section): section is TextSectionViewModel => Boolean(section));
+
+    this.warningGroupViewModels = this.buildWarningGroups(analysis);
+    this.intelligenceSectionViewModels = [
+      this.makeTextSection('experience', 'Experience Evidence', analysis.normalized?.experience),
+      this.makeTextSection('projects', 'Project Evidence', analysis.normalized?.projects),
+      this.makeTextSection('achievements', 'Measured Achievements', analysis.normalized?.achievements),
+      this.makeTextSection('certifications', 'Certifications', analysis.normalized?.certifications),
+      this.makeTextSection('education', 'Education', analysis.normalized?.education),
+      this.makeTextSection('openSourceContributions', 'Open Source Contributions', analysis.normalized?.openSourceContributions),
+      this.makeTextSection('leadership', 'Leadership Evidence', analysis.normalized?.leadership),
+      this.makeTextSection('publications', 'Publications', analysis.normalized?.publications),
+      this.makeTextSection('volunteerWork', 'Volunteer Experience', analysis.normalized?.volunteerWork)
+    ].filter((section): section is TextSectionViewModel => Boolean(section));
+
+    this.suggestionViewModels = (Array.isArray(analysis.suggestions) ? analysis.suggestions : [])
+      .filter((suggestion) => Boolean(suggestion?.title?.trim() && suggestion?.description?.trim()))
+      .sort((left, right) => {
+        const leftRank = this.suggestionPriorityOrder[left.color] ?? 99;
+        const rightRank = this.suggestionPriorityOrder[right.color] ?? 99;
+        if (leftRank !== rightRank) return leftRank - rightRank;
+        return left.title.localeCompare(right.title);
+      });
+
+    const changes = analysis.scoreChanges || analysis.improvementDelta?.['scoreChanges'] || {};
+    const currentScores: Record<string, unknown> = {
+      atsScore: analysis.atsScore,
+      keywordDensity: analysis.keywordDensity,
+      formatScore: analysis.formatScore,
+      contentQuality: analysis.contentQuality,
+      overallResumeScore: qualityScores['overallResumeScore']
     };
-    return Object.keys(labels).map((key) => ({
-      label: labels[key],
-      value: String(info[key] || 'Missing')
-    }));
-  }
-
-  getNormalizedList(key: keyof NonNullable<ResumeAnalysis['normalized']>): string[] {
-    const value = this.analysis?.normalized?.[key];
-    return Array.isArray(value) ? value : [];
-  }
-
-  getRecruiterList(key: 'strengths' | 'concerns' | 'interviewRisks'): string[] {
-    const value = this.analysis?.recruiterPerspective?.[key];
-    return Array.isArray(value) ? value : [];
-  }
-
-  getScoreChangeEntries(): Array<{ label: string; value: number }> {
-    const changes = this.analysis?.scoreChanges || this.analysis?.improvementDelta?.['scoreChanges'] || {};
-    const labels: Record<string, string> = {
-      atsScore: 'ATS',
-      keywordDensity: 'Keywords',
-      formatScore: 'Formatting',
-      contentQuality: 'Content',
-      overallResumeScore: 'Overall'
+    const changeLabels: Record<string, string> = {
+      atsScore: 'ATS Compatibility',
+      keywordDensity: 'Keyword Coverage',
+      formatScore: 'ATS Formatting',
+      contentQuality: 'Content Quality',
+      overallResumeScore: 'Overall Resume Score'
     };
-    return Object.keys(labels)
-      .filter((key) => changes[key] !== undefined)
-      .map((key) => ({ label: labels[key], value: Number(changes[key] || 0) }));
+    const hasPrevious = analysis.improvementDelta?.['hasPrevious'] === true || Boolean(analysis.previousAnalysisId);
+    this.growthScoreViewModels = hasPrevious
+      ? Object.keys(changeLabels).flatMap((key) => {
+        const delta = Number(changes[key]);
+        const current = Number(currentScores[key]);
+        if (!Number.isFinite(delta) || !Number.isFinite(current)) return [];
+        return [{ key, label: changeLabels[key], previous: Math.round(current - delta), current: Math.round(current), delta: Math.round(delta) }];
+      })
+      : [];
+    this.growthNewSkills = hasPrevious ? this.cleanStrings(analysis.newSkillsAdded) : [];
+    this.growthSummary = hasPrevious ? String(analysis.improvementDelta?.['summary'] || '').trim() : '';
   }
 
+  private toSkillGroups(value: Record<string, string[]> | undefined): SkillGroupViewModel[] {
+    return Object.entries(value || {})
+      .map(([category, skills]) => ({ category: category.trim(), skills: this.cleanStrings(skills) }))
+      .filter((group) => Boolean(group.category && group.skills.length));
+  }
+
+  private toLabelValueEntries(value: Record<string, string>, labels: Record<string, string>): Array<{ label: string; value: string }> {
+    return Object.entries(labels)
+      .map(([key, label]) => ({ label, value: String(value[key] || '').trim() }))
+      .filter((entry) => Boolean(entry.value));
+  }
+
+  private makeTextSection(key: string, title: string, values: unknown): TextSectionViewModel | null {
+    const items = this.cleanStrings(values);
+    return items.length ? { key, title, items } : null;
+  }
+
+  private cleanStrings(values: unknown): string[] {
+    if (!Array.isArray(values)) return [];
+    return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
+  }
+
+  private buildWarningGroups(analysis: ResumeAnalysis): WarningGroupViewModel[] {
+    const order: WarningSeverity[] = ['high', 'medium', 'low', 'info'];
+    const labels: Record<WarningSeverity, string> = {
+      high: 'High Priority',
+      medium: 'Medium Priority',
+      low: 'Low Priority',
+      info: 'Review Notes'
+    };
+    const grouped = new Map<WarningSeverity, WarningGroupViewModel['warnings']>();
+    (analysis.consistencyWarnings || []).forEach((warning) => {
+      const message = String(warning?.message || '').trim();
+      if (!message) return;
+      const rawSeverity = String(warning?.severity || '').toLowerCase();
+      const severity: WarningSeverity = order.includes(rawSeverity as WarningSeverity)
+        ? rawSeverity as WarningSeverity
+        : 'info';
+      const warnings = grouped.get(severity) || [];
+      warnings.push({
+        code: String(warning?.code || '').trim(),
+        message,
+        evidence: String(warning?.evidence || '').trim() || undefined
+      });
+      grouped.set(severity, warnings);
+    });
+    return order
+      .filter((severity) => grouped.has(severity))
+      .map((severity) => ({ severity, label: labels[severity], warnings: grouped.get(severity) || [] }));
+  }
+
+  /**
+   * Get suggestions — only show real AI-generated suggestions from analysis
+   */
   getTopSuggestionLabel(index: number): string {
     if (index === 0) return 'Highest priority';
     if (index === 1) return 'Next focus';
@@ -450,11 +540,26 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     return `Step ${index + 1}`;
   }
 
+  get hasOverviewContent(): boolean {
+    return Boolean(this.overviewSummary || this.hiringReadiness || this.personalInfoViewModels.length);
+  }
+
+  get hasGrowthData(): boolean {
+    return Boolean(this.growthSummary || this.growthNewSkills.length || this.growthScoreViewModels.length);
+  }
+
+  get cacheStatusLabel(): string {
+    if (this.cacheState === 'cache-hit') return 'Frontend cache';
+    if (this.cacheState === 'server-cache-hit') return 'Backend cache';
+    if (this.cacheState === 're-analysis') return 'Fresh analysis';
+    return '';
+  }
+
   /**
    * Format file size
    */
   formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (!Number.isFinite(bytes) || bytes <= 0) return '';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -465,8 +570,9 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
    * Format date relative to now
    */
   formatDate(dateString: string): string {
-    if (!dateString) return 'not available';
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '';
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -590,6 +696,18 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     this.hasNoData = false;
     this.errorMessage = '';
     this.cacheState = cacheState;
+    this.rebuildViewModels(res);
+    this.resumeFiles = this.resumeFiles.map((file) => (
+      file.fileId === (res.fileId || this.selectedResumeFileId)
+        ? {
+          ...file,
+          isAnalyzed: true,
+          resumeHash: res.resumeHash || res.cacheMetadata?.resumeHash || file.resumeHash,
+          analysisVersion: res.analysisVersion || res.cacheMetadata?.analysisVersion || file.analysisVersion,
+          lastAnalyzed: res.analyzedAt || file.lastAnalyzed
+        }
+        : file
+    ));
     this.resumeService.setCurrentAnalysis(res);
     this.resumeService.cacheAnalysis({
       fileId: res.fileId || this.selectedResumeFileId,

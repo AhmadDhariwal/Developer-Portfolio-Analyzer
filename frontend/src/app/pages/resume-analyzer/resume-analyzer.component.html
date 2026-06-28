@@ -1,25 +1,31 @@
 <div class="page-container">
-  <div class="page-header">
-    <h1>Resume Analyzer</h1>
-    <p>AI-powered resume parsing, score breakdown, detected skills, and structured improvement guidance.</p>
-  </div>
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Resume intelligence</span>
+      <h1>Resume Analyzer</h1>
+      <p>Review evidence extracted from your resume, understand recruiter readiness, and prioritize the next improvements.</p>
+    </div>
+  </header>
 
-  <div *ngIf="errorMessage" class="error-message">
+  <div *ngIf="errorMessage" class="state-banner state-banner--error" role="alert">
+    <strong>We could not complete that action.</strong>
     <span>{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="analysisComplete && analysis && !errorMessage" class="error-message">
-    <span *ngIf="isTemporaryView">
-      Viewing temporary analysis for <strong>{{ viewedResumeFileName || 'selected resume' }}</strong>. The rest of the platform still uses your default resume <strong>{{ defaultResumeFileName || 'Not set' }}</strong>.
-    </span>
-    <span *ngIf="!isTemporaryView">
-      Using your default saved resume <strong>{{ viewedResumeFileName || defaultResumeFileName || 'Not set' }}</strong>.
-    </span>
-    <button *ngIf="isTemporaryView" class="file-input-label" (click)="returnToDefaultResume()">Return to My Resume</button>
+  <div *ngIf="analysisComplete && analysis && (viewedResumeFileName || cacheStatusLabel)" class="state-banner state-banner--context">
+    <div>
+      <strong *ngIf="viewedResumeFileName">{{ viewedResumeFileName }}</strong>
+      <span *ngIf="isTemporaryView && defaultResumeFileName">Temporary view · other pages continue using {{ defaultResumeFileName }}</span>
+      <span *ngIf="!isTemporaryView && viewedResumeFileName">Current resume analysis</span>
+    </div>
+    <div class="state-banner__actions">
+      <span *ngIf="cacheStatusLabel" class="cache-pill">{{ cacheStatusLabel }}</span>
+      <button *ngIf="isTemporaryView" type="button" class="text-button" (click)="returnToDefaultResume()">Return to default</button>
+    </div>
   </div>
 
-  <div *ngIf="hasNoData && !analysisComplete && !isAnalyzing" class="empty-state-card">
-    <div class="empty-state-icon">
+  <div *ngIf="hasNoData && !analysisComplete && !isAnalyzing && !isLoadingAnalysis" class="empty-state-card">
+    <div class="empty-state-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
         <polyline points="13 2 13 9 20 9"/>
@@ -27,352 +33,284 @@
         <line x1="10" y1="15" x2="14" y2="15"/>
       </svg>
     </div>
-    <h3>No Resume Uploaded Yet</h3>
-    <p>Upload your PDF resume below to get an AI-powered analysis including ATS compatibility score, keyword density, detected skills, and personalized improvement suggestions.</p>
+    <h2>Analyze your first resume</h2>
+    <p>Upload a PDF to extract skills, resume evidence, ATS scores, warnings, and improvement priorities.</p>
   </div>
 
   <app-ui-card class="upload-card">
     <div class="upload-content">
-      <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName">
-        <p>Default Resume: <strong>{{ defaultResumeFileName || 'Not set' }}</strong></p>
-        <p>Viewing Resume: <strong>{{ viewedResumeFileName || defaultResumeFileName || activeResumeFileName || 'Not set' }}</strong></p>
-        <p *ngIf="analysis?.analyzedAt">Last Analyzed: <strong>{{ formatDate(analysis?.analyzedAt || '') }}</strong></p>
-        <p *ngIf="analysis?.analysisVersion">Analysis Version: <strong>{{ analysis?.analysisVersion }}</strong></p>
-        <p *ngIf="cacheState === 'cache-hit' || cacheState === 'server-cache-hit'">Loaded From Cache: <strong>{{ cacheState === 'cache-hit' ? 'Frontend cache' : 'Backend cache' }}</strong></p>
+      <div class="resume-context" *ngIf="defaultResumeFileName || activeResumeFileName || analysis?.analyzedAt || analysis?.analysisVersion">
+        <div *ngIf="defaultResumeFileName">
+          <span>Platform default</span>
+          <strong>{{ defaultResumeFileName }}</strong>
+        </div>
+        <div *ngIf="viewedResumeFileName || activeResumeFileName">
+          <span>Viewing</span>
+          <strong>{{ viewedResumeFileName || activeResumeFileName }}</strong>
+        </div>
+        <div *ngIf="analysis?.analyzedAt">
+          <span>Analyzed</span>
+          <strong>{{ formatDate(analysis?.analyzedAt || '') }}</strong>
+        </div>
+        <div *ngIf="analysis?.analysisVersion">
+          <span>Analysis version</span>
+          <strong>{{ analysis?.analysisVersion }}</strong>
+        </div>
       </div>
 
       <div class="resume-switcher" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
-        <label class="sr-only" for="resume-file-selector">Resume selector</label>
-        <select id="resume-file-selector" [(ngModel)]="selectedResumeFileId" title="Select active resume">
+        <label for="resume-file-selector">Saved resume</label>
+        <select id="resume-file-selector" [(ngModel)]="selectedResumeFileId" title="Select a saved resume">
           <option *ngFor="let file of resumeFiles" [value]="file.fileId">
-            {{ file.fileName }}{{ file.isDefault ? ' (default)' : '' }}{{ file.isActive ? ' (active)' : '' }}
+            {{ file.fileName }}{{ file.isDefault ? ' · default' : '' }}{{ file.isAnalyzed ? ' · analyzed' : '' }}
           </option>
         </select>
-        <button class="file-input-label" (click)="useSelectedResume(false)">Preview Selected</button>
-        <button class="file-input-label" (click)="useSelectedResume(true)">Set as Default</button>
-        <button class="file-input-label secondary" (click)="forceRefreshSelected()" [disabled]="isLoadingAnalysis || isAnalyzing">Force Refresh</button>
-      </div>
-
-      <div class="resume-file-list" *ngIf="resumeFiles.length > 0 && !isAnalyzing">
-        <div class="resume-file-row" *ngFor="let file of resumeFiles">
-          <div>
-            <strong>{{ file.fileName }}</strong>
-            <span>{{ formatFileSize(file.fileSize || 0) }} | uploaded {{ formatDate(file.uploadDate) }}</span>
-          </div>
-          <div class="resume-file-badges">
-            <span *ngIf="file.isDefault">Default</span>
-            <span *ngIf="file.isActive">Active</span>
-            <span *ngIf="file.isAnalyzed">Analyzed</span>
-            <small *ngIf="file.lastAnalyzed">Last {{ formatDate(file.lastAnalyzed) }}</small>
-          </div>
+        <div class="resume-switcher__actions">
+          <button type="button" class="action-button" (click)="useSelectedResume(false)" [disabled]="isLoadingAnalysis || isAnalyzing">View analysis</button>
+          <button type="button" class="action-button action-button--secondary" (click)="useSelectedResume(true)" [disabled]="isLoadingAnalysis || isAnalyzing">Use as default</button>
+          <button type="button" class="action-button action-button--secondary" (click)="forceRefreshSelected()" [disabled]="isLoadingAnalysis || isAnalyzing">Refresh analysis</button>
         </div>
       </div>
 
-      <svg *ngIf="!analysisComplete" class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="17 8 12 3 7 8"></polyline>
-        <line x1="12" y1="3" x2="12" y2="15"></line>
-      </svg>
+      <div *ngIf="isAnalyzing || isLoadingAnalysis" class="operation-state" aria-live="polite">
+        <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        <div>
+          <strong>{{ isAnalyzing ? 'Analyzing your resume' : (cacheState === 're-analysis' ? 'Refreshing resume analysis' : 'Loading saved analysis') }}</strong>
+          <span>{{ isAnalyzing ? 'Uploading the PDF and processing its evidence.' : 'Retrieving the selected resume result.' }}</span>
+        </div>
+      </div>
 
-      <div *ngIf="analysisComplete && analysis" class="file-info">
+      <div *ngIf="analysisComplete && analysis && analysis.fileName as fileName" class="file-info">
         <div class="file-details">
-          <div class="file-icon">
+          <div class="file-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-              <polyline points="13 2 13 9 20 9"></polyline>
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
             </svg>
           </div>
           <div class="file-meta">
-            <h3>{{ analysis.fileName }}</h3>
-            <p>{{ formatFileSize(analysis.fileSize || 0) }} • PDF • analyzed {{ formatDate(analysis.uploadDate || '') }}</p>
+            <h3>{{ fileName }}</h3>
+            <div class="metadata-row">
+              <span *ngIf="analysis.fileSize">{{ formatFileSize(analysis.fileSize) }}</span>
+              <span *ngIf="analysis.analyzedAt">Analyzed {{ formatDate(analysis.analyzedAt) }}</span>
+            </div>
           </div>
         </div>
-        <div class="file-status">
-          <app-ui-badge variant="success" size="sm">Analyzed</app-ui-badge>
-        </div>
+        <app-ui-badge variant="success" size="sm">Analysis ready</app-ui-badge>
       </div>
 
-      <div *ngIf="!analysisComplete" class="upload-prompt">
-        <h3>{{ isAnalyzing || isLoadingAnalysis ? 'Analyzing your resume...' : 'Upload your resume' }}</h3>
-        <p *ngIf="!isAnalyzing">Drag and drop or click to browse</p>
-        <span *ngIf="!isAnalyzing" class="file-hint">PDF format accepted</span>
-
-        <div *ngIf="isAnalyzing || isLoadingAnalysis" class="analyzing-spinner">
-          <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
-          </svg>
-          <p class="analyzing-text">{{ cacheState === 'loading' ? 'Checking resume intelligence cache...' : 'Parsing PDF and extracting deterministic signals...' }}</p>
+      <div *ngIf="!isAnalyzing && !isLoadingAnalysis" class="upload-prompt">
+        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <div>
+          <h3>{{ analysisComplete ? 'Analyze another resume' : 'Upload a PDF resume' }}</h3>
+          <p>The selected file is uploaded and analyzed once.</p>
         </div>
-
-        <input *ngIf="!isAnalyzing && !isLoadingAnalysis" type="file" accept=".pdf" (change)="onFileSelected($event)" id="fileInput" [disabled]="isAnalyzing || isLoadingAnalysis" hidden>
-        <label *ngIf="!isAnalyzing && !isLoadingAnalysis" for="fileInput" class="file-input-label" [class.disabled]="isAnalyzing || isLoadingAnalysis">
-          Select File
-        </label>
+        <input type="file" accept="application/pdf,.pdf" (change)="onFileSelected($event)" id="resumeUploadInput" hidden>
+        <label for="resumeUploadInput" class="file-input-label">Choose PDF</label>
       </div>
     </div>
   </app-ui-card>
 
-  <div *ngIf="analysisComplete" class="reupload-row">
-    <label for="reuploadInput" class="reupload-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reupload-icon">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      Upload New Resume
-    </label>
-    <input type="file" accept=".pdf" (change)="onFileSelected($event)" id="reuploadInput" [disabled]="isAnalyzing" hidden>
-  </div>
-
-  <div *ngIf="analysisComplete && analysis" class="score-cards-grid">
-    <app-score-card
-      *ngFor="let scoreCard of scoreCards"
-      [title]="scoreCard.title"
-      [score]="getScore(scoreCard.key)"
-      [color]="scoreCard.color">
-    </app-score-card>
-  </div>
-
-  <div *ngIf="analysisComplete && analysis" class="analysis-flow">
-    <app-ui-card class="overview-panel">
-      <div class="section-head">
-        <div>
-          <h2>Overview</h2>
-          <p>{{ analysis.recruiterPerspective?.resumeSummary || 'Structured resume intelligence generated from deterministic signals and validated AI insights.' }}</p>
+  <ng-container *ngIf="analysisComplete && analysis">
+    <section *ngIf="scoreCardViewModels.length" class="score-cards-grid" aria-label="Resume score summary">
+      <article *ngFor="let score of scoreCardViewModels" class="score-summary-card" [class]="'score-summary-card score-summary-card--' + score.tone">
+        <div class="score-summary-card__top">
+          <span>{{ score.label }}</span>
+          <strong>{{ score.value }}</strong>
         </div>
-        <app-ui-badge variant="success" size="sm">{{ analysis.recruiterPerspective?.hiringReadiness || 'Analyzed' }}</app-ui-badge>
-      </div>
+        <div class="score-track"><span [style.width.%]="score.value"></span></div>
+        <p *ngIf="score.explanation">{{ score.explanation }}</p>
+      </article>
+    </section>
 
-      <div class="personal-grid">
-        <div class="personal-item" *ngFor="let item of getPersonalInfoEntries()">
-          <span>{{ item.label }}</span>
-          <strong [class.missing]="item.value === 'Missing'">{{ item.value }}</strong>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="quality-panel">
-      <div class="section-head">
-        <div>
-          <h2>ATS Breakdown</h2>
-          <p>Deterministic scoring with an explanation for every score used by platform-wide resume signals.</p>
-        </div>
-      </div>
-
-      <div class="quality-grid">
-        <div class="quality-item" *ngFor="let score of getQualityScoreEntries()">
-          <div class="quality-item__top">
-            <strong>{{ score.label }}</strong>
-            <span>{{ score.value }}/100</span>
+    <div class="analysis-flow">
+      <app-ui-card *ngIf="hasOverviewContent" class="overview-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Candidate snapshot</span>
+            <h2>Resume Overview</h2>
+            <p *ngIf="overviewSummary">{{ overviewSummary }}</p>
           </div>
-          <p>{{ score.explanation }}</p>
+          <app-ui-badge *ngIf="hiringReadiness" variant="success" size="sm">{{ hiringReadiness }}</app-ui-badge>
         </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="skills-panel">
-      <div class="section-head">
-        <div>
-          <h2>Detected Skills</h2>
-          <p>{{ getTotalSkillsCount() }} skills extracted from your resume across the main hiring categories.</p>
-        </div>
-        <app-ui-badge variant="success" size="sm">AI Parsed</app-ui-badge>
-      </div>
-
-      <div class="skills-overview">
-        <div class="skill-group-card" *ngFor="let group of getDetectedSkillGroups()">
-          <div class="skill-group-card__head">
-            <div class="skill-group-card__dot"></div>
-            <h3>{{ group.category }}</h3>
-            <span>{{ group.skills.length }}</span>
-          </div>
-
-          <div class="skill-badges" *ngIf="group.skills.length > 0; else noSkillsForGroup">
-            <app-skill-badge
-              *ngFor="let skill of group.skills"
-              [skill]="skill"
-              [category]="group.category">
-            </app-skill-badge>
-          </div>
-
-          <ng-template #noSkillsForGroup>
-            <div class="empty-inline">None detected in this category yet.</div>
-          </ng-template>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="technology-panel">
-      <div class="section-head">
-        <div>
-          <h2>Technology Categories</h2>
-          <p>Normalized technologies detected from skills, projects, experience, and achievements.</p>
-        </div>
-      </div>
-
-      <div class="tech-grid">
-        <div class="tech-group" *ngFor="let group of getTechnologyGroups()">
-          <h3>{{ group.category }}</h3>
-          <div class="chip-row">
-            <span *ngFor="let skill of group.skills">{{ skill }}</span>
+        <div *ngIf="personalInfoViewModels.length" class="personal-grid">
+          <div class="personal-item" *ngFor="let item of personalInfoViewModels">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
           </div>
         </div>
-      </div>
-    </app-ui-card>
+      </app-ui-card>
 
-    <app-ui-card class="details-panel">
-      <div class="section-head">
-        <div>
-          <h2>Resume Intelligence</h2>
-          <p>Normalized sections that other platform modules can reuse without re-parsing the resume.</p>
-        </div>
-      </div>
-
-      <div class="details-grid">
-        <div>
-          <h3>Projects</h3>
-          <p *ngFor="let item of getNormalizedList('projects')">{{ item }}</p>
-          <span *ngIf="!getNormalizedList('projects').length" class="empty-inline">No projects detected.</span>
-        </div>
-        <div>
-          <h3>Experience</h3>
-          <p *ngFor="let item of getNormalizedList('experience')">{{ item }}</p>
-          <span *ngIf="!getNormalizedList('experience').length" class="empty-inline">No experience bullets detected.</span>
-        </div>
-        <div>
-          <h3>Achievements</h3>
-          <p *ngFor="let item of getNormalizedList('achievements')">{{ item }}</p>
-          <span *ngIf="!getNormalizedList('achievements').length" class="empty-inline">No quantified achievements detected.</span>
-        </div>
-        <div>
-          <h3>Certifications</h3>
-          <p *ngFor="let item of getNormalizedList('certifications')">{{ item }}</p>
-          <span *ngIf="!getNormalizedList('certifications').length" class="empty-inline">No certifications detected.</span>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="recruiter-panel">
-      <div class="section-head">
-        <div>
-          <h2>Recruiter Perspective</h2>
-          <p>Reusable strengths, concerns, interview risks, and hiring readiness for recruiter modules.</p>
-        </div>
-      </div>
-
-      <div class="recruiter-grid">
-        <div>
-          <h3>Strengths</h3>
-          <p *ngFor="let item of getRecruiterList('strengths')">{{ item }}</p>
-          <span *ngIf="!getRecruiterList('strengths').length" class="empty-inline">No strengths generated yet.</span>
-        </div>
-        <div>
-          <h3>Concerns</h3>
-          <p *ngFor="let item of getRecruiterList('concerns')">{{ item }}</p>
-          <span *ngIf="!getRecruiterList('concerns').length" class="empty-inline">No major concerns detected.</span>
-        </div>
-        <div>
-          <h3>Interview Risks</h3>
-          <p *ngFor="let item of getRecruiterList('interviewRisks')">{{ item }}</p>
-          <span *ngIf="!getRecruiterList('interviewRisks').length" class="empty-inline">No interview risks generated.</span>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="warnings-panel" *ngIf="getWarnings().length > 0">
-      <div class="section-head">
-        <div>
-          <h2>Consistency Warnings</h2>
-          <p>Structured checks for contact gaps, weak project evidence, missing metrics, and skill stuffing.</p>
-        </div>
-      </div>
-
-      <div class="warning-list">
-        <div class="warning-item" *ngFor="let warning of getWarnings()" [class.high]="warning.severity === 'high'">
-          <strong>{{ warning.message }}</strong>
-          <span>{{ warning.severity }}</span>
-          <p *ngIf="warning.evidence">{{ warning.evidence }}</p>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="growth-panel">
-      <div class="section-head">
-        <div>
-          <h2>Resume Growth</h2>
-          <p>{{ analysis.improvementDelta?.['summary'] || 'Growth tracking starts after the next analysis snapshot.' }}</p>
-        </div>
-      </div>
-
-      <div class="growth-grid">
-        <div>
-          <h3>New Skills Added</h3>
-          <div class="chip-row" *ngIf="(analysis.newSkillsAdded || []).length; else noNewSkills">
-            <span *ngFor="let skill of analysis.newSkillsAdded">{{ skill }}</span>
-          </div>
-          <ng-template #noNewSkills><span class="empty-inline">No new skills in this snapshot.</span></ng-template>
-        </div>
-        <div>
-          <h3>Score Changes</h3>
-          <p *ngFor="let change of getScoreChangeEntries()">
-            {{ change.label }}: <strong>{{ change.value > 0 ? '+' : '' }}{{ change.value }}</strong>
-          </p>
-          <span *ngIf="!getScoreChangeEntries().length" class="empty-inline">No previous score snapshot yet.</span>
-        </div>
-      </div>
-    </app-ui-card>
-
-    <app-ui-card class="suggestions-panel">
-      <div class="section-head section-head--stacked">
-        <div>
-          <h2>Resume Improvement Suggestions</h2>
-          <p>Ordered from higher-priority fixes to polish opportunities, based on the latest analysis.</p>
-        </div>
-      </div>
-
-      <div *ngIf="getSuggestions().length > 0; else noSuggestions" class="suggestions-sequence">
-        <div class="suggestion-step" *ngFor="let suggestion of getSuggestions(); let i = index">
-          <div class="suggestion-step__marker">
-            <span>{{ i + 1 }}</span>
-            <small>{{ getTopSuggestionLabel(i) }}</small>
-          </div>
-          <div class="suggestion-step__content">
-            <app-suggestion-card
-              [title]="suggestion.title"
-              [description]="suggestion.description"
-              [color]="suggestion.color"
-              [icon]="suggestion.icon || ''">
-            </app-suggestion-card>
+      <app-ui-card *ngIf="atsBreakdownViewModels.length" class="quality-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">ATS evidence profile</span>
+            <h2>Score Breakdown</h2>
+            <p>Each dimension is calculated from the latest parsed resume evidence.</p>
           </div>
         </div>
-      </div>
+        <div class="breakdown-list">
+          <div class="breakdown-row" *ngFor="let score of atsBreakdownViewModels">
+            <div class="breakdown-row__label">
+              <strong>{{ score.label }}</strong>
+              <span>{{ score.value }}/100</span>
+            </div>
+            <div class="breakdown-track"><span [style.width.%]="score.value"></span></div>
+            <p *ngIf="score.explanation">{{ score.explanation }}</p>
+          </div>
+        </div>
+      </app-ui-card>
 
-      <ng-template #noSuggestions>
-        <p class="no-suggestions">Great job! No major issues were found in your resume.</p>
-      </ng-template>
-    </app-ui-card>
-  </div>
+      <app-ui-card *ngIf="skillGroupViewModels.length" class="skills-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Parsed technology evidence</span>
+            <h2>Detected Skills</h2>
+            <p>{{ detectedSkillCount }} unique skills grouped by their normalized hiring category.</p>
+          </div>
+        </div>
+        <div class="skills-overview">
+          <div class="skill-group-card" *ngFor="let group of skillGroupViewModels">
+            <div class="skill-group-card__head">
+              <div class="skill-group-card__dot"></div>
+              <h3>{{ group.category }}</h3>
+              <span>{{ group.skills.length }}</span>
+            </div>
+            <div class="skill-badges">
+              <app-skill-badge *ngFor="let skill of group.skills" [skill]="skill" [category]="group.category"></app-skill-badge>
+            </div>
+          </div>
+        </div>
+      </app-ui-card>
 
-  <div *ngIf="analysisComplete" class="cta-section">
-    <button
-      class="cta-button"
-      (click)="downloadGuide()"
-      [disabled]="isDownloading"
-      [class.loading]="isDownloading">
-      <svg *ngIf="isDownloading" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-        <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
-      </svg>
+      <app-ui-card *ngIf="intelligenceSectionViewModels.length" class="details-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Extracted resume evidence</span>
+            <h2>Resume Intelligence</h2>
+            <p>Only sections detected in the uploaded resume are shown.</p>
+          </div>
+        </div>
+        <div class="details-grid">
+          <section *ngFor="let section of intelligenceSectionViewModels">
+            <h3>{{ section.title }}</h3>
+            <ul>
+              <li *ngFor="let item of section.items">{{ item }}</li>
+            </ul>
+          </section>
+        </div>
+      </app-ui-card>
 
-      <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
+      <app-ui-card *ngIf="recruiterSectionViewModels.length" class="recruiter-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Hiring review</span>
+            <h2>Recruiter Perspective</h2>
+            <p>Resume-backed strengths and areas a recruiter may validate.</p>
+          </div>
+        </div>
+        <div class="recruiter-grid">
+          <section *ngFor="let section of recruiterSectionViewModels">
+            <h3>{{ section.title }}</h3>
+            <ul>
+              <li *ngFor="let item of section.items">{{ item }}</li>
+            </ul>
+          </section>
+        </div>
+      </app-ui-card>
 
-      {{ isDownloading ? 'Generating Guide...' : 'Download Improved Resume Guide' }}
-    </button>
-    <p class="cta-hint">AI generates a personalized HTML guide — open in browser and print to PDF</p>
-  </div>
+      <app-ui-card *ngIf="warningGroupViewModels.length" class="warnings-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Consistency review</span>
+            <h2>Resume Warnings</h2>
+            <p>Grouped by review priority so the most consequential gaps are visible first.</p>
+          </div>
+        </div>
+        <div class="warning-groups">
+          <section *ngFor="let group of warningGroupViewModels" class="warning-group" [class]="'warning-group warning-group--' + group.severity">
+            <header>
+              <h3>{{ group.label }}</h3>
+              <span>{{ group.warnings.length }}</span>
+            </header>
+            <div class="warning-list">
+              <article class="warning-item" *ngFor="let warning of group.warnings">
+                <strong>{{ warning.message }}</strong>
+                <p *ngIf="warning.evidence">{{ warning.evidence }}</p>
+              </article>
+            </div>
+          </section>
+        </div>
+      </app-ui-card>
+
+      <app-ui-card *ngIf="hasGrowthData" class="growth-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Version comparison</span>
+            <h2>Resume Growth</h2>
+            <p *ngIf="growthSummary">{{ growthSummary }}</p>
+          </div>
+        </div>
+        <div *ngIf="growthScoreViewModels.length" class="growth-comparison">
+          <article *ngFor="let change of growthScoreViewModels">
+            <span>{{ change.label }}</span>
+            <div class="growth-values">
+              <div><small>Before</small><strong>{{ change.previous }}</strong></div>
+              <span aria-hidden="true">→</span>
+              <div><small>Current</small><strong>{{ change.current }}</strong></div>
+              <em [class.negative]="change.delta < 0">{{ change.delta > 0 ? '+' : '' }}{{ change.delta }}</em>
+            </div>
+          </article>
+        </div>
+        <div *ngIf="growthNewSkills.length" class="new-skills-row">
+          <h3>Newly Detected Skills</h3>
+          <div class="chip-row"><span *ngFor="let skill of growthNewSkills">{{ skill }}</span></div>
+        </div>
+      </app-ui-card>
+
+      <app-ui-card *ngIf="suggestionViewModels.length" class="suggestions-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Prioritized action plan</span>
+            <h2>Improvement Suggestions</h2>
+            <p>Ordered from high-impact corrections to final polish.</p>
+          </div>
+        </div>
+        <div class="suggestions-sequence">
+          <div class="suggestion-step" *ngFor="let suggestion of suggestionViewModels; let i = index">
+            <div class="suggestion-step__marker">
+              <span>{{ i + 1 }}</span>
+              <small>{{ getTopSuggestionLabel(i) }}</small>
+            </div>
+            <div class="suggestion-step__content">
+              <app-suggestion-card [title]="suggestion.title" [description]="suggestion.description" [color]="suggestion.color" [icon]="suggestion.icon || ''"></app-suggestion-card>
+            </div>
+          </div>
+        </div>
+      </app-ui-card>
+    </div>
+
+    <div class="cta-section">
+      <button type="button" class="cta-button" (click)="downloadGuide()" [disabled]="isDownloading" [class.loading]="isDownloading">
+        <svg *ngIf="isDownloading" class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        <svg *ngIf="!isDownloading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        {{ isDownloading ? 'Preparing guide…' : 'Download Resume Guide' }}
+      </button>
+      <p class="cta-hint">Downloads a personalized HTML guide based on this saved analysis.</p>
+    </div>
+  </ng-container>
 </div>

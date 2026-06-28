@@ -119,13 +119,22 @@ export class ResumeService {
   cacheAnalysis(file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>, analysis: any): void {
     const resumeHash = String(analysis?.resumeHash || file?.resumeHash || '').trim();
     if (!file?.fileId || !resumeHash) return;
+    this.currentAnalysisSubject.next(analysis || null);
+    const userId = this.getCurrentUserId() || 'anonymous';
+    const filePrefix = `${RESUME_ANALYSIS_CACHE_PREFIX}${userId}:${String(file.fileId).trim()}:`;
     const key = this.buildAnalysisCacheKey({
       fileId: file.fileId,
       resumeHash,
       analysisVersion: analysis?.analysisVersion || file?.analysisVersion || 'resume-intel-v2'
     });
-    localStorage.setItem(key, JSON.stringify({ cachedAt: Date.now(), analysis }));
-    this.currentAnalysisSubject.next(analysis || null);
+    try {
+      Object.keys(localStorage)
+        .filter((candidate) => candidate.startsWith(filePrefix) && candidate !== key)
+        .forEach((candidate) => localStorage.removeItem(candidate));
+      localStorage.setItem(key, JSON.stringify({ cachedAt: Date.now(), analysis }));
+    } catch {
+      // Keep the in-memory analysis usable when storage is unavailable or full.
+    }
   }
 
   clearResumeAnalysisCache(): void {
