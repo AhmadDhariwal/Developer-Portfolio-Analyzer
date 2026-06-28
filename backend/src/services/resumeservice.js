@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const pdfParse = require('pdf-parse');
 const crypto = require('node:crypto');
 const aiService = require('./aiservice');
@@ -6,6 +6,12 @@ const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const ANALYSIS_VERSION = 'resume-intel-v2';
+
+const elapsedMs = (startedAt) => Number((process.hrtime.bigint() - startedAt) / 1000000n);
+
+const recordTiming = (onTiming, stage, durationMs) => {
+  if (typeof onTiming === 'function') onTiming(stage, durationMs);
+};
 
 const SECTION_ALIASES = {
   summary: ['summary', 'professional summary', 'profile', 'objective'],
@@ -98,28 +104,14 @@ const emptyTechnologyCategories = () => ({
  * Robustly extract text from a PDF file.
  */
 const extractTextFromPDF = async (filePath) => {
-  const dataBuffer = fs.readFileSync(filePath);
+  const dataBuffer = await fs.readFile(filePath);
 
   try {
     const parsed = await pdfParse(dataBuffer, { max: 0 });
     const text = (parsed?.text || '').trim();
     if (text.length > 20) return text;
   } catch (primaryErr) {
-    console.warn('pdf-parse failed, trying fallback:', primaryErr.message);
-  }
-
-  // Fallback: scan raw bytes for printable ASCII runs
-  try {
-    let raw = '';
-    for (let i = 0; i < dataBuffer.length; i++) {
-      const c = dataBuffer[i];
-      if (c >= 32 && c <= 126) raw += String.fromCharCode(c);
-      else if (c === 10 || c === 13) raw += ' ';
-    }
-    const cleaned = raw.replace(/\s+/g, ' ').trim();
-    if (cleaned.length > 20) return cleaned;
-  } catch (fallbackErr) {
-    console.warn('Fallback text extraction also failed:', fallbackErr.message);
+    console.warn('pdf-parse failed:', primaryErr.message);
   }
 
   throw new Error('Unable to extract text from this PDF.');
@@ -200,21 +192,21 @@ const detectSections = (text = '') => {
   return { sections, present };
 };
 
-const extractPersonalInfo = (text = '', userFallback = {}) => {
+const extractPersonalInfo = (text = '') => {
   const lines = splitLines(text);
   const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || '';
   const phone = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/)?.[0]?.trim() || '';
   const urls = uniqueStrings(text.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [], 12);
   const linkedIn = urls.find((url) => /linkedin\.com/i.test(url)) || (text.match(/linkedin\.com\/[^\s)]+/i)?.[0] || '');
   const github = urls.find((url) => /github\.com/i.test(url)) || (text.match(/github\.com\/[^\s)]+/i)?.[0] || '');
-  const portfolio = urls.find((url) => !/linkedin\.com|github\.com/i.test(url)) || userFallback.website || '';
-  const location = text.match(/\b(?:remote|hybrid|onsite|[A-Z][a-z]+,\s*[A-Z]{2}|[A-Z][a-z]+,\s*[A-Z][a-z]+)\b/)?.[0] || userFallback.location || '';
+  const portfolio = urls.find((url) => !/linkedin\.com|github\.com/i.test(url)) || '';
+  const location = text.match(/\b(?:remote|hybrid|onsite|[A-Z][a-z]+,\s*[A-Z]{2}|[A-Z][a-z]+,\s*[A-Z][a-z]+)\b/)?.[0] || '';
   const name = lines.find((line) => {
     if (line.length > 70) return false;
     if (/@|https?:|www\.|github|linkedin|\d{3}/i.test(line)) return false;
     if (headerLookup.has(line.toLowerCase().replace(/[:\-|]+$/g, '').trim())) return false;
     return /^[A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){0,3}$/.test(line);
-  }) || userFallback.name || '';
+  }) || '';
 
   return { name, email, phone, location, portfolio, linkedIn, github };
 };
@@ -267,11 +259,11 @@ const buildLegacySkills = (technologyCategories) => ({
   )
 });
 
-const extractExperienceYears = (text = '') => {
+const extractExperienceYears = (text = '', experienceText = '') => {
   const explicit = text.match(/(\d{1,2})\+?\s*(?:years|yrs)\s+(?:of\s+)?experience/i);
   if (explicit) return Math.min(40, Number(explicit[1]) || 0);
 
-  const years = uniqueStrings(text.match(/\b(?:20\d{2}|19\d{2})\b/g) || [], 40)
+  const years = uniqueStrings(experienceText.match(/\b(?:20\d{2}|19\d{2})\b/g) || [], 40)
     .map((year) => Number(year))
     .filter((year) => year >= 1980 && year <= new Date().getFullYear());
   if (years.length < 2) return 0;
@@ -350,7 +342,7 @@ const scoreDeterministically = ({ text, personalInfo, present, projects, experie
   const formatScore = clamp(35 + countTruthy(Object.values(present)) * 4 + (bulletCount >= 6 ? 14 : 0) + (hasDates ? 10 : 0) - warnings.length * 3);
   const contentQuality = clamp(30 + Math.min(metricCount * 10, 35) + Math.min(actionCount * 3, 18) + (achievements.length ? 10 : 0));
   const projectQuality = clamp(25 + Math.min(projects.length * 12, 30) + Math.min(projects.filter(hasMetric).length * 14, 28) + Math.min(projects.filter((project) => allTech.some((skill) => project.toLowerCase().includes(skill.toLowerCase()))).length * 5, 17));
-  const experienceStrength = clamp(25 + Math.min(experience.length * 5, 25) + Math.min(experience.filter(hasMetric).length * 12, 30) + (extractExperienceYears(text) >= 2 ? 15 : 0));
+  const experienceStrength = clamp(25 + Math.min(experience.length * 5, 25) + Math.min(experience.filter(hasMetric).length * 12, 30) + (extractExperienceYears(text, experience.join('\n')) >= 2 ? 15 : 0));
   const skillsCoverage = clamp(20 + Math.min(allTech.length * 3, 48) + Math.min(categoryCount * 5, 30));
   const technicalDepth = clamp(20 + Math.min(categoryCount * 7, 42) + Math.min(projects.length * 4, 16) + Math.min(experience.length * 2, 18));
   const recruiterReadiness = clamp((atsScore * 0.24) + (contentQuality * 0.24) + (projectQuality * 0.18) + (experienceStrength * 0.18) + (skillsCoverage * 0.16) - warnings.length);
@@ -449,19 +441,36 @@ const buildResumeSignals = ({ normalized, scores, technologyCategories, warnings
   updatedAt: new Date().toISOString()
 });
 
-const getCompactAiInsights = async ({ normalized, scores, warnings, technologyCategories }) => {
+const AI_FOCUS_AREAS = {
+  contact_details: 'Complete missing contact details in the resume header.',
+  quantified_impact: 'Add measurable outcomes to the strongest experience and project bullets.',
+  project_evidence: 'Strengthen project evidence with ownership, implementation details, and outcomes.',
+  keyword_coverage: 'Improve role-relevant keyword coverage using only skills genuinely demonstrated in the resume.',
+  bullet_clarity: 'Rewrite passive or vague bullets with clear action verbs and concrete outcomes.',
+  section_structure: 'Use conventional section headings and a clear reading order for ATS parsing.',
+  technical_depth: 'Connect listed technologies to specific project or experience evidence.',
+  recruiter_readiness: 'Prioritize the highest-severity resume warnings before adding cosmetic polish.'
+};
+
+const getApplicableAiFocusAreas = ({ normalized, scores, warnings }) => {
+  const warningCodes = new Set(warnings.map((warning) => warning.code));
+  return uniqueStrings([
+    ...(warningCodes.has('missing_contact_details') ? ['contact_details'] : []),
+    ...(warningCodes.has('missing_metrics') || scores.contentQuality < 70 ? ['quantified_impact'] : []),
+    ...(warningCodes.has('missing_projects_section') || warningCodes.has('weak_project_descriptions') ? ['project_evidence'] : []),
+    ...(scores.keywordCoverage < 70 ? ['keyword_coverage'] : []),
+    ...(scores.contentQuality < 75 ? ['bullet_clarity'] : []),
+    ...(Object.values(normalized.sectionPresence || {}).some((present) => !present) ? ['section_structure'] : []),
+    ...(scores.technicalDepth < 70 ? ['technical_depth'] : []),
+    ...(scores.recruiterReadiness < 75 ? ['recruiter_readiness'] : [])
+  ], 8);
+};
+
+const getCompactAiInsights = async ({ normalized, scores, warnings, onTiming }) => {
+  const applicableFocusAreas = getApplicableAiFocusAreas({ normalized, scores, warnings });
   const fallback = {
     __fallback: true,
-    atsInsights: [scores.explanations.atsScore],
-    contentQualityInsights: [scores.explanations.contentQuality],
-    improvementSuggestions: [],
-    recruiterPerspective: {
-      strengths: [],
-      concerns: [],
-      interviewRisks: [],
-      hiringReadiness: scores.recruiterReadiness >= 75 ? 'Strong' : scores.recruiterReadiness >= 55 ? 'Moderate' : 'Needs improvement'
-    },
-    resumeSummary: ''
+    focusAreas: []
   };
 
   const compactPayload = {
@@ -470,49 +479,46 @@ const getCompactAiInsights = async ({ normalized, scores, warnings, technologyCa
       experienceLevel: normalized.experienceLevel,
       sectionPresence: normalized.sectionPresence
     },
-    experienceSummary: normalized.experience.slice(0, 8),
-    projects: normalized.projects.slice(0, 6),
-    detectedSkills: uniqueStrings(Object.values(technologyCategories).flat(), 60),
-    achievements: normalized.achievements.slice(0, 8),
     missingSections: Object.entries(normalized.sectionPresence || {}).filter(([, present]) => !present).map(([name]) => name),
-    warnings: warnings.slice(0, 8),
-    deterministicScores: scores
+    warningCodes: warnings.slice(0, 8).map((warning) => warning.code),
+    deterministicScores: scores,
+    allowedFocusAreas: applicableFocusAreas
   };
 
   const prompt = `
-You are a senior technical recruiter. Use only the structured resume facts below. Do not invent skills, employers, certifications, schools, dates, or experience.
+You are a senior technical recruiter. Prioritize only the allowed focus-area codes below. Do not return prose and do not add facts, names, employers, skills, certifications, schools, dates, experience, or scores.
 
 Structured resume facts:
 ${JSON.stringify(compactPayload, null, 2)}
 
-Return valid JSON only:
-{
-  "atsInsights": ["short insight"],
-  "contentQualityInsights": ["short insight"],
-  "improvementSuggestions": ["specific suggestion"],
-  "recruiterPerspective": {
-    "strengths": ["recruiter-visible strength"],
-    "concerns": ["recruiter concern"],
-    "interviewRisks": ["risk to validate in interview"],
-    "hiringReadiness": "Strong | Moderate | Needs improvement"
-  },
-  "resumeSummary": "2 concise sentences based only on the structured facts"
-}`.trim();
+Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
 
-  const aiResult = await aiService.runAIAnalysis(prompt, fallback, 1);
-  if (!aiResult || typeof aiResult !== 'object') return { ...fallback, aiUsed: false };
-  const aiUsed = aiResult.__fallback !== true;
+  const aiStartedAt = process.hrtime.bigint();
+  let aiResult = fallback;
+  try {
+    aiResult = await aiService.runAIAnalysis(prompt, fallback, 1);
+  } catch (error) {
+    console.warn('[ResumeAnalysisPipeline]', JSON.stringify({
+      event: 'ai_insights_fallback',
+      reason: error?.message || 'unknown_error'
+    }));
+  } finally {
+    recordTiming(onTiming, 'aiInsightsMs', elapsedMs(aiStartedAt));
+  }
+  const selectedFocusAreas = uniqueStrings(Array.isArray(aiResult?.focusAreas) ? aiResult.focusAreas : [], 6)
+    .filter((area) => applicableFocusAreas.includes(area) && AI_FOCUS_AREAS[area]);
+  const aiUsed = aiResult?.__fallback !== true && selectedFocusAreas.length > 0;
 
-  const recruiter = aiResult.recruiterPerspective || {};
   return {
-    atsInsights: uniqueStrings(Array.isArray(aiResult.atsInsights) ? aiResult.atsInsights : fallback.atsInsights, 5),
-    contentQualityInsights: uniqueStrings(Array.isArray(aiResult.contentQualityInsights) ? aiResult.contentQualityInsights : fallback.contentQualityInsights, 5),
-    improvementSuggestions: uniqueStrings(Array.isArray(aiResult.improvementSuggestions) ? aiResult.improvementSuggestions : [], 6),
-    strengths: uniqueStrings(Array.isArray(recruiter.strengths) ? recruiter.strengths : [], 6),
-    concerns: uniqueStrings(Array.isArray(recruiter.concerns) ? recruiter.concerns : [], 6),
-    interviewRisks: uniqueStrings(Array.isArray(recruiter.interviewRisks) ? recruiter.interviewRisks : [], 6),
-    hiringReadiness: ['Strong', 'Moderate', 'Needs improvement'].includes(recruiter.hiringReadiness) ? recruiter.hiringReadiness : fallback.recruiterPerspective.hiringReadiness,
-    resumeSummary: String(aiResult.resumeSummary || '').trim().slice(0, 600),
+    atsInsights: [scores.explanations.atsScore],
+    contentQualityInsights: [scores.explanations.contentQuality],
+    improvementSuggestions: selectedFocusAreas.map((area) => AI_FOCUS_AREAS[area]),
+    strengths: [],
+    concerns: [],
+    interviewRisks: [],
+    hiringReadiness: scores.recruiterReadiness >= 75 ? 'Strong' : scores.recruiterReadiness >= 55 ? 'Moderate' : 'Needs improvement',
+    resumeSummary: '',
+    focusAreas: selectedFocusAreas,
     aiUsed
   };
 };
@@ -542,11 +548,12 @@ const buildImprovementDelta = (current, previous) => {
   };
 };
 
-const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAnalysis, userFallback = {} }) => {
+const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAnalysis, onTiming }) => {
+  const deterministicStartedAt = process.hrtime.bigint();
   const normalizedText = normalizeResumeText(text);
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
   const { sections, present } = detectSections(normalizedText);
-  const personalInfo = extractPersonalInfo(normalizedText, userFallback);
+  const personalInfo = extractPersonalInfo(normalizedText);
   const technologyCategories = detectTechnologies(normalizedText);
   const projects = extractProjects(sections);
   const experience = extractExperience(sections);
@@ -557,7 +564,7 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   const volunteerWork = extractBullets(sections.volunteerWork || []).slice(0, 8);
   const leadership = extractBullets(sections.leadership || []).slice(0, 8);
   const openSourceContributions = extractBullets(sections.openSource || []).slice(0, 8);
-  const experienceYears = extractExperienceYears(normalizedText);
+  const experienceYears = extractExperienceYears(normalizedText, (sections.experience || []).join('\n'));
   const normalized = {
     personalInfo,
     education,
@@ -577,7 +584,8 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
 
   const warnings = buildWarnings({ personalInfo, present, projects, achievements, technologyCategories, experience, education });
   const qualityScores = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings });
-  const aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, technologyCategories });
+  recordTiming(onTiming, 'deterministicAnalysisMs', elapsedMs(deterministicStartedAt));
+  const aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, onTiming });
   const recruiterPerspective = buildRecruiterPerspective({ personalInfo, scores: qualityScores, warnings, achievements, technologyCategories, aiInsights });
   const suggestions = [
     ...buildSuggestions({ warnings, scores: qualityScores, projects, achievements }),
@@ -643,8 +651,10 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
   const forceRefresh = Boolean(options.forceRefresh);
   const analysisVersion = options.analysisVersion || ANALYSIS_VERSION;
 
-  if (userId && resumeFileId && !forceRefresh) {
+  if (userId && resumeFileId && !forceRefresh && !options.cacheLookupCompleted) {
+    const cacheStartedAt = process.hrtime.bigint();
     const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion }).lean();
+    recordTiming(options.onTiming, 'cacheLookupMs', elapsedMs(cacheStartedAt));
     if (cached?.result) {
       return {
         ...cached.result,
@@ -666,32 +676,64 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
     fileName,
     fileSize,
     previousAnalysis: options.previousAnalysis || null,
-    userFallback: options.userFallback || {}
+    onTiming: options.onTiming
   });
 
   if (userId && resumeFileId) {
-    await ResumeAnalysisCache.findOneAndUpdate(
-      { userId, resumeFileId, resumeHash, analysisVersion },
-      {
-        $set: {
-          userId,
-          resumeFileId,
-          resumeHash,
-          analysisVersion,
-          result,
-          analyzedAt: new Date()
-        },
-        $setOnInsert: { createdAt: new Date() }
+    const writeStartedAt = process.hrtime.bigint();
+    const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
+    const cacheUpdate = {
+      $set: {
+        userId,
+        resumeFileId,
+        resumeHash,
+        analysisVersion,
+        result,
+        analyzedAt: new Date()
       },
-      { upsert: true, new: true }
-    );
+      $setOnInsert: { createdAt: new Date() }
+    };
+    try {
+      await ResumeAnalysisCache.findOneAndUpdate(cacheQuery, cacheUpdate, { upsert: true, new: true });
+    } catch (error) {
+      if (error?.code !== 11000) throw error;
+      await ResumeAnalysisCache.updateOne(cacheQuery, { $set: cacheUpdate.$set });
+    }
+    recordTiming(options.onTiming, 'mongoWritesMs', elapsedMs(writeStartedAt));
   }
 
   return result;
 };
 
+const findCachedResumeAnalysis = async ({ userId, resumeFileId, resumeHash, analysisVersion = ANALYSIS_VERSION, onTiming }) => {
+  if (!userId || !resumeFileId || !resumeHash) return null;
+  const cacheStartedAt = process.hrtime.bigint();
+  const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion }).lean();
+  recordTiming(onTiming, 'cacheLookupMs', elapsedMs(cacheStartedAt));
+  if (!cached?.result) return null;
+  return {
+    ...cached.result,
+    cacheMetadata: {
+      ...(cached.result.cacheMetadata || {}),
+      loadedFromCache: true,
+      cacheHit: true,
+      aiUsed: false,
+      analyzedAt: cached.analyzedAt,
+      analysisVersion,
+      resumeHash
+    }
+  };
+};
+
 module.exports = {
   extractTextFromPDF,
   analyzeResume,
-  ANALYSIS_VERSION
+  findCachedResumeAnalysis,
+  ANALYSIS_VERSION,
+  __test: {
+    buildDeterministicAnalysis,
+    extractExperienceYears,
+    extractPersonalInfo,
+    getApplicableAiFocusAreas
+  }
 };

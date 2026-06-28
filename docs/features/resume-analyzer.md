@@ -23,7 +23,7 @@ Users upload resumes, choose active/default resume context, and explicitly run a
 ## Request Flow
 Upload: `POST /api/resume/upload` -> file metadata saved.
 
-Analyze: `POST /api/resume/analyze` -> extract text -> AI/deterministic analysis -> save `ResumeAnalysis`.
+Analyze: `POST /api/resume/analyze` -> versioned `ResumeAnalysisCache` lookup -> on miss, extract PDF text -> deterministic analysis -> optional constrained AI focus prioritization -> save `ResumeAnalysis` and cache result. A normal repeat for the same file/hash/version returns before PDF extraction; `forceRefresh=true` bypasses the resume result cache and recomputes.
 
 Read: `GET /api/resume/result`, `GET /api/resume/files`, `GET /api/resume/active`.
 
@@ -34,9 +34,13 @@ Read: `GET /api/resume/result`, `GET /api/resume/files`, `GET /api/resume/active
 ## Testing Files
 - `node --check backend/src/controllers/resumecontoller.js`
 - `node --check backend/src/services/resumeservice.js`
+- `node --check backend/src/middleware/uploadmiddleware.js`
+- `node --test backend/src/tests/resumeService.test.js`
 - `npx -y ng build --configuration development`
 
 ## Common Pitfalls
 - Do not analyze automatically from read endpoints.
 - Preserve uploaded file ownership checks.
 - Keep default resume selection explicit and stable.
+- AI may prioritize backend-defined improvement focus codes, but factual fields, scores, resume signals, recruiter evidence, and displayed prose remain deterministic and resume-grounded.
+- Pipeline logs use the `[ResumeAnalysisPipeline]` prefix and report extraction, cache, deterministic, AI, Mongo write, serialization, and total durations.

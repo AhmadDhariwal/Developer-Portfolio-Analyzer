@@ -4,25 +4,21 @@ const resumeAnalysisCacheSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   resumeFileId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ResumeFile',
-    required: true,
-    index: true
+    required: true
   },
   resumeHash: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
   analysisVersion: {
     type: String,
     required: true,
-    default: 'resume-intel-v2',
-    index: true
+    default: 'resume-intel-v2'
   },
   result: {
     type: mongoose.Schema.Types.Mixed,

@@ -48,4 +48,7 @@ const resumeFileSchema = new mongoose.Schema({
   }
 });
 
+resumeFileSchema.index({ userId: 1, uploadDate: -1 });
+resumeFileSchema.index({ userId: 1, isAnalyzed: 1, uploadDate: -1 });
+
 module.exports = mongoose.model('ResumeFile', resumeFileSchema);

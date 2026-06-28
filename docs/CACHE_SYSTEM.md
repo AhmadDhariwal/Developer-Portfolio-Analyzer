@@ -139,6 +139,12 @@ Prompt generation happens after this cache lookup and after deterministic confid
 
 Cached resume analysis results to avoid re-processing the same PDF.
 
+- Key: `userId + resumeFileId + resumeHash + analysisVersion` (unique compound index).
+- Normal repeat analyses use the hash/version stored on `ResumeFile` to check this cache before reading or parsing the PDF.
+- `forceRefresh=true` bypasses this feature cache, recomputes deterministic output, and replaces the versioned cache value.
+- The shared AI prompt cache remains a separate layer, so a force refresh of resume analysis can still reuse an identical safe AI focus-code response.
+- `ResumeAnalysis` keeps durable result history; its `userId + fileId + analyzedAt` and `userId + analyzedAt` indexes support default-file and latest-result reads.
+
 ## Frontend Cache And Inflight Dedupe
 
 Several Angular services intentionally return cached observables or cached values before making HTTP calls.

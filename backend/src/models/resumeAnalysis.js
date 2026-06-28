@@ -157,5 +157,7 @@ const resumeAnalysisSchema = new mongoose.Schema({
 });
 
 resumeAnalysisSchema.index({ userId: 1, fileId: 1, resumeHash: 1, analysisVersion: 1, analyzedAt: -1 });
+resumeAnalysisSchema.index({ userId: 1, fileId: 1, analyzedAt: -1 });
+resumeAnalysisSchema.index({ userId: 1, analyzedAt: -1 });
 
 module.exports = mongoose.model('ResumeAnalysis', resumeAnalysisSchema);

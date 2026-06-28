@@ -14,7 +14,7 @@ const { protect } = require('../middleware/authmiddleware');
 const upload = require('../middleware/uploadmiddleware');
 
 // Upload resume file
-router.post('/upload', protect, upload.single('file'), uploadResume);
+router.post('/upload', protect, upload.resumePdf, uploadResume);
 
 // Analyze resume
 router.post('/analyze', protect, analyzeResumeFile);

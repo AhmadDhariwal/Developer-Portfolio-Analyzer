@@ -140,6 +140,8 @@ Prompts are kept in `backend/src/prompts/` as template functions.
 
 AI prompt templates use `backend/src/services/promptBuilderService.js` for compact JSON, bounded text, and summarized evidence. Skill Gap, GitHub Analyzer, Resume Analysis, Recommendations, Career Sprint, Interview Prep, Portfolio Score, Weekly Reports, Resume Guide, Jobs, and Courses share the same compaction helpers.
 
+Resume Analysis keeps every factual field deterministic. Its optional AI call can only return a subset of backend-provided focus-area codes; the backend maps accepted codes to fixed improvement text and rejects unknown values. AI output cannot supply employers, skills, certifications, schools, dates, experience, scores, recruiter facts, or resume signals. Any AI/cache/provider exception falls back to the complete deterministic result.
+
 Skill Gap builds a compact context before calling `getSkillGapPrompt()`. It summarizes GitHub repositories, resume evidence, portfolio, sprint, weekly report, integration, and job-demand signals instead of sending raw source objects. Resume Analysis sends a bounded resume evidence summary instead of unbounded raw resume text. Prompt size is estimated before every AI request, with a target below 5000 input tokens.
 
 Reusable prompt compaction helpers live in `backend/src/services/promptBuilderService.js`. Feature code should:
