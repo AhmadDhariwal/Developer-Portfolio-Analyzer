@@ -51,6 +51,13 @@ interface SuggestionViewModel extends ResumeSuggestion {
   priorityLabel: string;
 }
 
+interface RadarLabelViewModel {
+  label: string;
+  x: number;
+  y: number;
+  anchor: 'start' | 'middle' | 'end';
+}
+
 @Component({
   selector: 'app-resume-analyzer',
   standalone: true,
@@ -89,6 +96,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
 
   scoreCardViewModels: ScoreViewModel[] = [];
+  hiringReadinessViewModel: ScoreViewModel | null = null;
   atsBreakdownViewModels: ScoreViewModel[] = [];
   skillGroupViewModels: SkillGroupViewModel[] = [];
   technologyCategoryViewModels: SkillGroupViewModel[] = [];
@@ -105,6 +113,8 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   hiringReadiness = '';
   detectedSkillCount = 0;
   showAllSkills = false;
+  radarPoints = '';
+  radarLabelViewModels: RadarLabelViewModel[] = [];
 
   // Snapshot backup used when a new upload/analyze fails
   private previousAnalysis: ResumeAnalysis | null = null;
@@ -400,9 +410,15 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       makeScore('atsScore', 'ATS Compatibility', analysis.atsScore, scoreBreakdown['atsScore'] || explanations['atsScore'], 'pink'),
       makeScore('keywordDensity', 'Keyword Density', analysis.keywordDensity, scoreBreakdown['keywordDensity'] || explanations['keywordCoverage'], 'purple'),
       makeScore('formatScore', 'Formatting Score', analysis.formatScore, scoreBreakdown['formatScore'] || explanations['formattingScore'], 'green'),
-      makeScore('contentQuality', 'Content Quality', analysis.contentQuality, scoreBreakdown['contentQuality'] || explanations['contentQuality'], 'amber'),
-      makeScore('recruiterReadiness', 'Hiring Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'purple')
+      makeScore('contentQuality', 'Content Quality', analysis.contentQuality, scoreBreakdown['contentQuality'] || explanations['contentQuality'], 'amber')
     ].filter((item): item is ScoreViewModel => Boolean(item));
+    this.hiringReadinessViewModel = makeScore(
+      'recruiterReadiness',
+      'Hiring Readiness',
+      qualityScores['recruiterReadiness'],
+      explanations['recruiterReadiness'],
+      'purple'
+    );
 
     this.atsBreakdownViewModels = [
       makeScore('overallResumeScore', 'Overall Resume Score', qualityScores['overallResumeScore'], explanations['overallResumeScore'], 'purple'),
@@ -416,6 +432,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       makeScore('technicalDepth', 'Technical Depth', qualityScores['technicalDepth'], explanations['technicalDepth'], 'purple'),
       makeScore('recruiterReadiness', 'Recruiter Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'green')
     ].filter((item): item is ScoreViewModel => Boolean(item));
+    this.buildRadarViewModel(this.atsBreakdownViewModels.slice(0, 6));
 
     this.skillGroupViewModels = this.toSkillGroups(analysis.skills);
     this.technologyCategoryViewModels = this.toSkillGroups(analysis.technologyCategories);
@@ -506,6 +523,39 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       : [];
     this.growthNewSkills = hasPrevious ? this.cleanStrings(analysis.newSkillsAdded) : [];
     this.growthSummary = hasPrevious ? String(analysis.improvementDelta?.['summary'] || '').trim() : '';
+  }
+
+  private buildRadarViewModel(scores: ScoreViewModel[]): void {
+    if (scores.length < 3) {
+      this.radarPoints = '';
+      this.radarLabelViewModels = [];
+      return;
+    }
+    const center = 100;
+    const plotRadius = 64;
+    const labelRadius = 88;
+    const pointAt = (index: number, radius: number) => {
+      const angle = (-90 + (360 / scores.length) * index) * (Math.PI / 180);
+      return {
+        x: Number((center + Math.cos(angle) * radius).toFixed(1)),
+        y: Number((center + Math.sin(angle) * radius).toFixed(1))
+      };
+    };
+    this.radarPoints = scores
+      .map((score, index) => {
+        const point = pointAt(index, plotRadius * (score.value / 100));
+        return `${point.x},${point.y}`;
+      })
+      .join(' ');
+    this.radarLabelViewModels = scores.map((score, index) => {
+      const point = pointAt(index, labelRadius);
+      return {
+        label: score.label.replace(' Compatibility', '').replace(' Coverage', ''),
+        x: point.x,
+        y: point.y,
+        anchor: point.x < 92 ? 'end' : point.x > 108 ? 'start' : 'middle'
+      };
+    });
   }
 
   private toSkillGroups(value: Record<string, string[]> | undefined): SkillGroupViewModel[] {

@@ -377,7 +377,7 @@
 
 .score-cards-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -452,6 +452,22 @@
   font-weight: 700;
 }
 
+.hiring-readiness {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  p { margin: 6px 0 0; color: #94a3b8; font-size: 12px; line-height: 18px; }
+}
+
+.score-ring--large {
+  width: 112px;
+  height: 112px;
+
+  &::after { inset: 9px; }
+  strong { font-size: 32px; }
+}
+
 .breakdown-track {
   height: 6px;
   margin-top: 0.8rem;
@@ -468,10 +484,21 @@
 }
 
 .analysis-flow {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 20px;
 }
+
+.overview-panel { grid-column: span 8; }
+.hiring-panel { grid-column: span 4; }
+.quality-panel,
+.warnings-panel { grid-column: 1 / -1; }
+.skills-panel,
+.technology-panel,
+.details-panel,
+.recruiter-panel { grid-column: span 6; }
+.growth-panel { grid-column: span 5; }
+.suggestions-panel { grid-column: span 7; }
 
 .section-head {
   display: flex;
@@ -505,6 +532,45 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.ats-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 0.85fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.radar-card {
+  min-width: 0;
+  padding: 8px;
+
+  svg {
+    width: 100%;
+    max-height: 310px;
+    overflow: visible;
+  }
+
+  line,
+  .radar-grid {
+    fill: none;
+    stroke: rgba(148, 163, 184, 0.18);
+    stroke-width: 1;
+  }
+
+  .radar-grid--outer { stroke: rgba(148, 163, 184, 0.28); }
+
+  .radar-data {
+    fill: rgba(124, 58, 237, 0.35);
+    stroke: #8b5cf6;
+    stroke-width: 2;
+  }
+
+  text {
+    fill: #94a3b8;
+    font-size: 7px;
+    dominant-baseline: middle;
+  }
 }
 
 .breakdown-row {
@@ -658,6 +724,7 @@
 
 .warning-groups {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
 }
 
@@ -919,7 +986,7 @@
 @media (max-width: 1100px) {
   .page-container { padding: 24px; }
   .score-cards-grid,
-  .skeleton-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .resume-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .resume-switcher { grid-template-columns: 1fr; }
   .technology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -930,6 +997,9 @@
   .page-header__actions { justify-content: flex-start; }
   .score-cards-grid,
   .skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analysis-flow { grid-template-columns: 1fr; }
+  .analysis-flow > * { grid-column: 1; }
+  .ats-layout { grid-template-columns: 1fr; }
   .personal-grid,
   .breakdown-list,
   .skills-overview,

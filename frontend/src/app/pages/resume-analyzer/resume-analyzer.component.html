@@ -114,7 +114,7 @@
   </app-ui-card>
 
   <div *ngIf="(isLoadingAnalysis || isAnalyzing) && !analysisComplete" class="skeleton-grid" aria-hidden="true">
-    <div class="skeleton-card" *ngFor="let item of [1, 2, 3, 4, 5]">
+    <div class="skeleton-card" *ngFor="let item of [1, 2, 3, 4]">
       <span></span>
       <strong></strong>
       <em></em>
@@ -156,6 +156,24 @@
         </div>
       </app-ui-card>
 
+      <app-ui-card *ngIf="hiringReadinessViewModel as readiness" class="hiring-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Recruiter signal</span>
+            <h2>Hiring Readiness</h2>
+          </div>
+        </div>
+        <div class="hiring-readiness">
+          <div class="score-ring score-ring--large" [style.--score-progress]="readiness.value + '%'">
+            <strong>{{ readiness.value }}%</strong>
+          </div>
+          <div>
+            <span class="score-status">{{ hiringReadiness || readiness.status }}</span>
+            <p *ngIf="readiness.explanation">{{ readiness.explanation }}</p>
+          </div>
+        </div>
+      </app-ui-card>
+
       <app-ui-card *ngIf="atsBreakdownViewModels.length" class="quality-panel">
         <div class="section-head">
           <div>
@@ -164,14 +182,31 @@
             <p>Each dimension is calculated from the latest parsed resume evidence.</p>
           </div>
         </div>
-        <div class="breakdown-list">
-          <div class="breakdown-row" *ngFor="let score of atsBreakdownViewModels">
-            <div class="breakdown-row__label">
-              <strong>{{ score.label }}</strong>
-              <span>{{ score.value }}/100</span>
+        <div class="ats-layout">
+          <div class="breakdown-list">
+            <div class="breakdown-row" *ngFor="let score of atsBreakdownViewModels">
+              <div class="breakdown-row__label">
+                <strong>{{ score.label }}</strong>
+                <span>{{ score.value }}/100</span>
+              </div>
+              <div class="breakdown-track"><span [style.width.%]="score.value"></span></div>
+              <p *ngIf="score.explanation">{{ score.explanation }}</p>
             </div>
-            <div class="breakdown-track"><span [style.width.%]="score.value"></span></div>
-            <p *ngIf="score.explanation">{{ score.explanation }}</p>
+          </div>
+          <div *ngIf="radarPoints" class="radar-card" aria-label="Resume score radar">
+            <svg viewBox="0 0 200 200" role="img">
+              <polygon points="100,30 160.6,65 160.6,135 100,170 39.4,135 39.4,65" class="radar-grid radar-grid--outer"></polygon>
+              <polygon points="100,47.5 145.5,73.8 145.5,126.2 100,152.5 54.5,126.2 54.5,73.8" class="radar-grid"></polygon>
+              <polygon points="100,65 130.3,82.5 130.3,117.5 100,135 69.7,117.5 69.7,82.5" class="radar-grid"></polygon>
+              <line x1="100" y1="100" x2="100" y2="30"></line>
+              <line x1="100" y1="100" x2="160.6" y2="65"></line>
+              <line x1="100" y1="100" x2="160.6" y2="135"></line>
+              <line x1="100" y1="100" x2="100" y2="170"></line>
+              <line x1="100" y1="100" x2="39.4" y2="135"></line>
+              <line x1="100" y1="100" x2="39.4" y2="65"></line>
+              <polygon [attr.points]="radarPoints" class="radar-data"></polygon>
+              <text *ngFor="let label of radarLabelViewModels" [attr.x]="label.x" [attr.y]="label.y" [attr.text-anchor]="label.anchor">{{ label.label }}</text>
+            </svg>
           </div>
         </div>
       </app-ui-card>
