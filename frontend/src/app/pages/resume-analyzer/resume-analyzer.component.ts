@@ -6,7 +6,6 @@ import { ResumeAnalysis, ResumeSuggestion } from '../../shared/models/resume.mod
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
-import { SuggestionCardComponent } from '../../shared/components/suggestion-card/suggestion-card.component';
 import { Subscription } from 'rxjs';
 
 import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
@@ -20,6 +19,7 @@ interface ScoreViewModel {
   value: number;
   explanation: string;
   tone: ScoreTone;
+  status: string;
 }
 
 interface SkillGroupViewModel {
@@ -47,6 +47,10 @@ interface ScoreChangeViewModel {
   delta: number;
 }
 
+interface SuggestionViewModel extends ResumeSuggestion {
+  priorityLabel: string;
+}
+
 @Component({
   selector: 'app-resume-analyzer',
   standalone: true,
@@ -55,8 +59,7 @@ interface ScoreChangeViewModel {
     FormsModule,
     UiCardComponent,
     UiBadgeComponent,
-    SkillBadgeComponent,
-    SuggestionCardComponent
+    SkillBadgeComponent
   ],
   templateUrl: './resume-analyzer.component.html',
   styleUrl: './resume-analyzer.component.scss'
@@ -88,17 +91,20 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   scoreCardViewModels: ScoreViewModel[] = [];
   atsBreakdownViewModels: ScoreViewModel[] = [];
   skillGroupViewModels: SkillGroupViewModel[] = [];
+  technologyCategoryViewModels: SkillGroupViewModel[] = [];
   warningGroupViewModels: WarningGroupViewModel[] = [];
   recruiterSectionViewModels: TextSectionViewModel[] = [];
+  resumeInsightViewModels: TextSectionViewModel[] = [];
   intelligenceSectionViewModels: TextSectionViewModel[] = [];
   personalInfoViewModels: Array<{ label: string; value: string }> = [];
-  suggestionViewModels: ResumeSuggestion[] = [];
+  suggestionViewModels: SuggestionViewModel[] = [];
   growthScoreViewModels: ScoreChangeViewModel[] = [];
   growthNewSkills: string[] = [];
   growthSummary = '';
   overviewSummary = '';
   hiringReadiness = '';
   detectedSkillCount = 0;
+  showAllSkills = false;
 
   // Snapshot backup used when a new upload/analyze fails
   private previousAnalysis: ResumeAnalysis | null = null;
@@ -385,30 +391,38 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         label,
         value: Math.max(0, Math.min(100, Math.round(parsed))),
         explanation: String(explanation || '').trim(),
-        tone
+        tone,
+        status: this.getScoreStatus(parsed)
       };
     };
 
     this.scoreCardViewModels = [
-      makeScore('overallResumeScore', 'Overall Resume Score', qualityScores['overallResumeScore'], explanations['overallResumeScore'], 'purple'),
       makeScore('atsScore', 'ATS Compatibility', analysis.atsScore, scoreBreakdown['atsScore'] || explanations['atsScore'], 'pink'),
-      makeScore('recruiterReadiness', 'Recruiter Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'green'),
-      makeScore('contentQuality', 'Content Quality', analysis.contentQuality, scoreBreakdown['contentQuality'] || explanations['contentQuality'], 'amber')
+      makeScore('keywordDensity', 'Keyword Density', analysis.keywordDensity, scoreBreakdown['keywordDensity'] || explanations['keywordCoverage'], 'purple'),
+      makeScore('formatScore', 'Formatting Score', analysis.formatScore, scoreBreakdown['formatScore'] || explanations['formattingScore'], 'green'),
+      makeScore('contentQuality', 'Content Quality', analysis.contentQuality, scoreBreakdown['contentQuality'] || explanations['contentQuality'], 'amber'),
+      makeScore('recruiterReadiness', 'Hiring Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'purple')
     ].filter((item): item is ScoreViewModel => Boolean(item));
 
     this.atsBreakdownViewModels = [
+      makeScore('overallResumeScore', 'Overall Resume Score', qualityScores['overallResumeScore'], explanations['overallResumeScore'], 'purple'),
+      makeScore('atsScore', 'ATS Compatibility', qualityScores['atsScore'] ?? analysis.atsScore, explanations['atsScore'] || scoreBreakdown['atsScore'], 'pink'),
       makeScore('keywordCoverage', 'Keyword Coverage', qualityScores['keywordCoverage'] ?? analysis.keywordDensity, explanations['keywordCoverage'] || scoreBreakdown['keywordDensity'], 'pink'),
-      makeScore('formattingScore', 'ATS Formatting', qualityScores['formattingScore'] ?? analysis.formatScore, explanations['formattingScore'] || scoreBreakdown['formatScore'], 'green'),
+      makeScore('formattingScore', 'Formatting Score', qualityScores['formattingScore'] ?? analysis.formatScore, explanations['formattingScore'] || scoreBreakdown['formatScore'], 'green'),
+      makeScore('contentQuality', 'Content Quality', qualityScores['contentQuality'] ?? analysis.contentQuality, explanations['contentQuality'] || scoreBreakdown['contentQuality'], 'amber'),
       makeScore('projectQuality', 'Project Evidence', qualityScores['projectQuality'], explanations['projectQuality'], 'purple'),
       makeScore('experienceStrength', 'Experience Strength', qualityScores['experienceStrength'], explanations['experienceStrength'], 'amber'),
       makeScore('skillsCoverage', 'Skills Coverage', qualityScores['skillsCoverage'], explanations['skillsCoverage'], 'green'),
-      makeScore('technicalDepth', 'Technical Depth', qualityScores['technicalDepth'], explanations['technicalDepth'], 'purple')
+      makeScore('technicalDepth', 'Technical Depth', qualityScores['technicalDepth'], explanations['technicalDepth'], 'purple'),
+      makeScore('recruiterReadiness', 'Recruiter Readiness', qualityScores['recruiterReadiness'], explanations['recruiterReadiness'], 'green')
     ].filter((item): item is ScoreViewModel => Boolean(item));
 
-    const technologyGroups = this.toSkillGroups(analysis.technologyCategories);
-    this.skillGroupViewModels = technologyGroups.length ? technologyGroups : this.toSkillGroups(analysis.skills);
+    this.skillGroupViewModels = this.toSkillGroups(analysis.skills);
+    this.technologyCategoryViewModels = this.toSkillGroups(analysis.technologyCategories);
+    if (!this.skillGroupViewModels.length) this.skillGroupViewModels = this.technologyCategoryViewModels;
     this.detectedSkillCount = new Set(
-      this.skillGroupViewModels.flatMap((group) => group.skills.map((skill) => skill.toLowerCase()))
+      [...this.skillGroupViewModels, ...this.technologyCategoryViewModels]
+        .flatMap((group) => group.skills.map((skill) => skill.toLowerCase()))
     ).size;
 
     this.personalInfoViewModels = this.toLabelValueEntries(analysis.normalized?.personalInfo || {}, {
@@ -420,6 +434,12 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       linkedIn: 'LinkedIn',
       github: 'GitHub'
     });
+    const experienceLevel = String(analysis.normalized?.experienceLevel || '').trim();
+    const experienceYears = Number(analysis.normalized?.experienceYears);
+    if (experienceLevel) this.personalInfoViewModels.push({ label: 'Experience Level', value: experienceLevel });
+    if (Number.isFinite(experienceYears) && experienceYears > 0) {
+      this.personalInfoViewModels.push({ label: 'Experience', value: `${experienceYears} year${experienceYears === 1 ? '' : 's'}` });
+    }
 
     this.overviewSummary = String(analysis.recruiterPerspective?.resumeSummary || '').trim();
     this.hiringReadiness = String(analysis.recruiterPerspective?.hiringReadiness || '').trim();
@@ -430,6 +450,14 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     ].filter((section): section is TextSectionViewModel => Boolean(section));
 
     this.warningGroupViewModels = this.buildWarningGroups(analysis);
+    this.resumeInsightViewModels = [
+      this.makeTextSection('strengths', 'Resume Strengths', analysis.recruiterPerspective?.strengths),
+      this.makeTextSection(
+        'improvements',
+        'Areas to Improve',
+        (analysis.consistencyWarnings || []).map((warning) => warning.message)
+      )
+    ].filter((section): section is TextSectionViewModel => Boolean(section));
     this.intelligenceSectionViewModels = [
       this.makeTextSection('experience', 'Experience Evidence', analysis.normalized?.experience),
       this.makeTextSection('projects', 'Project Evidence', analysis.normalized?.projects),
@@ -449,7 +477,8 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         const rightRank = this.suggestionPriorityOrder[right.color] ?? 99;
         if (leftRank !== rightRank) return leftRank - rightRank;
         return left.title.localeCompare(right.title);
-      });
+      })
+      .map((suggestion, index) => ({ ...suggestion, priorityLabel: this.getTopSuggestionLabel(index) }));
 
     const changes = analysis.scoreChanges || analysis.improvementDelta?.['scoreChanges'] || {};
     const currentScores: Record<string, unknown> = {
@@ -480,9 +509,20 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   }
 
   private toSkillGroups(value: Record<string, string[]> | undefined): SkillGroupViewModel[] {
-    return Object.entries(value || {})
-      .map(([category, skills]) => ({ category: category.trim(), skills: this.cleanStrings(skills) }))
-      .filter((group) => Boolean(group.category && group.skills.length));
+    const seen = new Set<string>();
+    return Object.entries(value || {}).flatMap(([category, skills]) => {
+      const cleanCategory = category.trim();
+      const cleanSkills = this.cleanStrings(skills).filter((skill) => {
+        const normalized = skill.toLowerCase();
+        const isWellFormed = skill.length <= 60
+          && !/^\[object\s+object\]$/i.test(skill)
+          && !/^https?:\/\//i.test(skill);
+        if (!isWellFormed || seen.has(normalized)) return false;
+        seen.add(normalized);
+        return true;
+      });
+      return cleanCategory && cleanSkills.length ? [{ category: cleanCategory, skills: cleanSkills }] : [];
+    });
   }
 
   private toLabelValueEntries(value: Record<string, string>, labels: Record<string, string>): Array<{ label: string; value: string }> {
@@ -538,6 +578,25 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     if (index === 1) return 'Next focus';
     if (index === 2) return 'Worth improving';
     return `Step ${index + 1}`;
+  }
+
+  getVisibleSkills(group: SkillGroupViewModel): string[] {
+    return this.showAllSkills ? group.skills : group.skills.slice(0, 8);
+  }
+
+  get hasCollapsedSkills(): boolean {
+    return this.skillGroupViewModels.some((group) => group.skills.length > 8);
+  }
+
+  toggleAllSkills(): void {
+    this.showAllSkills = !this.showAllSkills;
+  }
+
+  private getScoreStatus(value: number): string {
+    if (value >= 85) return 'Excellent';
+    if (value >= 70) return 'Strong';
+    if (value >= 55) return 'Developing';
+    return 'Needs attention';
   }
 
   get hasOverviewContent(): boolean {
