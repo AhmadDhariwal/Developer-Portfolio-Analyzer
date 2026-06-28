@@ -129,6 +129,7 @@
           <div class="gap-card__details">
             <div class="detail-block gap-slot--why"><ng-container *ngIf="skill.whyItMatters"><span>Why it matters</span><p>{{ skill.whyItMatters }}</p></ng-container></div>
             <div class="detail-block gap-slot--evidence"><span>Evidence and detection</span><p>{{ skill.evidenceSummary }}</p><small>{{ skill.detectionMethod }}</small><ul *ngIf="skill.evidence.length > 1"><li *ngFor="let evidence of skill.evidence | slice:1">{{ evidence }}</li></ul></div>
+            <div class="detail-grid gap-slot--profile"><div><span>Career profile</span><strong>{{ result.careerStack }} · {{ result.experienceLevel }}</strong></div></div>
             <div class="detail-grid gap-slot--project"><div *ngIf="skill.project || skill.nextAction"><span>Project or next action</span><strong>{{ skill.project?.title || skill.nextAction }}</strong><small *ngIf="skill.project?.title && skill.nextAction">{{ skill.nextAction }}</small></div></div>
             <div class="detail-grid gap-slot--learning"><div *ngIf="skill.learningPath"><span>Learning path</span><strong>{{ skill.learningPath }}</strong><small *ngIf="skill.learningEffort">{{ skill.learningEffort }}</small></div></div>
             <div class="resource-links gap-slot--resources"><ng-container *ngIf="skill.resources.length"><span>Recommended resources</span><a *ngFor="let resource of skill.resources" [href]="getResourceUrl(resource)" target="_blank" rel="noopener noreferrer">{{ getResourceTitle(resource) }} <b aria-hidden="true">↗</b></a></ng-container></div>
