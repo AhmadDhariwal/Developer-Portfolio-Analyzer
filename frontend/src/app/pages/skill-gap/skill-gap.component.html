@@ -1,613 +1,212 @@
-<div class="sg-page">
-  <div class="sg-header">
-    <div class="sg-header__text">
-      <h1>Skill Gap Analysis</h1>
-      <p>Compare your skills against role expectations using GitHub, resume, and supporting progress signals.</p>
+<main class="sg-page" aria-labelledby="skill-gap-title">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/app/dashboard">Dashboard</a><span>›</span><strong>Skill Gap</strong><span>→</span></nav>
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Career intelligence</span>
+      <h1 id="skill-gap-title">Skill Gap Analysis</h1>
+      <p>Understand your strongest evidence, the gaps limiting role fit, and the clearest path forward.</p>
     </div>
-  </div>
-
-  <div class="sg-search-card">
-    <div class="sg-search-card__inner">
-      <div class="sg-search-card__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
-                   5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77
-                   a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-        </svg>
-      </div>
-      <div class="sg-search-card__fields">
-        <h3>GitHub Username</h3>
-        <input
-          type="text"
-          [(ngModel)]="username"
-          placeholder="Enter GitHub username (e.g., torvalds)"
-          (keyup.enter)="analyze()"
-          [disabled]="isLoading"
-        />
-      </div>
-      <button class="btn-analyze" (click)="analyze()" [disabled]="isLoading || !username.trim()">
-        <span *ngIf="!isLoading">Analyze Skills</span>
-        <span *ngIf="isLoading" class="spinner-wrap">
-          <span class="spinner"></span>Analyzing...
-        </span>
-      </button>
-      <button class="btn-analyze btn-analyze--secondary" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
-        Force Refresh
-      </button>
-    </div>
-  </div>
-
-  <div class="sg-error" *ngIf="errorMessage">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    <div class="state-copy">
-      <strong>Analysis could not complete</strong>
-      <span>{{ errorMessage }}</span>
-    </div>
-    <button class="btn-analyze btn-analyze--secondary" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
-      Retry
+    <button class="header-action" type="button" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
+      Re-analyze
     </button>
-  </div>
+  </header>
 
-  <div class="sg-loading" *ngIf="isLoading && !result">
-    <div class="loading-copy">
-      <strong>Building career intelligence</strong>
-      <span>Normalizing skill names, checking evidence quality, and prioritizing realistic next steps.</span>
+  <section class="analysis-toolbar" aria-label="Analysis profile">
+    <label class="profile-field" for="github-username">
+      <span>GitHub profile</span>
+      <div><span aria-hidden="true">@</span><input id="github-username" type="text" [(ngModel)]="username" placeholder="GitHub username" autocomplete="off" spellcheck="false" (keyup.enter)="analyze()" [disabled]="isLoading" /></div>
+    </label>
+    <div class="scope-field">
+      <span>Target role</span>
+      <strong>{{ currentCareerStack }}</strong>
     </div>
-    <div class="loading-grid">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="scope-field">
+      <span>Experience level</span>
+      <strong>{{ currentExperienceLevel }}</strong>
     </div>
-  </div>
-
-  <div class="sg-context" *ngIf="!errorMessage && result">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    <span *ngIf="isTemporaryView">
-      Viewing temporary skill-gap analysis for <strong>@{{ viewedUsername }}</strong>. The rest of the platform still uses <strong>@{{ defaultUsername }}</strong>.
-    </span>
-    <span *ngIf="!isTemporaryView">
-      Using your default GitHub profile <strong>@{{ viewedUsername || defaultUsername }}</strong>
-      <ng-container *ngIf="result.analysisBasedOn?.resumeAnalyzed; else noResumeFallback">
-        and saved default resume.
-      </ng-container>
-      <ng-template #noResumeFallback>
-        with GitHub and profile data until a resume is analyzed.
-      </ng-template>
-    </span>
-    <button class="btn-analyze" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">
-      Return to My Profile
+    <div class="scope-field" *ngIf="analysisLastUpdatedLabel">
+      <span>Analysis date</span>
+      <strong>{{ analysisLastUpdatedLabel }}</strong>
+    </div>
+    <button class="primary-button" type="button" (click)="analyze()" [disabled]="isLoading || !username.trim()" *ngIf="!result">
+      <span *ngIf="!isLoading">Analyze skills</span>
+      <span class="button-loading" *ngIf="isLoading"><i aria-hidden="true"></i>Analyzing</span>
     </button>
-  </div>
+  </section>
+
+  <section class="state-panel state-panel--error" *ngIf="errorMessage" role="alert">
+    <span class="state-symbol" aria-hidden="true">!</span>
+    <div><strong>Analysis could not be completed</strong><p>{{ errorMessage }}</p></div>
+    <button class="secondary-button" type="button" (click)="refreshAnalysis()" [disabled]="isLoading">Try again</button>
+  </section>
+
+  <section class="loading-state" *ngIf="(isInitLoading || isLoading) && !result" aria-live="polite" aria-busy="true">
+    <div class="skeleton skeleton--heading"></div>
+    <div class="skeleton-grid"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+    <div class="skeleton-cards"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+    <span class="sr-only">Building the skill gap dashboard.</span>
+  </section>
 
   <ng-container *ngIf="result">
-    <div class="analysis-based-on">
-      <div class="card-heading">
-        <h2>Analysis Based On</h2>
-      </div>
-
-      <div class="analysis-based-on__grid">
-        <div class="analysis-based-on__item">
-          <span>GitHub username</span>
-          <strong>@{{ result.analysisBasedOn?.githubUsername || viewedUsername || defaultUsername }}</strong>
-        </div>
-        <div class="analysis-based-on__item">
-          <span>Resume analyzed</span>
-          <strong>{{ result.analysisBasedOn?.resumeAnalyzed ? 'Yes' : 'No' }}</strong>
-        </div>
-        <div class="analysis-based-on__item">
-          <span>Career stack</span>
-          <strong>{{ result.analysisBasedOn?.careerStack || currentCareerStack }}</strong>
-        </div>
-        <div class="analysis-based-on__item">
-          <span>Experience level</span>
-          <strong>{{ result.analysisBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
-        </div>
-        <div class="analysis-based-on__item">
-          <span>Last analyzed date</span>
-          <strong>{{ analysisLastUpdatedLabel }}</strong>
-        </div>
-      </div>
-
-      <p class="analysis-based-on__note">{{ resumeStatusLabel }}</p>
-      <div class="cache-strip">
-        <span>{{ cacheStatusLabel }}</span>
-        <span>Version {{ result.cacheMetadata?.analysisVersion || result.cacheMetadata?.cacheKey?.analysisVersion || 'current' }}</span>
-        <span *ngIf="result.cacheMetadata?.signalHash || result.cacheMetadata?.cacheKey?.signalHash">
-          Signal {{ (result.cacheMetadata?.signalHash || result.cacheMetadata?.cacheKey?.signalHash || '').slice(0, 10) }}
-        </span>
-      </div>
+    <div class="profile-notice" *ngIf="isTemporaryView">
+      <span>Temporary analysis for <strong>@{{ viewedUsername }}</strong>. Your saved profile remains <strong>@{{ defaultUsername }}</strong>.</span>
+      <button type="button" (click)="returnToDefaultProfile()" [disabled]="isLoading">Return to saved profile</button>
     </div>
 
-    <div class="trust-strip">
-      <div>
-        <span>Skill Hygiene</span>
-        <strong>Recognized technical skills only</strong>
-        <small>Aliases are canonicalized before display.</small>
-      </div>
-      <div>
-        <span>Evidence Standard</span>
-        <strong>{{ result.yourSkills.length + result.missingSkills.length }} skills with rationale</strong>
-        <small>Each displayed skill includes source and evidence.</small>
-      </div>
-      <div>
-        <span>Next Action</span>
-        <strong>{{ topActionSkill }}</strong>
-        <small>Prioritized by demand, confidence, and current profile fit.</small>
-      </div>
-    </div>
-
-    <div class="action-strip">
-      <a routerLink="/app/recommendations">Open Recommendations</a>
-      <a routerLink="/app/courses">Open Learning Hub</a>
-      <a routerLink="/app/career-sprint" [queryParams]="{ skill: result.immediateSkills?.[0]?.name || result.missingSkills[0]?.name }">Create Career Sprint Task</a>
-      <a routerLink="/app/interview-prep" [queryParams]="{ skill: result.missingSkills[0]?.name }">Open Interview Prep</a>
-      <a routerLink="/app/jobs" [queryParams]="{ skill: result.highDemandSkills?.[0]?.name || result.missingSkills[0]?.name }">View Matched Jobs</a>
-    </div>
-
-    <div class="insight-grid">
-      <div class="sg-card insight-card" *ngIf="result.analysisSummary">
-        <div class="card-heading">
-          <h2>Analysis Summary</h2>
-        </div>
-        <p>{{ result.analysisSummary }}</p>
-      </div>
-
-      <div class="sg-card insight-card">
-        <div class="card-heading">
-          <h2>Signals Used</h2>
-        </div>
-
-        <div class="signal-grid">
-          <div class="signal-pill">
-            <span class="signal-pill__label">GitHub</span>
-            <strong>{{ result.signalsUsed?.github?.connected ? (result.signalsUsed?.github?.username || 'Connected') : 'Not connected' }}</strong>
-            <small>{{ result.signalsUsed?.github?.repoCount || 0 }} repos</small>
-          </div>
-          <div class="signal-pill">
-            <span class="signal-pill__label">Resume</span>
-            <strong>{{ result.signalsUsed?.resume?.analyzed ? 'Analyzed' : 'Not analyzed' }}</strong>
-            <small>ATS {{ result.signalsUsed?.resume?.atsScore || 0 }}</small>
-          </div>
-          <div class="signal-pill">
-            <span class="signal-pill__label">Portfolio</span>
-            <strong>{{ result.signalsUsed?.portfolio?.completenessScore || 0 }}%</strong>
-            <small>{{ result.signalsUsed?.portfolio?.projectCount || 0 }} projects</small>
-          </div>
-          <div class="signal-pill">
-            <span class="signal-pill__label">Integrations</span>
-            <strong>{{ result.signalsUsed?.integrations?.score || 0 }}%</strong>
-            <small>{{ integrationProvidersLabel }}</small>
-          </div>
-          <div class="signal-pill">
-            <span class="signal-pill__label">Weekly Progress</span>
-            <strong>{{ result.signalsUsed?.weeklyProgress?.status || 'Unavailable' }}</strong>
-            <small>{{ result.signalsUsed?.weeklyProgress?.score || 0 }}% | {{ weeklyTrendLabel }}</small>
-          </div>
-          <div class="signal-pill">
-            <span class="signal-pill__label">Career Sprint</span>
-            <strong>{{ result.signalsUsed?.careerSprint?.consistencyScore || 0 }}%</strong>
-            <small>{{ result.signalsUsed?.careerSprint?.streak || 0 }} day streak</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sg-card coverage-card">
-      <div class="coverage-card__top">
-        <div class="coverage-card__title">
-          <h2>Overall Skill Coverage</h2>
-          <p>Role-fit estimate using current proof plus supporting progress evidence</p>
-        </div>
-        <div class="coverage-card__badges">
-          <div class="cov-badge cov-badge--green">
-            <span class="cov-pct">{{ result.coverage }}%</span>
-            <span class="cov-label">Covered</span>
-          </div>
-          <div class="cov-badge cov-badge--red">
-            <span class="cov-pct">{{ result.missing }}%</span>
-            <span class="cov-label">Missing</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="coverage-bar-wrap">
-        <span class="bar-label bar-label--left">0%</span>
-        <div class="coverage-bar">
-          <div class="coverage-bar__fill" [style.width]="coverageWidth(result.coverage)"></div>
-          <div class="coverage-bar__marker">
-            <span class="marker-label">Target: 85%+</span>
-          </div>
-        </div>
-        <span class="bar-label bar-label--right">100%</span>
-      </div>
-      <div class="coverage-explain">
-        <span>Known {{ result.coverageBreakdown?.knownSkillCount || result.yourSkills.length }}</span>
-        <span>Missing {{ result.coverageBreakdown?.missingSkillCount || result.missingSkills.length }}</span>
-        <span>Avg proficiency {{ result.coverageBreakdown?.averageProficiency || 0 }}%</span>
-        <span>{{ coverageFormulaLabel }}</span>
-      </div>
-    </div>
-
-    <div class="skill-buckets-grid">
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Proven Skills</h3>
-          <span class="skills-badge skills-badge--green">{{ result.provenSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.provenSkills?.length; else noProvenSkills">
-          <span class="bucket-chip bucket-chip--green" *ngFor="let skill of result.provenSkills">{{ skill }}</span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Resume Skills</h3>
-          <span class="skills-badge skills-badge--blue">{{ result.resumeSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.resumeSkills?.length; else noResumeSkills">
-          <span class="bucket-chip" *ngFor="let skill of result.resumeSkills">{{ skill }}</span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Weak Skills</h3>
-          <span class="skills-badge skills-badge--amber">{{ result.weakSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.weakSkills?.length; else noWeakSkills">
-          <span class="bucket-chip bucket-chip--amber" *ngFor="let skill of result.weakSkills">{{ skill.name }}</span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>High Demand Skills</h3>
-          <span class="skills-badge skills-badge--red">{{ result.highDemandSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.highDemandSkills?.length; else noHighDemandSkills">
-          <span class="bucket-chip bucket-chip--red" *ngFor="let skill of result.highDemandSkills">{{ skill.name }}</span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>GitHub Skills</h3>
-          <span class="skills-badge skills-badge--green">{{ result.githubSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.githubSkills?.length; else noGithubSkills">
-          <span class="bucket-chip bucket-chip--green" *ngFor="let skill of result.githubSkills">{{ skill }}</span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Missing Skills</h3>
-          <span class="skills-badge skills-badge--red">{{ result.missingSkills.length }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.missingSkills.length; else noMissingSkills">
-          <span class="bucket-chip bucket-chip--red" *ngFor="let skill of result.missingSkills; let i = index">
-            {{ skill.name }}
-          </span>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Claimed but not proven</h3>
-          <span class="skills-badge skills-badge--amber">{{ result.claimedButNotProvenSkills?.length || 0 }}</span>
-        </div>
-        <div class="bucket-list" *ngIf="result.claimedButNotProvenSkills?.length; else noClaimedSkills">
-          <span class="bucket-chip bucket-chip--amber" *ngFor="let skill of result.claimedButNotProvenSkills">{{ skill }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="skills-grid">
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Your Skills</h3>
-          <span class="skills-badge skills-badge--green">{{ result.yourSkills.length }} detected</span>
-        </div>
-        <div class="skills-list skills-list--cards">
-          <div class="skill-row" *ngFor="let skill of result.yourSkills; trackBy: trackByName">
-            <div class="skill-row__main">
-              <span class="skill-check">&#10003;</span>
-              <div class="skill-row__title">
-                <span class="skill-name">{{ skill.name }}</span>
-                <small>{{ getSkillExplanation(skill, 'current') }}</small>
-              </div>
-              <span class="skill-category">{{ skill.category }}</span>
-              <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
-                {{ skill.confidenceScore || 0 }}% confidence
-              </span>
-            </div>
-            <div class="skill-row__meter">
-              <span>Proficiency</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar"
-                     [ngClass]="getProficiencyClass(skill.proficiency)"
-                     [style.width]="coverageWidth(skill.proficiency)">
-                </div>
-              </div>
-              <span class="skill-pct">{{ skill.proficiency }}%</span>
-            </div>
-            <div class="skill-row__evidence">
-              <span class="evidence-source">{{ getDetectionMethod(skill) }}</span>
-              <p>{{ getSkillReason(skill) }}</p>
-            </div>
-            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length > 1">
-              <span *ngFor="let evidence of getSkillEvidence(skill).slice(1)">{{ evidence }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sg-card skills-card">
-        <div class="skills-card__header">
-          <h3>Missing Skills</h3>
-          <span class="skills-badge skills-badge--red">{{ result.missingSkills.length }} gaps</span>
-        </div>
-        <div class="skills-list skills-list--cards">
-          <div class="skill-row missing-row" *ngFor="let skill of result.missingSkills; trackBy: trackByName">
-            <div class="skill-row__main">
-              <span class="skill-cross">&#10005;</span>
-              <div class="skill-row__title">
-                <span class="skill-name">{{ skill.name }}</span>
-                <small>{{ getSkillExplanation(skill, 'missing') }}</small>
-              </div>
-              <span class="skill-category">{{ skill.category }}</span>
-              <span class="skill-demand">&#8599; {{ skill.jobDemand }}% demand</span>
-              <span class="confidence-badge" [ngClass]="getConfidenceClass(skill.confidenceScore || 0)">
-                {{ skill.confidenceScore || 0 }}% confidence
-              </span>
-              <span class="priority-badge" [ngClass]="getPriorityClass(skill.priority)">
-                {{ skill.priority }}
-              </span>
-            </div>
-            <div class="skill-row__evidence">
-              <span class="evidence-source">{{ getDetectionMethod(skill) }}</span>
-              <p>{{ getSkillReason(skill) }}</p>
-            </div>
-            <div class="skill-impact-grid">
-              <div>
-                <span>Business impact</span>
-                <strong>{{ getBusinessImpact(skill) }}</strong>
-              </div>
-              <div>
-                <span>Learning effort</span>
-                <strong>{{ getLearningEffort(skill) }}</strong>
-              </div>
-              <div *ngIf="skill.suggestedProject">
-                <span>Suggested project</span>
-                <strong>{{ skill.suggestedProject.title }}</strong>
-                <small>{{ skill.suggestedProject.deliverable || skill.suggestedProject.outcome }}</small>
-              </div>
-            </div>
-            <div class="resources-list resources-list--inline" *ngIf="getSkillResources(skill).length">
-              <a
-                *ngFor="let r of getSkillResources(skill)"
-                [href]="getResourceUrl(r)"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="resource-link">
-                {{ getResourceTitle(r) }}
-              </a>
-            </div>
-            <div class="evidence-chips" *ngIf="getSkillEvidence(skill).length > 1">
-              <span *ngFor="let evidence of getSkillEvidence(skill).slice(1)">{{ evidence }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sg-card graph-card" *ngIf="graphLayout.length">
-      <div class="graph-card__header">
-        <h2>Skill Dependency Graph</h2>
-        <p>Green nodes are current strengths, orange nodes are high-impact skills to learn next.</p>
-      </div>
-
-      <div class="graph-legend">
-        <span class="legend-chip legend-chip--current">Current strengths</span>
-        <span class="legend-chip legend-chip--missing">Next high-value gaps</span>
-        <span class="legend-chip legend-chip--edge">Prerequisite and related paths</span>
-      </div>
-
-      <div class="graph-canvas">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="graph-lines">
-          <line
-            *ngFor="let edge of graphEdges"
-            [attr.x1]="findNode(edge.from)?.x"
-            [attr.y1]="findNode(edge.from)?.y"
-            [attr.x2]="findNode(edge.to)?.x"
-            [attr.y2]="findNode(edge.to)?.y"
-            [attr.class]="'edge-' + edge.type"
-          ></line>
-        </svg>
-
-        <div
-          class="graph-node"
-          *ngFor="let node of graphLayout"
-          [style.left.%]="node.x"
-          [style.top.%]="node.y"
-          [ngClass]="node.kind === 'current' ? 'node-current' : 'node-missing'">
-          <div class="node-title">{{ node.name }}</div>
-          <div class="node-meta">{{ node.category }}</div>
-          <div class="node-score">
-            {{ node.kind === 'current' ? 'Proficiency' : 'Demand' }}
-            {{ node.kind === 'current' ? node.proficiency : node.demandScore }}%
-          </div>
-          <div class="node-score" *ngIf="node.difficulty">{{ node.difficulty }} | order {{ node.learningOrder || 0 }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sg-card roadmap-card" *ngIf="result.immediateSkills?.length || result.suggestedProjects?.length">
-      <div class="roadmap-card__header">
-        <h2>Roadmap Timeline</h2>
-        <span class="weeks-badge">{{ result.estimatedWeeks || 8 }} weeks</span>
-      </div>
-      <div class="timeline-grid">
-        <div>
-          <h4>Immediate</h4>
-          <span *ngFor="let skill of result.immediateSkills">{{ skill.name }}</span>
+    <!-- Hero Summary -->
+    <section class="hero-summary" aria-labelledby="hero-summary-title">
+      <div class="match-score">
+        <div class="score-ring" [style.--score]="result.coverage" role="img" [attr.aria-label]="result.coverage + '% overall skill match'">
+          <strong>{{ result.coverage }}%</strong><span>overall match</span>
         </div>
         <div>
-          <h4>Short Term</h4>
-          <span *ngFor="let skill of result.shortTermSkills">{{ skill.name }}</span>
-        </div>
-        <div>
-          <h4>Mid Term</h4>
-          <span *ngFor="let skill of result.midTermSkills">{{ skill.name }}</span>
-        </div>
-        <div>
-          <h4>Long Term</h4>
-          <span *ngFor="let skill of result.longTermSkills">{{ skill.name }}</span>
+          <span class="eyebrow">Overall match</span>
+          <h2 id="hero-summary-title">{{ result.coverage >= 75 ? 'Strong role alignment' : result.coverage >= 50 ? 'Good foundation' : 'Focused growth opportunity' }}</h2>
+          <p>{{ overallSummary }}</p>
+          <small>{{ cacheStatusLabel }}<ng-container *ngIf="analysisLastUpdatedLabel"> · Updated {{ analysisLastUpdatedLabel }}</ng-container></small>
         </div>
       </div>
-      <div class="project-suggestions" *ngIf="result.suggestedProjects?.length">
-        <div *ngFor="let project of result.suggestedProjects">
-          <strong>{{ project.title }}</strong>
-          <span>{{ project.outcome }}</span>
-          <small *ngIf="project.deliverable">{{ project.deliverable }}</small>
-        </div>
+
+      <article class="top-strength" *ngIf="topStrength as skill">
+        <div class="panel-heading"><span>Top strength</span><span class="status-badge status-badge--success" *ngIf="skill.isProven">Proven</span></div>
+        <h3>{{ skill.name }}</h3>
+        <div class="top-strength__score" *ngIf="skill.proficiency !== undefined"><span>Proficiency</span><strong>{{ skill.proficiency }}%</strong></div>
+        <p *ngIf="skill.whyItMatters">{{ skill.whyItMatters }}</p>
+        <small>{{ skill.detectionMethod }}</small>
+      </article>
+    </section>
+
+
+    <!-- Skill Overview -->
+    <section class="dashboard-section overview-section" aria-labelledby="skill-overview-title">
+      <div class="section-heading">
+        <div><span class="eyebrow">Skill overview</span><h2 id="skill-overview-title">Readiness at a glance</h2></div>
       </div>
-    </div>
-
-    <div class="sg-card weekly-card" *ngIf="result.weeklyRoadmap?.length">
-      <div class="weekly-card__header">
-        <h2>Weekly Learning Roadmap</h2>
-        <p>Engine-generated milestones based on prerequisites and demand score.</p>
+      <div class="overview-grid">
+        <div class="overview-metric"><span>Evidence-backed skills</span><strong>{{ result.yourSkills.length }}</strong><small>{{ result.provenSkills?.length || 0 }} cross-source proven</small></div>
+        <div class="overview-metric overview-metric--danger"><span>Validated gaps</span><strong>{{ topGapCards.length + remainingGapCards.length }}</strong><small>{{ result.highDemandSkills?.length || 0 }} high-demand gaps</small></div>
+        <div class="overview-metric overview-metric--warning"><span>Weak skills</span><strong>{{ weakSkillCards.length }}</strong><small>{{ result.claimedButNotProvenSkills?.length || 0 }} claims need proof</small></div>
+        <div class="overview-metric overview-metric--primary"><span>Learning plan</span><strong>{{ result.estimatedWeeks || result.totalWeeks }}</strong><small *ngIf="result.weeklyRoadmap?.length">{{ result.weeklyRoadmap?.length }} weekly milestones</small></div>
       </div>
-      <div class="weekly-grid">
-        <div class="weekly-item" *ngFor="let week of result.weeklyRoadmap; trackBy: trackByWeek">
-          <div class="weekly-item__head">
-            <span class="week-label">Week {{ week.week }}</span>
-            <span class="week-count">{{ week.focusSkills.length }} focus skill(s)</span>
-          </div>
-          <p class="week-reason">{{ week.reason }}</p>
-          <div class="week-skill-list">
-            <span class="week-skill" *ngFor="let skill of week.focusSkills">{{ skill }}</span>
-          </div>
-          <ul class="week-outcomes" *ngIf="week.outcomes.length">
-            <li *ngFor="let outcome of week.outcomes">{{ outcome }}</li>
-          </ul>
-        </div>
+      <div class="coverage-row">
+        <div><span>Role coverage</span><strong>{{ result.coverage }}%</strong></div>
+        <div class="progress-track" role="progressbar" aria-label="Role coverage" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="result.coverage"><i [style.width]="coverageWidth(result.coverage)"></i></div>
+        <div class="coverage-legend"><span>{{ result.coverageBreakdown?.knownSkillCount ?? result.yourSkills.length }} known</span><span>{{ result.coverageBreakdown?.missingSkillCount ?? result.missingSkills.length }} missing</span><span *ngIf="result.coverageBreakdown?.averageProficiency !== undefined">{{ result.coverageBreakdown?.averageProficiency }}% average proficiency</span></div>
       </div>
-    </div>
+    </section>
 
-    <div class="sg-card roadmap-card">
-      <div class="roadmap-card__header">
-        <h2>Learning Roadmap</h2>
-        <span class="weeks-badge">{{ result.totalWeeks }}</span>
+    <!-- Skill Breakdown -->
+    <section class="skill-breakdown" *ngIf="categoryBreakdown.length || matchDistribution.length">
+      <div class="breakdown-heading"><h2>Skill breakdown</h2><span>Based on validated current skills and gaps</span></div>
+      <div class="breakdown-grid">
+        <div class="breakdown-panel"><h3>By category</h3><div class="category-list"><div *ngFor="let item of categoryBreakdown"><span>{{ item.name }}</span><i><b [style.width]="coverageWidth(item.coverage)"></b></i><strong>{{ item.coverage }}%</strong></div></div></div>
+        <div class="breakdown-panel"><h3>Match distribution</h3><div class="distribution-list"><div *ngFor="let item of matchDistribution"><span>{{ item.label }}</span><i [attr.data-tone]="item.tone"><b [style.width]="coverageWidth((item.count / (result.yourSkills.length || 1)) * 100)"></b></i><strong>{{ item.count }}</strong></div></div></div>
+        <div class="breakdown-panel priority-panel"><h3>Priority gaps</h3><div class="priority-total"><strong>{{ topGapCards.length + remainingGapCards.length }}</strong><span>Total gaps</span></div><div class="priority-legend"><span><i class="dot-high"></i>High {{ getGapPriorityCount('High') }}</span><span><i class="dot-medium"></i>Medium {{ getGapPriorityCount('Medium') }}</span><span><i class="dot-low"></i>Low {{ getGapPriorityCount('Low') }}</span></div></div>
+        <div class="breakdown-panel demand-panel"><h3>Market demand</h3><span>High-demand skills you lack</span><strong>{{ result.highDemandSkills?.length || 0 }}</strong><small *ngIf="result.highDemandSkills?.length">{{ (result.highDemandSkills | slice:0:4)?.length }} priority market signals</small></div>
+      </div>
+    </section>
+
+    <!-- Top Priority Skill Gaps -->
+    <section class="dashboard-section" *ngIf="shouldShowSection('gaps')" aria-labelledby="priority-gaps-title">
+      <div class="section-heading section-heading--action">
+        <div><span class="eyebrow">Focus next</span><h2 id="priority-gaps-title">Top priority skill gaps</h2><p>Sorted by priority, demand, and confidence using the current analysis.</p></div>
+        <button class="text-button" type="button" *ngIf="remainingGapCards.length" (click)="toggleAllGaps()">{{ showAllGaps ? 'Show top gaps' : 'View all ' + (topGapCards.length + remainingGapCards.length) + ' gaps' }}</button>
       </div>
 
-      <div class="roadmap-grid">
-        <div class="phase-card"
-             *ngFor="let phase of result.roadmap; trackBy: trackByPhase"
-             [ngClass]="getPhaseClass(phase.color)">
-          <div class="phase-card__top">
-            <span class="phase-label">{{ phase.phase }}</span>
-            <span class="phase-duration">{{ phase.duration }}</span>
-          </div>
-
-          <h4 class="phase-title">{{ phase.title }}</h4>
-          <p class="phase-desc">{{ phase.description }}</p>
-
-          <div class="phase-objectives">
-            <div>
-              <span>Objective</span>
-              <strong>{{ phase.objective || phase.description }}</strong>
+      <div class="gap-grid">
+        <details class="gap-card" *ngFor="let skill of visibleGapCards; trackBy: trackByCard" open>
+          <summary>
+            <div class="gap-card__title"><span *ngIf="skill.category">{{ skill.category }}</span><h3>{{ skill.name }}</h3></div>
+            <div class="badge-row"><span class="status-badge" *ngIf="skill.priorityLabel" [ngClass]="getPriorityClass(skill.priority)">{{ skill.priorityLabel }}</span><span class="status-badge" *ngIf="skill.confidence !== undefined" [ngClass]="getConfidenceClass(skill.confidence)">{{ skill.confidence }}%</span></div>
+            <div class="gap-card__quick">
+              <div *ngIf="skill.confidence !== undefined"><span>Confidence</span><strong>{{ skill.confidence }}%</strong></div>
+              <div *ngIf="skill.demandLabel"><span>Market</span><strong>{{ skill.demandLabel }}</strong></div>
+              <span class="expand-label">View details</span>
             </div>
-            <div>
-              <span>Expected outcome</span>
-              <strong>{{ phase.expectedOutcome || 'A working implementation that proves the focus skills.' }}</strong>
-            </div>
-            <div>
-              <span>Deliverable</span>
-              <strong>{{ phase.measurableDeliverable || 'A documented repository update or portfolio-ready case study.' }}</strong>
-            </div>
-          </div>
+          </summary>
 
-          <ul class="phase-skills">
-            <li *ngFor="let s of phase.skills">{{ s }}</li>
-          </ul>
-
-          <div class="phase-resources">
-            <span class="resources-label">Resources</span>
-            <div class="resources-list">
-              <a
-                *ngFor="let r of phase.resources"
-                [href]="getResourceUrl(r)"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="resource-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                {{ getResourceTitle(r) }}
-              </a>
+          <div class="gap-card__details">
+            <div class="detail-block gap-slot--why"><ng-container *ngIf="skill.whyItMatters"><span>Why it matters</span><p>{{ skill.whyItMatters }}</p></ng-container></div>
+            <div class="detail-block gap-slot--evidence"><span>Evidence and detection</span><p>{{ skill.evidenceSummary }}</p><small>{{ skill.detectionMethod }}</small><ul *ngIf="skill.evidence.length > 1"><li *ngFor="let evidence of skill.evidence | slice:1">{{ evidence }}</li></ul></div>
+            <div class="detail-grid gap-slot--project"><div *ngIf="skill.project || skill.nextAction"><span>Project or next action</span><strong>{{ skill.project?.title || skill.nextAction }}</strong><small *ngIf="skill.project?.title && skill.nextAction">{{ skill.nextAction }}</small></div></div>
+            <div class="detail-grid gap-slot--learning"><div *ngIf="skill.learningPath"><span>Learning path</span><strong>{{ skill.learningPath }}</strong><small *ngIf="skill.learningEffort">{{ skill.learningEffort }}</small></div></div>
+            <div class="resource-links gap-slot--resources"><ng-container *ngIf="skill.resources.length"><span>Recommended resources</span><a *ngFor="let resource of skill.resources" [href]="getResourceUrl(resource)" target="_blank" rel="noopener noreferrer">{{ getResourceTitle(resource) }} <b aria-hidden="true">↗</b></a></ng-container></div>
+              <a class="card-action" routerLink="/app/courses" [queryParams]="{ skill: skill.name }">View learning path <span aria-hidden="true">→</span></a>
             </div>
-          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="skill-health-grid" *ngIf="shouldShowSection('strengths') || shouldShowSection('weak')">
+      <!-- Strengths -->
+      <div class="dashboard-section health-panel" *ngIf="shouldShowSection('strengths')">
+        <div class="section-heading"><div><span class="eyebrow">Strengths</span><h2>Evidence-backed capability</h2></div><span class="section-count">{{ strengthCards.length }}</span></div>
+        <div class="health-list">
+          <article *ngFor="let skill of strengthCards | slice:0:6; trackBy: trackByCard">
+            <div><strong>{{ skill.name }}</strong><small>{{ skill.detectionMethod }}</small></div>
+            <span *ngIf="skill.proficiency !== undefined">{{ skill.proficiency }}%</span>
+            <div class="mini-progress" *ngIf="skill.proficiency !== undefined"><i [style.width]="coverageWidth(skill.proficiency)"></i></div>
+          </article>
         </div>
       </div>
-    </div>
+
+      <!-- Weak Skills -->
+      <div class="dashboard-section health-panel health-panel--weak" *ngIf="shouldShowSection('weak')">
+        <div class="section-heading"><div><span class="eyebrow">Weak skills</span><h2>Needs stronger proof</h2></div><span class="section-count">{{ weakSkillCards.length }}</span></div>
+        <div class="health-list">
+          <article *ngFor="let skill of weakSkillCards | slice:0:6; trackBy: trackByCard">
+            <div><strong>{{ skill.name }}</strong><small>{{ skill.evidenceSummary }}</small></div>
+            <span *ngIf="skill.proficiency !== undefined">{{ skill.proficiency }}%</span>
+            <div class="mini-progress" *ngIf="skill.proficiency !== undefined"><i [style.width]="coverageWidth(skill.proficiency)"></i></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Learning Roadmap -->
+    <section class="dashboard-section roadmap-section" *ngIf="shouldShowSection('roadmap')" aria-labelledby="roadmap-title">
+      <div class="section-heading section-heading--action"><div><span class="eyebrow">Learning roadmap</span><h2 id="roadmap-title">Personalized execution plan</h2><p>Backend-generated phases, outcomes, and measurable deliverables.</p></div><span class="section-count" *ngIf="result.totalWeeks || result.estimatedWeeks">{{ result.totalWeeks || result.estimatedWeeks + ' weeks' }}</span></div>
+      <div class="roadmap-track" *ngIf="result.roadmap.length">
+        <article *ngFor="let phase of result.roadmap; trackBy: trackByPhase">
+          <div class="phase-marker"></div>
+          <span>{{ phase.phase }} · {{ phase.duration }}</span>
+          <h3>{{ phase.title }}</h3>
+          <p>{{ phase.description }}</p>
+          <div class="phase-facts"><div *ngIf="phase.objective"><span>Objective</span><strong>{{ phase.objective }}</strong></div><div *ngIf="phase.expectedOutcome"><span>Outcome</span><strong>{{ phase.expectedOutcome }}</strong></div><div *ngIf="phase.measurableDeliverable"><span>Deliverable</span><strong>{{ phase.measurableDeliverable }}</strong></div></div>
+          <div class="skill-tags"><span *ngFor="let skill of phase.skills">{{ skill }}</span></div>
+        </article>
+      </div>
+      <details class="weekly-plan" *ngIf="result.weeklyRoadmap?.length" open><summary>Weekly milestones <span>{{ result.weeklyRoadmap?.length }} weeks</span></summary><div class="weekly-grid"><article *ngFor="let week of result.weeklyRoadmap; trackBy: trackByWeek"><strong>Week {{ week.week }}</strong><p>{{ week.reason }}</p><div class="skill-tags"><span *ngFor="let skill of week.focusSkills">{{ skill }}</span></div><ul *ngIf="week.outcomes.length"><li *ngFor="let outcome of week.outcomes">{{ outcome }}</li></ul></article></div></details>
+    </section>
+
+    <section class="decision-grid">
+      <!-- Recommended Next Actions -->
+      <div class="dashboard-section" *ngIf="shouldShowSection('actions')">
+        <div class="section-heading"><div><span class="eyebrow">Recommended next actions</span><h2>Start with the highest leverage work</h2></div></div>
+        <ol class="action-list"><li *ngFor="let action of recommendedActions; let i = index; trackBy: trackByAction"><span>{{ i + 1 }}</span><div><strong>{{ action.title }}</strong><small>{{ action.skill }}<ng-container *ngIf="action.detail"> · {{ action.detail }}</ng-container></small></div><em *ngIf="action.priority" [ngClass]="getPriorityClass(action.priority)">{{ action.priority }}</em></li></ol>
+        <a class="panel-action" routerLink="/app/career-sprint" [queryParams]="{ skill: recommendedActions[0]?.skill }">Create a Career Sprint task <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- Market Insights -->
+      <div class="dashboard-section" *ngIf="shouldShowSection('market')">
+        <div class="section-heading"><div><span class="eyebrow">Market insights</span><h2>Demand around your target role</h2></div></div>
+        <div class="market-list"><article *ngFor="let insight of marketInsights" [attr.data-tone]="insight.tone"><span>{{ insight.label }}</span><strong>{{ insight.value }}</strong><small *ngIf="insight.detail">{{ insight.detail }}</small></article></div>
+        <a class="panel-action" routerLink="/app/jobs">Explore matched jobs <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- Overall Summary -->
+      <div class="dashboard-section summary-panel" *ngIf="shouldShowSection('summary')">
+        <div class="section-heading"><div><span class="eyebrow">Overall summary</span><h2>Your next career move</h2></div></div>
+        <div class="summary-score"><strong>{{ result.coverage }}%</strong><span>role coverage</span></div>
+        <p>{{ overallSummary }}</p>
+        <a class="primary-link" routerLink="/app/courses">Start learning now <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
   </ng-container>
 
-  <ng-template #noResumeSkills>
-    <p class="bucket-empty">Resume not analyzed yet.</p>
-  </ng-template>
-
-  <ng-template #noProvenSkills>
-    <p class="bucket-empty">No resume skills are proven by GitHub yet.</p>
-  </ng-template>
-
-  <ng-template #noWeakSkills>
-    <p class="bucket-empty">No weak skills detected.</p>
-  </ng-template>
-
-  <ng-template #noHighDemandSkills>
-    <p class="bucket-empty">No high-demand gaps detected.</p>
-  </ng-template>
-
-  <ng-template #noGithubSkills>
-    <p class="bucket-empty">No GitHub skills detected yet.</p>
-  </ng-template>
-
-  <ng-template #noMissingSkills>
-    <p class="bucket-empty">No missing skills detected.</p>
-  </ng-template>
-
-  <ng-template #noClaimedSkills>
-    <p class="bucket-empty">No resume-only skills right now.</p>
-  </ng-template>
-
-  <div class="sg-empty" *ngIf="!result && !isLoading && !errorMessage">
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <h3>Enter a GitHub username to analyze skill gaps</h3>
-    <p>We'll compare your GitHub activity, resume, and supporting signals to identify missing skills and the right next learning priorities.</p>
-    <div class="empty-hints">
-      <span>Filters malformed skill tokens</span>
-      <span>Explains every recommendation</span>
-      <span>Builds an actionable roadmap</span>
-    </div>
-  </div>
-</div>
+  <section class="empty-state" *ngIf="!result && !isLoading && !isInitLoading && !errorMessage">
+    <div class="empty-state__icon" aria-hidden="true">@</div><h2>Connect a GitHub profile to begin</h2><p>Enter a username above. Add a resume and complete your career profile to improve evidence quality and personalization.</p><div><a routerLink="/app/profile">Complete career profile</a><a routerLink="/app/resume-analyzer">Analyze resume</a></div>
+  </section>
+</main>

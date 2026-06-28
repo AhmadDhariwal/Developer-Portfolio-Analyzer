@@ -8,8 +8,9 @@ import {
   CurrentSkill,
   MissingSkill,
   RoadmapPhase,
-  SkillGraphNode,
-  SkillGraphEdge,
+  SkillPriority,
+  SkillTimelineItem,
+  SuggestedSkillProject,
   WeeklyRoadmapWeek
 } from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
@@ -19,6 +20,58 @@ import { AuthService } from '../../shared/services/auth.service';
 import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
+
+type SkillCardKind = 'gap' | 'strength' | 'weak';
+
+interface SkillCardViewModel {
+  id: string;
+  name: string;
+  category?: string;
+  kind: SkillCardKind;
+  priority?: SkillPriority;
+  priorityLabel?: string;
+  confidence?: number;
+  proficiency?: number;
+  demand?: number;
+  demandLabel?: string;
+  whyItMatters?: string;
+  evidence: string[];
+  evidenceSummary: string;
+  detectionMethod: string;
+  learningPath?: string;
+  learningEffort?: string;
+  project?: SuggestedSkillProject;
+  nextAction?: string;
+  resources: Array<{ title: string; url: string } | string>;
+  isProven: boolean;
+}
+
+interface NextActionViewModel {
+  skill: string;
+  title: string;
+  detail?: string;
+  priority?: SkillPriority;
+}
+
+interface MarketInsightViewModel {
+  label: string;
+  value: string;
+  detail?: string;
+  tone: 'primary' | 'success' | 'warning';
+}
+
+interface CategoryBreakdownViewModel {
+  name: string;
+  coverage: number;
+  current: number;
+  gaps: number;
+}
+
+interface DistributionViewModel {
+  label: string;
+  count: number;
+  tone: 'strong' | 'good' | 'average' | 'weak';
+}
 
 @Component({
   selector: 'app-skill-gap',
@@ -36,8 +89,15 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   errorMessage = '';
   isTemporaryView = false;
   result: SkillGapResult | null = null;
-  graphLayout: Array<SkillGraphNode & { x: number; y: number }> = [];
-  graphEdges: SkillGraphEdge[] = [];
+  topGapCards: SkillCardViewModel[] = [];
+  remainingGapCards: SkillCardViewModel[] = [];
+  strengthCards: SkillCardViewModel[] = [];
+  weakSkillCards: SkillCardViewModel[] = [];
+  recommendedActions: NextActionViewModel[] = [];
+  marketInsights: MarketInsightViewModel[] = [];
+  categoryBreakdown: CategoryBreakdownViewModel[] = [];
+  matchDistribution: DistributionViewModel[] = [];
+  showAllGaps = false;
   private readonly subscriptions: Subscription = new Subscription();
   private activeAnalyzeKey = '';
 
@@ -138,8 +198,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.activeAnalyzeKey = analyzeKey;
     this.result = null;
-    this.graphLayout = [];
-    this.graphEdges = [];
+    this.clearPresentation();
     this.cdr.detectChanges();
 
     this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary, forceRefresh).subscribe({
@@ -157,8 +216,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         this.errorMessage = err?.error?.message || 'Failed to analyze skill gap. Please try again.';
         this.isLoading = false;
         this.result = null;
-        this.graphLayout = [];
-        this.graphEdges = [];
+        this.clearPresentation();
         if (this.activeAnalyzeKey === analyzeKey) this.activeAnalyzeKey = '';
         this.cdr.detectChanges();
       }
@@ -206,7 +264,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       signalsUsed: this.normalizeSignalsUsed(raw?.signalsUsed, user),
       analysisBasedOn: this.normalizeAnalysisBasedOn(raw?.analysisBasedOn, user, careerStack, experienceLevel),
       resumeStatusMessage: typeof raw?.resumeStatusMessage === 'string' ? raw.resumeStatusMessage : '',
-      totalWeeks: raw?.totalWeeks || 'N/A'
+      totalWeeks: raw?.totalWeeks || ''
     };
 
     const yourCount = normalized.yourSkills.length;
@@ -222,7 +280,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.result = normalized;
     this.viewedUsername = user;
     this.isTemporaryView = isTemporary;
-    this.refreshGraphLayout();
+    this.buildPresentationViewModels();
   }
 
   get currentCareerStack(): string  { return this.careerProfileService.careerStack; }
@@ -234,33 +292,36 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.analyze();
   }
 
-  get integrationProvidersLabel(): string {
-    const providers = this.result?.signalsUsed?.integrations?.providers || [];
-    return providers.length ? providers.join(', ') : 'No extra integrations';
+  get visibleGapCards(): SkillCardViewModel[] {
+    return this.showAllGaps ? [...this.topGapCards, ...this.remainingGapCards] : this.topGapCards;
   }
 
-  get weeklyTrendLabel(): string {
-    const delta = Number(this.result?.signalsUsed?.weeklyProgress?.trendDelta || 0);
-    return delta > 0 ? `+${delta}` : `${delta}`;
+  get topStrength(): SkillCardViewModel | null {
+    return this.strengthCards[0] || null;
   }
 
-  getPriorityClass(priority: MissingSkill['priority']): string {
+  get overallSummary(): string {
+    const supplied = String(this.result?.analysisSummary || this.result?.levelAssessment || '').trim();
+    if (supplied) return supplied;
+    if (!this.result) return '';
+    return `${this.result.coverage}% coverage across ${this.result.yourSkills.length} evidence-backed skills, with ${this.result.missingSkills.length} validated gaps for the active career profile.`;
+  }
+
+  toggleAllGaps(): void {
+    this.showAllGaps = !this.showAllGaps;
+  }
+
+  getGapPriorityCount(priority: SkillPriority): number {
+    return [...this.topGapCards, ...this.remainingGapCards].filter((card) => card.priority === priority).length;
+  }
+
+  getPriorityClass(priority?: SkillPriority): string {
     switch (priority) {
       case 'High':   return 'badge-high';
       case 'Medium': return 'badge-medium';
       case 'Low':    return 'badge-low';
       default:       return '';
     }
-  }
-
-  getProficiencyClass(proficiency: number): string {
-    if (proficiency >= 80) return 'bar-green';
-    if (proficiency >= 60) return 'bar-blue';
-    return 'bar-amber';
-  }
-
-  getPhaseClass(color: RoadmapPhase['color']): string {
-    return `phase-${color}`;
   }
 
   coverageWidth(pct: number): string {
@@ -279,66 +340,141 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     return 'Fresh signal analysis';
   }
 
-  get coverageFormulaLabel(): string {
-    return this.result?.coverageBreakdown?.formula || 'Deterministic score from known skills, missing gaps, proficiency, resume, and integrations.';
+  getSkillPriorityLabel(priority?: SkillPriority): string | undefined {
+    return priority ? `${priority} priority` : undefined;
+  }
+
+  getSkillDemandLabel(demand?: number): string | undefined {
+    return Number.isFinite(Number(demand)) && Number(demand) > 0
+      ? `${Math.round(Number(demand))}% demand`
+      : undefined;
   }
 
   getSkillEvidence(skill: CurrentSkill | MissingSkill): string[] {
-    return Array.isArray(skill.evidence) ? skill.evidence.slice(0, 3) : [];
+    const values = Array.isArray(skill.evidence) ? skill.evidence : [];
+    return [...new Set(values.map((item) => String(item || '').trim()).filter(Boolean))].slice(0, 4);
   }
 
-  getPrimaryEvidence(skill: CurrentSkill | MissingSkill): string {
-    return this.getSkillEvidence(skill)[0] || `${skill.name} is supported by the current analysis signals.`;
+  getSkillLearningPath(skill: CurrentSkill | MissingSkill): string | undefined {
+    const timeline: Array<[string, SkillTimelineItem[] | undefined]> = [
+      ['Immediate focus', this.result?.immediateSkills],
+      ['Short-term plan', this.result?.shortTermSkills],
+      ['Mid-term plan', this.result?.midTermSkills],
+      ['Long-term plan', this.result?.longTermSkills]
+    ];
+    const match = timeline.find(([, skills]) => this.hasNamedSkill(skills, skill.name));
+    if (match) return match[0];
+
+    const phase = (this.result?.roadmap || []).find((item) =>
+      (item.skills || []).some((name) => this.sameSkill(name, skill.name))
+    );
+    if (phase) return `${phase.phase}: ${phase.title}`;
+
+    const week = (this.result?.weeklyRoadmap || []).find((item) =>
+      (item.focusSkills || []).some((name) => this.sameSkill(name, skill.name))
+    );
+    return week ? `Week ${week.week} focus` : undefined;
   }
 
-  getDetectionMethod(skill: CurrentSkill | MissingSkill): string {
-    const source = String(skill.detectionMethod || skill.source || '').trim();
-    return source || ('jobDemand' in skill ? 'Career Profile' : 'Developer Evidence');
+  getSkillSuggestedProject(skill: CurrentSkill | MissingSkill): SuggestedSkillProject | undefined {
+    if ('suggestedProject' in skill && skill.suggestedProject) return skill.suggestedProject;
+    return (this.result?.suggestedProjects || []).find((project) =>
+      this.sameSkill(project.skill, skill.name)
+    );
   }
 
-  getSkillExplanation(skill: CurrentSkill | MissingSkill, kind: 'current' | 'missing'): string {
-    if (skill.whyItMatters) return skill.whyItMatters;
-    if (kind === 'current') {
-      return `${skill.name} is shown because it was recognized in your evidence, not inferred from free-form text alone.`;
+  getSkillNextAction(skill: CurrentSkill | MissingSkill): string | undefined {
+    const project = this.getSkillSuggestedProject(skill);
+    if (project?.deliverable) return project.deliverable;
+    if (project?.outcome) return project.outcome;
+    if (project?.title) return project.title;
+
+    const week = (this.result?.weeklyRoadmap || []).find((item) =>
+      (item.focusSkills || []).some((name) => this.sameSkill(name, skill.name))
+    );
+    return week?.outcomes?.find((outcome) => String(outcome || '').trim());
+  }
+
+  buildSkillCardViewModel(skill: CurrentSkill | MissingSkill, kind: SkillCardKind): SkillCardViewModel | null {
+    const name = String(skill?.name || '').trim();
+    if (!this.isDisplayableSkillName(name)) return null;
+
+    const evidence = this.getSkillEvidence(skill);
+    const demand = 'jobDemand' in skill && Number(skill.jobDemand) > 0
+      ? Math.min(100, Math.round(Number(skill.jobDemand)))
+      : undefined;
+    const project = this.getSkillSuggestedProject(skill);
+    const learningPath = this.getSkillLearningPath(skill);
+    const nextAction = this.getSkillNextAction(skill);
+    const suppliedSource = String(skill.detectionMethod || skill.source || '').trim();
+    const isPlanBacked = Boolean(learningPath || project || nextAction);
+    const isDemandBacked = Boolean(demand || this.hasNamedSkill(this.result?.highDemandSkills, name));
+    const hasEvidence = Boolean(evidence.length || skill.whyExists || (suppliedSource && !/ai/i.test(suppliedSource)));
+    if (!hasEvidence && !(kind === 'gap' && (isPlanBacked || isDemandBacked))) return null;
+
+    const evidenceSummary = String(skill.whyExists || evidence[0] || '').trim()
+      || (demand ? `${demand}% demand for the active career profile.` : '')
+      || (learningPath ? `Included in the ${learningPath.toLowerCase()}.` : '');
+    if (!evidenceSummary) return null;
+
+    const detectionMethod = suppliedSource
+      || (isDemandBacked ? 'Job market demand' : '')
+      || (project ? 'Recommended project' : '')
+      || (learningPath ? 'Learning roadmap' : '');
+    if (!detectionMethod) return null;
+
+    const confidence = Number(skill.confidenceScore);
+    const proficiency = 'proficiency' in skill ? Number(skill.proficiency) : Number.NaN;
+    const priority = skill.priority;
+    const whyItMatters = String(skill.businessImpact || skill.whyItMatters || '').trim()
+      || (demand ? `${name} has a ${demand}% demand score for the selected career path.` : '')
+      || (this.hasNamedSkill(this.result?.immediateSkills, name) ? `${name} is prioritized in the immediate learning plan.` : '')
+      || evidence[0];
+
+    return {
+      id: this.normalizeSkillKey(name),
+      name,
+      category: String(skill.category || '').trim() || undefined,
+      kind,
+      priority,
+      priorityLabel: this.getSkillPriorityLabel(priority),
+      confidence: Number.isFinite(confidence) && confidence > 0 ? Math.min(100, Math.round(confidence)) : undefined,
+      proficiency: Number.isFinite(proficiency) && proficiency >= 0 ? Math.min(100, Math.round(proficiency)) : undefined,
+      demand,
+      demandLabel: this.getSkillDemandLabel(demand),
+      whyItMatters,
+      evidence,
+      evidenceSummary,
+      detectionMethod,
+      learningPath,
+      learningEffort: 'learningEffort' in skill ? String(skill.learningEffort?.label || '').trim() || undefined : undefined,
+      project,
+      nextAction,
+      resources: 'recommendedResources' in skill && Array.isArray(skill.recommendedResources)
+        ? skill.recommendedResources.slice(0, 2)
+        : [],
+      isProven: (this.result?.provenSkills || []).some((item) => this.sameSkill(item, name))
+    };
+  }
+
+  shouldShowSection(section: 'gaps' | 'strengths' | 'weak' | 'roadmap' | 'actions' | 'market' | 'summary'): boolean {
+    switch (section) {
+      case 'gaps': return this.topGapCards.length > 0;
+      case 'strengths': return this.strengthCards.length > 0;
+      case 'weak': return this.weakSkillCards.length > 0;
+      case 'roadmap': return Boolean(this.result?.roadmap?.length || this.result?.weeklyRoadmap?.length);
+      case 'actions': return this.recommendedActions.length > 0;
+      case 'market': return this.marketInsights.length > 0;
+      case 'summary': return Boolean(this.overallSummary);
     }
-    const demand = 'jobDemand' in skill ? Number(skill.jobDemand || 0) : 0;
-    if (demand >= 80) return `${skill.name} matters because it is a high-demand capability for your target path.`;
-    if ((skill.confidenceScore || 0) >= 70) return `${skill.name} matters because multiple signals point to it as a practical next gap.`;
-    return `${skill.name} is lower priority until stronger market or profile evidence raises it.`;
-  }
-
-  getSkillReason(skill: CurrentSkill | MissingSkill): string {
-    return skill.whyExists || this.getPrimaryEvidence(skill);
-  }
-
-  getBusinessImpact(skill: CurrentSkill | MissingSkill): string {
-    return skill.businessImpact || skill.whyItMatters || this.getSkillExplanation(skill, 'jobDemand' in skill ? 'missing' : 'current');
-  }
-
-  getLearningEffort(skill: MissingSkill): string {
-    return skill.learningEffort?.label || '2 focused weeks';
-  }
-
-  getSkillResources(skill: MissingSkill): Array<{ title: string; url: string } | string> {
-    return Array.isArray(skill.recommendedResources) ? skill.recommendedResources.slice(0, 2) : [];
-  }
-
-  get topActionSkill(): string {
-    return this.result?.immediateSkills?.[0]?.name
-      || this.result?.missingSkills?.[0]?.name
-      || 'your top skill gap';
   }
 
   get analysisLastUpdatedLabel(): string {
     const value = this.result?.analysisBasedOn?.lastAnalyzedAt;
-    if (!value) return 'Not available';
+    if (!value) return '';
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Not available';
+    if (Number.isNaN(date.getTime())) return '';
     return date.toLocaleString();
-  }
-
-  get resumeStatusLabel(): string {
-    return this.result?.analysisBasedOn?.resumeStatus || this.result?.resumeStatusMessage || 'Resume not analyzed yet';
   }
 
   getResourceTitle(resource: { title?: string; url?: string } | string): string {
@@ -357,8 +493,12 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     return 'https://roadmap.sh/';
   }
 
-  trackByName(_: number, item: CurrentSkill | MissingSkill): string {
-    return item.name;
+  trackByCard(_: number, item: SkillCardViewModel): string {
+    return item.id;
+  }
+
+  trackByAction(_: number, item: NextActionViewModel): string {
+    return `${item.skill}:${item.title}`;
   }
 
   trackByPhase(_: number, item: RoadmapPhase): string {
@@ -369,44 +509,149 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     return item.week;
   }
 
-  private refreshGraphLayout(): void {
-    const nodes = this.result?.skillGraph?.nodes || [];
-    const edges = this.result?.skillGraph?.edges || [];
-    const limitedNodes = nodes.slice(0, 16);
-
-    const currentNodes = limitedNodes.filter((n) => n.kind === 'current');
-    const missingNodes = limitedNodes.filter((n) => n.kind === 'missing');
-    const allRows = Math.max(currentNodes.length, missingNodes.length, 1);
-
-    const placeNodes = (
-      list: SkillGraphNode[],
-      x: number
-    ): Array<SkillGraphNode & { x: number; y: number }> => {
-      const step = 100 / (Math.max(list.length, 1) + 1);
-      return list.map((node, index) => ({
-        ...node,
-        x,
-        y: Math.round((index + 1) * step)
-      }));
-    };
-
-    const left = placeNodes(currentNodes, 22);
-    const right = placeNodes(missingNodes, 78);
-    const fallbackCenter = limitedNodes.length && (!left.length || !right.length)
-      ? limitedNodes.map((node, index) => ({
-          ...node,
-          x: 50 + (node.kind === 'current' ? -22 : 22),
-          y: Math.round(((index % allRows) + 1) * (100 / (allRows + 1)))
-        }))
-      : [];
-
-    this.graphLayout = left.length && right.length ? [...left, ...right] : fallbackCenter;
-    const visibleIds = new Set(this.graphLayout.map((node) => node.id));
-    this.graphEdges = edges.filter((edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to));
+  private hasNamedSkill(skills: SkillTimelineItem[] | undefined, name: string): boolean {
+    return (skills || []).some((skill) => this.sameSkill(skill.name, name));
   }
 
-  findNode(id: string): (SkillGraphNode & { x: number; y: number }) | undefined {
-    return this.graphLayout.find((node) => node.id === id);
+  private sameSkill(left: string, right: string): boolean {
+    return String(left || '').trim().toLowerCase() === String(right || '').trim().toLowerCase();
+  }
+
+  private buildPresentationViewModels(): void {
+    if (!this.result) {
+      this.clearPresentation();
+      return;
+    }
+
+    const gapCards = this.toUniqueSkillCards(this.result.missingSkills, 'gap')
+      .sort((left, right) =>
+        this.priorityScore(right.priority) - this.priorityScore(left.priority)
+        || Number(right.demand || 0) - Number(left.demand || 0)
+        || Number(left.confidence || 101) - Number(right.confidence || 101)
+        || left.name.localeCompare(right.name)
+      );
+    const gapKeys = new Set(gapCards.map((card) => card.id));
+    const weakKeys = new Set((this.result.weakSkills || []).map((skill) => this.normalizeSkillKey(skill.name)));
+    const currentSkills = this.toUniqueSkillCards(this.result.yourSkills, 'strength');
+    const weakFromCurrent = currentSkills
+      .filter((card) => weakKeys.has(card.id) && !gapKeys.has(card.id))
+      .map((card) => ({ ...card, kind: 'weak' as const }));
+    const extraWeak = this.toUniqueSkillCards(this.result.weakSkills || [], 'weak')
+      .filter((card) => !gapKeys.has(card.id) && !weakFromCurrent.some((item) => item.id === card.id));
+
+    this.topGapCards = gapCards.slice(0, 8);
+    this.remainingGapCards = gapCards.slice(8);
+    this.strengthCards = currentSkills
+      .filter((card) => !weakKeys.has(card.id))
+      .sort((left, right) => Number(right.proficiency || 0) - Number(left.proficiency || 0));
+    this.weakSkillCards = [...weakFromCurrent, ...extraWeak]
+      .sort((left, right) => Number(left.proficiency || 0) - Number(right.proficiency || 0));
+    this.recommendedActions = gapCards
+      .filter((card) => Boolean(card.project?.title || card.nextAction))
+      .slice(0, 3)
+      .map((card) => ({
+        skill: card.name,
+        title: card.project?.title || card.nextAction as string,
+        detail: card.project?.deliverable || card.project?.outcome || card.learningPath || card.learningEffort,
+        priority: card.priority
+      }));
+    this.marketInsights = this.buildMarketInsights(gapCards);
+    this.categoryBreakdown = this.buildCategoryBreakdown([...currentSkills, ...gapCards]);
+    this.matchDistribution = this.buildMatchDistribution(currentSkills);
+    this.showAllGaps = false;
+  }
+
+  private toUniqueSkillCards(skills: SkillTimelineItem[], kind: SkillCardKind): SkillCardViewModel[] {
+    const cards = new Map<string, SkillCardViewModel>();
+    skills.forEach((skill) => {
+      const card = this.buildSkillCardViewModel(skill, kind);
+      if (card && !cards.has(card.id)) cards.set(card.id, card);
+    });
+    return [...cards.values()];
+  }
+
+  private buildMarketInsights(gaps: SkillCardViewModel[]): MarketInsightViewModel[] {
+    const insights: MarketInsightViewModel[] = [];
+    const jobsDemand = this.result?.signalsUsed?.jobsDemand;
+    const sampledJobs = Number(jobsDemand?.sampledJobs || 0);
+    const requestedSkills = (jobsDemand?.topSkills || [])
+      .map((skill) => String(skill.name || '').trim())
+      .filter(Boolean)
+      .slice(0, 3);
+    const highDemandGaps = gaps.filter((card) => Number(card.demand || 0) >= 75);
+
+    if (sampledJobs > 0) {
+      insights.push({ label: 'Jobs analyzed', value: String(sampledJobs), detail: 'Current demand sample', tone: 'primary' });
+    }
+    if (highDemandGaps.length) {
+      insights.push({ label: 'High-demand gaps', value: String(highDemandGaps.length), detail: highDemandGaps.slice(0, 3).map((card) => card.name).join(', '), tone: 'warning' });
+    }
+    if (requestedSkills.length) {
+      insights.push({ label: 'Most requested skills', value: requestedSkills.join(', '), detail: 'From current job signals', tone: 'success' });
+    }
+    return insights;
+  }
+
+  private buildCategoryBreakdown(cards: SkillCardViewModel[]): CategoryBreakdownViewModel[] {
+    const categories = new Map<string, { current: number; gaps: number }>();
+    cards.forEach((card) => {
+      const category = card.category;
+      if (!category) return;
+      const current = categories.get(category) || { current: 0, gaps: 0 };
+      if (card.kind === 'gap') current.gaps += 1;
+      else current.current += 1;
+      categories.set(category, current);
+    });
+    return [...categories.entries()]
+      .map(([name, counts]) => ({
+        name,
+        ...counts,
+        coverage: Math.round((counts.current / Math.max(1, counts.current + counts.gaps)) * 100)
+      }))
+      .sort((left, right) => right.current + right.gaps - (left.current + left.gaps))
+      .slice(0, 6);
+  }
+
+  private buildMatchDistribution(cards: SkillCardViewModel[]): DistributionViewModel[] {
+    const ranges: Array<DistributionViewModel & { min: number; max: number }> = [
+      { label: 'Strong (80-100%)', count: 0, tone: 'strong', min: 80, max: 100 },
+      { label: 'Good (60-79%)', count: 0, tone: 'good', min: 60, max: 79 },
+      { label: 'Average (40-59%)', count: 0, tone: 'average', min: 40, max: 59 },
+      { label: 'Weak (0-39%)', count: 0, tone: 'weak', min: 0, max: 39 }
+    ];
+    cards.forEach((card) => {
+      if (card.proficiency === undefined) return;
+      const range = ranges.find((item) => card.proficiency! >= item.min && card.proficiency! <= item.max);
+      if (range) range.count += 1;
+    });
+    return ranges;
+  }
+
+  private clearPresentation(): void {
+    this.topGapCards = [];
+    this.remainingGapCards = [];
+    this.strengthCards = [];
+    this.weakSkillCards = [];
+    this.recommendedActions = [];
+    this.marketInsights = [];
+    this.categoryBreakdown = [];
+    this.matchDistribution = [];
+    this.showAllGaps = false;
+  }
+
+  private priorityScore(priority?: SkillPriority): number {
+    return priority === 'High' ? 3 : priority === 'Medium' ? 2 : priority === 'Low' ? 1 : 0;
+  }
+
+  private isDisplayableSkillName(name: string): boolean {
+    if (name.length < 2 || name.length > 64) return false;
+    if (!/[A-Za-z]/.test(name) || !/^[A-Za-z0-9][A-Za-z0-9 .+#/&()_-]*$/.test(name)) return false;
+    if (/^[A-Za-z]\d+$/.test(name)) return false;
+    return !new Set(['unknown', 'none', 'n/a', 'other', 'skill', 'technical skill']).has(name.toLowerCase());
+  }
+
+  private normalizeSkillKey(name: string): string {
+    return String(name || '').trim().toLowerCase().replace(/[^a-z0-9+#]+/g, '-');
   }
 
   private normalizeSignalsUsed(raw: any, username: string): SkillGapResult['signalsUsed'] {
