@@ -215,6 +215,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         plugins: {
           legend: { display: false },
           tooltip: {
+            titleFont: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 600 },
+            bodyFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
             callbacks: {
               label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%`
             }
@@ -252,19 +254,26 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.x} commits` } }
+          tooltip: {
+            titleFont: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 600 },
+            bodyFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
+            callbacks: { label: (ctx) => ` ${ctx.parsed.x} commits` }
+          }
         },
         scales: {
           x: {
             beginAtZero: true,
             grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#94A3B8', font: { size: 11 } }
+            ticks: {
+              color: '#94A3B8',
+              font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 }
+            }
           },
           y: {
             grid: { display: false },
             ticks: {
               color: '#94A3B8',
-              font: { size: 11 },
+              font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 },
               callback: function(_val, idx) {
                 const label = this.getLabelForValue(idx);
                 return label.length > 18 ? `${label.slice(0, 17)}...` : label;

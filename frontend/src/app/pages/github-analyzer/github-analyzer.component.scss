@@ -1,58 +1,55 @@
-$background: #0b1020;
+// ── Design Tokens ──────────────────────────────────────────────
+$bg: #0b1020;
 $surface: #111827;
 $surface-raised: #141c2f;
-$surface-soft: #0f172a;
 $border: rgba(255, 255, 255, 0.08);
-$border-strong: rgba(255, 255, 255, 0.13);
-$text-primary: #f8fafc;
+$border-hover: rgba(255, 255, 255, 0.14);
+$text: #f8fafc;
 $text-secondary: #94a3b8;
 $text-muted: #64748b;
-$primary: #6d5df6;
-$primary-blue: #3b82f6;
-$success: #10b981;
-$warning: #f59e0b;
-$danger: #ef4444;
-$radius: 18px;
+$accent: #6366f1;
+$accent-soft: #818cf8;
+$blue: #3b82f6;
+$green: #10b981;
+$amber: #f59e0b;
+$red: #ef4444;
+$font: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', Consolas, monospace;
+$radius-lg: 18px;
+$radius-md: 14px;
+$radius-sm: 10px;
 
+// ── Host ────────────────────────────────────────────────────────
 :host {
   display: block;
   min-width: 0;
   min-height: 100%;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 82% 8%, rgba(59, 130, 246, 0.08), transparent 32%),
-    radial-gradient(circle at 18% 34%, rgba(109, 93, 246, 0.07), transparent 30%),
-    $background;
+  color: $text;
 }
 
+// ── Page Container ──────────────────────────────────────────────
 .analyzer-page {
   width: 100%;
   max-width: 1440px;
-  min-width: 0;
   margin: 0 auto;
   padding: 32px;
-  color: $text-primary;
+  color: $text;
+  font-family: $font;
   font-size: 14px;
+  line-height: 22px;
   box-sizing: border-box;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 }
 
-.analyzer-page *,
-.analyzer-page *::before,
-.analyzer-page *::after {
-  box-sizing: border-box;
-}
-
-.page-header,
-.search-inner,
-.profile-meta,
-.table-header,
-.card-header,
-.page-actions {
-  display: flex;
-  align-items: center;
-}
-
+// ── Page Header ─────────────────────────────────────────────────
 .page-header {
+  display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
@@ -63,8 +60,8 @@ $radius: 18px;
   margin: 0 0 8px;
   color: #a5b4fc;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -72,40 +69,54 @@ $radius: 18px;
   margin: 0;
   font-size: 32px;
   font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.035em;
+  line-height: 40px;
+  letter-spacing: -0.025em;
 }
 
 .page-subtitle {
   margin: 8px 0 0;
+  max-width: 540px;
   color: $text-secondary;
-  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
 }
 
 .page-actions {
-  flex: 0 0 auto;
+  display: flex;
+  flex-shrink: 0;
   gap: 12px;
 }
 
+// ── Card Base ──────────────────────────────────────────────────
+.dashboard-card,
+.info-section,
 .search-card,
 .score-panel,
 .stat-card,
-.dashboard-card,
 .narrative-section,
 .table-card {
-  min-width: 0;
   border: 1px solid $border;
-  border-radius: $radius;
-  background: linear-gradient(145deg, rgba(20, 28, 47, 0.98), rgba(15, 23, 42, 0.96));
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.16);
+  border-radius: $radius-lg;
+  background: $surface;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+
+  &:hover {
+    border-color: $border-hover;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+  }
 }
 
+// ── Search Card ─────────────────────────────────────────────────
 .search-card {
   margin-bottom: 24px;
   padding: 20px 24px;
 }
 
 .search-inner {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
@@ -117,36 +128,37 @@ $radius: 18px;
   align-items: center;
   overflow: hidden;
   border: 1px solid $border;
-  border-radius: 14px;
-  background: rgba(8, 15, 30, 0.68);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: $radius-sm;
+  background: rgba(8, 15, 30, 0.7);
+  transition: border-color 220ms ease, box-shadow 220ms ease;
 
   &:focus-within {
-    border-color: rgba(109, 93, 246, 0.72);
-    box-shadow: 0 0 0 4px rgba(109, 93, 246, 0.12);
+    border-color: rgba($accent, 0.6);
+    box-shadow: 0 0 0 4px rgba($accent, 0.1);
   }
 }
 
 .search-prefix-icon {
   display: grid;
+  place-items: center;
   width: 32px;
   height: 32px;
   margin-left: 8px;
-  flex: 0 0 32px;
-  place-items: center;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(109, 93, 246, 0.28), rgba(59, 130, 246, 0.16));
-  color: #ddd6fe;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: rgba($accent, 0.18);
+  color: #c7d2fe;
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
 .search-prefix-text {
-  margin-left: 10px;
-  padding-right: 12px;
+  padding: 0 4px 0 12px;
   border-right: 1px solid $border;
   color: $text-muted;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -158,107 +170,123 @@ $radius: 18px;
   border: 0;
   outline: 0;
   background: transparent;
-  color: $text-primary;
+  color: $text;
   font: inherit;
+  font-size: 14px;
 
   &::placeholder {
     color: #475569;
   }
+
+  &:disabled {
+    opacity: 0.6;
+  }
 }
 
-.analyze-btn,
-.ghost-btn {
+// ── Buttons ─────────────────────────────────────────────────────
+.ghost-btn,
+.analyze-btn {
   display: inline-flex;
-  height: 44px;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 18px;
-  border-radius: 12px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: $radius-sm;
   font: inherit;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, opacity 0.18s ease;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
+  transition: background 180ms ease, border-color 180ms ease, opacity 180ms ease;
 
   &:disabled {
-    opacity: 0.52;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 }
 
 .analyze-btn {
-  height: 48px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(135deg, $primary, #7657f8);
-  color: white;
-  box-shadow: 0 10px 26px rgba(109, 93, 246, 0.24);
+  border: 1px solid rgba($accent, 0.35);
+  background: $accent;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    border-color: rgba($accent-soft, 0.7);
+    background: #5558e6;
+  }
 }
 
 .ghost-btn {
-  border: 1px solid $border-strong;
-  background: rgba(15, 23, 42, 0.7);
-  color: $text-primary;
+  border: 1px solid $border;
+  background: $surface;
+  color: $text;
 
   &:hover:not(:disabled) {
-    border-color: rgba(109, 93, 246, 0.55);
-    background: rgba(109, 93, 246, 0.1);
+    border-color: $border-hover;
+    background: $surface-raised;
   }
 }
 
 .ghost-btn--compact {
   height: 36px;
-  padding: 0 13px;
-  font-size: 12px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
+// ── Spinner ─────────────────────────────────────────────────────
 .spinner {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
-  border: 2px solid rgba(255, 255, 255, 0.26);
-  border-top-color: white;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
 .spinner--dark {
-  border-color: rgba(148, 163, 184, 0.3);
-  border-top-color: $text-primary;
+  border-color: rgba(148, 163, 184, 0.25);
+  border-top-color: $text;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
+// ── Banners (error / profile meta) ─────────────────────────────
 .error-banner,
 .profile-meta {
-  margin-top: 14px;
-  padding: 13px 15px;
-  border-radius: 14px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: $radius-md;
 }
 
 .error-banner {
-  display: grid;
-  gap: 3px;
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  background: rgba(239, 68, 68, 0.09);
+  border: 1px solid rgba($red, 0.25);
+  background: rgba($red, 0.07);
   color: #fecaca;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
   span {
     color: #fca5a5;
+    font-size: 14px;
+    line-height: 22px;
   }
 }
 
 .profile-meta {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border: 1px solid rgba(59, 130, 246, 0.18);
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08), rgba(109, 93, 246, 0.05));
+  border: 1px solid rgba($blue, 0.15);
+  background: rgba($blue, 0.04);
 
   > div {
     min-width: 0;
@@ -266,17 +294,19 @@ $radius: 18px;
 
   strong {
     display: block;
-    color: $text-primary;
+    font-size: 14px;
+    font-weight: 600;
   }
 }
 
 .metadata-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 18px;
-  margin-top: 5px;
+  gap: 6px 18px;
+  margin-top: 6px;
   color: $text-secondary;
   font-size: 12px;
+  line-height: 18px;
 
   span + span {
     position: relative;
@@ -291,117 +321,138 @@ $radius: 18px;
 }
 
 .metadata-warning {
-  color: #fbbf24;
+  color: #fbbf24 !important;
 }
 
+// ── Overview Grid ───────────────────────────────────────────────
 .overview-grid {
   display: grid;
-  grid-template-columns: minmax(360px, 1.75fr) repeat(4, minmax(140px, 1fr));
+  grid-template-columns: minmax(380px, 1.75fr) repeat(4, minmax(150px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
 
+// ── Score Panel ─────────────────────────────────────────────────
 .score-panel {
   display: flex;
-  min-height: 166px;
   align-items: center;
-  gap: 20px;
-  padding: 22px 24px;
+  gap: 22px;
+  padding: 24px;
+
+  &:hover {
+    border-color: $border-hover;
+  }
 }
 
+$score-ring-size: 112px;
 .score-ring {
   --score: 0;
-  --score-colour: #{$primary-blue};
+  --sc: #{$blue};
   display: grid;
-  width: 112px;
-  height: 112px;
-  flex: 0 0 112px;
   place-items: center;
+  width: $score-ring-size;
+  height: $score-ring-size;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: conic-gradient(var(--score-colour) calc(var(--score) * 1%), rgba(255, 255, 255, 0.08) 0);
-  box-shadow: 0 0 32px color-mix(in srgb, var(--score-colour) 18%, transparent);
+  background: conic-gradient(var(--sc) calc(var(--score) * 1%), rgba(255, 255, 255, 0.06) 0);
 
-  &.score-high { --score-colour: #{$success}; }
-  &.score-mid { --score-colour: #{$primary-blue}; }
-  &.score-low { --score-colour: #{$warning}; }
+  &.score-high { --sc: #{$green}; }
+  &.score-mid  { --sc: #{$blue}; }
+  &.score-low  { --sc: #{$amber}; }
 }
 
 .score-ring__inner {
   display: grid;
-  width: 88px;
-  height: 88px;
   place-content: center;
-  text-align: center;
+  width: calc($score-ring-size - 24px);
+  height: calc($score-ring-size - 24px);
   border-radius: 50%;
-  background: $surface-soft;
-  box-shadow: inset 0 0 0 1px $border;
+  background: $surface;
+  text-align: center;
 
   span {
-    font-size: 34px;
+    font-size: 36px;
     font-weight: 700;
     line-height: 1;
+    letter-spacing: -0.03em;
   }
 
   small {
-    margin-top: 4px;
+    display: block;
+    margin-top: 3px;
     color: $text-muted;
     font-size: 11px;
+    font-weight: 600;
   }
 }
 
 .score-copy {
   min-width: 0;
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.35;
-  }
-
-  > p:last-child {
-    margin: 0;
-    color: $text-secondary;
-    line-height: 1.55;
-  }
 }
 
-.section-kicker,
-.stat-label {
-  margin: 0 0 9px;
+.section-kicker {
+  margin: 0 0 8px;
   color: $text-secondary;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
+.score-copy h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+.score-copy > p:last-child {
+  margin: 0;
+  color: $text-secondary;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+// ── Stat Cards ──────────────────────────────────────────────────
 .stat-card {
   display: flex;
-  min-height: 166px;
-  min-width: 0;
   flex-direction: column;
   justify-content: center;
-  padding: 22px;
+  padding: 24px 20px;
+  min-height: 160px;
+
+  &:hover {
+    border-color: $border-hover;
+  }
+}
+
+.stat-label {
+  margin: 0 0 8px;
+  color: $text-secondary;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .stat-value {
   margin: 0;
-  overflow: hidden;
-  color: $text-primary;
+  color: $text;
   font-size: clamp(36px, 3vw, 44px);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.04em;
-  text-overflow: ellipsis;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-caption {
-  margin-top: 13px;
-  color: $text-secondary;
+  margin-top: 10px;
+  color: $text-muted;
   font-size: 12px;
+  line-height: 18px;
 }
 
+// ── Charts & Content Grids ──────────────────────────────────────
 .charts-row,
 .content-grid {
   display: grid;
@@ -417,49 +468,52 @@ $radius: 18px;
 
 .dashboard-card,
 .info-section {
-  min-width: 0;
-  padding: 22px 24px;
+  padding: 24px;
 }
 
+// ── Card Header ─────────────────────────────────────────────────
 .card-header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 
   h2 {
     margin: 0;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    line-height: 26px;
+    letter-spacing: -0.015em;
   }
 
   p {
-    margin: 5px 0 0;
+    margin: 4px 0 0;
     color: $text-secondary;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 13px;
+    line-height: 20px;
   }
 }
 
+// ── Chart Body ──────────────────────────────────────────────────
 .chart-body {
   min-width: 0;
 }
 
 .donut-body {
   display: flex;
-  min-height: 250px;
   align-items: center;
-  gap: 28px;
+  gap: 32px;
+  min-height: 250px;
 }
 
 .donut-wrap {
-  width: 208px;
-  height: 208px;
-  flex: 0 0 208px;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
 }
 
 .bar-body {
-  position: relative;
   min-height: 300px;
 }
 
@@ -469,6 +523,7 @@ $radius: 18px;
   height: 100% !important;
 }
 
+// ── Language Legend ─────────────────────────────────────────────
 .lang-legend {
   display: grid;
   flex: 1;
@@ -481,18 +536,17 @@ $radius: 18px;
 
 .legend-item {
   display: flex;
-  min-width: 0;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   font-size: 13px;
+  line-height: 20px;
 }
 
 .legend-dot {
   width: 9px;
   height: 9px;
-  flex: 0 0 9px;
+  flex-shrink: 0;
   border-radius: 50%;
-  box-shadow: 0 0 10px currentColor;
 }
 
 .legend-name {
@@ -505,37 +559,42 @@ $radius: 18px;
 }
 
 .legend-pct {
-  min-width: 44px;
-  color: $text-primary;
-  font-weight: 700;
+  width: 44px;
   text-align: right;
+  color: $text;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
+// ── Support Languages ───────────────────────────────────────────
 .support-languages {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid $border;
-  color: $text-secondary;
   font-size: 12px;
+  color: $text-muted;
 
   span:not(.support-label) {
-    padding: 4px 9px;
+    padding: 4px 10px;
     border: 1px solid $border;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.035);
-    color: $text-primary;
+    color: $text-secondary;
+    font-size: 12px;
+    font-weight: 600;
   }
 }
 
 .support-label {
-  margin-right: 2px;
+  margin-right: 4px;
   font-weight: 600;
+  color: $text-secondary;
 }
 
+// ── Technology Groups ───────────────────────────────────────────
 .tech-groups {
   display: grid;
   gap: 16px;
@@ -543,12 +602,14 @@ $radius: 18px;
 
 .tech-group {
   display: grid;
-  gap: 9px;
+  gap: 8px;
 
   strong {
-    color: $text-secondary;
     font-size: 12px;
     font-weight: 600;
+    color: $text-secondary;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 }
 
@@ -558,50 +619,66 @@ $radius: 18px;
   gap: 8px;
 }
 
+// ── Pills & Badges ──────────────────────────────────────────────
 .pill,
 .category-badge,
 .lang-badge,
 .tech-cell span {
   display: inline-flex;
-  max-width: 100%;
   align-items: center;
-  padding: 4px 9px;
+  max-width: 100%;
+  padding: 4px 10px;
   overflow: hidden;
-  border: 1px solid rgba(109, 93, 246, 0.2);
   border-radius: 999px;
-  background: rgba(109, 93, 246, 0.12);
-  color: #c7d2fe;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
+  line-height: 18px;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pill {
+  border: 1px solid rgba($accent, 0.18);
+  background: rgba($accent, 0.08);
+  color: #c7d2fe;
 }
 
 .category-badge {
-  border-color: rgba(16, 185, 129, 0.22);
-  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba($green, 0.2);
+  background: rgba($green, 0.07);
   color: #a7f3d0;
 }
 
 .lang-badge {
-  border-color: rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba($blue, 0.18);
+  background: rgba($blue, 0.07);
   color: #bfdbfe;
 }
 
 .lang-badge--unknown {
   border-color: $border;
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   color: $text-muted;
 }
 
+.tech-cell span {
+  margin: 2px 5px 2px 0;
+  border: 1px solid rgba($accent, 0.2);
+  background: rgba($accent, 0.06);
+  color: #c7d2fe;
+  font-size: 12px;
+}
+
+// ── Insight Lists ───────────────────────────────────────────────
 .insight-list {
   display: grid;
-  gap: 11px;
+  gap: 10px;
   margin: 0;
   padding: 0;
-  color: $text-secondary;
-  line-height: 1.55;
   list-style: none;
+  color: $text-secondary;
+  font-size: 14px;
+  line-height: 22px;
 
   li {
     position: relative;
@@ -609,157 +686,167 @@ $radius: 18px;
     overflow-wrap: anywhere;
 
     &::before {
+      content: '';
       position: absolute;
-      top: 0.62em;
+      top: 9px;
       left: 2px;
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background: $primary-blue;
-      content: '';
+      background: $blue;
     }
   }
 }
 
 .recruiter-list li::before {
-  background: $primary;
-  box-shadow: 0 0 9px rgba(109, 93, 246, 0.5);
+  background: $accent;
 }
 
 .strengths-list li::before {
   width: 7px;
   height: 7px;
-  background: $success;
-  box-shadow: 0 0 9px rgba(16, 185, 129, 0.45);
+  top: 8px;
+  left: 1px;
+  background: $green;
 }
 
 .warning-list li::before {
   width: 7px;
   height: 7px;
-  background: $warning;
-  box-shadow: 0 0 9px rgba(245, 158, 11, 0.4);
+  top: 8px;
+  left: 1px;
+  background: $amber;
 }
 
+// ── Narrative Section ───────────────────────────────────────────
 .narrative-section {
   margin-bottom: 24px;
-  padding: 22px 24px 0;
-  border-color: rgba(109, 93, 246, 0.2);
-  background:
-    linear-gradient(145deg, rgba(109, 93, 246, 0.07), transparent 42%),
-    linear-gradient(145deg, rgba(20, 28, 47, 0.98), rgba(15, 23, 42, 0.96));
+  padding: 24px 24px 0;
 }
 
 .narrative-header {
   margin-bottom: 14px;
 
-  h2,
-  p {
-    margin: 0;
-  }
-
   h2 {
-    font-size: 20px;
+    margin: 0;
+    font-size: 18px;
     font-weight: 600;
+    line-height: 26px;
   }
 
   > div > p:last-child {
-    margin-top: 5px;
+    margin: 4px 0 0;
     color: $text-secondary;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 20px;
   }
 }
 
 .narrative-copy {
-  display: grid;
-  gap: 8px;
+  margin-bottom: 16px;
   color: $text-secondary;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 22px;
 
   p {
     margin: 0;
+
+    + p {
+      margin-top: 10px;
+    }
   }
 }
 
 .narrative-grid {
-  margin-top: 18px;
-  margin-bottom: 0;
+  margin: 0;
+
+  &.content-grid {
+    margin-bottom: 0;
+  }
 }
 
 .narrative-card {
-  min-width: 0;
   padding: 20px;
   border: 1px solid $border;
-  border-radius: 14px;
-  background: rgba(7, 13, 27, 0.35);
+  border-radius: $radius-md;
+  background: $surface-raised;
+
+  &:hover {
+    border-color: $border-hover;
+  }
 }
 
+// ── Table ───────────────────────────────────────────────────────
 .table-card {
   margin-bottom: 24px;
   overflow: hidden;
 }
 
 .table-header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 22px 24px 18px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid $border;
 
   h2 {
     margin: 0;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 600;
+    line-height: 26px;
   }
 
   p {
-    margin: 5px 0 0;
+    margin: 4px 0 0;
     color: $text-secondary;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 13px;
+    line-height: 20px;
   }
 }
 
 .repo-count-badge {
-  flex: 0 0 auto;
-  padding: 5px 10px;
-  border: 1px solid rgba(16, 185, 129, 0.24);
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border: 1px solid rgba($green, 0.22);
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.09);
+  background: rgba($green, 0.06);
   color: #a7f3d0;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .table-wrap {
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .repo-table {
   width: 100%;
-  min-width: 0;
+  min-width: 1040px;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 20px;
 
   th,
   td {
-    min-width: 0;
-    padding: 14px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-    color: $text-secondary;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     text-align: left;
     vertical-align: middle;
     overflow-wrap: anywhere;
   }
 
   th {
-    background: rgba(255, 255, 255, 0.025);
+    background: rgba(255, 255, 255, 0.015);
     color: $text-muted;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -772,11 +859,16 @@ $radius: 18px;
   th:nth-child(7) { width: 15%; }
   th:last-child { width: 10%; }
 
+  td {
+    color: $text-secondary;
+  }
+
   tbody tr {
-    transition: background 0.18s ease;
+    height: 60px;
+    transition: background 160ms ease;
 
     &:hover {
-      background: rgba(59, 130, 246, 0.035);
+      background: $surface-raised;
     }
 
     &:last-child td {
@@ -786,7 +878,7 @@ $radius: 18px;
 }
 
 .repo-name-cell {
-  color: $text-primary !important;
+  color: $text !important;
 
   strong,
   small {
@@ -795,83 +887,86 @@ $radius: 18px;
 
   strong {
     overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   small {
-    margin-top: 4px;
+    margin-top: 3px;
     overflow: hidden;
     color: $text-muted;
-    font-size: 10px;
+    font-size: 13px;
+    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
 
-.tech-cell span {
-  margin: 2px 4px 2px 0;
-}
-
+// ── Score Bar ───────────────────────────────────────────────────
 .score-cell {
   min-width: 0;
 }
 
 .score-bar-wrap {
   display: flex;
-  min-width: 0;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .score-bar-bg {
   flex: 1;
-  min-width: 32px;
+  min-width: 36px;
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .score-bar-fill {
   height: 100%;
   border-radius: inherit;
+  transition: width 400ms ease;
 
-  &.score-high { background: $success; }
-  &.score-mid { background: $primary-blue; }
-  &.score-low { background: $warning; }
+  &.score-high { background: $green; }
+  &.score-mid  { background: $blue; }
+  &.score-low  { background: $amber; }
 }
 
 .score-num {
-  min-width: 24px;
+  min-width: 26px;
   font-weight: 700;
+  font-size: 13px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 
   &.score-high { color: #34d399; }
-  &.score-mid { color: #60a5fa; }
-  &.score-low { color: #fbbf24; }
+  &.score-mid  { color: #60a5fa; }
+  &.score-low  { color: #fbbf24; }
 }
 
+// ── External Link ───────────────────────────────────────────────
 .ext-link {
   color: #93c5fd;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
 
   &:hover {
     color: #bfdbfe;
   }
 }
 
+// ── Analysis Footer ─────────────────────────────────────────────
 .analysis-footer {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 20px;
-  padding: 0 16px 8px;
+  gap: 6px 20px;
+  padding: 8px 16px 16px;
   color: $text-muted;
-  font-size: 11px;
-  text-align: center;
+  font-size: 12px;
 
   span + span {
     position: relative;
@@ -884,42 +979,52 @@ $radius: 18px;
   }
 }
 
+// ── Empty State ─────────────────────────────────────────────────
 .empty-state {
   display: grid;
-  min-height: 240px;
   place-items: center;
   align-content: center;
-  gap: 14px;
+  gap: 12px;
+  min-height: 240px;
   padding: 40px 20px;
   color: $text-secondary;
+  font-size: 14px;
+  line-height: 22px;
   text-align: center;
 
   p {
-    max-width: 440px;
+    max-width: 420px;
     margin: 0;
-    line-height: 1.55;
   }
 }
 
 .empty-icon {
   display: grid;
-  width: 58px;
-  height: 58px;
   place-items: center;
+  width: 56px;
+  height: 56px;
   border: 1px solid $border;
-  border-radius: 18px;
-  background: rgba(109, 93, 246, 0.08);
+  border-radius: $radius-md;
+  background: rgba($accent, 0.06);
   color: #c7d2fe;
-  font-weight: 800;
+  font-family: $font-mono;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .loading-state .spinner {
-  width: 22px;
-  height: 22px;
-  border-color: rgba(109, 93, 246, 0.22);
+  width: 24px;
+  height: 24px;
+  border-color: rgba($accent, 0.2);
   border-top-color: #a5b4fc;
 }
 
+// ── Fade-in Animation ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  RESPONSIVE
+// ══════════════════════════════════════════════════════════════════
+
+// ── ≤1180px ────────────────────────────────────────────────────
 @media (max-width: 1180px) {
   .overview-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -930,9 +1035,10 @@ $radius: 18px;
   }
 }
 
+// ── ≤960px ─────────────────────────────────────────────────────
 @media (max-width: 960px) {
   .analyzer-page {
-    padding: 28px 24px;
+    padding: 24px;
   }
 
   .charts-row,
@@ -944,22 +1050,19 @@ $radius: 18px;
     justify-content: flex-start;
   }
 
-  .repo-table {
-    font-size: 11px;
-
-    th,
-    td {
-      padding: 12px 8px;
-    }
+  .dashboard-card,
+  .info-section {
+    padding: 20px;
   }
 }
 
+// ── ≤900px ─────────────────────────────────────────────────────
 @media (max-width: 900px) {
   .page-header,
   .profile-meta,
   .table-header {
-    align-items: stretch;
     flex-direction: column;
+    align-items: stretch;
   }
 
   .page-actions,
@@ -976,8 +1079,9 @@ $radius: 18px;
     grid-column: 1 / -1;
   }
 
+  // Mobile table: card layout
   .table-wrap {
-    padding: 0 14px 14px;
+    padding: 0 16px 16px;
   }
 
   .repo-table,
@@ -989,6 +1093,7 @@ $radius: 18px;
   }
 
   .repo-table {
+    min-width: 0;
     table-layout: auto;
 
     thead {
@@ -1001,156 +1106,152 @@ $radius: 18px;
     }
 
     tr {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0 16px;
-      overflow: hidden;
+      height: auto;
       border: 1px solid $border;
-      border-radius: 14px;
-      background: rgba(8, 15, 30, 0.38);
+      border-radius: $radius-md;
+      padding: 0;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.015);
+      }
     }
 
     td {
-      min-width: 0;
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+      &:last-child {
+        border-bottom: 0;
+      }
 
       &::before {
-        display: block;
-        margin-bottom: 5px;
-        color: $text-muted;
         content: attr(data-label);
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.07em;
+        flex-shrink: 0;
+        min-width: 64px;
+        color: $text-muted;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
       }
     }
 
-    td:nth-child(odd) {
-      padding-left: 14px;
-    }
-
-    td:nth-child(even) {
-      padding-right: 14px;
-    }
-
     .repo-name-cell {
-      grid-column: 1 / -1;
-      padding-right: 14px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
 
-      strong,
-      small {
+      &::before {
+        display: none;
+      }
+
+      strong {
         white-space: normal;
       }
+    }
+
+    .score-cell .score-bar-wrap {
+      flex: 1;
     }
   }
 }
 
-@media (max-width: 600px) {
+// ── ≤640px ─────────────────────────────────────────────────────
+@media (max-width: 640px) {
   .analyzer-page {
-    padding: 20px 16px;
-  }
-
-  .page-header {
-    margin-bottom: 20px;
+    padding: 16px;
   }
 
   .page-title {
-    font-size: 27px;
+    font-size: 32px;
+    line-height: 40px;
   }
 
-  .search-card,
-  .dashboard-card,
-  .info-section,
-  .narrative-section,
-  .table-header {
-    padding: 18px;
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .score-panel {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .search-inner {
-    align-items: stretch;
     flex-direction: column;
+    align-items: stretch;
   }
 
   .analyze-btn {
     width: 100%;
   }
 
-  .overview-grid {
-    gap: 14px;
-  }
-
-  .score-panel {
-    align-items: flex-start;
+  .donut-body {
     flex-direction: column;
-    padding: 20px;
+    align-items: flex-start;
   }
 
-  .stat-card {
-    min-height: 138px;
-    padding: 18px;
+  .donut-wrap {
+    width: 170px;
+    height: 170px;
+  }
+
+  $score-ring-size: 96px;
+  .score-ring {
+    width: $score-ring-size;
+    height: $score-ring-size;
+
+    .score-ring__inner {
+      width: calc($score-ring-size - 20px);
+      height: calc($score-ring-size - 20px);
+
+      span { font-size: 36px; }
+    }
   }
 
   .stat-value {
     font-size: 36px;
   }
 
-  .donut-body {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .donut-wrap {
-    width: min(220px, 100%);
-    height: 220px;
-    margin: 0 auto;
-  }
-
-  .bar-body {
-    min-height: 280px;
-  }
-
-  .narrative-section {
-    padding-bottom: 0;
-  }
-
-  .analysis-footer {
-    align-items: center;
-    flex-direction: column;
-    gap: 5px;
-
-    span + span::before {
-      display: none;
-    }
+  .card-header h2 {
+    font-size: 18px;
+    line-height: 26px;
   }
 }
 
-@media (max-width: 420px) {
-  .search-prefix-text {
-    display: none;
+// ── ≤480px ─────────────────────────────────────────────────────
+@media (max-width: 480px) {
+  .analyzer-page {
+    padding: 16px;
   }
 
-  .search-prefix-icon {
-    margin-right: 2px;
+  .page-title {
+    font-size: 32px;
+    line-height: 40px;
   }
 
-  .overview-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
+  .search-card,
   .score-panel {
-    grid-column: auto;
+    padding: 16px;
   }
 
-  .repo-table tr {
-    grid-template-columns: minmax(0, 1fr);
+  .dashboard-card,
+  .info-section {
+    padding: 16px;
   }
 
-  .repo-table td,
-  .repo-table td:nth-child(odd),
-  .repo-table td:nth-child(even) {
-    padding-right: 14px;
-    padding-left: 14px;
+  .narrative-section {
+    padding: 16px 16px 0;
+  }
+
+  .table-header {
+    padding: 16px;
+  }
+
+  .repo-table td {
+    padding: 10px 14px;
   }
 }
