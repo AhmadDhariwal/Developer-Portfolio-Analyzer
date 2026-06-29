@@ -457,7 +457,7 @@
   align-items: center;
   gap: 20px;
 
-  p { margin: 6px 0 0; color: #94a3b8; font-size: 12px; line-height: 18px; }
+  p { margin: 6px 0 0; color: #c0cad8; font-size: 13px; line-height: 20px; }
 }
 
 .score-ring--large {
@@ -497,6 +497,11 @@
 .technology-panel,
 .details-panel,
 .recruiter-panel { grid-column: span 6; }
+.details-panel,
+.recruiter-panel { align-self: stretch; }
+
+:host ::ng-deep .details-panel .ui-card,
+:host ::ng-deep .recruiter-panel .ui-card { height: 100%; }
 .growth-panel { grid-column: span 5; }
 .suggestions-panel { grid-column: span 7; }
 
@@ -508,7 +513,7 @@
   margin-bottom: 18px;
 
   h2 { margin: 0.22rem 0 0.3rem; color: #f8fafc; font-size: 19px; font-weight: 600; line-height: 26px; }
-  p { max-width: 760px; margin: 0; color: #94a3b8; font-size: 13px; line-height: 19px; }
+  p { max-width: 760px; margin: 0; color: #b6c2d2; font-size: 13px; line-height: 20px; }
 }
 
 .personal-grid {
@@ -589,7 +594,7 @@
     span { color: #a5b4fc; font-weight: 800; }
   }
 
-  p { margin: 0.55rem 0 0; color: var(--text-muted); font-size: 0.75rem; line-height: 1.45; }
+  p { margin: 0.55rem 0 0; color: #b6c2d2; font-size: 0.78rem; line-height: 1.55; }
 }
 
 .skills-overview,
@@ -636,7 +641,7 @@
 
 .technology-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -659,10 +664,11 @@
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
   }
 
-  h3 { margin: 0; color: #f8fafc; font-size: 14px; font-weight: 600; }
-  > div:first-child span { color: #64748b; font-size: 10px; }
+  h3 { min-width: 0; margin: 0; color: #f8fafc; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+  > div:first-child span { flex: 0 0 auto; color: #a8b4c5; font-size: 11px; }
 
   &__skills {
     display: flex;
@@ -670,12 +676,15 @@
     gap: 5px;
 
     span {
+      display: inline-block;
+      max-width: 100%;
       padding: 3px 6px;
       border-radius: 6px;
       background: rgba(6, 182, 212, 0.09);
       color: #67e8f9;
       font-size: 10px;
       line-height: 15px;
+      overflow-wrap: anywhere;
     }
   }
 }
@@ -700,7 +709,8 @@
   }
 
   h3 { margin: 0 0 10px; color: #f8fafc; font-size: 14px; font-weight: 600; }
-  ul { display: grid; gap: 6px; margin: 0; padding-left: 17px; color: #cbd5e1; font-size: 12px; line-height: 18px; }
+  ul { display: grid; gap: 7px; margin: 0; padding-left: 18px; color: #d3dbe7; font-size: 13px; line-height: 20px; }
+  li { padding-left: 2px; overflow-wrap: anywhere; }
 }
 
 .details-grid h3,
@@ -717,9 +727,15 @@
   gap: 0.45rem;
   margin: 0;
   padding-left: 1.05rem;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  line-height: 1.5;
+  color: #d3dbe7;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.details-grid li,
+.recruiter-grid li {
+  padding-left: 0.1rem;
+  overflow-wrap: anywhere;
 }
 
 .warning-groups {

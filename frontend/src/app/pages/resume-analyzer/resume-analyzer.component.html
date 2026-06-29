@@ -257,6 +257,24 @@
         </div>
       </app-ui-card>
 
+      <app-ui-card *ngIf="recruiterSectionViewModels.length" class="recruiter-panel">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Hiring review</span>
+            <h2>Recruiter Perspective</h2>
+            <p>Resume-backed strengths and areas a recruiter may validate.</p>
+          </div>
+        </div>
+        <div class="recruiter-grid">
+          <section *ngFor="let section of recruiterSectionViewModels">
+            <h3>{{ section.title }}</h3>
+            <ul>
+              <li *ngFor="let item of section.items">{{ item }}</li>
+            </ul>
+          </section>
+        </div>
+      </app-ui-card>
+
       <app-ui-card *ngIf="resumeInsightViewModels.length || intelligenceSectionViewModels.length" class="details-panel">
         <div class="section-head">
           <div>
@@ -282,25 +300,6 @@
           </section>
         </div>
       </app-ui-card>
-
-      <app-ui-card *ngIf="recruiterSectionViewModels.length" class="recruiter-panel">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Hiring review</span>
-            <h2>Recruiter Perspective</h2>
-            <p>Resume-backed strengths and areas a recruiter may validate.</p>
-          </div>
-        </div>
-        <div class="recruiter-grid">
-          <section *ngFor="let section of recruiterSectionViewModels">
-            <h3>{{ section.title }}</h3>
-            <ul>
-              <li *ngFor="let item of section.items">{{ item }}</li>
-            </ul>
-          </section>
-        </div>
-      </app-ui-card>
-
       <app-ui-card *ngIf="warningGroupViewModels.length" class="warnings-panel">
         <div class="section-head">
           <div>
