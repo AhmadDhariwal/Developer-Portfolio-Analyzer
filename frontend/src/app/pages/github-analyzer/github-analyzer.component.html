@@ -1,28 +1,27 @@
 <div class="analyzer-page">
-  <div class="page-header">
+  <header class="page-header">
     <div>
-      <h2 class="page-title">GitHub Analyzer</h2>
+      <p class="page-eyebrow">Developer intelligence</p>
+      <h1 class="page-title">GitHub Analyzer</h1>
       <p class="page-subtitle">Repository quality, technology signals, and recruiter-ready insights</p>
     </div>
-    <button
-      type="button"
-      class="ghost-btn"
-      *ngIf="analysisReady && result"
-      (click)="refreshAnalysis()"
-      [disabled]="isAnalyzing">
-      <span class="spinner spinner--dark" *ngIf="isAnalyzing"></span>
-      Refresh analysis
-    </button>
-  </div>
+    <div class="page-actions" *ngIf="analysisReady && result">
+      <button type="button" class="ghost-btn" (click)="refreshAnalysis()" [disabled]="isAnalyzing">
+        <span class="spinner spinner--dark" *ngIf="isAnalyzing"></span>
+        Refresh analysis
+      </button>
+    </div>
+  </header>
 
-  <div class="search-card">
+  <section class="search-card" aria-label="GitHub profile lookup">
     <div class="search-inner">
       <div class="search-input-wrap">
-        <span class="search-prefix-icon">GH</span>
+        <span class="search-prefix-icon" aria-hidden="true">GH</span>
         <span class="search-prefix-text">github.com/</span>
         <input
           class="search-input"
           type="text"
+          aria-label="GitHub username"
           placeholder="GitHub username"
           [(ngModel)]="username"
           [disabled]="isAnalyzing"
@@ -31,27 +30,29 @@
       </div>
 
       <button
+        type="button"
         class="analyze-btn"
         (click)="analyze(false)"
         [disabled]="!username.trim() || isAnalyzing">
         <span class="spinner" *ngIf="isAnalyzing"></span>
-        {{ isAnalyzing ? 'Analyzing...' : 'Analyze Profile' }}
+        {{ isAnalyzing ? 'Analyzing...' : 'Analyze profile' }}
       </button>
     </div>
 
-    <div class="error-banner" *ngIf="errorMessage">
+    <div class="error-banner" *ngIf="errorMessage" role="alert">
       <strong>{{ invalidUsername ? 'Username not found' : 'Analysis failed' }}</strong>
       <span>{{ errorMessage }}</span>
     </div>
 
-    <div class="notice-banner" *ngIf="analysisReady && result && !errorMessage">
+    <div class="profile-meta" *ngIf="analysisReady && result && !errorMessage">
       <div>
         <strong *ngIf="isTemporaryView">Temporary analysis for @{{ viewedUsername }}</strong>
         <strong *ngIf="!isTemporaryView">Default profile analysis for @{{ viewedUsername || defaultUsername }}</strong>
-        <span>
-          Last analyzed: {{ lastAnalyzedLabel }} · {{ cacheStatusLabel }}
-          <ng-container *ngIf="result.warning"> · {{ result.warning }}</ng-container>
-        </span>
+        <div class="metadata-line">
+          <span *ngIf="hasAnalysisTimestamp">Last analyzed {{ lastAnalyzedLabel }}</span>
+          <span *ngIf="hasCacheMetadata">{{ cacheStatusLabel }}</span>
+          <span *ngIf="result.warning" class="metadata-warning">{{ result.warning }}</span>
+        </div>
       </div>
       <button
         *ngIf="isTemporaryView"
@@ -62,56 +63,63 @@
         Return to my profile
       </button>
     </div>
-  </div>
+  </section>
 
   <ng-container *ngIf="analysisReady && result">
-    <section class="overview-grid">
-      <div class="score-panel">
-        <div class="score-ring" [ngClass]="getScoreClass(healthScore)">
-          <span>{{ healthScore }}</span>
-          <small>/100</small>
+    <section class="overview-grid" aria-label="GitHub profile metrics">
+      <article class="score-panel">
+        <div class="score-ring" [ngClass]="getScoreClass(healthScore)" [style.--score]="healthScore">
+          <div class="score-ring__inner">
+            <span>{{ healthScore }}</span>
+            <small>/100</small>
+          </div>
         </div>
-        <div>
-          <p class="section-kicker">GitHub Health Score</p>
-          <h3 *ngIf="result.recruiterInsights?.headline || result.developerLevel">
+        <div class="score-copy">
+          <p class="section-kicker">GitHub health score</p>
+          <h2 *ngIf="result.recruiterInsights?.headline || result.developerLevel">
             {{ result.recruiterInsights?.headline || result.developerLevel }}
-          </h3>
+          </h2>
           <p *ngIf="result.recruiterInsights?.recruiterSummary">{{ result.recruiterInsights?.recruiterSummary }}</p>
         </div>
-      </div>
+      </article>
 
-      <div class="stat-card">
+      <article class="stat-card">
         <p class="stat-label">Repositories</p>
         <p class="stat-value">{{ formatNumber(result.repoCount) }}</p>
-      </div>
-      <div class="stat-card">
+        <span class="stat-caption">Total repositories</span>
+      </article>
+      <article class="stat-card">
         <p class="stat-label">Stars</p>
         <p class="stat-value">{{ formatNumber(result.totalStars) }}</p>
-      </div>
-      <div class="stat-card">
+        <span class="stat-caption">Total stars</span>
+      </article>
+      <article class="stat-card">
         <p class="stat-label">Forks</p>
         <p class="stat-value">{{ formatNumber(result.totalForks) }}</p>
-      </div>
-      <div class="stat-card">
+        <span class="stat-caption">Total forks</span>
+      </article>
+      <article class="stat-card" *ngIf="result.followers !== undefined && result.followers !== null">
         <p class="stat-label">Followers</p>
         <p class="stat-value">{{ formatNumber(result.followers) }}</p>
-      </div>
+        <span class="stat-caption">GitHub followers</span>
+      </article>
     </section>
 
-    <section class="charts-row">
-      <div class="chart-card">
-        <div class="chart-card-header">
+    <section
+      class="charts-row"
+      *ngIf="hasLanguageData || hasActivityData"
+      [class.charts-row--single]="!hasLanguageData || !hasActivityData">
+      <article class="dashboard-card chart-card" *ngIf="hasLanguageData">
+        <div class="card-header">
           <div>
-            <h4 class="chart-title">Languages</h4>
-            <p class="chart-subtitle">
-              {{ result.languageDistributionSource === 'language_bytes' ? 'Main programming languages from GitHub bytes' : 'Primary repository language fallback' }}
+            <h2>Languages</h2>
+            <p *ngIf="result.languageDistributionSource">
+              {{ result.languageDistributionSource === 'language_bytes' ? 'Main programming languages from GitHub bytes' : 'Primary repository languages' }}
             </p>
           </div>
         </div>
-        <div class="chart-body donut-body" *ngIf="displayLanguages.length; else noLanguageData">
-          <div class="donut-wrap">
-            <canvas #donutCanvas></canvas>
-          </div>
+        <div class="chart-body donut-body">
+          <div class="donut-wrap"><canvas #donutCanvas></canvas></div>
           <ul class="lang-legend">
             <li *ngFor="let lang of displayLanguages; let i = index" class="legend-item">
               <span class="legend-dot" [style.background]="getLangColour(i)"></span>
@@ -120,37 +128,30 @@
             </li>
           </ul>
         </div>
-        <ng-template #noLanguageData>
-          <div class="empty-panel">No language distribution available.</div>
-        </ng-template>
         <div class="support-languages" *ngIf="supportLanguages.length">
-          Support files:
+          <span class="support-label">Support files</span>
           <span *ngFor="let lang of supportLanguages.slice(0, 5)">{{ lang.language }} {{ lang.percentage }}%</span>
         </div>
-      </div>
+      </article>
 
-      <div class="chart-card">
-        <div class="chart-card-header">
+      <article class="dashboard-card chart-card" *ngIf="hasActivityData">
+        <div class="card-header">
           <div>
-            <h4 class="chart-title">Activity</h4>
-            <p class="chart-subtitle">Commit depth across strongest repositories</p>
+            <h2>Activity</h2>
+            <p>Commit depth across strongest repositories</p>
           </div>
         </div>
-        <div class="chart-body bar-body" *ngIf="hasActivityData; else noActivityData">
-          <canvas #barCanvas></canvas>
-        </div>
-        <ng-template #noActivityData>
-          <div class="empty-panel">No repository activity available.</div>
-        </ng-template>
-      </div>
+        <div class="chart-body bar-body"><canvas #barCanvas></canvas></div>
+      </article>
     </section>
 
-    <section class="content-grid">
-      <div class="info-section">
-        <div class="section-header">
-          <h4>Technologies Detected</h4>
-        </div>
-        <div class="tech-groups" *ngIf="technologyCategories.length; else noTech">
+    <section
+      class="content-grid"
+      *ngIf="hasTechnologyData || hasRecruiterInsights"
+      [class.content-grid--single]="!hasTechnologyData || !hasRecruiterInsights">
+      <article class="dashboard-card info-section" *ngIf="hasTechnologyData">
+        <div class="card-header"><h2>Technologies detected</h2></div>
+        <div class="tech-groups">
           <div class="tech-group" *ngFor="let group of technologyCategories">
             <strong>{{ group.category }}</strong>
             <div class="pill-row">
@@ -158,101 +159,89 @@
             </div>
           </div>
         </div>
-        <ng-template #noTech>
-          <div class="empty-panel">No framework or tool signals detected yet.</div>
-        </ng-template>
-      </div>
+      </article>
 
-      <div class="info-section">
-        <div class="section-header">
-          <h4>Recruiter Insights</h4>
-        </div>
-        <ul class="insight-list" *ngIf="result.recruiterInsights?.proofPoints?.length; else noInsights">
+      <article class="dashboard-card info-section" *ngIf="hasRecruiterInsights">
+        <div class="card-header"><h2>Recruiter insights</h2></div>
+        <ul class="insight-list recruiter-list">
           <li *ngFor="let point of result.recruiterInsights?.proofPoints">{{ point }}</li>
         </ul>
-        <ng-template #noInsights>
-          <div class="empty-panel">No recruiter proof points available yet.</div>
-        </ng-template>
-      </div>
+      </article>
     </section>
 
     <section class="narrative-section" *ngIf="hasAiNarrative">
       <div class="narrative-header">
         <div>
-          <h4>AI Narrative</h4>
-          <p>Interpretation of the deterministic GitHub facts shown above</p>
+          <p class="page-eyebrow">AI-assisted interpretation</p>
+          <h2>Profile narrative</h2>
+          <p>Narrative context based only on the deterministic GitHub facts shown above</p>
         </div>
       </div>
-      <p class="narrative-copy" *ngIf="result.summary">{{ result.summary }}</p>
-      <p class="narrative-copy" *ngIf="result.explanation">{{ result.explanation }}</p>
+      <div class="narrative-copy" *ngIf="result.summary || result.explanation">
+        <p *ngIf="result.summary">{{ result.summary }}</p>
+        <p *ngIf="result.explanation">{{ result.explanation }}</p>
+      </div>
 
-      <div class="content-grid narrative-grid">
-        <div class="info-section">
-          <div class="section-header">
-            <h4>Strengths</h4>
-          </div>
-          <ul class="insight-list" *ngIf="result.strengths?.length; else noStrengths">
+      <div
+        class="content-grid narrative-grid"
+        *ngIf="hasStrengths || hasWeakAreas"
+        [class.content-grid--single]="!hasStrengths || !hasWeakAreas">
+        <article class="narrative-card strengths-card" *ngIf="hasStrengths">
+          <div class="card-header"><h2>Strengths</h2></div>
+          <ul class="insight-list strengths-list">
             <li *ngFor="let item of result.strengths">{{ item }}</li>
           </ul>
-          <ng-template #noStrengths>
-            <div class="empty-panel">No AI strengths narrative returned.</div>
-          </ng-template>
-        </div>
+        </article>
 
-        <div class="info-section">
-          <div class="section-header">
-            <h4>Weak Areas</h4>
-          </div>
-          <ul class="insight-list warning-list" *ngIf="result.weakAreas?.length; else noWeakAreas">
+        <article class="narrative-card weak-card" *ngIf="hasWeakAreas">
+          <div class="card-header"><h2>Weak areas</h2></div>
+          <ul class="insight-list warning-list">
             <li *ngFor="let item of result.weakAreas">{{ item }}</li>
           </ul>
-          <ng-template #noWeakAreas>
-            <div class="empty-panel">No AI weak-area narrative returned.</div>
-          </ng-template>
-        </div>
+        </article>
       </div>
     </section>
 
-    <section class="table-card">
+    <section class="table-card" *ngIf="repositoryRows.length">
       <div class="table-header">
         <div>
-          <h4 class="chart-title">Repository Quality</h4>
-          <p class="chart-subtitle">Sorted highest quality first; score combines README, description, topics, activity, stars, forks, size, and tech signals</p>
+          <h2>Repository quality</h2>
+          <p>Sorted highest quality first using repository documentation, activity, adoption, and technology signals</p>
         </div>
         <span class="repo-count-badge">{{ result.repoCount }} repos analyzed</span>
       </div>
 
-      <div class="table-wrap" *ngIf="repositoryRows.length; else noRepos">
+      <div class="table-wrap">
         <table class="repo-table">
           <thead>
             <tr>
               <th>Repository</th>
               <th>Category</th>
               <th>Language</th>
-              <th>Tech</th>
+              <th>Technology</th>
               <th>Stars</th>
               <th>Forks</th>
               <th>Quality</th>
-              <th></th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let repo of repositoryRows">
-              <td class="repo-name-cell">
+              <td class="repo-name-cell" data-label="Repository">
                 <strong>{{ repo.name }}</strong>
                 <small *ngIf="repo.description">{{ repo.description }}</small>
               </td>
-              <td><span class="category-badge">{{ repo.category || 'Uncategorized' }}</span></td>
-              <td>
+              <td data-label="Category"><span class="category-badge">{{ repo.category || 'Uncategorized' }}</span></td>
+              <td data-label="Language">
                 <span class="lang-badge" *ngIf="repo.language && repo.language !== 'Unknown'">{{ repo.language }}</span>
                 <span class="lang-badge lang-badge--unknown" *ngIf="!repo.language || repo.language === 'Unknown'">None</span>
               </td>
-              <td class="tech-cell">
+              <td class="tech-cell" data-label="Technology">
                 <span *ngFor="let tech of repositoryTechnologies(repo)">{{ tech }}</span>
               </td>
-              <td>{{ formatNumber(repo.stars) }}</td>
-              <td>{{ formatNumber(repo.forks) }}</td>
-              <td class="score-cell">
+              <td data-label="Stars">{{ formatNumber(repo.stars) }}</td>
+              <td data-label="Forks">{{ formatNumber(repo.forks) }}</td>
+              <td class="score-cell" data-label="Quality">
                 <div class="score-bar-wrap">
                   <div class="score-bar-bg">
                     <div
@@ -266,9 +255,12 @@
                   </span>
                 </div>
               </td>
-              <td>
-                <a [href]="'https://github.com/' + (viewedUsername || username) + '/' + repo.name"
-                   target="_blank" rel="noopener noreferrer" class="ext-link">
+              <td data-label="Action">
+                <a
+                  [href]="'https://github.com/' + (viewedUsername || username) + '/' + repo.name"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="ext-link">
                   Open
                 </a>
               </td>
@@ -276,19 +268,22 @@
           </tbody>
         </table>
       </div>
-      <ng-template #noRepos>
-        <div class="empty-panel">No repositories available for this profile.</div>
-      </ng-template>
     </section>
+
+    <footer class="analysis-footer" *ngIf="hasAnalysisTimestamp || hasCacheMetadata || result.analysisVersion">
+      <span *ngIf="hasAnalysisTimestamp">Data refreshed {{ lastAnalyzedLabel }}</span>
+      <span *ngIf="hasCacheMetadata">{{ cacheStatusLabel }}</span>
+      <span *ngIf="result.analysisVersion">Analysis version {{ result.analysisVersion }}</span>
+    </footer>
   </ng-container>
 
-  <div class="empty-state" *ngIf="!analysisReady && !isAnalyzing && !errorMessage">
-    <div class="empty-icon">GH</div>
-    <p>Enter a GitHub username above and run an analysis.</p>
+  <div class="empty-state" *ngIf="!analysisReady && !isAnalyzing && !errorMessage && !isInitLoading">
+    <div class="empty-icon" aria-hidden="true">GH</div>
+    <p>Enter a GitHub username to analyze its public repository signals.</p>
   </div>
 
-  <div class="empty-state" *ngIf="isInitLoading || (isAnalyzing && !analysisReady)">
+  <div class="empty-state loading-state" *ngIf="isInitLoading || (isAnalyzing && !analysisReady)">
     <span class="spinner"></span>
-    <p>Analyzing GitHub signals...</p>
+    <p>{{ isInitLoading ? 'Loading your GitHub profile...' : 'Analyzing GitHub signals...' }}</p>
   </div>
 </div>

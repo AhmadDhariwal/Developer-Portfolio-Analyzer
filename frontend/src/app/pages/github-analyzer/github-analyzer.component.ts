@@ -23,8 +23,8 @@ import { AuthService } from '../../shared/services/auth.service';
 Chart.register(...registerables);
 
 const LANG_COLOURS = [
-  '#2563EB', '#16A34A', '#F59E0B', '#DC2626', '#7C3AED',
-  '#0891B2', '#DB2777', '#65A30D', '#EA580C', '#475569'
+  '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6D5DF6',
+  '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#64748B'
 ];
 
 @Component({
@@ -336,8 +336,36 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     return Number(this.result?.githubHealthScore || this.result?.activityScore || 0);
   }
 
+  get hasLanguageData(): boolean {
+    return this.displayLanguages.length > 0;
+  }
+
   get hasActivityData(): boolean {
     return (this.result?.repositoryActivity || []).length > 0;
+  }
+
+  get hasTechnologyData(): boolean {
+    return this.technologyCategories.length > 0;
+  }
+
+  get hasRecruiterInsights(): boolean {
+    return Boolean(this.result?.recruiterInsights?.proofPoints?.length);
+  }
+
+  get hasStrengths(): boolean {
+    return Boolean(this.result?.strengths?.length);
+  }
+
+  get hasWeakAreas(): boolean {
+    return Boolean(this.result?.weakAreas?.length);
+  }
+
+  get hasAnalysisTimestamp(): boolean {
+    return Boolean(this.result?.cache?.cachedAt || this.result?.githubSignals?.analyzedAt);
+  }
+
+  get hasCacheMetadata(): boolean {
+    return Boolean(this.result?.cache);
   }
 
   get hasAiNarrative(): boolean {
