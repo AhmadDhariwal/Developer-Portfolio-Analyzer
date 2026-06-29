@@ -10,12 +10,12 @@ const getGitHubPrompt = (githubData) => {
     Compressed GitHub Signals:
     ${compactSignals}
     
+    Use the supplied facts only as grounding. Generate narrative text only.
     Return a structured JSON object with:
-    1. "developerLevel": "Beginner", "Intermediate", or "Advanced".
-    2. "strengths": Array of 3-6 recruiter-friendly technical strengths.
-    3. "weakAreas": Array of 3-6 specific improvement areas.
-    4. "summary": A concise recruiter-friendly profile summary.
-    5. "explanation": A concise explanation of the deterministic score drivers.
+    1. "strengths": Array of 3-6 recruiter-friendly technical strengths.
+    2. "weakAreas": Array of 3-6 specific improvement areas.
+    3. "summary": A concise recruiter-friendly profile summary.
+    4. "explanation": A concise explanation of the deterministic score drivers.
     
     Ensure the response is ONLY valid JSON.
   `;

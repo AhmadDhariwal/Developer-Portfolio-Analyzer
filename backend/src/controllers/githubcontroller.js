@@ -52,6 +52,7 @@ const analyzeGitHub = async (req, res) => {
             message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
           });
         }
+        if (error.status === 404) return res.status(404).json({ message: msg });
         res.status(500).json({ message: msg || 'Failed to analyze GitHub profile.' });
     }
 };
@@ -143,6 +144,7 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
           });
         }
+        if (error.status === 404) return res.status(404).json({ message: msg });
         res.status(500).json({ message: msg || 'Failed to analyze and save GitHub profile.' });
     }
 };

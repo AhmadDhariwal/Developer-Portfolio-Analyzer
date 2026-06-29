@@ -178,9 +178,15 @@ $radius: 8px;
 }
 
 .error-banner {
+  display: grid;
+  gap: 2px;
   color: #fecaca;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.28);
+
+  span {
+    color: #fca5a5;
+  }
 }
 
 .notice-banner {
@@ -435,6 +441,39 @@ $radius: 8px;
 
 .warning-list li::marker {
   color: $warning;
+}
+
+.narrative-section {
+  margin-bottom: 24px;
+  padding: 20px 24px 0;
+  background: rgba(124, 58, 237, 0.06);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: $radius;
+}
+
+.narrative-header {
+  margin-bottom: 12px;
+
+  h4,
+  p {
+    margin: 0;
+  }
+
+  p {
+    margin-top: 4px;
+    color: $text-secondary;
+    font-size: 0.82rem;
+  }
+}
+
+.narrative-copy {
+  margin: 0 0 10px;
+  color: $text-secondary;
+  line-height: 1.55;
+}
+
+.narrative-grid {
+  margin-top: 16px;
 }
 
 .table-card {

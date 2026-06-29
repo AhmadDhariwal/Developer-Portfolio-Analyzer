@@ -10,7 +10,11 @@ const ANALYSIS_VERSION = 'github-v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 const refreshJobs = new Map();
+const analysisJobs = new Map();
 let swrIndexChecked = false;
+const MAX_ACTIVITY_REPOS = 5;
+const MAX_LANGUAGE_REPOS = 8;
+const MAX_SIGNAL_REPOS = 2;
 const SKILL_GAP_ANALYSIS_VERSION = 'v6-skill-intelligence';
 const SUPPORT_LANGUAGES = new Set([
   'HTML',
@@ -130,7 +134,11 @@ const fetchGitHubUser = async (username) => {
       public_repos: Number(data.public_repos || 0)
     };
   } catch (error) {
-    if (error.response?.status === 404) throw new Error(`GitHub user "${username}" not found.`);
+    if (error.response?.status === 404) {
+      const notFoundError = new Error(`GitHub user "${username}" not found.`);
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
     if (isRateLimitError(error)) throw error;
     throw new Error('Failed to fetch GitHub user data.');
   }
@@ -144,6 +152,11 @@ const fetchGitHubRepos = async (username) => {
     );
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
+    if (error.response?.status === 404) {
+      const notFoundError = new Error(`GitHub user "${username}" not found.`);
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
     if (isRateLimitError(error)) throw error;
     throw new Error('Failed to fetch GitHub repositories.');
   }
@@ -157,7 +170,8 @@ const fetchRepoCommitCount = async (username, repoName) => {
     );
     if (!Array.isArray(response.data)) return 0;
     return response.data.reduce((sum, contributor) => sum + Number(contributor.contributions || 0), 0);
-  } catch {
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
     return 0;
   }
 };
@@ -169,7 +183,8 @@ const fetchRepoLanguages = async (username, repoName) => {
       { timeout: 8000 }
     );
     return response.data || {};
-  } catch {
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
     return {};
   }
 };
@@ -191,7 +206,8 @@ const fetchRepoContent = async (username, repoName, path) => {
     );
     if (Array.isArray(response.data)) return '';
     return decodeContent(response.data);
-  } catch {
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
     return '';
   }
 };
@@ -205,21 +221,14 @@ const fetchRepoCheapSignals = async (username, repos = []) => {
       if (left !== right) return left - right;
       return new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0);
     })
-    .slice(0, 8);
+    .slice(0, MAX_SIGNAL_REPOS);
 
   const manifestPaths = [
     'package.json',
     'requirements.txt',
     'pyproject.toml',
-    'Pipfile',
     'go.mod',
-    'pom.xml',
-    'build.gradle',
-    'Gemfile',
-    'composer.json',
-    'Dockerfile',
-    '.github/workflows/ci.yml',
-    '.github/workflows/main.yml'
+    'Dockerfile'
   ];
 
   const entries = await Promise.all(targetRepos.map(async (repo) => {
@@ -402,7 +411,7 @@ const buildLanguageDistribution = async (username, repos = []) => {
   const candidates = repos
     .filter((repo) => !repo.fork)
     .sort((a, b) => new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0))
-    .slice(0, 24);
+    .slice(0, MAX_LANGUAGE_REPOS);
 
   if (!candidates.length) {
     const fallback = buildFallbackLanguageDistribution(repos);
@@ -594,7 +603,7 @@ const buildAIInsights = async ({ username, userData, repos, languageSummary, tec
 
   const aiResult = await aiService.runAIAnalysis(prompt, fallback);
   return {
-    developerLevel: String(aiResult.developerLevel || fallback.developerLevel),
+    developerLevel,
     strengths: Array.isArray(aiResult.strengths) ? aiResult.strengths.slice(0, 6) : fallback.strengths,
     weakAreas: Array.isArray(aiResult.weakAreas) ? aiResult.weakAreas.slice(0, 6) : fallback.weakAreas,
     summary: String(aiResult.summary || aiResult.explanation || fallback.summary),
@@ -903,7 +912,7 @@ const buildFreshAnalysis = async (username) => {
       return new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0);
     });
 
-  const topActivityRepos = rankedRepos.slice(0, 12);
+  const topActivityRepos = rankedRepos.slice(0, MAX_ACTIVITY_REPOS);
   const [commitCounts, languageData, repoSignals] = await Promise.all([
     Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
     buildLanguageDistribution(username, repos),
@@ -1110,19 +1119,32 @@ const analyzeGitHubProfile = async (username, options = {}) => {
     return withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
   }
 
-  try {
-    const fresh = await buildFreshAnalysis(trimmedUsername);
-    return await saveCacheResult(trimmedUsername, fresh, cacheEntry);
-  } catch (error) {
-    if (cacheEntry?.result && isRateLimitError(error)) {
-      return {
-        ...withCacheMetadata(cacheEntry.result, cacheEntry, 'stale-cache'),
-        rateLimited: true,
-        warning: 'GitHub API rate limit reached. Showing the most recent cached analysis.'
-      };
+  const normalizedUsername = normalizeUsername(trimmedUsername);
+  const inFlight = analysisJobs.get(normalizedUsername);
+  if (inFlight) return inFlight;
+
+  const job = (async () => {
+    try {
+      const fresh = await buildFreshAnalysis(trimmedUsername);
+      return await saveCacheResult(trimmedUsername, fresh, cacheEntry);
+    } catch (error) {
+      if (cacheEntry?.result && isRateLimitError(error)) {
+        return {
+          ...withCacheMetadata(cacheEntry.result, cacheEntry, 'stale-cache'),
+          rateLimited: true,
+          warning: 'GitHub API rate limit reached. Showing the most recent cached analysis.'
+        };
+      }
+      throw error;
+    } finally {
+      if (analysisJobs.get(normalizedUsername) === job) {
+        analysisJobs.delete(normalizedUsername);
+      }
     }
-    throw error;
-  }
+  })();
+
+  analysisJobs.set(normalizedUsername, job);
+  return job;
 };
 
 const refreshGitHubAnalysisInBackground = (username, options = {}) => {

@@ -23,7 +23,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="alexdev"
+          placeholder="GitHub username"
           [(ngModel)]="username"
           [disabled]="isAnalyzing"
           (keyup.enter)="analyze(false)"
@@ -40,7 +40,8 @@
     </div>
 
     <div class="error-banner" *ngIf="errorMessage">
-      {{ errorMessage }}
+      <strong>{{ invalidUsername ? 'Username not found' : 'Analysis failed' }}</strong>
+      <span>{{ errorMessage }}</span>
     </div>
 
     <div class="notice-banner" *ngIf="analysisReady && result && !errorMessage">
@@ -72,8 +73,10 @@
         </div>
         <div>
           <p class="section-kicker">GitHub Health Score</p>
-          <h3>{{ result.recruiterInsights?.headline || result.developerLevel || 'Profile analyzed' }}</h3>
-          <p>{{ result.summary || result.explanation || result.recruiterInsights?.recruiterSummary }}</p>
+          <h3 *ngIf="result.recruiterInsights?.headline || result.developerLevel">
+            {{ result.recruiterInsights?.headline || result.developerLevel }}
+          </h3>
+          <p *ngIf="result.recruiterInsights?.recruiterSummary">{{ result.recruiterInsights?.recruiterSummary }}</p>
         </div>
       </div>
 
@@ -133,9 +136,12 @@
             <p class="chart-subtitle">Commit depth across strongest repositories</p>
           </div>
         </div>
-        <div class="chart-body bar-body">
+        <div class="chart-body bar-body" *ngIf="hasActivityData; else noActivityData">
           <canvas #barCanvas></canvas>
         </div>
+        <ng-template #noActivityData>
+          <div class="empty-panel">No repository activity available.</div>
+        </ng-template>
       </div>
     </section>
 
@@ -170,29 +176,40 @@
       </div>
     </section>
 
-    <section class="content-grid">
-      <div class="info-section">
-        <div class="section-header">
-          <h4>Strengths</h4>
+    <section class="narrative-section" *ngIf="hasAiNarrative">
+      <div class="narrative-header">
+        <div>
+          <h4>AI Narrative</h4>
+          <p>Interpretation of the deterministic GitHub facts shown above</p>
         </div>
-        <ul class="insight-list" *ngIf="result.strengths?.length; else noStrengths">
-          <li *ngFor="let item of result.strengths">{{ item }}</li>
-        </ul>
-        <ng-template #noStrengths>
-          <div class="empty-panel">No strengths returned for this analysis.</div>
-        </ng-template>
       </div>
+      <p class="narrative-copy" *ngIf="result.summary">{{ result.summary }}</p>
+      <p class="narrative-copy" *ngIf="result.explanation">{{ result.explanation }}</p>
 
-      <div class="info-section">
-        <div class="section-header">
-          <h4>Weak Areas</h4>
+      <div class="content-grid narrative-grid">
+        <div class="info-section">
+          <div class="section-header">
+            <h4>Strengths</h4>
+          </div>
+          <ul class="insight-list" *ngIf="result.strengths?.length; else noStrengths">
+            <li *ngFor="let item of result.strengths">{{ item }}</li>
+          </ul>
+          <ng-template #noStrengths>
+            <div class="empty-panel">No AI strengths narrative returned.</div>
+          </ng-template>
         </div>
-        <ul class="insight-list warning-list" *ngIf="result.weakAreas?.length; else noWeakAreas">
-          <li *ngFor="let item of result.weakAreas">{{ item }}</li>
-        </ul>
-        <ng-template #noWeakAreas>
-          <div class="empty-panel">No major weak areas detected.</div>
-        </ng-template>
+
+        <div class="info-section">
+          <div class="section-header">
+            <h4>Weak Areas</h4>
+          </div>
+          <ul class="insight-list warning-list" *ngIf="result.weakAreas?.length; else noWeakAreas">
+            <li *ngFor="let item of result.weakAreas">{{ item }}</li>
+          </ul>
+          <ng-template #noWeakAreas>
+            <div class="empty-panel">No AI weak-area narrative returned.</div>
+          </ng-template>
+        </div>
       </div>
     </section>
 
@@ -200,7 +217,7 @@
       <div class="table-header">
         <div>
           <h4 class="chart-title">Repository Quality</h4>
-          <p class="chart-subtitle">Quality combines README, description, topics, activity, stars, forks, size, and tech signals</p>
+          <p class="chart-subtitle">Sorted highest quality first; score combines README, description, topics, activity, stars, forks, size, and tech signals</p>
         </div>
         <span class="repo-count-badge">{{ result.repoCount }} repos analyzed</span>
       </div>
@@ -225,13 +242,13 @@
                 <strong>{{ repo.name }}</strong>
                 <small *ngIf="repo.description">{{ repo.description }}</small>
               </td>
-              <td><span class="category-badge">{{ repo.category || 'Experimental' }}</span></td>
+              <td><span class="category-badge">{{ repo.category || 'Uncategorized' }}</span></td>
               <td>
-                <span class="lang-badge" *ngIf="repo.language !== 'Unknown'">{{ repo.language }}</span>
-                <span class="lang-badge lang-badge--unknown" *ngIf="repo.language === 'Unknown'">None</span>
+                <span class="lang-badge" *ngIf="repo.language && repo.language !== 'Unknown'">{{ repo.language }}</span>
+                <span class="lang-badge lang-badge--unknown" *ngIf="!repo.language || repo.language === 'Unknown'">None</span>
               </td>
               <td class="tech-cell">
-                <span *ngFor="let tech of (repo.technologies || []).slice(0, 3)">{{ tech }}</span>
+                <span *ngFor="let tech of repositoryTechnologies(repo)">{{ tech }}</span>
               </td>
               <td>{{ formatNumber(repo.stars) }}</td>
               <td>{{ formatNumber(repo.forks) }}</td>
@@ -240,12 +257,12 @@
                   <div class="score-bar-bg">
                     <div
                       class="score-bar-fill"
-                      [ngClass]="getScoreClass(repo.qualityScore || repo.activityScore)"
-                      [style.width]="getScoreBarWidth(repo.qualityScore || repo.activityScore)">
+                      [ngClass]="getScoreClass(repositoryScore(repo))"
+                      [style.width]="getScoreBarWidth(repositoryScore(repo))">
                     </div>
                   </div>
-                  <span class="score-num" [ngClass]="getScoreClass(repo.qualityScore || repo.activityScore)">
-                    {{ repo.qualityScore || repo.activityScore }}
+                  <span class="score-num" [ngClass]="getScoreClass(repositoryScore(repo))">
+                    {{ repositoryScore(repo) }}
                   </span>
                 </div>
               </td>

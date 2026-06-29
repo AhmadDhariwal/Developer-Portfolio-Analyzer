@@ -44,6 +44,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   isAnalyzing = false;
   analysisReady = false;
   errorMessage = '';
+  invalidUsername = false;
   isInitLoading = true;
   isTemporaryView = false;
   result: GitHubAnalysisResult | null = null;
@@ -53,9 +54,9 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   private donutChart: Chart | null = null;
   private barChart: Chart | null = null;
   private viewReady = false;
+  private destroyed = false;
   private pendingLangs: LanguageDistribution[] | null = null;
   private pendingActivity: RepositoryActivity[] | null = null;
-  private activeRequestKey = '';
 
   constructor(
     private readonly github: GithubService,
@@ -75,11 +76,13 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.github.getActiveUsername().subscribe({
       next: (data) => {
+        if (this.destroyed) return;
         this.applyDefaultUsername(data.username || '');
         this.isInitLoading = false;
         if (this.username) this.analyze(false);
       },
       error: () => {
+        if (this.destroyed) return;
         this.isInitLoading = false;
       }
     });
@@ -103,6 +106,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    this.viewReady = false;
     this.destroyCharts();
   }
 
@@ -113,20 +118,14 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     const normalizedDefault = this.defaultUsername.trim().toLowerCase();
     const normalizedCurrent = trimmed.toLowerCase();
     const isDefaultProfileAnalysis = Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
-    const mode: 'public' | 'save' = isDefaultProfileAnalysis ? 'save' : 'public';
-    const requestKey = `${mode}:${normalizedCurrent}:${forceRefresh ? 'refresh' : 'normal'}`;
 
-    if (this.isAnalyzing && this.activeRequestKey === requestKey) return;
-
-    const cached = !forceRefresh ? this.github.getCachedAnalysis(trimmed, mode) : null;
-    if (cached) {
-      this.applyResult(cached, trimmed, isDefaultProfileAnalysis);
-    }
+    if (this.isAnalyzing) return;
 
     this.isAnalyzing = true;
-    this.activeRequestKey = requestKey;
     this.errorMessage = '';
-    if (!cached) {
+    this.invalidUsername = false;
+    const keepCurrentResult = forceRefresh && this.viewedUsername.toLowerCase() === normalizedCurrent;
+    if (!keepCurrentResult) {
       this.analysisReady = false;
       this.result = null;
       this.destroyCharts();
@@ -138,14 +137,15 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
     request$.subscribe({
       next: (data) => {
+        if (this.destroyed) return;
         this.applyResult(data, trimmed, isDefaultProfileAnalysis);
         this.isAnalyzing = false;
-        this.activeRequestKey = '';
       },
       error: (err) => {
+        if (this.destroyed) return;
         this.isAnalyzing = false;
-        this.activeRequestKey = '';
         this.analysisReady = Boolean(this.result);
+        this.invalidUsername = err.status === 404 || err.error?.status === 404;
         this.errorMessage = err.error?.message ?? 'Failed to analyze GitHub profile. Please check the username and try again.';
         this.cdr.detectChanges();
       }
@@ -167,27 +167,25 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.viewedUsername = username;
     this.isTemporaryView = !isDefaultProfileAnalysis;
     this.analysisReady = true;
-    this.lastAnalyzedLabel = this.formatDateTime(data.cache?.cachedAt || data.githubSignals?.analyzedAt || new Date().toISOString());
-    this.cacheStatusLabel = data.cache?.hit
-      ? data.cache.source === 'stale-cache' ? 'Cached fallback' : 'Cached'
-      : 'Fresh';
+    this.lastAnalyzedLabel = this.formatDateTime(data.cache?.cachedAt || data.githubSignals?.analyzedAt);
+    this.cacheStatusLabel = this.getCacheStatusLabel(data);
 
-    this.pendingLangs = this.displayLanguages;
-    this.pendingActivity = data.repositoryActivity ?? [];
+    this.pendingLangs = this.displayLanguages.length ? this.displayLanguages : null;
+    this.pendingActivity = data.repositoryActivity?.length ? data.repositoryActivity : null;
     this.cdr.detectChanges();
-    setTimeout(() => this.flushPendingCharts(), 0);
+    setTimeout(() => {
+      if (!this.destroyed) this.flushPendingCharts();
+    }, 0);
   }
 
   private flushPendingCharts(): void {
     if (!this.viewReady || !this.analysisReady || !this.result) return;
-    if (!this.donutCanvasRef?.nativeElement || !this.barCanvasRef?.nativeElement) return;
-
-    if (this.pendingLangs) {
+    if (this.pendingLangs && this.donutCanvasRef?.nativeElement) {
       this.buildDonutChart(this.pendingLangs);
       this.pendingLangs = null;
     }
 
-    if (this.pendingActivity) {
+    if (this.pendingActivity && this.barCanvasRef?.nativeElement) {
       this.buildBarChart(this.pendingActivity);
       this.pendingActivity = null;
     }
@@ -197,15 +195,14 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     const ctx = this.donutCanvasRef?.nativeElement;
     if (!ctx) return;
     this.donutChart?.destroy();
-
-    const safeLangs = langs.length ? langs : [{ language: 'No data', percentage: 100 }];
+    if (!langs.length) return;
     const cfg: ChartConfiguration<'doughnut'> = {
       type: 'doughnut',
       data: {
-        labels: safeLangs.map((lang) => lang.language),
+        labels: langs.map((lang) => lang.language),
         datasets: [{
-          data: safeLangs.map((lang) => lang.percentage),
-          backgroundColor: safeLangs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+          data: langs.map((lang) => lang.percentage),
+          backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
           borderColor: '#111827',
           borderWidth: 3,
           hoverOffset: 6
@@ -234,16 +231,16 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.barChart?.destroy();
 
     const top = [...(activity || [])].sort((a, b) => b.commits - a.commits).slice(0, 7);
-    const safe = top.length ? top : [{ repo: 'No commit data', commits: 0 }];
+    if (!top.length) return;
     const cfg: ChartConfiguration<'bar'> = {
       type: 'bar',
       data: {
-        labels: safe.map((repo) => repo.repo),
+        labels: top.map((repo) => repo.repo),
         datasets: [{
           label: 'Commits',
-          data: safe.map((repo) => repo.commits),
-          backgroundColor: safe.map((_, i) => `${LANG_COLOURS[i % LANG_COLOURS.length]}CC`),
-          borderColor: safe.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+          data: top.map((repo) => repo.commits),
+          backgroundColor: top.map((_, i) => `${LANG_COLOURS[i % LANG_COLOURS.length]}CC`),
+          borderColor: top.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
           borderWidth: 1,
           borderRadius: 4,
           barThickness: 16
@@ -289,35 +286,70 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
   get displayLanguages(): LanguageDistribution[] {
     const main = this.result?.mainLanguageDistribution || [];
-    return main.length ? main : (this.result?.languageDistribution || []);
+    return this.sortedLanguages(main.length ? main : (this.result?.languageDistribution || []));
   }
 
   get supportLanguages(): LanguageDistribution[] {
-    return this.result?.supportLanguageDistribution || [];
-  }
-
-  get topTechnologies(): TechnologySignal[] {
-    return (this.result?.technologies || []).slice(0, 16);
+    return this.sortedLanguages(this.result?.supportLanguageDistribution || []);
   }
 
   get technologyCategories(): Array<{ category: string; items: TechnologySignal[] }> {
     const categories = this.result?.technologyCategories || {};
-    return Object.keys(categories)
-      .map((category) => ({ category, items: (categories[category] || []).slice(0, 6) }))
-      .filter((group) => group.items.length > 0);
+    const signals = [
+      ...(this.result?.technologies || []),
+      ...Object.entries(categories).flatMap(([category, items]) =>
+        (items || []).map((item) => ({ ...item, category: item.category || category })))
+    ];
+    const deduped = new Map<string, TechnologySignal>();
+    signals.forEach((item) => {
+      const name = String(item?.name || '').trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+      const existing = deduped.get(key);
+      if (!existing || Number(item.confidence || 0) > Number(existing.confidence || 0)) {
+        deduped.set(key, { ...item, name, category: item.category || 'Other' });
+      }
+    });
+
+    const grouped = new Map<string, TechnologySignal[]>();
+    deduped.forEach((item) => {
+      const category = item.category || 'Other';
+      grouped.set(category, [...(grouped.get(category) || []), item]);
+    });
+    return Array.from(grouped.entries())
+      .map(([category, items]) => ({
+        category,
+        items: items.sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0) || a.name.localeCompare(b.name))
+      }))
+      .sort((a, b) => a.category.localeCompare(b.category));
   }
 
   get repositoryRows(): Repository[] {
     return [...(this.result?.repositories || [])]
-      .sort((a, b) => Number(b.qualityScore || b.activityScore || 0) - Number(a.qualityScore || a.activityScore || 0));
+      .sort((a, b) =>
+        this.repositoryScore(b) - this.repositoryScore(a) ||
+        Number(b.stars || 0) - Number(a.stars || 0) ||
+        String(a.name || '').localeCompare(String(b.name || '')));
   }
 
   get healthScore(): number {
     return Number(this.result?.githubHealthScore || this.result?.activityScore || 0);
   }
 
-  get hasChartData(): boolean {
-    return this.displayLanguages.length > 0 || (this.result?.repositoryActivity || []).length > 0;
+  get hasActivityData(): boolean {
+    return (this.result?.repositoryActivity || []).length > 0;
+  }
+
+  get hasAiNarrative(): boolean {
+    return Boolean(this.result?.summary || this.result?.explanation || this.result?.strengths?.length || this.result?.weakAreas?.length);
+  }
+
+  repositoryScore(repo: Repository): number {
+    return Number(repo.qualityScore ?? repo.activityScore ?? 0);
+  }
+
+  repositoryTechnologies(repo: Repository): string[] {
+    return Array.from(new Set((repo.technologies || []).map((tech) => String(tech || '').trim()).filter(Boolean))).slice(0, 3);
   }
 
   getLangColour(index: number): string {
@@ -351,5 +383,21 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  private sortedLanguages(languages: LanguageDistribution[]): LanguageDistribution[] {
+    return [...languages]
+      .filter((item) => Boolean(item?.language) && Number.isFinite(Number(item.percentage)))
+      .sort((a, b) => Number(b.percentage) - Number(a.percentage) || a.language.localeCompare(b.language));
+  }
+
+  private getCacheStatusLabel(data: GitHubAnalysisResult): string {
+    switch (data.cache?.source) {
+      case 'frontend-cache': return 'Browser cache';
+      case 'cache': return 'Backend cache';
+      case 'stale-cache': return 'Cached fallback';
+      case 'fresh': return 'Fresh analysis';
+      default: return data.cache?.hit ? 'Cached' : 'Fresh analysis';
+    }
   }
 }

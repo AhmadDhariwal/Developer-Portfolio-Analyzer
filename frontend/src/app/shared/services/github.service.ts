@@ -114,7 +114,7 @@ export class GithubService {
   getCachedAnalysis(username: string, mode: 'public' | 'save'): GitHubAnalysisResult | null {
     const entry = this.memoryCache.get(this.cacheKey(username, mode));
     if (!entry || entry.expiresAt <= Date.now()) return null;
-    return entry.result;
+    return this.withFrontendCacheStatus(entry.result);
   }
 
   analyzeProfile(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
@@ -125,11 +125,13 @@ export class GithubService {
   }
 
   analyzeAndSave(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
-    this.frontendCache.clearCurrentSignalHash();
-    return this.cachedRequest('save', username, forceRefresh, () => this.http.post<GitHubAnalysisResult>(
-      `${this.baseUrl}/github/analyze-save`,
-      { username, forceRefresh }
-    ));
+    return this.cachedRequest('save', username, forceRefresh, () => {
+      this.frontendCache.clearCurrentSignalHash();
+      return this.http.post<GitHubAnalysisResult>(
+        `${this.baseUrl}/github/analyze-save`,
+        { username, forceRefresh }
+      );
+    });
   }
 
   getActiveUsername(): Observable<ActiveUsername> {
@@ -144,25 +146,44 @@ export class GithubService {
   ): Observable<GitHubAnalysisResult> {
     const key = this.cacheKey(username, mode);
     const cached = !forceRefresh ? this.memoryCache.get(key) : null;
-    if (cached && cached.expiresAt > Date.now()) return of(cached.result);
+    if (cached && cached.expiresAt > Date.now()) return of(this.withFrontendCacheStatus(cached.result));
 
-    const inflightKey = `${key}:${forceRefresh ? 'refresh' : 'normal'}`;
-    const existing = this.inflight.get(inflightKey);
+    const existing = this.inflight.get(key);
     if (existing) return existing;
 
     const request$ = requestFactory().pipe(
       tap((result) => {
         this.memoryCache.set(key, {
           result,
-          expiresAt: Date.now() + this.ttlMs
+          expiresAt: this.getCacheExpiry(result)
         });
       }),
-      finalize(() => this.inflight.delete(inflightKey)),
+      finalize(() => this.inflight.delete(key)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-    this.inflight.set(inflightKey, request$);
+    this.inflight.set(key, request$);
     return request$;
+  }
+
+  private getCacheExpiry(result: GitHubAnalysisResult): number {
+    const now = Date.now();
+    const backendExpiry = result.cache?.expiresAt ? new Date(result.cache.expiresAt).getTime() : 0;
+    if (Number.isFinite(backendExpiry) && backendExpiry > now) {
+      return Math.min(backendExpiry, now + this.ttlMs);
+    }
+    return result.cache?.source === 'stale-cache' ? now : now + this.ttlMs;
+  }
+
+  private withFrontendCacheStatus(result: GitHubAnalysisResult): GitHubAnalysisResult {
+    return {
+      ...result,
+      cache: {
+        ...result.cache,
+        source: 'frontend-cache',
+        hit: true
+      }
+    };
   }
 
   private cacheKey(username: string, mode: 'public' | 'save'): string {
