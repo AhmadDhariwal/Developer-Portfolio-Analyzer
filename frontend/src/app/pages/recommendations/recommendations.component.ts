@@ -33,15 +33,7 @@ type AdvisorSection =
   | 'Portfolio Optimization'
   | 'Recommended Projects'
   | 'Career Timeline';
-type LoadingState = 'empty' | 'loading' | 'refreshing' | 'cache-hit' | 'error' | 'ready';
-const REQUIRED_CARD_CATEGORIES = [
-  'Learning Recommendations',
-  'Interview Recommendations',
-  'Job Readiness Recommendations',
-  'Portfolio Recommendations',
-  'Resume Recommendations',
-  'Career Growth Recommendations'
-];
+type LoadingState = 'empty' | 'loading' | 'refreshing' | 'cache-hit' | 'stale' | 'error' | 'ready';
 
 @Component({
   selector: 'app-recommendations',
@@ -62,6 +54,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   result: RecommendationsResult | null = null;
   private readonly subscriptions = new Subscription();
   private lastProfileKey = '';
+  private activeRequest?: Subscription;
 
   activeSection: AdvisorSection = 'Career Overview';
   readonly sections: AdvisorSection[] = [
@@ -88,16 +81,21 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
         distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
       ).subscribe(() => {
         const nextKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
         if (nextKey === this.lastProfileKey) return;
+        const hadProfile = Boolean(this.lastProfileKey);
         this.lastProfileKey = nextKey;
         const activeUsername = this.getStoredActiveUsername();
         if (activeUsername) this.applyDefaultUsername(activeUsername);
-        if (this.username && this.result) this.analyze(false);
+        if (hadProfile && this.username) {
+          this.frontendCache.clear({ module: 'recommendations', canonicalSignalKey: true });
+          this.analyze(false, true);
+        }
       })
     );
 
@@ -134,15 +132,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.activeRequest?.unsubscribe();
     this.subscriptions.unsubscribe();
   }
 
-  analyze(forceRefresh = false): void {
+  analyze(forceRefresh = false, profileChanged = false): void {
     const user = this.username.trim();
-    if (!user || this.isLoading) return;
+    if (!user || (this.isLoading && !profileChanged)) return;
+    if (profileChanged) this.activeRequest?.unsubscribe();
 
     const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
-    this.lastProfileKey = `${careerStack}:${experienceLevel}`;
+    this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
     const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
 
     if (!isTemporary && !forceRefresh) {
@@ -186,7 +186,16 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     else this.result = null;
     this.cdr.detectChanges();
 
-    this.recService.getRecommendations(user, careerStack, experienceLevel, undefined, undefined, isTemporary, forceRefresh).subscribe({
+    this.activeRequest = this.recService.getRecommendations(
+      user,
+      careerStack,
+      experienceLevel,
+      undefined,
+      undefined,
+      isTemporary,
+      forceRefresh,
+      this.lastProfileKey
+    ).subscribe({
       next: (data) => {
         const normalized = this.normalizeResult(data, user, careerStack, experienceLevel);
         this.applyResult(normalized, user, careerStack, experienceLevel, isTemporary, normalized.fromCache ? 'cache-hit' : 'ready');
@@ -294,13 +303,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get recommendedCareerPath(): string {
     return this.result?.careerPaths?.[0]?.title
       || this.careerCards[0]?.title
-      || `${this.currentCareerStack} Engineer`;
+      || '';
   }
 
   get priorityActions(): RecommendationCard[] {
     const roadmap = this.result?.roadmap;
-    if (roadmap?.immediateActions?.length) return roadmap.immediateActions;
-    return this.allCards.slice(0, 6);
+    return this.sortCards(roadmap?.immediateActions?.length ? roadmap.immediateActions : this.allCards).slice(0, 6);
   }
 
   get allCards(): RecommendationCard[] {
@@ -338,6 +346,20 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return this.result?.roadmap?.timeline || [];
   }
 
+  get availableSections(): AdvisorSection[] {
+    if (!this.result) return [];
+    const available = new Set<AdvisorSection>(['Career Overview']);
+    if (this.priorityActions.length) available.add('Career Growth Priorities');
+    if (this.learningPlanCards.length || this.recommendedNextSkills.length) available.add('Learning Roadmap');
+    if (this.interviewActionCards.length || this.result.interviewReadinessActions?.length) available.add('Interview Readiness');
+    if (this.jobsActionCards.length || this.topDemandedSkills.length || this.result.careerPaths.length) available.add('Job Market Readiness');
+    if (this.resumeActionCards.length || this.result.resumeRecommendations?.length) available.add('Resume Optimization');
+    if (this.portfolioActionCards.length || this.result.portfolioRecommendations?.length) available.add('Portfolio Optimization');
+    if (this.result.projects.length) available.add('Recommended Projects');
+    if (this.roadmapTimeline.length) available.add('Career Timeline');
+    return this.sections.filter((section) => available.has(section));
+  }
+
   get overviewActionMetrics(): Array<{ label: string; value: string; hint: string; target: AdvisorSection }> {
     const current = this.currentReadiness;
     const target = this.targetReadiness;
@@ -357,27 +379,25 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   get executiveHeroMetrics(): Array<{ label: string; value: string; hint: string; target: AdvisorSection; featured?: boolean }> {
-    const gap = Math.max(0, this.targetReadiness - this.currentReadiness);
     const immediate = this.priorityActions[0];
-    return [
+    const metrics: Array<{ label: string; value: string; hint: string; target: AdvisorSection; featured?: boolean }> = [
       { label: 'Readiness Score', value: `${this.currentReadiness}%`, hint: 'Current composite career readiness.', target: 'Career Growth Priorities', featured: true },
-      { label: 'Target Score', value: `${this.targetReadiness}%`, hint: 'Near-term target band.', target: 'Career Timeline', featured: true },
-      { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Points to close.' : 'At target band.', target: 'Career Growth Priorities', featured: true },
       { label: 'Priority Focus Area', value: this.highestPrioritySkill, hint: 'Primary area to improve next.', target: 'Job Market Readiness' },
-      { label: 'Timeline Estimate', value: this.estimatedCompletionTime, hint: 'Expected execution window.', target: 'Career Timeline' },
-      { label: 'Next Best Action', value: immediate?.title || 'Review priority actions', hint: immediate?.estimatedEffort || 'Start with the top card.', target: 'Career Growth Priorities' }
+      { label: 'Next Best Action', value: immediate?.title || '', hint: immediate?.estimatedEffort || '', target: 'Career Growth Priorities' },
+      { label: 'Last Updated', value: this.analysisLastUpdatedLabel, hint: this.cacheStateLabel, target: 'Career Overview' }
     ];
+    return metrics.filter((metric) => metric.value && metric.value !== '0%');
   }
 
   get careerGoalLabel(): string {
     return this.result?.signalsUsed?.careerProfile?.careerGoal
       || this.result?.analysisBasedOn?.careerStack
       || this.currentCareerStack
-      || 'Career growth';
+      || '';
   }
 
   get highestPrioritySkill(): string {
-    return this.topMissingSkills[0] || this.topDemandedSkills[0] || this.getSprintFocus() || 'Portfolio proof';
+    return this.topMissingSkills[0] || this.topDemandedSkills[0] || this.getSprintFocus() || '';
   }
 
   get executiveInsights(): Array<{ label: string; tone: string; items: string[] }> {
@@ -397,21 +417,22 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       this.result?.signalsUsed?.jobsDemand?.sampledJobs ? `${this.result.signalsUsed.jobsDemand.sampledJobs} jobs sampled` : ''
     ].filter(Boolean).slice(0, 3);
     return [
-      { label: 'Strengths', tone: 'strength', items: strengths.length ? strengths : ['Reusable GitHub, resume, and profile signals are available.'] },
-      { label: 'Risks', tone: 'risk', items: risks.length ? risks : ['No critical blocker detected; keep evidence fresh.'] },
-      { label: 'Opportunities', tone: 'opportunity', items: opportunities.length ? opportunities : [this.recommendedCareerPath] }
-    ];
+      { label: 'Strengths', tone: 'strength', items: strengths },
+      { label: 'Risks', tone: 'risk', items: risks },
+      { label: 'Opportunities', tone: 'opportunity', items: opportunities }
+    ].filter((group) => group.items.length);
   }
 
   get readinessCenterMetrics(): Array<{ label: string; score: number; hint: string; target: AdvisorSection }> {
     const scores = this.result?.recommendationScores;
-    return [
+    const metrics: Array<{ label: string; score: number; hint: string; target: AdvisorSection }> = [
       { label: 'Resume', score: Number(this.result?.signalsUsed?.resume?.atsScore || scores?.readinessScore || 0), hint: this.resumeStatusLabel, target: 'Resume Optimization' },
       { label: 'Portfolio', score: Number(this.result?.signalsUsed?.portfolio?.completenessScore || scores?.portfolioScore || 0), hint: `${this.result?.signalsUsed?.portfolio?.projectCount || 0} projects, ${this.result?.signalsUsed?.portfolio?.liveLinkCount || 0} live links`, target: 'Portfolio Optimization' },
       { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Interview Readiness' },
       { label: 'Jobs', score: Number(scores?.marketReadinessScore || 0), hint: `${this.jobsReadinessMetrics[0]?.value || 0} matched jobs`, target: 'Job Market Readiness' },
       { label: 'Learning', score: Number(scores?.learningScore || this.result?.signalsUsed?.skillGap?.coverage || 0), hint: this.recommendedNextSkills.slice(0, 2).join(', ') || this.getSprintFocus(), target: 'Learning Roadmap' }
     ];
+    return metrics.filter((metric) => metric.score > 0);
   }
 
   get opportunityCenterMetrics(): Array<{ label: string; value: string; hint: string }> {
@@ -421,8 +442,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       { label: 'Matched jobs', value: String(sampled), hint: 'Jobs Hub and career path signal volume.' },
       { label: 'Top demanded skills', value: this.topDemandedSkills.slice(0, 3).join(', ') || this.highestPrioritySkill, hint: 'Most useful skills to reinforce now.' },
       { label: 'Strongest opportunities', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: `${strong} paths at 75% match or better.` },
-      { label: 'Growth potential', value: this.estimatedGrowthLabel, hint: 'Projected lift after top roadmap actions.' }
-    ];
+    ].filter((metric) => metric.value && metric.value !== '0');
   }
 
   get estimatedGrowthLabel(): string {
@@ -439,17 +459,11 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   get priorityLevel(): string {
-    const gap = this.targetReadiness - this.currentReadiness;
-    if (gap >= 20 || this.priorityActions.some((card) => String(card.priority).toLowerCase().includes('high'))) return 'High';
-    if (gap >= 10) return 'Medium';
-    return 'Focused';
+    return String(this.priorityActions[0]?.priority || '');
   }
 
   get estimatedCompletionTime(): string {
-    const effortText = this.priorityActions.slice(0, 4).map((card) => String(card.estimatedEffort || '')).join(' ').toLowerCase();
-    if (effortText.includes('month')) return '6-8 weeks';
-    if (effortText.includes('week')) return '4-6 weeks';
-    return '2-4 weeks';
+    return String(this.priorityActions[0]?.estimatedEffort || this.result?.projects?.[0]?.estimatedWeeks || '');
   }
 
   get topCareerOpportunities(): string[] {
@@ -506,10 +520,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get interviewTopics(): string[] {
     return [
       ...this.topMissingSkills,
-      ...(this.result?.signalsUsed?.resume?.weaknesses || []),
-      'project tradeoffs',
-      'debugging stories',
-      'system design fundamentals'
+      ...(this.result?.signalsUsed?.resume?.weaknesses || [])
     ].filter((topic, index, list) => topic && list.findIndex((item) => item.toLowerCase() === topic.toLowerCase()) === index).slice(0, 6);
   }
 
@@ -530,7 +541,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     if ((portfolio?.projectCount || 0) < 3) missing.push('3 polished projects');
     if (!this.signalProofList || this.signalProofList.includes('No strong')) missing.push('external proof');
     if (this.topMissingSkills.length) missing.push('skill-gap project proof');
-    return missing.length ? missing : ['case study depth'];
+    return missing;
   }
 
   get resumeMetrics(): Array<{ label: string; value: string; hint: string }> {
@@ -551,11 +562,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   get resumeAtsImprovements(): string[] {
-    return [
-      ...this.topDemandedSkills.slice(0, 3).map((skill) => `add ${skill} where proven`),
-      'quantify project impact',
-      'mirror target role keywords'
-    ].slice(0, 5);
+    return (this.result?.resumeRecommendations || []).slice(0, 5);
   }
 
   get learningMetrics(): Array<{ label: string; value: string; hint: string }> {
@@ -568,49 +575,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   get roadmapWeeks(): Array<{ label: string; milestone: string; actions: string[]; progress: number; sprint: string }> {
-    const cards = this.dedupeCards([...this.priorityActions, ...this.allCards]);
-    const fallbackActions = [
-      'Audit readiness gaps',
-      'Ship proof for one missing skill',
-      'Improve resume keyword alignment',
-      'Add a portfolio case study',
-      'Practice interview stories',
-      'Apply to matched jobs'
-    ];
-    return Array.from({ length: 6 }).map((_, index) => {
-      const card = cards[index] || cards[index % Math.max(cards.length, 1)];
-      const action = card?.title || fallbackActions[index];
-      return {
-        label: `Week ${index + 1}`,
-        milestone: index === 0 ? 'Stabilize the plan' : index === 5 ? 'Launch job-ready profile' : `Advance readiness by ${Math.max(4, 10 - index)} points`,
-        progress: Math.min(100, Math.max(12, Math.round(((index + 1) / 6) * 100))),
-        sprint: index === 0 ? this.getSprintFocus() : `Sprint task: ${action}`,
-        actions: [
-          action,
-          card?.reason || fallbackActions[index],
-          index < this.recommendedNextSkills.length ? `Use ${this.recommendedNextSkills[index]} as the proof skill` : 'Document the result and next decision'
-        ].filter(Boolean).slice(0, 3)
-      };
-    });
+    return this.roadmapTimeline.map((phase) => ({
+      label: phase.label,
+      milestone: phase.items[0] || '',
+      actions: phase.items,
+      progress: 0,
+      sprint: ''
+    }));
   }
 
   get learningPlanCards(): RecommendationCard[] {
-    return this.dedupeCards([
-      ...this.learningCards,
-      ...(this.result?.technologies || []).slice(0, 3).map((tech, index) => this.makeFallbackCard({
-        id: `learning_tech_${index}`,
-        category: 'Learning Recommendations',
-        title: `Build confidence with ${tech.name}`,
-        description: tech.description,
-        priority: tech.priorityRaw || 'Medium',
-        evidence: tech.evidence || [`${tech.jobDemand}% market demand`],
-        sources: tech.sourceSignalsUsed || ['jobMarketSignals', 'skillGapSignals'],
-        impact: tech.estimatedImpact || tech.jobDemand,
-        effort: tech.estimatedEffort || '1-2 weeks',
-        actionUrl: '/app/courses',
-        actionLabel: 'Open Learning Hub'
-      }))
-    ]);
+    return this.learningCards;
   }
 
   get portfolioActionCards(): RecommendationCard[] {
@@ -634,12 +609,21 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   get cacheStateLabel(): string {
+    if (this.isCachedResultStale) return 'stale';
     if (this.loadingState === 'cache-hit' || this.result?.fromFrontendCache || this.result?.fromCache) return 'cache-hit';
     if (this.loadingState === 'refreshing') return 'refreshing';
     if (this.loadingState === 'loading') return 'loading';
     if (this.loadingState === 'error') return 'error';
     if (!this.result) return 'empty';
     return 'ready';
+  }
+
+  get isCachedResultStale(): boolean {
+    const cachedAt = this.result?.cacheMetadata?.cachedAt;
+    const ttlHours = Number(this.result?.cacheMetadata?.ttlHours || 0);
+    if (!cachedAt || !ttlHours) return false;
+    const timestamp = new Date(cachedAt).getTime();
+    return Number.isFinite(timestamp) && Date.now() - timestamp > ttlHours * 60 * 60 * 1000;
   }
 
   get signalProviderList(): string {
@@ -649,7 +633,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   get signalProofList(): string {
     const proof = this.result?.signalsUsed?.integrations?.strongestProof || [];
-    return proof.length ? proof.join(', ') : 'No strong external proof yet';
+    return proof.join(', ');
   }
 
   get weeklyTrendLabel(): string {
@@ -658,14 +642,18 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   getSprintFocus(): string {
-    return this.result?.signalsUsed?.careerSprint?.activeLearningFocus || 'No active sprint focus';
+    return this.result?.signalsUsed?.careerSprint?.activeLearningFocus || '';
   }
 
   get analysisLastUpdatedLabel(): string {
     const value = this.result?.analysisBasedOn?.lastAnalyzedAt || this.result?.cacheMetadata?.cachedAt;
-    if (!value) return 'Not available';
+    if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? 'Not available' : date.toLocaleString();
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+  }
+
+  formatSourceLabel(source: string): string {
+    return String(source || '').replace(/signals?$/i, '').replace(/([a-z])([A-Z])/g, '$1 $2').trim();
   }
 
   get resumeStatusLabel(): string {
@@ -679,15 +667,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   getProjectStartUrl(project: RecommendedProject): string {
     const url = String(project?.startUrl || '').trim();
     if (/^https?:\/\//i.test(url)) return url;
-    const query = `${project?.title || 'software project'} tutorial`;
-    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    return '';
   }
 
   getCareerExploreUrl(path: CareerPath): string {
     const url = String(path?.exploreUrl || '').trim();
     if (/^https?:\/\//i.test(url)) return url;
-    const query = `${path?.title || 'software engineer'} career path`;
-    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    return '';
   }
 
   runAction(card: RecommendationCard): void {
@@ -785,6 +771,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     state: LoadingState
   ): void {
     this.result = this.normalizeResult(data, user, careerStack, experienceLevel);
+    if (!this.availableSections.includes(this.activeSection)) this.activeSection = 'Career Overview';
     this.viewedUsername = user;
     this.isTemporaryView = isTemporary;
     this.isLoading = false;
@@ -799,9 +786,9 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       username: data?.username || user,
       careerStack: data?.careerStack || careerStack,
       experienceLevel: data?.experienceLevel || experienceLevel,
-      projects: Array.isArray(data?.projects) ? data.projects : [],
-      technologies: Array.isArray(data?.technologies) ? data.technologies : [],
-      careerPaths: Array.isArray(data?.careerPaths) ? data.careerPaths : [],
+      projects: (Array.isArray(data?.projects) ? data.projects : []).slice().sort((a, b) => this.valueRank(b) - this.valueRank(a)),
+      technologies: (Array.isArray(data?.technologies) ? data.technologies : []).slice().sort((a, b) => this.valueRank(b) - this.valueRank(a)),
+      careerPaths: (Array.isArray(data?.careerPaths) ? data.careerPaths : []).slice().sort((a, b) => this.valueRank(b) - this.valueRank(a)),
       analysisSummary: typeof data?.analysisSummary === 'string' ? data.analysisSummary : '',
       portfolioRecommendations: Array.isArray(data?.portfolioRecommendations) ? data.portfolioRecommendations : [],
       resumeRecommendations: Array.isArray(data?.resumeRecommendations) ? data.resumeRecommendations : [],
@@ -847,60 +834,37 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   private normalizeStructured(raw: Record<string, RecommendationCard[]> | undefined, result: Partial<RecommendationsResult>): Record<string, RecommendationCard[]> {
     const out: Record<string, RecommendationCard[]> = {};
     Object.entries(raw || {}).forEach(([category, cards]) => {
-      out[category] = Array.isArray(cards) ? cards.map((card, index) => ({
+      out[category] = Array.isArray(cards) ? this.sortCards(cards.map((card, index) => ({
         id: card.id || `${category}_${index}`,
         category: card.category || category,
         title: card.title || '',
         description: card.description || '',
-        priority: card.priority || 'Medium',
+        priority: card.priority || '',
         confidenceScore: Number(card.confidenceScore || 0),
         reason: card.reason || '',
         evidence: Array.isArray(card.evidence) ? card.evidence : [],
         sourceSignalsUsed: Array.isArray(card.sourceSignalsUsed) ? card.sourceSignalsUsed : [],
         estimatedImpact: Number(card.estimatedImpact || 0),
-        estimatedEffort: card.estimatedEffort || 'Medium',
+        estimatedEffort: card.estimatedEffort || '',
         actionUrl: card.actionUrl || '',
-        actionLabel: card.actionLabel || 'Open'
-      })).filter((card) => card.title) : [];
+        actionLabel: card.actionLabel || ''
+      })).filter((card) => card.title)) : [];
     });
-    REQUIRED_CARD_CATEGORIES.forEach((category) => {
-      if (!out[category]?.length) out[category] = this.fallbackCardsFor(category, result);
-    });
-    if (!out['Project Recommendations']?.length && result.projects?.length) {
-      out['Project Recommendations'] = result.projects.slice(0, 3).map((project, index) => this.makeFallbackCard({
-        id: `project_fallback_${index}`,
-        category: 'Project Recommendations',
-        title: project.title,
-        description: project.description,
-        priority: project.priority || 'High',
-        evidence: project.evidence || project.tech || [],
-        sources: project.sourceSignalsUsed || ['githubSignals', 'skillGapSignals'],
-        actionUrl: project.startUrl,
-        actionLabel: 'Start Project'
-      }));
-    }
     return out;
   }
 
   private normalizeRoadmap(raw: RecommendationRoadmap | undefined, structured: Record<string, RecommendationCard[]>): RecommendationRoadmap {
-    const all = this.dedupeCards(Object.values(structured).flat());
-    const phases = [
-      { label: 'Immediate Actions', items: (raw?.timeline?.find((phase) => phase.label === 'Immediate Actions')?.items || all.slice(0, 4).map((item) => item.title)).filter(Boolean) },
-      { label: 'Next 30 Days', items: (raw?.timeline?.find((phase) => phase.label === 'Next 30 Days')?.items || all.slice(0, 5).map((item) => item.title)).filter(Boolean) },
-      { label: 'Next 60 Days', items: (raw?.timeline?.find((phase) => phase.label === 'Next 60 Days')?.items || all.slice(3, 8).map((item) => item.title)).filter(Boolean) },
-      { label: 'Next 90 Days', items: (raw?.timeline?.find((phase) => phase.label === 'Next 90 Days')?.items || all.slice(6, 11).map((item) => item.title)).filter(Boolean) },
-      { label: 'Long-Term Growth', items: (raw?.timeline?.find((phase) => phase.label === 'Long-Term Growth')?.items || (structured['Career Growth Recommendations'] || []).map((item) => item.title)).filter(Boolean) }
-    ].map((phase, index) => ({
-      ...phase,
-      items: phase.items.length ? phase.items : [all[index]?.title || 'Keep improving your strongest career signal']
-    }));
+    const phases = (raw?.timeline || []).map((phase) => ({
+      label: String(phase.label || '').trim(),
+      items: (phase.items || []).map((item) => String(item || '').trim()).filter(Boolean)
+    })).filter((phase) => phase.label && phase.items.length);
 
     return {
-      immediateActions: Array.isArray(raw?.immediateActions) ? raw.immediateActions : all.slice(0, 4),
-      next30Days: Array.isArray(raw?.next30Days) ? raw.next30Days : all.slice(0, 5),
-      next60Days: Array.isArray(raw?.next60Days) ? raw.next60Days : all.slice(3, 8),
-      next90Days: Array.isArray(raw?.next90Days) ? raw.next90Days : all.slice(6, 11),
-      longTermGrowth: Array.isArray(raw?.longTermGrowth) ? raw.longTermGrowth : structured['Career Growth Recommendations'] || [],
+      immediateActions: this.sortCards(Array.isArray(raw?.immediateActions) ? raw.immediateActions : []),
+      next30Days: this.sortCards(Array.isArray(raw?.next30Days) ? raw.next30Days : []),
+      next60Days: this.sortCards(Array.isArray(raw?.next60Days) ? raw.next60Days : []),
+      next90Days: this.sortCards(Array.isArray(raw?.next90Days) ? raw.next90Days : []),
+      longTermGrowth: this.sortCards(Array.isArray(raw?.longTermGrowth) ? raw.longTermGrowth : []),
       suggestedProjects: Array.isArray(raw?.suggestedProjects) ? raw.suggestedProjects : [],
       suggestedCertifications: Array.isArray(raw?.suggestedCertifications) ? raw.suggestedCertifications : structured['Certification Recommendations'] || [],
       suggestedTechnologies: Array.isArray(raw?.suggestedTechnologies) ? raw.suggestedTechnologies : [],
@@ -1049,8 +1013,18 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     );
   }
 
+  private sortCards(cards: RecommendationCard[]): RecommendationCard[] {
+    return this.dedupeCards(cards).slice().sort((a, b) => this.valueRank(b) - this.valueRank(a));
+  }
+
+  private valueRank(item: any): number {
+    const priority = String(item?.priority || item?.priorityRaw || '').toLowerCase();
+    const priorityWeight = priority.includes('high') || priority.includes('must') ? 300 : priority.includes('medium') ? 200 : 100;
+    return priorityWeight + Number(item?.estimatedImpact || item?.impact || item?.match || item?.jobDemand || item?.confidenceScore || 0);
+  }
+
   private cardsFor(category: string): RecommendationCard[] {
-    return this.result?.structuredRecommendations?.[category] || [];
+    return this.sortCards(this.result?.structuredRecommendations?.[category] || []);
   }
 
   private pathToCard(path: CareerPath): RecommendationCard {

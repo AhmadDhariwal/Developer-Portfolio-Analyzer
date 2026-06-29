@@ -12,7 +12,9 @@
 
   <div class="rec-search-card">
     <div class="rec-search-card__inner">
-      <div class="rec-search-card__icon">GH</div>
+      <div class="rec-search-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.88c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.82a9.6 9.6 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+      </div>
       <div class="rec-search-card__fields">
         <h3>GitHub Username</h3>
         <input
@@ -62,7 +64,7 @@
   <ng-container *ngIf="result">
     <div class="section-nav">
       <button
-        *ngFor="let section of sections"
+        *ngFor="let section of availableSections"
         class="tab-btn"
         [class.tab-btn--active]="activeSection === section"
         (click)="setSection(section)">
@@ -74,36 +76,27 @@
       <div class="executive-hero">
         <div class="executive-hero__copy">
           <span class="eyebrow">Career Overview</span>
-          <h2 title="{{ recommendedCareerPath }}">{{ recommendedCareerPath }}</h2>
-          <p title="{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}">{{ result.analysisSummary || priorityActions[0]?.reason || 'A prioritized execution plan for closing readiness gaps, improving market alignment, and turning profile signals into recruiter-visible proof.' }}</p>
+          <h2 *ngIf="recommendedCareerPath" title="{{ recommendedCareerPath }}">{{ recommendedCareerPath }}</h2>
+          <span class="narrative-label" *ngIf="result.analysisSummary">Advisor narrative</span>
+          <p *ngIf="result.analysisSummary" title="{{ result.analysisSummary }}">{{ result.analysisSummary }}</p>
           <div class="career-summary-row">
-            <span>Goal: {{ careerGoalLabel }}</span>
-            <span>Timeline: {{ estimatedCompletionTime }}</span>
-            <span>Focus: {{ highestPrioritySkill }}</span>
-            <span>Updated: {{ analysisLastUpdatedLabel }}</span>
+            <span *ngIf="careerGoalLabel">Goal: {{ careerGoalLabel }}</span>
+            <span *ngIf="roadmapTimeline.length">Timeline: {{ roadmapTimeline[0].label }} → {{ roadmapTimeline[roadmapTimeline.length - 1].label }}</span>
+            <span *ngIf="highestPrioritySkill">Focus: {{ highestPrioritySkill }}</span>
+            <span *ngIf="analysisLastUpdatedLabel">Updated: {{ analysisLastUpdatedLabel }}</span>
           </div>
-          <div class="hero-progress">
+          <div class="hero-progress" *ngIf="currentReadiness > 0">
             <div>
               <span>Readiness Progress</span>
-              <strong>{{ currentReadiness }}% / {{ targetReadiness }}%</strong>
+              <strong>{{ currentReadiness }}%</strong>
             </div>
             <div class="score-bar"><i [style.width]="barWidth(currentReadiness)"></i></div>
           </div>
         </div>
-        <div class="executive-hero__score">
+        <div class="executive-hero__score" *ngIf="currentReadiness > 0">
           <div class="readiness-orbit" [style.--score]="barWidth(currentReadiness)">
             <strong>{{ currentReadiness }}%</strong>
             <span>Ready</span>
-          </div>
-          <div class="hero-score-grid">
-            <div>
-              <span>Target</span>
-              <strong>{{ targetReadiness }}%</strong>
-            </div>
-            <div>
-              <span>Gap</span>
-              <strong>{{ targetReadiness - currentReadiness > 0 ? targetReadiness - currentReadiness : 0 }} pts</strong>
-            </div>
           </div>
         </div>
       </div>
@@ -126,7 +119,7 @@
           <p>Strategic readout of what is helping, what can block hiring readiness, and where the best upside is.</p>
         </div>
       </div>
-      <div class="executive-insights">
+      <div class="executive-insights" *ngIf="executiveInsights.length">
         <article class="insight-card" [attr.data-tone]="insight.tone" *ngFor="let insight of executiveInsights">
           <h3>{{ insight.label }}</h3>
           <ul>
@@ -142,7 +135,7 @@
         </div>
         <span class="section-count">{{ priorityActions.length }} actions</span>
       </div>
-      <div class="action-center-grid">
+      <div class="action-center-grid" *ngIf="priorityActions.length">
         <article class="advisor-card advisor-card--action" *ngFor="let card of priorityActions.slice(0, 4); trackBy: trackById">
           <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
         </article>
@@ -155,15 +148,12 @@
         </div>
         <button class="btn-secondary" (click)="jumpTo('Career Timeline')">View Full Roadmap</button>
       </div>
-      <div class="roadmap-rail">
+      <div class="roadmap-rail" *ngIf="roadmapWeeks.length">
         <article class="roadmap-step" *ngFor="let week of roadmapWeeks">
           <div class="roadmap-step__top">
             <span>{{ week.label }}</span>
-            <strong>{{ week.progress }}%</strong>
           </div>
           <h3>{{ week.milestone }}</h3>
-          <div class="score-bar"><i [style.width]="barWidth(week.progress)"></i></div>
-          <p>{{ week.sprint }}</p>
         </article>
       </div>
 
@@ -240,12 +230,12 @@
         </div>
         <div class="metric-tile">
           <span>Immediate Action</span>
-          <strong>{{ priorityActions[0]?.title || 'Review recommendations' }}</strong>
-          <small>{{ priorityActions[0]?.estimatedEffort || 'Medium effort' }}</small>
+          <strong>{{ priorityActions[0]?.title }}</strong>
+          <small>{{ priorityActions[0]?.estimatedEffort }}</small>
         </div>
         <div class="metric-tile">
           <span>Expected Gain</span>
-          <strong>{{ priorityActions[0]?.estimatedImpact || 70 }}%</strong>
+          <strong>{{ priorityActions[0]?.estimatedImpact }}%</strong>
           <small>impact from the top action</small>
         </div>
       </div>
@@ -267,8 +257,8 @@
       <div class="projects-grid" *ngIf="result.projects.length">
         <div class="project-card" *ngFor="let proj of result.projects; trackBy: trackById">
           <div class="project-card__top">
-            <span class="difficulty-badge" [ngClass]="getDifficultyClass(proj.difficulty)">{{ proj.difficulty }}</span>
-            <span class="priority-badge" [ngClass]="getPriorityClass(proj.priority || 'Medium')">{{ proj.priority || 'Medium' }}</span>
+            <span *ngIf="proj.difficulty" class="difficulty-badge" [ngClass]="getDifficultyClass(proj.difficulty)">{{ proj.difficulty }}</span>
+            <span *ngIf="proj.priority" class="priority-badge" [ngClass]="getPriorityClass(proj.priority)">{{ proj.priority }}</span>
           </div>
           <h3 title="{{ proj.title }}">{{ proj.title }}</h3>
           <p title="{{ proj.description }}">{{ proj.description }}</p>
@@ -280,13 +270,8 @@
               <div class="source-row"><span *ngFor="let skill of proj.triggerSkills">{{ skill }}</span></div>
             </div>
           </details>
-          <a [href]="getProjectStartUrl(proj)" target="_blank" rel="noopener noreferrer" class="project-start-link">Start Project</a>
+          <a *ngIf="getProjectStartUrl(proj)" [href]="getProjectStartUrl(proj)" target="_blank" rel="noopener noreferrer" class="project-start-link">Start Project</a>
         </div>
-      </div>
-      <div class="card-grid" *ngIf="!result.projects.length">
-        <article class="advisor-card" *ngFor="let card of portfolioActionCards; trackBy: trackById">
-          <ng-container *ngTemplateOutlet="advisorCard; context: { card: card }"></ng-container>
-        </article>
       </div>
     </section>
 
@@ -305,7 +290,7 @@
           <small>{{ metric.hint }}</small>
         </div>
       </div>
-      <div class="skill-strip">
+      <div class="skill-strip" *ngIf="resumeAtsImprovements.length">
         <span *ngFor="let item of resumeAtsImprovements">{{ item }}</span>
       </div>
       <div class="card-grid">
@@ -361,7 +346,7 @@
           <small>{{ metric.hint }}</small>
         </div>
       </div>
-      <div class="skill-strip">
+      <div class="skill-strip" *ngIf="interviewTopics.length">
         <span *ngFor="let topic of interviewTopics">Topic: {{ topic }}</span>
       </div>
       <div class="card-grid">
@@ -386,7 +371,7 @@
           <small>{{ metric.hint }}</small>
         </div>
       </div>
-      <div class="skill-strip">
+      <div class="skill-strip" *ngIf="recommendedNextSkills.length">
         <span *ngFor="let skill of recommendedNextSkills">{{ skill }}</span>
       </div>
       <div class="card-grid">
@@ -411,7 +396,7 @@
           <small>{{ metric.hint }}</small>
         </div>
       </div>
-      <div class="skill-strip">
+      <div class="skill-strip" *ngIf="portfolioMissingSections.length">
         <span *ngFor="let item of portfolioMissingSections">Missing: {{ item }}</span>
       </div>
       <div class="card-grid">
@@ -425,9 +410,9 @@
       <div class="section-header">
         <div>
           <h2>Career Timeline</h2>
-          <p>Six-week execution plan with milestones and concrete actions.</p>
+          <p>Backend-generated phases and actions for the current recommendation plan.</p>
         </div>
-        <span class="section-count">{{ estimatedCompletionTime }}</span>
+        <span class="section-count" *ngIf="estimatedCompletionTime">{{ estimatedCompletionTime }}</span>
       </div>
       <div class="week-timeline">
         <div class="week-card" *ngFor="let week of roadmapWeeks">
@@ -435,8 +420,6 @@
             <span>{{ week.label }}</span>
             <strong>{{ week.milestone }}</strong>
           </div>
-          <div class="score-bar"><i [style.width]="barWidth(week.progress)"></i></div>
-          <p class="week-sprint">{{ week.sprint }}</p>
           <ul><li *ngFor="let item of week.actions">{{ item }}</li></ul>
         </div>
       </div>
@@ -445,16 +428,23 @@
         <div class="tech-tags"><span class="tech-tag" *ngFor="let item of result.roadmap?.suggestedLearningPath">{{ item }}</span></div>
       </div>
     </section>
+
+    <footer class="recommendation-meta">
+      <span>Status: {{ cacheStateLabel }}</span>
+      <span *ngIf="analysisLastUpdatedLabel">Updated: {{ analysisLastUpdatedLabel }}</span>
+      <span *ngIf="result.cacheMetadata?.recommendationVersion">Version: {{ result.cacheMetadata?.recommendationVersion }}</span>
+      <span>{{ isTemporaryView ? 'Temporary analysis' : 'Saved profile analysis' }}</span>
+    </footer>
   </ng-container>
 
   <ng-template #advisorCard let-card="card">
     <div class="advisor-card__top">
-      <span class="priority-badge" [ngClass]="getPriorityClass(card.priority)">{{ card.priority }}</span>
-      <span class="impact-badge">{{ card.estimatedImpact }}% impact</span>
+      <span *ngIf="card.priority" class="priority-badge" [ngClass]="getPriorityClass(card.priority)">{{ card.priority }}</span>
+      <span *ngIf="card.estimatedImpact" class="impact-badge">{{ card.estimatedImpact }}% impact</span>
     </div>
     <h3 title="{{ card.title }}">{{ card.title }}</h3>
     <p class="card-description" title="{{ card.reason || card.description }}">{{ card.reason || card.description }}</p>
-    <div class="effort-row">
+    <div class="effort-row" *ngIf="card.estimatedEffort">
       <span>Effort</span>
       <strong>{{ card.estimatedEffort }}</strong>
     </div>
@@ -462,22 +452,18 @@
       <summary>View details</summary>
       <div class="details-body">
         <p>{{ card.description }}</p>
-        <div>
+        <div *ngIf="card.evidence.length">
           <strong>Evidence</strong>
-          <span>{{ card.evidence.length ? card.evidence.join(', ') : 'Relevant platform signals' }}</span>
-        </div>
-        <div>
-          <strong>Expected Outcome</strong>
-          <span>{{ getExpectedOutcome(card) }}</span>
+          <span>{{ card.evidence.join(', ') }}</span>
         </div>
         <div class="source-row">
-          <span *ngFor="let source of card.sourceSignalsUsed">{{ source }}</span>
+          <span *ngFor="let source of card.sourceSignalsUsed">{{ formatSourceLabel(source) }}</span>
         </div>
       </div>
     </details>
     <div class="card-actions">
       <button class="btn-secondary" (click)="actionToSprint(card)">Add to Sprint</button>
-      <button class="btn-analyze btn-analyze--small" *ngIf="card.actionUrl" (click)="runAction(card)">{{ card.actionLabel || 'Open' }}</button>
+      <button class="btn-analyze btn-analyze--small" *ngIf="card.actionUrl && card.actionLabel" (click)="runAction(card)">{{ card.actionLabel }}</button>
     </div>
   </ng-template>
 

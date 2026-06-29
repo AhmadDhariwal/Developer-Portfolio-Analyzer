@@ -1,7 +1,9 @@
+const crypto = require('node:crypto');
 const aiService = require('../services/aiservice');
 const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
+const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const User = require('../models/user');
 const { createVersion } = require('../services/aiVersionService');
 const {
@@ -17,6 +19,7 @@ const { extractSkillsFromRepositories, canonicalizeSkillName, detectSkillGaps } 
 const RECOMMENDATION_ANALYSIS_VERSION = 'v4-career-advisor';
 const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
+const recommendationInflight = new Map();
 const STACK_PROJECT_HINTS = {
   Frontend: ['React', 'TypeScript', 'Accessibility', 'Deployment'],
   Backend: ['Node.js', 'REST APIs', 'SQL', 'Deployment'],
@@ -180,6 +183,14 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
   }
 };
 
+const queueAIVersionSnapshot = (options) => {
+  setImmediate(() => {
+    saveAIVersionSnapshot(options).catch((error) => {
+      console.error('Recommendation AI snapshot queue error:', error.message);
+    });
+  });
+};
+
 const loadResumeAnalysis = async (userId) => {
   if (!userId) return null;
   const userContext = await User.findById(userId)
@@ -198,6 +209,11 @@ const loadResumeAnalysis = async (userId) => {
 const getGitHubData = async (username) => {
   const { analyzeGitHubProfile } = require('../services/githubservice');
   try {
+    const normalizedUsername = String(username || '').trim().toLowerCase();
+    const cached = normalizedUsername
+      ? await GitHubAnalysisCache.findOne({ normalizedUsername }).sort({ updatedAt: -1 }).lean()
+      : null;
+    if (cached?.result) return cached.result;
     return await analyzeGitHubProfile(String(username || '').trim());
   } catch (githubError) {
     console.warn('Recommendations GitHub fallback:', githubError.message);
@@ -211,6 +227,46 @@ const getGitHubData = async (username) => {
       repositories: []
     };
   }
+};
+
+const mergeNarrativeEnrichment = (fallback, enrichment = {}) => {
+  const projectNarratives = new Map((Array.isArray(enrichment.projectNarratives) ? enrichment.projectNarratives : [])
+    .map((item) => [String(item?.id || '').trim(), item]));
+  const technologyNarratives = new Map((Array.isArray(enrichment.technologyNarratives) ? enrichment.technologyNarratives : [])
+    .map((item) => [String(item?.name || '').trim().toLowerCase(), item]));
+  const careerPathNarratives = new Map((Array.isArray(enrichment.careerPathNarratives) ? enrichment.careerPathNarratives : [])
+    .map((item) => [String(item?.id || '').trim(), item]));
+
+  return {
+    ...fallback,
+    analysisSummary: String(enrichment.analysisSummary || fallback.analysisSummary || '').trim(),
+    projects: fallback.projects.map((project) => {
+      const narrative = projectNarratives.get(String(project.id || '').trim()) || {};
+      return {
+        ...project,
+        title: String(narrative.title || project.title || '').trim(),
+        description: String(narrative.description || project.description || '').trim(),
+        whyThisProject: String(narrative.whyThisProject || project.whyThisProject || '').trim()
+      };
+    }),
+    technologies: fallback.technologies.map((technology) => {
+      const narrative = technologyNarratives.get(String(technology.name || '').trim().toLowerCase()) || {};
+      return { ...technology, description: String(narrative.description || technology.description || '').trim() };
+    }),
+    careerPaths: fallback.careerPaths.map((path) => {
+      const narrative = careerPathNarratives.get(String(path.id || '').trim()) || {};
+      return {
+        ...path,
+        title: String(narrative.title || path.title || '').trim(),
+        description: String(narrative.description || path.description || '').trim(),
+        actionItems: normalizeActionList(narrative.actionItems, path.actionItems, 2, 6)
+      };
+    }),
+    portfolioRecommendations: normalizeActionList(enrichment.portfolioRecommendations, fallback.portfolioRecommendations, 2, 4),
+    resumeRecommendations: normalizeActionList(enrichment.resumeRecommendations, fallback.resumeRecommendations, 2, 4),
+    learningActions: normalizeActionList(enrichment.learningActions, fallback.learningActions, 3, 6),
+    interviewReadinessActions: normalizeActionList(enrichment.interviewReadinessActions, fallback.interviewReadinessActions, 2, 4)
+  };
 };
 
 const buildGithubInsights = (githubData = {}) => ({
@@ -545,7 +601,10 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
   }
 
   try {
-    const developerSignals = await getDeveloperSignals(userId);
+    const developerSignals = await getDeveloperSignals(userId, {
+      resumeSignals: resumeInsights?.analyzed ? resumeInsights : undefined,
+      githubSignals: githubInsights?.present ? githubInsights : undefined
+    });
     const signalHash = buildSignalHash(developerSignals);
     const signalsUsed = buildSignalsUsedSummary({
       username,
@@ -1150,6 +1209,26 @@ const runRecommendationPipeline = async ({
 }) => {
   const latestResumeAnalysis = await loadResumeAnalysis(userId);
   const storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
+  const resumeCacheIdentity = buildResumeCacheIdentity({
+    resumeText,
+    resumeAnalysis: latestResumeAnalysis
+  });
+  const baseCacheKey = saveResult && userId
+    ? {
+        userId,
+        githubUsername: username,
+        careerStack,
+        experienceLevel,
+        resumeHash: resumeCacheIdentity.resumeHash,
+        resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+        analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
+      }
+    : null;
+  // Do the cheapest possible candidate lookup before signal aggregation,
+  // GitHub fallback analysis, skill resolution, prompt construction, or AI.
+  const earlyCacheCandidate = !forceRefresh && baseCacheKey
+    ? await AnalysisCache.findOne(baseCacheKey).sort({ updatedAt: -1 }).lean()
+    : null;
   const preliminarySignals = await loadDeveloperSignalsSafely({
     userId,
     username,
@@ -1163,17 +1242,23 @@ const runRecommendationPipeline = async ({
   const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
     || await getGitHubData(username);
   const githubInsights = buildGithubInsights(githubData);
-  const resumeCacheIdentity = buildResumeCacheIdentity({
-    resumeText,
-    resumeAnalysis: latestResumeAnalysis
-  });
   const recommendationEvidence = buildRecommendationEvidence({
     resumeInsights,
     githubData,
     careerStack
   });
   const developerSignals = preliminarySignals.developerSignals;
-  const signalHash = buildSignalHash(developerSignals);
+  // A recommendation must not invalidate itself after it is saved.
+  const upstreamSignalHash = buildSignalHash({
+    ...developerSignals,
+    recommendationSignal: {},
+    recommendationSignals: {}
+  });
+  const signalHash = crypto.createHash('sha256').update(JSON.stringify({
+    upstreamSignalHash,
+    providedKnownSkills: uniqueStrings(knownSkills || [], 30),
+    providedMissingSkills: uniqueStrings(missingSkills || [], 20)
+  })).digest('hex');
   const signalsUsed = buildSignalsUsedSummary({
     username,
     resumeInsights,
@@ -1210,8 +1295,8 @@ const runRecommendationPipeline = async ({
   const scopedCacheKey = saveResult && req.user?._id
     ? { ...cacheKey, userId: req.user._id }
     : null;
-  const previousRecommendation = scopedCacheKey
-    ? await AnalysisCache.findOne({
+  const previousRecommendationPromise = scopedCacheKey
+    ? AnalysisCache.findOne({
         userId: req.user._id,
         analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
         $or: [
@@ -1220,10 +1305,12 @@ const runRecommendationPipeline = async ({
           { githubUsername: { $ne: username } }
         ]
       }).sort({ updatedAt: -1 }).lean()
-    : null;
+    : Promise.resolve(null);
 
   if (scopedCacheKey) {
-    const cached = await AnalysisCache.findOne(scopedCacheKey).lean();
+    const cached = earlyCacheCandidate?.signalHash === signalHash
+      ? earlyCacheCandidate
+      : await AnalysisCache.findOne(scopedCacheKey).lean();
     if (!forceRefresh && isCacheFresh(cached) && cached?.analysisData?.projects?.length) {
       const cachedResult = {
         ...cached.analysisData,
@@ -1247,22 +1334,11 @@ const runRecommendationPipeline = async ({
           cachedAt: cached.updatedAt || cached.createdAt || null
         }
       };
-      await saveAIVersionSnapshot({
-        req,
-        source,
-        output: cachedResult,
-        metadata: {
-          fromCache: true,
-          username,
-          careerStack,
-          experienceLevel,
-          signalHash,
-          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-        }
-      });
       return res.json(cachedResult);
     }
   }
+
+  const previousRecommendation = await previousRecommendationPromise;
 
   const fallback = buildRecommendationFallback({
     username,
@@ -1282,60 +1358,76 @@ const runRecommendationPipeline = async ({
     resolvedSkills.missingSkills,
     resumeInsights,
     githubInsights,
-    summarizeSignalsForAI(developerSignals)
+    summarizeSignalsForAI(developerSignals),
+    fallback
   );
 
-  const aiResult = await aiService.runAIAnalysis(prompt, fallback);
-  const fullResult = finalizeRecommendationResult({
-    username,
-    careerStack,
-    experienceLevel,
-    rawResult: aiResult,
-    fallback,
-    resumeInsights,
-    githubInsights,
-    signalsUsed,
-    analysisBasedOn: buildAnalysisBasedOn({
-      username,
-      careerStack,
-      experienceLevel,
-      resumeInsights
-    }),
-    recommendationEvidence,
-    developerSignals,
-    resolvedSkills,
-    signalHash,
-    cacheKey,
-    previousRecommendation: previousRecommendation?.analysisData || null
+  const inflightKey = JSON.stringify({
+    userId: String(userId || 'temporary'),
+    ...cacheKey,
+    forceRefresh: Boolean(forceRefresh),
+    saveResult: Boolean(saveResult),
+    knownSkills: resolvedSkills.knownSkills,
+    missingSkills: resolvedSkills.missingSkills
   });
-  fullResult.cacheMetadata.temporary = !saveResult;
+  let workPromise = recommendationInflight.get(inflightKey);
+  if (!workPromise) {
+    workPromise = (async () => {
+      const aiEnrichment = await aiService.runAIAnalysis(prompt, fallback);
+      const deterministicResult = mergeNarrativeEnrichment(fallback, aiEnrichment);
+      const result = finalizeRecommendationResult({
+        username,
+        careerStack,
+        experienceLevel,
+        rawResult: deterministicResult,
+        fallback,
+        resumeInsights,
+        githubInsights,
+        signalsUsed,
+        analysisBasedOn: buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights
+        }),
+        recommendationEvidence,
+        developerSignals,
+        resolvedSkills,
+        signalHash,
+        cacheKey,
+        previousRecommendation: previousRecommendation?.analysisData || null
+      });
+      result.cacheMetadata.temporary = !saveResult;
 
-  if (scopedCacheKey) {
-    await AnalysisCache.findOneAndUpdate(
-      scopedCacheKey,
-      {
-        $set: {
-          analysisData: fullResult,
-          userId: req.user._id
-        }
-      },
-      { upsert: true }
-    );
+      if (scopedCacheKey) {
+        await AnalysisCache.findOneAndUpdate(
+          scopedCacheKey,
+          { $set: { analysisData: result, userId: req.user._id } },
+          { upsert: true }
+        );
+      }
+      if (saveResult) {
+        queueAIVersionSnapshot({
+          req,
+          source,
+          output: result,
+          metadata: {
+            fromCache: false,
+            username,
+            careerStack,
+            experienceLevel,
+            signalHash,
+            resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+          }
+        });
+      }
+      return result;
+    })();
+    recommendationInflight.set(inflightKey, workPromise);
+    workPromise.finally(() => recommendationInflight.delete(inflightKey)).catch(() => {});
   }
 
-  await saveAIVersionSnapshot({
-    req,
-    source,
-    output: fullResult,
-    metadata: {
-      fromCache: false,
-      username,
-      careerStack,
-      experienceLevel,
-      signalHash,
-      resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-    }
-  });
+  const fullResult = await workPromise;
 
   return res.json(fullResult);
 };

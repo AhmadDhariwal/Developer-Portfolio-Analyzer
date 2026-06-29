@@ -1,8 +1,12 @@
-const { getExperienceConfig } = require('../utils/experienceMapper');
-const { compactJson, compactArray } = require('../services/promptBuilderService');
+const {
+  compactJson,
+  compactArray,
+  summarizeResume,
+  summarizeGithub
+} = require('../services/promptBuilderService');
 
 /**
- * Recommendation prompt - context-aware with strict difficulty and new-tech rules.
+ * Recommendation prompt for text-only enrichment of a deterministic plan.
  * The caller must pass summarized reusable signals only. Do not pass raw GitHub
  * repositories, raw resume text, or full skill-gap analysis payloads here.
  * @param {string} careerStack
@@ -20,18 +24,23 @@ const getRecommendationPrompt = (
   missingSkills,
   resumeInsights = {},
   githubInsights = {},
-  developerSignals = {}
+  developerSignals = {},
+  deterministicPlan = {}
 ) => {
-  const config = getExperienceConfig(experienceLevel);
   const compactKnownSkills = compactArray(knownSkills, 20);
   const compactMissingSkills = compactArray(missingSkills, 20);
-  const compactResume = compactJson(resumeInsights, 0);
-  const compactGithub = compactJson(githubInsights, 0);
+  const compactResume = compactJson(summarizeResume(resumeInsights), 0);
+  const compactGithub = compactJson(summarizeGithub(githubInsights), 0);
   const compactSignals = compactJson(developerSignals, 0);
+  const compactPlan = compactJson({
+    projects: (deterministicPlan.projects || []).slice(0, 4).map(({ id, title }) => ({ id, title })),
+    technologies: (deterministicPlan.technologies || []).slice(0, 8).map(({ name }) => ({ name })),
+    careerPaths: (deterministicPlan.careerPaths || []).slice(0, 4).map(({ id, title }) => ({ id, title }))
+  }, 0);
 
   return `
     You are a senior software engineering mentor.
-    Generate a personalised, evidence-based recommendation plan for this developer.
+    Enrich an already-computed deterministic recommendation plan with concise narrative text.
 
     Career Stack:     "${careerStack}"
     Experience Level: "${experienceLevel}"
@@ -40,67 +49,46 @@ const getRecommendationPrompt = (
     Resume Signals Summary:  ${compactResume}
     GitHub Signals Summary:  ${compactGithub}
     Developer Signals Summary:${compactSignals}
+    Deterministic Plan IDs:    ${compactPlan}
 
     STRICT RULES - you MUST follow ALL of these:
-    1. Every project MUST primarily use technologies from "Known Skills".
-    2. Each project MAY introduce AT MOST ${config.maxNewTechs} technology from "Skill Gaps" - never more.
-    3. Project difficulty MUST only be: ${config.difficultyRange.join(' or ')}.
-    4. Generate at least ${Math.max(3, config.projectCount)} projects.
-    5. Complexity target: ${config.complexityHint}.
-    6. Tech depth goal: ${config.techDepth}.
-    7. Do NOT list technologies the developer already knows as "new technologies to learn".
-    8. Return at least 6 technologies in the technologies array.
-    9. Return at least 3 career paths in the careerPaths array.
-    10. Recommendations MUST adapt to progress signals:
+    1. Do not calculate or return scores, rankings, priorities, difficulty, effort, timelines, salary, URLs, or technology selections.
+    2. Do not add or remove recommendation items. The backend owns all deterministic choices and scoring.
+    3. Recommendations MUST adapt to progress signals:
         - If weekly progress or sprint consistency is low, prefer smaller, practical next steps.
         - If portfolio completeness is low, include portfolio improvement actions.
         - If integration proof is weak (GitHub, LinkedIn, LeetCode, Kaggle, StackOverflow, certifications), recommend proof-building actions.
         - If repeated weak areas show up across signals, reflect them in technology and learning actions.
-    11. Use portfolio and integration signals only as supporting evidence. Do not treat them as stronger than GitHub plus resume.
-    12. Avoid generic filler. Every recommendation should connect to a real signal from the input.
-    13. Keep the tone specific, realistic, and recruiter-useful.
-    14. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
-    15. Use AI only for prioritization, explanation, roadmap wording, and career strategy. Deterministic platform scoring will happen outside this prompt.
+    4. Use portfolio and integration signals only as supporting evidence. Do not treat them as stronger than GitHub plus resume.
+    5. Avoid generic filler. Every narrative should connect to a real signal from the input.
+    6. Keep the tone specific, realistic, and recruiter-useful.
+    7. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
+    8. AI may only enrich narrative and action wording. Deterministic platform output remains authoritative.
 
     Return ONLY valid JSON (no markdown, no code fences):
 
     {
       "analysisSummary": string,
-      "projects": [
+      "projectNarratives": [
         {
           "id": string,
           "title": string,
           "description": string,
-          "tech": string[],
-          "newTech": string[],
-          "difficulty": "${config.difficultyRange.join('" | "')}",
-          "impact": number (0-100),
-          "estimatedWeeks": string,
-          "whyThisProject": string,
-          "startUrl": string (must be a valid https URL)
+          "whyThisProject": string
         }
       ],
-      "technologies": [
+      "technologyNarratives": [
         {
           "name": string,
-          "category": string,
-          "priority": string,
-          "priorityRaw": "High" | "Medium" | "Low",
-          "jobDemand": number (0-100),
           "description": string
         }
       ],
-      "careerPaths": [
+      "careerPathNarratives": [
         {
           "id": string,
           "title": string,
-          "match": number (0-100),
-          "salaryRange": string,
           "description": string,
-          "timeline": string,
-          "hiringCompanies": string[],
-          "actionItems": string[],
-          "exploreUrl": string (must be a valid https URL)
+          "actionItems": string[]
         }
       ],
       "portfolioRecommendations": [string],
@@ -121,7 +109,7 @@ const getRecommendationPrompt = (
     - Do not generate sprint tasks, weekly reports, or portfolio content ownership.
     - Focus on recommendations only.
 
-    Salary ranges must be realistic for: ${config.salaryContext}.
+    Keep every returned string concise.
   `;
 };
 

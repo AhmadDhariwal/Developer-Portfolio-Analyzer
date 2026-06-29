@@ -240,7 +240,8 @@ export class RecommendationsService {
     knownSkills?:    string[],
     missingSkills?:  string[],
     isTemporary = false,
-    forceRefresh = false
+    forceRefresh = false,
+    requestIdentity = ''
   ): Observable<RecommendationsResult> {
     const key = [
       username,
@@ -248,6 +249,7 @@ export class RecommendationsService {
       experienceLevel,
       isTemporary ? 'temporary' : 'saved',
       forceRefresh ? 'refresh' : 'normal',
+      requestIdentity,
       (knownSkills || []).join(','),
       (missingSkills || []).join(',')
     ].join(':').toLowerCase();

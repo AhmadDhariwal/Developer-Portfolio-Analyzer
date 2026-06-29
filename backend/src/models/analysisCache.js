@@ -64,5 +64,6 @@ analysisCacheSchema.index({
     resumeAnalysisId: 1,
     signalHash: 1
 });
+analysisCacheSchema.index({ userId: 1, analysisVersion: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('AnalysisCache', analysisCacheSchema);
