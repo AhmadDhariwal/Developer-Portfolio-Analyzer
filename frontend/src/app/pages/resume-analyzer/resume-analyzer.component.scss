@@ -410,9 +410,9 @@
 
   p {
     margin: 6px 0 0;
-    color: #94a3b8;
+    color: #c4cedc;
     font-size: 12px;
-    line-height: 17px;
+    line-height: 18px;
   }
 }
 
@@ -494,14 +494,9 @@
 .quality-panel,
 .warnings-panel { grid-column: 1 / -1; }
 .skills-panel,
-.technology-panel,
-.details-panel,
-.recruiter-panel { grid-column: span 6; }
-.details-panel,
-.recruiter-panel { align-self: stretch; }
-
-:host ::ng-deep .details-panel .ui-card,
-:host ::ng-deep .recruiter-panel .ui-card { height: 100%; }
+.technology-panel { grid-column: span 6; }
+.recruiter-panel,
+.details-panel { grid-column: 1 / -1; }
 .growth-panel { grid-column: span 5; }
 .suggestions-panel { grid-column: span 7; }
 
@@ -514,6 +509,14 @@
 
   h2 { margin: 0.22rem 0 0.3rem; color: #f8fafc; font-size: 19px; font-weight: 600; line-height: 26px; }
   p { max-width: 760px; margin: 0; color: #b6c2d2; font-size: 13px; line-height: 20px; }
+}
+
+.analysis-flow p {
+  color: #c4cedc;
+}
+
+.analysis-flow li {
+  color: #dbe3ee;
 }
 
 .personal-grid {
