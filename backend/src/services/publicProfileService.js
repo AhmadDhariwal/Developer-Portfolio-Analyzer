@@ -17,6 +17,11 @@ const DEFAULT_MAX_UPCOMING_PROJECTS = 12;
 const DEFAULT_MAX_TESTIMONIALS = 12;
 const DEFAULT_MAX_TECH = 10;
 const DEFAULT_MAX_WORK_EXPERIENCES = 8;
+const DEFAULT_MAX_COMPLETED_COURSES = 50;
+const PUBLIC_PROFILE_CACHE_TTL_MS = Math.max(30000, Number.parseInt(process.env.PUBLIC_PROFILE_CACHE_TTL_MS || '300000', 10) || 300000);
+const PUBLIC_PROFILE_STALE_TTL_MS = Math.max(PUBLIC_PROFILE_CACHE_TTL_MS, Number.parseInt(process.env.PUBLIC_PROFILE_STALE_TTL_MS || '86400000', 10) || 86400000);
+const PUBLIC_PROFILE_CACHE_MAX = Math.max(20, Number.parseInt(process.env.PUBLIC_PROFILE_CACHE_MAX || '200', 10) || 200);
+const publicProfileCache = new Map();
 const DEFAULT_WORK_EXPERIENCE_ICONS = [
   'mdi-rocket-launch',
   'mdi-lightbulb-on',
@@ -95,6 +100,55 @@ const normalizeUpcomingStatus = (value = '', fallback = 'planned') => {
 };
 
 const normalizeExpectedDate = (value = '') => trimText(value, 48);
+
+const normalizeCompletedCourses = (courses = [], { visibleOnly = false } = {}) => {
+  if (!Array.isArray(courses)) return [];
+  return courses
+    .map((course, index) => {
+      const completionDate = course?.completionDate ? new Date(course.completionDate) : null;
+      return ({
+      ...(course?._id ? { _id: course._id } : {}),
+      title: trimText(course?.title, 160),
+      provider: trimText(course?.provider, 120),
+      category: trimText(course?.category, 80),
+      skills: normalizeTechList(course?.skills || []).slice(0, 20),
+      completionDate: completionDate && Number.isFinite(completionDate.getTime()) ? completionDate : null,
+      duration: trimText(course?.duration, 80),
+      certificateUrl: normalizeUrl(course?.certificateUrl || ''),
+      credentialId: trimText(course?.credentialId, 120),
+      description: trimText(course?.description, 600),
+      order: Number.isFinite(Number(course?.order)) ? Number(course.order) : index,
+      isVisible: course?.isVisible !== false
+      });
+    })
+    .filter((course) => course.title && (!visibleOnly || course.isVisible))
+    .sort((left, right) => left.order - right.order
+      || Number(right.completionDate || 0) - Number(left.completionDate || 0))
+    .slice(0, DEFAULT_MAX_COMPLETED_COURSES);
+};
+
+const prunePublicProfileCache = () => {
+  const now = Date.now();
+  for (const [key, entry] of publicProfileCache) {
+    if (entry.staleUntil <= now) publicProfileCache.delete(key);
+  }
+  while (publicProfileCache.size > PUBLIC_PROFILE_CACHE_MAX) {
+    const oldestKey = publicProfileCache.keys().next().value;
+    if (!oldestKey) break;
+    publicProfileCache.delete(oldestKey);
+  }
+};
+
+const setPublicProfileCache = (slug, payload) => {
+  const key = String(slug || '').trim().toLowerCase();
+  if (!key) return;
+  const now = Date.now();
+  publicProfileCache.delete(key);
+  publicProfileCache.set(key, { payload, freshUntil: now + PUBLIC_PROFILE_CACHE_TTL_MS, staleUntil: now + PUBLIC_PROFILE_STALE_TTL_MS });
+  prunePublicProfileCache();
+};
+
+const invalidatePublicProfileCache = (...slugs) => slugs.forEach((slug) => publicProfileCache.delete(String(slug || '').trim().toLowerCase()));
 
 const resolveAvatarForResponse = (avatarValue = '', req = null) => {
   const raw = String(avatarValue || '').trim();
@@ -606,7 +660,7 @@ const calculateProfileStrength = ({ profile, user, skills, projects, workExperie
   return Math.round((completed / checks.length) * 100);
 };
 
-async function buildPublicProfilePayload(profile, user, req = null) {
+async function buildPublicProfilePayload(profile, user, req = null, { publicOnly = false } = {}) {
   const [skillScores, latestReport, defaultResume] = await Promise.all([
     getSkillScores(profile.userId),
     WeeklyReport.findOne({ userId: profile.userId }).sort({ weekEndDate: -1 }).lean(),
@@ -635,6 +689,7 @@ async function buildPublicProfilePayload(profile, user, req = null) {
         imageUrl: project.imageUrl
       }));
   const normalizedTestimonials = normalizeTestimonials(profile.testimonials || []);
+  const completedCourses = normalizeCompletedCourses(profile.completedCourses || [], { visibleOnly: publicOnly });
   const normalizedSocialLinks = normalizeSocialLinks(profile.socialLinks || {}, user?.githubUsername || '');
   const sectionsSource = profile.sections?.toObject
     ? profile.sections.toObject()
@@ -663,6 +718,7 @@ async function buildPublicProfilePayload(profile, user, req = null) {
     upcomingProjects: normalizedUpcomingProjects,
     testimonials: normalizedTestimonials,
     workExperiences: normalizedWorkExperiences,
+    completedCourses,
     sections: {
       ...normalizedSections,
       cta: {
@@ -762,6 +818,10 @@ const applyCollectionProfileUpdates = ({ profile, payload }) => {
       skills: normalizeSkills(profile.skills || [])
     });
   }
+
+  if (payload.completedCourses !== undefined || payload.courses !== undefined) {
+    profile.completedCourses = normalizeCompletedCourses(payload.completedCourses ?? payload.courses);
+  }
 };
 
 const applySectionsUpdate = ({ profile, payload, user }) => {
@@ -831,6 +891,7 @@ const applySocialLinksUpdate = ({ profile, payload, user }) => {
 
 const updatePublicProfile = async (userId, payload = {}, req = null) => {
   const profile = await getOrCreatePublicProfile(userId);
+  const previousSlug = profile.slug;
   const user = await User.findById(userId)
     .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
     .lean();
@@ -841,6 +902,7 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
   applySocialLinksUpdate({ profile, payload, user });
 
   await profile.save();
+  invalidatePublicProfileCache(previousSlug, profile.slug);
   const savedProfile = await PublicProfile.findById(profile._id);
   return buildPublicProfilePayload(savedProfile || profile, user, req);
 };
@@ -878,19 +940,45 @@ const recordProfileView = async ({ profile, req }) => {
 };
 
 const getPublicProfileBySlug = async (slug, req) => {
+  const startedAt = Date.now();
   if (getDeveloperSettingsSync().publicPortfolioVisibility === false) {
     return null;
   }
 
-  const profile = await PublicProfile.findOne({ slug, isPublic: true });
-  if (!profile) return null;
+  prunePublicProfileCache();
+  const cacheStartedAt = Date.now();
+  const cacheKey = String(slug || '').trim().toLowerCase();
+  const cached = publicProfileCache.get(cacheKey);
+  const cacheMs = Date.now() - cacheStartedAt;
+  if (cached?.freshUntil > Date.now()) {
+    void PublicProfile.findById(cached.payload?.id)
+      .then((profile) => profile ? recordProfileView({ profile, req }) : null)
+      .catch((error) => console.warn('[PublicProfile] Cached view tracking failed:', error.message));
+    console.info('[PublicProfileTiming]', { slug: cacheKey, cache: 'hit', cacheMs, githubDataMs: 0, aiMs: 0, dbMs: 0, totalMs: Date.now() - startedAt });
+    return cached.payload;
+  }
 
-  const user = await User.findById(profile.userId)
-    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
-    .lean();
-  await recordProfileView({ profile, req });
+  const dbStartedAt = Date.now();
+  try {
+    const profile = await PublicProfile.findOne({ slug, isPublic: true });
+    if (!profile) return null;
 
-  return buildPublicProfilePayload(profile, user, req);
+    const user = await User.findById(profile.userId)
+      .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
+      .lean();
+    const dbMs = Date.now() - dbStartedAt;
+    await recordProfileView({ profile, req });
+    const payload = await buildPublicProfilePayload(profile, user, req, { publicOnly: true });
+    setPublicProfileCache(profile.slug, payload);
+    console.info('[PublicProfileTiming]', { slug: cacheKey, cache: 'miss', cacheMs, githubDataMs: 0, aiMs: 0, dbMs, totalMs: Date.now() - startedAt });
+    return payload;
+  } catch (error) {
+    if (cached?.staleUntil > Date.now()) {
+      console.warn('[PublicProfileTiming]', { slug: cacheKey, cache: 'stale-fallback', cacheMs, githubDataMs: 0, aiMs: 0, dbMs: Date.now() - dbStartedAt, totalMs: Date.now() - startedAt, error: error.message });
+      return cached.payload;
+    }
+    throw error;
+  }
 };
 
 const getPublicProfileForOwner = async (userId, req = null) => {

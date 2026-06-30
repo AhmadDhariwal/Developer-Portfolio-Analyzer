@@ -5,6 +5,7 @@ import { Title, Meta } from '@angular/platform-browser';
 import {
   PublicProfileService,
   PublicProfilePayload,
+  PublicProfileCompletedCourse,
   PublicProfileProject,
   PublicProfileSections,
   PublicProfileUpcomingProject,
@@ -49,6 +50,8 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   featuredProjects: PublicProfileProject[] = [];
   upcomingProjects: PublicProfileUpcomingProject[] = [];
   testimonials: PublicProfileTestimonial[] = [];
+  completedCourses: PublicProfileCompletedCourse[] = [];
+  cacheState: PublicProfilePayload['frontendCacheState'] = 'network';
   readonly previewResolver = (project: LinkableProject) => this.getProjectPreview(project);
   readonly primaryLinkResolver = (project: LinkableProject) => this.getProjectPrimaryLink(project);
   readonly repoLinkResolver = (project: LinkableProject) => this.getProjectRepositoryLink(project);
@@ -205,6 +208,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
         }))
         : [],
       workExperiences: Array.isArray(profile.workExperiences) ? profile.workExperiences : [],
+      completedCourses: this.sortCompletedCourses(profile.completedCourses || []),
       sections: {
         hero: heroSection,
         skills: skillsSection,
@@ -232,6 +236,8 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
         const safeProfile = this.ensureProfileShape(profile);
         safeProfile.user.avatar = this.resolveAvatarUrl(safeProfile.user.avatar || '');
         this.profile = safeProfile;
+        this.cacheState = safeProfile.frontendCacheState || 'network';
+        this.completedCourses = this.sortCompletedCourses(safeProfile.completedCourses || []);
         this.avatarVersion = Date.now();
         this.refreshUserAvatarSrc();
         this.prepareRenderableData();
@@ -289,6 +295,18 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
 
   getTestimonials(): PublicProfileTestimonial[] {
     return this.testimonials;
+  }
+
+  private sortCompletedCourses(courses: PublicProfileCompletedCourse[]): PublicProfileCompletedCourse[] {
+    return courses
+      .filter((course) => Boolean(String(course?.title || '').trim()) && course.isVisible !== false)
+      .sort((left, right) => Number(left.order || 0) - Number(right.order || 0)
+        || this.courseDateValue(right.completionDate) - this.courseDateValue(left.completionDate));
+  }
+
+  private courseDateValue(value?: string | null): number {
+    const timestamp = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(timestamp) ? timestamp : 0;
   }
 
   isSectionVisible(section: keyof PublicProfileSections['visibility']): boolean {

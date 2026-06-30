@@ -50,6 +50,20 @@ const publicWorkExperienceSchema = new mongoose.Schema({
   ctaUrl: { type: String, default: '' }
 }, { _id: false });
 
+const completedCourseSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  provider: { type: String, default: '', trim: true },
+  category: { type: String, default: '', trim: true },
+  skills: [{ type: String, trim: true }],
+  completionDate: { type: Date, default: null },
+  duration: { type: String, default: '', trim: true },
+  certificateUrl: { type: String, default: '', trim: true },
+  credentialId: { type: String, default: '', trim: true },
+  description: { type: String, default: '', trim: true },
+  order: { type: Number, default: 0 },
+  isVisible: { type: Boolean, default: true }
+}, { _id: true });
+
 const publicHeroSectionSchema = new mongoose.Schema({
   greetingLabel: { type: String, default: '' },
   roleLabel: { type: String, default: '' },
@@ -138,6 +152,7 @@ const publicProfileSchema = new mongoose.Schema({
   upcomingProjects: [publicUpcomingProjectSchema],
   testimonials: [publicTestimonialSchema],
   workExperiences: [publicWorkExperienceSchema],
+  completedCourses: { type: [completedCourseSchema], default: [] },
   sections: {
     type: publicSectionCopySchema,
     default: () => ({})
@@ -171,5 +186,7 @@ const publicProfileSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 publicProfileSchema.index({ updatedAt: -1 });
+publicProfileSchema.index({ slug: 1, isPublic: 1 });
+publicProfileSchema.index({ userId: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('PublicProfile', publicProfileSchema);

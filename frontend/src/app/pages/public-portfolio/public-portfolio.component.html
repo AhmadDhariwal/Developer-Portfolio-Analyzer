@@ -3,6 +3,9 @@
   <div class="bg-gradient"></div>
   <div class="bg-glow top-glow"></div>
   <div class="bg-glow bottom-glow"></div>
+  <div class="portfolio-cache-state" *ngIf="cacheState !== 'network'" [class.stale]="cacheState === 'stale'">
+    {{ cacheState === 'stale' ? 'Showing cached portfolio while refresh is unavailable' : 'Loaded from cache' }}
+  </div>
 
   <!-- Navbar - Figma exact style -->
   <nav class="navbar">
@@ -173,7 +176,7 @@
   </section>
 
   <!-- Work Experience Section -->
-  <section class="work-section reveal-on-scroll">
+  <section class="work-section reveal-on-scroll" *ngIf="getWorkExperiences().length > 0">
     <div class="work-container">
       <h2 class="section-title">Work Experience</h2>
       
@@ -207,6 +210,37 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="courses-section reveal-on-scroll" *ngIf="completedCourses.length > 0">
+    <div class="courses-container">
+      <h2 class="section-title">Completed Courses</h2>
+      <div class="courses-grid">
+        <article class="course-card" *ngFor="let course of completedCourses">
+          <div class="course-heading">
+            <div>
+              <span class="course-category" *ngIf="course.category">{{ course.category }}</span>
+              <h3>{{ course.title }}</h3>
+              <p class="course-provider" *ngIf="course.provider">{{ course.provider }}</p>
+            </div>
+            <time *ngIf="course.completionDate" [attr.datetime]="course.completionDate">
+              {{ course.completionDate | date:'mediumDate' }}
+            </time>
+          </div>
+          <p class="course-description" *ngIf="course.description">{{ course.description }}</p>
+          <div class="course-skills" *ngIf="course.skills?.length">
+            <span *ngFor="let skill of course.skills">{{ skill }}</span>
+          </div>
+          <div class="course-meta" *ngIf="course.duration || course.credentialId">
+            <span *ngIf="course.duration">{{ course.duration }}</span>
+            <span *ngIf="course.credentialId">Credential: {{ course.credentialId }}</span>
+          </div>
+          <a *ngIf="course.certificateUrl" class="certificate-link" [href]="course.certificateUrl" target="_blank" rel="noopener noreferrer">
+            View certificate
+          </a>
+        </article>
       </div>
     </div>
   </section>
