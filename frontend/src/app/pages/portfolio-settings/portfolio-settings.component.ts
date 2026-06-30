@@ -9,7 +9,8 @@ import {
   PublicProfileSections,
   PublicProfileWorkExperience,
   PublicProfileUpcomingProject,
-  PublicProfileTestimonial
+  PublicProfileTestimonial,
+  PublicProfileCompletedCourse
 } from '../../shared/services/public-profile.service';
 
 @Component({
@@ -185,6 +186,22 @@ export class PortfolioSettingsComponent implements OnInit {
         }))
         : [],
       workExperiences: Array.isArray(profile.workExperiences) ? profile.workExperiences : [],
+      completedCourses: Array.isArray(profile.completedCourses)
+        ? profile.completedCourses.map((course) => ({
+          ...course,
+          title: String(course.title || ''),
+          provider: String(course.provider || ''),
+          category: String(course.category || ''),
+          completionDate: course.completionDate || null,
+          duration: String(course.duration || ''),
+          certificateUrl: String(course.certificateUrl || ''),
+          credentialId: String(course.credentialId || ''),
+          description: String(course.description || ''),
+          order: Number.isFinite(Number(course.order)) ? Number(course.order) : 0,
+          isVisible: course.isVisible !== false,
+          skills: Array.isArray(course.skills) ? course.skills : []
+        }))
+        : [],
       sections: {
         hero: heroSection,
         skills: skillsSection,
@@ -371,6 +388,45 @@ export class PortfolioSettingsComponent implements OnInit {
     this.profile.workExperiences.splice(index, 1);
   }
 
+  addCourse(): void {
+    if (!this.profile) return;
+    this.profile.completedCourses = [
+      ...(this.profile.completedCourses || []),
+      {
+        title: 'New Course',
+        provider: '',
+        category: '',
+        skills: [],
+        completionDate: null,
+        duration: '',
+        certificateUrl: '',
+        credentialId: '',
+        description: '',
+        order: (this.profile.completedCourses || []).length,
+        isVisible: true
+      }
+    ];
+  }
+
+  removeCourse(index: number): void {
+    if (!this.profile) return;
+    this.profile.completedCourses!.splice(index, 1);
+  }
+
+  addCourseSkill(courseIndex: number): void {
+    if (!this.profile) return;
+    const course = this.profile.completedCourses![courseIndex];
+    if (!course) return;
+    course.skills = [...(course.skills || []), 'New Skill'];
+  }
+
+  removeCourseSkill(courseIndex: number, skillIndex: number): void {
+    if (!this.profile) return;
+    const course = this.profile.completedCourses![courseIndex];
+    if (!course) return;
+    course.skills!.splice(skillIndex, 1);
+  }
+
   getStrengthTip(score: number): string {
     if (score < 40) return 'Add more project outcomes and specific skills to improve your recruiter visibility.';
     if (score < 70) return 'You have a solid foundation. Adding a professional summary and social links will push you to the top tier.';
@@ -442,6 +498,24 @@ export class PortfolioSettingsComponent implements OnInit {
       }))
       .filter((experience) => experience.title);
 
+    const normalizedCompletedCourses = (this.profile.completedCourses || [])
+      .map((course) => ({
+        title: String(course?.title || '').trim(),
+        provider: String(course?.provider || '').trim(),
+        category: String(course?.category || '').trim(),
+        skills: Array.isArray(course?.skills)
+          ? course.skills.map((skill) => String(skill || '').trim()).filter(Boolean)
+          : [],
+        completionDate: course?.completionDate || null,
+        duration: String(course?.duration || '').trim(),
+        certificateUrl: String(course?.certificateUrl || '').trim(),
+        credentialId: String(course?.credentialId || '').trim(),
+        description: String(course?.description || '').trim(),
+        order: Number.isFinite(Number(course?.order)) ? Number(course.order) : 0,
+        isVisible: course?.isVisible !== false
+      }))
+      .filter((course) => course.title);
+
     const normalizedSections: PublicProfileSections = {
       hero: {
         greetingLabel: String(this.profile.sections?.hero?.greetingLabel || '').trim(),
@@ -498,6 +572,7 @@ export class PortfolioSettingsComponent implements OnInit {
       upcomingProjects: normalizedUpcomingProjects as PublicProfileUpcomingProject[],
       testimonials: normalizedTestimonials as PublicProfileTestimonial[],
       workExperiences: normalizedWorkExperiences as PublicProfileWorkExperience[],
+      completedCourses: normalizedCompletedCourses as PublicProfileCompletedCourse[],
       sections: normalizedSections,
       socialLinks: this.profile.socialLinks
     };

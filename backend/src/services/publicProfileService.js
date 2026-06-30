@@ -642,13 +642,15 @@ const getOrCreatePublicProfile = async (userId) => {
   return profile;
 };
 
-const calculateProfileStrength = ({ profile, user, skills, projects, workExperiences, sections }) => {
+const calculateProfileStrength = ({ profile, user, skills, projects, workExperiences, sections, courses = [] }) => {
+  const visibleCourses = Array.isArray(courses) ? courses.filter((course) => course?.isVisible !== false && Boolean(trimText(course?.title || '', 160))) : [];
   const checks = [
     Boolean(trimText(profile?.headline || user?.jobTitle || '', 120)),
     Boolean(trimText(profile?.summary || user?.bio || '', 520)),
     (skills?.length || 0) >= 3,
     (projects?.length || 0) >= 1,
     (workExperiences?.length || 0) >= 1,
+    visibleCourses.length >= 1,
     Boolean(trimText(profile?.seoTitle || '', 120)),
     Boolean(trimText(profile?.seoDescription || '', 180)),
     Boolean(trimText(profile?.socialLinks?.linkedin || user?.linkedin || '', 240)),
@@ -745,7 +747,8 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
       skills: normalizedSkills,
       projects: normalizedProjects,
       workExperiences: normalizedWorkExperiences,
-      sections: normalizedSections
+      sections: normalizedSections,
+      courses: completedCourses
     }),
     momentum: latestReport ? {
       weekEndDate: latestReport.weekEndDate,

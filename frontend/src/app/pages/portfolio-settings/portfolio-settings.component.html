@@ -492,6 +492,89 @@
         </div>
       </section>
 
+      <!-- Section: Completed Courses -->
+      <section class="settings-card">
+        <div class="card-header">
+          <i class="mdi mdi-school-outline"></i>
+          <h3>Completed Courses</h3>
+          <button class="ghost-add-btn" (click)="addCourse()">+ Add Course</button>
+        </div>
+        <div class="card-content">
+          <div class="projects-stack">
+            <div class="project-entry" *ngFor="let course of profile.completedCourses; let courseIndex = index; trackBy: trackByIndex">
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'course-title-' + courseIndex">Course Title *</label>
+                  <input [id]="'course-title-' + courseIndex" [(ngModel)]="course.title" placeholder="e.g. Advanced Angular Development" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'course-provider-' + courseIndex">Provider</label>
+                  <input [id]="'course-provider-' + courseIndex" [(ngModel)]="course.provider" placeholder="e.g. Udemy, Coursera, Pluralsight" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'course-category-' + courseIndex">Category</label>
+                  <input [id]="'course-category-' + courseIndex" [(ngModel)]="course.category" placeholder="e.g. Frontend, Backend, DevOps" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'course-date-' + courseIndex">Completion Date</label>
+                  <input [id]="'course-date-' + courseIndex" type="date" [ngModel]="course.completionDate | date:'yyyy-MM-dd'" (ngModelChange)="course.completionDate = $event" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'course-duration-' + courseIndex">Duration</label>
+                  <input [id]="'course-duration-' + courseIndex" [(ngModel)]="course.duration" placeholder="e.g. 42 hours, 8 weeks" />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'course-credential-' + courseIndex">Credential ID</label>
+                  <input [id]="'course-credential-' + courseIndex" [(ngModel)]="course.credentialId" placeholder="e.g. UC-abc123" />
+                </div>
+              </div>
+              <div class="project-entry-header">
+                <div class="input-group">
+                  <label [attr.for]="'course-cert-url-' + courseIndex">Certificate URL</label>
+                  <input [id]="'course-cert-url-' + courseIndex" [(ngModel)]="course.certificateUrl" placeholder="https://..." />
+                </div>
+                <div class="input-group">
+                  <label [attr.for]="'course-order-' + courseIndex">Display Order</label>
+                  <input [id]="'course-order-' + courseIndex" type="number" min="0" [(ngModel)]="course.order" placeholder="0" />
+                </div>
+              </div>
+              <div class="input-group">
+                <label [attr.for]="'course-description-' + courseIndex">Description</label>
+                <textarea [id]="'course-description-' + courseIndex" [(ngModel)]="course.description" rows="2" placeholder="Brief description of what was covered and the key outcomes."></textarea>
+              </div>
+              <div class="tech-stack-manager">
+                <div class="manager-head">
+                  <label [attr.for]="'course-skills-' + courseIndex">Skills Gained</label>
+                  <button class="tiny-add" (click)="addCourseSkill(courseIndex)">+ Add</button>
+                </div>
+                <div class="tech-tags-input">
+                  <div class="tech-tag-chip" *ngFor="let skill of course.skills; let skillIndex = index; trackBy: trackByIndex">
+                    <input [id]="'course-skill-' + courseIndex + '-' + skillIndex" [(ngModel)]="course.skills![skillIndex]" placeholder="Skill" />
+                    <button title="remove skill" (click)="removeCourseSkill(courseIndex, skillIndex)"><i class="mdi mdi-close"></i></button>
+                  </div>
+                </div>
+              </div>
+              <div class="visibility-row">
+                <label [attr.for]="'course-visible-' + courseIndex" class="toggle-label">
+                  <input [id]="'course-visible-' + courseIndex" type="checkbox" [(ngModel)]="course.isVisible" />
+                  <span>Visible on public portfolio</span>
+                </label>
+              </div>
+              <button class="remove-project-btn" (click)="removeCourse(courseIndex)">
+                <i class="mdi mdi-trash-can-outline"></i> Delete Course
+              </button>
+            </div>
+          </div>
+          <div class="empty-placeholder" *ngIf="!(profile.completedCourses || []).length">
+            Add courses, certifications, or bootcamps to showcase continuous learning. Courses appear in the "Completed Courses" section of your public portfolio.
+          </div>
+        </div>
+      </section>
+
       <!-- Section: Social & SEO -->
       <section class="settings-card">
         <div class="card-header">
