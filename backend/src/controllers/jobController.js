@@ -1,4 +1,4 @@
-const { buildJobPool, refreshJobCache, findCachedJobById, getSourceHealth, getCacheHealth, normaliseJobFilters, isUsableJob } = require('../services/jobService');
+const { buildJobPool, findCachedJobById, getSourceHealth, getCacheHealth, normaliseJobFilters, isUsableJob } = require('../services/jobService');
 const AnalysisCache = require('../models/analysisCache');
 const Analysis = require('../models/analysis');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -8,6 +8,9 @@ const CareerSprint = require('../models/careerSprint');
 const { getIntegrationSecretsSync } = require('../services/platformSettingsService');
 const { buildCoursePool } = require('../services/courseService');
 const { rankJobs } = require('../utils/jobRanker');
+const COURSE_POOL_CACHE_TTL_MS = Math.max(60000, Number.parseInt(process.env.JOB_COURSE_POOL_CACHE_TTL_MS || '900000', 10) || 900000);
+const coursePoolCache = new Map();
+const coursePoolInflight = new Map();
 
 const uniqueStrings = (values = [], limit = 12) => {
   const seen = new Set();
@@ -80,18 +83,27 @@ const resolveDeveloperSignals = async (userId) => {
     };
   }
 
-  const [latestCache, latestResume, latestAnalysis, latestRecommendationCache] = await Promise.all([
-    AnalysisCache.findOne({
-      userId,
-      'analysisData.missingSkills.0': { $exists: true }
-    }).sort({ updatedAt: -1 }).lean(),
+  const [signalCacheResult, latestResume, latestAnalysis] = await Promise.all([
+    AnalysisCache.aggregate([
+      { $match: { userId } },
+      { $facet: {
+        skillGap: [
+          { $match: { 'analysisData.missingSkills.0': { $exists: true } } },
+          { $sort: { updatedAt: -1 } },
+          { $limit: 1 }
+        ],
+        recommendation: [
+          { $match: { 'analysisData.recommendationSignals.priorityRecommendations.0': { $exists: true } } },
+          { $sort: { updatedAt: -1 } },
+          { $limit: 1 }
+        ]
+      } }
+    ]),
     loadDefaultResumeAnalysis(userId),
-    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean(),
-    AnalysisCache.findOne({
-      userId,
-      'analysisData.recommendationSignals.priorityRecommendations.0': { $exists: true }
-    }).sort({ updatedAt: -1 }).lean()
+    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean()
   ]);
+  const latestCache = signalCacheResult?.[0]?.skillGap?.[0] || null;
+  const latestRecommendationCache = signalCacheResult?.[0]?.recommendation?.[0] || null;
 
   const skillGaps = Array.isArray(latestCache?.analysisData?.missingSkills)
     ? latestCache.analysisData.missingSkills.map((item) => item?.name || item)
@@ -227,7 +239,7 @@ const resolveCareerExplanationSignals = async ({
   let courses = [];
 
   try {
-    courses = await buildCoursePool({
+    const courseOptions = {
       platform: 'Other',
       limit: 12,
       careerStack,
@@ -235,7 +247,24 @@ const resolveCareerExplanationSignals = async ({
       topic: courseTopic,
       skillGaps: uniqueStrings([...(developerSignals.skillGaps || []), ...recommendationSkills], 12),
       knownSkills: developerSignals.knownSkills || []
-    });
+    };
+    const courseKey = JSON.stringify(courseOptions);
+    const cached = coursePoolCache.get(courseKey);
+    if (cached?.expiresAt > Date.now()) {
+      courses = cached.value;
+    } else {
+      let inflight = coursePoolInflight.get(courseKey);
+      if (!inflight) {
+        inflight = buildCoursePool(courseOptions);
+        coursePoolInflight.set(courseKey, inflight);
+      }
+      try {
+        courses = await inflight;
+        coursePoolCache.set(courseKey, { value: courses, expiresAt: Date.now() + COURSE_POOL_CACHE_TTL_MS });
+      } finally {
+        coursePoolInflight.delete(courseKey);
+      }
+    }
   } catch (error) {
     console.warn('[JobController] Learning Hub course signal unavailable:', error.message);
   }
@@ -374,6 +403,7 @@ const fetchJobs = async (req, res) => {
       knownSkills: developerSignals.knownSkills,
       resumeSkills: developerSignals.resumeSkills,
       githubSkills: developerSignals.githubSkills,
+      forceRefresh: ['true', '1'].includes(String(req.query.forceRefresh || req.query.refresh || '').toLowerCase()),
       ...filters
     });
     const allJobs = (jobPool.jobs || []).filter(isUsableJob);
@@ -443,29 +473,7 @@ const getJobById = async (req, res) => {
       return res.json({ job });
     }
 
-    await refreshJobCache({
-      careerStack,
-      knownSkills: developerSignals.knownSkills,
-      resumeSkills: developerSignals.resumeSkills,
-      platform: 'All',
-      location: 'All',
-      skills: '',
-      jobType: 'All',
-      expLevel: 'All'
-    });
-
-    const refreshedJob = await findCachedJobById(id);
-    if (refreshedJob && isUsableJob(refreshedJob)) {
-      const job = await rankAndEnrichCachedJob(refreshedJob, {
-        userId: req.user?._id,
-        careerStack,
-        experienceLevel,
-        developerSignals
-      });
-      return res.json({ job });
-    }
-
-    return res.status(404).json({ message: 'Job details are no longer available. Refresh Jobs Hub and try again.' });
+    return res.status(404).json({ message: 'Job details are no longer available. The cached job may have expired; refresh Jobs Hub and try again.' });
   } catch (error) {
     console.error('[JobController] Failed to fetch job details:', error.message);
     return res.status(500).json({ message: 'Failed to fetch job details. Please try again.' });

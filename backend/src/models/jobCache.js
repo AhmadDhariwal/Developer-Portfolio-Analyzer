@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const JOB_CACHE_TTL_HOURS = Math.max(24, Math.min(48, Number.parseInt(process.env.JOB_CACHE_TTL_HOURS || '36', 10) || 36));
+const JOB_CACHE_RETENTION_DAYS = Math.max(3, Number.parseInt(process.env.JOB_CACHE_RETENTION_DAYS || '7', 10) || 7);
 
 const jobCacheSchema = new mongoose.Schema({
   jobId: {
@@ -94,15 +95,22 @@ const jobCacheSchema = new mongoose.Schema({
     default: Date.now,
     index: true
   },
+  freshUntil: {
+    type: Date,
+    required: true,
+    default: () => new Date(Date.now() + (JOB_CACHE_TTL_HOURS * 60 * 60 * 1000)),
+    index: true
+  },
   expiresAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now() + (JOB_CACHE_TTL_HOURS * 60 * 60 * 1000))
+    default: () => new Date(Date.now() + (JOB_CACHE_RETENTION_DAYS * 24 * 60 * 60 * 1000))
   }
 }, { timestamps: true });
 
 jobCacheSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 jobCacheSchema.index({ source: 1, externalJobId: 1 });
-jobCacheSchema.index({ lastSynced: -1, updatedAt: -1, expiresAt: 1 });
+jobCacheSchema.index({ freshUntil: 1, lastSynced: -1, updatedAt: -1 });
+jobCacheSchema.index({ platform: 1, jobType: 1, freshUntil: 1, lastSynced: -1 });
 
 module.exports = mongoose.model('JobCache', jobCacheSchema);

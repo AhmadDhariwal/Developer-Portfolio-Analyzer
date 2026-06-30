@@ -36,14 +36,15 @@ export class JobCardComponent {
   }
 
   get postedLabel(): string {
-    if (!this.job.postedDate) return 'Recently';
+    if (!this.job.postedDate) return '';
     const days = Math.floor((Date.now() - new Date(this.job.postedDate).getTime()) / 86400000);
+    if (!Number.isFinite(days)) return '';
     if (days <= 0) return 'Today';
     if (days === 1) return '1 day ago';
     if (days < 7) return `${days} days ago`;
     if (days < 14) return '1 week ago';
     if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    return '1 month ago';
+    return new Date(this.job.postedDate).toLocaleDateString();
   }
 
   get jobTypeClass(): string {
@@ -52,7 +53,7 @@ export class JobCardComponent {
 
   get sourceLabel(): string {
     const source = String(this.job.source || '').trim();
-    return source || 'Suggested';
+    return source;
   }
 
   get applyLink(): string {

@@ -28,6 +28,8 @@ import { AuthService } from '../../shared/services/auth.service';
 const INITIAL_DISPLAY = 10;
 const PAGE_SIZE = 10;
 const JOB_STATE_STORAGE_KEY = 'devinsight_public_jobs_state';
+const MAX_UI_STATE_ENTRIES = 200;
+const UI_STATE_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const SOURCE_LABELS: Record<string, string> = {
   jsearch: 'JSearch',
   jooble: 'Jooble',
@@ -63,7 +65,10 @@ export class JobsComponent implements OnInit, OnDestroy {
   sourceFailures: JobsResponse['sourceFailures'] = [];
   jsearchConfigured = true;
   fromCache = false;
+  frontendCached = false;
+  isStale = false;
   isMobileFiltersOpen = false;
+  isMobileInsightsOpen = false;
 
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
   readonly PAGE_SIZE = PAGE_SIZE;
@@ -72,6 +77,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   private readonly uiStateMap = new Map<string, JobUiState>();
   private requestToken = 0;
   private lastProfileSignature = '';
+  private activeRequestKey = '';
 
   constructor(
     private readonly jobService: JobService,
@@ -239,6 +245,11 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.resetAndFetch();
   }
 
+  toggleMobileInsights(): void {
+    this.isMobileInsightsOpen = !this.isMobileInsightsOpen;
+    this.cdr.markForCheck();
+  }
+
   refreshJobs(): void {
     this.jobService.clearCache();
     this.resetAndFetch();
@@ -262,10 +273,11 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   onSimilar(job: Job): void {
-    const focusSkill = job.skills?.[0] || '';
+    const focusSkill = job.skills?.[0] || job.missingSkills?.[0] || '';
     this.pendingFilters = normalizeJobFilters({
       ...this.pendingFilters,
-      skills: focusSkill
+      skills: focusSkill,
+      platform: focusSkill ? this.pendingFilters.platform : (job.platform || this.pendingFilters.platform)
     });
     this.applyFilters();
   }
@@ -280,6 +292,7 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   private resetAndFetch(): void {
     this.requestToken += 1;
+    this.activeRequestKey = '';
     this.allJobs = [];
     this.displayCount = INITIAL_DISPLAY;
     this.currentPage = 0;
@@ -287,10 +300,20 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.totalJobs = 0;
     this.errorMessage = '';
     this.recommendedBasedOn = null;
+    this.sourceMessage = '';
+    this.primarySource = '';
+    this.sourceSummary = {};
+    this.sourceFailures = [];
+    this.fromCache = false;
+    this.frontendCached = false;
+    this.isStale = false;
     this.fetchPage(1, false);
   }
 
   private fetchPage(page: number, append: boolean): void {
+    const requestKey = JSON.stringify({ filters: this.activeFilters, page, limit: PAGE_SIZE });
+    if (this.activeRequestKey === requestKey) return;
+    this.activeRequestKey = requestKey;
     const currentRequest = ++this.requestToken;
     if (append) {
       this.isLoadingMore = true;
@@ -304,10 +327,12 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.jobService.getJobs(this.activeFilters, page, PAGE_SIZE).subscribe({
       next: (response) => {
         if (currentRequest !== this.requestToken) return;
+        this.activeRequestKey = '';
         this.applyResponse(response, append, page);
       },
       error: (error) => {
         if (currentRequest !== this.requestToken) return;
+        this.activeRequestKey = '';
         this.errorMessage = error?.error?.message || 'Failed to load jobs. Please try again.';
         this.isLoading = false;
         this.isLoadingMore = false;
@@ -329,6 +354,8 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.sourceFailures = response.sourceFailures || [];
     this.jsearchConfigured = response.jsearchConfigured ?? true;
     this.fromCache = Boolean(response.fromCache);
+    this.frontendCached = Boolean(response.frontendCached);
+    this.isStale = Boolean(response.diagnostics?.cacheFallback?.stale);
     this.displayCount = append ? this.visibleJobs.length : Math.min(INITIAL_DISPLAY, this.visibleJobs.length);
     this.isLoading = false;
     this.isLoadingMore = false;
@@ -354,16 +381,39 @@ export class JobsComponent implements OnInit, OnDestroy {
       const raw = localStorage.getItem(this.stateStorageKey);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Record<string, JobUiState>;
-      Object.entries(parsed).forEach(([id, state]) => this.uiStateMap.set(id, state));
+      const cutoff = Date.now() - UI_STATE_TTL_MS;
+      Object.entries(parsed)
+        .filter(([id, state]) => Boolean(id) && state && (state.saved || state.applied || state.hidden))
+        .filter(([, state]) => !state.updatedAt || state.updatedAt >= cutoff)
+        .sort((left, right) => Number(right[1].updatedAt || 0) - Number(left[1].updatedAt || 0))
+        .slice(0, MAX_UI_STATE_ENTRIES)
+        .forEach(([id, state]) => this.uiStateMap.set(id, state));
+      this.persistUiState();
     } catch {
       this.uiStateMap.clear();
     }
   }
 
   private setUiState(jobId: string, state: JobUiState): void {
-    this.uiStateMap.set(jobId, state);
-    localStorage.setItem(this.stateStorageKey, JSON.stringify(Object.fromEntries(this.uiStateMap.entries())));
+    this.uiStateMap.delete(jobId);
+    if (state.saved || state.applied || state.hidden) {
+      this.uiStateMap.set(jobId, { ...state, updatedAt: Date.now() });
+    }
+    while (this.uiStateMap.size > MAX_UI_STATE_ENTRIES) {
+      const oldestId = this.uiStateMap.keys().next().value as string | undefined;
+      if (!oldestId) break;
+      this.uiStateMap.delete(oldestId);
+    }
+    this.persistUiState();
     this.cdr.markForCheck();
+  }
+
+  private persistUiState(): void {
+    try {
+      localStorage.setItem(this.stateStorageKey, JSON.stringify(Object.fromEntries(this.uiStateMap.entries())));
+    } catch {
+      // Preferences are optional; storage failures must not break the feed.
+    }
   }
 
   private get stateStorageKey(): string {

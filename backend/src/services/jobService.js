@@ -112,6 +112,13 @@ const SKILL_ALIASES = {
 };
 const JOB_CACHE_TTL_HOURS = Math.max(24, Math.min(48, Number.parseInt(process.env.JOB_CACHE_TTL_HOURS || '36', 10) || 36));
 const JOB_CACHE_TTL_MS = JOB_CACHE_TTL_HOURS * 60 * 60 * 1000;
+const JOB_CACHE_RETENTION_MS = Math.max(3, Number.parseInt(process.env.JOB_CACHE_RETENTION_DAYS || '7', 10) || 7) * 86400000;
+const JOB_POOL_CACHE_TTL_MS = Math.max(30000, Number.parseInt(process.env.JOB_POOL_CACHE_TTL_MS || '300000', 10) || 300000);
+const JOB_SOURCE_DEADLINE_MS = Math.max(3000, Number.parseInt(process.env.JOB_SOURCE_DEADLINE_MS || '12000', 10) || 12000);
+const SOURCE_HEALTH_WRITE_INTERVAL_MS = Math.max(60000, Number.parseInt(process.env.JOB_SOURCE_HEALTH_WRITE_INTERVAL_MS || '300000', 10) || 300000);
+const jobPoolCache = new Map();
+const jobPoolInflight = new Map();
+const sourceHealthWriteState = new Map();
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toText = (value) => String(value || '').trim();
@@ -257,6 +264,12 @@ async function updateSourceHealthStats(sourceResults = []) {
     const source = normaliseSourceKey(result.source);
     const jobsFetched = Array.isArray(result.jobs) ? result.jobs.length : 0;
     const reachable = Boolean(result.configured && !result.failure);
+    const stateKey = `${Boolean(result.configured)}|${reachable}|${result.failure?.reason || ''}|${result.failure?.status || ''}`;
+    const previous = sourceHealthWriteState.get(source);
+    if (previous?.stateKey === stateKey && Date.now() - previous.writtenAt < SOURCE_HEALTH_WRITE_INTERVAL_MS) {
+      return null;
+    }
+    sourceHealthWriteState.set(source, { stateKey, writtenAt: Date.now() });
     const update = {
       source,
       configured: Boolean(result.configured),
@@ -302,7 +315,7 @@ function buildSourceResult(source, jobs = [], failure = null, configured = true,
 }
 
 function computeCacheExpiry() {
-  return new Date(Date.now() + JOB_CACHE_TTL_MS);
+  return new Date(Date.now() + JOB_CACHE_RETENTION_MS);
 }
 
 function toJobCacheDocument(job = {}) {
@@ -330,6 +343,7 @@ function toJobCacheDocument(job = {}) {
     applyUrl: toText(normalized.applyUrl || normalized.url),
     postedDate: normalized.postedDate,
     lastSynced: new Date(),
+    freshUntil: new Date(Date.now() + JOB_CACHE_TTL_MS),
     expiresAt: computeCacheExpiry()
   };
 }
@@ -446,9 +460,18 @@ async function syncJobsToCache(jobs = []) {
   }
 }
 
-async function loadActiveCachedJobs() {
+function buildCacheQuery(filters = {}, includeStale = false) {
   const now = new Date();
-  const records = await JobCache.find({ expiresAt: { $gt: now } })
+  const query = includeStale
+    ? { expiresAt: { $gt: now } }
+    : { expiresAt: { $gt: now }, $or: [{ freshUntil: { $gt: now } }, { freshUntil: { $exists: false } }] };
+  if (filters.platform && filters.platform !== 'All') query.platform = filters.platform;
+  if (filters.jobType && filters.jobType !== 'All') query.jobType = new RegExp(`^${filters.jobType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+  return query;
+}
+
+async function loadCachedJobs(filters = {}, includeStale = false) {
+  const records = await JobCache.find(buildCacheQuery(filters, includeStale))
     .sort({ lastSynced: -1, updatedAt: -1 })
     .lean();
 
@@ -463,6 +486,7 @@ async function findCachedJobById(id = '') {
 
   const record = await JobCache.findOne({
     expiresAt: { $gt: new Date() },
+    $and: [{ $or: [{ freshUntil: { $gt: new Date() } }, { freshUntil: { $exists: false } }] }],
     $or: [
       { jobId: normalizedId },
       { externalJobId: normalizedId }
@@ -1623,13 +1647,33 @@ function isUsableJob(job = {}) {
 }
 
 async function fetchLiveJobSources(query, filters) {
+  const withDeadline = (source, promise) => new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(buildSourceResult(source, [], buildSourceFailure({
+      source,
+      reason: 'timeout',
+      configured: true,
+      detail: `Source exceeded ${JOB_SOURCE_DEADLINE_MS}ms deadline`
+    }), true)), JOB_SOURCE_DEADLINE_MS);
+    promise.then((result) => {
+      clearTimeout(timer);
+      resolve(result);
+    }, (error) => {
+      clearTimeout(timer);
+      resolve(buildSourceResult(source, [], buildSourceFailure({
+        source,
+        reason: 'request_failed',
+        configured: true,
+        detail: error?.message || String(error)
+      }), true));
+    });
+  });
   const results = await Promise.all([
-    fetchJSearchJobs(query, 40),
-    fetchJoobleJobs(query, filters, 35),
-    fetchAdzunaJobs(query, filters, 35),
-    fetchRemotiveJobs(query, 35),
-    fetchArbeitnowJobs(query, 35),
-    fetchRemoteOkJobs(query, 35)
+    withDeadline('jsearch', fetchJSearchJobs(query, 40)),
+    withDeadline('jooble', fetchJoobleJobs(query, filters, 35)),
+    withDeadline('adzuna', fetchAdzunaJobs(query, filters, 35)),
+    withDeadline('remotive', fetchRemotiveJobs(query, 35)),
+    withDeadline('arbeitnow', fetchArbeitnowJobs(query, 35)),
+    withDeadline('remoteok', fetchRemoteOkJobs(query, 35))
   ]);
 
   const failures = results
@@ -1702,13 +1746,29 @@ async function buildJobPool(options = {}) {
     resumeSkills
   }, filters);
 
+  const forceRefresh = options.forceRefresh === true;
+  const signature = crypto.createHash('sha1').update(JSON.stringify({
+    careerStack, experienceLevel, skillGaps, knownSkills, resumeSkills, githubSkills,
+    platform: filters.platform, location: filters.location, skills: filters.skills,
+    jobType: filters.jobType, expLevel: filters.expLevel
+  })).digest('hex');
+  const cachedPool = jobPoolCache.get(signature);
+  if (!forceRefresh && cachedPool?.expiresAt > Date.now()) return cachedPool.value;
+  if (!forceRefresh && jobPoolInflight.has(signature)) return jobPoolInflight.get(signature);
+
+  const build = (async () => {
   const syncResult = await refreshJobCache({
     careerStack,
     knownSkills,
     resumeSkills,
     ...filters
   });
-  const cachedJobs = await loadActiveCachedJobs();
+  let cachedJobs = await loadCachedJobs(filters, false);
+  let staleFallbackUsed = false;
+  if (!cachedJobs.length && syncResult.liveResult.diagnostics.allLiveSourcesFailed) {
+    cachedJobs = await loadCachedJobs(filters, true);
+    staleFallbackUsed = cachedJobs.length > 0;
+  }
   let pool = cachedJobs;
   const hasActiveFilters = [filters.platform, filters.location, filters.jobType, filters.expLevel]
     .some((value) => value && value !== 'All')
@@ -1754,11 +1814,21 @@ async function buildJobPool(options = {}) {
       },
       cacheFallback: {
         available: cachedJobs.length,
-        used: syncResult.liveResult.jobs.length === 0 && cachedJobs.length > 0
+        used: syncResult.liveResult.jobs.length === 0 && cachedJobs.length > 0,
+        stale: staleFallbackUsed
       },
       fromCacheOnly: syncResult.liveResult.jobs.length === 0 && rankedJobs.length > 0
     }
   };
+  })();
+  jobPoolInflight.set(signature, build);
+  try {
+    const value = await build;
+    jobPoolCache.set(signature, { value, expiresAt: Date.now() + JOB_POOL_CACHE_TTL_MS });
+    return value;
+  } finally {
+    jobPoolInflight.delete(signature);
+  }
 }
 
 module.exports = {

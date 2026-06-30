@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
@@ -13,7 +13,9 @@ import {
 @Injectable({ providedIn: 'root' })
 export class JobService {
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly cache = new Map<string, Observable<unknown>>();
+  private readonly cacheTtlMs = 60 * 60 * 1000;
+  private readonly maxCacheEntries = 60;
+  private readonly cache = new Map<string, { value$: Observable<unknown>; expiresAt: number }>();
 
   constructor(private readonly http: HttpClient) {}
 
@@ -84,17 +86,46 @@ export class JobService {
   }
 
   private once<T>(key: string, source$: Observable<T>): Observable<T> {
-    const existing = this.cache.get(key) as Observable<T> | undefined;
-    if (existing) {
-      return existing;
+    const now = Date.now();
+    this.pruneCache(now);
+    const existing = this.cache.get(key);
+    if (existing && existing.expiresAt > now) {
+      this.cache.delete(key);
+      this.cache.set(key, existing);
+      return (existing.value$ as Observable<T>).pipe(
+        map((value) => this.markFrontendCacheHit(value))
+      );
     }
 
     const shared$ = source$.pipe(
+      catchError((error) => {
+        this.cache.delete(key);
+        return throwError(() => error);
+      }),
       shareReplay({ bufferSize: 1, refCount: false })
     );
 
-    this.cache.set(key, shared$);
+    this.cache.set(key, { value$: shared$, expiresAt: now + this.cacheTtlMs });
+    this.pruneCache(now);
     return shared$;
+  }
+
+  private pruneCache(now = Date.now()): void {
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt <= now) this.cache.delete(key);
+    }
+    while (this.cache.size > this.maxCacheEntries) {
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (!oldestKey) break;
+      this.cache.delete(oldestKey);
+    }
+  }
+
+  private markFrontendCacheHit<T>(value: T): T {
+    if (value && typeof value === 'object' && 'jobs' in (value as object)) {
+      return { ...(value as object), frontendCached: true } as T;
+    }
+    return value;
   }
 
   private normalizeResponse(response: JobsResponse | null | undefined, filters: JobFilters, requestedPage: number): JobsResponse {
@@ -141,7 +172,7 @@ export class JobService {
     };
   }
 
-  private normalizeJob(job: Partial<Job> | null | undefined, index: number): Job {
+  private normalizeJob(job: Partial<Job> | null | undefined, _index: number): Job {
     const url = String(job?.url || '').trim();
     const applyUrl = String(job?.applyUrl || url || '').trim();
     const recommendedCourse = job?.recommendedCourse
@@ -163,29 +194,29 @@ export class JobService {
       : null;
 
     return {
-      id: String(job?.id || `job-${index}`).trim(),
+      id: String(job?.id || job?.externalJobId || job?.applyUrl || job?.url || '').trim(),
       externalJobId: String(job?.externalJobId || '').trim(),
-      title: String(job?.title || 'Software Engineer').trim(),
-      company: String(job?.company || 'Technology Company').trim(),
+      title: String(job?.title || '').trim(),
+      company: String(job?.company || '').trim(),
       companyLogo: String(job?.companyLogo || '').trim(),
-      location: String(job?.location || 'Remote').trim(),
-      salary: String(job?.salary || 'Competitive').trim(),
-      jobType: String(job?.jobType || 'Full Time').trim(),
+      location: String(job?.location || '').trim(),
+      salary: String(job?.salary || '').trim(),
+      jobType: String(job?.jobType || '').trim(),
       skills: Array.isArray(job?.skills)
         ? job!.skills.map((skill) => String(skill || '').trim()).filter(Boolean).slice(0, 8)
         : [],
       postedDate: String(job?.postedDate || '').trim(),
-      description: String(job?.description || 'Explore a role aligned with your developer profile.').trim(),
+      description: String(job?.description || '').trim(),
       requirements: Array.isArray(job?.requirements)
         ? job!.requirements.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 14)
         : [],
       benefits: Array.isArray(job?.benefits)
         ? job!.benefits.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 10)
         : [],
-      platform: (job?.platform || 'Other') as Job['platform'],
+      platform: (job?.platform || '') as Job['platform'],
       url,
       applyUrl,
-      experienceLevel: String(job?.experienceLevel || 'Entry').trim(),
+      experienceLevel: String(job?.experienceLevel || '').trim(),
       source: String(job?.source || '').trim(),
       score: Number(job?.score ?? 0) || 0,
       matchScore: Number(job?.matchScore ?? 0) || 0,

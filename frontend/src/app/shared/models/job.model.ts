@@ -22,7 +22,7 @@ export interface Job {
   description: string;
   requirements: string[];
   benefits: string[];
-  platform: JobPlatform;
+  platform: JobPlatform | '';
   url: string;
   applyUrl: string;
   experienceLevel: string;
@@ -82,6 +82,7 @@ export interface JobsResponse {
   totalPages: number;
   hasMore: boolean;
   fromCache?: boolean;
+  frontendCached?: boolean;
   sourceMessage?: string;
   primarySource?: string;
   sourceSummary?: Record<string, number>;
@@ -123,7 +124,7 @@ export interface JobsResponse {
     };
     dedupeJobs?: { before: number; after: number; removed: number };
     rankJobs?: { inputCount: number; sourceSummary?: Record<string, number> };
-    cacheFallback?: { available: number; used: boolean };
+    cacheFallback?: { available: number; used: boolean; stale?: boolean };
     cacheWrite?: {
       attempted: number;
       synced: number;
@@ -149,6 +150,7 @@ export interface JobUiState {
   saved: boolean;
   applied: boolean;
   hidden: boolean;
+  updatedAt?: number;
 }
 
 export const DEFAULT_JOB_FILTERS: JobFilters = {

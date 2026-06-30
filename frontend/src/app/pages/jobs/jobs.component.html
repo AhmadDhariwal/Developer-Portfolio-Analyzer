@@ -24,9 +24,9 @@
           <span class="stat-label">Page</span>
           <strong>{{ currentPage || 1 }}/{{ totalPages }}</strong>
         </div>
-        <div class="stat-chip accent" *ngIf="fromCache">
+        <div class="stat-chip accent" *ngIf="fromCache || frontendCached">
           <span class="stat-label">Pool</span>
-          <strong>Cached</strong>
+          <strong>{{ isStale ? 'Stale' : 'Cached' }}</strong>
         </div>
       </div>
 
@@ -44,6 +44,16 @@
     </div>
   </header>
 
+  <button
+    class="mobile-insights-toggle"
+    type="button"
+    (click)="toggleMobileInsights()"
+    [attr.aria-expanded]="isMobileInsightsOpen"
+  >
+    {{ isMobileInsightsOpen ? 'Hide job insights' : 'Show job insights and source status' }}
+  </button>
+
+  <div class="upper-insights" [class.mobile-expanded]="isMobileInsightsOpen">
   <section class="insight-strip" [class.with-filters]="hasActiveFilters">
     <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters">
       <div class="insight-header">
@@ -51,7 +61,8 @@
           <span class="eyebrow">Recommended Based On</span>
           <h2>Your current developer context</h2>
         </div>
-        <span class="cache-pill" *ngIf="fromCache">Cached pool</span>
+        <span class="cache-pill stale" *ngIf="isStale; else cachedPool">Stale fallback</span>
+        <ng-template #cachedPool><span class="cache-pill" *ngIf="fromCache || frontendCached">Cached pool</span></ng-template>
       </div>
 
       <p class="insight-summary">{{ recommendationSummary }}</p>
@@ -65,13 +76,13 @@
           <span>Experience</span>
           <strong>{{ recommendedBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
         </div>
-        <div class="context-pill">
+        <div class="context-pill" *ngIf="recommendedBasedOn?.knownSkills?.length">
           <span>Known Skills</span>
-          <strong>{{ recommendedBasedOn?.knownSkills?.length ? recommendedBasedOn?.knownSkills?.join(', ') : 'Profile signals only' }}</strong>
+          <strong>{{ recommendedBasedOn?.knownSkills?.join(', ') }}</strong>
         </div>
-        <div class="context-pill">
+        <div class="context-pill" *ngIf="recommendedBasedOn?.skillGaps?.length">
           <span>Skill Gaps</span>
-          <strong>{{ recommendedBasedOn?.skillGaps?.length ? recommendedBasedOn?.skillGaps?.join(', ') : 'General role-fit balancing' }}</strong>
+          <strong>{{ recommendedBasedOn?.skillGaps?.join(', ') }}</strong>
         </div>
       </div>
     </article>
@@ -112,9 +123,10 @@
         {{ item.label }}: {{ item.count }}
       </span>
       <span class="source-pill warning" *ngFor="let failure of sourceFailureItems" [title]="failure.reason">
-        {{ failure.label }} failed
+        {{ failure.label }}: {{ failure.reason }}
       </span>
     </div>
+  </div>
   </div>
 
   <div class="jobs-layout">
