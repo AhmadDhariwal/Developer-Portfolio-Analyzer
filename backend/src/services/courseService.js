@@ -1,6 +1,14 @@
 const axios = require('axios');
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+const YOUTUBE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const YOUTUBE_FAILURE_TTL_MS = 10 * 60 * 1000;
+const YOUTUBE_CIRCUIT_TTL_MS = 30 * 60 * 1000;
+const YOUTUBE_CACHE_MAX_ENTRIES = 40;
+const YOUTUBE_FAILURE_THRESHOLD = 3;
+const youtubeCache = new Map();
+let youtubeFailureCount = 0;
+let youtubeCircuitOpenUntil = 0;
 const COURSE_POOL_SIZE = {
   All: 30,
   YouTube: 40
@@ -174,27 +182,28 @@ function ensureTopics(topics = [], title = '', description = '') {
 }
 
 function normaliseCourse(course = {}, index = 0) {
-  const title = toTrimmedString(course.title) || `Recommended Course ${index + 1}`;
-  const description = toTrimmedString(course.description) || 'Strengthen your developer profile with guided learning and hands-on practice.';
+  const title = toTrimmedString(course.title);
+  const description = toTrimmedString(course.description);
+  const normalizedPlatform = normalisePlatform(course.platform);
   const platform = course.platform === 'edX' || course.platform === 'freeCodeCamp'
     ? course.platform
-    : normalisePlatform(course.platform) === 'Other'
+    : normalizedPlatform === 'Other'
       ? 'edX'
-      : normalisePlatform(course.platform);
+      : normalizedPlatform;
   const safePlatform = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(platform)
     ? platform
     : 'Udemy';
-  const rating = clamp(Number.parseFloat(course.rating) || 4.1, 0, 5);
+  const rating = clamp(Number.parseFloat(course.rating) || 0, 0, 5);
   const reviewCount = Math.max(0, Number.parseInt(course.reviewCount, 10) || 0);
   const durationHours = Math.max(0, Number(course.durationHours) || 0);
   const duration = toTrimmedString(course.duration)
-    || (durationHours ? `${durationHours.toFixed(durationHours >= 10 ? 0 : 1)}h` : 'Self-paced');
+    || (durationHours ? `${durationHours.toFixed(durationHours >= 10 ? 0 : 1)}h` : '');
   const level = ['Beginner', 'Intermediate', 'Advanced'].includes(course.level)
     ? course.level
     : 'All Levels';
   const url = /^https?:\/\//i.test(toTrimmedString(course.url)) ? toTrimmedString(course.url) : buildFallbackUrl({ title, platform: safePlatform });
   const topics = ensureTopics(course.topics, title, description);
-  const popularity = clamp(Number(course.popularity) || 50, 10, 100);
+  const popularity = clamp(Number(course.popularity) || 0, 0, 100);
 
   return {
     id: toTrimmedString(course.id) || `course_${safePlatform.toLowerCase()}_${index + 1}`,
@@ -407,10 +416,24 @@ function blendDefaultPlatformPages(courses = []) {
 }
 
 async function fetchYouTubeCourses(query, maxResults = 20) {
+  const cacheKey = `${toTrimmedString(query).toLowerCase()}|${Math.min(50, Math.max(1, maxResults))}`;
+  const now = Date.now();
+  const cached = youtubeCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    youtubeCache.delete(cacheKey);
+    youtubeCache.set(cacheKey, cached);
+    return { ...cached.result, fromCache: true };
+  }
+  if (cached) youtubeCache.delete(cacheKey);
+
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey || apiKey === 'your_youtube_api_key') {
     console.warn('[CourseService] YOUTUBE_API_KEY not set. Skipping YouTube source.');
-    return [];
+    return { courses: [], status: 'unavailable', reason: 'YouTube is not configured. Showing ranked provider alternatives.', fromCache: false };
+  }
+
+  if (youtubeCircuitOpenUntil > now) {
+    return { courses: [], status: 'circuit-open', reason: 'YouTube is temporarily unavailable. Showing ranked provider alternatives.', fromCache: false };
   }
 
   try {
@@ -456,7 +479,11 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
       }
     }
 
-    if (!videoIds.length) return [];
+    if (!videoIds.length) {
+      const emptyResult = { courses: [], status: 'unavailable', reason: 'YouTube returned no matching courses.', fromCache: false };
+      setYouTubeCache(cacheKey, emptyResult, YOUTUBE_FAILURE_TTL_MS);
+      return emptyResult;
+    }
 
     const detailsResponse = await axios.get(`${YOUTUBE_API_BASE}/videos`, {
       params: {
@@ -467,7 +494,7 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
       timeout: 10000
     });
 
-    return (detailsResponse.data.items || [])
+    const courses = (detailsResponse.data.items || [])
       .map((item, index) => {
         const snippet = item.snippet || {};
         const statistics = item.statistics || {};
@@ -500,9 +527,35 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
       })
       .filter(Boolean)
       .slice(0, maxResults);
+
+    youtubeFailureCount = 0;
+    youtubeCircuitOpenUntil = 0;
+    const result = { courses, status: 'available', reason: '', fromCache: false };
+    setYouTubeCache(cacheKey, result, YOUTUBE_CACHE_TTL_MS);
+    return result;
   } catch (error) {
     console.error('[CourseService] YouTube API error:', error.response?.data?.error?.message || error.message);
-    return [];
+    youtubeFailureCount += 1;
+    if (youtubeFailureCount >= YOUTUBE_FAILURE_THRESHOLD) {
+      youtubeCircuitOpenUntil = Date.now() + YOUTUBE_CIRCUIT_TTL_MS;
+      youtubeFailureCount = 0;
+    }
+    const result = {
+      courses: [],
+      status: youtubeCircuitOpenUntil > Date.now() ? 'circuit-open' : 'unavailable',
+      reason: 'YouTube could not be reached. Showing ranked provider alternatives.',
+      fromCache: false
+    };
+    setYouTubeCache(cacheKey, result, YOUTUBE_FAILURE_TTL_MS);
+    return result;
+  }
+}
+
+function setYouTubeCache(key, result, ttlMs) {
+  if (youtubeCache.has(key)) youtubeCache.delete(key);
+  youtubeCache.set(key, { result, expiresAt: Date.now() + ttlMs });
+  while (youtubeCache.size > YOUTUBE_CACHE_MAX_ENTRIES) {
+    youtubeCache.delete(youtubeCache.keys().next().value);
   }
 }
 
@@ -544,10 +597,6 @@ function buildFallbackPool(platform = 'All', count = 20) {
     pool = allCourses.filter((course) => course.platform === platform);
   }
 
-  while (pool.length > 0 && pool.length < count) {
-    pool = [...pool, ...pool];
-  }
-
   return pool.slice(0, count);
 }
 
@@ -561,7 +610,7 @@ function dedupeCourses(courses = []) {
   });
 }
 
-async function buildCoursePool(options = {}) {
+async function buildCoursePoolWithMetadata(options = {}) {
   const filters = normaliseCourseFilters(options);
   const careerStack = toTrimmedString(options.careerStack) || 'Full Stack';
   const experienceLevel = toTrimmedString(options.experienceLevel) || 'Student';
@@ -581,22 +630,26 @@ async function buildCoursePool(options = {}) {
     topic: filters.topic
   };
 
-  const [youtubeCourses, curatedCourses] = await Promise.all([
-    youtubeCount > 0 ? fetchYouTubeCourses(query, youtubeCount) : Promise.resolve([]),
+  const [youtubeResult, curatedCourses] = await Promise.all([
+    youtubeCount > 0
+      ? fetchYouTubeCourses(query, youtubeCount)
+      : Promise.resolve({ courses: [], status: 'not-requested', reason: '', fromCache: false }),
     Promise.resolve(buildFallbackPool(filters.platform, curatedCount))
   ]);
 
-  let pool = dedupeCourses([...youtubeCourses, ...curatedCourses].map((course, index) => normaliseCourse(course, index)));
+  let pool = dedupeCourses([...youtubeResult.courses, ...curatedCourses]);
   pool = applyCourseFilters(pool, filters);
+  let fallbackUsed = youtubeCount > 0 && youtubeResult.status !== 'available';
 
   if (!pool.length) {
     const fallbackPool = filters.platform === 'YouTube'
-      ? await fetchYouTubeCourses(query, 20)
+      ? buildFallbackPool('All', 40)
       : buildFallbackPool(filters.platform, 40);
-    pool = applyCourseFilters(
-      dedupeCourses(fallbackPool.map((course, index) => normaliseCourse(course, index))),
-      filters
-    );
+    const fallbackFilters = filters.platform === 'YouTube'
+      ? { ...filters, platform: 'All' }
+      : filters;
+    pool = applyCourseFilters(dedupeCourses(fallbackPool), fallbackFilters);
+    fallbackUsed = fallbackUsed || filters.platform === 'YouTube';
   }
 
   pool = scoreAndRank(pool, rankingContext).map((course) => ({
@@ -608,10 +661,28 @@ async function buildCoursePool(options = {}) {
     pool = blendDefaultPlatformPages(pool);
   }
 
-  return pool;
+  return {
+    courses: pool,
+    sourceMetadata: {
+      source: fallbackUsed ? 'curated-fallback' : youtubeResult.courses.length ? 'mixed' : 'curated',
+      youtubeStatus: youtubeResult.fromCache ? 'cached' : youtubeResult.status,
+      fallbackUsed,
+      sourceMessage: fallbackUsed
+        ? (youtubeResult.reason || 'YouTube is unavailable. Showing ranked provider alternatives.')
+        : youtubeResult.fromCache
+          ? 'YouTube results were reused from the provider cache.'
+          : ''
+    }
+  };
+}
+
+async function buildCoursePool(options = {}) {
+  const result = await buildCoursePoolWithMetadata(options);
+  return result.courses;
 }
 
 module.exports = {
   buildCoursePool,
+  buildCoursePoolWithMetadata,
   normaliseCourseFilters
 };

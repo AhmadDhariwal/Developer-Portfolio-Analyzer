@@ -48,6 +48,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
   recommendedBasedOn: RecommendedBasedOn | null = null;
   isMobileFiltersOpen = false;
+  isInsightsExpanded = false;
 
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
   readonly PAGE_SIZE = PAGE_SIZE;
@@ -123,8 +124,15 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   get recommendationSummary(): string {
-    return this.recommendedBasedOn?.summary
-      || `Courses are recommended using your ${this.currentCareerStack} profile and ${this.currentExperienceLevel} experience level.`;
+    return this.recommendedBasedOn?.summary || '';
+  }
+
+  get sourceNotice(): string {
+    return this.recommendedBasedOn?.sourceMessage || '';
+  }
+
+  get isFallbackSource(): boolean {
+    return Boolean(this.recommendedBasedOn?.fallbackUsed);
   }
 
   ngOnInit(): void {
@@ -169,6 +177,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   onFiltersReset(): void {
     this.activeFilters = { ...DEFAULT_FILTERS };
+    this.isMobileFiltersOpen = false;
     this.courseService.clearCache();
     this.resetAndFetch();
   }
@@ -209,6 +218,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   toggleMobileFilters(): void {
     this.isMobileFiltersOpen = !this.isMobileFiltersOpen;
+    this.cdr.markForCheck();
+  }
+
+  toggleInsights(): void {
+    this.isInsightsExpanded = !this.isInsightsExpanded;
     this.cdr.markForCheck();
   }
 
@@ -269,7 +283,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.currentPage = response.page ?? page;
         this.totalPages = response.totalPages ?? 1;
         this.totalCourses = response.total ?? this.allCourses.length;
-        this.recommendedBasedOn = response.recommendedBasedOn ?? null;
+        this.recommendedBasedOn = response.recommendedBasedOn
+          ? {
+              ...response.recommendedBasedOn,
+              fromCache: Boolean(response.fromCache || response.fromFrontendCache)
+            }
+          : null;
         this.errorMessage = '';
         this.isLoading = false;
         this.isLoadingMore = false;

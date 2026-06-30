@@ -347,3 +347,15 @@
     flex-direction: column;
   }
 }
+
+
+@media (max-width: 1180px) {
+  .filters-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin: 0 -18px -18px;
+    padding: 14px 18px 18px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), #0f172a 24%);
+  }
+}

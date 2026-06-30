@@ -10,18 +10,18 @@ export interface PlatformColor {
 export interface Course {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   platform: CoursePlatform;
-  instructor: string;
-  rating: number;
-  reviewCount: number;
-  duration: string;
-  durationHours: number;
-  level: CourseLevel;
-  thumbnail: string;
+  instructor?: string;
+  rating?: number;
+  reviewCount?: number;
+  duration?: string;
+  durationHours?: number;
+  level?: CourseLevel;
+  thumbnail?: string;
   url: string;
   topics: string[];
-  popularity: number;
+  popularity?: number;
   relevanceScore?: number;
   finalScore?: number;
   whyRecommended?: string;
@@ -42,6 +42,10 @@ export interface RecommendedBasedOn {
   skillGapsUsed: string[];
   activeFilters: CourseFilters;
   fromCache?: boolean;
+  source?: 'mixed' | 'curated' | 'curated-fallback';
+  youtubeStatus?: 'available' | 'cached' | 'unavailable' | 'circuit-open' | 'not-requested';
+  fallbackUsed?: boolean;
+  sourceMessage?: string;
   summary: string;
 }
 
@@ -52,6 +56,7 @@ export interface CoursesResponse {
   totalPages: number;
   hasMore: boolean;
   fromCache?: boolean;
+  fromFrontendCache?: boolean;
   recommendedBasedOn?: RecommendedBasedOn | null;
 }
 

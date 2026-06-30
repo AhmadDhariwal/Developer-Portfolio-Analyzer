@@ -103,23 +103,6 @@
       </div>
     </div>
 
-    <div class="filter-group">
-      <div class="filter-label-row">
-        <label class="filter-label">Quick Topics</label>
-        <span class="quick-tip">Add one focus area at a time</span>
-      </div>
-      <div class="topic-grid">
-        <button
-          *ngFor="let topic of topicOptions"
-          class="topic-pill"
-          [class.active]="filters.topic === topic"
-          (click)="selectTopic(topic)"
-        >
-          {{ topic }}
-        </button>
-      </div>
-    </div>
-
     <div class="filters-footer">
       <div class="draft-note" [class.pending]="hasPendingChanges">
         <span *ngIf="hasPendingChanges">You have unapplied filter changes.</span>

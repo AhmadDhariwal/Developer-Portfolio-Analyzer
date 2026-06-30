@@ -1,8 +1,10 @@
 const crypto = require('node:crypto');
-const { buildCoursePool, normaliseCourseFilters } = require('../services/courseService');
+const { buildCoursePoolWithMetadata, normaliseCourseFilters } = require('../services/courseService');
 const AnalysisCache = require('../models/analysisCache');
 
-const COURSE_POOL_VERSION = 'courses_pool_v3';
+const COURSE_POOL_VERSION = 'courses_pool_v4';
+const COURSE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MAX_COURSE_CACHE_VARIANTS = 40;
 
 const uniqueStrings = (values = [], limit = 8) => {
   const seen = new Set();
@@ -21,15 +23,14 @@ const uniqueStrings = (values = [], limit = 8) => {
 };
 
 const resolveSkillSignals = async (userId) => {
-  if (!userId) {
-    return { skillGaps: [], knownSkills: [] };
-  }
+  if (!userId) return { skillGaps: [], knownSkills: [] };
 
   const latestSkillGap = await AnalysisCache.findOne({
     userId,
     'analysisData.missingSkills.0': { $exists: true }
   })
     .sort({ updatedAt: -1 })
+    .select({ 'analysisData.missingSkills': 1, 'analysisData.yourSkills': 1 })
     .lean();
 
   const missingSkills = Array.isArray(latestSkillGap?.analysisData?.missingSkills)
@@ -45,28 +46,24 @@ const resolveSkillSignals = async (userId) => {
   };
 };
 
-const buildPoolCacheKey = ({
-  careerStack,
-  experienceLevel,
-  skillGaps,
-  filters
-}) => {
+const buildPoolCacheKey = ({ userId, careerStack, experienceLevel, skillGaps, knownSkills, filters }) => {
   const poolSeed = JSON.stringify({
     careerStack,
     experienceLevel,
     skillGaps: uniqueStrings(skillGaps, 6),
+    knownSkills: uniqueStrings(knownSkills, 10),
     platform: filters.platform,
     rating: filters.rating,
     level: filters.level,
     topic: filters.topic,
     duration: filters.duration
   });
-
   const hash = crypto.createHash('sha256').update(poolSeed).digest('hex').slice(0, 20);
 
   return {
     poolHash: hash,
     cacheLookup: {
+      userId,
       githubUsername: `courses_pool_${hash}`,
       careerStack,
       experienceLevel,
@@ -82,7 +79,8 @@ const buildRecommendedBasedOn = ({
   experienceLevel,
   skillGaps,
   filters,
-  fromCache
+  fromCache,
+  sourceMetadata = {}
 }) => {
   const skillGapsUsed = uniqueStrings(skillGaps, 4);
   const activeFilters = {
@@ -92,7 +90,6 @@ const buildRecommendedBasedOn = ({
     duration: filters.duration,
     topic: filters.topic
   };
-
   const activeFilterParts = [];
   if (filters.platform !== 'All') activeFilterParts.push(filters.platform);
   if (filters.rating) activeFilterParts.push(`${filters.rating}+ rating`);
@@ -102,8 +99,12 @@ const buildRecommendedBasedOn = ({
 
   const summary = [
     `Courses are recommended for your ${careerStack} profile at ${experienceLevel} level.`,
-    skillGapsUsed.length ? `Top skill gaps used: ${skillGapsUsed.join(', ')}.` : 'Skill gap evidence is limited, so broader stack matching was used.',
-    activeFilterParts.length ? `Active filters: ${activeFilterParts.join(', ')}.` : 'No extra filters are active right now.'
+    skillGapsUsed.length
+      ? `Top skill gaps used: ${skillGapsUsed.join(', ')}.`
+      : 'Skill gap evidence is limited, so broader stack matching was used.',
+    activeFilterParts.length
+      ? `Active filters: ${activeFilterParts.join(', ')}.`
+      : 'No extra filters are active right now.'
   ].join(' ');
 
   return {
@@ -112,19 +113,81 @@ const buildRecommendedBasedOn = ({
     skillGapsUsed,
     activeFilters,
     fromCache,
-    summary
+    summary,
+    ...sourceMetadata
   };
+};
+
+const readCachedPage = async (cacheLookup, filters) => {
+  const startIndex = (filters.page - 1) * filters.limit;
+  const projection = {
+    'analysisData.allCourses': { $slice: [startIndex, filters.limit] },
+    'analysisData.total': 1,
+    'analysisData.sourceMetadata': 1
+  };
+  const cached = await AnalysisCache.findOne({
+    ...cacheLookup,
+    updatedAt: { $gte: new Date(Date.now() - COURSE_CACHE_TTL_MS) }
+  }).select(projection).lean();
+
+  if (!Number.isFinite(cached?.analysisData?.total)) return null;
+
+  const total = cached.analysisData.total;
+  const totalPages = Math.max(1, Math.ceil(total / filters.limit));
+  const safePage = Math.min(filters.page, totalPages);
+  let courses = Array.isArray(cached.analysisData.allCourses) ? cached.analysisData.allCourses : [];
+
+  if (safePage !== filters.page) {
+    const safeStart = (safePage - 1) * filters.limit;
+    const finalPage = await AnalysisCache.findOne(cacheLookup)
+      .select({ 'analysisData.allCourses': { $slice: [safeStart, filters.limit] } })
+      .lean();
+    courses = Array.isArray(finalPage?.analysisData?.allCourses) ? finalPage.analysisData.allCourses : [];
+  }
+
+  return {
+    courses,
+    total,
+    page: safePage,
+    totalPages,
+    sourceMetadata: cached.analysisData.sourceMetadata || {}
+  };
+};
+
+const pruneCourseCache = async (userId) => {
+  const cutoff = new Date(Date.now() - COURSE_CACHE_TTL_MS);
+  await AnalysisCache.deleteMany({
+    userId,
+    githubUsername: /^courses_pool_/,
+    $or: [
+      { analysisVersion: { $ne: COURSE_POOL_VERSION } },
+      { updatedAt: { $lt: cutoff } }
+    ]
+  });
+
+  const overflow = await AnalysisCache.find({
+    userId,
+    analysisVersion: COURSE_POOL_VERSION,
+    githubUsername: /^courses_pool_/
+  })
+    .sort({ updatedAt: -1 })
+    .skip(MAX_COURSE_CACHE_VARIANTS)
+    .select({ _id: 1 })
+    .lean();
+
+  if (overflow.length) {
+    await AnalysisCache.deleteMany({ _id: { $in: overflow.map((entry) => entry._id) } });
+  }
 };
 
 const fetchCourses = async (req, res) => {
   try {
+    const userId = req.user?._id;
     const careerStack = req.user?.careerStack || req.query.stack || 'Full Stack';
     const experienceLevel = req.user?.experienceLevel || req.query.experience || 'Student';
     const filters = normaliseCourseFilters(req.query);
-
-    const skillSignals = await resolveSkillSignals(req.user?._id);
+    const skillSignals = await resolveSkillSignals(userId);
     let skillGaps = skillSignals.skillGaps;
-    const knownSkills = skillSignals.knownSkills;
 
     if (req.query.skillGaps) {
       const override = Array.isArray(req.query.skillGaps)
@@ -133,68 +196,72 @@ const fetchCourses = async (req, res) => {
       skillGaps = uniqueStrings(override, 12);
     }
 
-    const { poolHash, cacheLookup } = buildPoolCacheKey({
+    const { cacheLookup } = buildPoolCacheKey({
+      userId,
       careerStack,
       experienceLevel,
       skillGaps,
+      knownSkills: skillSignals.knownSkills,
       filters
     });
 
-    let allCourses = null;
-    let fromCache = false;
+    let pageResult = await readCachedPage(cacheLookup, filters);
+    let fromCache = Boolean(pageResult);
 
-    const cached = await AnalysisCache.findOne(cacheLookup).lean();
-    if (Array.isArray(cached?.analysisData?.allCourses)) {
-      allCourses = cached.analysisData.allCourses;
-      fromCache = true;
-    }
-
-    if (!allCourses) {
-      allCourses = await buildCoursePool({
+    if (!pageResult) {
+      const built = await buildCoursePoolWithMetadata({
         careerStack,
         experienceLevel,
         skillGaps,
-        knownSkills,
+        knownSkills: skillSignals.knownSkills,
         ...filters
       });
+      const allCourses = built.courses;
+      const total = allCourses.length;
+      const totalPages = Math.max(1, Math.ceil(total / filters.limit));
+      const safePage = Math.min(filters.page, totalPages);
+      const startIndex = (safePage - 1) * filters.limit;
+
+      pageResult = {
+        courses: allCourses.slice(startIndex, startIndex + filters.limit),
+        total,
+        page: safePage,
+        totalPages,
+        sourceMetadata: built.sourceMetadata
+      };
 
       await AnalysisCache.findOneAndUpdate(
         cacheLookup,
         {
           $set: {
-            userId: req.user?._id,
-            githubUsername: cacheLookup.githubUsername,
-            careerStack,
-            experienceLevel,
-            analysisVersion: COURSE_POOL_VERSION,
-            resumeHash: 'no-resume',
-            signalHash: poolHash,
-            analysisData: { allCourses }
+            ...cacheLookup,
+            analysisData: {
+              allCourses,
+              total,
+              sourceMetadata: built.sourceMetadata
+            }
           }
         },
-        { upsert: true }
+        { upsert: true, setDefaultsOnInsert: true }
       ).catch(() => null);
+
+      await pruneCourseCache(userId).catch(() => null);
     }
 
-    const total = Array.isArray(allCourses) ? allCourses.length : 0;
-    const totalPages = Math.max(1, Math.ceil(total / filters.limit));
-    const safePage = Math.min(filters.page, totalPages);
-    const startIndex = (safePage - 1) * filters.limit;
-    const courses = (allCourses || []).slice(startIndex, startIndex + filters.limit);
-
     res.json({
-      courses,
-      total,
-      page: safePage,
-      totalPages,
-      hasMore: safePage < totalPages,
+      courses: pageResult.courses,
+      total: pageResult.total,
+      page: pageResult.page,
+      totalPages: pageResult.totalPages,
+      hasMore: pageResult.page < pageResult.totalPages,
       fromCache,
       recommendedBasedOn: buildRecommendedBasedOn({
         careerStack,
         experienceLevel,
         skillGaps,
         filters,
-        fromCache
+        fromCache,
+        sourceMetadata: pageResult.sourceMetadata
       })
     });
   } catch (error) {

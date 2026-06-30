@@ -65,5 +65,19 @@ analysisCacheSchema.index({
     signalHash: 1
 });
 analysisCacheSchema.index({ userId: 1, analysisVersion: 1, updatedAt: -1 });
+analysisCacheSchema.index(
+    { userId: 1, updatedAt: -1 },
+    {
+        name: 'skill_gap_signal_lookup',
+        partialFilterExpression: { 'analysisData.missingSkills.0': { $exists: true } }
+    }
+);
+analysisCacheSchema.index(
+    { userId: 1, analysisVersion: 1, signalHash: 1, updatedAt: -1 },
+    {
+        name: 'course_pool_lookup',
+        partialFilterExpression: { analysisVersion: 'courses_pool_v4' }
+    }
+);
 
 module.exports = mongoose.model('AnalysisCache', analysisCacheSchema);

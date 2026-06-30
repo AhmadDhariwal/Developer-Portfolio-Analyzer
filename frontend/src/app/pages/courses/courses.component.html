@@ -44,30 +44,37 @@
     </div>
   </header>
 
-  <section class="insight-strip" [class.with-filters]="hasActiveFilters">
-    <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters">
+  <section class="insight-strip" [class.with-filters]="hasActiveFilters" *ngIf="recommendedBasedOn">
+    <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters" [class.mobile-collapsed]="!isInsightsExpanded">
       <div class="insight-header">
         <div>
           <span class="eyebrow">Recommended Based On</span>
           <h2>Your current developer context</h2>
         </div>
-        <span class="cache-pill" *ngIf="recommendedBasedOn?.fromCache">Cached pool</span>
+        <div class="insight-actions">
+          <span class="cache-pill" *ngIf="recommendedBasedOn.fromCache">Cached</span>
+          <button class="insight-toggle" type="button" (click)="toggleInsights()" [attr.aria-expanded]="isInsightsExpanded">
+            {{ isInsightsExpanded ? 'Hide context' : 'Show context' }}
+          </button>
+        </div>
       </div>
 
-      <p class="insight-summary">{{ recommendationSummary }}</p>
+      <div class="insight-details">
+        <p class="insight-summary">{{ recommendationSummary }}</p>
 
-      <div class="context-grid">
-        <div class="context-pill">
-          <span>Career Stack</span>
-          <strong>{{ recommendedBasedOn?.careerStack || currentCareerStack }}</strong>
-        </div>
-        <div class="context-pill">
-          <span>Experience</span>
-          <strong>{{ recommendedBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
-        </div>
-        <div class="context-pill wide">
-          <span>Top Skill Gaps</span>
-          <strong>{{ (recommendedBasedOn?.skillGapsUsed?.length ? recommendedBasedOn?.skillGapsUsed?.join(', ') : 'General stack-fit recommendations') }}</strong>
+        <div class="context-grid">
+          <div class="context-pill">
+            <span>Career Stack</span>
+            <strong>{{ recommendedBasedOn.careerStack }}</strong>
+          </div>
+          <div class="context-pill">
+            <span>Experience</span>
+            <strong>{{ recommendedBasedOn.experienceLevel }}</strong>
+          </div>
+          <div class="context-pill wide" *ngIf="recommendedBasedOn.skillGapsUsed.length">
+            <span>Top Skill Gaps</span>
+            <strong>{{ recommendedBasedOn.skillGapsUsed.join(', ') }}</strong>
+          </div>
         </div>
       </div>
     </article>
@@ -99,10 +106,16 @@
     </article>
   </section>
 
+  <div class="source-notice" *ngIf="sourceNotice" [class.fallback]="isFallbackSource" role="status">
+    <strong>{{ isFallbackSource ? 'Provider fallback active' : 'Course source' }}</strong>
+    <span>{{ sourceNotice }}</span>
+  </div>
+
   <div class="courses-layout">
     <aside class="filters-column" [class.mobile-open]="isMobileFiltersOpen">
       <div class="filters-overlay" (click)="toggleMobileFilters()"></div>
       <div class="filters-inner">
+        <button class="drawer-close" type="button" (click)="toggleMobileFilters()" aria-label="Close filters">Close</button>
         <app-course-filters
           [initialFilters]="activeFilters"
           [isApplying]="isLoading || isLoadingMore"

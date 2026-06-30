@@ -8,7 +8,6 @@ import {
   LEVEL_OPTIONS,
   PLATFORM_OPTIONS,
   RATING_OPTIONS,
-  TOPIC_OPTIONS,
   normalizeCourseFilters
 } from '../../models/course.model';
 
@@ -32,7 +31,6 @@ export class CourseFiltersComponent implements OnInit, OnChanges {
   readonly ratingOptions = RATING_OPTIONS;
   readonly levelOptions = LEVEL_OPTIONS;
   readonly durationOptions = DURATION_OPTIONS;
-  readonly topicOptions = TOPIC_OPTIONS;
 
   isCollapsed = false;
 
@@ -86,10 +84,6 @@ export class CourseFiltersComponent implements OnInit, OnChanges {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  selectTopic(topic: string): void {
-    this.filters.topic = this.filters.topic === topic ? '' : topic;
-    this.onFilterChange();
-  }
 
   clearTopic(): void {
     if (!this.filters.topic) return;

@@ -27,7 +27,7 @@
 
     <div class="thumb-top">
       <span class="platform-chip" [ngClass]="platformClass">{{ course.platform }}</span>
-      <span class="level-badge" [ngClass]="levelClass">{{ course.level }}</span>
+      <span class="level-badge" *ngIf="course.level" [ngClass]="levelClass">{{ course.level }}</span>
     </div>
 
     <div class="thumb-score" *ngIf="course.relevanceScore">
@@ -38,7 +38,7 @@
 
   <div class="card-body">
     <div class="meta-row">
-      <span class="duration-chip">
+      <span class="duration-chip" *ngIf="course.duration">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
@@ -50,7 +50,7 @@
 
     <h3 class="course-title" [title]="course.title">{{ course.title }}</h3>
 
-    <p class="instructor">
+    <p class="instructor" *ngIf="course.instructor">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
@@ -58,7 +58,7 @@
       {{ course.instructor }}
     </p>
 
-    <p class="description">{{ course.description }}</p>
+    <p class="description" *ngIf="course.description">{{ course.description }}</p>
 
     <p class="why-recommended" *ngIf="course.whyRecommended">
       <span>Why recommended</span>
@@ -70,16 +70,16 @@
     </div>
 
     <div class="card-footer">
-      <div class="rating-block">
-        <span class="rating-value">{{ course.rating.toFixed(1) }}</span>
-        <span class="stars">
+      <div class="rating-block" *ngIf="course.rating || course.reviewCount">
+        <span class="rating-value" *ngIf="course.rating">{{ course.rating.toFixed(1) }}</span>
+        <span class="stars" *ngIf="course.rating">
           <span
             *ngFor="let star of starsArray; let i = index"
             class="star"
             [ngClass]="getStarClass(i)"
           ></span>
         </span>
-        <span class="review-count">{{ formatReviews(course.reviewCount) }} reviews</span>
+        <span class="review-count" *ngIf="course.reviewCount">{{ formatReviews(course.reviewCount) }} reviews</span>
       </div>
 
       <button class="btn-view" (click)="$event.stopPropagation(); openCourse()">

@@ -62,6 +62,7 @@ describe('CourseService caching', () => {
     const cached = await firstValueFrom(service.getCourses({ platform: 'Coursera' }, 1, 10));
 
     expect(cached.courses[0]?.title).toBe('Backend Foundations');
+    expect(cached.fromFrontendCache).toBe(true);
     httpMock.expectNone(`${environment.apiBaseUrl}/courses?page=1&limit=10&platform=Coursera`);
   });
 
@@ -110,4 +111,55 @@ describe('CourseService caching', () => {
     });
     await secondPromise;
   });
+
+  it('evicts failed requests so retry can reach the backend', async () => {
+    const failedPromise = firstValueFrom(service.getCourses({ topic: 'Testing' }, 1, 10));
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Testing`).flush(
+      { message: 'Temporary failure' },
+      { status: 503, statusText: 'Service Unavailable' }
+    );
+    let rejected = false;
+    try {
+      await failedPromise;
+    } catch {
+      rejected = true;
+    }
+    expect(rejected).toBe(true);
+
+    const retryPromise = firstValueFrom(service.getCourses({ topic: 'Testing' }, 1, 10));
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Testing`).flush({
+      courses: [],
+      total: 0,
+      page: 1,
+      totalPages: 1,
+      hasMore: false
+    });
+    await retryPromise;
+  });
+
+  it('deduplicates response courses and leaves unavailable display fields empty', async () => {
+    const promise = firstValueFrom(service.getCourses({}, 1, 10));
+    const duplicate = {
+      id: 'course-3',
+      title: 'Production Angular',
+      platform: 'Coursera',
+      url: 'https://example.com/course/3',
+      topics: ['Angular', 'Angular']
+    };
+
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10`).flush({
+      courses: [duplicate, duplicate],
+      total: 1,
+      page: 1,
+      totalPages: 1,
+      hasMore: false
+    });
+
+    const response = await promise;
+    expect(response.courses.length).toBe(1);
+    expect(response.courses[0]?.topics).toEqual(['Angular']);
+    expect(response.courses[0]?.duration).toBeUndefined();
+    expect(response.courses[0]?.rating).toBeUndefined();
+  });
+
 });

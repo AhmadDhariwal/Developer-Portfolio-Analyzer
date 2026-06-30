@@ -5,6 +5,7 @@
 
 .course-card {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
@@ -216,6 +217,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .instructor,
