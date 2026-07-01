@@ -432,9 +432,13 @@ export class ApiService {
   }
 
   /* ── Public Profiles ── */
-  getPublicProfile(slug: string): Observable<any> {
+  getPublicProfile(slug: string, preview?: string): Observable<any> {
     const cacheBust = Date.now();
-    return this.http.get(`${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}?_=${cacheBust}`);
+    let url = `${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}?_=${cacheBust}`;
+    if (preview) {
+      url += `&preview=${encodeURIComponent(preview)}`;
+    }
+    return this.http.get(url);
   }
 
   getMyPublicProfile(): Observable<any> {

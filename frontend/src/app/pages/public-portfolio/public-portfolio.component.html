@@ -216,30 +216,55 @@
 
   <section class="courses-section reveal-on-scroll" *ngIf="completedCourses.length > 0">
     <div class="courses-container">
-      <h2 class="section-title">Completed Courses</h2>
+      <div class="section-header">
+        <h2 class="section-title">Academic & Professional Courses</h2>
+        <p class="section-subtitle">A collection of completed certifications and specialized learning tracks</p>
+      </div>
+      
       <div class="courses-grid">
         <article class="course-card" *ngFor="let course of completedCourses">
+          <div class="card-top-border"></div>
+          
           <div class="course-heading">
-            <div>
+            <div class="heading-left">
               <span class="course-category" *ngIf="course.category">{{ course.category }}</span>
-              <h3>{{ course.title }}</h3>
-              <p class="course-provider" *ngIf="course.provider">{{ course.provider }}</p>
+              <h3 class="course-title">{{ course.title }}</h3>
+              <div class="provider-row" *ngIf="course.provider">
+                <i class="mdi mdi-school-outline"></i>
+                <span class="course-provider">{{ course.provider }}</span>
+              </div>
             </div>
-            <time *ngIf="course.completionDate" [attr.datetime]="course.completionDate">
-              {{ course.completionDate | date:'mediumDate' }}
-            </time>
+            <div class="heading-right" *ngIf="course.completionDate">
+              <div class="date-badge">
+                <i class="mdi mdi-calendar-check-outline"></i>
+                <time [attr.datetime]="course.completionDate">{{ course.completionDate | date:'mediumDate' }}</time>
+              </div>
+            </div>
           </div>
+          
           <p class="course-description" *ngIf="course.description">{{ course.description }}</p>
+          
           <div class="course-skills" *ngIf="course.skills?.length">
-            <span *ngFor="let skill of course.skills">{{ skill }}</span>
+            <span class="skill-badge" *ngFor="let skill of course.skills">{{ skill }}</span>
           </div>
-          <div class="course-meta" *ngIf="course.duration || course.credentialId">
-            <span *ngIf="course.duration">{{ course.duration }}</span>
-            <span *ngIf="course.credentialId">Credential: {{ course.credentialId }}</span>
+          
+          <div class="course-meta-grid" *ngIf="course.duration || course.credentialId">
+            <div class="meta-item" *ngIf="course.duration">
+              <i class="mdi mdi-clock-outline"></i>
+              <span>{{ course.duration }}</span>
+            </div>
+            <div class="meta-item" *ngIf="course.credentialId">
+              <i class="mdi mdi-shield-check-outline"></i>
+              <span class="credential-text" title="Credential ID: {{ course.credentialId }}">ID: {{ course.credentialId }}</span>
+            </div>
           </div>
-          <a *ngIf="course.certificateUrl" class="certificate-link" [href]="course.certificateUrl" target="_blank" rel="noopener noreferrer">
-            View certificate
-          </a>
+          
+          <div class="course-actions" *ngIf="course.certificateUrl">
+            <a class="certificate-btn" [href]="course.certificateUrl" target="_blank" rel="noopener noreferrer">
+              <span>View Certificate</span>
+              <i class="mdi mdi-open-in-new"></i>
+            </a>
+          </div>
         </article>
       </div>
     </div>

@@ -166,7 +166,8 @@ export class PublicProfileService {
       return existing.value$.pipe(map((profile) => ({ ...profile, frontendCacheState: 'cached' })));
     }
 
-    const request$ = this.api.getPublicProfile(slug).pipe(
+    const previewVal = options.queryParams?.['preview'] as string | undefined;
+    const request$ = this.api.getPublicProfile(slug, previewVal).pipe(
       map((profile) => ({ ...profile, frontendCacheState: 'network' as const })),
       catchError((error) => {
         this.cache.delete(key);

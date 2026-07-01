@@ -18,6 +18,7 @@ import { UpcomingProjectsSectionComponent } from './components/upcoming-projects
 import { TestimonialsSectionComponent } from './components/testimonials-section/testimonials-section.component';
 import { CtaSectionComponent } from './components/cta-section/cta-section.component';
 import { environment } from '../../../environments/environment';
+import { combineLatest } from 'rxjs';
 
 type SectionId = 'home' | 'about' | 'projects' | 'upcoming' | 'testimonials' | 'cta' | 'contact';
 type LinkableProject = { url?: string; repoUrl?: string; imageUrl?: string };
@@ -71,10 +72,11 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe((params) => {
+    combineLatest([this.route.params, this.route.queryParams]).subscribe(([params, queryParams]) => {
       const slug = params['slug'];
       if (slug) {
-        this.fetchProfile(slug);
+        const preview = queryParams['preview'] ? String(queryParams['preview']) : undefined;
+        this.fetchProfile(slug, preview);
       }
     });
   }
@@ -227,11 +229,12 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private fetchProfile(slug: string): void {
+  private fetchProfile(slug: string, preview?: string): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.copyFeedback = '';
-    this.profileService.getPublicProfile(slug).subscribe({
+    const options = preview ? { queryParams: { preview } } : undefined;
+    this.profileService.getPublicProfile(slug, options).subscribe({
       next: (profile) => {
         const safeProfile = this.ensureProfileShape(profile);
         safeProfile.user.avatar = this.resolveAvatarUrl(safeProfile.user.avatar || '');

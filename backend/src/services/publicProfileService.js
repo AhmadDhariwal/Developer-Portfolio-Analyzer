@@ -953,7 +953,8 @@ const getPublicProfileBySlug = async (slug, req) => {
   const cacheKey = String(slug || '').trim().toLowerCase();
   const cached = publicProfileCache.get(cacheKey);
   const cacheMs = Date.now() - cacheStartedAt;
-  if (cached?.freshUntil > Date.now()) {
+  const isPreview = req?.query?.preview !== undefined;
+  if (!isPreview && cached?.freshUntil > Date.now()) {
     void PublicProfile.findById(cached.payload?.id)
       .then((profile) => profile ? recordProfileView({ profile, req }) : null)
       .catch((error) => console.warn('[PublicProfile] Cached view tracking failed:', error.message));
@@ -963,7 +964,11 @@ const getPublicProfileBySlug = async (slug, req) => {
 
   const dbStartedAt = Date.now();
   try {
-    const profile = await PublicProfile.findOne({ slug, isPublic: true });
+    const query = { slug };
+    if (!isPreview) {
+      query.isPublic = true;
+    }
+    const profile = await PublicProfile.findOne(query);
     if (!profile) return null;
 
     const user = await User.findById(profile.userId)
@@ -972,11 +977,13 @@ const getPublicProfileBySlug = async (slug, req) => {
     const dbMs = Date.now() - dbStartedAt;
     await recordProfileView({ profile, req });
     const payload = await buildPublicProfilePayload(profile, user, req, { publicOnly: true });
-    setPublicProfileCache(profile.slug, payload);
+    if (!isPreview) {
+      setPublicProfileCache(profile.slug, payload);
+    }
     console.info('[PublicProfileTiming]', { slug: cacheKey, cache: 'miss', cacheMs, githubDataMs: 0, aiMs: 0, dbMs, totalMs: Date.now() - startedAt });
     return payload;
   } catch (error) {
-    if (cached?.staleUntil > Date.now()) {
+    if (!isPreview && cached?.staleUntil > Date.now()) {
       console.warn('[PublicProfileTiming]', { slug: cacheKey, cache: 'stale-fallback', cacheMs, githubDataMs: 0, aiMs: 0, dbMs: Date.now() - dbStartedAt, totalMs: Date.now() - startedAt, error: error.message });
       return cached.payload;
     }
