@@ -71,13 +71,13 @@
 
   <div class="sim-grid">
     <div class="panel input-panel">
-      <section class="panel-section context-section">
+      <section class="panel-section context-section" [class.mobile-collapsed]="!showMobileContext">
         <div class="section-head">
           <div>
             <span class="section-kicker">Signals</span>
             <h2>Scenario Prefill Context</h2>
           </div>
-          <span class="loading-chip">{{ contextCacheLabel }}</span>
+          <div class="section-status"><span class="loading-chip">{{ contextCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileContext = !showMobileContext">{{ showMobileContext ? 'Collapse' : 'Expand' }}</button></div>
         </div>
 
         <div class="context-summary" *ngIf="context as ctx; else contextSkeleton">
@@ -140,7 +140,7 @@
         <div class="source-strip" *ngIf="context?.sources?.length">
           <div class="source-pill" *ngFor="let source of context?.sources; trackBy: trackBySource" [class.connected]="source.connected">
             <span class="dot"></span>
-            {{ source.label }}
+            <span>{{ source.label }}</span><small>{{ source.connected ? 'Connected' : 'Disconnected' }}</small>
           </div>
         </div>
       </section>
@@ -337,13 +337,13 @@
         </div>
       </section>
 
-      <section class="panel-section history-section">
+      <section class="panel-section history-section" [class.mobile-collapsed]="!showMobileHistory">
         <div class="section-head compact">
           <div>
             <span class="section-kicker">History</span>
             <h2>Saved Scenarios</h2>
           </div>
-          <span class="loading-chip">{{ historyCacheLabel }}</span>
+          <div class="section-status"><span class="loading-chip">{{ historyCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileHistory = !showMobileHistory">{{ showMobileHistory ? 'Collapse' : 'Expand' }}</button></div>
         </div>
 
         <div class="history-list" *ngIf="scenarioHistory.length; else historyEmpty">

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap } from 'rxjs';
+import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
@@ -9,8 +9,14 @@ import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service'
 })
 export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
-  private scenarioContextCache: any | null = null;
-  private scenarioHistoryCache = new Map<number, any>();
+  private readonly scenarioContextTtlMs = 15 * 60 * 1000;
+  private readonly scenarioHistoryTtlMs = 5 * 60 * 1000;
+  private readonly scenarioCacheMaxEntries = 50;
+  private readonly scenarioContextCache = new Map<string, { value: any; expiresAt: number }>();
+  private readonly scenarioHistoryCache = new Map<string, { value: any; expiresAt: number }>();
+  private readonly scenarioContextInflight = new Map<string, Observable<any>>();
+  private readonly scenarioHistoryInflight = new Map<string, Observable<any>>();
+  private scenarioSignalHash = '';
 
   constructor(
     private readonly http: HttpClient,
@@ -363,16 +369,40 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 
-  getScenarioSimulatorContext(forceRefresh = false): Observable<any> {
-    if (!forceRefresh && this.scenarioContextCache) {
-      return of(this.scenarioContextCache);
-    }
-    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
-    return this.http.get(url).pipe(tap((response) => {
-      this.scenarioContextCache = response;
-    }));
+  private getScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string): any | null {
+    const entry = cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) { cache.delete(key); return null; }
+    cache.delete(key); cache.set(key, entry); return entry.value;
   }
 
+  private setScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string, value: any, ttlMs: number): void {
+    cache.delete(key); cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+    while (cache.size > this.scenarioCacheMaxEntries) {
+      const oldestKey = cache.keys().next().value as string | undefined;
+      if (!oldestKey) break;
+      cache.delete(oldestKey);
+    }
+  }
+
+  getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
+    const key = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
+    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioContextCache, key) : null;
+    if (cached) return of(cached);
+    const inflight = this.scenarioContextInflight.get(key);
+    if (inflight) return inflight;
+    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
+    const request$ = this.http.get(url).pipe(
+      tap((response: any) => {
+        this.scenarioSignalHash = response?.context?.signalHash || this.scenarioSignalHash;
+        this.setScenarioCacheValue(this.scenarioContextCache, key, response, this.scenarioContextTtlMs);
+      }),
+      finalize(() => this.scenarioContextInflight.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.scenarioContextInflight.set(key, request$);
+    return request$;
+  }
   saveScenarioSimulation(payload: {
     name?: string;
     baselineHiringScore: number;
@@ -388,16 +418,21 @@ export class ApiService {
     }));
   }
 
-  getScenarioSimulationHistory(limit = 8, forceRefresh = false): Observable<any> {
-    if (!forceRefresh && this.scenarioHistoryCache.has(limit)) {
-      return of(this.scenarioHistoryCache.get(limit));
-    }
+  getScenarioSimulationHistory(limit = 8, forceRefresh = false, profileSignature = ''): Observable<any> {
+    const key = `history:${profileSignature}:${this.scenarioSignalHash}:${limit}:${forceRefresh}`;
+    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioHistoryCache, key) : null;
+    if (cached) return of(cached);
+    const inflight = this.scenarioHistoryInflight.get(key);
+    if (inflight) return inflight;
     const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
-    return this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(tap((response) => {
-      this.scenarioHistoryCache.set(limit, response);
-    }));
+    const request$ = this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(
+      tap((response) => this.setScenarioCacheValue(this.scenarioHistoryCache, key, response, this.scenarioHistoryTtlMs)),
+      finalize(() => this.scenarioHistoryInflight.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.scenarioHistoryInflight.set(key, request$);
+    return request$;
   }
-
   deleteScenarioSimulation(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(tap(() => {
       this.invalidateScenarioHistoryCache();
@@ -406,10 +441,13 @@ export class ApiService {
 
   invalidateScenarioHistoryCache(): void {
     this.scenarioHistoryCache.clear();
+    this.scenarioHistoryInflight.clear();
   }
 
   invalidateScenarioContextCache(): void {
-    this.scenarioContextCache = null;
+    this.scenarioContextCache.clear();
+    this.scenarioContextInflight.clear();
+    this.scenarioSignalHash = '';
   }
 
   private invalidateDeveloperSignalState(): void {
