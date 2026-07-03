@@ -388,7 +388,7 @@ export class ApiService {
   getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
     const key = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
     const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioContextCache, key) : null;
-    if (cached) return of(cached);
+    if (cached) return of({ ...cached, frontendCacheHit: true });
     const inflight = this.scenarioContextInflight.get(key);
     if (inflight) return inflight;
     const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
@@ -396,6 +396,12 @@ export class ApiService {
       tap((response: any) => {
         this.scenarioSignalHash = response?.context?.signalHash || this.scenarioSignalHash;
         this.setScenarioCacheValue(this.scenarioContextCache, key, response, this.scenarioContextTtlMs);
+        const resolvedKey = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
+        if (resolvedKey !== key) {
+          this.setScenarioCacheValue(this.scenarioContextCache, resolvedKey, response, this.scenarioContextTtlMs);
+        }
+        const normalKey = `context:${profileSignature}:${this.scenarioSignalHash}:false`;
+        this.setScenarioCacheValue(this.scenarioContextCache, normalKey, response, this.scenarioContextTtlMs);
       }),
       finalize(() => this.scenarioContextInflight.delete(key)),
       shareReplay({ bufferSize: 1, refCount: false })
@@ -421,12 +427,20 @@ export class ApiService {
   getScenarioSimulationHistory(limit = 8, forceRefresh = false, profileSignature = ''): Observable<any> {
     const key = `history:${profileSignature}:${this.scenarioSignalHash}:${limit}:${forceRefresh}`;
     const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioHistoryCache, key) : null;
-    if (cached) return of(cached);
+    if (cached) return of({ ...cached, frontendCacheHit: true });
     const inflight = this.scenarioHistoryInflight.get(key);
     if (inflight) return inflight;
     const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
     const request$ = this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(
-      tap((response) => this.setScenarioCacheValue(this.scenarioHistoryCache, key, response, this.scenarioHistoryTtlMs)),
+      tap((response) => {
+        this.setScenarioCacheValue(this.scenarioHistoryCache, key, response, this.scenarioHistoryTtlMs);
+        const resolvedKey = `history:${profileSignature}:${this.scenarioSignalHash}:${limit}:${forceRefresh}`;
+        if (resolvedKey !== key) {
+          this.setScenarioCacheValue(this.scenarioHistoryCache, resolvedKey, response, this.scenarioHistoryTtlMs);
+        }
+        const normalKey = `history:${profileSignature}:${this.scenarioSignalHash}:${limit}:false`;
+        this.setScenarioCacheValue(this.scenarioHistoryCache, normalKey, response, this.scenarioHistoryTtlMs);
+      }),
       finalize(() => this.scenarioHistoryInflight.delete(key)),
       shareReplay({ bufferSize: 1, refCount: false })
     );

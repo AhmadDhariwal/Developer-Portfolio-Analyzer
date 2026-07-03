@@ -137,6 +137,13 @@ const invalidateHistoryCache = (userId) => {
     .forEach((key) => historyCache.delete(key));
 };
 
+const invalidateContextCache = (userId) => {
+  const normalizedUserId = String(userId || '');
+  Array.from(contextCache.entries())
+    .filter(([, entry]) => entry?.value?.__scenarioUserId === normalizedUserId)
+    .forEach(([key]) => contextCache.delete(key));
+};
+
 const ROLE_ALIASES = {
   frontend: 'frontend',
   'front end': 'frontend',
@@ -751,6 +758,10 @@ const simulateHiringOutcome = (payload = {}, signalContext = {}) => {
       suggestedDurationWeeks,
       sources
     }),
+    dataTrust: {
+      baseline: { label: 'User-provided or estimated input baseline' },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
     meta: {
       role: normalizedRole,
       level: normalizedLevel,
@@ -819,6 +830,11 @@ const buildFallbackContext = (warning, userId) => {
       baselineJobMatch: 48, durationWeeks: 6, skills: [], projects: []
     },
     summary: 'Scenario context is temporarily unavailable. Safe defaults are being used.',
+    dataTrust: {
+      baselineHiringScore: { label: 'Estimated baseline', source: 'safe-default', signalCount: 0, fallbackUsed: true },
+      baselineJobMatch: { label: 'Estimated baseline', source: 'safe-default', signalCount: 0, fallbackUsed: true },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
     signalHash,
     warnings: [warning],
     cache: { hit: false, key: `fallback:${String(userId || '')}`, version: SCENARIO_CONTEXT_VERSION }
@@ -942,22 +958,24 @@ const loadScenarioContext = async (userId, options = {}) => {
 
   const role = mapCareerStackToRole(user?.activeCareerStack || user?.careerStack);
   const level = normalizeLevel(user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel);
-  const baselineHiringScore = clamp(average([
+  const hiringBaselineSignals = [
     user?.score,
     analysis?.readinessScore,
     resolvedResumeAnalysis?.atsScore,
     resumeSignal.atsScore,
     skillGapSignal.coverage,
     portfolioSignal.completenessScore
-  ], 55));
-  const baselineJobMatch = clamp(average([
+  ].filter((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+  const jobMatchBaselineSignals = [
     analysis?.skillScore,
     analysis?.githubScore,
     resolvedResumeAnalysis?.keywordDensity,
     resumeSignal.keywordDensity,
     githubSignal.scores?.healthScore,
     jobsDemandSignal.sampledJobs ? 55 : 0
-  ], 48));
+  ].filter((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+  const baselineHiringScore = clamp(average(hiringBaselineSignals, 55));
+  const baselineJobMatch = clamp(average(jobMatchBaselineSignals, 48));
   const suggestedSkills = uniqueStrings([
     ...missingSkills,
     ...recommendationSkills,
@@ -1067,10 +1085,26 @@ const loadScenarioContext = async (userId, options = {}) => {
     },
     summary: `Recommendations are prefetched from your ${user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
     signalHash,
+    dataTrust: {
+      baselineHiringScore: {
+        label: 'Estimated baseline',
+        source: hiringBaselineSignals.length ? 'developer-signals' : 'safe-default',
+        signalCount: hiringBaselineSignals.length,
+        fallbackUsed: hiringBaselineSignals.length === 0
+      },
+      baselineJobMatch: {
+        label: 'Estimated baseline',
+        source: jobMatchBaselineSignals.length ? 'developer-signals' : 'safe-default',
+        signalCount: jobMatchBaselineSignals.length,
+        fallbackUsed: jobMatchBaselineSignals.length === 0
+      },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
     cache: { hit: false, key: contextCacheKey, version: SCENARIO_CONTEXT_VERSION }
   };
 
   context.sourceContextSummary = buildSourceContextSummary(context, signalHash);
+  Object.defineProperty(context, '__scenarioUserId', { value: String(userId || ''), enumerable: false });
   setCachedValue(contextCache, contextCacheKey, context, CONTEXT_CACHE_MAX_SIZE);
   logTiming('context total', startedAt, `cache=miss forceRefresh=${!!options.forceRefresh}`);
   return context;
@@ -1302,6 +1336,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
       sourceScenarioHash: task.sourceScenarioHash
     }))
   };
+  invalidateContextCache(userId);
   logTiming('sprint creation total', startedAt);
   return response;
 };

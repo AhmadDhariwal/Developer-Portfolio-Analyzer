@@ -423,20 +423,20 @@
       <ng-container *ngIf="result && !isRunning">
         <section class="result-top-grid">
           <article class="metric-card gradient-violet">
-            <span class="metric-label">Hiring Score</span>
+            <span class="metric-label">Estimated Hiring Score</span>
             <div class="metric-values">
               <span class="metric-before">{{ result.baseline.hiringScore }}</span>
-              <span class="metric-arrow">→</span>
+              <span class="metric-arrow" aria-hidden="true">&rarr;</span>
               <strong [style.color]="scoreColor(result.predicted.hiringScore)">{{ result.predicted.hiringScore }}</strong>
             </div>
             <span class="metric-delta">{{ deltaLabel(result.improvements.hiringScore) }} pts</span>
           </article>
 
           <article class="metric-card gradient-blue">
-            <span class="metric-label">Job Match</span>
+            <span class="metric-label">Estimated Job Match</span>
             <div class="metric-values">
               <span class="metric-before">{{ result.baseline.jobMatch }}%</span>
-              <span class="metric-arrow">→</span>
+              <span class="metric-arrow" aria-hidden="true">&rarr;</span>
               <strong [style.color]="scoreColor(result.predicted.jobMatch)">{{ result.predicted.jobMatch }}%</strong>
             </div>
             <span class="metric-delta">{{ deltaLabel(result.improvements.jobMatch) }}%</span>
@@ -564,7 +564,7 @@
           <article class="card-block">
             <div class="block-head">
               <h3>Before vs After</h3>
-              <span class="block-tag">Deterministic score chart</span>
+              <span class="block-tag">Estimated to predicted</span>
             </div>
 
             <div class="score-visuals">
@@ -616,13 +616,13 @@
         </section>
 
         <section class="result-split-grid">
-          <article class="card-block">
+          <article class="card-block" *ngIf="result.skillDetails.length">
             <div class="block-head">
               <h3>Skill Impact</h3>
               <span class="block-tag">{{ result.skillDetails.length }} skills</span>
             </div>
 
-            <div class="impact-list" *ngIf="result.skillDetails.length; else noSkillDetail">
+            <div class="impact-list">
               <div class="impact-item" *ngFor="let detail of result.skillDetails">
                 <div class="impact-copy">
                   <strong>{{ detail.skill }}</strong>
@@ -634,18 +634,15 @@
               </div>
             </div>
 
-            <ng-template #noSkillDetail>
-              <p class="hint">Add skills to see role-by-role impact detail.</p>
-            </ng-template>
           </article>
 
-          <article class="card-block">
+          <article class="card-block" *ngIf="result.projectDetails.length">
             <div class="block-head">
               <h3>Project Impact</h3>
               <span class="block-tag">{{ result.projectDetails.length }} projects</span>
             </div>
 
-            <div class="impact-list" *ngIf="result.projectDetails.length; else noProjectDetail">
+            <div class="impact-list">
               <div class="impact-item" *ngFor="let detail of result.projectDetails">
                 <div class="impact-copy">
                   <strong>{{ detail.name }}</strong>
@@ -657,9 +654,6 @@
               </div>
             </div>
 
-            <ng-template #noProjectDetail>
-              <p class="hint">Projects are optional, but one strong build usually improves signal quality.</p>
-            </ng-template>
           </article>
         </section>
 
@@ -727,7 +721,7 @@
             <div class="source-entry" *ngFor="let source of result.assumptions.sources">
               <div>
                 <strong>{{ source.label }}</strong>
-                <span>{{ source.lastUpdatedAt ? formatDate(source.lastUpdatedAt) : 'No recent sync' }}</span>
+                <span *ngIf="source.lastUpdatedAt">{{ formatDate(source.lastUpdatedAt) }}</span>
               </div>
               <span class="source-state">Connected</span>
             </div>

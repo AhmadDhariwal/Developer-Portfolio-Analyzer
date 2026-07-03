@@ -324,14 +324,14 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       next: ({ context, history }) => {
         if (context?.context) {
           this.applyContext(context.context, true);
-          this.contextCacheHit = !!context.context.cache?.hit;
+          this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
         } else {
           this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
           this.contextCacheHit = false;
         }
 
         this.scenarioHistory = Array.isArray(history?.history) ? history.history : [];
-        this.historyCacheHit = !!history?.cache?.hit;
+        this.historyCacheHit = !!history?.frontendCacheHit || !!history?.cache?.hit;
         if (forceRefresh && !this.contextError) {
           this.actionMessage = 'Simulator signals refreshed.';
           this.actionTone = 'success';
@@ -360,7 +360,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     ).subscribe((context) => {
       if (context?.context) {
         this.applyContext(context.context, true);
-        this.contextCacheHit = !!context.context.cache?.hit;
+        this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
       } else {
         this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
         this.contextCacheHit = false;
