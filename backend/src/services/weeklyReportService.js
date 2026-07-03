@@ -18,6 +18,7 @@ const { getDeveloperSignals, buildSignalsUsedSummary } = require('./developerSig
 const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
+let weeklyReportSchedulerTask = null;
 const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older than this are considered stale
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
@@ -1361,9 +1362,35 @@ const sendWeeklyReportEmail = async (report, user) => {
   }
 };
 
+const isEnabledFlag = (value) => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+
 const startWeeklyReportScheduler = () => {
   const scheduleExpr = process.env.WEEKLY_REPORT_CRON || '0 8 * * 1';
-  cron.schedule(scheduleExpr, async () => {
+  const dryRun = isEnabledFlag(
+    process.env.WEEKLY_REPORT_DRY_RUN ?? process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN
+  );
+
+  if (String(process.env.NODE_ENV || '').trim().toLowerCase() === 'test') {
+    console.info('[WeeklyReports] Scheduler skipped in test mode.');
+    return null;
+  }
+
+  if (!isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_ENABLED)) {
+    console.info('[WeeklyReports] Scheduler disabled by WEEKLY_REPORT_SCHEDULER_ENABLED.');
+    return null;
+  }
+
+  if (weeklyReportSchedulerTask) {
+    console.info('[WeeklyReports] Scheduler already enabled; duplicate start skipped.');
+    return weeklyReportSchedulerTask;
+  }
+
+  weeklyReportSchedulerTask = cron.schedule(scheduleExpr, async () => {
+    if (dryRun) {
+      console.info('[WeeklyReports] Scheduled run skipped (dry-run mode).');
+      return;
+    }
+
     const users = await User.find({ 'notifications.weeklyScoreReport': { $ne: false } })
       .select('name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel')
       .lean();
@@ -1385,6 +1412,9 @@ const startWeeklyReportScheduler = () => {
       }
     }
   });
+
+  console.info(`[WeeklyReports] Scheduler enabled (${scheduleExpr})${dryRun ? ' in dry-run mode' : ''}.`);
+  return weeklyReportSchedulerTask;
 };
 
 module.exports = {
