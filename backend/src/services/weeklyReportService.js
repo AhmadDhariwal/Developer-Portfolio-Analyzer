@@ -18,7 +18,12 @@ const { getDeveloperSignals, buildSignalsUsedSummary } = require('./developerSig
 const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
 
 const WEEKLY_REPORT_VERSION = 'weekly-report-v2';
-const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older than this are considered stale
+const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000;
+const generationInflight = new Map();
+const emailInflight = new Map();
+const smartSkippedReports = new WeakSet();
+let schedulerStarted = false;
+let schedulerRunning = false; // 7 days — sources older than this are considered stale
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
@@ -49,12 +54,13 @@ const escapeHtml = (value = '') => {
     .replaceAll("'", '&#39;');
 };
 
-const getProvider = () => {
-  if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) return 'sendgrid';
+const getEmailProviders = () => {
+  const providers = [];
+  if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) providers.push('sendgrid');
   if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM_EMAIL) {
-    return 'smtp';
+    providers.push('smtp');
   }
-  return null;
+  return providers;
 };
 
 const sendWithSendGrid = async ({ to, subject, html, text }) => {
@@ -530,9 +536,9 @@ const buildDataSourcesUsed = ({
       status: resumeAnalysis ? 'Analyzed' : 'Unavailable'
     },
     skillGap: {
-      analyzed: Boolean(skillGraph),
-      lastAnalyzedAt: skillGraph?.updatedAt || skillGraph?.createdAt || null,
-      status: skillGraph ? 'Analyzed' : 'Unavailable'
+      analyzed: Boolean(skillGraph || developerSignals?.skillGapSignals?.present),
+      lastAnalyzedAt: skillGraph?.updatedAt || skillGraph?.createdAt || developerSignals?.skillGapSignals?.updatedAt || null,
+      status: (skillGraph || developerSignals?.skillGapSignals?.present) ? 'Analyzed' : 'Unavailable'
     },
     recommendations: {
       available: recommendations.length > 0,
@@ -577,7 +583,8 @@ const buildSourceFreshnessWarning = (dataSourcesUsed) => {
 
   criticalSources.forEach((key) => {
     const source = dataSourcesUsed[key];
-    if (source && source.connected && source.freshness === 'stale') {
+    const present = source && (source.connected || source.analyzed);
+    if (present && source.freshness === 'stale') {
       staleSources.push(key);
     }
   });
@@ -907,10 +914,13 @@ const normalizeReadiness = (input, fallback) => {
 };
 
 const normalizeReport = (result, fallback) => {
-  const progressSummary = String(result?.progressSummary || fallback.progressSummary || '').trim();
-  const insights = toCleanStrings(result?.insights, 5);
-  const recommendations = toCleanStrings(result?.recommendations, 5);
-  const achievements = toCleanStrings(result?.topAchievements, 3);
+  const safeResult = result && typeof result === 'object' && !Array.isArray(result) ? result : {};
+  const cleanNarratives = (values, limit, maxLength = 500) => toCleanStrings(values, limit)
+    .map((value) => value.slice(0, maxLength));
+  const progressSummary = String(safeResult.progressSummary || fallback.progressSummary || '').trim().slice(0, 1200);
+  const insights = cleanNarratives(safeResult.insights, 5);
+  const recommendations = cleanNarratives(safeResult.recommendations, 5);
+  const achievements = cleanNarratives(safeResult.topAchievements, 3);
 
   const mergedInsights = insights.length ? insights : toCleanStrings(fallback.insights, 5);
   const mergedRecommendations = recommendations.length ? recommendations : toCleanStrings(fallback.recommendations, 5);
@@ -921,18 +931,12 @@ const normalizeReport = (result, fallback) => {
     insights: mergedInsights,
     recommendations: mergedRecommendations,
     topAchievements: mergedAchievements,
-    biggestRiskArea: String(result?.biggestRiskArea || fallback.biggestRiskArea || '').trim() || fallback.biggestRiskArea,
-    predictedHiringReadiness: normalizeReadiness(
-      result?.predictedHiringReadiness || {
-        score: result?.predictedHiringReadinessScore,
-        reason: result?.predictedHiringReadinessReason
-      },
-      fallback.predictedHiringReadiness
-    )
+    biggestRiskArea: fallback.biggestRiskArea,
+    predictedHiringReadiness: normalizeReadiness(fallback.predictedHiringReadiness, fallback.predictedHiringReadiness)
   };
 };
 
-const generateWeeklyReport = async (userId, options = {}) => {
+const generateWeeklyReportCore = async (userId, options = {}) => {
   const { forceRefresh = false } = options;
 
   const user = await User.findById(userId)
@@ -947,7 +951,7 @@ const generateWeeklyReport = async (userId, options = {}) => {
   const [analysis, resumeAnalysis, skillGraph, repositories] = await Promise.all([
     Analysis.findOne({ userId })
       .sort({ updatedAt: -1 })
-      .select('githubScore readinessScore githubStats contributionActivity updatedAt createdAt')
+      .select('githubScore readinessScore githubStats githubSignals languageDistribution contributionActivity updatedAt createdAt')
       .lean(),
     loadDefaultResumeAnalysis(userId, user),
     SkillGraph.findOne({ userId })
@@ -972,11 +976,11 @@ const generateWeeklyReport = async (userId, options = {}) => {
     developerSignals
   ] = await Promise.all([
     WeeklyReport.findOne({ userId, weekStartDate, weekEndDate }).lean(),
-    WeeklyReport.find({ userId }).sort({ weekEndDate: -1 }).limit(4).lean(),
-    CareerSprint.findOne({ userId, weekStartDate: { $lte: weekEndDate }, weekEndDate: { $gte: weekStartDate } }).sort({ updatedAt: -1 }).lean(),
-    CareerSprint.findOne({ userId, weekStartDate: { $lte: previousWeek.end }, weekEndDate: { $gte: previousWeek.start } }).sort({ updatedAt: -1 }).lean(),
-    InterviewPrepSession.find({ userId, createdAt: { $gte: weekStartDate, $lte: weekEndDate } }).lean(),
-    InterviewPrepSession.find({ userId, createdAt: { $gte: previousWeek.start, $lte: previousWeek.end } }).lean(),
+    WeeklyReport.find({ userId }).sort({ weekEndDate: -1 }).limit(4).select('score topAchievements biggestRiskArea recommendations weekEndDate updatedAt meta').lean(),
+    CareerSprint.findOne({ userId, weekStartDate: { $lte: weekEndDate }, weekEndDate: { $gte: weekStartDate } }).sort({ updatedAt: -1 }).select('tasks weeklyGoal streak updatedAt createdAt').lean(),
+    CareerSprint.findOne({ userId, weekStartDate: { $lte: previousWeek.end }, weekEndDate: { $gte: previousWeek.start } }).sort({ updatedAt: -1 }).select('tasks weeklyGoal streak updatedAt createdAt').lean(),
+    InterviewPrepSession.find({ userId, createdAt: { $gte: weekStartDate, $lte: weekEndDate } }).select('questions updatedAt createdAt').lean(),
+    InterviewPrepSession.find({ userId, createdAt: { $gte: previousWeek.start, $lte: previousWeek.end } }).select('questions updatedAt createdAt').lean(),
     Recommendation.find({ userId })
       .sort({ createdAt: -1 })
       .limit(8)
@@ -989,12 +993,11 @@ const generateWeeklyReport = async (userId, options = {}) => {
       .sort({ lastSyncedAt: -1, updatedAt: -1 })
       .select('provider status lastSyncedAt updatedAt')
       .lean(),
-    getDeveloperSignals(userId)
+    getDeveloperSignals(userId, {
+      githubSource: { analysis, repositories },
+      resumeAnalysis
+    })
   ]);
-
-  if (existingReport && !forceRefresh) {
-    return existingReport;
-  }
 
   const previousReport = recentReports.find((report) => !existingReport || String(report._id) !== String(existingReport._id)) || null;
   const previousWeeklyReports = recentReports.filter((report) => !existingReport || String(report._id) !== String(existingReport._id));
@@ -1169,7 +1172,8 @@ const generateWeeklyReport = async (userId, options = {}) => {
     signalsUsedSummary
   });
 
-  if (existingReport?.meta?.signalHash === signalHash) {
+  if (existingReport?.meta?.signalHash === signalHash && !forceRefresh) {
+    smartSkippedReports.add(existingReport);
     return existingReport;
   }
 
@@ -1204,11 +1208,21 @@ const generateWeeklyReport = async (userId, options = {}) => {
 
   let aiResult = fallback;
   let narrativeSource = 'deterministic';
+  let fallbackUsed = false;
   try {
     aiResult = await aiService.runAIAnalysis(prompt, fallback);
-    narrativeSource = aiResult === fallback ? 'deterministic' : 'ai-enhanced';
+    const validAINarrative = aiResult !== fallback
+      && aiResult && typeof aiResult === 'object' && !Array.isArray(aiResult)
+      && typeof aiResult.progressSummary === 'string'
+      && Array.isArray(aiResult.insights) && aiResult.insights.length >= 4
+      && Array.isArray(aiResult.recommendations) && aiResult.recommendations.length >= 4
+      && Array.isArray(aiResult.topAchievements) && aiResult.topAchievements.length >= 3;
+    if (!validAINarrative) aiResult = fallback;
+    narrativeSource = validAINarrative ? 'ai-enhanced' : 'deterministic';
+    fallbackUsed = !validAINarrative;
   } catch {
     aiResult = fallback;
+    fallbackUsed = true;
   }
   const normalized = normalizeReport(aiResult, fallback);
 
@@ -1271,24 +1285,46 @@ const generateWeeklyReport = async (userId, options = {}) => {
       signalHash,
       reportHash,
       narrativeSource,
+      usesAI: narrativeSource === 'ai-enhanced',
+      deterministicScore: true,
+      guaranteed: false,
+      fallbackUsed,
+      dataSourceFreshness: Object.fromEntries(Object.entries(dataSourcesUsed).map(([key, source]) => [key, source.freshness])),
       scoreBreakdown,
       sourceFreshness: buildSourceFreshnessWarning(dataSourcesUsed),
       snapshot: userData
     }
   };
 
-  if (existingReport && forceRefresh) {
-    return WeeklyReport.findByIdAndUpdate(existingReport._id, { $set: payload }, { returnDocument: 'after' });
+  const savedReport = existingReport && forceRefresh
+    ? await WeeklyReport.findByIdAndUpdate(existingReport._id, { $set: payload }, { returnDocument: 'after' })
+    : await WeeklyReport.findOneAndUpdate(
+      { userId, weekStartDate, weekEndDate },
+      { $set: payload },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+    );
+
+  try {
+    const { invalidateDashboardSummaryCache } = require('../controllers/dashboardcontroller');
+    invalidateDashboardSummaryCache(userId);
+  } catch (error) {
+    console.error('[WeeklyReport] cache invalidation failed:', error.message);
   }
 
-  return WeeklyReport.findOneAndUpdate(
-    { userId, weekStartDate, weekEndDate },
-    { $set: payload },
-    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-  );
+  return savedReport;
 };
 
-const sendWeeklyReportEmail = async (report, user) => {
+const generateWeeklyReport = (userId, options = {}) => {
+  const weekKey = `${String(userId)}:${startOfWeek().toISOString()}:${Boolean(options.forceRefresh)}`;
+  if (generationInflight.has(weekKey)) return generationInflight.get(weekKey);
+  const pending = generateWeeklyReportCore(userId, options).finally(() => generationInflight.delete(weekKey));
+  generationInflight.set(weekKey, pending);
+  return pending;
+};
+
+const wasWeeklyReportSmartSkipped = (report) => Boolean(report && smartSkippedReports.has(report));
+
+const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) => {
   if (!report || !user?.email) {
     await updateWeeklyReportEmailStatus(report?._id, {
       status: 'skipped',
@@ -1297,8 +1333,12 @@ const sendWeeklyReportEmail = async (report, user) => {
     return { sent: false, reason: 'Missing report or email.' };
   }
 
-  const provider = getProvider();
-  if (!provider) {
+  if (report.emailStatus === 'sent' && !resend) {
+    return { sent: false, reason: 'Report email already sent.' };
+  }
+
+  const providers = getEmailProviders();
+  if (!providers.length) {
     await updateWeeklyReportEmailStatus(report._id, {
       status: 'skipped',
       error: 'No email provider configured.'
@@ -1312,84 +1352,161 @@ const sendWeeklyReportEmail = async (report, user) => {
   const staleRecommendation = report.meta?.sourceFreshness?.detection
     ? `\n\n${report.meta.sourceFreshness.recommendation}`
     : '';
-
   const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports`;
   const subject = staleWarning
-    ? `[Insight] ${report.score}% Weekly — Refresh Recommended`
+    ? `[Insight] ${report.score}% Weekly � Refresh Recommended`
     : `[Insight] Your Weekly Performance Report: ${report.score}%`;
-  const html = buildEmailHtml({
-    name: user.name,
-    score: report.score,
-    githubScore: report.meta?.githubScore || 0,
-    resumeScore: report.meta?.resumeScore || 0,
-    summary: report.progressSummary,
-    recommendations: report.recommendations,
-    topAchievements: report.topAchievements,
-    biggestRiskArea: report.biggestRiskArea,
-    predictedHiringReadiness: report.predictedHiringReadiness,
-    staleWarning,
-    staleRecommendation,
-    reportLink
-  });
-  const text = buildEmailText({
-    name: user.name,
-    summary: report.progressSummary,
-    recommendations: report.recommendations,
-    topAchievements: report.topAchievements,
-    biggestRiskArea: report.biggestRiskArea,
-    predictedHiringReadiness: report.predictedHiringReadiness,
-    staleWarning,
-    staleRecommendation,
-    reportLink
-  });
+  const message = {
+    to: user.email,
+    subject,
+    html: buildEmailHtml({
+      name: user.name,
+      score: report.score,
+      githubScore: report.meta?.githubScore || 0,
+      resumeScore: report.meta?.resumeScore || 0,
+      summary: report.progressSummary,
+      recommendations: report.recommendations,
+      topAchievements: report.topAchievements,
+      biggestRiskArea: report.biggestRiskArea,
+      predictedHiringReadiness: report.predictedHiringReadiness,
+      staleWarning,
+      staleRecommendation,
+      reportLink
+    }),
+    text: buildEmailText({
+      name: user.name,
+      summary: report.progressSummary,
+      recommendations: report.recommendations,
+      topAchievements: report.topAchievements,
+      biggestRiskArea: report.biggestRiskArea,
+      predictedHiringReadiness: report.predictedHiringReadiness,
+      staleWarning,
+      staleRecommendation,
+      reportLink
+    })
+  };
 
-  try {
-    if (provider === 'sendgrid') {
-      await sendWithSendGrid({ to: user.email, subject, html, text });
-    } else {
-      await sendWithSmtp({ to: user.email, subject, html, text });
+  let lastError = null;
+  for (const provider of providers) {
+    try {
+      if (provider === 'sendgrid') await sendWithSendGrid(message);
+      else await sendWithSmtp(message);
+      await updateWeeklyReportEmailStatus(report._id, { status: 'sent', error: '' });
+      return { sent: true, provider };
+    } catch (error) {
+      lastError = error;
+      console.error(`[WeeklyReportEmail] ${provider} delivery failed:`, error.message);
     }
-
-    await updateWeeklyReportEmailStatus(report._id, { status: 'sent', error: '' });
-    return { sent: true, provider };
-  } catch (error) {
-    await updateWeeklyReportEmailStatus(report._id, {
-      status: 'failed',
-      error: error?.message || 'Email send failed.'
-    });
-    throw error;
   }
+
+  await updateWeeklyReportEmailStatus(report._id, {
+    status: 'failed',
+    error: lastError?.message || 'Email send failed.'
+  });
+  throw lastError || new Error('Email send failed.');
+};
+const sendWeeklyReportEmail = (report, user, options = {}) => {
+  const reportId = String(report?._id || 'missing');
+  if (emailInflight.has(reportId)) return emailInflight.get(reportId);
+  const pending = sendWeeklyReportEmailCore(report, user, options).finally(() => emailInflight.delete(reportId));
+  emailInflight.set(reportId, pending);
+  return pending;
+};
+const positiveEnvInt = (value, fallback, max) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback;
+};
+
+const runWeeklyReportBatch = async ({
+  dryRun = String(process.env.WEEKLY_REPORT_DRY_RUN || '').toLowerCase() === 'true',
+  usersOverride = null,
+  generate = generateWeeklyReport,
+  sendEmail = sendWeeklyReportEmail,
+  updateEmailStatus = updateWeeklyReportEmailStatus
+} = {}) => {
+  const batchLimit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
+  const concurrency = positiveEnvInt(process.env.WEEKLY_REPORT_CONCURRENCY, 3, 10);
+  const users = Array.isArray(usersOverride)
+    ? usersOverride.slice(0, batchLimit)
+    : await User.find({ 'notifications.weeklyScoreReport': { $ne: false } })
+      .select('name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel')
+      .limit(batchLimit)
+      .lean();
+  const stats = { usersScanned: users.length, generated: 0, skipped: 0, emailed: 0, failed: 0, dryRun };
+
+  console.log('[WeeklyReportScheduler] batch started', { usersScanned: stats.usersScanned, batchLimit, concurrency, dryRun });
+  for (let index = 0; index < users.length; index += concurrency) {
+    const batch = users.slice(index, index + concurrency);
+    await Promise.all(batch.map(async (user) => {
+      if (dryRun) {
+        stats.skipped += 1;
+        return;
+      }
+      try {
+        const report = await generate(user._id);
+        if (!report || wasWeeklyReportSmartSkipped(report)) {
+          stats.skipped += 1;
+          return;
+        }
+        stats.generated += 1;
+        const emailResult = user?.email
+          ? await sendEmail(report, user)
+          : await updateEmailStatus(report._id, {
+            status: 'skipped',
+            error: 'No user email is configured.'
+          }).then(() => ({ sent: false }));
+        if (emailResult?.sent) stats.emailed += 1;
+        else stats.skipped += 1;
+      } catch (error) {
+        stats.failed += 1;
+        console.error('[WeeklyReportScheduler] user failed', { userId: String(user?._id || ''), error: error.message });
+      }
+    }));
+  }
+
+  console.log('[WeeklyReportScheduler] batch completed', stats);
+  return stats;
 };
 
 const startWeeklyReportScheduler = () => {
+  if (schedulerStarted) {
+    console.log('[WeeklyReportScheduler] already started; duplicate start ignored');
+    return null;
+  }
+  if (String(process.env.WEEKLY_REPORT_SCHEDULER_ENABLED || 'true').toLowerCase() === 'false') {
+    console.log('[WeeklyReportScheduler] disabled by environment');
+    return null;
+  }
+
   const scheduleExpr = process.env.WEEKLY_REPORT_CRON || '0 8 * * 1';
-  cron.schedule(scheduleExpr, async () => {
-    const users = await User.find({ 'notifications.weeklyScoreReport': { $ne: false } })
-      .select('name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel')
-      .lean();
-    for (const user of users) {
-      try {
-        const report = await generateWeeklyReport(user._id);
-        if (report) {
-          if (user?.email) {
-            await sendWeeklyReportEmail(report, user);
-          } else {
-            await updateWeeklyReportEmailStatus(report._id, {
-              status: 'skipped',
-              error: 'No user email is configured.'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Weekly report cron error:', error.message);
-      }
+  if (!cron.validate(scheduleExpr)) {
+    console.error('[WeeklyReportScheduler] invalid cron expression; scheduler not started');
+    return null;
+  }
+
+  schedulerStarted = true;
+  const task = cron.schedule(scheduleExpr, async () => {
+    if (schedulerRunning) {
+      console.log('[WeeklyReportScheduler] previous batch still running; tick skipped');
+      return;
+    }
+    schedulerRunning = true;
+    try {
+      await runWeeklyReportBatch();
+    } catch (error) {
+      console.error('[WeeklyReportScheduler] batch failed:', error.message);
+    } finally {
+      schedulerRunning = false;
     }
   });
+  console.log('[WeeklyReportScheduler] started', { scheduleExpr });
+  return task;
 };
-
 module.exports = {
   generateWeeklyReport,
+  wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,
   updateWeeklyReportEmailStatus,
-  startWeeklyReportScheduler
+  startWeeklyReportScheduler,
+  runWeeklyReportBatch
 };

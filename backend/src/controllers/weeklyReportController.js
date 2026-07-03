@@ -2,6 +2,7 @@ const WeeklyReport = require('../models/weeklyReport');
 const User = require('../models/user');
 const {
   generateWeeklyReport,
+  wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,
   updateWeeklyReportEmailStatus
 } = require('../services/weeklyReportService');
@@ -17,7 +18,9 @@ const generateReport = async (req, res) => {
 
     try {
       const user = await User.findById(req.user._id).select('name email notifications').lean();
-      if (user?.email && user?.notifications?.weeklyScoreReport !== false) {
+      if (wasWeeklyReportSmartSkipped(report)) {
+        // An unchanged report has already completed its email lifecycle.
+      } else if (user?.email && user?.notifications?.weeklyScoreReport !== false) {
         await sendWeeklyReportEmail(report, user);
       } else {
         await updateWeeklyReportEmailStatus(report._id, {
@@ -40,7 +43,10 @@ const generateReport = async (req, res) => {
 // GET /api/weekly-reports/latest
 const getLatestReport = async (req, res) => {
   try {
-    const report = await WeeklyReport.findOne({ userId: req.user._id }).sort({ weekEndDate: -1 }).lean();
+    const report = await WeeklyReport.findOne({ userId: req.user._id })
+      .sort({ weekEndDate: -1 })
+      .select('-__v')
+      .lean();
     res.json(report || null);
   } catch (error) {
     console.error('Weekly report latest error:', error.message);
@@ -55,6 +61,7 @@ const getReportHistory = async (req, res) => {
     const reports = await WeeklyReport.find({ userId: req.user._id })
       .sort({ weekEndDate: -1 })
       .limit(limit)
+      .select('-__v')
       .lean();
     res.json({ reports });
   } catch (error) {

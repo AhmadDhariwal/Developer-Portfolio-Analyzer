@@ -92,17 +92,20 @@ const weeklyReportSchema = new mongoose.Schema({
       github: {
         connected: { type: Boolean, default: false },
         lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+        status: { type: String, default: 'Unavailable' },
+        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
       },
       resume: {
         analyzed: { type: Boolean, default: false },
         lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+        status: { type: String, default: 'Unavailable' },
+        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
       },
       skillGap: {
         analyzed: { type: Boolean, default: false },
         lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+        status: { type: String, default: 'Unavailable' },
+        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
       },
       recommendations: {
         available: { type: Boolean, default: false },
@@ -143,6 +146,11 @@ const weeklyReportSchema = new mongoose.Schema({
       enum: ['ai-enhanced', 'deterministic', 'cached'],
       default: 'deterministic'
     },
+    usesAI: { type: Boolean, default: false },
+    deterministicScore: { type: Boolean, default: true },
+    guaranteed: { type: Boolean, default: false },
+    fallbackUsed: { type: Boolean, default: false },
+    dataSourceFreshness: { type: mongoose.Schema.Types.Mixed, default: {} },
     scoreBreakdown: {
       type: mongoose.Schema.Types.Mixed,
       default: {}
@@ -156,5 +164,8 @@ const weeklyReportSchema = new mongoose.Schema({
 
 weeklyReportSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 }, { unique: true });
 weeklyReportSchema.index({ userId: 1, weekEndDate: -1 });
+weeklyReportSchema.index({ userId: 1, createdAt: -1 });
+weeklyReportSchema.index({ userId: 1, 'meta.signalHash': 1 });
+weeklyReportSchema.index({ userId: 1, weekStartDate: -1 });
 
 module.exports = mongoose.model('WeeklyReport', weeklyReportSchema);

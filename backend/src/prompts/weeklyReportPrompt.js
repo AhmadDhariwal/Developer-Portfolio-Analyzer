@@ -1,7 +1,8 @@
 const { compactJson } = require('../services/promptBuilderService');
 
 const getWeeklyReportPrompt = ({ name, careerStack, experienceLevel, aiInput }) => {
-  const compactInput = compactJson(aiInput, 0);
+  const rawInput = compactJson(aiInput, 0);
+  const compactInput = rawInput.length > 14000 ? rawInput.slice(0, 14000) + '...' : rawInput;
   return `You are an AI career coach. Build a personalized weekly performance report for ${name || 'the developer'}.
 
 Return STRICT JSON only with these keys:
@@ -9,22 +10,19 @@ Return STRICT JSON only with these keys:
 - insights: string[] (exactly 4)
 - recommendations: string[] (exactly 4)
 - topAchievements: string[] (exactly 3)
-- biggestRiskArea: string
-- predictedHiringReadiness: { score: number, reason: string }
 
 Hard requirements:
 1) Compare current vs previous metrics with real numbers.
 2) Quantify outcomes (scores, deltas, counts, percentages).
 3) Keep it personalized to this user's data and stack.
 4) Avoid generic advice like "work harder".
-5) Mention both positive momentum and at least one risk.
-6) Use only the provided deterministic metrics as source of truth.
-7) If a source is missing, acknowledge the limited signal instead of inventing detail.
+5) Use only the provided deterministic metrics as source of truth.
+6) If a source is missing, acknowledge the limited signal instead of inventing detail.
+7) Generate narrative text only. Never return or alter scores, deltas, risks, snapshots, hashes, or source freshness.
 
 Style:
 - concise, confident, and actionable
 - each insight/recommendation must include concrete metric context where possible
-- predictedHiringReadiness.score must be 0-100
 - recommendations should reflect progress signals from sprint, portfolio, integrations, and interview prep when present
 
 Profile context:
