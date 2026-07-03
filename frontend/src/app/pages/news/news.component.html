@@ -9,7 +9,7 @@
       <h1>Tech News Hub</h1>
       <p>Personalized developer news, saved articles, and read-later tracking in one clean workspace.</p>
       <button class="refresh-feed-button" type="button" *ngIf="isFeedView" [disabled]="isLoading || isLoadingMore" (click)="forceRefresh()">
-        {{ isLoading ? 'Refreshing...' : 'Force refresh' }}
+        {{ isLoading ? 'Refreshing...' : 'Refresh feed' }}
       </button>
     </div>
 
@@ -84,14 +84,14 @@
           <div class="signal-group" *ngIf="recommendedBasedOn.detectedSkills.length">
             <h3>Detected skills</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.detectedSkills || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngFor="let skill of recommendedBasedOn.detectedSkills; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
 
           <div class="signal-group" *ngIf="recommendedBasedOn.skillGaps.length">
             <h3>Skill gaps</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.skillGaps || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngFor="let skill of recommendedBasedOn.skillGaps; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
 
@@ -105,7 +105,7 @@
           <div class="signal-group" *ngIf="recommendedBasedOn.recommendationTechnologies?.length">
             <h3>Recommendations</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.recommendationTechnologies || []; trackBy: trackByValue">{{ skill }}</span>
+              <span *ngFor="let skill of recommendedBasedOn.recommendationTechnologies; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@
             <span class="section-kicker">Saved News</span>
             <h2>{{ selectedView === 'bookmarks' ? 'Bookmarks' : 'Read Later' }}</h2>
           </div>
-          <span class="status-pill status-live">{{ displayedCount }} items</span>
+          <span class="status-pill status-saved">{{ displayedCount }} items</span>
         </div>
 
         <p class="context-summary" *ngIf="selectedView === 'bookmarks'">
@@ -255,7 +255,7 @@
   </div>
 
   <div class="saved-grid" *ngIf="!isFeedView && !isLoading && !errorMessage && savedItemsView.length > 0">
-    <article class="saved-card" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
+    <article class="saved-card" [class.saved-card--read]="!!item.readAt" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
       <div class="saved-card__image-wrap" *ngIf="item.image">
         <img class="saved-card__image" [src]="item.image" [alt]="item.title" />
         <div class="saved-card__badges">
