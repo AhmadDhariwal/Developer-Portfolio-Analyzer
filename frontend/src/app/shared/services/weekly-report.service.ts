@@ -3,6 +3,7 @@ import { finalize, forkJoin, map, Observable, of, shareReplay, tap } from 'rxjs'
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface WeeklyReportDataSourceStatus {
   connected?: boolean;
@@ -103,8 +104,18 @@ export class WeeklyReportService {
   constructor(
     private readonly api: ApiService,
     private readonly auth: AuthService,
-    private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('weekly-reports', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.dashboardRequests.clear();
+    this.frontendCache.clearModule('weeklyReports');
+    this.frontendCache.clearModule('weeklyReports:latest');
+    this.frontendCache.clearModule('weeklyReports:history');
+  }
 
   generateReport(forceRefresh = true): Observable<WeeklyReport> {
     const cachedHistory = this.frontendCache.get<{ reports: WeeklyReport[] }>(this.historyCacheKey(6));

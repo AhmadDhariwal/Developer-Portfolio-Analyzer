@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface LanguageDistribution {
   language: string;
@@ -108,8 +109,16 @@ export class GithubService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('github', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.memoryCache.clear();
+    this.inflight.clear();
+  }
 
   getCachedAnalysis(username: string, mode: 'public' | 'save'): GitHubAnalysisResult | null {
     const entry = this.memoryCache.get(this.cacheKey(username, mode));
@@ -153,6 +162,10 @@ export class GithubService {
 
     const request$ = requestFactory().pipe(
       tap((result) => {
+        if (mode === 'save') {
+          this.cacheInvalidation.clearDeveloperSignalCaches();
+          this.cacheInvalidation.clearGithubCaches();
+        }
         this.memoryCache.set(key, {
           result,
           expiresAt: this.getCacheExpiry(result)

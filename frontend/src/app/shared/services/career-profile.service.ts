@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { AuthService } from './auth.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   CareerProfile,
   CareerStack,
@@ -40,8 +41,16 @@ export class CareerProfileService {
   constructor(
     private readonly http: HttpClient,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly authService: AuthService
-  ) {}
+    private readonly authService: AuthService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('career-profile', () => this.clearUserCache());
+  }
+
+  clearUserCache(): void {
+    localStorage.removeItem(STORAGE_KEY);
+    this.profileSubject.next({ ...DEFAULT_CAREER_PROFILE });
+  }
 
   get snapshot(): CareerProfile {
     return this.profileSubject.value;
@@ -174,9 +183,7 @@ export class CareerProfileService {
   }
 
   private invalidateDependentCaches(): void {
-    this.dependentCacheModules.forEach((module) => this.frontendCache.clearModule(module));
-    this.frontendCache.clearPrefixes(['skill_gap_cache:', 'skill_gap_cache_index:']);
-    this.frontendCache.clearCurrentSignalHash();
+    this.cacheInvalidation.clearDeveloperSignalCaches();
     globalThis.dispatchEvent?.(new CustomEvent('devinsight:profile-personalization-changed'));
   }
 }

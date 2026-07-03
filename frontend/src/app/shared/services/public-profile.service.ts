@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, shareReplay, tap, throwError } from 'rxjs';
 import { ApiService } from './api.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface PublicProfileSkill {
   name: string;
@@ -153,7 +154,9 @@ export class PublicProfileService {
   private readonly maxCacheEntries = 50;
   private readonly cache = new Map<string, { value$: Observable<PublicProfilePayload>; expiresAt: number }>();
 
-  constructor(private readonly api: ApiService) {}
+  constructor(private readonly api: ApiService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('public-portfolio', () => this.clearCache());
+  }
 
   getPublicProfile(slug: string, options: { forceRefresh?: boolean; queryParams?: Record<string, unknown> } = {}): Observable<PublicProfilePayload> {
     const key = this.buildKey(slug, options.queryParams);
@@ -186,7 +189,10 @@ export class PublicProfileService {
   }
 
   updateMyPublicProfile(payload: Partial<PublicProfilePayload>): Observable<PublicProfilePayload> {
-    return this.api.updateMyPublicProfile(payload).pipe(tap(() => this.clearCache()));
+    return this.api.updateMyPublicProfile(payload).pipe(tap(() => {
+      this.cacheInvalidation.clearPublicPortfolioCaches();
+      this.cacheInvalidation.clearDashboardCaches();
+    }));
   }
 
   getAnalytics(): Observable<PublicProfileAnalytics> {

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   Job,
   JobFilters,
@@ -17,7 +18,9 @@ export class JobService {
   private readonly maxCacheEntries = 60;
   private readonly cache = new Map<string, { value$: Observable<unknown>; expiresAt: number }>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('jobs', () => this.clearCache());
+  }
 
   getJobs(filters: Partial<JobFilters> = {}, page = 1, limit = 10): Observable<JobsResponse> {
     const normalizedFilters = normalizeJobFilters(filters);

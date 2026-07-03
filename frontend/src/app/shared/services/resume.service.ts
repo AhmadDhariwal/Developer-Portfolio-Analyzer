@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, map, shareReplay, switchMap, of } from 'rxjs';
 import { ProfileService, UserProfile, ResumeContextFile } from './profile.service';
 import { ApiService } from './api.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface ResumeFile {
   fileId: string;
@@ -27,6 +28,7 @@ export class ResumeService {
   private readonly http = inject(HttpClient);
   private readonly profileService = inject(ProfileService);
   private readonly apiService = inject(ApiService);
+  private readonly cacheInvalidation = inject(FrontendCacheInvalidationService);
 
   private readonly resumesSubject = new BehaviorSubject<ResumeFile[]>([]);
   resumes$ = this.resumesSubject.asObservable();
@@ -40,8 +42,14 @@ export class ResumeService {
   currentAnalysis$ = this.currentAnalysisSubject.asObservable();
 
   constructor() {
-    // Initial fetch
-    this.refresh();
+    this.cacheInvalidation.register('resume', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.clearResumeAnalysisCache();
+    this.resumesSubject.next([]);
+    this.profileSubject.next(null);
+    this.loadingSubject.next(false);
   }
 
   refresh(): void {

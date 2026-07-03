@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +21,10 @@ export class ApiService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly frontendCache: FrontendAnalysisCacheService
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
   ) {
+    this.cacheInvalidation.register('scenario', () => this.clearScenarioCaches());
     globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
       this.invalidateScenarioContextCache();
     });
@@ -62,19 +65,19 @@ export class ApiService {
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearGithubCaches(); })
     );
   }
 
   uploadResume(formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
@@ -93,7 +96,7 @@ export class ApiService {
 
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
     return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
@@ -451,6 +454,12 @@ export class ApiService {
     }));
   }
 
+  clearScenarioCaches(): void {
+    this.invalidateScenarioContextCache();
+    this.invalidateScenarioHistoryCache();
+    this.scenarioSignalHash = '';
+  }
+
   invalidateScenarioHistoryCache(): void {
     this.scenarioHistoryCache.clear();
     this.scenarioHistoryInflight.clear();
@@ -463,8 +472,7 @@ export class ApiService {
   }
 
   private invalidateDeveloperSignalState(): void {
-    this.frontendCache.clearCurrentSignalHash();
-    this.invalidateScenarioContextCache();
+    this.cacheInvalidation.clearDeveloperSignalCaches();
   }
 
   createSprintFromScenario(payload: {

@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { finalize, shareReplay } from 'rxjs/operators';
+import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 const SKILL_GAP_CACHE_PREFIX = 'skill_gap_cache:';
 const SKILL_GAP_CACHE_INDEX_PREFIX = 'skill_gap_cache_index:';
@@ -235,8 +236,18 @@ export class SkillGapService {
   constructor(
     private readonly http: HttpClient,
     private readonly auth: AuthService,
-    private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('skill-gap', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.inflight.clear();
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(SKILL_GAP_CACHE_PREFIX) || key.startsWith(SKILL_GAP_CACHE_INDEX_PREFIX))
+      .forEach((key) => localStorage.removeItem(key));
+  }
 
   analyze(
     username: string,
@@ -253,6 +264,16 @@ export class SkillGapService {
       `${this.baseUrl}/skillgap/skill-gap`,
       { username, careerStack, experienceLevel, isTemporary, forceRefresh }
     ).pipe(
+      tap(() => {
+        if (!isTemporary) {
+          this.cacheInvalidation.clearRecommendationsCaches();
+          this.cacheInvalidation.clearScenarioCaches();
+          this.cacheInvalidation.clearNewsCaches();
+          this.cacheInvalidation.clearJobsCaches();
+          this.cacheInvalidation.clearCoursesCaches();
+          this.cacheInvalidation.clearDashboardCaches();
+        }
+      }),
       finalize(() => this.inflight.delete(requestKey)),
       shareReplay({ bufferSize: 1, refCount: true })
     );

@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { TenantContextService } from './tenant-context.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import { environment } from '../../../environments/environment';
 
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
@@ -51,7 +52,7 @@ export class AuthService {
   avatarVersion$ = this.avatarVersionSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService) {
+  constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
     if (this.checkToken()) {
       this.scheduleAutoLogout();
       // Restore role from stored user on page refresh — use real org id if present
@@ -217,6 +218,7 @@ export class AuthService {
   }
 
   private storeSession(response: any): void {
+    this.cacheInvalidation.clearAllUserCaches();
     localStorage.setItem('token', response.token);
     this.persistCurrentUser({ ...response, avatar: response.avatar || '' } as SessionUser);
     const careerProfile = {
@@ -318,6 +320,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.cacheInvalidation.clearAllUserCaches();
     if (this.autoLogoutTimer) {
       clearTimeout(this.autoLogoutTimer);
       this.autoLogoutTimer = null;
