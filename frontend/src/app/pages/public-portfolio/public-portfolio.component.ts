@@ -115,7 +115,6 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   private ensureProfileShape(profile: PublicProfilePayload): PublicProfilePayload {
-    const defaultRole = (profile.user.jobTitle || '').toLowerCase().includes('design') ? 'A Designer who' : 'A Developer who';
     const heroOverride = profile.sections?.hero as Partial<PublicProfileSections['hero']> | undefined;
     const skillsOverride = profile.sections?.skills as Partial<PublicProfileSections['skills']> | undefined;
     const contactOverride = profile.sections?.contact as Partial<PublicProfileSections['contact']> | undefined;
@@ -125,25 +124,25 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     const visibilityOverride = profile.sections?.visibility as Partial<PublicProfileSections['visibility']> | undefined;
 
     const heroSection: PublicProfileSections['hero'] = {
-      greetingLabel: 'Hello! I Am',
-      roleLabel: defaultRole,
-      titleLineOne: 'Judges a book',
-      titleLineTwo: 'by its',
-      titleHighlight: 'cover',
-      titleLineSuffix: '...',
-      tagline: 'Because if the cover does not impress you what else can?',
+      greetingLabel: '',
+      roleLabel: '',
+      titleLineOne: '',
+      titleLineTwo: '',
+      titleHighlight: '',
+      titleLineSuffix: '',
+      tagline: '',
       ...heroOverride
     };
     const skillsSection: PublicProfileSections['skills'] = {
-      headline: "I'm currently looking to join a",
-      highlight: 'cross-functional',
-      headlineSuffix: 'team',
-      subheadline: "that values improving people's lives through accessible design",
+      headline: '',
+      highlight: '',
+      headlineSuffix: '',
+      subheadline: '',
       ...skillsOverride
     };
     const contactSection: PublicProfileSections['contact'] = {
-      heading: 'Contact',
-      message: "I'm currently looking to join a cross-functional team that values improving people's lives through accessible design. Or have a project in mind? Let's connect.",
+      heading: '',
+      message: '',
       email: '',
       ...contactOverride
     };
@@ -301,10 +300,14 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   }
 
   private sortCompletedCourses(courses: PublicProfileCompletedCourse[]): PublicProfileCompletedCourse[] {
-    return courses
+    return [...courses]
       .filter((course) => Boolean(String(course?.title || '').trim()) && course.isVisible !== false)
-      .sort((left, right) => Number(left.order || 0) - Number(right.order || 0)
+      .sort((left, right) => this.courseOrderValue(left.order) - this.courseOrderValue(right.order)
         || this.courseDateValue(right.completionDate) - this.courseDateValue(left.completionDate));
+  }
+
+  private courseOrderValue(value?: number): number {
+    return Number.isFinite(Number(value)) ? Number(value) : Number.MAX_SAFE_INTEGER;
   }
 
   private courseDateValue(value?: string | null): number {
@@ -428,27 +431,24 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
 
   getProfileLabel(): string {
     if (!this.profile) return '';
-    return this.profile.headline || this.profile.user.jobTitle || 'Developer Portfolio';
+    return this.profile.headline || this.profile.user.jobTitle || '';
   }
 
   getSummaryText(): string {
-    if (!this.profile) return '';
-    return this.profile.summary || 'A self-taught Software Engineer, functioning in the industry for 3+ years now. I make meaningful and delightful digital products that create an equilibrium between user needs and business goals.';
+    return this.profile?.summary || '';
   }
 
   getTopSkillsText(): string {
-    if (!this.profile?.skills?.length) return 'Not provided';
-    return this.profile.skills.slice(0, 8).map((skill) => skill.name).join(', ');
+    return (this.profile?.skills || []).slice(0, 8).map((skill) => skill.name).filter(Boolean).join(', ');
   }
 
   getCurrentCompany(): string {
-    if (!this.profile) return 'a tech company';
-    // Extract company from job title or location
-    const jobTitle = this.profile.user.jobTitle || '';
-    if (jobTitle.includes(' at ')) {
-      return jobTitle.split(' at ')[1];
-    }
-    return this.profile.user.location || 'a tech company';
+    const jobTitle = this.profile?.user?.jobTitle || '';
+    return jobTitle.includes(' at ') ? jobTitle.split(' at ').slice(1).join(' at ').trim() : '';
+  }
+
+  trackByCourse(index: number, course: PublicProfileCompletedCourse): string {
+    return String(course._id || course.credentialId || course.certificateUrl || course.title || index);
   }
 
   toExternalLink(url: string | undefined): string {

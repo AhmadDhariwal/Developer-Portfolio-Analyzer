@@ -139,6 +139,27 @@
   line-height: 1.6;
 }
 
+.refresh-feed-button {
+  margin-top: 1rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  border-radius: 0.85rem;
+  background: rgba(8, 145, 178, 0.14);
+  color: #cffafe;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(103, 232, 249, 0.55);
+    background: rgba(8, 145, 178, 0.24);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+}
 .header-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -463,13 +484,13 @@
 
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .saved-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -701,5 +722,111 @@
     grid-column: 1 / -1;
     margin-right: 0;
     text-align: center;
+  }
+}
+
+.news-page,
+.news-header,
+.insight-grid,
+.news-grid,
+.saved-grid,
+.saved-card,
+.context-card,
+.status-card {
+  min-width: 0;
+}
+
+.mobile-disclosure {
+  display: none;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  border-radius: 0.9rem;
+  background: rgba(30, 41, 59, 0.78);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.filters-panel {
+  min-width: 0;
+}
+
+@media (max-width: 1080px) {
+  .news-grid,
+  .saved-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .mobile-disclosure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .filters-panel:not(.mobile-expanded),
+  .source-health-panel:not(.mobile-expanded) .source-health-content {
+    display: none;
+  }
+
+  .filter-disclosure {
+    margin-bottom: 0.75rem;
+  }
+
+  .news-grid,
+  .saved-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .view-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+  }
+
+  .view-tab {
+    min-width: 8.5rem;
+    flex: 0 0 auto;
+  }
+
+  .saved-card__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-action,
+  .saved-action--primary {
+    grid-column: auto;
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .provider-health,
+  .status-metrics,
+  .signal-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .news-page {
+    padding: 0.75rem;
+    overflow-x: clip;
+  }
+
+  .header-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .header-copy,
+  .context-card,
+  .status-card,
+  .saved-summary-card,
+  .active-filters,
+  .state-card {
+    padding: 0.9rem;
   }
 }

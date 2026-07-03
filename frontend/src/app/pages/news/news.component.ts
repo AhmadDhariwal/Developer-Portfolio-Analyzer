@@ -84,6 +84,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   sourceBannerMessage = '';
   lastUpdatedLabel = '';
+  filtersExpanded = false;
+  sourceHealthExpanded = false;
 
   private readonly subscriptions = new Subscription();
   private readonly savedItemsByType: Record<NewsSavedType, Map<string, SavedNewsItem>> = {
@@ -101,6 +103,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   private profileSignature = '';
   private currentSignalHash = '';
   private toastTimer?: ReturnType<typeof setTimeout>;
+  private readonly feedCacheEntries = new Map<string, FrontendAnalysisCacheKey>();
 
   constructor(
     private readonly newsService: NewsService,
@@ -122,7 +125,9 @@ export class NewsComponent implements OnInit, OnDestroy {
         )
         .subscribe((signature) => {
           if (signature === this.profileSignature) return;
+          const isInitialProfile = !this.profileSignature;
           this.profileSignature = signature;
+          if (!isInitialProfile) this.clearFeedCache();
           if (this.isFeedView) {
             this.page = 1;
             this.fetch(false);
@@ -250,6 +255,12 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (!this.isFeedView || this.isLoadingMore || this.page >= this.totalPages) return;
     this.page += 1;
     this.fetch(true);
+  }
+
+  forceRefresh(): void {
+    if (!this.isFeedView || this.isLoading || this.isLoadingMore) return;
+    this.page = 1;
+    this.fetch(false, true);
   }
 
   retry(): void {
@@ -509,7 +520,24 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   private writeFeedCache(filters: NewsFilters, page: number, response: any): void {
-    this.frontendCache.set(this.buildFeedCacheKey(filters, page), response);
+    const key = this.buildFeedCacheKey(filters, page);
+    const identity = JSON.stringify(key);
+    this.feedCacheEntries.delete(identity);
+    this.feedCacheEntries.set(identity, key);
+    this.frontendCache.set(key, response);
+    while (this.feedCacheEntries.size > 50) {
+      const oldest = this.feedCacheEntries.entries().next().value as [string, FrontendAnalysisCacheKey] | undefined;
+      if (!oldest) break;
+      this.frontendCache.clear(oldest[1]);
+      this.feedCacheEntries.delete(oldest[0]);
+    }
+  }
+
+  private clearFeedCache(): void {
+    this.frontendCache.clearModule('news-feed');
+    this.feedCacheEntries.clear();
+    this.lastCompletedSignature = '';
+    this.pendingSignature = '';
   }
 
   private loadSavedItems(): void {
@@ -536,7 +564,7 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.persistClientState(READ_LATER_KEY, this.readLater);
         },
         error: () => {
-          this.syncSavedMapFromLocalFallback();
+          this.savedItemsView = [];
           if (!this.isFeedView && this.selectedSavedType) {
             this.refreshSavedViewCollection(this.selectedSavedType);
           }
@@ -713,7 +741,7 @@ export class NewsComponent implements OnInit, OnDestroy {
       source: item.source,
       url: item.url,
       image: item.image,
-      publishedAt: item.publishedAt || item.createdAt || new Date().toISOString(),
+      publishedAt: item.publishedAt || item.createdAt || '',
       category: item.category,
       popularity: 0,
       relevanceScore: 0,
@@ -751,32 +779,6 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.writeAllSavedCaches();
   }
 
-  private syncSavedMapFromLocalFallback(): void {
-    this.savedItemsByType.bookmark.clear();
-    this.savedItemsByType.read_later.clear();
-    this.bookmarks.forEach((articleId) => {
-      this.savedItemsByType.bookmark.set(articleId, this.createFallbackSavedItem(articleId, 'bookmark'));
-    });
-    this.readLater.forEach((articleId) => {
-      this.savedItemsByType.read_later.set(articleId, this.createFallbackSavedItem(articleId, 'read_later'));
-    });
-  }
-
-  private createFallbackSavedItem(articleId: string, type: NewsSavedType): SavedNewsItem {
-    return {
-      id: '',
-      articleId,
-      title: '',
-      url: '',
-      source: 'Unknown',
-      image: '',
-      publishedAt: null,
-      category: 'Backend',
-      type,
-      createdAt: null,
-      readAt: null
-    };
-  }
 
   private mergeUniqueItems(currentItems: NewsItem[], nextItems: NewsItem[]): NewsItem[] {
     const seen = new Set(currentItems.map((item) => item.id));
@@ -802,7 +804,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (this.recommendedBasedOn?.sourceStatus) {
       return this.recommendedBasedOn.sourceStatus;
     }
-    return 'Showing the best available developer news with safe defaults.';
+    return '';
   }
 
   private formatLastUpdated(value?: string): string {
@@ -816,9 +818,9 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   formatSavedDate(value: string | null): string {
-    if (!value) return 'Saved recently';
+    if (!value) return '';
     const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return 'Saved recently';
+    if (Number.isNaN(parsed.getTime())) return '';
     return new Intl.DateTimeFormat('en', {
       dateStyle: 'medium',
       timeStyle: 'short'
@@ -896,6 +898,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   private rememberSignalHash(value: string): void {
     const normalized = String(value || '').trim();
     if (!normalized || normalized === this.currentSignalHash) return;
+    this.clearFeedCache();
     this.currentSignalHash = normalized;
     localStorage.setItem(SIGNAL_HASH_KEY, normalized);
   }

@@ -91,15 +91,35 @@ const getSavedNews = async (req, res) => {
       return res.status(400).json({ message: 'Saved news type is invalid.' });
     }
 
+    const rawPage = req.query?.page;
+    const rawLimit = req.query?.limit;
+    const page = rawPage === undefined ? 1 : Number.parseInt(rawPage, 10);
+    const limit = rawLimit === undefined ? 50 : Number.parseInt(rawLimit, 10);
+    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+      return res.status(400).json({ message: 'Saved news pagination is invalid.' });
+    }
+
     const filter = { userId: req.user._id };
     if (type) filter.type = type;
 
-    const items = await NewsSavedItem.find(filter)
-      .sort({ createdAt: -1 })
-      .lean();
+    const [items, total] = await Promise.all([
+      NewsSavedItem.find(filter)
+        .select('articleId title url source image publishedAt category type createdAt readAt')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      NewsSavedItem.countDocuments(filter)
+    ]);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
     res.json({
-      items: items.map(mapSavedItem)
+      items: items.map(mapSavedItem),
+      total,
+      page,
+      limit,
+      totalPages,
+      hasMore: page < totalPages
     });
   } catch (error) {
     logger.error('saved news fetch failed', {
@@ -116,12 +136,12 @@ const saveNews = async (req, res) => {
     const title = sanitizeString(req.body?.title, 220);
     const url = sanitizeUrl(req.body?.url);
     const source = sanitizeString(req.body?.source, 80, 'Unknown');
-    const image = sanitizeUrl(req.body?.image) || sanitizeString(req.body?.image, 500);
+    const image = req.body?.image ? sanitizeUrl(req.body.image) : '';
     const category = sanitizeString(req.body?.category, 80, 'Backend');
     const type = normalizeSavedType(req.body?.type);
     const publishedAt = normalizePublishedAt(req.body?.publishedAt);
 
-    if (!articleId || !title || !url || !type) {
+    if (!articleId || !title || !url || !type || (req.body?.publishedAt && !publishedAt) || (req.body?.image && !image)) {
       return res.status(400).json({
         message: 'Valid articleId, title, url, and type are required.'
       });
@@ -167,9 +187,19 @@ const saveNews = async (req, res) => {
     });
   } catch (error) {
     if (error?.code === 11000) {
+      const type = normalizeSavedType(req.body?.type);
+      const url = sanitizeUrl(req.body?.url);
+      const existing = type && url
+        ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean()
+        : null;
+      if (existing) {
+        return res.status(200).json({
+          item: mapSavedItem(existing),
+          message: 'Article already saved.'
+        });
+      }
       return res.status(409).json({ message: 'This article is already saved.' });
     }
-
     logger.error('saved news create failed', {
       ...logger.withRequest(req),
       error: error.message
