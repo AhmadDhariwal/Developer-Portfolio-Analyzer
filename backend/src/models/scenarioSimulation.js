@@ -104,4 +104,6 @@ const scenarioSimulationSchema = new mongoose.Schema(
 
 scenarioSimulationSchema.index({ userId: 1, createdAt: -1 });
 
+scenarioSimulationSchema.index({ userId: 1, scenarioHash: 1 });
+scenarioSimulationSchema.index({ userId: 1, role: 1, experienceLevel: 1 });
 module.exports = mongoose.model('ScenarioSimulation', scenarioSimulationSchema);

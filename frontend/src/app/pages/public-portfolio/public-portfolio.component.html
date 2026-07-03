@@ -59,43 +59,37 @@
       
       <!-- Right side with text -->
       <div class="hero-right">
-        <p class="hero-subtitle-small">{{ profile.headline || profile.sections.hero.roleLabel }}</p>
-        <h1 class="hero-title">
+        <p class="hero-subtitle-small" *ngIf="profile.headline || profile.sections.hero.roleLabel">{{ profile.headline || profile.sections.hero.roleLabel }}</p>
+        <h1 class="hero-title" *ngIf="profile.sections.hero.titleLineOne || profile.sections.hero.titleLineTwo || profile.sections.hero.titleHighlight">
           {{ profile.sections.hero.titleLineOne }}<br>
           {{ profile.sections.hero.titleLineTwo }} <span class="cover-word">{{ profile.sections.hero.titleHighlight }}</span>{{ profile.sections.hero.titleLineSuffix }}
         </h1>
-        <p class="hero-tagline">{{ profile.sections.hero.tagline }}</p>
+        <p class="hero-tagline" *ngIf="profile.sections.hero.tagline">{{ profile.sections.hero.tagline }}</p>
       </div>
     </div>
   </section>
 
   <!-- Bio Section -->
-  <section class="bio-section reveal-on-scroll" id="about">
+  <section class="bio-section reveal-on-scroll" id="about" *ngIf="getProfileLabel() || getSummaryText() || getTopSkillsText() || profile.user.githubUsername || profile.socialLinks.linkedin">
     <div class="bio-container">
       <h2 class="bio-title">I'm a {{ getProfileLabel() }}.<span class="cursor">|</span></h2>
-      <p class="bio-company">
-        Currently, I'm a {{ profile.user.jobTitle || 'Software Engineer' }} at
-        <span class="company-link">
-          <i class="mdi mdi-github"></i>
-          <span class="company-name">{{ getCurrentCompany() }}</span>
-        </span>,
-      </p>
-      <div class="bio-description">
+      <p class="bio-company" *ngIf="profile.user.jobTitle">Currently, {{ profile.user.jobTitle }}</p>
+      <div class="bio-description" *ngIf="getSummaryText()">
         <p>{{ getSummaryText() }}</p>
       </div>
 
       <div class="bio-description bio-description--meta">
         <p><strong>Name:</strong> {{ profile.user.name }}</p>
-        <p><strong>Skills:</strong> {{ getTopSkillsText() }}</p>
-        <p><strong>GitHub:</strong> {{ profile.user.githubUsername ? ('@' + profile.user.githubUsername) : 'Not provided' }}</p>
-        <p><strong>LinkedIn:</strong> {{ profile.socialLinks.linkedin ? profile.socialLinks.linkedin : 'Not provided' }}</p>
+        <p *ngIf="getTopSkillsText()"><strong>Skills:</strong> {{ getTopSkillsText() }}</p>
+        <p *ngIf="profile.user.githubUsername"><strong>GitHub:</strong> @{{ profile.user.githubUsername }}</p>
+        <p *ngIf="profile.socialLinks.linkedin"><strong>LinkedIn:</strong> {{ profile.socialLinks.linkedin }}</p>
         <p *ngIf="hasPhoneNumber()"><strong>Phone:</strong> <a [href]="getPhoneHref()">{{ getPhoneNumber() }}</a></p>
       </div>
     </div>
   </section>
 
   <!-- Skills Section with Orbital Design -->
-  <section class="skills-section reveal-on-scroll">
+  <section class="skills-section reveal-on-scroll" *ngIf="profile.skills.length > 0">
     <div class="skills-container">
       <!-- Section Header -->
       <div class="skills-header">
@@ -216,30 +210,55 @@
 
   <section class="courses-section reveal-on-scroll" *ngIf="completedCourses.length > 0">
     <div class="courses-container">
-      <h2 class="section-title">Completed Courses</h2>
+      <div class="section-header">
+        <h2 class="section-title">Academic & Professional Courses</h2>
+        <p class="section-subtitle">A collection of completed certifications and specialized learning tracks</p>
+      </div>
+      
       <div class="courses-grid">
-        <article class="course-card" *ngFor="let course of completedCourses">
+        <article class="course-card" *ngFor="let course of completedCourses; trackBy: trackByCourse">
+          <div class="card-top-border"></div>
+          
           <div class="course-heading">
-            <div>
+            <div class="heading-left">
               <span class="course-category" *ngIf="course.category">{{ course.category }}</span>
-              <h3>{{ course.title }}</h3>
-              <p class="course-provider" *ngIf="course.provider">{{ course.provider }}</p>
+              <h3 class="course-title">{{ course.title }}</h3>
+              <div class="provider-row" *ngIf="course.provider">
+                <i class="mdi mdi-school-outline"></i>
+                <span class="course-provider">{{ course.provider }}</span>
+              </div>
             </div>
-            <time *ngIf="course.completionDate" [attr.datetime]="course.completionDate">
-              {{ course.completionDate | date:'mediumDate' }}
-            </time>
+            <div class="heading-right" *ngIf="course.completionDate">
+              <div class="date-badge">
+                <i class="mdi mdi-calendar-check-outline"></i>
+                <time [attr.datetime]="course.completionDate">{{ course.completionDate | date:'mediumDate' }}</time>
+              </div>
+            </div>
           </div>
+          
           <p class="course-description" *ngIf="course.description">{{ course.description }}</p>
+          
           <div class="course-skills" *ngIf="course.skills?.length">
-            <span *ngFor="let skill of course.skills">{{ skill }}</span>
+            <span class="skill-badge" *ngFor="let skill of course.skills">{{ skill }}</span>
           </div>
-          <div class="course-meta" *ngIf="course.duration || course.credentialId">
-            <span *ngIf="course.duration">{{ course.duration }}</span>
-            <span *ngIf="course.credentialId">Credential: {{ course.credentialId }}</span>
+          
+          <div class="course-meta-grid" *ngIf="course.duration || course.credentialId">
+            <div class="meta-item" *ngIf="course.duration">
+              <i class="mdi mdi-clock-outline"></i>
+              <span>{{ course.duration }}</span>
+            </div>
+            <div class="meta-item" *ngIf="course.credentialId">
+              <i class="mdi mdi-shield-check-outline"></i>
+              <span class="credential-text" title="Credential ID: {{ course.credentialId }}">ID: {{ course.credentialId }}</span>
+            </div>
           </div>
-          <a *ngIf="course.certificateUrl" class="certificate-link" [href]="course.certificateUrl" target="_blank" rel="noopener noreferrer">
-            View certificate
-          </a>
+          
+          <div class="course-actions" *ngIf="course.certificateUrl">
+            <a class="certificate-btn" [href]="toExternalLink(course.certificateUrl)" target="_blank" rel="noopener noreferrer">
+              <span>View Certificate</span>
+              <i class="mdi mdi-open-in-new"></i>
+            </a>
+          </div>
         </article>
       </div>
     </div>
@@ -294,20 +313,14 @@
   <!-- Contact Footer Section -->
   <footer class="contact-section reveal-on-scroll" id="contact">
     <div class="contact-container">
-      <h2 class="contact-title">{{ profile.sections.contact.heading }}</h2>
+      <h2 class="contact-title" *ngIf="profile.sections.contact.heading">{{ profile.sections.contact.heading }}</h2>
       
-      <p class="contact-message">{{ profile.sections.contact.message }}</p>
+      <p class="contact-message" *ngIf="profile.sections.contact.message">{{ profile.sections.contact.message }}</p>
 
       <div class="contact-actions">
-        <a *ngIf="hasContactEmail(); else emailUnavailable" [href]="getEmailHref()" target="_blank" rel="noopener" class="contact-email">{{ getContactEmail() }}</a>
-        <ng-template #emailUnavailable>
-          <span class="contact-email contact-email--muted">Email not provided</span>
-        </ng-template>
+        <a *ngIf="hasContactEmail()" [href]="getEmailHref()" target="_blank" rel="noopener" class="contact-email">{{ getContactEmail() }}</a>
 
-        <a *ngIf="hasPhoneNumber(); else phoneUnavailable" [href]="getPhoneHref()" class="contact-email">{{ getPhoneNumber() }}</a>
-        <ng-template #phoneUnavailable>
-          <span class="contact-email contact-email--muted">Phone not provided</span>
-        </ng-template>
+        <a *ngIf="hasPhoneNumber()" [href]="getPhoneHref()" class="contact-email">{{ getPhoneNumber() }}</a>
       </div>
       
       <div class="social-icons">
@@ -395,30 +408,16 @@
                     <i class="mdi mdi-twitter"></i> Twitter
                   </a>
                 </li>
-                <li *ngIf="hasContactEmail(); else footerEmailUnavailable">
+                <li *ngIf="hasContactEmail()">
                   <a [href]="getEmailHref()" target="_blank" rel="noopener">
                     <i class="mdi mdi-email"></i> Email
                   </a>
                 </li>
-                <ng-template #footerEmailUnavailable>
-                  <li>
-                    <span class="footer-link-text footer-link-text--muted">
-                      <i class="mdi mdi-email-off-outline"></i> Email not provided
-                    </span>
-                  </li>
-                </ng-template>
-                <li *ngIf="hasPhoneNumber(); else footerPhoneUnavailable">
+                <li *ngIf="hasPhoneNumber()">
                   <a [href]="getPhoneHref()">
                     <i class="mdi mdi-phone"></i> Phone
                   </a>
                 </li>
-                <ng-template #footerPhoneUnavailable>
-                  <li>
-                    <span class="footer-link-text footer-link-text--muted">
-                      <i class="mdi mdi-phone-off"></i> Phone not provided
-                    </span>
-                  </li>
-                </ng-template>
               </ul>
             </div>
 

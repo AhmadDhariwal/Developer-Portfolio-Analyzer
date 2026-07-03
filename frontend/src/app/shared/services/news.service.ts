@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize, map, Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   NewsFilters,
   NewsItem,
@@ -16,7 +17,13 @@ export class NewsService {
   private readonly baseUrl = `${environment.apiBaseUrl}/news`;
   private readonly pendingRequests = new Map<string, Observable<unknown>>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('news', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.pendingRequests.clear();
+  }
 
   getNews(filters: NewsFilters, page = 1, limit = 12, options: { refresh?: boolean } = {}): Observable<NewsResponse> {
     const normalizedFilters = normalizeNewsFilters(filters);
@@ -112,14 +119,14 @@ export class NewsService {
     return items
       .filter((item) => item && item.title && item.url)
       .map((item, index) => ({
-        id: item.id || item.url || `news-${page}-${index}`,
+        id: item.id || item.url,
         title: item.title,
         description: item.description || '',
-        source: item.source || 'Unknown',
+        source: item.source || '',
         url: item.url,
         image: item.image || '',
-        publishedAt: item.publishedAt || new Date().toISOString(),
-        category: item.category || 'Backend',
+        publishedAt: item.publishedAt || '',
+        category: item.category || '',
         popularity: Number(item.popularity || 0),
         relevanceScore: Number(item.relevanceScore || 0),
         rankScore: Number(item.rankScore || item.relevanceScore || 0),
@@ -134,7 +141,9 @@ export class NewsService {
 
   private normalizeSavedItems(items: SavedNewsItem[] | undefined): SavedNewsItem[] {
     if (!Array.isArray(items)) return [];
-    return items.map((item) => this.normalizeSavedItem(item));
+    return items
+      .filter((item) => Boolean(item?.title && item?.url && item?.articleId))
+      .map((item) => this.normalizeSavedItem(item));
   }
 
   private normalizeSavedItem(item: Partial<SavedNewsItem> | undefined, fallbackArticleId = '', fallbackType: NewsSavedType = 'bookmark'): SavedNewsItem {
@@ -143,10 +152,10 @@ export class NewsService {
       articleId: String(item?.articleId || fallbackArticleId),
       title: String(item?.title || ''),
       url: String(item?.url || ''),
-      source: String(item?.source || 'Unknown'),
+      source: String(item?.source || ''),
       image: String(item?.image || ''),
       publishedAt: item?.publishedAt || null,
-      category: String(item?.category || 'Backend'),
+      category: String(item?.category || ''),
       type: item?.type === 'read_later' || item?.type === 'bookmark' ? item.type : fallbackType,
       createdAt: item?.createdAt || null,
       readAt: item?.readAt || null

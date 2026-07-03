@@ -654,10 +654,12 @@ const toPlainLanguageDistribution = (languageDistribution = {}) => {
     .sort((left, right) => right.percentage - left.percentage);
 };
 
-const summarizeGithubSignal = async (userId) => {
-  const analysis = userId
-    ? await Analysis.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean()
-    : null;
+const summarizeGithubSignal = async (userId, source = {}) => {
+  const analysis = source.analysis !== undefined
+    ? source.analysis
+    : userId
+      ? await Analysis.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+      : null;
 
   if (!analysis) {
     return {
@@ -678,12 +680,14 @@ const summarizeGithubSignal = async (userId) => {
   const stored = analysis.githubSignals && typeof analysis.githubSignals === 'object'
     ? analysis.githubSignals
     : {};
-  const repositories = await Repository.find({ ownerId: userId })
-    .select('repoName language stars forks commits lastUpdated')
-    .sort({ lastUpdated: -1 })
-    .limit(24)
-    .lean()
-    .catch(() => []);
+  const repositories = Array.isArray(source.repositories)
+    ? source.repositories
+    : await Repository.find({ ownerId: userId })
+      .select('repoName language stars forks commits lastUpdated')
+      .sort({ lastUpdated: -1 })
+      .limit(24)
+      .lean()
+      .catch(() => []);
 
   const storedRepositories = Array.isArray(stored.repositories) ? stored.repositories : [];
   const normalizedRepositories = (repositories.length ? repositories : storedRepositories).map((repo) => ({
@@ -738,8 +742,8 @@ const loadDefaultResumeAnalysis = async (userId) => {
     : null;
 };
 
-const summarizeResumeSignal = async (userId) => {
-  const latestResume = await loadDefaultResumeAnalysis(userId);
+const summarizeResumeSignal = async (userId, sourceAnalysis) => {
+  const latestResume = sourceAnalysis !== undefined ? sourceAnalysis : await loadDefaultResumeAnalysis(userId);
   return buildResumeAnalysisSignals(latestResume);
 };
 
@@ -799,6 +803,8 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
   const githubSignalOverride = overrides.githubSignals || overrides.githubSignal || null;
   const resumeSignalOverride = overrides.resumeSignals || overrides.resumeSignal || null;
   const careerProfileSignalOverride = overrides.careerProfileSignal || overrides.careerProfile || null;
+  const githubSourceOverride = overrides.githubSource || {};
+  const resumeAnalysisOverride = Object.prototype.hasOwnProperty.call(overrides, 'resumeAnalysis') ? overrides.resumeAnalysis : undefined;
 
   if (!userId) {
     const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
@@ -838,8 +844,8 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
   }
 
   const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
-    githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(userId),
-    resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(userId),
+    githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(userId, githubSourceOverride),
+    resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(userId, resumeAnalysisOverride),
     summarizeSkillGapSignal(userId),
     summarizeCareerSprintSignal(userId),
     summarizeWeeklyReportSignal(userId),

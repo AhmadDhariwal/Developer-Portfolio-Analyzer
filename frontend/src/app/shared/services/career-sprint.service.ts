@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { finalize, Observable, shareReplay, tap } from 'rxjs';
 import { ApiService } from './api.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskCategory = 'learning' | 'project' | 'practice';
@@ -157,7 +158,15 @@ export class CareerSprintService {
   private currentCache: CareerSprint | null = null;
   private historyCache: CareerSprint[] | null = null;
 
-  constructor(private readonly api: ApiService) {}
+  constructor(private readonly api: ApiService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('career-sprint', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.currentCache = null;
+    this.historyCache = null;
+    this.inflight.clear();
+  }
 
   private dedupe<T>(key: string, source$: Observable<T>): Observable<T> {
     const existing = this.inflight.get(key) as Observable<T> | undefined;
@@ -199,7 +208,7 @@ export class CareerSprintService {
     sprintStartDate?: string;
     sprintEndDate?: string;
   }): Observable<CareerSprint> {
-    return this.api.createCareerSprint(payload);
+    return this.api.createCareerSprint(payload).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
   addTask(sprintId: string, payload: {
@@ -212,11 +221,11 @@ export class CareerSprintService {
     startDate?: string;
     endDate?: string;
   }): Observable<CareerSprint> {
-    return this.api.addCareerSprintTask(sprintId, payload);
+    return this.api.addCareerSprintTask(sprintId, payload).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
   toggleTask(sprintId: string, taskId: string, isCompleted: boolean): Observable<CareerSprint> {
-    return this.api.updateCareerSprintTask(sprintId, taskId, isCompleted);
+    return this.api.updateCareerSprintTask(sprintId, taskId, isCompleted).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
   getHistory(limit = 6): Observable<{ history: CareerSprint[] }> {
@@ -230,7 +239,7 @@ export class CareerSprintService {
   }
 
   restoreStreak(sprintId: string): Observable<CareerSprint> {
-    return this.api.restoreCareerStreak(sprintId);
+    return this.api.restoreCareerStreak(sprintId).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
   generateAiTasks(payload: GenerateAiTasksPayload): Observable<GenerateAiTasksResponse> {
@@ -242,14 +251,22 @@ export class CareerSprintService {
   }
 
   saveAiPlan(sprintId: string, payload: Record<string, unknown>): Observable<CareerSprint> {
-    return this.api.saveCareerSprintAiPlan(sprintId, payload);
+    return this.api.saveCareerSprintAiPlan(sprintId, payload).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
   importScenarioPlan(sprintId: string, scenarioId?: string): Observable<CareerSprint> {
-    return this.api.importCareerSprintScenarioPlan(sprintId, scenarioId);
+    return this.api.importCareerSprintScenarioPlan(sprintId, scenarioId).pipe(tap(() => this.invalidateMutationCaches()));
+  }
+
+  private invalidateMutationCaches(): void {
+    this.cacheInvalidation.clearCareerSprintCaches();
+    this.cacheInvalidation.clearScenarioCaches();
+    this.cacheInvalidation.clearDashboardCaches();
+    this.cacheInvalidation.clearNewsCaches();
+    this.cacheInvalidation.clearCoursesCaches();
   }
 
   updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<CareerSprint> {
-    return this.api.updateSprintDates(sprintId, sprintStartDate, sprintEndDate);
+    return this.api.updateSprintDates(sprintId, sprintStartDate, sprintEndDate).pipe(tap(() => this.invalidateMutationCaches()));
   }
 }

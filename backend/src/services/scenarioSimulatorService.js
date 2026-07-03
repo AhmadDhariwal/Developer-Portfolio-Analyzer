@@ -42,8 +42,43 @@ const MAX_SKILLS = 10;
 const MAX_PROJECTS = 5;
 const SCENARIO_CONTEXT_VERSION = 'scenario-context-v2';
 const SCENARIO_HISTORY_VERSION = 'scenario-history-v1';
+const CONTEXT_CACHE_TTL_MS = Math.max(10_000, Number(process.env.SCENARIO_CONTEXT_CACHE_TTL_MS) || 5 * 60 * 1000);
+const HISTORY_CACHE_TTL_MS = Math.max(10_000, Number(process.env.SCENARIO_HISTORY_CACHE_TTL_MS) || 60 * 1000);
+const CONTEXT_CACHE_MAX_SIZE = Math.max(10, Number(process.env.SCENARIO_CONTEXT_CACHE_MAX_SIZE) || 250);
+const HISTORY_CACHE_MAX_SIZE = Math.max(10, Number(process.env.SCENARIO_HISTORY_CACHE_MAX_SIZE) || 250);
 const contextCache = new Map();
 const historyCache = new Map();
+const contextInflight = new Map();
+const historyInflight = new Map();
+
+const logTiming = (operation, startedAt, details = '') => {
+  console.info(`[ScenarioSimulator] ${operation} ${Date.now() - startedAt}ms${details ? ` ${details}` : ''}`);
+};
+
+const getCachedValue = (cache, key, ttlMs) => {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.cachedAt >= ttlMs) {
+    cache.delete(key);
+    return null;
+  }
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry.value;
+};
+
+const setCachedValue = (cache, key, value, maxSize) => {
+  cache.delete(key);
+  cache.set(key, { value, cachedAt: Date.now() });
+  while (cache.size > maxSize) cache.delete(cache.keys().next().value);
+};
+
+const runDeduped = (inflight, key, work) => {
+  if (inflight.has(key)) return inflight.get(key);
+  const promise = Promise.resolve().then(work).finally(() => inflight.delete(key));
+  inflight.set(key, promise);
+  return promise;
+};
 
 const stableValue = (value) => {
   if (Array.isArray(value)) return value.map(stableValue);
@@ -100,6 +135,13 @@ const invalidateHistoryCache = (userId) => {
   Array.from(historyCache.keys())
     .filter((key) => key.startsWith(prefix))
     .forEach((key) => historyCache.delete(key));
+};
+
+const invalidateContextCache = (userId) => {
+  const normalizedUserId = String(userId || '');
+  Array.from(contextCache.entries())
+    .filter(([, entry]) => entry?.value?.__scenarioUserId === normalizedUserId)
+    .forEach(([key]) => contextCache.delete(key));
 };
 
 const ROLE_ALIASES = {
@@ -716,6 +758,10 @@ const simulateHiringOutcome = (payload = {}, signalContext = {}) => {
       suggestedDurationWeeks,
       sources
     }),
+    dataTrust: {
+      baseline: { label: 'User-provided or estimated input baseline' },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
     meta: {
       role: normalizedRole,
       level: normalizedLevel,
@@ -767,19 +813,55 @@ const buildSourceContextSummary = (context = {}, signalHash = '') => ({
   suggestedProjectCount: context.suggestedInputs?.projects?.length || 0
 });
 
-const getScenarioContext = async (userId, options = {}) => {
+const buildFallbackContext = (warning, userId) => {
+  const signalHash = buildSignalHash({});
+  const context = {
+    profile: {
+      careerStack: 'Full Stack', experienceLevel: 'Student', githubUsername: '',
+      role: 'full stack', level: 'mid', baselineHiringScore: 55, baselineJobMatch: 48
+    },
+    sources: [],
+    signals: {
+      knownSkills: [], missingSkills: [], recommendationSkills: [], sprintFocus: [],
+      connectedProviders: [], portfolioProjects: [], topDemandedSkills: []
+    },
+    suggestedInputs: {
+      role: 'full stack', experienceLevel: 'mid', baselineHiringScore: 55,
+      baselineJobMatch: 48, durationWeeks: 6, skills: [], projects: []
+    },
+    summary: 'Scenario context is temporarily unavailable. Safe defaults are being used.',
+    dataTrust: {
+      baselineHiringScore: { label: 'Estimated baseline', source: 'safe-default', signalCount: 0, fallbackUsed: true },
+      baselineJobMatch: { label: 'Estimated baseline', source: 'safe-default', signalCount: 0, fallbackUsed: true },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
+    signalHash,
+    warnings: [warning],
+    cache: { hit: false, key: `fallback:${String(userId || '')}`, version: SCENARIO_CONTEXT_VERSION }
+  };
+  context.sourceContextSummary = buildSourceContextSummary(context, signalHash);
+  return context;
+};
+
+const loadScenarioContext = async (userId, options = {}) => {
+  const startedAt = Date.now();
   const developerSignals = await getDeveloperSignals(userId);
   const signalHash = buildSignalHash(developerSignals);
   const careerProfile = developerSignals.careerProfileSignal || developerSignals.careerProfile || {};
   const contextCacheKey = buildContextCacheKey({ userId, signalHash, careerProfile });
-  if (!options.forceRefresh && contextCache.has(contextCacheKey)) {
+  const cachedContext = !options.forceRefresh
+    ? getCachedValue(contextCache, contextCacheKey, CONTEXT_CACHE_TTL_MS)
+    : null;
+  if (cachedContext) {
+    logTiming('context total', startedAt, 'cache=hit');
     return {
-      ...contextCache.get(contextCacheKey),
+      ...cachedContext,
       cache: { hit: true, key: contextCacheKey, version: SCENARIO_CONTEXT_VERSION }
     };
   }
 
   const now = new Date();
+  const dbStartedAt = Date.now();
   const [
     user,
     analysis,
@@ -795,22 +877,23 @@ const getScenarioContext = async (userId, options = {}) => {
     User.findById(userId)
       .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle')
       .lean(),
-    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean(),
-    ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1, createdAt: -1 }).lean(),
-    SkillGraph.findOne({ userId }).sort({ updatedAt: -1 }).lean(),
-    Recommendation.find({ userId }).sort({ createdAt: -1 }).limit(12).lean(),
+    Analysis.findOne({ userId }).select('languageDistribution missingSkills readinessScore skillScore githubScore createdAt').sort({ createdAt: -1 }).lean(),
+    ResumeAnalysis.findOne({ userId }).select('fileId skills atsScore keywordDensity analyzedAt createdAt').sort({ analyzedAt: -1, createdAt: -1 }).lean(),
+    SkillGraph.findOne({ userId }).select('nodes weeklyRoadmap updatedAt').sort({ updatedAt: -1 }).lean(),
+    Recommendation.find({ userId }).select('techStack isNewTech createdAt').sort({ createdAt: -1 }).limit(12).lean(),
     CareerSprint.findOne({
       userId,
       $or: [
         { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
         { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
       ]
-    }).sort({ updatedAt: -1 }).lean(),
-    CareerSprint.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean(),
-    PublicProfile.findOne({ userId }).lean(),
-    IntegrationInsight.findOne({ userId }).lean(),
-    IntegrationConnection.find({ userId, status: 'connected' }).lean()
+    }).select('tasks updatedAt createdAt').sort({ updatedAt: -1 }).lean(),
+    CareerSprint.findOne({ userId }).select('tasks updatedAt createdAt').sort({ updatedAt: -1, createdAt: -1 }).lean(),
+    PublicProfile.findOne({ userId }).select('skills projects upcomingProjects updatedAt createdAt').lean(),
+    IntegrationInsight.findOne({ userId }).select('mergedSkills providers updatedAt').lean(),
+    IntegrationConnection.find({ userId, status: 'connected' }).select('provider lastSyncedAt updatedAt').lean()
   ]);
+  logTiming('context DB', dbStartedAt);
 
   const githubSignal = developerSignals.githubSignals || {};
   const resumeSignal = developerSignals.resumeSignals || {};
@@ -875,22 +958,24 @@ const getScenarioContext = async (userId, options = {}) => {
 
   const role = mapCareerStackToRole(user?.activeCareerStack || user?.careerStack);
   const level = normalizeLevel(user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel);
-  const baselineHiringScore = clamp(average([
+  const hiringBaselineSignals = [
     user?.score,
     analysis?.readinessScore,
     resolvedResumeAnalysis?.atsScore,
     resumeSignal.atsScore,
     skillGapSignal.coverage,
     portfolioSignal.completenessScore
-  ], 55));
-  const baselineJobMatch = clamp(average([
+  ].filter((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+  const jobMatchBaselineSignals = [
     analysis?.skillScore,
     analysis?.githubScore,
     resolvedResumeAnalysis?.keywordDensity,
     resumeSignal.keywordDensity,
     githubSignal.scores?.healthScore,
     jobsDemandSignal.sampledJobs ? 55 : 0
-  ], 48));
+  ].filter((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+  const baselineHiringScore = clamp(average(hiringBaselineSignals, 55));
+  const baselineJobMatch = clamp(average(jobMatchBaselineSignals, 48));
   const suggestedSkills = uniqueStrings([
     ...missingSkills,
     ...recommendationSkills,
@@ -1000,13 +1085,39 @@ const getScenarioContext = async (userId, options = {}) => {
     },
     summary: `Recommendations are prefetched from your ${user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
     signalHash,
+    dataTrust: {
+      baselineHiringScore: {
+        label: 'Estimated baseline',
+        source: hiringBaselineSignals.length ? 'developer-signals' : 'safe-default',
+        signalCount: hiringBaselineSignals.length,
+        fallbackUsed: hiringBaselineSignals.length === 0
+      },
+      baselineJobMatch: {
+        label: 'Estimated baseline',
+        source: jobMatchBaselineSignals.length ? 'developer-signals' : 'safe-default',
+        signalCount: jobMatchBaselineSignals.length,
+        fallbackUsed: jobMatchBaselineSignals.length === 0
+      },
+      prediction: { label: 'Deterministic estimate', guaranteed: false, usesAI: false }
+    },
     cache: { hit: false, key: contextCacheKey, version: SCENARIO_CONTEXT_VERSION }
   };
 
   context.sourceContextSummary = buildSourceContextSummary(context, signalHash);
-  contextCache.set(contextCacheKey, context);
+  Object.defineProperty(context, '__scenarioUserId', { value: String(userId || ''), enumerable: false });
+  setCachedValue(contextCache, contextCacheKey, context, CONTEXT_CACHE_MAX_SIZE);
+  logTiming('context total', startedAt, `cache=miss forceRefresh=${!!options.forceRefresh}`);
   return context;
 };
+
+const getScenarioContext = (userId, options = {}) => runDeduped(
+  contextInflight,
+  `${String(userId || '')}:${options.forceRefresh ? 'refresh' : 'normal'}`,
+  () => loadScenarioContext(userId, options).catch((error) => {
+    console.warn('[ScenarioSimulator] context fallback:', error.message);
+    return buildFallbackContext('Some context sources could not be loaded. The simulation is using safe defaults.', userId);
+  })
+);
 
 const generateScenarioName = ({ role, durationWeeks, skills, projects }) => {
   const roleLabel = ROLE_LABELS[normalizeRole(role)] || 'Scenario';
@@ -1016,6 +1127,7 @@ const generateScenarioName = ({ role, durationWeeks, skills, projects }) => {
 };
 
 const saveScenarioForUser = async (userId, payload = {}) => {
+  const startedAt = Date.now();
   const normalized = sanitizeScenarioInput(payload);
   if (!normalized.isValid) {
     const error = new Error('Scenario validation failed.');
@@ -1032,6 +1144,7 @@ const saveScenarioForUser = async (userId, payload = {}) => {
   });
   const scenarioHash = result.scenarioHash || buildScenarioHash(normalized.value);
 
+  const dbStartedAt = Date.now();
   const scenario = await ScenarioSimulation.create({
     userId,
     name: String(payload.name || '').trim() || generateScenarioName(normalized.value),
@@ -1046,36 +1159,60 @@ const saveScenarioForUser = async (userId, payload = {}) => {
     sourceContextSummary: context.sourceContextSummary || buildSourceContextSummary(context, context.signalHash),
     result
   });
+  logTiming('save DB', dbStartedAt);
 
   invalidateHistoryCache(userId);
+  logTiming('save total', startedAt);
   return scenario.toObject();
 };
 
-const getScenarioHistoryForUser = async (userId, limit = 8, options = {}) => {
+const loadScenarioHistoryForUser = async (userId, limit = 8, options = {}) => {
+  const startedAt = Date.now();
   const safeLimit = clamp(limit, 1, 20);
   const cacheKey = buildHistoryCacheKey(userId, safeLimit);
-  if (!options.forceRefresh && historyCache.has(cacheKey)) {
+  const cachedHistory = !options.forceRefresh
+    ? getCachedValue(historyCache, cacheKey, HISTORY_CACHE_TTL_MS)
+    : null;
+  if (cachedHistory) {
+    logTiming('history total', startedAt, 'cache=hit');
     return {
-      history: historyCache.get(cacheKey),
+      history: cachedHistory,
       cache: { hit: true, key: cacheKey, version: SCENARIO_HISTORY_VERSION }
     };
   }
 
+  const dbStartedAt = Date.now();
   const history = await ScenarioSimulation.find({ userId })
     .sort({ createdAt: -1 })
+    .select('name baselineHiringScore baselineJobMatch role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash breakdown uncertaintyRange warnings sourceContextSummary result createdAt updatedAt')
     .limit(safeLimit)
     .lean();
+  logTiming('history DB', dbStartedAt);
 
-  historyCache.set(cacheKey, history);
+  setCachedValue(historyCache, cacheKey, history, HISTORY_CACHE_MAX_SIZE);
+  logTiming('history total', startedAt, `cache=miss forceRefresh=${!!options.forceRefresh}`);
   return {
     history,
     cache: { hit: false, key: cacheKey, version: SCENARIO_HISTORY_VERSION }
   };
 };
 
+const getScenarioHistoryForUser = (userId, limit = 8, options = {}) => {
+  const safeLimit = clamp(limit, 1, 20);
+  return runDeduped(
+    historyInflight,
+    `${buildHistoryCacheKey(userId, safeLimit)}:${options.forceRefresh ? 'refresh' : 'normal'}`,
+    () => loadScenarioHistoryForUser(userId, safeLimit, options)
+  );
+};
+
 const deleteScenarioForUser = async (userId, scenarioId) => {
+  const startedAt = Date.now();
+  const dbStartedAt = Date.now();
   const deleted = await ScenarioSimulation.findOneAndDelete({ _id: scenarioId, userId }).lean();
+  logTiming('delete DB', dbStartedAt);
   if (deleted) invalidateHistoryCache(userId);
+  logTiming('delete total', startedAt);
   return !!deleted;
 };
 
@@ -1129,6 +1266,7 @@ const buildSprintTasksFromScenario = (normalizedInput, result, source = {}) => {
 };
 
 const createSprintFromScenario = async (userId, payload = {}) => {
+  const startedAt = Date.now();
   const normalized = sanitizeScenarioInput(payload);
   if (!normalized.isValid) {
     const error = new Error('Scenario validation failed.');
@@ -1150,6 +1288,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
     scenarioHash
   });
   const now = new Date();
+  const dbStartedAt = Date.now();
   let sprint = await CareerSprint.findOne({
     userId,
     weekStartDate: { $lte: now },
@@ -1166,6 +1305,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
       goalExperienceLevel: context.profile.experienceLevel
     });
   }
+  logTiming('sprint DB', dbStartedAt);
 
   const existingTitles = new Set((sprint.tasks || []).map((task) => String(task.title || '').toLowerCase().trim()));
   const tasksToAdd = tasks.filter((task) => !existingTitles.has(task.title.toLowerCase().trim()));
@@ -1180,7 +1320,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
     await sprint.save();
   }
 
-  return {
+  const response = {
     sprintId: sprint._id,
     sprintTitle: sprint.title,
     sourceScenarioId: payload.scenarioId || payload.sourceScenarioId || null,
@@ -1196,6 +1336,9 @@ const createSprintFromScenario = async (userId, payload = {}) => {
       sourceScenarioHash: task.sourceScenarioHash
     }))
   };
+  invalidateContextCache(userId);
+  logTiming('sprint creation total', startedAt);
+  return response;
 };
 
 module.exports = {

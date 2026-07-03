@@ -62,5 +62,6 @@ const newsSavedItemSchema = new mongoose.Schema(
 );
 
 newsSavedItemSchema.index({ userId: 1, url: 1, type: 1 }, { unique: true });
+newsSavedItemSchema.index({ userId: 1, type: 1, createdAt: -1 });
 
 module.exports = mongoose.model('NewsSavedItem', newsSavedItemSchema);

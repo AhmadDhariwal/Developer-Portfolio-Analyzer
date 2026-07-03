@@ -1,21 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap } from 'rxjs';
+import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
-  private scenarioContextCache: any | null = null;
-  private scenarioHistoryCache = new Map<number, any>();
+  private readonly scenarioContextTtlMs = 15 * 60 * 1000;
+  private readonly scenarioHistoryTtlMs = 5 * 60 * 1000;
+  private readonly scenarioCacheMaxEntries = 50;
+  private readonly scenarioContextCache = new Map<string, { value: any; expiresAt: number }>();
+  private readonly scenarioHistoryCache = new Map<string, { value: any; expiresAt: number }>();
+  private readonly scenarioContextInflight = new Map<string, Observable<any>>();
+  private readonly scenarioHistoryInflight = new Map<string, Observable<any>>();
+  private scenarioSignalHash = '';
 
   constructor(
     private readonly http: HttpClient,
-    private readonly frontendCache: FrontendAnalysisCacheService
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
   ) {
+    this.cacheInvalidation.register('scenario', () => this.clearScenarioCaches());
     globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
       this.invalidateScenarioContextCache();
     });
@@ -56,19 +65,19 @@ export class ApiService {
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearGithubCaches(); })
     );
   }
 
   uploadResume(formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
@@ -87,7 +96,7 @@ export class ApiService {
 
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
     return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
+      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
     );
   }
 
@@ -363,16 +372,46 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 
-  getScenarioSimulatorContext(forceRefresh = false): Observable<any> {
-    if (!forceRefresh && this.scenarioContextCache) {
-      return of(this.scenarioContextCache);
-    }
-    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
-    return this.http.get(url).pipe(tap((response) => {
-      this.scenarioContextCache = response;
-    }));
+  private getScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string): any | null {
+    const entry = cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) { cache.delete(key); return null; }
+    cache.delete(key); cache.set(key, entry); return entry.value;
   }
 
+  private setScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string, value: any, ttlMs: number): void {
+    cache.delete(key); cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+    while (cache.size > this.scenarioCacheMaxEntries) {
+      const oldestKey = cache.keys().next().value as string | undefined;
+      if (!oldestKey) break;
+      cache.delete(oldestKey);
+    }
+  }
+
+  getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
+    const key = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
+    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioContextCache, key) : null;
+    if (cached) return of({ ...cached, frontendCacheHit: true });
+    const inflight = this.scenarioContextInflight.get(key);
+    if (inflight) return inflight;
+    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
+    const request$ = this.http.get(url).pipe(
+      tap((response: any) => {
+        this.scenarioSignalHash = response?.context?.signalHash || this.scenarioSignalHash;
+        this.setScenarioCacheValue(this.scenarioContextCache, key, response, this.scenarioContextTtlMs);
+        const resolvedKey = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
+        if (resolvedKey !== key) {
+          this.setScenarioCacheValue(this.scenarioContextCache, resolvedKey, response, this.scenarioContextTtlMs);
+        }
+        const normalKey = `context:${profileSignature}:${this.scenarioSignalHash}:false`;
+        this.setScenarioCacheValue(this.scenarioContextCache, normalKey, response, this.scenarioContextTtlMs);
+      }),
+      finalize(() => this.scenarioContextInflight.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.scenarioContextInflight.set(key, request$);
+    return request$;
+  }
   saveScenarioSimulation(payload: {
     name?: string;
     baselineHiringScore: number;
@@ -388,33 +427,52 @@ export class ApiService {
     }));
   }
 
-  getScenarioSimulationHistory(limit = 8, forceRefresh = false): Observable<any> {
-    if (!forceRefresh && this.scenarioHistoryCache.has(limit)) {
-      return of(this.scenarioHistoryCache.get(limit));
-    }
+  getScenarioSimulationHistory(limit = 8, forceRefresh = false, profileSignature = ''): Observable<any> {
+    const key = `history:${profileSignature}:${limit}:${forceRefresh}`;
+    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioHistoryCache, key) : null;
+    if (cached) return of({ ...cached, frontendCacheHit: true });
+    const inflight = this.scenarioHistoryInflight.get(key);
+    if (inflight) return inflight;
     const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
-    return this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(tap((response) => {
-      this.scenarioHistoryCache.set(limit, response);
-    }));
+    const request$ = this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(
+      tap((response) => {
+        this.setScenarioCacheValue(this.scenarioHistoryCache, key, response, this.scenarioHistoryTtlMs);
+        const normalKey = `history:${profileSignature}:${limit}:false`;
+        if (normalKey !== key) {
+          this.setScenarioCacheValue(this.scenarioHistoryCache, normalKey, response, this.scenarioHistoryTtlMs);
+        }
+      }),
+      finalize(() => this.scenarioHistoryInflight.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.scenarioHistoryInflight.set(key, request$);
+    return request$;
   }
-
   deleteScenarioSimulation(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(tap(() => {
       this.invalidateScenarioHistoryCache();
     }));
   }
 
+  clearScenarioCaches(): void {
+    this.invalidateScenarioContextCache();
+    this.invalidateScenarioHistoryCache();
+    this.scenarioSignalHash = '';
+  }
+
   invalidateScenarioHistoryCache(): void {
     this.scenarioHistoryCache.clear();
+    this.scenarioHistoryInflight.clear();
   }
 
   invalidateScenarioContextCache(): void {
-    this.scenarioContextCache = null;
+    this.scenarioContextCache.clear();
+    this.scenarioContextInflight.clear();
+    this.scenarioSignalHash = '';
   }
 
   private invalidateDeveloperSignalState(): void {
-    this.frontendCache.clearCurrentSignalHash();
-    this.invalidateScenarioContextCache();
+    this.cacheInvalidation.clearDeveloperSignalCaches();
   }
 
   createSprintFromScenario(payload: {
@@ -432,9 +490,13 @@ export class ApiService {
   }
 
   /* ── Public Profiles ── */
-  getPublicProfile(slug: string): Observable<any> {
+  getPublicProfile(slug: string, preview?: string): Observable<any> {
     const cacheBust = Date.now();
-    return this.http.get(`${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}?_=${cacheBust}`);
+    let url = `${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}?_=${cacheBust}`;
+    if (preview) {
+      url += `&preview=${encodeURIComponent(preview)}`;
+    }
+    return this.http.get(url);
   }
 
   getMyPublicProfile(): Observable<any> {

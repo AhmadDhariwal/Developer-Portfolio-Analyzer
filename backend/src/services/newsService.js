@@ -17,6 +17,11 @@ const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
 const CACHE_TTL_MS = 1000 * 60 * 20;
 const SIGNAL_CACHE_TTL_MS = 1000 * 60 * 2;
+const SIGNAL_CACHE_MAX_SIZE = 250;
+const MAX_CACHED_ITEMS = 300;
+const PROVIDER_TIMEOUT_MS = Math.max(2000, Number(process.env.NEWS_PROVIDER_TIMEOUT_MS) || 7000);
+const PROVIDER_FAILURE_THRESHOLD = 3;
+const PROVIDER_COOLDOWN_MS = Math.max(30000, Number(process.env.NEWS_PROVIDER_COOLDOWN_MS) || 2 * 60 * 1000);
 const REDDIT_FEEDS = ['programming', 'webdev', 'MachineLearning', 'devops'];
 const SOURCE_NAMES = ['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'];
 const NEWS_TABS = ['for-you', 'trending', 'latest'];
@@ -25,6 +30,9 @@ const NEWS_SOURCES = ['All', ...SOURCE_NAMES];
 const NEWS_DATE_FILTERS = ['today', 'week', 'month'];
 const NEWS_POPULARITY_FILTERS = ['all', 'high'];
 const signalResolutionCache = new Map();
+const signalResolutionInflight = new Map();
+const feedInflight = new Map();
+const providerCircuitState = new Map();
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const uniqueStrings = (values = [], limit = 8) => {
@@ -80,8 +88,41 @@ const hashKey = (payload) =>
   crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 32);
 
 const fetchJson = async (url, options = {}) => {
-  const response = await axios.get(url, { timeout: 9000, ...options });
+  const response = await axios.get(url, { timeout: PROVIDER_TIMEOUT_MS, ...options });
   return response.data;
+};
+
+const withProviderTimeout = (providerName, operation) => Promise.race([
+  Promise.resolve().then(operation),
+  new Promise((_, reject) => {
+    const timeout = setTimeout(
+      () => reject(new Error(providerName + ' timed out after ' + PROVIDER_TIMEOUT_MS + 'ms')),
+      PROVIDER_TIMEOUT_MS
+    );
+    timeout.unref?.();
+  })
+]);
+
+const runProvider = async (provider) => {
+  const state = providerCircuitState.get(provider.name) || { failures: 0, cooldownUntil: 0 };
+  if (state.cooldownUntil > Date.now()) {
+    const error = new Error('Provider cooldown active until ' + new Date(state.cooldownUntil).toISOString());
+    error.code = 'PROVIDER_COOLDOWN';
+    throw error;
+  }
+
+  try {
+    const value = await withProviderTimeout(provider.name, provider.fetcher);
+    providerCircuitState.delete(provider.name);
+    return value;
+  } catch (error) {
+    const failures = state.failures + 1;
+    providerCircuitState.set(provider.name, {
+      failures,
+      cooldownUntil: failures >= PROVIDER_FAILURE_THRESHOLD ? Date.now() + PROVIDER_COOLDOWN_MS : 0
+    });
+    throw error;
+  }
 };
 
 const fetchFromNewsApi = async (sinceDate, token) => {
@@ -163,24 +204,41 @@ const extractTrendingTopics = (items = []) => {
     .map(([topic]) => topic);
 };
 
-const getCachedDeveloperSignals = async (userId) => {
+const getCachedDeveloperSignals = async (userId, forceRefresh = false) => {
   const key = String(userId || 'public');
   const cached = signalResolutionCache.get(key);
-  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    signalResolutionCache.delete(key);
+    signalResolutionCache.set(key, cached);
+    return cached.value;
+  }
+  signalResolutionCache.delete(key);
+  if (!forceRefresh && signalResolutionInflight.has(key)) return signalResolutionInflight.get(key);
 
-  const signals = await getDeveloperSignals(userId || null);
-  const signalHash = userId ? buildSignalHash(signals) : 'no-signals';
-  const value = { signals, signalHash };
-  signalResolutionCache.set(key, { value, expiresAt: Date.now() + SIGNAL_CACHE_TTL_MS });
-  return value;
+  const request = Promise.resolve()
+    .then(async () => {
+      const signals = await getDeveloperSignals(userId || null);
+      const signalHash = userId ? buildSignalHash(signals) : 'no-signals';
+      const value = { signals, signalHash };
+      signalResolutionCache.set(key, { value, expiresAt: Date.now() + SIGNAL_CACHE_TTL_MS });
+      while (signalResolutionCache.size > SIGNAL_CACHE_MAX_SIZE) {
+        signalResolutionCache.delete(signalResolutionCache.keys().next().value);
+      }
+      return value;
+    })
+    .finally(() => signalResolutionInflight.delete(key));
+
+  signalResolutionInflight.set(key, request);
+  return request;
 };
 
 const invalidateNewsSignalCache = (userId) => {
   if (!userId) return;
   signalResolutionCache.delete(String(userId));
+  signalResolutionInflight.delete(String(userId));
 };
 
-const buildUserContext = async (user) => {
+const buildUserContext = async (user, options = {}) => {
   const defaults = {
     careerStack: user?.careerStack || 'Full Stack',
     experienceLevel: user?.experienceLevel || 'Student',
@@ -199,7 +257,7 @@ const buildUserContext = async (user) => {
   };
   if (!user?._id) return defaults;
 
-  const { signals, signalHash } = await getCachedDeveloperSignals(user._id);
+  const { signals, signalHash } = await getCachedDeveloperSignals(user._id, !!options.forceRefresh);
   const careerProfile = signals.careerProfileSignal || signals.careerProfile || {};
   const github = signals.githubSignals || {};
   const resume = signals.resumeSignals || {};
@@ -281,7 +339,7 @@ const fetchAllSources = async (sinceDate) => {
   const nowIso = new Date().toISOString();
   const settled = await Promise.allSettled(providers.map((provider) => {
     if (!provider.enabled || !provider.configured) return Promise.resolve([]);
-    return provider.fetcher();
+    return runProvider(provider);
   }));
   const sourceBuckets = {};
   const providerDiagnostics = [];
@@ -373,7 +431,8 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
 const getNewsFeed = async ({ user, query }) => {
   const startedAt = Date.now();
   const filters = normalizeFilters(query);
-  const userContext = await buildUserContext(user);
+  const bypassCache = ['1', 'true', 'yes'].includes(String(query?.refresh || query?.bypassCache || '').toLowerCase());
+  const userContext = await buildUserContext(user, { forceRefresh: bypassCache });
   const cacheLookupKey = hashKey({
     userId: String(user?._id || 'public'),
     signalHash: userContext.signalHash,
@@ -389,95 +448,137 @@ const getNewsFeed = async ({ user, query }) => {
     experienceLevel: userContext.experienceLevel
   });
 
-  const bypassCache = ['1', 'true', 'yes'].includes(String(query?.refresh || query?.bypassCache || '').toLowerCase());
-  const cached = bypassCache ? null : await NewsCache.findOne({ cacheKey: cacheLookupKey, expiresAt: { $gt: new Date() } }).lean();
-  if (cached) {
-    const start = (filters.page - 1) * filters.limit;
-    const allItems = Array.isArray(cached.allItems) ? cached.allItems : [];
-    return {
-      items: allItems.slice(start, start + filters.limit),
-      total: Number(cached.total || allItems.length),
-      sourceSummary: cached.sourceSummary || {},
-      trendingTopics: Array.isArray(cached.trendingTopics) ? cached.trendingTopics : [],
-      recommendedBasedOn: cached.recommendedBasedOn || {},
-      fromCache: true,
-      filters,
-      telemetry: {
-        cacheHit: true,
-        providerFailureCount: Number(cached.providerFailureCount || 0),
-        providerUsed: Array.isArray(cached.providerUsed) ? cached.providerUsed : [],
-        providerDiagnostics: Array.isArray(cached.providerDiagnostics) ? cached.providerDiagnostics : [],
-        signalHash: userContext.signalHash,
-        responseTimeMs: Number(cached.responseTimeMs || 0)
-      }
-    };
-  }
-
-  const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
-  const { sourceBuckets, providerUsed, providerFailureCount, providerDiagnostics } = await fetchAllSources(new Date(sinceTimestamp));
-  const merged = uniqueNewsItems(Object.values(sourceBuckets).flat());
-  const filtered = merged.filter((item) => matchesFilters(item, filters, sinceTimestamp));
-  const ranked = rankNewsItems(filtered, userContext, filters.tab);
-  const sourceSummary = SOURCE_NAMES.reduce((accumulator, sourceName) => {
-    accumulator[sourceName] = ranked.filter((item) => item.source === sourceName).length;
-    return accumulator;
-  }, {});
-  const trendingTopics = extractTrendingTopics(ranked);
-  const total = ranked.length;
   const start = (filters.page - 1) * filters.limit;
-  const items = ranked.slice(start, start + filters.limit);
-  const responseTimeMs = Date.now() - startedAt;
-  const lastUpdated = new Date().toISOString();
-  const sourceStatus = providerUsed.length
-    ? `Active sources: ${providerUsed.join(', ')}`
-    : 'Fallback imagery and safe defaults are active because provider coverage is limited.';
-  const recommendedBasedOn = buildRecommendedBasedOn({
-    userContext,
+  const cacheProjection = {
+    allItems: { $slice: [start, filters.limit] },
+    total: 1,
+    sourceSummary: 1,
+    trendingTopics: 1,
+    recommendedBasedOn: 1,
+    providerUsed: 1,
+    providerDiagnostics: 1,
+    providerFailureCount: 1,
+    responseTimeMs: 1,
+    lastUpdated: 1,
+    expiresAt: 1
+  };
+
+  const toCachedPayload = (cached, telemetryOverrides = {}) => ({
+    items: Array.isArray(cached.allItems) ? cached.allItems : [],
+    total: Number(cached.total || 0),
+    sourceSummary: cached.sourceSummary || {},
+    trendingTopics: Array.isArray(cached.trendingTopics) ? cached.trendingTopics : [],
+    recommendedBasedOn: cached.recommendedBasedOn || {},
+    fromCache: true,
     filters,
-    lastUpdated,
-    sourceStatus,
-    fromCache: false
+    telemetry: {
+      cacheHit: true,
+      providerFailureCount: Number(cached.providerFailureCount || 0),
+      providerUsed: Array.isArray(cached.providerUsed) ? cached.providerUsed : [],
+      providerDiagnostics: Array.isArray(cached.providerDiagnostics) ? cached.providerDiagnostics : [],
+      signalHash: userContext.signalHash,
+      responseTimeMs: Date.now() - startedAt,
+      ...telemetryOverrides
+    }
   });
 
-  NewsCache.findOneAndUpdate(
-    { cacheKey: cacheLookupKey },
-    {
-      $set: {
-        cacheKey: cacheLookupKey,
+  if (!bypassCache) {
+    const cached = await NewsCache.findOne({
+      cacheKey: cacheLookupKey,
+      expiresAt: { $gt: new Date() }
+    }).select(cacheProjection).lean();
+    if (cached) return toCachedPayload(cached);
+  }
+
+  const inflightKey = `${cacheLookupKey}:${filters.page}:${filters.limit}:${bypassCache ? 'refresh' : 'normal'}`;
+  if (feedInflight.has(inflightKey)) return feedInflight.get(inflightKey);
+
+  const request = Promise.resolve()
+    .then(async () => {
+      const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
+      const { sourceBuckets, providerUsed, providerFailureCount, providerDiagnostics } =
+        await fetchAllSources(new Date(sinceTimestamp));
+      const merged = uniqueNewsItems(Object.values(sourceBuckets).flat());
+
+      if (!providerUsed.length && !merged.length) {
+        const stale = await NewsCache.findOne({ cacheKey: cacheLookupKey })
+          .select(cacheProjection)
+          .lean();
+        if (stale) {
+          return toCachedPayload(stale, {
+            providerFailureCount,
+            providerDiagnostics,
+            staleFallback: true
+          });
+        }
+      }
+
+      const filtered = merged.filter((item) => matchesFilters(item, filters, sinceTimestamp));
+      const ranked = rankNewsItems(filtered, userContext, filters.tab);
+      const sourceSummary = SOURCE_NAMES.reduce((accumulator, sourceName) => {
+        accumulator[sourceName] = ranked.filter((item) => item.source === sourceName).length;
+        return accumulator;
+      }, {});
+      const trendingTopics = extractTrendingTopics(ranked);
+      const total = ranked.length;
+      const items = ranked.slice(start, start + filters.limit);
+      const responseTimeMs = Date.now() - startedAt;
+      const lastUpdated = new Date().toISOString();
+      const sourceStatus = providerUsed.length
+        ? `Active sources: ${providerUsed.join(', ')}`
+        : 'Provider coverage is temporarily unavailable.';
+      const recommendedBasedOn = buildRecommendedBasedOn({
+        userContext,
         filters,
-        allItems: ranked,
+        lastUpdated,
+        sourceStatus,
+        fromCache: false
+      });
+
+      await NewsCache.findOneAndUpdate(
+        { cacheKey: cacheLookupKey },
+        {
+          $set: {
+            cacheKey: cacheLookupKey,
+            filters,
+            allItems: ranked.slice(0, MAX_CACHED_ITEMS),
+            total,
+            sourceSummary,
+            trendingTopics,
+            recommendedBasedOn,
+            providerUsed,
+            providerDiagnostics,
+            providerFailureCount,
+            responseTimeMs,
+            lastUpdated: new Date(lastUpdated),
+            expiresAt: new Date(Date.now() + CACHE_TTL_MS)
+          }
+        },
+        { upsert: true }
+      ).catch((error) => logger.warn('news cache write failed', { error: error.message }));
+
+      return {
+        items,
         total,
         sourceSummary,
         trendingTopics,
         recommendedBasedOn,
-        providerUsed,
-        providerDiagnostics,
-        providerFailureCount,
-        responseTimeMs,
-        lastUpdated: new Date(lastUpdated),
-        expiresAt: new Date(Date.now() + CACHE_TTL_MS)
-      }
-    },
-    { upsert: true }
-  ).catch((error) => logger.warn('news cache write failed', { error: error.message }));
+        fromCache: false,
+        filters,
+        telemetry: {
+          cacheHit: false,
+          providerFailureCount,
+          providerUsed,
+          providerDiagnostics,
+          signalHash: userContext.signalHash,
+          responseTimeMs
+        }
+      };
+    })
+    .finally(() => feedInflight.delete(inflightKey));
 
-  return {
-    items,
-    total,
-    sourceSummary,
-    trendingTopics,
-    recommendedBasedOn,
-    fromCache: false,
-    filters,
-    telemetry: {
-      cacheHit: false,
-      providerFailureCount,
-      providerUsed,
-      providerDiagnostics,
-      signalHash: userContext.signalHash,
-      responseTimeMs
-    }
-  };
+  feedInflight.set(inflightKey, request);
+  return request;
 };
 
 module.exports = { getNewsFeed, buildUserContext, invalidateNewsSignalCache };

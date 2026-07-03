@@ -35,6 +35,11 @@
   </div>
 
   <ng-container *ngIf="!isLoading && latestReport as report">
+    <section class="stale-warning" *ngIf="report.meta.sourceFreshness?.detection">
+      <strong>Source data needs attention</strong>
+      <p>{{ report.meta.sourceFreshness?.message }}</p>
+      <small *ngIf="report.meta.sourceFreshness?.recommendation">{{ report.meta.sourceFreshness?.recommendation }}</small>
+    </section>
     <section class="hero-grid">
       <article class="hero-card">
         <div class="hero-score">
@@ -50,7 +55,7 @@
             <strong>Period</strong>
             {{ report.weekStartDate | date:'MMM d' }} - {{ report.weekEndDate | date:'MMM d' }}
           </span>
-          <span>
+          <span *ngIf="report.emailStatus">
             <strong>Email</strong>
             <mark [class]="statusBadgeClass(report.emailStatus)">{{ report.emailStatus }}</mark>
           </span>
@@ -60,7 +65,7 @@
           </span>
           <span>
             <strong>Narrative</strong>
-            {{ narrativeSourceLabel }}
+            <mark class="narrative-badge" [class.narrative-badge--ai]="report.meta.narrativeSource === 'ai-enhanced'" [class.narrative-badge--cached]="report.meta.narrativeSource === 'cached'">{{ narrativeSourceLabel }}</mark>
           </span>
           <span *ngIf="report.meta.signalHash">
             <strong>Signal</strong>
@@ -156,46 +161,46 @@
         </div>
       </article>
 
-      <article class="panel-card">
-        <div class="panel-head">
-          <h3>Momentum History</h3>
-          <span class="panel-subtitle">Last {{ history.length }} reports</span>
-        </div>
+      <article class="panel-card history-panel" *ngIf="history.length">
+        <button class="history-toggle" type="button" (click)="toggleHistory()" [attr.aria-expanded]="isHistoryOpen">
+          <span>
+            <strong>Momentum History</strong>
+            <small>Last {{ history.length }} reports</small>
+          </span>
+          <span class="history-toggle__icon">{{ isHistoryOpen ? '-' : '+' }}</span>
+        </button>
 
-        <div class="history-list">
-          <div class="history-row" *ngFor="let item of history; trackBy: trackByReportId" [class.latest]="item._id === report._id">
+        <div class="history-list" [class.history-list--open]="isHistoryOpen">
+          <button class="history-row" type="button" *ngFor="let item of history; trackBy: trackByReportId" (click)="selectReport(item)" [class.latest]="item._id === report._id">
             <div class="history-copy">
-              <span>{{ item.weekEndDate | date:'MMM d' }}</span>
+              <span>{{ item.weekStartDate | date:'MMM d' }} – {{ item.weekEndDate | date:'MMM d' }}</span>
               <strong>{{ item.score }}%</strong>
             </div>
             <div class="history-track">
               <span class="history-fill" [style.width.%]="item.score"></span>
             </div>
-          </div>
+          </button>
         </div>
       </article>
     </section>
 
     <section class="detail-grid">
-      <article class="panel-card">
+      <article class="panel-card" *ngIf="hasText(report.topAchievements)">
         <div class="panel-head">
           <h3>Achievements</h3>
           <span class="panel-subtitle">Wins worth repeating</span>
         </div>
-        <ol class="rich-list ordered" *ngIf="report.topAchievements.length; else noAchievements">
+        <ol class="rich-list ordered">
           <li *ngFor="let achievement of report.topAchievements">{{ achievement }}</li>
         </ol>
-        <ng-template #noAchievements>
-          <p class="placeholder">No achievements were recorded for this report.</p>
-        </ng-template>
       </article>
 
-      <article class="panel-card">
+      <article class="panel-card" *ngIf="getRiskArea(report) || report.meta.skillFocus.length">
         <div class="panel-head">
           <h3>Risks and Focus</h3>
           <span class="panel-subtitle">Primary blocker this week</span>
         </div>
-        <p class="risk-copy">{{ getRiskArea(report) }}</p>
+        <p class="risk-copy" *ngIf="getRiskArea(report)">{{ getRiskArea(report) }}</p>
         <div class="focus-chips" *ngIf="report.meta.skillFocus.length">
           <span *ngFor="let skill of report.meta.skillFocus">{{ skill }}</span>
         </div>
@@ -203,7 +208,7 @@
     </section>
 
     <section class="detail-grid">
-      <article class="panel-card">
+      <article class="panel-card" *ngIf="hasText(report.insights)">
         <div class="panel-head">
           <h3>Insights</h3>
           <span class="panel-subtitle">Deterministic metrics, AI summarized</span>
@@ -213,7 +218,7 @@
         </ul>
       </article>
 
-      <article class="panel-card">
+      <article class="panel-card" *ngIf="hasText(report.recommendations)">
         <div class="panel-head">
           <h3>Recommendations</h3>
           <span class="panel-subtitle">Next-week actions</span>
@@ -224,7 +229,7 @@
       </article>
     </section>
 
-    <section class="sources-card">
+    <section class="sources-card" *ngIf="dataSources.length">
       <div class="panel-head">
         <div>
           <h3>Data Sources Used</h3>
@@ -239,8 +244,9 @@
             <strong>{{ source.label }}</strong>
             <span>{{ source.status.status }}</span>
           </div>
-          <small>{{ sourceFreshness(source.status) }}</small>
-          <small>{{ formatDate(source.status.lastAnalyzedAt) }}</small>
+          <small *ngIf="source.status.freshness">{{ source.status.freshness | titlecase }}</small>
+          <small *ngIf="sourceFreshness(source.status)">{{ sourceFreshness(source.status) }}</small>
+          <small *ngIf="source.status.lastAnalyzedAt">{{ formatDate(source.status.lastAnalyzedAt) }}</small>
         </article>
       </div>
     </section>

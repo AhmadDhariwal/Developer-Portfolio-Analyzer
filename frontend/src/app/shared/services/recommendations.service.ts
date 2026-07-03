@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { finalize, shareReplay } from 'rxjs/operators';
+import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface RecommendedProject {
   id:             string;
@@ -231,7 +232,13 @@ export class RecommendationsService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<RecommendationsResult>>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('recommendations', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.inflight.clear();
+  }
 
   getRecommendations(
     username:        string,
@@ -262,6 +269,15 @@ export class RecommendationsService {
         ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true, forceRefresh }
         : { username, careerStack, experienceLevel, knownSkills, missingSkills, forceRefresh }
     ).pipe(
+      tap(() => {
+        if (!isTemporary) {
+          this.cacheInvalidation.clearScenarioCaches();
+          this.cacheInvalidation.clearNewsCaches();
+          this.cacheInvalidation.clearJobsCaches();
+          this.cacheInvalidation.clearCoursesCaches();
+          this.cacheInvalidation.clearDashboardCaches();
+        }
+      }),
       finalize(() => this.inflight.delete(key)),
       shareReplay({ bufferSize: 1, refCount: true })
     );

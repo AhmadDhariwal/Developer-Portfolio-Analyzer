@@ -3,6 +3,7 @@ import { finalize, forkJoin, map, Observable, of, shareReplay, tap } from 'rxjs'
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from './frontend-analysis-cache.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface WeeklyReportDataSourceStatus {
   connected?: boolean;
@@ -10,6 +11,7 @@ export interface WeeklyReportDataSourceStatus {
   available?: boolean;
   lastAnalyzedAt: string | null;
   status: string;
+  freshness?: 'fresh' | 'stale' | 'unavailable';
 }
 
 export interface WeeklyReport {
@@ -24,7 +26,7 @@ export interface WeeklyReport {
   biggestRiskArea: string;
   predictedHiringReadiness: { score: number; reason: string };
   reportText: string;
-  emailStatus: 'sent' | 'skipped' | 'failed';
+  emailStatus?: 'sent' | 'skipped' | 'failed';
   emailedAt: string | null;
   emailError: string;
   createdAt?: string | null;
@@ -83,6 +85,11 @@ export interface WeeklyReport {
     reportHash: string;
     narrativeSource: 'ai-enhanced' | 'deterministic' | 'cached';
     scoreBreakdown: Record<string, { label: string; score: number; weight: number }>;
+    sourceFreshness?: { detection?: boolean; message?: string; staleSources?: string[]; severity?: string; recommendation?: string } | null;
+    usesAI?: boolean;
+    deterministicScore?: boolean;
+    fallbackUsed?: boolean;
+    dataSourceFreshness?: Record<string, string>;
   };
 }
 
@@ -98,41 +105,80 @@ export interface WeeklyReportDashboard {
 })
 export class WeeklyReportService {
   private readonly cacheVersion = 'weekly-report-v2';
+  private readonly latestTtlMs = 15 * 60 * 1000;
+  private readonly historyTtlMs = 10 * 60 * 1000;
+  private readonly maxCacheEntries = 50;
+  private latestRequests = new Map<string, Observable<WeeklyReport | null>>();
+  private historyRequests = new Map<string, Observable<{ reports: WeeklyReport[] }>>();
   private dashboardRequests = new Map<string, Observable<WeeklyReportDashboard>>();
 
   constructor(
     private readonly api: ApiService,
     private readonly auth: AuthService,
-    private readonly frontendCache: FrontendAnalysisCacheService
-  ) {}
+    private readonly frontendCache: FrontendAnalysisCacheService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('weekly-reports', () => this.clearCache());
+  }
+
+  clearCache(): void {
+    this.latestRequests.clear();
+    this.historyRequests.clear();
+    this.dashboardRequests.clear();
+    this.frontendCache.clearModule('weeklyReports');
+    this.frontendCache.clearModule('weeklyReports:latest');
+    this.frontendCache.clearModule('weeklyReports:history');
+  }
 
   generateReport(forceRefresh = true): Observable<WeeklyReport> {
     const cachedHistory = this.frontendCache.get<{ reports: WeeklyReport[] }>(this.historyCacheKey(6));
-    if (forceRefresh) this.frontendCache.clearModule('weeklyReports');
     return this.api.generateWeeklyReport(forceRefresh).pipe(
       map((report) => this.normalizeReport(report)),
       tap((report) => {
+        this.clearCache();
         this.cacheLatest(report);
-        this.frontendCache.set(this.historyCacheKey(6), {
-          reports: this.mergeHistory(report, cachedHistory?.reports || [])
-        });
-        this.dashboardRequests.clear();
+        this.cacheHistory(this.mergeHistory(report, cachedHistory?.reports || []), 6);
       })
     );
   }
 
-  getLatest(): Observable<WeeklyReport | null> {
-    return this.api.getWeeklyReportLatest().pipe(
-      map((report) => (report ? this.normalizeReport(report) : null))
+  getLatest(forceRefresh = false): Observable<WeeklyReport | null> {
+    const key = JSON.stringify(this.latestCacheKey());
+    if (!forceRefresh) {
+      const cached = this.frontendCache.get<WeeklyReport>(this.latestCacheKey());
+      if (cached) return of(cached);
+      const active = this.latestRequests.get(key);
+      if (active) return active;
+    }
+    const request$ = this.api.getWeeklyReportLatest().pipe(
+      map((report) => (report ? this.normalizeReport(report) : null)),
+      tap((report) => { if (report) this.cacheLatest(report); }),
+      finalize(() => this.latestRequests.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+    if (!forceRefresh) this.latestRequests.set(key, request$);
+    return request$;
   }
 
-  getHistory(limit = 6): Observable<{ reports: WeeklyReport[] }> {
-    return this.api.getWeeklyReportHistory(limit).pipe(
+  getHistory(limit = 6, forceRefresh = false): Observable<{ reports: WeeklyReport[] }> {
+    const cacheKey = this.historyCacheKey(limit);
+    const key = JSON.stringify(cacheKey);
+    if (!forceRefresh) {
+      const cached = this.frontendCache.get<{ reports: WeeklyReport[] }>(cacheKey);
+      if (cached?.reports) return of(cached);
+      const active = this.historyRequests.get(key);
+      if (active) return active;
+    }
+    const request$ = this.api.getWeeklyReportHistory(limit).pipe(
       map((response) => ({
         reports: Array.isArray(response?.reports) ? response.reports.map((report: unknown) => this.normalizeReport(report)) : []
-      }))
+      })),
+      tap((response) => this.cacheHistory(response.reports, limit)),
+      finalize(() => this.historyRequests.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+    if (!forceRefresh) this.historyRequests.set(key, request$);
+    return request$;
   }
 
   getDashboard(limit = 6, forceRefresh = false): Observable<WeeklyReportDashboard> {
@@ -146,8 +192,8 @@ export class WeeklyReportService {
     }
 
     const request$ = forkJoin({
-      latest: this.getLatest(),
-      history: this.getHistory(limit)
+      latest: this.getLatest(forceRefresh),
+      history: this.getHistory(limit, forceRefresh)
     }).pipe(
       map(({ latest, history }) => ({
         latest,
@@ -173,21 +219,19 @@ export class WeeklyReportService {
       weekStartDate: String(raw?.weekStartDate || ''),
       weekEndDate: String(raw?.weekEndDate || ''),
       score: this.clamp(raw?.score),
-      progressSummary: String(raw?.progressSummary || 'Weekly insights are being prepared.'),
+      progressSummary: String(raw?.progressSummary || ''),
       insights: this.normalizeStrings(raw?.insights, 6),
       recommendations: this.normalizeStrings(raw?.recommendations, 6),
       topAchievements: this.normalizeStrings(raw?.topAchievements, 4),
-      biggestRiskArea: String(raw?.biggestRiskArea || 'No major risk identified for this period.'),
+      biggestRiskArea: String(raw?.biggestRiskArea || ''),
       predictedHiringReadiness: {
         score: this.clamp(raw?.predictedHiringReadiness?.score),
-        reason: String(
-          raw?.predictedHiringReadiness?.reason || 'Hiring readiness remains stable based on the available weekly signals.'
-        )
+        reason: String(raw?.predictedHiringReadiness?.reason || '')
       },
       reportText: String(raw?.reportText || ''),
       emailStatus: ['sent', 'skipped', 'failed'].includes(String(raw?.emailStatus || ''))
         ? raw.emailStatus
-        : 'skipped',
+        : undefined,
       emailedAt: raw?.emailedAt || null,
       emailError: String(raw?.emailError || ''),
       createdAt: raw?.createdAt || null,
@@ -242,7 +286,12 @@ export class WeeklyReportService {
         signalHash: String(raw?.meta?.signalHash || ''),
         reportHash: String(raw?.meta?.reportHash || ''),
         narrativeSource: this.normalizeNarrativeSource(raw?.meta?.narrativeSource),
-        scoreBreakdown: this.normalizeScoreBreakdown(raw?.meta?.scoreBreakdown)
+        scoreBreakdown: this.normalizeScoreBreakdown(raw?.meta?.scoreBreakdown),
+        sourceFreshness: raw?.meta?.sourceFreshness || null,
+        usesAI: raw?.meta?.usesAI === true,
+        deterministicScore: raw?.meta?.deterministicScore === true,
+        fallbackUsed: raw?.meta?.fallbackUsed === true,
+        dataSourceFreshness: raw?.meta?.dataSourceFreshness || {}
       }
     };
   }
@@ -262,13 +311,30 @@ export class WeeklyReportService {
 
   private cacheDashboard(dashboard: WeeklyReportDashboard, limit: number): void {
     if (dashboard.latest) this.cacheLatest(dashboard.latest);
-    this.frontendCache.set(this.historyCacheKey(limit), { reports: dashboard.history });
+    this.cacheHistory(dashboard.history, limit);
   }
 
   private cacheLatest(report: WeeklyReport): void {
-    this.frontendCache.set(this.latestCacheKey(report), report);
+    this.frontendCache.set({ ...this.latestCacheKey(report), ttlMs: this.latestTtlMs }, report);
+    this.capWeeklyCacheEntries();
   }
 
+  private cacheHistory(reports: WeeklyReport[], limit: number): void {
+    this.frontendCache.set({ ...this.historyCacheKey(limit), ttlMs: this.historyTtlMs }, { reports });
+    this.capWeeklyCacheEntries();
+  }
+
+  private capWeeklyCacheEntries(): void {
+    const prefix = 'frontend_analysis_cache:weeklyReports';
+    const entries = Object.keys(localStorage)
+      .filter((key) => key.startsWith(prefix))
+      .map((key) => {
+        try { return { key, cachedAt: Number(JSON.parse(localStorage.getItem(key) || '{}')?.cachedAt || 0) }; }
+        catch { return { key, cachedAt: 0 }; }
+      })
+      .sort((left, right) => right.cachedAt - left.cachedAt);
+    entries.slice(this.maxCacheEntries).forEach(({ key }) => localStorage.removeItem(key));
+  }
   private mergeHistory(report: WeeklyReport, history: WeeklyReport[]): WeeklyReport[] {
     return [report, ...(Array.isArray(history) ? history : []).filter((entry) => entry._id !== report._id)]
       .sort((left, right) => new Date(right.weekEndDate).getTime() - new Date(left.weekEndDate).getTime())
@@ -279,6 +345,8 @@ export class WeeklyReportService {
     const currentUser = this.auth.getCurrentUser();
     return {
       module: 'weeklyReports:latest',
+      ttlMs: this.latestTtlMs,
+      limit: 'latest',
       userId: currentUser?._id,
       githubUsername: currentUser?.activeGithubUsername || currentUser?.githubUsername,
       careerStack: currentUser?.activeCareerStack || currentUser?.careerStack,
@@ -294,7 +362,11 @@ export class WeeklyReportService {
     return {
       module: 'weeklyReports:history',
       userId: currentUser?._id,
+      githubUsername: currentUser?.activeGithubUsername || currentUser?.githubUsername,
+      careerStack: currentUser?.activeCareerStack || currentUser?.careerStack,
+      experienceLevel: currentUser?.activeExperienceLevel || currentUser?.experienceLevel,
       limit,
+      ttlMs: this.historyTtlMs,
       version: this.cacheVersion
     };
   }
@@ -333,7 +405,8 @@ export class WeeklyReportService {
       analyzed: analyzed ? Boolean(raw?.analyzed) : undefined,
       available: !analyzed && !connected ? Boolean(raw?.available) : undefined,
       lastAnalyzedAt: raw?.lastAnalyzedAt || null,
-      status: String(raw?.status || 'Unavailable')
+      status: String(raw?.status || ''),
+      freshness: ['fresh', 'stale', 'unavailable'].includes(String(raw?.freshness || '')) ? raw.freshness : undefined
     };
   }
 

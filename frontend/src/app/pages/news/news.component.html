@@ -8,6 +8,9 @@
       <span class="eyebrow">Developer feed</span>
       <h1>Tech News Hub</h1>
       <p>Personalized developer news, saved articles, and read-later tracking in one clean workspace.</p>
+      <button class="refresh-feed-button" type="button" *ngIf="isFeedView" [disabled]="isLoading || isLoadingMore" (click)="forceRefresh()">
+        {{ isLoading ? 'Refreshing...' : 'Refresh feed' }}
+      </button>
     </div>
 
     <div class="header-stats">
@@ -42,77 +45,73 @@
   </section>
 
   <ng-container *ngIf="isFeedView; else savedView">
-    <section class="insight-grid">
-      <article class="context-card">
+    <section class="insight-grid" *ngIf="recommendedBasedOn || sourceBannerMessage || sourceDiagnostics.length">
+      <article class="context-card" *ngIf="recommendedBasedOn">
         <div class="section-head">
           <div>
             <span class="section-kicker">Personalized Based On</span>
             <h2>Your current developer context</h2>
           </div>
-          <span class="context-status" [class.context-status--cached]="recommendedBasedOn?.fromCache">
-            {{ recommendedBasedOn?.fromCache ? 'Cached feed' : 'Live context' }}
+          <span class="context-status" [class.context-status--cached]="recommendedBasedOn.fromCache">
+            {{ recommendedBasedOn.fromCache ? 'Cached feed' : 'Live context' }}
           </span>
         </div>
 
         <p class="context-summary">
-          {{ recommendedBasedOn?.summary || 'Your feed will adapt to your stack, detected skills, and recent news filters.' }}
+          {{ recommendedBasedOn.summary }}
         </p>
 
         <div class="context-pills">
-          <span>
+          <span *ngIf="recommendedBasedOn.careerStack">
             <strong>Career stack</strong>
-            {{ recommendedBasedOn?.careerStack || 'Developer' }}
+            {{ recommendedBasedOn.careerStack }}
           </span>
-          <span>
+          <span *ngIf="recommendedBasedOn.targetRole">
             <strong>Goal</strong>
-            {{ recommendedBasedOn?.targetRole || 'Career growth' }}
+            {{ recommendedBasedOn.targetRole }}
           </span>
           <span>
             <strong>Active tab</strong>
             {{ selectedViewLabel }}
           </span>
-          <span>
+          <span *ngIf="lastUpdatedLabel">
             <strong>Last updated</strong>
-            {{ lastUpdatedLabel || 'Refreshing now' }}
+            {{ lastUpdatedLabel }}
           </span>
         </div>
 
         <div class="signal-groups">
-          <div class="signal-group">
+          <div class="signal-group" *ngIf="recommendedBasedOn.detectedSkills.length">
             <h3>Detected skills</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn?.detectedSkills || []; trackBy: trackByValue">{{ skill }}</span>
-              <span *ngIf="!(recommendedBasedOn?.detectedSkills?.length)">General developer signals</span>
+              <span *ngFor="let skill of recommendedBasedOn.detectedSkills; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
 
-          <div class="signal-group">
+          <div class="signal-group" *ngIf="recommendedBasedOn.skillGaps.length">
             <h3>Skill gaps</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn?.skillGaps || []; trackBy: trackByValue">{{ skill }}</span>
-              <span *ngIf="!(recommendedBasedOn?.skillGaps?.length)">No urgent gaps detected</span>
+              <span *ngFor="let skill of recommendedBasedOn.skillGaps; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
 
-          <div class="signal-group">
+          <div class="signal-group" *ngIf="recommendedBasedOn.jobDemandSkills?.length">
             <h3>Market demand</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn?.jobDemandSkills || []; trackBy: trackByValue">{{ skill }}</span>
-              <span *ngIf="!(recommendedBasedOn?.jobDemandSkills?.length)">Using general demand signals</span>
+              <span *ngFor="let skill of recommendedBasedOn.jobDemandSkills || []; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
 
-          <div class="signal-group">
+          <div class="signal-group" *ngIf="recommendedBasedOn.recommendationTechnologies?.length">
             <h3>Recommendations</h3>
             <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn?.recommendationTechnologies || []; trackBy: trackByValue">{{ skill }}</span>
-              <span *ngIf="!(recommendedBasedOn?.recommendationTechnologies?.length)">No active recommendation tags</span>
+              <span *ngFor="let skill of recommendedBasedOn.recommendationTechnologies; trackBy: trackByValue">{{ skill }}</span>
             </div>
           </div>
         </div>
       </article>
 
-      <article class="status-card">
+      <article class="status-card source-health-panel" [class.mobile-expanded]="sourceHealthExpanded">
         <div class="section-head compact">
           <div>
             <span class="section-kicker">Source Status</span>
@@ -121,7 +120,9 @@
           <span class="status-pill" [ngClass]="sourceStatusClass">{{ telemetry.cacheHit ? 'Cache hit' : 'Fresh fetch' }}</span>
         </div>
 
-        <p class="status-message">{{ sourceBannerMessage }}</p>
+        <button class="mobile-disclosure" type="button" (click)="sourceHealthExpanded = !sourceHealthExpanded">{{ sourceHealthExpanded ? 'Hide source health' : 'Show source health' }}</button>
+        <div class="source-health-content">
+        <p class="status-message" *ngIf="sourceBannerMessage">{{ sourceBannerMessage }}</p>
 
         <div class="status-metrics">
           <span>
@@ -149,10 +150,14 @@
             <small>{{ source.articlesFetched }} articles</small>
           </div>
         </div>
+        </div>
       </article>
     </section>
 
+    <button class="mobile-disclosure filter-disclosure" type="button" (click)="filtersExpanded = !filtersExpanded">{{ filtersExpanded ? 'Hide filters' : 'Show filters' }}</button>
+    <div class="filters-panel" [class.mobile-expanded]="filtersExpanded">
     <app-news-filters [filters]="filters" [isApplying]="isLoading" (filtersChange)="onFiltersChange($event)"></app-news-filters>
+    </div>
 
     <section class="active-filters" *ngIf="hasActiveFilters">
       <div class="active-filter-head">
@@ -195,7 +200,7 @@
             <span class="section-kicker">Saved News</span>
             <h2>{{ selectedView === 'bookmarks' ? 'Bookmarks' : 'Read Later' }}</h2>
           </div>
-          <span class="status-pill status-live">{{ displayedCount }} items</span>
+          <span class="status-pill status-saved">{{ displayedCount }} items</span>
         </div>
 
         <p class="context-summary" *ngIf="selectedView === 'bookmarks'">
@@ -250,19 +255,19 @@
   </div>
 
   <div class="saved-grid" *ngIf="!isFeedView && !isLoading && !errorMessage && savedItemsView.length > 0">
-    <article class="saved-card" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
-      <div class="saved-card__image-wrap">
-        <img class="saved-card__image" [src]="item.image || 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80'" [alt]="item.title || 'Saved article'" />
+    <article class="saved-card" [class.saved-card--read]="!!item.readAt" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
+      <div class="saved-card__image-wrap" *ngIf="item.image">
+        <img class="saved-card__image" [src]="item.image" [alt]="item.title" />
         <div class="saved-card__badges">
-          <span class="saved-badge">{{ item.source }}</span>
-          <span class="saved-badge saved-badge--alt">{{ item.category }}</span>
+          <span class="saved-badge" *ngIf="item.source">{{ item.source }}</span>
+          <span class="saved-badge saved-badge--alt" *ngIf="item.category">{{ item.category }}</span>
         </div>
       </div>
 
       <div class="saved-card__body">
-        <h3>{{ item.title || 'Saved article' }}</h3>
+        <h3>{{ item.title }}</h3>
         <div class="saved-card__meta">
-          <span>Saved {{ formatSavedDate(item.createdAt) }}</span>
+          <span *ngIf="item.createdAt">Saved {{ formatSavedDate(item.createdAt) }}</span>
           <span *ngIf="item.publishedAt">Published {{ item.publishedAt | date:'mediumDate' }}</span>
           <span *ngIf="selectedView === 'read_later' && item.readAt">Read {{ formatSavedDate(item.readAt) }}</span>
         </div>

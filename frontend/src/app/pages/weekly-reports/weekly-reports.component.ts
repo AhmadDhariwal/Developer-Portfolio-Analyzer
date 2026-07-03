@@ -18,6 +18,7 @@ export class WeeklyReportsComponent implements OnInit {
   errorMessage = '';
   loadSource: 'frontend-cache' | 'api' | 'generated' = 'api';
   loadedAt: Date | null = null;
+  isHistoryOpen = false;
 
   constructor(
     private readonly reportService: WeeklyReportService,
@@ -49,7 +50,7 @@ export class WeeklyReportsComponent implements OnInit {
       { label: 'Interview Prep', status: sources.interviewPrep },
       { label: 'Portfolio', status: sources.portfolio },
       { label: 'Integrations', status: sources.integrations }
-    ];
+    ].filter(({ status }) => this.isSourceAvailable(status));
   }
 
   get scoreBreakdown(): Array<{ key: string; label: string; score: number; weight: number; contribution: number }> {
@@ -71,7 +72,9 @@ export class WeeklyReportsComponent implements OnInit {
 
   get narrativeSourceLabel(): string {
     const source = this.latestReport?.meta.narrativeSource;
-    return source === 'ai-enhanced' ? 'AI-enhanced narrative' : 'Deterministic fallback narrative';
+    if (source === 'ai-enhanced') return 'AI-enhanced';
+    if (source === 'cached') return 'Cached report';
+    return 'Deterministic';
   }
 
   loadReports(): void {
@@ -139,7 +142,7 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   getRiskArea(report: WeeklyReport | null): string {
-    return report?.biggestRiskArea || 'No major risk identified for this period.';
+    return String(report?.biggestRiskArea || '').trim();
   }
 
   deltaClass(value: number): string {
@@ -155,7 +158,7 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   sourceTone(status: WeeklyReportDataSourceStatus): string {
-    if (status?.status === 'Unavailable') return 'source-card source-card--muted';
+    if (status?.freshness === 'stale') return 'source-card source-card--warning';
     if (status?.status.toLowerCase().includes('failed')) return 'source-card source-card--warning';
     return 'source-card source-card--live';
   }
@@ -167,9 +170,9 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   sourceFreshness(status: WeeklyReportDataSourceStatus): string {
-    if (!status?.lastAnalyzedAt) return 'No saved timestamp';
+    if (!status?.lastAnalyzedAt) return '';
     const parsed = new Date(status.lastAnalyzedAt);
-    if (Number.isNaN(parsed.getTime())) return 'No saved timestamp';
+    if (Number.isNaN(parsed.getTime())) return '';
     const ageMs = Date.now() - parsed.getTime();
     const days = Math.max(0, Math.floor(ageMs / (24 * 60 * 60 * 1000)));
     if (days === 0) return 'Updated today';
@@ -178,15 +181,33 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   formatDate(value: string | null | undefined): string {
-    if (!value) return 'Not available';
+    if (!value) return '';
     const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return 'Not available';
+    if (Number.isNaN(parsed.getTime())) return '';
     return new Intl.DateTimeFormat('en', {
       dateStyle: 'medium',
       timeStyle: 'short'
     }).format(parsed);
   }
 
+  selectReport(report: WeeklyReport): void {
+    this.latestReport = report;
+    this.isHistoryOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  toggleHistory(): void {
+    this.isHistoryOpen = !this.isHistoryOpen;
+  }
+
+  hasText(values: string[] | null | undefined): boolean {
+    return Array.isArray(values) && values.some((value) => Boolean(String(value || '').trim()));
+  }
+
+  private isSourceAvailable(status: WeeklyReportDataSourceStatus | null | undefined): boolean {
+    if (!status || !status.status || status.status.toLowerCase() === 'unavailable') return false;
+    return status.connected === true || status.analyzed === true || status.available === true || Boolean(status.lastAnalyzedAt);
+  }
   trackByReportId(_: number, report: WeeklyReport): string {
     return report._id;
   }

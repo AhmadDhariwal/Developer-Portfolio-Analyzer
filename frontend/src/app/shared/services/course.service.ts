@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   Course,
   CourseFilters,
@@ -22,7 +23,9 @@ export class CourseService {
   private readonly cacheTtlMs = 24 * 60 * 60 * 1000;
   private readonly maxCacheEntries = 50;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    this.cacheInvalidation.register('courses', () => this.clearCache());
+  }
 
   getCourses(filters: Partial<CourseFilters> = {}, page = 1, limit = 10): Observable<CoursesResponse> {
     const normalizedFilters = normalizeCourseFilters(filters);

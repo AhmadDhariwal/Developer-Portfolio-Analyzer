@@ -178,6 +178,8 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   result: SimResult | null = null;
   hasSimulated = false;
   showInfoPanel = false;
+  showMobileContext = false;
+  showMobileHistory = false;
   context: ScenarioContext | null = null;
   scenarioHistory: SavedScenario[] = [];
   compareScenario: SavedScenario | null = null;
@@ -316,20 +318,20 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     }
 
     forkJoin({
-      context: this.apiService.getScenarioSimulatorContext(forceRefresh).pipe(catchError(() => of(null))),
-      history: this.apiService.getScenarioSimulationHistory(8, forceRefresh).pipe(catchError(() => of({ history: [] })))
+      context: this.apiService.getScenarioSimulatorContext(forceRefresh, this.lastProfileSignature).pipe(catchError(() => of(null))),
+      history: this.apiService.getScenarioSimulationHistory(8, forceRefresh, this.lastProfileSignature).pipe(catchError(() => of({ history: [] })))
     }).subscribe({
       next: ({ context, history }) => {
         if (context?.context) {
           this.applyContext(context.context, true);
-          this.contextCacheHit = !!context.context.cache?.hit;
+          this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
         } else {
           this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
           this.contextCacheHit = false;
         }
 
         this.scenarioHistory = Array.isArray(history?.history) ? history.history : [];
-        this.historyCacheHit = !!history?.cache?.hit;
+        this.historyCacheHit = !!history?.frontendCacheHit || !!history?.cache?.hit;
         if (forceRefresh && !this.contextError) {
           this.actionMessage = 'Simulator signals refreshed.';
           this.actionTone = 'success';
@@ -353,12 +355,12 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     this.isLoadingContext = true;
     this.contextError = '';
     this.apiService.invalidateScenarioContextCache();
-    this.apiService.getScenarioSimulatorContext(true).pipe(
+    this.apiService.getScenarioSimulatorContext(true, this.lastProfileSignature).pipe(
       catchError(() => of(null))
     ).subscribe((context) => {
       if (context?.context) {
         this.applyContext(context.context, true);
-        this.contextCacheHit = !!context.context.cache?.hit;
+        this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
       } else {
         this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
         this.contextCacheHit = false;
