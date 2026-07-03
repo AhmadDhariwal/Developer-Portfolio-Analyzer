@@ -100,6 +100,11 @@ export interface WeeklyReportDashboard {
   cachedAt?: number | null;
 }
 
+interface WeeklyReportLatestCacheEntry {
+  report: WeeklyReport | null;
+  cachedAt?: number | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -138,23 +143,24 @@ export class WeeklyReportService {
         this.clearCache();
         this.cacheLatest(report);
         this.cacheHistory(this.mergeHistory(report, cachedHistory?.reports || []), 6);
-      })
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
   }
 
   getLatest(forceRefresh = false): Observable<WeeklyReport | null> {
     const key = JSON.stringify(this.latestCacheKey());
     if (!forceRefresh) {
-      const cached = this.frontendCache.get<WeeklyReport>(this.latestCacheKey());
-      if (cached) return of(cached);
+      const cached = this.frontendCache.get<WeeklyReportLatestCacheEntry>(this.latestCacheKey());
+      if (cached && Object.prototype.hasOwnProperty.call(cached, 'report')) return of(cached.report);
       const active = this.latestRequests.get(key);
       if (active) return active;
     }
     const request$ = this.api.getWeeklyReportLatest().pipe(
       map((report) => (report ? this.normalizeReport(report) : null)),
-      tap((report) => { if (report) this.cacheLatest(report); }),
+      tap((report) => this.cacheLatest(report)),
       finalize(() => this.latestRequests.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
     if (!forceRefresh) this.latestRequests.set(key, request$);
     return request$;
@@ -175,7 +181,7 @@ export class WeeklyReportService {
       })),
       tap((response) => this.cacheHistory(response.reports, limit)),
       finalize(() => this.historyRequests.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
     if (!forceRefresh) this.historyRequests.set(key, request$);
     return request$;
@@ -203,7 +209,7 @@ export class WeeklyReportService {
       })),
       tap((dashboard) => this.cacheDashboard(dashboard, limit)),
       finalize(() => this.dashboardRequests.delete(requestKey)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
 
     if (!forceRefresh) this.dashboardRequests.set(requestKey, request$);
@@ -297,12 +303,12 @@ export class WeeklyReportService {
   }
 
   private getCachedDashboard(limit: number): WeeklyReportDashboard | null {
-    const latest = this.frontendCache.get<WeeklyReport>(this.latestCacheKey());
+    const latest = this.frontendCache.get<WeeklyReportLatestCacheEntry>(this.latestCacheKey());
     const history = this.frontendCache.get<{ reports: WeeklyReport[]; cachedAt?: number | null }>(this.historyCacheKey(limit));
-    if (!latest || !history?.reports) return null;
+    if (!latest || !Object.prototype.hasOwnProperty.call(latest, 'report') || !history?.reports) return null;
 
     return {
-      latest,
+      latest: latest.report,
       history: history.reports,
       fromFrontendCache: true,
       cachedAt: latest.cachedAt || history.cachedAt || null
@@ -310,12 +316,12 @@ export class WeeklyReportService {
   }
 
   private cacheDashboard(dashboard: WeeklyReportDashboard, limit: number): void {
-    if (dashboard.latest) this.cacheLatest(dashboard.latest);
+    this.cacheLatest(dashboard.latest);
     this.cacheHistory(dashboard.history, limit);
   }
 
-  private cacheLatest(report: WeeklyReport): void {
-    this.frontendCache.set({ ...this.latestCacheKey(report), ttlMs: this.latestTtlMs }, report);
+  private cacheLatest(report: WeeklyReport | null): void {
+    this.frontendCache.set({ ...this.latestCacheKey(), ttlMs: this.latestTtlMs }, { report });
     this.capWeeklyCacheEntries();
   }
 
@@ -341,7 +347,7 @@ export class WeeklyReportService {
       .slice(0, 6);
   }
 
-  private latestCacheKey(report?: WeeklyReport | null): FrontendAnalysisCacheKey {
+  private latestCacheKey(): FrontendAnalysisCacheKey {
     const currentUser = this.auth.getCurrentUser();
     return {
       module: 'weeklyReports:latest',
@@ -351,8 +357,6 @@ export class WeeklyReportService {
       githubUsername: currentUser?.activeGithubUsername || currentUser?.githubUsername,
       careerStack: currentUser?.activeCareerStack || currentUser?.careerStack,
       experienceLevel: currentUser?.activeExperienceLevel || currentUser?.experienceLevel,
-      weekStartDate: this.weekStartDate(report?.weekStartDate),
-      signalHash: report?.meta?.signalHash || undefined,
       version: this.cacheVersion
     };
   }
@@ -369,16 +373,6 @@ export class WeeklyReportService {
       ttlMs: this.historyTtlMs,
       version: this.cacheVersion
     };
-  }
-
-  private weekStartDate(value?: string | null): string {
-    const date = value ? new Date(value) : new Date();
-    if (Number.isNaN(date.getTime())) return '';
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    date.setDate(diff);
-    date.setHours(0, 0, 0, 0);
-    return date.toISOString().slice(0, 10);
   }
 
   private normalizeNarrativeSource(value: any): 'ai-enhanced' | 'deterministic' | 'cached' {

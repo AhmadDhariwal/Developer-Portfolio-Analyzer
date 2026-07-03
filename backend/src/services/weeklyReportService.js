@@ -23,8 +23,6 @@ const SOURCE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — sources older tha
 const generationInflight = new Map();
 const emailInflight = new Map();
 const smartSkippedReports = new WeakSet();
-let schedulerStarted = false;
-let schedulerRunning = false; // 7 days — sources older than this are considered stale
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
@@ -1419,7 +1417,7 @@ const positiveEnvInt = (value, fallback, max) => {
 };
 
 const runWeeklyReportBatch = async ({
-  dryRun = String(process.env.WEEKLY_REPORT_DRY_RUN || '').toLowerCase() === 'true',
+  dryRun = isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN) || isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN),
   usersOverride = null,
   generate = generateWeeklyReport,
   sendEmail = sendWeeklyReportEmail,
@@ -1472,19 +1470,10 @@ const runWeeklyReportBatch = async ({
 const isEnabledFlag = (value) => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
 
 const startWeeklyReportScheduler = () => {
-  if (schedulerStarted) {
-    console.log('[WeeklyReportScheduler] already started; duplicate start ignored');
-    return null;
-  }
-  if (String(process.env.WEEKLY_REPORT_SCHEDULER_ENABLED || 'true').toLowerCase() === 'false') {
-    console.log('[WeeklyReportScheduler] disabled by environment');
-    return null;
-  }
-
   const scheduleExpr = process.env.WEEKLY_REPORT_CRON || '0 8 * * 1';
-  const dryRun = isEnabledFlag(
-    process.env.WEEKLY_REPORT_DRY_RUN ?? process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN
-  );
+  const timezone = String(process.env.WEEKLY_REPORT_TIMEZONE || '').trim();
+  const dryRun = isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN)
+    || isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN);
 
   if (String(process.env.NODE_ENV || '').trim().toLowerCase() === 'test') {
     console.info('[WeeklyReports] Scheduler skipped in test mode.');
@@ -1501,35 +1490,15 @@ const startWeeklyReportScheduler = () => {
     return weeklyReportSchedulerTask;
   }
 
-  weeklyReportSchedulerTask = cron.schedule(scheduleExpr, async () => {
-    if (dryRun) {
-      console.info('[WeeklyReports] Scheduled run skipped (dry-run mode).');
-      return;
-    }
+  weeklyReportSchedulerTask = cron.schedule(
+    scheduleExpr,
+    () => runWeeklyReportBatch({ dryRun }).catch((error) => {
+      console.error('[WeeklyReportScheduler] batch failed', { error: error.message });
+    }),
+    timezone ? { timezone } : undefined
+  );
 
-    const users = await User.find({ 'notifications.weeklyScoreReport': { $ne: false } })
-      .select('name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel')
-      .lean();
-    for (const user of users) {
-      try {
-        const report = await generateWeeklyReport(user._id);
-        if (report) {
-          if (user?.email) {
-            await sendWeeklyReportEmail(report, user);
-          } else {
-            await updateWeeklyReportEmailStatus(report._id, {
-              status: 'skipped',
-              error: 'No user email is configured.'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Weekly report cron error:', error.message);
-      }
-    }
-  });
-
-  console.info(`[WeeklyReports] Scheduler enabled (${scheduleExpr})${dryRun ? ' in dry-run mode' : ''}.`);
+  console.info(`[WeeklyReports] Scheduler enabled (${scheduleExpr})${timezone ? ` in ${timezone}` : ' using server timezone'}${dryRun ? ' in dry-run mode' : ''}.`);
   return weeklyReportSchedulerTask;
 };
 module.exports = {

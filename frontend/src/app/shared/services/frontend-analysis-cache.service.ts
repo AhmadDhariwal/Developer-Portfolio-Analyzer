@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { AuthService } from './auth.service';
 
 const CACHE_PREFIX = 'frontend_analysis_cache:';
 const INDEX_PREFIX = 'frontend_analysis_cache_index:';
@@ -25,8 +24,6 @@ export interface FrontendAnalysisCacheKey {
 
 @Injectable({ providedIn: 'root' })
 export class FrontendAnalysisCacheService {
-  constructor(private readonly auth: AuthService) {}
-
   get<T>(lookup: FrontendAnalysisCacheKey): T | null {
     const exactKey = lookup.canonicalSignalKey
       ? this.buildCanonicalSignalKey(lookup)
@@ -108,7 +105,7 @@ export class FrontendAnalysisCacheService {
       return;
     }
 
-    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = this.getStoredUserId();
     Object.keys(localStorage)
       .filter((key) => key.startsWith(`${CURRENT_SIGNAL_PREFIX}${userId}:`))
       .forEach((key) => localStorage.removeItem(key));
@@ -131,7 +128,7 @@ export class FrontendAnalysisCacheService {
   }
 
   private buildIndexKey(key: FrontendAnalysisCacheKey): string {
-    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = key.userId || this.getStoredUserId();
     return [
       `${INDEX_PREFIX}${key.module}`,
       userId,
@@ -145,7 +142,7 @@ export class FrontendAnalysisCacheService {
   }
 
   private buildSignalIndexKey(key: FrontendAnalysisCacheKey): string {
-    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = key.userId || this.getStoredUserId();
     return [
       `${SIGNAL_INDEX_PREFIX}${key.module}`,
       userId,
@@ -155,7 +152,7 @@ export class FrontendAnalysisCacheService {
   }
 
   private buildCurrentSignalKey(key: FrontendAnalysisCacheKey): string {
-    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = key.userId || this.getStoredUserId();
     return [
       `${CURRENT_SIGNAL_PREFIX}${userId}`,
       this.clean(key.careerStack || 'Full Stack'),
@@ -164,7 +161,7 @@ export class FrontendAnalysisCacheService {
   }
 
   private buildExactKey(key: FrontendAnalysisCacheKey): string {
-    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = key.userId || this.getStoredUserId();
     return [
       `${CACHE_PREFIX}${key.module}`,
       userId,
@@ -181,7 +178,7 @@ export class FrontendAnalysisCacheService {
   }
 
   private buildCanonicalSignalKey(key: FrontendAnalysisCacheKey): string {
-    const userId = key.userId || this.auth.getCurrentUser()?._id || 'anonymous';
+    const userId = key.userId || this.getStoredUserId();
     return [
       `${CACHE_PREFIX}${key.module}`,
       userId,
@@ -197,6 +194,15 @@ export class FrontendAnalysisCacheService {
     if (!signalHash) return;
     const indexedKey = this.buildCanonicalSignalKey({ ...lookup, signalHash });
     if (indexedKey === exactKey) localStorage.removeItem(indexKey);
+  }
+
+  private getStoredUserId(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      return String(user?._id || 'anonymous');
+    } catch {
+      return 'anonymous';
+    }
   }
 
   private clean(value: string): string {
