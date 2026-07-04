@@ -276,6 +276,7 @@ export class RecommendationsService {
           this.cacheInvalidation.clearJobsCaches();
           this.cacheInvalidation.clearCoursesCaches();
           this.cacheInvalidation.clearDashboardCaches();
+          this.cacheInvalidation.clearWeeklyReportCaches();
         }
       }),
       finalize(() => this.inflight.delete(key)),

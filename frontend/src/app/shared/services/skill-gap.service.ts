@@ -272,6 +272,7 @@ export class SkillGapService {
           this.cacheInvalidation.clearJobsCaches();
           this.cacheInvalidation.clearCoursesCaches();
           this.cacheInvalidation.clearDashboardCaches();
+          this.cacheInvalidation.clearWeeklyReportCaches();
         }
       }),
       finalize(() => this.inflight.delete(requestKey)),

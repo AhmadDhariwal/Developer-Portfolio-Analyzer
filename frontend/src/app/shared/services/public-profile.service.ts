@@ -192,6 +192,8 @@ export class PublicProfileService {
     return this.api.updateMyPublicProfile(payload).pipe(tap(() => {
       this.cacheInvalidation.clearPublicPortfolioCaches();
       this.cacheInvalidation.clearDashboardCaches();
+      this.cacheInvalidation.clearScenarioCaches();
+      this.cacheInvalidation.clearWeeklyReportCaches();
     }));
   }
 
