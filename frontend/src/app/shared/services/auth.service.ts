@@ -319,6 +319,10 @@ export class AuthService {
     this.storeSession(authPayload);
   }
 
+  startExternalLogin(provider: 'google' | 'github'): void {
+    window.location.assign(`${this.baseUrl}/auth/${provider}`);
+  }
+
   logout(): void {
     this.cacheInvalidation.clearAllUserCaches();
     if (this.autoLogoutTimer) {

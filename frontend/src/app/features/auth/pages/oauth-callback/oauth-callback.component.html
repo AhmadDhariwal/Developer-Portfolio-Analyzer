@@ -1,0 +1,36 @@
+<div class="callback-page" role="main">
+  <div class="callback-container">
+    <!-- Brand -->
+    <div class="callback-brand" aria-hidden="true">
+      <span class="callback-logo">DevInsight AI</span>
+    </div>
+
+    <!-- Processing state -->
+    <div *ngIf="status === 'processing'" class="callback-state" aria-live="polite" aria-busy="true">
+      <div class="callback-spinner" role="status">
+        <span class="sr-only">Completing sign-in, please wait…</span>
+      </div>
+      <p class="callback-message">Completing sign-in…</p>
+      <p class="callback-hint">You'll be redirected momentarily.</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="status === 'error'" class="callback-state callback-state--error" aria-live="assertive">
+      <div class="callback-error-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <p class="callback-message callback-message--error">{{ errorMessage }}</p>
+      <p class="callback-hint">Redirecting you back to sign in…</p>
+    </div>
+  </div>
+
+  <!-- Background -->
+  <div class="callback-background" aria-hidden="true">
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+  </div>
+</div>

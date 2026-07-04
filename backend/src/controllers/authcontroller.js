@@ -13,6 +13,14 @@ const { generateOtp } = require('../utils/otpGenerator');
 const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 const { sendEmailOTP } = require('../services/emailService');
 const { sendSMSOTP } = require('../services/smsService');
+const {
+  createAuthorization,
+  validateState,
+  exchangeGoogleIdentity,
+  exchangeGitHubIdentity,
+  stateCookieName,
+  cookieOptions
+} = require('../services/oauthAuthService');
 
 const getSecurityConfig = () => getSettingsSnapshotSync()?.security || {};
 
@@ -33,6 +41,130 @@ const normalizeOtpType     = (v) => (String(v || '').toLowerCase() === 'phone' ?
 const normalizePurpose     = (v) => (String(v || '').toLowerCase() === 'forgot-password' ? 'forgot-password' : 'signup');
 const toPublicRole         = (v) => (String(v || '').toLowerCase() === 'user' ? 'developer' : String(v || 'developer'));
 const normalizeLinkedIn    = (v) => String(v || '').trim();
+
+const frontendOrigin = () => {
+  try {
+    const url = new URL(process.env.FRONTEND_URL || 'http://localhost:4200');
+    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('invalid protocol');
+    return url.origin;
+  } catch {
+    return 'http://localhost:4200';
+  }
+};
+
+const buildAuthPayload = async (user) => {
+  let organizationName = '';
+  if (user.organizationId) {
+    organizationName = (await Organization.findById(user.organizationId).select('name').lean())?.name || '';
+  }
+  return {
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    role: toPublicRole(user.role),
+    organizationId: user.organizationId || null,
+    organizationName,
+    isActive: user.isActive !== false,
+    isPublic: Boolean(user.isPublic),
+    phoneNumber: user.phoneNumber || '',
+    linkedin: user.linkedin || '',
+    profileCompleted: isRecruiterProfileComplete(user),
+    githubUsername: user.githubUsername || '',
+    activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+    avatar: user.avatar || user.avatarUrl || '',
+    careerStack: user.careerStack,
+    experienceLevel: user.experienceLevel,
+    activeCareerStack: user.activeCareerStack || user.careerStack,
+    activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+    token: generateToken(user._id)
+  };
+};
+
+const completeOAuthLogin = async (identity) => {
+  const providerField = identity.provider === 'google' ? 'googleId' : 'githubId';
+  let user = await User.findOne({
+    $or: [{ email: identity.email }, { [providerField]: identity.providerId }]
+  });
+
+  if (user?.isActive === false) throw Object.assign(new Error('Account access is disabled.'), { statusCode: 403 });
+  if (user?.[providerField] && user[providerField] !== identity.providerId) {
+    throw Object.assign(new Error('Provider account is already linked differently.'), { statusCode: 409 });
+  }
+
+  if (!user) {
+    user = new User({
+      name: identity.name || identity.email.split('@')[0],
+      email: identity.email,
+      authProvider: identity.provider,
+      providers: [identity.provider],
+      [providerField]: identity.providerId,
+      avatar: identity.avatarUrl,
+      avatarUrl: identity.avatarUrl,
+      emailVerified: true,
+      isVerified: true,
+      isActive: true,
+      githubUsername: identity.username,
+      activeGithubUsername: identity.username
+    });
+  } else {
+    user[providerField] = identity.providerId;
+    user.providers = Array.from(new Set([...(user.providers || ['local']), identity.provider]));
+    user.authProvider = user.authProvider || identity.provider;
+    user.emailVerified = true;
+    user.isVerified = true;
+    if (!user.avatar && identity.avatarUrl) user.avatar = identity.avatarUrl;
+    if (!user.avatarUrl && identity.avatarUrl) user.avatarUrl = identity.avatarUrl;
+    if (identity.provider === 'github' && identity.username) {
+      user.githubUsername = user.githubUsername || identity.username;
+      user.activeGithubUsername = user.activeGithubUsername || identity.username;
+    }
+  }
+
+  user.lastLoginAt = new Date();
+  user.providerMetadata = {
+    ...(user.providerMetadata || {}),
+    [identity.provider]: {
+      linkedAt: user.providerMetadata?.[identity.provider]?.linkedAt || new Date(),
+      username: identity.username || ''
+    }
+  };
+  await user.save();
+  return buildAuthPayload(user);
+};
+
+const startOAuth = (provider) => (req, res) => {
+  try {
+    const authorization = createAuthorization(provider);
+    res.cookie(authorization.cookieName, authorization.state, authorization.cookieOptions);
+    return res.redirect(302, authorization.authorizationUrl);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ message: 'OAuth sign-in is unavailable.' });
+  }
+};
+
+const oauthCallback = (provider) => async (req, res) => {
+  const clearOptions = { ...cookieOptions(), maxAge: undefined };
+  try {
+    const code = String(req.query.code || '');
+    const state = String(req.query.state || '');
+    if (!code) throw Object.assign(new Error('Authorization code is missing.'), { statusCode: 400 });
+    validateState(provider, state, req.headers.cookie || '');
+    res.clearCookie(stateCookieName(provider), clearOptions);
+    const identity = provider === 'google' ? await exchangeGoogleIdentity(code) : await exchangeGitHubIdentity(code);
+    const payload = await completeOAuthLogin(identity);
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    return res.redirect(302, `${frontendOrigin()}/auth/login#oauth=${encodeURIComponent(encoded)}`);
+  } catch (error) {
+    res.clearCookie(stateCookieName(provider), clearOptions);
+    const reason = error.statusCode === 403 ? 'account_unavailable' : 'oauth_failed';
+    return res.redirect(302, `${frontendOrigin()}/auth/login?oauthError=${reason}`);
+  }
+};
+
+const startGoogleOAuth = startOAuth('google');
+const googleOAuthCallback = oauthCallback('google');
+const startGitHubOAuth = startOAuth('github');
+const githubOAuthCallback = oauthCallback('github');
 
 const isRecruiterProfileComplete = (user) => {
   if (!user || String(user.role || '').toLowerCase() !== 'recruiter') {
@@ -171,13 +303,13 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const normalizedEmail = normalizeEmail(email);
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (user?.isActive === false) {
       return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
     }
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user?.password && (await bcrypt.compare(password, user.password))) {
       user.activeGithubUsername  = user.githubUsername;
       user.activeResumeFileId    = user.defaultResumeFileId || null;
       user.activeCareerStack     = user.careerStack     || 'Full Stack';
@@ -373,7 +505,7 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'userId is required.' });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     const result = await validateOtp({ userId: user._id, otp, type: otpType, purpose: otpPurpose });
@@ -431,7 +563,7 @@ const resetPassword = async (req, res) => {
     const userId  = decoded?.id;
     if (!userId) return res.status(400).json({ message: 'Invalid reset token.' });
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     try {
@@ -442,6 +574,7 @@ const resetPassword = async (req, res) => {
 
     const salt   = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
+    user.providers = Array.from(new Set([...(user.providers || []), 'local']));
     await user.save();
 
     return res.json({ message: 'Password reset successful.' });
@@ -530,6 +663,7 @@ const acceptInvite = async (req, res) => {
         }
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(requestedPassword, salt);
+        user.providers = Array.from(new Set([...(user.providers || []), 'local']));
       }
 
       user.name = requestedName || invitation.name || user.name;
@@ -649,5 +783,9 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getInviteDetails,
-  acceptInvite
+  acceptInvite,
+  startGoogleOAuth,
+  googleOAuthCallback,
+  startGitHubOAuth,
+  githubOAuthCallback
 };

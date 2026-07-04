@@ -1,0 +1,129 @@
+.callback-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-main);
+  position: relative;
+  overflow: hidden;
+}
+
+.callback-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: var(--spacing-2xl);
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+.callback-brand {
+  .callback-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.callback-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  &--error {
+    .callback-error-icon {
+      width: 56px;
+      height: 56px;
+      color: var(--color-danger, #ef4444);
+      animation: callback-fade-in 0.3s ease;
+    }
+  }
+}
+
+// Animated ring spinner
+.callback-spinner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid rgba(99, 102, 241, 0.15);
+  border-top-color: var(--color-primary, #6366f1);
+  animation: callback-spin 0.8s linear infinite;
+}
+
+.callback-message {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+
+  &--error {
+    color: var(--color-danger, #ef4444);
+  }
+}
+
+.callback-hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+// Screen-reader-only utility
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Background gradient blobs (same as login/signup)
+.callback-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  .gradient-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.25;
+
+    &.blob-1 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      top: -10%;
+      right: -10%;
+    }
+
+    &.blob-2 {
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+      bottom: -15%;
+      left: -10%;
+    }
+  }
+}
+
+@keyframes callback-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes callback-fade-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}

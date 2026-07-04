@@ -35,6 +35,7 @@ import { Signup } from './auth/signup/signup';
 import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
 import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';
+import { OAuthCallbackComponent } from './features/auth/pages/oauth-callback/oauth-callback.component';
 import { authGuard } from './guards/auth.guard';
 import { publicGuard } from './guards/public.guard';
 import { adminSettingsGuard } from './guards/admin-settings.guard';
@@ -66,6 +67,8 @@ export const routes: Routes = [
   { path: 'auth/forgot-password',  component: ForgotPasswordComponent,  canActivate: [publicGuard] },
   { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
   { path: 'auth/reset-password',   component: ResetPasswordComponent,   canActivate: [publicGuard] },
+  // OAuth callback — NO publicGuard: guard would redirect before token can be extracted
+  { path: 'auth/oauth/callback',   component: OAuthCallbackComponent },
 
   // Recruiter invitation — public
   { path: 'invitations/accept/:token', component: AcceptInvitationComponent },

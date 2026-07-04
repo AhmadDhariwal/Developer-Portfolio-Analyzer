@@ -31,6 +31,9 @@ export class Signup {
   // Per-field errors for real-time feedback
   fieldErrors: Record<string, string> = {};
 
+  // OAuth provider currently loading — null means no OAuth in progress
+  oauthLoading: 'google' | 'github' | null = null;
+
   constructor(private readonly authService: AuthService, private readonly router: Router, private readonly cdr: ChangeDetectorRef) {}
 
   // ── Real-time validators ──────────────────────────────────────────────────
@@ -115,6 +118,8 @@ export class Signup {
       return;
     }
 
+    if (this.isLoading || this.oauthLoading) return;
+
     this.isLoading = true;
     this.error = '';
     this.cdr.detectChanges();
@@ -153,13 +158,28 @@ export class Signup {
       },
       error: (err) => {
         this.isLoading = false;
+        // Show backend message only — never expose raw stack traces
         this.error = err?.error?.message || 'Signup failed. Please try again.';
         this.cdr.detectChanges();
       }
     });
   }
 
-  signupWithGithub() {
-    // GitHub OAuth implementation would go here
+  /** Redirect to backend Google OAuth endpoint. No client secret involved. */
+  signupWithGoogle(): void {
+    if (this.oauthLoading || this.isLoading) return;
+    this.oauthLoading = 'google';
+    this.error = '';
+    this.cdr.detectChanges();
+    this.authService.startExternalLogin('google');
+  }
+
+  /** Redirect to backend GitHub OAuth endpoint. No client secret involved. */
+  signupWithGithub(): void {
+    if (this.oauthLoading || this.isLoading) return;
+    this.oauthLoading = 'github';
+    this.error = '';
+    this.cdr.detectChanges();
+    this.authService.startExternalLogin('github');
   }
 }

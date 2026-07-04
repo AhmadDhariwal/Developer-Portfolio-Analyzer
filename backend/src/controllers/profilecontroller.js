@@ -248,8 +248,9 @@ const updateProfile = async (req, res) => {
       learningPreference,
     } = req.body;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (!user.password) return res.status(400).json({ message: 'This account does not have a password yet.' });
     const previousProfileHash = buildProfileHash(user);
     const developerSettings = getDeveloperSettingsSync();
 
@@ -476,6 +477,7 @@ const updatePassword = async (req, res) => {
 
     const salt           = await bcrypt.genSalt(10);
     user.password        = await bcrypt.hash(newPassword, salt);
+    user.providers       = Array.from(new Set([...(user.providers || []), 'local']));
     await user.save();
 
     await createNotification({

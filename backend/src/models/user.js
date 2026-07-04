@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    lowercase: true,
+    trim: true
   },
   phoneNumber: {
     type: String,
@@ -26,8 +28,26 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required() {
+      return !Array.isArray(this.providers) || this.providers.includes('local');
+    },
+    select: false
   },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google', 'github'],
+    default: 'local'
+  },
+  providers: {
+    type: [{ type: String, enum: ['local', 'google', 'github'] }],
+    default: ['local']
+  },
+  googleId: { type: String, default: undefined },
+  githubId: { type: String, default: undefined },
+  avatarUrl: { type: String, default: '' },
+  emailVerified: { type: Boolean, default: false },
+  lastLoginAt: { type: Date, default: null },
+  providerMetadata: { type: mongoose.Schema.Types.Mixed, default: {} },
   isVerified: {
     type: Boolean,
     default: false
@@ -179,5 +199,8 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
+userSchema.index({ githubId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('User', userSchema);

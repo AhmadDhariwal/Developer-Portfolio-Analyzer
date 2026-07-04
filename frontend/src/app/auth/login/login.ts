@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ import { UiCardComponent } from '../../shared/components/ui-card/ui-card.compone
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnInit {
   email: string = '';
   password: string = '';
   isLoading: boolean = false;
@@ -22,12 +22,45 @@ export class Login {
   // Per-field real-time errors
   fieldErrors: Record<string, string> = {};
 
+  // OAuth provider currently loading — null means no OAuth in progress
+  oauthLoading: 'google' | 'github' | null = null;
+
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    // --- OAuth hash-based callback (existing behavior, unchanged) ---
+    const oauthPayload = window.location.hash.startsWith('#oauth=')
+      ? window.location.hash.slice('#oauth='.length)
+      : '';
+
+    if (oauthPayload) {
+      // Remove credentials from the address bar before decoding or storing them.
+      // SECURITY: token is never sent to server via fragment; stripped immediately.
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+      try {
+        const normalized = oauthPayload.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+        const bytes = Uint8Array.from(atob(padded), character => character.charCodeAt(0));
+        const payload = JSON.parse(new TextDecoder().decode(bytes));
+
+        if (!payload?.token || !payload?.user) throw new Error('Invalid OAuth payload');
+        this.authService.completeExternalLogin(payload);
+        this.router.navigateByUrl(this.authService.getHomeRoute(payload.user));
+        return;
+      } catch {
+        this.error = 'Social sign-in could not be completed. Please try again.';
+      }
+    }
+
+    if (this.route.snapshot.queryParamMap.has('oauthError')) {
+      this.error = 'Social sign-in could not be completed. Please try again.';
+    }
+  }
 
   validateEmail(): void {
     if (!this.email.trim()) {
@@ -70,13 +103,29 @@ export class Login {
       },
       error: (err) => {
         this.isLoading = false;
+        // Show backend message only — never expose raw stack traces
         this.error = err?.error?.message || 'Invalid email or password.';
         this.cdr.detectChanges();
       }
     });
   }
 
-  loginWithGithub() {
-    // GitHub OAuth implementation would go here
+  /** Redirect to backend Google OAuth endpoint. No client secret involved. */
+  loginWithGoogle(): void {
+    if (this.oauthLoading || this.isLoading) return;
+    this.oauthLoading = 'google';
+    this.error = '';
+    this.cdr.detectChanges();
+    // startExternalLogin does window.location.assign — page navigates away immediately
+    this.authService.startExternalLogin('google');
+  }
+
+  /** Redirect to backend GitHub OAuth endpoint. No client secret involved. */
+  loginWithGithub(): void {
+    if (this.oauthLoading || this.isLoading) return;
+    this.oauthLoading = 'github';
+    this.error = '';
+    this.cdr.detectChanges();
+    this.authService.startExternalLogin('github');
   }
 }

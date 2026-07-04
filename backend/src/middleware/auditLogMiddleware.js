@@ -16,7 +16,8 @@ const SENSITIVE_KEY_PATTERNS = [
   /pass[_-]?phrase/i,
   /private[_-]?key/i,
   /access[_-]?token/i,
-  /refresh[_-]?token/i
+  /refresh[_-]?token/i,
+  /^(code|authorizationCode|oauthCode)$/i
 ];
 
 const maskValue = (key, value) => {
