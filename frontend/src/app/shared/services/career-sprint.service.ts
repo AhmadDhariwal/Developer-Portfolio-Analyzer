@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { finalize, Observable, shareReplay, tap } from 'rxjs';
+import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
@@ -140,6 +140,11 @@ export interface GenerateAiTasksPayload {
   sprintEndDate?: string;
 }
 
+interface SprintCacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
 export interface GenerateAiTasksResponse {
   tasks: SprintTask[];
   planMeta: {
@@ -154,18 +159,56 @@ export interface GenerateAiTasksResponse {
 
 @Injectable({ providedIn: 'root' })
 export class CareerSprintService {
+  private readonly cacheTtlMs = 12 * 60 * 1000;
+  private readonly maxCacheEntries = 50;
   private readonly inflight = new Map<string, Observable<any>>();
-  private currentCache: CareerSprint | null = null;
-  private historyCache: CareerSprint[] | null = null;
+  private readonly cache = new Map<string, SprintCacheEntry<unknown>>();
+  private readonly activeSprintByProfile = new Map<string, string>();
 
   constructor(private readonly api: ApiService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
     this.cacheInvalidation.register('career-sprint', () => this.clearCache());
   }
 
   clearCache(): void {
-    this.currentCache = null;
-    this.historyCache = null;
+    this.cache.clear();
+    this.activeSprintByProfile.clear();
     this.inflight.clear();
+  }
+
+  private profileKey(profileSignature = ''): string {
+    return profileSignature.trim() || 'anonymous-profile';
+  }
+
+  private currentKey(profileSignature = '', activeSprintId = ''): string {
+    const profile = this.profileKey(profileSignature);
+    const active = activeSprintId || this.activeSprintByProfile.get(profile) || 'active';
+    return `current:${profile}:${active}`;
+  }
+
+  private historyKey(profileSignature = '', limit = 6): string {
+    return `history:${this.profileKey(profileSignature)}:${limit}`;
+  }
+
+  private readCache<T>(key: string): T | null {
+    const entry = this.cache.get(key) as SprintCacheEntry<T> | undefined;
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) {
+      this.cache.delete(key);
+      return null;
+    }
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    return entry.value;
+  }
+
+  private writeCache<T>(key: string, value: T): void {
+    this.cache.delete(key);
+    this.cache.set(key, { value, expiresAt: Date.now() + this.cacheTtlMs });
+    while (this.cache.size > this.maxCacheEntries) {
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (!oldestKey) break;
+      this.cache.delete(oldestKey);
+    }
   }
 
   private dedupe<T>(key: string, source$: Observable<T>): Observable<T> {
@@ -179,22 +222,33 @@ export class CareerSprintService {
     return shared$;
   }
 
-  getCurrent(): Observable<CareerSprint> {
-    return this.dedupe('current', this.api.getCurrentCareerSprint()).pipe(
-      tap((sprint) => { this.currentCache = sprint; })
+  getCurrent(profileSignature = '', activeSprintId = '', forceRefresh = false): Observable<CareerSprint> {
+    const profile = this.profileKey(profileSignature);
+    const key = this.currentKey(profile, activeSprintId);
+    const cached = forceRefresh ? null : this.readCache<CareerSprint>(key);
+    if (cached) return of(cached);
+
+    const source$ = this.api.getCurrentCareerSprint(forceRefresh).pipe(
+      tap((sprint: CareerSprint) => {
+        const sprintId = sprint?._id || activeSprintId;
+        if (sprintId) this.activeSprintByProfile.set(profile, sprintId);
+        this.writeCache(this.currentKey(profile, sprintId), sprint);
+        this.writeCache(this.currentKey(profile, 'active'), sprint);
+      })
     );
+    return forceRefresh ? source$ : this.dedupe(key, source$);
   }
 
-  getCurrentCached(): CareerSprint | null {
-    return this.currentCache;
+  getCurrentCached(profileSignature = '', activeSprintId = ''): CareerSprint | null {
+    return this.readCache<CareerSprint>(this.currentKey(profileSignature, activeSprintId));
   }
 
   invalidateCurrentCache(): void {
-    this.currentCache = null;
+    Array.from(this.cache.keys()).filter((key) => key.startsWith('current:')).forEach((key) => this.cache.delete(key));
   }
 
   invalidateHistoryCache(): void {
-    this.historyCache = null;
+    Array.from(this.cache.keys()).filter((key) => key.startsWith('history:')).forEach((key) => this.cache.delete(key));
   }
 
   create(payload: {
@@ -228,14 +282,19 @@ export class CareerSprintService {
     return this.api.updateCareerSprintTask(sprintId, taskId, isCompleted).pipe(tap(() => this.invalidateMutationCaches()));
   }
 
-  getHistory(limit = 6): Observable<{ history: CareerSprint[] }> {
-    return this.dedupe(`history:${limit}`, this.api.getCareerSprintHistory(limit)).pipe(
-      tap((data) => { this.historyCache = data.history || []; })
+  getHistory(limit = 6, profileSignature = '', forceRefresh = false): Observable<{ history: CareerSprint[] }> {
+    const key = this.historyKey(profileSignature, limit);
+    const cached = forceRefresh ? null : this.readCache<{ history: CareerSprint[] }>(key);
+    if (cached) return of(cached);
+    const source$ = this.api.getCareerSprintHistory(limit).pipe(
+      tap((data) => this.writeCache(key, { history: data.history || [] }))
     );
+    return forceRefresh ? source$ : this.dedupe(key, source$);
   }
 
-  getHistoryCached(): CareerSprint[] | null {
-    return this.historyCache ? [...this.historyCache] : null;
+  getHistoryCached(limit = 6, profileSignature = ''): CareerSprint[] | null {
+    const cached = this.readCache<{ history: CareerSprint[] }>(this.historyKey(profileSignature, limit));
+    return cached ? [...cached.history] : null;
   }
 
   restoreStreak(sprintId: string): Observable<CareerSprint> {
@@ -262,6 +321,9 @@ export class CareerSprintService {
     this.cacheInvalidation.clearCareerSprintCaches();
     this.cacheInvalidation.clearScenarioCaches();
     this.cacheInvalidation.clearDashboardCaches();
+    this.cacheInvalidation.clearRecommendationsCaches();
+    this.cacheInvalidation.clearSkillGapCaches();
+    this.cacheInvalidation.clearWeeklyReportCaches();
     this.cacheInvalidation.clearNewsCaches();
     this.cacheInvalidation.clearCoursesCaches();
   }

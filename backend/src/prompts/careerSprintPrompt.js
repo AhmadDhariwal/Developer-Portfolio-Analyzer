@@ -5,7 +5,7 @@ const safeList = (values = [], limit = 8) =>
 
 const formatTasks = (tasks = []) =>
   tasks.slice(0, 8).map((task, index) => (
-    `${index + 1}. ${task.title} [${task.category}/${task.priority}/${task.points}pts] - ${task.description}`
+    `${index + 1}. ${task.title} [${task.category}] - ${task.description}`
   )).join('\n');
 
 const getCareerSprintPrompt = ({
@@ -33,17 +33,9 @@ Return valid JSON only with this exact shape:
     {
       "title": "string",
       "description": "string",
-      "points": 1,
-      "priority": "high|medium|low",
       "category": "learning|project|practice"
     }
-  ],
-  "planMeta": {
-    "summary": "string",
-    "confidenceScore": 0,
-    "consistencyScore": 0,
-    "signalsUsed": ["string"]
-  }
+  ]
 }
 
 Rules:
@@ -53,8 +45,7 @@ Rules:
 - Avoid duplicates.
 - Use clear action-oriented descriptions.
 - Keep titles short and professional.
-- Points must be 1 to 10.
-- confidenceScore and consistencyScore must be 0 to 100.
+- Suggest task content only. Do not assign XP, points, streaks, scores, levels, or priorities.
 - Do not include markdown.
 - Do not invent unavailable personal data.
 - Prefer smaller tasks if consistency is low or repeated misses are high.

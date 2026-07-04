@@ -143,7 +143,7 @@ export class ProfileService {
       map((profile) => this.normalizeProfile(profile)),
       tap(profile => this.applyProfile(profile)),
       finalize(() => { this.inflightProfile$ = null; }),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
 
     return this.inflightProfile$;

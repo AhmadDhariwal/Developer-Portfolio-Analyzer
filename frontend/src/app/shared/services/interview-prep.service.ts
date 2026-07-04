@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface InterviewQuestion {
   _id?: string;
@@ -67,9 +68,16 @@ export class InterviewPrepService {
    * refCount: false ensures the replay survives when the component is destroyed
    * and recreated — no duplicate API calls when navigating back.
    */
-  private readonly cache = new Map<string, Observable<any>>();
+  private readonly cacheTtlMs = 15 * 60 * 1000;
+  private readonly maxCacheEntries = 50;
+  private readonly cache = new Map<string, { value$: Observable<any>; expiresAt: number }>();
 
-  constructor(private readonly api: ApiService) {}
+  constructor(
+    private readonly api: ApiService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {
+    this.cacheInvalidation.register('interview-prep', () => this.clearCache());
+  }
 
   /** Build a deterministic cache key from params, stripping undefined values. */
   private buildKey(prefix: string, params: Record<string, unknown>): string {
@@ -83,14 +91,24 @@ export class InterviewPrepService {
 
   /** Returns a cached shared observable, or creates one with refCount: false. */
   private once<T>(key: string, source$: Observable<T>): Observable<T> {
-    const existing = this.cache.get(key) as Observable<T> | undefined;
-    if (existing) return existing;
+    const now = Date.now();
+    this.pruneCache(now);
+    const existing = this.cache.get(key);
+    if (existing?.expiresAt && existing.expiresAt > now) {
+      return existing.value$ as Observable<T>;
+    }
+    if (existing) this.cache.delete(key);
 
     const shared$ = source$.pipe(
+      catchError((error) => {
+        this.cache.delete(key);
+        return throwError(() => error);
+      }),
       shareReplay({ bufferSize: 1, refCount: false })
     );
 
-    this.cache.set(key, shared$);
+    this.cache.set(key, { value$: shared$, expiresAt: now + this.cacheTtlMs });
+    this.pruneCache(now);
     return shared$;
   }
 
@@ -105,7 +123,22 @@ export class InterviewPrepService {
 
   /** Clear all cached responses (called on logout / full reset). */
   reset(): void {
+    this.clearCache();
+  }
+
+  clearCache(): void {
     this.cache.clear();
+  }
+
+  private pruneCache(now = Date.now()): void {
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt <= now) this.cache.delete(key);
+    }
+    while (this.cache.size > this.maxCacheEntries) {
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (!oldestKey) break;
+      this.cache.delete(oldestKey);
+    }
   }
 
   getTopQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {

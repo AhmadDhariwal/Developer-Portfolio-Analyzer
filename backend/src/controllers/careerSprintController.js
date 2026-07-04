@@ -10,6 +10,15 @@ const {
   importScenarioPlanToSprint
 } = require('../services/careerSprintService');
 const { generateTasks, generateAiTasksWithLLM } = require('../services/aiTaskService');
+const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
+const { invalidateContextCache } = require('../services/scenarioSimulatorService');
+const { invalidateNewsSignalCache } = require('../services/newsService');
+
+const invalidateSprintDependents = (userId) => {
+  invalidateDashboardSummaryCache(userId);
+  invalidateContextCache(userId);
+  invalidateNewsSignalCache(userId);
+};
 
 const normalizeError = (error, fallback) => ({
   message: error?.message || fallback,
@@ -18,7 +27,8 @@ const normalizeError = (error, fallback) => ({
 
 const getCurrentCareerSprint = async (req, res) => {
   try {
-    const sprint = await getCurrentSprint(req.user._id);
+    const forceRefresh = String(req.query.forceRefresh || '').toLowerCase() === 'true';
+    const sprint = await getCurrentSprint(req.user._id, { forceRefresh });
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint fetch error:', error.message);
@@ -52,6 +62,7 @@ const createCareerSprint = async (req, res) => {
       sprintStartDate,
       sprintEndDate
     });
+    invalidateSprintDependents(req.user._id);
     res.status(201).json(sprint);
   } catch (error) {
     console.error('Career sprint create error:', error.message);
@@ -63,6 +74,7 @@ const addCareerSprintTask = async (req, res) => {
   try {
     const sprint = await addTaskToSprint(req.user._id, req.params.id, req.body || {});
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint add task error:', error.message);
@@ -75,6 +87,7 @@ const updateCareerSprintTask = async (req, res) => {
     const { isCompleted } = req.body || {};
     const sprint = await toggleTaskCompletion(req.user._id, req.params.id, req.params.taskId, isCompleted);
     if (!sprint) return res.status(404).json({ message: 'Sprint or task not found.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint update task error:', error.message);
@@ -97,6 +110,7 @@ const restoreCareerStreakController = async (req, res) => {
   try {
     const sprint = await restoreStreak(req.user._id, req.params.id);
     if (!sprint) return res.status(400).json({ message: 'Cannot restore streak at this time.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint restore streak error:', error.message);
@@ -106,14 +120,15 @@ const restoreCareerStreakController = async (req, res) => {
 
 const generateAiTasks = async (req, res) => {
   try {
-    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate } = req.body || {};
+    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate, forceRefresh } = req.body || {};
     const result = await generateTasks({
       userId: req.user._id,
       stack,
       technology,
       experienceLevel,
       sprintStartDate,
-      sprintEndDate
+      sprintEndDate,
+      forceRefresh: Boolean(forceRefresh)
     });
     res.json(result);
   } catch (error) {
@@ -124,14 +139,15 @@ const generateAiTasks = async (req, res) => {
 
 const generateTrueAiTasks = async (req, res) => {
   try {
-    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate } = req.body || {};
+    const { stack, technology, experienceLevel, sprintStartDate, sprintEndDate, forceRefresh } = req.body || {};
     const result = await generateAiTasksWithLLM({
       userId: req.user._id,
       stack,
       technology,
       experienceLevel,
       sprintStartDate,
-      sprintEndDate
+      sprintEndDate,
+      forceRefresh: Boolean(forceRefresh)
     });
     res.json(result);
   } catch (error) {
@@ -145,6 +161,7 @@ const updateSprintDatesController = async (req, res) => {
     const { sprintStartDate, sprintEndDate } = req.body || {};
     const sprint = await updateSprintDates(req.user._id, req.params.id, sprintStartDate, sprintEndDate);
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Sprint dates update error:', error.message);
@@ -156,6 +173,7 @@ const saveAiPlanController = async (req, res) => {
   try {
     const sprint = await saveAiPlanToSprint(req.user._id, req.params.id, req.body || {});
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Save AI sprint plan error:', error.message);
@@ -167,6 +185,7 @@ const importScenarioPlanController = async (req, res) => {
   try {
     const sprint = await importScenarioPlanToSprint(req.user._id, req.params.id, req.body?.scenarioId || '');
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
+    invalidateSprintDependents(req.user._id);
     res.json(sprint);
   } catch (error) {
     console.error('Import scenario sprint plan error:', error.message);

@@ -91,9 +91,11 @@ const careerSprintSchema = new mongoose.Schema({
 
   tasks: [sprintTaskSchema],
   aiPlans: [aiPlanSchema]
-}, { timestamps: true });
+}, { timestamps: true, optimisticConcurrency: true });
 
 careerSprintSchema.index({ userId: 1, updatedAt: -1 });
+careerSprintSchema.index({ userId: 1, sprintStartDate: 1, sprintEndDate: 1 });
+careerSprintSchema.index({ userId: 1, 'tasks.isCompleted': 1, 'tasks.endDate': 1 });
 careerSprintSchema.index({ userId: 1, weekStartDate: -1 });
 careerSprintSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 });
 

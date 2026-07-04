@@ -31,6 +31,10 @@ export class CareerSprintComponent implements OnInit {
   userInitial = 'D';
   avatarVersion = Date.now();
   isLoading = false;
+  isRefreshing = false;
+  isCached = false;
+  isOffline = false;
+  isMutationSaving = false;
   errorMessage = '';
   actionMessage = '';
   actionTone: 'success' | 'error' | 'info' = 'info';
@@ -61,6 +65,7 @@ export class CareerSprintComponent implements OnInit {
   customRangeStart = '';
   customRangeEnd = '';
   selectedDraftId = '';
+  private profileSignature = '';
 
   readonly priorityOptions: TaskPriority[] = ['high', 'medium', 'low'];
   readonly categoryOptions: TaskCategory[] = ['learning', 'project', 'practice'];
@@ -72,44 +77,58 @@ export class CareerSprintComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadData();
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.profileService.getProfile().subscribe({
       next: (profile) => {
+        this.profileSignature = profile.profileHash || JSON.stringify([
+          profile._id || '', profile.careerStack || '', profile.experienceLevel || '',
+          profile.activeGithubUsername || profile.githubUsername || ''
+        ]);
         this.userAvatar = this.profileService.resolveAvatarUrl(profile.avatar || '');
         this.userName = profile.name || '';
         this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
         if (!this.goalStack && profile.careerStack) this.goalStack = profile.careerStack;
         if (!this.goalExperienceLevel && profile.experienceLevel) this.goalExperienceLevel = profile.experienceLevel;
         this.avatarVersion = Date.now();
+        this.loadData();
         this.cdr.markForCheck();
       },
-      error: () => this.cdr.markForCheck()
+      error: () => {
+        this.profileSignature = 'signed-in-user';
+        this.loadData();
+        this.cdr.markForCheck();
+      }
     });
   }
 
-  loadData(): void {
-    const cachedSprint = this.sprintService.getCurrentCached();
-    const cachedHistory = this.sprintService.getHistoryCached();
+  loadData(forceRefresh = false): void {
+    const activeSprintId = this.sprint?._id || '';
+    const cachedSprint = forceRefresh ? null : this.sprintService.getCurrentCached(this.profileSignature, activeSprintId);
+    const cachedHistory = forceRefresh ? null : this.sprintService.getHistoryCached(8, this.profileSignature);
 
-    // If both caches are warm, render immediately and skip API calls
     if (cachedSprint && cachedHistory) {
       this.applySprintState(cachedSprint);
       this.history = cachedHistory;
       this.isLoading = false;
+      this.isRefreshing = false;
+      this.isCached = true;
+      this.isOffline = false;
       this.cdr.markForCheck();
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading = !this.sprint;
+    this.isRefreshing = forceRefresh && !!this.sprint;
+    this.isCached = false;
+    this.isOffline = false;
     this.errorMessage = '';
 
     forkJoin({
-      sprint: this.sprintService.getCurrent(),
-      history: this.sprintService.getHistory(8).pipe(
+      sprint: this.sprintService.getCurrent(this.profileSignature, activeSprintId, forceRefresh),
+      history: this.sprintService.getHistory(8, this.profileSignature, forceRefresh).pipe(
         catchError(() => of({ history: [] }))
       )
     }).subscribe({
@@ -117,22 +136,53 @@ export class CareerSprintComponent implements OnInit {
         this.applySprintState(sprint);
         this.history = history.history || [];
         this.isLoading = false;
+        this.isRefreshing = false;
         this.cdr.markForCheck();
       },
       error: (error) => {
         this.errorMessage = error?.error?.message || 'Failed to load Career Sprint.';
+        this.isOffline = error?.status === 0;
         this.isLoading = false;
+        this.isRefreshing = false;
         this.cdr.markForCheck();
       }
     });
   }
 
   private applySprintState(sprint: CareerSprint): void {
-    this.sprint = sprint;
+    this.sprint = { ...sprint, tasks: this.dedupeTasks(sprint.tasks || []) };
     this.syncDatePickers();
     if (!this.goalStack && sprint.goalStack) this.goalStack = sprint.goalStack;
     if (!this.goalTechnology && sprint.goalTechnology) this.goalTechnology = sprint.goalTechnology;
     if (!this.goalExperienceLevel && sprint.goalExperienceLevel) this.goalExperienceLevel = sprint.goalExperienceLevel;
+  }
+
+  private dedupeTasks(tasks: SprintTask[]): SprintTask[] {
+    const seen = new Set<string>();
+    return tasks.filter((task) => {
+      const key = task._id || `${task.title || ''}:${task.startDate || ''}:${task.endDate || ''}`.trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private reloadAfterMutation(message: string): void {
+    const activeSprintId = this.sprint?._id || '';
+    this.isMutationSaving = true;
+    this.sprintService.getCurrent(this.profileSignature, activeSprintId, true).subscribe({
+      next: (sprint) => {
+        this.applySprintState(sprint);
+        this.isMutationSaving = false;
+        this.setAction(message, 'success');
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.isMutationSaving = false;
+        this.setAction(error?.error?.message || 'The change was saved, but the sprint could not be refreshed.', 'error');
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private syncDatePickers(): void {
@@ -169,6 +219,35 @@ export class CareerSprintComponent implements OnInit {
 
   get restoreMeta() {
     return this.sprint?.restoreMeta || null;
+  }
+
+  get hasInsights(): boolean {
+    return Boolean(this.sprint?.insights?.length);
+  }
+
+  get hasCareerFocusSignal(): boolean {
+    return Boolean(this.sprint?.signalsUsed?.careerSprint?.activeLearningFocus?.trim());
+  }
+
+  get hasWeeklySignal(): boolean {
+    const weekly = this.sprint?.signalsUsed?.weeklyReport;
+    return Boolean(weekly && weekly.status && weekly.status.toLowerCase() !== 'unavailable');
+  }
+
+  get hasPortfolioSignal(): boolean {
+    return Number(this.sprint?.signalsUsed?.portfolio?.completenessScore || 0) > 0;
+  }
+
+  get hasIntegrationSignal(): boolean {
+    return Boolean(this.sprint?.signalsUsed?.integrations?.usedProviders?.length);
+  }
+
+  get hasSignalContext(): boolean {
+    return this.hasCareerFocusSignal || this.hasWeeklySignal || this.hasPortfolioSignal || this.hasIntegrationSignal;
+  }
+
+  get generatedTaskCount(): number {
+    return this.allTasks.filter((task) => task.taskType === 'ai').length;
   }
 
   get progressPercent(): number {
@@ -263,7 +342,7 @@ export class CareerSprintComponent implements OnInit {
   }
 
   get allTasks(): SprintTask[] {
-    return this.sprint?.tasks || [];
+    return this.dedupeTasks(this.sprint?.tasks || []);
   }
 
   get pendingTasks(): SprintTask[] {
@@ -350,7 +429,7 @@ export class CareerSprintComponent implements OnInit {
 
   get sprintDaysLabel(): string {
     const days = this.sprintDurationDays;
-    return `${days} day${days === 1 ? '' : 's'} left`;
+    return `${days}-day sprint`;
   }
 
   get trendActivity(): Array<{ date: string; count: number; active: boolean; label: string }> {
@@ -371,10 +450,9 @@ export class CareerSprintComponent implements OnInit {
     this.isSavingDates = true;
     this.sprintService.updateSprintDates(this.sprint._id, this.sprintStartDate, this.sprintEndDate).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
         this.isSavingDates = false;
-        this.setAction('Sprint dates updated.', 'success');
-        this.cdr.markForCheck();
+        this.sprint = sprint;
+        this.reloadAfterMutation('Sprint dates updated.');
       },
       error: (error) => {
         this.isSavingDates = false;
@@ -396,15 +474,14 @@ export class CareerSprintComponent implements OnInit {
       taskType: 'manual'
     }).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
+        this.sprint = sprint;
         this.newTaskTitle = '';
         this.newTaskDescription = '';
         this.newTaskPoints = 3;
         this.newTaskPriority = 'medium';
         this.newTaskCategory = 'learning';
         this.isAddingTask = false;
-        this.setAction('Manual task added to sprint.', 'success');
-        this.cdr.markForCheck();
+        this.reloadAfterMutation('Manual task added to sprint.');
       },
       error: (error) => {
         this.isAddingTask = false;
@@ -422,8 +499,8 @@ export class CareerSprintComponent implements OnInit {
 
     this.sprintService.toggleTask(this.sprint._id, task._id, task.isCompleted).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
-        this.cdr.markForCheck();
+        this.sprint = sprint;
+        this.reloadAfterMutation(task.isCompleted ? 'Task completed and sprint progress updated.' : 'Task returned to pending.');
       },
       error: (error) => {
         this.sprint = snapshot;
@@ -437,9 +514,8 @@ export class CareerSprintComponent implements OnInit {
     if (!this.sprint) return;
     this.sprintService.restoreStreak(this.sprint._id).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
-        this.setAction('Streak restored successfully.', 'success');
-        this.cdr.markForCheck();
+        this.sprint = sprint;
+        this.reloadAfterMutation('Streak restored successfully.');
       },
       error: (error) => {
         this.setAction(error?.error?.message || 'Failed to restore streak.', 'error');
@@ -460,7 +536,7 @@ export class CareerSprintComponent implements OnInit {
       sprintEndDate: this.sprintEndDate || undefined
     }).subscribe({
       next: (response) => {
-        this.generatedTasks = response.tasks || [];
+        this.generatedTasks = this.dedupeTasks(response.tasks || []);
         this.generatedPlanMeta = response.planMeta || null;
         this.isGeneratingPlan = false;
         this.setAction('Sprint plan generated from real developer signals.', 'success');
@@ -486,7 +562,7 @@ export class CareerSprintComponent implements OnInit {
       sprintEndDate: this.sprintEndDate || undefined
     }).subscribe({
       next: (response) => {
-        this.generatedTasks = response.tasks || [];
+        this.generatedTasks = this.dedupeTasks(response.tasks || []);
         this.generatedPlanMeta = response.planMeta || null;
         this.isGeneratingAi = false;
         this.setAction(
@@ -521,10 +597,9 @@ export class CareerSprintComponent implements OnInit {
       tasks: this.generatedTasks
     }).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
+        this.sprint = sprint;
         this.isSavingAiPlan = false;
-        this.setAction('AI plan saved to sprint drafts.', 'success');
-        this.cdr.markForCheck();
+        this.reloadAfterMutation('Plan saved to sprint drafts.');
       },
       error: (error) => {
         this.isSavingAiPlan = false;
@@ -557,12 +632,11 @@ export class CareerSprintComponent implements OnInit {
     this.isImportingScenario = true;
     this.sprintService.importScenarioPlan(this.sprint._id).subscribe({
       next: (sprint) => {
-        this.applySprintState(sprint);
+        this.sprint = sprint;
         const latestScenarioPlan = [...(sprint.aiPlans || [])].reverse().find((plan) => plan.source === 'scenario');
         if (latestScenarioPlan) this.loadDraft(latestScenarioPlan);
         this.isImportingScenario = false;
-        this.setAction('Scenario Simulator plan imported into sprint drafts.', 'success');
-        this.cdr.markForCheck();
+        this.reloadAfterMutation('Scenario Simulator plan imported into sprint drafts.');
       },
       error: (error) => {
         this.isImportingScenario = false;
@@ -575,15 +649,20 @@ export class CareerSprintComponent implements OnInit {
   addGeneratedTasksToSprint(): void {
     if (!this.sprint || !this.generatedTasks.length) return;
 
-    const tasks = this.generatedTasks.slice();
+    const existingTitles = new Set(this.allTasks.map((task) => task.title.trim().toLowerCase()));
+    const tasks = this.dedupeTasks(this.generatedTasks).filter((task) => !existingTitles.has(task.title.trim().toLowerCase()));
+    if (!tasks.length) {
+      this.setAction('All generated suggestions already exist in this sprint.', 'info');
+      return;
+    }
+    this.isMutationSaving = true;
     const addNext = (index: number) => {
       if (index >= tasks.length) {
         this.generatedTasks = [];
         this.generatedPlanMeta = null;
         this.selectedDraftId = '';
         this.showSetupPanel = false;
-        this.setAction('Generated tasks added to the current sprint.', 'success');
-        this.cdr.markForCheck();
+        this.reloadAfterMutation('Generated task suggestions added to the current sprint.');
         return;
       }
 
@@ -599,7 +678,7 @@ export class CareerSprintComponent implements OnInit {
         endDate: task.endDate || undefined
       }).subscribe({
         next: (sprint) => {
-          this.applySprintState(sprint);
+          this.sprint = sprint;
           addNext(index + 1);
         },
         error: () => addNext(index + 1)

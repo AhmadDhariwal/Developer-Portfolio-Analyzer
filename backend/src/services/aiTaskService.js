@@ -20,6 +20,33 @@ const { distributeTaskDates, phaseCategory, startOfDay, addDays } = require('../
 
 const MIN_TASKS = 6;
 const MAX_TASKS = 8;
+const PLANNING_CACHE_TTL_MS = Math.max(1_000, Number(process.env.CAREER_SPRINT_PLANNING_CACHE_TTL_MS) || 120_000);
+const PLANNING_CACHE_MAX_SIZE = Math.max(10, Number(process.env.CAREER_SPRINT_PLANNING_CACHE_MAX_SIZE) || 300);
+const planningContextCache = new Map();
+const planningContextInflight = new Map();
+const generationInflight = new Map();
+
+const boundedSet = (cache, key, value) => {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > PLANNING_CACHE_MAX_SIZE) cache.delete(cache.keys().next().value);
+};
+
+const planningKey = ({ userId, stack, technology, experienceLevel }) => JSON.stringify([
+  String(userId || ''), String(stack || '').trim().toLowerCase(),
+  String(technology || '').trim().toLowerCase(), String(experienceLevel || '').trim().toLowerCase()
+]);
+
+const generationKey = (mode, input) => JSON.stringify([
+  mode, planningKey(input), String(input.sprintStartDate || ''), String(input.sprintEndDate || '')
+]);
+
+const dedupeGeneration = (key, factory, forceRefresh) => {
+  if (!forceRefresh && generationInflight.has(key)) return generationInflight.get(key);
+  const request = Promise.resolve().then(factory).finally(() => generationInflight.delete(key));
+  if (!forceRefresh) generationInflight.set(key, request);
+  return request;
+};
 
 const uniqStrings = (values = [], limit = 8) => {
   const seen = new Set();
@@ -165,8 +192,15 @@ const loadPlanningContext = async ({
   userId,
   stack,
   technology,
-  experienceLevel
+  experienceLevel,
+  forceRefresh = false
 }) => {
+  const key = planningKey({ userId, stack, technology, experienceLevel });
+  const cached = planningContextCache.get(key);
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) return cached.value;
+  if (!forceRefresh && planningContextInflight.has(key)) return planningContextInflight.get(key);
+
+  const request = (async () => {
   const [user, signals, recommendationDocs, latestCache, githubAnalysis] = await Promise.all([
     User.findById(userId).select('careerStack experienceLevel').lean(),
     getDeveloperSignals(userId),
@@ -188,7 +222,7 @@ const loadPlanningContext = async ({
     4
   );
 
-  return {
+  const context = {
     user,
     signals,
     githubAnalysis,
@@ -199,6 +233,12 @@ const loadPlanningContext = async ({
     githubWeakAreas,
     recommendationTechnologies
   };
+    boundedSet(planningContextCache, key, { value: context, expiresAt: Date.now() + PLANNING_CACHE_TTL_MS });
+    return context;
+  })().finally(() => planningContextInflight.delete(key));
+
+  if (!forceRefresh) planningContextInflight.set(key, request);
+  return request;
 };
 
 const buildDeterministicTaskSet = ({
@@ -315,19 +355,22 @@ const finalizePlan = ({
   };
 };
 
-const generateTasks = async ({
+const generateTasks = async (input) => dedupeGeneration(generationKey('deterministic', input), async () => {
+  const {
   userId,
   stack,
   technology,
   experienceLevel,
   sprintStartDate,
-  sprintEndDate
-}) => {
+  sprintEndDate,
+  forceRefresh = false
+  } = input;
   const context = await loadPlanningContext({
     userId,
     stack,
     technology,
-    experienceLevel
+    experienceLevel,
+    forceRefresh
   });
 
   const tasks = buildDeterministicTaskSet(context);
@@ -343,21 +386,24 @@ const generateTasks = async ({
     generationMode: 'deterministic',
     providerLabel: 'Rules Engine'
   });
-};
+}, Boolean(input.forceRefresh));
 
-const generateAiTasksWithLLM = async ({
+const generateAiTasksWithLLM = async (input) => dedupeGeneration(generationKey('llm', input), async () => {
+  const {
   userId,
   stack,
   technology,
   experienceLevel,
   sprintStartDate,
-  sprintEndDate
-}) => {
+  sprintEndDate,
+  forceRefresh = false
+  } = input;
   const context = await loadPlanningContext({
     userId,
     stack,
     technology,
-    experienceLevel
+    experienceLevel,
+    forceRefresh
   });
 
   const deterministicTasks = buildDeterministicTaskSet(context);
@@ -391,21 +437,17 @@ const generateAiTasksWithLLM = async ({
     tasks: deterministicPlan.tasks.map((task) => ({
       title: task.title,
       description: task.description,
-      points: task.points,
-      priority: task.priority,
       category: task.category
-    })),
-    planMeta: {
-      summary: deterministicPlan.planMeta.summary,
-      confidenceScore: deterministicPlan.planMeta.confidenceScore,
-      consistencyScore: deterministicPlan.planMeta.consistencyScore,
-      signalsUsed: deterministicPlan.planMeta.signalsUsed
-    }
+    }))
   };
 
   const aiResult = await aiService.runAIAnalysis(prompt, aiFallback);
   const aiTasks = Array.isArray(aiResult?.tasks) && aiResult.tasks.length
-    ? aiResult.tasks
+    ? aiResult.tasks.map((task, index) => ({
+        ...task,
+        points: deterministicPlan.tasks[index]?.points || 3,
+        priority: deterministicPlan.tasks[index]?.priority || 'medium'
+      }))
     : deterministicPlan.tasks;
   const usedFallback = aiTasks === deterministicPlan.tasks || !Array.isArray(aiResult?.tasks) || !aiResult.tasks.length;
 
@@ -420,9 +462,9 @@ const generateAiTasksWithLLM = async ({
     experienceLevel: context.effectiveExperience,
     generationMode: usedFallback ? 'deterministic' : 'llm',
     providerLabel: usedFallback ? 'Rules Engine Fallback' : 'LLM Planner',
-    summaryOverride: aiResult?.planMeta?.summary || ''
+    summaryOverride: ''
   });
-};
+}, Boolean(input.forceRefresh));
 
 module.exports = {
   generateTasks,

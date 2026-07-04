@@ -11,9 +11,7 @@ const getPublicProfile = async (req, res) => {
   try {
     const profile = await getPublicProfileBySlug(req.params.slug, req);
     if (!profile) return res.status(404).json({ message: 'Public profile not found.' });
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate, stale-if-error=86400');
     res.json(profile);
   } catch (error) {
     console.error('Public profile fetch error:', error.message);
@@ -65,9 +63,7 @@ const downloadPublicProfileResume = async (req, res) => {
       return res.status(404).json({ message: 'Resume not available.' });
     }
 
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate, stale-if-error=86400');
     res.type(resume.mimeType);
     return res.download(resume.filePath, resume.fileName);
   } catch (error) {

@@ -4,6 +4,27 @@ const { getDeveloperSignals } = require('./developerSignalService');
 const { recordActivity, checkInactivity, restoreStreak: restoreStreakFn, canRestore, MAX_RESTORE_DAYS } = require('./streakService');
 const { startOfDay, endOfDay, addDays, daysBetween } = require('../utils/dateUtils');
 
+const SPRINT_CACHE_TTL_MS = Math.max(1_000, Number(process.env.CAREER_SPRINT_CACHE_TTL_MS) || 60_000);
+const SPRINT_CACHE_MAX_SIZE = Math.max(10, Number(process.env.CAREER_SPRINT_CACHE_MAX_SIZE) || 500);
+const sprintOverviewCache = new Map();
+const sprintOverviewInflight = new Map();
+const sprintCacheEpoch = new Map();
+
+const userCacheKey = (userId) => String(userId || '');
+const cloneCached = (value) => JSON.parse(JSON.stringify(value));
+
+const setBoundedCache = (cache, key, value) => {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > SPRINT_CACHE_MAX_SIZE) cache.delete(cache.keys().next().value);
+};
+
+const invalidateCareerSprintCache = (userId) => {
+  const key = userCacheKey(userId);
+  sprintOverviewCache.delete(key);
+  sprintCacheEpoch.set(key, (sprintCacheEpoch.get(key) || 0) + 1);
+};
+
 const clamp = (value, min = 0, max = 100) => {
   const numeric = Number(value || 0);
   if (!Number.isFinite(numeric)) return min;
@@ -272,6 +293,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
 const createSprint = async (opts) => {
   const payload = buildSprintPayload(opts);
   const sprint = await CareerSprint.create(payload);
+  invalidateCareerSprintCache(opts.userId);
   return serializeSprint(sprint);
 };
 
@@ -284,7 +306,7 @@ const findPreviousSprint = async (userId, sprint) => {
   }).sort({ weekStartDate: -1 }).lean();
 };
 
-const getCurrentSprint = async (userId) => {
+const loadCurrentSprint = async (userId) => {
   const now = new Date();
   const weekStart = startOfWeek();
   const weekEnd = endOfWeek(weekStart);
@@ -317,6 +339,26 @@ const getCurrentSprint = async (userId) => {
   ]);
 
   return serializeSprint(sprint, { previousSprint, signals });
+};
+
+const getCurrentSprint = async (userId, { forceRefresh = false } = {}) => {
+  const key = userCacheKey(userId);
+  const cached = sprintOverviewCache.get(key);
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) return cloneCached(cached.value);
+  if (!forceRefresh && sprintOverviewInflight.has(key)) return sprintOverviewInflight.get(key);
+
+  const epoch = sprintCacheEpoch.get(key) || 0;
+  const request = loadCurrentSprint(userId)
+    .then((value) => {
+      if ((sprintCacheEpoch.get(key) || 0) === epoch) {
+        setBoundedCache(sprintOverviewCache, key, { value: cloneCached(value), expiresAt: Date.now() + SPRINT_CACHE_TTL_MS });
+      }
+      return value;
+    })
+    .finally(() => sprintOverviewInflight.delete(key));
+
+  if (!forceRefresh) sprintOverviewInflight.set(key, request);
+  return request;
 };
 
 const assertUniqueTask = (sprint, title) => {
@@ -355,6 +397,7 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
 
   sprint.level = levelFromXp(sprint.xpPoints);
   await sprint.save();
+  invalidateCareerSprintCache(userId);
 
   // Task toggle only needs previous sprint for comparison — skip full signal reload
   const previousSprint = await findPreviousSprint(userId, sprint);
@@ -368,6 +411,7 @@ const addTaskToSprint = async (userId, sprintId, task) => {
   assertUniqueTask(sprint, task?.title);
   sprint.tasks.push(normalizeTask(task));
   await sprint.save();
+  invalidateCareerSprintCache(userId);
 
   // Task addition doesn't need full developer signal enrichment — skip signal reload
   const previousSprint = await findPreviousSprint(userId, sprint);
@@ -382,6 +426,7 @@ const restoreStreak = async (userId, sprintId) => {
   if (!restored) return null;
 
   await sprint.save();
+  invalidateCareerSprintCache(userId);
   const [previousSprint, signals] = await Promise.all([
     findPreviousSprint(userId, sprint),
     getDeveloperSignals(userId)
@@ -397,6 +442,7 @@ const updateSprintDates = async (userId, sprintId, sprintStartDate, sprintEndDat
   if (sprintStartDate) sprint.sprintStartDate = startOfDay(new Date(sprintStartDate));
   if (sprintEndDate) sprint.sprintEndDate = endOfDay(new Date(sprintEndDate));
   await sprint.save();
+  invalidateCareerSprintCache(userId);
 
   const [previousSprint, signals] = await Promise.all([
     findPreviousSprint(userId, sprint),
@@ -462,6 +508,7 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}) => {
 
   sprint.aiPlans = [...(sprint.aiPlans || []).filter((item) => normalizeTitle(item.name).toLowerCase() !== plan.name.toLowerCase()), plan].slice(-8);
   await sprint.save();
+  invalidateCareerSprintCache(userId);
 
   const [previousSprint, signals] = await Promise.all([
     findPreviousSprint(userId, sprint),
@@ -548,5 +595,6 @@ module.exports = {
   serializeSprint,
   calcWeightedProgress,
   xpForTask,
-  levelFromXp
+  levelFromXp,
+  invalidateCareerSprintCache
 };

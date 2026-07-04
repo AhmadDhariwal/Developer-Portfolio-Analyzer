@@ -7,11 +7,13 @@
     </div>
 
     <div class="header-actions">
+      <span class="cache-status" *ngIf="isCached">Cached</span>
+      <span class="cache-status offline" *ngIf="isOffline">Offline</span>
       <button class="ghost-btn" type="button" (click)="showSetupPanel = !showSetupPanel">
         {{ showSetupPanel ? 'Hide AI Setup' : 'AI Sprint Setup' }}
       </button>
-      <button class="ghost-btn" type="button" (click)="loadData()">
-        Refresh Sprint
+      <button class="ghost-btn" type="button" (click)="loadData(true)" [disabled]="isRefreshing || isLoading">
+        {{ isRefreshing ? 'Refreshing...' : 'Refresh Sprint' }}
       </button>
     </div>
   </header>
@@ -22,6 +24,8 @@
       {{ actionMessage }}
     </div>
   </div>
+
+  <div class="refresh-bar" *ngIf="isRefreshing"><span></span></div>
 
   <div *ngIf="isLoading" class="loading-shell">
     <div class="skeleton-block hero-skeleton"></div>
@@ -126,6 +130,14 @@
           </div>
         </div>
 
+        <div class="sprint-summary-strip">
+          <div *ngIf="sprint.weeklyGoal > 0"><span>Weekly goal</span><strong>{{ sprint.weeklyGoal }}</strong></div>
+          <div><span>Total tasks</span><strong>{{ allTasks.length }}</strong></div>
+          <div><span>Completed</span><strong>{{ completedCount }}</strong></div>
+          <div><span>Pending</span><strong>{{ remainingTasksCount }}</strong></div>
+          <div *ngIf="generatedTaskCount > 0"><span>Suggestions added</span><strong>{{ generatedTaskCount }}</strong></div>
+        </div>
+
         <div class="restore-banner" *ngIf="restoreMeta">
           <div>
             <strong>Restore window</strong>
@@ -174,7 +186,7 @@
     </section>
 
     <section class="analytics-grid">
-      <article class="card insight-card">
+      <article class="card insight-card" *ngIf="hasInsights">
         <div class="section-head">
           <div>
             <span class="section-kicker">Insights</span>
@@ -187,7 +199,7 @@
         <button class="text-link-btn" type="button" (click)="plannerFilter = 'week'">View planner focus</button>
       </article>
 
-      <article class="card signals-card" *ngIf="sprint.signalsUsed">
+      <article class="card signals-card" *ngIf="hasSignalContext">
         <div class="section-head">
           <div>
             <span class="section-kicker">Signals Used</span>
@@ -196,21 +208,21 @@
         </div>
 
         <div class="signals-grid">
-          <div class="signal-box">
+          <div class="signal-box" *ngIf="hasCareerFocusSignal">
             <strong>Career Focus</strong>
-            <span>{{ sprint.signalsUsed.careerSprint.activeLearningFocus || 'Not set' }}</span>
+            <span>{{ sprint.signalsUsed?.careerSprint?.activeLearningFocus }}</span>
           </div>
-          <div class="signal-box">
+          <div class="signal-box" *ngIf="hasWeeklySignal">
             <strong>Weekly Report</strong>
-            <span>{{ sprint.signalsUsed.weeklyReport.status }} - {{ sprint.signalsUsed.weeklyReport.weeklyProgressScore }}%</span>
+            <span>{{ sprint.signalsUsed?.weeklyReport?.status }} · {{ sprint.signalsUsed?.weeklyReport?.weeklyProgressScore }}%</span>
           </div>
-          <div class="signal-box">
+          <div class="signal-box" *ngIf="hasPortfolioSignal">
             <strong>Portfolio</strong>
-            <span>{{ sprint.signalsUsed.portfolio.completenessScore }}% complete</span>
+            <span>{{ sprint.signalsUsed?.portfolio?.completenessScore }}% complete</span>
           </div>
-          <div class="signal-box">
+          <div class="signal-box" *ngIf="hasIntegrationSignal">
             <strong>Integrations</strong>
-            <span>{{ (sprint.signalsUsed.integrations.usedProviders || []).join(', ') || 'No active integrations' }}</span>
+            <span>{{ (sprint.signalsUsed?.integrations?.usedProviders || []).join(', ') }}</span>
           </div>
         </div>
       </article>
@@ -250,7 +262,7 @@
             <span class="section-kicker">AI Setup</span>
             <h3>Plan a Smarter Sprint</h3>
           </div>
-          <span class="mini-badge" *ngIf="generatedPlanMeta">{{ generatedPlanMeta.confidenceScore }}% confidence</span>
+          <span class="mini-badge" *ngIf="generatedPlanMeta?.confidenceScore">{{ generatedPlanMeta?.confidenceScore }}% confidence</span>
         </div>
 
         <p class="setup-desc">
@@ -324,34 +336,38 @@
             <strong>Plan type</strong>
             <span>{{ getGeneratedModeLabel() }}{{ generatedPlanMeta.providerLabel ? ' - ' + generatedPlanMeta.providerLabel : '' }}</span>
           </div>
-          <div>
+          <div *ngIf="generatedPlanMeta.summary">
             <strong>Draft summary</strong>
             <span>{{ generatedPlanMeta.summary }}</span>
           </div>
-          <div>
+          <div *ngIf="generatedPlanMeta.signalsUsed.length">
             <strong>Signals</strong>
-            <span>{{ generatedPlanMeta.signalsUsed.join(', ') || 'Profile defaults' }}</span>
+            <span>{{ generatedPlanMeta.signalsUsed.join(', ') }}</span>
           </div>
-          <div>
+          <div *ngIf="generatedPlanMeta.consistencyScore > 0">
             <strong>Consistency</strong>
             <span>{{ generatedPlanMeta.consistencyScore }}%</span>
           </div>
-          <div>
+          <div *ngIf="generatedPlanMeta.confidenceScore > 0">
             <strong>Confidence</strong>
             <span>{{ generatedPlanMeta.confidenceScore }}%</span>
           </div>
         </div>
 
+        <div class="fallback-state" *ngIf="generatedPlanMeta?.generationMode === 'deterministic' && !isGeneratingAi">
+          Rules-based fallback active. These are deterministic task suggestions generated from available developer signals.
+        </div>
+
         <div class="generated-preview" *ngIf="generatedTasks.length">
           <div class="preview-header">
-            <strong>{{ generatedTasks.length }} generated tasks</strong>
-            <button class="primary-btn small" type="button" (click)="addGeneratedTasksToSprint()">Add All to Sprint</button>
+            <strong>{{ generatedTasks.length }} task suggestions</strong>
+            <button class="primary-btn small" type="button" (click)="addGeneratedTasksToSprint()" [disabled]="isMutationSaving">{{ isMutationSaving ? 'Saving...' : 'Add All to Sprint' }}</button>
           </div>
 
           <div class="timeline-list">
             <article class="timeline-card" *ngFor="let task of generatedTasks; trackBy: trackByTask">
               <div class="timeline-top">
-                <span class="task-type-badge ai">AI</span>
+                <span class="task-type-badge ai">Suggestion</span>
                 <span class="priority-pill" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
               </div>
               <strong>{{ task.title }}</strong>
@@ -427,7 +443,7 @@
         <div class="task-stack" *ngIf="plannerTasks.length; else plannerEmpty">
           <article class="task-card" *ngFor="let task of plannerTasks; trackBy: trackByTask" [class.task-active]="isTaskActive(task)" [class.completed-row]="task.isCompleted">
             <label class="task-checkbox">
-              <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" />
+              <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" [disabled]="isMutationSaving" />
               <span class="checkmark"></span>
             </label>
 
@@ -435,7 +451,7 @@
               <div class="task-top">
                 <strong>{{ task.title }}</strong>
                 <span class="task-type-badge" [class.ai]="task.taskType === 'ai'" [class.manual]="task.taskType === 'manual'">
-                  {{ task.taskType === 'ai' ? 'AI' : 'Manual' }}
+                  {{ task.taskType === 'ai' ? 'Suggestion' : 'Manual' }}
                 </span>
               </div>
               <p *ngIf="task.description">{{ task.description }}</p>

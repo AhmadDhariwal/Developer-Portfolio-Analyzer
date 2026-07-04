@@ -279,7 +279,7 @@ export class RecommendationsService {
         }
       }),
       finalize(() => this.inflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
 
     this.inflight.set(key, request$);

@@ -275,7 +275,7 @@ export class SkillGapService {
         }
       }),
       finalize(() => this.inflight.delete(requestKey)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: false })
     );
 
     this.inflight.set(requestKey, request$);

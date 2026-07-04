@@ -843,8 +843,9 @@ export class ApiService {
   }
 
   /* ── Career Sprint ── */
-  getCurrentCareerSprint(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/career-sprints/current`);
+  getCurrentCareerSprint(forceRefresh = false): Observable<any> {
+    const suffix = forceRefresh ? '?forceRefresh=true' : '';
+    return this.http.get(`${this.baseUrl}/career-sprints/current${suffix}`);
   }
 
   createCareerSprint(payload: { title?: string; weeklyGoal?: number; tasks?: Array<{ title: string; description?: string; points?: number }> }): Observable<any> {
