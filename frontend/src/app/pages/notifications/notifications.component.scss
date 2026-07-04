@@ -580,4 +580,17 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
+
+  .primary-action,
+  .ghost-action,
+  .pager button {
+    min-height: 44px;
+  }
+
+  .page,
+  .notification-item,
+  .notification-main {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }

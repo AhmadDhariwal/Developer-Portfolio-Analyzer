@@ -4,6 +4,7 @@ const {
   refreshGitHubAnalysisInBackground
 } = require('../services/githubservice');
 const aiService = require('../services/aiservice');
+const { createNotification } = require('../services/notificationService');
 const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -1845,6 +1846,18 @@ const analyzeSkillGap = async (req, res) => {
     });
 
     completeInflightRequest(inflightKey, inflightDeferred, fullResult);
+    if (req.user?._id && Array.isArray(fullResult.missingSkills) && fullResult.missingSkills.length >= 3) {
+      await createNotification({
+        userId: req.user._id,
+        type: 'career_update',
+        title: 'Major Skill Gaps Identified',
+        message: `${fullResult.missingSkills.length} priority skill gaps are ready for review.`,
+        dedupeKey: `skill_gap:${signalHash}`,
+        dedupeWindowHours: 24,
+        preferenceKey: 'skillTrendAlerts',
+        meta: { gapCount: fullResult.missingSkills.length }
+      });
+    }
     return res.json(fullResult);
   } catch (error) {
     failInflightRequest(inflightKey, inflightDeferred, error);

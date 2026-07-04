@@ -13,6 +13,7 @@ const { generateTasks, generateAiTasksWithLLM } = require('../services/aiTaskSer
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { invalidateContextCache } = require('../services/scenarioSimulatorService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
+const { createNotification } = require('../services/notificationService');
 
 const invalidateSprintDependents = (userId) => {
   invalidateDashboardSummaryCache(userId);
@@ -88,6 +89,18 @@ const updateCareerSprintTask = async (req, res) => {
     const sprint = await toggleTaskCompletion(req.user._id, req.params.id, req.params.taskId, isCompleted);
     if (!sprint) return res.status(404).json({ message: 'Sprint or task not found.' });
     invalidateSprintDependents(req.user._id);
+    if (Boolean(isCompleted)) {
+      const completedTask = (sprint.tasks || []).find((task) => String(task._id) === String(req.params.taskId));
+      await createNotification({
+        userId: req.user._id,
+        type: 'success',
+        title: 'Sprint Task Completed',
+        message: completedTask?.title ? `${completedTask.title} was completed.` : 'A Career Sprint task was completed.',
+        dedupeKey: `sprint_task_completed:${req.params.id}:${req.params.taskId}`,
+        dedupeWindowHours: 24,
+        meta: { sprintId: req.params.id, taskId: req.params.taskId, level: sprint.level, streak: sprint.currentStreak }
+      });
+    }
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint update task error:', error.message);
@@ -111,6 +124,14 @@ const restoreCareerStreakController = async (req, res) => {
     const sprint = await restoreStreak(req.user._id, req.params.id);
     if (!sprint) return res.status(400).json({ message: 'Cannot restore streak at this time.' });
     invalidateSprintDependents(req.user._id);
+    await createNotification({
+      userId: req.user._id,
+      type: 'success',
+      title: 'Career Streak Restored',
+      message: `Your ${Number(sprint.currentStreak || sprint.streak || 0)} day streak is active again.`,
+      dedupeKey: `sprint_streak_restored:${req.params.id}`,
+      dedupeWindowHours: 24
+    });
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint restore streak error:', error.message);

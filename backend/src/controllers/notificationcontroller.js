@@ -12,6 +12,10 @@ const {
   emitNotificationEvent
 } = require('../services/notificationService');
 
+const NOTIFICATION_TYPES = new Set(['profile_update', 'resume_upload', 'github_update', 'low_score', 'career_update', 'system', 'info', 'warning', 'success', 'error']);
+const NOTIFICATION_PROJECTION = '_id userId type title message dedupeKey meta isRead createdAt updatedAt';
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const parseDate = (value) => {
   if (!value) return null;
   const date = new Date(String(value));
@@ -108,8 +112,13 @@ const collectAllowedUserIds = async ({ organizationId, teamId, requesterId, incl
 
 const getNotifications = async (req, res) => {
   try {
-    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-    const limit = Math.max(1, Math.min(50, Number.parseInt(req.query.limit, 10) || 20));
+    const rawPage = req.query.page === undefined ? 1 : Number(req.query.page);
+    const rawLimit = req.query.limit === undefined ? 20 : Number(req.query.limit);
+    if (!Number.isInteger(rawPage) || rawPage < 1 || !Number.isInteger(rawLimit) || rawLimit < 1 || rawLimit > 50) {
+      return res.status(400).json({ message: 'page and limit must be positive integers; limit cannot exceed 50.' });
+    }
+    const page = rawPage;
+    const limit = rawLimit;
   const organizationId = String(req.query.organizationId || '').trim();
   const teamId = String(req.query.teamId || '').trim();
     const search = String(req.query.search || '').trim();
@@ -118,6 +127,16 @@ const getNotifications = async (req, res) => {
     const requestedUserId = String(req.query.userId || '').trim();
     const unreadOnly = String(req.query.unread || '').toLowerCase() === 'true';
   const includeAllOrgs = String(req.query.includeAllOrgs || '').toLowerCase() === 'true';
+
+    if (requestedUserId && !mongoose.Types.ObjectId.isValid(requestedUserId)) {
+      return res.status(400).json({ message: 'userId is invalid.' });
+    }
+    if (typeFilter && !NOTIFICATION_TYPES.has(typeFilter)) {
+      return res.status(400).json({ message: 'type is invalid.' });
+    }
+    if (search.length > 100) {
+      return res.status(400).json({ message: 'search cannot exceed 100 characters.' });
+    }
 
   const scope = await collectAllowedUserIds({ organizationId, teamId, requesterId: req.user._id, includeAllOrgs });
     if (scope.error) {
@@ -148,12 +167,15 @@ const getNotifications = async (req, res) => {
     }
 
     if (search) {
-      const regex = new RegExp(search, 'i');
+      const regex = new RegExp(escapeRegex(search), 'i');
       filter.$or = [{ title: regex }, { message: regex }];
     }
 
     const from = parseDate(req.query.from);
     const to = parseDate(req.query.to);
+    if ((req.query.from && !from) || (req.query.to && !to) || (from && to && from > to)) {
+      return res.status(400).json({ message: 'Date range is invalid.' });
+    }
     if (from || to) {
       filter.createdAt = {};
       if (from) filter.createdAt.$gte = from;
@@ -166,6 +188,7 @@ const getNotifications = async (req, res) => {
 
     const [notifications, total, unreadCount] = await Promise.all([
       Notification.find(filter)
+        .select(NOTIFICATION_PROJECTION)
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -215,6 +238,7 @@ const canAccessNotification = async (req, notification) => {
 
 const markNotificationRead = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Notification id is invalid.' });
     const existing = await Notification.findById(req.params.id).lean();
     if (!existing) {
       return res.status(404).json({ message: 'Notification not found.' });
@@ -258,9 +282,10 @@ const markAllNotificationsRead = async (req, res) => {
 
 const deleteNotification = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Notification id is invalid.' });
     const existing = await Notification.findById(req.params.id).lean();
     if (!existing) {
-      return res.status(404).json({ message: 'Notification not found.' });
+      return res.json({ message: 'Notification already deleted.' });
     }
 
     const access = await canAccessNotification(req, existing);
@@ -280,6 +305,15 @@ const deleteNotification = async (req, res) => {
 
 const streamNotifications = async (req, res) => {
   let heartbeat = null;
+  let cleanedUp = false;
+  let onChanged = null;
+
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    if (heartbeat) clearInterval(heartbeat);
+    if (onChanged) notificationEvents.off('changed', onChanged);
+  };
 
   try {
     const token = req.query.token;
@@ -296,6 +330,7 @@ const streamNotifications = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ message: 'Not authorized, invalid token' });
     }
+    console.info('Notification SSE connected', { userId });
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -309,7 +344,7 @@ const streamNotifications = async (req, res) => {
 
     sendEvent('connected', { ok: true, timestamp: new Date().toISOString() });
 
-    const onChanged = (payload) => {
+    onChanged = (payload) => {
       if (payload?.userId !== userId) return;
       sendEvent('notification', payload);
     };
@@ -321,12 +356,13 @@ const streamNotifications = async (req, res) => {
     }, 25000);
 
     req.on('close', () => {
-      if (heartbeat) clearInterval(heartbeat);
-      notificationEvents.off('changed', onChanged);
+      cleanup();
+      console.info('Notification SSE disconnected', { userId });
       res.end();
     });
+    res.on('error', cleanup);
   } catch (error) {
-    if (heartbeat) clearInterval(heartbeat);
+    cleanup();
     console.error('Notification stream auth error:', error.message);
     res.status(401).json({ message: 'Not authorized, token failed' });
   }

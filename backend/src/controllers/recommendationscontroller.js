@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const aiService = require('../services/aiservice');
+const { createNotification } = require('../services/notificationService');
 const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -1428,6 +1429,18 @@ const runRecommendationPipeline = async ({
   }
 
   const fullResult = await workPromise;
+
+  if (req.user?._id) {
+    await createNotification({
+      userId: req.user._id,
+      type: 'career_update',
+      title: 'Career Recommendations Updated',
+      message: 'Your latest career recommendations are ready to review.',
+      dedupeKey: `recommendations:${fullResult?.signalHash || 'latest'}`,
+      dedupeWindowHours: 24,
+      preferenceKey: 'newRecommendations'
+    });
+  }
 
   return res.json(fullResult);
 };

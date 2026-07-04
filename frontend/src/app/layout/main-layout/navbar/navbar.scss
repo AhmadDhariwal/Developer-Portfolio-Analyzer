@@ -630,3 +630,26 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 640px) {
+  .navbar .navbar-right .notifications-dropdown {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-height: calc(100dvh - var(--navbar-height));
+    border-radius: 0 0 18px 18px;
+    overflow: hidden;
+
+    .notif-list {
+      max-height: calc(100dvh - var(--navbar-height) - 104px);
+    }
+
+    .mark-all-btn,
+    .notif-item,
+    .view-all-btn {
+      min-height: 44px;
+    }
+  }
+}

@@ -6,6 +6,7 @@
         <p>Track account activity, resume updates, GitHub events, and organization-level alerts in one place.</p>
       </div>
       <div class="hero-actions">
+        <button class="ghost-action" (click)="fetchNotifications(1, true)" [disabled]="loading">{{ loading ? 'Refreshing...' : 'Refresh' }}</button>
         <button class="primary-action" (click)="markAllAsRead()" [disabled]="markingAllRead || unreadCount === 0">
           {{ markingAllRead ? 'Marking...' : 'Mark All as Read' }}
         </button>

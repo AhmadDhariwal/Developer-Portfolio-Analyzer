@@ -5,6 +5,7 @@ const {
   getPublicProfileAnalytics,
   getPublicProfileResumeDownload
 } = require('../services/publicProfileService');
+const { createNotification } = require('../services/notificationService');
 
 // GET /api/public-profiles/:slug (public)
 const getPublicProfile = async (req, res) => {
@@ -46,6 +47,16 @@ const updateMyPublicProfile = async (req, res) => {
       userId: String(req.user?._id || ''),
       slug: profile?.slug,
       headline: profile?.headline
+    });
+
+    await createNotification({
+      userId: req.user._id,
+      type: 'profile_update',
+      title: 'Public Portfolio Updated',
+      message: profile?.isPublic ? 'Your public portfolio changes are now live.' : 'Your public portfolio settings were updated.',
+      dedupeKey: `public_portfolio_update:${profile?.slug || req.user._id}`,
+      dedupeWindowHours: 1,
+      meta: { slug: profile?.slug || '', isPublic: Boolean(profile?.isPublic) }
     });
 
     res.json(profile);

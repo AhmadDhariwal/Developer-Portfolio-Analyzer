@@ -1,5 +1,6 @@
 const WeeklyReport = require('../models/weeklyReport');
 const User = require('../models/user');
+const { createNotification } = require('../services/notificationService');
 const {
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
@@ -33,7 +34,19 @@ const generateReport = async (req, res) => {
     }
 
     const latest = await WeeklyReport.findById(report._id).lean();
-    res.json(latest || report);
+    const resolved = latest || report;
+    const emailStatus = String(resolved?.emailStatus?.status || resolved?.emailStatus || '').toLowerCase();
+    await createNotification({
+      userId: req.user._id,
+      type: emailStatus === 'failed' ? 'warning' : 'career_update',
+      title: emailStatus === 'failed' ? 'Weekly Report Email Failed' : 'Weekly Report Ready',
+      message: emailStatus === 'failed' ? 'Your weekly report was generated, but its email could not be sent.' : 'Your latest weekly progress report is ready.',
+      dedupeKey: `weekly_report:${report._id}:${emailStatus || 'generated'}`,
+      dedupeWindowHours: 24,
+      preferenceKey: 'weeklyScoreReport',
+      meta: { reportId: report._id, emailStatus: emailStatus || 'generated' }
+    });
+    res.json(resolved);
   } catch (error) {
     console.error('Weekly report generate error:', error.message);
     res.status(500).json({ message: 'Failed to generate weekly report.' });

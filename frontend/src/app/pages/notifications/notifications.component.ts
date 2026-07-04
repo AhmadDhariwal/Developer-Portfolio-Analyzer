@@ -6,6 +6,7 @@ import { ApiService } from '../../shared/services/api.service';
 import { TenantContextService } from '../../shared/services/tenant-context.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject } from '@angular/core';
+import { AuthService } from '../../shared/services/auth.service';
 
 interface OrganizationItem {
   _id: string;
@@ -68,7 +69,11 @@ export class NotificationsComponent implements OnInit {
     { value: 'github_update', label: 'GitHub update' },
     { value: 'low_score', label: 'Low score' },
     { value: 'career_update', label: 'Career update' },
-    { value: 'system', label: 'System' }
+    { value: 'system', label: 'System' },
+    { value: 'success', label: 'Success' },
+    { value: 'warning', label: 'Warning' },
+    { value: 'info', label: 'Information' },
+    { value: 'error', label: 'Error' }
   ];
 
   readonly roleOptions = [
@@ -81,7 +86,8 @@ export class NotificationsComponent implements OnInit {
   constructor(
     private readonly notificationService: NotificationService,
     private readonly apiService: ApiService,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -105,6 +111,10 @@ export class NotificationsComponent implements OnInit {
           this.fetchNotifications(1);
         }
       });
+
+    this.notificationService.streamEvents$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.fetchNotifications(1, true));
   }
 
   get canFilterUsers(): boolean {
@@ -251,19 +261,20 @@ export class NotificationsComponent implements OnInit {
     if (this.markingAllRead || this.unreadCount === 0) return;
     this.markingAllRead = true;
     this.statusMessage = '';
+    const snapshot = this.notifications.map((notification) => ({ ...notification }));
+    const previousUnread = this.unreadCount;
+    this.notifications = this.notifications.map((notification) => ({ ...notification, isRead: true }));
+    this.unreadCount = 0;
 
     this.notificationService.markAllAsRead().subscribe({
       next: () => {
-        this.notifications = this.notifications.map((notification) => ({
-          ...notification,
-          isRead: true
-        }));
-        this.unreadCount = 0;
         this.markingAllRead = false;
         this.statusMessage = 'All notifications marked as read.';
         this.cdr.markForCheck();
       },
       error: () => {
+        this.notifications = snapshot;
+        this.unreadCount = previousUnread;
         this.markingAllRead = false;
         this.statusMessage = 'Failed to mark all notifications as read.';
         this.cdr.markForCheck();
@@ -271,7 +282,7 @@ export class NotificationsComponent implements OnInit {
     });
   }
 
-  fetchNotifications(page = this.page): void {
+  fetchNotifications(page = this.page, forceRefresh = false): void {
     this.loading = true;
     this.page = page;
     this.statusMessage = '';
@@ -292,7 +303,9 @@ export class NotificationsComponent implements OnInit {
     if (this.from) query.from = this.toStartOfDayIso(this.from);
     if (this.to) query.to = this.toEndOfDayIso(this.to);
 
-    this.notificationService.getNotifications(query).subscribe({
+    const user = this.authService.getCurrentUser();
+    const signature = String(user?._id || user?.email || 'current-user');
+    this.notificationService.getNotifications(query, signature, forceRefresh).subscribe({
       next: (res) => {
         this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
         this.unreadCount = Number(res?.unreadCount || 0);
@@ -315,32 +328,38 @@ export class NotificationsComponent implements OnInit {
 
   markAsRead(notification: AppNotification): void {
     if (notification.isRead) return;
+    const previousUnread = this.unreadCount;
+    notification.isRead = true;
+    this.unreadCount = Math.max(0, previousUnread - 1);
     this.notificationService.markAsRead(notification._id, {
       organizationId: this.selectedOrganizationId || undefined,
       teamId: this.selectedTeamId || undefined
     }).subscribe({
-      next: () => {
-        notification.isRead = true;
-        this.unreadCount = Math.max(0, this.unreadCount - 1);
-      },
-      error: () => null
+      next: () => this.cdr.markForCheck(),
+      error: () => {
+        notification.isRead = false;
+        this.unreadCount = previousUnread;
+        this.statusMessage = 'Failed to mark notification as read.';
+        this.cdr.markForCheck();
+      }
     });
   }
 
   deleteNotification(notification: AppNotification): void {
     const confirmed = globalThis.confirm('Delete this notification?');
     if (!confirmed) return;
+    const snapshot = [...this.notifications];
+    const previousTotal = this.total;
+    const previousUnread = this.unreadCount;
+    this.notifications = this.notifications.filter((item) => item._id !== notification._id);
+    this.total = Math.max(0, this.total - 1);
+    if (!notification.isRead) this.unreadCount = Math.max(0, this.unreadCount - 1);
 
     this.notificationService.deleteNotification(notification._id, {
       organizationId: this.selectedOrganizationId || undefined,
       teamId: this.selectedTeamId || undefined
     }).subscribe({
       next: () => {
-        this.notifications = this.notifications.filter((item) => item._id !== notification._id);
-        this.total = Math.max(0, this.total - 1);
-        if (!notification.isRead) {
-          this.unreadCount = Math.max(0, this.unreadCount - 1);
-        }
         if (this.notifications.length === 0 && this.page > 1) {
           this.fetchNotifications(this.page - 1);
           return;
@@ -350,6 +369,9 @@ export class NotificationsComponent implements OnInit {
         }
       },
       error: () => {
+        this.notifications = snapshot;
+        this.total = previousTotal;
+        this.unreadCount = previousUnread;
         this.statusMessage = 'Failed to delete notification.';
       }
     });

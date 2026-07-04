@@ -61,8 +61,6 @@ export class Navbar implements OnInit {
   private lastLoadedGithubHandle = '';
   private readonly searchSubject = new Subject<string>();
   private readonly destroyRef = inject(DestroyRef);
-  private notificationStream: EventSource | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly navPages: SearchSuggestion[] = [
     { type: 'page', label: 'Dashboard', sublabel: 'Portfolio overview', route: '/app/dashboard' },
@@ -129,10 +127,7 @@ export class Navbar implements OnInit {
     ).subscribe(query => this.runSearch(query));
 
     this.destroyRef.onDestroy(() => {
-      this.closeNotificationStream();
-      if (this.reconnectTimer) {
-        clearTimeout(this.reconnectTimer);
-      }
+      this.notificationService.disconnectStream();
     });
   }
 
@@ -143,7 +138,20 @@ export class Navbar implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
         this.syncUserState(user);
+        if (user && this.authService.isLoggedIn()) {
+          const token = this.authService.getToken();
+          if (token) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
+        } else {
+          this.notificationService.disconnectStream();
+          this.notifications = [];
+          this.unreadNotifications = 0;
+          this.totalNotifications = 0;
+        }
       });
+
+    this.notificationService.streamEvents$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadNotifications(true));
 
     // Subscribe to avatar version changes to force refresh
     this.authService.avatarVersion$
@@ -156,7 +164,9 @@ export class Navbar implements OnInit {
 
     if (this.authService.isLoggedIn()) {
       this.loadNotifications();
-      this.connectNotificationStream();
+      const token = this.authService.getToken();
+      const user = this.authService.getCurrentUser();
+      if (token && user) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
       this.loadOrganizations();
     }
 
@@ -264,35 +274,10 @@ export class Navbar implements OnInit {
     this.tenantContext.setTeam({ id: teamId, name: selectedTeam?.name || '' });
   }
 
-  private connectNotificationStream(): void {
-    if (!this.authService.isLoggedIn()) return;
-    const token = this.authService.getToken();
-    if (!token) return;
-
-    this.closeNotificationStream();
-    this.notificationStream = this.notificationService.createStream(token);
-
-    this.notificationStream.addEventListener('notification', () => {
-      this.loadNotifications();
-    });
-
-    this.notificationStream.onerror = () => {
-      this.closeNotificationStream();
-      if (!this.authService.isLoggedIn()) return;
-      if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = setTimeout(() => this.connectNotificationStream(), 10000);
-    };
-  }
-
-  private closeNotificationStream(): void {
-    if (this.notificationStream) {
-      this.notificationStream.close();
-      this.notificationStream = null;
-    }
-  }
-
-  loadNotifications(): void {
-    this.notificationService.getNotifications({ limit: 5, page: 1 })
+  loadNotifications(forceRefresh = false): void {
+    const user = this.authService.getCurrentUser();
+    const signature = String(user?._id || user?.email || 'current-user');
+    this.notificationService.getNotifications({ limit: 5, page: 1 }, signature, forceRefresh)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: NotificationResponse) => {
@@ -416,21 +401,34 @@ export class Navbar implements OnInit {
 
   markNotificationRead(notification: AppNotification): void {
     if (notification.isRead) return;
+    const previousUnread = this.unreadNotifications;
+    notification.isRead = true;
+    this.unreadNotifications = Math.max(0, previousUnread - 1);
     this.notificationService.markAsRead(notification._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.loadNotifications(),
-        error: () => null
+        next: () => this.loadNotifications(true),
+        error: () => {
+          notification.isRead = false;
+          this.unreadNotifications = previousUnread;
+        }
       });
     this.closeNotifications();
   }
 
   markAllNotificationsRead(): void {
+    const previous = this.notifications.map((item) => ({ ...item }));
+    const previousUnread = this.unreadNotifications;
+    this.notifications = this.notifications.map((item) => ({ ...item, isRead: true }));
+    this.unreadNotifications = 0;
     this.notificationService.markAllAsRead()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.loadNotifications(),
-        error: () => null
+        next: () => this.loadNotifications(true),
+        error: () => {
+          this.notifications = previous;
+          this.unreadNotifications = previousUnread;
+        }
       });
     this.closeNotifications();
   }
@@ -451,7 +449,7 @@ export class Navbar implements OnInit {
   }
 
   logout() {
-    this.closeNotificationStream();
+    this.notificationService.disconnectStream();
     this.authService.logout();
     this.showUserMenu = false;
     this.router.navigate(['/']);
