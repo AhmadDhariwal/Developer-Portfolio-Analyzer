@@ -12,9 +12,9 @@
 }
 
 :host ::ng-deep .ui-card {
-  border: 1px solid #3b4f6b;
+  border: 1px solid #28384f;
   border-radius: 18px;
-  background: #162337;
+  background: #111c2b;
   box-shadow: none;
   transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
@@ -969,6 +969,11 @@
 
   h2 { margin: 0; color: var(--text-primary); font-size: 1.05rem; }
   p { max-width: 520px; margin: 0; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.55; }
+}
+
+// Apply the dark surface only to the large primary section blocks.
+:host ::ng-deep .ui-card {
+  background: #111827;
 }
 
 .empty-state-icon {
