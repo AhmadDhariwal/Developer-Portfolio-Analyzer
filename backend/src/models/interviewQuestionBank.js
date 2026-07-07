@@ -53,6 +53,12 @@ const interviewQuestionBankSchema = new mongoose.Schema({
     lowercase: true,
     index: true
   },
+  canonicalQuestionKey: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    default: ''
+  },
   answer: {
     type: String,
     required: true,
@@ -229,5 +235,14 @@ interviewQuestionBankSchema.index({ topicKey: 1, qualityScore: -1, rankScore: -1
 interviewQuestionBankSchema.index({ topicKey: 1, isApproved: 1, qualityStatus: 1, confidenceScore: -1, relevanceScore: -1 });
 // NEW: Supports finding legacy/plain answers that need one-time enrichment.
 interviewQuestionBankSchema.index({ topicKey: 1, isEnriched: 1, answerFormat: 1 });
+// NEW: Supports canonical question key lookups for synonym matching.
+interviewQuestionBankSchema.index(
+  { canonicalQuestionKey: 1, topicKey: 1 },
+  { partialFilterExpression: { canonicalQuestionKey: { $type: 'string', $ne: '' } } }
+);
+// NEW: Supports multi-filter queries (difficulty + category + sourceType).
+interviewQuestionBankSchema.index({ topicKey: 1, difficulty: 1, category: 1, sourceType: 1 });
+// NEW: Supports tag-based lookups.
+interviewQuestionBankSchema.index({ tags: 1 });
 
 module.exports = mongoose.model('InterviewQuestionBank', interviewQuestionBankSchema);

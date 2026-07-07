@@ -21,6 +21,29 @@ const LEGACY_CATEGORY_MAP = {
   database: 'core-concepts'
 };
 const STOP_WORDS = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'are', 'was', 'were', 'what', 'why', 'how', 'when', 'where']);
+const CANONICAL_STOP_WORDS = new Set([
+  ...STOP_WORDS,
+  'tell', 'me', 'about', 'explain', 'describe', 'define', 'can', 'you', 'please',
+  'discuss', 'elaborate', 'briefly', 'detail', 'overview', 'could', 'would',
+  'do', 'does', 'its', 'it', 'us', 'give', 'talk', 'walk', 'through',
+  'know', 'think', 'mean', 'means', 'say', 'said', 'work', 'works'
+]);
+const FILLER_PHRASE_PATTERNS = [
+  /^can you (tell me|explain|describe|discuss|elaborate on|walk me through)\s+/i,
+  /^(tell me about|explain to me|give me an overview of|briefly explain|elaborate on)\s+/i,
+  /^(describe the|define the|discuss the|talk about|walk me through)\s+/i,
+  /^(what is|what are|what does|what do|how do|how does|how is|how are)\s+(the\s+)?/i,
+  /^(why is|why are|why do|why does)\s+(the\s+)?/i,
+  /^(could you|would you|please)\s+(explain|describe|tell me|discuss)\s+/i
+];
+const INTENT_PATTERNS = [
+  { intent: 'comparison', patterns: [/\b(difference|differences)\s+(between|of)\b/i, /\bvs\.?\b/i, /\bcompare\b/i, /\bcompared\s+to\b/i, /\bversus\b/i] },
+  { intent: 'use_case', patterns: [/\b(when\s+to\s+use|why\s+use|how\s+to\s+use|use\s+case|when\s+should)\b/i, /\bpurpose\s+of\b/i] },
+  { intent: 'lifecycle', patterns: [/\blifecycle\b/i, /\bhow\s+.+\s+works?\b/i, /\bflow\s+of\b/i, /\bprocess\s+of\b/i] },
+  { intent: 'debugging', patterns: [/\bdebug(ging)?\b/i, /\bfix(ing)?\b/i, /\btroubleshoot(ing)?\b/i, /\berror\s+handling\b/i] },
+  { intent: 'design', patterns: [/\bdesign(ing)?\b/i, /\barchitect(ure)?\b/i, /\bstructure\b/i, /\bpattern\b/i] },
+  { intent: 'definition', patterns: [/^(what|explain|describe|define|tell)/i, /\bmeaning\s+of\b/i] }
+];
 const TOPIC_TOKEN_ALIASES = {
   javascript: ['javascript', 'js', 'ecmascript', 'promise', 'closure', 'prototype', 'event', 'async', 'await'],
   typescript: ['typescript', 'ts', 'type', 'interface', 'generic', 'enum'],
@@ -151,6 +174,54 @@ const normalizeComparableText = (value = '') => {
     .replaceAll(/[^a-z0-9\s]/g, '')
     .replaceAll(/\s+/g, ' ')
     .trim();
+};
+
+/**
+ * Detect question intent BEFORE stop-word removal so words like
+ * "difference", "between", "compare" are preserved for classification.
+ */
+const detectQuestionIntent = (text = '') => {
+  const cleaned = normalizeWhitespace(text).toLowerCase();
+  for (const { intent, patterns } of INTENT_PATTERNS) {
+    if (patterns.some((pattern) => pattern.test(cleaned))) {
+      return intent;
+    }
+  }
+  return 'general';
+};
+
+/**
+ * Strip filler preambles, then remove canonical stop words, sort tokens.
+ * Produces a deterministic canonical core like "typescript" or "react angular".
+ */
+const canonicalizeQuestion = (text = '') => {
+  let cleaned = normalizeWhitespace(text).toLowerCase();
+  // Strip trailing question mark
+  cleaned = cleaned.replace(/\?+$/, '').trim();
+  // Strip filler phrases
+  for (const pattern of FILLER_PHRASE_PATTERNS) {
+    cleaned = cleaned.replace(pattern, '').trim();
+  }
+  // Remove non-alphanumeric (keep spaces)
+  cleaned = cleaned.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  // Remove canonical stop words and sort
+  const tokens = cleaned
+    .split(' ')
+    .filter((token) => token && !CANONICAL_STOP_WORDS.has(token))
+    .sort();
+  return tokens.join(' ');
+};
+
+/**
+ * Build canonical question key in format: topicKey:intent:canonicalCore
+ * Intent detection runs on raw text BEFORE stop-word removal.
+ */
+const buildCanonicalQuestionKey = (text = '', topicKey = '') => {
+  const intent = detectQuestionIntent(text);
+  const core = canonicalizeQuestion(text);
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  if (!core) return '';
+  return `${normalizedTopicKey || 'general'}:${intent}:${core}`;
 };
 
 const tokenize = (value = '') => {
@@ -437,5 +508,8 @@ module.exports = {
   validateInterviewQuestionQuality,
   inferDifficultyFromContent,
   dedupeQuestions,
-  computeJaccardSimilarity
+  computeJaccardSimilarity,
+  canonicalizeQuestion,
+  detectQuestionIntent,
+  buildCanonicalQuestionKey
 };

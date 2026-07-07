@@ -3,7 +3,6 @@ const logger = require('../utils/logger');
 const InterviewPrepSession = require('../models/interviewPrepSession');
 const { getInterviewPrepPrompt } = require('../prompts/interviewPrepPrompt');
 const {
-  CACHE_TTL_SECONDS,
   getCacheJson,
   setCacheJson,
   invalidateInterviewPrepCache
@@ -18,7 +17,8 @@ const {
   buildSeedRecordsForTopic,
   getTopicSeedItems,
   getImportantTopicByKey,
-  findSeedRecordByQuestion
+  findSeedRecordByQuestion,
+  findSeedRecordByCanonicalKey
 } = require('./interviewQuestionSeedCatalog');
 const {
   normalizeQuestionText,
@@ -31,7 +31,8 @@ const {
   dedupeQuestions,
   isQualityQuestionAnswer,
   validateInterviewQuestionQuality,
-  computeJaccardSimilarity
+  computeJaccardSimilarity,
+  buildCanonicalQuestionKey
 } = require('./interviewQuestionQualityService');
 const questionRepository = require('../repositories/interviewQuestionRepository');
 const aiProvider = require('./providers/interviewAIProvider');
@@ -236,23 +237,55 @@ const enrichQuestionIfNeeded = async (item = {}) => {
   };
 };
 
+/** Max number of legacy/plain records to enrich in background per request. */
+const MAX_BACKGROUND_ENRICHMENT_BATCH = 5;
+/** Track in-flight enrichment IDs to prevent duplicate background jobs. */
+const enrichmentInflight = new Set();
+
 const enrichQuestionListOnce = async (questions = []) => {
   const enriched = [];
   for (const item of questions) {
-    try {
-      const upgraded = await enrichQuestionIfNeeded(item);
-      if (upgraded?.answer && isStructuredQuestion(upgraded)) {
-        enriched.push(upgraded);
-      }
-    } catch (error) {
-      logger.warn('interview-prep answer enrichment failed', {
-        id: item?._id,
-        topicKey: item?.topicKey,
-        message: error.message
-      });
+    if (isStructuredQuestion(item)) {
+      enriched.push(item);
+      continue;
     }
+    // Return un-enriched items immediately with their existing data
+    enriched.push(item);
   }
   return enriched;
+};
+
+/**
+ * Fire-and-forget background enrichment for unenriched questions.
+ * Bounded to MAX_BACKGROUND_ENRICHMENT_BATCH. Prevents duplicate jobs.
+ * AI enrichment failure does not affect the caller.
+ */
+const scheduleBackgroundEnrichment = (questions = []) => {
+  const unenriched = (Array.isArray(questions) ? questions : [])
+    .filter((item) => item?._id && !isStructuredQuestion(item) && !enrichmentInflight.has(String(item._id)));
+  const batch = unenriched.slice(0, MAX_BACKGROUND_ENRICHMENT_BATCH);
+  if (batch.length === 0) return;
+
+  for (const item of batch) {
+    enrichmentInflight.add(String(item._id));
+  }
+
+  // Fire-and-forget — never blocks the response
+  (async () => {
+    for (const item of batch) {
+      try {
+        await enrichQuestionIfNeeded(item);
+      } catch (error) {
+        logger.warn('interview-prep background enrichment failed', {
+          id: item?._id,
+          topicKey: item?.topicKey,
+          message: error.message
+        });
+      } finally {
+        enrichmentInflight.delete(String(item._id));
+      }
+    }
+  })();
 };
 
 const makeQuestionPayload = ({
@@ -618,6 +651,7 @@ const getQuestionBank = async ({
     }
 
     const questions = await enrichQuestionListOnce(pageResult.questions || []);
+    scheduleBackgroundEnrichment(pageResult.questions || []);
     const payload = makeQuestionPayload({
       questions,
       total: pageResult.total,
@@ -659,6 +693,7 @@ const getQuestionBank = async ({
   const questions = (await enrichQuestionListOnce(rows))
     .sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999))
     .slice(0, 30);
+  scheduleBackgroundEnrichment(rows);
   const payload = makeQuestionPayload({
     questions,
     total: questions.length,
@@ -743,7 +778,7 @@ const searchQuestionBank = async ({
       source: 'db',
       topicInput
     });
-    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
     return payload;
   }
 
@@ -779,7 +814,7 @@ const searchQuestionBank = async ({
       source: 'db',
       topicInput
     });
-    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
     return payload;
   }
 
@@ -809,11 +844,26 @@ const searchQuestionBank = async ({
       source: 'db',
       topicInput
     });
-    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
     return payload;
   }
 
+  // lookupOnly=true: guarantee zero AI calls. Check seed catalog before returning empty.
   if (!allowEnrichment) {
+    // Try seed catalog as final DB-free source before returning empty
+    const seedMatch = findSeedRecordByQuestion(topicInput.topicKey, query);
+    if (seedMatch) {
+      const payload = makeQuestionPayload({
+        questions: [seedMatch],
+        total: 1,
+        page: 1,
+        limit: normalizedLimit,
+        source: 'seed',
+        topicInput
+      });
+      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
+      return payload;
+    }
     const payload = makeQuestionPayload({
       questions: [],
       total: 0,
@@ -822,7 +872,24 @@ const searchQuestionBank = async ({
       source: 'db',
       topicInput
     });
-    await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
+    return payload;
+  }
+
+  // Seed catalog check BEFORE AI fallback
+  const seedMatch = findSeedRecordByQuestion(topicInput.topicKey, query);
+  if (seedMatch) {
+    // Upsert seed record to DB for future reuse
+    questionRepository.upsertQuestions([seedMatch]).catch(() => {});
+    const payload = makeQuestionPayload({
+      questions: [seedMatch],
+      total: 1,
+      page: 1,
+      limit: normalizedLimit,
+      source: 'seed',
+      topicInput
+    });
+    await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
     return payload;
   }
 
@@ -879,7 +946,7 @@ const searchQuestionBank = async ({
     aiGeneratedCount: 1,
     enrichedCount: 1
   });
-  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
   return payload;
 };
 
@@ -1402,8 +1469,36 @@ const answerCustomInterviewQuestion = async ({
       duplicate: true,
       fromCache: false
     };
-    await setCacheJson(cacheKey, reusedPayload, CACHE_TTL_SECONDS);
+    await setCacheJson(cacheKey, reusedPayload, CACHE_TTL_CUSTOM);
     return reusedPayload;
+  }
+
+  // Seed catalog check BEFORE AI fallback for custom questions
+  const seedMatch = findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion);
+  if (seedMatch) {
+    questionRepository.upsertQuestions([seedMatch]).catch(() => {});
+    const seedPayload = {
+      question: seedMatch.question,
+      answer: seedMatch.answer,
+      answerSections: seedMatch.answerSections || {},
+      difficulty: seedMatch.difficulty,
+      tags: seedMatch.tags,
+      topicKey: topicInput.topicKey,
+      topicType: topicInput.topicType,
+      sourceType: 'seed',
+      sourceLabel: 'Verified Seed',
+      confidenceScore: seedMatch.confidenceScore,
+      relevanceScore: seedMatch.relevanceScore,
+      category: seedMatch.category,
+      qualityScore: seedMatch.qualityScore,
+      answerFormat: seedMatch.answerFormat || 'structured',
+      isEnriched: true,
+      stored: true,
+      duplicate: false,
+      fromCache: false
+    };
+    await setCacheJson(cacheKey, seedPayload, CACHE_TTL_CUSTOM);
+    return seedPayload;
   }
 
   let generated = null;
@@ -1488,7 +1583,7 @@ const answerCustomInterviewQuestion = async ({
     fromCache: false
   };
 
-  await setCacheJson(cacheKey, payload, CACHE_TTL_SECONDS);
+  await setCacheJson(cacheKey, payload, CACHE_TTL_CUSTOM);
   return payload;
 };
 

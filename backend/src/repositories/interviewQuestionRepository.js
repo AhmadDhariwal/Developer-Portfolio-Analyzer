@@ -8,6 +8,7 @@ const {
   sanitizeCategory,
   sanitizeTags,
   normalizeQualityScore,
+  buildCanonicalQuestionKey,
   INTERVIEW_CATEGORY_SET
 } = require('../services/interviewQuestionQualityService');
 
@@ -37,6 +38,8 @@ const toQuestionHash = (value = '') => crypto
   .createHash('sha256')
   .update(normalizeComparableText(value))
   .digest('hex');
+
+const escapeRegex = (value = '') => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const compareQuestionPriority = (left, right) => {
   if (left.isTopQuestion && right.isTopQuestion) {
@@ -170,6 +173,8 @@ const upsertQuestions = async (records = []) => {
     const qualityStatus = rawQualityStatus === 'review' ? 'pending' : rawQualityStatus;
     const confidenceScore = Number(record.confidenceScore || 0.7);
     const qualityScore = normalizeQualityScore(record.qualityScore || (sourceType === 'verified_seed' ? 90 : 80));
+    const canonicalQuestionKey = record.canonicalQuestionKey
+      || buildCanonicalQuestionKey(record.question, topicKey);
 
     const identityClauses = [];
     if (seedId) {
@@ -199,6 +204,7 @@ const upsertQuestions = async (records = []) => {
             answerSections,
             normalizedQuestion,
             normalizedQuestionHash,
+            canonicalQuestionKey,
             normalizedAnswer,
             difficulty: sanitizeDifficulty(record.difficulty),
             tags: sanitizeTags(record.tags || []),
@@ -292,10 +298,11 @@ const findAllQuestionsPage = async ({ topicKey = '', page = 1, limit = 10, diffi
   const pageSize = Math.max(1, Number(limit || 10));
   const currentPage = Math.max(1, Number(page || 1));
   const skip = (currentPage - 1) * pageSize;
+  const boundedFetchLimit = Math.min(500, pageSize * 10);
   const [rows, total] = await Promise.all([
     InterviewQuestionBank.find(filter)
       .sort({ qualityScore: -1, rankScore: -1, usageCount: -1, createdAt: -1 })
-      .limit(500)
+      .limit(boundedFetchLimit)
       .lean(),
     InterviewQuestionBank.countDocuments(filter)
   ]);
@@ -333,7 +340,7 @@ const findAiGeneratedByTopic = async ({ topicKey = '', topic = '', limit = 10 } 
   if (normalizedTopic) {
     filter.$or = [
       { tags: normalizedTopic },
-      { question: new RegExp(normalizedTopic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+      { question: new RegExp(escapeRegex(normalizedTopic), 'i') },
       { 'sourceMeta.topic': normalizedTopic },
       { 'sourceMeta.query': normalizedTopic }
     ];
@@ -341,6 +348,7 @@ const findAiGeneratedByTopic = async ({ topicKey = '', topic = '', limit = 10 } 
 
   return InterviewQuestionBank.find(filter)
     .sort({ qualityScore: -1, usageCount: -1, confidenceScore: -1, createdAt: -1 })
+    .select('-normalizedAnswer')
     .limit(Math.max(1, Number(limit || 10)))
     .lean();
 };
@@ -383,15 +391,34 @@ const updateQuestionById = async (id, update = {}) => {
 const findExactReusableQuestion = async ({ topicKey = '', question = '', minConfidence = 0.55 } = {}) => {
   const normalizedQuestion = normalizeComparableText(question);
   if (!normalizedQuestion) return null;
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  const canonicalKey = buildCanonicalQuestionKey(question, normalizedTopicKey);
 
-  return InterviewQuestionBank.findOne({
-    topicKey: String(topicKey || '').trim().toLowerCase(),
+  const matchClauses = [
+    { normalizedQuestionHash: toQuestionHash(normalizedQuestion) },
+    { normalizedQuestion }
+  ];
+  // Canonical key match — fastest path for synonym phrasings
+  if (canonicalKey) {
+    matchClauses.unshift({ canonicalQuestionKey: canonicalKey });
+  }
+
+  const result = await InterviewQuestionBank.findOne({
+    topicKey: normalizedTopicKey,
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE),
-    $or: [
-      { normalizedQuestionHash: toQuestionHash(normalizedQuestion) },
-      { normalizedQuestion }
-    ]
+    $or: matchClauses
   }).lean();
+
+  // Lazy backfill: if found but missing canonicalQuestionKey, set it
+  if (result && canonicalKey && !result.canonicalQuestionKey) {
+    InterviewQuestionBank.updateOne(
+      { _id: result._id },
+      { $set: { canonicalQuestionKey: canonicalKey } }
+    ).catch(() => {});
+    result.canonicalQuestionKey = canonicalKey;
+  }
+
+  return result;
 };
 
 const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, minConfidence = 0.6 } = {}) => {
@@ -404,8 +431,26 @@ const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, mi
 
   return InterviewQuestionBank.find(filter)
     .sort({ relevanceScore: -1, confidenceScore: -1, usageCount: -1, popularity: -1, createdAt: -1 })
+    .select('-normalizedAnswer')
     .limit(limit)
     .lean();
+};
+
+/**
+ * Lazy-backfill canonicalQuestionKey for records that are missing it.
+ * Called when old records are read during matching. Fire-and-forget.
+ */
+const backfillCanonicalKey = (record) => {
+  if (!record || !record._id || record.canonicalQuestionKey) return;
+  const canonicalKey = buildCanonicalQuestionKey(
+    record.question || record.normalizedQuestion || '',
+    record.topicKey || ''
+  );
+  if (!canonicalKey) return;
+  InterviewQuestionBank.updateOne(
+    { _id: record._id, $or: [{ canonicalQuestionKey: '' }, { canonicalQuestionKey: { $exists: false } }] },
+    { $set: { canonicalQuestionKey: canonicalKey } }
+  ).catch(() => {});
 };
 
 const incrementQuestionUsage = async (id) => {
@@ -503,5 +548,7 @@ module.exports = {
   toQuestionHash,
   countQuestionsByTopic,
   countQuestionsByTopicAndSeedVersion,
-  normalizeSourceType
+  normalizeSourceType,
+  backfillCanonicalKey,
+  escapeRegex
 };

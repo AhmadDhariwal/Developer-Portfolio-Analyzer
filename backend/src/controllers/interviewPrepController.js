@@ -9,6 +9,16 @@ const {
   sanitizeSkill
 } = require('../services/interviewPrepService');
 
+const MAX_QUERY_LENGTH = 500;
+const VALID_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'senior', '']);
+const VALID_SOURCES = new Set(['seed', 'database', 'ai', 'scraped', 'ai_generated', 'verified_seed', 'prebuilt', '']);
+
+const clampInt = (value, min, max, fallback) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(parsed)));
+};
+
 const mapCareerStackToSkill = (careerStack = '') => {
   const normalized = String(careerStack || '').trim().toLowerCase();
   if (normalized.includes('frontend') || normalized.includes('react')) return 'react';
@@ -68,17 +78,25 @@ const getInterviewPrepQuestions = async (req, res) => {
     if (!normalizedSkill && !topicInput.topic) {
       return res.status(400).json({ message: 'Query parameter skill or topic is required.' });
     }
+    const safeDifficulty = String(difficulty || '').trim().toLowerCase();
+    if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
+      return res.status(400).json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
+    }
+    const safeSource = String(source || '').trim().toLowerCase();
+    if (!VALID_SOURCES.has(safeSource)) {
+      return res.status(400).json({ message: `Invalid source filter.` });
+    }
 
     const payload = await getQuestionBank({
       skill: normalizedSkill,
       ...topicInput,
-      page,
-      limit,
-      difficulty,
+      page: clampInt(page, 1, 1000, 1),
+      limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
+      difficulty: safeDifficulty,
       tags,
       block: String(top).toLowerCase() === 'true' ? 'top' : block,
       category,
-      source
+      source: safeSource
     });
 
     return res.json(payload);
@@ -93,17 +111,25 @@ const searchInterviewPrepQuestions = async (req, res) => {
   try {
     const { q = '', skill = '', difficulty = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT, lookupOnly = '' } = req.query;
     const topicInput = readTopicInput(req.query || {});
-    if (!String(q || '').trim()) {
+    const trimmedQuery = String(q || '').trim();
+    if (!trimmedQuery) {
       return res.status(400).json({ message: 'Query parameter q is required.' });
+    }
+    if (trimmedQuery.length > MAX_QUERY_LENGTH) {
+      return res.status(400).json({ message: `Query must be at most ${MAX_QUERY_LENGTH} characters.` });
+    }
+    const safeDifficulty = String(difficulty || '').trim().toLowerCase();
+    if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
+      return res.status(400).json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
     }
 
     const payload = await searchQuestionBank({
-      q,
+      q: trimmedQuery,
       skill,
-      difficulty,
+      difficulty: safeDifficulty,
       tags,
-      page,
-      limit,
+      page: clampInt(page, 1, 1000, 1),
+      limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
       ...topicInput,
       allowEnrichment: String(lookupOnly).toLowerCase() !== 'true'
     });

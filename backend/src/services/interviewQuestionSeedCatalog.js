@@ -8,6 +8,7 @@ const {
   normalizeQualityScore,
   computeJaccardSimilarity,
   containsWeakOrPlaceholderContent,
+  buildCanonicalQuestionKey,
   INTERVIEW_CATEGORY_SET,
   DIFFICULTY_SET
 } = require('./interviewQuestionQualityService');
@@ -1933,6 +1934,7 @@ const getImportantTopicByKey = (topicKey = '') => {
 };
 
 const comparableSeedIndex = new Map();
+const canonicalSeedIndex = new Map();
 
 const ensureComparableSeedIndex = (topicKey = '') => {
   const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
@@ -1940,18 +1942,55 @@ const ensureComparableSeedIndex = (topicKey = '') => {
   if (!comparableSeedIndex.has(normalizedTopicKey)) {
     const topic = getImportantTopicByKey(normalizedTopicKey);
     const records = topic ? buildSeedRecordsForTopic(topic) : [];
-    comparableSeedIndex.set(
-      normalizedTopicKey,
-      new Map(records.map((record) => [record.normalizedQuestion, record]))
-    );
+    const comparableMap = new Map();
+    const canonicalMap = new Map();
+    for (const record of records) {
+      if (record.normalizedQuestion) {
+        comparableMap.set(record.normalizedQuestion, record);
+      }
+      const canonicalKey = buildCanonicalQuestionKey(record.question || '', normalizedTopicKey);
+      if (canonicalKey && !canonicalMap.has(canonicalKey)) {
+        canonicalMap.set(canonicalKey, record);
+      }
+    }
+    comparableSeedIndex.set(normalizedTopicKey, comparableMap);
+    canonicalSeedIndex.set(normalizedTopicKey, canonicalMap);
   }
   return comparableSeedIndex.get(normalizedTopicKey) || new Map();
 };
 
+/**
+ * Find a seed record by question text.
+ * Checks canonical key first (synonym matching), then exact comparable text.
+ */
 const findSeedRecordByQuestion = (topicKey = '', question = '') => {
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
   const normalizedQuestion = normalizeComparableText(question);
   if (!normalizedQuestion) return null;
-  return ensureComparableSeedIndex(topicKey).get(normalizedQuestion) || null;
+  ensureComparableSeedIndex(normalizedTopicKey);
+
+  // Try canonical key match first (handles synonym phrasings)
+  const canonicalKey = buildCanonicalQuestionKey(question, normalizedTopicKey);
+  if (canonicalKey) {
+    const canonicalMap = canonicalSeedIndex.get(normalizedTopicKey);
+    const canonicalMatch = canonicalMap?.get(canonicalKey);
+    if (canonicalMatch) return canonicalMatch;
+  }
+
+  // Fall back to exact comparable text match
+  const comparableMap = comparableSeedIndex.get(normalizedTopicKey);
+  return comparableMap?.get(normalizedQuestion) || null;
+};
+
+/**
+ * Direct lookup by canonical intent key.
+ */
+const findSeedRecordByCanonicalKey = (topicKey = '', canonicalKey = '') => {
+  if (!canonicalKey) return null;
+  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  ensureComparableSeedIndex(normalizedTopicKey);
+  const canonicalMap = canonicalSeedIndex.get(normalizedTopicKey);
+  return canonicalMap?.get(canonicalKey) || null;
 };
 
 module.exports = {
@@ -1970,5 +2009,6 @@ module.exports = {
   getTopicSeedItems,
   buildSeedRecordsForTopic,
   getImportantTopicByKey,
-  findSeedRecordByQuestion
+  findSeedRecordByQuestion,
+  findSeedRecordByCanonicalKey
 };
