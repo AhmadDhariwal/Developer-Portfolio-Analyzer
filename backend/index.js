@@ -33,6 +33,7 @@ const weeklyReportroute      = require('./src/routes/weeklyReport.routes');
 const interviewPreproute     = require('./src/routes/interviewPrep.routes');
 const careerSprintroute      = require('./src/routes/careerSprint.routes');
 const newsroute              = require('./src/routes/newsRoutes');
+const supportroute           = require('./src/routes/support.routes');
 const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
 const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
 const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
@@ -176,6 +177,7 @@ app.use('/api/weekly-reports',  weeklyReportroute);
 app.use('/api/interview-prep',  interviewPreproute);
 app.use('/api/career-sprints',  careerSprintroute);
 app.use('/api/news',            newsroute);
+app.use('/api/support',         supportroute);
 app.get('/metrics', metricsHandler);
 
 const PORT = env.PORT || process.env.PORT || 5000;

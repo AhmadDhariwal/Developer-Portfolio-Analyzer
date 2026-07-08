@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Help &amp; Support | Analyzer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#500a89",
+                    "primary": "#4954bd",
+                    "on-secondary-container": "#942265",
+                    "on-error": "#fff7f7",
+                    "background": "#f7f9fb",
+                    "tertiary": "#7c41b5",
+                    "on-tertiary": "#fff6ff",
+                    "on-primary-fixed": "#041085",
+                    "secondary-dim": "#952467",
+                    "tertiary-dim": "#6f34a8",
+                    "secondary-fixed": "#ffd8e7",
+                    "secondary-fixed-dim": "#ffc4dd",
+                    "on-secondary": "#fff7f8",
+                    "primary-dim": "#3d47b0",
+                    "inverse-surface": "#0b0f10",
+                    "inverse-on-surface": "#9a9d9f",
+                    "secondary": "#a53173",
+                    "primary-fixed-dim": "#a5adff",
+                    "surface-tint": "#4954bd",
+                    "error-dim": "#770326",
+                    "surface-container-high": "#e3e9ec",
+                    "surface-container-highest": "#dde3e7",
+                    "outline": "#757c7f",
+                    "tertiary-fixed-dim": "#ca94ff",
+                    "surface-bright": "#f7f9fb",
+                    "secondary-container": "#ffd8e7",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#68001f",
+                    "on-background": "#2d3337",
+                    "outline-variant": "#acb3b7",
+                    "on-tertiary-fixed": "#33005c",
+                    "surface": "#f7f9fb",
+                    "inverse-primary": "#818cf8",
+                    "on-surface-variant": "#596063",
+                    "surface-variant": "#dde3e7",
+                    "on-primary": "#fbf8ff",
+                    "on-tertiary-fixed-variant": "#5a1a93",
+                    "tertiary-fixed": "#d3a6ff",
+                    "surface-container-low": "#f1f4f6",
+                    "error": "#ac3149",
+                    "primary-fixed": "#b6bcff",
+                    "on-primary-fixed-variant": "#2e38a1",
+                    "on-primary-container": "#232e98",
+                    "error-container": "#f76a80",
+                    "on-secondary-fixed": "#7b0852",
+                    "primary-container": "#b6bcff",
+                    "tertiary-container": "#d3a6ff",
+                    "on-secondary-fixed-variant": "#a02d70",
+                    "surface-container": "#eaeef1",
+                    "on-surface": "#2d3337"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "display": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+            color: #2d3337;
+            scroll-behavior: smooth;
+        }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface/70 backdrop-blur-xl shadow-[0_40px_40px_-15px_rgba(73,84,189,0.06)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-headline font-bold bg-gradient-to-br from-primary to-primary-container bg-clip-text text-transparent">
+                Analyzer
+            </div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-label-md" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-label-md" href="#">Reports</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-label-md" href="#">Analysis</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body text-label-md" href="#">Help</a>
+</div>
+<div class="flex items-center space-x-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95">settings</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden cursor-pointer active:scale-95 transition-transform">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a software developer in a high-key minimalist setting. Soft natural side lighting illuminates the subject, who has a confident and welcoming expression. The background is a clean, out-of-focus modern office space with soft lavenders and cool whites, matching a high-end corporate tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5NR1yVeZ_lT5a63BbKt6qfm7hE_Zz_gnWh-64W43GxBSibS1tzBqNPWXgdFBIZNHkbjpuw2lYdRSlCWnUtrLHPH2epVgq9ZAPWrywmoYoC_6j_J1vhlBSIxlv6VVwAVUi_zgHvJIond3BBYh3yOvwqJHGGYdLkLwFXME4KxY8b0GVyQh2i9vllE2quZs5H9OL1LE7LamUf9D1kjJL1YJvyoQ0I78vSEycNKc7iH2v8sfX0DZpxDFrhMKLmr4aCpKuETvkI-q0OgA"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-24 px-6 md:px-12 max-w-5xl mx-auto">
+<!-- Magazine Style Header -->
+<header class="mb-20 text-center md:text-left">
+<h1 class="font-headline text-6xl md:text-7xl font-extrabold tracking-tight text-on-background mb-6 leading-tight">
+                How can we <span class="text-primary italic">help</span>?
+            </h1>
+<p class="font-body text-xl text-on-surface-variant max-w-2xl leading-relaxed">
+                Whether you're troubleshooting a data pipeline or optimizing your career trajectory, our support team is dedicated to your growth in the lucid sanctuary of development.
+            </p>
+</header>
+<!-- Ticket Submission Section -->
+<div class="relative mb-24">
+<!-- Decorative atmospheric glow -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none"></div>
+<div class="absolute -bottom-24 -left-24 w-80 h-80 bg-tertiary/5 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="glass-panel p-8 md:p-12 rounded-xl shadow-[0_40px_80px_-20px_rgba(73,84,189,0.08)] border border-white/20">
+<div class="flex items-center gap-4 mb-10">
+<div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">contact_support</span>
+</div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Submit a Support Ticket</h2>
+</div>
+<form class="space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Category -->
+<div class="space-y-2">
+<label class="font-label text-sm font-semibold text-on-surface-variant ml-1">Category</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-md px-6 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+<option>Technical Issue</option>
+<option>Account Management</option>
+<option>Data Accuracy</option>
+<option>Feature Request</option>
+<option>Billing &amp; Subscription</option>
+</select>
+</div>
+<!-- Priority -->
+<div class="space-y-2">
+<label class="font-label text-sm font-semibold text-on-surface-variant ml-1">Priority</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-md px-6 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+<option>Low - Question</option>
+<option>Medium - Minor Bug</option>
+<option>High - Major Blocker</option>
+<option>Critical - System Failure</option>
+</select>
+</div>
+</div>
+<!-- Subject -->
+<div class="space-y-2">
+<label class="font-label text-sm font-semibold text-on-surface-variant ml-1">Subject</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md px-6 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Briefly describe your request" type="text"/>
+</div>
+<!-- Message -->
+<div class="space-y-2">
+<label class="font-label text-sm font-semibold text-on-surface-variant ml-1">Message</label>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-md px-6 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all resize-none" placeholder="Provide as much detail as possible..." rows="5"></textarea>
+</div>
+<!-- Submit Button -->
+<div class="pt-4">
+<button class="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-primary to-tertiary text-on-primary rounded-full font-headline font-bold text-lg shadow-[0_20px_30px_-10px_rgba(73,84,189,0.3)] hover:scale-[1.02] active:scale-95 transition-all relative overflow-hidden group" type="submit">
+<span class="relative z-10">Submit Ticket</span>
+<div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Recent Tickets Section -->
+<section class="space-y-8">
+<div class="flex items-end justify-between px-2">
+<div>
+<h3 class="font-headline text-3xl font-bold text-on-surface mb-2">Recent Tickets</h3>
+<p class="font-body text-on-surface-variant">Track your ongoing support requests</p>
+</div>
+<button class="text-primary font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
+                    View All History <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Tickets List -->
+<div class="space-y-4">
+<!-- Ticket Item 1 -->
+<div class="group bg-surface-container-low p-6 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-container hover:translate-x-2 transition-all duration-300">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">bug_report</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">API Rate Limit Clarification</h4>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-xs font-label uppercase tracking-wider text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">Technical Issue</span>
+<span class="text-xs font-label text-on-surface-variant/60">Nov 12, 2024</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary-container/50 text-on-secondary-container font-semibold text-sm">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+                            In Progress
+                        </div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 2 -->
+<div class="group bg-surface-container-low p-6 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-container hover:translate-x-2 transition-all duration-300">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">Invoice for October Analysis</h4>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-xs font-label uppercase tracking-wider text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">Billing</span>
+<span class="text-xs font-label text-on-surface-variant/60">Nov 08, 2024</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
+<div class="w-2 h-2 rounded-full bg-green-600"></div>
+                            Resolved
+                        </div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 3 -->
+<div class="group bg-surface-container-low p-6 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-container hover:translate-x-2 transition-all duration-300 opacity-60">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">password</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-on-surface">2FA Verification Setup</h4>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-xs font-label uppercase tracking-wider text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">Account</span>
+<span class="text-xs font-label text-on-surface-variant/60">Oct 24, 2024</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
+<div class="w-2 h-2 rounded-full bg-green-600"></div>
+                            Resolved
+                        </div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Knowledge Base Shortcut -->
+<section class="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="p-8 bg-surface-container-lowest rounded-xl border border-primary/5 hover:border-primary/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-primary mb-4 block">book</span>
+<h5 class="font-headline font-bold text-xl mb-2 group-hover:text-primary">Documentation</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Deep dive into our API guides, integration tutorials, and system schemas.</p>
+</div>
+<div class="p-8 bg-surface-container-lowest rounded-xl border border-secondary/5 hover:border-secondary/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-secondary mb-4 block">forum</span>
+<h5 class="font-headline font-bold text-xl mb-2 group-hover:text-secondary">Community Forum</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Connect with other developers to share solutions and best practices.</p>
+</div>
+<div class="p-8 bg-surface-container-lowest rounded-xl border border-tertiary/5 hover:border-tertiary/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-4 block">school</span>
+<h5 class="font-headline font-bold text-xl mb-2 group-hover:text-tertiary">Video Library</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Step-by-step video walkthroughs of advanced analyzer configurations.</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-background w-full py-12 border-t border-surface-container">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 max-w-7xl mx-auto gap-8">
+<div class="font-headline font-semibold text-on-surface">Analyzer</div>
+<div class="flex flex-wrap justify-center gap-8 font-body text-label-md text-on-surface-variant">
+<a class="hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-secondary transition-colors" href="#">API Documentation</a>
+<a class="hover:text-secondary transition-colors" href="#">Community Forum</a>
+</div>
+<div class="font-body text-label-md text-on-surface-variant">
+                © 2024 Developer Portfolio Analyzer. Crafted for clarity.
+            </div>
+</div>
+</footer>
+<!-- Interactive Layer: Ambient Mouse Glow -->
+<div class="fixed top-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10 transition-transform duration-75 ease-out opacity-0 md:opacity-100" id="ambient-glow"></div>
+<script>
+        document.addEventListener('mousemove', (e) => {
+            const glow = document.getElementById('ambient-glow');
+            const x = e.clientX - 200;
+            const y = e.clientY - 200;
+            glow.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // Simple form interaction
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="flex items-center gap-2"><span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Sending...</span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check</span> Ticket Sent';
+                btn.classList.remove('from-primary', 'to-tertiary');
+                btn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.add('from-primary', 'to-tertiary');
+                    btn.classList.remove('bg-green-600');
+                    btn.disabled = false;
+                    form.reset();
+                }, 3000);
+            }, 1500);
+        });
+    </script>
+</body></html>

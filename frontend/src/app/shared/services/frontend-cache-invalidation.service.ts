@@ -4,7 +4,7 @@ import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service'
 type CacheOwner =
   | 'github' | 'resume' | 'skill-gap' | 'recommendations' | 'scenario'
   | 'news' | 'jobs' | 'courses' | 'public-portfolio' | 'career-sprint'
-  | 'weekly-reports' | 'profile' | 'career-profile' | 'interview-prep' | 'notifications';
+  | 'weekly-reports' | 'profile' | 'career-profile' | 'interview-prep' | 'notifications' | 'support';
 
 @Injectable({ providedIn: 'root' })
 export class FrontendCacheInvalidationService {
@@ -31,6 +31,7 @@ export class FrontendCacheInvalidationService {
     this.run('interview-prep');
     this.run('profile');
     this.run('career-profile');
+    this.run('support');
   }
 
   clearDeveloperSignalCaches(): void {
@@ -79,6 +80,7 @@ export class FrontendCacheInvalidationService {
   clearCoursesCaches(): void { this.run('courses'); }
   clearPublicPortfolioCaches(): void { this.run('public-portfolio'); }
   clearCareerSprintCaches(): void { this.run('career-sprint'); }
+  clearSupportCaches(): void { this.run('support'); }
 
   clearWeeklyReportCaches(): void {
     ['weeklyReports', 'weeklyReports:latest', 'weeklyReports:history']

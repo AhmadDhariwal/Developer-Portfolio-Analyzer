@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Help &amp; Support | DevInsight AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#131b2e",
+                    "on-primary-fixed": "#07006c",
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed": "#ffdcc5",
+                    "on-tertiary-container": "#452000",
+                    "inverse-on-surface": "#283044",
+                    "on-surface-variant": "#c7c4d7",
+                    "outline": "#908fa0",
+                    "on-error-container": "#ffdad6",
+                    "primary": "#c0c1ff",
+                    "on-background": "#dae2fd",
+                    "tertiary-container": "#d97721",
+                    "surface-container-lowest": "#060e20",
+                    "secondary-container": "#3626ce",
+                    "error": "#ffb4ab",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "secondary": "#c3c0ff",
+                    "inverse-primary": "#494bd6",
+                    "surface": "#0b1326",
+                    "surface-variant": "#2d3449",
+                    "primary-fixed": "#e1e0ff",
+                    "tertiary": "#ffb783",
+                    "primary-container": "#8083ff",
+                    "on-primary-container": "#0d0096",
+                    "surface-tint": "#c0c1ff",
+                    "on-surface": "#dae2fd",
+                    "on-primary": "#1000a9",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed": "#0f0069",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "inverse-surface": "#dae2fd",
+                    "on-tertiary": "#4f2500",
+                    "surface-container-highest": "#2d3449",
+                    "surface-container": "#171f33",
+                    "on-error": "#690005",
+                    "surface-bright": "#31394d",
+                    "secondary-fixed": "#e2dfff",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "outline-variant": "#464554",
+                    "on-secondary": "#1d00a5",
+                    "surface-dim": "#0b1326",
+                    "surface-container-high": "#222a3d",
+                    "background": "#0b1326",
+                    "on-secondary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#c3c0ff",
+                    "on-secondary-container": "#b3b1ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "64px",
+                    "gutter": "24px",
+                    "sm": "16px",
+                    "lg": "40px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "container-max": "1280px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Inter"],
+                    "label-sm": ["JetBrains Mono"],
+                    "body-md": ["Inter"],
+                    "code-snippet": ["JetBrains Mono"],
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dae2fd; }
+        .glass-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+        }
+        .indigo-pulse {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-open .accordion-content {
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- Top Navigation Bar (Shared Component) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-md py-xs bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<span class="text-headline-md font-headline-md font-bold text-primary">DevInsight AI</span>
+<nav class="hidden md:flex items-center gap-md ml-lg">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Documentation</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Changelog</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Community</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">chat_bubble</span>
+</button>
+<button class="p-xs hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Side Navigation Bar (Shared Component) -->
+<aside class="hidden md:flex flex-col fixed left-0 top-[60px] h-[calc(100vh-60px)] w-64 bg-surface-container border-r border-outline-variant p-sm space-y-xs z-40">
+<div class="flex items-center gap-sm p-sm mb-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">DA</div>
+<div>
+<div class="text-label-sm font-label-sm font-bold text-on-surface">DevInsight AI</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant opacity-70">Technical Account</div>
+</div>
+</div>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">rocket_launch</span>
+<span class="font-label-sm text-label-sm">Deployments</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">monitoring</span>
+<span class="font-label-sm text-label-sm">Monitoring</span>
+</a>
+<a class="flex items-center gap-sm p-sm bg-secondary-container text-on-secondary-container rounded-lg transition-all group translate-x-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help</span>
+<span class="font-label-sm text-label-sm">Help Center</span>
+</a>
+<div class="mt-auto pt-md">
+<button class="w-full py-sm bg-primary text-on-primary font-bold rounded-lg mb-md">New Project</button>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-sm text-label-sm">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-xl px-md pb-xl">
+<div class="max-w-container-max mx-auto pt-lg">
+<!-- Breadcrumbs & Header -->
+<div class="mb-lg">
+<nav class="mb-xs">
+<span class="text-label-sm font-label-sm text-on-surface-variant opacity-60">Profile Settings / Help &amp; Support</span>
+</nav>
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary text-[32px]">chat_bubble</span>
+<h1 class="text-[32px] font-bold text-on-surface">Help &amp; Support</h1>
+</div>
+<p class="text-on-surface-variant text-[14px]">We're here to help. Get support, report issues, or share your feedback.</p>
+</div>
+<!-- Category Cards Grid -->
+<section class="grid grid-cols-2 md:grid-cols-5 gap-md mb-xl">
+<!-- Report Bug -->
+<div class="glass-card p-md rounded-[20px] flex flex-col items-center text-center group cursor-pointer hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-purple-400">bug_report</span>
+</div>
+<span class="font-medium mb-md">Report a Bug</span>
+<button class="w-full py-xs border border-outline-variant rounded-lg text-label-sm font-label-sm hover:bg-surface-variant transition-colors">Start Report</button>
+</div>
+<!-- Request Feature -->
+<div class="glass-card p-md rounded-[20px] flex flex-col items-center text-center group cursor-pointer hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-blue-400">lightbulb</span>
+</div>
+<span class="font-medium mb-md">Request a Feature</span>
+<button class="w-full py-xs border border-outline-variant rounded-lg text-label-sm font-label-sm hover:bg-surface-variant transition-colors">Suggest</button>
+</div>
+<!-- Contact Support -->
+<div class="glass-card p-md rounded-[20px] flex flex-col items-center text-center group cursor-pointer hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-green-400">headset_mic</span>
+</div>
+<span class="font-medium mb-md">Contact Support</span>
+<button class="w-full py-xs border border-outline-variant rounded-lg text-label-sm font-label-sm hover:bg-surface-variant transition-colors">Chat Now</button>
+</div>
+<!-- Account Issue -->
+<div class="glass-card p-md rounded-[20px] flex flex-col items-center text-center group cursor-pointer hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-orange-400">person</span>
+</div>
+<span class="font-medium mb-md">Account Issue</span>
+<button class="w-full py-xs border border-outline-variant rounded-lg text-label-sm font-label-sm hover:bg-surface-variant transition-colors">Manage</button>
+</div>
+<!-- General Feedback -->
+<div class="glass-card p-md rounded-[20px] flex flex-col items-center text-center group cursor-pointer hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-indigo-400">chat</span>
+</div>
+<span class="font-medium mb-md">General Feedback</span>
+<button class="w-full py-xs border border-outline-variant rounded-lg text-label-sm font-label-sm hover:bg-surface-variant transition-colors">Send</button>
+</div>
+</section>
+<!-- Main Content: Submit Request & My Requests -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+<!-- Left Column: Submit a Support Request -->
+<section class="flex flex-col gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">send</span>
+<h2 class="text-headline-md font-headline-md">Submit a Support Request</h2>
+</div>
+<form class="glass-card p-lg rounded-2xl flex flex-col gap-md">
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Category</label>
+<select class="w-full bg-surface-variant border border-outline-variant rounded-lg p-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+<option>Technical Issue</option>
+<option>Billing</option>
+<option>Feature Request</option>
+</select>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Priority</label>
+<select class="w-full bg-surface-variant border border-outline-variant rounded-lg p-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+<option>Low</option>
+<option>Medium</option>
+<option>High (Urgent)</option>
+</select>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-xs">
+<label class="text-label-sm font-label-sm text-on-surface-variant">Subject</label>
+<span class="text-xs text-on-surface-variant/50">0 / 100</span>
+</div>
+<input class="w-full bg-surface-variant border border-outline-variant rounded-lg p-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Summary of your issue" type="text"/>
+</div>
+<div>
+<div class="flex justify-between items-center mb-xs">
+<label class="text-label-sm font-label-sm text-on-surface-variant">Message</label>
+<span class="text-xs text-on-surface-variant/50">0 / 2000</span>
+</div>
+<textarea class="w-full bg-surface-variant border border-outline-variant rounded-lg p-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none" placeholder="Provide details about your request..." rows="4"></textarea>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Source Page</label>
+<input class="w-full bg-surface-variant/50 border border-outline-variant rounded-lg p-sm text-on-surface-variant cursor-not-allowed" readonly="" type="text" value="/dashboard/deployments"/>
+</div>
+<div>
+<div class="flex items-center gap-xs mb-xs">
+<label class="text-label-sm font-label-sm text-on-surface-variant">Browser/Device Info</label>
+<span class="material-symbols-outlined text-[14px] text-primary cursor-help">info</span>
+</div>
+<input class="w-full bg-surface-variant/50 border border-outline-variant rounded-lg p-sm text-on-surface-variant cursor-not-allowed" readonly="" type="text" value="Chrome 120 / macOS Sonoma"/>
+</div>
+</div>
+<div class="bg-primary/10 border border-primary/20 p-sm rounded-lg flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-xs text-on-surface leading-relaxed">Attaching system logs and environment details helps us resolve your issue up to 40% faster. These are automatically included in this request.</p>
+</div>
+<button class="w-full py-md indigo-pulse text-white font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-primary/20" type="submit">Submit Request</button>
+</form>
+</section>
+<!-- Right Column: My Support Requests -->
+<section class="flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">confirmation_number</span>
+<h2 class="text-headline-md font-headline-md">My Support Requests</h2>
+</div>
+<button class="text-primary font-medium hover:underline">View All</button>
+</div>
+<div class="glass-card rounded-2xl overflow-hidden border border-outline-variant">
+<div class="divide-y divide-outline-variant/30">
+<!-- Ticket Item 1 -->
+<div class="p-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-purple-400 bg-purple-400/10 p-xs rounded">bug_report</span>
+<div>
+<div class="font-medium group-hover:text-primary transition-colors">API Deployment Timeout Error</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">#TCK-2025-001234</div>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-blue-500/20 text-blue-400 text-[10px] uppercase font-bold rounded">In Progress</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="text-[12px] text-on-surface-variant/60">Updated 2h ago</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 2 -->
+<div class="p-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-green-400 bg-green-400/10 p-xs rounded">headset_mic</span>
+<div>
+<div class="font-medium group-hover:text-primary transition-colors">Billing Clarification - Pro Plan</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">#TCK-2025-001198</div>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-green-500/20 text-green-400 text-[10px] uppercase font-bold rounded">Open</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="text-[12px] text-on-surface-variant/60">Updated 5h ago</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 3 -->
+<div class="p-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-blue-400 bg-blue-400/10 p-xs rounded">lightbulb</span>
+<div>
+<div class="font-medium group-hover:text-primary transition-colors">Bulk Action Interface Overhaul</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">#TCK-2025-001050</div>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-surface-variant text-on-surface-variant text-[10px] uppercase font-bold rounded">Resolved</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="text-[12px] text-on-surface-variant/60">Updated 1d ago</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 4 -->
+<div class="p-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-orange-400 bg-orange-400/10 p-xs rounded">person</span>
+<div>
+<div class="font-medium group-hover:text-primary transition-colors">SSO Integration Request</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">#TCK-2025-001012</div>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-surface-variant text-on-surface-variant text-[10px] uppercase font-bold rounded">Closed</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="text-[12px] text-on-surface-variant/60">Updated 3d ago</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Ticket Item 5 -->
+<div class="p-md hover:bg-surface-variant/30 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-indigo-400 bg-indigo-400/10 p-xs rounded">chat</span>
+<div>
+<div class="font-medium group-hover:text-primary transition-colors">Feedback on New Dashboard Theme</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">#TCK-2025-000950</div>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-surface-variant text-on-surface-variant text-[10px] uppercase font-bold rounded">Resolved</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="text-[12px] text-on-surface-variant/60">Updated 1w ago</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="p-sm bg-surface-container-high flex justify-between items-center border-t border-outline-variant">
+<span class="text-xs text-on-surface-variant">Showing 1-5 of 12 requests</span>
+<div class="flex gap-xs">
+<button class="p-xs rounded hover:bg-surface-variant disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-xs rounded hover:bg-surface-variant">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- FAQ Section -->
+<section class="mb-xl">
+<h2 class="text-headline-md font-headline-md mb-lg">Frequently Asked Questions</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Accordion 1 -->
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant accordion-group">
+<button class="w-full flex justify-between items-center p-md text-left transition-colors hover:bg-surface-variant/30" onclick="toggleAccordion(this)">
+<span class="font-medium">How long does it take to get a response?</span>
+<span class="material-symbols-outlined transition-transform accordion-icon">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="px-md pb-md text-on-surface-variant text-[14px] leading-relaxed">
+                                Our technical support team typically responds within 2-4 hours for Pro and Enterprise users. Community support may take up to 24-48 hours depending on volume.
+                            </div>
+</div>
+</div>
+<!-- Accordion 2 -->
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant accordion-group">
+<button class="w-full flex justify-between items-center p-md text-left transition-colors hover:bg-surface-variant/30" onclick="toggleAccordion(this)">
+<span class="font-medium">How do I delete my account?</span>
+<span class="material-symbols-outlined transition-transform accordion-icon">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="px-md pb-md text-on-surface-variant text-[14px] leading-relaxed">
+                                You can delete your account under Profile Settings &gt; Security. Please note that this action is permanent and will immediately purge all your deployment data and project logs.
+                            </div>
+</div>
+</div>
+<!-- Accordion 3 -->
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant accordion-group">
+<button class="w-full flex justify-between items-center p-md text-left transition-colors hover:bg-surface-variant/30" onclick="toggleAccordion(this)">
+<span class="font-medium">What happens if I exceed my deployment limit?</span>
+<span class="material-symbols-outlined transition-transform accordion-icon">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="px-md pb-md text-on-surface-variant text-[14px] leading-relaxed">
+                                If you hit your monthly limit, new deployments will be queued until the next billing cycle. You can upgrade your plan at any time to instantly resume activity.
+                            </div>
+</div>
+</div>
+<!-- Accordion 4 -->
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant accordion-group">
+<button class="w-full flex justify-between items-center p-md text-left transition-colors hover:bg-surface-variant/30" onclick="toggleAccordion(this)">
+<span class="font-medium">Is there an API for reporting bugs?</span>
+<span class="material-symbols-outlined transition-transform accordion-icon">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="px-md pb-md text-on-surface-variant text-[14px] leading-relaxed">
+                                Yes! We offer a specialized endpoint at `/v1/support/tickets` for Enterprise customers to automate bug reporting directly from their CI/CD pipelines.
+                            </div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-lg px-md mt-xl flex flex-col md:flex-row justify-between items-center gap-md bg-surface-container-lowest border-t border-outline-variant">
+<div>
+<span class="font-bold text-primary mr-sm">DevInsight AI</span>
+<span class="text-on-surface-variant font-family: Inter text-label-sm font-label-sm">© 2024 DevInsight AI. Intelligence in Motion.</span>
+</div>
+<div class="flex gap-md">
+<a class="text-on-surface-variant text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Security Status</a>
+<a class="text-on-surface-variant text-label-sm font-label-sm hover:text-primary transition-colors" href="#">Contact Us</a>
+</div>
+<div class="text-on-surface-variant text-xs opacity-60">
+            For critical issues, email <a class="text-primary hover:underline" href="mailto:support@devinsight.ai">support@devinsight.ai</a>
+</div>
+</footer>
+<script>
+        function toggleAccordion(btn) {
+            const group = btn.closest('.accordion-group');
+            const icon = btn.querySelector('.accordion-icon');
+            const isOpen = group.classList.contains('accordion-open');
+            
+            // Close others if needed (optional)
+            // document.querySelectorAll('.accordion-group').forEach(g => g.classList.remove('accordion-open'));
+
+            if (isOpen) {
+                group.classList.remove('accordion-open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                group.classList.add('accordion-open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Simple animation on form submit (prevent actual reload)
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Sending...';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            
+            setTimeout(() => {
+                btn.innerText = 'Request Submitted!';
+                btn.classList.remove('indigo-pulse');
+                btn.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('bg-green-500', 'opacity-80', 'cursor-not-allowed');
+                    btn.classList.add('indigo-pulse');
+                    e.target.reset();
+                }, 2000);
+            }, 1500);
+        });
+    </script>
+</body></html>
