@@ -121,7 +121,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   allTotal = 0;
 
   // ── UI state ──
-  openAnswers = new Set<number>();
+  openAnswers = new Set<string>();
   skeletonItems = Array.from({ length: 6 });
   highlightedQuestions: SafeHtml[] = [];
   highlightedAnswers: SafeHtml[] = [];
@@ -981,34 +981,27 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   // ── Answer toggle ──
 
-  toggleAnswer(index: number): void {
-    const isCurrentlyOpen = this.openAnswers.has(index);
+  getQuestionKey(question: any): string {
+    if (!question) return '';
+    return question._id || question.id || question.normalizedQuestionHash || question.canonicalQuestionKey || question.question;
+  }
+
+  toggleAnswer(item: InterviewQuestion): void {
+    const key = this.getQuestionKey(item);
+    if (!key) return;
+
+    const isCurrentlyOpen = this.openAnswers.has(key);
     if (isCurrentlyOpen) {
-      this.openAnswers.delete(index);
+      this.openAnswers.delete(key);
     } else {
-      this.openAnswers.add(index);
-    }
-    if (!isCurrentlyOpen) {
-      let item: InterviewQuestion | undefined;
-      if (index < 1000) {
-        item = this.questions[index];
-      } else if (index < 2000) {
-        item = this.recentQuestions[index - 1000];
-      } else if (index < 3000) {
-        item = this.allQuestions[index - 2000];
-      } else if (index < 4000) {
-        item = this.generatedQuestions[index - 3000];
-      } else {
-        item = this.historyQuestions[index - 4000];
-      }
-      if (item) {
-        this.recordQuestionViewed(item, true);
-      }
+      this.openAnswers.add(key);
+      this.recordQuestionViewed(item, true);
     }
   }
 
-  isAnswerOpen(index: number): boolean {
-    return this.openAnswers.has(index);
+  isExpanded(item: InterviewQuestion): boolean {
+    const key = this.getQuestionKey(item);
+    return !!key && this.openAnswers.has(key);
   }
 
   getAbsoluteTopIndex(i: number): number {

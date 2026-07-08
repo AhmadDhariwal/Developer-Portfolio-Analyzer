@@ -353,12 +353,12 @@
             *ngFor="let item of visibleAllQuestions; let i = index; trackBy: trackByQuestion"
             [class.viewed]="viewedTopicKeys.has(item.topicKey || '')">
 
-            <div class="qa-header" (click)="toggleAnswer(2000 + getAbsoluteAllIndex(i))" style="cursor:pointer">
+            <div class="qa-header" (click)="toggleAnswer(item)" style="cursor:pointer">
               <strong>{{ item.question }}</strong>
               <div class="qa-badges">
                 <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
                 <span class="source-label-sm">{{ sourceLabel(item) }}</span>
-                <span class="chevron-icon" [class.open]="isAnswerOpen(2000 + getAbsoluteAllIndex(i))" aria-hidden="true">▾</span>
+                <span class="chevron-icon" [class.open]="isExpanded(item)" aria-hidden="true">▾</span>
               </div>
             </div>
 
@@ -366,11 +366,11 @@
               <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
             </div>
 
-            <div class="qa-answer" *ngIf="isAnswerOpen(2000 + getAbsoluteAllIndex(i))">
+            <div class="qa-answer" *ngIf="isExpanded(item)">
               <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
             </div>
 
-            <div class="card-actions" *ngIf="isAnswerOpen(2000 + getAbsoluteAllIndex(i))">
+            <div class="card-actions" *ngIf="isExpanded(item)">
               <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-all-' + getAbsoluteAllIndex(i)" type="button">
                 Copy Answer
               </button>
@@ -443,12 +443,12 @@
           *ngFor="let item of visibleTopQuestions; let i = index; trackBy: trackByQuestion"
           [class.viewed]="viewedTopicKeys.has(item.topicKey || '')">
 
-          <div class="qa-header" (click)="toggleAnswer(getAbsoluteTopIndex(i))" style="cursor:pointer">
+          <div class="qa-header" (click)="toggleAnswer(item)" style="cursor:pointer">
             <strong [innerHTML]="highlightedQuestions[getAbsoluteTopIndex(i)] || item.question"></strong>
             <div class="qa-badges">
               <span class="rank-badge">#{{ getAbsoluteTopIndex(i) + 1 }}</span>
               <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
-              <span class="chevron-icon" [class.open]="isAnswerOpen(getAbsoluteTopIndex(i))" aria-hidden="true">▾</span>
+              <span class="chevron-icon" [class.open]="isExpanded(item)" aria-hidden="true">▾</span>
             </div>
           </div>
 
@@ -456,11 +456,11 @@
             <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
           </div>
 
-          <div class="qa-answer" *ngIf="isAnswerOpen(getAbsoluteTopIndex(i))">
+          <div class="qa-answer" *ngIf="isExpanded(item)">
             <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
           </div>
 
-          <div class="card-actions" *ngIf="isAnswerOpen(getAbsoluteTopIndex(i))">
+          <div class="card-actions" *ngIf="isExpanded(item)">
             <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-top-' + getAbsoluteTopIndex(i)" type="button">
               Copy Answer
             </button>
@@ -570,21 +570,21 @@
           <div
             class="qa-card"
             *ngFor="let item of generatedQuestions; let i = index; trackBy: trackByQuestion">
-            <div class="qa-header" (click)="toggleAnswer(3000 + i)" style="cursor:pointer">
+            <div class="qa-header" (click)="toggleAnswer(item)" style="cursor:pointer">
               <strong>{{ item.question }}</strong>
               <div class="qa-badges">
                 <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
                 <span class="source-label-sm">{{ sourceLabel(item) }}</span>
-                <span class="chevron-icon" [class.open]="isAnswerOpen(3000 + i)" aria-hidden="true">▾</span>
+                <span class="chevron-icon" [class.open]="isExpanded(item)" aria-hidden="true">▾</span>
               </div>
             </div>
             <div class="qa-tags" *ngIf="item.tags.length">
               <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
             </div>
-            <div class="qa-answer" *ngIf="isAnswerOpen(3000 + i)">
+            <div class="qa-answer" *ngIf="isExpanded(item)">
               <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
             </div>
-            <div class="card-actions" *ngIf="isAnswerOpen(3000 + i)">
+            <div class="card-actions" *ngIf="isExpanded(item)">
               <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-gen-' + i" type="button">
                 Copy Answer
               </button>
@@ -630,20 +630,20 @@
           <div
             class="qa-card qa-card--recent"
             *ngFor="let item of historyQuestions; let i = index; trackBy: trackByQuestion">
-            <div class="qa-header" (click)="toggleAnswer(4000 + i)" style="cursor:pointer">
+            <div class="qa-header" (click)="toggleAnswer(item)" style="cursor:pointer">
               <strong>{{ item.question }}</strong>
               <div class="qa-badges">
                 <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
-                <span class="chevron-icon" [class.open]="isAnswerOpen(4000 + i)" aria-hidden="true">▾</span>
+                <span class="chevron-icon" [class.open]="isExpanded(item)" aria-hidden="true">▾</span>
               </div>
             </div>
             <div class="qa-tags" *ngIf="item.tags.length">
               <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
             </div>
-            <div class="qa-answer" *ngIf="isAnswerOpen(4000 + i)">
+            <div class="qa-answer" *ngIf="isExpanded(item)">
               <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
             </div>
-            <div class="card-actions" *ngIf="isAnswerOpen(4000 + i)">
+            <div class="card-actions" *ngIf="isExpanded(item)">
               <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-hist-' + i" type="button">
                 Copy Answer
               </button>
@@ -659,21 +659,21 @@
           <div
             class="qa-card qa-card--recent"
             *ngFor="let item of recentQuestions; let i = index; trackBy: trackByQuestion">
-            <div class="qa-header" (click)="toggleAnswer(1000 + i)" style="cursor:pointer">
+            <div class="qa-header" (click)="toggleAnswer(item)" style="cursor:pointer">
               <strong>{{ item.question }}</strong>
               <div class="qa-badges">
                 <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
                 <span class="source-label-sm">{{ sourceLabel(item) }}</span>
-                <span class="chevron-icon" [class.open]="isAnswerOpen(1000 + i)" aria-hidden="true">▾</span>
+                <span class="chevron-icon" [class.open]="isExpanded(item)" aria-hidden="true">▾</span>
               </div>
             </div>
             <div class="qa-tags" *ngIf="item.tags.length">
               <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
             </div>
-            <div class="qa-answer" *ngIf="isAnswerOpen(1000 + i)">
+            <div class="qa-answer" *ngIf="isExpanded(item)">
               <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
             </div>
-            <div class="card-actions" *ngIf="isAnswerOpen(1000 + i)">
+            <div class="card-actions" *ngIf="isExpanded(item)">
               <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-sess-' + i" type="button">
                 Copy Answer
               </button>
