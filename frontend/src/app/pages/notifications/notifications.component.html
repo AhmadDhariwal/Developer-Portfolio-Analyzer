@@ -199,7 +199,7 @@
 
         <div class="notification-actions">
           <button class="ghost-action" *ngIf="!notification.isRead" (click)="markAsRead(notification)">Mark Read</button>
-          <button class="ghost-action ghost-action--danger" (click)="deleteNotification(notification)">Delete</button>
+          <button class="ghost-action ghost-action--danger" (click)="askDelete(notification)">Delete</button>
         </div>
       </article>
     </div>
@@ -222,3 +222,13 @@
     </div>
   </section>
 </div>
+
+<app-confirm-dialog
+  [open]="showDeleteDialog"
+  title="Delete this notification?"
+  message="This action cannot be undone."
+  confirmText="Delete"
+  cancelText="Cancel"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+></app-confirm-dialog>

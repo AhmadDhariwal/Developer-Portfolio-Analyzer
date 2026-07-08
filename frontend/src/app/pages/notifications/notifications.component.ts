@@ -7,6 +7,7 @@ import { TenantContextService } from '../../shared/services/tenant-context.servi
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject } from '@angular/core';
 import { AuthService } from '../../shared/services/auth.service';
+import { RecruiterSharedModule } from '../../supervisors/recruiter-shared/recruiter-shared.module';
 
 interface OrganizationItem {
   _id: string;
@@ -30,7 +31,7 @@ interface UserOption {
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RecruiterSharedModule],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss'
 })
@@ -43,6 +44,9 @@ export class NotificationsComponent implements OnInit {
   page = 1;
   totalPages = 1;
   total = 0;
+
+  showDeleteDialog = false;
+  pendingDeleteNotification: AppNotification | null = null;
 
   search = '';
   from = '';
@@ -345,9 +349,20 @@ export class NotificationsComponent implements OnInit {
     });
   }
 
-  deleteNotification(notification: AppNotification): void {
-    const confirmed = globalThis.confirm('Delete this notification?');
-    if (!confirmed) return;
+  askDelete(notification: AppNotification): void {
+    this.pendingDeleteNotification = notification;
+    this.showDeleteDialog = true;
+  }
+
+  confirmDelete(): void {
+    if (!this.pendingDeleteNotification) {
+      this.showDeleteDialog = false;
+      return;
+    }
+    const notification = this.pendingDeleteNotification;
+    this.showDeleteDialog = false;
+    this.pendingDeleteNotification = null;
+
     const snapshot = [...this.notifications];
     const previousTotal = this.total;
     const previousUnread = this.unreadCount;
@@ -373,8 +388,14 @@ export class NotificationsComponent implements OnInit {
         this.total = previousTotal;
         this.unreadCount = previousUnread;
         this.statusMessage = 'Failed to delete notification.';
+        this.cdr.markForCheck();
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteDialog = false;
+    this.pendingDeleteNotification = null;
   }
 
   formatTime(value: string): string {
