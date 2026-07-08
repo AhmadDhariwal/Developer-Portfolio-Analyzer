@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, throwError } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
+import { Observable, catchError, of, throwError } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
@@ -167,5 +167,45 @@ export class InterviewPrepService {
     framework?: string;
   }): Observable<InterviewQuestion> {
     return this.once(this.buildKey('ask', payload), this.api.askInterviewPrepQuestion(payload));
+  }
+
+  /**
+   * Fetch recent history from backend and normalize the response into InterviewQuestion[].
+   * Returns [] on any error so the component can show a professional empty state.
+   */
+  getHistory(limit = 10): Observable<InterviewQuestion[]> {
+    return this.api.getInterviewPrepHistory(limit).pipe(
+      map((response) => this.normalizeHistoryResponse(response)),
+      catchError(() => of([]))
+    );
+  }
+
+  private normalizeHistoryResponse(response: unknown): InterviewQuestion[] {
+    const isValid = (q: unknown): q is InterviewQuestion => {
+      if (!q || typeof q !== 'object') return false;
+      const item = q as Record<string, unknown>;
+      return typeof item['question'] === 'string' && typeof item['answer'] === 'string';
+    };
+
+    const toList = (arr: unknown[]): InterviewQuestion[] =>
+      arr.filter(isValid).slice(0, 20);
+
+    if (!response) return [];
+    if (Array.isArray(response)) return toList(response as unknown[]);
+
+    const resp = response as Record<string, unknown>;
+    // { questions: [...] }
+    if (Array.isArray(resp['questions'])) return toList(resp['questions'] as unknown[]);
+    // { sessions: [{ questions: [...] }] }
+    if (Array.isArray(resp['sessions'])) {
+      const all = (resp['sessions'] as Record<string, unknown>[])
+        .flatMap(s => Array.isArray(s['questions']) ? s['questions'] as unknown[] : []);
+      return toList(all);
+    }
+    // { data: [...] } or { history: [...] }
+    if (Array.isArray(resp['data'])) return toList(resp['data'] as unknown[]);
+    if (Array.isArray(resp['history'])) return toList(resp['history'] as unknown[]);
+
+    return [];
   }
 }
