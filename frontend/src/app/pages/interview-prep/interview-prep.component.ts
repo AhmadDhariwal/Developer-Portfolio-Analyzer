@@ -995,7 +995,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       } else if (index < 2000) {
         item = this.recentQuestions[index - 1000];
       } else if (index < 3000) {
-        item = this.visibleAllQuestions[index - 2000];
+        item = this.allQuestions[index - 2000];
       } else if (index < 4000) {
         item = this.generatedQuestions[index - 3000];
       } else {
@@ -1009,6 +1009,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   isAnswerOpen(index: number): boolean {
     return this.openAnswers.has(index);
+  }
+
+  getAbsoluteTopIndex(i: number): number {
+    return (this.topPage - 1) * this.pageSize + i;
+  }
+
+  getAbsoluteAllIndex(i: number): number {
+    return (this.allVisiblePage - 1) * this.pageSize + i;
   }
 
   // ── Display helpers ──

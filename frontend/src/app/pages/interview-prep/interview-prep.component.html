@@ -353,12 +353,12 @@
             *ngFor="let item of visibleAllQuestions; let i = index; trackBy: trackByQuestion"
             [class.viewed]="viewedTopicKeys.has(item.topicKey || '')">
 
-            <div class="qa-header" (click)="toggleAnswer(2000 + i)" style="cursor:pointer">
+            <div class="qa-header" (click)="toggleAnswer(2000 + getAbsoluteAllIndex(i))" style="cursor:pointer">
               <strong>{{ item.question }}</strong>
               <div class="qa-badges">
                 <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
                 <span class="source-label-sm">{{ sourceLabel(item) }}</span>
-                <span class="chevron-icon" [class.open]="isAnswerOpen(2000 + i)" aria-hidden="true">▾</span>
+                <span class="chevron-icon" [class.open]="isAnswerOpen(2000 + getAbsoluteAllIndex(i))" aria-hidden="true">▾</span>
               </div>
             </div>
 
@@ -366,15 +366,15 @@
               <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
             </div>
 
-            <div class="qa-answer" *ngIf="isAnswerOpen(2000 + i)">
+            <div class="qa-answer" *ngIf="isAnswerOpen(2000 + getAbsoluteAllIndex(i))">
               <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
             </div>
 
-            <div class="card-actions" *ngIf="isAnswerOpen(2000 + i)">
-              <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-all-' + i" type="button">
+            <div class="card-actions" *ngIf="isAnswerOpen(2000 + getAbsoluteAllIndex(i))">
+              <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-all-' + getAbsoluteAllIndex(i)" type="button">
                 Copy Answer
               </button>
-              <button class="ghost-btn small-btn" (click)="useStoredQuestion(item)" [id]="'btn-use-all-' + i" type="button">
+              <button class="ghost-btn small-btn" (click)="useStoredQuestion(item)" [id]="'btn-use-all-' + getAbsoluteAllIndex(i)" type="button">
                 Use in Search
               </button>
             </div>
@@ -443,12 +443,12 @@
           *ngFor="let item of visibleTopQuestions; let i = index; trackBy: trackByQuestion"
           [class.viewed]="viewedTopicKeys.has(item.topicKey || '')">
 
-          <div class="qa-header" (click)="toggleAnswer(i)" style="cursor:pointer">
-            <strong>{{ item.question }}</strong>
+          <div class="qa-header" (click)="toggleAnswer(getAbsoluteTopIndex(i))" style="cursor:pointer">
+            <strong [innerHTML]="highlightedQuestions[getAbsoluteTopIndex(i)] || item.question"></strong>
             <div class="qa-badges">
-              <span class="rank-badge">#{{ (topPage - 1) * pageSize + i + 1 }}</span>
+              <span class="rank-badge">#{{ getAbsoluteTopIndex(i) + 1 }}</span>
               <span class="difficulty-badge" [attr.data-level]="item.difficulty">{{ item.difficulty }}</span>
-              <span class="chevron-icon" [class.open]="isAnswerOpen(i)" aria-hidden="true">▾</span>
+              <span class="chevron-icon" [class.open]="isAnswerOpen(getAbsoluteTopIndex(i))" aria-hidden="true">▾</span>
             </div>
           </div>
 
@@ -456,15 +456,15 @@
             <span class="tag-pill" *ngFor="let tag of item.tags">{{ tag }}</span>
           </div>
 
-          <div class="qa-answer" *ngIf="isAnswerOpen(i)">
+          <div class="qa-answer" *ngIf="isAnswerOpen(getAbsoluteTopIndex(i))">
             <ng-container *ngTemplateOutlet="answerRenderer; context: { item: item }"></ng-container>
           </div>
 
-          <div class="card-actions" *ngIf="isAnswerOpen(i)">
-            <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-top-' + i" type="button">
+          <div class="card-actions" *ngIf="isAnswerOpen(getAbsoluteTopIndex(i))">
+            <button class="ghost-btn small-btn" (click)="copyAnswer(item)" [id]="'btn-copy-top-' + getAbsoluteTopIndex(i)" type="button">
               Copy Answer
             </button>
-            <button class="ghost-btn small-btn" (click)="useStoredQuestion(item)" [id]="'btn-use-top-' + i" type="button">
+            <button class="ghost-btn small-btn" (click)="useStoredQuestion(item)" [id]="'btn-use-top-' + getAbsoluteTopIndex(i)" type="button">
               Use in Search
             </button>
           </div>
