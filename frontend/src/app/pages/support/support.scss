@@ -576,3 +576,138 @@ input[readonly] {
   margin-bottom: 24px;
   font-size: 14px;
 }
+
+// Ticket Detail Modal
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modal-container {
+  background: $card-bg;
+  border: 1px solid $card-border;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid $card-border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $text-main;
+  }
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    color: $text-main;
+  }
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-row {
+  font-size: 14px;
+  color: $text-muted;
+  
+  strong {
+    color: $text-main;
+    font-weight: 500;
+    margin-right: 8px;
+  }
+}
+
+.detail-message-box {
+  margin-top: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid $card-border;
+  border-radius: 12px;
+  padding: 16px;
+  
+  strong {
+    color: $text-main;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $text-muted;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+// Mobile responsive sheet
+@media (max-width: 639px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  
+  .modal-container {
+    border-radius: 24px 24px 0 0;
+    max-height: 85vh;
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  
+  .modal-body {
+    padding-bottom: 40px;
+  }
+}

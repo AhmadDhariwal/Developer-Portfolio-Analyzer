@@ -161,4 +161,4 @@ const sendRecruiterInvitationEmail = async ({ to, inviteeName, organizationName,
   }
 };
 
-module.exports = { sendEmailOTP, sendRecruiterInvitationEmail };
+module.exports = { getTransporter, sendEmailOTP, sendRecruiterInvitationEmail };

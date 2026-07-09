@@ -45,6 +45,9 @@ export class SupportComponent implements OnInit {
   supportError = '';
   supportPage = 1;
   supportTotalPages = 1;
+  
+  selectedTicket: SupportTicket | null = null;
+  showAllFaqs = false;
 
   categoryCards: CategoryCard[] = [
     {
@@ -86,10 +89,30 @@ export class SupportComponent implements OnInit {
 
   faqs: FaqItem[] = [
     { question: 'How long does it take to get a response?', answer: 'We usually respond within 24-48 hours depending on the ticket priority.', isOpen: false },
-    { question: 'How do I delete my account?', answer: 'You can delete your account from the Profile Settings page under the Danger Zone section.', isOpen: false },
-    { question: 'How do I update my email or profile?', answer: 'Navigate to your Profile Settings from the sidebar to update your personal information.', isOpen: false },
-    { question: 'Where can I view my subscription?', answer: 'Your subscription details are available under the Billing & Subscription section in Settings.', isOpen: false }
+    { question: 'How do I report a bug?', answer: 'You can select "Report a Bug" category in the support form above and provide details of the issue.', isOpen: false },
+    { question: 'Facing an account issue?', answer: 'Select "Account Issue" from the categories and describe your problem for priority support.', isOpen: false },
+    { question: 'How do I update my profile or email?', answer: 'Navigate to your Profile Settings from the sidebar to update your personal information or email.', isOpen: false },
+    { question: 'What if I forget my password?', answer: 'Use the "Forgot Password" link on the login page to reset it.', isOpen: false },
+    { question: 'Is my sensitive information safe?', answer: 'Yes, we take privacy seriously. Please refrain from sharing highly sensitive info like passwords in support tickets.', isOpen: false },
+    { question: 'What do the ticket statuses mean?', answer: 'Open: received, In Progress: being worked on, Resolved: fixed, Closed: completed.', isOpen: false },
+    { question: 'How else can I contact support?', answer: 'You can email us directly at support@example.com for urgent inquiries.', isOpen: false }
   ];
+
+  get displayedFaqs(): FaqItem[] {
+    return this.showAllFaqs ? this.faqs : this.faqs.slice(0, 4);
+  }
+
+  toggleViewAllFaqs(): void {
+    this.showAllFaqs = !this.showAllFaqs;
+  }
+
+  openTicketDetails(ticket: SupportTicket): void {
+    this.selectedTicket = ticket;
+  }
+
+  closeTicketDetails(): void {
+    this.selectedTicket = null;
+  }
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
@@ -144,7 +167,9 @@ export class SupportComponent implements OnInit {
     
     const payload = {
       ...this.supportForm,
-      email: this.supportForm.contactEmail
+      email: this.supportForm.contactEmail,
+      sourcePage: window.location.href,
+      browserInfo: navigator.userAgent
     };
 
     this.supportService.createTicket(payload).pipe(

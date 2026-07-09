@@ -13,6 +13,9 @@ export interface SupportTicket {
   message: string;
   status?: string;
   createdAt?: string;
+  updatedAt?: string;
+  sourcePage?: string;
+  browserInfo?: string;
 }
 
 @Injectable({ providedIn: 'root' })

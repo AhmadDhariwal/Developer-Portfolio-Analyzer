@@ -130,7 +130,7 @@
       <!-- Ticket List -->
       <div class="ticket-list" *ngIf="!isLoadingTickets && supportTickets.length > 0">
         
-        <div class="ticket-item" *ngFor="let ticket of supportTickets">
+        <div class="ticket-item" *ngFor="let ticket of supportTickets" (click)="openTicketDetails(ticket)" style="cursor: pointer;">
           <div class="ticket-item-left">
             <div class="ticket-icon" 
                  [ngClass]="{
@@ -207,11 +207,11 @@
         </h2>
         <p>Find quick answers to common questions.</p>
       </div>
-      <button class="btn-secondary">View All FAQs</button>
+      <button class="btn-secondary" (click)="toggleViewAllFaqs()">{{ showAllFaqs ? 'Show Less' : 'View All FAQs' }}</button>
     </div>
     
     <div class="faq-grid">
-      <div class="faq-item" *ngFor="let faq of faqs; let i = index">
+      <div class="faq-item" *ngFor="let faq of displayedFaqs; let i = index">
         <button class="faq-question" [class.open]="faq.isOpen" (click)="toggleFaq(i)">
           <span>{{ faq.question }}</span>
           <span class="material-symbols-outlined">expand_more</span>
@@ -226,6 +226,39 @@
   <div class="footer-note">
     We usually respond within 24-48 hours.<br/>
     Need immediate help? Contact us at <a href="mailto:support@devinsight.com">support@devinsight.com</a>
+  </div>
+
+  <!-- Ticket Detail Modal -->
+  <div class="modal-backdrop" *ngIf="selectedTicket" (click)="closeTicketDetails()" (window:keydown.escape)="closeTicketDetails()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Ticket Details</h3>
+        <button class="close-btn" (click)="closeTicketDetails()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row"><strong>Subject:</strong> {{ selectedTicket.subject }}</div>
+        <div class="detail-row" *ngIf="selectedTicket._id"><strong>Ticket ID:</strong> {{ selectedTicket._id }}</div>
+        <div class="detail-row"><strong>Category:</strong> {{ formatCategory(selectedTicket.category) }}</div>
+        <div class="detail-row"><strong>Priority:</strong> {{ selectedTicket.priority | titlecase }}</div>
+        <div class="detail-row">
+          <strong>Status:</strong> 
+          <span class="ticket-status" [ngClass]="'status-' + (selectedTicket.status || 'default')">
+            {{ formatStatus(selectedTicket.status) | titlecase }}
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="selectedTicket.createdAt"><strong>Created Date:</strong> {{ selectedTicket.createdAt | date:'medium' }}</div>
+        <div class="detail-row" *ngIf="selectedTicket.updatedAt"><strong>Updated Date:</strong> {{ selectedTicket.updatedAt | date:'medium' }}</div>
+        <div class="detail-row" *ngIf="selectedTicket.sourcePage"><strong>Source Page:</strong> {{ selectedTicket.sourcePage }}</div>
+        <div class="detail-row" *ngIf="selectedTicket.browserInfo"><strong>Browser/Device:</strong> {{ selectedTicket.browserInfo }}</div>
+        
+        <div class="detail-message-box">
+          <strong>Message:</strong>
+          <p>{{ selectedTicket.message }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
 </main>

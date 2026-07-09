@@ -77,7 +77,7 @@ router.post('/tickets', protect, rateLimitAndDedupe, async (req, res) => {
     });
 
     // Send email optionally
-    const supportEmail = String(process.env.SUPPORT_INBOX_EMAIL || '').trim();
+    const supportEmail = String(process.env.SUPPORT_INBOX_EMAIL || process.env.EMAIL_USER || '').trim();
     if (supportEmail) {
       try {
         const tx = getTransporter();
@@ -86,7 +86,7 @@ router.post('/tickets', protect, rateLimitAndDedupe, async (req, res) => {
             from: String(process.env.EMAIL_USER || '').trim(),
             to: supportEmail,
             subject: `[Support Ticket] ${safeSubject}`,
-            text: `New support ticket from ${req.user.name} (${req.user.email}).\n\nCategory: ${category}\nPriority: ${priority}\n\nMessage:\n${safeMessage}\n\nTicket ID: ${ticket._id}`,
+            text: `New support ticket from ${req.user.name} (${req.user.email}).\n\nCategory: ${category}\nPriority: ${priority}\n\nSubject: ${safeSubject}\nMessage:\n${safeMessage}\n\nSource Page: ${sourcePage || 'N/A'}\nBrowser/Device: ${browserInfo || 'N/A'}\nTicket ID: ${ticket._id}\nCreated Date: ${ticket.createdAt}`,
           });
         }
       } catch (err) {
