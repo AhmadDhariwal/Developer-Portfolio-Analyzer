@@ -1,15 +1,22 @@
 <main class="sg-page" aria-labelledby="skill-gap-title">
   <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/app/dashboard">Dashboard</a><span>›</span><strong>Skill Gap</strong><span>→</span></nav>
   <header class="page-header">
-    <div>
-      <span class="eyebrow">Career intelligence</span>
-      <h1 id="skill-gap-title">Skill Gap Analysis</h1>
-      <p>Understand your strongest evidence, the gaps limiting role fit, and the clearest path forward.</p>
+    <div class="header-copy">
+      <div class="title-badge">
+        <span class="material-symbols-outlined">analytics</span>
+      </div>
+      <div class="header-text">
+        <span class="eyebrow">Career intelligence</span>
+        <h1 id="skill-gap-title">Skill Gap Analysis</h1>
+        <p>Understand your strongest evidence, the gaps limiting role fit, and the clearest path forward.</p>
+      </div>
     </div>
-    <button class="header-action" type="button" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
-      Re-analyze
-    </button>
+    <div class="header-actions">
+      <button class="secondary-button" type="button" (click)="refreshAnalysis()" [disabled]="isLoading || !username.trim()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2;"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
+        Re-analyze
+      </button>
+    </div>
   </header>
 
   <section class="analysis-toolbar" aria-label="Analysis profile">
