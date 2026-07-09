@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorizeRoles } = require('../middleware/authmiddleware');
-const SupportTicket = require('../models/supportTicket');
-const { createNotification } = require('../services/notificationService');
-const { getTransporter } = require('../services/emailService');
+const supportController = require('../controllers/support.controller');
 
 // In-memory rate limiting & deduplication
 const rateLimits = new Map();
@@ -45,154 +43,14 @@ const rateLimitAndDedupe = (req, res, next) => {
   next();
 };
 
-// POST /api/support/tickets
-router.post('/tickets', protect, rateLimitAndDedupe, async (req, res) => {
-  try {
-    const { category, priority, subject, message, sourcePage, browserInfo } = req.body;
-
-    // Sanitize and validate
-    const safeSubject = String(subject || '').trim().substring(0, 150);
-    const safeMessage = String(message || '').trim().substring(0, 5000);
-
-    const ticket = await SupportTicket.create({
-      userId: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      category,
-      priority,
-      subject: safeSubject,
-      message: safeMessage,
-      sourcePage,
-      browserInfo
-    });
-
-    // Create user notification
-    await createNotification({
-      userId: req.user._id,
-      type: 'info',
-      title: 'Support request received',
-      message: `Your ticket "${safeSubject}" has been received. Our team will look into it shortly.`,
-      dedupeKey: `support-ticket-${ticket._id}`,
-      meta: { ticketId: ticket._id }
-    });
-
-    // Send email optionally
-    const supportEmail = String(process.env.SUPPORT_INBOX_EMAIL || process.env.EMAIL_USER || '').trim();
-    if (supportEmail) {
-      try {
-        const tx = getTransporter();
-        if (tx) {
-          await tx.sendMail({
-            from: String(process.env.EMAIL_USER || '').trim(),
-            to: supportEmail,
-            subject: `[Support Ticket] ${safeSubject}`,
-            text: `New support ticket from ${req.user.name} (${req.user.email}).\n\nCategory: ${category}\nPriority: ${priority}\n\nSubject: ${safeSubject}\nMessage:\n${safeMessage}\n\nSource Page: ${sourcePage || 'N/A'}\nBrowser/Device: ${browserInfo || 'N/A'}\nTicket ID: ${ticket._id}\nCreated Date: ${ticket.createdAt}`,
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to send support email:', err.message);
-      }
-    }
-
-    res.status(201).json({ message: 'Support ticket submitted successfully.', ticket });
-  } catch (error) {
-    console.error('Error creating support ticket:', error);
-    res.status(400).json({ message: 'Failed to submit support ticket.' });
-  }
-});
-
-// GET /api/support/my-tickets
-router.get('/my-tickets', protect, async (req, res) => {
-  try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
-    const skip = (page - 1) * limit;
-
-    const tickets = await SupportTicket.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-    
-    const total = await SupportTicket.countDocuments({ userId: req.user._id });
-
-    res.json({
-      tickets,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch tickets.' });
-  }
-});
-
-// GET /api/support/tickets/:id
-router.get('/tickets/:id', protect, async (req, res) => {
-  try {
-    const ticket = await SupportTicket.findOne({ _id: req.params.id, userId: req.user._id }).lean();
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found.' });
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch ticket.' });
-  }
-});
-
-// DELETE /api/support/tickets/:id
-router.delete('/tickets/:id', protect, async (req, res) => {
-  try {
-    const ticket = await SupportTicket.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found or unauthorized.' });
-    res.json({ message: 'Ticket deleted successfully.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to delete ticket.' });
-  }
-});
+// User endpoints
+router.post('/tickets', protect, rateLimitAndDedupe, supportController.createTicket);
+router.get('/my-tickets', protect, supportController.getMyTickets);
+router.get('/tickets/:id', protect, supportController.getTicketById);
+router.delete('/tickets/:id', protect, supportController.deleteTicket);
 
 // Admin endpoints
-router.get('/admin/tickets', protect, authorizeRoles('admin', 'super_admin'), async (req, res) => {
-  try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
-    const skip = (page - 1) * limit;
-
-    const tickets = await SupportTicket.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-    
-    const total = await SupportTicket.countDocuments();
-
-    res.json({
-      tickets,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch tickets.' });
-  }
-});
-
-router.put('/admin/tickets/:id/status', protect, authorizeRoles('admin', 'super_admin'), async (req, res) => {
-  try {
-    const { status } = req.body;
-    if (!['open', 'in_progress', 'resolved', 'closed'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status.' });
-    }
-    const ticket = await SupportTicket.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found.' });
-    res.json({ message: 'Status updated.', ticket });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update ticket.' });
-  }
-});
+router.get('/admin/tickets', protect, authorizeRoles('admin', 'super_admin'), supportController.getAdminTickets);
+router.put('/admin/tickets/:id/status', protect, authorizeRoles('admin', 'super_admin'), supportController.updateTicketStatus);
 
 module.exports = router;
