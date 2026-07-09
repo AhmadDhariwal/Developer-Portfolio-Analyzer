@@ -44,6 +44,12 @@ export class SupportService {
     );
   }
 
+  deleteTicket(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiBaseUrl}/support/tickets/${id}`).pipe(
+      tap(() => this.clearCache())
+    );
+  }
+
   clearCache(): void {
     this.cache.clear();
   }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { SupportService, SupportTicket } from '../../shared/services/support.service';
+import { RecruiterSharedModule } from '../../supervisors/recruiter-shared/recruiter-shared.module';
 
 interface CategoryCard {
   value: string;
@@ -22,7 +23,7 @@ interface FaqItem {
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RecruiterSharedModule],
   templateUrl: './support.html',
   styleUrl: './support.scss',
 })
@@ -184,11 +185,62 @@ export class SupportComponent implements OnInit {
         this.cdr.detectChanges();
         setTimeout(() => { this.supportSuccess = ''; this.cdr.detectChanges(); }, 5000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmittingTicket = false;
         this.supportError = err?.error?.message || 'Failed to submit request. Please try again.';
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  isDeletingTicket = false;
+
+  // ── Confirm dialog ────────────────────────────────────────────────────
+  confirmOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  private pendingConfirmAction: (() => void) | null = null;
+
+  private openConfirm(title: string, message: string, action: () => void): void {
+    this.confirmTitle = title;
+    this.confirmMessage = message;
+    this.pendingConfirmAction = action;
+    this.confirmOpen = true;
+  }
+
+  onConfirmAccepted(): void {
+    this.confirmOpen = false;
+    this.pendingConfirmAction?.();
+    this.pendingConfirmAction = null;
+  }
+
+  onConfirmCancelled(): void {
+    this.confirmOpen = false;
+    this.pendingConfirmAction = null;
+  }
+
+  deleteTicket(id: string | undefined): void {
+    if (!id) return;
+    
+    this.openConfirm('Delete Ticket', 'Warning: This ticket will be deleted permanently. Are you sure you want to proceed?', () => {
+      this.isDeletingTicket = true;
+      this.supportService.deleteTicket(id).pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe({
+        next: () => {
+          this.supportSuccess = 'Ticket deleted successfully.';
+          this.isDeletingTicket = false;
+          this.selectedTicket = null;
+          this.loadSupportTickets(this.supportPage);
+          this.cdr.detectChanges();
+          setTimeout(() => { this.supportSuccess = ''; this.cdr.detectChanges(); }, 5000);
+        },
+        error: (err: any) => {
+          this.isDeletingTicket = false;
+          this.supportError = err?.error?.message || 'Failed to delete ticket.';
+          this.cdr.detectChanges();
+        }
+      });
     });
   }
 

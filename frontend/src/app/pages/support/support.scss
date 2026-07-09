@@ -238,6 +238,11 @@ input, select, textarea {
     border-color: $primary;
     background-color: rgba(0,0,0,0.3);
   }
+
+  option {
+    background-color: #1e293b;
+    color: #f8fafc;
+  }
 }
 textarea {
   resize: vertical;
@@ -711,3 +716,5 @@ input[readonly] {
     padding-bottom: 40px;
   }
 }
+
+

@@ -141,6 +141,17 @@ router.get('/tickets/:id', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/support/tickets/:id
+router.delete('/tickets/:id', protect, async (req, res) => {
+  try {
+    const ticket = await SupportTicket.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found or unauthorized.' });
+    res.json({ message: 'Ticket deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete ticket.' });
+  }
+});
+
 // Admin endpoints
 router.get('/admin/tickets', protect, authorizeRoles('admin', 'super_admin'), async (req, res) => {
   try {
