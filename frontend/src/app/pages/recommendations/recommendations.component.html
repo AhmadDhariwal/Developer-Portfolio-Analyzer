@@ -1,14 +1,19 @@
 <div class="rec-page">
-  <div class="rec-header">
-    <div class="rec-header__text">
-      <h1>Recommendations</h1>
-      <p>AI career advisor powered by reusable platform signals</p>
+  <header class="page-header">
+    <div class="header-copy">
+      <div class="title-badge">
+        <span class="material-symbols-outlined">psychology</span>
+      </div>
+      <div class="header-text">
+        <h1>Recommendations</h1>
+        <p>AI career advisor powered by reusable platform signals</p>
+      </div>
     </div>
     <div class="header-actions" *ngIf="result">
       <span class="state-pill" [class.state-pill--cache]="cacheStateLabel === 'cache-hit'">{{ cacheStateLabel }}</span>
-      <button class="btn-secondary" (click)="analyze(true)" [disabled]="isLoading">Refresh</button>
+      <button class="secondary-button" (click)="analyze(true)" [disabled]="isLoading">Refresh</button>
     </div>
-  </div>
+  </header>
 
   <div class="rec-search-card">
     <div class="rec-search-card__inner">
@@ -25,7 +30,7 @@
           [disabled]="isLoading"
         />
       </div>
-      <button class="btn-analyze" (click)="analyze(false)" [disabled]="isLoading || !username.trim()">
+      <button class="primary-button" (click)="analyze(false)" [disabled]="isLoading || !username.trim()">
         <span *ngIf="!isLoading">Get Recommendations</span>
         <span *ngIf="isLoading" class="spinner-wrap"><span class="spinner"></span>{{ loadingState === 'refreshing' ? 'Refreshing...' : 'Loading...' }}</span>
       </button>
@@ -42,7 +47,7 @@
     <span *ngIf="!isTemporaryView">
       Showing advisor output for your default profile <strong>@{{ viewedUsername || defaultUsername }}</strong>.
     </span>
-    <button class="btn-secondary" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">Return to My Profile</button>
+    <button class="secondary-button" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">Return to My Profile</button>
   </div>
 
   <div class="skeleton-stack" *ngIf="!result && isLoading">
