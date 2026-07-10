@@ -2,8 +2,6 @@ const SupportTicket = require('../models/supportTicket');
 const { createNotification } = require('./notificationService');
 const { sendConfiguredEmail } = require('./emailService');
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
 const CATEGORY_LABELS = {
   bug: 'Bug Report',
   feature_request: 'Feature Request',
@@ -16,115 +14,122 @@ const CATEGORY_LABELS = {
 const PRIORITY_LABELS = { low: 'Low', medium: 'Medium', high: 'High', urgent: 'Urgent' };
 
 const PRIORITY_BADGE_COLOR = {
-  low: '#22c55e',
-  medium: '#eab308',
-  high: '#ef4444',
-  urgent: '#9333ea'
+  low: '#15803d',
+  medium: '#b45309',
+  high: '#b91c1c',
+  urgent: '#6d28d9'
 };
 
 const STATUS_BADGE_COLOR = {
-  open: '#3b82f6',
-  in_progress: '#f97316',
-  resolved: '#22c55e',
-  closed: '#6b7280'
+  open: '#1d4ed8',
+  in_progress: '#c2410c',
+  resolved: '#15803d',
+  closed: '#4b5563'
 };
 
-const escapeHtml = (str) => String(str || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const titleCase = (str) => String(str || '')
+  .replace(/_/g, ' ')
+  .replace(/\b\w/g, char => char.toUpperCase());
+
+const formatHtmlMessage = (str) => escapeHtml(str).replace(/\r?\n/g, '<br />');
 
 const buildSupportEmailHtml = (ticket, user) => {
   const categoryLabel = CATEGORY_LABELS[ticket.category] || ticket.category;
   const priorityLabel = PRIORITY_LABELS[ticket.priority] || ticket.priority;
   const priorityColor = PRIORITY_BADGE_COLOR[ticket.priority] || '#6b7280';
   const statusColor = STATUS_BADGE_COLOR[ticket.status] || '#6b7280';
-  const statusLabel = ticket.status.replace('_', ' ');
-  const createdDate = ticket.createdAt ? new Date(ticket.createdAt).toISOString().replace('T', ' ').substring(0, 19) + ' UTC' : 'N/A';
+  const statusLabel = titleCase(ticket.status);
+  const createdDate = ticket.createdAt
+    ? `${new Date(ticket.createdAt).toISOString().replace('T', ' ').substring(0, 19)} UTC`
+    : 'N/A';
+  const requesterName = ticket.name || user.name;
+  const requesterEmail = ticket.email || user.email;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support Ticket — DevInsight AI</title>
+  <title>Support Ticket - DevInsight AI</title>
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#eef2ff;font-family:Arial,'Segoe UI',sans-serif;color:#111827;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eef2ff;margin:0;padding:32px 12px;">
     <tr>
       <td align="center">
-        <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
-
-          <!-- Header -->
+        <table width="640" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:640px;border-collapse:separate;border-spacing:0;">
           <tr>
-            <td align="center" style="padding-bottom:24px;">
-              <span style="font-size:20px;font-weight:800;color:#818cf8;letter-spacing:-0.5px;">DevInsight AI Support</span>
+            <td style="background:#24114d;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:4px solid #8b5cf6;">
+              <div style="font-size:20px;font-weight:700;color:#ffffff;line-height:1.2;">DevInsight AI Support</div>
+              <div style="margin-top:7px;font-size:13px;color:#e9d5ff;">A new support request needs review.</div>
             </td>
           </tr>
-
-          <!-- Main card -->
           <tr>
-            <td style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:32px 28px;">
-
-              <!-- Title row -->
-              <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">New Support Ticket</p>
-
-              <!-- Subject -->
-              <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#f1f5f9;line-height:1.35;">
-                ${escapeHtml(ticket.subject)}
-              </h1>
-
-              <!-- Badges row -->
-              <table cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <td style="background:#ffffff;border:1px solid #c7d2fe;border-top:0;border-radius:0 0 12px 12px;padding:28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
                 <tr>
-                  <td style="padding:4px 10px;background:${priorityColor};border-radius:6px;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.05em;">
-                    ${escapeHtml(priorityLabel)}
+                  <td style="padding:0 0 18px 0;">
+                    <h1 style="margin:0 0 10px 0;font-size:24px;line-height:1.25;color:#111827;font-weight:700;">New Support Ticket</h1>
+                    <div style="font-size:16px;line-height:1.5;color:#1f2937;font-weight:700;">${escapeHtml(ticket.subject)}</div>
                   </td>
-                  <td style="width:8px;"></td>
-                  <td style="padding:4px 10px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);border-radius:6px;font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;">
-                    ${escapeHtml(categoryLabel)}
-                  </td>
-                  <td style="width:8px;"></td>
-                  <td style="padding:4px 10px;background:${statusColor};border-radius:6px;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.05em;">
-                    ${escapeHtml(statusLabel)}
+                </tr>
+                <tr>
+                  <td style="padding:0 0 22px 0;">
+                    <span style="display:inline-block;background:${priorityColor};border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;line-height:1;color:#ffffff;text-transform:uppercase;letter-spacing:0.04em;">${escapeHtml(priorityLabel)}</span>
+                    <span style="display:inline-block;background:${statusColor};border-radius:999px;padding:5px 11px;margin-left:8px;font-size:11px;font-weight:700;line-height:1;color:#ffffff;text-transform:uppercase;letter-spacing:0.04em;">${escapeHtml(statusLabel)}</span>
                   </td>
                 </tr>
               </table>
 
-              <!-- Meta info -->
-              <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border:1px solid #c7d2fe;border-radius:8px;margin:0 0 22px 0;background:#f8f7ff;">
                 <tr>
-                  <td style="padding:6px 0;font-size:13px;color:#94a3b8;vertical-align:top;width:80px;">From</td>
-                  <td style="padding:6px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${escapeHtml(user.name)} <${escapeHtml(user.email)}></td>
+                  <td width="50%" style="padding:14px 16px;border-right:1px solid #c7d2fe;border-bottom:1px solid #c7d2fe;vertical-align:top;background:#ffffff;">
+                    <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Requester</div>
+                    <div style="margin-top:5px;font-size:14px;color:#111827;font-weight:600;line-height:1.4;">${escapeHtml(requesterName)}</div>
+                    <div style="margin-top:2px;font-size:13px;color:#374151;line-height:1.4;">${escapeHtml(requesterEmail)}</div>
+                  </td>
+                  <td width="50%" style="padding:14px 16px;border-bottom:1px solid #c7d2fe;vertical-align:top;background:#ffffff;">
+                    <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Category</div>
+                    <div style="margin-top:5px;font-size:14px;color:#111827;font-weight:600;line-height:1.4;">${escapeHtml(categoryLabel)}</div>
+                  </td>
                 </tr>
                 <tr>
-                  <td style="padding:6px 0;font-size:13px;color:#94a3b8;vertical-align:top;">Ticket ID</td>
-                  <td style="padding:6px 0;font-size:13px;color:#e2e8f0;font-family:monospace;">${escapeHtml(String(ticket._id))}</td>
-                </tr>
-                <tr>
-                  <td style="padding:6px 0;font-size:13px;color:#94a3b8;vertical-align:top;">Date</td>
-                  <td style="padding:6px 0;font-size:13px;color:#e2e8f0;">${escapeHtml(createdDate)}</td>
+                  <td width="50%" style="padding:14px 16px;border-right:1px solid #c7d2fe;vertical-align:top;background:#ffffff;">
+                    <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Ticket ID</div>
+                    <div style="margin-top:5px;font-size:13px;color:#111827;font-family:Consolas,Monaco,monospace;line-height:1.4;">${escapeHtml(String(ticket._id))}</div>
+                  </td>
+                  <td width="50%" style="padding:14px 16px;vertical-align:top;background:#ffffff;">
+                    <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Created</div>
+                    <div style="margin-top:5px;font-size:14px;color:#111827;font-weight:600;line-height:1.4;">${escapeHtml(createdDate)}</div>
+                  </td>
                 </tr>
               </table>
 
-              <!-- Message box -->
-              <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:16px 18px;margin-bottom:8px;">
-                <p style="margin:0;font-size:14px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap;word-break:break-word;">${escapeHtml(ticket.message)}</p>
-              </div>
-
-              <p style="margin:8px 0 0;font-size:11px;color:#475569;text-align:right;">
-                ${escapeHtml(String(ticket.message || '').length)} characters
-              </p>
-
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
+                <tr>
+                  <td style="padding:0 0 8px 0;font-size:13px;font-weight:700;color:#111827;">Message</td>
+                </tr>
+                <tr>
+                  <td style="background:#f5f3ff;border:1px solid #a78bfa;border-left:5px solid #6d28d9;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.65;color:#111827;word-break:break-word;">
+                    ${formatHtmlMessage(ticket.message)}
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
-            <td align="center" style="padding-top:20px;">
-              <p style="margin:0;font-size:12px;color:#475569;">
+            <td align="center" style="padding:18px 8px 0 8px;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#4b5563;">
                 This email was generated automatically from DevInsight AI.
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -136,20 +141,24 @@ const buildSupportEmailHtml = (ticket, user) => {
 const buildSupportEmailText = (ticket, user) => {
   const categoryLabel = CATEGORY_LABELS[ticket.category] || ticket.category;
   const priorityLabel = PRIORITY_LABELS[ticket.priority] || ticket.priority;
-  const statusLabel = ticket.status.replace('_', ' ');
-  const createdDate = ticket.createdAt ? new Date(ticket.createdAt).toISOString().replace('T', ' ').substring(0, 19) + ' UTC' : 'N/A';
+  const statusLabel = titleCase(ticket.status);
+  const createdDate = ticket.createdAt
+    ? `${new Date(ticket.createdAt).toISOString().replace('T', ' ').substring(0, 19)} UTC`
+    : 'N/A';
+  const requesterName = ticket.name || user.name;
+  const requesterEmail = ticket.email || user.email;
 
   return `DevInsight AI Support
 New Support Ticket
 
 Subject: ${ticket.subject}
 Priority: ${priorityLabel}
-Category: ${categoryLabel}
 Status: ${statusLabel}
+Category: ${categoryLabel}
 
-From: ${user.name} (${user.email})
+Requester: ${requesterName} (${requesterEmail})
 Ticket ID: ${ticket._id}
-Date: ${createdDate}
+Created: ${createdDate}
 
 Message:
 ${'-'.repeat(40)}
@@ -158,8 +167,6 @@ ${'-'.repeat(40)}
 
 This email was generated automatically from DevInsight AI.`;
 };
-
-// ── Core ────────────────────────────────────────────────────────────────────────
 
 const createTicket = async (user, data) => {
   const { category, priority, subject, message, sourcePage, browserInfo } = data;
@@ -190,7 +197,7 @@ const createTicket = async (user, data) => {
     meta: { ticketId: ticket._id }
   }).catch(err => console.warn('Failed to create notification:', err.message));
 
-  // Send notification email to support inbox (fire-and-forget — never blocks ticket creation)
+  // Send notification email to support inbox (fire-and-forget, never blocks ticket creation)
   const supportEmail = String(process.env.SUPPORT_INBOX_EMAIL || '').trim();
   if (supportEmail) {
     const categoryLabel = CATEGORY_LABELS[ticket.category] || ticket.category;
@@ -202,7 +209,7 @@ const createTicket = async (user, data) => {
       html: buildSupportEmailHtml(ticket, user),
       text: buildSupportEmailText(ticket, user)
     }).catch(err => {
-      // Sanitize: log only the error message, never the email body or SMTP credentials
+      // Sanitize: log only the error message, never the email body or SMTP credentials.
       console.warn('Failed to send support notification email:', err.message);
     });
   }
