@@ -2,21 +2,43 @@ const nodemailer = require('nodemailer');
 
 let transporter = null;
 
-const getTransporter = () => {
-  if (transporter) return transporter;
+const value = (key, fallback = '') => String(process.env[key] || fallback).trim();
+const numberValue = (key, fallback) => Number.parseInt(process.env[key] || '', 10) || fallback;
 
-  const user = String(process.env.EMAIL_USER || '').trim();
-  const pass = String(process.env.EMAIL_PASS || '').trim();
+const getEmailConfig = () => {
+  const user = value('SMTP_USER', value('EMAIL_USER'));
+  const pass = value('SMTP_PASS', value('EMAIL_PASS'));
   if (!user || !pass) {
     throw new Error('Email service is not configured.');
   }
 
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass }
-  });
+  const port = numberValue('SMTP_PORT', 587);
+  return {
+    transport: {
+      host: value('SMTP_HOST', 'smtp.gmail.com'),
+      port,
+      secure: value('SMTP_SECURE', port === 465 ? 'true' : 'false') === 'true',
+      auth: { user, pass },
+      connectionTimeout: numberValue('SMTP_CONNECTION_TIMEOUT_MS', 10000),
+      socketTimeout: numberValue('SMTP_SOCKET_TIMEOUT_MS', 15000)
+    },
+    from: value('SMTP_FROM_EMAIL', user)
+  };
+};
+
+const getTransporter = () => {
+  if (transporter) return transporter;
+
+  const { transport } = getEmailConfig();
+
+  transporter = nodemailer.createTransport(transport);
 
   return transporter;
+};
+
+const sendConfiguredEmail = async ({ from, ...mailOptions }) => {
+  const { from: defaultFrom } = getEmailConfig();
+  return getTransporter().sendMail({ from: from || defaultFrom, ...mailOptions });
 };
 
 const sendEmailOTP = async (email, otp) => {
@@ -25,9 +47,7 @@ const sendEmailOTP = async (email, otp) => {
     throw new Error('Recipient email is required.');
   }
 
-  const tx = getTransporter();
-  await tx.sendMail({
-    from: String(process.env.EMAIL_USER || '').trim(),
+  await sendConfiguredEmail({
     to: recipient,
     subject: 'DevInsight AI OTP Verification',
     text: `Your OTP is ${otp}. It expires in 5 minutes.`,
@@ -41,7 +61,7 @@ const sendRecruiterInvitationEmail = async ({ to, inviteeName, organizationName,
   if (!String(invitationLink || '').trim()) throw new Error('Invitation link is required.');
 
   try {
-    const tx = getTransporter();
+    const { from } = getEmailConfig();
     const safeName = String(inviteeName || 'there').trim();
     const safeOrg  = String(organizationName || 'DevInsight').trim();
 
@@ -147,8 +167,8 @@ const sendRecruiterInvitationEmail = async ({ to, inviteeName, organizationName,
 
     const text = `Hi ${safeName},\n\nYou've been invited to join ${safeOrg} as a Recruiter on DevInsight AI.\n\nDevInsight AI is an AI-powered developer intelligence platform. As a recruiter you can:\n- Browse verified developer profiles with GitHub scores\n- Post jobs and run AI candidate matching\n- View skill breakdowns, growth signals, and consistency scores\n\nAccept your invitation here:\n${invitationLink}\n\nThis link expires in 7 days.\n\n— DevInsight AI Team`;
 
-    await tx.sendMail({
-      from: `"DevInsight AI" <${String(process.env.EMAIL_USER || '').trim()}>`,
+    await sendConfiguredEmail({
+      from: `"DevInsight AI" <${from}>`,
       to: recipient,
       subject: `You're invited to join ${safeOrg} as a Recruiter — DevInsight AI`,
       text,
@@ -161,4 +181,4 @@ const sendRecruiterInvitationEmail = async ({ to, inviteeName, organizationName,
   }
 };
 
-module.exports = { getTransporter, sendEmailOTP, sendRecruiterInvitationEmail };
+module.exports = { getEmailConfig, getTransporter, sendConfiguredEmail, sendEmailOTP, sendRecruiterInvitationEmail };
