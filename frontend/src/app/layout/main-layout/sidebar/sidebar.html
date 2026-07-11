@@ -24,11 +24,9 @@
           routerLinkActive="active"
           class="nav-link"
           [attr.aria-label]="item.label"
-          [attr.title]="!isOpen && !isMobile ? item.label : null"
           (click)="onNavigate()">
           <span class="nav-icon" [innerHTML]="item.icon"></span>
           <span class="nav-label">{{ item.label }}</span>
-          <span class="tooltip-text">{{ item.label }}</span>
         </a>
       </li>
 
@@ -46,11 +44,9 @@
               class="nav-link nav-group-link"
               [class.active]="isGroupActive(group)"
               [attr.aria-label]="group.label"
-              [attr.title]="!isOpen && !isMobile ? group.label : null"
               (click)="onNavigate()">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
-              <span class="tooltip-text">{{ group.label }}</span>
             </a>
           </ng-container>
           <ng-template #groupToggleOnly>
@@ -58,11 +54,9 @@
               type="button"
               class="nav-link nav-group-link nav-group-link--button"
               [class.active]="isGroupActive(group)"
-              [attr.aria-label]="group.label"
-              [attr.title]="!isOpen && !isMobile ? group.label : null">
+              [attr.aria-label]="group.label">
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
-              <span class="tooltip-text">{{ group.label }}</span>
             </button>
           </ng-template>
 
@@ -86,11 +80,9 @@
                 [routerLink]="item.route"
                 class="nav-link nav-sublink"
                 [class.active]="isAdminConsoleActive()"
-                [attr.title]="!isOpen && !isMobile ? item.label : null"
                 (click)="onNavigate()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
-                <span class="tooltip-text">{{ item.label }}</span>
               </a>
             </ng-container>
             <ng-template #normalSubLink>
@@ -99,11 +91,9 @@
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: item.route === '/app/admin/console' }"
                 class="nav-link nav-sublink"
-                [attr.title]="!isOpen && !isMobile ? item.label : null"
                 (click)="onNavigate()">
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
-                <span class="tooltip-text">{{ item.label }}</span>
               </a>
             </ng-template>
           </li>
@@ -143,7 +133,7 @@
       </div>
     </div>
 
-    <button class="logout-btn" type="button" (click)="logout()" [attr.title]="!isOpen && !isMobile ? 'Logout' : null">
+    <button class="logout-btn" type="button" (click)="logout()">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -152,7 +142,6 @@
         </svg>
       </span>
       <span class="nav-label">Logout</span>
-      <span class="tooltip-text">Logout</span>
     </button>
   </div>
 </aside>

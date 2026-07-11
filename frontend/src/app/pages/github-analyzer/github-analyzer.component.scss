@@ -1025,7 +1025,7 @@ $score-ring-size: 112px;
 // ══════════════════════════════════════════════════════════════════
 
 // ── ≤1180px ────────────────────────────────────────────────────
-@media (max-width: 1180px) {
+@container (max-width: 1180px) {
   .overview-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1036,7 +1036,7 @@ $score-ring-size: 112px;
 }
 
 // ── ≤960px ─────────────────────────────────────────────────────
-@media (max-width: 960px) {
+@container (max-width: 960px) {
   .analyzer-page {
     padding: 24px;
   }
@@ -1057,7 +1057,7 @@ $score-ring-size: 112px;
 }
 
 // ── ≤900px ─────────────────────────────────────────────────────
-@media (max-width: 900px) {
+@container (max-width: 900px) {
   .page-header,
   .profile-meta,
   .table-header {
@@ -1161,7 +1161,7 @@ $score-ring-size: 112px;
 }
 
 // ── ≤640px ─────────────────────────────────────────────────────
-@media (max-width: 640px) {
+@container (max-width: 640px) {
   .analyzer-page {
     padding: 16px;
   }
@@ -1223,7 +1223,7 @@ $score-ring-size: 112px;
 }
 
 // ── ≤480px ─────────────────────────────────────────────────────
-@media (max-width: 480px) {
+@container (max-width: 480px) {
   .analyzer-page {
     padding: 16px;
   }

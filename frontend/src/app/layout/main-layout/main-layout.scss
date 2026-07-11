@@ -17,6 +17,7 @@
 
 .shell-body {
   flex: 1;
+  min-width: 0;
   margin-left: var(--sidebar-expanded-width);
   display: flex;
   flex-direction: column;
@@ -39,6 +40,7 @@
 
 .main-content {
   flex: 1;
+  container-type: inline-size;
   margin-top: var(--navbar-height);
   overflow-y: auto;
   padding: var(--spacing-2xl);
