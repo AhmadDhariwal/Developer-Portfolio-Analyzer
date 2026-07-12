@@ -4,10 +4,12 @@
   gap: 22px;
   min-height: 100%;
   min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 32px;
   color: #f8fafc;
-  background: #0b1020;
   font-family: 'Inter', sans-serif;
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -29,11 +31,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
-  box-shadow: 0 18px 50px rgba(2, 6, 23, 0.28);
 }
 
 .header-copy {
@@ -49,8 +46,8 @@
   width: 52px;
   height: 52px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #8b5cf6, #2563eb);
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.22);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 16px 32px rgba(99, 102, 241, 0.22);
   flex-shrink: 0;
 
   .material-symbols-outlined {
@@ -158,13 +155,13 @@
 
 .primary-button {
   border: 0;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
-  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 14px 30px rgba(99, 102, 241, 0.25);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
+    box-shadow: 0 18px 36px rgba(99, 102, 241, 0.28);
   }
 }
 
@@ -202,7 +199,7 @@
 .secondary-button:focus-visible,
 .tab-btn:focus-visible,
 .rec-search-card input:focus-visible {
-  outline: 2px solid #6d5df6;
+  outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
 
