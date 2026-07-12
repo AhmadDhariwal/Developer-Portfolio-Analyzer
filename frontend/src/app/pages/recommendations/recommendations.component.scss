@@ -4,10 +4,12 @@
   gap: 22px;
   min-height: 100%;
   min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 32px;
   color: #f8fafc;
-  background: #0b1020;
   font-family: 'Inter', sans-serif;
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -29,11 +31,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
-  box-shadow: 0 18px 50px rgba(2, 6, 23, 0.28);
 }
 
 .header-copy {

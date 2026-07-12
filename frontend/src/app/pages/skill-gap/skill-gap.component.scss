@@ -1,7 +1,7 @@
 :host {
   display: block;
   color: #edf2f9;
-  background-color: #0b1020;
+  background-color: transparent;
 }
 
 .sg-page {
@@ -21,8 +21,12 @@
   gap: 22px;
   min-height: 100%;
   min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 32px;
+  background: transparent;
   font-family: 'Inter', sans-serif;
 }
 
@@ -59,12 +63,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 18px 50px rgba(2, 6, 23, 0.28);
-  margin-bottom: 18px;
 }
 
 .header-copy {

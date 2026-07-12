@@ -3,11 +3,12 @@
   flex-direction: column;
   gap: 20px;
   min-height: 100%;
-  padding: 24px;
+  min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px;
   color: #f8fafc;
-  background:
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 24%),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 20%);
   overflow-x: hidden;
 }
 
@@ -22,7 +23,6 @@
 .page-header,
 .insight-card,
 .source-banner,
-.jobs-content,
 .filters-sidebar-inner {
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
@@ -35,8 +35,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .header-copy,
@@ -357,9 +360,7 @@
 
 .jobs-content {
   min-width: 0;
-  overflow: hidden;
-  border-radius: 24px;
-  padding: 22px;
+  padding: 0;
 }
 
 .section-header {

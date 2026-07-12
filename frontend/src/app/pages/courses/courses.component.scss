@@ -4,17 +4,16 @@
   gap: 22px;
   min-height: 100%;
   min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 32px;
   color: #f8fafc;
-  background:
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 24%),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 20%);
 }
 
 .page-header,
 .insight-card,
-.courses-content,
 .filters-inner {
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
@@ -27,8 +26,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .header-copy,
@@ -383,9 +385,8 @@
 }
 
 .courses-content {
-  overflow: hidden;
-  border-radius: 24px;
-  padding: 22px;
+  min-width: 0;
+  padding: 0;
 }
 
 .loading-header {
