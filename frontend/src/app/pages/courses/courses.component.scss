@@ -4,22 +4,20 @@
   gap: 22px;
   min-height: 100%;
   min-width: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 32px;
   color: #f8fafc;
-  background:
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 24%),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 20%);
 }
 
 .page-header,
 .insight-card,
-.courses-content,
 .filters-inner {
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #111827;
   box-shadow: 0 18px 50px rgba(2, 6, 23, 0.28);
- // backdrop-filter: blur(16px);
 }
 
 .page-header {
@@ -27,8 +25,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .header-copy,
@@ -51,8 +52,8 @@
   width: 52px;
   height: 52px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #8b5cf6, #2563eb);
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.22);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 16px 32px rgba(99, 102, 241, 0.22);
 
   svg {
     width: 24px;
@@ -383,9 +384,8 @@
 }
 
 .courses-content {
-  overflow: hidden;
-  border-radius: 24px;
-  padding: 22px;
+  min-width: 0;
+  padding: 0;
 }
 
 .loading-header {
@@ -551,7 +551,7 @@
 
 .primary-button {
   border: 0;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
 

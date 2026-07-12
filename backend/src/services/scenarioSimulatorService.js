@@ -1345,6 +1345,7 @@ module.exports = {
   sanitizeScenarioInput,
   simulateHiringOutcome,
   getScenarioContext,
+  invalidateContextCache,
   saveScenarioForUser,
   getScenarioHistoryForUser,
   deleteScenarioForUser,
