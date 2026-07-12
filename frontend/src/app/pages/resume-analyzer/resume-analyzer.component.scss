@@ -12,18 +12,18 @@
 }
 
 :host ::ng-deep .ui-card {
-  border: 1px solid #28384f;
-  border-radius: 18px;
-  background: #111c2b;
-  box-shadow: none;
-  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 :host ::ng-deep .ui-card.hover-effect:hover {
   transform: translateY(-2px);
-  border-color: #3b4f6b;
-  background: #162337;
-  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #141c2f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
 }
 
 :host ::ng-deep .ui-card .card-body {
@@ -76,7 +76,7 @@
   padding: 0 16px;
   border: 1px solid rgba(124, 58, 237, 0.4);
   border-radius: 10px;
-  background: linear-gradient(135deg, #6d5df6, #7c3aed);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #f8fafc;
   font: inherit;
   font-size: 13px;
@@ -99,8 +99,8 @@
   }
 
   &--secondary {
-    border-color: #28384f;
-    background: #111c2b;
+    border-color: rgba(255, 255, 255, 0.06);
+    background: #111827;
   }
 }
 
@@ -250,7 +250,7 @@
   padding: 0.55rem 0.85rem;
   border: 1px solid transparent;
   border-radius: 9px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   font-size: 0.78rem;
   font-weight: 750;
@@ -267,8 +267,8 @@
   }
 
   &--secondary {
-    border-color: #28384f;
-    background: #111c2b;
+    border-color: rgba(255, 255, 255, 0.06);
+    background: #111827;
     color: #cbd5e1;
   }
 }
@@ -314,9 +314,9 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 18px;
-  border: 1px solid #28384f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  background: #111c2b;
+  background: #111827;
 }
 
 .file-details {
@@ -368,7 +368,7 @@
   justify-items: end;
   gap: 0.3rem;
   padding-left: 22px;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
 
   >span {
     color: #94a3b8;
@@ -438,9 +438,9 @@
   --score-accent: #818cf8;
   min-width: 0;
   padding: 20px;
-  border: 1px solid color-mix(in srgb, var(--score-accent) 28%, transparent);
-  border-radius: 18px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--score-accent) 9%, #111c2b), #111c2b 68%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: #111827;
   transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
 
   &--pink {
@@ -457,7 +457,7 @@
 
   &:hover {
     transform: translateY(-2px);
-    background: #162337;
+    background: #141c2f;
   }
 
   &__visual {
@@ -493,14 +493,14 @@
   flex: 0 0 auto;
   position: relative;
   border-radius: 50%;
-  background: conic-gradient(var(--score-accent) var(--score-progress), rgba(255, 255, 255, 0.08) 0);
+  background: conic-gradient(var(--score-accent) var(--score-progress), rgba(255, 255, 255, 0.06) 0);
 
   &::after {
     content: '';
     position: absolute;
     inset: 7px;
     border-radius: inherit;
-    background: #111c2b;
+    background: #111827;
   }
 
   strong,
@@ -806,14 +806,14 @@
 .technology-card {
   min-width: 0;
   padding: 14px;
-  border: 1px solid #28384f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  background: #111c2b;
+  background: #111827;
   transition: background-color 180ms ease, border-color 180ms ease;
 
   &:hover {
     border-color: rgba(6, 182, 212, 0.3);
-    background: #162337;
+    background: #141c2f;
   }
 
   >div:first-child {
@@ -1118,14 +1118,14 @@
   --suggestion-accent: #06b6d4;
   height: 100%;
   padding: 15px 16px;
-  border: 1px solid color-mix(in srgb, var(--suggestion-accent) 26%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--suggestion-accent) 5%, #111c2b);
+  background: #111827;
   transition: background-color 180ms ease, transform 180ms ease;
 
   &:hover {
     transform: translateX(2px);
-    background: #162337;
+    background: #141c2f;
   }
 
   &--red {
@@ -1202,7 +1202,7 @@
   padding: 0.8rem 1.25rem;
   border: 0;
   border-radius: 10px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   font-size: 0.86rem;
   font-weight: 750;
@@ -1241,9 +1241,9 @@
   padding: 20px;
   overflow: hidden;
   position: relative;
-  border: 1px solid #28384f;
-  border-radius: 18px;
-  background: #111c2b;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: #111827;
 
   &::after {
     content: '';
@@ -1289,7 +1289,7 @@
   padding: 2rem;
   border: 1px dashed rgba(129, 140, 248, 0.3);
   border-radius: 16px;
-  background: rgba(17, 28, 43, 0.92);
+  background: #111827;
   text-align: center;
 
   h2 {
@@ -1427,7 +1427,7 @@
     justify-items: start;
     padding: 12px 0 0;
     border-left: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .upload-prompt .file-input-label {
