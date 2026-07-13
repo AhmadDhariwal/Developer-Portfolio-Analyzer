@@ -1372,4 +1372,99 @@
     font-size: 0.8rem;
     user-select: none;
   }
+
+  // Question Card Badges & Info Row
+  .qa-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+
+    &[data-level='easy'] {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    &[data-level='medium'] {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    &[data-level='hard'] {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  .source-label-sm {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    color: #818cf8;
+    background: rgba(129, 140, 248, 0.12);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+  }
+
+  .qa-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border-ghost);
+  }
+
+  .qa-answer {
+    margin-top: 8px;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .chevron-icon {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+    
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
 }
