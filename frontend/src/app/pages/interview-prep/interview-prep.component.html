@@ -258,8 +258,8 @@
             <span class="source-badge" [attr.data-state]="searchState">{{ customResultLabel }}</span>
             <div class="result-meta-row">
               <span class="meta" *ngIf="confidenceLabel(customResult)">{{ confidenceLabel(customResult) }}</span>
+              <span class="meta-sep" *ngIf="confidenceLabel(customResult) && relevanceLabel(customResult)">•</span>
               <span class="meta" *ngIf="relevanceLabel(customResult)">{{ relevanceLabel(customResult) }}</span>
-              <span class="meta source-meta">{{ sourceLabel(customResult) }}</span>
             </div>
           </div>
 
