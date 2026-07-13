@@ -5,19 +5,21 @@ const { getAdapter, marketplace } = require('../services/integrations');
 const { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore } = require('../services/integrationInsightService');
 const { normalizeIngestion } = require('../services/integrationNormalizationService');
 const { syncConnectedProvidersForUser, syncProviderForUser } = require('../services/integrationSyncService');
+const { getGithubIntegrationOAuthConfig } = require('../config/githubOauth');
 
 const trimValue = (value) => String(value || '').trim();
 
 const getFrontendBaseUrl = () => {
-  const fromEnv = trimValue(process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
+  const fromEnv = trimValue(process.env.FRONTEND_URL || process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
   return fromEnv;
 };
 
 const resolveProviderRedirectUri = (provider, requestedRedirectUri) => {
   const providerOverrides = {
-    github: trimValue(process.env.GITHUB_OAUTH_REDIRECT_URI),
     linkedin: trimValue(process.env.LINKEDIN_OAUTH_REDIRECT_URI)
   };
+
+  if (provider === 'github') return getGithubIntegrationOAuthConfig().callbackUrl;
 
   if (providerOverrides[provider]) return providerOverrides[provider];
 
@@ -78,19 +80,26 @@ const startOAuth = async (req, res) => {
       });
     }
 
-    const resolvedRedirectUri = resolveProviderRedirectUri(provider, redirectUri);
+    let resolvedRedirectUri = resolveProviderRedirectUri(provider, redirectUri);
+    if (provider === 'github') {
+      const config = getGithubIntegrationOAuthConfig();
+      resolvedRedirectUri = config.callbackUrl;
+    }
     const state = `${provider}:${crypto.randomUUID()}`;
     const authorizationUrl = adapter.getAuthorizationUrl({ state, redirectUri: resolvedRedirectUri });
 
+    const updateObj = {
+      oauthState: state,
+      oauthStateExpiresAt: new Date(Date.now() + (10 * 60 * 1000)),
+      oauthRedirectUri: resolvedRedirectUri
+    };
+    if (provider === 'github') {
+      updateObj.status = 'pending';
+    }
+
     await IntegrationConnection.findOneAndUpdate(
       { userId: req.user._id, provider },
-      {
-        $set: {
-          oauthState: state,
-          oauthStateExpiresAt: new Date(Date.now() + (10 * 60 * 1000)),
-          oauthRedirectUri: resolvedRedirectUri
-        }
-      },
+      { $set: updateObj },
       { upsert: true }
     );
 
@@ -168,6 +177,113 @@ const oauthCallback = async (req, res) => {
   } catch (error) {
     console.error('OAuth callback error:', error.message);
     return res.status(500).json({ message: 'Failed to complete OAuth callback.' });
+  }
+};
+
+const githubOauthCallback = async (req, res) => {
+  const frontendUrl = getFrontendBaseUrl();
+  try {
+    const { code, state } = req.query || {};
+
+    // 1. state exists
+    if (!state) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[OAuth Callback Warning] State parameter is missing.');
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_state`);
+    }
+
+    // 2. matching IntegrationConnection exists
+    const connectionDoc = await IntegrationConnection.findOne({ oauthState: state });
+    if (!connectionDoc) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[OAuth Callback Warning] No matching IntegrationConnection found for state.');
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=invalid_state`);
+    }
+
+    // 3. state not expired
+    if (connectionDoc.oauthStateExpiresAt && new Date(connectionDoc.oauthStateExpiresAt).getTime() < Date.now()) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[OAuth Callback Warning] OAuth state has expired.');
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=state_expired`);
+    }
+
+    // 4. provider is github
+    if (connectionDoc.provider !== 'github') {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[OAuth Callback Warning] Provider mismatch. Expected github, got ${connectionDoc.provider}`);
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=provider_mismatch`);
+    }
+
+    // 5. connection status is pending/connecting
+    if (connectionDoc.status !== 'pending' && connectionDoc.status !== 'connecting') {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[OAuth Callback Warning] Connection status invalid: ${connectionDoc.status}. Expected pending or connecting.`);
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=invalid_status`);
+    }
+
+    // 6. connection contains the userId created during connect step
+    if (!connectionDoc.userId) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[OAuth Callback Warning] Connection is missing userId.');
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_user`);
+    }
+
+    if (!code) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[OAuth Callback Warning] Code parameter is missing.');
+      }
+      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_code`);
+    }
+
+    const adapter = getAdapter('github');
+    const config = getGithubIntegrationOAuthConfig();
+
+    // 7. Do not log secrets, code, state, tokens, or JWTs.
+    // Development logs may show only sanitized redirect_uri and whether IDs/secrets are present.
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[OAuth Integration Callback Debug] Exchanging code with redirect_uri: ${config.callbackUrl}`);
+    }
+
+    const token = await adapter.exchangeCodeForToken({ code, redirectUri: config.callbackUrl });
+    const identity = adapter.getExternalIdentity
+      ? await adapter.getExternalIdentity(token.accessToken)
+      : { username: '' };
+
+    const expiresAt = token.expiresIn
+      ? new Date(Date.now() + (Number(token.expiresIn || 0) * 1000))
+      : null;
+
+    await IntegrationConnection.findOneAndUpdate(
+      { userId: connectionDoc.userId, provider: 'github' },
+      {
+        $set: {
+          status: 'connected',
+          externalUsername: String(identity.username || '').trim(),
+          accessToken: token.accessToken || '',
+          refreshToken: token.refreshToken || '',
+          tokenType: token.tokenType || 'Bearer',
+          tokenExpiresAt: expiresAt,
+          scopes: String(token.scope || '').split(/[\s,]+/).filter(Boolean),
+          nextSyncAt: new Date(),
+          lastSyncError: '',
+          oauthState: '',
+          oauthStateExpiresAt: null,
+          oauthRedirectUri: config.callbackUrl
+        }
+      }
+    );
+
+    // Redirect to frontend integrations page with success
+    return res.redirect(302, `${frontendUrl}/app/integrations?success=github`);
+  } catch (error) {
+    console.error('GitHub integration callback error:', error.message);
+    return res.redirect(302, `${frontendUrl}/app/integrations?error=callback_failed`);
   }
 };
 
@@ -473,6 +589,7 @@ module.exports = {
   getMarketplace,
   startOAuth,
   oauthCallback,
+  githubOauthCallback,
   manualConnectProvider,
   ingestProviderData,
   syncNow,

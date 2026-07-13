@@ -1,6 +1,8 @@
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
 
+const { getGithubAuthOAuthConfig } = require('../config/githubOauth');
+
 const STATE_TTL_SECONDS = 10 * 60;
 const consumedStates = new Map();
 
@@ -13,10 +15,11 @@ const providerConfig = (provider) => {
       authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
     };
   }
+  const config = getGithubAuthOAuthConfig();
   return {
-    clientId: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackUrl: process.env.GITHUB_CALLBACK_URL,
+    clientId: config.clientId,
+    clientSecret: config.clientSecret,
+    callbackUrl: config.callbackUrl,
     authorizeUrl: 'https://github.com/login/oauth/authorize'
   };
 };
@@ -27,6 +30,9 @@ const requireConfig = (provider) => {
     const error = new Error(`${provider} OAuth is not configured.`);
     error.statusCode = 503;
     throw error;
+  }
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[OAuth Debug] Resolved login redirect_uri for ${provider}: ${config.callbackUrl}`);
   }
   return config;
 };

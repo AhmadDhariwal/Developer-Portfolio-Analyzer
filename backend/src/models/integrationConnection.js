@@ -14,7 +14,7 @@ const integrationConnectionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['disconnected', 'connected', 'error'],
+    enum: ['disconnected', 'connected', 'error', 'pending', 'connecting'],
     default: 'disconnected'
   },
   externalUsername: {
