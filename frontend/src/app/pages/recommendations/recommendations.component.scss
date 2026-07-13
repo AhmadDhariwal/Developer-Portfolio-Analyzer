@@ -1440,3 +1440,17 @@
   color: #c7d2fe;
   font-size: 0.88rem;
 }
+
+.btn-view-roadmap {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+  
+  &:hover {
+    background: #f1f5f9 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35);
+  }
+}
