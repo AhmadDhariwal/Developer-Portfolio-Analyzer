@@ -172,12 +172,16 @@ export class AuthService {
 
     if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
 
+    const browserOrigin = typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : this.apiOrigin;
+
     if (/^https?:\/\//i.test(raw)) {
       try {
         const parsed = new URL(raw);
         if (parsed.pathname.startsWith('/uploads/')) {
           // Strip query params when storing — cache-busting ?v= is added at display time
-          return `${this.apiOrigin}${parsed.pathname}`;
+          return `${browserOrigin}${parsed.pathname}`;
         }
       } catch {
         return raw;
@@ -191,11 +195,11 @@ export class AuthService {
     }
 
     if (raw.startsWith('/uploads/')) {
-      return `${this.apiOrigin}${raw}`;
+      return `${browserOrigin}${raw}`;
     }
 
     if (raw.startsWith('uploads/')) {
-      return `${this.apiOrigin}/${raw}`;
+      return `${browserOrigin}/${raw}`;
     }
 
     return raw;
