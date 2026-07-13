@@ -31,17 +31,28 @@
     </div>
 
     <div class="user-menu">
-      <button class="user-avatar">
-        <span>D</span>
+      <button class="user-avatar" title="User menu">
+        <!-- Show image when avatar is available; fallback to initials on error or when absent -->
+        <img
+          *ngIf="userAvatar && avatarSrc; else navbarAvatarFallback"
+          [src]="avatarSrc"
+          [alt]="userName"
+          class="user-avatar-img"
+          (error)="onAvatarError($event)"
+        />
+        <ng-template #navbarAvatarFallback>
+          <span class="user-avatar-initial">{{ userInitial }}</span>
+        </ng-template>
       </button>
+
       <div class="user-dropdown">
         <div class="user-info">
           <p class="user-name">{{ userName }}</p>
-          <p class="user-email">developer@example.com</p>
+          <p class="user-email">{{ userEmail || 'No email on record' }}</p>
         </div>
         <hr />
-        <a routerLink="/profile" class="dropdown-item">Profile</a>
-        <a routerLink="/settings" class="dropdown-item">Settings</a>
+        <a routerLink="/app/profile" class="dropdown-item">Profile</a>
+        <a routerLink="/app/settings" class="dropdown-item">Settings</a>
         <hr />
         <button (click)="logout()" class="dropdown-item danger">Logout</button>
       </div>

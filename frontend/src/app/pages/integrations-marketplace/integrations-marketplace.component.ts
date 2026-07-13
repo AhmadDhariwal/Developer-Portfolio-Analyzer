@@ -163,6 +163,15 @@ export class IntegrationsMarketplaceComponent implements OnInit {
 
   handleOAuthCallback(): void {
     const query = this.route.snapshot.queryParamMap;
+
+    // Check for success redirect from backend GET callback
+    const success = query.get('success');
+    if (success === 'github') {
+      this.router.navigate([], { queryParams: { success: null }, queryParamsHandling: 'merge' });
+      this.executeIngestion('github', true);
+      return;
+    }
+
     const code = query.get('code');
     const state = query.get('state');
     if (!code || !state) return;

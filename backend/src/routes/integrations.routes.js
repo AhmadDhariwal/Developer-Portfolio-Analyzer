@@ -5,6 +5,7 @@ const {
   getMarketplace,
   startOAuth,
   oauthCallback,
+  githubOauthCallback,
   manualConnectProvider,
   ingestProviderData,
   syncNow,
@@ -19,6 +20,7 @@ router.get('/marketplace', protect, getMarketplace);
 router.get('/connections', protect, getConnections);
 router.get('/insights', protect, getIntegrationInsights);
 router.get('/sync-trends', protect, getSyncTrends);
+router.get('/github/callback', githubOauthCallback);
 router.post('/oauth/start', protect, startOAuth);
 router.post('/oauth/callback', protect, oauthCallback);
 router.post('/manual/connect', protect, manualConnectProvider);

@@ -48,9 +48,9 @@ export class Login implements OnInit {
         const bytes = Uint8Array.from(atob(padded), character => character.charCodeAt(0));
         const payload = JSON.parse(new TextDecoder().decode(bytes));
 
-        if (!payload?.token || !payload?.user) throw new Error('Invalid OAuth payload');
+        if (!payload?.token || !payload?._id) throw new Error('Invalid OAuth payload');
         this.authService.completeExternalLogin(payload);
-        this.router.navigateByUrl(this.authService.getHomeRoute(payload.user));
+        this.router.navigateByUrl(this.authService.getHomeRoute(payload));
         return;
       } catch {
         this.error = 'Social sign-in could not be completed. Please try again.';
