@@ -191,6 +191,16 @@ export interface AnalysisBasedOn {
   lastAnalyzedAt?: string | null;
 }
 
+export interface RecommendationDataQuality {
+  hasGitHubData: boolean;
+  hasResumeData: boolean;
+  hasSkillGapData: boolean;
+  hasPortfolioData: boolean;
+  hasJobMarketData: boolean;
+  dataCompleteness: number;
+  scoreAvailability: Partial<Record<keyof RecommendationScores, boolean>>;
+}
+
 export interface RecommendationsResult {
   username:        string;
   careerStack:     string;
@@ -210,6 +220,7 @@ export interface RecommendationsResult {
   githubSkills?: string[];
   resumeSkills?: string[];
   recommendationScores?: RecommendationScores;
+  dataQuality?: RecommendationDataQuality;
   structuredRecommendations?: Record<string, RecommendationCard[]>;
   roadmap?: RecommendationRoadmap;
   recommendationSignals?: Record<string, unknown>;

@@ -421,7 +421,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, #0f172a 0 57%, transparent 58%),
-    conic-gradient(#22c55e var(--score), rgba(148, 163, 184, 0.16) 0);
+    conic-gradient(#6366f1 var(--score), rgba(148, 163, 184, 0.16) 0);
   display: grid;
   place-items: center;
   text-align: center;
@@ -874,7 +874,7 @@
 .score-bar i {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #38bdf8);
+  background: linear-gradient(90deg, #6366f1, #38bdf8);
 }
 
 .eyebrow {
@@ -1430,4 +1430,13 @@
   .week-timeline {
     grid-template-columns: 1fr;
   }
+}
+.section-empty {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed rgba(99, 102, 241, 0.45);
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  color: #c7d2fe;
+  font-size: 0.88rem;
 }

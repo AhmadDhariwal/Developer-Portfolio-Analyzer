@@ -61,12 +61,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     'Career Overview',
     'Career Growth Priorities',
     'Learning Roadmap',
-    'Interview Readiness',
     'Job Market Readiness',
     'Resume Optimization',
     'Portfolio Optimization',
     'Recommended Projects',
-    'Career Timeline'
   ];
 
   constructor(
@@ -253,6 +251,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return this.activeSection === section;
   }
 
+  get dataQuality() {
+    return this.result?.dataQuality || {
+      hasGitHubData: false, hasResumeData: false, hasSkillGapData: false, hasPortfolioData: false, hasJobMarketData: false,
+      dataCompleteness: 0, scoreAvailability: {}
+    };
+  }
+
+  scoreLabel(value: number | null | undefined, available: boolean): string {
+    return available && Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : 'Not enough data';
+  }
+
   get overviewScores(): Array<{ label: string; value: number; hint: string }> {
     const scores = this.result?.recommendationScores;
     if (!scores) return [];
@@ -367,10 +376,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const immediate = this.priorityActions[0];
     return [
       { label: 'Current Readiness', value: `${current}%`, hint: 'Composite score from resume, portfolio, jobs, learning, and interview signals.', target: 'Career Growth Priorities' },
-      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Career Timeline' },
+      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Learning Roadmap' },
       { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Close this gap through the priority roadmap.' : 'You are at the current readiness target.', target: 'Career Growth Priorities' },
       { label: 'Priority Level', value: this.priorityLevel, hint: 'Based on readiness gap and highest-impact actions.', target: 'Career Growth Priorities' },
-      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Career Timeline' },
+      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Learning Roadmap' },
       { label: 'Top Missing Skills', value: this.topMissingSkills.join(', ') || 'No critical gaps detected', hint: 'Deduplicated from skill gap, recommendation, and market signals.', target: 'Learning Roadmap' },
       { label: 'Top Opportunities', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: 'Career paths with the strongest match and market alignment.', target: 'Career Overview' },
       { label: 'Immediate Next Action', value: immediate?.title || 'Review priority actions', hint: immediate?.reason || 'Start with the highest-impact recommendation.', target: 'Career Growth Priorities' },
@@ -428,7 +437,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const metrics: Array<{ label: string; score: number; hint: string; target: AdvisorSection }> = [
       { label: 'Resume', score: Number(this.result?.signalsUsed?.resume?.atsScore || scores?.readinessScore || 0), hint: this.resumeStatusLabel, target: 'Resume Optimization' },
       { label: 'Portfolio', score: Number(this.result?.signalsUsed?.portfolio?.completenessScore || scores?.portfolioScore || 0), hint: `${this.result?.signalsUsed?.portfolio?.projectCount || 0} projects, ${this.result?.signalsUsed?.portfolio?.liveLinkCount || 0} live links`, target: 'Portfolio Optimization' },
-      { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Interview Readiness' },
+      { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Career Growth Priorities' },
       { label: 'Jobs', score: Number(scores?.marketReadinessScore || 0), hint: `${this.jobsReadinessMetrics[0]?.value || 0} matched jobs`, target: 'Job Market Readiness' },
       { label: 'Learning', score: Number(scores?.learningScore || this.result?.signalsUsed?.skillGap?.coverage || 0), hint: this.recommendedNextSkills.slice(0, 2).join(', ') || this.getSprintFocus(), target: 'Learning Roadmap' }
     ];
@@ -527,7 +536,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get portfolioMetrics(): Array<{ label: string; value: string; hint: string }> {
     const portfolio = this.result?.signalsUsed?.portfolio;
     return [
-      { label: 'Portfolio Score', value: `${portfolio?.completenessScore || this.result?.recommendationScores?.portfolioScore || 0}%`, hint: 'Current portfolio completeness and proof quality.' },
+      { label: 'Portfolio Score', value: this.scoreLabel(portfolio?.completenessScore, this.dataQuality.hasPortfolioData), hint: this.dataQuality.hasPortfolioData ? 'Current portfolio completeness and proof quality.' : 'Add portfolio projects to improve this.' },
       { label: 'Projects', value: String(portfolio?.projectCount || this.result?.projects?.length || 0), hint: 'Visible projects available for recruiter review.' },
       { label: 'Live Links', value: String(portfolio?.liveLinkCount || 0), hint: 'Deployments or demos that reduce reviewer friction.' },
       { label: 'Missing Sections', value: String(this.portfolioMissingSections.length), hint: this.portfolioMissingSections.join(', ') }
@@ -547,7 +556,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get resumeMetrics(): Array<{ label: string; value: string; hint: string }> {
     const resume = this.result?.signalsUsed?.resume;
     return [
-      { label: 'Resume Score', value: `${resume?.atsScore || this.result?.recommendationScores?.readinessScore || 0}%`, hint: 'ATS and profile readiness signal.' },
+      { label: 'Resume Score', value: this.scoreLabel(resume?.atsScore, this.dataQuality.hasResumeData), hint: this.dataQuality.hasResumeData ? 'ATS and profile readiness signal.' : 'Upload resume to improve this.' },
       { label: 'Missing Items', value: String(this.resumeMissingItems.length), hint: this.resumeMissingItems.join(', ') },
       { label: 'ATS Improvements', value: String(this.resumeAtsImprovements.length), hint: this.resumeAtsImprovements.join(', ') },
       { label: 'Recruiter Visibility', value: `${Math.min(100, Math.round((resume?.atsScore || 0) * 0.7 + (this.result?.signalsUsed?.integrations?.score || 0) * 0.3))}%`, hint: 'Resume plus external proof visibility.' }
@@ -567,8 +576,8 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   get learningMetrics(): Array<{ label: string; value: string; hint: string }> {
     return [
-      { label: 'Learning Score', value: `${this.result?.recommendationScores?.learningScore || 0}%`, hint: 'Momentum from skill coverage and weekly progress.' },
-      { label: 'Skill Coverage', value: `${this.result?.signalsUsed?.skillGap?.coverage || 0}%`, hint: 'Known skills compared with target role needs.' },
+      { label: 'Learning Score', value: this.scoreLabel(this.result?.recommendationScores?.learningScore, this.dataQuality.hasSkillGapData), hint: this.dataQuality.hasSkillGapData ? 'Momentum from skill coverage and weekly progress.' : 'Generate Skill Gap first.' },
+      { label: 'Skill Coverage', value: this.scoreLabel(this.result?.signalsUsed?.skillGap?.coverage, this.dataQuality.hasSkillGapData), hint: this.dataQuality.hasSkillGapData ? 'Known skills compared with target role needs.' : 'Generate Skill Gap first.' },
       { label: 'Recommended Skills', value: String(this.recommendedNextSkills.length), hint: this.recommendedNextSkills.join(', ') },
       { label: 'Sprint Focus', value: this.getSprintFocus(), hint: `${this.result?.signalsUsed?.careerSprint?.streak || 0} day streak` }
     ];
@@ -796,6 +805,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       interviewReadinessActions: Array.isArray(data?.interviewReadinessActions) ? data.interviewReadinessActions : [],
       signalsUsed,
       recommendationScores: scores,
+      dataQuality: this.normalizeDataQuality(data?.dataQuality, signalsUsed),
       recommendationSignals: data?.recommendationSignals || {}
     };
     const structured = this.normalizeStructured(data?.structuredRecommendations, baseResult);
@@ -815,6 +825,20 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       fromCache: Boolean(data?.fromCache),
       fromFrontendCache: Boolean(data?.fromFrontendCache),
       cacheState: data?.cacheState
+    };
+  }
+
+  private normalizeDataQuality(raw: any, signals: RecommendationSignalsUsed) {
+    const hasGitHubData = Boolean(raw?.hasGitHubData ?? signals.github.repoCount);
+    const hasResumeData = Boolean(raw?.hasResumeData ?? signals.resume.analyzed);
+    const hasSkillGapData = Boolean(raw?.hasSkillGapData ?? signals.skillGap?.present);
+    const hasPortfolioData = Boolean(raw?.hasPortfolioData ?? (signals.portfolio.present || signals.portfolio.projectCount));
+    const hasJobMarketData = Boolean(raw?.hasJobMarketData ?? (signals.jobsDemand?.sampledJobs || signals.jobsDemand?.topSkills?.length));
+    const available = [hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData];
+    return {
+      hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData,
+      dataCompleteness: Number.isFinite(Number(raw?.dataCompleteness)) ? Number(raw.dataCompleteness) : Math.round((available.filter(Boolean).length / available.length) * 100),
+      scoreAvailability: raw?.scoreAvailability || {}
     };
   }
 

@@ -151,7 +151,7 @@
           <h2>Career Timeline</h2>
           <p>Week-by-week milestones tied to progress indicators and Career Sprint handoff.</p>
         </div>
-        <button class="btn-secondary" (click)="jumpTo('Career Timeline')">View Full Roadmap</button>
+        <button class="btn-secondary" (click)="jumpTo('Learning Roadmap')">View Full Roadmap</button>
       </div>
       <div class="roadmap-rail" *ngIf="roadmapWeeks.length">
         <article class="roadmap-step" *ngFor="let week of roadmapWeeks">
@@ -259,6 +259,7 @@
         </div>
         <span class="section-count">{{ result.projects.length }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasGitHubData">Connect GitHub to improve this with repository and code-proof data.</p>
       <div class="projects-grid" *ngIf="result.projects.length">
         <div class="project-card" *ngFor="let proj of result.projects; trackBy: trackById">
           <div class="project-card__top">
@@ -286,8 +287,9 @@
           <h2>Resume Optimization</h2>
           <p>ATS, recruiter visibility, and proof-alignment actions.</p>
         </div>
-        <span class="section-count">{{ result.signalsUsed?.resume?.atsScore || 0 }}% resume</span>
+        <span class="section-count">{{ scoreLabel(result.signalsUsed?.resume?.atsScore, dataQuality.hasResumeData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasResumeData">Upload resume to improve this with ATS and recruiter-visibility guidance.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of resumeMetrics">
           <span>{{ metric.label }}</span>
@@ -311,8 +313,9 @@
           <h2>Job Market Readiness</h2>
           <p>Market alignment from Jobs Hub demand, matched roles, and skill gaps.</p>
         </div>
-        <span class="section-count">{{ result.recommendationScores?.marketReadinessScore || 0 }}% market</span>
+        <span class="section-count">{{ scoreLabel(result.recommendationScores?.marketReadinessScore, dataQuality.hasJobMarketData && dataQuality.hasSkillGapData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasSkillGapData">Generate Skill Gap first to compare your skills with target job demand.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of opportunityCenterMetrics">
           <span>{{ metric.label }}</span>
@@ -367,8 +370,9 @@
           <h2>Learning Roadmap</h2>
           <p>Focused skill investments that avoid completed work and prioritize market demand.</p>
         </div>
-        <span class="section-count">{{ result.recommendationScores?.learningScore || 0 }}% learning</span>
+        <span class="section-count">{{ scoreLabel(result.recommendationScores?.learningScore, dataQuality.hasSkillGapData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasSkillGapData">Generate Skill Gap first to create a focused learning roadmap.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of learningMetrics">
           <span>{{ metric.label }}</span>
@@ -392,7 +396,7 @@
           <h2>Portfolio Optimization</h2>
           <p>Actions that turn your work into recruiter-visible proof.</p>
         </div>
-        <span class="section-count">{{ result.signalsUsed?.portfolio?.completenessScore || result.recommendationScores?.portfolioScore || 0 }}% score</span>
+        <span class="section-count">{{ scoreLabel(result.signalsUsed?.portfolio?.completenessScore, dataQuality.hasPortfolioData) }}</span>
       </div>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of portfolioMetrics">

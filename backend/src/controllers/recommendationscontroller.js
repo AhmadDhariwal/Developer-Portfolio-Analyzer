@@ -17,7 +17,7 @@ const {
 } = require('../services/developerSignalService');
 const { extractSkillsFromRepositories, canonicalizeSkillName, detectSkillGaps } = require('../utils/skilldetector');
 
-const RECOMMENDATION_ANALYSIS_VERSION = 'v4-career-advisor';
+const RECOMMENDATION_ANALYSIS_VERSION = 'v5-career-advisor-data-quality';
 const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
 const recommendationInflight = new Map();
@@ -168,6 +168,49 @@ const normalizeRecommendationPayload = (payload = {}) => {
     learningActions: normalizeActionList(payload.learningActions, [], 0, 6),
     interviewReadinessActions: normalizeActionList(payload.interviewReadinessActions, [], 0, 4)
   };
+};
+
+const buildRecommendationDataQuality = (payload = {}) => {
+  const signals = payload.signalsUsed || {};
+  const hasGitHubData = Boolean(Number(signals.github?.repoCount || 0) || (payload.githubSkills || []).length || (payload.githubInsights?.repositories || []).length);
+  const hasResumeData = Boolean(signals.resume?.analyzed);
+  const hasSkillGapData = Boolean(signals.skillGap?.present);
+  const hasPortfolioData = Boolean(signals.portfolio?.present || Number(signals.portfolio?.projectCount || 0));
+  const hasJobMarketData = Boolean(Number(signals.jobsDemand?.sampledJobs || 0) || (signals.jobsDemand?.topSkills || []).length);
+  const sources = [hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData];
+
+  return {
+    hasGitHubData,
+    hasResumeData,
+    hasSkillGapData,
+    hasPortfolioData,
+    hasJobMarketData,
+    dataCompleteness: Math.round((sources.filter(Boolean).length / sources.length) * 100),
+    scoreAvailability: {
+      readinessScore: hasGitHubData || hasResumeData || hasSkillGapData,
+      portfolioScore: hasPortfolioData,
+      learningScore: hasSkillGapData,
+      interviewScore: hasGitHubData || hasResumeData || hasSkillGapData,
+      marketReadinessScore: hasJobMarketData && hasSkillGapData,
+      careerGrowthScore: hasPortfolioData || hasSkillGapData,
+      overallRecommendationScore: sources.filter(Boolean).length >= 2
+    }
+  };
+};
+
+const normalizeRecommendationResponse = (payload = {}) => {
+  const normalized = normalizeRecommendationPayload(payload);
+  normalized.projects = uniqueBy(normalized.projects.filter((item) => item.title), (item) => item.title.toLowerCase());
+  normalized.technologies = uniqueBy(normalized.technologies.filter((item) => item.name), (item) => item.name.toLowerCase());
+  normalized.careerPaths = uniqueBy(normalized.careerPaths.filter((item) => item.title), (item) => item.title.toLowerCase());
+  normalized.structuredRecommendations = Object.fromEntries(
+    Object.entries(normalized.structuredRecommendations || {}).map(([category, cards]) => [
+      category,
+      uniqueBy((Array.isArray(cards) ? cards : []).filter((card) => String(card?.title || '').trim()), (card) => String(card.title).trim().toLowerCase())
+    ]).filter(([, cards]) => cards.length)
+  );
+  normalized.dataQuality = buildRecommendationDataQuality(normalized);
+  return normalized;
 };
 
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
@@ -1190,7 +1233,7 @@ const finalizeRecommendationResult = ({
     cachedAt: null
   };
 
-  return normalized;
+  return normalizeRecommendationResponse(normalized);
 };
 
 const runRecommendationPipeline = async ({
@@ -1313,7 +1356,7 @@ const runRecommendationPipeline = async ({
       ? earlyCacheCandidate
       : await AnalysisCache.findOne(scopedCacheKey).lean();
     if (!forceRefresh && isCacheFresh(cached) && cached?.analysisData?.projects?.length) {
-      const cachedResult = {
+      const cachedResult = normalizeRecommendationResponse({
         ...cached.analysisData,
         ...normalizeRecommendationPayload(cached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
@@ -1334,7 +1377,7 @@ const runRecommendationPipeline = async ({
           ttlHours: 24,
           cachedAt: cached.updatedAt || cached.createdAt || null
         }
-      };
+      });
       return res.json(cachedResult);
     }
   }
@@ -1428,7 +1471,7 @@ const runRecommendationPipeline = async ({
     workPromise.finally(() => recommendationInflight.delete(inflightKey)).catch(() => {});
   }
 
-  const fullResult = await workPromise;
+  const fullResult = normalizeRecommendationResponse(await workPromise);
 
   if (req.user?._id) {
     await createNotification({
