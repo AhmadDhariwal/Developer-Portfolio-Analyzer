@@ -18,6 +18,13 @@ export interface ResumeFile {
   analysisVersion?: string;
 }
 
+export interface PreviewResumeReference {
+  previewResumeId: string;
+  resumeHash: string;
+  extractedSkills: string[];
+  summary?: string;
+}
+
 const RESUME_ANALYSIS_CACHE_PREFIX = 'resume_analysis_cache:';
 const RESUME_ANALYSIS_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -167,5 +174,11 @@ export class ResumeService {
         this.refresh();
       })
     );
+  }
+
+  parsePreviewResumeText(file: File): Observable<PreviewResumeReference> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.apiService.parsePreviewResumeText(formData) as unknown as Observable<PreviewResumeReference>;
   }
 }

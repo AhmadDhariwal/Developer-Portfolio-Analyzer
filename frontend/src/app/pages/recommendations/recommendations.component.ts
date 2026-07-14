@@ -13,13 +13,15 @@ import {
   RecommendationCard,
   RecommendationScores,
   RecommendationRoadmap,
+  SavedPreview,
 } from '../../shared/services/recommendations.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
-import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
+import { buildCareerProfileSignature, CareerStack, ExperienceLevel } from '../../shared/models/career-profile.model';
 import { FrontendAnalysisCacheService } from '../../shared/services/frontend-analysis-cache.service';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { ResumeService } from '../../shared/services/resume.service';
 import { Subscription } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
@@ -51,6 +53,22 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   actionMessage = '';
   isTemporaryView = false;
+  isPreviewMode = false;
+  previewGithubUsername = '';
+  previewResumeText = '';
+  previewResumeId = '';
+  previewResumeHash = '';
+  previewCareerStack = 'Full Stack';
+  previewExperienceLevel = 'Student';
+  previewFileName = '';
+  isUploading = false;
+  profileResultBackup: RecommendationsResult | null = null;
+  savedPreviews: SavedPreview[] = [];
+  selectedSavedPreviewId = '';
+  isSavedPreviewsLoading = false;
+  isSavingPreview = false;
+  previewSaveMessage = '';
+
   result: RecommendationsResult | null = null;
   private readonly subscriptions = new Subscription();
   private lastProfileKey = '';
@@ -61,12 +79,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     'Career Overview',
     'Career Growth Priorities',
     'Learning Roadmap',
-    'Interview Readiness',
     'Job Market Readiness',
     'Resume Optimization',
     'Portfolio Optimization',
     'Recommended Projects',
-    'Career Timeline'
   ];
 
   constructor(
@@ -76,6 +92,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly api: ApiService,
     private readonly authService: AuthService,
+    private readonly resumeService: ResumeService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {}
@@ -94,15 +111,15 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         if (activeUsername) this.applyDefaultUsername(activeUsername);
         if (hadProfile && this.username) {
           this.frontendCache.clear({ module: 'recommendations', canonicalSignalKey: true });
-          this.analyze(false, true);
+          this.recService.clearCache();
+          this.loadProfile();
         }
       })
     );
-
     const storedUsername = this.getStoredActiveUsername();
     if (storedUsername) {
       this.applyDefaultUsername(storedUsername);
-      this.analyze();
+      this.loadProfile();
       this.cdr.detectChanges();
       return;
     }
@@ -112,7 +129,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         next: (res: { username: string; isDefault?: boolean } | null) => {
           if (res?.username) {
             this.applyDefaultUsername(res.username);
-            this.analyze();
+            this.loadProfile();
           }
           this.cdr.detectChanges();
         },
@@ -136,14 +153,127 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  analyze(forceRefresh = false, profileChanged = false): void {
+  setSection(section: AdvisorSection): void {
+    this.activeSection = section;
+  }
+
+  setMode(preview: boolean): void {
+    if (this.isLoading) return;
+    this.isPreviewMode = preview;
+    if (preview) {
+      if (this.result && !this.isTemporaryView) {
+        this.profileResultBackup = this.result;
+      }
+      this.result = null;
+      this.loadingState = 'empty';
+      this.errorMessage = '';
+      this.loadSavedPreviews();
+    } else {
+      if (this.profileResultBackup) {
+        this.applyResult(this.profileResultBackup, this.defaultUsername, this.profileResultBackup.careerStack, this.profileResultBackup.experienceLevel, false, 'cache-hit');
+      } else {
+        this.username = this.defaultUsername;
+        this.loadProfile();
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  loadProfile(forceRefresh = false): void {
     const user = this.username.trim();
-    if (!user || (this.isLoading && !profileChanged)) return;
+    if (!user) return;
+    this.analyze(forceRefresh);
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      this.errorMessage = 'Only PDF files are allowed.';
+      this.loadingState = 'error';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'File is too large. Max size is 5MB.';
+      this.loadingState = 'error';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.isUploading = true;
+    this.previewFileName = file.name;
+    this.errorMessage = '';
+    this.cdr.detectChanges();
+
+    this.resumeService.parsePreviewResumeText(file).subscribe({
+      next: (res) => {
+        this.previewResumeText = '';
+        this.previewResumeId = res.previewResumeId;
+        this.previewResumeHash = res.resumeHash;
+        this.isUploading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isUploading = false;
+        this.previewFileName = '';
+        this.previewResumeText = '';
+        this.previewResumeId = '';
+        this.previewResumeHash = '';
+        this.errorMessage = err?.error?.message || 'Failed to parse resume file.';
+        this.loadingState = 'error';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  clearPreviewFile(): void {
+    this.previewFileName = '';
+    this.previewResumeText = '';
+    this.previewResumeId = '';
+    this.previewResumeHash = '';
+    this.cdr.detectChanges();
+  }
+
+  returnToDefaultProfile(): void {
+    if (this.isLoading) return;
+    this.setMode(false);
+  }
+
+  get currentCareerStack(): string {
+    return this.careerProfileService.careerStack;
+  }
+
+  get currentExperienceLevel(): string {
+    return this.careerProfileService.experienceLevel;
+  }
+
+  analyze(forceRefresh = false, profileChanged = false, knownSkills?: string[], missingSkills?: string[]): void {
+    const user = this.isPreviewMode ? this.previewGithubUsername.trim() : this.username.trim();
+    if (!user) {
+      if (this.isPreviewMode) {
+        this.errorMessage = 'GitHub username is required for preview.';
+        this.loadingState = 'error';
+      }
+      return;
+    }
+    if (this.isLoading && !profileChanged) return;
     if (profileChanged) this.activeRequest?.unsubscribe();
 
-    const { careerStack, experienceLevel } = this.careerProfileService.snapshot;
-    this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
-    const isTemporary = Boolean(this.defaultUsername) && user.toLowerCase() !== this.defaultUsername.trim().toLowerCase();
+    const careerStack = (this.isPreviewMode ? this.previewCareerStack : this.careerProfileService.careerStack) as CareerStack;
+    const experienceLevel = (this.isPreviewMode ? this.previewExperienceLevel : this.careerProfileService.experienceLevel) as ExperienceLevel;
+    const isTemporary = this.isPreviewMode;
+    const resumeText = this.isPreviewMode ? this.previewResumeText : '';
+    const previewResumeId = isTemporary && !resumeText.trim() ? this.previewResumeId : '';
+    const previewResumeHash = previewResumeId ? this.previewResumeHash : '';
+
+    this.lastProfileKey = buildCareerProfileSignature({
+      careerStack,
+      experienceLevel,
+      careerGoal: ''
+    });
 
     if (!isTemporary && !forceRefresh) {
       const cachedSignalHash = this.frontendCache.getLatestSignalHash({
@@ -164,7 +294,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         experienceLevel
       });
       const cachedResultSignalHash = this.extractSignalHash(cached);
-      if (cached && currentSignalHash && cachedResultSignalHash === currentSignalHash) {
+      if (cached && (!currentSignalHash || cachedResultSignalHash === currentSignalHash)) {
         this.applyResult(cached, user, careerStack, experienceLevel, isTemporary, 'cache-hit');
         return;
       }
@@ -190,11 +320,14 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       user,
       careerStack,
       experienceLevel,
-      undefined,
-      undefined,
+      knownSkills,
+      missingSkills,
       isTemporary,
       forceRefresh,
-      this.lastProfileKey
+      this.lastProfileKey,
+      resumeText,
+      previewResumeId,
+      previewResumeHash
     ).subscribe({
       next: (data) => {
         const normalized = this.normalizeResult(data, user, careerStack, experienceLevel);
@@ -220,26 +353,108 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         this.errorMessage = err?.error?.message || 'Failed to fetch recommendations. Please try again.';
         this.isLoading = false;
         this.loadingState = 'error';
-        if (!this.result) this.result = null;
+        this.result = null;
         this.cdr.detectChanges();
-      },
+      }
     });
   }
 
-  get currentCareerStack(): string { return this.careerProfileService.careerStack; }
-  get currentExperienceLevel(): string { return this.careerProfileService.experienceLevel; }
-
-  returnToDefaultProfile(): void {
-    if (!this.defaultUsername || this.isLoading) return;
-    this.username = this.defaultUsername;
-    this.analyze(false);
+  get isAuthenticated(): boolean {
+    return Boolean(this.authService.getCurrentUser()?._id);
   }
 
-  setSection(section: AdvisorSection): void { this.activeSection = section; }
+  loadSavedPreviews(forceRefresh = false): void {
+    if (!this.isAuthenticated || this.isSavedPreviewsLoading) return;
+    this.isSavedPreviewsLoading = true;
+    this.recService.listSavedPreviews(forceRefresh).subscribe({
+      next: ({ previews }) => {
+        this.savedPreviews = Array.isArray(previews) ? previews : [];
+        this.isSavedPreviewsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isSavedPreviewsLoading = false;
+
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  savePreview(): void {
+    if (!this.result || !this.isTemporaryView || !this.isAuthenticated || this.isSavingPreview) return;
+    const resumeHash = String((this.result.cacheMetadata?.cacheKey as any)?.resumeHash || 'no-resume');
+    this.isSavingPreview = true;
+    this.previewSaveMessage = '';
+    this.recService.savePreview({
+      module: 'recommendations',
+      title: `${this.result.username} Recommendations Preview`,
+      githubUsername: this.result.username,
+      careerStack: this.result.careerStack,
+      experienceLevel: this.result.experienceLevel,
+      resumeHash,
+      result: this.result
+    }).subscribe({
+      next: ({ preview }) => {
+        this.savedPreviews = this.recService.cacheSavedPreview(preview);
+        this.selectedSavedPreviewId = preview._id;
+        this.isSavingPreview = false;
+        this.previewSaveMessage = 'Preview saved.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isSavingPreview = false;
+        this.previewSaveMessage = err?.error?.message || 'Unable to save preview.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openSavedPreview(id: string): void {
+    const preview = this.savedPreviews.find((item) => item._id === id);
+    if (!preview || this.isLoading) return;
+    this.selectedSavedPreviewId = id;
+    if (this.result && !this.isTemporaryView) this.profileResultBackup = this.result;
+    this.isPreviewMode = true;
+    this.previewGithubUsername = preview.githubUsername;
+    this.previewCareerStack = preview.careerStack;
+    this.previewExperienceLevel = preview.experienceLevel;
+    this.previewSaveMessage = '';
+
+    if (preview.module === 'recommendations') {
+      this.applyResult({ ...preview.resultSummary, username: preview.githubUsername, careerStack: preview.careerStack, experienceLevel: preview.experienceLevel } as RecommendationsResult, preview.githubUsername, preview.careerStack, preview.experienceLevel, true, 'ready');
+      return;
+    }
+
+    const knownSkills = (preview.resultSummary?.['knownSkills'] || []).map((skill: any) => typeof skill === 'string' ? skill : skill?.name).filter(Boolean);
+    const missingSkills = (preview.resultSummary?.['missingSkills'] || []).map((skill: any) => typeof skill === 'string' ? skill : skill?.name).filter(Boolean);
+    this.result = null;
+    this.analyze(false, false, knownSkills, missingSkills);
+  }
+
+  deleteSavedPreview(): void {
+    const id = this.selectedSavedPreviewId;
+    if (!id || this.isLoading) return;
+    this.recService.deleteSavedPreview(id).subscribe({
+      next: () => {
+        this.savedPreviews = this.recService.removeSavedPreviewFromCache(id);
+        this.selectedSavedPreviewId = '';
+        this.previewSaveMessage = 'Saved preview removed.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.previewSaveMessage = err?.error?.message || 'Unable to remove saved preview.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   private extractSignalHash(result: RecommendationsResult | null | undefined): string {
     const meta = result?.cacheMetadata?.cacheKey || {};
     return String(meta.signalHash || result?.cacheMetadata?.signalHash || '').trim().toLowerCase();
+  }
+
+  show(section: AdvisorSection): boolean {
+    return this.activeSection === section;
   }
 
   jumpTo(section: AdvisorSection): void {
@@ -249,8 +464,15 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  show(section: AdvisorSection): boolean {
-    return this.activeSection === section;
+  get dataQuality() {
+    return this.result?.dataQuality || {
+      hasGitHubData: false, hasResumeData: false, hasSkillGapData: false, hasPortfolioData: false, hasJobMarketData: false,
+      dataCompleteness: 0, scoreAvailability: {}
+    };
+  }
+
+  scoreLabel(value: number | null | undefined, available: boolean): string {
+    return available && Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : 'Not enough data';
   }
 
   get overviewScores(): Array<{ label: string; value: number; hint: string }> {
@@ -367,10 +589,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const immediate = this.priorityActions[0];
     return [
       { label: 'Current Readiness', value: `${current}%`, hint: 'Composite score from resume, portfolio, jobs, learning, and interview signals.', target: 'Career Growth Priorities' },
-      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Career Timeline' },
+      { label: 'Target Readiness', value: `${target}%`, hint: 'Near-term score target for a credible job-ready profile.', target: 'Learning Roadmap' },
       { label: 'Gap Remaining', value: `${gap} pts`, hint: gap ? 'Close this gap through the priority roadmap.' : 'You are at the current readiness target.', target: 'Career Growth Priorities' },
       { label: 'Priority Level', value: this.priorityLevel, hint: 'Based on readiness gap and highest-impact actions.', target: 'Career Growth Priorities' },
-      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Career Timeline' },
+      { label: 'Estimated Completion', value: this.estimatedCompletionTime, hint: 'Derived from recommended effort and roadmap density.', target: 'Learning Roadmap' },
       { label: 'Top Missing Skills', value: this.topMissingSkills.join(', ') || 'No critical gaps detected', hint: 'Deduplicated from skill gap, recommendation, and market signals.', target: 'Learning Roadmap' },
       { label: 'Top Opportunities', value: this.topCareerOpportunities.join(', ') || this.recommendedCareerPath, hint: 'Career paths with the strongest match and market alignment.', target: 'Career Overview' },
       { label: 'Immediate Next Action', value: immediate?.title || 'Review priority actions', hint: immediate?.reason || 'Start with the highest-impact recommendation.', target: 'Career Growth Priorities' },
@@ -428,7 +650,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     const metrics: Array<{ label: string; score: number; hint: string; target: AdvisorSection }> = [
       { label: 'Resume', score: Number(this.result?.signalsUsed?.resume?.atsScore || scores?.readinessScore || 0), hint: this.resumeStatusLabel, target: 'Resume Optimization' },
       { label: 'Portfolio', score: Number(this.result?.signalsUsed?.portfolio?.completenessScore || scores?.portfolioScore || 0), hint: `${this.result?.signalsUsed?.portfolio?.projectCount || 0} projects, ${this.result?.signalsUsed?.portfolio?.liveLinkCount || 0} live links`, target: 'Portfolio Optimization' },
-      { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Interview Readiness' },
+      { label: 'Interview', score: Number(scores?.interviewScore || 0), hint: this.interviewTopics.slice(0, 2).join(', ') || 'Practice proof-backed stories', target: 'Career Growth Priorities' },
       { label: 'Jobs', score: Number(scores?.marketReadinessScore || 0), hint: `${this.jobsReadinessMetrics[0]?.value || 0} matched jobs`, target: 'Job Market Readiness' },
       { label: 'Learning', score: Number(scores?.learningScore || this.result?.signalsUsed?.skillGap?.coverage || 0), hint: this.recommendedNextSkills.slice(0, 2).join(', ') || this.getSprintFocus(), target: 'Learning Roadmap' }
     ];
@@ -527,7 +749,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get portfolioMetrics(): Array<{ label: string; value: string; hint: string }> {
     const portfolio = this.result?.signalsUsed?.portfolio;
     return [
-      { label: 'Portfolio Score', value: `${portfolio?.completenessScore || this.result?.recommendationScores?.portfolioScore || 0}%`, hint: 'Current portfolio completeness and proof quality.' },
+      { label: 'Portfolio Score', value: this.scoreLabel(portfolio?.completenessScore, this.dataQuality.hasPortfolioData), hint: this.dataQuality.hasPortfolioData ? 'Current portfolio completeness and proof quality.' : 'Add portfolio projects to improve this.' },
       { label: 'Projects', value: String(portfolio?.projectCount || this.result?.projects?.length || 0), hint: 'Visible projects available for recruiter review.' },
       { label: 'Live Links', value: String(portfolio?.liveLinkCount || 0), hint: 'Deployments or demos that reduce reviewer friction.' },
       { label: 'Missing Sections', value: String(this.portfolioMissingSections.length), hint: this.portfolioMissingSections.join(', ') }
@@ -547,7 +769,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get resumeMetrics(): Array<{ label: string; value: string; hint: string }> {
     const resume = this.result?.signalsUsed?.resume;
     return [
-      { label: 'Resume Score', value: `${resume?.atsScore || this.result?.recommendationScores?.readinessScore || 0}%`, hint: 'ATS and profile readiness signal.' },
+      { label: 'Resume Score', value: this.scoreLabel(resume?.atsScore, this.dataQuality.hasResumeData), hint: this.dataQuality.hasResumeData ? 'ATS and profile readiness signal.' : 'Upload resume to improve this.' },
       { label: 'Missing Items', value: String(this.resumeMissingItems.length), hint: this.resumeMissingItems.join(', ') },
       { label: 'ATS Improvements', value: String(this.resumeAtsImprovements.length), hint: this.resumeAtsImprovements.join(', ') },
       { label: 'Recruiter Visibility', value: `${Math.min(100, Math.round((resume?.atsScore || 0) * 0.7 + (this.result?.signalsUsed?.integrations?.score || 0) * 0.3))}%`, hint: 'Resume plus external proof visibility.' }
@@ -567,8 +789,8 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
 
   get learningMetrics(): Array<{ label: string; value: string; hint: string }> {
     return [
-      { label: 'Learning Score', value: `${this.result?.recommendationScores?.learningScore || 0}%`, hint: 'Momentum from skill coverage and weekly progress.' },
-      { label: 'Skill Coverage', value: `${this.result?.signalsUsed?.skillGap?.coverage || 0}%`, hint: 'Known skills compared with target role needs.' },
+      { label: 'Learning Score', value: this.scoreLabel(this.result?.recommendationScores?.learningScore, this.dataQuality.hasSkillGapData), hint: this.dataQuality.hasSkillGapData ? 'Momentum from skill coverage and weekly progress.' : 'Generate Skill Gap first.' },
+      { label: 'Skill Coverage', value: this.scoreLabel(this.result?.signalsUsed?.skillGap?.coverage, this.dataQuality.hasSkillGapData), hint: this.dataQuality.hasSkillGapData ? 'Known skills compared with target role needs.' : 'Generate Skill Gap first.' },
       { label: 'Recommended Skills', value: String(this.recommendedNextSkills.length), hint: this.recommendedNextSkills.join(', ') },
       { label: 'Sprint Focus', value: this.getSprintFocus(), hint: `${this.result?.signalsUsed?.careerSprint?.streak || 0} day streak` }
     ];
@@ -796,6 +1018,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       interviewReadinessActions: Array.isArray(data?.interviewReadinessActions) ? data.interviewReadinessActions : [],
       signalsUsed,
       recommendationScores: scores,
+      dataQuality: this.normalizeDataQuality(data?.dataQuality, signalsUsed),
       recommendationSignals: data?.recommendationSignals || {}
     };
     const structured = this.normalizeStructured(data?.structuredRecommendations, baseResult);
@@ -815,6 +1038,20 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       fromCache: Boolean(data?.fromCache),
       fromFrontendCache: Boolean(data?.fromFrontendCache),
       cacheState: data?.cacheState
+    };
+  }
+
+  private normalizeDataQuality(raw: any, signals: RecommendationSignalsUsed) {
+    const hasGitHubData = Boolean(raw?.hasGitHubData ?? signals.github.repoCount);
+    const hasResumeData = Boolean(raw?.hasResumeData ?? signals.resume.analyzed);
+    const hasSkillGapData = Boolean(raw?.hasSkillGapData ?? signals.skillGap?.present);
+    const hasPortfolioData = Boolean(raw?.hasPortfolioData ?? (signals.portfolio.present || signals.portfolio.projectCount));
+    const hasJobMarketData = Boolean(raw?.hasJobMarketData ?? (signals.jobsDemand?.sampledJobs || signals.jobsDemand?.topSkills?.length));
+    const available = [hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData];
+    return {
+      hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData,
+      dataCompleteness: Number.isFinite(Number(raw?.dataCompleteness)) ? Number(raw.dataCompleteness) : Math.round((available.filter(Boolean).length / available.length) * 100),
+      scoreAvailability: raw?.scoreAvailability || {}
     };
   }
 

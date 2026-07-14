@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
+import { AuthService } from './auth.service';
 
 export interface RecommendedProject {
   id:             string;
@@ -191,6 +192,16 @@ export interface AnalysisBasedOn {
   lastAnalyzedAt?: string | null;
 }
 
+export interface RecommendationDataQuality {
+  hasGitHubData: boolean;
+  hasResumeData: boolean;
+  hasSkillGapData: boolean;
+  hasPortfolioData: boolean;
+  hasJobMarketData: boolean;
+  dataCompleteness: number;
+  scoreAvailability: Partial<Record<keyof RecommendationScores, boolean>>;
+}
+
 export interface RecommendationsResult {
   username:        string;
   careerStack:     string;
@@ -210,6 +221,7 @@ export interface RecommendationsResult {
   githubSkills?: string[];
   resumeSkills?: string[];
   recommendationScores?: RecommendationScores;
+  dataQuality?: RecommendationDataQuality;
   structuredRecommendations?: Record<string, RecommendationCard[]>;
   roadmap?: RecommendationRoadmap;
   recommendationSignals?: Record<string, unknown>;
@@ -227,17 +239,107 @@ export interface RecommendationsResult {
   cacheState?: 'cache-hit' | 'refreshing' | 'loading' | 'error' | 'empty';
 }
 
+const SAVED_PREVIEWS_CACHE_TTL_MS = 7 * 60 * 1000;
+
+export interface SavedPreview {
+  _id: string;
+  title: string;
+  githubUsername: string;
+  careerStack: string;
+  experienceLevel: string;
+  resumeHash: string;
+  source: 'preview';
+  module: 'skill-gap' | 'recommendations';
+  resultSummary: Record<string, any>;
+  createdAt: string;
+}
 @Injectable({ providedIn: 'root' })
 export class RecommendationsService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<RecommendationsResult>>();
+  private profileCache: { value: RecommendationsResult; cachedAt: number } | null = null;
+  private profileCacheKey = '';
+  private savedPreviewCache: { userId: string; previews: SavedPreview[]; cachedAt: number } | null = null;
+  private savedPreviewListRequest?: Observable<{ previews: SavedPreview[] }>;
 
-  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
+    private readonly auth: AuthService
+  ) {
     this.cacheInvalidation.register('recommendations', () => this.clearCache());
+    this.cacheInvalidation.register('saved-previews', () => this.clearSavedPreviewCache());
+  }
+
+  private getProfileCacheKey(username: string): string {
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    const cleanUsername = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.+-]+/g, '-');
+    return `recommendations:profile:${userId}:${cleanUsername}`;
   }
 
   clearCache(): void {
     this.inflight.clear();
+    this.profileCache = null;
+    this.profileCacheKey = '';
+  }
+
+  savePreview(payload: { module: SavedPreview['module']; title?: string; githubUsername: string; careerStack: string; experienceLevel: string; resumeHash: string; result: unknown }): Observable<{ preview: SavedPreview }> {
+    return this.http.post<{ preview: SavedPreview }>(`${this.baseUrl}/recommendations/saved-previews`, payload);
+  }
+
+  listSavedPreviews(forceRefresh = false): Observable<{ previews: SavedPreview[] }> {
+    const userId = String(this.auth.getCurrentUser()?._id || '').trim();
+    if (!userId) return of({ previews: [] });
+
+    const cache = this.savedPreviewCache;
+    if (!forceRefresh && cache?.userId === userId && Date.now() - cache.cachedAt < SAVED_PREVIEWS_CACHE_TTL_MS) {
+      return of({ previews: cache.previews });
+    }
+    if (this.savedPreviewListRequest) return this.savedPreviewListRequest;
+
+    let request$!: Observable<{ previews: SavedPreview[] }>;
+    request$ = this.http.get<{ previews: SavedPreview[] }>(`${this.baseUrl}/recommendations/saved-previews`).pipe(
+      tap(({ previews }) => {
+        if (String(this.auth.getCurrentUser()?._id || '').trim() !== userId) return;
+        this.savedPreviewCache = {
+          userId,
+          previews: Array.isArray(previews) ? previews : [],
+          cachedAt: Date.now()
+        };
+      }),
+      finalize(() => {
+        if (this.savedPreviewListRequest === request$) this.savedPreviewListRequest = undefined;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.savedPreviewListRequest = request$;
+    return request$;
+  }
+
+  cacheSavedPreview(preview: SavedPreview): SavedPreview[] {
+    const userId = String(this.auth.getCurrentUser()?._id || '').trim();
+    if (!userId) return [];
+    const existing = this.savedPreviewCache?.userId === userId ? this.savedPreviewCache.previews : [];
+    const previews = [preview, ...existing.filter((item) => item._id !== preview._id)];
+    this.savedPreviewCache = { userId, previews, cachedAt: Date.now() };
+    return previews;
+  }
+
+  removeSavedPreviewFromCache(id: string): SavedPreview[] {
+    const userId = String(this.auth.getCurrentUser()?._id || '').trim();
+    if (!userId || this.savedPreviewCache?.userId !== userId) return [];
+    const previews = this.savedPreviewCache.previews.filter((item) => item._id !== id);
+    this.savedPreviewCache = { userId, previews, cachedAt: Date.now() };
+    return previews;
+  }
+
+  clearSavedPreviewCache(): void {
+    this.savedPreviewCache = null;
+    this.savedPreviewListRequest = undefined;
+  }
+
+  deleteSavedPreview(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/recommendations/saved-previews/${encodeURIComponent(id)}`);
   }
 
   getRecommendations(
@@ -248,8 +350,20 @@ export class RecommendationsService {
     missingSkills?:  string[],
     isTemporary = false,
     forceRefresh = false,
-    requestIdentity = ''
+    requestIdentity = '',
+    resumeText?:     string,
+    previewResumeId?: string,
+    resumeHash?: string
   ): Observable<RecommendationsResult> {
+    const cacheKey = this.getProfileCacheKey(username);
+    const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
+    if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
+      const age = Date.now() - this.profileCache.cachedAt;
+      if (age < ttlMs) {
+        return of(this.profileCache.value);
+      }
+    }
+
     const key = [
       username,
       careerStack,
@@ -258,19 +372,24 @@ export class RecommendationsService {
       forceRefresh ? 'refresh' : 'normal',
       requestIdentity,
       (knownSkills || []).join(','),
-      (missingSkills || []).join(',')
+      (missingSkills || []).join(','),
+      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${resumeText.length}` : 'no-resume')
     ].join(':').toLowerCase();
     const existing = this.inflight.get(key);
     if (existing) return existing;
 
+    const payload = isTemporary
+      ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true, forceRefresh, resumeText, previewResumeId, resumeHash }
+      : { username, careerStack, experienceLevel, forceRefresh };
     const request$ = this.http.post<RecommendationsResult>(
       isTemporary ? `${this.baseUrl}/recommendations/generate` : `${this.baseUrl}/recommendations`,
-      isTemporary
-        ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true, forceRefresh }
-        : { username, careerStack, experienceLevel, knownSkills, missingSkills, forceRefresh }
+      payload
     ).pipe(
-      tap(() => {
+      tap((result) => {
         if (!isTemporary) {
+          this.profileCache = { value: result, cachedAt: Date.now() };
+          this.profileCacheKey = cacheKey;
+
           this.cacheInvalidation.clearScenarioCaches();
           this.cacheInvalidation.clearNewsCaches();
           this.cacheInvalidation.clearJobsCaches();

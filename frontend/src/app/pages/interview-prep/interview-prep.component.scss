@@ -742,9 +742,10 @@
       margin: 0;
       color: var(--text-primary);
       font-size: 14px;
-      line-height: 1.6;
-      white-space: pre-line;
-      overflow-wrap: anywhere;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      word-break: normal;
     }
 
     ul {
@@ -774,6 +775,17 @@
       border-left: 3px solid #6366f1;
       padding-left: 12px;
       color: #d1fae5;
+    }
+
+    &[data-kind='code'] .answer-body {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.72);
+      color: #dbeafe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      overflow-x: auto;
     }
   }
 
@@ -916,6 +928,14 @@
       grid-template-columns: 1fr;
     }
 
+    .filter-group--wide {
+      grid-column: 1 / -1;
+    }
+
+    .search-controls {
+      grid-template-columns: 1fr;
+    }
+
     .card {
       padding: 1.25rem;
       border-radius: 1.25rem;
@@ -1019,5 +1039,432 @@
     border: 3px solid rgba(99, 102, 241, 0.2);
     border-top-color: var(--primary);
     animation: generated-spin 0.8s linear infinite;
+  }
+
+  // ── New Premium Interview Prep UI Styles (Highly Reusable & Condensed) ──
+  .prep-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  // Shared Premium Card Container
+  .search-panel,
+  .all-questions-section,
+  .ai-section,
+  .recent-section {
+    background: #111827;
+    border: 1px solid var(--border-ghost);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .section-title {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .count-badge {
+    padding: 0.25rem 0.75rem;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #c7d2fe;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 999px;
+  }
+
+  .section-filter-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  // Shared Filter Grid Layout
+  .compact-filter,
+  .ai-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+  }
+
+  .filter-panel__intro,
+  .filters-dirty-note {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .filter-panel__intro p,
+  .section-heading p,
+  .search-guidance {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .filter-group--wide {
+    grid-column: span 2;
+  }
+
+  .search-controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .local-skill-row {
+    min-width: 0;
+  }
+
+  .section-heading {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .search-guidance {
+    padding: 0.65rem 0.8rem;
+    border-left: 3px solid rgba(99, 102, 241, 0.75);
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 0 8px 8px 0;
+  }
+
+  // Shared Action Row Layout
+  .filter-actions,
+  .ai-actions,
+  .search-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .filter-actions,
+  .ai-actions {
+    justify-content: flex-end;
+  }
+
+  // Active Filter Chips
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.85rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    border-radius: 9999px;
+    color: #c7d2fe;
+    font-size: 0.825rem;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: all 0.2s ease;
+  }
+
+  .chip-reset {
+    background: transparent;
+    border: 1px dashed var(--border-ghost);
+    color: var(--text-secondary);
+    cursor: pointer;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+  }
+
+  // Collapsible Accordion Toggle
+  .filter-accordion {
+    border: 1px solid var(--border-ghost);
+    border-radius: 12px;
+    background: #111827;
+    overflow: hidden;
+    width: 100%;
+    transition: all 0.3s ease;
+
+    &[open] {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .filter-accordion__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.95rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.015);
+    list-style: none;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .filter-accordion__count {
+    margin-left: auto;
+    margin-right: 0.75rem;
+    padding: 0.2rem 0.55rem;
+    background: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+  }
+
+  .filter-accordion__chevron {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+  }
+
+  details[open] .filter-accordion__chevron {
+    transform: rotate(180deg);
+  }
+
+  .filter-panel {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border-ghost);
+    background: transparent;
+  }
+
+  // Textarea with inside count indicator
+  .textarea-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .question-textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 0.85rem 1.25rem 2.25rem 1.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-ghost);
+    background: rgba(15, 23, 42, 0.6);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.925rem;
+    line-height: 1.6;
+    resize: vertical;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      background: rgba(15, 23, 42, 0.8);
+    }
+  }
+
+  .char-count {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    font-weight: 500;
+  }
+
+  // Recent practice groups
+  .recent-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  .recent-group-heading {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  // Search custom result card aligning with qa-card
+  .result-card {
+    background: #111827;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid var(--border-ghost);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 1rem;
+    
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+    }
+  }
+
+  .result-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-ghost);
+  }
+
+  .result-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .result-question {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .meta-sep {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    user-select: none;
+  }
+
+  // Question Card Badges & Info Row
+  .qa-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+
+    &[data-level='easy'] {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    &[data-level='medium'] {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    &[data-level='hard'] {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  .source-label-sm {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.58rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    color: #818cf8;
+    background: rgba(129, 140, 248, 0.12);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+  }
+
+  .qa-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border-ghost);
+  }
+
+  .qa-answer {
+    margin-top: 8px;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .chevron-icon {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+    
+    &.open {
+      transform: rotate(180deg);
+    }
   }
 }

@@ -75,6 +75,10 @@ export class ApiService {
     );
   }
 
+  parsePreviewResumeText(formData: FormData): Observable<{ text: string }> {
+    return this.http.post<{ text: string }>(`${this.baseUrl}/preview/resume/parse-text`, formData);
+  }
+
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(
       tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })

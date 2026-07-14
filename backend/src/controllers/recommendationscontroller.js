@@ -5,6 +5,7 @@ const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
+const SavedPreview = require('../models/savedPreview');
 const User = require('../models/user');
 const { createVersion } = require('../services/aiVersionService');
 const {
@@ -13,11 +14,13 @@ const {
   buildSignalsUsedSummary,
   buildResumeAnalysisSignals,
   buildResumeCacheIdentity,
-  buildAnalysisBasedOn
+  buildAnalysisBasedOn,
+  getPublicJobMarketSignal
 } = require('../services/developerSignalService');
 const { extractSkillsFromRepositories, canonicalizeSkillName, detectSkillGaps } = require('../utils/skilldetector');
+const { resolvePreviewResume } = require('../services/previewResumeCacheService');
 
-const RECOMMENDATION_ANALYSIS_VERSION = 'v4-career-advisor';
+const RECOMMENDATION_ANALYSIS_VERSION = 'v5-career-advisor-data-quality';
 const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
 const recommendationInflight = new Map();
@@ -170,6 +173,49 @@ const normalizeRecommendationPayload = (payload = {}) => {
   };
 };
 
+const buildRecommendationDataQuality = (payload = {}) => {
+  const signals = payload.signalsUsed || {};
+  const hasGitHubData = Boolean(Number(signals.github?.repoCount || 0) || (payload.githubSkills || []).length || (payload.githubInsights?.repositories || []).length);
+  const hasResumeData = Boolean(signals.resume?.analyzed);
+  const hasSkillGapData = Boolean(signals.skillGap?.present);
+  const hasPortfolioData = Boolean(signals.portfolio?.present || Number(signals.portfolio?.projectCount || 0));
+  const hasJobMarketData = Boolean(Number(signals.jobsDemand?.sampledJobs || 0) || (signals.jobsDemand?.topSkills || []).length);
+  const sources = [hasGitHubData, hasResumeData, hasSkillGapData, hasPortfolioData, hasJobMarketData];
+
+  return {
+    hasGitHubData,
+    hasResumeData,
+    hasSkillGapData,
+    hasPortfolioData,
+    hasJobMarketData,
+    dataCompleteness: Math.round((sources.filter(Boolean).length / sources.length) * 100),
+    scoreAvailability: {
+      readinessScore: hasGitHubData || hasResumeData || hasSkillGapData,
+      portfolioScore: hasPortfolioData,
+      learningScore: hasSkillGapData,
+      interviewScore: hasGitHubData || hasResumeData || hasSkillGapData,
+      marketReadinessScore: hasJobMarketData && hasSkillGapData,
+      careerGrowthScore: hasPortfolioData || hasSkillGapData,
+      overallRecommendationScore: sources.filter(Boolean).length >= 2
+    }
+  };
+};
+
+const normalizeRecommendationResponse = (payload = {}) => {
+  const normalized = normalizeRecommendationPayload(payload);
+  normalized.projects = uniqueBy(normalized.projects.filter((item) => item.title), (item) => item.title.toLowerCase());
+  normalized.technologies = uniqueBy(normalized.technologies.filter((item) => item.name), (item) => item.name.toLowerCase());
+  normalized.careerPaths = uniqueBy(normalized.careerPaths.filter((item) => item.title), (item) => item.title.toLowerCase());
+  normalized.structuredRecommendations = Object.fromEntries(
+    Object.entries(normalized.structuredRecommendations || {}).map(([category, cards]) => [
+      category,
+      uniqueBy((Array.isArray(cards) ? cards : []).filter((card) => String(card?.title || '').trim()), (card) => String(card.title).trim().toLowerCase())
+    ]).filter(([, cards]) => cards.length)
+  );
+  normalized.dataQuality = buildRecommendationDataQuality(normalized);
+  return normalized;
+};
+
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
   if (!req.user?._id || !output || typeof output !== 'object') return;
   try {
@@ -207,17 +253,24 @@ const loadResumeAnalysis = async (userId) => {
   return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
 };
 
-const getGitHubData = async (username) => {
+const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
   const { analyzeGitHubProfile } = require('../services/githubservice');
   try {
     const normalizedUsername = String(username || '').trim().toLowerCase();
     const cached = normalizedUsername
       ? await GitHubAnalysisCache.findOne({ normalizedUsername }).sort({ updatedAt: -1 }).lean()
       : null;
-    if (cached?.result) return cached.result;
-    return await analyzeGitHubProfile(String(username || '').trim());
+    const cacheExpiresAt = cached?.expiresAt ? new Date(cached.expiresAt).getTime() : 0;
+    if (!forceRefresh && cached?.result && cacheExpiresAt > Date.now()) return cached.result;
+
+    const freshData = await analyzeGitHubProfile(String(username || '').trim(), { forceRefresh });
+    if (isTemporaryMode && (!freshData || Number(freshData.repoCount || 0) < 1)) {
+      throw new Error('GitHub profile has no public repositories or analysis is in progress.');
+    }
+    return freshData;
   } catch (githubError) {
     console.warn('Recommendations GitHub fallback:', githubError.message);
+    if (isTemporaryMode) throw githubError;
     return {
       repoCount: 0,
       developerLevel: 'Unknown',
@@ -583,6 +636,7 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
       careerProfileSignal: { present: false, careerStack: '', experienceLevel: '', careerGoal: '', githubUsername: '', updatedAt: null },
       jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [], updatedAt: null }
     };
+    emptySignals.jobsDemandSignal = await getPublicJobMarketSignal();
     emptySignals.portfolioSignals = emptySignals.portfolioSignal;
     emptySignals.careerSprintSignals = emptySignals.careerSprintSignal;
     emptySignals.weeklyReportSignals = emptySignals.weeklyReportSignal;
@@ -646,8 +700,8 @@ const resolveKnownAndMissingSkills = async ({
   const skillGapSignals = developerSignals.skillGapSignals || {};
 
   if (!knownSkills || !missingSkills) {
-    const cachedGap = skillGapSignals.present ? null : await AnalysisCache.findOne({
-      ...(userId ? { userId } : {}),
+    const cachedGap = (skillGapSignals.present || !userId) ? null : await AnalysisCache.findOne({
+      userId,
       githubUsername: username,
       careerStack,
       experienceLevel,
@@ -1190,7 +1244,7 @@ const finalizeRecommendationResult = ({
     cachedAt: null
   };
 
-  return normalized;
+  return normalizeRecommendationResponse(normalized);
 };
 
 const runRecommendationPipeline = async ({
@@ -1200,6 +1254,8 @@ const runRecommendationPipeline = async ({
   careerStack,
   experienceLevel,
   resumeText,
+  previewResumeId,
+  resumeHash,
   knownSkills,
   missingSkills,
   userId,
@@ -1208,12 +1264,50 @@ const runRecommendationPipeline = async ({
   source,
   forceRefresh = false
 }) => {
-  const latestResumeAnalysis = await loadResumeAnalysis(userId);
-  const storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
-  const resumeCacheIdentity = buildResumeCacheIdentity({
-    resumeText,
-    resumeAnalysis: latestResumeAnalysis
-  });
+  const isTemporaryMode = !allowSignals;
+  const cleanResume = isTemporaryMode ? String(resumeText || '').trim() : '';
+
+  let latestResumeAnalysis = null;
+  let storedResumeInsights;
+  let resumeCacheIdentity;
+
+  if (isTemporaryMode) {
+    const previewResume = await resolvePreviewResume({ previewResumeId, resumeHash, resumeText: cleanResume, experienceLevel });
+    if (previewResume.error) return res.status(previewResume.status).json({ message: previewResume.error });
+    storedResumeInsights = previewResume.resumeInsights;
+    resumeCacheIdentity = previewResume.resumeCacheIdentity;
+  } else {
+    latestResumeAnalysis = await loadResumeAnalysis(userId);
+    storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
+    resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
+  }
+
+  const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
+  const previewCacheKey = `recommendations:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${RECOMMENDATION_ANALYSIS_VERSION}`;
+
+  if (isTemporaryMode && !forceRefresh) {
+    const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
+    if (previewCached?.analysisData) {
+      const cachedResult = {
+        ...previewCached.analysisData,
+        analysisBasedOn: buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights: storedResumeInsights
+        }),
+        fromCache: true,
+        cacheMetadata: {
+          ...(previewCached.analysisData.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheKey: previewCacheKey,
+          cachedAt: previewCached.updatedAt || null
+        }
+      };
+      return res.json(cachedResult);
+    }
+  }
+
   const baseCacheKey = saveResult && userId
     ? {
         userId,
@@ -1241,7 +1335,7 @@ const runRecommendationPipeline = async ({
     ? preliminarySignals.developerSignals.resumeSignals
     : storedResumeInsights;
   const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
-    || await getGitHubData(username);
+    || await getGitHubData(username, { forceRefresh, isTemporaryMode });
   const githubInsights = buildGithubInsights(githubData);
   const recommendationEvidence = buildRecommendationEvidence({
     resumeInsights,
@@ -1313,7 +1407,7 @@ const runRecommendationPipeline = async ({
       ? earlyCacheCandidate
       : await AnalysisCache.findOne(scopedCacheKey).lean();
     if (!forceRefresh && isCacheFresh(cached) && cached?.analysisData?.projects?.length) {
-      const cachedResult = {
+      const cachedResult = normalizeRecommendationResponse({
         ...cached.analysisData,
         ...normalizeRecommendationPayload(cached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
@@ -1334,7 +1428,7 @@ const runRecommendationPipeline = async ({
           ttlHours: 24,
           cachedAt: cached.updatedAt || cached.createdAt || null
         }
-      };
+      });
       return res.json(cachedResult);
     }
   }
@@ -1400,27 +1494,39 @@ const runRecommendationPipeline = async ({
       });
       result.cacheMetadata.temporary = !saveResult;
 
-      if (scopedCacheKey) {
-        await AnalysisCache.findOneAndUpdate(
-          scopedCacheKey,
-          { $set: { analysisData: result, userId: req.user._id } },
-          { upsert: true }
-        );
-      }
-      if (saveResult) {
-        queueAIVersionSnapshot({
-          req,
-          source,
-          output: result,
-          metadata: {
-            fromCache: false,
-            username,
-            careerStack,
-            experienceLevel,
-            signalHash,
-            resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-          }
-        });
+      if (isTemporaryMode) {
+        result.mode = 'preview';
+        result.isTemporary = true;
+        result.savedToProfile = false;
+
+        const cachePayload = {
+          analysisData: result,
+          updatedAt: new Date()
+        };
+        await aiService.setSharedCache(previewCacheKey, cachePayload, 1800, 'preview');
+      } else {
+        if (scopedCacheKey) {
+          await AnalysisCache.findOneAndUpdate(
+            scopedCacheKey,
+            { $set: { analysisData: result, userId: req.user._id } },
+            { upsert: true }
+          );
+        }
+        if (saveResult) {
+          queueAIVersionSnapshot({
+            req,
+            source,
+            output: result,
+            metadata: {
+              fromCache: false,
+              username,
+              careerStack,
+              experienceLevel,
+              signalHash,
+              resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+            }
+          });
+        }
       }
       return result;
     })();
@@ -1428,9 +1534,9 @@ const runRecommendationPipeline = async ({
     workPromise.finally(() => recommendationInflight.delete(inflightKey)).catch(() => {});
   }
 
-  const fullResult = await workPromise;
+  const fullResult = normalizeRecommendationResponse(await workPromise);
 
-  if (req.user?._id) {
+  if (!isTemporaryMode && req.user?._id) {
     await createNotification({
       userId: req.user._id,
       type: 'career_update',
@@ -1445,32 +1551,125 @@ const runRecommendationPipeline = async ({
   return res.json(fullResult);
 };
 
+const PREVIEW_STACKS = new Set(['Frontend', 'Backend', 'Full Stack', 'AI/ML']);
+const PREVIEW_LEVELS = new Set(['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years']);
+const previewText = (value, max = 500) => String(value || '').trim().slice(0, max);
+const previewStrings = (values, max = 12) => uniqueStrings(Array.isArray(values) ? values.map((value) => typeof value === 'string' ? value : value?.name) : [], max);
+const previewSkills = (values, max = 16) => (Array.isArray(values) ? values : [])
+  .map((skill) => ({ name: previewText(typeof skill === 'string' ? skill : skill?.name, 80), priority: previewText(skill?.priority, 16), jobDemand: clamp(skill?.jobDemand || 0) }))
+  .filter((skill) => skill.name)
+  .slice(0, max);
+const previewCards = (values, max = 8) => (Array.isArray(values) ? values : [])
+  .map((card) => ({ title: previewText(card?.title, 160), description: previewText(card?.description || card?.reason, 500), priority: previewText(card?.priority, 16), estimatedImpact: clamp(card?.estimatedImpact || card?.impact || 0) }))
+  .filter((card) => card.title)
+  .slice(0, max);
+
+const buildSavedPreviewSummary = (module, result = {}) => {
+  if (module === 'skill-gap') {
+    return {
+      analysisSummary: previewText(result.analysisSummary || result.levelAssessment, 1000),
+      coverage: clamp(result.coverage || 0),
+      missing: clamp(result.missing || 0),
+      knownSkills: previewSkills(result.yourSkills),
+      missingSkills: previewSkills(result.missingSkills),
+      actions: previewCards(result.suggestedProjects, 6)
+    };
+  }
+  return {
+    analysisSummary: previewText(result.analysisSummary, 1000),
+    projects: previewCards(result.projects, 8),
+    technologies: previewSkills(result.technologies, 12),
+    careerPaths: previewCards(result.careerPaths, 6),
+    portfolioRecommendations: previewStrings(result.portfolioRecommendations, 4),
+    resumeRecommendations: previewStrings(result.resumeRecommendations, 4),
+    learningActions: previewStrings(result.learningActions, 6),
+    interviewReadinessActions: previewStrings(result.interviewReadinessActions, 4),
+    recommendationScores: Object.fromEntries(Object.entries(result.recommendationScores || {}).filter(([, value]) => Number.isFinite(Number(value))).map(([key, value]) => [key, clamp(value)])),
+    actions: Object.values(result.structuredRecommendations || {}).flatMap((cards) => previewCards(cards, 6)).slice(0, 16)
+  };
+};
+
+const savePreview = async (req, res) => {
+  try {
+    const module = String(req.body?.module || '').trim();
+    const githubUsername = String(req.body?.githubUsername || '').trim().replace(/^@/, '').toLowerCase();
+    const careerStack = String(req.body?.careerStack || '').trim();
+    const experienceLevel = String(req.body?.experienceLevel || '').trim();
+    const resumeHash = String(req.body?.resumeHash || 'no-resume').trim();
+    if (!['skill-gap', 'recommendations'].includes(module) || !githubUsername || !PREVIEW_STACKS.has(careerStack) || !PREVIEW_LEVELS.has(experienceLevel)) {
+      return res.status(400).json({ message: 'Invalid saved preview metadata.' });
+    }
+    if (resumeHash !== 'no-resume' && !/^[a-f0-9]{64}$/i.test(resumeHash)) {
+      return res.status(400).json({ message: 'Invalid preview resume identity.' });
+    }
+    const title = previewText(req.body?.title, 120) || `${githubUsername} ${careerStack} preview`;
+    const preview = await SavedPreview.create({
+      userId: req.user._id,
+      title,
+      githubUsername,
+      careerStack,
+      experienceLevel,
+      resumeHash,
+      source: 'preview',
+      module,
+      resultSummary: buildSavedPreviewSummary(module, req.body?.result)
+    });
+    return res.status(201).json({ preview });
+  } catch (error) {
+    console.error('Save preview error:', error.message);
+    return res.status(500).json({ message: 'Failed to save preview.' });
+  }
+};
+
+const listSavedPreviews = async (req, res) => {
+  const previews = await SavedPreview.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(50).lean();
+  return res.json({ previews });
+};
+
+const deleteSavedPreview = async (req, res) => {
+  if (!/^[a-f\d]{24}$/i.test(String(req.params.id || ''))) {
+    return res.status(400).json({ message: 'Invalid saved preview id.' });
+  }
+  const deleted = await SavedPreview.findOneAndDelete({ _id: req.params.id, userId: req.user._id }).lean();
+  if (!deleted) return res.status(404).json({ message: 'Saved preview not found.' });
+  return res.status(204).send();
+};
 /**
  * @desc Generate personalised roadmap and project suggestions
  * @route POST /api/recommendations
  */
 const getRecommendations = async (req, res) => {
   try {
-    let { username, knownSkills, missingSkills, resumeText, forceRefresh } = req.body;
-    username = username || req.user?.githubUsername;
+    let { username, knownSkills, missingSkills, forceRefresh } = req.body;
+    const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
+
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Authentication required.' });
+    }
+
+    const requestedUsername = String(username || '').trim();
+    if (requestedUsername && activeGithub && requestedUsername.toLowerCase() !== activeGithub.toLowerCase()) {
+      return res.status(400).json({ message: 'Use Preview mode to analyze another GitHub username.' });
+    }
+
+    const finalUsername = activeGithub;
+    if (!finalUsername) {
+      return res.status(400).json({ message: 'GitHub username is required.' });
+    }
 
     const careerStack = req.user?.careerStack || req.body.careerStack || 'Full Stack';
     const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
 
-    if (!username) {
-      return res.status(400).json({ message: 'Username is required.' });
-    }
-
     return runRecommendationPipeline({
       req,
       res,
-      username: username.trim(),
+      username: finalUsername,
       careerStack,
       experienceLevel,
-      resumeText,
-      knownSkills,
-      missingSkills,
-      userId: req.user?._id || null,
+      resumeText: '',
+      knownSkills: undefined,
+      missingSkills: undefined,
+      userId: req.user._id,
       allowSignals: true,
       saveResult: true,
       source: 'recommendations',
@@ -1498,25 +1697,28 @@ const generateRecommendations = async (req, res) => {
       isTemporary,
       missingSkills,
       knownSkills,
-      resumeText
+      resumeText,
+      previewResumeId,
+      resumeHash
     } = req.body;
     const forceRefresh = req.body.forceRefresh === true || req.body.forceRefresh === 'true';
-    const defaultGithubUsername = String(req.user?.githubUsername || '').trim();
-    const normalizedGithubUsername = String(githubUsername || '').trim();
-    const isTemporaryMode = isTemporary === true
-      || isTemporary === 'true'
-      || Boolean(defaultGithubUsername && normalizedGithubUsername && normalizedGithubUsername.toLowerCase() !== defaultGithubUsername.toLowerCase());
+    const isTemporaryMode = isTemporary === true || isTemporary === 'true';
+    const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
 
-    if (!githubUsername) {
+    if (!isTemporaryMode) {
+      if (!req.user?._id) {
+        return res.status(401).json({ message: 'Authentication required for profile mode.' });
+      }
+      const requestedUsername = String(githubUsername || '').trim();
+      if (requestedUsername && activeGithub && requestedUsername.toLowerCase() !== activeGithub.toLowerCase()) {
+        return res.status(400).json({ message: 'Use Preview mode to analyze another GitHub username.' });
+      }
+    }
+
+    const username = isTemporaryMode ? String(githubUsername || '').trim() : activeGithub;
+
+    if (!username) {
       return res.status(400).json({ message: 'GitHub username is required.' });
-    }
-
-    if (!careerStack) {
-      return res.status(400).json({ message: 'Career stack is required.' });
-    }
-
-    if (!experienceLevel) {
-      return res.status(400).json({ message: 'Experience level is required.' });
     }
 
     const finalCareerStack = isTemporaryMode
@@ -1526,16 +1728,33 @@ const generateRecommendations = async (req, res) => {
       ? experienceLevel
       : (req.user?.experienceLevel || experienceLevel || 'Student');
 
+    // Validation for Preview Mode
+    if (isTemporaryMode) {
+      const allowedStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+      if (!finalCareerStack || !allowedStacks.includes(finalCareerStack)) {
+        return res.status(400).json({ message: `Target stack is required and must be one of: ${allowedStacks.join(', ')}` });
+      }
+      const allowedLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+      if (!finalExperienceLevel || !allowedLevels.includes(finalExperienceLevel)) {
+        return res.status(400).json({ message: `Experience level is required and must be one of: ${allowedLevels.join(', ')}` });
+      }
+      if (resumeText !== undefined && typeof resumeText !== 'string') {
+        return res.status(400).json({ message: 'Resume input must be a valid text string.' });
+      }
+    }
+
     return runRecommendationPipeline({
       req,
       res,
-      username: normalizedGithubUsername,
+      username,
       careerStack: finalCareerStack,
       experienceLevel: finalExperienceLevel,
       resumeText,
-      knownSkills,
-      missingSkills,
-      userId: !isTemporaryMode ? (req.user?._id || null) : null,
+      previewResumeId,
+      resumeHash,
+      knownSkills: isTemporaryMode ? knownSkills : undefined,
+      missingSkills: isTemporaryMode ? missingSkills : undefined,
+      userId: !isTemporaryMode ? req.user._id : null,
       allowSignals: !isTemporaryMode,
       saveResult: !isTemporaryMode,
       source: 'recommendations/generate',
@@ -1550,4 +1769,4 @@ const generateRecommendations = async (req, res) => {
   }
 };
 
-module.exports = { getRecommendations, generateRecommendations };
+module.exports = { getRecommendations, generateRecommendations, savePreview, listSavedPreviews, deleteSavedPreview };

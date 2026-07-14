@@ -10,46 +10,132 @@
       </div>
     </div>
     <div class="header-actions" *ngIf="result">
-      <span class="state-pill" [class.state-pill--cache]="cacheStateLabel === 'cache-hit'">{{ cacheStateLabel }}</span>
       <button class="secondary-button" (click)="analyze(true)" [disabled]="isLoading">Refresh</button>
     </div>
   </header>
 
+  <div class="mode-tabs-container">
+    <button type="button" class="mode-tab" [class.active]="!isPreviewMode" (click)="setMode(false)" [disabled]="isLoading">My Profile</button>
+    <button type="button" class="mode-tab" [class.active]="isPreviewMode" (click)="setMode(true)" [disabled]="isLoading">Preview Candidate</button>
+  </div>
+
   <div class="rec-search-card">
-    <div class="rec-search-card__inner">
-      <div class="rec-search-card__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.88c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.82a9.6 9.6 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+    <!-- MY PROFILE MODE -->
+    <div class="rec-search-card__inner" *ngIf="!isPreviewMode">
+      <div class="rec-search-card__fields">
+        <h3>GitHub Profile</h3>
+        <strong>@{{ defaultUsername }}</strong>
       </div>
       <div class="rec-search-card__fields">
-        <h3>GitHub Username</h3>
-        <input
-          type="text"
-          [(ngModel)]="username"
-          placeholder="Enter GitHub username"
-          (keyup.enter)="analyze(false)"
-          [disabled]="isLoading"
-        />
+        <h3>Target Stack</h3>
+        <strong>{{ currentCareerStack }}</strong>
       </div>
-      <button class="primary-button" (click)="analyze(false)" [disabled]="isLoading || !username.trim()">
+      <div class="rec-search-card__fields">
+        <h3>Experience Level</h3>
+        <strong>{{ currentExperienceLevel }}</strong>
+      </div>
+      <button class="primary-button" (click)="analyze(true)" [disabled]="isLoading || !defaultUsername.trim()">
         <span *ngIf="!isLoading">Get Recommendations</span>
         <span *ngIf="isLoading" class="spinner-wrap"><span class="spinner"></span>{{ loadingState === 'refreshing' ? 'Refreshing...' : 'Loading...' }}</span>
       </button>
     </div>
+
+    <!-- PREVIEW CANDIDATE MODE -->
+    <div class="rec-search-card__inner preview-grid-layout" *ngIf="isPreviewMode">
+      <div class="rec-search-card__fields">
+        <h3>GitHub Username</h3>
+        <input
+          type="text"
+          [(ngModel)]="previewGithubUsername"
+          placeholder="Enter username"
+          [disabled]="isLoading"
+        />
+      </div>
+      <div class="rec-search-card__fields">
+        <h3>Target Stack</h3>
+        <select [(ngModel)]="previewCareerStack" [disabled]="isLoading" class="stitch-select">
+          <option value="Frontend">Frontend</option>
+          <option value="Backend">Backend</option>
+          <option value="Full Stack">Full Stack</option>
+          <option value="AI/ML">AI/ML</option>
+        </select>
+      </div>
+      <div class="rec-search-card__fields">
+        <h3>Experience Level</h3>
+        <select [(ngModel)]="previewExperienceLevel" [disabled]="isLoading" class="stitch-select">
+          <option value="Student">Student</option>
+          <option value="Intern">Intern</option>
+          <option value="0-1 years">0-1 years</option>
+          <option value="1-2 years">1-2 years</option>
+          <option value="2-3 years">2-3 years</option>
+          <option value="3-5 years">3-5 years</option>
+          <option value="5+ years">5+ years</option>
+        </select>
+      </div>
+      <button class="primary-button" (click)="analyze()" [disabled]="isLoading || isUploading || !previewGithubUsername.trim()" *ngIf="!result">
+        <span *ngIf="!isLoading">Generate Preview</span>
+        <span *ngIf="isLoading" class="spinner-wrap"><span class="spinner"></span>Generating...</span>
+      </button>
+    </div>
   </div>
+
+  <!-- Temporary Resume input for Recommendations page in Preview mode -->
+  <section class="preview-resume-panel" *ngIf="isPreviewMode && !result" aria-label="Preview resume input">
+    <div class="resume-input-group">
+      <div class="file-upload-zone">
+        <span>Temporary Resume PDF</span>
+        <div class="upload-controls">
+          <input type="file" id="rec-preview-resume-file" accept="application/pdf" (change)="onFileSelected($event)" [disabled]="isLoading || isUploading" class="hidden-file-input" />
+          <label for="rec-preview-resume-file" class="upload-btn">
+            <span class="material-symbols-outlined">upload_file</span>
+            {{ previewFileName || 'Upload PDF' }}
+          </label>
+          <button type="button" class="clear-file-btn" *ngIf="previewFileName" (click)="clearPreviewFile()" [disabled]="isLoading || isUploading">Clear</button>
+          <span class="uploading-spinner" *ngIf="isUploading">Parsing...</span>
+        </div>
+      </div>
+      <div class="text-paste-zone">
+        <span>Or paste resume text</span>
+        <textarea [(ngModel)]="previewResumeText" placeholder="Paste resume details here..." rows="4" [disabled]="isLoading || isUploading"></textarea>
+      </div>
+    </div>
+  </section>
 
   <div class="rec-error" *ngIf="errorMessage">{{ errorMessage }}</div>
-  <div class="mode-banner" *ngIf="!errorMessage && actionMessage">{{ actionMessage }}</div>
 
-  <div class="mode-banner" *ngIf="!errorMessage && result">
-    <span *ngIf="isTemporaryView">
-      Temporary recommendations for <strong>@{{ viewedUsername }}</strong>. Saved dashboard recommendations still use <strong>@{{ defaultUsername }}</strong>.
-    </span>
-    <span *ngIf="!isTemporaryView">
-      Showing advisor output for your default profile <strong>@{{ viewedUsername || defaultUsername }}</strong>.
-    </span>
-    <button class="secondary-button" *ngIf="isTemporaryView" (click)="returnToDefaultProfile()" [disabled]="isLoading">Return to My Profile</button>
+  <div class="profile-notice preview-banner" *ngIf="!errorMessage && isTemporaryView" style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 16px 20px; border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; background: rgba(99,102,241,0.05);">
+    <div class="preview-badge" style="background: var(--primary); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 750; text-transform: uppercase;">Preview Result</div>
+    <p style="margin: 0; font-weight: 600; color: #fff;">Preview result is not saved to your profile.</p>
+    <div class="sources-list" style="display: flex; flex-direction: column; gap: 6px; width: 100%; font-size: 0.85rem;">
+      <div class="source-group used" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <strong style="color: #fff;">Sources Included:</strong>
+        <span style="background: rgba(50,201,151,0.12); color: #74dfbd; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(50,201,151,0.2);">GitHub</span>,
+        <span style="background: rgba(50,201,151,0.12); color: #74dfbd; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(50,201,151,0.2);">Temporary Resume</span>,
+        <span style="background: rgba(50,201,151,0.12); color: #74dfbd; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(50,201,151,0.2);">Job Market</span>
+      </div>
+      <div class="source-group excluded" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <strong style="color: #fff;">Sources Not Included:</strong>
+        <span style="background: rgba(240,98,114,0.12); color: #ff9faa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(240,98,114,0.2);">Saved Sprint</span>,
+        <span style="background: rgba(240,98,114,0.12); color: #ff9faa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(240,98,114,0.2);">Weekly Reports</span>,
+        <span style="background: rgba(240,98,114,0.12); color: #ff9faa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(240,98,114,0.2);">Saved Portfolio</span>,
+        <span style="background: rgba(240,98,114,0.12); color: #ff9faa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(240,98,114,0.2);">Saved Integrations</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <button class="secondary-button" *ngIf="isAuthenticated" (click)="savePreview()" [disabled]="isLoading || isSavingPreview">{{ isSavingPreview ? 'Saving...' : 'Save Preview' }}</button>
+      <small *ngIf="previewSaveMessage">{{ previewSaveMessage }}</small>
+      <button class="secondary-button" (click)="returnToDefaultProfile()" [disabled]="isLoading">Return to My Profile</button>
+    </div>
   </div>
 
+  <section class="profile-notice" *ngIf="isPreviewMode && isAuthenticated && savedPreviews.length" style="margin-top: 12px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; background: rgba(255, 255, 255, 0.04);">
+    <strong style="color: #fff; font-size: 0.88rem;">Saved previews</strong>
+    <select [(ngModel)]="selectedSavedPreviewId" (ngModelChange)="openSavedPreview($event)" [disabled]="isLoading" class="stitch-select" style="max-width: 280px; display: inline-block;">
+      <option value="">Open a saved preview</option>
+      <option *ngFor="let preview of savedPreviews" [value]="preview._id">{{ preview.title }}</option>
+    </select>
+    <button class="secondary-button" type="button" (click)="deleteSavedPreview()" [disabled]="!selectedSavedPreviewId || isLoading">Remove</button>
+  </section>
   <div class="skeleton-stack" *ngIf="!result && isLoading">
     <div class="skeleton-card skeleton-card--wide">
       <span class="skeleton-line skeleton-line--short"></span>
@@ -86,7 +172,7 @@
           <p *ngIf="result.analysisSummary" title="{{ result.analysisSummary }}">{{ result.analysisSummary }}</p>
           <div class="career-summary-row">
             <span *ngIf="careerGoalLabel">Goal: {{ careerGoalLabel }}</span>
-            <span *ngIf="roadmapTimeline.length">Timeline: {{ roadmapTimeline[0].label }} → {{ roadmapTimeline[roadmapTimeline.length - 1].label }}</span>
+            <span *ngIf="roadmapTimeline.length">Timeline: {{ roadmapTimeline[0].label }} Ã¢â€ â€™ {{ roadmapTimeline[roadmapTimeline.length - 1].label }}</span>
             <span *ngIf="highestPrioritySkill">Focus: {{ highestPrioritySkill }}</span>
             <span *ngIf="analysisLastUpdatedLabel">Updated: {{ analysisLastUpdatedLabel }}</span>
           </div>
@@ -151,7 +237,7 @@
           <h2>Career Timeline</h2>
           <p>Week-by-week milestones tied to progress indicators and Career Sprint handoff.</p>
         </div>
-        <button class="btn-secondary" (click)="jumpTo('Career Timeline')">View Full Roadmap</button>
+        <button class="secondary-button btn-view-roadmap" (click)="jumpTo('Learning Roadmap')">View Full Roadmap</button>
       </div>
       <div class="roadmap-rail" *ngIf="roadmapWeeks.length">
         <article class="roadmap-step" *ngFor="let week of roadmapWeeks">
@@ -259,6 +345,7 @@
         </div>
         <span class="section-count">{{ result.projects.length }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasGitHubData">Connect GitHub to improve this with repository and code-proof data.</p>
       <div class="projects-grid" *ngIf="result.projects.length">
         <div class="project-card" *ngFor="let proj of result.projects; trackBy: trackById">
           <div class="project-card__top">
@@ -286,8 +373,9 @@
           <h2>Resume Optimization</h2>
           <p>ATS, recruiter visibility, and proof-alignment actions.</p>
         </div>
-        <span class="section-count">{{ result.signalsUsed?.resume?.atsScore || 0 }}% resume</span>
+        <span class="section-count">{{ scoreLabel(result.signalsUsed?.resume?.atsScore, dataQuality.hasResumeData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasResumeData">Upload resume to improve this with ATS and recruiter-visibility guidance.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of resumeMetrics">
           <span>{{ metric.label }}</span>
@@ -311,8 +399,9 @@
           <h2>Job Market Readiness</h2>
           <p>Market alignment from Jobs Hub demand, matched roles, and skill gaps.</p>
         </div>
-        <span class="section-count">{{ result.recommendationScores?.marketReadinessScore || 0 }}% market</span>
+        <span class="section-count">{{ scoreLabel(result.recommendationScores?.marketReadinessScore, dataQuality.hasJobMarketData && dataQuality.hasSkillGapData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasSkillGapData">Generate Skill Gap first to compare your skills with target job demand.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of opportunityCenterMetrics">
           <span>{{ metric.label }}</span>
@@ -367,8 +456,9 @@
           <h2>Learning Roadmap</h2>
           <p>Focused skill investments that avoid completed work and prioritize market demand.</p>
         </div>
-        <span class="section-count">{{ result.recommendationScores?.learningScore || 0 }}% learning</span>
+        <span class="section-count">{{ scoreLabel(result.recommendationScores?.learningScore, dataQuality.hasSkillGapData) }}</span>
       </div>
+      <p class="section-empty" *ngIf="!dataQuality.hasSkillGapData">Generate Skill Gap first to create a focused learning roadmap.</p>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of learningMetrics">
           <span>{{ metric.label }}</span>
@@ -392,7 +482,7 @@
           <h2>Portfolio Optimization</h2>
           <p>Actions that turn your work into recruiter-visible proof.</p>
         </div>
-        <span class="section-count">{{ result.signalsUsed?.portfolio?.completenessScore || result.recommendationScores?.portfolioScore || 0 }}% score</span>
+        <span class="section-count">{{ scoreLabel(result.signalsUsed?.portfolio?.completenessScore, dataQuality.hasPortfolioData) }}</span>
       </div>
       <div class="section-metrics">
         <div class="metric-tile" *ngFor="let metric of portfolioMetrics">

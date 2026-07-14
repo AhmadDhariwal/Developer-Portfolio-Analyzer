@@ -180,6 +180,8 @@
       font-weight: 700;
       font-size: 1rem;
       transition: all var(--transition-fast);
+      overflow: hidden;
+      padding: 0;
 
       &:hover {
         transform: scale(1.05);
@@ -187,6 +189,23 @@
 
       &:active {
         transform: scale(0.95);
+      }
+
+      // Real avatar image
+      .user-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--radius-full);
+        display: block;
+      }
+
+      // Initials fallback
+      .user-avatar-initial {
+        line-height: 1;
+        font-weight: 700;
+        font-size: 1rem;
+        user-select: none;
       }
     }
 

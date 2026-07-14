@@ -219,16 +219,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     return this.selectedSkill || this.defaultSkill;
   }
 
-  get isGlobalSkillSelected(): boolean {
-    return Boolean(this.selectedSkill);
-  }
-
-  get showLocalQuestionSkillSelector(): boolean {
-    return !this.isGlobalSkillSelected;
-  }
 
   get effectiveQuestionSkill(): string {
-    return this.selectedSkill || this.localQuestionSkill;
+    return this.localQuestionSkill || this.selectedSkill;
   }
 
   get questionSkillLabel(): string {
@@ -367,7 +360,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
 
   onSkillChange(): void {
-    this.localQuestionSkill = '';
+    this.localQuestionSkill = this.selectedSkill;
     this.resetQuestionSearchState();
     this.generatedQuestions = [];
     this.aiGeneratedCount = 0;

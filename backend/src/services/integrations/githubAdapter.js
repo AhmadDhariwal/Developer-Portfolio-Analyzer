@@ -1,4 +1,5 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
+const { getGithubIntegrationOAuthConfig } = require('../../config/githubOauth');
 
 class GitHubAdapter extends BaseIntegrationAdapter {
   constructor() {
@@ -6,13 +7,14 @@ class GitHubAdapter extends BaseIntegrationAdapter {
   }
 
   getRequiredConfigKeys() {
-    return ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'];
+    return ['GITHUB_INTEGRATION_CLIENT_ID', 'GITHUB_INTEGRATION_CLIENT_SECRET'];
   }
 
   getAuthorizationUrl({ state, redirectUri }) {
+    const config = getGithubIntegrationOAuthConfig();
     const params = new URLSearchParams({
-      client_id: process.env.GITHUB_CLIENT_ID,
-      redirect_uri: redirectUri,
+      client_id: config.clientId,
+      redirect_uri: redirectUri || config.callbackUrl,
       state,
       scope: 'read:user user:email repo'
     });
@@ -20,13 +22,14 @@ class GitHubAdapter extends BaseIntegrationAdapter {
   }
 
   async exchangeCodeForToken({ code, redirectUri }) {
+    const config = getGithubIntegrationOAuthConfig();
     const data = await this.post(
       'https://github.com/login/oauth/access_token',
       {
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
         code,
-        redirect_uri: redirectUri
+        redirect_uri: redirectUri || config.callbackUrl
       },
       { headers: { Accept: 'application/json' } }
     );
@@ -47,11 +50,12 @@ class GitHubAdapter extends BaseIntegrationAdapter {
   async refreshAccessToken({ refreshToken }) {
     if (!refreshToken) return null;
 
+    const config = getGithubIntegrationOAuthConfig();
     const data = await this.post(
       'https://github.com/login/oauth/access_token',
       {
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
         grant_type: 'refresh_token',
         refresh_token: refreshToken
       },

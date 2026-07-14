@@ -273,7 +273,11 @@ function getMatchedSkills(course, skills = []) {
   return skills
     .map((skill) => toTrimmedString(skill))
     .filter(Boolean)
-    .filter((skill) => haystack.includes(skill.toLowerCase()))
+    .filter((skill) => {
+      const escapedSkill = skill.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?:^|[^a-z0-9_])${escapedSkill}(?:[^a-z0-9_]|$)`, 'i');
+      return regex.test(haystack);
+    })
     .slice(0, 3);
 }
 

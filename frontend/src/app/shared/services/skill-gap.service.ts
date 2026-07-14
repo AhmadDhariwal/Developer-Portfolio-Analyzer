@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
@@ -194,6 +194,8 @@ export interface SkillGapResult {
   };
   resumeStatusMessage?: string;
   totalWeeks: string;
+  data?: any;
+  result?: any;
 }
 
 export interface SkillGraphNode {
@@ -232,6 +234,8 @@ export interface WeeklyRoadmapWeek {
 export class SkillGapService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<SkillGapResult>>();
+  private profileCache: { value: SkillGapResult; cachedAt: number } | null = null;
+  private profileCacheKey = '';
 
   constructor(
     private readonly http: HttpClient,
@@ -242,8 +246,16 @@ export class SkillGapService {
     this.cacheInvalidation.register('skill-gap', () => this.clearCache());
   }
 
+  private getProfileCacheKey(username: string): string {
+    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
+    const cleanUsername = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.+-]+/g, '-');
+    return `skillgap:profile:${userId}:${cleanUsername}`;
+  }
+
   clearCache(): void {
     this.inflight.clear();
+    this.profileCache = null;
+    this.profileCacheKey = '';
     Object.keys(localStorage)
       .filter((key) => key.startsWith(SKILL_GAP_CACHE_PREFIX) || key.startsWith(SKILL_GAP_CACHE_INDEX_PREFIX))
       .forEach((key) => localStorage.removeItem(key));
@@ -254,18 +266,34 @@ export class SkillGapService {
     careerStack: string,
     experienceLevel: string,
     isTemporary = false,
-    forceRefresh = false
+    forceRefresh = false,
+    resumeText?: string,
+    previewResumeId?: string,
+    resumeHash?: string
   ): Observable<SkillGapResult> {
-    const requestKey = this.buildRequestKey(username, careerStack, experienceLevel, isTemporary, forceRefresh);
+    const cacheKey = this.getProfileCacheKey(username);
+    const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
+    if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
+      const age = Date.now() - this.profileCache.cachedAt;
+      if (age < ttlMs) {
+        return of(this.profileCache.value);
+      }
+    }
+
+    const requestKey = this.buildRequestKey(username, careerStack, experienceLevel, isTemporary, forceRefresh, resumeText, resumeHash);
     const existing = this.inflight.get(requestKey);
     if (existing) return existing;
 
-    const request$ = this.http.post<SkillGapResult>(
-      `${this.baseUrl}/skillgap/skill-gap`,
-      { username, careerStack, experienceLevel, isTemporary, forceRefresh }
-    ).pipe(
-      tap(() => {
+    const payload = isTemporary
+      ? { username, careerStack, experienceLevel, isTemporary: true, forceRefresh, resumeText, previewResumeId, resumeHash }
+      : { username, careerStack, experienceLevel, isTemporary: false, forceRefresh };
+    const request$ = this.http.post<SkillGapResult>(`${this.baseUrl}/skillgap/skill-gap`, payload).pipe(
+      tap((result) => {
         if (!isTemporary) {
+          const raw = result?.data || result?.result || result;
+          this.profileCache = { value: raw, cachedAt: Date.now() };
+          this.profileCacheKey = cacheKey;
+
           this.cacheInvalidation.clearRecommendationsCaches();
           this.cacheInvalidation.clearScenarioCaches();
           this.cacheInvalidation.clearNewsCaches();
@@ -341,7 +369,9 @@ export class SkillGapService {
     careerStack: string,
     experienceLevel: string,
     isTemporary: boolean,
-    forceRefresh: boolean
+    forceRefresh: boolean,
+    resumeText?: string,
+    resumeHash?: string
   ): string {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
     const signalHash = this.getLatestSignalHash(careerStack, experienceLevel) || 'no-signals';
@@ -351,7 +381,8 @@ export class SkillGapService {
       this.clean(careerStack || 'Full Stack'),
       this.clean(experienceLevel || 'Student'),
       isTemporary ? 'temporary' : 'saved',
-      forceRefresh ? 'refresh' : 'normal'
+      forceRefresh ? 'refresh' : 'normal',
+      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${resumeText.length}` : 'no-resume')
     ].join(':');
   }
 

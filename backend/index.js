@@ -34,6 +34,7 @@ const interviewPreproute     = require('./src/routes/interviewPrep.routes');
 const careerSprintroute      = require('./src/routes/careerSprint.routes');
 const newsroute              = require('./src/routes/newsRoutes');
 const supportroute           = require('./src/routes/support.routes');
+const previewroute           = require('./src/routes/preview.routes');
 const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
 const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
 const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
@@ -105,8 +106,8 @@ app.use(helmet({
 app.use(cors());
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Global maintenance mode (controlled by Super Admin settings).
 // Keep auth + super-admin routes accessible so admins can turn it off.
@@ -178,7 +179,15 @@ app.use('/api/interview-prep',  interviewPreproute);
 app.use('/api/career-sprints',  careerSprintroute);
 app.use('/api/news',            newsroute);
 app.use('/api/support',         supportroute);
+app.use('/api/preview',         previewroute);
 app.get('/metrics', metricsHandler);
+
+app.use((error, _req, res, next) => {
+  if (error?.type === 'entity.too.large' || error?.status === 413) {
+    return res.status(413).json({ message: 'Request too large. Please upload a smaller resume or use file upload.' });
+  }
+  return next(error);
+});
 
 const PORT = env.PORT || process.env.PORT || 5000;
 
@@ -201,8 +210,7 @@ app.listen(PORT, () => {
     } else {
         logger.info('GitHub token detected; using authenticated API quota.');
     }
-
-    // ── Jobs Hub source startup validation ──────────────────────────────────
+    // Jobs Hub source startup validation
     const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
     const integrations = getIntegrationSecretsSync();
     const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
@@ -210,8 +218,7 @@ app.listen(PORT, () => {
     const jsearchConfigured = integrations?.jobsEnabled !== false && Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
     const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
     const adzunaConfigured = Boolean(String(process.env.ADZUNA_APP_ID || '').trim() && String(process.env.ADZUNA_APP_KEY || '').trim());
-
-    // ── Jobs Hub cache health startup check ─────────────────────────────────
+    // Jobs Hub cache health startup check
     const { getCacheHealth } = require('./src/services/jobService');
     getCacheHealth().then((health) => {
       console.log(`[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`);

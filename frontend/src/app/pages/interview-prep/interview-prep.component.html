@@ -54,6 +54,9 @@
         </summary>
 
         <div class="filter-panel compact-filter">
+          <div class="filter-panel__intro">
+            <p>Refine the question lists by skill, difficulty, category, source, or tags.</p>
+          </div>
 
           <!-- Skill -->
           <div class="filter-group">
@@ -148,34 +151,39 @@
 
       <!-- ── Search Panel ── -->
       <div class="search-panel">
-        <h2 class="section-title">Search & Ask</h2>
-
-        <!-- Local skill selector (only visible when no global skill selected) -->
-        <div class="local-skill-row" *ngIf="showLocalQuestionSkillSelector">
-          <label for="sel-local-skill" class="filter-label">Skill for this question</label>
-          <select
-            id="sel-local-skill"
-            [(ngModel)]="localQuestionSkill"
-            (change)="onLocalQuestionSkillChange()"
-            class="filter-select">
-            <option value="" class="placeholder-option">Select a skill</option>
-            <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
-          </select>
+        <div class="section-heading">
+          <h2 class="section-title">Search & Ask</h2>
+          <p>Choose the skill for this question, then search the question bank or request an AI answer.</p>
         </div>
 
-        <!-- Question input -->
-        <div class="textarea-wrapper">
-          <textarea
-            id="custom-question-input"
-            [(ngModel)]="customQuestion"
-            (input)="onQuestionDraftChange(customQuestion)"
-            rows="3"
-            maxlength="300"
-            placeholder="Type your interview question here… e.g. What is the event loop in JavaScript?"
-            class="question-textarea"
-            aria-label="Interview question input"
-            [attr.aria-describedby]="searchState !== 'idle' ? 'search-state-bar' : null"></textarea>
-          <span class="char-count" aria-live="polite">{{ customQuestion.length }}/300</span>
+        <!-- Question skill remains available independently of list filters. -->
+        <div class="search-controls">
+          <div class="local-skill-row">
+            <label for="sel-local-skill" class="filter-label">Skill for this question</label>
+            <select
+              id="sel-local-skill"
+              [(ngModel)]="localQuestionSkill"
+              (change)="onLocalQuestionSkillChange()"
+              class="filter-select">
+              <option value="" class="placeholder-option">Select a skill</option>
+              <option *ngFor="let skill of skills" [value]="skill">{{ getSkillLabel(skill) }}</option>
+            </select>
+          </div>
+
+          <!-- Question input -->
+          <div class="textarea-wrapper">
+            <textarea
+              id="custom-question-input"
+              [(ngModel)]="customQuestion"
+              (input)="onQuestionDraftChange(customQuestion)"
+              rows="3"
+              maxlength="300"
+              placeholder="Type your interview question here… e.g. What is the event loop in JavaScript?"
+              class="question-textarea"
+              aria-label="Interview question input"
+              [attr.aria-describedby]="searchState !== 'idle' ? 'search-state-bar' : null"></textarea>
+            <span class="char-count" aria-live="polite">{{ customQuestion.length }}/300</span>
+          </div>
         </div>
 
         <!-- ── Search state indicator bar ── -->
@@ -208,8 +216,8 @@
             class="primary-btn ai-btn"
             type="button"
             (click)="askCustomQuestion()"
-            *ngIf="canAskAI"
-            [disabled]="!canAskQuestion || isAskingQuestion">
+            [disabled]="!canAskAI || !canAskQuestion || isAskingQuestion"
+            [attr.title]="canAskAI ? 'Generate an answer for this question' : 'Search the question bank first'">
             <span class="btn-spinner" *ngIf="isAskingQuestion" aria-hidden="true"></span>
             {{ isAskingQuestion ? 'Generating…' : 'Ask AI for Answer' }}
           </button>
@@ -223,6 +231,10 @@
             Clear
           </button>
         </div>
+
+        <p class="search-guidance" *ngIf="!searchAttempted">
+          Search the question bank first. AI answers become available when no stored answer matches.
+        </p>
 
         <!-- Validation error -->
         <p class="error" *ngIf="customErrorMessage" role="alert">{{ customErrorMessage }}</p>
@@ -246,8 +258,8 @@
             <span class="source-badge" [attr.data-state]="searchState">{{ customResultLabel }}</span>
             <div class="result-meta-row">
               <span class="meta" *ngIf="confidenceLabel(customResult)">{{ confidenceLabel(customResult) }}</span>
+              <span class="meta-sep" *ngIf="confidenceLabel(customResult) && relevanceLabel(customResult)">•</span>
               <span class="meta" *ngIf="relevanceLabel(customResult)">{{ relevanceLabel(customResult) }}</span>
-              <span class="meta source-meta">{{ sourceLabel(customResult) }}</span>
             </div>
           </div>
 
@@ -496,7 +508,10 @@
 
     <!-- ── BLOCK 3: Generate Practice Set ── -->
     <section class="prep-section ai-section" aria-label="AI Practice Set Generator">
-      <h2 class="section-title">Generate Practice Set</h2>
+      <div class="section-heading">
+        <h2 class="section-title">Generate Practice Set</h2>
+        <p>Choose a skill, focus area, difficulty, and question count to create a targeted practice set.</p>
+      </div>
 
       <div class="ai-controls">
 

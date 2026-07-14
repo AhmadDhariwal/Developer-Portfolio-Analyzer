@@ -58,7 +58,7 @@ export class OAuthCallbackComponent implements OnInit {
 
       try {
         const payload = this.decodeBase64Payload(encoded);
-        if (!payload?.token || !payload?.user) {
+        if (!payload?.token || !payload?._id) {
           throw new Error('Incomplete OAuth payload — missing token or user');
         }
         this.completeLogin(payload);
