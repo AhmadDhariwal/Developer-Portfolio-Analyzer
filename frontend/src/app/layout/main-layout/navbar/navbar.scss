@@ -73,8 +73,13 @@
         border-radius: 10px;
         color: var(--text-primary);
         width: 280px;
+        max-width: 100%;
         font-size: 0.875rem;
         transition: all var(--transition-fast);
+
+        @media (max-width: 640px) {
+          width: 140px;
+        }
 
         &::placeholder { color: var(--text-muted); }
 
@@ -83,6 +88,10 @@
           border-color: rgba(99, 102, 241, 0.5);
           background: rgba(99, 102, 241, 0.04);
           width: 320px;
+
+          @media (max-width: 640px) {
+            width: 180px;
+          }
         }
       }
 

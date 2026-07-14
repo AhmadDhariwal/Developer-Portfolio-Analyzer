@@ -102,6 +102,9 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   profileResultBackup: SkillGapResult | null = null;
   isSavingPreview = false;
   previewSaveMessage = '';
+  savedPreviews: any[] = [];
+  selectedSavedPreviewId = '';
+  isSavedPreviewsLoading = false;
 
   result: SkillGapResult | null = null;
   topGapCards: SkillCardViewModel[] = [];
@@ -115,6 +118,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   showAllGaps = false;
   private readonly subscriptions: Subscription = new Subscription();
   private activeAnalyzeKey = '';
+  private lastProfileKey = '';
 
   constructor(
     private readonly skillGapService:    SkillGapService,
@@ -128,23 +132,31 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
     // Subscribe to profile signal changes and re-analyze once per distinct profile hash/signature.
     this.subscriptions.add(
       this.careerProfileService.careerProfile$.pipe(
         distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
       ).subscribe(() => {
+        const nextKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
+        if (nextKey === this.lastProfileKey) return;
+        const hadProfile = Boolean(this.lastProfileKey);
+        this.lastProfileKey = nextKey;
         const activeUsername = this.getStoredActiveUsername();
         if (activeUsername) this.applyDefaultUsername(activeUsername);
-        if (this.username) this.analyze();
+        if (hadProfile && this.username) {
+          this.skillGapService.invalidateCachedResult(this.careerProfileService.careerStack, this.careerProfileService.experienceLevel);
+          this.skillGapService.clearCache();
+          this.loadProfile();
+        }
       })
     );
-
     this.isInitLoading = true;
     const storedUsername = this.getStoredActiveUsername();
     if (storedUsername) {
       this.applyDefaultUsername(storedUsername);
       this.isInitLoading = false;
-      this.analyze();
+      this.loadProfile();
       this.cdr.detectChanges();
       return;
     }
@@ -154,7 +166,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.applyDefaultUsername(data.username || '');
           this.isInitLoading = false;
-          if (this.username) this.analyze();
+          if (this.username) this.loadProfile();
           this.cdr.detectChanges();
         },
         error: () => {
@@ -190,13 +202,14 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       this.result = null;
       this.clearPresentation();
       this.errorMessage = '';
+      this.loadSavedPreviews();
     } else {
       // Restore backup if present
       if (this.profileResultBackup) {
         this.applyResult(this.profileResultBackup, this.defaultUsername, this.profileResultBackup.careerStack, this.profileResultBackup.experienceLevel, false);
       } else {
         this.username = this.defaultUsername;
-        this.analyze();
+        this.loadProfile();
       }
     }
     this.cdr.detectChanges();
@@ -251,6 +264,12 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  loadProfile(forceRefresh = false): void {
+    const user = this.username.trim();
+    if (!user) return;
+    this.analyze(forceRefresh);
+  }
+
   analyze(forceRefresh = false): void {
     const user = this.isPreviewMode ? this.previewGithubUsername.trim() : this.username.trim();
     if (!user) {
@@ -287,7 +306,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     const cachedSignalHash = this.skillGapService.extractSignalHash(cached);
 
     this.errorMessage = '';
-    if (cached && currentSignalHash && cachedSignalHash === currentSignalHash) {
+    if (cached && (!currentSignalHash || cachedSignalHash === currentSignalHash)) {
       this.applyResult(cached, user, careerStack, experienceLevel, isTemporary);
       this.isLoading = false;
       this.cdr.detectChanges();
@@ -344,7 +363,9 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       resumeHash,
       result: this.result
     }).subscribe({
-      next: () => {
+      next: ({ preview }) => {
+        this.savedPreviews = this.recommendationsService.cacheSavedPreview(preview).filter((p: any) => p.module === 'skill-gap');
+        this.selectedSavedPreviewId = preview._id;
         this.isSavingPreview = false;
         this.previewSaveMessage = 'Preview saved.';
         this.cdr.detectChanges();
@@ -356,6 +377,61 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  loadSavedPreviews(forceRefresh = false): void {
+    if (!this.isAuthenticated || this.isSavedPreviewsLoading) return;
+    this.isSavedPreviewsLoading = true;
+    this.recommendationsService.listSavedPreviews(forceRefresh).subscribe({
+      next: ({ previews }) => {
+        this.savedPreviews = (Array.isArray(previews) ? previews : []).filter((p: any) => p.module === 'skill-gap');
+        this.isSavedPreviewsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isSavedPreviewsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openSavedPreview(id: string): void {
+    const preview = this.savedPreviews.find((item) => item._id === id);
+    if (!preview || this.isLoading) return;
+    this.selectedSavedPreviewId = id;
+    if (this.result && !this.isTemporaryView) this.profileResultBackup = this.result;
+    this.isPreviewMode = true;
+    this.previewGithubUsername = preview.githubUsername;
+    this.previewCareerStack = preview.careerStack;
+    this.previewExperienceLevel = preview.experienceLevel;
+    this.previewSaveMessage = '';
+
+    if (preview.module === 'skill-gap') {
+      this.applyResult({
+        ...preview.resultSummary,
+        username: preview.githubUsername,
+        careerStack: preview.careerStack,
+        experienceLevel: preview.experienceLevel
+      }, preview.githubUsername, preview.careerStack, preview.experienceLevel, true);
+    }
+  }
+
+  deleteSavedPreview(): void {
+    const id = this.selectedSavedPreviewId;
+    if (!id || this.isLoading) return;
+    this.recommendationsService.deleteSavedPreview(id).subscribe({
+      next: () => {
+        this.savedPreviews = this.recommendationsService.removeSavedPreviewFromCache(id).filter((item: any) => item.module === 'skill-gap');
+        this.selectedSavedPreviewId = '';
+        this.previewSaveMessage = 'Saved preview removed.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.previewSaveMessage = err?.error?.message || 'Unable to remove saved preview.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   refreshAnalysis(): void {
     this.analyze(true);
   }
