@@ -254,16 +254,19 @@ export class SkillGapService {
     careerStack: string,
     experienceLevel: string,
     isTemporary = false,
-    forceRefresh = false
+    forceRefresh = false,
+    resumeText?: string,
+    previewResumeId?: string,
+    resumeHash?: string
   ): Observable<SkillGapResult> {
-    const requestKey = this.buildRequestKey(username, careerStack, experienceLevel, isTemporary, forceRefresh);
+    const requestKey = this.buildRequestKey(username, careerStack, experienceLevel, isTemporary, forceRefresh, resumeText, resumeHash);
     const existing = this.inflight.get(requestKey);
     if (existing) return existing;
 
-    const request$ = this.http.post<SkillGapResult>(
-      `${this.baseUrl}/skillgap/skill-gap`,
-      { username, careerStack, experienceLevel, isTemporary, forceRefresh }
-    ).pipe(
+    const payload = isTemporary
+      ? { username, careerStack, experienceLevel, isTemporary: true, forceRefresh, resumeText, previewResumeId, resumeHash }
+      : { username, careerStack, experienceLevel, isTemporary: false, forceRefresh };
+    const request$ = this.http.post<SkillGapResult>(`${this.baseUrl}/skillgap/skill-gap`, payload).pipe(
       tap(() => {
         if (!isTemporary) {
           this.cacheInvalidation.clearRecommendationsCaches();
@@ -341,7 +344,9 @@ export class SkillGapService {
     careerStack: string,
     experienceLevel: string,
     isTemporary: boolean,
-    forceRefresh: boolean
+    forceRefresh: boolean,
+    resumeText?: string,
+    resumeHash?: string
   ): string {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
     const signalHash = this.getLatestSignalHash(careerStack, experienceLevel) || 'no-signals';
@@ -351,7 +356,8 @@ export class SkillGapService {
       this.clean(careerStack || 'Full Stack'),
       this.clean(experienceLevel || 'Student'),
       isTemporary ? 'temporary' : 'saved',
-      forceRefresh ? 'refresh' : 'normal'
+      forceRefresh ? 'refresh' : 'normal',
+      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${resumeText.length}` : 'no-resume')
     ].join(':');
   }
 
