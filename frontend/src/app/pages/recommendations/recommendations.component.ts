@@ -111,17 +111,15 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         if (activeUsername) this.applyDefaultUsername(activeUsername);
         if (hadProfile && this.username) {
           this.frontendCache.clear({ module: 'recommendations', canonicalSignalKey: true });
-          this.analyze(false, true);
+          this.recService.clearCache();
+          this.loadProfile();
         }
       })
     );
-
-    if (this.isAuthenticated) this.loadSavedPreviews();
-
     const storedUsername = this.getStoredActiveUsername();
     if (storedUsername) {
       this.applyDefaultUsername(storedUsername);
-      this.analyze();
+      this.loadProfile();
       this.cdr.detectChanges();
       return;
     }
@@ -131,7 +129,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         next: (res: { username: string; isDefault?: boolean } | null) => {
           if (res?.username) {
             this.applyDefaultUsername(res.username);
-            this.analyze();
+            this.loadProfile();
           }
           this.cdr.detectChanges();
         },
@@ -169,15 +167,22 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       this.result = null;
       this.loadingState = 'empty';
       this.errorMessage = '';
+      this.loadSavedPreviews();
     } else {
       if (this.profileResultBackup) {
         this.applyResult(this.profileResultBackup, this.defaultUsername, this.profileResultBackup.careerStack, this.profileResultBackup.experienceLevel, false, 'cache-hit');
       } else {
         this.username = this.defaultUsername;
-        this.analyze();
+        this.loadProfile();
       }
     }
     this.cdr.detectChanges();
+  }
+
+  loadProfile(forceRefresh = false): void {
+    const user = this.username.trim();
+    if (!user) return;
+    this.analyze(forceRefresh);
   }
 
   onFileSelected(event: any): void {
@@ -358,10 +363,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return Boolean(this.authService.getCurrentUser()?._id);
   }
 
-  loadSavedPreviews(): void {
+  loadSavedPreviews(forceRefresh = false): void {
     if (!this.isAuthenticated || this.isSavedPreviewsLoading) return;
     this.isSavedPreviewsLoading = true;
-    this.recService.listSavedPreviews().subscribe({
+    this.recService.listSavedPreviews(forceRefresh).subscribe({
       next: ({ previews }) => {
         this.savedPreviews = Array.isArray(previews) ? previews : [];
         this.isSavedPreviewsLoading = false;
@@ -390,7 +395,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       result: this.result
     }).subscribe({
       next: ({ preview }) => {
-        this.savedPreviews = [preview, ...this.savedPreviews];
+        this.savedPreviews = this.recService.cacheSavedPreview(preview);
         this.selectedSavedPreviewId = preview._id;
         this.isSavingPreview = false;
         this.previewSaveMessage = 'Preview saved.';
@@ -431,7 +436,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     if (!id || this.isLoading) return;
     this.recService.deleteSavedPreview(id).subscribe({
       next: () => {
-        this.savedPreviews = this.savedPreviews.filter((item) => item._id !== id);
+        this.savedPreviews = this.recService.removeSavedPreviewFromCache(id);
         this.selectedSavedPreviewId = '';
         this.previewSaveMessage = 'Saved preview removed.';
         this.cdr.detectChanges();

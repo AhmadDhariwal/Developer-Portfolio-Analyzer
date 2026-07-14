@@ -146,19 +146,17 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         if (activeUsername) this.applyDefaultUsername(activeUsername);
         if (hadProfile && this.username) {
           this.skillGapService.invalidateCachedResult(this.careerProfileService.careerStack, this.careerProfileService.experienceLevel);
-          this.analyze();
+          this.skillGapService.clearCache();
+          this.loadProfile();
         }
       })
     );
-
-    if (this.isAuthenticated) this.loadSavedPreviews();
-
     this.isInitLoading = true;
     const storedUsername = this.getStoredActiveUsername();
     if (storedUsername) {
       this.applyDefaultUsername(storedUsername);
       this.isInitLoading = false;
-      this.analyze();
+      this.loadProfile();
       this.cdr.detectChanges();
       return;
     }
@@ -168,7 +166,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.applyDefaultUsername(data.username || '');
           this.isInitLoading = false;
-          if (this.username) this.analyze();
+          if (this.username) this.loadProfile();
           this.cdr.detectChanges();
         },
         error: () => {
@@ -204,13 +202,14 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       this.result = null;
       this.clearPresentation();
       this.errorMessage = '';
+      this.loadSavedPreviews();
     } else {
       // Restore backup if present
       if (this.profileResultBackup) {
         this.applyResult(this.profileResultBackup, this.defaultUsername, this.profileResultBackup.careerStack, this.profileResultBackup.experienceLevel, false);
       } else {
         this.username = this.defaultUsername;
-        this.analyze();
+        this.loadProfile();
       }
     }
     this.cdr.detectChanges();
@@ -263,6 +262,12 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.previewResumeId = '';
     this.previewResumeHash = '';
     this.cdr.detectChanges();
+  }
+
+  loadProfile(forceRefresh = false): void {
+    const user = this.username.trim();
+    if (!user) return;
+    this.analyze(forceRefresh);
   }
 
   analyze(forceRefresh = false): void {
@@ -359,7 +364,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       result: this.result
     }).subscribe({
       next: ({ preview }) => {
-        this.savedPreviews = [preview, ...this.savedPreviews].filter((p: any) => p.module === 'skill-gap');
+        this.savedPreviews = this.recommendationsService.cacheSavedPreview(preview).filter((p: any) => p.module === 'skill-gap');
         this.selectedSavedPreviewId = preview._id;
         this.isSavingPreview = false;
         this.previewSaveMessage = 'Preview saved.';
@@ -373,10 +378,10 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadSavedPreviews(): void {
+  loadSavedPreviews(forceRefresh = false): void {
     if (!this.isAuthenticated || this.isSavedPreviewsLoading) return;
     this.isSavedPreviewsLoading = true;
-    this.recommendationsService.listSavedPreviews().subscribe({
+    this.recommendationsService.listSavedPreviews(forceRefresh).subscribe({
       next: ({ previews }) => {
         this.savedPreviews = (Array.isArray(previews) ? previews : []).filter((p: any) => p.module === 'skill-gap');
         this.isSavedPreviewsLoading = false;
@@ -415,7 +420,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     if (!id || this.isLoading) return;
     this.recommendationsService.deleteSavedPreview(id).subscribe({
       next: () => {
-        this.savedPreviews = this.savedPreviews.filter((item) => item._id !== id);
+        this.savedPreviews = this.recommendationsService.removeSavedPreviewFromCache(id).filter((item: any) => item.module === 'skill-gap');
         this.selectedSavedPreviewId = '';
         this.previewSaveMessage = 'Saved preview removed.';
         this.cdr.detectChanges();
