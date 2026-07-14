@@ -72,4 +72,46 @@ const authorizeRoles = (...roles) => {
     };
 };
 
-module.exports = { protect, authorizeRoles, normalizeUserRole };
+const optionalProtect = (req, res, next) => {
+  const isTemporary = req.body?.isTemporary === true || req.body?.isTemporary === 'true';
+  const authHeader = req.headers.authorization;
+
+  if (isTemporary) {
+    if (authHeader) {
+      if (!authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Not authorized, malformed token' });
+      }
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+          algorithms: ['HS256'],
+          issuer: process.env.JWT_ISSUER || 'devinsight-api',
+          audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+        });
+        User.findById(decoded.id).select('-password').then((user) => {
+          if (!user) {
+            return res.status(401).json({ message: 'Not authorized, user not found' });
+          }
+          if (user.isActive === false) {
+            return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
+          }
+          req.user = user;
+          req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;
+          req.user.experienceLevel = req.user.activeExperienceLevel || req.user.experienceLevel;
+          next();
+        }).catch((err) => {
+          console.error(err);
+          res.status(500).json({ message: 'Server Error during authentication' });
+        });
+      } catch (error) {
+        return res.status(401).json({ message: 'Not authorized, token failed or expired' });
+      }
+    } else {
+      next();
+    }
+  } else {
+    protect(req, res, next);
+  }
+};
+
+module.exports = { protect, authorizeRoles, normalizeUserRole, optionalProtect };

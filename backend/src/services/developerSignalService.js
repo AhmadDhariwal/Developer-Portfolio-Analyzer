@@ -799,6 +799,9 @@ const summarizeSkillGapSignal = async (userId) => {
   };
 };
 
+// Preview analysis may use this public aggregate without querying user-owned signals.
+const getPublicJobMarketSignal = () => summarizeJobsDemandSignal();
+
 const getDeveloperSignals = async (userId, overrides = {}) => {
   const githubSignalOverride = overrides.githubSignals || overrides.githubSignal || null;
   const resumeSignalOverride = overrides.resumeSignals || overrides.resumeSignal || null;
@@ -998,5 +1001,6 @@ module.exports = {
   buildSignalsUsedSummary,
   buildResumeAnalysisSignals,
   buildResumeCacheIdentity,
-  buildAnalysisBasedOn
+  buildAnalysisBasedOn,
+  getPublicJobMarketSignal
 };

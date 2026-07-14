@@ -6,6 +6,7 @@ const User = require('../models/user');
 const fs = require('fs/promises');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
+const { createPreviewResume } = require('../services/previewResumeCacheService');
 
 const elapsedMs = (startedAt) => Number((process.hrtime.bigint() - startedAt) / 1000000n);
 
@@ -562,6 +563,63 @@ const setActiveResume = async (req, res) => {
   }
 };
 
+const memoryRateLimitMap = new Map();
+
+const parsePreviewResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Rate Limiting: 10 requests per 10 minutes
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown-ip';
+    const rateLimitKey = `rate_limit:parse_resume:${ip}`;
+    const { isRedisCacheEnabled, getCacheJson, setCacheJson } = require('../services/redisCacheService');
+
+    if (isRedisCacheEnabled()) {
+      const current = await getCacheJson(rateLimitKey);
+      if (current && current.count >= 10) {
+        await fs.unlink(req.file.path).catch(() => {});
+        return res.status(429).json({ message: 'Too many resume parse requests. Try again in 10 minutes.' });
+      }
+      const nextCount = (current?.count || 0) + 1;
+      await setCacheJson(rateLimitKey, { count: nextCount }, 600); // 10 minutes TTL
+    } else {
+      const now = Date.now();
+      const windowStart = now - 10 * 60 * 1000;
+      const history = memoryRateLimitMap.get(ip) || [];
+      const recent = history.filter((timestamp) => timestamp > windowStart);
+      if (recent.length >= 10) {
+        await fs.unlink(req.file.path).catch(() => {});
+        return res.status(429).json({ message: 'Too many resume parse requests. Try again in 10 minutes.' });
+      }
+      recent.push(now);
+      memoryRateLimitMap.set(ip, recent);
+    }
+
+    // Validate file signature (first 5 bytes must be %PDF-)
+    const fsDirect = require('node:fs');
+    const fileHandle = fsDirect.readFileSync(req.file.path);
+    if (fileHandle.slice(0, 5).toString('ascii') !== '%PDF-') {
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({ message: 'Only valid PDF files are allowed' });
+    }
+
+    let text = await extractTextFromPDF(req.file.path);
+    if (text.length > 50000) text = text.substring(0, 50000);
+    const previewResume = await createPreviewResume(text);
+
+    await fs.unlink(req.file.path).catch(() => {});
+    return res.json(previewResume);
+  } catch (error) {
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    console.error('Preview resume parsing failed'); // DO NOT log raw resume text
+    return res.status(500).json({ message: 'Failed to parse PDF resume' });
+  }
+};
+
 module.exports = {
   uploadResume,
   analyzeResumeFile,
@@ -570,5 +628,6 @@ module.exports = {
   downloadResumeGuide,
   getResumeFiles,
   getActiveResumeContext,
-  setActiveResume
+  setActiveResume,
+  parsePreviewResume
 };

@@ -238,6 +238,18 @@ export interface RecommendationsResult {
   cacheState?: 'cache-hit' | 'refreshing' | 'loading' | 'error' | 'empty';
 }
 
+export interface SavedPreview {
+  _id: string;
+  title: string;
+  githubUsername: string;
+  careerStack: string;
+  experienceLevel: string;
+  resumeHash: string;
+  source: 'preview';
+  module: 'skill-gap' | 'recommendations';
+  resultSummary: Record<string, any>;
+  createdAt: string;
+}
 @Injectable({ providedIn: 'root' })
 export class RecommendationsService {
   private readonly baseUrl = environment.apiBaseUrl;
@@ -251,6 +263,17 @@ export class RecommendationsService {
     this.inflight.clear();
   }
 
+  savePreview(payload: { module: SavedPreview['module']; title?: string; githubUsername: string; careerStack: string; experienceLevel: string; resumeHash: string; result: unknown }): Observable<{ preview: SavedPreview }> {
+    return this.http.post<{ preview: SavedPreview }>(`${this.baseUrl}/recommendations/saved-previews`, payload);
+  }
+
+  listSavedPreviews(): Observable<{ previews: SavedPreview[] }> {
+    return this.http.get<{ previews: SavedPreview[] }>(`${this.baseUrl}/recommendations/saved-previews`);
+  }
+
+  deleteSavedPreview(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/recommendations/saved-previews/${encodeURIComponent(id)}`);
+  }
   getRecommendations(
     username:        string,
     careerStack:     string,
@@ -259,7 +282,10 @@ export class RecommendationsService {
     missingSkills?:  string[],
     isTemporary = false,
     forceRefresh = false,
-    requestIdentity = ''
+    requestIdentity = '',
+    resumeText?:     string,
+    previewResumeId?: string,
+    resumeHash?: string
   ): Observable<RecommendationsResult> {
     const key = [
       username,
@@ -269,16 +295,18 @@ export class RecommendationsService {
       forceRefresh ? 'refresh' : 'normal',
       requestIdentity,
       (knownSkills || []).join(','),
-      (missingSkills || []).join(',')
+      (missingSkills || []).join(','),
+      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${resumeText.length}` : 'no-resume')
     ].join(':').toLowerCase();
     const existing = this.inflight.get(key);
     if (existing) return existing;
 
+    const payload = isTemporary
+      ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true, forceRefresh, resumeText, previewResumeId, resumeHash }
+      : { username, careerStack, experienceLevel, forceRefresh };
     const request$ = this.http.post<RecommendationsResult>(
       isTemporary ? `${this.baseUrl}/recommendations/generate` : `${this.baseUrl}/recommendations`,
-      isTemporary
-        ? { githubUsername: username, careerStack, experienceLevel, knownSkills, missingSkills, isTemporary: true, forceRefresh }
-        : { username, careerStack, experienceLevel, knownSkills, missingSkills, forceRefresh }
+      payload
     ).pipe(
       tap(() => {
         if (!isTemporary) {
