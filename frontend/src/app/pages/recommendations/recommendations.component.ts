@@ -289,7 +289,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
         experienceLevel
       });
       const cachedResultSignalHash = this.extractSignalHash(cached);
-      if (cached && currentSignalHash && cachedResultSignalHash === currentSignalHash) {
+      if (cached && (!currentSignalHash || cachedResultSignalHash === currentSignalHash)) {
         this.applyResult(cached, user, careerStack, experienceLevel, isTemporary, 'cache-hit');
         return;
       }
@@ -457,17 +457,6 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     requestAnimationFrame(() => {
       document.querySelector('.advisor-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }
-
-  get dataQuality() {
-    return this.result?.dataQuality || {
-      hasGitHubData: false, hasResumeData: false, hasSkillGapData: false, hasPortfolioData: false, hasJobMarketData: false,
-      dataCompleteness: 0, scoreAvailability: {}
-    };
-  }
-
-  scoreLabel(value: number | null | undefined, available: boolean): string {
-    return available && Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : 'Not enough data';
   }
 
   get dataQuality() {
