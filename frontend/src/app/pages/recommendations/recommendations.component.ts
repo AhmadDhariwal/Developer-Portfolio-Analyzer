@@ -470,6 +470,17 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     return available && Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : 'Not enough data';
   }
 
+  get dataQuality() {
+    return this.result?.dataQuality || {
+      hasGitHubData: false, hasResumeData: false, hasSkillGapData: false, hasPortfolioData: false, hasJobMarketData: false,
+      dataCompleteness: 0, scoreAvailability: {}
+    };
+  }
+
+  scoreLabel(value: number | null | undefined, available: boolean): string {
+    return available && Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : 'Not enough data';
+  }
+
   get overviewScores(): Array<{ label: string; value: number; hint: string }> {
     const scores = this.result?.recommendationScores;
     if (!scores) return [];
