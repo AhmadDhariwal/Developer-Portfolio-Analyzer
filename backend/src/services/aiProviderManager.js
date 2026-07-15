@@ -386,7 +386,7 @@ class AIProviderManager {
     return /mini|o1|o3|o4|reasoning/i.test(modelName);
   }
 
-  async runOpenAICompatible({ provider, prompt, modelName, apiKey, endpoint, parseJson }) {
+  async runOpenAICompatible({ provider, prompt, modelName, apiKey, endpoint, parseJson, timeoutMs }) {
     const body = {
       model: modelName,
       max_tokens: 8000,
@@ -412,7 +412,7 @@ class AIProviderManager {
 
     const response = await axios.post(endpoint, body, {
       headers,
-      timeout: Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10)
+      timeout: timeoutMs
     });
 
     const text = response.data?.choices?.[0]?.message?.content || '';
@@ -420,16 +420,29 @@ class AIProviderManager {
     return parseJson(text);
   }
 
-  async runGemini({ prompt, modelName, apiKey, parseJson }) {
+  async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs }) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    this.log('provider_response', { provider: 'gemini', model: modelName, responseChars: text.length });
-    return parseJson(text);
+    let timer = null;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error(`Gemini request timed out after ${timeoutMs}ms`);
+        error.code = 'ECONNABORTED';
+        reject(error);
+      }, timeoutMs);
+    });
+
+    try {
+      const result = await Promise.race([model.generateContent(prompt), timeout]);
+      const text = result.response.text();
+      this.log('provider_response', { provider: 'gemini', model: modelName, responseChars: text.length });
+      return parseJson(text);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
-  async runAnthropic({ prompt, modelName, apiKey, parseJson }) {
+  async runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs }) {
     const response = await axios.post(PROVIDERS.anthropic.endpoint, {
       model: modelName,
       max_tokens: 8000,
@@ -441,7 +454,7 @@ class AIProviderManager {
         'anthropic-version': process.env.ANTHROPIC_VERSION || '2023-06-01',
         'Content-Type': 'application/json'
       },
-      timeout: Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10)
+      timeout: timeoutMs
     });
 
     const text = (response.data?.content || [])
@@ -452,21 +465,22 @@ class AIProviderManager {
     return parseJson(text);
   }
 
-  async runProviderRequest({ provider, prompt, modelName, apiKey, parseJson }) {
+  async runProviderRequest({ provider, prompt, modelName, apiKey, parseJson, timeoutMs }) {
     const config = PROVIDERS[provider];
-    if (config.type === 'gemini') return this.runGemini({ prompt, modelName, apiKey, parseJson });
-    if (config.type === 'anthropic') return this.runAnthropic({ prompt, modelName, apiKey, parseJson });
+    if (config.type === 'gemini') return this.runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs });
+    if (config.type === 'anthropic') return this.runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs });
     return this.runOpenAICompatible({
       provider,
       prompt,
       modelName,
       apiKey,
       endpoint: config.endpoint,
-      parseJson
+      parseJson,
+      timeoutMs
     });
   }
 
-  async tryProvider(provider, prompt, retries, parseJson) {
+  async tryProvider(provider, prompt, retries, parseJson, timeoutMs) {
     const { states } = this.getProviderState();
     const state = states[provider];
     if (!state?.hasKey) return { ok: false, failover: true, reason: state?.disabledReason || 'missing_key' };
@@ -487,7 +501,8 @@ class AIProviderManager {
             prompt,
             modelName,
             apiKey: state.apiKey,
-            parseJson
+            parseJson,
+            timeoutMs
           });
           const latencyMs = Date.now() - startedAt;
           this.recordSuccess(provider, latencyMs);
@@ -528,7 +543,7 @@ class AIProviderManager {
     return { ok: false, failover: true, reason: 'models_exhausted' };
   }
 
-  async execute(prompt, { retries = 2, parseJson }) {
+  async execute(prompt, { retries = 2, parseJson, timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10) }) {
     const { settings, states } = this.getProviderState();
     if (!settings.enabled) {
       this.log('ai_disabled');
@@ -541,7 +556,7 @@ class AIProviderManager {
     let lastReason = '';
     for (const provider of priority) {
       if (lastReason) this.log('provider_switched', { provider, reason: lastReason }, 'warn');
-      const result = await this.tryProvider(provider, prompt, retries, parseJson);
+      const result = await this.tryProvider(provider, prompt, retries, parseJson, timeoutMs);
       if (result.ok) return result;
       lastReason = result.reason || 'provider_failed';
     }

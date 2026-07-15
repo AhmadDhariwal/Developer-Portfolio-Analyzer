@@ -224,7 +224,7 @@ class AIService {
     return aiProviderManager.getStatus();
   }
 
-  async runAIAnalysis(prompt, fallback, retries = 2) {
+  async runAIAnalysis(prompt, fallback, retries = 2, { timeoutMs } = {}) {
     const startedAt = Date.now();
     this.metrics.requests += 1;
 
@@ -259,6 +259,7 @@ class AIService {
 
     const result = await aiProviderManager.execute(prompt, {
       retries,
+      timeoutMs,
       parseJson: (text) => this.extractJson(text)
     });
 
