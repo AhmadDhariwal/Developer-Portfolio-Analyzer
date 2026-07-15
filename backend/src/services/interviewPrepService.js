@@ -1110,7 +1110,7 @@ const fallbackToQuestionBankForGeneration = async ({
       block: 'top'
     });
 
-    if (Array.isArray(topPayload?.questions) && topPayload.questions.length > 0) {
+    if (Array.isArray(topPayload?.questions) && topPayload.questions.length >= normalizedLimit) {
       console.log('Fallback question bank returned:', topPayload.questions.length);
       return topPayload;
     }
@@ -1128,7 +1128,7 @@ const fallbackToQuestionBankForGeneration = async ({
       block: 'all'
     });
 
-    if (Array.isArray(allPayload?.questions) && allPayload.questions.length > 0) {
+    if (Array.isArray(allPayload?.questions) && allPayload.questions.length >= normalizedLimit) {
       console.log('Fallback all-questions bank returned:', allPayload.questions.length);
       return allPayload;
     }
@@ -1141,7 +1141,7 @@ const fallbackToQuestionBankForGeneration = async ({
         block: 'top'
       });
 
-      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length > 0) {
+      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length >= normalizedLimit) {
         console.warn('Requested topic bank was empty; using javascript fallback bank');
         return defaultPayload;
       }
@@ -1163,7 +1163,7 @@ const fallbackToQuestionBankForGeneration = async ({
         block: 'top'
       });
 
-      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length > 0) {
+      if (Array.isArray(defaultPayload?.questions) && defaultPayload.questions.length >= normalizedLimit) {
         console.warn('Requested topic bank was empty; using javascript fallback bank');
         return defaultPayload;
       }
@@ -1177,11 +1177,11 @@ const fallbackToQuestionBankForGeneration = async ({
     ? buildSeedRecordsForTopic(memoryFallbackTopic).filter((record) => record.isTopQuestion).slice(0, normalizedLimit)
     : [];
 
-  if (memoryFallbackQuestions.length > 0) {
+  if (memoryFallbackQuestions.length >= normalizedLimit) {
     console.warn(`Using in-memory verified seed fallback for topic: ${memoryFallbackTopic.key}`);
     return makeQuestionPayload({
       questions: memoryFallbackQuestions,
-      total: memoryFallbackQuestions.length,
+      total: normalizedLimit,
       page: 1,
       limit: normalizedLimit,
       source: 'db',
@@ -1189,19 +1189,14 @@ const fallbackToQuestionBankForGeneration = async ({
       aiGeneratedCount: 0,
       scrapedGeneratedCount: 0,
       enrichedCount: 0,
-      sourceMix: { verified_seed: memoryFallbackQuestions.length },
+      sourceMix: { verified_seed: normalizedLimit },
       partial: false
     });
   }
 
-  return makeQuestionPayload({
-    questions: [],
-    total: 0,
-    page: 1,
-    limit: normalizedLimit,
-    source: 'db',
-    topicInput: topicInput || normalizeTopicInput({ skill: fallbackSkill })
-  });
+  const unavailableError = new Error(`Unable to provide the requested ${normalizedLimit} interview questions from the verified bank.`);
+  unavailableError.statusCode = 503;
+  throw unavailableError;
 };
 
 const generateFreshInterviewQuestions = async ({
@@ -1363,11 +1358,11 @@ const generateFreshInterviewQuestions = async ({
       limit: targetCount
     });
     const questions = await enrichQuestionListOnce(fullSet.slice(0, targetCount));
-    if (questions.length > 0) {
+    if (questions.length >= targetCount) {
       return {
-        questions,
-        total: questions.length,
-        totalAvailable: questions.length,
+        questions: questions.slice(0, targetCount),
+        total: targetCount,
+        totalAvailable: targetCount,
         page: 1,
         limit: targetCount,
         totalPages: 1,
@@ -1384,8 +1379,32 @@ const generateFreshInterviewQuestions = async ({
       };
     }
 
-    console.warn('Generated questions were stored but final payload was empty, using fallback questions');
-    return fallbackToBank('post_store_payload_empty');
+    console.warn(`Generated ${questions.length} of ${targetCount} requested questions; completing from the verified bank`);
+    const fallbackPayload = await fallbackToBank('generated_set_incomplete');
+    const completedQuestions = dedupeQuestions({
+      questions: [...questions, ...(fallbackPayload.questions || [])]
+    }).slice(0, targetCount);
+
+    if (completedQuestions.length >= targetCount) {
+      return {
+        ...fallbackPayload,
+        questions: completedQuestions,
+        total: targetCount,
+        totalAvailable: targetCount,
+        limit: targetCount,
+        source: records.length ? 'ai_generated+verified_seed' : fallbackPayload.source,
+        aiGeneratedCount: records.length,
+        enrichedCount: records.length,
+        partial: false,
+        topicKey: topicInput.topicKey,
+        topicType: topicInput.topicType,
+        metrics: metricSnapshot()
+      };
+    }
+
+    const error = new Error(`Unable to generate the requested ${targetCount} distinct interview questions.`);
+    error.statusCode = 503;
+    throw error;
   } catch (error) {
     console.error('Generate fresh interview questions error:', error);
     logger.warn('interview-prep explicit generation failed; using saved bank', {
@@ -1502,7 +1521,9 @@ const answerCustomInterviewQuestion = async ({
   }
 
   let generated = null;
-  let generatedSourceType = 'ai_generated';
+  // The question originates from the user; this avoids rejecting a valid prompt
+  // merely because it is phrased as a topic rather than a formal question.
+  let generatedSourceType = 'user_asked';
   try {
     generated = await aiProvider.answerSearchFallback({
       skill: topicInput.skill,
