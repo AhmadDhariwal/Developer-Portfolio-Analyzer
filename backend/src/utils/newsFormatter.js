@@ -55,6 +55,17 @@ const CATEGORY_KEYWORDS = {
 
 const cleanText = (value = '') => String(value || '').replaceAll(/\s+/g, ' ').trim();
 
+const sanitizeHttpUrl = (value = '') => {
+  const raw = cleanText(value);
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : '';
+  } catch {
+    return '';
+  }
+};
+
 const hashText = (value = '') =>
   Number.parseInt(crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 8), 16);
 
@@ -98,7 +109,7 @@ const normalizeItem = (item = {}) => {
   const title = cleanText(item.title);
   const description = cleanText(item.description);
   const source = cleanText(item.source) || 'Unknown';
-  const url = cleanText(item.url);
+  const url = sanitizeHttpUrl(item.url);
   if (!title || !url) return null;
   const category = cleanText(item.category) || inferCategory(title, description);
   const tags = uniqueStrings(Array.isArray(item.tags) ? item.tags : [], 6);
@@ -109,7 +120,7 @@ const normalizeItem = (item = {}) => {
     description,
     source,
     url,
-    image: cleanText(item.image) || pickFallbackImage(category, title, description, source),
+    image: sanitizeHttpUrl(item.image) || pickFallbackImage(category, title, description, source),
     publishedAt: normalizeDate(item.publishedAt),
     category,
     popularity: Number(item.popularity || 0),
