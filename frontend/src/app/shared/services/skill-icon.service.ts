@@ -42,6 +42,19 @@ export class SkillIconService {
     ['ruby', { mdiIcon: 'mdi-language-ruby', color: '#CC342D', displayName: 'Ruby' }],
     ['swift', { mdiIcon: 'mdi-language-swift', color: '#FA7343', displayName: 'Swift' }],
     ['kotlin', { mdiIcon: 'mdi-language-kotlin', color: '#7F52FF', displayName: 'Kotlin' }],
+    ['dart', { mdiIcon: 'mdi-diamond-stone', color: '#0175C2', displayName: 'Dart' }],
+    ['r', { mdiIcon: 'mdi-language-r', color: '#276DC3', displayName: 'R' }],
+    ['scala', { mdiIcon: 'mdi-lambda', color: '#DC322F', displayName: 'Scala' }],
+    ['lua', { mdiIcon: 'mdi-language-lua', color: '#2C2D72', displayName: 'Lua' }],
+    ['haskell', { mdiIcon: 'mdi-language-haskell', color: '#5E5086', displayName: 'Haskell' }],
+    ['perl', { mdiIcon: 'mdi-script-text', color: '#39457E', displayName: 'Perl' }],
+    ['shell', { mdiIcon: 'mdi-console-line', color: '#89E051', displayName: 'Shell' }],
+    ['bash', { mdiIcon: 'mdi-console-line', color: '#89E051', displayName: 'Bash' }],
+    ['powershell', { mdiIcon: 'mdi-console-line', color: '#5391FE', displayName: 'PowerShell' }],
+    ['jupyter notebook', { mdiIcon: 'mdi-notebook', color: '#F37626', displayName: 'Jupyter Notebook' }],
+    ['notebook', { mdiIcon: 'mdi-notebook', color: '#F37626', displayName: 'Notebook' }],
+    ['objective-c', { mdiIcon: 'mdi-language-c', color: '#A8B9CC', displayName: 'Objective-C' }],
+    ['objective c', { mdiIcon: 'mdi-language-c', color: '#A8B9CC', displayName: 'Objective-C' }],
     
     // Databases
     ['mongodb', { mdiIcon: 'mdi-database', color: '#47A248', displayName: 'MongoDB' }],
@@ -122,7 +135,7 @@ export class SkillIconService {
 
     // Default fallback
     return { 
-      mdiIcon: 'mdi-code-braces', 
+      mdiIcon: 'mdi-laptop',
       color: '#9857D3', 
       displayName: skillName 
     };

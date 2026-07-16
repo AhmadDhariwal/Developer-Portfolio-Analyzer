@@ -7,6 +7,15 @@ const {
 } = require('../services/publicProfileService');
 const { createNotification } = require('../services/notificationService');
 
+const invalidatePublicProfileDependentCaches = (userId) => {
+  try {
+    require('./dashboardcontroller').invalidateDashboardSummaryCache(userId);
+    require('../services/scenarioSimulatorService').invalidateContextCache(userId);
+  } catch (error) {
+    console.warn('Public profile dependent cache invalidation failed:', error.message);
+  }
+};
+
 // GET /api/public-profiles/:slug (public)
 const getPublicProfile = async (req, res) => {
   try {
@@ -43,6 +52,8 @@ const updateMyPublicProfile = async (req, res) => {
 
     const profile = await updatePublicProfile(req.user._id, req.body || {}, req);
 
+    invalidatePublicProfileDependentCaches(req.user._id);
+
     console.info('public-profile updated', {
       userId: String(req.user?._id || ''),
       slug: profile?.slug,
@@ -59,10 +70,11 @@ const updateMyPublicProfile = async (req, res) => {
       meta: { slug: profile?.slug || '', isPublic: Boolean(profile?.isPublic) }
     });
 
+    res.set('Cache-Control', 'no-store');
     res.json(profile);
   } catch (error) {
     console.error('Public profile update error:', error.message);
-    res.status(500).json({ message: 'Failed to update public profile.' });
+    res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Failed to update public profile.' });
   }
 };
 

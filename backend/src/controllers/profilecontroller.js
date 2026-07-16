@@ -9,6 +9,7 @@ const path = require('node:path');
 const { createNotification } = require('../services/notificationService');
 const { getDeveloperSettingsSync } = require('../services/platformSettingsService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
+const { invalidatePublicProfileCacheForUser } = require('../services/publicProfileService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 
@@ -658,6 +659,7 @@ const uploadAvatar = async (req, res) => {
     // Store only the relative path in DB — full URL is resolved per-request
     user.avatar = nextAvatarPath;
     await user.save();
+    await invalidatePublicProfileCacheForUser(user._id);
 
     await createNotification({
       userId: user._id,

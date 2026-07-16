@@ -17,6 +17,12 @@ $glow-purple: rgba(139, 92, 246, 0.35);
 $glow-indigo: rgba(99, 102, 241, 0.35);
 
 // === Base Styles ===
+:host {
+  display: block;
+  min-height: 100vh;
+  background: $bg-primary;
+}
+
 .portfolio-wrapper {
   background: $bg-primary;
   min-height: 100vh;

@@ -158,6 +158,7 @@ export class ProfileService {
       tap((updated) => {
         this.authService.updateCurrentUser(updated);
         this.mergeProfileUpdate(updated);
+        this.cacheInvalidation.clearPublicPortfolioCaches();
       })
     );
   }
@@ -178,6 +179,7 @@ export class ProfileService {
       tap((res) => {
         this.authService.updateCurrentUser({ avatar: res.avatar });
         this.mergeProfileUpdate({ avatar: res.avatar });
+        this.cacheInvalidation.clearPublicPortfolioCaches();
       })
     );
   }
