@@ -64,3 +64,24 @@ test('validateInterviewQuestionQuality rejects placeholder or AI-disclaimer cont
   assert.equal(result.isValid, false);
   assert.ok(result.reasons.includes('placeholder_or_weak_ai_content'));
 });
+
+test('validateInterviewQuestionQuality accepts a structured answer that uses different technical wording', () => {
+  const result = validateInterviewQuestionQuality({
+    question: 'How does event delegation work in JavaScript?',
+    answer: 'A parent click handler inspects the originating element as events bubble through the DOM. This keeps dynamically rendered controls interactive while avoiding a separate listener for every child node.',
+    answerSections: {
+      shortAnswer: 'A parent handler uses event bubbling to handle child interactions.',
+      explanation: 'The handler checks the originating DOM element and applies the matching behavior.'
+    },
+    topicKey: 'javascript',
+    tags: ['javascript', 'dom'],
+    category: 'core-concepts',
+    sourceType: 'ai_generated',
+    confidenceScore: 0.9,
+    qualityScore: 80,
+    minimumScore: 0.78
+  });
+
+  assert.equal(result.isValid, true);
+  assert.equal(result.reasons.includes('answer_does_not_directly_address_question'), false);
+});

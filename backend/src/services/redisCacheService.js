@@ -99,13 +99,13 @@ const deleteByPrefix = async (prefix) => {
 };
 
 const acquireCacheLock = async (key, token, ttlSeconds = 900) => {
-  if (!redisEnabled || !client) return false;
+  if (!redisEnabled || !client) return null;
   try {
     const result = await client.set(key, token, { NX: true, EX: ttlSeconds });
     return result === 'OK';
   } catch (error) {
     console.error('[redis] acquire lock failed:', error.message);
-    return false;
+    return null;
   }
 };
 

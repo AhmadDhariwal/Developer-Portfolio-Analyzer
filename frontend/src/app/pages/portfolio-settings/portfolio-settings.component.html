@@ -1,4 +1,4 @@
-<main class="portfolio-settings-container kinetic-terminal">
+<main class="portfolio-settings-container kinetic-terminal" *ngIf="!isLoading && profile; else loadingState">
   <header class="settings-header">
     <div class="header-content">
       <h1 class="page-title">Portfolio Workspace</h1>
@@ -20,7 +20,7 @@
     {{ message }}
   </div>
 
-  <div class="settings-grid" *ngIf="!isLoading && profile; else loadingState">
+  <div class="settings-grid">
     <!-- Left Column: Configuration -->
     <div class="config-column">
       <!-- Section: Visibility & Identity -->
@@ -678,7 +678,7 @@
 </main>
 
 <ng-template #loadingState>
-  <div class="loading-workspace">
+  <div class="portfolio-settings-loading" role="status" aria-live="polite">
     <div class="work-loader"></div>
     <p>Authenticating Workspace...</p>
   </div>

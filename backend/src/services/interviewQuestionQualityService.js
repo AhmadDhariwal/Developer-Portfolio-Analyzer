@@ -400,9 +400,15 @@ const validateInterviewQuestionQuality = ({
     score -= 0.12;
   }
 
+  const hasStructuredAnswer = answerSections && typeof answerSections === 'object'
+    && Boolean(answerSections.summary || answerSections.explanation || answerSections.shortAnswer);
   const questionAnswerOverlap = computeJaccardSimilarity(normalizedQuestion, normalizedAnswer);
   const questionTokens = tokenize(normalizedQuestion);
-  if (questionTokens.length >= 3 && questionAnswerOverlap < 0.08) {
+  // A structured answer can address a question without repeating its wording.
+  // Keep the lexical-overlap guard for unstructured/scraped content, where it
+  // is the only direct-answer signal, but do not reject valid structured AI
+  // answers merely because they use different technical terminology.
+  if (!hasStructuredAnswer && questionTokens.length >= 3 && questionAnswerOverlap < 0.08) {
     reasons.push('answer_does_not_directly_address_question');
     score -= 0.18;
   }
@@ -440,9 +446,7 @@ const validateInterviewQuestionQuality = ({
     score -= 0.08;
   }
 
-  const hasStructuredSections = answerSections && typeof answerSections === 'object'
-    && Boolean(answerSections.summary || answerSections.explanation || answerSections.shortAnswer);
-  if (String(sourceType || '').includes('ai') && !hasStructuredSections) {
+  if (String(sourceType || '').includes('ai') && !hasStructuredAnswer) {
     reasons.push('missing_structured_answer');
     score -= 0.1;
   }

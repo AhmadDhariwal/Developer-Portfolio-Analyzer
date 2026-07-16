@@ -46,6 +46,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   copyFeedback = '';
   shareMenuOpen = false;
   userAvatarSrc = '/avatar/profile.png';
+  private readonly fallbackAvatarSrc = '/avatar/profile.png';
   activeSection: SectionId = 'home';
   mobileMenuOpen = false;
   featuredProjects: PublicProfileProject[] = [];
@@ -493,6 +494,13 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
     return this.userAvatarSrc;
   }
 
+  onUserAvatarError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (image.src.endsWith(this.fallbackAvatarSrc)) return;
+    this.userAvatarSrc = this.fallbackAvatarSrc;
+    this.cdr.detectChanges();
+  }
+
   getContactEmail(): string {
     if (!this.profile) return '';
     return String(this.profile.sections?.contact?.email || this.profile.email || this.profile.user.email || '')
@@ -683,7 +691,7 @@ export class PublicPortfolioComponent implements OnInit, AfterViewInit {
   private refreshUserAvatarSrc(): void {
     const avatar = this.resolveAvatarUrl(this.profile?.user?.avatar || '');
     if (!avatar) {
-      this.userAvatarSrc = '/avatar/profile.png';
+      this.userAvatarSrc = this.fallbackAvatarSrc;
       return;
     }
 

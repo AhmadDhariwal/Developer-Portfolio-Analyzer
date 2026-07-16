@@ -41,6 +41,40 @@ const uniqueStrings = (values = [], limit = 12) => {
 
   return output;
 };
+const SKILL_ALIASES = {
+  'c sharp': 'c#',
+  csharp: 'c#',
+  'c plus plus': 'c++',
+  cpp: 'c++',
+  dotnet: '.net',
+  '.net core': '.net',
+  node: 'node.js',
+  nodejs: 'node.js',
+  nextjs: 'next.js'
+};
+
+const normalizeSkill = (value) => {
+  const normalized = toText(value).toLowerCase().replace(/\s+/g, ' ');
+  return SKILL_ALIASES[normalized] || normalized;
+};
+
+const escapeRegExp = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const skillEquals = (left, right) => normalizeSkill(left) === normalizeSkill(right);
+
+const skillAppearsInText = (text, skill) => {
+  const normalizedSkill = normalizeSkill(skill);
+  if (!normalizedSkill) return false;
+  const variants = uniqueStrings([
+    normalizedSkill,
+    ...Object.keys(SKILL_ALIASES).filter((alias) => SKILL_ALIASES[alias] === normalizedSkill)
+  ], 8);
+  const haystack = toText(text).toLowerCase();
+  return variants.some((variant) => new RegExp(
+    `(^|[^a-z0-9])${escapeRegExp(variant)}(?=$|[^a-z0-9])`,
+    'i'
+  ).test(haystack));
+};
 
 function normalizeExpIndex(level) {
   return EXPERIENCE_INDEX[toText(level).toLowerCase()] ?? 2;
@@ -49,14 +83,14 @@ function normalizeExpIndex(level) {
 function computeStackMatch(job, careerStack) {
   const keywords = STACK_KEYWORDS[careerStack] || STACK_KEYWORDS['Full Stack'];
   const haystack = `${job.title} ${(job.skills || []).join(' ')} ${job.description || ''}`.toLowerCase();
-  const hits = keywords.filter((keyword) => haystack.includes(keyword));
+  const hits = keywords.filter((keyword) => skillAppearsInText(haystack, keyword));
   return clamp(Math.round((hits.length / Math.max(keywords.length * 0.28, 1)) * 100));
 }
 
 function computeSkillMatch(job, userSkills) {
-  const safeUserSkills = uniqueStrings(userSkills, 25).map((skill) => skill.toLowerCase());
-  const jobSkills = uniqueStrings(job.skills || [], 12).map((skill) => skill.toLowerCase());
-  const haystack = `${job.title} ${job.description} ${jobSkills.join(' ')}`.toLowerCase();
+  const safeUserSkills = uniqueStrings(userSkills, 25);
+  const jobSkills = uniqueStrings(job.skills || [], 12);
+  const haystack = `${job.title} ${job.description} ${jobSkills.join(' ')}`;
 
   if (!safeUserSkills.length) {
     return {
@@ -67,11 +101,14 @@ function computeSkillMatch(job, userSkills) {
   }
 
   const matchedSkills = safeUserSkills.filter((userSkill) =>
-    jobSkills.some((jobSkill) => jobSkill.includes(userSkill) || userSkill.includes(jobSkill))
-    || haystack.includes(userSkill)
+    jobSkills.some((jobSkill) => skillEquals(jobSkill, userSkill))
+    || skillAppearsInText(haystack, userSkill)
   );
   const missingSkills = jobSkills.filter((jobSkill) =>
-    !safeUserSkills.some((userSkill) => jobSkill.includes(userSkill) || userSkill.includes(jobSkill))
+    !safeUserSkills.some((userSkill) =>
+      skillEquals(jobSkill, userSkill)
+      || skillAppearsInText(jobSkill, userSkill)
+    )
   );
 
   const score = clamp(Math.round((matchedSkills.length / Math.max(jobSkills.length || safeUserSkills.length, 1)) * 100));

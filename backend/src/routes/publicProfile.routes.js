@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authmiddleware');
+const { protect, attachOptionalUser } = require('../middleware/authmiddleware');
 const {
   getPublicProfile,
   getMyPublicProfile,
@@ -13,6 +13,6 @@ router.get('/me', protect, getMyPublicProfile);
 router.put('/me', protect, updateMyPublicProfile);
 router.get('/me/analytics', protect, getMyPublicProfileAnalytics);
 router.get('/:slug/resume', downloadPublicProfileResume);
-router.get('/:slug', getPublicProfile);
+router.get('/:slug', attachOptionalUser, getPublicProfile);
 
 module.exports = router;

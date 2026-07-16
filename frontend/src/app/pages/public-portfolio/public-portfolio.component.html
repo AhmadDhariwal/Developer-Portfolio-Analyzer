@@ -47,7 +47,7 @@
         <!-- Avatar with laptop -->
         <div class="avatar-container">
           <div class="avatar-glow"></div>
-          <img title="Profile Avatar" [src]="userAvatarSrc" [alt]="profile.user.name" class="avatar-image">
+          <img title="Profile Avatar" [src]="userAvatarSrc" [alt]="profile.user.name" class="avatar-image" (error)="onUserAvatarError($event)">
           <div class="laptop-overlay">
             <div class="laptop-screen"></div>
             <div class="apple-logo">

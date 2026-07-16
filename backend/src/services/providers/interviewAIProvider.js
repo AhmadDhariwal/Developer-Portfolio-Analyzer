@@ -8,6 +8,8 @@ const {
   normalizeQualityScore: normalizeSharedQualityScore
 } = require('../interviewQuestionQualityService');
 
+const INTERVIEW_AI_TIMEOUT_MS = Number.parseInt(process.env.INTERVIEW_AI_TIMEOUT_MS || '12000', 10);
+
 const normalizeStructuredAnswer = (answer = {}) => {
   if (typeof answer === 'string') {
     const shortAnswer = normalizeAnswerText(answer).split(/[.!?]\s/)[0] || normalizeAnswerText(answer);
@@ -240,7 +242,7 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
     ]
   };
 
-  const result = await aiService.runAIAnalysis(prompt, fallback);
+  const result = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: INTERVIEW_AI_TIMEOUT_MS });
   const rawQuestions = Array.isArray(result)
     ? result
     : Array.isArray(result.questions)
@@ -268,7 +270,7 @@ const answerCustomQuestionFromAI = async ({ topicKey, topicType, question }) => 
     confidenceScore: 0.78
   };
 
-  const result = await aiService.runAIAnalysis(prompt, fallback);
+  const result = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: INTERVIEW_AI_TIMEOUT_MS });
   return normalizeGeneratedResult({
     result: { ...result, question },
     fallbackQuestion: question,
@@ -279,7 +281,7 @@ const answerCustomQuestionFromAI = async ({ topicKey, topicType, question }) => 
 const enrichAnswerToStructured = async ({ question, currentAnswer }) => {
   const prompt = buildEnrichmentPrompt({ question, currentAnswer });
   const fallback = normalizeStructuredAnswer(currentAnswer);
-  const result = await aiService.runAIAnalysis(prompt, fallback);
+  const result = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: INTERVIEW_AI_TIMEOUT_MS });
   return normalizeStructuredAnswer(result);
 };
 
