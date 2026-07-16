@@ -165,6 +165,14 @@ export class JobsComponent implements OnInit, OnDestroy {
       || `Jobs are personalized for your ${this.currentCareerStack} path and ${this.currentExperienceLevel} experience level.`;
   }
 
+  get isJSearchUnavailableWithoutCache(): boolean {
+    return this.activeFilters.platform === 'JSearch'
+      && this.displayedJobs.length === 0
+      && (this.sourceFailures || []).some((failure) =>
+        String(failure?.source || '').toLowerCase() === 'jsearch'
+        && ['quota_exceeded', 'circuit_open'].includes(String(failure?.reason || '').toLowerCase())
+      );
+  }
   get skeletonItems(): number[] {
     return Array.from({ length: PAGE_SIZE }, (_, index) => index);
   }

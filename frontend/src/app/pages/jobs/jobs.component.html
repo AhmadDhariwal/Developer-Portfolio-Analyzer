@@ -203,8 +203,8 @@
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
           </svg>
         </div>
-        <h3>No jobs match these filters</h3>
-        <p>Try broadening the location or skill search, or reset filters to reload your default recommendations.</p>
+        <h3>{{ isJSearchUnavailableWithoutCache ? 'JSearch is temporarily unavailable' : 'No jobs match these filters' }}</h3>
+        <p>{{ isJSearchUnavailableWithoutCache ? 'JSearch is temporarily unavailable and no cached jobs are available.' : 'Try broadening the location or skill search, or reset filters to reload your default recommendations.' }}</p>
         <button class="primary-button" type="button" (click)="onFiltersReset()">Reset Filters</button>
       </div>
 
