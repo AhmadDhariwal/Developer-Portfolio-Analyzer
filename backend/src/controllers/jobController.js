@@ -285,16 +285,70 @@ const chooseRecommendedCourse = (job = {}, courses = []) => {
   const matched = courses.find((course) =>
     includesAnyToken(`${course?.title || ''} ${course?.description || ''} ${(course?.topics || []).join(' ')}`, tokens)
   );
-  return summarizeCourse(matched || courses[0]);
+  return summarizeCourse(matched);
 };
 
 const chooseRecommendedSprintTask = (job = {}, sprintTasks = []) => {
   if (!sprintTasks.length) return null;
   const tokens = toSearchTokens(job.skills || [], job.missingSkills || [], job.title);
   const matched = sprintTasks.find((task) => includesAnyToken(`${task?.title || ''} ${task?.description || ''}`, tokens));
-  return summarizeSprintTask(matched || sprintTasks[0]);
+  return summarizeSprintTask(matched);
 };
 
+const sanitizeSourceFailure = (failure = {}) => ({
+  source: String(failure.source || 'unknown').slice(0, 40),
+  reason: String(failure.reason || 'request_failed').slice(0, 60),
+  status: Number.isInteger(failure.status) ? failure.status : undefined,
+  configured: Boolean(failure.configured)
+});
+
+const sanitizeCacheWrite = (cacheWrite = {}) => ({
+  attempted: Number(cacheWrite.attempted || 0),
+  synced: Number(cacheWrite.synced || 0),
+  upserted: Number(cacheWrite.upserted || 0),
+  modified: Number(cacheWrite.modified || 0),
+  matched: Number(cacheWrite.matched || 0),
+  skippedRecentlySynced: Number(cacheWrite.skippedRecentlySynced || 0),
+  failed: Boolean(cacheWrite.failed)
+});
+const sanitizeJobDiagnostics = (diagnostics = {}) => ({
+  sourceSummaryFetched: diagnostics.sourceSummaryFetched || {},
+  sourceSummaryUsable: diagnostics.sourceSummaryUsable || {},
+  sourceSummaryAfterSourceDedupe: diagnostics.sourceSummaryAfterSourceDedupe || {},
+  sourceSummaryBeforeRank: diagnostics.sourceSummaryBeforeRank || {},
+  sourceSummaryFinal: diagnostics.sourceSummaryFinal || {},
+  sourceConfigs: diagnostics.sourceConfigs || {},
+  sourceFailures: Array.isArray(diagnostics.sourceFailures)
+    ? diagnostics.sourceFailures.map(sanitizeSourceFailure)
+    : [],
+  cacheCount: Number(diagnostics.cacheCount || 0),
+  cacheWrite: sanitizeCacheWrite(diagnostics.cacheWrite),
+  liveJobsFetched: Number(diagnostics.liveJobsFetched || 0),
+  allLiveSourcesFailed: Boolean(diagnostics.allLiveSourcesFailed),
+  applyFilters: diagnostics.applyFilters || {},
+  dedupeJobs: diagnostics.dedupeJobs || {},
+  rankJobs: diagnostics.rankJobs || {},
+  cacheFallback: diagnostics.cacheFallback || {},
+  fromCacheOnly: Boolean(diagnostics.fromCacheOnly)
+});
+
+const sanitizeSourceHealthPayload = (payload = {}) => ({
+  sources: Object.entries(payload.sources || {}).reduce((sources, [name, source]) => {
+    sources[name] = {
+      source: String(source?.source || name).slice(0, 40),
+      configured: Boolean(source?.configured),
+      reachable: Boolean(source?.reachable),
+      jobsFetched: Number(source?.jobsFetched || 0),
+      lastSuccessAt: source?.lastSuccessAt || null,
+      lastFailureAt: source?.lastFailureAt || null,
+      error: source?.error ? 'Source request failed.' : '',
+      statusCode: Number.isInteger(source?.statusCode) ? source.statusCode : null,
+      cacheCount: Number(source?.cacheCount || 0)
+    };
+    return sources;
+  }, {}),
+  cacheMetrics: payload.cacheMetrics || {}
+});
 const enrichJobsWithCareerSignals = async (jobs = [], context = {}) => {
   const careerSignals = await resolveCareerExplanationSignals(context);
   return (Array.isArray(jobs) ? jobs : []).map((job) => ({
@@ -340,7 +394,7 @@ const getCacheHealthStatus = async (_req, res) => {
 const getSourceHealthStatus = async (_req, res) => {
   try {
     const payload = await getSourceHealth();
-    return res.json(payload);
+    return res.json(sanitizeSourceHealthPayload(payload));
   } catch (error) {
     console.error('[JobController] Failed to fetch source health:', error.message);
     return res.status(500).json({ message: 'Failed to fetch job source health. Please try again.' });
@@ -413,7 +467,7 @@ const fetchJobs = async (req, res) => {
       experienceLevel,
       developerSignals
     });
-    const diagnostics = jobPool.diagnostics || null;
+    const diagnostics = sanitizeJobDiagnostics(jobPool.diagnostics || {});
     const fromCache = Boolean(diagnostics?.fromCacheOnly);
 
     const total = Array.isArray(enrichedAllJobs) ? enrichedAllJobs.length : 0;
@@ -431,10 +485,10 @@ const fetchJobs = async (req, res) => {
       hasMore: safePage < totalPages,
       fromCache,
       ...sourceMeta,
-      sourceFailures: diagnostics?.sourceFailures || [],
+      sourceFailures: diagnostics.sourceFailures,
       cacheCount: Number(diagnostics?.cacheCount || 0),
       warning: diagnostics?.applyFilters?.warning || undefined,
-      diagnostics: diagnostics || undefined,
+      diagnostics,
       recommendedBasedOn: buildRecommendedBasedOn({
         careerStack,
         experienceLevel,

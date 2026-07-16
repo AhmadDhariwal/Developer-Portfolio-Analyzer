@@ -20,7 +20,12 @@ export class FrontendCacheInvalidationService {
     ['devinsight_profile_cache', 'devinsight_career_profile', 'devinsight_news_signal_hash',
       'devinsight_news_bookmarks', 'devinsight_news_read_later']
       .forEach((key) => localStorage.removeItem(key));
-    this.removeStoragePrefixes(['resume_analysis_cache:', 'skill_gap_cache:', 'skill_gap_cache_index:']);
+    this.removeStoragePrefixes([
+      'resume_analysis_cache:',
+      'skill_gap_cache:',
+      'skill_gap_cache_index:',
+      'devinsight_public_jobs_state:'
+    ]);
     this.clearGithubCaches();
     this.clearResumeCaches();
     this.clearDeveloperSignalCaches();
