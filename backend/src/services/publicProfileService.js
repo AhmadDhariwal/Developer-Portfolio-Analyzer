@@ -10,6 +10,7 @@ const ResumeAnalysis = require('../models/resumeAnalysis');
 const SkillGraph = require('../models/skillGraph');
 const WeeklyReport = require('../models/weeklyReport');
 const { getDeveloperSettingsSync } = require('./platformSettingsService');
+const { acquireCacheLock, isRedisCacheEnabled } = require('./redisCacheService');
 
 const DEFAULT_MAX_SKILLS = 12;
 const DEFAULT_MAX_PROJECTS = 12;
@@ -21,6 +22,7 @@ const DEFAULT_MAX_COMPLETED_COURSES = 50;
 const PUBLIC_PROFILE_CACHE_TTL_MS = Math.max(30000, Number.parseInt(process.env.PUBLIC_PROFILE_CACHE_TTL_MS || '300000', 10) || 300000);
 const PUBLIC_PROFILE_STALE_TTL_MS = Math.max(PUBLIC_PROFILE_CACHE_TTL_MS, Number.parseInt(process.env.PUBLIC_PROFILE_STALE_TTL_MS || '86400000', 10) || 86400000);
 const PUBLIC_PROFILE_CACHE_MAX = Math.max(20, Number.parseInt(process.env.PUBLIC_PROFILE_CACHE_MAX || '200', 10) || 200);
+const UNIQUE_VIEW_TTL_SECONDS = 24 * 60 * 60;
 const publicProfileCache = new Map();
 const DEFAULT_WORK_EXPERIENCE_ICONS = [
   'mdi-rocket-launch',
@@ -139,16 +141,22 @@ const prunePublicProfileCache = () => {
   }
 };
 
-const setPublicProfileCache = (slug, payload) => {
+const setPublicProfileCache = (slug, payload, profileId) => {
   const key = String(slug || '').trim().toLowerCase();
   if (!key) return;
   const now = Date.now();
   publicProfileCache.delete(key);
-  publicProfileCache.set(key, { payload, freshUntil: now + PUBLIC_PROFILE_CACHE_TTL_MS, staleUntil: now + PUBLIC_PROFILE_STALE_TTL_MS });
+  publicProfileCache.set(key, { payload, profileId: String(profileId || ''), freshUntil: now + PUBLIC_PROFILE_CACHE_TTL_MS, staleUntil: now + PUBLIC_PROFILE_STALE_TTL_MS });
   prunePublicProfileCache();
 };
 
 const invalidatePublicProfileCache = (...slugs) => slugs.forEach((slug) => publicProfileCache.delete(String(slug || '').trim().toLowerCase()));
+
+const invalidatePublicProfileCacheForUser = async (userId) => {
+  if (!userId) return;
+  const profiles = await PublicProfile.find({ userId }).select('slug').lean();
+  invalidatePublicProfileCache(...profiles.map((profile) => profile.slug));
+};
 
 const resolveAvatarForResponse = (avatarValue = '', req = null) => {
   const raw = String(avatarValue || '').trim();
@@ -403,11 +411,57 @@ const normalizeUrl = (value = '') => {
   const raw = trimText(value, 240);
   if (!raw) return '';
 
-  if (/^https?:\/\//i.test(raw)) {
-    return raw;
+  try {
+    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw.replace(/^\/+/, '')}`;
+    const parsed = new URL(candidate);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.toString() : '';
+  } catch {
+    return '';
   }
+};
 
-  return `https://${raw.replace(/^\/+/, '')}`;
+const createValidationError = (message) => Object.assign(new Error(message), { statusCode: 400 });
+const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+const hasUnsafeMarkup = (value) => typeof value === 'string' && /<\s*script\b|javascript\s*:/i.test(value);
+
+const validateUrl = (value, field) => {
+  if (value === undefined || value === null || value === '') return;
+  if (typeof value !== 'string' || !normalizeUrl(value)) throw createValidationError(`Invalid ${field}.`);
+};
+
+const validatePublicProfileUpdatePayload = (payload) => {
+  if (!isPlainObject(payload)) throw createValidationError('Invalid profile payload.');
+  ['skills', 'projects', 'upcomingProjects', 'testimonials', 'workExperiences', 'completedCourses', 'courses'].forEach((field) => {
+    if (payload[field] !== undefined && !Array.isArray(payload[field])) throw createValidationError(`Invalid ${field}.`);
+  });
+  ['sections', 'socialLinks'].forEach((field) => {
+    if (payload[field] !== undefined && !isPlainObject(payload[field])) throw createValidationError(`Invalid ${field}.`);
+  });
+  if (payload.isPublic !== undefined && typeof payload.isPublic !== 'boolean') throw createValidationError('Invalid public visibility.');
+  ['headline', 'summary', 'seoTitle', 'seoDescription'].forEach((field) => {
+    if (payload[field] !== undefined && typeof payload[field] !== 'string') throw createValidationError(`Invalid ${field}.`);
+  });
+  if (payload.slug !== undefined && (typeof payload.slug !== 'string' || (payload.slug.trim() && !slugify(payload.slug)))) {
+    throw createValidationError('Invalid slug.');
+  }
+  const hasUnsafeValue = (value) => Array.isArray(value)
+    ? value.some(hasUnsafeValue)
+    : isPlainObject(value)
+      ? Object.values(value).some(hasUnsafeValue)
+      : hasUnsafeMarkup(value);
+  if (hasUnsafeValue(payload)) throw createValidationError('Unsafe content is not allowed.');
+  const validateCollection = (items, fields) => (items || []).forEach((item) => {
+    if (!isPlainObject(item)) throw createValidationError('Invalid collection item.');
+    fields.forEach((field) => validateUrl(item[field], field));
+  });
+  validateCollection(payload.projects, ['url', 'repoUrl', 'imageUrl']);
+  validateCollection(payload.upcomingProjects, ['url', 'repoUrl', 'imageUrl']);
+  validateCollection(payload.testimonials, ['avatarUrl']);
+  validateCollection(payload.workExperiences, ['ctaUrl']);
+  validateCollection(payload.completedCourses || payload.courses, ['certificateUrl']);
+  Object.entries(payload.socialLinks || {}).forEach(([field, value]) => validateUrl(value, field));
+  if (payload.sections?.cta !== undefined && !isPlainObject(payload.sections.cta)) throw createValidationError('Invalid cta section.');
+  validateUrl(payload.sections?.cta?.resumeUrl, 'resume URL');
 };
 
 const normalizeGithubLink = (value = '', fallbackUsername = '') => {
@@ -701,14 +755,16 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
     projects: normalizedProjects,
     skills: normalizedSkills
   });
-  const publicEmail = normalizedSections.contact.email || normalizeEmail(user?.email || '');
-  const publicPhoneNumber = normalizePhoneNumber(user?.phoneNumber || '');
+  const ownerEmail = normalizedSections.contact.email || normalizeEmail(user?.email || '');
+  const ownerPhoneNumber = normalizePhoneNumber(user?.phoneNumber || '');
+  const publicEmail = publicOnly ? '' : ownerEmail;
+  const publicPhoneNumber = publicOnly ? '' : ownerPhoneNumber;
   const hasDefaultResumeFile = Boolean(defaultResume?.fileUrl && resolveStoredResumePath(defaultResume.fileUrl));
   const defaultResumeUrl = hasDefaultResumeFile ? buildPublicResumeDownloadUrl(profile.slug, req) : '';
   const effectiveResumeUrl = defaultResumeUrl || normalizedSections.cta.resumeUrl || '';
 
   return {
-    id: profile._id,
+    ...(!publicOnly ? { id: profile._id } : {}),
     slug: profile.slug,
     isPublic: profile.isPublic,
     headline: trimText(profile.headline, 120),
@@ -723,14 +779,17 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
     completedCourses,
     sections: {
       ...normalizedSections,
+      contact: {
+        ...normalizedSections.contact,
+        email: publicEmail
+      },
       cta: {
         ...normalizedSections.cta,
         resumeUrl: effectiveResumeUrl
       }
     },
     socialLinks: normalizedSocialLinks,
-    email: publicEmail,
-    phoneNumber: publicPhoneNumber,
+    ...(!publicOnly ? { email: publicEmail, phoneNumber: publicPhoneNumber } : {}),
     defaultResumeUrl,
     resumeUrl: effectiveResumeUrl,
     analytics: {
@@ -761,10 +820,9 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
       name: user?.name || '',
       jobTitle: user?.jobTitle || '',
       location: user?.location || '',
-      avatar: resolveAvatarForResponse(user?.avatar || '', req),
+      avatar: resolveAvatarForResponse(user?.avatar || user?.avatarUrl || '', req),
       githubUsername: user?.githubUsername || '',
-      phoneNumber: publicPhoneNumber,
-      email: publicEmail
+      ...(!publicOnly ? { phoneNumber: publicPhoneNumber, email: publicEmail } : {})
     }
   };
 }
@@ -893,10 +951,11 @@ const applySocialLinksUpdate = ({ profile, payload, user }) => {
 };
 
 const updatePublicProfile = async (userId, payload = {}, req = null) => {
+  validatePublicProfileUpdatePayload(payload);
   const profile = await getOrCreatePublicProfile(userId);
   const previousSlug = profile.slug;
   const user = await User.findById(userId)
-    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar avatarUrl githubUsername website twitter linkedin bio')
     .lean();
 
   await applyCoreProfileUpdates({ profile, payload });
@@ -910,6 +969,47 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
   return buildPublicProfilePayload(savedProfile || profile, user, req);
 };
 
+const acquireMongoUniqueViewGuard = async ({ profileId, viewerHash, now }) => {
+  try {
+    const result = await PublicProfileView.updateOne(
+      {
+        profileId,
+        viewerHash,
+        recordType: 'unique_guard',
+        uniqueWindowUntil: { $lte: now }
+      },
+      {
+        $set: {
+          profileId,
+          viewerHash,
+          recordType: 'unique_guard',
+          uniqueWindowUntil: new Date(now.getTime() + UNIQUE_VIEW_TTL_SECONDS * 1000),
+          viewedAt: now
+        }
+      },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return result.matchedCount === 1 || result.upsertedCount === 1;
+  } catch (error) {
+    if (error?.code === 11000) return false;
+    throw error;
+  }
+};
+
+const acquireUniqueViewGuard = async ({ profileId, viewerHash, now }) => {
+  if (isRedisCacheEnabled()) {
+    const redisResult = await acquireCacheLock(
+      `public-profile:unique-view:${String(profileId)}:${viewerHash}`,
+      '1',
+      UNIQUE_VIEW_TTL_SECONDS
+    );
+    if (typeof redisResult === 'boolean') return redisResult;
+  }
+
+  return acquireMongoUniqueViewGuard({ profileId, viewerHash, now });
+};
+
 const recordProfileView = async ({ profile, req }) => {
   if (!profile) return;
 
@@ -918,28 +1018,29 @@ const recordProfileView = async ({ profile, req }) => {
   const viewerHash = crypto.createHash('sha256')
     .update(`${profile._id}:${ipAddress}:${userAgent}`)
     .digest('hex');
-
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const existing = await PublicProfileView.findOne({
+  const viewedAt = new Date();
+  const isUniqueView = await acquireUniqueViewGuard({
     profileId: profile._id,
     viewerHash,
-    viewedAt: { $gte: since }
-  }).lean();
+    now: viewedAt
+  });
 
   await PublicProfileView.create({
     profileId: profile._id,
     viewerHash,
     ipAddress,
     userAgent,
-    viewedAt: new Date()
+    recordType: 'view',
+    viewedAt
   });
 
-  profile.totalViews = Number(profile.totalViews || 0) + 1;
-  if (!existing) {
-    profile.uniqueViews = Number(profile.uniqueViews || 0) + 1;
-  }
-  profile.lastViewedAt = new Date();
-  await profile.save();
+  await PublicProfile.updateOne(
+    { _id: profile._id },
+    {
+      $inc: { totalViews: 1, ...(isUniqueView ? { uniqueViews: 1 } : {}) },
+      $set: { lastViewedAt: viewedAt }
+    }
+  );
 };
 
 const getPublicProfileBySlug = async (slug, req) => {
@@ -953,9 +1054,9 @@ const getPublicProfileBySlug = async (slug, req) => {
   const cacheKey = String(slug || '').trim().toLowerCase();
   const cached = publicProfileCache.get(cacheKey);
   const cacheMs = Date.now() - cacheStartedAt;
-  const isPreview = req?.query?.preview !== undefined;
-  if (!isPreview && cached?.freshUntil > Date.now()) {
-    void PublicProfile.findById(cached.payload?.id)
+  const previewRequested = req?.query?.preview !== undefined;
+  if (!previewRequested && cached?.freshUntil > Date.now()) {
+    void PublicProfile.findById(cached.profileId)
       .then((profile) => profile ? recordProfileView({ profile, req }) : null)
       .catch((error) => console.warn('[PublicProfile] Cached view tracking failed:', error.message));
     console.info('[PublicProfileTiming]', { slug: cacheKey, cache: 'hit', cacheMs, githubDataMs: 0, aiMs: 0, dbMs: 0, totalMs: Date.now() - startedAt });
@@ -964,26 +1065,25 @@ const getPublicProfileBySlug = async (slug, req) => {
 
   const dbStartedAt = Date.now();
   try {
-    const query = { slug };
-    if (!isPreview) {
-      query.isPublic = true;
-    }
-    const profile = await PublicProfile.findOne(query);
+    const profile = await PublicProfile.findOne({ slug: cacheKey });
     if (!profile) return null;
 
+    const isOwnerPreview = previewRequested && req?.user?._id && String(req.user._id) === String(profile.userId);
+    if (!profile.isPublic && !isOwnerPreview) return null;
+
     const user = await User.findById(profile.userId)
-      .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
+      .select('name email phoneNumber defaultResumeFileId jobTitle location avatar avatarUrl githubUsername website twitter linkedin bio')
       .lean();
     const dbMs = Date.now() - dbStartedAt;
-    await recordProfileView({ profile, req });
-    const payload = await buildPublicProfilePayload(profile, user, req, { publicOnly: true });
-    if (!isPreview) {
-      setPublicProfileCache(profile.slug, payload);
+    if (profile.isPublic) await recordProfileView({ profile, req });
+    const payload = await buildPublicProfilePayload(profile, user, req, { publicOnly: profile.isPublic });
+    if (profile.isPublic && !isOwnerPreview) {
+      setPublicProfileCache(profile.slug, payload, profile._id);
     }
     console.info('[PublicProfileTiming]', { slug: cacheKey, cache: 'miss', cacheMs, githubDataMs: 0, aiMs: 0, dbMs, totalMs: Date.now() - startedAt });
     return payload;
   } catch (error) {
-    if (!isPreview && cached?.staleUntil > Date.now()) {
+    if (!previewRequested && cached?.staleUntil > Date.now()) {
       console.warn('[PublicProfileTiming]', { slug: cacheKey, cache: 'stale-fallback', cacheMs, githubDataMs: 0, aiMs: 0, dbMs: Date.now() - dbStartedAt, totalMs: Date.now() - startedAt, error: error.message });
       return cached.payload;
     }
@@ -994,7 +1094,7 @@ const getPublicProfileBySlug = async (slug, req) => {
 const getPublicProfileForOwner = async (userId, req = null) => {
   const profile = await getOrCreatePublicProfile(userId);
   const user = await User.findById(userId)
-    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select('name email phoneNumber defaultResumeFileId jobTitle location avatar avatarUrl githubUsername website twitter linkedin bio')
     .lean();
   return buildPublicProfilePayload(profile, user, req);
 };
@@ -1015,13 +1115,16 @@ const getPublicProfileResumeDownload = async (slug) => {
     .lean();
   if (!resumeFile?.fileUrl) return null;
 
+  const mimeType = String(resumeFile.mimeType || 'application/pdf').toLowerCase();
+  if (mimeType !== 'application/pdf') return null;
+
   const filePath = resolveStoredResumePath(resumeFile.fileUrl);
   if (!filePath) return null;
 
   return {
     filePath,
     fileName: toSafeDownloadName(resumeFile.fileName || `${profile.slug}-resume.pdf`),
-    mimeType: resumeFile.mimeType || 'application/pdf'
+    mimeType
   };
 };
 
@@ -1029,7 +1132,7 @@ const getPublicProfileAnalytics = async (userId) => {
   const profile = await getOrCreatePublicProfile(userId);
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const views = await PublicProfileView.aggregate([
-    { $match: { profileId: profile._id, viewedAt: { $gte: since } } },
+    { $match: { profileId: profile._id, recordType: { $ne: 'unique_guard' }, viewedAt: { $gte: since } } },
     {
       $group: {
         _id: {
@@ -1081,5 +1184,6 @@ module.exports = {
   getPublicProfileBySlug,
   getPublicProfileForOwner,
   getPublicProfileAnalytics,
-  getPublicProfileResumeDownload
+  getPublicProfileResumeDownload,
+  invalidatePublicProfileCacheForUser
 };

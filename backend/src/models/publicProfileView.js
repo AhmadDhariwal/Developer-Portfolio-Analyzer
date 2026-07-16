@@ -12,6 +12,16 @@ const publicProfileViewSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  recordType: {
+    type: String,
+    enum: ['view', 'unique_guard'],
+    default: 'view',
+    index: true
+  },
+  uniqueWindowUntil: {
+    type: Date,
+    default: null
+  },
   ipAddress: {
     type: String,
     default: ''
@@ -26,5 +36,11 @@ const publicProfileViewSchema = new mongoose.Schema({
     index: true
   }
 }, { timestamps: true });
+
+publicProfileViewSchema.index(
+  { profileId: 1, viewerHash: 1, recordType: 1 },
+  { unique: true, partialFilterExpression: { recordType: 'unique_guard' } }
+);
+publicProfileViewSchema.index({ uniqueWindowUntil: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model('PublicProfileView', publicProfileViewSchema);

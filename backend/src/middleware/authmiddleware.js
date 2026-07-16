@@ -53,6 +53,26 @@ const protect = async (req, res, next) => {
     }
 };
 
+const attachOptionalUser = async (req, _res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization?.startsWith('Bearer ')) return next();
+
+    try {
+        const token = authorization.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ['HS256'],
+            issuer: process.env.JWT_ISSUER || 'devinsight-api',
+            audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+        });
+        const user = await User.findById(decoded.id).select('-password');
+        if (user?.isActive !== false) req.user = user || undefined;
+    } catch {
+        // Public routes remain accessible without a valid token; protected preview checks handle the absence of req.user.
+    }
+
+    return next();
+};
+
 const authorizeRoles = (...roles) => {
     const allowed = new Set((roles || []).map((role) => String(role || '').toLowerCase()));
 
@@ -114,4 +134,4 @@ const optionalProtect = (req, res, next) => {
   }
 };
 
-module.exports = { protect, authorizeRoles, normalizeUserRole, optionalProtect };
+module.exports = { protect, authorizeRoles, normalizeUserRole, optionalProtect, attachOptionalUser };
