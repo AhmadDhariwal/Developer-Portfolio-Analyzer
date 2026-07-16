@@ -8,7 +8,7 @@ const JobSourceHealth = require('../models/jobSourceHealth');
 const JSEARCH_HOST = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE = 'https://jsearch.p.rapidapi.com/search';
 const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '10000', 10);
-const JSEARCH_RETRIES = Number.parseInt(process.env.JSEARCH_RETRIES || '1', 10);
+const JSEARCH_RETRIES = Math.min(1, Math.max(0, Number.parseInt(process.env.JSEARCH_RETRIES || '1', 10) || 0));
 const JOOBLE_BASE = 'https://jooble.org/api';
 const ADZUNA_BASE = 'https://api.adzuna.com/v1/api/jobs';
 const REMOTIVE_BASE = 'https://remotive.com/api/remote-jobs';
@@ -116,9 +116,12 @@ const JOB_CACHE_RETENTION_MS = Math.max(3, Number.parseInt(process.env.JOB_CACHE
 const JOB_POOL_CACHE_TTL_MS = Math.max(30000, Number.parseInt(process.env.JOB_POOL_CACHE_TTL_MS || '300000', 10) || 300000);
 const JOB_SOURCE_DEADLINE_MS = Math.max(3000, Number.parseInt(process.env.JOB_SOURCE_DEADLINE_MS || '12000', 10) || 12000);
 const SOURCE_HEALTH_WRITE_INTERVAL_MS = Math.max(60000, Number.parseInt(process.env.JOB_SOURCE_HEALTH_WRITE_INTERVAL_MS || '300000', 10) || 300000);
+const SOURCE_WARNING_DEDUPE_MS = Math.max(60000, Number.parseInt(process.env.JOB_SOURCE_WARNING_DEDUPE_MS || '300000', 10) || 300000);
+const JSEARCH_QUOTA_COOLDOWN_MS = Math.max(60000, Math.min(86400000, Number.parseInt(process.env.JSEARCH_QUOTA_COOLDOWN_MS || '21600000', 10) || 21600000));
 const jobPoolCache = new Map();
 const jobPoolInflight = new Map();
 const sourceHealthWriteState = new Map();
+const sourceWarningState = new Map();
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toText = (value) => String(value || '').trim();
@@ -177,17 +180,19 @@ function buildSourceQuery(options = {}, filters = {}) {
 function logSourceFailure(failure = {}) {
   const source = toText(failure.source) || 'unknown';
   const reason = toText(failure.reason) || 'request_failed';
-  const status = failure.statusCode || failure.status ? ` status=${failure.statusCode || failure.status}` : '';
-  const configured = typeof failure.configured === 'boolean' ? ` configured=${failure.configured}` : '';
-  const endpoint = toText(failure.endpoint) ? ` endpoint=${failure.endpoint}` : '';
-  const requestQuery = toText(failure.requestQuery) ? ` query="${failure.requestQuery}"` : '';
-  const detail = toText(failure.detail) ? ` detail=${failure.detail}` : '';
-  console.warn(`[JobService][SourceFailure] source=${source} reason=${reason}${status}${configured}${endpoint}${requestQuery}${detail}`);
+  if (reason === 'circuit_open') return;
+  const status = Number(failure.statusCode || failure.status) || 0;
+  const key = `${source}|${reason}|${status}`;
+  const now = Date.now();
+  if (Number(sourceWarningState.get(key) || 0) > now) return;
+  sourceWarningState.set(key, now + SOURCE_WARNING_DEDUPE_MS);
+  console.warn(`[JobService][SourceFailure] source=${source} reason=${reason}${status ? ` status=${status}` : ''}`);
 }
 
 function sourceErrorMessage(failure = null) {
   if (!failure) return '';
-  return toText(failure.detail || failure.reason || 'Source request failed').slice(0, 300);
+  if (['quota_exceeded', 'circuit_open'].includes(failure.reason)) return 'Source quota is temporarily unavailable.';
+  return toText(failure.reason || 'Source request failed').slice(0, 120);
 }
 
 function redactRequestParams(params = {}) {
@@ -244,6 +249,7 @@ function buildSourceFailure({
   status,
   configured = true,
   detail = '',
+  circuitOpenUntil = null,
   diagnostics = null
 } = {}) {
   return {
@@ -252,53 +258,49 @@ function buildSourceFailure({
     status,
     configured,
     detail: toText(detail),
+    circuitOpenUntil,
     ...(diagnostics ? buildProviderDiagnostics({ ...diagnostics, source, configured, reachable: false, lastFailureAt: new Date() }) : {})
   };
 }
-
 async function updateSourceHealthStats(sourceResults = []) {
   if (!Array.isArray(sourceResults) || !sourceResults.length) return;
-
   const now = new Date();
   await Promise.all(sourceResults.map((result) => {
     const source = normaliseSourceKey(result.source);
+    const failure = result.failure || null;
     const jobsFetched = Array.isArray(result.jobs) ? result.jobs.length : 0;
-    const reachable = Boolean(result.configured && !result.failure);
-    const stateKey = `${Boolean(result.configured)}|${reachable}|${result.failure?.reason || ''}|${result.failure?.status || ''}`;
+    const reachable = Boolean(result.configured && !failure);
+    const stateKey = `${Boolean(result.configured)}|${reachable}|${failure?.reason || ''}|${failure?.status || ''}|${failure?.circuitOpenUntil || ''}`;
     const previous = sourceHealthWriteState.get(source);
-    if (previous?.stateKey === stateKey && Date.now() - previous.writtenAt < SOURCE_HEALTH_WRITE_INTERVAL_MS) {
-      return null;
-    }
+    if (previous?.stateKey === stateKey && Date.now() - previous.writtenAt < SOURCE_HEALTH_WRITE_INTERVAL_MS) return null;
     sourceHealthWriteState.set(source, { stateKey, writtenAt: Date.now() });
     const update = {
-      source,
-      configured: Boolean(result.configured),
-      reachable,
-      jobsFetched,
-      error: result.failure ? sourceErrorMessage(result.failure) : '',
-      endpoint: result.diagnostics?.endpoint || result.failure?.endpoint || '',
-      requestQuery: result.diagnostics?.requestQuery || result.failure?.requestQuery || '',
-      requestParams: result.diagnostics?.requestParams || result.failure?.requestParams || null,
-      statusCode: result.diagnostics?.statusCode || result.failure?.statusCode || result.failure?.status || null,
-      responseBody: result.diagnostics?.responseBody || result.failure?.responseBody || null
+      source, configured: Boolean(result.configured), reachable, jobsFetched,
+      error: failure ? sourceErrorMessage(failure) : '',
+      endpoint: result.diagnostics?.endpoint || failure?.endpoint || '',
+      requestQuery: result.diagnostics?.requestQuery || failure?.requestQuery || '',
+      requestParams: result.diagnostics?.requestParams || failure?.requestParams || null,
+      statusCode: result.diagnostics?.statusCode || failure?.statusCode || failure?.status || null,
+      responseBody: result.diagnostics?.responseBody || failure?.responseBody || null
     };
-
     if (reachable) {
       update.lastSuccessAt = now;
-    } else if (result.failure) {
+      update.circuitState = 'closed';
+      update.circuitOpenUntil = null;
+    } else if (failure) {
       update.lastFailureAt = now;
+      if (['quota_exceeded', 'circuit_open'].includes(failure.reason)) {
+        update.circuitState = 'quota_exceeded';
+        update.circuitOpenUntil = failure.circuitOpenUntil || null;
+        update.error = 'Source quota is temporarily unavailable.';
+        update.responseBody = null;
+      }
     }
-
     return JobSourceHealth.findOneAndUpdate(
-      { source },
-      { $set: update },
-      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-    ).catch((error) => {
-      console.warn(`[JobService] Failed to update source health for ${source}: ${error.message}`);
-    });
+      { source }, { $set: update }, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+    ).catch((error) => console.warn(`[JobService] Failed to update source health for ${source}: ${error.message}`));
   }));
 }
-
 function buildSourceResult(source, jobs = [], failure = null, configured = true, diagnostics = null) {
   return {
     source,
@@ -935,125 +937,105 @@ function mapJSearchJob(job = {}, index = 0) {
   }, index, 'JSearch');
 }
 
+function sourceIsConfigured(source) {
+  const integrations = getIntegrationSecretsSync();
+  if (source === 'jsearch') {
+    const key = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
+    return integrations?.jobsEnabled !== false && Boolean(key && key !== 'your_rapidapi_key');
+  }
+  if (source === 'jooble') return Boolean(toText(process.env.JOOBLE_API_KEY));
+  if (source === 'adzuna') return Boolean(toText(process.env.ADZUNA_APP_ID) && toText(process.env.ADZUNA_APP_KEY));
+  return ['remotive', 'arbeitnow', 'remoteok'].includes(source);
+}
+
+function selectedLiveSourceKeys(filters = {}) {
+  if (filters.platform && filters.platform !== 'All') {
+    const source = normaliseSourceKey(filters.platform);
+    return LIVE_SOURCE_KEYS.includes(source) ? [source] : [];
+  }
+  return LIVE_SOURCE_KEYS.filter(sourceIsConfigured);
+}
+
+function isRetryableProviderFailure(failure = {}) {
+  const safeFailure = failure || {};
+  const status = Number(safeFailure.statusCode || safeFailure.status) || 0;
+  return safeFailure.reason === 'timeout' || (safeFailure.reason === 'request_failed' && (!status || status >= 500));
+}
+
+function retryAfterMs(error) {
+  const value = error?.response?.headers?.['retry-after'];
+  if (value !== undefined && value !== null) {
+    const seconds = Number(value);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.min(86400000, Math.max(1000, seconds * 1000));
+    const retryAt = Date.parse(String(value));
+    if (Number.isFinite(retryAt)) return Math.min(86400000, Math.max(1000, retryAt - Date.now()));
+  }
+  return JSEARCH_QUOTA_COOLDOWN_MS;
+}
+
+async function openSourceQuotaCircuit(source, cooldownMs) {
+  const circuitOpenUntil = new Date(Date.now() + cooldownMs);
+  await JobSourceHealth.findOneAndUpdate(
+    { source: normaliseSourceKey(source) },
+    { $set: { source: normaliseSourceKey(source), configured: true, reachable: false, jobsFetched: 0,
+      error: 'Source quota is temporarily unavailable.', statusCode: 429, responseBody: null,
+      circuitState: 'quota_exceeded', circuitOpenUntil, lastFailureAt: new Date() } },
+    { upsert: true, setDefaultsOnInsert: true }
+  ).catch((error) => console.warn(`[JobService] Failed to open source circuit for ${source}: ${error.message}`));
+  return circuitOpenUntil;
+}
+
+async function getOpenSourceCircuits(sources = []) {
+  if (!sources.length) return new Map();
+  const rows = await JobSourceHealth.find({ source: { $in: sources }, circuitState: 'quota_exceeded', circuitOpenUntil: { $gt: new Date() } })
+    .select('source circuitOpenUntil').lean().catch(() => []);
+  return new Map(rows.map((row) => [normaliseSourceKey(row.source), row.circuitOpenUntil]));
+}
+
+async function fetchSourceWithRetry(source, fetcher) {
+  const first = await fetcher();
+  if (source === 'jsearch' || !isRetryableProviderFailure(first.failure)) return first;
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  return fetcher();
+}
 async function fetchJSearchJobs(query, maxResults = 80) {
   const integrations = getIntegrationSecretsSync();
   const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
   const safeQuery = normalizeProviderQuery(query);
-  const baseDiagnostics = {
-    source: 'jsearch',
-    endpoint: JSEARCH_BASE,
-    requestQuery: safeQuery,
-    requestParams: { query: safeQuery, page: 1, num_pages: 1 }
-  };
-  if (integrations?.jobsEnabled === false) {
-    console.warn('[JobService] JSearch disabled by platform settings.');
-    return buildSourceResult('jsearch', [], buildSourceFailure({
-      source: 'jsearch',
-      reason: 'disabled_by_settings',
-      configured: false,
-      diagnostics: baseDiagnostics
-    }), false, baseDiagnostics);
+  const baseDiagnostics = { source: 'jsearch', endpoint: JSEARCH_BASE, requestQuery: safeQuery, requestParams: { query: safeQuery, page: 1, num_pages: 1 } };
+  if (integrations?.jobsEnabled === false || !rapidApiKey || rapidApiKey === 'your_rapidapi_key') {
+    return buildSourceResult('jsearch', [], buildSourceFailure({ source: 'jsearch', reason: integrations?.jobsEnabled === false ? 'disabled_by_settings' : 'missing_api_key', configured: false, diagnostics: baseDiagnostics }), false, baseDiagnostics);
   }
-  if (!rapidApiKey || rapidApiKey === 'your_rapidapi_key') {
-    console.warn('[JobService] JSearch disabled: RAPIDAPI_KEY is missing or placeholder.');
-    return buildSourceResult('jsearch', [], buildSourceFailure({
-      source: 'jsearch',
-      reason: 'missing_api_key',
-      configured: false,
-      diagnostics: baseDiagnostics
-    }), false, baseDiagnostics);
-  }
-
-  const headers = {
-    'X-RapidAPI-Key': rapidApiKey,
-    'X-RapidAPI-Host': JSEARCH_HOST,
-    'User-Agent': 'Developer-Portfolio-Analyzer/1.0'
-  };
-
+  const headers = { 'X-RapidAPI-Key': rapidApiKey, 'X-RapidAPI-Host': JSEARCH_HOST, 'User-Agent': 'Developer-Portfolio-Analyzer/1.0' };
   let lastFailure = null;
-  let lastSuccessfulDiagnostics = null;
   for (let attempt = 0; attempt <= JSEARCH_RETRIES; attempt += 1) {
-    const relaxedQuery = normalizeProviderQuery(attempt > 0 ? `${safeQuery} developer` : safeQuery);
-    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt > 0 ? 2 : 3));
-    const attemptDiagnostics = {
-      ...baseDiagnostics,
-      requestQuery: relaxedQuery,
-      requestParams: { query: relaxedQuery, page: 1, num_pages: 1 }
-    };
-
+    const relaxedQuery = normalizeProviderQuery(attempt ? `${safeQuery} developer` : safeQuery);
+    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt ? 2 : 3));
+    const attemptDiagnostics = { ...baseDiagnostics, requestQuery: relaxedQuery, requestParams: { query: relaxedQuery, page: 1, num_pages: 1 } };
     try {
       const aggregated = [];
-
       for (let page = 1; page <= maxPages; page += 1) {
         const requestParams = { query: relaxedQuery, page, num_pages: 1 };
-        const response = await axios.get(JSEARCH_BASE, {
-          params: requestParams,
-          headers,
-          timeout: JSEARCH_TIMEOUT_MS
-        });
+        const response = await axios.get(JSEARCH_BASE, { params: requestParams, headers, timeout: JSEARCH_TIMEOUT_MS });
         const pageJobs = response.data?.data || [];
         attemptDiagnostics.requestParams = requestParams;
-        attemptDiagnostics.statusCode = response.status;
-        attemptDiagnostics.responseBody = { dataCount: Array.isArray(pageJobs) ? pageJobs.length : 0 };
-        lastSuccessfulDiagnostics = { ...attemptDiagnostics };
         if (!pageJobs.length) break;
         aggregated.push(...pageJobs);
         if (aggregated.length >= maxResults) break;
       }
-
-      if (aggregated.length) {
-        return buildSourceResult(
-          'jsearch',
-          aggregated.slice(0, maxResults).map((job, index) => mapJSearchJob(job, index)),
-          null,
-          true,
-          {
-            ...attemptDiagnostics,
-            statusCode: 200,
-            responseBody: { jobsFetched: aggregated.length }
-          }
-        );
-      }
+      return buildSourceResult('jsearch', aggregated.slice(0, maxResults).map((job, index) => mapJSearchJob(job, index)), null, true, { ...attemptDiagnostics, statusCode: 200, responseBody: { jobsFetched: aggregated.length } });
     } catch (error) {
-      const status = error?.response?.status;
-      const message = error?.response?.data?.message || error.message;
-      lastFailure = buildSourceFailure({
-        source: 'jsearch',
-        reason: 'request_failed',
-        status,
-        configured: true,
-        detail: message,
-        diagnostics: {
-          ...attemptDiagnostics,
-          statusCode: status,
-          responseBody: error?.response?.data || null
-        }
-      });
-      console.warn(`[JobService] JSearch attempt ${attempt + 1} failed${status ? ` (${status})` : ''}: ${message}`);
-
-      if (status === 401 || status === 403) break;
-      if (status === 429 && attempt < JSEARCH_RETRIES) {
-        await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
-      }
+      const status = Number(error?.response?.status) || undefined;
+      const quotaExceeded = status === 429;
+      const circuitOpenUntil = quotaExceeded ? await openSourceQuotaCircuit('jsearch', retryAfterMs(error)) : null;
+      lastFailure = buildSourceFailure({ source: 'jsearch', reason: quotaExceeded ? 'quota_exceeded' : 'request_failed', status, configured: true, detail: quotaExceeded ? 'Source quota is temporarily unavailable.' : 'Source request failed.', circuitOpenUntil, diagnostics: { ...attemptDiagnostics, statusCode: status, responseBody: quotaExceeded ? null : { failed: true } } });
+      const retryable = !quotaExceeded && (status === undefined || status >= 500);
+      if (!retryable || attempt >= JSEARCH_RETRIES) break;
+      await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
-
-  if (lastSuccessfulDiagnostics && !lastFailure) {
-    return buildSourceResult('jsearch', [], null, true, {
-      ...lastSuccessfulDiagnostics,
-      responseBody: { jobsFetched: 0 }
-    });
-  }
-
-  return buildSourceResult('jsearch', [], lastFailure || buildSourceFailure({
-    source: 'jsearch',
-    reason: 'request_failed',
-    configured: true,
-    detail: 'JSearch returned no jobs for the validated query.',
-    diagnostics: baseDiagnostics
-  }), true, lastFailure || baseDiagnostics);
+  return buildSourceResult('jsearch', [], lastFailure || buildSourceFailure({ source: 'jsearch', reason: 'request_failed', configured: true, detail: 'Source request failed.', diagnostics: baseDiagnostics }), true, lastFailure || baseDiagnostics);
 }
-
 function mapJoobleJob(job = {}, index = 0) {
   const url = toText(job.link || job.url);
   const description = stripHtml(job.snippet || job.description);
@@ -1646,77 +1628,30 @@ function isUsableJob(job = {}) {
   return Boolean(toText(job.title) && toText(job.company) && isHttpUrl(job.applyUrl || job.url));
 }
 
-async function fetchLiveJobSources(query, filters) {
-  const withDeadline = (source, promise) => new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(buildSourceResult(source, [], buildSourceFailure({
-      source,
-      reason: 'timeout',
-      configured: true,
-      detail: `Source exceeded ${JOB_SOURCE_DEADLINE_MS}ms deadline`
-    }), true)), JOB_SOURCE_DEADLINE_MS);
-    promise.then((result) => {
-      clearTimeout(timer);
-      resolve(result);
-    }, (error) => {
-      clearTimeout(timer);
-      resolve(buildSourceResult(source, [], buildSourceFailure({
-        source,
-        reason: 'request_failed',
-        configured: true,
-        detail: error?.message || String(error)
-      }), true));
-    });
+async function fetchLiveJobSources(query, filters = {}) {
+  const selectedSources = selectedLiveSourceKeys(filters);
+  const openCircuits = await getOpenSourceCircuits(selectedSources);
+  const fetchers = { jsearch: () => fetchJSearchJobs(query, 40), jooble: () => fetchJoobleJobs(query, filters, 35), adzuna: () => fetchAdzunaJobs(query, filters, 35), remotive: () => fetchRemotiveJobs(query, 35), arbeitnow: () => fetchArbeitnowJobs(query, 35), remoteok: () => fetchRemoteOkJobs(query, 35) };
+  const withDeadline = (source, fetcher) => new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(buildSourceResult(source, [], buildSourceFailure({ source, reason: 'timeout', configured: true, detail: 'Source request timed out.' }), true)), JOB_SOURCE_DEADLINE_MS);
+    Promise.resolve().then(fetcher).then((result) => { clearTimeout(timer); resolve(result); }, () => { clearTimeout(timer); resolve(buildSourceResult(source, [], buildSourceFailure({ source, reason: 'request_failed', configured: true, detail: 'Source request failed.' }), true)); });
   });
-  const results = await Promise.all([
-    withDeadline('jsearch', fetchJSearchJobs(query, 40)),
-    withDeadline('jooble', fetchJoobleJobs(query, filters, 35)),
-    withDeadline('adzuna', fetchAdzunaJobs(query, filters, 35)),
-    withDeadline('remotive', fetchRemotiveJobs(query, 35)),
-    withDeadline('arbeitnow', fetchArbeitnowJobs(query, 35)),
-    withDeadline('remoteok', fetchRemoteOkJobs(query, 35))
-  ]);
-
-  const failures = results
-    .map((result) => result.failure)
-    .filter(Boolean);
-  failures.forEach((failure) => logSourceFailure(failure));
-
-  const fetchedSourceSummary = results.reduce((accumulator, result) => {
-    accumulator[result.source] = Number(accumulator[result.source] || 0) + result.jobs.length;
-    return accumulator;
-  }, buildSourceSummarySeed());
-
+  const results = await Promise.all(selectedSources.map((source) => {
+    const circuitOpenUntil = openCircuits.get(source);
+    if (circuitOpenUntil) return buildSourceResult(source, [], buildSourceFailure({ source, reason: 'circuit_open', status: 429, configured: true, circuitOpenUntil }), true);
+    return withDeadline(source, () => fetchSourceWithRetry(source, fetchers[source]));
+  }));
+  results.map((result) => result.failure).filter(Boolean).forEach(logSourceFailure);
+  const fetchedSourceSummary = results.reduce((accumulator, result) => { accumulator[result.source] = Number(accumulator[result.source] || 0) + result.jobs.length; return accumulator; }, buildSourceSummarySeed());
   const liveJobs = results.flatMap((result) => result.jobs || []);
-  const usableJobs = liveJobs
-    .map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Unknown'))
-    .filter(isUsableJob);
-  const usableSourceSummary = createSourceSummary(usableJobs);
+  const usableJobs = liveJobs.map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Unknown')).filter(isUsableJob);
   const dedupedUsableJobs = dedupeJobs(usableJobs);
-  const dedupedSourceSummary = createSourceSummary(dedupedUsableJobs);
-
-  return {
-    jobs: dedupedUsableJobs,
-    sourceResults: results,
-    diagnostics: {
-      sourceSummaryFetched: fetchedSourceSummary,
-      sourceSummaryUsable: usableSourceSummary,
-      sourceSummaryAfterSourceDedupe: dedupedSourceSummary,
-      sourceFailures: failures,
-      sourceConfigs: results.reduce((accumulator, result) => {
-        accumulator[result.source] = { configured: result.configured };
-        return accumulator;
-      }, {}),
-      sourceDedupe: {
-        before: usableJobs.length,
-        after: dedupedUsableJobs.length,
-        removed: Math.max(0, usableJobs.length - dedupedUsableJobs.length)
-      },
-      liveJobsFetched: liveJobs.length,
-      allLiveSourcesFailed: results.every((result) => !result.jobs.length)
-    }
-  };
+  return { jobs: dedupedUsableJobs, sourceResults: results, diagnostics: {
+    sourceSummaryFetched: fetchedSourceSummary, sourceSummaryUsable: createSourceSummary(usableJobs), sourceSummaryAfterSourceDedupe: createSourceSummary(dedupedUsableJobs),
+    sourceFailures: results.map((result) => result.failure).filter(Boolean), sourceConfigs: results.reduce((accumulator, result) => { accumulator[result.source] = { configured: result.configured }; return accumulator; }, {}),
+    sourceDedupe: { before: usableJobs.length, after: dedupedUsableJobs.length, removed: Math.max(0, usableJobs.length - dedupedUsableJobs.length) }, liveJobsFetched: liveJobs.length, allLiveSourcesFailed: results.every((result) => !result.jobs.length)
+  } };
 }
-
 async function refreshJobCache(options = {}) {
   const filters = normaliseJobFilters(options);
   const query = buildSourceQuery(options, filters);
@@ -1834,6 +1769,7 @@ async function buildJobPool(options = {}) {
 module.exports = {
   buildJobPool,
   refreshJobCache,
+  fetchLiveJobSources,
   findCachedJobById,
   syncJobsToCache,
   getSourceHealth,
