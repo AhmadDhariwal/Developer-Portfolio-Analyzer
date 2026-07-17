@@ -8,6 +8,34 @@ const STACK_KEYWORDS = {
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+const SKILL_ALIASES = {
+  'c sharp': 'c#',
+  csharp: 'c#',
+  'c plus plus': 'c++',
+  cpp: 'c++',
+  dotnet: '.net',
+  'dot net': '.net',
+  nodejs: 'node.js',
+  nextjs: 'next.js'
+};
+
+const normalizeSkill = (value = '') => {
+  const normalized = String(value).trim().toLowerCase().replace(/\s+/g, ' ');
+  return SKILL_ALIASES[normalized] || normalized;
+};
+
+const escapeRegExp = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const skillAppearsInText = (text = '', skill = '') => {
+  const normalizedSkill = normalizeSkill(skill);
+  if (!normalizedSkill) return false;
+  const aliases = Object.entries(SKILL_ALIASES)
+    .filter(([, canonical]) => canonical === normalizedSkill)
+    .map(([alias]) => alias);
+  const candidates = [...new Set([normalizedSkill, ...aliases])];
+  return candidates.some((candidate) => new RegExp(`(^|[^a-z0-9])${escapeRegExp(candidate)}(?=$|[^a-z0-9])`, 'i').test(text));
+};
+
 const normalizeCareerStack = (stack = '') => {
   const lower = String(stack).trim().toLowerCase();
   if (lower === 'ai/ml') return 'AI / ML';
@@ -42,8 +70,8 @@ const findMatches = (item, values = [], limit = 4) => {
   const matches = [];
   values.forEach((value) => {
     const label = String(value?.name || value?.skill || value || '').trim();
-    const key = label.toLowerCase();
-    if (!key || seen.has(key) || !text.includes(key)) return;
+    const key = normalizeSkill(label);
+    if (!key || seen.has(key) || !skillAppearsInText(text, key)) return;
     seen.add(key);
     matches.push(label);
   });
@@ -82,7 +110,7 @@ const relevanceScore = (item, keywords) => {
   const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
   let hits = 0;
   keywords.forEach((kw) => {
-    if (kw && text.includes(kw)) hits += 1;
+    if (kw && skillAppearsInText(text, kw)) hits += 1;
   });
   return clamp(hits / Math.min(8, keywords.size), 0, 1);
 };

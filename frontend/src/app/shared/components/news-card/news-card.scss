@@ -1,6 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
 .news-card {
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -84,7 +92,9 @@
 }
 
 .news-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   gap: 0.9rem;
   padding: 1rem;
 }
@@ -193,6 +203,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+  margin-top: auto;
 }
 
 .action-button,

@@ -9,6 +9,7 @@
     "test": "node --test src/tests/**/*.test.js",
     "seed:interview-bank": "node src/scripts/seedInterviewQuestionBank.js",
     "migrate:interview-bank": "node src/scripts/migrateInterviewQuestionBankTopicFields.js",
+    "migrate:scenario-simulation-index": "node src/scripts/migrateScenarioSimulationUniqueIndex.js",
     "security:audit": "npm audit --audit-level=moderate",
     "security:audit:fix": "npm audit fix"
   },

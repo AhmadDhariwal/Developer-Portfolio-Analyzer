@@ -52,6 +52,17 @@ const jobSourceHealthSchema = new mongoose.Schema({
   responseBody: {
     type: mongoose.Schema.Types.Mixed,
     default: null
+  },
+  circuitState: {
+    type: String,
+    enum: ['closed', 'quota_exceeded'],
+    default: 'closed',
+    index: true
+  },
+  circuitOpenUntil: {
+    type: Date,
+    default: null,
+    index: true
   }
 }, { timestamps: true });
 

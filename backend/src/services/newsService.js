@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('node:crypto');
 const NewsCache = require('../models/news');
+const NewsProviderCircuit = require('../models/newsProviderCircuit');
 const logger = require('../utils/logger');
 const {
   fromNewsAPI,
@@ -12,6 +13,7 @@ const {
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
+const { isRedisCacheEnabled, getRedisCacheClient } = require('./redisCacheService');
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
@@ -19,7 +21,7 @@ const CACHE_TTL_MS = 1000 * 60 * 20;
 const SIGNAL_CACHE_TTL_MS = 1000 * 60 * 2;
 const SIGNAL_CACHE_MAX_SIZE = 250;
 const MAX_CACHED_ITEMS = 300;
-const PROVIDER_TIMEOUT_MS = Math.max(2000, Number(process.env.NEWS_PROVIDER_TIMEOUT_MS) || 7000);
+const PROVIDER_TIMEOUT_MS = Math.min(7000, Math.max(2000, Number(process.env.NEWS_PROVIDER_TIMEOUT_MS) || 7000));
 const PROVIDER_FAILURE_THRESHOLD = 3;
 const PROVIDER_COOLDOWN_MS = Math.max(30000, Number(process.env.NEWS_PROVIDER_COOLDOWN_MS) || 2 * 60 * 1000);
 const REDDIT_FEEDS = ['programming', 'webdev', 'MachineLearning', 'devops'];
@@ -29,10 +31,28 @@ const NEWS_CATEGORIES = ['All', 'Frontend', 'Backend', 'Full Stack', 'AI / ML', 
 const NEWS_SOURCES = ['All', ...SOURCE_NAMES];
 const NEWS_DATE_FILTERS = ['today', 'week', 'month'];
 const NEWS_POPULARITY_FILTERS = ['all', 'high'];
+const SAFE_PROVIDER_FAILURES = new Set([
+  'Provider disabled in platform settings',
+  'Provider API key is not configured'
+]);
+
+const sanitizeProviderDiagnostics = (diagnostics = []) => (Array.isArray(diagnostics) ? diagnostics : [])
+  .map((diagnostic) => ({
+    provider: String(diagnostic?.provider || 'Unknown'),
+    enabled: Boolean(diagnostic?.enabled),
+    configured: Boolean(diagnostic?.configured),
+    reachable: Boolean(diagnostic?.reachable),
+    articlesFetched: Math.max(0, Number(diagnostic?.articlesFetched || 0)),
+    lastSuccess: diagnostic?.lastSuccess || null,
+    lastFailure: diagnostic?.lastFailure
+      ? (SAFE_PROVIDER_FAILURES.has(diagnostic.lastFailure) ? diagnostic.lastFailure : 'Provider request failed.')
+      : null
+  }));
 const signalResolutionCache = new Map();
 const signalResolutionInflight = new Map();
 const feedInflight = new Map();
-const providerCircuitState = new Map();
+const localProviderCircuitState = new Map();
+let localCircuitFallbackWarned = false;
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const uniqueStrings = (values = [], limit = 8) => {
@@ -103,28 +123,202 @@ const withProviderTimeout = (providerName, operation) => Promise.race([
   })
 ]);
 
+const providerCircuitKey = (providerName) => `news:circuit:${String(providerName || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+const toCircuitState = (state = {}) => ({
+  failureCount: Math.max(0, Number(state.failureCount || 0)),
+  circuitOpenUntil: Math.max(0, Number(state.circuitOpenUntil || 0)),
+  lastFailureAt: Math.max(0, Number(state.lastFailureAt || 0))
+});
+
+const warnLocalCircuitFallback = () => {
+  if (localCircuitFallbackWarned) return;
+  localCircuitFallbackWarned = true;
+  logger.warn('news shared provider circuit unavailable; using local fallback');
+};
+
+const getRedisCircuit = async (providerName) => {
+  if (!isRedisCacheEnabled()) return undefined;
+  const client = getRedisCacheClient();
+  if (!client) return undefined;
+  try {
+    const key = providerCircuitKey(providerName);
+    const fields = await client.hGetAll(key);
+    if (!fields || !Object.keys(fields).length) return null;
+    const state = toCircuitState(fields);
+    if (state.circuitOpenUntil > Date.now()) return state;
+    if (state.circuitOpenUntil && state.circuitOpenUntil <= Date.now()) await client.del(key);
+    return null;
+  } catch {
+    return undefined;
+  }
+};
+
+const recordRedisFailure = async (providerName) => {
+  if (!isRedisCacheEnabled()) return undefined;
+  const client = getRedisCacheClient();
+  if (!client) return undefined;
+  try {
+    const key = providerCircuitKey(providerName);
+    const now = Date.now();
+    const existing = toCircuitState(await client.hGetAll(key));
+    if (existing.circuitOpenUntil > now) return existing;
+    if (existing.circuitOpenUntil && existing.circuitOpenUntil <= now) await client.del(key);
+    const failureCount = Number(await client.hIncrBy(key, 'failureCount', 1));
+    const circuitOpenUntil = failureCount >= PROVIDER_FAILURE_THRESHOLD ? now + PROVIDER_COOLDOWN_MS : 0;
+    const ttlSeconds = Math.max(1, Math.ceil(PROVIDER_COOLDOWN_MS / 1000));
+    await client.hSet(key, {
+      failureCount: String(failureCount),
+      circuitOpenUntil: String(circuitOpenUntil),
+      lastFailureAt: String(now)
+    });
+    await client.expire(key, ttlSeconds);
+    return { failureCount, circuitOpenUntil, lastFailureAt: now };
+  } catch {
+    return undefined;
+  }
+};
+
+const clearRedisCircuit = async (providerName) => {
+  if (!isRedisCacheEnabled()) return false;
+  const client = getRedisCacheClient();
+  if (!client) return false;
+  try {
+    await client.del(providerCircuitKey(providerName));
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const getMongoCircuit = async (providerName) => {
+  const now = new Date();
+  const document = await NewsProviderCircuit.findOne({ provider: providerName }).lean();
+  if (!document) return null;
+  const state = {
+    failureCount: Math.max(0, Number(document.failureCount || 0)),
+    circuitOpenUntil: document.circuitOpenUntil ? new Date(document.circuitOpenUntil).getTime() : 0,
+    lastFailureAt: document.lastFailureAt ? new Date(document.lastFailureAt).getTime() : 0
+  };
+  if (state.circuitOpenUntil > Date.now()) return state;
+  if (document.expiresAt && new Date(document.expiresAt).getTime() <= Date.now()) {
+    await NewsProviderCircuit.updateOne(
+      { provider: providerName, expiresAt: { $lte: now } },
+      { $set: { failureCount: 0, circuitOpenUntil: null, expiresAt: null } }
+    );
+  }
+  return null;
+};
+
+const recordMongoFailure = async (providerName) => {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + PROVIDER_COOLDOWN_MS);
+  await NewsProviderCircuit.updateOne(
+    { provider: providerName, expiresAt: { $lte: now } },
+    { $set: { failureCount: 0, circuitOpenUntil: null, expiresAt: null } }
+  );
+  let document;
+  try {
+    document = await NewsProviderCircuit.findOneAndUpdate(
+      { provider: providerName, $or: [{ circuitOpenUntil: null }, { circuitOpenUntil: { $exists: false } }, { circuitOpenUntil: { $lte: now } }] },
+      { $set: { provider: providerName, lastFailureAt: now, expiresAt }, $inc: { failureCount: 1 } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    document = await NewsProviderCircuit.findOne({ provider: providerName }).lean();
+  }
+  if (!document) return { failureCount: 0, circuitOpenUntil: 0, lastFailureAt: now.getTime() };
+  const failureCount = Math.max(0, Number(document.failureCount || 0));
+  if (failureCount < PROVIDER_FAILURE_THRESHOLD) {
+    return { failureCount, circuitOpenUntil: 0, lastFailureAt: now.getTime() };
+  }
+  const circuitOpenUntil = new Date(Date.now() + PROVIDER_COOLDOWN_MS);
+  const opened = await NewsProviderCircuit.findOneAndUpdate(
+    { provider: providerName, $or: [{ circuitOpenUntil: null }, { circuitOpenUntil: { $lte: now } }] },
+    { $set: { circuitOpenUntil, expiresAt: circuitOpenUntil, lastFailureAt: now } },
+    { new: true }
+  ).lean();
+  return {
+    failureCount: Math.max(failureCount, Number(opened?.failureCount || 0)),
+    circuitOpenUntil: opened?.circuitOpenUntil ? new Date(opened.circuitOpenUntil).getTime() : circuitOpenUntil.getTime(),
+    lastFailureAt: now.getTime()
+  };
+};
+
+const clearMongoCircuit = async (providerName) => {
+  await NewsProviderCircuit.deleteOne({ provider: providerName });
+};
+
+const getLocalCircuit = (providerName) => {
+  const state = localProviderCircuitState.get(providerName);
+  if (!state) return null;
+  if (!state.circuitOpenUntil) return state;
+  if (state.circuitOpenUntil > Date.now()) return state;
+  localProviderCircuitState.delete(providerName);
+  return null;
+};
+
+const recordLocalFailure = (providerName) => {
+  const previous = getLocalCircuit(providerName) || localProviderCircuitState.get(providerName) || { failureCount: 0 };
+  const failureCount = Number(previous.failureCount || 0) + 1;
+  const state = {
+    failureCount,
+    circuitOpenUntil: failureCount >= PROVIDER_FAILURE_THRESHOLD ? Date.now() + PROVIDER_COOLDOWN_MS : 0,
+    lastFailureAt: Date.now()
+  };
+  localProviderCircuitState.set(providerName, state);
+  return state;
+};
+
+const getSharedCircuit = async (providerName) => {
+  const redisState = await getRedisCircuit(providerName);
+  if (redisState !== undefined) return redisState;
+  try {
+    return await getMongoCircuit(providerName);
+  } catch {
+    warnLocalCircuitFallback();
+    return getLocalCircuit(providerName);
+  }
+};
+
+const recordSharedFailure = async (providerName) => {
+  const redisState = await recordRedisFailure(providerName);
+  if (redisState !== undefined) return redisState;
+  try {
+    return await recordMongoFailure(providerName);
+  } catch {
+    warnLocalCircuitFallback();
+    return recordLocalFailure(providerName);
+  }
+};
+
+const clearSharedCircuit = async (providerName) => {
+  if (await clearRedisCircuit(providerName)) return;
+  try {
+    await clearMongoCircuit(providerName);
+  } catch {
+    warnLocalCircuitFallback();
+    localProviderCircuitState.delete(providerName);
+  }
+};
+
 const runProvider = async (provider) => {
-  const state = providerCircuitState.get(provider.name) || { failures: 0, cooldownUntil: 0 };
-  if (state.cooldownUntil > Date.now()) {
-    const error = new Error('Provider cooldown active until ' + new Date(state.cooldownUntil).toISOString());
+  const state = await getSharedCircuit(provider.name);
+  if (state?.circuitOpenUntil > Date.now()) {
+    const error = new Error('Provider cooldown is active');
     error.code = 'PROVIDER_COOLDOWN';
     throw error;
   }
 
   try {
     const value = await withProviderTimeout(provider.name, provider.fetcher);
-    providerCircuitState.delete(provider.name);
+    await clearSharedCircuit(provider.name);
     return value;
   } catch (error) {
-    const failures = state.failures + 1;
-    providerCircuitState.set(provider.name, {
-      failures,
-      cooldownUntil: failures >= PROVIDER_FAILURE_THRESHOLD ? Date.now() + PROVIDER_COOLDOWN_MS : 0
-    });
+    await recordSharedFailure(provider.name);
     throw error;
   }
 };
-
 const fetchFromNewsApi = async (sinceDate, token) => {
   const from = sinceDate.toISOString().slice(0, 10);
   const query = encodeURIComponent('(software OR programming OR developer OR javascript OR nodejs)');
@@ -382,8 +576,8 @@ const fetchAllSources = async (sinceDate) => {
     } else {
       providerFailureCount += 1;
       sourceBuckets[providerName] = [];
-      diagnostic.lastFailure = result.reason?.message || 'Unknown error';
-      logger.warn('news provider failed', { provider: providerName, error: diagnostic.lastFailure });
+      diagnostic.lastFailure = 'Provider request failed.';
+      logger.warn('news provider failed', { provider: providerName });
     }
     providerDiagnostics.push(diagnostic);
   });
@@ -475,7 +669,7 @@ const getNewsFeed = async ({ user, query }) => {
       cacheHit: true,
       providerFailureCount: Number(cached.providerFailureCount || 0),
       providerUsed: Array.isArray(cached.providerUsed) ? cached.providerUsed : [],
-      providerDiagnostics: Array.isArray(cached.providerDiagnostics) ? cached.providerDiagnostics : [],
+      providerDiagnostics: sanitizeProviderDiagnostics(cached.providerDiagnostics),
       signalHash: userContext.signalHash,
       responseTimeMs: Date.now() - startedAt,
       ...telemetryOverrides
