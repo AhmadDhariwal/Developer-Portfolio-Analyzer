@@ -1195,7 +1195,7 @@ const saveScenarioForUser = async (userId, payload = {}) => {
   const scenarioHash = result.scenarioHash || buildScenarioHash(normalized.value);
 
   const dbStartedAt = Date.now();
-  const scenario = await ScenarioSimulation.findOneAndUpdate({ userId, scenarioHash }, {
+  const update = {
     $set: {
       name: String(payload.name || '').trim() || generateScenarioName(normalized.value),
       ...normalized.value,
@@ -1210,7 +1210,21 @@ const saveScenarioForUser = async (userId, payload = {}) => {
       result
     },
     $setOnInsert: { userId }
-  }, { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true });  logTiming('save DB', dbStartedAt);
+  };
+
+  let scenario;
+  try {
+    scenario = await ScenarioSimulation.findOneAndUpdate(
+      { userId, scenarioHash },
+      update,
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
+    );
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    scenario = await ScenarioSimulation.findOne({ userId, scenarioHash });
+    if (!scenario) throw error;
+  }
+  logTiming('save DB', dbStartedAt);
 
   invalidateHistoryCache(userId);
   logTiming('save total', startedAt);
@@ -1347,7 +1361,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
   });
 
   if (!sprint) {
-    sprint = await createSprint({
+    const createdSprint = await createSprint({
       userId,
       title: `Scenario Sprint - ${ROLE_LABELS[result.meta.role] || 'Career Plan'}`,
       weeklyGoal: Math.max(4, tasks.length),
@@ -1355,6 +1369,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
       goalStack: context.profile.careerStack,
       goalExperienceLevel: context.profile.experienceLevel
     });
+    sprint = await CareerSprint.findById(createdSprint._id);
   }
   logTiming('sprint DB', dbStartedAt);
 
