@@ -117,14 +117,19 @@ export class NewsService {
     if (!Array.isArray(items)) return [];
 
     return items
-      .filter((item) => item && item.title && item.url)
-      .map((item, index) => ({
-        id: item.id || item.url,
+      .map((item) => ({
+        item,
+        url: this.safeHttpUrl(item?.url),
+        image: this.safeHttpUrl(item?.image)
+      }))
+      .filter(({ item, url }) => Boolean(item?.title && url))
+      .map(({ item, url, image }) => ({
+        id: item.id || url,
         title: item.title,
         description: item.description || '',
         source: item.source || '',
-        url: item.url,
-        image: item.image || '',
+        url,
+        image,
         publishedAt: item.publishedAt || '',
         category: item.category || '',
         popularity: Number(item.popularity || 0),
@@ -138,7 +143,6 @@ export class NewsService {
         demandTags: Array.isArray(item.demandTags) ? item.demandTags.filter(Boolean).slice(0, 4) : []
       }));
   }
-
   private normalizeSavedItems(items: SavedNewsItem[] | undefined): SavedNewsItem[] {
     if (!Array.isArray(items)) return [];
     return items
@@ -151,9 +155,9 @@ export class NewsService {
       id: String(item?.id || ''),
       articleId: String(item?.articleId || fallbackArticleId),
       title: String(item?.title || ''),
-      url: String(item?.url || ''),
+      url: this.safeHttpUrl(item?.url),
       source: String(item?.source || ''),
-      image: String(item?.image || ''),
+      image: this.safeHttpUrl(item?.image),
       publishedAt: item?.publishedAt || null,
       category: String(item?.category || ''),
       type: item?.type === 'read_later' || item?.type === 'bookmark' ? item.type : fallbackType,
@@ -173,6 +177,16 @@ export class NewsService {
     return request$;
   }
 
+  private safeHttpUrl(value: unknown): string {
+    const raw = String(value || '').trim();
+    if (!/^https?:\/\//i.test(raw)) return '';
+    try {
+      const parsed = new URL(raw);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : '';
+    } catch {
+      return '';
+    }
+  }
   private clearSavedPending(): void {
     Array.from(this.pendingRequests.keys())
       .filter((key) => key.startsWith('saved:'))

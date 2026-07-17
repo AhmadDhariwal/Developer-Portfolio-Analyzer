@@ -559,7 +559,8 @@
 }
 
 .saved-card__body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.9rem;
   padding: 1rem;
   min-width: 0;

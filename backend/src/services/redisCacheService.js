@@ -59,6 +59,7 @@ const getCacheJson = async (key) => {
 };
 
 const isRedisCacheEnabled = () => Boolean(redisEnabled && client);
+const getRedisCacheClient = () => (isRedisCacheEnabled() ? client : null);
 
 const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
   if (!redisEnabled || !client) return;
@@ -129,6 +130,7 @@ module.exports = {
   CACHE_TTL_SECONDS,
   initRedisCache,
   isRedisCacheEnabled,
+  getRedisCacheClient,
   getCacheJson,
   setCacheJson,
   deleteCacheKey,

@@ -25,11 +25,9 @@ export class NewsCardComponent {
   get imageSrc(): string {
     const raw = String(this.news?.image || '').trim();
     if (!raw) return this.fallbackImage;
-    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
-    if (raw.startsWith('//')) return `${globalThis.location?.protocol || 'https:'}${raw}`;
+    if (/^https?:\/\//i.test(raw)) return raw;
     return this.fallbackImage;
   }
-
   get scoreWidth(): number {
     return Math.max(12, Math.min(100, Math.round(Number(this.news?.rankScore || 0))));
   }

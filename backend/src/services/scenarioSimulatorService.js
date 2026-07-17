@@ -216,6 +216,17 @@ const normalizeLevel = (level = '') => {
   return 'mid';
 };
 
+const isRecognizedRole = (role) => {
+  const raw = String(role || '').toLowerCase().trim();
+  return !raw || Boolean(ROLE_ALIASES[raw]) || ['frontend developer', 'backend developer', 'full stack developer', 'ai/ml engineer', 'devops engineer', 'devops / cloud engineer'].includes(raw);
+};
+
+const isRecognizedLevel = (level) => {
+  const raw = String(level || '').toLowerCase().trim();
+  return !raw || Boolean(LEVEL_ALIASES[raw]) || ['junior developer', 'mid-level developer', 'senior developer'].includes(raw);
+};
+
+const hasUnsafeScenarioText = (value) => /[<>\u0000-\u001f\u007f]/.test(String(value || ''));
 const uniqueStrings = (values = [], limit = 12) => {
   const seen = new Set();
   const result = [];
@@ -312,6 +323,39 @@ const sanitizeScenarioInput = (payload = {}, options = {}) => {
   const warnings = [];
   const baselineHiringScore = Number(payload.baselineHiringScore);
   const baselineJobMatch = Number(payload.baselineJobMatch);
+  if (payload.name !== undefined) {
+    const name = String(payload.name || '').trim();
+    if (name.length > 120 || hasUnsafeScenarioText(name)) {
+      errors.push({ field: 'name', message: 'Scenario name must be plain text up to 120 characters.' });
+    }
+  }
+
+  if (payload.role !== undefined && !isRecognizedRole(payload.role)) {
+    errors.push({ field: 'role', message: 'Role must be a supported career path.' });
+  }
+  if (payload.experienceLevel !== undefined && !isRecognizedLevel(payload.experienceLevel)) {
+    errors.push({ field: 'experienceLevel', message: 'Experience level must be junior, mid, or senior.' });
+  }
+  if (payload.skills !== undefined && !Array.isArray(payload.skills)) {
+    errors.push({ field: 'skills', message: 'Skills must be an array.' });
+  }
+  if (Array.isArray(payload.skills) && payload.skills.length > MAX_SKILLS) {
+    errors.push({ field: 'skills', message: `A scenario can include up to ${MAX_SKILLS} skills.` });
+  }
+  if (Array.isArray(payload.skills)) {
+    payload.skills.forEach((skill, index) => {
+      const value = String(skill || '').trim();
+      if (!value || value.length > 100 || hasUnsafeScenarioText(value)) {
+        errors.push({ field: `skills[${index}]`, message: 'Skill names must be plain text up to 100 characters.' });
+      }
+    });
+  }
+  if (payload.projects !== undefined && !Array.isArray(payload.projects)) {
+    errors.push({ field: 'projects', message: 'Projects must be an array.' });
+  }
+  if (Array.isArray(payload.projects) && payload.projects.length > MAX_PROJECTS) {
+    errors.push({ field: 'projects', message: `A scenario can include up to ${MAX_PROJECTS} projects.` });
+  }
 
   if (!Number.isFinite(baselineHiringScore) || baselineHiringScore < 0 || baselineHiringScore > 100) {
     errors.push({ field: 'baselineHiringScore', message: 'Baseline hiring score must be between 0 and 100.' });
@@ -333,6 +377,12 @@ const sanitizeScenarioInput = (payload = {}, options = {}) => {
   const { clean: projects, errors: projectErrors, warnings: projectWarnings } = sanitizeProjects(payload.projects);
   errors.push(...projectErrors);
   warnings.push(...projectWarnings);
+
+  projects.forEach((project, index) => {
+    if (project.name.length > 160 || hasUnsafeScenarioText(project.name)) {
+      errors.push({ field: `projects[${index}].name`, message: 'Project names must be plain text up to 160 characters.' });
+    }
+  });
 
   if (requirePlan && !skills.length && !projects.length) {
     errors.push({ field: 'plan', message: 'Add at least one skill or project to simulate.' });
@@ -1145,20 +1195,35 @@ const saveScenarioForUser = async (userId, payload = {}) => {
   const scenarioHash = result.scenarioHash || buildScenarioHash(normalized.value);
 
   const dbStartedAt = Date.now();
-  const scenario = await ScenarioSimulation.create({
-    userId,
-    name: String(payload.name || '').trim() || generateScenarioName(normalized.value),
-    ...normalized.value,
-    predicted: result.predicted,
-    improvements: result.improvements,
-    confidenceScore: result.confidenceScore,
-    scenarioHash,
-    breakdown: result.breakdown,
-    uncertaintyRange: result.uncertaintyRange,
-    warnings: result.warnings,
-    sourceContextSummary: context.sourceContextSummary || buildSourceContextSummary(context, context.signalHash),
-    result
-  });
+  const update = {
+    $set: {
+      name: String(payload.name || '').trim() || generateScenarioName(normalized.value),
+      ...normalized.value,
+      predicted: result.predicted,
+      improvements: result.improvements,
+      confidenceScore: result.confidenceScore,
+      scenarioHash,
+      breakdown: result.breakdown,
+      uncertaintyRange: result.uncertaintyRange,
+      warnings: result.warnings,
+      sourceContextSummary: context.sourceContextSummary || buildSourceContextSummary(context, context.signalHash),
+      result
+    },
+    $setOnInsert: { userId }
+  };
+
+  let scenario;
+  try {
+    scenario = await ScenarioSimulation.findOneAndUpdate(
+      { userId, scenarioHash },
+      update,
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
+    );
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    scenario = await ScenarioSimulation.findOne({ userId, scenarioHash });
+    if (!scenario) throw error;
+  }
   logTiming('save DB', dbStartedAt);
 
   invalidateHistoryCache(userId);
@@ -1296,7 +1361,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
   });
 
   if (!sprint) {
-    sprint = await createSprint({
+    const createdSprint = await createSprint({
       userId,
       title: `Scenario Sprint - ${ROLE_LABELS[result.meta.role] || 'Career Plan'}`,
       weeklyGoal: Math.max(4, tasks.length),
@@ -1304,6 +1369,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
       goalStack: context.profile.careerStack,
       goalExperienceLevel: context.profile.experienceLevel
     });
+    sprint = await CareerSprint.findById(createdSprint._id);
   }
   logTiming('sprint DB', dbStartedAt);
 
