@@ -1,6 +1,11 @@
 const IntegrationInsight = require('../models/integrationInsight');
 
-const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value || 0)));
+const toFiniteNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, toFiniteNumber(value)));
 
 const uniqLower = (arr = []) => {
   const seen = new Set();
@@ -15,9 +20,9 @@ const uniqLower = (arr = []) => {
 const computeIntegrationScore = (providers = []) => {
   if (!providers.length) return 0;
 
-  const averageProfile = providers.reduce((sum, p) => sum + Number(p.profileScore || 0), 0) / providers.length;
-  const averageActivity = providers.reduce((sum, p) => sum + Number(p.activityScore || 0), 0) / providers.length;
-  const averageConfidence = providers.reduce((sum, p) => sum + Number(p.confidence || 0), 0) / providers.length;
+  const averageProfile = providers.reduce((sum, p) => sum + clamp(p.profileScore), 0) / providers.length;
+  const averageActivity = providers.reduce((sum, p) => sum + clamp(p.activityScore), 0) / providers.length;
+  const averageConfidence = providers.reduce((sum, p) => sum + clamp(p.confidence), 0) / providers.length;
 
   return clamp(Math.round((averageProfile * 0.38) + (averageActivity * 0.42) + (averageConfidence * 0.2)));
 };
@@ -78,4 +83,18 @@ const getIntegrationInsight = async (userId) => {
   };
 };
 
-module.exports = { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore };
+const removeProviderInsight = async ({ userId, provider }) => {
+  const existing = await IntegrationInsight.findOne({ userId });
+  if (!existing) return null;
+
+  const providers = (Array.isArray(existing.providers) ? existing.providers : [])
+    .filter((item) => item.provider !== provider);
+  existing.providers = providers;
+  existing.mergedSkills = uniqLower(providers.flatMap((item) => item.inferredSkills || []));
+  existing.integrationScore = computeIntegrationScore(providers);
+  existing.updatedAt = new Date();
+  await existing.save();
+  return existing;
+};
+
+module.exports = { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore, removeProviderInsight };

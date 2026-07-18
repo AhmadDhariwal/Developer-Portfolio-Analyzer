@@ -2,12 +2,33 @@ const crypto = require('node:crypto');
 const IntegrationConnection = require('../models/integrationConnection');
 const IntegrationSyncLog = require('../models/integrationSyncLog');
 const { getAdapter, marketplace } = require('../services/integrations');
-const { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore } = require('../services/integrationInsightService');
+const { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore, removeProviderInsight } = require('../services/integrationInsightService');
 const { normalizeIngestion } = require('../services/integrationNormalizationService');
 const { syncConnectedProvidersForUser, syncProviderForUser } = require('../services/integrationSyncService');
 const { getGithubIntegrationOAuthConfig } = require('../config/githubOauth');
 
 const trimValue = (value) => String(value || '').trim();
+const USERNAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.@\- ]{0,99}$/;
+
+const validateManualIdentifier = (provider, value) => {
+  const identifier = trimValue(value);
+  if (!identifier) return 'externalUsername is required for manual connection.';
+  if (identifier.length > (provider === 'certifications' ? 1000 : 300)) return 'Manual connection value is too long.';
+  if (provider !== 'portfolio' && provider !== 'certifications' && !USERNAME_PATTERN.test(identifier)) {
+    return `Invalid ${provider} username.`;
+  }
+  return '';
+};
+
+const invalidateIntegrationDependents = (userId) => {
+  try {
+    require('./dashboardcontroller').invalidateDashboardSummaryCache(userId);
+    require('../services/scenarioSimulatorService').invalidateContextCache(userId);
+    require('../services/careerSprintService').invalidateCareerSprintCache(userId);
+  } catch (error) {
+    console.error('Integration cache invalidation error:', error.message);
+  }
+};
 
 const getFrontendBaseUrl = () => {
   const fromEnv = trimValue(process.env.FRONTEND_URL || process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
@@ -165,6 +186,8 @@ const oauthCallback = async (req, res) => {
       { upsert: true, returnDocument: 'after' }
     ).lean();
 
+    invalidateIntegrationDependents(req.user._id);
+
     return res.json({
       message: `${provider} connected successfully.`,
       connection: {
@@ -279,6 +302,8 @@ const githubOauthCallback = async (req, res) => {
       }
     );
 
+    invalidateIntegrationDependents(connectionDoc.userId);
+
     // Redirect to frontend integrations page with success
     return res.redirect(302, `${frontendUrl}/app/integrations?success=github`);
   } catch (error) {
@@ -298,9 +323,8 @@ const manualConnectProvider = async (req, res) => {
     if (adapter.getAuthMode() !== 'manual') {
       return res.status(400).json({ message: `${provider} requires OAuth connection.` });
     }
-    if (!externalUsername) {
-      return res.status(400).json({ message: 'externalUsername is required for manual connection.' });
-    }
+    const validationError = validateManualIdentifier(provider, externalUsername);
+    if (validationError) return res.status(400).json({ message: validationError });
 
     const candidateConnection = {
       provider,
@@ -314,10 +338,8 @@ const manualConnectProvider = async (req, res) => {
     let ingested;
     try {
       ingested = await adapter.ingestData(candidateConnection);
-    } catch (error) {
-      return res.status(400).json({
-        message: `${provider} username validation failed. ${error.message || 'Unable to fetch public profile data.'}`
-      });
+    } catch {
+      return res.status(400).json({ message: `Unable to validate the ${provider} connection.` });
     }
 
     const providerInsight = normalizeIngestion(provider, ingested);
@@ -350,6 +372,8 @@ const manualConnectProvider = async (req, res) => {
       },
       { upsert: true, returnDocument: 'after' }
     ).lean();
+
+    invalidateIntegrationDependents(req.user._id);
 
     return res.json({
       message: `${provider} connected with manual credentials.`,
@@ -403,6 +427,8 @@ const ingestProviderData = async (req, res) => {
         }
       }
     );
+
+    invalidateIntegrationDependents(req.user._id);
 
     return res.json({
       provider,
@@ -548,7 +574,9 @@ const getIntegrationInsights = async (req, res) => {
 
 const getConnections = async (req, res) => {
   try {
-    const connections = await IntegrationConnection.find({ userId: req.user._id }).lean();
+    const connections = await IntegrationConnection.find({ userId: req.user._id })
+      .select('provider status externalUsername lastSyncedAt nextSyncAt lastSyncError createdAt updatedAt')
+      .lean();
     return res.json({ connections });
   } catch (error) {
     console.error('Get connections error:', error.message);
@@ -570,13 +598,23 @@ const disconnectProvider = async (req, res) => {
           status: 'disconnected',
           accessToken: '',
           refreshToken: '',
+          tokenType: 'Bearer',
+          tokenExpiresAt: null,
           scopes: [],
           metadata: {},
-          lastSyncedAt: null
+          lastSyncedAt: null,
+          nextSyncAt: null,
+          lastSyncError: '',
+          oauthState: '',
+          oauthStateExpiresAt: null,
+          oauthRedirectUri: ''
         }
       },
-      { upsert: true }
+      { upsert: false }
     );
+
+    await removeProviderInsight({ userId: req.user._id, provider });
+    invalidateIntegrationDependents(req.user._id);
 
     return res.json({ message: `${provider} disconnected.` });
   } catch (error) {

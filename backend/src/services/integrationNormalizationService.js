@@ -1,4 +1,9 @@
-const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value || 0)));
+const toFiniteNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, toFiniteNumber(value)));
 
 const computeProviderScores = (provider, ingested = {}) => {
   const profile = ingested.profile || {};
@@ -83,7 +88,10 @@ const computeProviderScores = (provider, ingested = {}) => {
 
 const normalizeIngestion = (provider, ingested) => {
   const inferredSkills = Array.isArray(ingested?.inferredSkills)
-    ? ingested.inferredSkills.map((skill) => String(skill || '').trim()).filter(Boolean)
+    ? [...new Map(ingested.inferredSkills
+      .map((skill) => String(skill || '').trim())
+      .filter(Boolean)
+      .map((skill) => [skill.toLowerCase(), skill])).values()]
     : [];
   const { profileScore, activityScore } = computeProviderScores(provider, ingested);
 

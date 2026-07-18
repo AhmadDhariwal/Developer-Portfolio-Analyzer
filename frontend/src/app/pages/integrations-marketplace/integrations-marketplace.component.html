@@ -73,12 +73,12 @@
                     (click)="runIngestion(item.provider)"
                     [disabled]="busyProvider === item.provider">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              {{ busyProvider === item.provider ? 'Syncing…' : 'Sync Now' }}
+              {{ busyProvider === item.provider && busyAction === 'sync' ? 'Syncing…' : 'Sync Now' }}
             </button>
             <button type="button" class="btn btn-danger"
                     (click)="disconnect(item)"
                     [disabled]="busyProvider === item.provider">
-              Disconnect
+              {{ busyProvider === item.provider && busyAction === 'disconnect' ? 'Disconnecting…' : 'Disconnect' }}
             </button>
           </div>
         </article>
@@ -104,7 +104,7 @@
               </div>
             </div>
             <span class="status-pill" [ngClass]="item.status">
-              {{ item.status === 'error' ? 'Error' : 'Not connected' }}
+              {{ item.status === 'error' ? 'Error' : (item.status === 'pending' || item.status === 'connecting' ? 'Pending' : 'Not connected') }}
             </span>
           </div>
 
