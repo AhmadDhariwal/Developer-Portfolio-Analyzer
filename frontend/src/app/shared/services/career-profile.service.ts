@@ -165,7 +165,7 @@ export class CareerProfileService {
       Boolean(next.profileHash && current.profileHash && next.profileHash !== current.profileHash);
     this.profileSubject.next(next);
     this.persistToStorage(next);
-    if (personalizationChanged) this.invalidateDependentCaches();
+    if (personalizationChanged && options.invalidateCaches !== false) this.invalidateDependentCaches();
   }
 
   private persistToStorage(profile: CareerProfile): void {
