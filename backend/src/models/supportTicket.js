@@ -47,8 +47,25 @@ const supportTicketSchema = new mongoose.Schema({
   },
   browserInfo: {
     type: String,
-    default: ''
+    default: '',
+    maxlength: 512
+  },
+  dedupeKey: {
+    type: String,
+    required: true,
+    maxlength: 128
+  },
+  dedupeWindow: {
+    type: Number,
+    required: true
   }
 }, { timestamps: true });
+
+supportTicketSchema.index({ userId: 1, createdAt: -1 });
+supportTicketSchema.index({ status: 1, createdAt: -1 });
+supportTicketSchema.index(
+  { userId: 1, dedupeKey: 1, dedupeWindow: 1 },
+  { unique: true, partialFilterExpression: { dedupeKey: { $type: 'string' } } }
+);
 
 module.exports = mongoose.model('SupportTicket', supportTicketSchema);

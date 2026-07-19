@@ -33,6 +33,7 @@ describe('WeeklyReportService cache behavior', () => {
   let api: any;
   let cache: CacheStub;
   let invalidate: () => void;
+  let invalidation: any;
   let service: WeeklyReportService;
 
   beforeEach(() => {
@@ -50,7 +51,10 @@ describe('WeeklyReportService cache behavior', () => {
         activeExperienceLevel: 'Mid'
       })
     };
-    const invalidation = { register: (_owner: string, callback: () => void) => { invalidate = callback; } };
+    invalidation = {
+      register: (_owner: string, callback: () => void) => { invalidate = callback; },
+      clearDeveloperSignalCaches: vi.fn()
+    };
     service = new WeeklyReportService(api, auth as any, cache as any, invalidation as any);
   });
 
@@ -65,6 +69,7 @@ describe('WeeklyReportService cache behavior', () => {
     const cached = await firstValueFrom(service.getLatest());
     expect(cached?._id).toBe('generated');
     expect(api.getWeeklyReportLatest).not.toHaveBeenCalled();
+    expect(invalidation.clearDeveloperSignalCaches).toHaveBeenCalledTimes(1);
   });
 
   it('bypasses cache for manual refresh', async () => {

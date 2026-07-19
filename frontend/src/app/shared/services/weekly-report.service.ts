@@ -141,6 +141,7 @@ export class WeeklyReportService {
       map((report) => this.normalizeReport(report)),
       tap((report) => {
         this.clearCache();
+        this.cacheInvalidation.clearDeveloperSignalCaches();
         this.cacheLatest(report);
         this.cacheHistory(this.mergeHistory(report, cachedHistory?.reports || []), 6);
       }),
@@ -331,6 +332,7 @@ export class WeeklyReportService {
   }
 
   private capWeeklyCacheEntries(): void {
+    if (typeof localStorage === 'undefined') return;
     const prefix = 'frontend_analysis_cache:weeklyReports';
     const entries = Object.keys(localStorage)
       .filter((key) => key.startsWith(prefix))

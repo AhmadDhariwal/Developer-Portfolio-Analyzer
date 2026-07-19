@@ -26,6 +26,10 @@ const sanitizeText = (value, maxLength = 240) => String(value || '')
   .trim()
   .slice(0, maxLength);
 
+const profileTimingEnabled = () => String(process.env.PROFILE_TIMING || '') === '1'
+  && String(process.env.NODE_ENV || '').toLowerCase() !== 'production';
+const elapsedMs = (startedAt) => Math.round((performance.now() - startedAt) * 100) / 100;
+
 const buildProfileHash = (user) => crypto
   .createHash('sha256')
   .update(JSON.stringify({
@@ -105,14 +109,28 @@ const sanitizeGithubUsername = (value) => sanitizeText(value).replace(/^@+/, '')
 // @access Private
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const timings = {};
+    const requestStartedAt = performance.now();
+    const measure = async (name, query) => {
+      const startedAt = performance.now();
+      const result = await query;
+      if (profileTimingEnabled()) timings[name] = elapsedMs(startedAt);
+      return result;
+    };
+    const user = await measure('userQuery', User.findById(req.user._id).select('-password'));
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     const activeGithubUsername = user.activeGithubUsername || user.githubUsername;
 
     if (!user.defaultResumeFileId) {
-      const latestAnalyzed = await ResumeFile.findOne({ userId: user._id, isAnalyzed: true }).sort({ uploadDate: -1 }).lean();
-      const latestAny = latestAnalyzed || await ResumeFile.findOne({ userId: user._id }).sort({ uploadDate: -1 }).lean();
+      const latestAnalyzed = await measure('resumeContextQuery', ResumeFile.findOne({ userId: user._id, isAnalyzed: true })
+        .sort({ uploadDate: -1 })
+        .select('_id')
+        .lean());
+      const latestAny = latestAnalyzed || await measure('resumeContextQuery', ResumeFile.findOne({ userId: user._id })
+        .sort({ uploadDate: -1 })
+        .select('_id')
+        .lean());
       if (latestAny) {
         user.defaultResumeFileId = latestAny._id;
         user.activeResumeFileId = latestAny._id;
@@ -124,17 +142,28 @@ const getProfile = async (req, res) => {
     }
 
     const [defaultResumeFile, activeResumeFile] = await Promise.all([
-      user.defaultResumeFileId ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id }).lean() : null,
-      user.activeResumeFileId ? ResumeFile.findOne({ _id: user.activeResumeFileId, userId: user._id }).lean() : null
+      user.defaultResumeFileId ? measure('defaultResumeQuery', ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id })
+        .select('_id fileName uploadDate isAnalyzed')
+        .lean()) : null,
+      user.activeResumeFileId ? measure('activeResumeQuery', ResumeFile.findOne({ _id: user.activeResumeFileId, userId: user._id })
+        .select('_id fileName uploadDate isAnalyzed')
+        .lean()) : null
     ]);
     const resolvedActiveResumeFile = activeResumeFile || defaultResumeFile;
 
     // Pull stats from latest analyses
     const [analysis, latestResumeAnalysis] = await Promise.all([
-      Analysis.findOne({ userId: req.user._id }).sort({ updatedAt: -1 }),
-      ResumeAnalysis.findOne({ userId: req.user._id }).sort({ analyzedAt: -1 }).lean()
+      measure('analysisQuery', Analysis.findOne({ userId: req.user._id })
+        .sort({ updatedAt: -1 })
+        .select('githubScore githubStats.repos languageDistribution')
+        .lean()),
+      measure('resumeAnalysisQuery', ResumeAnalysis.findOne({ userId: req.user._id })
+        .sort({ analyzedAt: -1 })
+        .select('atsScore keywordDensity formatScore contentQuality skills')
+        .lean())
     ]);
 
+    const scoreAggregationStartedAt = performance.now();
     const githubScore = Number(analysis?.githubScore || 0);
     const resumeScore = latestResumeAnalysis
       ? Math.round((
@@ -174,6 +203,7 @@ const getProfile = async (req, res) => {
       skillsDetected,
       memberSince:     formatMemberSince(user.createdAt),
     };
+    if (profileTimingEnabled()) timings.scoreAggregation = elapsedMs(scoreAggregationStartedAt);
 
     if (!user.activeCareerStack) user.activeCareerStack = user.careerStack || 'Full Stack';
     if (!user.activeExperienceLevel) user.activeExperienceLevel = user.experienceLevel || 'Student';
@@ -181,7 +211,7 @@ const getProfile = async (req, res) => {
       await user.save();
     }
 
-    res.json({
+    const profileResponse = {
       _id:               user._id,
       name:              user.name,
       email:             user.email,
@@ -228,7 +258,18 @@ const getProfile = async (req, res) => {
         isAnalyzed: resolvedActiveResumeFile.isAnalyzed
       } : null,
       stats,
-    });
+    };
+
+    if (profileTimingEnabled()) {
+      const serializationStartedAt = performance.now();
+      const serializedResponse = JSON.stringify(profileResponse);
+      timings.responseSerialization = elapsedMs(serializationStartedAt);
+      timings.total = elapsedMs(requestStartedAt);
+      res.set('X-Profile-Timing', JSON.stringify(timings));
+      return res.type('application/json').send(serializedResponse);
+    }
+
+    return res.json(profileResponse);
   } catch (error) {
     console.error('Profile GET error:', error.message);
     res.status(500).json({ message: 'Server error fetching profile.' });
@@ -371,6 +412,11 @@ const updateProfile = async (req, res) => {
     }
 
     if (notifications !== undefined) {
+      const notificationKeys = ['weeklyScoreReport', 'skillTrendAlerts', 'newRecommendations', 'jobMatchAlerts'];
+      if (!notifications || typeof notifications !== 'object' || Array.isArray(notifications)
+        || Object.entries(notifications).some(([key, value]) => !notificationKeys.includes(key) || typeof value !== 'boolean')) {
+        return res.status(400).json({ message: 'Invalid notification preferences.' });
+      }
       const nextNotifications = {
         weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
         skillTrendAlerts: notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,

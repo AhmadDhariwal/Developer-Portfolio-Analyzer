@@ -275,10 +275,14 @@ export class ProfileComponent implements OnInit {
   }
 
   saveCareerProfile(): void {
+    if (this.isSavingCareer) return;
     const careerStack = this.profile.careerStack;
     const experienceLevel = this.profile.experienceLevel;
     const careerGoal = (this.profile.careerGoal || '') as CareerGoal;
 
+    this.isSavingCareer = true;
+    this.errorMessage = '';
+    this.careerSuccess = '';
     this.careerProfileService.saveCareerProfile(
       this.profile.careerStack,
       this.profile.experienceLevel,
@@ -289,7 +293,6 @@ export class ProfileComponent implements OnInit {
       next: (updated) => {
         this.profile = this.normalizeProfile({ ...this.profile, ...updated });
         this.snapshot = { ...this.profile };
-        this.isSavingCareer = true;
         this.careerSuccess  = 'Career profile saved!';
         this.isSavingCareer = false;
         this.cdr.detectChanges();

@@ -105,6 +105,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   busyProvider: ProviderName | '' = '';
+  busyAction: 'connect' | 'sync' | 'disconnect' | '' = '';
 
   readonly providerIconHtml: Record<string, SafeHtml>;
   readonly providerColor: Record<string, string>;
@@ -220,12 +221,14 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   }
 
   connect(item: IntegrationMarketplaceItem): void {
+    if (this.busyProvider === item.provider) return;
     if (item.authMode === 'manual') {
       this.manualConnect(item);
       return;
     }
 
     this.busyProvider = item.provider;
+    this.busyAction = 'connect';
     this.integrationsService.startOAuth(item.provider).subscribe({
       next: (oauth) => {
         if (!oauth?.authorizationUrl) {
@@ -245,6 +248,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   }
 
   manualConnect(item: IntegrationMarketplaceItem): void {
+    if (this.busyProvider === item.provider) return;
     const externalUsername = (this.manualUsername[item.provider] || '').trim();
     const apiKey = (this.manualApiKey[item.provider] || '').trim();
 
@@ -255,6 +259,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     }
 
     this.busyProvider = item.provider;
+    this.busyAction = 'connect';
     this.integrationsService.manualConnect(item.provider, externalUsername, apiKey).subscribe({
       next: () => {
         this.runIngestion(item.provider);
@@ -299,6 +304,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   }
 
   private executeSyncNow(provider: ProviderName): void {
+    this.busyAction = 'sync';
     this.integrationsService.syncNow(provider).subscribe({
       next: () => {
         this.busyProvider = '';
@@ -315,7 +321,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   }
 
   disconnect(item: IntegrationMarketplaceItem): void {
+    if (this.busyProvider === item.provider) return;
     this.busyProvider = item.provider;
+    this.busyAction = 'disconnect';
     this.integrationsService.disconnect(item.provider).subscribe({
       next: () => {
         this.busyProvider = '';
@@ -334,7 +342,8 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   private loadInsights(): void {
     this.integrationsService.getInsights().subscribe({
       next: (insight) => {
-        this.integrationScore = Number(insight?.integrationScore || 0);
+        const score = Number(insight?.integrationScore);
+        this.integrationScore = Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : 0;
         this.cdr.detectChanges();
       },
       error: () => {

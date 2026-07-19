@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export type ProviderName =
   | 'linkedin'
@@ -20,7 +21,7 @@ export interface IntegrationMarketplaceItem {
   description: string;
   category: string;
   authMode?: 'oauth2' | 'manual';
-  status: 'connected' | 'disconnected' | 'error';
+  status: 'connected' | 'disconnected' | 'error' | 'pending' | 'connecting';
   externalUsername?: string;
   lastSyncedAt?: string | null;
 }
@@ -106,7 +107,14 @@ export interface IntegrationInsightsResponse {
 export class IntegrationsService {
   private readonly baseUrl = `${environment.apiBaseUrl}/integrations`;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService
+  ) {}
+
+  private invalidateDependents<T>() {
+    return tap<T>(() => this.cacheInvalidation.clearDeveloperSignalCaches());
+  }
 
   getMarketplace(): Observable<{ integrations: IntegrationMarketplaceItem[] }> {
     return this.http.get<{ integrations: IntegrationMarketplaceItem[] }>(`${this.baseUrl}/marketplace`);
@@ -126,23 +134,23 @@ export class IntegrationsService {
   }
 
   oauthCallback(provider: ProviderName, code: string, state: string, username?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/oauth/callback`, { provider, code, state, username });
+    return this.http.post(`${this.baseUrl}/oauth/callback`, { provider, code, state, username }).pipe(this.invalidateDependents());
   }
 
   manualConnect(provider: ProviderName, externalUsername: string, apiKey = ''): Observable<any> {
-    return this.http.post(`${this.baseUrl}/manual/connect`, { provider, externalUsername, apiKey });
+    return this.http.post(`${this.baseUrl}/manual/connect`, { provider, externalUsername, apiKey }).pipe(this.invalidateDependents());
   }
 
   ingest(provider: ProviderName): Observable<any> {
-    return this.http.post(`${this.baseUrl}/ingest`, { provider });
+    return this.http.post(`${this.baseUrl}/ingest`, { provider }).pipe(this.invalidateDependents());
   }
 
   syncNow(provider?: ProviderName): Observable<any> {
-    return this.http.post(`${this.baseUrl}/sync-now`, provider ? { provider } : {});
+    return this.http.post(`${this.baseUrl}/sync-now`, provider ? { provider } : {}).pipe(this.invalidateDependents());
   }
 
   disconnect(provider: ProviderName): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/connections/${provider}`);
+    return this.http.delete(`${this.baseUrl}/connections/${provider}`).pipe(this.invalidateDependents());
   }
 
   getInsights(): Observable<IntegrationInsightsResponse> {

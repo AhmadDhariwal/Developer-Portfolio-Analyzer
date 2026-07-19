@@ -1,10 +1,12 @@
-require('dotenv').config();
+const path = require('node:path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
+const { validateEnv } = require('./src/config/env');
+const env = validateEnv();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('node:path');
 const connectDB = require('./src/config/db');
-const { validateEnv } = require('./src/config/env');
 const logger = require('./src/utils/logger');
 const authroute      = require('./src/routes/auth.routes');
 const githubroute    = require('./src/routes/github.routes');
@@ -45,15 +47,10 @@ const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService
 const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
 const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncService');
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
-const { initRedisCache } = require('./src/services/redisCacheService');
+const { initRedisCache, closeRedisCache } = require('./src/services/redisCacheService');
 const { startInterviewQuestionIngestionScheduler } = require('./src/services/interviewQuestionIngestionService');
 const { startInterviewQuestionMaintenanceScheduler } = require('./src/services/interviewQuestionMaintenanceService');
 const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
-
-const env = validateEnv();
-
-// Connect to database
-connectDB();
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -190,10 +187,34 @@ app.use((error, _req, res, next) => {
 });
 
 const PORT = env.PORT || process.env.PORT || 5000;
+const REDIS_STARTUP_TIMEOUT_MS = 4000;
 
-app.listen(PORT, () => {
+const initializeRedisAtStartup = async () => {
+  let timer;
+  try {
+    const redis = await Promise.race([
+      initRedisCache({ silent: true }),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(null), REDIS_STARTUP_TIMEOUT_MS);
+        timer.unref?.();
+      })
+    ]);
+    if (redis) {
+      console.log('[redis] connected');
+    } else {
+      console.warn('[redis] connection unavailable; using application fallbacks.');
+    }
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+const startServer = async () => {
+  await connectDB();
+  await initializeRedisAtStartup();
+
+  app.listen(PORT, () => {
     logger.info('server started', { port: PORT });
-    initRedisCache();
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();
@@ -228,12 +249,17 @@ app.listen(PORT, () => {
     }).catch((err) => {
       console.warn('[JobsHub] Cache health check skipped:', err.message);
     });
+  });
+};
+
+startServer().catch((error) => {
+  logger.error('server startup failed', { error: error?.message || 'Unknown startup error' });
+  process.exitCode = 1;
 });
 
-process.on('SIGTERM', () => {
-    shutdownTracing();
-});
+const shutdown = () => {
+    Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+};
 
-process.on('SIGINT', () => {
-    shutdownTracing();
-});
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

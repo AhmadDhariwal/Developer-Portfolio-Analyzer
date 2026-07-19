@@ -917,12 +917,12 @@ const normalizeReport = (result, fallback) => {
   const cleanNarratives = (values, limit, maxLength = 500) => toCleanStrings(values, limit)
     .map((value) => value.slice(0, maxLength));
   const progressSummary = String(safeResult.progressSummary || fallback.progressSummary || '').trim().slice(0, 1200);
-  const insights = cleanNarratives(safeResult.insights, 5);
-  const recommendations = cleanNarratives(safeResult.recommendations, 5);
+  const insights = cleanNarratives(safeResult.insights, 4);
+  const recommendations = cleanNarratives(safeResult.recommendations, 4);
   const achievements = cleanNarratives(safeResult.topAchievements, 3);
 
-  const mergedInsights = insights.length ? insights : toCleanStrings(fallback.insights, 5);
-  const mergedRecommendations = recommendations.length ? recommendations : toCleanStrings(fallback.recommendations, 5);
+  const mergedInsights = insights.length ? insights : toCleanStrings(fallback.insights, 4);
+  const mergedRecommendations = recommendations.length ? recommendations : toCleanStrings(fallback.recommendations, 4);
   const mergedAchievements = achievements.length ? achievements : toCleanStrings(fallback.topAchievements, 3);
 
   return {
@@ -1189,10 +1189,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       `GitHub momentum is ${userData.github.score}% with ${userData.activity.activeRepositories} active repositories and a commit signal of ${userData.activity.weeklyCommitSignal}.`,
       `Resume quality is ${userData.resume.score}% with ATS ${userData.resume.atsScore}% and content quality ${userData.resume.contentQuality}%.`,
       `Sprint completion changed by ${signed(comparisons.sprintCompletionDelta)} to ${userData.sprint.completionRate}%, indicating ${userData.sprint.completionRate >= 70 ? 'strong' : 'inconsistent'} execution cadence.`,
-      `Interview prep logged ${userData.interview.sessions} sessions and ${userData.interview.questionsGenerated} questions (${signed(comparisons.interviewQuestionsDelta)} vs last period), while portfolio completeness is ${userData.portfolio.completenessScore}% and integrations score is ${userData.integrations.integrationScore}%.`,
-      userData.jobsDemand.sampledJobs > 0
-        ? `Jobs demand sampled ${userData.jobsDemand.sampledJobs} postings, with ${userData.jobsDemand.topSkills[0]?.name || 'target-stack skills'} appearing as a priority market signal.`
-        : 'Jobs demand data was unavailable this week, so market-fit guidance is based on saved developer signals only.'
+      `Interview prep logged ${userData.interview.sessions} sessions and ${userData.interview.questionsGenerated} questions (${signed(comparisons.interviewQuestionsDelta)} vs last period), while portfolio completeness is ${userData.portfolio.completenessScore}% and integrations score is ${userData.integrations.integrationScore}%.`
     ],
     recommendations: [
       `Increase sprint completion to at least 70% by finishing ${Math.max(0, Math.ceil((0.7 * Math.max(1, userData.sprint.tasksTotal)) - userData.sprint.tasksCompleted))} more tasks next week.`,
@@ -1213,9 +1210,9 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     const validAINarrative = aiResult !== fallback
       && aiResult && typeof aiResult === 'object' && !Array.isArray(aiResult)
       && typeof aiResult.progressSummary === 'string'
-      && Array.isArray(aiResult.insights) && aiResult.insights.length >= 4
-      && Array.isArray(aiResult.recommendations) && aiResult.recommendations.length >= 4
-      && Array.isArray(aiResult.topAchievements) && aiResult.topAchievements.length >= 3;
+      && Array.isArray(aiResult.insights) && aiResult.insights.length === 4
+      && Array.isArray(aiResult.recommendations) && aiResult.recommendations.length === 4
+      && Array.isArray(aiResult.topAchievements) && aiResult.topAchievements.length === 3;
     if (!validAINarrative) aiResult = fallback;
     narrativeSource = validAINarrative ? 'ai-enhanced' : 'deterministic';
     fallbackUsed = !validAINarrative;
@@ -1400,7 +1397,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
 
   await updateWeeklyReportEmailStatus(report._id, {
     status: 'failed',
-    error: lastError?.message || 'Email send failed.'
+    error: 'Weekly report email delivery failed. Please try again later.'
   });
   throw lastError || new Error('Email send failed.');
 };

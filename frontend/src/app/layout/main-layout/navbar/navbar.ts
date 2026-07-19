@@ -28,7 +28,9 @@ interface SearchSuggestion {
   styleUrl: './navbar.scss',
 })
 export class Navbar implements OnInit {
-  @Input() sidebarOpen: boolean = true;
+  // MainLayout creates the sidebar closed.  Keep this initial value aligned so
+  // the class binding is stable during the first development-mode check.
+  @Input() sidebarOpen: boolean = false;
   @Output() sidebarToggle = new EventEmitter<void>();
 
   @ViewChild('notificationButton') notificationButton?: ElementRef<HTMLElement>;

@@ -1,5 +1,17 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
 const axios = require('axios');
+const dns = require('node:dns').promises;
+const net = require('node:net');
+
+const isPrivateIp = (address) => {
+  if (!address) return true;
+  const normalized = String(address).toLowerCase();
+  if (normalized === '::1' || normalized === '::' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:')) return true;
+  if (net.isIP(normalized) !== 4) return false;
+  const [a, b] = normalized.split('.').map(Number);
+  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || a >= 224;
+};
 
 class PortfolioScannerAdapter extends BaseIntegrationAdapter {
   constructor() {
@@ -23,7 +35,7 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
       throw new Error('Portfolio URL is required.');
     }
 
-    const url = this.normalizeUrl(rawUrl);
+    const url = await this.validatePublicUrl(rawUrl);
 
     const scanResult = await this.scanPortfolio(url);
 
@@ -59,6 +71,40 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     return `https://${raw}`;
   }
 
+  async validatePublicUrl(raw) {
+    let parsed;
+    try {
+      parsed = new URL(this.normalizeUrl(raw));
+    } catch {
+      throw new Error('Portfolio URL must be a valid http or https URL.');
+    }
+
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+      throw new Error('Portfolio URL must be a valid http or https URL.');
+    }
+
+    const hostname = parsed.hostname.toLowerCase().replace(/\.$/, '');
+    if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local')) {
+      throw new Error('Portfolio URL must use a public host.');
+    }
+
+    if (net.isIP(hostname)) {
+      if (isPrivateIp(hostname)) throw new Error('Portfolio URL must not use a private or local IP address.');
+      return parsed.toString();
+    }
+
+    let addresses;
+    try {
+      addresses = await dns.lookup(hostname, { all: true, verbatim: true });
+    } catch {
+      throw new Error('Portfolio hostname could not be resolved.');
+    }
+    if (!addresses.length || addresses.some(({ address }) => isPrivateIp(address))) {
+      throw new Error('Portfolio URL must resolve only to public IP addresses.');
+    }
+    return parsed.toString();
+  }
+
   async scanPortfolio(url) {
     const start = Date.now();
     let html = '';
@@ -69,7 +115,9 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     try {
       const response = await axios.get(url, {
         timeout: 12000,
-        maxRedirects: 5,
+        // Do not follow unvalidated redirects; a public URL can otherwise redirect
+        // the scanner to a private network target after the initial DNS validation.
+        maxRedirects: 0,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; DevInsightBot/1.0; +https://devinsight.ai)',
           Accept: 'text/html,application/xhtml+xml'

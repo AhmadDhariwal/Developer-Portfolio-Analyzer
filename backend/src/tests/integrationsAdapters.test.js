@@ -27,18 +27,17 @@ test('oauth providers expose oauth2 auth mode', () => {
   assert.equal(linkedin.getAuthMode(), 'oauth2');
 });
 
-test('manual providers ingest normalized data with username', async () => {
-  for (const provider of ['leetcode', 'kaggle']) {
-    const adapter = getAdapter(provider);
-    assert.ok(adapter, `Expected adapter for ${provider}`);
-
-    try {
-      const payload = await adapter.ingestData({ externalUsername: 'demo-user' });
-      assert.equal(payload.provider, provider);
-      assert.ok(Array.isArray(payload.inferredSkills));
-    } catch (error) {
-      // External APIs can reject mocked usernames or traffic, but adapter should at least throw cleanly.
-      assert.ok(String(error.message || '').length > 0);
-    }
+test('portfolio adapter rejects unsafe URL schemes and private targets without network calls', async () => {
+  const adapter = getAdapter('portfolio');
+  for (const value of [
+    'javascript:alert(1)',
+    'data:text/html,test',
+    'blob:https://example.com/id',
+    'http://localhost:3000',
+    'http://127.0.0.1',
+    'http://10.0.0.1',
+    'http://192.168.1.10'
+  ]) {
+    await assert.rejects(() => adapter.ingestData({ externalUsername: value }), /valid http|public host|private or local/i);
   }
 });

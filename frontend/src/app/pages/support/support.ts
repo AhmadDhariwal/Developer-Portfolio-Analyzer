@@ -158,6 +158,7 @@ export class SupportComponent implements OnInit {
   }
 
   submitSupportTicket(): void {
+    if (this.isSubmittingTicket) return;
     if (!this.supportForm.subject.trim() || !this.supportForm.message.trim()) {
       this.supportError = 'Subject and message are required.';
       return;
