@@ -2,41 +2,138 @@ const { createClient } = require('redis');
 
 const CACHE_TTL_SECONDS = 60 * 60;
 const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:', 'interview:custom:'];
+const UPSTASH_DEFAULT_HOST = 'light-arachnid-164805.upstash.io';
+const UPSTASH_DEFAULT_PORT = 6379;
+const REDIS_CONNECT_TIMEOUT_MS = 3000;
+const REDIS_COMMAND_TIMEOUT_MS = 2500;
+const REDIS_RECONNECT_DELAY_MS = 15000;
 
 let client;
+let clientProxy;
 let redisEnabled = false;
 let connectPromise;
+let reconnectTimer;
+let closing = false;
 
-const initRedisCache = async () => {
-  const redisUrl = String(process.env.REDIS_URL || '').trim();
+const getRedisUrl = () => {
+  const override = String(process.env.REDIS_URL || '').trim();
+  if (override) return override;
+
+  const token = String(process.env.UPSTASH_REDIS_TOKEN || '').trim();
+  if (!token) return '';
+
+  const host = String(process.env.UPSTASH_REDIS_HOST || UPSTASH_DEFAULT_HOST).trim() || UPSTASH_DEFAULT_HOST;
+  if (!host) return '';
+  const requestedPort = Number.parseInt(process.env.UPSTASH_REDIS_PORT || String(UPSTASH_DEFAULT_PORT), 10);
+  const port = Number.isInteger(requestedPort) && requestedPort > 0 && requestedPort <= 65535
+    ? requestedPort
+    : UPSTASH_DEFAULT_PORT;
+  return `rediss://default:${encodeURIComponent(token)}@${host}:${port}`;
+};
+
+const runWithCommandTimeout = async (operation) => {
+  let timeout;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('Redis command timed out.')), REDIS_COMMAND_TIMEOUT_MS);
+        timeout.unref?.();
+      })
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+};
+
+const createCommandProxy = (redisClient) => new Proxy(redisClient, {
+  get(target, property, receiver) {
+    const value = Reflect.get(target, property, receiver);
+    if (typeof value !== 'function') return value;
+    if (property === 'scanIterator') {
+      return (...args) => {
+        const iterator = value.apply(target, args);
+        return {
+          [Symbol.asyncIterator]() { return this; },
+          next: () => runWithCommandTimeout(() => iterator.next()),
+          return: () => (typeof iterator.return === 'function' ? iterator.return() : Promise.resolve({ done: true }))
+        };
+      };
+    }
+    return (...args) => runWithCommandTimeout(() => value.apply(target, args));
+  }
+});
+
+const scheduleReconnect = () => {
+  if (closing || reconnectTimer || !getRedisUrl()) return;
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    initRedisCache();
+  }, REDIS_RECONNECT_DELAY_MS);
+  reconnectTimer.unref?.();
+};
+
+const setUnavailable = (redisClient, { schedule = true } = {}) => {
+  if (client !== redisClient) return;
+  redisEnabled = false;
+  clientProxy = null;
+  if (schedule) scheduleReconnect();
+};
+
+const initRedisCache = async ({ silent = false } = {}) => {
+  closing = false;
+  const redisUrl = getRedisUrl();
   if (!redisUrl) {
-    console.log('[redis] REDIS_URL not set. Redis cache disabled.');
+    if (!silent) console.log('[redis] Redis is not configured; cache disabled.');
     return null;
   }
 
-  if (redisEnabled && client) {
-    return client;
+  if (redisEnabled && client?.isReady) {
+    return clientProxy || client;
   }
 
   if (connectPromise) {
     return connectPromise;
   }
 
-  client = createClient({ url: redisUrl });
-  client.on('error', (error) => {
-    console.error('[redis] client error:', error.message);
+  const redisClient = createClient({
+    url: redisUrl,
+    disableOfflineQueue: true,
+    socket: {
+      connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
+      reconnectStrategy: (retries) => {
+        if (closing || retries >= 2) return false;
+        return Math.min(500, 150 * (retries + 1));
+      }
+    }
+  });
+  client = redisClient;
+  clientProxy = createCommandProxy(redisClient);
+  redisClient.on('error', () => {
+    setUnavailable(redisClient);
+    if (!silent) console.warn('[redis] connection unavailable; using application fallbacks.');
+  });
+  redisClient.on('end', () => {
+    setUnavailable(redisClient);
+    if (client === redisClient) client = null;
+  });
+  redisClient.on('ready', () => {
+    if (client !== redisClient) return;
+    redisEnabled = true;
+    clientProxy = createCommandProxy(redisClient);
   });
 
-  connectPromise = client.connect()
+  connectPromise = redisClient.connect()
     .then(() => {
+      if (closing || client !== redisClient) return null;
       redisEnabled = true;
-      console.log('[redis] connected.');
-      return client;
+      if (!silent) console.log('[redis] connected.');
+      return clientProxy;
     })
-    .catch((error) => {
-      redisEnabled = false;
-      client = null;
-      console.error('[redis] connection failed:', error.message);
+    .catch(() => {
+      setUnavailable(redisClient);
+      if (client === redisClient) client = null;
+      if (!silent) console.warn('[redis] connection unavailable; using application fallbacks.');
       return null;
     })
     .finally(() => {
@@ -47,78 +144,94 @@ const initRedisCache = async () => {
 };
 
 const getCacheJson = async (key) => {
-  if (!redisEnabled || !client) return null;
+  const redis = getRedisCacheClient();
+  if (!redis) return null;
   try {
-    const raw = await client.get(key);
+    const raw = await redis.get(key);
     if (!raw) return null;
     return JSON.parse(raw);
-  } catch (error) {
-    console.error('[redis] get cache failed:', error.message);
+  } catch {
+    console.warn('[redis] cache read failed; using application fallback.');
     return null;
   }
 };
 
-const isRedisCacheEnabled = () => Boolean(redisEnabled && client);
-const getRedisCacheClient = () => (isRedisCacheEnabled() ? client : null);
+const isRedisCacheEnabled = () => Boolean(redisEnabled && client?.isReady);
+const getRedisCacheClient = () => (isRedisCacheEnabled() ? clientProxy : null);
+
+const pingRedisCache = async () => {
+  const redis = getRedisCacheClient();
+  if (!redis) return null;
+  try {
+    return await redis.ping();
+  } catch {
+    return null;
+  }
+};
 
 const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
-  if (!redisEnabled || !client) return;
+  const redis = getRedisCacheClient();
+  if (!redis) return;
   try {
-    await client.set(key, JSON.stringify(payload), { EX: ttlSeconds });
-  } catch (error) {
-    console.error('[redis] set cache failed:', error.message);
+    await redis.set(key, JSON.stringify(payload), { EX: ttlSeconds });
+  } catch {
+    console.warn('[redis] cache write failed; continuing without Redis.');
   }
 };
 
 const deleteCacheKey = async (key) => {
-  if (!redisEnabled || !client) return;
+  const redis = getRedisCacheClient();
+  if (!redis) return;
   try {
-    await client.del(key);
-  } catch (error) {
-    console.error('[redis] delete cache key failed:', error.message);
+    await redis.del(key);
+  } catch {
+    console.warn('[redis] cache invalidation failed; continuing without Redis.');
   }
 };
 
 const deleteByPrefix = async (prefix) => {
-  if (!redisEnabled || !client) return;
+  const redis = getRedisCacheClient();
+  if (!redis) return;
   try {
     const keysToDelete = [];
-    for await (const key of client.scanIterator({ MATCH: `${prefix}*`, COUNT: 200 })) {
+    for await (const key of redis.scanIterator({ MATCH: `${prefix}*`, COUNT: 200 })) {
       keysToDelete.push(key);
       if (keysToDelete.length >= 200) {
-        await client.del(keysToDelete);
+        await redis.del(keysToDelete);
         keysToDelete.length = 0;
       }
     }
 
     if (keysToDelete.length > 0) {
-      await client.del(keysToDelete);
+      await redis.del(keysToDelete);
     }
-  } catch (error) {
-    console.error('[redis] delete by prefix failed:', error.message);
+  } catch {
+    console.warn('[redis] cache invalidation failed; continuing without Redis.');
   }
 };
 
 const acquireCacheLock = async (key, token, ttlSeconds = 900) => {
-  if (!redisEnabled || !client) return null;
+  const redis = getRedisCacheClient();
+  if (!redis) return null;
   try {
-    const result = await client.set(key, token, { NX: true, EX: ttlSeconds });
+    const result = await redis.set(key, token, { NX: true, EX: ttlSeconds });
     return result === 'OK';
-  } catch (error) {
-    console.error('[redis] acquire lock failed:', error.message);
+  } catch {
+    console.warn('[redis] cache lock unavailable; using application fallback.');
     return null;
   }
 };
 
 const releaseCacheLock = async (key, token) => {
-  if (!redisEnabled || !client) return;
+  const redis = getRedisCacheClient();
+  if (!redis) return;
   try {
-    const current = await client.get(key);
+    const current = await redis.get(key);
     if (current === token) {
-      await client.del(key);
+      await redis.del(key);
     }
-  } catch (error) {
-    console.error('[redis] release lock failed:', error.message);
+  } catch {
+    console.warn('[redis] cache lock release failed; continuing without Redis.');
   }
 };
 
@@ -126,11 +239,33 @@ const invalidateInterviewPrepCache = async () => {
   await Promise.all(INTERVIEW_CACHE_PREFIXES.map((prefix) => deleteByPrefix(prefix)));
 };
 
+const closeRedisCache = async () => {
+  closing = true;
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+  const redisClient = client;
+  client = null;
+  clientProxy = null;
+  redisEnabled = false;
+  if (!redisClient?.isOpen) return;
+  if (!redisClient.isReady) {
+    redisClient.disconnect();
+    return;
+  }
+  try {
+    await redisClient.quit();
+  } catch {
+    redisClient.disconnect();
+  }
+};
+
 module.exports = {
   CACHE_TTL_SECONDS,
   initRedisCache,
+  closeRedisCache,
   isRedisCacheEnabled,
   getRedisCacheClient,
+  pingRedisCache,
   getCacheJson,
   setCacheJson,
   deleteCacheKey,
