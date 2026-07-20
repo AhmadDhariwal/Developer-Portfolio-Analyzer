@@ -12,7 +12,7 @@ const chain = (value) => ({ sort: () => ({ lean: async () => value }), lean: asy
 
 const harness = () => {
   const shared = new Map(); const deterministic = new Map();
-  const calls = { github: 0, ai: 0, private: 0 };
+  const calls = { github: 0, ai: 0, private: 0, persistence: 0, aiArgs: null };
   mock('services/githubservice.js', {
     getCachedGitHubAnalysis: async () => { calls.github += 1; await new Promise((done) => setTimeout(done, 15)); return { status: 'fresh', ageMs: 0, data: { repoCount: 2, languageDistribution: [{ language: 'TypeScript' }], repositories: [{ name: 'react-app', description: 'React app', language: 'TypeScript' }], cache: { cachedAt: '2026-07-20', expiresAt: '2026-07-21' } } }; },
     refreshGitHubAnalysisInBackground: () => ({ queued: true, running: false })
@@ -22,10 +22,10 @@ const harness = () => {
     setSharedCache: async (key, value, _ttl, namespace) => shared.set(`${namespace}:${key}`, value),
     getDeterministicSummary: async (_scope, key) => deterministic.get(JSON.stringify(key)) || null,
     setDeterministicSummary: async (_scope, key, value) => deterministic.set(JSON.stringify(key), value),
-    runAIAnalysis: async () => { calls.ai += 1; return { analysisSummary: 'Narrative.', levelAssessment: 'Narrative.', coverage: 100, yourSkills: [{ name: 'Kubernetes' }], missingSkills: [{ name: 'Kubernetes' }] }; },
+    runAIAnalysis: async (_prompt, _fallback, retries, options) => { calls.ai += 1; calls.aiArgs = { retries, timeoutMs: options?.timeoutMs }; return { analysisSummary: 'Narrative.', levelAssessment: 'Narrative.', coverage: 100, yourSkills: [{ name: 'Kubernetes' }], missingSkills: [{ name: 'Kubernetes' }] }; },
     recordDeterministicSkip: () => {}
   });
-  mock('models/analysisCache.js', { findOne: () => chain(null), findOneAndUpdate: async () => null });
+  mock('models/analysisCache.js', { findOne: () => chain(null), findOneAndUpdate: async () => { calls.persistence += 1; return null; } });
   mock('models/resumeAnalysis.js', { findOne: () => chain({ fileId: 'default', fileName: 'default.pdf', technicalSkills: ['React', 'TypeScript'], atsScore: 80 }) });
   mock('services/aiVersionService.js', { createVersion: async () => {} });
   mock('services/notificationService.js', { createNotification: async () => {} });
@@ -80,15 +80,15 @@ test('preview resolver rejects mismatch, expiry, and oversized input without ret
 
 test('profile uses active user data while preview excludes private signals and AI cannot change skills', async () => {
   const h = harness(); const user = { _id: 'u1', activeGithubUsername: 'active', activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', defaultResumeFileId: 'default' };
-  const profile = await h.call({}, user); assert.equal(profile.status, 200); assert.equal(profile.body.careerStack, 'Frontend'); assert.equal(profile.body.experienceLevel, 'Intern'); assert.equal(profile.body.username, 'active'); assert.equal(h.calls.private, 1);
+  const profile = await h.call({}, user); assert.equal(profile.status, 200); assert.equal(profile.body.careerStack, 'Frontend'); assert.equal(profile.body.experienceLevel, 'Intern'); assert.equal(profile.body.username, 'active'); assert.equal(h.calls.private, 1); assert.deepEqual(h.calls.aiArgs, { retries: 0, timeoutMs: 6500 });
   assert.ok(!profile.body.missingSkills.some((skill) => skill.name === 'Kubernetes'));
   const preview = await h.call({ isTemporary: true, username: 'public', careerStack: 'Backend', experienceLevel: 'Student', resumeText: 'Node.js SQL' }); assert.equal(preview.body.mode, 'preview'); assert.equal(h.calls.private, 1);
 });
 
 test('cache hit uses zero GitHub and AI calls; concurrent refreshes share one pipeline', async () => {
   const h = harness(); const user = { _id: 'u2', activeGithubUsername: 'cache', activeCareerStack: 'Full Stack', activeExperienceLevel: 'Student', defaultResumeFileId: 'default' };
-  await h.call({}, user); h.calls.github = 0; h.calls.ai = 0; const hit = await h.call({}, user); assert.equal(hit.body.fromCache, true); assert.equal(h.calls.github, 0); assert.equal(h.calls.ai, 0);
-  h.calls.github = 0; h.calls.ai = 0; const results = await Promise.all(Array.from({ length: 5 }, () => h.call({ forceRefresh: true }, user))); assert.ok(results.every((r) => r.status === 200)); assert.equal(h.calls.github, 1); assert.equal(h.calls.ai, 1);
+  await h.call({}, user); h.calls.github = 0; h.calls.ai = 0; h.calls.persistence = 0; const hit = await h.call({}, user); assert.equal(hit.body.fromCache, true); assert.equal(h.calls.github, 0); assert.equal(h.calls.ai, 0); assert.equal(h.calls.persistence, 0);
+  h.calls.github = 0; h.calls.ai = 0; h.calls.persistence = 0; const results = await Promise.all(Array.from({ length: 5 }, () => h.call({ forceRefresh: true }, user))); assert.ok(results.every((r) => r.status === 200)); assert.equal(h.calls.github, 1); assert.equal(h.calls.ai, 1); assert.equal(h.calls.persistence, 1);
 });
 
 test('saved previews are owner-scoped, deduplicated, raw-text-free, and load without analysis', () => {

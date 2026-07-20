@@ -76,11 +76,9 @@ class AIService {
 
   async getSharedCache(key, namespace = 'ai:response') {
     const cacheKey = `${namespace}:${key}`;
-    if (!isRedisCacheEnabled()) {
-      const localValue = this.memoryGet(cacheKey);
-      if (localValue !== null) return localValue;
-      return null;
-    }
+    const localValue = this.memoryGet(cacheKey);
+    if (localValue !== null) return localValue;
+    if (!isRedisCacheEnabled()) return null;
 
     const redisStartedAt = Date.now();
     try {
@@ -88,6 +86,7 @@ class AIService {
       this.recordRedisTiming(redisValue ? 'redis_cache_hit' : 'redis_cache_miss', redisStartedAt, { cacheKey: key.slice(0, 12), namespace });
       if (redisValue !== null) {
         this.metrics.redisHits += 1;
+        this.memorySet(cacheKey, redisValue, 60);
         return redisValue;
       }
       this.metrics.redisMisses += 1;
@@ -100,15 +99,14 @@ class AIService {
 
   async setSharedCache(key, value, ttlSeconds = AI_RESPONSE_CACHE_TTL_SECONDS, namespace = 'ai:response') {
     const cacheKey = `${namespace}:${key}`;
+    this.memorySet(cacheKey, value, ttlSeconds);
     if (isRedisCacheEnabled()) {
       const redisStartedAt = Date.now();
       await setCacheJson(cacheKey, value, ttlSeconds);
       this.recordRedisTiming('redis_cache_set', redisStartedAt, { cacheKey: key.slice(0, 12), namespace, ttlSeconds });
       return;
     }
-    this.memorySet(cacheKey, value, ttlSeconds);
   }
-
   async invalidateCacheKey(key, namespace = 'ai:response') {
     const cacheKey = `${namespace}:${key}`;
     if (isRedisCacheEnabled()) {
