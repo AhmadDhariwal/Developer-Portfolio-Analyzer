@@ -1,5 +1,6 @@
 const fs = require('fs/promises');
-const pdfParse = require('pdf-parse');
+const path = require('node:path');
+const { spawn } = require('node:child_process');
 const crypto = require('node:crypto');
 const aiService = require('./aiservice');
 const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
@@ -103,20 +104,63 @@ const emptyTechnologyCategories = () => ({
 /**
  * Robustly extract text from a PDF file.
  */
-const extractTextFromPDF = async (filePath) => {
-  const dataBuffer = await fs.readFile(filePath);
+const PDF_WORKER_TIMEOUT_MS = 5000;
+const MAX_EXTRACTED_RESUME_CHARS = 250000;
 
-  try {
-    const parsed = await pdfParse(dataBuffer, { max: 0 });
-    const text = (parsed?.text || '').trim();
-    if (text.length > 20) return text;
-  } catch (primaryErr) {
-    console.warn('pdf-parse failed:', primaryErr.message);
-  }
-
-  throw new Error('Unable to extract text from this PDF.');
+const unreadablePdfError = () => {
+  const error = new Error('Resume PDF has no readable text.');
+  error.code = 'RESUME_UNREADABLE_PDF';
+  return error;
 };
 
+const parsePdfInIsolatedProcess = (dataBuffer) => new Promise((resolve, reject) => {
+  const worker = spawn(process.execPath, [path.join(__dirname, 'resumePdfWorker.js')], {
+    stdio: ['pipe', 'pipe', 'ignore'],
+    windowsHide: true
+  });
+  let output = '';
+  let settled = false;
+  const finish = (callback, value) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeout);
+    callback(value);
+  };
+  const timeout = setTimeout(() => {
+    worker.kill();
+    finish(reject, unreadablePdfError());
+  }, PDF_WORKER_TIMEOUT_MS);
+  worker.once('error', () => finish(reject, unreadablePdfError()));
+  worker.stdout.on('data', (chunk) => {
+    output += chunk.toString('utf8');
+    if (output.length > MAX_EXTRACTED_RESUME_CHARS + 1024) {
+      worker.kill();
+      finish(reject, unreadablePdfError());
+    }
+  });
+  worker.once('close', (code) => {
+    if (settled) return;
+    if (code !== 0) return finish(reject, unreadablePdfError());
+    try {
+      const text = String(JSON.parse(output).text || '').trim();
+      return text.length > 20 ? finish(resolve, text.slice(0, MAX_EXTRACTED_RESUME_CHARS)) : finish(reject, unreadablePdfError());
+    } catch (_) {
+      return finish(reject, unreadablePdfError());
+    }
+  });
+  worker.stdin.once('error', () => finish(reject, unreadablePdfError()));
+  worker.stdin.end(dataBuffer);
+});
+
+const extractTextFromPDF = async (filePath, { onTiming } = {}) => {
+  const fileReadStartedAt = process.hrtime.bigint();
+  const dataBuffer = await fs.readFile(filePath);
+  recordTiming(onTiming, 'fileReadMs', elapsedMs(fileReadStartedAt));
+  const extractionStartedAt = process.hrtime.bigint();
+  const text = await parsePdfInIsolatedProcess(dataBuffer);
+  recordTiming(onTiming, 'pdfExtractionMs', elapsedMs(extractionStartedAt));
+  return text;
+};
 /** Clamp a value to 0-100 and ensure it's an integer */
 const clamp = (val) => Math.min(100, Math.max(0, Math.round(Number(val) || 0)));
 
@@ -220,7 +264,9 @@ const detectTechnologies = (text = '') => {
     if (found && categories[tech.category]) categories[tech.category].push(tech.name);
   });
 
-  const detectorSkills = extractSkillsFromText(text).map((skill) => canonicalizeSkillName(skill));
+  const detectorSkills = extractSkillsFromText(text)
+    .map((skill) => canonicalizeSkillName(skill))
+    .filter((skill) => skill !== 'JavaScript' || /(^|[^a-z0-9+#.])(?:javascript|ecmascript)(?=$|[^a-z0-9+#.])/i.test(text));
   detectorSkills.forEach((skill) => {
     const catalog = TECHNOLOGY_CATALOG.find((entry) => entry.name.toLowerCase() === String(skill).toLowerCase());
     const category = catalog?.category || 'Tools';
@@ -496,14 +542,11 @@ Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
   const aiStartedAt = process.hrtime.bigint();
   let aiResult = fallback;
   try {
-    aiResult = await aiService.runAIAnalysis(prompt, fallback, 1);
+    aiResult = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: 6500 });
   } catch (error) {
-    console.warn('[ResumeAnalysisPipeline]', JSON.stringify({
-      event: 'ai_insights_fallback',
-      reason: error?.message || 'unknown_error'
-    }));
+    console.warn('[ResumeAnalysisPipeline]', JSON.stringify({ event: 'ai_insights_fallback' }));
   } finally {
-    recordTiming(onTiming, 'aiInsightsMs', elapsedMs(aiStartedAt));
+    recordTiming(onTiming, 'aiMs', elapsedMs(aiStartedAt));
   }
   const selectedFocusAreas = uniqueStrings(Array.isArray(aiResult?.focusAreas) ? aiResult.focusAreas : [], 6)
     .filter((area) => applicableFocusAreas.includes(area) && AI_FOCUS_AREAS[area]);
@@ -554,7 +597,9 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
   const { sections, present } = detectSections(normalizedText);
   const personalInfo = extractPersonalInfo(normalizedText);
+  const skillDetectionStartedAt = process.hrtime.bigint();
   const technologyCategories = detectTechnologies(normalizedText);
+  recordTiming(onTiming, 'skillDetectionMs', elapsedMs(skillDetectionStartedAt));
   const projects = extractProjects(sections);
   const experience = extractExperience(sections);
   const achievements = extractAchievements(sections);
@@ -583,8 +628,10 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   };
 
   const warnings = buildWarnings({ personalInfo, present, projects, achievements, technologyCategories, experience, education });
+  const scoringStartedAt = process.hrtime.bigint();
   const qualityScores = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings });
-  recordTiming(onTiming, 'deterministicAnalysisMs', elapsedMs(deterministicStartedAt));
+  recordTiming(onTiming, 'scoringMs', elapsedMs(scoringStartedAt));
+  recordTiming(onTiming, 'parsingMs', elapsedMs(deterministicStartedAt));
   const aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, onTiming });
   const recruiterPerspective = buildRecruiterPerspective({ personalInfo, scores: qualityScores, warnings, achievements, technologyCategories, aiInsights });
   const suggestions = [
@@ -643,6 +690,22 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
 /**
  * Deterministic-first resume intelligence pipeline with optional persistent cache.
  */
+const persistResumeAnalysisCache = async ({ userId, resumeFileId, resumeHash, analysisVersion = ANALYSIS_VERSION, result, onTiming }) => {
+  if (!userId || !resumeFileId || !resumeHash || !result) return;
+  const writeStartedAt = process.hrtime.bigint();
+  const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
+  const cacheUpdate = {
+    $set: { userId, resumeFileId, resumeHash, analysisVersion, result, analyzedAt: new Date() },
+    $setOnInsert: { createdAt: new Date() }
+  };
+  try {
+    await ResumeAnalysisCache.findOneAndUpdate(cacheQuery, cacheUpdate, { upsert: true, new: true });
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    await ResumeAnalysisCache.updateOne(cacheQuery, { $set: cacheUpdate.$set });
+  }
+  recordTiming(onTiming, 'cachePersistenceMs', elapsedMs(writeStartedAt));
+};
 const analyzeResume = async (text, fileName, fileSize, options = {}) => {
   const normalizedText = normalizeResumeText(text);
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
@@ -679,29 +742,9 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
     onTiming: options.onTiming
   });
 
-  if (userId && resumeFileId) {
-    const writeStartedAt = process.hrtime.bigint();
-    const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
-    const cacheUpdate = {
-      $set: {
-        userId,
-        resumeFileId,
-        resumeHash,
-        analysisVersion,
-        result,
-        analyzedAt: new Date()
-      },
-      $setOnInsert: { createdAt: new Date() }
-    };
-    try {
-      await ResumeAnalysisCache.findOneAndUpdate(cacheQuery, cacheUpdate, { upsert: true, new: true });
-    } catch (error) {
-      if (error?.code !== 11000) throw error;
-      await ResumeAnalysisCache.updateOne(cacheQuery, { $set: cacheUpdate.$set });
-    }
-    recordTiming(options.onTiming, 'mongoWritesMs', elapsedMs(writeStartedAt));
+  if (userId && resumeFileId && !options.deferCacheWrite) {
+    await persistResumeAnalysisCache({ userId, resumeFileId, resumeHash, analysisVersion, result, onTiming: options.onTiming });
   }
-
   return result;
 };
 
@@ -729,11 +772,14 @@ module.exports = {
   extractTextFromPDF,
   analyzeResume,
   findCachedResumeAnalysis,
+  persistResumeAnalysisCache,
   ANALYSIS_VERSION,
   __test: {
     buildDeterministicAnalysis,
     extractExperienceYears,
     extractPersonalInfo,
-    getApplicableAiFocusAreas
+    getApplicableAiFocusAreas,
+    detectTechnologies,
+    scoreDeterministically
   }
 };

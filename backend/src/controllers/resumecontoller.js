@@ -1,34 +1,44 @@
-const { extractTextFromPDF, analyzeResume, findCachedResumeAnalysis, ANALYSIS_VERSION } = require('../services/resumeservice');
+const { extractTextFromPDF, analyzeResume, findCachedResumeAnalysis, persistResumeAnalysisCache, ANALYSIS_VERSION } = require('../services/resumeservice');
 const { generateResumeGuide } = require('../services/resumeGuideService');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const User = require('../models/user');
 const fs = require('fs/promises');
+const path = require('path');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
+const { invalidateCareerSprintCache } = require('../services/careerSprintService');
+const { invalidateContextCache } = require('../services/scenarioSimulatorService');
 const { createPreviewResume } = require('../services/previewResumeCacheService');
+
+const resumeAnalysisInflight = new Map();
 
 const elapsedMs = (startedAt) => Number((process.hrtime.bigint() - startedAt) / 1000000n);
 
 const createPipelineTimings = () => ({
-  pdfTextExtractionMs: 0,
-  cacheLookupMs: 0,
-  deterministicAnalysisMs: 0,
-  aiInsightsMs: 0,
-  mongoWritesMs: 0,
+  fileLookupMs: 0,
+  fileReadMs: 0,
+  pdfExtractionMs: 0,
+  parsingMs: 0,
+  skillDetectionMs: 0,
+  scoringMs: 0,
+  aiMs: 0,
+  resumeAnalysisLookupMs: 0,
+  resumeAnalysisPersistenceMs: 0,
+  cachePersistenceMs: 0,
+  userDefaultUpdateMs: 0,
+  invalidationNotificationMs: 0,
   responseSerializationMs: 0
 });
 
-const logPipelineTiming = ({ userId, fileId, forceRefresh, cacheHit, status, timings, totalDurationMs }) => {
-  console.log('[ResumeAnalysisPipeline]', JSON.stringify({
-    event: 'resume_analysis_complete',
-    userId: String(userId || ''),
-    fileId: String(fileId || ''),
+const logPipelineTiming = ({ forceRefresh, cacheHit, status, timings, totalDurationMs }) => {
+  if (process.env.RESUME_TIMING !== '1') return;
+  console.info('[ResumeAnalysisTiming]', JSON.stringify({
     forceRefresh: Boolean(forceRefresh),
     cacheHit: Boolean(cacheHit),
     status,
     ...timings,
-    totalDurationMs
+    totalMs: totalDurationMs
   }));
 };
 
@@ -114,14 +124,14 @@ const uploadResume = async (req, res) => {
       await fs.unlink(req.file.path).catch(() => {});
     }
     console.error('Resume Upload Error:', error);
-    res.status(500).json({ message: error.message || 'Server Error' });
+    res.status(500).json({ message: 'Resume upload could not be completed.' });
   }
 };
 
 // @desc    Analyze resume
 // @route   POST /api/resume/analyze
 // @access  Private
-const analyzeResumeFile = async (req, res) => {
+const analyzeResumeFileCore = async (req, res) => {
   const pipelineStartedAt = process.hrtime.bigint();
   const timings = createPipelineTimings();
   const addTiming = (stage, durationMs) => {
@@ -140,10 +150,19 @@ const analyzeResumeFile = async (req, res) => {
       return res.status(400).json({ message: 'fileId is required' });
     }
 
+    const fileLookupStartedAt = process.hrtime.bigint();
     const resumeFile = await ResumeFile.findById(fileId);
+    addTiming('fileLookupMs', elapsedMs(fileLookupStartedAt));
     if (!resumeFile) {
       status = 'not_found';
       return res.status(404).json({ message: 'Resume file not found' });
+    }
+
+    const resolvedFilePath = path.resolve(String(resumeFile.fileUrl || ''));
+    const uploadsRoot = path.resolve(process.cwd(), 'uploads') + path.sep;
+    if (!resolvedFilePath.startsWith(uploadsRoot)) {
+      status = 'invalid_file_path';
+      return res.status(400).json({ message: 'Resume file is unavailable.' });
     }
 
     if (resumeFile.userId.toString() !== req.user._id.toString()) {
@@ -169,9 +188,7 @@ const analyzeResumeFile = async (req, res) => {
       userContext = await User.findById(req.user._id)
         .select('defaultResumeFileId activeResumeFileId');
     } else {
-      const extractionStartedAt = process.hrtime.bigint();
-      const text = await extractTextFromPDF(resumeFile.fileUrl);
-      addTiming('pdfTextExtractionMs', elapsedMs(extractionStartedAt));
+      const text = await extractTextFromPDF(resolvedFilePath, { onTiming: addTiming });
 
       const [loadedUserContext, previousAnalysis] = await Promise.all([
         User.findById(req.user._id).select('defaultResumeFileId activeResumeFileId'),
@@ -184,24 +201,24 @@ const analyzeResumeFile = async (req, res) => {
         forceRefresh,
         cacheLookupCompleted: canLookupBeforeExtraction,
         previousAnalysis,
+        deferCacheWrite: true,
         onTiming: addTiming
       });
     }
     cacheHit = Boolean(analysis.cacheMetadata?.loadedFromCache) && !forceRefresh;
 
-    let resumeAnalysis = null;
-    if (cacheHit) {
-      resumeAnalysis = await ResumeAnalysis.findOne({
-        userId: req.user._id,
-        fileId: resumeFile._id,
-        resumeHash: analysis.resumeHash,
-        analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION
-      }).sort({ analyzedAt: -1 });
-    }
+    const resumeAnalysisLookupStartedAt = process.hrtime.bigint();
+    let resumeAnalysis = await ResumeAnalysis.findOne({
+      userId: req.user._id,
+      fileId: resumeFile._id,
+      resumeHash: analysis.resumeHash,
+      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION
+    }).sort({ analyzedAt: -1 });
+    addTiming('resumeAnalysisLookupMs', elapsedMs(resumeAnalysisLookupStartedAt));
 
     let createdAnalysis = false;
-    if (!resumeAnalysis) {
-      resumeAnalysis = new ResumeAnalysis({
+    if (!resumeAnalysis || forceRefresh) {
+      const persistedFields = {
         userId: req.user._id,
         fileId: resumeFile._id,
         fileName: analysis.fileName,
@@ -233,14 +250,26 @@ const analyzeResumeFile = async (req, res) => {
         newSkillsAdded: analysis.newSkillsAdded,
         uploadDate: resumeFile.uploadDate,
         analyzedAt: new Date()
-      });
+      };
+      if (!resumeAnalysis) {
+        resumeAnalysis = new ResumeAnalysis(persistedFields);
+      } else {
+        resumeAnalysis.set(persistedFields);
+      }
 
       const analysisWriteStartedAt = process.hrtime.bigint();
       await resumeAnalysis.save();
-      addTiming('mongoWritesMs', elapsedMs(analysisWriteStartedAt));
+      addTiming('resumeAnalysisPersistenceMs', elapsedMs(analysisWriteStartedAt));
+      await persistResumeAnalysisCache({
+        userId: req.user._id,
+        resumeFileId: resumeFile._id,
+        resumeHash: analysis.resumeHash,
+        analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+        result: analysis,
+        onTiming: addTiming
+      });
       createdAnalysis = true;
     }
-
     const resolvedResumeHash = analysis.resumeHash || resumeFile.resumeHash || '';
     const resolvedAnalysisVersion = analysis.analysisVersion || ANALYSIS_VERSION;
     const resumeFileNeedsSave = !resumeFile.isAnalyzed
@@ -270,18 +299,26 @@ const analyzeResumeFile = async (req, res) => {
     await Promise.all([
       resumeFileNeedsSave ? resumeFile.save() : null,
       userNeedsSave ? userContext.save() : null,
-      createNotification({
-        userId: req.user._id,
-        type: 'resume_upload',
-        title: 'Resume Analysis Completed',
-        message: `Analysis finished for ${resumeFile.fileName} (ATS ${analysis.atsScore}%).`,
-        dedupeKey: `resume_analysis:${resumeFile._id}`,
-        meta: { fileId: resumeFile._id, atsScore: analysis.atsScore }
-      })
+      createdAnalysis
+        ? createNotification({
+          userId: req.user._id,
+          type: 'resume_upload',
+          title: 'Resume Analysis Completed',
+          message: `Analysis finished for ${resumeFile.fileName} (ATS ${analysis.atsScore}%).`,
+          dedupeKey: `resume_analysis:${resumeFile._id}`,
+          meta: { fileId: resumeFile._id, atsScore: analysis.atsScore }
+        })
+        : null
     ]);
-    addTiming('mongoWritesMs', elapsedMs(contextWritesStartedAt));
+    addTiming('userDefaultUpdateMs', elapsedMs(contextWritesStartedAt));
 
-    if (createdAnalysis || userNeedsSave) invalidateDashboardSummaryCache(req.user._id);
+    if (createdAnalysis || userNeedsSave) {
+      const invalidationStartedAt = process.hrtime.bigint();
+      invalidateDashboardSummaryCache(req.user._id);
+      invalidateCareerSprintCache(req.user._id);
+      invalidateContextCache(req.user._id);
+      addTiming('invalidationNotificationMs', elapsedMs(invalidationStartedAt));
+    }
 
     const responsePayload = {
       message: 'Resume analyzed successfully',
@@ -321,12 +358,12 @@ const analyzeResumeFile = async (req, res) => {
     addTiming('responseSerializationMs', elapsedMs(serializationStartedAt));
     status = 'success';
   } catch (error) {
-    console.error('Resume Analysis Error:', error);
-    res.status(500).json({ message: error.message || 'Server Error' });
+    console.error('Resume Analysis Error');
+    res.status(error?.code === 'RESUME_UNREADABLE_PDF' ? 422 : 500).json({
+      message: error?.code === 'RESUME_UNREADABLE_PDF' ? 'Resume PDF has no readable text.' : 'Resume analysis could not be completed.'
+    });
   } finally {
     logPipelineTiming({
-      userId: req.user?._id,
-      fileId,
       forceRefresh,
       cacheHit,
       status,
@@ -336,6 +373,51 @@ const analyzeResumeFile = async (req, res) => {
   }
 };
 
+const captureAnalysisResponse = () => {
+  const captured = { statusCode: 200, payload: null };
+  const response = {
+    status(code) { captured.statusCode = code; return response; },
+    json(payload) { captured.payload = payload; return response; }
+  };
+  return { captured, response };
+};
+
+const buildResumeAnalysisInflightKey = ({ userId, resumeFileId, resumeHash, forceRefresh }) => [
+  String(userId || ''), String(resumeFileId || ''), String(resumeHash || 'pending'), ANALYSIS_VERSION,
+  forceRefresh ? 'force' : 'normal'
+].join(':');
+
+const analyzeResumeFile = async (req, res) => {
+  const fileId = String(req.body?.fileId || '').trim();
+  if (!fileId || !req.user?._id) return analyzeResumeFileCore(req, res);
+  const resumeFile = await ResumeFile.findOne({ _id: fileId, userId: req.user._id })
+    .select('_id resumeHash')
+    .lean()
+    .catch(() => null);
+  if (!resumeFile) return analyzeResumeFileCore(req, res);
+
+  const key = buildResumeAnalysisInflightKey({
+    userId: req.user._id,
+    resumeFileId: resumeFile._id,
+    resumeHash: resumeFile.resumeHash,
+    forceRefresh: toForceRefresh(req)
+  });
+  let pending = resumeAnalysisInflight.get(key);
+  if (!pending) {
+    pending = (async () => {
+      const { captured, response } = captureAnalysisResponse();
+      await analyzeResumeFileCore(req, response);
+      return captured;
+    })();
+    resumeAnalysisInflight.set(key, pending);
+  }
+  try {
+    const outcome = await pending;
+    return res.status(outcome.statusCode).json(outcome.payload);
+  } finally {
+    if (resumeAnalysisInflight.get(key) === pending) resumeAnalysisInflight.delete(key);
+  }
+};
 /** Convert a Mongoose Map or plain object to a plain JS object */
 const mapToObj = (skills) => {
   if (skills instanceof Map) {
@@ -419,6 +501,9 @@ const getResumeAnalysis = async (req, res) => {
 const getResumeAnalysisByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    if (String(userId) !== String(req.user?._id || '')) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
 
     const analysis = await ResumeAnalysis.findOne({ userId })
       .sort({ analyzedAt: -1 });

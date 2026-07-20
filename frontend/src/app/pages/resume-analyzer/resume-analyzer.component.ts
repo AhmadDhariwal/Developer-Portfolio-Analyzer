@@ -364,7 +364,6 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
             this.analysisComplete = this.previousAnalysisComplete;
             this.hasNoData = this.previousHasNoData;
             this.cdr.detectChanges();
-            console.error(err);
           }
         });
       },
@@ -377,7 +376,6 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         this.analysisComplete = this.previousAnalysisComplete;
         this.hasNoData = this.previousHasNoData;
         this.cdr.detectChanges();
-        console.error(err);
       }
     });
   }
