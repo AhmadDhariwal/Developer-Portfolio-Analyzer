@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "test:recommendations-hardening": "node --test backend/src/tests/recommendationsHardening.test.js",
+    "test:recommendations-performance": "node --test backend/src/tests/recommendationsPerformance.test.js"
+  }
+}

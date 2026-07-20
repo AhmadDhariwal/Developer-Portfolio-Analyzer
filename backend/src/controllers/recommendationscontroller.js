@@ -23,7 +23,26 @@ const { resolvePreviewResume } = require('../services/previewResumeCacheService'
 const RECOMMENDATION_ANALYSIS_VERSION = 'v5-career-advisor-data-quality';
 const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
+const STAGE_TIMINGS_ENABLED = process.env.NODE_ENV !== 'production' || process.env.RECOMMENDATIONS_STAGE_TIMINGS === 'true';
+const createStageTimer = () => {
+  const startedAt = process.hrtime.bigint();
+  const stages = {};
+  return {
+    async measure(name, work) {
+      const stageStartedAt = process.hrtime.bigint();
+      const value = await work();
+      stages[name] = Number(process.hrtime.bigint() - stageStartedAt) / 1e6;
+      return value;
+    },
+    attach(result) {
+      if (!STAGE_TIMINGS_ENABLED || !result || typeof result !== 'object') return result;
+      const total = Number(process.hrtime.bigint() - startedAt) / 1e6;
+      return { ...result, cacheMetadata: { ...(result.cacheMetadata || {}), stageTimingsMs: { ...stages, total }, requestCounters: { ...recommendationRuntimeCounters } } };
+    }
+  };
+};
 const recommendationInflight = new Map();
+const recommendationRuntimeCounters = { pipelineExecutions: 0, githubCalls: 0, aiCalls: 0, persistenceOperations: 0 };
 const STACK_PROJECT_HINTS = {
   Frontend: ['React', 'TypeScript', 'Accessibility', 'Deployment'],
   Backend: ['Node.js', 'REST APIs', 'SQL', 'Deployment'],
@@ -263,6 +282,7 @@ const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode =
     const cacheExpiresAt = cached?.expiresAt ? new Date(cached.expiresAt).getTime() : 0;
     if (!forceRefresh && cached?.result && cacheExpiresAt > Date.now()) return cached.result;
 
+    recommendationRuntimeCounters.githubCalls += 1;
     const freshData = await analyzeGitHubProfile(String(username || '').trim(), { forceRefresh });
     if (isTemporaryMode && (!freshData || Number(freshData.repoCount || 0) < 1)) {
       throw new Error('GitHub profile has no public repositories or analysis is in progress.');
@@ -1265,6 +1285,7 @@ const runRecommendationPipeline = async ({
   forceRefresh = false
 }) => {
   const isTemporaryMode = !allowSignals;
+  const stageTimer = createStageTimer();
   const cleanResume = isTemporaryMode ? String(resumeText || '').trim() : '';
 
   let latestResumeAnalysis = null;
@@ -1272,42 +1293,17 @@ const runRecommendationPipeline = async ({
   let resumeCacheIdentity;
 
   if (isTemporaryMode) {
-    const previewResume = await resolvePreviewResume({ previewResumeId, resumeHash, resumeText: cleanResume, experienceLevel });
+    const previewResume = await stageTimer.measure('preview-resume resolution', () => resolvePreviewResume({ previewResumeId, resumeHash, resumeText: cleanResume, experienceLevel }));
     if (previewResume.error) return res.status(previewResume.status).json({ message: previewResume.error });
     storedResumeInsights = previewResume.resumeInsights;
     resumeCacheIdentity = previewResume.resumeCacheIdentity;
   } else {
-    latestResumeAnalysis = await loadResumeAnalysis(userId);
+    latestResumeAnalysis = await stageTimer.measure('resume', () => loadResumeAnalysis(userId));
     storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
     resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
   }
 
   const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
-  const previewCacheKey = `recommendations:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${RECOMMENDATION_ANALYSIS_VERSION}`;
-
-  if (isTemporaryMode && !forceRefresh) {
-    const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
-    if (previewCached?.analysisData) {
-      const cachedResult = {
-        ...previewCached.analysisData,
-        analysisBasedOn: buildAnalysisBasedOn({
-          username,
-          careerStack,
-          experienceLevel,
-          resumeInsights: storedResumeInsights
-        }),
-        fromCache: true,
-        cacheMetadata: {
-          ...(previewCached.analysisData.cacheMetadata || {}),
-          loadedFromCache: true,
-          cacheKey: previewCacheKey,
-          cachedAt: previewCached.updatedAt || null
-        }
-      };
-      return res.json(cachedResult);
-    }
-  }
-
   const baseCacheKey = saveResult && userId
     ? {
         userId,
@@ -1324,28 +1320,17 @@ const runRecommendationPipeline = async ({
   const earlyCacheCandidate = !forceRefresh && baseCacheKey
     ? await AnalysisCache.findOne(baseCacheKey).sort({ updatedAt: -1 }).lean()
     : null;
-  const preliminarySignals = await loadDeveloperSignalsSafely({
+  const preliminarySignals = await stageTimer.measure('developer signals', () => loadDeveloperSignalsSafely({
     userId,
     username,
     resumeInsights: storedResumeInsights,
     githubInsights: {},
     allowSignals
-  });
-  const resumeInsights = preliminarySignals.developerSignals.resumeSignals?.analyzed
-    ? preliminarySignals.developerSignals.resumeSignals
-    : storedResumeInsights;
-  const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
-    || await getGitHubData(username, { forceRefresh, isTemporaryMode });
-  const githubInsights = buildGithubInsights(githubData);
-  const recommendationEvidence = buildRecommendationEvidence({
-    resumeInsights,
-    githubData,
-    careerStack
-  });
-  const developerSignals = preliminarySignals.developerSignals;
-  // A recommendation must not invalidate itself after it is saved.
+  }));
+  // Preview results may only be shared when their public inputs are identical.
+  // This runs before GitHub/AI work so a cache hit makes neither provider call.
   const upstreamSignalHash = buildSignalHash({
-    ...developerSignals,
+    ...preliminarySignals.developerSignals,
     recommendationSignal: {},
     recommendationSignals: {}
   });
@@ -1354,6 +1339,39 @@ const runRecommendationPipeline = async ({
     providedKnownSkills: uniqueStrings(knownSkills || [], 30),
     providedMissingSkills: uniqueStrings(missingSkills || [], 20)
   })).digest('hex');
+  const previewCacheKey = `recommendations:preview:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
+
+  if (isTemporaryMode && !forceRefresh) {
+    const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
+    if (previewCached?.analysisData) {
+      const cachedResult = {
+        ...previewCached.analysisData,
+        analysisBasedOn: buildAnalysisBasedOn({ username, careerStack, experienceLevel, resumeInsights: storedResumeInsights }),
+        fromCache: true,
+        cacheMetadata: {
+          ...(previewCached.analysisData.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheKey: previewCacheKey,
+          signalHash,
+          cachedAt: previewCached.updatedAt || null
+        }
+      };
+      return res.json(stageTimer.attach(normalizeRecommendationResponse(cachedResult)));
+    }
+  }
+  const resumeInsights = preliminarySignals.developerSignals.resumeSignals?.analyzed
+    ? preliminarySignals.developerSignals.resumeSignals
+    : storedResumeInsights;
+  const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
+    || await stageTimer.measure('GitHub', () => getGitHubData(username, { forceRefresh, isTemporaryMode }));
+  const githubInsights = buildGithubInsights(githubData);
+  const recommendationEvidence = buildRecommendationEvidence({
+    resumeInsights,
+    githubData,
+    careerStack
+  });
+  const developerSignals = preliminarySignals.developerSignals;
+  // A recommendation must not invalidate itself after it is saved.
   const signalsUsed = buildSignalsUsedSummary({
     username,
     resumeInsights,
@@ -1429,7 +1447,7 @@ const runRecommendationPipeline = async ({
           cachedAt: cached.updatedAt || cached.createdAt || null
         }
       });
-      return res.json(cachedResult);
+      return res.json(stageTimer.attach(cachedResult));
     }
   }
 
@@ -1468,7 +1486,8 @@ const runRecommendationPipeline = async ({
   let workPromise = recommendationInflight.get(inflightKey);
   if (!workPromise) {
     workPromise = (async () => {
-      const aiEnrichment = await aiService.runAIAnalysis(prompt, fallback);
+      recommendationRuntimeCounters.aiCalls += 1;
+      const aiEnrichment = await stageTimer.measure('AI', () => aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: 7000 }));
       const deterministicResult = mergeNarrativeEnrichment(fallback, aiEnrichment);
       const result = finalizeRecommendationResult({
         username,
@@ -1503,9 +1522,11 @@ const runRecommendationPipeline = async ({
           analysisData: result,
           updatedAt: new Date()
         };
+        recommendationRuntimeCounters.persistenceOperations += 1;
         await aiService.setSharedCache(previewCacheKey, cachePayload, 1800, 'preview');
       } else {
         if (scopedCacheKey) {
+          recommendationRuntimeCounters.persistenceOperations += 1;
           await AnalysisCache.findOneAndUpdate(
             scopedCacheKey,
             { $set: { analysisData: result, userId: req.user._id } },
@@ -1548,7 +1569,7 @@ const runRecommendationPipeline = async ({
     });
   }
 
-  return res.json(fullResult);
+  return res.json(stageTimer.attach(fullResult));
 };
 
 const PREVIEW_STACKS = new Set(['Frontend', 'Backend', 'Full Stack', 'AI/ML']);
@@ -1679,7 +1700,6 @@ const getRecommendations = async (req, res) => {
     console.error('Recommendations Error:', error.message);
     return res.status(500).json({
       message: 'Failed to generate recommendations.',
-      error: error.message
     });
   }
 };
@@ -1764,7 +1784,6 @@ const generateRecommendations = async (req, res) => {
     console.error('Generate Recommendations Error:', error.message);
     return res.status(500).json({
       message: 'Failed to generate recommendations.',
-      error: error.message
     });
   }
 };
