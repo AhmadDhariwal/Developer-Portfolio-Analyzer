@@ -261,6 +261,17 @@ export class RecommendationsService {
   private profileCacheKey = '';
   private savedPreviewCache: { userId: string; previews: SavedPreview[]; cachedAt: number } | null = null;
   private savedPreviewListRequest?: Observable<{ previews: SavedPreview[] }>;
+  private inlineResumeIdentity(resumeText: string): string {
+    // Do not retain raw resume text in a client-side request/cache key.
+    let first = 0x811c9dc5;
+    let second = 0x01000193;
+    for (let index = 0; index < resumeText.length; index += 1) {
+      const code = resumeText.charCodeAt(index);
+      first = Math.imul(first ^ code, 0x01000193);
+      second = Math.imul(second ^ code, 0x85ebca6b);
+    }
+    return `${resumeText.length}-${(first >>> 0).toString(16)}-${(second >>> 0).toString(16)}`;
+  }
 
   constructor(
     private readonly http: HttpClient,
@@ -271,10 +282,12 @@ export class RecommendationsService {
     this.cacheInvalidation.register('saved-previews', () => this.clearSavedPreviewCache());
   }
 
-  private getProfileCacheKey(username: string): string {
+  private getProfileCacheKey(username: string, careerStack: string, experienceLevel: string): string {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
     const cleanUsername = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.+-]+/g, '-');
-    return `recommendations:profile:${userId}:${cleanUsername}`;
+    const cleanStack = String(careerStack || '').trim().toLowerCase();
+    const cleanLevel = String(experienceLevel || '').trim().toLowerCase();
+    return `recommendations:profile:${userId}:${cleanUsername}:${cleanStack}:${cleanLevel}`;
   }
 
   clearCache(): void {
@@ -355,7 +368,7 @@ export class RecommendationsService {
     previewResumeId?: string,
     resumeHash?: string
   ): Observable<RecommendationsResult> {
-    const cacheKey = this.getProfileCacheKey(username);
+    const cacheKey = this.getProfileCacheKey(username, careerStack, experienceLevel);
     const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
     if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
       const age = Date.now() - this.profileCache.cachedAt;
@@ -373,7 +386,7 @@ export class RecommendationsService {
       requestIdentity,
       (knownSkills || []).join(','),
       (missingSkills || []).join(','),
-      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${resumeText.length}` : 'no-resume')
+      resumeHash ? `resume-${resumeHash}` : (resumeText ? `inline-${this.inlineResumeIdentity(resumeText)}` : 'no-resume')
     ].join(':').toLowerCase();
     const existing = this.inflight.get(key);
     if (existing) return existing;

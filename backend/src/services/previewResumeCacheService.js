@@ -38,8 +38,11 @@ const createPreviewResume = async (text = '') => {
 const resolvePreviewResume = async ({ previewResumeId, resumeHash, resumeText, experienceLevel } = {}) => {
   const requestedId = String(previewResumeId || '').trim();
   if (requestedId) {
+    if (!/^[a-f\d]{64}$/i.test(String(resumeHash || '').trim())) {
+      return { error: 'A valid temporary resume identity is required.', status: 400 };
+    }
     const cached = await aiService.getSharedCache(requestedId, 'preview:resume');
-    if (!cached || (resumeHash && String(resumeHash) !== String(cached.resumeHash))) {
+    if (!cached || String(resumeHash) !== String(cached.resumeHash)) {
       return { error: 'Temporary resume expired. Please upload or paste resume again.', status: 400 };
     }
     return {
