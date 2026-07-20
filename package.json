@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "test:recommendations-hardening": "node --test backend/src/tests/recommendationsHardening.test.js",
+    "test:skillgap-hardening": "node --test backend/src/tests/skillgapHardening.test.js",
     "test:recommendations-performance": "node --test backend/src/tests/recommendationsPerformance.test.js"
   }
 }

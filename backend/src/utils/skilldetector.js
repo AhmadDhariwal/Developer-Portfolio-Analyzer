@@ -183,7 +183,8 @@ const detectSkillGaps = (currentSkillNames = []) => {
  */
 const skillsFromLanguages = (languageDistribution = []) => {
   const skills = new Set();
-  languageDistribution.forEach(({ language }) => {
+  const sources = Array.isArray(languageDistribution) ? languageDistribution : [];
+  sources.forEach(({ language } = {}) => {
     const mapped = canonicalizeSkillName(LANGUAGE_TO_SKILL[language] || language);
     if (mapped) skills.add(mapped);
   });

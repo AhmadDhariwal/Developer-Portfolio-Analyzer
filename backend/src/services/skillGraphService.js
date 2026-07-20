@@ -1,4 +1,8 @@
-const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value || 0)));
+const clamp = (value, min, max) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return min;
+  return Math.max(min, Math.min(max, numeric));
+};
 
 const SKILL_PREREQUISITES = {
   'React': ['TypeScript', 'Git'],
@@ -56,20 +60,13 @@ const selectWeekSkills = ({ missingNodes, prereqsByTarget, completed, planned })
   for (const node of missingNodes) {
     if (planned.has(node.id)) continue;
     const prereqs = prereqsByTarget.get(node.id) || [];
-    const ready = prereqs.every((pre) => completed.has(pre) || planned.has(pre));
+    // Dependencies must finish in an earlier week, not beside the dependent skill.
+    const ready = prereqs.every((pre) => completed.has(pre));
     if (!ready) continue;
 
     weekSkills.push(node);
     planned.add(node.id);
     if (weekSkills.length >= 2) break;
-  }
-
-  if (!weekSkills.length && missingNodes.length) {
-    const fallback = missingNodes.find((node) => !planned.has(node.id));
-    if (fallback) {
-      weekSkills.push(fallback);
-      planned.add(fallback.id);
-    }
   }
 
   return weekSkills;
@@ -158,7 +155,19 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
   };
 
   current.forEach((skill) => addNode(skill, 'current'));
-  missing.forEach((skill) => addNode(skill, 'missing'));
+
+  const addMissingWithPrerequisites = (skill, visiting = new Set()) => {
+    const name = toSkillName(skill);
+    if (!name || visiting.has(name)) return;
+    const nextVisiting = new Set(visiting);
+    nextVisiting.add(name);
+    (SKILL_PREREQUISITES[name] || []).forEach((prerequisite) => {
+      addMissingWithPrerequisites({ name: prerequisite }, nextVisiting);
+    });
+    addNode(skill, 'missing');
+  };
+
+  missing.forEach((skill) => addMissingWithPrerequisites(skill));
 
   const edges = [];
   const edgeKeys = new Set();
@@ -188,31 +197,16 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
     });
   });
 
-  // Add soft related-skill edges by category.
-  const byCategory = nodes.reduce((acc, node) => {
-    const category = node.category || 'General';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(node);
-    return acc;
-  }, {});
-
-  Object.values(byCategory).forEach((categoryNodes) => {
-    categoryNodes.forEach((node, index) => {
-      const next = categoryNodes[index + 1];
-      if (!next) return;
-      addEdge(node.id, next.id, 'related', 0.45);
-      if (!node.relatedSkills.includes(next.name)) node.relatedSkills.push(next.name);
-    });
-  });
-
   const rankedNodes = nodes
     .slice()
     .sort((a, b) => {
       if (a.kind !== b.kind) return a.kind === 'current' ? -1 : 1;
       return (b.demandScore - a.demandScore) || (b.confidenceScore - a.confidenceScore) || a.name.localeCompare(b.name);
     });
-  rankedNodes.forEach((node, index) => {
-    node.learningOrder = node.kind === 'missing' ? index + 1 : 0;
+  let missingOrder = 0;
+  rankedNodes.forEach((node) => {
+    if (node.kind === 'missing') missingOrder += 1;
+    node.learningOrder = node.kind === 'missing' ? missingOrder : 0;
   });
 
   return { nodes: rankedNodes, edges };
