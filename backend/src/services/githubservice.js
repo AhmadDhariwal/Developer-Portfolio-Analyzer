@@ -34,6 +34,20 @@ const SUPPORT_LANGUAGES = new Set([
   'Jupyter Notebook'
 ]);
 
+const createTiming = () => {
+  if (String(process.env.GITHUB_TIMING || '') !== '1') return null;
+  const startedAt = Date.now();
+  const stages = {};
+  return {
+    async time(name, operation) {
+      const start = Date.now();
+      try { return await operation(); }
+      finally { stages[name] = Date.now() - start; }
+    },
+    attach(result) { return { ...result, timing: { ...stages, total: Date.now() - startedAt } }; }
+  };
+};
+
 class GitHubRateLimitError extends Error {
   constructor(message = 'GitHub API rate limit exceeded.', resetAt = null) {
     super(message);
@@ -848,10 +862,10 @@ const fetchMonthlyCommitActivity = async (username, repos = []) => {
   return buckets.map((bucket) => ({ month: bucket.label, count: bucket.count }));
 };
 
-const buildFreshAnalysis = async (username) => {
+const buildFreshAnalysis = async (username, timing = null) => {
   const [userData, repos] = await Promise.all([
-    fetchGitHubUser(username),
-    fetchGitHubRepos(username)
+    timing ? timing.time('profileFetch', () => fetchGitHubUser(username)) : fetchGitHubUser(username),
+    timing ? timing.time('repositoryFetch', () => fetchGitHubRepos(username)) : fetchGitHubRepos(username)
   ]);
 
   const totalStars = repos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
@@ -913,11 +927,15 @@ const buildFreshAnalysis = async (username) => {
     });
 
   const topActivityRepos = rankedRepos.slice(0, MAX_ACTIVITY_REPOS);
-  const [commitCounts, languageData, repoSignals] = await Promise.all([
+  const [commitCounts, languageData, repoSignals] = await (timing ? timing.time('deepSignals', () => Promise.all([
     Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
     buildLanguageDistribution(username, repos),
     fetchRepoCheapSignals(username, rankedRepos)
-  ]);
+  ])) : Promise.all([
+    Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
+    buildLanguageDistribution(username, repos),
+    fetchRepoCheapSignals(username, rankedRepos)
+  ]));
 
   const commitMap = {};
   topActivityRepos.forEach((repo, index) => {
@@ -979,7 +997,9 @@ const buildFreshAnalysis = async (username) => {
     commits: commitMap[repo.name] || 0
   }));
 
-  const scores = buildDeterministicScores({
+  const scores = timing ? await timing.time('deterministicScoring', () => buildDeterministicScores({
+    repos, userData, mainLanguageDistribution, technologies: techResult.technologies, repositoryActivity, repositoryQuality
+  })) : buildDeterministicScores({
     repos,
     userData,
     mainLanguageDistribution,
@@ -1020,7 +1040,9 @@ const buildFreshAnalysis = async (username) => {
     };
   });
 
-  const insights = await buildAIInsights({
+  const insights = await (timing ? timing.time('ai', () => buildAIInsights({
+    username, userData, repos: enrichedRepos, languageSummary: mainLanguageDistribution.slice(0, 8).map((entry) => ({ language: entry.language, percentage: entry.percentage })), technologySummary: techResult.technologies.map((tech) => ({ name: tech.name, category: tech.category, confidence: tech.confidence })), activityMetrics: { repoCount: repos.length, totalStars, totalForks, followers: Number(userData?.followers || 0), activeRepos: repos.filter((repo) => { const pushedAt = repo.pushed_at || repo.updated_at; return pushedAt && Date.now() - new Date(pushedAt).getTime() <= 180 * 24 * 60 * 60 * 1000; }).length, avgRepositoryQuality: clamp(average(repositoryQuality.map((repo) => repo.qualityScore))) }, deterministicScores: scores, weakAreas
+  })) : buildAIInsights({
     username,
     userData,
     repos: enrichedRepos,
@@ -1046,7 +1068,7 @@ const buildFreshAnalysis = async (username) => {
     },
     deterministicScores: scores,
     weakAreas
-  });
+  }));
 
   const recruiterInsights = buildRecruiterInsights({
     scores,
@@ -1112,11 +1134,13 @@ const analyzeGitHubProfile = async (username, options = {}) => {
   if (!trimmedUsername) throw new Error('GitHub username is required.');
 
   const forceRefresh = Boolean(options.forceRefresh);
-  const cacheEntry = await getCacheEntry(trimmedUsername);
+  const timing = createTiming();
+  const cacheEntry = timing ? await timing.time('cacheLookup', () => getCacheEntry(trimmedUsername)) : await getCacheEntry(trimmedUsername);
   const isFresh = cacheEntry?.expiresAt && new Date(cacheEntry.expiresAt).getTime() > Date.now();
 
   if (!forceRefresh && cacheEntry?.result && isFresh) {
-    return withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
+    const cached = withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
+    return timing ? timing.attach(cached) : cached;
   }
 
   const normalizedUsername = normalizeUsername(trimmedUsername);
@@ -1125,8 +1149,9 @@ const analyzeGitHubProfile = async (username, options = {}) => {
 
   const job = (async () => {
     try {
-      const fresh = await buildFreshAnalysis(trimmedUsername);
-      return await saveCacheResult(trimmedUsername, fresh, cacheEntry);
+      const fresh = await buildFreshAnalysis(trimmedUsername, timing);
+      const saved = timing ? await timing.time('cacheWrite', () => saveCacheResult(trimmedUsername, fresh, cacheEntry)) : await saveCacheResult(trimmedUsername, fresh, cacheEntry);
+      return timing ? timing.attach(saved) : saved;
     } catch (error) {
       if (cacheEntry?.result && isRateLimitError(error)) {
         return {
