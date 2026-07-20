@@ -1,5 +1,4 @@
 <main class="sg-page" aria-labelledby="skill-gap-title">
-  <nav class="breadcrumb" aria-label="Breadcrumb"><a routerLink="/app/dashboard">Dashboard</a><span>â€º</span><strong>Skill Gap</strong><span>â†’</span></nav>
   <header class="page-header">
     <div class="header-copy">
       <div class="title-badge">
@@ -111,9 +110,9 @@
     <button class="secondary-button" type="button" (click)="refreshAnalysis()" [disabled]="isLoading">Try again</button>
   </section>
 
-  <section class="profile-notice" *ngIf="isPreviewMode && isAuthenticated && savedPreviews.length" style="margin-top: 12px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2);">
-    <strong style="color: #fff; font-size: 0.88rem;">Saved previews</strong>
-    <select [(ngModel)]="selectedSavedPreviewId" (ngModelChange)="openSavedPreview($event)" [disabled]="isLoading" class="stitch-select" style="max-width: 280px; display: inline-block;">
+  <section class="profile-notice saved-preview-picker" *ngIf="isPreviewMode && isAuthenticated && savedPreviews.length">
+    <strong>Saved previews</strong>
+    <select [(ngModel)]="selectedSavedPreviewId" (ngModelChange)="openSavedPreview($event)" [disabled]="isLoading" class="stitch-select">
       <option value="">Open a saved preview</option>
       <option *ngFor="let preview of savedPreviews" [value]="preview._id">{{ preview.title }}</option>
     </select>
@@ -159,7 +158,7 @@
           <span class="eyebrow">Overall match</span>
           <h2 id="hero-summary-title">{{ result.coverage >= 75 ? 'Strong role alignment' : result.coverage >= 50 ? 'Good foundation' : 'Focused growth opportunity' }}</h2>
           <p>{{ overallSummary }}</p>
-          <small>{{ cacheStatusLabel }}<ng-container *ngIf="analysisLastUpdatedLabel"> Â· Updated {{ analysisLastUpdatedLabel }}</ng-container></small>
+          <small>{{ cacheStatusLabel }}<ng-container *ngIf="analysisLastUpdatedLabel"> &middot; Updated {{ analysisLastUpdatedLabel }}</ng-container></small>
         </div>
       </div>
 
@@ -224,11 +223,11 @@
           <div class="gap-card__details">
             <div class="detail-block gap-slot--why"><ng-container *ngIf="skill.whyItMatters"><span>Why it matters</span><p>{{ skill.whyItMatters }}</p></ng-container></div>
             <div class="detail-block gap-slot--evidence"><span>Evidence and detection</span><p>{{ skill.evidenceSummary }}</p><small>{{ skill.detectionMethod }}</small><ul *ngIf="skill.evidence.length > 1"><li *ngFor="let evidence of skill.evidence | slice:1">{{ evidence }}</li></ul></div>
-            <div class="detail-grid gap-slot--profile"><div><span>Career profile</span><strong>{{ result.careerStack }} Â· {{ result.experienceLevel }}</strong></div></div>
+            <div class="detail-grid gap-slot--profile"><div><span>Career profile</span><strong>{{ result.careerStack }} &middot; {{ result.experienceLevel }}</strong></div></div>
             <div class="detail-grid gap-slot--project"><div *ngIf="skill.project || skill.nextAction"><span>Project or next action</span><strong>{{ skill.project?.title || skill.nextAction }}</strong><small *ngIf="skill.project?.title && skill.nextAction">{{ skill.nextAction }}</small></div></div>
             <div class="detail-grid gap-slot--learning"><div *ngIf="skill.learningPath"><span>Learning path</span><strong>{{ skill.learningPath }}</strong><small *ngIf="skill.learningEffort">{{ skill.learningEffort }}</small></div></div>
-            <div class="resource-links gap-slot--resources"><ng-container *ngIf="skill.resources.length"><span>Recommended resources</span><a *ngFor="let resource of skill.resources" [href]="getResourceUrl(resource)" target="_blank" rel="noopener noreferrer">{{ getResourceTitle(resource) }} <b aria-hidden="true">â†—</b></a></ng-container></div>
-              <a class="card-action" routerLink="/app/courses" [queryParams]="{ skill: skill.name }">View learning path <span aria-hidden="true">â†’</span></a>
+            <div class="resource-links gap-slot--resources"><ng-container *ngIf="skill.resources.length"><span>Recommended resources</span><a *ngFor="let resource of skill.resources" [href]="getResourceUrl(resource)" target="_blank" rel="noopener noreferrer">{{ getResourceTitle(resource) }} <span class="arrow-icon" aria-hidden="true">&nearr;</span></a></ng-container></div>
+              <a class="card-action" routerLink="/app/courses" [queryParams]="{ skill: skill.name }">View learning path <span class="arrow-icon" aria-hidden="true">&rarr;</span></a>
             </div>
         </details>
       </div>
@@ -266,7 +265,7 @@
       <div class="roadmap-track" *ngIf="result.roadmap.length">
         <article *ngFor="let phase of result.roadmap; trackBy: trackByPhase">
           <div class="phase-marker"></div>
-          <span>{{ phase.phase }} Â· {{ phase.duration }}</span>
+          <span>{{ phase.phase }} &middot; {{ phase.duration }}</span>
           <h3>{{ phase.title }}</h3>
           <p>{{ phase.description }}</p>
           <div class="phase-facts"><div *ngIf="phase.objective"><span>Objective</span><strong>{{ phase.objective }}</strong></div><div *ngIf="phase.expectedOutcome"><span>Outcome</span><strong>{{ phase.expectedOutcome }}</strong></div><div *ngIf="phase.measurableDeliverable"><span>Deliverable</span><strong>{{ phase.measurableDeliverable }}</strong></div></div>
@@ -280,15 +279,15 @@
       <!-- Recommended Next Actions -->
       <div class="dashboard-section" *ngIf="shouldShowSection('actions')">
         <div class="section-heading"><div><span class="eyebrow">Recommended next actions</span><h2>Start with the highest leverage work</h2></div></div>
-        <ol class="action-list"><li *ngFor="let action of recommendedActions; let i = index; trackBy: trackByAction"><span>{{ i + 1 }}</span><div><strong>{{ action.title }}</strong><small>{{ action.skill }}<ng-container *ngIf="action.detail"> Â· {{ action.detail }}</ng-container></small></div><em *ngIf="action.priority" [ngClass]="getPriorityClass(action.priority)">{{ action.priority }}</em></li></ol>
-        <a class="panel-action" routerLink="/app/career-sprint" [queryParams]="{ skill: recommendedActions[0]?.skill }">Create a Career Sprint task <span aria-hidden="true">â†’</span></a>
+        <ol class="action-list"><li *ngFor="let action of recommendedActions; let i = index; trackBy: trackByAction"><span>{{ i + 1 }}</span><div><strong>{{ action.title }}</strong><small>{{ action.skill }}<ng-container *ngIf="action.detail"> &middot; {{ action.detail }}</ng-container></small></div><em *ngIf="action.priority" [ngClass]="getPriorityClass(action.priority)">{{ action.priority }}</em></li></ol>
+        <a class="panel-action" routerLink="/app/career-sprint" [queryParams]="{ skill: recommendedActions[0]?.skill }">Create a Career Sprint task <span class="arrow-icon" aria-hidden="true">&rarr;</span></a>
       </div>
 
       <!-- Market Insights -->
       <div class="dashboard-section" *ngIf="shouldShowSection('market')">
         <div class="section-heading"><div><span class="eyebrow">Market insights</span><h2>Demand around your target role</h2></div></div>
         <div class="market-list"><article *ngFor="let insight of marketInsights" [attr.data-tone]="insight.tone"><span>{{ insight.label }}</span><strong>{{ insight.value }}</strong><small *ngIf="insight.detail">{{ insight.detail }}</small></article></div>
-        <a class="panel-action" routerLink="/app/jobs">Explore matched jobs <span aria-hidden="true">â†’</span></a>
+        <a class="panel-action" routerLink="/app/jobs">Explore matched jobs <span class="arrow-icon" aria-hidden="true">&rarr;</span></a>
       </div>
 
       <!-- Overall Summary -->
@@ -296,7 +295,7 @@
         <div class="section-heading"><div><span class="eyebrow">Overall summary</span><h2>Your next career move</h2></div></div>
         <div class="summary-score"><strong>{{ result.coverage }}%</strong><span>role coverage</span></div>
         <p>{{ overallSummary }}</p>
-        <a class="primary-link" routerLink="/app/courses">Start learning now <span aria-hidden="true">â†’</span></a>
+        <a class="primary-link" routerLink="/app/courses">Start learning now <span class="arrow-icon" aria-hidden="true">&rarr;</span></a>
       </div>
     </section>
 

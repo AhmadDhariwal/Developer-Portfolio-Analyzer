@@ -14,5 +14,6 @@ const savedPreviewSchema = new mongoose.Schema({
 }, { timestamps: false });
 
 savedPreviewSchema.index({ userId: 1, createdAt: -1 });
+savedPreviewSchema.index({ userId: 1, module: 1, githubUsername: 1, careerStack: 1, experienceLevel: 1, resumeHash: 1 }, { name: 'saved_preview_identity_unique', unique: true });
 
 module.exports = mongoose.model('SavedPreview', savedPreviewSchema);

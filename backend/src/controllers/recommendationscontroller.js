@@ -1591,7 +1591,9 @@ const buildSavedPreviewSummary = (module, result = {}) => {
       analysisSummary: previewText(result.analysisSummary || result.levelAssessment, 1000),
       coverage: clamp(result.coverage || 0),
       missing: clamp(result.missing || 0),
-      knownSkills: previewSkills(result.yourSkills),
+      yourSkills: previewSkills(result.yourSkills),
+      weakSkills: previewSkills(result.weakSkills),
+      highDemandSkills: previewSkills(result.highDemandSkills),
       missingSkills: previewSkills(result.missingSkills),
       actions: previewCards(result.suggestedProjects, 6)
     };
@@ -1624,18 +1626,28 @@ const savePreview = async (req, res) => {
       return res.status(400).json({ message: 'Invalid preview resume identity.' });
     }
     const title = previewText(req.body?.title, 120) || `${githubUsername} ${careerStack} preview`;
-    const preview = await SavedPreview.create({
-      userId: req.user._id,
-      title,
-      githubUsername,
-      careerStack,
-      experienceLevel,
-      resumeHash,
-      source: 'preview',
-      module,
-      resultSummary: buildSavedPreviewSummary(module, req.body?.result)
-    });
-    return res.status(201).json({ preview });
+    const previewIdentity = { userId: req.user._id, module, githubUsername, careerStack, experienceLevel, resumeHash };
+    const update = {
+      $set: {
+        title,
+        source: 'preview',
+        resultSummary: buildSavedPreviewSummary(module, req.body?.result)
+      },
+      $setOnInsert: previewIdentity
+    };
+    let preview;
+    try {
+      preview = await SavedPreview.findOneAndUpdate(
+        previewIdentity,
+        update,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      ).lean();
+    } catch (error) {
+      if (error?.code !== 11000) throw error;
+      preview = await SavedPreview.findOne(previewIdentity).lean();
+      if (!preview) throw error;
+    }
+    return res.status(200).json({ preview });
   } catch (error) {
     console.error('Save preview error:', error.message);
     return res.status(500).json({ message: 'Failed to save preview.' });
