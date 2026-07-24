@@ -6,7 +6,7 @@ import { ResumeAnalysis, ResumeSuggestion } from '../../shared/models/resume.mod
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject, EMPTY, catchError, exhaustMap, filter, finalize, map, switchMap } from 'rxjs';
 
 import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
 
@@ -89,6 +89,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
   cacheState: 'idle' | 'loading' | 'cache-hit' | 'server-cache-hit' | 're-analysis' | 'error' = 'idle';
   private activeAnalysisRequestKey = '';
   private readonly subscriptions = new Subscription();
+  private readonly uploadSubject$ = new Subject<File>();
   private bootstrapAnalysisResolved = false;
 
   // Resume analysis data
@@ -150,8 +151,69 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.add(
-      this.resumeService.loading$.subscribe((loading) => {
-        if (!loading && !this.bootstrapAnalysisResolved) {
+      this.uploadSubject$.pipe(
+        exhaustMap((selectedFile) => {
+          const requestKey = `upload:${selectedFile.name}:${selectedFile.size}:${selectedFile.lastModified}`;
+          if (this.activeAnalysisRequestKey === requestKey || this.isAnalyzing) {
+            return EMPTY;
+          }
+          this.activeAnalysisRequestKey = requestKey;
+
+          // Save a snapshot so we can restore previous data on failure
+          this.previousAnalysis = this.analysis ? JSON.parse(JSON.stringify(this.analysis)) : null;
+          this.previousAnalysisComplete = this.analysisComplete;
+          this.previousHasNoData = this.hasNoData;
+
+          this.isAnalyzing = true;
+          this.errorMessage = '';
+          this.cdr.detectChanges();
+
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+
+          return this.resumeService.uploadResume(formData).pipe(
+            switchMap((uploadRes) =>
+              this.apiService.analyzeResume(uploadRes.fileId).pipe(
+                map((analysisRes) => ({ uploadRes, analysisRes }))
+              )
+            ),
+            finalize(() => {
+              this.isAnalyzing = false;
+              this.activeAnalysisRequestKey = '';
+              this.selectedFile = null;
+              this.cdr.detectChanges();
+            }),
+            catchError((err) => {
+              this.errorMessage = err?.error?.message || 'Failed to analyze resume. Please try again.';
+              this.analysis = this.previousAnalysis;
+              this.analysisComplete = this.previousAnalysisComplete;
+              this.hasNoData = this.previousHasNoData;
+              this.cdr.detectChanges();
+              console.error(err);
+              return EMPTY;
+            })
+          );
+        })
+      ).subscribe(({ uploadRes, analysisRes }) => {
+        this.applyAnalysis(analysisRes, analysisRes?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 're-analysis');
+        this.syncResumeViewState(analysisRes?.fileId || uploadRes.fileId, analysisRes?.fileName || uploadRes.fileName || '');
+        this.cdr.detectChanges();
+      })
+    );
+
+    let isFirstEmission = true;
+    this.subscriptions.add(
+      this.resumeService.loading$.pipe(
+        filter((loading) => {
+          if (isFirstEmission) {
+            isFirstEmission = false;
+            const hasData = Boolean(this.resumeService.profileSubjectValue() || this.resumeService.resumesSubjectValue().length);
+            return !loading && hasData;
+          }
+          return !loading;
+        })
+      ).subscribe(() => {
+        if (!this.bootstrapAnalysisResolved) {
           this.loadPreviousAnalysis();
         }
       })
@@ -191,7 +253,13 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
       this.activeAnalysisRequestKey = requestKey;
       this.isLoadingAnalysis = true;
       this.cacheState = 'loading';
-      this.apiService.getResumeAnalysis(this.selectedResumeFileId).subscribe({
+      this.apiService.getResumeAnalysis(this.selectedResumeFileId).pipe(
+        finalize(() => {
+          this.isLoadingAnalysis = false;
+          this.activeAnalysisRequestKey = '';
+          this.cdr.detectChanges();
+        })
+      ).subscribe({
         next: (res) => {
           if (res && res.atsScore != null && this.matchesAnalysisFile(res, this.selectedResumeFileId)) {
             this.applyAnalysis(res, res?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle');
@@ -199,16 +267,10 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
           } else {
             this.errorMessage = 'The selected resume does not have an analysis yet.';
           }
-          this.isLoadingAnalysis = false;
-          this.activeAnalysisRequestKey = '';
-          this.cdr.detectChanges();
         },
         error: (err) => {
           this.errorMessage = err?.error?.message || 'No analysis exists for the selected resume yet.';
-          this.isLoadingAnalysis = false;
-          this.activeAnalysisRequestKey = '';
           this.cacheState = 'error';
-          this.cdr.detectChanges();
         }
       });
       return;
@@ -237,7 +299,8 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
    * Load previous analysis on component init
    */
   loadPreviousAnalysis() {
-    if (this.isLoadingAnalysis) return;
+    if (this.isLoadingAnalysis || this.bootstrapAnalysisResolved) return;
+    this.bootstrapAnalysisResolved = true;
     const expectedFile = this.getDefaultOrSelectedResumeFile();
     const expectedFileId = String(expectedFile?.fileId || this.selectedResumeFileId || this.defaultResumeFileId || '').trim();
     const current = this.resumeService.getCurrentAnalysis<ResumeAnalysis>();
@@ -252,7 +315,6 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         }
       }, 'cache-hit');
       this.syncResumeViewState(current?.fileId || expectedFileId, current?.fileName || expectedFile?.fileName || '');
-      this.bootstrapAnalysisResolved = true;
       this.isLoadingAnalysis = false;
       this.cdr.detectChanges();
       return;
@@ -270,7 +332,6 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
         }
       }, 'cache-hit');
       this.syncResumeViewState(cached?.fileId || expectedFileId, cached?.fileName || expectedFile?.fileName || '');
-      this.bootstrapAnalysisResolved = true;
       this.isLoadingAnalysis = false;
       this.cdr.detectChanges();
       return;
@@ -278,7 +339,12 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
 
     this.isLoadingAnalysis = true;
     this.cacheState = 'loading';
-    this.apiService.getResumeAnalysis().subscribe({
+    this.apiService.getResumeAnalysis().pipe(
+      finalize(() => {
+        this.isLoadingAnalysis = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
       next: (res) => {
         if (res && res.atsScore != null && this.matchesAnalysisFile(res, expectedFileId)) {
           this.applyAnalysis(res, res?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle');
@@ -289,22 +355,14 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
           this.resumeService.setCurrentAnalysis(null);
           if (expectedFileId) this.errorMessage = 'The selected default resume does not have an analysis yet.';
         }
-        this.bootstrapAnalysisResolved = true;
-        this.isLoadingAnalysis = false;
-        this.cdr.detectChanges();
       },
       error: () => {
-        // If no local analysis loaded, show empty state.
-        // If an analysis already exists in memory, keep showing it.
         if (!this.analysis) {
           this.analysisComplete = false;
           this.hasNoData = true;
           this.resumeService.setCurrentAnalysis(null);
         }
-        this.bootstrapAnalysisResolved = true;
-        this.isLoadingAnalysis = false;
         this.cacheState = 'error';
-        this.cdr.detectChanges();
       }
     });
   }
@@ -326,60 +384,7 @@ export class ResumeAnalyzerComponent implements OnInit, OnDestroy {
 
   analyzeResume() {
     if (!this.selectedFile || this.isAnalyzing) return;
-    const selectedFile = this.selectedFile;
-    const requestKey = `upload:${selectedFile.name}:${selectedFile.size}:${selectedFile.lastModified}`;
-    if (this.activeAnalysisRequestKey === requestKey) return;
-    this.activeAnalysisRequestKey = requestKey;
-
-    // Save a snapshot so we can restore previous data on failure
-    this.previousAnalysis = this.analysis ? JSON.parse(JSON.stringify(this.analysis)) : null;
-    this.previousAnalysisComplete = this.analysisComplete;
-    this.previousHasNoData = this.hasNoData;
-
-    this.isAnalyzing = true;
-    this.errorMessage = '';
-    this.cdr.detectChanges();
-    
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    this.resumeService.uploadResume(formData).subscribe({
-      next: (uploadRes) => {
-        // Now analyze the uploaded file
-        this.apiService.analyzeResume(uploadRes.fileId).subscribe({
-          next: (analysisRes) => {
-            this.isAnalyzing = false;
-            this.activeAnalysisRequestKey = '';
-            this.applyAnalysis(analysisRes, analysisRes?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 're-analysis');
-            this.selectedFile = null;
-            this.syncResumeViewState(analysisRes?.fileId || uploadRes.fileId, analysisRes?.fileName || uploadRes.fileName || '');
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.isAnalyzing = false;
-            this.activeAnalysisRequestKey = '';
-            this.errorMessage = err.error?.message || 'Failed to analyze resume. Please try again.';
-            // Restore previous successful analysis if available
-            this.analysis = this.previousAnalysis;
-            this.analysisComplete = this.previousAnalysisComplete;
-            this.hasNoData = this.previousHasNoData;
-            this.cdr.detectChanges();
-            console.error(err);
-          }
-        });
-      },
-      error: (err) => {
-        this.isAnalyzing = false;
-        this.activeAnalysisRequestKey = '';
-        this.errorMessage = err.error?.message || 'Failed to upload resume. Please ensure you are logged in.';
-        // Restore previous successful analysis if available
-        this.analysis = this.previousAnalysis;
-        this.analysisComplete = this.previousAnalysisComplete;
-        this.hasNoData = this.previousHasNoData;
-        this.cdr.detectChanges();
-        console.error(err);
-      }
-    });
+    this.uploadSubject$.next(this.selectedFile);
   }
 
   private rebuildViewModels(analysis: ResumeAnalysis): void {
