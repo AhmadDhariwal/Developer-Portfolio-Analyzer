@@ -155,6 +155,29 @@ const upsertQuestions = async (records = []) => {
     return { insertedCount: 0, upsertedIds: [] };
   }
 
+  // Pre-fetch existing records in batch to check source priorities
+  const filterQueries = records.map((record) => {
+    const topicKey = String(record.topicKey || record.skill || '').trim().toLowerCase();
+    const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
+    const normalizedQuestionHash = String(record.normalizedQuestionHash || toQuestionHash(normalizedQuestion)).trim().toLowerCase();
+    return { topicKey, $or: [{ normalizedQuestionHash }, { normalizedQuestion }] };
+  });
+
+  const existingMatches = await InterviewQuestionBank.find({ $or: filterQueries })
+    .select('topicKey normalizedQuestionHash normalizedQuestion sourceType')
+    .lean()
+    .catch(() => []);
+
+  const existingPriorityMap = new Map();
+  (existingMatches || []).forEach((item) => {
+    const topicKey = String(item.topicKey || '').toLowerCase();
+    const hashKey = `${topicKey}:${item.normalizedQuestionHash}`;
+    const textKey = `${topicKey}:${item.normalizedQuestion}`;
+    const priority = SOURCE_PRIORITY[item.sourceType] || 0;
+    existingPriorityMap.set(hashKey, priority);
+    existingPriorityMap.set(textKey, priority);
+  });
+
   const operations = records.map((record) => {
     const topicKey = String(record.topicKey || record.skill || '').trim().toLowerCase();
     const normalizedQuestion = normalizeComparableText(record.normalizedQuestion || record.question);
@@ -182,6 +205,53 @@ const upsertQuestions = async (records = []) => {
     }
     identityClauses.push({ normalizedQuestionHash }, { normalizedQuestion });
 
+    const hashKey = `${topicKey}:${normalizedQuestionHash}`;
+    const textKey = `${topicKey}:${normalizedQuestion}`;
+    const existingPriority = Math.max(existingPriorityMap.get(hashKey) || 0, existingPriorityMap.get(textKey) || 0);
+    const incomingPriority = SOURCE_PRIORITY[sourceType] || 0;
+
+    const setFields = {
+      topicKey,
+      topicType: String(record.topicType || '').trim().toLowerCase() || 'technology',
+      skill: normalizedSkill,
+      seedId,
+      normalizedQuestion,
+      normalizedQuestionHash,
+      canonicalQuestionKey,
+      normalizedAnswer,
+      difficulty: sanitizeDifficulty(record.difficulty),
+      tags: sanitizeTags(record.tags || []),
+      sourceMeta: record.sourceMeta || {},
+      confidenceScore,
+      relevanceScore: Number(record.relevanceScore || Math.min(0.95, Math.max(0.75, confidenceScore))),
+      category: VALID_CATEGORIES.has(category) ? category : 'core-concepts',
+      expectedSignals: Array.isArray(record.expectedSignals) ? record.expectedSignals : [],
+      badAnswerSignals: Array.isArray(record.badAnswerSignals) ? record.badAnswerSignals : [],
+      reviewStatus: String(record.reviewStatus || qualityStatus || 'approved').trim().toLowerCase(),
+      version: String(record.version || record.sourceMeta?.seedVersion || '').trim(),
+      answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
+      isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
+      qualityState: String(record.qualityState || 'approved').trim().toLowerCase(),
+      isApproved: record.isApproved !== false,
+      qualityStatus,
+      rejectedReason: String(record.rejectedReason || '').trim(),
+      popularity: Number(record.popularity || 0),
+      topicDimensions: record.topicDimensions || {}
+    };
+
+    // Protect verified_seed content: do not overwrite question, answer, rank, qualityScore, or sourceType if existing record has higher trust
+    if (existingPriority <= incomingPriority || existingPriority === 0) {
+      setFields.question = normalizeQuestionText(record.question);
+      setFields.answer = normalizeAnswerText(record.answer);
+      setFields.answerSections = answerSections;
+      setFields.source = sourceType === 'user_asked' ? 'ai_generated' : sourceType;
+      setFields.sourceType = sourceType;
+      setFields.qualityScore = qualityScore;
+      setFields.rank = Number(record.rank || 0);
+      setFields.rankScore = Number(record.rankScore || 0);
+      setFields.isTopQuestion = Boolean(record.isTopQuestion);
+    }
+
     return {
       updateOne: {
         filter: {
@@ -194,43 +264,7 @@ const upsertQuestions = async (records = []) => {
             lastUsedAt: record.lastUsedAt || null,
             createdAt: record.createdAt || new Date()
           },
-          $set: {
-            topicKey,
-            topicType: String(record.topicType || '').trim().toLowerCase() || 'technology',
-            skill: normalizedSkill,
-            seedId,
-            question: normalizeQuestionText(record.question),
-            answer: normalizeAnswerText(record.answer),
-            answerSections,
-            normalizedQuestion,
-            normalizedQuestionHash,
-            canonicalQuestionKey,
-            normalizedAnswer,
-            difficulty: sanitizeDifficulty(record.difficulty),
-            tags: sanitizeTags(record.tags || []),
-            source: sourceType === 'user_asked' ? 'ai_generated' : sourceType,
-            sourceType,
-            sourceMeta: record.sourceMeta || {},
-            confidenceScore,
-            relevanceScore: Number(record.relevanceScore || Math.min(0.95, Math.max(0.75, confidenceScore))),
-            category: VALID_CATEGORIES.has(category) ? category : 'core-concepts',
-            qualityScore,
-            rank: Number(record.rank || 0),
-            rankScore: Number(record.rankScore || 0),
-            isTopQuestion: Boolean(record.isTopQuestion),
-            expectedSignals: Array.isArray(record.expectedSignals) ? record.expectedSignals : [],
-            badAnswerSignals: Array.isArray(record.badAnswerSignals) ? record.badAnswerSignals : [],
-            reviewStatus: String(record.reviewStatus || qualityStatus || 'approved').trim().toLowerCase(),
-            version: String(record.version || record.sourceMeta?.seedVersion || '').trim(),
-            answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
-            isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
-            qualityState: String(record.qualityState || 'approved').trim().toLowerCase(),
-            isApproved: record.isApproved !== false,
-            qualityStatus,
-            rejectedReason: String(record.rejectedReason || '').trim(),
-            popularity: Number(record.popularity || 0),
-            topicDimensions: record.topicDimensions || {}
-          }
+          $set: setFields
         },
         upsert: true
       }
@@ -407,7 +441,9 @@ const findExactReusableQuestion = async ({ topicKey = '', question = '', minConf
     topicKey: normalizedTopicKey,
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE),
     $or: matchClauses
-  }).lean();
+  })
+    .select('question answer answerSections normalizedQuestion normalizedQuestionHash canonicalQuestionKey difficulty tags topicKey topicType source sourceType confidenceScore relevanceScore category qualityScore answerFormat isEnriched sourceMeta')
+    .lean();
 
   // Lazy backfill: if found but missing canonicalQuestionKey, set it
   if (result && canonicalKey && !result.canonicalQuestionKey) {
@@ -419,6 +455,29 @@ const findExactReusableQuestion = async ({ topicKey = '', question = '', minConf
   }
 
   return result;
+};
+
+const SEARCH_CANDIDATE_LIMIT = 60;
+
+/**
+ * Fetch only a bounded, topic-scoped projection for Jaccard comparison. This
+ * avoids ranking the global Mongo text index before applying the 0.78 rule.
+ */
+const findSearchCandidates = async ({ topicKey = '', difficulty = '', tags = [], limit = SEARCH_CANDIDATE_LIMIT, minConfidence = 0.75 } = {}) => {
+  const filter = {
+    topicKey: String(topicKey || '').trim().toLowerCase(),
+    $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE)
+  };
+  const normalizedDifficulty = String(difficulty || '').trim().toLowerCase();
+  if (normalizedDifficulty) filter.difficulty = normalizedDifficulty;
+  const safeTags = sanitizeTags(tags);
+  if (safeTags.length) filter.tags = { $in: safeTags };
+
+  return InterviewQuestionBank.find(filter)
+    .sort({ relevanceScore: -1, confidenceScore: -1, qualityScore: -1, usageCount: -1, createdAt: -1 })
+    .select('question answer answerSections normalizedQuestion normalizedQuestionHash canonicalQuestionKey difficulty tags topicKey topicType source sourceType confidenceScore relevanceScore category qualityScore answerFormat isEnriched sourceMeta')
+    .limit(Math.min(SEARCH_CANDIDATE_LIMIT, Math.max(1, Number(limit || SEARCH_CANDIDATE_LIMIT))))
+    .lean();
 };
 
 const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, minConfidence = 0.6 } = {}) => {
@@ -540,6 +599,7 @@ module.exports = {
   updateQuestionById,
   upsertQuestions,
   findExactReusableQuestion,
+  findSearchCandidates,
   findSemanticCandidates,
   fetchComparableQuestionsByTopic,
   getSourceMixByTopic,

@@ -1208,6 +1208,78 @@ const generatedTopicConfigs = {
     { concept: 'accessibility', tags: ['accessibility', 'frontend'], useCase: 'making full-stack products usable by a broader set of users and devices', example: 'Semantic HTML and keyboard support are part of feature completeness.' },
     { concept: 'deployment and CI/CD', tags: ['deployment', 'ci-cd'], useCase: 'releasing full-stack changes safely and repeatedly', example: 'Run builds, tests, and migrations through a repeatable pipeline.' },
     { concept: 'observability', tags: ['observability', 'operations'], useCase: 'diagnosing user issues that cross browser, API, and database layers', example: 'Correlate frontend errors with backend logs using request identifiers.' }
+  ],
+  csharp: [
+    { concept: 'async and await in C#', tags: ['async', 'tasks'], useCase: 'non-blocking I/O operations with Task and Task<T>', example: 'Use await without blocking threads with Task.Wait().' },
+    { concept: 'LINQ queries and deferred execution', tags: ['linq', 'collections'], useCase: 'querying objects, database entities, and collections expressively', example: 'Remember that IEnumerable queries defer execution until enumerated.' },
+    { concept: 'garbage collection and IDisposable', tags: ['memory', 'idisposable'], useCase: 'managing managed memory and reclaiming unmanaged resources safely', example: 'Implement IDisposable or use using statements for unmanaged resources.' },
+    { concept: 'value types versus reference types', tags: ['types', 'memory'], useCase: 'struct vs class allocation and passing behavior in C#', example: 'Structs live on the stack or inline, classes live on the heap.' },
+    { concept: 'delegates, events, and Func/Action', tags: ['events', 'delegates'], useCase: 'type-safe function pointers and event-driven patterns', example: 'Use EventHandler or Action for decoupled subscriber notifications.' },
+    { concept: 'pattern matching and record types', tags: ['patterns', 'records'], useCase: 'immutable data shapes and expressive switch expressions', example: 'Use records for value-based equality and immutability.' },
+    { concept: 'dependency injection lifetimes in C#', tags: ['di', 'lifetime'], useCase: 'Transient, Scoped, and Singleton service management', example: 'Avoid injecting Scoped services into Singleton singletons.' },
+    { concept: 'exception handling and custom exceptions', tags: ['exceptions', 'errors'], useCase: 'structured error handling with try-catch-finally', example: 'Catch specific exception types and avoid empty catch blocks.' },
+    { concept: 'attributes and reflection', tags: ['attributes', 'reflection'], useCase: 'inspecting metadata at runtime for frameworks and libraries', example: 'Use reflection sparingly due to runtime overhead.' },
+    { concept: 'memory optimization with Span<T> and Memory<T>', tags: ['performance', 'span'], useCase: 'allocation-free slicing of contiguous memory buffers', example: 'Use Span<T> for high-performance string and array parsing.' }
+  ],
+  dotnet: [
+    { concept: '.NET middleware pipeline', tags: ['middleware', 'pipeline'], useCase: 'processing HTTP requests through ordered middleware components', example: 'Order middleware carefully as request/response flow depends on it.' },
+    { concept: 'dependency injection in .NET Core', tags: ['di', 'architecture'], useCase: 'managing service instances across HTTP requests', example: 'Register services with appropriate lifetimes to prevent memory leaks.' },
+    { concept: 'Entity Framework Core performance', tags: ['efcore', 'database'], useCase: 'optimizing ORM queries, tracking, and eager loading', example: 'Use AsNoTracking for read-only queries.' },
+    { concept: 'configuration and IOption patterns', tags: ['configuration', 'options'], useCase: 'strongly typed configuration binding in .NET', example: 'Bind appsettings.json sections to typed options classes.' },
+    { concept: 'Kestrel web server configuration', tags: ['kestrel', 'hosting'], useCase: 'hosting high-throughput ASP.NET Core web APIs', example: 'Configure connection limits, timeouts, and TLS parameters.' },
+    { concept: 'asynchronous web APIs', tags: ['async', 'api'], useCase: 'building non-blocking REST endpoints with ActionResult<T>', example: 'Return Task<IActionResult> to maximize thread pool utilization.' },
+    { concept: 'logging and Serilog integration', tags: ['logging', 'observability'], useCase: 'structured logging across .NET applications', example: 'Log structured properties instead of concatenated strings.' },
+    { concept: 'health checks and readiness probes', tags: ['health', 'monitoring'], useCase: 'reporting system and database health to orchestrators', example: 'Expose /health/live and /health/ready endpoints.' },
+    { concept: 'authentication and authorization in .NET', tags: ['auth', 'security'], useCase: 'JWT bearer tokens and policy-based authorization', example: 'Use policy requirements to enforce granular permissions.' },
+    { concept: '.NET background services and HostedServices', tags: ['background-jobs', 'hosting'], useCase: 'running background workers alongside web applications', example: 'Inherit BackgroundService for long-running queues.' }
+  ],
+  'react-native': [
+    { concept: 'React Native bridge and JSI architecture', tags: ['architecture', 'bridge'], useCase: 'understanding thread communication between JS and native', example: 'Minimize bridge crossings for smooth 60fps animations.' },
+    { concept: 'FlatList performance optimization', tags: ['lists', 'performance'], useCase: 'rendering large collections without UI stutter', example: 'Use getItemLayout, initialNumToRender, and keyExtractor.' },
+    { concept: 'React Native navigation patterns', tags: ['navigation', 'routing'], useCase: 'managing stack, tab, and drawer navigation flows', example: 'Pass minimal params through navigation screens.' },
+    { concept: 'native modules and TurboModules', tags: ['native', 'modules'], useCase: 'writing platform-specific Swift, Java, or Kotlin code', example: 'Expose native APIs using modern TurboModules.' },
+    { concept: 'React Native styling and flexbox', tags: ['styling', 'flexbox'], useCase: 'building responsive layouts across iOS and Android', example: 'Use flex dimensions and avoid fixed pixel widths.' },
+    { concept: 'state management in mobile apps', tags: ['state', 'architecture'], useCase: 'persisting user state across app restarts', example: 'Use Redux or Zustand with AsyncStorage/MMKV.' },
+    { concept: 'gesture handling and animations', tags: ['gestures', 'animations'], useCase: 'building fluid touch interactions with Reanimated and Gesture Handler', example: 'Run animation drivers on the native thread.' },
+    { concept: 'memory leak prevention in React Native', tags: ['memory', 'debugging'], useCase: 'releasing native resources, listeners, and timers on unmount', example: 'Clean up event listeners in useEffect cleanup functions.' },
+    { concept: 'offline support and caching', tags: ['offline', 'storage'], useCase: 'storing data locally for offline mobile usage', example: 'Use MMKV or WatermelonDB for fast offline storage.' },
+    { concept: 'build configuration and app release', tags: ['build', 'deployment'], useCase: 'configuring Xcode, Gradle, and signing certificates', example: 'Automate Android APK/AAB and iOS IPA builds with Fastlane.' }
+  ],
+  sql: [
+    { concept: 'SQL indexes and B-Tree structures', tags: ['indexes', 'performance'], useCase: 'speeding up SELECT queries with targeted indexes', example: 'Index WHERE, JOIN, and ORDER BY columns.' },
+    { concept: 'JOIN types and execution plans', tags: ['joins', 'queries'], useCase: 'INNER, LEFT, RIGHT, FULL, and CROSS joins', example: 'Examine execution plans to avoid full table scans.' },
+    { concept: 'ACID properties and transactions', tags: ['transactions', 'acid'], useCase: 'ensuring data consistency across multi-statement operations', example: 'Use appropriate isolation levels to manage concurrency.' },
+    { concept: 'GROUP BY and aggregate functions', tags: ['aggregates', 'queries'], useCase: 'summarizing data with COUNT, SUM, AVG, and HAVING', example: 'Use HAVING to filter aggregated groups after grouping.' },
+    { concept: 'subqueries versus CTEs', tags: ['cte', 'subqueries'], useCase: 'writing readable and performant query structures', example: 'Use Common Table Expressions (WITH) for complex readable logic.' },
+    { concept: 'SQL normalization and denormalization', tags: ['schema', 'design'], useCase: '1NF through 3NF tradeoffs vs query speed', example: 'Normalize to reduce redundancy; denormalize for heavy read speed.' },
+    { concept: 'window functions', tags: ['window-functions', 'analytics'], useCase: 'ROW_NUMBER, RANK, DENSE_RANK, and OVER partitioning', example: 'Calculate running totals and rankings without subqueries.' },
+    { concept: 'stored procedures and functions', tags: ['procedures', 'database'], useCase: 'encapsulating SQL logic on the database server', example: 'Use parameters safely to prevent SQL injection.' },
+    { concept: 'database locking and deadlocks', tags: ['locking', 'concurrency'], useCase: 'handling row and table locks under concurrent writes', example: 'Access tables in consistent order to prevent deadlocks.' },
+    { concept: 'query optimization and EXPLAIN ANALYZE', tags: ['optimization', 'explain'], useCase: 'diagnosing slow queries and missing index bottlenecks', example: 'Look for sequential scans and high-cost node operations.' }
+  ],
+  docker: [
+    { concept: 'Docker multi-stage builds', tags: ['builds', 'optimization'], useCase: 'creating minimal production image sizes', example: 'Build in a builder stage and copy artifacts to Alpine base.' },
+    { concept: 'Dockerfile layer caching', tags: ['caching', 'dockerfile'], useCase: 'ordering Dockerfile instructions to maximize cache hits', example: 'Copy dependency files before running package install commands.' },
+    { concept: 'Docker volumes and persistent data', tags: ['volumes', 'storage'], useCase: 'persisting database files and container state', example: 'Use named volumes for database data.' },
+    { concept: 'Docker Compose multi-container environments', tags: ['compose', 'orchestration'], useCase: 'defining microservices, networks, and environment variables', example: 'Use docker-compose.yml for local development setups.' },
+    { concept: 'container networking and DNS', tags: ['networking', 'dns'], useCase: 'connecting container services on internal virtual networks', example: 'Use container names as hostnames inside compose networks.' },
+    { concept: 'Docker security and non-root users', tags: ['security', 'hardening'], useCase: 'running containerized processes securely', example: 'Add USER node/alpine to avoid running as root.' },
+    { concept: 'Docker entrypoint vs cmd', tags: ['entrypoint', 'cmd'], useCase: 'configuring default container execution commands', example: 'Use ENTRYPOINT for fixed executable and CMD for default arguments.' },
+    { concept: 'container health checks', tags: ['health', 'monitoring'], useCase: 'reporting container health to Docker engine', example: 'Add HEALTHCHECK instructions to detect frozen processes.' },
+    { concept: 'Docker buildx and multi-platform images', tags: ['buildx', 'cross-platform'], useCase: 'building images for amd64 and arm64 architectures', example: 'Use buildx for cross-compiling deployment images.' },
+    { concept: 'cleaning Docker resources', tags: ['prune', 'cleanup'], useCase: 'reclaiming disk space from dangling images and stopped containers', example: 'Run docker system prune to free unused resources.' }
+  ],
+  kubernetes: [
+    { concept: 'Kubernetes Pod lifecycle and restart policies', tags: ['pods', 'architecture'], useCase: 'managing container execution within cluster nodes', example: 'Understand Pending, Running, Succeeded, and Failed states.' },
+    { concept: 'Kubernetes Deployments and Rolling Updates', tags: ['deployments', 'rolling-updates'], useCase: 'updating application versions without downtime', example: 'Configure maxSurge and maxUnavailable for smooth rollouts.' },
+    { concept: 'Kubernetes Services and ClusterIP/NodePort/LoadBalancer', tags: ['services', 'networking'], useCase: 'exposing Pod workloads inside and outside the cluster', example: 'Use ClusterIP for internal microservice communication.' },
+    { concept: 'ConfigMaps and Secrets management', tags: ['configuration', 'secrets'], useCase: 'decoupling environment variables and sensitive keys from images', example: 'Mount secrets as volumes or env vars securely.' },
+    { concept: 'Horizontal Pod Autoscaler (HPA)', tags: ['scaling', 'autoscaling'], useCase: 'scaling pod replicas dynamically based on CPU/memory usage', example: 'Set clear resource requests before enabling HPA.' },
+    { concept: 'Liveness, Readiness, and Startup probes', tags: ['probes', 'health'], useCase: 'ensuring traffic only hits healthy pod replicas', example: 'Use readiness probes to delay traffic until app initialization.' },
+    { concept: 'Kubernetes Namespaces and resource limits', tags: ['namespaces', 'limits'], useCase: 'isolating team environments and setting resource quotas', example: 'Set CPU and memory limits to prevent noisy neighbor issues.' },
+    { concept: 'PersistentVolume and PersistentVolumeClaim', tags: ['storage', 'pv-pvc'], useCase: 'abstracting cluster storage for stateful applications', example: 'Use PVCs to request dynamic persistent storage.' },
+    { concept: 'Kubernetes RBAC and service accounts', tags: ['rbac', 'security'], useCase: 'controlling API access for cluster service accounts', example: 'Grant least-privilege permissions to service accounts.' },
+    { concept: 'Kubernetes Ingress and Gateway API', tags: ['ingress', 'networking'], useCase: 'routing external HTTP/HTTPS traffic to cluster services', example: 'Configure TLS certificates and path routing rules.' }
   ]
 };
 
@@ -1669,7 +1741,9 @@ const buildStructuredSeedQuestion = ({ topic, spec, index }) => {
 
 const buildRankedSeedCatalog = (rawCatalog = {}) => {
   return Object.fromEntries(listImportantTopics().map((topic) => {
-    const rawSeeds = rawCatalog[topic.key] || [];
+    const rawSeeds = (Array.isArray(rawCatalog[topic.key]) && rawCatalog[topic.key].length > 0)
+      ? rawCatalog[topic.key]
+      : getTopicSeedItems(topic.key);
     return [
       topic.key,
       rawSeeds.map((spec, index) => buildStructuredSeedQuestion({ topic, spec, index }))

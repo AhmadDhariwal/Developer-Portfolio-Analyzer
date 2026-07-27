@@ -244,5 +244,11 @@ interviewQuestionBankSchema.index(
 interviewQuestionBankSchema.index({ topicKey: 1, difficulty: 1, category: 1, sourceType: 1 });
 // NEW: Supports tag-based lookups.
 interviewQuestionBankSchema.index({ tags: 1 });
+// Exact lookup and bounded topic-scoped similarity candidates.
+interviewQuestionBankSchema.index(
+  { topicKey: 1, canonicalQuestionKey: 1 },
+  { partialFilterExpression: { canonicalQuestionKey: { $type: 'string', $ne: '' } } }
+);
+interviewQuestionBankSchema.index({ topicKey: 1, relevanceScore: -1, confidenceScore: -1, qualityScore: -1, usageCount: -1, createdAt: -1 });
 
 module.exports = mongoose.model('InterviewQuestionBank', interviewQuestionBankSchema);

@@ -11,9 +11,12 @@ const IMPORTANT_TOPICS = [
   { key: 'python', type: TOPIC_TYPES.LANGUAGE, label: 'Python', aliases: ['py'] },
   { key: 'java', type: TOPIC_TYPES.LANGUAGE, label: 'Java', aliases: [] },
   { key: 'cpp', type: TOPIC_TYPES.LANGUAGE, label: 'C++', aliases: ['c++', 'cplusplus', 'c plus plus'] },
+  { key: 'csharp', type: TOPIC_TYPES.LANGUAGE, label: 'C#', aliases: ['c#', 'c-sharp', 'c sharp'] },
+  { key: 'dotnet', type: TOPIC_TYPES.FRAMEWORK, label: '.NET', aliases: ['.net', 'dotnet', 'dot net', 'asp.net', 'asp.net core'] },
 
   { key: 'angular', type: TOPIC_TYPES.FRAMEWORK, label: 'Angular', aliases: ['angularjs'] },
   { key: 'react', type: TOPIC_TYPES.FRAMEWORK, label: 'React', aliases: ['reactjs', 'react.js'] },
+  { key: 'react-native', type: TOPIC_TYPES.FRAMEWORK, label: 'React Native', aliases: ['react native', 'react-native'] },
   { key: 'nodejs', type: TOPIC_TYPES.FRAMEWORK, label: 'Node.js', aliases: ['node', 'node.js', 'node js'] },
   { key: 'expressjs', type: TOPIC_TYPES.FRAMEWORK, label: 'Express.js', aliases: ['express', 'express.js', 'express js'] },
   { key: 'nextjs', type: TOPIC_TYPES.FRAMEWORK, label: 'Next.js', aliases: ['next', 'next.js', 'next js'] },
@@ -21,7 +24,10 @@ const IMPORTANT_TOPICS = [
   { key: 'mongodb', type: TOPIC_TYPES.TECHNOLOGY, label: 'MongoDB', aliases: ['mongo', 'mongo db'] },
   { key: 'mysql', type: TOPIC_TYPES.TECHNOLOGY, label: 'MySQL', aliases: ['my sql'] },
   { key: 'postgresql', type: TOPIC_TYPES.TECHNOLOGY, label: 'PostgreSQL', aliases: ['postgres', 'postgresql db', 'postgres sql'] },
+  { key: 'sql', type: TOPIC_TYPES.TECHNOLOGY, label: 'SQL', aliases: ['structured query language'] },
   { key: 'redis', type: TOPIC_TYPES.TECHNOLOGY, label: 'Redis', aliases: [] },
+  { key: 'docker', type: TOPIC_TYPES.TECHNOLOGY, label: 'Docker', aliases: ['docker container', 'docker containers'] },
+  { key: 'kubernetes', type: TOPIC_TYPES.TECHNOLOGY, label: 'Kubernetes', aliases: ['k8s', 'k8s cluster'] },
   { key: 'rest-apis', type: TOPIC_TYPES.TECHNOLOGY, label: 'REST APIs', aliases: ['rest', 'rest api', 'restful api', 'restful apis'] },
   { key: 'graphql', type: TOPIC_TYPES.TECHNOLOGY, label: 'GraphQL', aliases: ['graph ql'] },
   { key: 'html', type: TOPIC_TYPES.TECHNOLOGY, label: 'HTML', aliases: ['hypertext markup language'] },
@@ -46,6 +52,8 @@ const normalizeAlias = (value = '') => {
   return String(value || '')
     .trim()
     .toLowerCase()
+    .replace(/c#/g, 'c sharp')
+    .replace(/\.net/g, 'dot net')
     .replace(/\+/g, ' plus ')
     .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, ' ')
@@ -57,8 +65,10 @@ const slugify = (value = '') => {
   return String(value || '')
     .trim()
     .toLowerCase()
-    .replace(/\+/g, ' plus ')
-    .replace(/&/g, ' and ')
+    .replace(/c#/g, 'csharp')
+    .replace(/\.net/g, 'dotnet')
+    .replace(/\+/g, 'plus')
+    .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
@@ -205,6 +215,11 @@ const detectTopicsInText = (value = '') => {
   for (const candidate of candidates) {
     const matchedAlias = candidate.aliases.find((alias) => haystack.includes(` ${alias} `));
     if (!matchedAlias || seen.has(candidate.topic.key)) continue;
+
+    // Strict boundary checks to prevent false matches (e.g. "java" inside "javascript", "react" inside "react native")
+    if (candidate.topic.key === 'java' && /\bjavascript\b/i.test(value)) continue;
+    if (candidate.topic.key === 'react' && /\breact native\b/i.test(value)) continue;
+    if (candidate.topic.key === 'nodejs' && /\bnext\.js\b/i.test(value)) continue;
 
     seen.add(candidate.topic.key);
     matches.push({
