@@ -8,7 +8,18 @@ const {
   normalizeQualityScore: normalizeSharedQualityScore
 } = require('../interviewQuestionQualityService');
 
-const INTERVIEW_AI_TIMEOUT_MS = Number.parseInt(process.env.INTERVIEW_AI_TIMEOUT_MS || '12000', 10);
+const INTERVIEW_AI_TIMEOUT_MS = Math.min(6250, Number.parseInt(process.env.INTERVIEW_AI_TIMEOUT_MS || '6200', 10));
+
+const REQUIRED_ANSWER_FIELDS = ['shortAnswer', 'keyPoints', 'explanation', 'example', 'realWorldUseCase', 'commonMistakes', 'interviewTip'];
+const hasValidAnswerSchema = (result = {}) => {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) return false;
+  const answer = result.answer && typeof result.answer === 'object' ? result.answer : result;
+  return REQUIRED_ANSWER_FIELDS.every((field) => {
+    if (field === 'keyPoints') return Array.isArray(answer[field]) && answer[field].filter(Boolean).length >= 3;
+    if (field === 'commonMistakes') return Array.isArray(answer[field]) && answer[field].filter(Boolean).length >= 2;
+    return typeof answer[field] === 'string' && answer[field].trim().length > 0;
+  });
+};
 
 const normalizeStructuredAnswer = (answer = {}) => {
   if (typeof answer === 'string') {
@@ -146,32 +157,16 @@ const buildQuestionGenerationPrompt = ({ topicKey, topicType, query = '', diffic
   ].filter(Boolean).join('\n');
 };
 
-const buildCustomAnswerPrompt = ({ topicKey, topicType, question = '' }) => {
-  return [
-    'You are a senior software engineer being asked an interview question.',
-    `Skill: ${topicKey}, Topic: ${topicKey}`,
-    `Question: ${question}`,
-    'Return ONLY valid JSON:',
-    '{',
-    "  question: 'repeat the exact user question',",
-    "  shortAnswer: 'one sentence direct answer to the exact question',",
-    "  keyPoints: ['point1', 'point2', 'point3'],",
-    "  explanation: 'detailed 2-3 paragraph explanation',",
-    "  example: 'specific code/config/example if relevant, else empty string',",
-    "  realWorldUseCase: 'how this applies in production',",
-    "  commonMistakes: ['mistake1', 'mistake2'],",
-    "  interviewTip: 'one concise interview tip',",
-    "  difficulty: 'easy|medium|hard',",
-    `  technology: '${topicKey}',`,
-    `  topicKey: '${topicKey}',`,
-    "  tags: ['tag1', 'tag2'],",
-    '  confidenceScore: number between 0 and 1',
-    '}',
-    'No markdown. No extra text. JSON only.',
-    `The answer must directly answer the exact question and mention concrete ${topicKey} concepts.`,
-    `Topic type: ${topicType}.`
-  ].join('\n');
-};
+const buildCustomAnswerPrompt = ({ topicKey, topicType, question = '', verifiedContext = '' }) => [
+  'Answer the exact software interview question as a senior engineer.',
+  `Topic: ${topicKey} (${topicType})`,
+  `Question: ${question}`,
+  verifiedContext ? `Verified context (use only if directly relevant): ${verifiedContext}` : '',
+  'Return JSON only with: question, shortAnswer, keyPoints (3+), explanation, example, realWorldUseCase, commonMistakes (2+), interviewTip, difficulty, technology, topicKey, tags, confidenceScore.',
+  'Directly address every main concept. For comparisons: define both sides, contrast them, and include a relevant example, use case, and tradeoff.',
+  'Reject boilerplate, coaching instructions, placeholders, vague text, unrelated reusable answers, invented facts, and topic drift.',
+  'No markdown or extra text.'
+].filter(Boolean).join('\n');
 
 const buildEnrichmentPrompt = ({ question = '', currentAnswer = '' }) => [
   'You are a senior software engineer.',
@@ -251,26 +246,26 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
   return normalizeArray(rawQuestions);
 };
 
-const answerCustomQuestionFromAI = async ({ topicKey, topicType, question }) => {
-  const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question });
-  const fallback = {
-    answer: {
-      shortAnswer: `Explain the relevant ${topicKey} concept precisely and relate it to real implementation choices.`,
-      explanation: `A useful interview answer should define the concept, show how it behaves in practice, and explain the tradeoffs behind using it. For ${topicKey}, strong answers avoid generic theory and mention concrete APIs, patterns, or failure modes where possible.`,
-      keyPoints: ['Define the concept', 'Explain when to use it', 'Mention one tradeoff'],
-      example: '',
-      realWorldUseCase: `In production, ${topicKey} choices affect reliability, performance, maintainability, and debugging workflows.`,
-      commonMistakes: ['Answering with generic theory instead of technology-specific details'],
-      interviewTip: `Tie the answer to concrete ${topicKey} behavior.`
-    },
-    category: 'conceptual',
-    qualityScore: 4,
-    difficulty: 'medium',
-    tags: [topicKey, topicType, 'ai_generated'],
-    confidenceScore: 0.78
-  };
+const answerCustomQuestionFromAI = async ({ topicKey, topicType, question, verifiedContext = '' }) => {
+  const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question, verifiedContext });
+  const fallback = { __invalidInterviewFallback: true };
 
-  const result = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: INTERVIEW_AI_TIMEOUT_MS });
+  const outcome = await aiService.runAIAnalysis(prompt, fallback, 0, {
+    timeoutMs: INTERVIEW_AI_TIMEOUT_MS,
+    returnMeta: true,
+    preferredModel: process.env.INTERVIEW_AI_GEMINI_MODEL || 'gemini-3.1-flash-lite'
+  });
+  if (!outcome.ok) {
+    const error = new Error('Interview AI unavailable.');
+    error.reasonCode = outcome.reason === 'timeout' ? 'provider_timeout' : outcome.reason === 'invalid_json' ? 'invalid_json' : 'provider_error';
+    throw error;
+  }
+  const result = outcome.value;
+  if (!hasValidAnswerSchema(result)) {
+    const error = new Error('Interview AI schema rejected.');
+    error.reasonCode = 'schema_rejected';
+    throw error;
+  }
   return normalizeGeneratedResult({
     result: { ...result, question },
     fallbackQuestion: question,
@@ -285,11 +280,12 @@ const enrichAnswerToStructured = async ({ question, currentAnswer }) => {
   return normalizeStructuredAnswer(result);
 };
 
-const answerSearchFallback = async ({ skill, topicKey, question }) => {
+const answerSearchFallback = async ({ skill, topicKey, question, verifiedContext = '' }) => {
   return answerCustomQuestionFromAI({
     topicKey: topicKey || skill,
     topicType: 'technology',
-    question
+    question,
+    verifiedContext
   });
 };
 
