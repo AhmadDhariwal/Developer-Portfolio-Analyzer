@@ -99,7 +99,7 @@
     min-width: 0;
   }
 
-  // ── Card: Dashboard-aligned surface ──────────────────────────
+  // â”€â”€ Card: Dashboard-aligned surface â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .card {
     background: #111827;
     border: 1px solid var(--border-ghost);
@@ -180,7 +180,7 @@
     gap: 1.5rem;
   }
 
-  // ── Filter panel: simplified to Dashboard card style ─────────
+  // â”€â”€ Filter panel: simplified to Dashboard card style â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .filter-panel {
     padding: 0.8rem;
     border: 1px solid var(--border-ghost);
@@ -237,7 +237,7 @@
     line-height: 1.5;
   }
 
-  // ── Buttons aligned with Dashboard ───────────────────────────
+  // â”€â”€ Buttons aligned with Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .primary-btn, .ghost-btn {
     height: 44px;
     padding: 0 20px;
@@ -296,7 +296,7 @@
     min-height: 38px;
   }
 
-  // ── Topic summary: simplified ────────────────────────────────
+  // â”€â”€ Topic summary: simplified â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .topic-summary {
     margin-left: auto;
     min-width: 230px;
@@ -377,7 +377,7 @@
     font-weight: 700;
   }
 
-  // ── Custom question panel: simplified ────────────────────────
+  // â”€â”€ Custom question panel: simplified â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .custom-question-panel {
     display: flex;
     flex-direction: column;
@@ -434,7 +434,7 @@
     gap: 0.55rem;
   }
 
-  // ── Stored match: simplified to Dashboard card style ─────────
+  // â”€â”€ Stored match: simplified to Dashboard card style â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .stored-match {
     display: flex;
     justify-content: space-between;
@@ -482,7 +482,7 @@
     gap: 1.5rem;
   }
 
-  // ── QA card: Dashboard-aligned ───────────────────────────────
+  // â”€â”€ QA card: Dashboard-aligned â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .qa-card {
     background: #111827;
     border-radius: 16px;
@@ -789,7 +789,7 @@
     }
   }
 
-  // ── Insight panel: simplified ────────────────────────────────
+  // â”€â”€ Insight panel: simplified â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   .insight-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -971,7 +971,7 @@
     }
   }
 
-  // ─── New UI Components (production-ready additions) ───────────────
+  // â”€â”€â”€ New UI Components (production-ready additions) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // Input overflow guards
   input, select, textarea {
@@ -979,7 +979,7 @@
     box-sizing: border-box;
   }
 
-  // ── Page layout ──
+  // â”€â”€ Page layout â”€â”€
   .page-header {
     display: flex;
     align-items: flex-end;
@@ -1041,7 +1041,7 @@
     animation: generated-spin 0.8s linear infinite;
   }
 
-  // ── New Premium Interview Prep UI Styles (Highly Reusable & Condensed) ──
+  // â”€â”€ New Premium Interview Prep UI Styles (Highly Reusable & Condensed) â”€â”€
   .prep-section {
     display: flex;
     flex-direction: column;
@@ -1466,5 +1466,35 @@
     &.open {
       transform: rotate(180deg);
     }
+  }
+}
+@media (max-width: 600px) {
+  .interview-prep-page {
+    padding: 16px;
+    min-width: 0;
+
+    .prep-section,
+    .filter-accordion,
+    .filter-panel,
+    .search-panel,
+    .qa-card,
+    .qa-header,
+    .filter-group,
+    input,
+    select,
+    textarea,
+    button { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+    .filter-grid,
+    .filter-actions,
+    .qa-header,
+    .qa-badges { flex-wrap: wrap; }
+
+    .qa-header strong,
+    .section-title,
+    .result-question { overflow-wrap: anywhere; }
+
+    pre,
+    code { max-width: 100%; overflow-x: auto; }
   }
 }

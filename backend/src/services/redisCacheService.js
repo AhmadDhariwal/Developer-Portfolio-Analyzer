@@ -5,7 +5,7 @@ const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:', '
 const UPSTASH_DEFAULT_HOST = 'light-arachnid-164805.upstash.io';
 const UPSTASH_DEFAULT_PORT = 6379;
 const REDIS_CONNECT_TIMEOUT_MS = 3000;
-const REDIS_COMMAND_TIMEOUT_MS = 2500;
+const REDIS_COMMAND_TIMEOUT_MS = 175;
 const REDIS_RECONNECT_DELAY_MS = 15000;
 
 let client;
@@ -14,6 +14,14 @@ let redisEnabled = false;
 let connectPromise;
 let reconnectTimer;
 let closing = false;
+const memoryCache = new Map();
+
+const getMemoryValue = (key) => {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) { memoryCache.delete(key); return null; }
+  return entry.value;
+};
 
 const getRedisUrl = () => {
   const override = String(process.env.REDIS_URL || '').trim();
@@ -144,12 +152,16 @@ const initRedisCache = async ({ silent = false } = {}) => {
 };
 
 const getCacheJson = async (key) => {
+  const memoryValue = getMemoryValue(key);
+  if (memoryValue !== null) return memoryValue;
   const redis = getRedisCacheClient();
   if (!redis) return null;
   try {
     const raw = await redis.get(key);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const value = JSON.parse(raw);
+    memoryCache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_SECONDS * 1000 });
+    return value;
   } catch {
     console.warn('[redis] cache read failed; using application fallback.');
     return null;
@@ -170,16 +182,16 @@ const pingRedisCache = async () => {
 };
 
 const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
+  memoryCache.set(key, { value: payload, expiresAt: Date.now() + ttlSeconds * 1000 });
   const redis = getRedisCacheClient();
   if (!redis) return;
-  try {
-    await redis.set(key, JSON.stringify(payload), { EX: ttlSeconds });
-  } catch {
+  redis.set(key, JSON.stringify(payload), { EX: ttlSeconds }).catch(() => {
     console.warn('[redis] cache write failed; continuing without Redis.');
-  }
+  });
 };
 
 const deleteCacheKey = async (key) => {
+  memoryCache.delete(key);
   const redis = getRedisCacheClient();
   if (!redis) return;
   try {
@@ -190,6 +202,7 @@ const deleteCacheKey = async (key) => {
 };
 
 const deleteByPrefix = async (prefix) => {
+  for (const key of memoryCache.keys()) if (key.startsWith(prefix)) memoryCache.delete(key);
   const redis = getRedisCacheClient();
   if (!redis) return;
   try {
