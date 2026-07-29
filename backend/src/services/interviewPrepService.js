@@ -4,7 +4,9 @@ const InterviewPrepSession = require('../models/interviewPrepSession');
 const { getInterviewPrepPrompt } = require('../prompts/interviewPrepPrompt');
 const {
   getCacheJson,
+  getCacheJsonWithMeta,
   setCacheJson,
+  setMemoryCacheJson,
   invalidateInterviewPrepCache
 } = require('./redisCacheService');
 const {
@@ -47,10 +49,10 @@ const MIN_APPROVED_RELEVANCE = 0.75;
 const MIN_STRONG_SEARCH_RELEVANCE = 0.78;
 
 /** Differentiated cache TTLs in seconds. */
-const CACHE_TTL_TOP = 12 * 60 * 60;       // 12 hours â€” verified seed top-30 rarely changes
-const CACHE_TTL_ALL = 3 * 60 * 60;         // 3 hours â€” all-questions list can grow via enrichment
-const CACHE_TTL_SEARCH = 1 * 60 * 60;       // 1 hour â€” search results, including AI fallback
-const CACHE_TTL_CUSTOM = 24 * 60 * 60;      // 24 hours â€” exact Q&A pairs are deterministic
+const CACHE_TTL_TOP = 12 * 60 * 60;       // Verified top-30 changes rarely.
+const CACHE_TTL_ALL = 3 * 60 * 60;         // The full bank can grow through enrichment.
+const CACHE_TTL_SEARCH = 1 * 60 * 60;      // Valid search results only.
+const CACHE_TTL_CUSTOM = 24 * 60 * 60;    // Valid exact Q&A pairs are deterministic.
 const CACHE_TTL_DEFAULT = 1 * 60 * 60;
 
 const LOW_CONFIDENCE_FLAG_THRESHOLD = 0.6;
@@ -100,6 +102,69 @@ const runSingleFlight = async (key, taskFn) => {
   return promise;
 };
 
+const nowMs = () => Number(process.hrtime.bigint()) / 1e6;
+const createPipelineTrace = () => {
+  const startedAt = nowMs();
+  const timings = {
+    memoryCacheMs: 0,
+    redisMs: 0,
+    mongoExactMs: 0,
+    similarityMs: 0,
+    seedMs: 0,
+    aiMs: 0,
+    validationMs: 0,
+    persistenceMs: 0
+  };
+  const counts = { memory: 0, redis: 0, mongo: 0, similarity: 0, seed: 0, ai: 0, persistence: 0 };
+  return {
+    timings,
+    counts,
+    applyCache(meta) {
+      timings.memoryCacheMs += Number(meta?.memoryMs || 0);
+      timings.redisMs += Number(meta?.redisMs || 0);
+      if (meta?.layer === 'memory') counts.memory += 1;
+      if (meta?.layer === 'redis') counts.redis += 1;
+    },
+    async time(stage, count, operation) {
+      const stageStartedAt = nowMs();
+      if (count) counts[count] += 1;
+      try { return await operation(); }
+      finally { timings[stage] += nowMs() - stageStartedAt; }
+    },
+    finish(payload) {
+      return {
+        ...payload,
+        performance: {
+          ...Object.fromEntries(Object.entries(timings).map(([key, value]) => [key, Number(value.toFixed(3))])),
+          totalMs: Number((nowMs() - startedAt).toFixed(3)),
+          counts: { ...counts }
+        }
+      };
+    }
+  };
+};
+
+const cacheWithoutTrace = (key, payload, ttl) => {
+  const { performance: _performance, metrics: _metrics, ...cacheable } = payload;
+  setCacheJson(key, cacheable, ttl).catch(() => {});
+};
+const cacheAfterInvalidation = (key, payload, ttl) => {
+  const { performance: _performance, metrics: _metrics, ...cacheable } = payload;
+  const invalidation = invalidateInterviewPrepCache();
+  // invalidateInterviewPrepCache synchronously clears process memory before its
+  // first remote await; repopulate this exact key immediately, then repopulate
+  // Redis only after remote invalidation completes to avoid a delete/set race.
+  setMemoryCacheJson(key, cacheable, ttl);
+  invalidation.then(() => setCacheJson(key, cacheable, ttl)).catch(() => {});
+};
+const buildVerifiedPromptContext = (topicKey, question) => getTopicSeedItems(topicKey)
+  .map((item) => ({ item, score: computeJaccardSimilarity(question, item.normalizedQuestion || item.question) }))
+  .filter(({ score }) => score > 0)
+  .sort((left, right) => right.score - left.score)
+  .slice(0, 1)
+  .map(({ item }) => `${item.question}: ${item.answerSections?.shortAnswer || String(item.answer || '').slice(0, 320)}`)
+  .join('\n')
+  .slice(0, 600);
 const enrichmentOrchestrator = createInterviewEnrichmentOrchestrator({
   aiProvider,
   scraperProvider,
@@ -144,15 +209,15 @@ const toTagFilter = (tags = '') => {
 };
 
 const makeQuestionsCacheKey = ({ topicKey, page, limit, difficulty = '', tags = '', block = 'top', category = '', source = '' }) => {
-  return `interview:questions:bank=v9:block=${block}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:source=${String(source || '').toLowerCase()}`;
+  return `interview:questions:bank=v11:block=${block}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:source=${String(source || '').toLowerCase()}`;
 };
 
-const makeSearchCacheKey = ({ query, topicKey, page, limit, difficulty = '', tags = '', lookupOnly = false }) => {
-  return `interview:search:v3:mode=${lookupOnly ? 'lookup' : 'answer'}:q=${encodeURIComponent(String(query || '').trim().toLowerCase())}:topic=${topicKey}:difficulty=${String(difficulty || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:page=${page}:limit=${limit}`;
+const makeSearchCacheKey = ({ query, topicKey, page, limit, difficulty = '', category = '', tags = '', lookupOnly = false }) => {
+  return `interview:search:v6:mode=${lookupOnly ? 'lookup' : 'answer'}:q=${encodeURIComponent(String(query || '').trim().toLowerCase())}:topic=${topicKey}:difficulty=${String(difficulty || '').toLowerCase()}:category=${String(category || '').toLowerCase()}:tags=${String(tags || '').toLowerCase()}:page=${page}:limit=${limit}`;
 };
 
 const makeCustomQuestionCacheKey = ({ question, topicKey }) => (
-  `interview:custom:v3:topic=${topicKey}:question=${questionRepository.toQuestionHash(question)}`
+  `interview:custom:v4:topic=${topicKey}:question=${questionRepository.toQuestionHash(question)}`
 );
 
 const validateRecordForApproval = ({ record, topicInput, expectedDifficulty = '', minimumScore = MIN_APPROVED_RELEVANCE } = {}) => {
@@ -183,6 +248,40 @@ const withApprovalFields = ({ record, topicInput, expectedDifficulty = '', minim
     qualityStatus: approval.isApproved ? 'approved' : 'rejected',
     isApproved: approval.isApproved,
     rejectedReason: approval.isApproved ? '' : approval.reasons.join(', ')
+  };
+};
+
+const INTERVIEW_AI_REASON_CODES = new Set([
+  'provider_success', 'provider_timeout', 'provider_error', 'invalid_json', 'schema_rejected',
+  'semantic_rejected', 'quality_rejected', 'fallback_found', 'fallback_missing'
+]);
+const logInterviewAiReason = (reasonCode) => {
+  if (process.env.NODE_ENV === 'production' || !INTERVIEW_AI_REASON_CODES.has(reasonCode)) return;
+  logger.info('interview-prep-ai', { reasonCode });
+};
+const selectVerifiedFallback = ({ topicInput, question }) => {
+  const candidate = findSeedRecordByQuestion(topicInput.topicKey, question)
+    || getTopicSeedItems(topicInput.topicKey).find((item) => computeJaccardSimilarity(question, item.normalizedQuestion || item.question) >= MIN_STRONG_SEARCH_RELEVANCE)
+    || null;
+  if (!candidate) return null;
+  const approval = validateRecordForApproval({ record: candidate, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE });
+  if (!approval.isApproved) return null;
+  return {
+    question: candidate.question, answer: candidate.answer, answerSections: candidate.answerSections || {},
+    difficulty: candidate.difficulty, tags: candidate.tags, topicKey: topicInput.topicKey, topicType: topicInput.topicType,
+    sourceType: 'verified_seed', sourceLabel: 'Verified Seed', confidenceScore: candidate.confidenceScore,
+    relevanceScore: candidate.relevanceScore, category: candidate.category, qualityScore: candidate.qualityScore,
+    answerFormat: candidate.answerFormat || 'structured', isEnriched: true, stored: false, duplicate: false, fromCache: false
+  };
+};
+const buildAiFailurePayload = ({ topicInput, question }) => {
+  const fallback = selectVerifiedFallback({ topicInput, question });
+  if (fallback) { logInterviewAiReason('fallback_found'); return fallback; }
+  logInterviewAiReason('fallback_missing');
+  return {
+    question, answer: 'No verified answer available.', answerSections: {}, topicKey: topicInput.topicKey,
+    topicType: topicInput.topicType, sourceType: 'no_verified_answer', sourceLabel: 'No Verified Answer',
+    stored: false, duplicate: false, fromCache: false
   };
 };
 
@@ -303,7 +402,7 @@ const scheduleBackgroundEnrichment = (questions = []) => {
     enrichmentInflight.add(String(item._id));
   }
 
-  // Fire-and-forget â€” never blocks the response
+  // Fire-and-forget work never blocks the response.
   (async () => {
     for (const item of batch) {
       try {
@@ -724,6 +823,21 @@ const getQuestionBank = async ({
       }
     }
 
+    if (!difficulty && !normalizedTags && rows.length < 30) {
+      const importantTopic = getImportantTopicByKey(topicInput.topicKey);
+      const verifiedTopSeeds = importantTopic
+        ? buildSeedRecordsForTopic(importantTopic).filter((record) => record.isTopQuestion)
+        : [];
+      const merged = new Map();
+      for (const record of [...verifiedTopSeeds, ...rows]) {
+        const key = normalizeComparableText(record.question);
+        if (key) merged.set(key, record);
+      }
+      rows = [...merged.values()]
+        .sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999))
+        .slice(0, 30);
+    }
+
     const questions = (await enrichQuestionListOnce(rows))
       .sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999))
       .slice(0, 30);
@@ -751,6 +865,7 @@ const searchQuestionBank = async ({
   language = '',
   framework = '',
   difficulty = '',
+  category = '',
   tags = '',
   page = 1,
   limit = DEFAULT_PAGE_LIMIT,
@@ -758,135 +873,127 @@ const searchQuestionBank = async ({
 } = {}) => {
   const query = String(q || '').trim();
   if (!query) {
-    return getQuestionBank({ skill, topic, stack, technology, language, framework, difficulty, tags, page, limit, block: 'all' });
+    return getQuestionBank({ skill, topic, stack, technology, language, framework, difficulty, category, tags, page, limit, block: 'all' });
   }
 
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
+  const identity = questionRepository.buildQuestionIdentity({ question: query, topicKey: topicInput.topicKey });
   const { page: normalizedPage, limit: normalizedLimit } = normalizePagination({ page, limit });
   const normalizedTags = toTagFilter(tags);
+  const normalizedCategory = category ? sanitizeCategory(category) : '';
+  const expectedDifficulty = difficulty ? sanitizeDifficulty(difficulty) : '';
   const cacheKey = makeSearchCacheKey({
-    query,
+    query: identity.normalizedQuestion,
     topicKey: topicInput.topicKey,
     page: normalizedPage,
     limit: normalizedLimit,
-    difficulty,
+    difficulty: expectedDifficulty,
+    category: normalizedCategory,
     tags: normalizedTags,
     lookupOnly: !allowEnrichment
   });
 
   return runSingleFlight(cacheKey, async () => {
+    const trace = createPipelineTrace();
     interviewEngineMetrics.totalRequests += 1;
-    const cached = await getCacheJson(cacheKey);
-    if (cached) {
+    const cacheResult = await getCacheJsonWithMeta(cacheKey);
+    trace.applyCache(cacheResult);
+    if (cacheResult.value) {
       interviewEngineMetrics.cacheHits += 1;
-      return { ...cached, fromCache: true, metrics: metricSnapshot() };
+      return trace.finish({ ...cacheResult.value, fromCache: true, cacheLayer: cacheResult.layer, metrics: metricSnapshot() });
     }
 
     interviewEngineMetrics.dbReads += 1;
-
-    // The verified catalog is local and exact/canonical; never make Mongo or AI work for a seed answer.
-    const seedMatch = findSeedRecordByQuestion(topicInput.topicKey, query);
-    if (seedMatch) {
-      questionRepository.upsertQuestions([seedMatch]).catch(() => {});
-      const payload = makeQuestionPayload({ questions: [seedMatch], total: 1, page: 1, limit: normalizedLimit, source: 'seed', topicInput });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
-    }
-
-    const seedSemanticMatch = getTopicSeedItems(topicInput.topicKey).find((candidate) => (
-      computeJaccardSimilarity(query, candidate.normalizedQuestion || candidate.question) >= MIN_STRONG_SEARCH_RELEVANCE
-    ));
-    if (seedSemanticMatch) {
-      const payload = makeQuestionPayload({ questions: [seedSemanticMatch], total: 1, page: 1, limit: normalizedLimit, source: 'seed', topicInput });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
-    }
-
-    let reusable = await questionRepository.findExactReusableQuestion({
+    let reusable = await trace.time('mongoExactMs', 'mongo', () => questionRepository.findExactReusableQuestion({
       topicKey: topicInput.topicKey,
       question: query,
+      identity,
+      difficulty: expectedDifficulty,
+      category: normalizedCategory,
       minConfidence: 0.75
-    });
+    }));
 
     if (reusable) {
-      scheduleBackgroundEnrichment([reusable]);
-      const approval = validateRecordForApproval({
+      const approval = await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({
         record: reusable,
         topicInput,
-        expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+        expectedDifficulty,
         minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-      });
-      if (!approval.isApproved) {
-        reusable = null;
+      })));
+      if (!approval.isApproved) reusable = null;
+    }
+
+    if (!reusable) {
+      const candidates = await trace.time('similarityMs', 'similarity', () => questionRepository.findSearchCandidates({
+        topicKey: topicInput.topicKey,
+        difficulty: expectedDifficulty,
+        category: normalizedCategory,
+        tags: normalizedTags,
+        searchableTokens: identity.searchableTokens,
+        limit: 60,
+        minConfidence: 0.75
+      }));
+      const match = candidates.find((candidate) => (
+        computeJaccardSimilarity(query, candidate.normalizedQuestion || candidate.question) >= MIN_STRONG_SEARCH_RELEVANCE
+      ));
+      if (match) {
+        reusable = await trace.time('similarityMs', null, () => questionRepository.findQuestionById(match._id));
+        const approval = reusable
+          ? await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({
+            record: reusable,
+            topicInput,
+            expectedDifficulty,
+            minimumScore: MIN_STRONG_SEARCH_RELEVANCE
+          })))
+          : { isApproved: false };
+        if (!approval.isApproved) reusable = null;
       }
     }
 
     if (reusable) {
       questionRepository.incrementQuestionUsage(reusable._id).catch(() => {});
-      const payload = makeQuestionPayload({
-        questions: [reusable],
-        total: 1,
-        page: 1,
-        limit: normalizedLimit,
-        source: 'db',
-        topicInput
-      });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
+      const payload = makeQuestionPayload({ questions: [reusable], total: 1, page: 1, limit: normalizedLimit, source: 'db', topicInput });
+      cacheWithoutTrace(cacheKey, payload, CACHE_TTL_SEARCH);
+      return trace.finish(payload);
     }
 
-    const semanticCandidates = await questionRepository.findSearchCandidates({
-      topicKey: topicInput.topicKey,
-      difficulty,
-      limit: 60,
-      minConfidence: 0.75
-    });    const semanticMatch = semanticCandidates.find((candidate) => (
-      computeJaccardSimilarity(query, candidate.normalizedQuestion || candidate.question) >= 0.78
-      && validateRecordForApproval({
-        record: candidate,
+    const seedMatch = await trace.time('seedMs', 'seed', () => Promise.resolve(
+      findSeedRecordByQuestion(topicInput.topicKey, query)
+      || getTopicSeedItems(topicInput.topicKey).find((candidate) => (
+        (!expectedDifficulty || sanitizeDifficulty(candidate.difficulty) === expectedDifficulty)
+        && (!normalizedCategory || sanitizeCategory(candidate.category) === normalizedCategory)
+        && computeJaccardSimilarity(query, candidate.normalizedQuestion || candidate.question) >= MIN_STRONG_SEARCH_RELEVANCE
+      ))
+      || null
+    ));
+    if (seedMatch) {
+      const approval = await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({
+        record: seedMatch,
         topicInput,
-        expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+        expectedDifficulty,
         minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-      }).isApproved
-    )) || null;
-
-    if (semanticMatch) {
-      const question = semanticMatch;
-      scheduleBackgroundEnrichment([question]);
-      questionRepository.incrementQuestionUsage(question._id).catch(() => {});
-      const payload = makeQuestionPayload({
-        questions: [question],
-        total: 1,
-        page: 1,
-        limit: normalizedLimit,
-        source: 'db',
-        topicInput
-      });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
+      })));
+      if (approval.isApproved) {
+        const payload = makeQuestionPayload({ questions: [seedMatch], total: 1, page: 1, limit: normalizedLimit, source: 'seed', topicInput });
+        cacheWithoutTrace(cacheKey, payload, CACHE_TTL_SEARCH);
+        return trace.finish(payload);
+      }
     }
 
     if (!allowEnrichment) {
-      const payload = makeQuestionPayload({
-        questions: [],
-        total: 0,
-        page: 1,
-        limit: normalizedLimit,
-        source: 'db',
-        topicInput
-      });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
+      const payload = makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput });
+      cacheWithoutTrace(cacheKey, payload, CACHE_TTL_SEARCH);
+      return trace.finish(payload);
     }
 
     try {
-      const generated = await aiProvider.answerSearchFallback({
+      const generated = await trace.time('aiMs', 'ai', () => withAiDeadline(() => aiProvider.answerSearchFallback({
         skill: topicInput.skill,
         topicKey: topicInput.topicKey,
-        question: query
-      });
+        question: query,
+        verifiedContext: buildVerifiedPromptContext(topicInput.topicKey, query)
+      })));
       interviewEngineMetrics.aiFallbackRuns += 1;
-
       const record = enrichmentOrchestrator.toStorableRecord({
         item: {
           ...generated,
@@ -900,45 +1007,24 @@ const searchQuestionBank = async ({
         sourceMeta: { query, mode: 'search-fallback', generatedAt: new Date().toISOString() },
         popularity: 18
       });
-
-      const approvedRecord = withApprovalFields({
+      const approvedRecord = await trace.time('validationMs', null, () => Promise.resolve(withApprovalFields({
         record,
         topicInput,
-        expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+        expectedDifficulty,
         minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-      });
-      const approved = approvedRecord.isApproved && normalizeQualityScore(approvedRecord.qualityScore || 0) >= 80;
-      if (!approved) {
-        const payload = makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput });
-        await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-        return payload;
+      })));
+      if (!approvedRecord.isApproved || normalizeQualityScore(approvedRecord.qualityScore || 0) < 80) {
+        return trace.finish(makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput }));
       }
 
-      const result = await questionRepository.upsertQuestions([approvedRecord]);
-      await invalidateInterviewPrepCache();
-      const savedId = result.upsertedIds?.[0] || null;
-      const payloadQuestion = {
-        ...approvedRecord,
-        _id: savedId,
-        stored: true,
-        sourceLabel: 'AI Generated'
-      };
-      const payload = makeQuestionPayload({
-        questions: [payloadQuestion],
-        total: 1,
-        page: 1,
-        limit: normalizedLimit,
-        source: 'ai_generated',
-        topicInput,
-        aiGeneratedCount: 1,
-        enrichedCount: 1
-      });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
-    } catch (_err) {
-      const payload = makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput });
-      await setCacheJson(cacheKey, payload, CACHE_TTL_SEARCH);
-      return payload;
+      const result = await trace.time('persistenceMs', 'persistence', () => questionRepository.upsertQuestions([approvedRecord]));
+      const payloadQuestion = { ...approvedRecord, _id: result.upsertedIds?.[0] || null, stored: true, sourceLabel: 'AI Generated' };
+      const payload = makeQuestionPayload({ questions: [payloadQuestion], total: 1, page: 1, limit: normalizedLimit, source: 'ai_generated', topicInput, aiGeneratedCount: 1, enrichedCount: 1 });
+      cacheAfterInvalidation(cacheKey, payload, CACHE_TTL_SEARCH);
+      return trace.finish(payload);
+    } catch (error) {
+      logger.warn('interview-prep search AI answer failed', { topicKey: topicInput.topicKey, reason: 'provider_unavailable' });
+      return trace.finish(makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput }));
     }
   });
 };
@@ -1380,202 +1466,170 @@ const answerCustomInterviewQuestion = async ({
     throw error;
   }
 
-  const topicInput = normalizeTopicInput({
-    skill,
-    topic,
-    stack,
-    technology,
-    language,
-    framework
-  });
+  const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
   const detectedTopics = detectTopicsInText(normalizedQuestion);
   if (detectedTopics.length > 0 && !detectedTopics.some((item) => item.topicKey === topicInput.topicKey)) {
-    const detectedTopic = detectedTopics[0];
-    const error = new Error(`This question does not match the selected skill. It looks closer to ${detectedTopic.topicLabel}.`);
+    const error = new Error(`This question does not match the selected skill. It looks closer to ${detectedTopics[0].topicLabel}.`);
     error.statusCode = 400;
     throw error;
   }
 
-  const cacheKey = makeCustomQuestionCacheKey({ question: normalizedQuestion, topicKey: topicInput.topicKey });
-  const verifiedFallback = () => {
-    const seed = getTopicSeedItems(topicInput.topicKey)[0];
-    if (!seed) return null;
-    return {
-      ...seed,
-      topicKey: topicInput.topicKey,
-      topicType: topicInput.topicType,
-      sourceType: 'verified_seed',
-      sourceLabel: 'Verified Seed Fallback',
-      stored: false,
-      duplicate: false,
-      fromCache: false
-    };
-  };
+  const identity = questionRepository.buildQuestionIdentity({ question: normalizedQuestion, topicKey: topicInput.topicKey });
+  const cacheKey = makeCustomQuestionCacheKey({ question: identity.normalizedQuestion, topicKey: topicInput.topicKey });
   return runSingleFlight(cacheKey, async () => {
-  const cached = await getCacheJson(cacheKey);
-  if (cached) {
-    interviewEngineMetrics.cacheHits += 1;
-    if (cached._id) {
-      questionRepository.incrementQuestionUsage(cached._id).catch(() => {});
+    const trace = createPipelineTrace();
+    const cacheResult = await getCacheJsonWithMeta(cacheKey);
+    trace.applyCache(cacheResult);
+    if (cacheResult.value) {
+      interviewEngineMetrics.cacheHits += 1;
+      if (cacheResult.value._id) questionRepository.incrementQuestionUsage(cacheResult.value._id).catch(() => {});
+      return trace.finish({ ...cacheResult.value, sourceLabel: `Cache / ${cacheResult.value.sourceLabel || 'DB'}`, fromCache: true, cacheLayer: cacheResult.layer });
     }
-    return { ...cached, sourceLabel: `Cache / ${cached.sourceLabel || 'DB'}`, fromCache: true };
-  }
 
-  interviewEngineMetrics.dbReads += 1;
-  let reusable = await questionRepository.findExactReusableQuestion({
-    topicKey: topicInput.topicKey,
-    question: normalizedQuestion,
-    minConfidence: 0.75
-  });
-
-  if (!reusable) {
-    const semanticCandidates = await questionRepository.findSearchCandidates({
+    interviewEngineMetrics.dbReads += 1;
+    let reusable = await trace.time('mongoExactMs', 'mongo', () => questionRepository.findExactReusableQuestion({
       topicKey: topicInput.topicKey,
-      limit: 60,
+      question: normalizedQuestion,
+      identity,
       minConfidence: 0.75
+    }));
+    if (reusable) {
+      const approval = await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({ record: reusable, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })));
+      if (!approval.isApproved) reusable = null;
+    }
+
+    if (!reusable) {
+      const candidates = await trace.time('similarityMs', 'similarity', () => questionRepository.findSearchCandidates({
+        topicKey: topicInput.topicKey,
+        searchableTokens: identity.searchableTokens,
+        limit: 60,
+        minConfidence: 0.75
+      }));
+      const match = candidates.find((candidate) => computeJaccardSimilarity(normalizedQuestion, candidate.normalizedQuestion || candidate.question) >= MIN_STRONG_SEARCH_RELEVANCE);
+      if (match) {
+        reusable = await trace.time('similarityMs', null, () => questionRepository.findQuestionById(match._id));
+        const approval = reusable
+          ? await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({ record: reusable, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })))
+          : { isApproved: false };
+        if (!approval.isApproved) reusable = null;
+      }
+    }
+
+    if (reusable) {
+      questionRepository.incrementQuestionUsage(reusable._id).catch(() => {});
+      const payload = {
+        ...reusable,
+        sourceType: 'db',
+        sourceLabel: ['verified_seed', 'prebuilt'].includes(reusable.sourceType) ? 'Verified Seed' : 'DB',
+        stored: true,
+        duplicate: true,
+        fromCache: false
+      };
+      cacheWithoutTrace(cacheKey, payload, CACHE_TTL_CUSTOM);
+      return trace.finish(payload);
+    }
+
+    const seedMatch = await trace.time('seedMs', 'seed', () => Promise.resolve(
+      findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion)
+      || getTopicSeedItems(topicInput.topicKey).find((candidate) => computeJaccardSimilarity(normalizedQuestion, candidate.normalizedQuestion || candidate.question) >= MIN_STRONG_SEARCH_RELEVANCE)
+      || null
+    ));
+    if (seedMatch) {
+      const approval = await trace.time('validationMs', null, () => Promise.resolve(validateRecordForApproval({ record: seedMatch, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })));
+      if (approval.isApproved) {
+        const payload = {
+          question: seedMatch.question,
+          answer: seedMatch.answer,
+          answerSections: seedMatch.answerSections || {},
+          difficulty: seedMatch.difficulty,
+          tags: seedMatch.tags,
+          topicKey: topicInput.topicKey,
+          topicType: topicInput.topicType,
+          sourceType: 'verified_seed',
+          sourceLabel: 'Verified Seed',
+          confidenceScore: seedMatch.confidenceScore,
+          relevanceScore: seedMatch.relevanceScore,
+          category: seedMatch.category,
+          qualityScore: seedMatch.qualityScore,
+          answerFormat: seedMatch.answerFormat || 'structured',
+          isEnriched: true,
+          stored: false,
+          duplicate: false,
+          fromCache: false
+        };
+        cacheWithoutTrace(cacheKey, payload, CACHE_TTL_CUSTOM);
+        return trace.finish(payload);
+      }
+    }
+
+    let generated;
+    try {
+      generated = await trace.time('aiMs', 'ai', () => withAiDeadline(() => aiProvider.answerSearchFallback({
+        skill: topicInput.skill,
+        topicKey: topicInput.topicKey,
+        question: normalizedQuestion,
+        verifiedContext: buildVerifiedPromptContext(topicInput.topicKey, normalizedQuestion)
+      })));
+      interviewEngineMetrics.aiFallbackRuns += 1;
+      logInterviewAiReason('provider_success');
+    } catch (error) {
+      logInterviewAiReason(INTERVIEW_AI_REASON_CODES.has(error?.reasonCode) ? error.reasonCode : 'provider_error');
+      return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
+    }
+
+    const record = enrichmentOrchestrator.toStorableRecord({
+      item: {
+        question: normalizedQuestion,
+        answer: generated.answer,
+        answerSections: generated.answerSections,
+        category: generated.category,
+        qualityScore: generated.qualityScore,
+        answerFormat: 'structured',
+        isEnriched: true,
+        difficulty: generated.difficulty,
+        tags: sanitizeTags([...(generated.tags || []), topicInput.topicKey, 'user_asked'])
+      },
+      topic: topicInput,
+      sourceType: 'ai_generated',
+      sourceMeta: { userId: String(userId || ''), askedAt: new Date().toISOString(), mode: 'custom-question' },
+      popularity: 18
     });
-    reusable = semanticCandidates.find((candidate) => (
-      computeJaccardSimilarity(normalizedQuestion, candidate.normalizedQuestion || candidate.question) >= 0.78
-      && validateRecordForApproval({
-        record: candidate,
-        topicInput,
-        minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-      }).isApproved
-    )) || null;
-  }
+    const approvedRecord = await trace.time('validationMs', null, () => Promise.resolve(withApprovalFields({
+      record,
+      topicInput,
+      expectedDifficulty: generated.difficulty || '',
+      minimumScore: MIN_STRONG_SEARCH_RELEVANCE
+    })));
+    if (!approvedRecord.isApproved) {
+      const semanticReasons = /topic|concept|comparison|contradiction|generic|placeholder|directly_address/.test(approvedRecord.rejectedReason || '');
+      logInterviewAiReason(semanticReasons ? 'semantic_rejected' : 'quality_rejected');
+      return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
+    }
 
-  if (reusable) {
-    questionRepository.incrementQuestionUsage(reusable._id).catch(() => {});
-    const reusedPayload = {
-      ...reusable,
-      sourceType: 'db',
-      sourceLabel: ['verified_seed', 'prebuilt'].includes(reusable.sourceType) ? 'Verified Seed' : 'DB',
-      stored: true,
-      duplicate: true,
-      fromCache: false
-    };
-    await setCacheJson(cacheKey, reusedPayload, CACHE_TTL_CUSTOM);
-    return reusedPayload;
-  }
-
-  // Seed catalog check BEFORE AI fallback for custom questions
-  const seedMatch = findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion);
-  if (seedMatch) {
-    questionRepository.upsertQuestions([seedMatch]).catch(() => {});
-    const seedPayload = {
-      question: seedMatch.question,
-      answer: seedMatch.answer,
-      answerSections: seedMatch.answerSections || {},
-      difficulty: seedMatch.difficulty,
-      tags: seedMatch.tags,
+    const result = await trace.time('persistenceMs', 'persistence', () => questionRepository.upsertQuestions([approvedRecord]));
+    const payload = {
+      question: approvedRecord.question,
+      answer: approvedRecord.answer,
+      answerSections: approvedRecord.answerSections || {},
+      difficulty: approvedRecord.difficulty,
+      tags: approvedRecord.tags,
       topicKey: topicInput.topicKey,
       topicType: topicInput.topicType,
-      sourceType: 'seed',
-      sourceLabel: 'Verified Seed',
-      confidenceScore: seedMatch.confidenceScore,
-      relevanceScore: seedMatch.relevanceScore,
-      category: seedMatch.category,
-      qualityScore: seedMatch.qualityScore,
-      answerFormat: seedMatch.answerFormat || 'structured',
-      isEnriched: true,
-      stored: true,
+      sourceType: 'ai_generated',
+      sourceLabel: 'AI Generated',
+      confidenceScore: approvedRecord.confidenceScore,
+      relevanceScore: approvedRecord.relevanceScore,
+      category: approvedRecord.category,
+      qualityScore: approvedRecord.qualityScore,
+      answerFormat: approvedRecord.answerFormat,
+      isEnriched: approvedRecord.isEnriched,
+      _id: result.upsertedIds?.[0] || null,
+      stored: Number(result.insertedCount || 0) > 0,
       duplicate: false,
       fromCache: false
     };
-    await setCacheJson(cacheKey, seedPayload, CACHE_TTL_CUSTOM);
-    return seedPayload;
-  }
-
-  let generated = null;
-  // The question originates from the user; this avoids rejecting a valid prompt
-  // merely because it is phrased as a topic rather than a formal question.
-  let generatedSourceType = 'user_asked';
-  try {
-    generated = await withAiDeadline(() => aiProvider.answerSearchFallback({
-      skill: topicInput.skill,
-      topicKey: topicInput.topicKey,
-      question: normalizedQuestion
-    }));
-    interviewEngineMetrics.aiFallbackRuns += 1;
-  } catch (error) {
-    logger.warn('interview-prep custom AI answer failed', {
-      topicKey: topicInput.topicKey,
-      message: error.message
-    });
-  }
-
-  if (!generated) {
-    const fallback = verifiedFallback();
-    if (fallback) return fallback;
-    const bankFallback = await fallbackToQuestionBankForGeneration({ topicInput, skill: topicInput.topicKey, limit: 1, reason: 'custom_ai_unavailable' });
-    const verified = bankFallback.questions?.[0];
-    return { ...verified, topicKey: topicInput.topicKey, topicType: topicInput.topicType, sourceType: 'verified_seed', sourceLabel: 'Verified Seed Fallback', stored: false, duplicate: false, fromCache: false };
-  }
-
-  const record = enrichmentOrchestrator.toStorableRecord({
-    item: {
-      question: normalizedQuestion,
-      answer: generated.answer,
-      answerSections: generated.answerSections,
-      category: generated.category,
-      qualityScore: generated.qualityScore,
-      answerFormat: 'structured',
-      isEnriched: true,
-      difficulty: generated.difficulty,
-      tags: sanitizeTags([...(generated.tags || []), topicInput.topicKey, generatedSourceType])
-    },
-    topic: topicInput,
-    sourceType: generatedSourceType,
-    sourceMeta: { userId: String(userId || ''), askedAt: new Date().toISOString(), mode: 'custom-question' },
-    popularity: 18
-  });
-
-  const approvedRecord = withApprovalFields({
-    record,
-    topicInput,
-    expectedDifficulty: generated.difficulty || '',
-    minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-  });
-  const approved = approvedRecord.isApproved;
-  if (!approved) {
-    const fallback = verifiedFallback();
-    if (fallback) return fallback;
-    const bankFallback = await fallbackToQuestionBankForGeneration({ topicInput, skill: topicInput.topicKey, limit: 1, reason: 'custom_ai_invalid' });
-    const verified = bankFallback.questions?.[0];
-    return { ...verified, topicKey: topicInput.topicKey, topicType: topicInput.topicType, sourceType: 'verified_seed', sourceLabel: 'Verified Seed Fallback', stored: false, duplicate: false, fromCache: false };
-  }
-
-  let stored = false;
-  let storedId = null;
-  const result = await questionRepository.upsertQuestions([approvedRecord]);
-  stored = Number(result.insertedCount || 0) > 0;
-  storedId = result.upsertedIds?.[0] || null;
-  await invalidateInterviewPrepCache();
-
-  const payload = {
-    question: approvedRecord.question,
-    answer: approvedRecord.answer,
-    answerSections: approvedRecord.answerSections || {},
-    difficulty: approvedRecord.difficulty,
-    tags: approvedRecord.tags,
-    topicKey: topicInput.topicKey,
-    topicType: topicInput.topicType,
-    sourceType: generatedSourceType,
-    sourceLabel: generatedSourceType === 'scraped' ? 'Scraped' : 'AI Generated',
-    confidenceScore: approvedRecord.confidenceScore,
-    relevanceScore: approvedRecord.relevanceScore,
-    category: approvedRecord.category,
-    qualityScore: approvedRecord.qualityScore,
-    answerFormat: approvedRecord.answerFormat,
-    isEnriched: approvedRecord.isEnriched,
-    _id: storedId,
-    stored,
-    duplicate: false,
-    fromCache: false
-  };
-
-  await setCacheJson(cacheKey, payload, CACHE_TTL_CUSTOM);
-  return payload;
+    cacheAfterInvalidation(cacheKey, payload, CACHE_TTL_CUSTOM);
+    return trace.finish(payload);
   });
 };
 
@@ -1724,5 +1778,7 @@ module.exports = {
   listInterviewPrepHistory,
   maintainInterviewQuestionPools,
   getInterviewPrepEngineMetrics,
+  selectVerifiedFallback,
+  buildAiFailurePayload,
   invalidateInterviewPrepCache
 };

@@ -219,6 +219,7 @@ const seed = (difficulty, question, shortAnswer, tags, options = {}) => ({
   example: options.example || '',
   realWorldUseCase: options.realWorldUseCase || '',
   commonMistakes: Array.isArray(options.commonMistakes) ? options.commonMistakes : [],
+  keyPoints: Array.isArray(options.keyPoints) ? options.keyPoints : [],
   followUps: Array.isArray(options.followUps) ? options.followUps : [],
   interviewTip: options.interviewTip || '',
   category: options.category || '',
@@ -230,16 +231,18 @@ const buildExplanation = (topicKey, spec) => {
   const focusTags = (spec.tags || []).slice(0, 3).join(', ');
   const base = spec.explanation
     || `${spec.shortAnswer} In ${guide.label}, this matters because interviewers want to know how the concept changes implementation decisions, debugging, and production behavior. A strong answer should connect the idea to real tradeoffs instead of repeating a definition.`;
-  return normalizeAnswerText(`${base} Mention ${focusTags || guide.label} explicitly so the answer stays technology-specific.`);
+  return normalizeAnswerText(base);
 };
 
 const buildKeyPoints = (topicKey, spec) => {
   const guide = TOPIC_GUIDES[topicKey] || { label: topicKey, useCase: 'production software' };
+  const explicit = (spec.keyPoints || []).map((item) => normalizeAnswerText(item)).filter(Boolean);
+  if (explicit.length >= 3) return explicit.slice(0, 5);
   const tagList = sanitizeTags(spec.tags || []).filter((tag) => tag !== topicKey).slice(0, 3);
   return [
     normalizeAnswerText(spec.shortAnswer),
-    normalizeAnswerText(`Explain how ${guide.label} handles ${tagList[0] || 'this concept'} in practice.`),
-    normalizeAnswerText(`Connect the answer to ${spec.realWorldUseCase || guide.useCase}.`)
+    normalizeAnswerText(`${guide.label} uses ${tagList[0] || 'this concept'} as part of its concrete runtime or design behavior.`),
+    normalizeAnswerText(spec.realWorldUseCase || `The concept is applied in ${guide.useCase}.`)
   ].filter(Boolean);
 };
 
@@ -249,10 +252,11 @@ const buildUseCase = (topicKey, spec) => normalizeAnswerText(spec.realWorldUseCa
 
 const buildCommonMistakes = (topicKey, spec) => {
   const defaults = [
-    `Giving a generic answer without naming concrete ${TOPIC_GUIDES[topicKey]?.label || topicKey} behavior.`,
-    'Ignoring the main tradeoff or failure mode that the interviewer is testing.'
+    `Confusing the concept with a different ${TOPIC_GUIDES[topicKey]?.label || topicKey} mechanism.`,
+    'Ignoring the primary tradeoff or failure mode in production use.'
   ];
-  return [...new Set([...(spec.commonMistakes || []), ...defaults].map((item) => normalizeAnswerText(item)).filter(Boolean))].slice(0, 4);
+  const provided = (spec.commonMistakes || []).map((item) => normalizeAnswerText(item)).filter(Boolean);
+  return [...new Set(provided.length >= 2 ? provided : [...provided, ...defaults])].slice(0, 4);
 };
 
 const buildInterviewTip = (topicKey, spec) => normalizeAnswerText(spec.interviewTip || TOPIC_GUIDES[topicKey]?.interviewTip || 'Answer directly, then support it with one concrete example.');
@@ -952,7 +956,19 @@ const verifiedSeedCatalog = {
     seed('medium', 'What is immutability and how does it interact with OOP?', 'Immutable objects do not change after creation, which simplifies reasoning about shared state and concurrency.', ['immutability', 'state']),
     seed('hard', 'How do you test polymorphic behavior in OOP systems?', 'Test the shared contract across implementations so any subtype can be swapped in without violating caller expectations.', ['testing', 'polymorphism']),
     seed('medium', 'How do dependency injection and OOP complement each other?', 'Dependency injection helps OOP classes depend on abstractions and collaborators without constructing everything themselves.', ['dependency-injection', 'architecture']),
-    seed('hard', 'How do you know when OOP is the wrong default abstraction style?', 'If the problem is mostly data transformation or composition-oriented, forcing everything into class hierarchies can add more ceremony than value.', ['architecture', 'tradeoffs'])
+    seed('hard', 'How do you know when OOP is the wrong default abstraction style?', 'If the problem is mostly data transformation or composition-oriented, forcing everything into class hierarchies can add more ceremony than value.', ['architecture', 'tradeoffs']),
+    seed('medium', 'What is the difference between polymorphism and inheritance?', 'Inheritance creates an is-a hierarchy in which a subtype receives and specializes parent behavior, whereas polymorphism lets callers use one contract with multiple interchangeable implementations. They often work together, but inheritance is a reuse and hierarchy mechanism while polymorphism is a substitution capability.', ['inheritance', 'polymorphism', 'comparison'], {
+      keyPoints: [
+        'Inheritance establishes an is-a relationship and may reuse or specialize base implementation.',
+        'Polymorphism lets one interface or base contract dispatch to multiple interchangeable implementations.',
+        'Interfaces and composition can provide polymorphism without inheriting implementation, reducing hierarchy coupling.'
+      ],
+      explanation: 'Inheritance couples a child type to a parent and should model a genuine is-a relationship. Polymorphism means code can call the same operation on different implementations without knowing their concrete types. A subtype may use inheritance to achieve polymorphism, but interfaces and composition can provide polymorphism without inheriting implementation.',
+      example: 'A Shape reference can call area() on Circle and Rectangle implementations. Circle and Rectangle may inherit an abstract Shape, or implement a Shape interface without sharing a base implementation.',
+      realWorldUseCase: 'Use polymorphism for interchangeable payment gateways or notification channels; use inheritance only when the subtype must preserve the base contract and hierarchy.',
+      commonMistakes: ['Treating inheritance and polymorphism as synonyms.', 'Using inheritance only for code reuse and creating a brittle hierarchy.', 'Ignoring composition or interfaces when shared implementation is unnecessary.'],
+      interviewTip: 'Define both terms, state that inheritance can enable but is not required for polymorphism, then explain the coupling-versus-flexibility tradeoff.'
+    })
   ],
   dsa: [
     seed('medium', 'What is the difference between an array and a linked list?', 'Arrays provide fast indexed access, while linked lists make insertion and deletion at known nodes cheaper but sacrifice random access.', ['arrays', 'linked-list']),
@@ -1927,17 +1943,9 @@ const validateInterviewSeedCatalog = (options = {}) => {
 };
 
 const assertSeedCatalogValidForUse = () => {
-  if (!seedCatalogBootValidation.isValid) {
-    validateInterviewSeedCatalog();
-    return;
-  }
-  const report = cachedSeedCatalogValidationReport || validateInterviewSeedCatalog({
-    throwOnError: false,
-    returnResult: true
-  });
-  if (!report.isValid) {
-    validateInterviewSeedCatalog();
-  }
+  // The immutable catalog is validated once during module initialization. Avoid
+  // repeating the full cross-topic validation on the first request path.
+  if (!seedCatalogBootValidation.isValid) validateInterviewSeedCatalog();
 };
 
 const getTopicSeedItems = (topicKey = '') => rankedVerifiedSeedCatalog[String(topicKey || '').trim().toLowerCase()] || [];

@@ -273,9 +273,9 @@ class AIProviderManager {
     for (const provider of PROVIDER_ORDER) {
       const state = states[provider];
       if (state.enabled) {
-        console.log(`[AIProviderManager] ✓ ${state.label} Ready`);
+        console.log(`[AIProviderManager] READY ${state.label}`);
       } else {
-        console.warn(`[AIProviderManager] ✗ ${state.label} Disabled (${state.disabledReason})`);
+        console.warn(`[AIProviderManager] DISABLED ${state.label} (${state.disabledReason})`);
       }
 
       if (!state.hasRawKey) {
@@ -422,7 +422,13 @@ class AIProviderManager {
 
   async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs }) {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const generationConfig = {
+      temperature: 0.15,
+      maxOutputTokens: 1400,
+      responseMimeType: 'application/json'
+    };
+    if (/gemini-2\.5/i.test(modelName)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    const model = genAI.getGenerativeModel({ model: modelName, generationConfig });
     let timer = null;
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => {
@@ -480,13 +486,14 @@ class AIProviderManager {
     });
   }
 
-  async tryProvider(provider, prompt, retries, parseJson, timeoutMs) {
+  async tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel = '') {
     const { states } = this.getProviderState();
     const state = states[provider];
     if (!state?.hasKey) return { ok: false, failover: true, reason: state?.disabledReason || 'missing_key' };
     if (!state.enabled) return { ok: false, failover: true, reason: state?.disabledReason || 'disabled' };
 
-    for (const modelName of state.models) {
+    const models = preferredModel && this.isCompatibleModel(provider, preferredModel) ? [preferredModel] : state.models;
+    for (const modelName of models) {
       if (!this.isCompatibleModel(provider, modelName)) {
         this.log('model_skipped_incompatible', { provider, model: modelName }, 'error');
         continue;
@@ -513,8 +520,8 @@ class AIProviderManager {
           const statusCode = this.getStatusCode(error);
           const retryable = this.shouldRetry(error);
           const failover = this.shouldFailover(error);
-          const reason = statusCode || this.errorClass(error);
-          const responseBody = error?.response?.data ? JSON.stringify(error.response.data).slice(0, 800) : '';
+          const invalidJson = /no json found|failed to parse json/i.test(String(error?.message || ''));
+          const reason = invalidJson ? 'invalid_json' : (statusCode || this.errorClass(error));
           this.recordFailure(provider, latencyMs, reason);
 
           this.log('provider_error', {
@@ -526,8 +533,7 @@ class AIProviderManager {
             retryable,
             failover,
             latencyMs,
-            message: error?.message || 'Unknown AI error',
-            responseBody
+            reason
           }, retryable ? 'warn' : 'error');
 
           if (!retryable || failover) return { ok: false, failover: true, reason };
@@ -543,7 +549,7 @@ class AIProviderManager {
     return { ok: false, failover: true, reason: 'models_exhausted' };
   }
 
-  async execute(prompt, { retries = 2, parseJson, timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10) }) {
+  async execute(prompt, { retries = 2, parseJson, timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10), preferredModel = '' }) {
     const { settings, states } = this.getProviderState();
     if (!settings.enabled) {
       this.log('ai_disabled');
@@ -556,7 +562,7 @@ class AIProviderManager {
     let lastReason = '';
     for (const provider of priority) {
       if (lastReason) this.log('provider_switched', { provider, reason: lastReason }, 'warn');
-      const result = await this.tryProvider(provider, prompt, retries, parseJson, timeoutMs);
+      const result = await this.tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel);
       if (result.ok) return result;
       lastReason = result.reason || 'provider_failed';
     }

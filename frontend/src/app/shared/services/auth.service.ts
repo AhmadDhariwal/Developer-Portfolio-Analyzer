@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -10,6 +10,9 @@ import { environment } from '../../../environments/environment';
 const SESSION_DURATION_MS = 20 * 60 * 60 * 1000; // 20 hours
 const CAREER_PROFILE_STORAGE_KEY = 'devinsight_career_profile';
 const RESUME_ANALYSIS_CACHE_PREFIX = 'resume_analysis_cache:';
+// Fire logout 60 seconds before actual JWT expiry so network latency doesn't leave
+// the user in a state where the token is expired but the timer hasn't fired yet.
+const EXPIRY_BUFFER_MS = 60_000;
 
 export interface SessionUser {
   _id?: string;
@@ -41,9 +44,12 @@ const normalizeRole = (role: unknown): string => {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly apiOrigin = environment.apiOrigin;
+  // Capture whether a raw token existed before checkToken() may clear it.
+  // This lets the constructor detect the "expired token at startup" case.
+  private readonly hadTokenOnStartup = !!localStorage.getItem('token');
   private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());
@@ -51,8 +57,42 @@ export class AuthService {
   private readonly avatarVersionSubject = new BehaviorSubject<number>(Date.now());
   avatarVersion$ = this.avatarVersionSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
+  private isLoggingOut = false;
+  // Kept for cleanup in ngOnDestroy so we avoid memory leaks
+  private readonly boundStorageHandler: (e: StorageEvent) => void;
+  private readonly boundVisibilityHandler: () => void;
 
   constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+    // Cross-tab logout sync: when another tab clears the 'token' key from localStorage,
+    // this tab gets a 'storage' event and immediately logs out without a page reload.
+    this.boundStorageHandler = (e: StorageEvent) => {
+      if (e.key === 'token' && !e.newValue && this.isLoggedInSubject.value) {
+        // Another tab logged out — mirror it here silently (no redirect loop needed if
+        // the current tab is already navigated by the other tab's action).
+        this.logout(true);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', this.boundStorageHandler);
+    }
+
+    // Visibility / focus recheck: devices may suspend JavaScript timers during sleep.
+    // When the user returns to the tab after the device was asleep, re-validate the session.
+    this.boundVisibilityHandler = () => {
+      if (document.visibilityState === 'visible' || document.hasFocus()) {
+        if (!this.checkToken() && this.isLoggedInSubject.value) {
+          this.logout(true);
+        } else if (this.checkToken()) {
+          // Token is still valid — reschedule timer in case it drifted
+          this.scheduleAutoLogout();
+        }
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.boundVisibilityHandler);
+      window.addEventListener('focus', this.boundVisibilityHandler);
+    }
+
     if (this.checkToken()) {
       this.scheduleAutoLogout();
       // Restore role from stored user on page refresh — use real org id if present
@@ -78,7 +118,57 @@ export class AuthService {
       } else if (normalizeRole(user?.role) === 'super_admin') {
         this.tenantContext.clearAll();
       }
+    } else if (this.hadTokenOnStartup) {
+      // If a token existed in storage but was expired or invalid, checkToken() cleared storage.
+      // Ensure user is redirected to login if on protected route
+      const currentPath = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '';
+      if (currentPath && !currentPath.startsWith('/auth/')) {
+        this.logout(true, currentPath);
+      }
     }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all listeners and timers to prevent memory leaks.
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', this.boundStorageHandler);
+      window.removeEventListener('focus', this.boundVisibilityHandler);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
+    }
+    if (this.autoLogoutTimer) {
+      clearTimeout(this.autoLogoutTimer);
+      this.autoLogoutTimer = null;
+    }
+  }
+
+  private getJwtExpMs(token?: string | null): number | null {
+    const rawToken = token || localStorage.getItem('token');
+    if (!rawToken) return null;
+    const parts = rawToken.split('.');
+    if (parts.length !== 3) return null;
+
+    try {
+      const normalized = parts[1].replaceAll('-', '+').replaceAll('_', '/');
+      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+      const payloadRaw = atob(padded);
+      const payload = JSON.parse(payloadRaw) as { exp?: number };
+      return payload.exp ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private getEarliestExpiryTimestamp(): number | null {
+    const jwtExp = this.getJwtExpMs();
+    const expiryStr = localStorage.getItem('loginExpiry');
+    const loginExp = expiryStr ? Number.parseInt(expiryStr, 10) : null;
+
+    if (jwtExp !== null && loginExp !== null) {
+      return Math.min(jwtExp, loginExp);
+    }
+    return jwtExp ?? loginExp;
   }
 
   private checkToken(): boolean {
@@ -206,22 +296,33 @@ export class AuthService {
   }
 
   private scheduleAutoLogout(): void {
-    const expiry = localStorage.getItem('loginExpiry');
-    if (!expiry) return;
-    const remaining = Number.parseInt(expiry, 10) - Date.now();
+    if (this.autoLogoutTimer) {
+      clearTimeout(this.autoLogoutTimer);
+      this.autoLogoutTimer = null;
+    }
+
+    const expiryMs = this.getEarliestExpiryTimestamp();
+    if (!expiryMs) return;
+
+    // Apply a 60-second safety buffer so the timer fires slightly before actual expiry,
+    // ensuring the session is cleared before the next API call would 401.
+    const remaining = expiryMs - Date.now() - EXPIRY_BUFFER_MS;
     if (remaining <= 0) {
-      this.logout();
-      this.router.navigate(['/auth/login']);
+      this.logout(true);
       return;
     }
-    if (this.autoLogoutTimer) clearTimeout(this.autoLogoutTimer);
+
     this.autoLogoutTimer = setTimeout(() => {
-      this.logout();
-      this.router.navigate(['/auth/login']);
+      this.logout(true);
     }, remaining);
   }
 
   private storeSession(response: any): void {
+    this.isLoggingOut = false;
+    if (this.autoLogoutTimer) {
+      clearTimeout(this.autoLogoutTimer);
+      this.autoLogoutTimer = null;
+    }
     this.cacheInvalidation.clearAllUserCaches();
     localStorage.setItem('token', response.token);
     this.persistCurrentUser({ ...response, avatar: response.avatar || '' } as SessionUser);
@@ -232,7 +333,11 @@ export class AuthService {
       isConfigured: true
     };
     localStorage.setItem(CAREER_PROFILE_STORAGE_KEY, JSON.stringify(careerProfile));
-    localStorage.setItem('loginExpiry', String(Date.now() + SESSION_DURATION_MS));
+
+    const jwtExp = this.getJwtExpMs(response.token);
+    const fallbackExpiry = Date.now() + SESSION_DURATION_MS;
+    const loginExpiry = jwtExp ? Math.min(jwtExp, fallbackExpiry) : fallbackExpiry;
+    localStorage.setItem('loginExpiry', String(loginExpiry));
 
     // Set tenant context using the real organizationId from the server response.
     // Only fall back to a placeholder when no real org is available yet.
@@ -327,16 +432,37 @@ export class AuthService {
     window.location.assign(`${this.baseUrl}/auth/${provider}`);
   }
 
-  logout(): void {
-    this.cacheInvalidation.clearAllUserCaches();
-    if (this.autoLogoutTimer) {
-      clearTimeout(this.autoLogoutTimer);
-      this.autoLogoutTimer = null;
+  logout(redirect: boolean = true, customReturnUrl?: string): void {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
+
+    try {
+      if (this.autoLogoutTimer) {
+        clearTimeout(this.autoLogoutTimer);
+        this.autoLogoutTimer = null;
+      }
+      this.cacheInvalidation.clearAllUserCaches();
+      this.clearStorage();
+      localStorage.removeItem(CAREER_PROFILE_STORAGE_KEY);
+      this.tenantContext.clearAll();
+      this.isLoggedInSubject.next(false);
+
+      if (redirect) {
+        const rawUrl = customReturnUrl || (typeof this.router !== 'undefined' ? this.router.url : '');
+        const isAuthPage = rawUrl.startsWith('/auth/');
+        if (!isAuthPage && rawUrl) {
+          this.router.navigate(['/auth/login'], {
+            queryParams: { returnUrl: rawUrl, expired: 'true' }
+          });
+        } else if (!this.router.url?.includes('/auth/login')) {
+          this.router.navigate(['/auth/login']);
+        }
+      }
+    } finally {
+      setTimeout(() => {
+        this.isLoggingOut = false;
+      }, 0);
     }
-    this.clearStorage();
-    localStorage.removeItem(CAREER_PROFILE_STORAGE_KEY);
-    this.tenantContext.clearAll();
-    this.isLoggedInSubject.next(false);
   }
 
   getToken(): string | null {

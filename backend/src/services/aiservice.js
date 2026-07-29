@@ -224,7 +224,7 @@ class AIService {
     return aiProviderManager.getStatus();
   }
 
-  async runAIAnalysis(prompt, fallback, retries = 2, { timeoutMs } = {}) {
+  async runAIAnalysis(prompt, fallback, retries = 2, { timeoutMs, returnMeta = false, preferredModel = '' } = {}) {
     const startedAt = Date.now();
     this.metrics.requests += 1;
 
@@ -242,7 +242,7 @@ class AIService {
       this.metrics.cacheHits += 1;
       this.metrics.totalLatencyMs += Date.now() - startedAt;
       this.log('prompt_cache_hit', { cacheKey: cacheKey.slice(0, 12), durationMs: Date.now() - startedAt });
-      return cachedValue;
+      return returnMeta ? { ok: true, value: cachedValue, reason: 'cache_hit' } : cachedValue;
     }
 
     this.metrics.cacheMisses += 1;
@@ -254,12 +254,13 @@ class AIService {
       this.log('fallback_no_provider', {
         disabledProviders: status.disabledProviders
       }, 'warn');
-      return fallback;
+      return returnMeta ? { ok: false, value: fallback, reason: 'no_provider' } : fallback;
     }
 
     const result = await aiProviderManager.execute(prompt, {
       retries,
       timeoutMs,
+      preferredModel,
       parseJson: (text) => this.extractJson(text)
     });
 
@@ -274,7 +275,9 @@ class AIService {
         aiLatencyMs: result.latencyMs,
         durationMs: Date.now() - startedAt
       });
-      return result.parsed;
+      return returnMeta
+        ? { ok: true, value: result.parsed, provider: result.provider, model: result.model, latencyMs: result.latencyMs }
+        : result.parsed;
     }
 
     this.metrics.fallbacks += 1;
@@ -283,7 +286,7 @@ class AIService {
       durationMs: Date.now() - startedAt,
       reason: result.reason
     }, 'warn');
-    return fallback;
+    return returnMeta ? { ok: false, value: fallback, reason: result.reason || 'provider_error' } : fallback;
   }
 }
 

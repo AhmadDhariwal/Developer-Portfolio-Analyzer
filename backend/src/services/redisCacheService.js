@@ -5,7 +5,7 @@ const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:', '
 const UPSTASH_DEFAULT_HOST = 'light-arachnid-164805.upstash.io';
 const UPSTASH_DEFAULT_PORT = 6379;
 const REDIS_CONNECT_TIMEOUT_MS = 3000;
-const REDIS_COMMAND_TIMEOUT_MS = 175;
+const REDIS_COMMAND_TIMEOUT_MS = 150;
 const REDIS_RECONNECT_DELAY_MS = 15000;
 
 let client;
@@ -151,22 +151,32 @@ const initRedisCache = async ({ silent = false } = {}) => {
   return connectPromise;
 };
 
-const getCacheJson = async (key) => {
+const nowMs = () => Number(process.hrtime.bigint()) / 1e6;
+
+const getCacheJsonWithMeta = async (key) => {
+  const startedAt = nowMs();
   const memoryValue = getMemoryValue(key);
-  if (memoryValue !== null) return memoryValue;
+  if (memoryValue !== null) {
+    return { value: memoryValue, layer: 'memory', memoryMs: nowMs() - startedAt, redisMs: 0 };
+  }
+  const memoryMs = nowMs() - startedAt;
   const redis = getRedisCacheClient();
-  if (!redis) return null;
+  if (!redis) return { value: null, layer: 'miss', memoryMs, redisMs: 0 };
+  const redisStartedAt = nowMs();
   try {
     const raw = await redis.get(key);
-    if (!raw) return null;
+    const redisMs = nowMs() - redisStartedAt;
+    if (!raw) return { value: null, layer: 'miss', memoryMs, redisMs };
     const value = JSON.parse(raw);
     memoryCache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_SECONDS * 1000 });
-    return value;
+    return { value, layer: 'redis', memoryMs, redisMs };
   } catch {
     console.warn('[redis] cache read failed; using application fallback.');
-    return null;
+    return { value: null, layer: 'miss', memoryMs, redisMs: nowMs() - redisStartedAt };
   }
 };
+
+const getCacheJson = async (key) => (await getCacheJsonWithMeta(key)).value;
 
 const isRedisCacheEnabled = () => Boolean(redisEnabled && client?.isReady);
 const getRedisCacheClient = () => (isRedisCacheEnabled() ? clientProxy : null);
@@ -181,14 +191,20 @@ const pingRedisCache = async () => {
   }
 };
 
-const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
+const setMemoryCacheJson = (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
   memoryCache.set(key, { value: payload, expiresAt: Date.now() + ttlSeconds * 1000 });
+};
+
+const setCacheJson = async (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
+  setMemoryCacheJson(key, payload, ttlSeconds);
   const redis = getRedisCacheClient();
   if (!redis) return;
   redis.set(key, JSON.stringify(payload), { EX: ttlSeconds }).catch(() => {
     console.warn('[redis] cache write failed; continuing without Redis.');
   });
 };
+
+const clearMemoryCache = () => memoryCache.clear();
 
 const deleteCacheKey = async (key) => {
   memoryCache.delete(key);
@@ -280,7 +296,10 @@ module.exports = {
   getRedisCacheClient,
   pingRedisCache,
   getCacheJson,
+  getCacheJsonWithMeta,
   setCacheJson,
+  setMemoryCacheJson,
+  clearMemoryCache,
   deleteCacheKey,
   deleteByPrefix,
   acquireCacheLock,

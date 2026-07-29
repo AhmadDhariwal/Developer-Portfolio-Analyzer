@@ -93,6 +93,7 @@ const getInterviewPrepQuestions = async (req, res) => {
       page: clampInt(page, 1, 1000, 1),
       limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
       difficulty: safeDifficulty,
+      category,
       tags,
       block: String(top).toLowerCase() === 'true' ? 'top' : block,
       category,
@@ -109,7 +110,7 @@ const getInterviewPrepQuestions = async (req, res) => {
 // GET /api/interview-prep/search
 const searchInterviewPrepQuestions = async (req, res) => {
   try {
-    const { q = '', skill = '', difficulty = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT, lookupOnly = '' } = req.query;
+    const { q = '', skill = '', difficulty = '', category = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT, lookupOnly = '' } = req.query;
     const topicInput = readTopicInput(req.query || {});
     const trimmedQuery = String(q || '').trim();
     if (!trimmedQuery) {
@@ -127,6 +128,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
       q: trimmedQuery,
       skill,
       difficulty: safeDifficulty,
+      category,
       tags,
       page: clampInt(page, 1, 1000, 1),
       limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),

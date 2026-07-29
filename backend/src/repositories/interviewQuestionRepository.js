@@ -9,6 +9,8 @@ const {
   sanitizeTags,
   normalizeQualityScore,
   buildCanonicalQuestionKey,
+  canonicalizeQuestion,
+  tokenize,
   INTERVIEW_CATEGORY_SET
 } = require('../services/interviewQuestionQualityService');
 
@@ -38,6 +40,17 @@ const toQuestionHash = (value = '') => crypto
   .createHash('sha256')
   .update(normalizeComparableText(value))
   .digest('hex');
+
+const buildQuestionIdentity = ({ question = '', topicKey = '' } = {}) => {
+  const normalizedQuestion = normalizeComparableText(question);
+  return {
+    normalizedQuestion,
+    normalizedQuestionHash: toQuestionHash(normalizedQuestion),
+    canonicalQuestion: canonicalizeQuestion(question),
+    canonicalQuestionKey: buildCanonicalQuestionKey(question, topicKey),
+    searchableTokens: [...new Set(tokenize(question))].slice(0, 24)
+  };
+};
 
 const escapeRegex = (value = '') => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -198,6 +211,8 @@ const upsertQuestions = async (records = []) => {
     const qualityScore = normalizeQualityScore(record.qualityScore || (sourceType === 'verified_seed' ? 90 : 80));
     const canonicalQuestionKey = record.canonicalQuestionKey
       || buildCanonicalQuestionKey(record.question, topicKey);
+    const canonicalQuestion = record.canonicalQuestion || canonicalizeQuestion(record.question);
+    const searchableTokens = sanitizeTags(record.searchableTokens?.length ? record.searchableTokens : tokenize(record.question)).slice(0, 24);
 
     const identityClauses = [];
     if (seedId) {
@@ -218,6 +233,8 @@ const upsertQuestions = async (records = []) => {
       normalizedQuestion,
       normalizedQuestionHash,
       canonicalQuestionKey,
+      canonicalQuestion,
+      searchableTokens,
       normalizedAnswer,
       difficulty: sanitizeDifficulty(record.difficulty),
       tags: sanitizeTags(record.tags || []),
@@ -250,6 +267,14 @@ const upsertQuestions = async (records = []) => {
       setFields.rank = Number(record.rank || 0);
       setFields.rankScore = Number(record.rankScore || 0);
       setFields.isTopQuestion = Boolean(record.isTopQuestion);
+    } else {
+      for (const protectedField of [
+        'canonicalQuestion', 'searchableTokens', 'normalizedAnswer', 'difficulty', 'tags', 'sourceMeta', 'confidenceScore', 'relevanceScore',
+        'category', 'expectedSignals', 'badAnswerSignals', 'reviewStatus', 'version', 'answerFormat',
+        'isEnriched', 'qualityState', 'isApproved', 'qualityStatus', 'rejectedReason', 'topicDimensions'
+      ]) {
+        delete setFields[protectedField];
+      }
     }
 
     return {
@@ -422,26 +447,30 @@ const updateQuestionById = async (id, update = {}) => {
   return InterviewQuestionBank.findByIdAndUpdate(id, update, { new: true }).lean();
 };
 
-const findExactReusableQuestion = async ({ topicKey = '', question = '', minConfidence = 0.55 } = {}) => {
-  const normalizedQuestion = normalizeComparableText(question);
-  if (!normalizedQuestion) return null;
+const findExactReusableQuestion = async ({ topicKey = '', question = '', identity = null, difficulty = '', category = '', minConfidence = 0.55 } = {}) => {
   const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
-  const canonicalKey = buildCanonicalQuestionKey(question, normalizedTopicKey);
+  const questionIdentity = identity || buildQuestionIdentity({ question, topicKey: normalizedTopicKey });
+  const { normalizedQuestion, normalizedQuestionHash, canonicalQuestionKey: canonicalKey } = questionIdentity;
+  if (!normalizedQuestion) return null;
 
   const matchClauses = [
-    { normalizedQuestionHash: toQuestionHash(normalizedQuestion) },
+    { normalizedQuestionHash },
     { normalizedQuestion }
   ];
-  // Canonical key match — fastest path for synonym phrasings
+  // Canonical key match is the fastest path for synonym phrasings.
   if (canonicalKey) {
     matchClauses.unshift({ canonicalQuestionKey: canonicalKey });
   }
 
-  const result = await InterviewQuestionBank.findOne({
+  const filter = {
     topicKey: normalizedTopicKey,
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE),
     $or: matchClauses
-  })
+  };
+  if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
+  if (category) filter.category = sanitizeCategory(category);
+
+  const result = await InterviewQuestionBank.findOne(filter)
     .select('question answer answerSections normalizedQuestion normalizedQuestionHash canonicalQuestionKey difficulty tags topicKey topicType source sourceType confidenceScore relevanceScore category qualityScore answerFormat isEnriched sourceMeta')
     .lean();
 
@@ -463,20 +492,29 @@ const SEARCH_CANDIDATE_LIMIT = 60;
  * Fetch only a bounded, topic-scoped projection for Jaccard comparison. This
  * avoids ranking the global Mongo text index before applying the 0.78 rule.
  */
-const findSearchCandidates = async ({ topicKey = '', difficulty = '', tags = [], limit = SEARCH_CANDIDATE_LIMIT, minConfidence = 0.75 } = {}) => {
+const findSearchCandidates = async ({ topicKey = '', difficulty = '', category = '', tags = [], searchableTokens = [], limit = SEARCH_CANDIDATE_LIMIT, minConfidence = 0.75 } = {}) => {
   const filter = {
     topicKey: String(topicKey || '').trim().toLowerCase(),
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE)
   };
-  const normalizedDifficulty = String(difficulty || '').trim().toLowerCase();
-  if (normalizedDifficulty) filter.difficulty = normalizedDifficulty;
+  if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
+  if (category) filter.category = sanitizeCategory(category);
   const safeTags = sanitizeTags(tags);
   if (safeTags.length) filter.tags = { $in: safeTags };
+  const safeTokens = sanitizeTags(searchableTokens).slice(0, 24);
+  if (safeTokens.length) filter.searchableTokens = { $in: safeTokens };
 
   return InterviewQuestionBank.find(filter)
-    .sort({ relevanceScore: -1, confidenceScore: -1, qualityScore: -1, usageCount: -1, createdAt: -1 })
-    .select('question answer answerSections normalizedQuestion normalizedQuestionHash canonicalQuestionKey difficulty tags topicKey topicType source sourceType confidenceScore relevanceScore category qualityScore answerFormat isEnriched sourceMeta')
+    .sort({ relevanceScore: -1, confidenceScore: -1, qualityScore: -1, usageCount: -1 })
+    .select('_id question normalizedQuestion normalizedQuestionHash canonicalQuestion canonicalQuestionKey searchableTokens difficulty category tags topicKey sourceType confidenceScore relevanceScore qualityScore')
     .limit(Math.min(SEARCH_CANDIDATE_LIMIT, Math.max(1, Number(limit || SEARCH_CANDIDATE_LIMIT))))
+    .lean();
+};
+
+const findQuestionById = async (id) => {
+  if (!id) return null;
+  return InterviewQuestionBank.findById(id)
+    .select('question answer answerSections normalizedQuestion normalizedQuestionHash canonicalQuestion canonicalQuestionKey searchableTokens difficulty tags topicKey topicType source sourceType confidenceScore relevanceScore category qualityScore answerFormat isEnriched sourceMeta')
     .lean();
 };
 
@@ -600,12 +638,14 @@ module.exports = {
   upsertQuestions,
   findExactReusableQuestion,
   findSearchCandidates,
+  findQuestionById,
   findSemanticCandidates,
   fetchComparableQuestionsByTopic,
   getSourceMixByTopic,
   incrementUsageStats,
   incrementQuestionUsage,
   toQuestionHash,
+  buildQuestionIdentity,
   countQuestionsByTopic,
   countQuestionsByTopicAndSeedVersion,
   normalizeSourceType,
