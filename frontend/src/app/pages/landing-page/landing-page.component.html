@@ -83,38 +83,61 @@
       </div>
   
       <div class="hero-visual reveal">
-        <div class="hero-orbit">
-          <div class="orbit-ring"></div>
-          <div class="orbit-ring ring-2"></div>
-          <div class="hero-figure">
-            <div class="figure-core"></div>
-            <div class="figure-glow"></div>
-          </div>
-          <div class="floating-card card-score">
-            <span class="card-label">Career Score</span>
-            <div class="card-value">92</div>
-            <span class="card-pill">Excellent</span>
-          </div>
-          <div class="floating-card card-match">
-            <span class="card-label">Skills Match</span>
-            <div class="match-row">
-              <span class="match-value">85%</span>
-              <span class="match-pill">Verified</span>
+        <div class="hero-preview-container">
+          <!-- Ambient Glow Backdrop -->
+          <div class="ambient-glow"></div>
+
+          <!-- Glass Window Header Bar -->
+          <div class="preview-header">
+            <div class="header-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
             </div>
-            <div class="match-progress">
-              <span class="match-bar"></span>
+            <div class="header-title">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+              <span>devinsight-ai // career_analysis.ts</span>
+            </div>
+            <div class="header-badge">
+              <span class="status-live"></span>
+              LIVE STREAM
             </div>
           </div>
-          <div class="floating-card card-insights">
-            <div class="card-label">
-              <span class="status-dot"></span>
-              AI Insights
+
+          <!-- Glass Body with Live Metrics & Code Visual -->
+          <div class="preview-body">
+            <div class="preview-metric-row">
+              <div class="metric-block">
+                <span class="metric-label">Career Score</span>
+                <div class="metric-val">92<span class="metric-unit">/100</span></div>
+                <span class="metric-tag green">Top 5% Tier</span>
+              </div>
+              <div class="metric-block">
+                <span class="metric-label">Role Alignment</span>
+                <div class="metric-val">85%</div>
+                <div class="mini-progress-bar">
+                  <div class="progress-fill" style="width: 85%"></div>
+                </div>
+              </div>
             </div>
-            <ul>
-              <li>Strong problem solving</li>
-              <li>System design ready</li>
-              <li>Improve cloud depth</li>
-            </ul>
+
+            <div class="preview-code-block">
+              <div class="code-line"><span class="c-keyword">const</span> profile = <span class="c-keyword">await</span> devInsight.<span class="c-func">analyze</span>(&#123; github, resume &#125;);</div>
+              <div class="code-line"><span class="c-comment">// Executive AI Career Summary</span></div>
+              <div class="code-line tag-line"><span class="c-tag green">✓ Strong System Architecture</span></div>
+              <div class="code-line tag-line"><span class="c-tag cyan">✓ Verified Full-Stack Expertise</span></div>
+              <div class="code-line tag-line"><span class="c-tag purple">⚡ Target: Cloud & DevOps Depth</span></div>
+            </div>
+          </div>
+
+          <!-- Floating Micro Badges -->
+          <div class="floating-badge badge-top">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
+            <span>GitHub Sync Active</span>
+          </div>
+          <div class="floating-badge badge-bottom">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Roadmap Updated Live</span>
           </div>
         </div>
       </div>

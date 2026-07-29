@@ -2,31 +2,63 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  border-radius: var(--radius-md);
+  gap: 8px;
+  border-radius: 10px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border: none;
   position: relative;
+  overflow: hidden;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
 
-  /* Sizes */
+  /* Animated Shimmer Light Beam Effect */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.28) 50%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    transition: none;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &:hover:not(:disabled)::before {
+    left: 140%;
+    transition: left 0.75s ease-in-out;
+  }
+
+  /* Sizes - Proportional & Modern Dimensions */
   &.sm {
-    padding: var(--spacing-xs) var(--spacing-md);
-    font-size: 0.875rem;
-    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    border-radius: 8px;
   }
 
   &.md {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: 1rem;
+    padding: 9px 20px;
+    font-size: 0.9375rem;
+    border-radius: 10px;
   }
 
   &.lg {
-    padding: var(--spacing-md) var(--spacing-xl);
-    font-size: 1.125rem;
-    border-radius: var(--radius-lg);
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 12px;
   }
 
   &.full-width {
@@ -34,20 +66,65 @@
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: not-allowed;
     transform: none !important;
+    box-shadow: none !important;
+    filter: grayscale(40%);
   }
 
-  /* Primary Variant */
+  /* Primary Variant - Electric Indigo to Violet Gradient with Glow */
   &.primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: white;
-    box-shadow: var(--shadow-glow);
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 16px -2px rgba(139, 92, 246, 0.45), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
 
     &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0px 0px 30px rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px) scale(1.015);
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #9333EA 100%);
+      box-shadow: 0 10px 28px -4px rgba(139, 92, 246, 0.65), 0 0 20px rgba(168, 85, 247, 0.35);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.985);
+      box-shadow: 0 2px 8px -1px rgba(139, 92, 246, 0.4);
+    }
+  }
+
+  /* Secondary Variant - Glassmorphic Dark Slate with Glowing Border */
+  &.secondary {
+    background: rgba(30, 41, 59, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #F8FAFC;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.4);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.015);
+      background: rgba(51, 65, 85, 0.85);
+      border-color: rgba(167, 139, 250, 0.45);
+      color: #FFFFFF;
+      box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.25), 0 0 16px rgba(139, 92, 246, 0.15);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.985);
+      background: rgba(30, 41, 59, 0.9);
+    }
+  }
+
+  /* Ghost Variant */
+  &.ghost {
+    background: transparent;
+    color: #C084FC;
+    border: 1px solid transparent;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: rgba(139, 92, 246, 0.1);
+      border-color: rgba(139, 92, 246, 0.25);
+      color: #E9D5FF;
     }
 
     &:active:not(:disabled) {
@@ -55,62 +132,44 @@
     }
   }
 
-  /* Secondary Variant */
-  &.secondary {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-
-    &:hover:not(:disabled) {
-      background: var(--bg-hover);
-      border-color: var(--color-primary);
-    }
-  }
-
-  /* Ghost Variant */
-  &.ghost {
-    background: transparent;
-    color: var(--color-primary);
-    border: 1px solid transparent;
-
-    &:hover:not(:disabled) {
-      background: rgba(99, 102, 241, 0.1);
-      border-color: var(--color-primary);
-    }
-  }
-
   /* Danger Variant */
   &.danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--color-danger);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.12);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
 
     &:hover:not(:disabled) {
-      background: var(--color-danger);
-      color: white;
-      border-color: var(--color-danger);
+      transform: translateY(-2px);
+      background: #EF4444;
+      color: #FFFFFF;
+      border-color: #EF4444;
+      box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.5);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
     }
   }
 
-  /* Loading state */
+  /* Loading State */
   &.loading {
-    color: transparent;
+    color: transparent !important;
+    pointer-events: none;
 
     .spinner {
       position: absolute;
-      width: 1em;
-      height: 1em;
+      width: 1.1em;
+      height: 1.1em;
       border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      border-top-color: #FFFFFF;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: ui-btn-spin 0.75s linear infinite;
     }
   }
 }
 
-@keyframes spin {
+@keyframes ui-btn-spin {
   to {
     transform: rotate(360deg);
   }
 }
-
