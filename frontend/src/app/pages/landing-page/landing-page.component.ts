@@ -16,6 +16,13 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
   private revealObserver?: IntersectionObserver;
   private counterObserver?: IntersectionObserver;
 
+  readonly themes = [
+    { id: 'navy', label: 'Dark navy', description: 'Focused and technical' },
+    { id: 'special', label: 'Gold', description: 'Premium and distinctive' },
+    { id: 'cream', label: 'Cream', description: 'Warm and light' }
+  ] as const;
+  selectedTheme: (typeof this.themes)[number]['id'] = this.readSavedTheme();
+
   trustedLogos = ['Google', 'Microsoft', 'Spotify', 'Airbnb', 'Amazon', 'Netflix'];
 
   stats: { value: string; label: string; icon: string; target: number; suffix: string; prefix?: string; decimals?: number; duration?: number }[] = [
@@ -401,6 +408,26 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     );
 
     counters.forEach((el) => this.counterObserver?.observe(el));
+  }
+
+  setTheme(theme: (typeof this.themes)[number]['id']): void {
+    this.selectedTheme = theme;
+    try {
+      localStorage.setItem('landing-theme', theme);
+    } catch {
+      // Theme selection is still usable when browser storage is unavailable.
+    }
+  }
+
+  private readSavedTheme(): (typeof this.themes)[number]['id'] {
+    try {
+      const savedTheme = localStorage.getItem('landing-theme');
+      return this.themes.some((theme) => theme.id === savedTheme)
+        ? savedTheme as (typeof this.themes)[number]['id']
+        : 'special';
+    } catch {
+      return 'special';
+    }
   }
 
   private animateCount(element: HTMLElement): void {

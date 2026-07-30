@@ -1,4 +1,4 @@
-<div class="landing-page">
+<div class="landing-page" [ngClass]="'theme--' + selectedTheme">
   <!-- Navigation -->
   <nav class="landing-nav">
     <div class="logo-container">
@@ -17,6 +17,16 @@
       <a href="#live-analysis" class="nav-link">Live AI</a>
       <a href="#stacks" class="nav-link">Stacks</a>
       <a href="#testimonials" class="nav-link">Testimonials</a>
+      <div class="theme-switcher" role="group" aria-label="Landing page color theme">
+        <button *ngFor="let theme of themes" type="button" class="theme-option"
+          [class.is-active]="selectedTheme === theme.id"
+          [attr.aria-pressed]="selectedTheme === theme.id"
+          [attr.title]="theme.description" (click)="setTheme(theme.id)">
+          <span class="theme-option__dot" aria-hidden="true"></span>
+          <span class="theme-option__label">{{ theme.label }}</span>
+        </button>
+      </div>
+
     </div>
 
     <div class="nav-actions">

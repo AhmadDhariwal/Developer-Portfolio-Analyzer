@@ -1796,3 +1796,187 @@ $section-pad: clamp(80px, 8vw, 120px);
     transform: translateY(-8px) translateX(6px);
   }
 }
+// T-18 (navy), T-20 (gold), and T-19 (cream) as selectable, semantic palettes.
+.theme--navy { --landing-bg: #0b1220; --landing-surface: #121d32; --landing-ink: #f8fafc; --landing-muted: #a8b5c9; --landing-accent: #60a5fa; --landing-accent-strong: #7dd3fc; --landing-button-primary: linear-gradient(135deg, #7dd3fc, #3b82f6 55%, #2563eb); --landing-button-primary-hover: linear-gradient(135deg, #bae6fd, #60a5fa 55%, #3b82f6); --landing-button-text: #07111f; --landing-button-secondary: #17243b; --landing-button-secondary-text: #eff6ff; --landing-button-secondary-border: rgba(96, 165, 250, .45); --landing-button-secondary-hover: #203554; --landing-button-secondary-border-hover: rgba(125, 211, 252, .85); --landing-button-secondary-text-hover: #fff; }
+.theme--special { --landing-bg: #080c14; --landing-surface: #141e33; --landing-ink: #f8fafc; --landing-muted: #cbd5e1; --landing-accent: #d4af37; --landing-accent-strong: #f0d375; --landing-button-primary: linear-gradient(135deg, #f0d375, #d4af37 55%, #b89228); --landing-button-primary-hover: linear-gradient(135deg, #fff099, #e5c158 55%, #c5a059); --landing-button-text: #080c14; --landing-button-secondary: #141e33; --landing-button-secondary-text: #f8fafc; --landing-button-secondary-border: rgba(212, 175, 55, .45); --landing-button-secondary-hover: #1e293b; --landing-button-secondary-border-hover: rgba(240, 211, 117, .85); --landing-button-secondary-text-hover: #fff; }
+.theme--cream { --landing-bg: #f4eee7; --landing-surface: #fffaf3; --landing-ink: #2a1d17; --landing-muted: #6b5d54; --landing-accent: #7a4b31; --landing-accent-strong: #c27d56; --landing-button-primary: linear-gradient(135deg, #d89a73, #a66342 55%, #7a4b31); --landing-button-primary-hover: linear-gradient(135deg, #e8b18c, #c27d56 55%, #8b5135); --landing-button-text: #fffdf9; --landing-button-secondary: #fffaf3; --landing-button-secondary-text: #2a1d17; --landing-button-secondary-border: rgba(122, 75, 49, .4); --landing-button-secondary-hover: #f0e2d4; --landing-button-secondary-border-hover: rgba(122, 75, 49, .75); --landing-button-secondary-text-hover: #2a1d17; }
+
+.theme-switcher { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid color-mix(in srgb, var(--landing-accent) 32%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--landing-surface) 88%, transparent); }
+.theme-option { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; border: 0; border-radius: 999px; background: transparent; color: var(--landing-muted); font: inherit; font-size: .6875rem; font-weight: 700; cursor: pointer;
+  &:hover, &:focus-visible, &.is-active { background: color-mix(in srgb, var(--landing-accent) 16%, transparent); color: var(--landing-ink); outline: none; }
+}
+.theme-option__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--landing-accent); box-shadow: 0 0 8px color-mix(in srgb, var(--landing-accent) 65%, transparent); }
+
+.landing-page.theme--navy, .landing-page.theme--special, .landing-page.theme--cream {
+  background: var(--landing-bg);
+  color: var(--landing-ink);
+
+  .landing-nav, .landing-footer {
+    background: color-mix(in srgb, var(--landing-bg) 92%, transparent);
+    border-color: color-mix(in srgb, var(--landing-accent) 28%, transparent);
+  }
+
+  .hero-preview-container, .code-editor, .live-window, .editor-mockup, .analysis-terminal, .growth-chart, .chart-card, .stat-card, .recruiter-card, .feature-card, .stack-card, .step-card, .testimonial-card, .cta-card {
+    background-color: var(--landing-surface);
+    border-color: color-mix(in srgb, var(--landing-accent) 28%, transparent);
+  }
+
+  .hero-title, .section-header h2, .insights-content h2, .growth-content h2, .cta h2, .logo, .nav-actions .nav-link, .stat-label, .recruiter-card h3, .recruiter-card h4, .feature-card h4, .stack-card h4, .step-card h4, .testimonial-card h4, .testimonial-card h5, .chart-title {
+    color: var(--landing-ink);
+  }
+
+  .hero-subtitle, .section-header p, .insights-content p, .growth-content p, .cta p, .recruiter-card p, .feature-card p, .stack-card p, .step-card p, .testimonial-card p, .trusted-title, .trusted-logos span, .stat-sub, .hero-trust .trust-item span, .legend-item {
+    color: var(--landing-muted);
+  }
+
+  .hero-badge, .section-badge, .text-primary, .stat-value, .chart-badge {
+    color: var(--landing-accent-strong);
+    border-color: color-mix(in srgb, var(--landing-accent) 40%, transparent);
+  }
+
+  .text-highlight-white {
+    color: var(--landing-ink) !important;
+    -webkit-text-fill-color: var(--landing-ink) !important;
+    text-shadow: none;
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(120deg, var(--landing-ink), var(--landing-accent-strong) 55%, var(--landing-accent));
+  }
+
+  .analysis-tags .tag {
+    color: var(--landing-accent-strong);
+    background: color-mix(in srgb, var(--landing-accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--landing-accent) 35%, transparent);
+
+    &:hover {
+      color: var(--landing-ink);
+      background: color-mix(in srgb, var(--landing-accent) 28%, transparent);
+      border-color: color-mix(in srgb, var(--landing-accent) 60%, transparent);
+    }
+  }
+
+  .floating-badge {
+    background: color-mix(in srgb, var(--landing-surface) 92%, transparent);
+    border-color: color-mix(in srgb, var(--landing-accent) 35%, transparent);
+    color: var(--landing-ink);
+
+    svg {
+      stroke: var(--landing-accent-strong);
+    }
+  }
+
+  .stat-icon-wrapper svg, .hero-trust .trust-item svg, .recruiter-icon svg, .feature-icon svg, .stack-icon svg, .step-icon svg {
+    stroke: var(--landing-accent-strong);
+  }
+
+  .ambient-glow {
+    background: radial-gradient(circle, color-mix(in srgb, var(--landing-accent) 35%, transparent) 0%, transparent 70%);
+  }
+
+  .chart-tooltip {
+    rect {
+      fill: var(--landing-surface);
+      stroke: color-mix(in srgb, var(--landing-accent) 50%, transparent);
+    }
+    text {
+      fill: var(--landing-accent-strong);
+    }
+  }
+}
+
+.theme--cream {
+  .landing-page::before {
+    background: radial-gradient(circle at 20% 10%, rgba(194, 125, 86, 0.22), transparent 45%), radial-gradient(circle at 80% 0%, rgba(122, 75, 49, 0.16), transparent 50%);
+  }
+  .landing-page::after {
+    opacity: 0.12;
+  }
+
+  /* Hero Glass AI Cockpit visual card & Code Editor Mockup */
+  .hero-preview-container, .editor-mockup, .analysis-terminal {
+    background: #FFFAF3 !important;
+    border: 1px solid rgba(122, 75, 49, 0.25) !important;
+    box-shadow: 0 20px 50px -15px rgba(122, 75, 49, 0.15), 0 0 25px rgba(194, 125, 86, 0.1) !important;
+    color: #2A1D17 !important;
+  }
+
+  .preview-header, .editor-header, .terminal-header {
+    background: #F0E6DA !important;
+    border-bottom: 1px solid rgba(122, 75, 49, 0.2) !important;
+    color: #2A1D17 !important;
+
+    .header-title, .terminal-title {
+      color: #2A1D17 !important;
+      font-weight: 700;
+    }
+  }
+
+  .tab.active {
+    background: #FFFAF3 !important;
+    color: #2A1D17 !important;
+    border-color: rgba(122, 75, 49, 0.3) !important;
+  }
+
+  .line-numbers span {
+    color: #A8988D !important;
+  }
+
+  .code-content pre {
+    color: #2A1D17 !important;
+
+    .keyword, .c-keyword { color: #A66342 !important; font-weight: 700; }
+    .type, .c-func { color: #7A4B31 !important; font-weight: 700; }
+    .function { color: #C27D56 !important; }
+    .string { color: #524239 !important; }
+    .comment, .c-comment { color: #8C7B70 !important; font-style: italic; }
+  }
+
+  .c-tag {
+    &.green { background: rgba(34, 197, 94, 0.15) !important; color: #15803D !important; }
+    &.cyan { background: rgba(14, 165, 233, 0.15) !important; color: #0369A1 !important; }
+    &.purple { background: rgba(168, 85, 247, 0.15) !important; color: #7E22CE !important; }
+  }
+
+  .preview-metric-row .metric-block {
+    background: rgba(240, 230, 218, 0.7) !important;
+    border: 1px solid rgba(122, 75, 49, 0.2) !important;
+
+    .metric-label { color: #6B5D54 !important; }
+    .metric-val { color: #2A1D17 !important; }
+  }
+
+  .ai-suggestion-card {
+    background: #FFFAF3 !important;
+    border: 1px solid rgba(122, 75, 49, 0.25) !important;
+    color: #2A1D17 !important;
+
+    p { color: #2A1D17 !important; }
+    .ai-suggestion-header { color: #7A4B31 !important; font-weight: 700; }
+    .ai-meta span { color: #6B5D54 !important; }
+    .ai-meta strong { color: #2A1D17 !important; }
+  }
+
+  .terminal-body {
+    background: #FFFAF3 !important;
+    color: #2A1D17 !important;
+
+    .terminal-text strong { color: #2A1D17 !important; }
+    .terminal-text span { color: #6B5D54 !important; }
+    .status-pill.done { background: rgba(34, 197, 94, 0.15) !important; color: #15803D !important; }
+    .status-pill.processing { background: rgba(245, 158, 11, 0.15) !important; color: #B45309 !important; }
+    .status-pill.queued { background: rgba(122, 75, 49, 0.12) !important; color: #6B5D54 !important; }
+    .progress-track { background: rgba(122, 75, 49, 0.15) !important; }
+    .progress-fill { background: linear-gradient(90deg, #D89A73, #C27D56) !important; }
+    .terminal-prompt { color: #7A4B31 !important; }
+    .terminal-cursor { background: #7A4B31 !important; }
+  }
+
+  .chart-tooltip rect {
+    fill: #FFFAF3 !important;
+    stroke: rgba(122, 75, 49, 0.4) !important;
+  }
+  .chart-tooltip text {
+    fill: #7A4B31 !important;
+  }
+}
