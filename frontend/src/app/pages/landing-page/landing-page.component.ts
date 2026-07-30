@@ -335,6 +335,9 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const heroElements = Array.from(document.querySelectorAll<HTMLElement>('.hero .reveal'));
+    heroElements.forEach((el) => el.classList.add('in-view'));
+
     this.initRevealObserver();
     this.initCounterObserver();
   }
@@ -364,10 +367,14 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
           }
         });
       },
-      { threshold: 0.2, rootMargin: '0px 0px -10% 0px' }
+      { threshold: 0.05, rootMargin: '0px 0px 50px 0px' }
     );
 
     elements.forEach((el) => this.revealObserver?.observe(el));
+
+    setTimeout(() => {
+      elements.slice(0, 4).forEach((el) => el.classList.add('in-view'));
+    }, 100);
   }
 
   private initCounterObserver(): void {
