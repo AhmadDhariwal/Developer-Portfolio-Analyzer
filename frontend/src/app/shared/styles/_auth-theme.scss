@@ -118,6 +118,8 @@
   &:deep(.card-body),
   :deep(.card-body) {
     padding: var(--spacing-2xl);
+    background: var(--auth-card-bg);
+    color: var(--auth-ink);
   }
 
   .auth-header {
@@ -126,7 +128,7 @@
 
     h2 {
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
       margin: 0 0 var(--spacing-xs) 0;
       color: var(--auth-ink);
     }
@@ -139,19 +141,27 @@
   }
 
   .form-group {
-    label {
+    label,
+    .radio-label,
+    .visibility-toggle__label {
       color: var(--auth-ink);
+      font-weight: 600;
+    }
+
+    .visibility-toggle__hint {
+      color: var(--auth-muted);
     }
 
     input,
     select,
     textarea {
       background: var(--auth-input-bg);
-      border-color: var(--auth-input-border);
+      border: 1px solid var(--auth-input-border);
       color: var(--auth-ink);
 
       &::placeholder {
         color: var(--auth-muted);
+        opacity: 0.85;
       }
 
       &:focus {
@@ -165,12 +175,19 @@
   .forgot-link,
   .auth-footer a,
   a:not(.home-link):not(.btn-link) {
-    color: var(--lp-primary-light);
+    color: var(--lp-primary);
+    font-weight: 600;
   }
 
   .auth-footer,
+  .divider,
   .divider span,
   .helper-text {
     color: var(--auth-muted);
+  }
+
+  .divider::before,
+  .divider::after {
+    background: var(--auth-card-border);
   }
 }

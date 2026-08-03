@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-lg);
-  background: var(--auth-bg, var(--bg-main));
+  background: var(--auth-bg);
   position: relative;
   overflow: hidden;
 
@@ -17,14 +17,14 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--text-secondary);
+    color: var(--auth-muted);
     font-size: 0.75rem;
     font-weight: 500;
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 20px;
-    border: 1px solid var(--auth-home-border, rgba(255, 255, 255, 0.1));
-    background: var(--auth-home-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--auth-home-border, rgba(175, 115, 75, 0.25));
+    background: var(--auth-home-bg, rgba(233, 218, 200, 0.9));
     transition: all 0.2s ease;
     z-index: 20;
 
@@ -34,8 +34,8 @@
     }
 
     &:hover {
-      color: var(--auth-home-hover-color, #fff);
-      background: var(--auth-home-hover-bg, rgba(255, 255, 255, 0.1));
+      color: var(--auth-home-hover-color, var(--auth-ink));
+      background: var(--auth-home-hover-bg);
       transform: translateX(-2px);
     }
   }
@@ -58,13 +58,13 @@
   .logo {
     font-size: 2.25rem;
     font-weight: 700;
-    color: var(--auth-brand, #c0c1ff);
+    color: var(--auth-brand);
     margin: 0 0 var(--spacing-xs) 0;
     font-family: 'Inter', sans-serif;
     letter-spacing: -0.02em;
 
     span {
-      background: var(--auth-brand-accent, linear-gradient(135deg, #ffb783 0%, #d97721 100%));
+      background: var(--auth-brand-accent);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -73,7 +73,7 @@
   }
 
   .tagline {
-    color: var(--auth-tagline, #908fa0);
+    color: var(--auth-tagline);
     font-size: 0.75rem;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.15em;
@@ -84,10 +84,10 @@
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background: var(--auth-card-bg, var(--bg-card));
+  background: var(--auth-card-bg);
   border-radius: 1.5rem;
-  border: 1px solid var(--auth-card-border, rgba(255, 255, 255, 0.05));
-  box-shadow: var(--auth-shadow, 0 20px 40px rgba(0, 0, 0, 0.4));
+  border: 1px solid var(--auth-card-border);
+  box-shadow: var(--auth-shadow);
 
   &:deep(.card-body) {
     padding: var(--spacing-2xl);
@@ -101,11 +101,11 @@
       font-size: 1.5rem;
       font-weight: 600;
       margin: 0 0 var(--spacing-xs) 0;
-      color: var(--text-primary);
+      color: var(--auth-ink);
     }
 
     p {
-      color: var(--text-secondary);
+      color: var(--auth-muted);
       font-size: 0.875rem;
       margin: 0;
     }
@@ -118,9 +118,9 @@
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     background: rgba(239, 68, 68, 0.1);
-    border-left: 3px solid var(--color-danger);
-    border-radius: var(--radius-md);
-    color: var(--color-danger);
+    border-left: 3px solid var(--color-danger, #ef4444);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-danger, #ef4444);
     font-size: 0.875rem;
     line-height: 1.5;
 
@@ -151,29 +151,30 @@
       label {
         font-size: 0.875rem;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--auth-ink);
         text-transform: capitalize;
       }
 
       input {
         padding: 10px var(--spacing-md);
-        background: var(--auth-bg, var(--bg-main));
-        border: 1px solid var(--auth-home-border, rgba(255, 255, 255, 0.1));
+        background: var(--auth-input-bg);
+        border: 1px solid var(--auth-input-border);
         border-radius: 0.75rem;
-        color: var(--text-primary);
+        color: var(--auth-ink);
         font-family: 'Inter', sans-serif;
         font-size: 0.9rem;
         min-height: 42px;
-        transition: all var(--transition-fast);
+        transition: all var(--transition-fast, 0.15s ease);
 
         &:focus {
           outline: none;
-          border-color: var(--color-primary);
-          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+          border-color: var(--auth-input-border-focus, var(--lp-primary));
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--lp-primary) 20%, transparent);
         }
 
         &::placeholder {
-          color: var(--text-secondary);
+          color: var(--auth-muted);
+          opacity: 0.85;
         }
 
         &:disabled {
@@ -200,14 +201,14 @@
 
     .forgot-password {
       font-size: 0.8rem;
-      color: var(--color-primary);
+      color: var(--lp-primary);
       text-decoration: none;
       font-weight: 500;
-      transition: color var(--transition-fast);
+      transition: color var(--transition-fast, 0.15s ease);
       white-space: nowrap;
 
       &:hover {
-        color: var(--color-primary-light);
+        color: var(--lp-primary-light);
       }
     }
 
@@ -220,7 +221,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    color: var(--text-secondary);
+    color: var(--auth-muted);
     font-size: 0.8125rem;
     font-weight: 500;
     margin: var(--spacing-xl) 0 var(--spacing-lg);
@@ -230,7 +231,7 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--border-color);
+      background: var(--auth-card-border);
     }
   }
 
@@ -281,7 +282,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-primary);
+      outline: 2px solid var(--lp-primary);
       outline-offset: 2px;
     }
 
@@ -344,18 +345,18 @@
 
   p {
     margin: 0;
-    color: var(--text-secondary);
+    color: var(--auth-muted);
     font-size: 0.875rem;
   }
 
   a {
-    color: var(--color-primary-light);
-    font-weight: 500;
+    color: var(--lp-primary);
+    font-weight: 600;
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast, 0.15s ease);
 
     &:hover {
-      color: var(--auth-home-hover-color, #fff);
+      color: var(--lp-primary-light);
     }
   }
 }
