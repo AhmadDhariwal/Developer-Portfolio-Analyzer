@@ -5,13 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
+import { LandingThemeId, LandingThemeService } from '../../shared/services/landing-theme.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent],
-  templateUrl: './login.html',
-  styleUrl: './login.scss',
+    selector: 'app-login',
+    standalone: true,
+    imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent],
+    templateUrl: './login.html',
+    styleUrl: './login.scss',
 })
 export class Login implements OnInit {
   email: string = '';
@@ -25,11 +26,16 @@ export class Login implements OnInit {
   // OAuth provider currently loading — null means no OAuth in progress
   oauthLoading: 'google' | 'github' | null = null;
 
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly themeService: LandingThemeService
   ) {}
 
   ngOnInit(): void {

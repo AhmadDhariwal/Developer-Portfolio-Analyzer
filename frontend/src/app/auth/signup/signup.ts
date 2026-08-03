@@ -6,6 +6,7 @@ import { AuthService, OtpType } from '../../shared/services/auth.service';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
 import { CountryCodeDropdownComponent } from '../../features/auth/components/country-code-dropdown/country-code-dropdown.component';
+import { LandingThemeId, LandingThemeService } from '../../shared/services/landing-theme.service';
 
 @Component({
   selector: 'app-signup',
@@ -34,7 +35,16 @@ export class Signup {
   // OAuth provider currently loading — null means no OAuth in progress
   oauthLoading: 'google' | 'github' | null = null;
 
-  constructor(private readonly authService: AuthService, private readonly router: Router, private readonly cdr: ChangeDetectorRef) {}
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly themeService: LandingThemeService
+  ) {}
 
   // ── Real-time validators ──────────────────────────────────────────────────
 

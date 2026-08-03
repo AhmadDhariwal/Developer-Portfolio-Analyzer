@@ -17,19 +17,36 @@
       <a href="#live-analysis" class="nav-link">Live AI</a>
       <a href="#stacks" class="nav-link">Stacks</a>
       <a href="#testimonials" class="nav-link">Testimonials</a>
-      <div class="theme-switcher" role="group" aria-label="Landing page color theme">
-        <button *ngFor="let theme of themes" type="button" class="theme-option"
-          [class.is-active]="selectedTheme === theme.id"
-          [attr.aria-pressed]="selectedTheme === theme.id"
-          [attr.title]="theme.description" (click)="setTheme(theme.id)">
-          <span class="theme-option__dot" aria-hidden="true"></span>
-          <span class="theme-option__label">{{ theme.label }}</span>
-        </button>
-      </div>
-
     </div>
 
     <div class="nav-actions">
+      <div class="theme-dropdown" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="theme-dropdown__trigger"
+          [attr.aria-expanded]="themeMenuOpen"
+          aria-haspopup="listbox"
+          aria-label="Theme"
+          (click)="toggleThemeMenu($event)">
+          <span>Theme</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="theme-dropdown__menu" *ngIf="themeMenuOpen" role="listbox" aria-label="Theme options">
+          <button
+            *ngFor="let theme of themes"
+            type="button"
+            class="theme-dropdown__option"
+            role="option"
+            [class.is-active]="selectedTheme === theme.id"
+            [attr.aria-selected]="selectedTheme === theme.id"
+            (click)="setTheme(theme.id)">
+            <span>{{ theme.label }}</span>
+            <small>{{ theme.description }}</small>
+          </button>
+        </div>
+      </div>
       <a routerLink="/auth/login" class="nav-link">Sign In</a>
       <a routerLink="/auth/signup" class="btn-link">
         <app-ui-button variant="primary" size="sm">Get Started</app-ui-button>
@@ -78,15 +95,15 @@
         
         <div class="hero-trust">
           <div class="trust-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             <span>No credit card required</span>
           </div>
           <div class="trust-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             <span>GitHub OAuth secure</span>
           </div>
           <div class="trust-item">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             <span>Privacy first</span>
           </div>
         </div>
@@ -142,11 +159,11 @@
 
           <!-- Floating Micro Badges -->
           <div class="floating-badge badge-top">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
             <span>GitHub Sync Active</span>
           </div>
           <div class="floating-badge badge-bottom">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F0D375" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <span>Roadmap Updated Live</span>
           </div>
         </div>
@@ -167,7 +184,7 @@
     <div class="stats-grid">
       <div class="stat-card reveal">
         <div class="stat-icon-wrapper">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF37" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         </div>
         <h3 class="stat-value">38+ ↑</h3>
         <p class="stat-label">Elite Alumni</p>
@@ -175,7 +192,7 @@
       </div>
       <div class="stat-card reveal">
         <div class="stat-icon-wrapper">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF37" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
         </div>
         <h3 class="stat-value">15K</h3>
         <p class="stat-label">Breakthroughs</p>
@@ -183,7 +200,7 @@
       </div>
       <div class="stat-card reveal">
         <div class="stat-icon-wrapper">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF37" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         </div>
         <h3 class="stat-value">250+</h3>
         <p class="stat-label">Global Regions</p>
@@ -191,7 +208,7 @@
       </div>
       <div class="stat-card reveal">
         <div class="stat-icon-wrapper">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </div>
         <h3 class="stat-value">470</h3>
         <p class="stat-label">Satisfied Countries</p>
@@ -314,9 +331,9 @@
           <svg class="chart-svg" viewBox="0 0 520 220" role="img" aria-label="Hiring score chart">
             <defs>
               <linearGradient id="growthLine" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#F0D375"></stop>
-                <stop offset="50%" stop-color="#D4AF37"></stop>
-                <stop offset="100%" stop-color="#B89228"></stop>
+                <stop offset="0%" stop-color="var(--lp-primary-light)"></stop>
+                <stop offset="50%" stop-color="var(--lp-primary)"></stop>
+                <stop offset="100%" stop-color="var(--lp-primary-dark)"></stop>
               </linearGradient>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="rgba(212, 175, 55, 0.35)"></stop>
@@ -340,8 +357,8 @@
             <circle class="chart-point p6 active-node" cx="500" cy="60" r="6"></circle>
             <!-- Floating Peak Tooltip Callout -->
             <g class="chart-tooltip">
-              <rect x="410" y="10" width="105" height="32" rx="8" fill="#141E33" stroke="rgba(212, 175, 55, 0.5)" stroke-width="1.5"/>
-              <text x="462" y="30" fill="#F0D375" font-size="11" font-weight="700" text-anchor="middle">+34% Score: 92</text>
+              <rect x="410" y="10" width="105" height="32" rx="8" fill="var(--lp-chart-fill)" stroke="color-mix(in srgb, var(--lp-primary) 50%, transparent)" stroke-width="1.5"/>
+              <text x="462" y="30" fill="var(--lp-primary-light)" font-size="11" font-weight="700" text-anchor="middle">+34% Score: 92</text>
             </g>
           </svg>
           <div class="chart-legend">
@@ -480,7 +497,7 @@
     <div class="testimonials-grid">
       <div *ngFor="let testimonial of testimonials" class="testimonial-card reveal">
         <div class="stars">
-          <svg *ngFor="let i of [1,2,3,4,5]" viewBox="0 0 24 24" width="16" height="16" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+          <svg *ngFor="let i of [1,2,3,4,5]" viewBox="0 0 24 24" width="16" height="16" fill="var(--lp-warning)" stroke="var(--lp-warning)" stroke-width="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
         </div>
         <p class="quote">{{ quoted(testimonial.quote) }}</p>
         <div class="author-info">

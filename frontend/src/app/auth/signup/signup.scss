@@ -1,3 +1,5 @@
+@import '../../shared/styles/auth-theme';
+
 /* Reusing Auth page styles for consistent aesthetic */
 .auth-page {
   min-height: 100vh;
@@ -5,7 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-lg);
-  background: var(--bg-main);
+  background: var(--auth-bg, var(--bg-main));
   position: relative;
   overflow: hidden;
 
@@ -22,8 +24,8 @@
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--auth-home-border, rgba(255, 255, 255, 0.1));
+    background: var(--auth-home-bg, rgba(255, 255, 255, 0.05));
     transition: all 0.2s ease;
     z-index: 20;
 
@@ -33,8 +35,8 @@
     }
 
     &:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
+      color: var(--auth-home-hover-color, #fff);
+      background: var(--auth-home-hover-bg, rgba(255, 255, 255, 0.1));
       transform: translateX(-2px);
     }
   }
@@ -57,13 +59,13 @@
   .logo {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #c0c1ff;
+    color: var(--auth-brand, #c0c1ff);
     margin: 0 0 var(--spacing-xs) 0;
     font-family: 'Inter', sans-serif;
     letter-spacing: -0.02em;
 
     span {
-      background: linear-gradient(135deg, #ffb783 0%, #d97721 100%);
+      background: var(--auth-brand-accent, linear-gradient(135deg, #ffb783 0%, #d97721 100%));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -72,7 +74,7 @@
   }
 
   .tagline {
-    color: #908fa0;
+    color: var(--auth-tagline, #908fa0);
     font-size: 0.75rem;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.15em;
@@ -82,10 +84,10 @@
 
 .auth-card {
   width: 100%;
-  background: var(--bg-card);
+  background: var(--auth-card-bg, var(--bg-card));
   border-radius: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--auth-card-border, rgba(255, 255, 255, 0.05));
+  box-shadow: var(--auth-shadow, 0 20px 40px rgba(0, 0, 0, 0.4));
 
   &:deep(.card-body) {
     padding: var(--spacing-2xl);
@@ -280,8 +282,8 @@
 
       input:not([type="checkbox"]):not([type="radio"]) {
         padding: 10px var(--spacing-md);
-        background: var(--bg-main);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: var(--auth-bg, var(--bg-main));
+        border: 1px solid var(--auth-home-border, rgba(255, 255, 255, 0.1));
         border-radius: 0.75rem;
         color: var(--text-primary);
         font-family: 'Inter', sans-serif;
@@ -386,7 +388,7 @@
     transition: color var(--transition-fast);
 
     &:hover {
-      color: #fff;
+      color: var(--auth-home-hover-color, #fff);
     }
   }
 }

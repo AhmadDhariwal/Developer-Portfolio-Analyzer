@@ -1,8 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule, NgStyle } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { LandingThemeId, LandingThemeService } from '../../shared/services/landing-theme.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -16,12 +17,19 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
   private revealObserver?: IntersectionObserver;
   private counterObserver?: IntersectionObserver;
 
-  readonly themes = [
-    { id: 'navy', label: 'Dark navy', description: 'Focused and technical' },
-    { id: 'special', label: 'Gold', description: 'Premium and distinctive' },
-    { id: 'cream', label: 'Cream', description: 'Warm and light' }
-  ] as const;
-  selectedTheme: (typeof this.themes)[number]['id'] = this.readSavedTheme();
+  themeMenuOpen = false;
+
+  get themes() {
+    return this.themeService.themes;
+  }
+
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
+  get selectedThemeLabel(): string {
+    return this.themes.find((theme) => theme.id === this.selectedTheme)?.label ?? 'Dark';
+  }
 
   trustedLogos = ['Google', 'Microsoft', 'Spotify', 'Airbnb', 'Amazon', 'Netflix'];
 
@@ -209,7 +217,11 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
   readonly iconHtml: Record<string, SafeHtml>;
   readonly codeSnippetHtml: SafeHtml;
 
-  constructor(private readonly sanitizer: DomSanitizer) {
+  constructor(
+    private readonly sanitizer: DomSanitizer,
+    private readonly themeService: LandingThemeService,
+    private readonly cdr: ChangeDetectorRef
+  ) {
     const icons: Record<string, string> = {
       github: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
@@ -410,23 +422,30 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     counters.forEach((el) => this.counterObserver?.observe(el));
   }
 
-  setTheme(theme: (typeof this.themes)[number]['id']): void {
-    this.selectedTheme = theme;
-    try {
-      localStorage.setItem('landing-theme', theme);
-    } catch {
-      // Theme selection is still usable when browser storage is unavailable.
+  toggleThemeMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.themeMenuOpen = !this.themeMenuOpen;
+  }
+
+  setTheme(theme: LandingThemeId): void {
+    this.themeService.setTheme(theme);
+    this.themeMenuOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.themeMenuOpen) {
+      this.themeMenuOpen = false;
+      this.cdr.markForCheck();
     }
   }
 
-  private readSavedTheme(): (typeof this.themes)[number]['id'] {
-    try {
-      const savedTheme = localStorage.getItem('landing-theme');
-      return this.themes.some((theme) => theme.id === savedTheme)
-        ? savedTheme as (typeof this.themes)[number]['id']
-        : 'special';
-    } catch {
-      return 'special';
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.themeMenuOpen) {
+      this.themeMenuOpen = false;
+      this.cdr.markForCheck();
     }
   }
 
