@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Documentation (Internal to team and AI agents)
+docs/
+*.doc
+*.docx
+
+# Agent & IDE settings
+.agents/
+.codex/
+.gemini/
+.vscode/
+.idea/
+
+# Build and dist outputs
+dist/
+tmp/
+.angular/
+
+# System files
+.DS_Store
+Thumbs.db
