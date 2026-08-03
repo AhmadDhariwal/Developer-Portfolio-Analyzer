@@ -1,8 +1,9 @@
 .ui-card {
-  background: var(--bg-card);
+  background: var(--auth-card-bg, var(--bg-card));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  box-shadow: var(--auth-shadow, var(--shadow-md));
+  border: 1px solid var(--auth-card-border, var(--border-color));
+  color: var(--auth-ink, var(--text-primary));
   display: flex;
   flex-direction: column;
   transition: all var(--transition-base);
@@ -62,4 +63,3 @@
     gap: var(--spacing-md);
   }
 }
-

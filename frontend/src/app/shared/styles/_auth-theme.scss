@@ -1,0 +1,193 @@
+@import './public-theme-tokens';
+
+.auth-themed {
+  @include landing-theme-dark;
+
+  &.theme--dark { @include landing-theme-dark; }
+  &.theme--light { @include landing-theme-light; }
+  &.theme--premium { @include landing-theme-premium; }
+
+  min-height: 100vh;
+  background: var(--auth-bg);
+  color: var(--auth-ink);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 12%, var(--lp-aurora-1) 0%, transparent 42%),
+      radial-gradient(circle at 82% 0%, var(--lp-aurora-2) 0%, transparent 48%);
+    opacity: var(--lp-aurora-opacity);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.auth-themed .auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
+  .home-link {
+    position: absolute;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--auth-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--auth-home-border);
+    background: var(--auth-home-bg);
+    transition: all 0.2s ease;
+    z-index: 20;
+
+    .home-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      color: var(--auth-home-hover-color);
+      background: var(--auth-home-hover-bg);
+      transform: translateX(-2px);
+    }
+  }
+}
+
+.auth-themed .auth-container {
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-themed .auth-brand {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+
+  .logo {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--auth-brand);
+    margin: 0 0 var(--spacing-xs) 0;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+
+    span {
+      background: var(--auth-brand-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-left: 4px;
+    }
+  }
+
+  .tagline {
+    color: var(--auth-tagline);
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.15em;
+    margin: 0;
+  }
+}
+
+.auth-themed .auth-card {
+  width: 100%;
+  background: var(--auth-card-bg);
+  border-radius: 1.5rem;
+  border: 1px solid var(--auth-card-border);
+  box-shadow: var(--auth-shadow);
+  color: var(--auth-ink);
+
+  &:deep(.card-body),
+  :deep(.card-body) {
+    padding: var(--spacing-2xl);
+    background: var(--auth-card-bg);
+    color: var(--auth-ink);
+  }
+
+  .auth-header {
+    text-align: left;
+    margin-bottom: var(--spacing-2xl);
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 var(--spacing-xs) 0;
+      color: var(--auth-ink);
+    }
+
+    p {
+      color: var(--auth-muted);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  .form-group {
+    label,
+    .radio-label,
+    .visibility-toggle__label {
+      color: var(--auth-ink);
+      font-weight: 600;
+    }
+
+    .visibility-toggle__hint {
+      color: var(--auth-muted);
+    }
+
+    input,
+    select,
+    textarea {
+      background: var(--auth-input-bg);
+      border: 1px solid var(--auth-input-border);
+      color: var(--auth-ink);
+
+      &::placeholder {
+        color: var(--auth-muted);
+        opacity: 0.85;
+      }
+
+      &:focus {
+        border-color: var(--auth-input-border-focus);
+        outline: none;
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--lp-primary) 18%, transparent);
+      }
+    }
+  }
+
+  .forgot-link,
+  .auth-footer a,
+  a:not(.home-link):not(.btn-link) {
+    color: var(--lp-primary);
+    font-weight: 600;
+  }
+
+  .auth-footer,
+  .divider,
+  .divider span,
+  .helper-text {
+    color: var(--auth-muted);
+  }
+
+  .divider::before,
+  .divider::after {
+    background: var(--auth-card-border);
+  }
+}
