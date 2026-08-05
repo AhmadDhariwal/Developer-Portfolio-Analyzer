@@ -2,15 +2,18 @@ const axios = require('axios');
 const aiService = require('./aiservice');
 const { getGitHubPrompt } = require('../prompts/githubPrompt');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
-const { acquireCacheLock, releaseCacheLock, isRedisCacheEnabled } = require('./redisCacheService');
+const { acquireCacheLock, releaseCacheLock, isRedisCacheEnabled, getCacheJsonWithMeta, setCacheJson } = require('./redisCacheService');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const AnalysisCache = require('../models/analysisCache');
 
 const ANALYSIS_VERSION = 'github-v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
+const GITHUB_AI_TIMEOUT_MS = 5000;
+const CACHE_REDIS_TTL_SECONDS = Math.floor(CACHE_TTL_MS / 1000);
 const refreshJobs = new Map();
 const analysisJobs = new Map();
+const memoryAnalysisCache = new Map();
 let swrIndexChecked = false;
 const MAX_ACTIVITY_REPOS = 5;
 const MAX_LANGUAGE_REPOS = 8;
@@ -34,18 +37,116 @@ const SUPPORT_LANGUAGES = new Set([
   'Jupyter Notebook'
 ]);
 
+const isPerfTimingEnabled = () =>
+  String(process.env.GITHUB_TIMING || '') === '1' ||
+  process.env.NODE_ENV === 'test';
+
 const createTiming = () => {
-  if (String(process.env.GITHUB_TIMING || '') !== '1') return null;
+  if (!isPerfTimingEnabled()) return null;
   const startedAt = Date.now();
-  const stages = {};
+  const stages = {
+    memoryCache: 0,
+    redis: 0,
+    mongo: 0,
+    provider: 0,
+    ai: 0,
+    deterministic: 0,
+    validation: 0,
+    persistence: 0,
+    cacheWrite: 0,
+    total: 0
+  };
   return {
+    stages,
+    add(name, ms) {
+      if (Object.prototype.hasOwnProperty.call(stages, name)) {
+        stages[name] += Math.max(0, Number(ms || 0));
+      }
+    },
     async time(name, operation) {
       const start = Date.now();
       try { return await operation(); }
-      finally { stages[name] = Date.now() - start; }
+      finally { this.add(name, Date.now() - start); }
     },
-    attach(result) { return { ...result, timing: { ...stages, total: Date.now() - startedAt } }; }
+    attach(result) {
+      stages.total = Date.now() - startedAt;
+      return { ...result, timing: { ...stages } };
+    }
   };
+};
+
+const buildRedisCacheKey = (normalizedUsername) =>
+  `github:analysis:${ANALYSIS_VERSION}:${normalizedUsername}`;
+
+const isFreshCacheEntry = (entry) =>
+  Boolean(entry?.result && entry?.expiresAt && new Date(entry.expiresAt).getTime() > Date.now());
+
+const readMemoryAnalysisCache = (normalizedUsername) => {
+  const cached = memoryAnalysisCache.get(normalizedUsername);
+  if (!cached) return null;
+  if (!isFreshCacheEntry(cached)) {
+    memoryAnalysisCache.delete(normalizedUsername);
+    return null;
+  }
+  return cached;
+};
+
+const writeMemoryAnalysisCache = (normalizedUsername, entry) => {
+  if (!entry?.result) return;
+  memoryAnalysisCache.set(normalizedUsername, {
+    ...entry,
+    expiresAt: entry.expiresAt || new Date(Date.now() + CACHE_TTL_MS)
+  });
+};
+
+const clearGitHubAnalysisMemoryCache = () => {
+  memoryAnalysisCache.clear();
+};
+
+const packRedisCacheEntry = (entry) => ({
+  result: entry.result,
+  expiresAt: entry.expiresAt,
+  updatedAt: entry.updatedAt || new Date(),
+  createdAt: entry.createdAt || new Date(),
+  snapshots: Array.isArray(entry.snapshots) ? entry.snapshots.slice(-12) : [],
+  githubUsername: entry.githubUsername,
+  normalizedUsername: entry.normalizedUsername,
+  analysisVersion: entry.analysisVersion || ANALYSIS_VERSION
+});
+
+const resolveTieredCacheEntry = async (username, timing = null) => {
+  const normalizedUsername = normalizeUsername(username);
+  if (!normalizedUsername) return { entry: null, source: 'miss' };
+
+  const memoryStarted = Date.now();
+  const memoryEntry = readMemoryAnalysisCache(normalizedUsername);
+  if (timing) timing.add('memoryCache', Date.now() - memoryStarted);
+  if (memoryEntry) return { entry: memoryEntry, source: 'memory' };
+
+  const redisKey = buildRedisCacheKey(normalizedUsername);
+  const redisMeta = await getCacheJsonWithMeta(redisKey);
+  if (timing) {
+    timing.add('memoryCache', redisMeta.memoryMs || 0);
+    timing.add('redis', redisMeta.redisMs || 0);
+  }
+  if (redisMeta.value?.result) {
+    const redisEntry = packRedisCacheEntry(redisMeta.value);
+    if (isFreshCacheEntry(redisEntry)) {
+      writeMemoryAnalysisCache(normalizedUsername, redisEntry);
+      return { entry: redisEntry, source: redisMeta.layer === 'memory' ? 'memory' : 'redis' };
+    }
+  }
+
+  const mongoStarted = Date.now();
+  const mongoEntry = await getCacheEntry(username);
+  if (timing) timing.add('mongo', Date.now() - mongoStarted);
+  if (mongoEntry?.result && isFreshCacheEntry(mongoEntry)) {
+    writeMemoryAnalysisCache(normalizedUsername, mongoEntry);
+    setCacheJson(redisKey, packRedisCacheEntry(mongoEntry), CACHE_REDIS_TTL_SECONDS).catch(() => {});
+    return { entry: mongoEntry, source: 'mongo' };
+  }
+
+  return { entry: mongoEntry, source: mongoEntry?.result ? 'mongo-stale' : 'miss' };
 };
 
 class GitHubRateLimitError extends Error {
@@ -70,6 +171,31 @@ const average = (values = []) => {
 };
 
 const normalizeUsername = (username = '') => String(username || '').trim().replace(/^@/, '').toLowerCase();
+const escapeRegex = (value = '') => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const GITHUB_USERNAME_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+const MAX_GITHUB_USERNAME_LENGTH = 39;
+const ABSURD_GITHUB_USERNAME_LENGTH = 200;
+
+const parseGitHubUsername = (rawUsername = '') => {
+  const trimmed = String(rawUsername || '').trim().replace(/^@/, '');
+  if (!trimmed) {
+    const error = new Error('GitHub username is required.');
+    error.status = 400;
+    throw error;
+  }
+  if (trimmed.length > ABSURD_GITHUB_USERNAME_LENGTH) {
+    const error = new Error('GitHub username is too large.');
+    error.status = 413;
+    throw error;
+  }
+  if (trimmed.length > MAX_GITHUB_USERNAME_LENGTH || !GITHUB_USERNAME_PATTERN.test(trimmed)) {
+    const error = new Error('GitHub username format is invalid.');
+    error.status = 400;
+    throw error;
+  }
+  return trimmed;
+};
+
 const unique = (values = []) => {
   const seen = new Set();
   return values
@@ -80,6 +206,45 @@ const unique = (values = []) => {
       seen.add(key);
       return true;
     });
+};
+
+const isUsableInsightText = (value, { min = 12, max = 500 } = {}) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (text.length < min || text.length > max) return false;
+  if (/[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test summary/i.test(text)) {
+    return false;
+  }
+  if ((text.match(/[!?.]/g) || []).length > 8) return false;
+  return true;
+};
+
+const normalizeInsightList = (values, fallback = []) => {
+  const cleaned = (Array.isArray(values) ? values : [])
+    .map((value) => String(value || '').replace(/\s+/g, ' ').trim())
+    .filter((value) => isUsableInsightText(value, { min: 8, max: 220 }));
+  return cleaned.length >= 2 ? unique(cleaned).slice(0, 6) : fallback;
+};
+
+const resolveAIInsights = (aiResult, fallback) => {
+  if (!aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)) return fallback;
+  // Score fields are ignored — deterministic code owns all numeric outcomes.
+
+  const strengths = normalizeInsightList(aiResult.strengths, fallback.strengths);
+  const weakAreas = normalizeInsightList(aiResult.weakAreas, fallback.weakAreas);
+  const summary = isUsableInsightText(aiResult.summary, { min: 24, max: 600 })
+    ? String(aiResult.summary).replace(/\s+/g, ' ').trim()
+    : fallback.summary;
+  const explanation = isUsableInsightText(aiResult.explanation, { min: 24, max: 600 })
+    ? String(aiResult.explanation).replace(/\s+/g, ' ').trim()
+    : fallback.explanation;
+
+  return {
+    developerLevel: fallback.developerLevel,
+    strengths,
+    weakAreas,
+    summary,
+    explanation
+  };
 };
 
 const buildConfig = (extra = {}) => {
@@ -136,6 +301,14 @@ const isRateLimitError = (error) =>
   error?.response?.status === 403 ||
   error?.response?.status === 429 ||
   String(error?.message || '').toLowerCase().includes('rate limit');
+
+const isTransientGitHubError = (error) => {
+  if (isRateLimitError(error)) return true;
+  const status = Number(error?.status || error?.response?.status || 0);
+  if ([408, 500, 502, 503, 504].includes(status)) return true;
+  const message = String(error?.message || '').toLowerCase();
+  return /timeout|timed out|network|econnreset|econnrefused|socket|temporarily unavailable|failed to fetch/i.test(message);
+};
 
 const fetchGitHubUser = async (username) => {
   try {
@@ -615,14 +788,8 @@ const buildAIInsights = async ({ username, userData, repos, languageSummary, tec
     weakAreaHints: weakAreas
   });
 
-  const aiResult = await aiService.runAIAnalysis(prompt, fallback);
-  return {
-    developerLevel,
-    strengths: Array.isArray(aiResult.strengths) ? aiResult.strengths.slice(0, 6) : fallback.strengths,
-    weakAreas: Array.isArray(aiResult.weakAreas) ? aiResult.weakAreas.slice(0, 6) : fallback.weakAreas,
-    summary: String(aiResult.summary || aiResult.explanation || fallback.summary),
-    explanation: String(aiResult.explanation || aiResult.summary || fallback.explanation)
-  };
+  const aiResult = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: GITHUB_AI_TIMEOUT_MS });
+  return resolveAIInsights(aiResult, fallback);
 };
 
 const buildWeakAreas = ({ scores, repositoryQuality = [], technologyCategories = {}, supportLanguageDistribution = [] }) => {
@@ -694,6 +861,7 @@ const getCacheEntry = async (username) => {
   if (!normalizedUsername) return null;
   return GitHubAnalysisCache
     .findOne({ normalizedUsername, analysisVersion: ANALYSIS_VERSION })
+    .select('githubUsername normalizedUsername analysisVersion result expiresAt updatedAt createdAt snapshots')
     .lean();
 };
 
@@ -730,8 +898,7 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
 };
 
 const getCachedGitHubAnalysis = async (username, { allowStale = true } = {}) => {
-  await ensureSWRCacheIndex();
-  const cacheEntry = await getCacheEntry(username);
+  const { entry: cacheEntry } = await resolveTieredCacheEntry(username);
   const now = Date.now();
   const expiresAtMs = cacheEntry?.expiresAt ? new Date(cacheEntry.expiresAt).getTime() : 0;
   const isFresh = Boolean(cacheEntry?.result && expiresAtMs > now);
@@ -761,20 +928,49 @@ const getCachedGitHubAnalysis = async (username, { allowStale = true } = {}) => 
   };
 };
 
-const saveCacheResult = async (username, result, previousEntry = null) => {
+const composeCacheArtifacts = (username, fresh, previousEntry = null) => {
   const normalizedUsername = normalizeUsername(username);
-  const currentSnapshot = snapshotFromResult(result);
+  const currentSnapshot = snapshotFromResult(fresh);
   const previousSnapshot = Array.isArray(previousEntry?.snapshots) && previousEntry.snapshots.length
     ? previousEntry.snapshots[previousEntry.snapshots.length - 1]
     : null;
   const comparison = compareSnapshots(previousSnapshot, currentSnapshot);
   const resultWithComparison = {
-    ...result,
+    ...fresh,
     comparison,
     analysisVersion: ANALYSIS_VERSION
   };
+  const entry = {
+    githubUsername: username,
+    normalizedUsername,
+    analysisVersion: ANALYSIS_VERSION,
+    result: resultWithComparison,
+    expiresAt: new Date(Date.now() + CACHE_TTL_MS),
+    updatedAt: new Date(),
+    createdAt: previousEntry?.createdAt || new Date(),
+    snapshots: [
+      ...(Array.isArray(previousEntry?.snapshots) ? previousEntry.snapshots : []),
+      currentSnapshot
+    ].slice(-12)
+  };
+  return { resultWithComparison, entry };
+};
 
-  const updated = await GitHubAnalysisCache.findOneAndUpdate(
+const shouldDeferCachePersist = () =>
+  process.env.NODE_ENV === 'production' || String(process.env.GITHUB_DEFER_CACHE_WRITE || '') === '1';
+
+const saveCacheResult = async (username, fresh, previousEntry = null, timing = null) => {
+  const { resultWithComparison, entry } = composeCacheArtifacts(username, fresh, previousEntry);
+  const normalizedUsername = entry.normalizedUsername;
+  writeMemoryAnalysisCache(normalizedUsername, entry);
+  setCacheJson(
+    buildRedisCacheKey(normalizedUsername),
+    packRedisCacheEntry(entry),
+    CACHE_REDIS_TTL_SECONDS
+  ).catch(() => {});
+
+  await ensureSWRCacheIndex();
+  const persistMongo = async () => GitHubAnalysisCache.findOneAndUpdate(
     { normalizedUsername, analysisVersion: ANALYSIS_VERSION },
     {
       $set: {
@@ -782,11 +978,11 @@ const saveCacheResult = async (username, result, previousEntry = null) => {
         normalizedUsername,
         analysisVersion: ANALYSIS_VERSION,
         result: resultWithComparison,
-        expiresAt: new Date(Date.now() + CACHE_TTL_MS)
+        expiresAt: entry.expiresAt
       },
       $push: {
         snapshots: {
-          $each: [currentSnapshot],
+          $each: [entry.snapshots[entry.snapshots.length - 1]],
           $slice: -12
         }
       }
@@ -794,6 +990,7 @@ const saveCacheResult = async (username, result, previousEntry = null) => {
     { upsert: true, new: true, setDefaultsOnInsert: true }
   ).lean();
 
+  const updated = timing ? await timing.time('cacheWrite', persistMongo) : await persistMongo();
   return withCacheMetadata(resultWithComparison, updated, 'fresh');
 };
 
@@ -863,10 +1060,12 @@ const fetchMonthlyCommitActivity = async (username, repos = []) => {
 };
 
 const buildFreshAnalysis = async (username, timing = null) => {
-  const [userData, repos] = await Promise.all([
-    timing ? timing.time('profileFetch', () => fetchGitHubUser(username)) : fetchGitHubUser(username),
-    timing ? timing.time('repositoryFetch', () => fetchGitHubRepos(username)) : fetchGitHubRepos(username)
-  ]);
+  const runProvider = (operation) => (timing ? timing.time('provider', operation) : operation());
+
+  const [userData, repos] = await runProvider(() => Promise.all([
+    fetchGitHubUser(username),
+    fetchGitHubRepos(username)
+  ]));
 
   const totalStars = repos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
   const totalForks = repos.reduce((sum, repo) => sum + Number(repo.forks_count || 0), 0);
@@ -927,11 +1126,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
     });
 
   const topActivityRepos = rankedRepos.slice(0, MAX_ACTIVITY_REPOS);
-  const [commitCounts, languageData, repoSignals] = await (timing ? timing.time('deepSignals', () => Promise.all([
-    Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
-    buildLanguageDistribution(username, repos),
-    fetchRepoCheapSignals(username, rankedRepos)
-  ])) : Promise.all([
+  const [commitCounts, languageData, repoSignals] = await runProvider(() => Promise.all([
     Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
     buildLanguageDistribution(username, repos),
     fetchRepoCheapSignals(username, rankedRepos)
@@ -997,7 +1192,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
     commits: commitMap[repo.name] || 0
   }));
 
-  const scores = timing ? await timing.time('deterministicScoring', () => buildDeterministicScores({
+  const scores = timing ? await timing.time('deterministic', () => buildDeterministicScores({
     repos, userData, mainLanguageDistribution, technologies: techResult.technologies, repositoryActivity, repositoryQuality
   })) : buildDeterministicScores({
     repos,
@@ -1130,17 +1325,22 @@ const buildFreshAnalysis = async (username, timing = null) => {
 };
 
 const analyzeGitHubProfile = async (username, options = {}) => {
-  const trimmedUsername = String(username || '').trim().replace(/^@/, '');
-  if (!trimmedUsername) throw new Error('GitHub username is required.');
+  const timing = createTiming();
+  const trimmedUsername = timing
+    ? await timing.time('validation', async () => parseGitHubUsername(username))
+    : parseGitHubUsername(username);
 
   const forceRefresh = Boolean(options.forceRefresh);
-  const timing = createTiming();
-  const cacheEntry = timing ? await timing.time('cacheLookup', () => getCacheEntry(trimmedUsername)) : await getCacheEntry(trimmedUsername);
-  const isFresh = cacheEntry?.expiresAt && new Date(cacheEntry.expiresAt).getTime() > Date.now();
-
-  if (!forceRefresh && cacheEntry?.result && isFresh) {
-    const cached = withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
-    return timing ? timing.attach(cached) : cached;
+  let cacheEntry = null;
+  if (!forceRefresh) {
+    const resolved = await resolveTieredCacheEntry(trimmedUsername, timing);
+    cacheEntry = resolved.entry;
+    if (cacheEntry?.result && isFreshCacheEntry(cacheEntry)) {
+      const cached = withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
+      return timing ? timing.attach(cached) : cached;
+    }
+  } else {
+    cacheEntry = await getCacheEntry(trimmedUsername);
   }
 
   const normalizedUsername = normalizeUsername(trimmedUsername);
@@ -1149,16 +1349,45 @@ const analyzeGitHubProfile = async (username, options = {}) => {
 
   const job = (async () => {
     try {
+      if (!forceRefresh) {
+        const rechecked = await resolveTieredCacheEntry(trimmedUsername, timing);
+        if (rechecked.entry?.result && isFreshCacheEntry(rechecked.entry)) {
+          const cached = withCacheMetadata(rechecked.entry.result, rechecked.entry, 'cache');
+          return timing ? timing.attach(cached) : cached;
+        }
+        cacheEntry = rechecked.entry || cacheEntry;
+      }
+
       const fresh = await buildFreshAnalysis(trimmedUsername, timing);
-      const saved = timing ? await timing.time('cacheWrite', () => saveCacheResult(trimmedUsername, fresh, cacheEntry)) : await saveCacheResult(trimmedUsername, fresh, cacheEntry);
+      if (shouldDeferCachePersist()) {
+        const { resultWithComparison, entry } = composeCacheArtifacts(trimmedUsername, fresh, cacheEntry);
+        writeMemoryAnalysisCache(normalizedUsername, entry);
+        setCacheJson(
+          buildRedisCacheKey(normalizedUsername),
+          packRedisCacheEntry(entry),
+          CACHE_REDIS_TTL_SECONDS
+        ).catch(() => {});
+        setImmediate(() => {
+          saveCacheResult(trimmedUsername, fresh, cacheEntry, timing).catch((error) => {
+            console.warn('[GitHubCache]', JSON.stringify({ event: 'deferred_cache_persist_failed', error: error.message }));
+          });
+        });
+        const served = withCacheMetadata(resultWithComparison, entry, 'fresh');
+        return timing ? timing.attach(served) : served;
+      }
+
+      const saved = await saveCacheResult(trimmedUsername, fresh, cacheEntry, timing);
       return timing ? timing.attach(saved) : saved;
     } catch (error) {
-      if (cacheEntry?.result && isRateLimitError(error)) {
-        return {
+      if (cacheEntry?.result && isTransientGitHubError(error) && Number(error?.status || error?.response?.status || 0) !== 404) {
+        const stale = {
           ...withCacheMetadata(cacheEntry.result, cacheEntry, 'stale-cache'),
-          rateLimited: true,
-          warning: 'GitHub API rate limit reached. Showing the most recent cached analysis.'
+          rateLimited: isRateLimitError(error),
+          warning: isRateLimitError(error)
+            ? 'GitHub API rate limit reached. Showing the most recent cached analysis.'
+            : 'GitHub refresh failed. Showing the most recent cached analysis.'
         };
+        return timing ? timing.attach(stale) : stale;
       }
       throw error;
     } finally {
@@ -1266,5 +1495,7 @@ module.exports = {
   fetchGitHubUser,
   fetchGitHubRepos,
   fetchMonthlyCommitActivity,
-  isRateLimitError
+  isRateLimitError,
+  parseGitHubUsername,
+  clearGitHubAnalysisMemoryCache
 };
