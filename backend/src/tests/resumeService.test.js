@@ -8,6 +8,7 @@ const aiService = require('../services/aiservice');
 const {
   ANALYSIS_VERSION,
   findCachedResumeAnalysis,
+  clearResumeAnalysisMemoryCache,
   __test
 } = require('../services/resumeservice');
 
@@ -44,18 +45,21 @@ test('AI focus areas are selected only from deterministic evidence', () => {
 });
 
 test('persistent resume cache returns the exact versioned result', async (t) => {
+  clearResumeAnalysisMemoryCache();
   const originalFindOne = ResumeAnalysisCache.findOne;
-  t.after(() => { ResumeAnalysisCache.findOne = originalFindOne; });
+  t.after(() => { ResumeAnalysisCache.findOne = originalFindOne; clearResumeAnalysisMemoryCache(); });
 
   let query;
   ResumeAnalysisCache.findOne = (receivedQuery) => {
     query = receivedQuery;
-    return {
+    const chain = {
+      select() { return chain; },
       lean: async () => ({
         analyzedAt: new Date('2026-01-01T00:00:00.000Z'),
-        result: { atsScore: 77, cacheMetadata: { aiUsed: true } }
+        result: { atsScore: 77, keywordDensity: 70, formatScore: 70, contentQuality: 70, cacheMetadata: { aiUsed: true } }
       })
     };
+    return chain;
   };
 
   const result = await findCachedResumeAnalysis({
@@ -104,6 +108,7 @@ test('unexpected AI failure still returns a usable deterministic analysis', asyn
 });
 
 test('force refresh bypasses the result-cache read and repopulates it', async (t) => {
+  clearResumeAnalysisMemoryCache();
   const originalFindOne = ResumeAnalysisCache.findOne;
   const originalFindOneAndUpdate = ResumeAnalysisCache.findOneAndUpdate;
   const originalRunAIAnalysis = aiService.runAIAnalysis;
@@ -114,9 +119,19 @@ test('force refresh bypasses the result-cache read and repopulates it', async (t
   });
 
   let cacheWritten = false;
-  ResumeAnalysisCache.findOne = () => { throw new Error('cache read must be bypassed'); };
+  ResumeAnalysisCache.findOne = () => {
+    const chain = {
+      select() { return chain; },
+      lean: async () => { throw new Error('cache read must be bypassed'); }
+    };
+    return chain;
+  };
   ResumeAnalysisCache.findOneAndUpdate = async () => { cacheWritten = true; return {}; };
-  aiService.runAIAnalysis = async (_prompt, fallback) => fallback;
+  aiService.runAIAnalysis = async (_prompt, fallback, retries, options) => {
+    assert.equal(retries, 0);
+    assert.equal(options?.timeoutMs, 5000);
+    return fallback;
+  };
 
   const result = await require('../services/resumeservice').analyzeResume(
     'Jane Developer\nEXPERIENCE\nBuilt APIs for 100 users.\nSKILLS\nNode.js',
@@ -127,6 +142,23 @@ test('force refresh bypasses the result-cache read and repopulates it', async (t
 
   assert.equal(result.cacheMetadata.loadedFromCache, false);
   assert.equal(cacheWritten, true);
+});
+
+test('polluted AI output does not enable aiUsed flag', async (t) => {
+  const originalRunAIAnalysis = aiService.runAIAnalysis;
+  t.after(() => { aiService.runAIAnalysis = originalRunAIAnalysis; });
+  aiService.runAIAnalysis = async () => ({
+    focusAreas: ['quantified_impact'],
+    resumeSummary: 'Should not persist'
+  });
+
+  const result = await __test.buildDeterministicAnalysis({
+    text: 'Jane Developer\njane@example.com\nEXPERIENCE\nBuilt APIs for 100 users.\nSKILLS\nNode.js',
+    fileName: 'resume.pdf',
+    fileSize: 1024
+  });
+
+  assert.equal(result.aiInsights.aiUsed, false);
 });
 
 test('resume query indexes cover cache, latest file analysis, and active/default fallbacks', () => {
