@@ -317,10 +317,14 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       this.skillGapService.invalidateCachedResult(careerStack, experienceLevel);
     }
 
+    const previousResult = this.result;
+    const preservePrevious = Boolean(previousResult) && (forceRefresh || !isTemporary);
     this.isLoading = true;
     this.activeAnalyzeKey = analyzeKey;
-    this.result = null;
-    this.clearPresentation();
+    if (!preservePrevious) {
+      this.result = null;
+      this.clearPresentation();
+    }
     this.cdr.detectChanges();
 
     this.skillGapService.analyze(user, careerStack, experienceLevel, isTemporary, forceRefresh, resumeText, previewResumeId, previewResumeHash).subscribe({
@@ -337,8 +341,13 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.errorMessage = err?.error?.message || 'Failed to analyze skill gap. Please try again.';
         this.isLoading = false;
-        this.result = null;
-        this.clearPresentation();
+        if (preservePrevious && previousResult) {
+          this.result = previousResult;
+          this.buildPresentationViewModels();
+        } else {
+          this.result = null;
+          this.clearPresentation();
+        }
         if (this.activeAnalyzeKey === analyzeKey) this.activeAnalyzeKey = '';
         this.cdr.detectChanges();
       }

@@ -246,10 +246,16 @@ export class SkillGapService {
     this.cacheInvalidation.register('skill-gap', () => this.clearCache());
   }
 
-  private getProfileCacheKey(username: string): string {
+  private getProfileCacheKey(username: string, careerStack: string, experienceLevel: string): string {
     const userId = this.auth.getCurrentUser()?._id || 'anonymous';
     const cleanUsername = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.+-]+/g, '-');
-    return `skillgap:profile:${userId}:${cleanUsername}`;
+    return [
+      'skillgap:profile',
+      userId,
+      cleanUsername,
+      this.clean(careerStack || 'Full Stack'),
+      this.clean(experienceLevel || 'Student')
+    ].join(':');
   }
 
   clearCache(): void {
@@ -271,7 +277,7 @@ export class SkillGapService {
     previewResumeId?: string,
     resumeHash?: string
   ): Observable<SkillGapResult> {
-    const cacheKey = this.getProfileCacheKey(username);
+    const cacheKey = this.getProfileCacheKey(username, careerStack, experienceLevel);
     const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
     if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
       const age = Date.now() - this.profileCache.cachedAt;
