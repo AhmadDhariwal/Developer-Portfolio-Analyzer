@@ -4,13 +4,227 @@ const crypto = require('node:crypto');
 const aiService = require('./aiservice');
 const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
+const { getCacheJsonWithMeta, setCacheJson } = require('./redisCacheService');
 
 const ANALYSIS_VERSION = 'resume-intel-v2';
+const RESUME_AI_TIMEOUT_MS = 5000;
+const RESUME_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const RESUME_CACHE_REDIS_TTL_SECONDS = Math.floor(RESUME_CACHE_TTL_MS / 1000);
+const memoryResumeCache = new Map();
+const analyzeResumeJobs = new Map();
 
 const elapsedMs = (startedAt) => Number((process.hrtime.bigint() - startedAt) / 1000000n);
 
+const isPerfTimingEnabled = () =>
+  String(process.env.RESUME_TIMING || '') === '1' ||
+  process.env.NODE_ENV === 'test';
+
+const createTiming = () => {
+  if (!isPerfTimingEnabled()) return null;
+  const startedAt = Date.now();
+  const stages = {
+    memoryCache: 0,
+    redis: 0,
+    mongo: 0,
+    provider: 0,
+    ai: 0,
+    deterministic: 0,
+    validation: 0,
+    persistence: 0,
+    cacheWrite: 0,
+    total: 0
+  };
+  return {
+    stages,
+    add(name, ms) {
+      if (Object.prototype.hasOwnProperty.call(stages, name)) {
+        stages[name] += Math.max(0, Number(ms || 0));
+      }
+    },
+    attach(result) {
+      stages.total = Date.now() - startedAt;
+      return { ...result, timing: { ...stages } };
+    }
+  };
+};
+
 const recordTiming = (onTiming, stage, durationMs) => {
   if (typeof onTiming === 'function') onTiming(stage, durationMs);
+};
+
+const buildResumeRedisKey = ({ userId, resumeFileId, resumeHash, analysisVersion }) =>
+  `resume:analysis:${analysisVersion}:${String(userId)}:${String(resumeFileId)}:${String(resumeHash)}`;
+
+const buildMemoryCacheKey = ({ userId, resumeFileId, resumeHash, analysisVersion }) =>
+  `${String(userId)}:${String(resumeFileId)}:${String(resumeHash)}:${String(analysisVersion)}`;
+
+const isValidCachedResult = (result) => (
+  Boolean(result)
+  && Number.isFinite(result.atsScore)
+  && Number.isFinite(result.keywordDensity)
+  && Number.isFinite(result.formatScore)
+  && Number.isFinite(result.contentQuality)
+);
+
+const packCachedResult = (result, { analyzedAt, analysisVersion, resumeHash }) => ({
+  ...result,
+  cacheMetadata: {
+    ...(result.cacheMetadata || {}),
+    loadedFromCache: true,
+    cacheHit: true,
+    aiUsed: false,
+    analyzedAt: analyzedAt || result.cacheMetadata?.analyzedAt || null,
+    analysisVersion,
+    resumeHash
+  }
+});
+
+const readMemoryResumeCache = (key) => {
+  const cached = memoryResumeCache.get(key);
+  if (!cached) return null;
+  if (!cached.expiresAt || cached.expiresAt <= Date.now() || !isValidCachedResult(cached.result)) {
+    memoryResumeCache.delete(key);
+    return null;
+  }
+  return cached;
+};
+
+const writeMemoryResumeCache = (key, entry) => {
+  if (!isValidCachedResult(entry?.result)) return;
+  memoryResumeCache.set(key, {
+    result: entry.result,
+    analyzedAt: entry.analyzedAt || new Date(),
+    expiresAt: entry.expiresAt || (Date.now() + RESUME_CACHE_TTL_MS)
+  });
+};
+
+const clearResumeAnalysisMemoryCache = () => {
+  memoryResumeCache.clear();
+};
+
+const resolveTieredResumeCache = async ({ userId, resumeFileId, resumeHash, analysisVersion, onTiming, timing }) => {
+  if (!userId || !resumeFileId || !resumeHash) return null;
+  const memoryKey = buildMemoryCacheKey({ userId, resumeFileId, resumeHash, analysisVersion });
+
+  const memoryStarted = Date.now();
+  const memoryEntry = readMemoryResumeCache(memoryKey);
+  const memoryMs = Date.now() - memoryStarted;
+  if (timing) timing.add('memoryCache', memoryMs);
+  recordTiming(onTiming, 'memoryCacheMs', memoryMs);
+  recordTiming(onTiming, 'cacheLookupMs', memoryMs);
+  if (memoryEntry) {
+    return {
+      result: packCachedResult(memoryEntry.result, {
+        analyzedAt: memoryEntry.analyzedAt,
+        analysisVersion,
+        resumeHash
+      }),
+      source: 'memory'
+    };
+  }
+
+  const redisKey = buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion });
+  const redisMeta = await getCacheJsonWithMeta(redisKey);
+  if (timing) {
+    timing.add('memoryCache', redisMeta.memoryMs || 0);
+    timing.add('redis', redisMeta.redisMs || 0);
+  }
+  recordTiming(onTiming, 'memoryCacheMs', redisMeta.memoryMs || 0);
+  recordTiming(onTiming, 'redisMs', redisMeta.redisMs || 0);
+  recordTiming(onTiming, 'cacheLookupMs', (redisMeta.memoryMs || 0) + (redisMeta.redisMs || 0));
+  if (isValidCachedResult(redisMeta.value?.result)) {
+    writeMemoryResumeCache(memoryKey, {
+      result: redisMeta.value.result,
+      analyzedAt: redisMeta.value.analyzedAt,
+      expiresAt: Date.now() + RESUME_CACHE_TTL_MS
+    });
+    return {
+      result: packCachedResult(redisMeta.value.result, {
+        analyzedAt: redisMeta.value.analyzedAt,
+        analysisVersion,
+        resumeHash
+      }),
+      source: redisMeta.layer === 'memory' ? 'memory' : 'redis'
+    };
+  }
+
+  const mongoStarted = Date.now();
+  const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion })
+    .select('result analyzedAt')
+    .lean();
+  const mongoMs = Date.now() - mongoStarted;
+  if (timing) timing.add('mongo', mongoMs);
+  recordTiming(onTiming, 'mongoMs', mongoMs);
+  recordTiming(onTiming, 'cacheLookupMs', mongoMs);
+  if (!isValidCachedResult(cached?.result)) return null;
+
+  writeMemoryResumeCache(memoryKey, {
+    result: cached.result,
+    analyzedAt: cached.analyzedAt,
+    expiresAt: Date.now() + RESUME_CACHE_TTL_MS
+  });
+  setCacheJson(redisKey, {
+    result: cached.result,
+    analyzedAt: cached.analyzedAt,
+    analysisVersion,
+    resumeHash
+  }, RESUME_CACHE_REDIS_TTL_SECONDS).catch(() => {});
+
+  return {
+    result: packCachedResult(cached.result, {
+      analyzedAt: cached.analyzedAt,
+      analysisVersion,
+      resumeHash
+    }),
+    source: 'mongo'
+  };
+};
+
+const persistResumeCacheLayers = async ({ userId, resumeFileId, resumeHash, analysisVersion, result, onTiming, timing }) => {
+  if (!userId || !resumeFileId || !isValidCachedResult(result)) return;
+  const writeStarted = Date.now();
+  const memoryKey = buildMemoryCacheKey({ userId, resumeFileId, resumeHash, analysisVersion });
+  const redisKey = buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion });
+  const analyzedAt = new Date();
+  const payload = { result, analyzedAt, analysisVersion, resumeHash };
+
+  writeMemoryResumeCache(memoryKey, { ...payload, expiresAt: Date.now() + RESUME_CACHE_TTL_MS });
+  setCacheJson(redisKey, payload, RESUME_CACHE_REDIS_TTL_SECONDS).catch(() => {});
+
+  const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
+  const cacheUpdate = {
+    $set: {
+      userId,
+      resumeFileId,
+      resumeHash,
+      analysisVersion,
+      result,
+      analyzedAt
+    },
+    $setOnInsert: { createdAt: new Date() }
+  };
+
+  const writeMongo = async () => {
+    try {
+      await ResumeAnalysisCache.findOneAndUpdate(cacheQuery, cacheUpdate, { upsert: true, new: true });
+    } catch (error) {
+      if (error?.code !== 11000) throw error;
+      await ResumeAnalysisCache.updateOne(cacheQuery, { $set: cacheUpdate.$set });
+    }
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    setImmediate(() => {
+      writeMongo().catch(() => {});
+    });
+  } else {
+    await writeMongo();
+  }
+
+  const writeMs = Date.now() - writeStarted;
+  if (timing) timing.add('cacheWrite', writeMs);
+  recordTiming(onTiming, 'cacheWriteMs', writeMs);
+  recordTiming(onTiming, 'mongoWritesMs', writeMs);
 };
 
 const SECTION_ALIASES = {
@@ -496,18 +710,26 @@ Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
   const aiStartedAt = process.hrtime.bigint();
   let aiResult = fallback;
   try {
-    aiResult = await aiService.runAIAnalysis(prompt, fallback, 1);
+    aiResult = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: RESUME_AI_TIMEOUT_MS });
   } catch (error) {
     console.warn('[ResumeAnalysisPipeline]', JSON.stringify({
       event: 'ai_insights_fallback',
       reason: error?.message || 'unknown_error'
     }));
   } finally {
-    recordTiming(onTiming, 'aiInsightsMs', elapsedMs(aiStartedAt));
+    const aiMs = elapsedMs(aiStartedAt);
+    recordTiming(onTiming, 'aiInsightsMs', aiMs);
+    recordTiming(onTiming, 'aiMs', aiMs);
   }
   const selectedFocusAreas = uniqueStrings(Array.isArray(aiResult?.focusAreas) ? aiResult.focusAreas : [], 6)
     .filter((area) => applicableFocusAreas.includes(area) && AI_FOCUS_AREAS[area]);
-  const aiUsed = aiResult?.__fallback !== true && selectedFocusAreas.length > 0;
+  const aiPolluted = aiResult?.__fallback !== true && (
+    typeof aiResult?.resumeSummary === 'string'
+    || Array.isArray(aiResult?.strengths)
+    || Array.isArray(aiResult?.concerns)
+    || typeof aiResult?.hiringReadiness === 'string'
+  );
+  const aiUsed = !aiPolluted && aiResult?.__fallback !== true && selectedFocusAreas.length > 0;
 
   return {
     atsInsights: [scores.explanations.atsScore],
@@ -583,8 +805,11 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   };
 
   const warnings = buildWarnings({ personalInfo, present, projects, achievements, technologyCategories, experience, education });
+  const validationStartedAt = process.hrtime.bigint();
   const qualityScores = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings });
+  recordTiming(onTiming, 'validationMs', elapsedMs(validationStartedAt));
   recordTiming(onTiming, 'deterministicAnalysisMs', elapsedMs(deterministicStartedAt));
+  recordTiming(onTiming, 'deterministicMs', elapsedMs(deterministicStartedAt));
   const aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, onTiming });
   const recruiterPerspective = buildRecruiterPerspective({ personalInfo, scores: qualityScores, warnings, achievements, technologyCategories, aiInsights });
   const suggestions = [
@@ -644,85 +869,84 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
  * Deterministic-first resume intelligence pipeline with optional persistent cache.
  */
 const analyzeResume = async (text, fileName, fileSize, options = {}) => {
+  const timing = createTiming();
   const normalizedText = normalizeResumeText(text);
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
   const userId = options.userId || null;
   const resumeFileId = options.resumeFileId || options.fileId || null;
   const forceRefresh = Boolean(options.forceRefresh);
   const analysisVersion = options.analysisVersion || ANALYSIS_VERSION;
+  const jobKey = userId && resumeFileId
+    ? `${String(userId)}:${String(resumeFileId)}:${resumeHash}:${forceRefresh ? 'refresh' : 'analyze'}`
+    : null;
 
-  if (userId && resumeFileId && !forceRefresh && !options.cacheLookupCompleted) {
-    const cacheStartedAt = process.hrtime.bigint();
-    const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion }).lean();
-    recordTiming(options.onTiming, 'cacheLookupMs', elapsedMs(cacheStartedAt));
-    if (cached?.result) {
-      return {
-        ...cached.result,
-        cacheMetadata: {
-          ...(cached.result.cacheMetadata || {}),
-          loadedFromCache: true,
-          cacheHit: true,
-          aiUsed: false,
-          analyzedAt: cached.analyzedAt,
-          analysisVersion,
-          resumeHash
-        }
-      };
-    }
+  if (jobKey && analyzeResumeJobs.has(jobKey)) {
+    return analyzeResumeJobs.get(jobKey);
   }
 
-  const result = await buildDeterministicAnalysis({
-    text: normalizedText,
-    fileName,
-    fileSize,
-    previousAnalysis: options.previousAnalysis || null,
-    onTiming: options.onTiming
-  });
+  const run = async () => {
+    if (userId && resumeFileId && !forceRefresh && !options.cacheLookupCompleted) {
+      const cached = await resolveTieredResumeCache({
+        userId,
+        resumeFileId,
+        resumeHash,
+        analysisVersion,
+        onTiming: options.onTiming,
+        timing
+      });
+      if (cached?.result) {
+        return timing ? timing.attach(cached.result) : cached.result;
+      }
+    }
 
-  if (userId && resumeFileId) {
-    const writeStartedAt = process.hrtime.bigint();
-    const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
-    const cacheUpdate = {
-      $set: {
+    const providerStarted = Date.now();
+    const result = await (options.analysisBuilder || buildDeterministicAnalysis)({
+      text: normalizedText,
+      fileName,
+      fileSize,
+      previousAnalysis: options.previousAnalysis || null,
+      onTiming: options.onTiming
+    });
+    if (timing) timing.add('provider', 0);
+    recordTiming(options.onTiming, 'providerMs', Date.now() - providerStarted);
+
+    if (userId && resumeFileId) {
+      await persistResumeCacheLayers({
         userId,
         resumeFileId,
         resumeHash,
         analysisVersion,
         result,
-        analyzedAt: new Date()
-      },
-      $setOnInsert: { createdAt: new Date() }
-    };
-    try {
-      await ResumeAnalysisCache.findOneAndUpdate(cacheQuery, cacheUpdate, { upsert: true, new: true });
-    } catch (error) {
-      if (error?.code !== 11000) throw error;
-      await ResumeAnalysisCache.updateOne(cacheQuery, { $set: cacheUpdate.$set });
+        onTiming: options.onTiming,
+        timing
+      });
     }
-    recordTiming(options.onTiming, 'mongoWritesMs', elapsedMs(writeStartedAt));
-  }
 
-  return result;
+    return timing ? timing.attach(result) : result;
+  };
+
+  if (!jobKey) return run();
+
+  const promise = run().finally(() => {
+    analyzeResumeJobs.delete(jobKey);
+  });
+  analyzeResumeJobs.set(jobKey, promise);
+  return promise;
 };
 
 const findCachedResumeAnalysis = async ({ userId, resumeFileId, resumeHash, analysisVersion = ANALYSIS_VERSION, onTiming }) => {
   if (!userId || !resumeFileId || !resumeHash) return null;
-  const cacheStartedAt = process.hrtime.bigint();
-  const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion }).lean();
-  recordTiming(onTiming, 'cacheLookupMs', elapsedMs(cacheStartedAt));
-  if (!cached?.result) return null;
-  return {
-    ...cached.result,
-    cacheMetadata: {
-      ...(cached.result.cacheMetadata || {}),
-      loadedFromCache: true,
-      cacheHit: true,
-      aiUsed: false,
-      analyzedAt: cached.analyzedAt,
-      analysisVersion,
-      resumeHash
-    }
-  };
+  const timing = createTiming();
+  const resolved = await resolveTieredResumeCache({
+    userId,
+    resumeFileId,
+    resumeHash,
+    analysisVersion,
+    onTiming,
+    timing
+  });
+  if (!resolved?.result) return null;
+  return timing ? timing.attach(resolved.result) : resolved.result;
 };
 
 module.exports = {
@@ -730,10 +954,13 @@ module.exports = {
   analyzeResume,
   findCachedResumeAnalysis,
   ANALYSIS_VERSION,
+  clearResumeAnalysisMemoryCache,
   __test: {
     buildDeterministicAnalysis,
     extractExperienceYears,
     extractPersonalInfo,
-    getApplicableAiFocusAreas
+    getApplicableAiFocusAreas,
+    buildResumeRedisKey,
+    isValidCachedResult
   }
 };

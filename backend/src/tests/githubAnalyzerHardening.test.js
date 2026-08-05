@@ -7,6 +7,7 @@ const { performance } = require('node:perf_hooks');
 
 const servicePath = require.resolve('../services/githubservice');
 const controllerPath = require.resolve('../controllers/githubcontroller');
+const redisCachePath = require.resolve('../services/redisCacheService');
 const TOKEN = 'github_pat_acceptance_secret';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,6 +32,7 @@ const createHarness = () => {
     analyses: new Map(),
     users: new Map(),
     notifications: [],
+    analysisCacheDeletes: [],
     redisLocks: new Map(),
     mongoLocks: new Map(),
     redisHealthy: true,
@@ -112,11 +114,29 @@ const createHarness = () => {
       await delay(state.delays.ai);
       if (state.aiMode === 'timeout') return fallback;
       if (state.aiMode === 'malformed') return { malformed: '{not-json' };
+      if (state.aiMode === 'low-quality') {
+        return {
+          strengths: ['ok'],
+          weakAreas: [],
+          summary: 'Hi',
+          explanation: 'As an AI I cannot help with this placeholder.'
+        };
+      }
+      if (state.aiMode === 'score-pollution') {
+        return {
+          strengths: ['Strong React delivery across production repositories', 'Clear backend Node.js and API ownership'],
+          weakAreas: ['Testing tools are underrepresented', 'DevOps automation signals remain thin'],
+          summary: 'This profile shows durable full-stack delivery with production-ready repositories.',
+          explanation: 'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.',
+          scores: { healthScore: 999 },
+          githubHealthScore: 999
+        };
+      }
       return {
-        strengths: ['Consistent delivery'],
-        weakAreas: ['Add more tests'],
-        summary: 'Deterministic mocked narrative.',
-        explanation: 'Evidence-based mocked explanation.',
+        strengths: ['Consistent delivery across active repositories', 'Clear technology depth in primary stack'],
+        weakAreas: ['Add more automated tests', 'Strengthen DevOps visibility'],
+        summary: 'Deterministic mocked narrative for recruiter review of this GitHub profile.',
+        explanation: 'Evidence-based mocked explanation grounded in repository quality and activity.',
         scores: { healthScore: 999 }
       };
     },
@@ -127,7 +147,11 @@ const createHarness = () => {
     collection: { async indexes() { return []; }, async dropIndex() {}, async createIndex() {} },
     findOne(query) {
       state.counters.cache.reads += 1;
-      return thenable(state.cache.get(`${query.normalizedUsername}:${query.analysisVersion}`) || null);
+      const row = state.cache.get(`${query.normalizedUsername}:${query.analysisVersion}`) || null;
+      return {
+        select() { return this; },
+        lean: async () => copy(row)
+      };
     },
     findOneAndUpdate(query, update) {
       state.counters.cache.writes += 1;
@@ -166,7 +190,12 @@ const createHarness = () => {
     }
     static findOne(query) {
       state.counters.persistence.analysisFinds += 1;
-      return Promise.resolve(state.analyses.get(String(query.userId)) || null);
+      const row = state.analyses.get(String(query.userId)) || null;
+      return {
+        select() {
+          return Promise.resolve(row);
+        }
+      };
     }
     async save() {
       state.counters.persistence.analysisSaves += 1;
@@ -206,6 +235,10 @@ const createHarness = () => {
 
   const redisService = {
     isRedisCacheEnabled: () => state.redisHealthy,
+    async getCacheJsonWithMeta() {
+      return { value: null, layer: 'miss', memoryMs: 0, redisMs: 0 };
+    },
+    async setCacheJson() {},
     async acquireCacheLock(key, token) {
       state.counters.locks.redisAcquire += 1;
       if (!state.redisHealthy) return null;
@@ -227,7 +260,12 @@ const createHarness = () => {
     './redisCacheService': redisService,
     '../services/redisCacheService': redisService,
     '../models/githubAnalysisCache': GitHubAnalysisCache,
-    '../models/analysisCache': { async deleteMany() { return { deletedCount: 0 }; } },
+    '../models/analysisCache': {
+      async deleteMany(query) {
+        state.analysisCacheDeletes.push(copy(query));
+        return { deletedCount: 0 };
+      }
+    },
     '../models/repository': Repository,
     '../models/analysis': Analysis,
     '../models/user': User,
@@ -244,16 +282,23 @@ const createHarness = () => {
     }
   };
 
+  let latestService = null;
+
   const loadInstance = () => {
     delete require.cache[servicePath];
     delete require.cache[controllerPath];
+    delete require.cache[redisCachePath];
     const originalLoad = Module._load;
     Module._load = function mockedLoad(request, parent, isMain) {
+      const req = String(request);
+      if (req.includes('redisCacheService')) return redisService;
       if (Object.prototype.hasOwnProperty.call(mocks, request)) return mocks[request];
       return originalLoad.call(this, request, parent, isMain);
     };
     try {
       const service = require(servicePath);
+      latestService = service;
+      service.clearGitHubAnalysisMemoryCache?.();
       mocks['../services/githubservice'] = service;
       delete require.cache[controllerPath];
       const controller = require(controllerPath);
@@ -270,6 +315,7 @@ const createHarness = () => {
     state.analyses.clear();
     state.users.clear();
     state.notifications.length = 0;
+    state.analysisCacheDeletes.length = 0;
     state.redisLocks.clear();
     state.mongoLocks.clear();
     state.redisHealthy = true;
@@ -279,6 +325,7 @@ const createHarness = () => {
     state.aiMode = 'success';
     state.delays = { github: 2, ai: 2, persistence: 2 };
     state.logs.length = 0;
+    latestService?.clearGitHubAnalysisMemoryCache?.();
   };
 
   return { state, loadInstance, reset };
@@ -404,7 +451,7 @@ test('repository failure preserves old rows and prevents later commits', async (
 });
 
 test('AI timeout and malformed output preserve deterministic scoring', async () => {
-  for (const mode of ['timeout', 'malformed']) {
+  for (const mode of ['timeout', 'malformed', 'low-quality']) {
     const harness = createHarness();
     harness.state.aiMode = mode;
     const { service } = harness.loadInstance();
@@ -414,7 +461,101 @@ test('AI timeout and malformed output preserve deterministic scoring', async () 
     assert.notEqual(result.githubHealthScore, 999);
     assert.equal(result.githubHealthScore, result.scores.healthScore);
     assert.match(result.summary, /Rule-based|Deterministic|unavailable/i);
+    assert.equal(result.summary.includes('As an AI'), false);
   }
+});
+
+test('AI score pollution is ignored and narrative stays schema-safe', async () => {
+  const harness = createHarness();
+  harness.state.aiMode = 'score-pollution';
+  const { service } = harness.loadInstance();
+  const result = await service.analyzeGitHubProfile('ai-scores');
+  assertScores(result);
+  assert.equal(result.githubHealthScore, result.scores.healthScore);
+  assert.notEqual(result.githubHealthScore, 999);
+  assert.match(result.summary, /full-stack delivery/i);
+  assert.ok(result.strengths.length >= 2);
+});
+
+test('failed refresh preserves previous valid cache and skips unsafe persistence', async () => {
+  const harness = createHarness();
+  const { state } = harness;
+  const { service, controller } = harness.loadInstance();
+  const first = await service.analyzeGitHubProfile('sticky');
+  assert.equal(first.cache.source, 'fresh');
+  const health = first.githubHealthScore;
+  const writesBefore = state.counters.cache.writes;
+
+  state.githubFailure = 'timeout';
+  const preserved = await service.analyzeGitHubProfile('sticky', { forceRefresh: true });
+  assert.equal(preserved.cache.source, 'stale-cache');
+  assert.equal(preserved.githubHealthScore, health);
+  assert.match(preserved.warning || '', /refresh failed|cached analysis/i);
+  assert.equal(state.counters.cache.writes, writesBefore);
+
+  state.users.set('user-1', { githubUsername: 'sticky', activeGithubUsername: 'sticky' });
+  state.analyses.set('user-1', {
+    userId: 'user-1',
+    githubScore: health,
+    githubAnalysisHistory: [{ healthScore: health }],
+    contributionActivity: []
+  });
+  const saveResponse = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'sticky',
+    savedUsername: 'sticky',
+    forceRefresh: true
+  });
+  assert.equal(saveResponse.statusCode, 200);
+  assert.equal(saveResponse.body.cache.source, 'stale-cache');
+  assert.equal(state.counters.persistence.analysisSaves, 0);
+  assert.equal(state.counters.notifications, 0);
+  assert.equal(state.analyses.get('user-1').githubAnalysisHistory.length, 1);
+});
+
+test('username validation returns 400/413 and skill-gap invalidation escapes safely', async () => {
+  const harness = createHarness();
+  const { state } = harness;
+  const { controller, service } = harness.loadInstance();
+  assert.throws(() => service.parseGitHubUsername('bad user'), (error) => error.status === 400);
+  assert.throws(() => service.parseGitHubUsername('a'.repeat(250)), (error) => error.status === 413);
+
+  const invalid = await invoke(controller.analyzeGitHub, { username: 'not valid!' });
+  assert.equal(invalid.statusCode, 400);
+  assert.equal(state.counters.cache.writes, 0);
+
+  const oversized = await invoke(controller.analyzeGitHub, { username: 'x'.repeat(250) });
+  assert.equal(oversized.statusCode, 413);
+
+  const source = require('node:fs').readFileSync(servicePath, 'utf8');
+  assert.match(source, /const escapeRegex\s*=/);
+
+  state.redisHealthy = false;
+  const queued = service.refreshGitHubAnalysisInBackground('octo-cat');
+  assert.equal(queued.queued, true);
+  for (let waited = 0; waited < 40 && service.getGitHubRefreshState().running > 0; waited += 1) {
+    await delay(25);
+  }
+  assert.equal(service.getGitHubRefreshState().running, 0);
+  assert.ok(state.analysisCacheDeletes.length >= 1);
+  const deleted = state.analysisCacheDeletes.at(-1);
+  assert.ok(deleted.githubUsername instanceof RegExp);
+  assert.equal(deleted.githubUsername.test('octo-cat'), true);
+  assert.equal(deleted.githubUsername.test('octoXcat'), false);
+});
+
+test('saveJobs only clears the owning in-flight promise', async () => {
+  const harness = createHarness();
+  const { state } = harness;
+  state.delays = { github: 20, ai: 20, persistence: 20 };
+  const { controller } = harness.loadInstance();
+  const firstPromise = invoke(controller.analyzeAndSaveGitHubProfile, { username: 'owner', savedUsername: 'owner' });
+  await delay(5);
+  const secondPromise = invoke(controller.analyzeAndSaveGitHubProfile, { username: 'owner', savedUsername: 'owner' });
+  const [first, second] = await Promise.all([firstPromise, secondPromise]);
+  assert.equal(first.statusCode, 200);
+  assert.equal(second.statusCode, 200);
+  assert.equal(state.counters.persistence.analysisSaves, 1);
+  assert.equal(state.counters.github.profile, 1);
 });
 
 test('GitHub optional and full failures are sanitized and never cached', async () => {

@@ -70,7 +70,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (storedUsername) {
       this.applyDefaultUsername(storedUsername);
       this.isInitLoading = false;
-      this.analyze(false);
+      this.scheduleInitialAnalyze();
       return;
     }
 
@@ -79,7 +79,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         if (this.destroyed) return;
         this.applyDefaultUsername(data.username || '');
         this.isInitLoading = false;
-        if (this.username) this.analyze(false);
+        if (this.username) this.scheduleInitialAnalyze();
       },
       error: () => {
         if (this.destroyed) return;
@@ -100,6 +100,13 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.isTemporaryView = false;
   }
 
+  /** Avoid NG0100 when toggling init loading and analyze in the same CD cycle. */
+  private scheduleInitialAnalyze(): void {
+    queueMicrotask(() => {
+      if (!this.destroyed && this.username.trim()) this.analyze(false);
+    });
+  }
+
   ngAfterViewInit(): void {
     this.viewReady = true;
     this.flushPendingCharts();
@@ -114,6 +121,16 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   analyze(forceRefresh = false): void {
     const trimmed = this.username.trim().replace(/^@/, '');
     if (!trimmed) return;
+    if (trimmed.length > 200) {
+      this.errorMessage = 'GitHub username is too large.';
+      this.invalidUsername = false;
+      return;
+    }
+    if (trimmed.length > 39 || !/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(trimmed)) {
+      this.errorMessage = 'GitHub username format is invalid.';
+      this.invalidUsername = true;
+      return;
+    }
 
     const normalizedDefault = this.defaultUsername.trim().toLowerCase();
     const normalizedCurrent = trimmed.toLowerCase();
@@ -138,8 +155,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     request$.subscribe({
       next: (data) => {
         if (this.destroyed) return;
-        this.applyResult(data, trimmed, isDefaultProfileAnalysis);
         this.isAnalyzing = false;
+        this.applyResult(data, trimmed, isDefaultProfileAnalysis);
       },
       error: (err) => {
         if (this.destroyed) return;

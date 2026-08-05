@@ -3,7 +3,7 @@ const Analysis = require('../models/analysis');
 const User = require('../models/user');
 const GitHubSaveLock = require('../models/githubSaveLock');
 const crypto = require('node:crypto');
-const { ANALYSIS_VERSION, analyzeGitHubProfile, isRateLimitError } = require('../services/githubservice');
+const { ANALYSIS_VERSION, analyzeGitHubProfile, isRateLimitError, parseGitHubUsername } = require('../services/githubservice');
 const { acquireCacheLock, releaseCacheLock, isRedisCacheEnabled } = require('../services/redisCacheService');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
@@ -50,6 +50,39 @@ const releaseSaveLock = async (lock) => {
 
 const toForceRefresh = (req) =>
     String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true';
+
+const sanitizeClientMessage = (error, fallback) => {
+    const msg = String(error?.message || '').trim();
+    if (!msg || msg.length > 300) return fallback;
+    if (/[A-Za-z]:\\|\/(?:Users|home)\//i.test(msg)) return fallback;
+    if (/node_modules|at\s+\S+\s+\(|api[_-]?key|bearer\s|github_pat_|secret|password|token=/i.test(msg)) return fallback;
+    if (/stack|traceback|ENOENT|EACCES/i.test(msg)) return fallback;
+    return msg;
+};
+
+const respondGitHubError = (res, error, fallbackMessage) => {
+    if (isRateLimitError(error)) {
+        return res.status(429).json({
+            message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
+        });
+    }
+    const status = Number(error?.status || 0);
+    if (status === 404) {
+        return res.status(404).json({ message: sanitizeClientMessage(error, 'GitHub user not found.') });
+    }
+    if (status === 400) {
+        return res.status(400).json({ message: sanitizeClientMessage(error, 'Invalid GitHub username.') });
+    }
+    if (status === 413) {
+        return res.status(413).json({ message: sanitizeClientMessage(error, 'GitHub username is too large.') });
+    }
+    if (status === 409 || /already in progress/i.test(String(error?.message || ''))) {
+        return res.status(409).json({
+            message: sanitizeClientMessage(error, 'GitHub analysis save is already in progress. Please retry.')
+        });
+    }
+    return res.status(500).json({ message: sanitizeClientMessage(error, fallbackMessage) });
+};
 
 const buildLanguageMap = (languageDistribution = []) => {
     const langMap = {};
@@ -112,7 +145,11 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
 
 const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
     const lock = await acquireSaveLock(user._id, githubUsername);
-    if (!lock) throw new Error('GitHub analysis save is already in progress. Please retry.');
+    if (!lock) {
+        const error = new Error('GitHub analysis save is already in progress. Please retry.');
+        error.status = 409;
+        throw error;
+    }
     try {
     // A different application instance completed this save while this request
     // waited. Its analysis is now in the shared cache and its writes are
@@ -121,9 +158,15 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
 
     const data = await analyzeGitHubProfile(githubUsername, { forceRefresh });
 
+    // Never persist a fallback/stale refresh result — keep the previous valid profile.
+    if (data?.rateLimited || data?.cache?.source === 'stale-cache' || data?.warning) {
+        return data;
+    }
+
     await replaceRepositoriesSafely(user._id, data.repositories);
 
-    let analysis = await Analysis.findOne({ userId: user._id });
+    let analysis = await Analysis.findOne({ userId: user._id })
+        .select('userId githubScore githubStats githubAnalysisVersion githubSignals languageDistribution contributionActivity githubAnalysisHistory');
     if (!analysis) analysis = new Analysis({ userId: user._id });
 
     analysis.githubScore = Number(data.githubHealthScore || data.activityScore || 0);
@@ -149,16 +192,31 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
         activeGithubUsername: githubUsername.trim()
     });
 
-    await createNotification({
-        userId: user._id,
-        type: 'github_update',
-        title: 'GitHub Profile Updated',
-        message: `GitHub analysis refreshed for @${githubUsername.trim()}.`,
-        dedupeKey: `github_update:${githubUsername.trim().toLowerCase()}`,
-        meta: { username: githubUsername.trim() },
-        dedupeWindowHours: 1
-    });
-    invalidateDashboardSummaryCache(user._id);
+    if (process.env.NODE_ENV === 'production') {
+        setImmediate(() => {
+            createNotification({
+                userId: user._id,
+                type: 'github_update',
+                title: 'GitHub Profile Updated',
+                message: `GitHub analysis refreshed for @${githubUsername.trim()}.`,
+                dedupeKey: `github_update:${githubUsername.trim().toLowerCase()}`,
+                meta: { username: githubUsername.trim() },
+                dedupeWindowHours: 1
+            }).catch(() => {});
+            invalidateDashboardSummaryCache(user._id);
+        });
+    } else {
+        await createNotification({
+            userId: user._id,
+            type: 'github_update',
+            title: 'GitHub Profile Updated',
+            message: `GitHub analysis refreshed for @${githubUsername.trim()}.`,
+            dedupeKey: `github_update:${githubUsername.trim().toLowerCase()}`,
+            meta: { username: githubUsername.trim() },
+            dedupeWindowHours: 1
+        });
+        invalidateDashboardSummaryCache(user._id);
+    }
     return data;
     } finally {
         await releaseSaveLock(lock);
@@ -170,24 +228,18 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
 // @access  Public
 const analyzeGitHub = async (req, res) => {
     try {
-        const { username } = req.body;
-
-        if (!username || !username.trim()) {
-            return res.status(400).json({ message: 'GitHub username is required.' });
+        let githubUsername;
+        try {
+            githubUsername = parseGitHubUsername(req.body?.username);
+        } catch (validationError) {
+            return respondGitHubError(res, validationError, 'Invalid GitHub username.');
         }
 
-        const data = await analyzeGitHubProfile(username.trim(), { forceRefresh: toForceRefresh(req) });
+        const data = await analyzeGitHubProfile(githubUsername, { forceRefresh: toForceRefresh(req) });
         res.json(data);
     } catch (error) {
-        console.error('GitHub Analyzer Error:', error.message);
-        const msg = error.message || '';
-        if (isRateLimitError(error)) {
-          return res.status(429).json({
-            message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
-          });
-        }
-        if (error.status === 404) return res.status(404).json({ message: msg });
-        res.status(500).json({ message: msg || 'Failed to analyze GitHub profile.' });
+        console.error('GitHub Analyzer Error:', sanitizeClientMessage(error, 'Failed to analyze GitHub profile.'));
+        return respondGitHubError(res, error, 'Failed to analyze GitHub profile.');
     }
 };
 
@@ -195,43 +247,53 @@ const analyzeGitHub = async (req, res) => {
 // @route   POST /api/github/analyze-save
 // @access  Private
 const analyzeAndSaveGitHubProfile = async (req, res) => {
+    const saveKey = String(req.user?._id || '');
+    let job = null;
     try {
+        if (!req.user?._id) {
+            return res.status(401).json({ message: 'Not authorized.' });
+        }
+
         const defaultGithubUsername = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
-        const requestedUsername = String(req.body.username || defaultGithubUsername).trim();
-        const githubUsername = defaultGithubUsername || requestedUsername;
-
-        if (!githubUsername) {
-            return res.status(400).json({ message: 'GitHub username is required.' });
+        const requestedRaw = String(req.body?.username || defaultGithubUsername || '').trim();
+        let githubUsername = '';
+        try {
+            githubUsername = parseGitHubUsername(requestedRaw || defaultGithubUsername);
+        } catch (validationError) {
+            return respondGitHubError(res, validationError, 'Invalid GitHub username.');
         }
 
-        if (requestedUsername && defaultGithubUsername && requestedUsername.toLowerCase() !== defaultGithubUsername.toLowerCase()) {
-            return res.status(400).json({
-                message: 'Temporary GitHub analysis should use the analyzer preview flow and must not overwrite your saved profile.'
-            });
+        const normalizedDefault = String(defaultGithubUsername || '').trim().replace(/^@/, '');
+        if (normalizedDefault) {
+            let parsedDefault;
+            try {
+                parsedDefault = parseGitHubUsername(normalizedDefault);
+            } catch {
+                parsedDefault = '';
+            }
+            if (parsedDefault && githubUsername.toLowerCase() !== parsedDefault.toLowerCase()) {
+                return res.status(400).json({
+                    message: 'Temporary GitHub analysis should use the analyzer preview flow and must not overwrite your saved profile.'
+                });
+            }
+            githubUsername = parsedDefault;
         }
 
-        const saveKey = String(req.user._id);
-        let job = saveJobs.get(saveKey);
+        job = saveJobs.get(saveKey);
         if (!job) {
-            job = persistGitHubAnalysis(req.user, githubUsername.trim(), toForceRefresh(req));
+            job = persistGitHubAnalysis(req.user, githubUsername, toForceRefresh(req));
             saveJobs.set(saveKey, job);
         }
         const data = await job;
 
         res.json(data);
     } catch (error) {
-        console.error('GitHub Save Error:', error.message);
-        const msg = error.message || '';
-        if (isRateLimitError(error)) {
-          return res.status(429).json({
-            message: 'GitHub API rate limit exceeded. Please wait a few minutes and try again, or add a GITHUB_TOKEN to the backend .env for higher limits.'
-          });
-        }
-        if (error.status === 404) return res.status(404).json({ message: msg });
-        res.status(500).json({ message: msg || 'Failed to analyze and save GitHub profile.' });
+        console.error('GitHub Save Error:', sanitizeClientMessage(error, 'Failed to analyze and save GitHub profile.'));
+        return respondGitHubError(res, error, 'Failed to analyze and save GitHub profile.');
     } finally {
-        const saveKey = String(req.user?._id || '');
-        if (saveKey && saveJobs.get(saveKey)) saveJobs.delete(saveKey);
+        if (saveKey && job && saveJobs.get(saveKey) === job) {
+            saveJobs.delete(saveKey);
+        }
     }
 };
 
@@ -240,13 +302,17 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
 // @access  Private
 const getActiveUsername = async (req, res) => {
     try {
+        if (!req.user?._id) {
+            return res.status(401).json({ message: 'Not authorized.' });
+        }
         const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
         const defaultUsername = String(user?.githubUsername || '').trim();
         const activeUsername = String(user?.activeGithubUsername || '').trim();
+        const username = activeUsername || defaultUsername;
         res.json({
-            username: activeUsername || defaultUsername,
+            username,
             isDefault: true,
-            activeUsername: activeUsername || defaultUsername
+            activeUsername: username
         });
     } catch (error) {
         res.status(500).json({ message: 'Failed to get active username' });

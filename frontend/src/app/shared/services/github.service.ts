@@ -162,6 +162,9 @@ export class GithubService {
 
     const request$ = requestFactory().pipe(
       tap((result) => {
+        if (result?.rateLimited || result?.warning || result?.cache?.source === 'stale-cache') {
+          return;
+        }
         if (mode === 'save') {
           this.cacheInvalidation.clearDeveloperSignalCaches();
           this.cacheInvalidation.clearGithubCaches();
