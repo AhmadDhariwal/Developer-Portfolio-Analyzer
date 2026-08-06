@@ -1,6 +1,6 @@
 /**
- * Skill gap prompt - receives careerStack + experienceLevel so the AI
- * can distinguish which gaps are current-level priorities vs future concerns.
+ * Skill gap prompt — narrative only.
+ * Deterministic code owns skills, scores, rankings, coverage, and roadmaps.
  */
 const getSkillGapPrompt = (
   careerStack,
@@ -18,29 +18,23 @@ const getSkillGapPrompt = (
     signals: developerSignals
   };
 
-  return `You are a senior engineering career coach. Use only the compact evidence below; do not invent unsupported skills.
+  return `You are a senior engineering career coach. Write narrative only from the compact evidence below. Do not invent skills, scores, rankings, coverage, or roadmap phases.
 
 CONTEXT_JSON:
 ${JSON.stringify(compactContext)}
 
-Return ONLY valid JSON with this shape:
+Return ONLY valid JSON with this exact shape:
 {
   "analysisSummary": string,
-  "yourSkills": [{"name": string, "category": string, "proficiency": number, "isFoundational": boolean}],
-  "missingSkills": [{"name": string, "category": string, "priority": "High"|"Medium"|"Low", "jobDemand": number, "levelRelevance": "Current"|"Next Level"|"Advanced"}],
-  "coverage": number,
-  "missing": number,
-  "levelAssessment": string,
-  "roadmap": [{"phase": string, "title": string, "description": string, "duration": string, "skills": string[], "resources": [{"title": string, "url": string}], "color": "purple"|"blue"|"green"|"orange"}],
-  "totalWeeks": string
+  "levelAssessment": string
 }
 
 Rules:
-- Prioritize GitHub + resume proof; portfolio, sprint, weekly reports, integrations, and jobs are supporting signals.
-- Use only real technical skills from the provided evidence and target profile.
-- Calibrate priority for ${careerStack} at ${experienceLevel}; repeated weak/incomplete signals raise urgency.
-- Return at least 6 current skills, 12 missing skills, 3 roadmap phases, and keep coverage + missing near 100.
-- Roadmap resources must be valid https URLs.`;
+- analysisSummary: 1-3 sentences grounded in the provided evidence for ${careerStack} at ${experienceLevel}.
+- levelAssessment: 1-2 sentences on readiness gaps that are already visible in CONTEXT_JSON.
+- Mention the career stack or at least one listed skill name from CONTEXT_JSON.
+- Do not return skills arrays, coverage, missing counts, priorities, jobDemand, or roadmap.
+- Do not invent employers, credentials, or unsupported technologies.`;
 };
 
 module.exports = { getSkillGapPrompt };

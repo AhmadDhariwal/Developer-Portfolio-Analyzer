@@ -8,38 +8,152 @@ const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/
 const root = path.resolve(__dirname, '..');
 const resolve = (relative) => require.resolve(path.join(root, relative));
 const mock = (relative, exports) => { const filename = resolve(relative); require.cache[filename] = { id: filename, filename, loaded: true, exports }; };
-const chain = (value) => ({ sort: () => ({ lean: async () => value }), lean: async () => value });
+const chain = (value) => ({
+  select: () => chain(value),
+  sort: () => ({ lean: async () => value, select: () => ({ lean: async () => value }) }),
+  lean: async () => value
+});
 
-const harness = () => {
-  const shared = new Map(); const deterministic = new Map();
-  const calls = { github: 0, ai: 0, private: 0 };
+const parseGitHubUsername = (rawUsername = '') => {
+  const trimmed = String(rawUsername || '').trim().replace(/^@/, '');
+  if (!trimmed) {
+    const error = new Error('GitHub username is required.');
+    error.status = 400;
+    throw error;
+  }
+  if (trimmed.length > 200) {
+    const error = new Error('GitHub username is too large.');
+    error.status = 413;
+    throw error;
+  }
+  if (trimmed.length > 39 || !/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(trimmed)) {
+    const error = new Error('GitHub username format is invalid.');
+    error.status = 400;
+    throw error;
+  }
+  return trimmed;
+};
+
+const groundedNarrative = {
+  analysisSummary: 'Frontend evidence for React and TypeScript is visible, while Intern-level Testing and CI/CD gaps remain the priority.',
+  levelAssessment: 'At Intern level for Frontend, strengthen Testing and CI/CD proof before advancing.'
+};
+
+const harness = (options = {}) => {
+  const shared = new Map();
+  const deterministic = new Map();
+  const calls = { github: 0, ai: 0, private: 0, cacheWrites: 0, mongoWrites: 0 };
+  const githubData = options.githubMiss
+    ? null
+    : {
+      repoCount: 2,
+      languageDistribution: [{ language: 'TypeScript' }],
+      repositories: [{ name: 'react-app', description: 'React app', language: 'TypeScript' }],
+      cache: { cachedAt: '2026-07-20', expiresAt: '2026-07-21', source: 'cache' }
+    };
+
   mock('services/githubservice.js', {
-    getCachedGitHubAnalysis: async () => { calls.github += 1; await new Promise((done) => setTimeout(done, 15)); return { status: 'fresh', ageMs: 0, data: { repoCount: 2, languageDistribution: [{ language: 'TypeScript' }], repositories: [{ name: 'react-app', description: 'React app', language: 'TypeScript' }], cache: { cachedAt: '2026-07-20', expiresAt: '2026-07-21' } } }; },
-    refreshGitHubAnalysisInBackground: () => ({ queued: true, running: false })
+    parseGitHubUsername,
+    getCachedGitHubAnalysis: async () => {
+      calls.github += 1;
+      await new Promise((done) => setTimeout(done, 5));
+      if (!githubData) return { status: 'miss', ageMs: null, data: null };
+      return { status: 'fresh', ageMs: 0, data: githubData };
+    },
+    refreshGitHubAnalysisInBackground: () => ({ queued: true, running: false }),
+    analyzeGitHubProfile: async () => githubData
   });
+
   mock('services/aiservice.js', {
     getSharedCache: async (key, namespace) => shared.get(`${namespace}:${key}`) || null,
-    setSharedCache: async (key, value, _ttl, namespace) => shared.set(`${namespace}:${key}`, value),
+    setSharedCache: async (key, value, _ttl, namespace) => {
+      calls.cacheWrites += 1;
+      shared.set(`${namespace}:${key}`, value);
+    },
     getDeterministicSummary: async (_scope, key) => deterministic.get(JSON.stringify(key)) || null,
     setDeterministicSummary: async (_scope, key, value) => deterministic.set(JSON.stringify(key), value),
-    runAIAnalysis: async () => { calls.ai += 1; return { analysisSummary: 'Narrative.', levelAssessment: 'Narrative.', coverage: 100, yourSkills: [{ name: 'Kubernetes' }], missingSkills: [{ name: 'Kubernetes' }] }; },
+    runAIAnalysis: async (_prompt, fallback, _retries = 0, opts = {}) => {
+      calls.ai += 1;
+      let value = groundedNarrative;
+      if (options.aiMode === 'fail') value = fallback;
+      if (options.aiMode === 'polluted') {
+        value = {
+          analysisSummary: groundedNarrative.analysisSummary,
+          levelAssessment: groundedNarrative.levelAssessment,
+          coverage: 99,
+          yourSkills: [{ name: 'Kubernetes' }],
+          missingSkills: [{ name: 'Kubernetes' }]
+        };
+      }
+      if (options.aiMode === 'low-quality') {
+        value = { analysisSummary: 'As an AI I cannot help.', levelAssessment: 'N/A' };
+      }
+      if (options.aiMode === 'ungrounded') {
+        value = {
+          analysisSummary: 'This candidate is a perfect fit for quantum hardware roles worldwide.',
+          levelAssessment: 'Ready for executive quantum leadership tomorrow.'
+        };
+      }
+      const ok = options.aiMode !== 'fail';
+      if (opts.returnMeta) return { ok, value: ok ? value : fallback, reason: ok ? 'ok' : 'timeout' };
+      return ok ? value : fallback;
+    },
     recordDeterministicSkip: () => {}
   });
-  mock('models/analysisCache.js', { findOne: () => chain(null), findOneAndUpdate: async () => null });
+
+  mock('models/analysisCache.js', {
+    findOne: () => chain(null),
+    findOneAndUpdate: async () => {
+      calls.mongoWrites += 1;
+      return null;
+    }
+  });
   mock('models/resumeAnalysis.js', { findOne: () => chain({ fileId: 'default', fileName: 'default.pdf', technicalSkills: ['React', 'TypeScript'], atsScore: 80 }) });
   mock('services/aiVersionService.js', { createVersion: async () => {} });
   mock('services/notificationService.js', { createNotification: async () => {} });
-  mock('prompts/skillGapPrompt.js', { getSkillGapPrompt: () => 'prompt' });
+  mock('prompts/skillGapPrompt.js', {
+    getSkillGapPrompt: () => 'Return ONLY {"analysisSummary":string,"levelAssessment":string}'
+  });
   mock('services/promptBuilderService.js', { estimateTokens: () => 1, buildSkillGapPromptContext: () => ({ detectedSkills: [], resume: {}, github: {}, signals: {} }) });
   mock('services/developerSignalService.js', {
-    getDeveloperSignals: async () => { calls.private += 1; return { integrationSignal: { present: true, integrationScore: 0, detectedSkills: [], weakProof: [] }, careerSprintSignal: { completedSkillSignals: [], repeatedIncompleteSkills: [] }, weeklyReportSignal: { repeatedWeakAreas: [] }, portfolioSignal: { portfolioSkills: [] }, jobsDemandSignal: { present: true, sampledJobs: 1, topSkills: [] } }; },
-    buildSignalHash: () => 'signals', buildSignalsUsedSummary: () => ({}),
-    buildResumeAnalysisSignals: (value, level) => ({ ...(value || {}), skills: value?.technicalSkills || [], technicalSkills: value?.technicalSkills || [], atsScore: value?.atsScore || 0, experienceLevel: level, statusMessage: 'Saved resume' }),
-    buildResumeCacheIdentity: () => ({ resumeHash: 'a'.repeat(64), resumeAnalysisId: 'default' }), buildAnalysisBasedOn: () => ({}), getPublicJobMarketSignal: async () => ({ present: true, sampledJobs: 1, topSkills: [] })
+    getDeveloperSignals: async () => {
+      calls.private += 1;
+      return {
+        integrationSignal: { present: true, integrationScore: 0, detectedSkills: [], weakProof: [] },
+        careerSprintSignal: { completedSkillSignals: [], repeatedIncompleteSkills: [] },
+        weeklyReportSignal: { repeatedWeakAreas: [] },
+        portfolioSignal: { portfolioSkills: [] },
+        jobsDemandSignal: { present: true, sampledJobs: 1, topSkills: [] }
+      };
+    },
+    buildSignalHash: () => 'signals',
+    buildSignalsUsedSummary: () => ({}),
+    buildResumeAnalysisSignals: (value, level) => ({
+      ...(value || {}),
+      skills: value?.technicalSkills || [],
+      technicalSkills: value?.technicalSkills || [],
+      atsScore: value?.atsScore || 0,
+      experienceLevel: level,
+      statusMessage: 'Saved resume'
+    }),
+    buildResumeCacheIdentity: () => ({ resumeHash: 'a'.repeat(64), resumeAnalysisId: 'default' }),
+    buildAnalysisBasedOn: () => ({}),
+    getPublicJobMarketSignal: async () => ({ present: true, sampledJobs: 1, topSkills: [] })
   });
-  const controller = resolve('controllers/skillgapcontroller.js'); delete require.cache[controller]; const { analyzeSkillGap } = require(controller);
-  const call = async (body, user) => { const out = { status: 200 }; const res = { status: (status) => { out.status = status; return res; }, json: (body) => { out.body = body; return res; } }; await analyzeSkillGap({ body, user, skillGapRouteStartedAt: Date.now(), skillGapAuthCompletedAt: Date.now() }, res); return out; };
-  return { call, calls };
+
+  const controller = resolve('controllers/skillgapcontroller.js');
+  delete require.cache[controller];
+  const { analyzeSkillGap } = require(controller);
+  const call = async (body, user) => {
+    const out = { status: 200 };
+    const res = {
+      status: (status) => { out.status = status; return res; },
+      json: (bodyValue) => { out.body = bodyValue; return res; }
+    };
+    await analyzeSkillGap({ body, user, skillGapRouteStartedAt: Date.now(), skillGapAuthCompletedAt: Date.now() }, res);
+    return out;
+  };
+  return { call, calls, shared, deterministic };
 };
 
 test('aliases preserve distinct languages and recognized aliases', () => {
@@ -85,10 +199,10 @@ test('profile uses active user data while preview excludes private signals and A
   const preview = await h.call({ isTemporary: true, username: 'public', careerStack: 'Backend', experienceLevel: 'Student', resumeText: 'Node.js SQL' }); assert.equal(preview.body.mode, 'preview'); assert.equal(h.calls.private, 1);
 });
 
-test('cache hit uses zero GitHub and AI calls; concurrent refreshes share one pipeline', async () => {
+test('cache hit skips AI while concurrent refreshes share one pipeline', async () => {
   const h = harness(); const user = { _id: 'u2', activeGithubUsername: 'cache', activeCareerStack: 'Full Stack', activeExperienceLevel: 'Student', defaultResumeFileId: 'default' };
-  await h.call({}, user); h.calls.github = 0; h.calls.ai = 0; const hit = await h.call({}, user); assert.equal(hit.body.fromCache, true); assert.equal(h.calls.github, 0); assert.equal(h.calls.ai, 0);
-  h.calls.github = 0; h.calls.ai = 0; const results = await Promise.all(Array.from({ length: 5 }, () => h.call({ forceRefresh: true }, user))); assert.ok(results.every((r) => r.status === 200)); assert.equal(h.calls.github, 1); assert.equal(h.calls.ai, 1);
+  await h.call({}, user); h.calls.github = 0; h.calls.ai = 0; const hit = await h.call({}, user); assert.equal(hit.body.fromCache, true); assert.equal(h.calls.ai, 0);
+  h.calls.ai = 0; const results = await Promise.all(Array.from({ length: 5 }, () => h.call({ forceRefresh: true }, user))); assert.ok(results.every((r) => r.status === 200)); assert.equal(h.calls.ai, 1);
 });
 
 test('saved previews are owner-scoped, deduplicated, raw-text-free, and load without analysis', () => {
@@ -96,6 +210,7 @@ test('saved previews are owner-scoped, deduplicated, raw-text-free, and load wit
   assert.ok(indexes.some(([keys, opts]) => keys.userId === 1 && keys.module === 1 && keys.resumeHash === 1 && opts.unique)); assert.equal(SavedPreview.schema.path('resumeText'), undefined); assert.equal(SavedPreview.schema.path('userId').options.required, true);
   const component = fs.readFileSync(path.resolve(__dirname, '../../../frontend/src/app/pages/skill-gap/skill-gap.component.ts'), 'utf8'); const load = component.slice(component.indexOf('openSavedPreview('), component.indexOf('deleteSavedPreview(')); assert.ok(load.includes('this.applyResult(')); assert.ok(!load.includes('this.analyze('));
 });
+
 test('SavedPreview migration removes only confirmed duplicates and is idempotent', async () => {
   const { migrateSavedPreviewIndexes } = require('../scripts/migrateSavedPreviewIndexes');
   const same = { userId: 'u1', module: 'skill-gap', githubUsername: 'dev', careerStack: 'Frontend', experienceLevel: 'Intern', resumeHash: 'a'.repeat(64) };
@@ -130,4 +245,82 @@ test('concurrent saved-preview duplicate recovery returns the persisted winner',
   assert.match(source, /error\?\.code !== 11000/);
   assert.match(source, /SavedPreview\.findOne\(previewIdentity\)\.lean\(\)/);
   assert.match(source, /yourSkills: previewSkills\(result\.yourSkills\)/);
+});
+
+test('invalid and oversized GitHub usernames return 400/413 without leaking internals', async () => {
+  const h = harness();
+  const bad = await h.call({ isTemporary: true, username: 'bad user!!', careerStack: 'Frontend', experienceLevel: 'Student' });
+  assert.equal(bad.status, 400);
+  assert.match(String(bad.body.message || ''), /invalid|required/i);
+  assert.equal(JSON.stringify(bad.body).includes('stack'), false);
+
+  const huge = await h.call({ isTemporary: true, username: 'x'.repeat(250), careerStack: 'Frontend', experienceLevel: 'Student' });
+  assert.equal(huge.status, 413);
+  assert.match(String(huge.body.message || ''), /too large/i);
+});
+
+test('AI timeout uses deterministic fallback narrative and never marks aiUsed', async () => {
+  const h = harness({ aiMode: 'fail' });
+  const user = { _id: 'u3', activeGithubUsername: 'ai-fail', activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', defaultResumeFileId: 'default' };
+  const result = await h.call({ forceRefresh: true }, user);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.aiUsed, false);
+  assert.ok(!result.body.missingSkills.some((skill) => skill.name === 'Kubernetes'));
+  assert.ok(Number.isFinite(result.body.coverage));
+  assert.ok(String(result.body.analysisSummary || '').length > 20);
+  assert.equal(String(result.body.analysisSummary || '').includes('As an AI'), false);
+});
+
+test('polluted and low-quality AI narratives are rejected while skills stay deterministic', async () => {
+  for (const aiMode of ['polluted', 'low-quality', 'ungrounded']) {
+    const h = harness({ aiMode });
+    const user = { _id: `u-${aiMode}`, activeGithubUsername: `user-${aiMode}`, activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', defaultResumeFileId: 'default' };
+    const result = await h.call({ forceRefresh: true }, user);
+    assert.equal(result.status, 200);
+    assert.equal(result.body.aiUsed, false);
+    assert.ok(!result.body.missingSkills.some((skill) => skill.name === 'Kubernetes'));
+    assert.ok(!result.body.yourSkills.some((skill) => skill.name === 'Kubernetes'));
+    assert.equal(String(result.body.analysisSummary || '').includes('As an AI'), false);
+    assert.equal(String(result.body.analysisSummary || '').includes('quantum'), false);
+  }
+});
+
+test('partial GitHub miss is returned but never persisted to mongo or result cache', async () => {
+  const h = harness({ githubMiss: true, aiMode: 'fail' });
+  const user = { _id: 'u-partial', activeGithubUsername: 'partial-user', activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', defaultResumeFileId: 'default' };
+  const beforeMongo = h.calls.mongoWrites;
+  const beforeCache = h.calls.cacheWrites;
+  const result = await h.call({ forceRefresh: true }, user);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.fromCache, undefined);
+  assert.equal(h.calls.mongoWrites, beforeMongo);
+  assert.equal(h.calls.cacheWrites, beforeCache);
+});
+
+test('prompt is narrative-only and schema-bound', () => {
+  const promptFile = resolve('prompts/skillGapPrompt.js');
+  delete require.cache[promptFile];
+  const { getSkillGapPrompt } = require(promptFile);
+  const prompt = getSkillGapPrompt('Frontend', 'Intern', { github: ['React'], resume: ['TypeScript'] }, {}, {}, {});
+  assert.match(prompt, /analysisSummary/);
+  assert.match(prompt, /levelAssessment/);
+  assert.equal(prompt.includes('"yourSkills"'), false);
+  assert.equal(prompt.includes('"coverage"'), false);
+  assert.equal(prompt.includes('"roadmap"'), false);
+  assert.match(prompt, /Do not invent|narrative only|Do not return skills/i);
+});
+
+test('failed refresh preserves previous valid result in the frontend component', () => {
+  const component = fs.readFileSync(path.resolve(__dirname, '../../../frontend/src/app/pages/skill-gap/skill-gap.component.ts'), 'utf8');
+  assert.match(component, /const previousResult = this\.result/);
+  assert.match(component, /preservePrevious/);
+  assert.match(component, /if \(preservePrevious && previousResult\)/);
+  assert.equal(component.includes('this.result = null;\n    this.clearPresentation();\n    this.cdr.detectChanges();\n\n    this.skillGapService.analyze'), false);
+});
+
+test('frontend profile cache key includes career stack and experience level', () => {
+  const service = fs.readFileSync(path.resolve(__dirname, '../../../frontend/src/app/shared/services/skill-gap.service.ts'), 'utf8');
+  assert.match(service, /getProfileCacheKey\(username: string, careerStack: string, experienceLevel: string\)/);
+  assert.match(service, /this\.clean\(careerStack/);
+  assert.match(service, /this\.clean\(experienceLevel/);
 });

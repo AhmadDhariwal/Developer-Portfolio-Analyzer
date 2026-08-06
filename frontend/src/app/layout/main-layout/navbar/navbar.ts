@@ -122,6 +122,9 @@ export class Navbar implements OnInit {
     private readonly cdr: ChangeDetectorRef
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
+    // Hydrate avatar/name before the first template check to avoid NG0100
+    // (ExpressionChangedAfterItHasBeenCheckedError) on *ngIf="userAvatar".
+    this.syncUserState(this.authService.getCurrentUser());
 
     this.searchSubject.pipe(
       debounceTime(250),
@@ -134,21 +137,21 @@ export class Navbar implements OnInit {
   }
 
   ngOnInit() {
-    this.syncUserState(this.authService.getCurrentUser());
-
     this.authService.currentUser$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
-        this.syncUserState(user);
-        if (user && this.authService.isLoggedIn()) {
-          const token = this.authService.getToken();
-          if (token) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
-        } else {
-          this.notificationService.disconnectStream();
-          this.notifications = [];
-          this.unreadNotifications = 0;
-          this.totalNotifications = 0;
-        }
+        this.scheduleUi(() => {
+          this.syncUserState(user);
+          if (user && this.authService.isLoggedIn()) {
+            const token = this.authService.getToken();
+            if (token) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
+          } else {
+            this.notificationService.disconnectStream();
+            this.notifications = [];
+            this.unreadNotifications = 0;
+            this.totalNotifications = 0;
+          }
+        });
       });
 
     this.notificationService.streamEvents$
@@ -159,9 +162,10 @@ export class Navbar implements OnInit {
     this.authService.avatarVersion$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((version) => {
-        this.avatarVersion = version;
-        this.updateAvatarSrc();
-        this.cdr.markForCheck();
+        this.scheduleUi(() => {
+          this.avatarVersion = version;
+          this.updateAvatarSrc();
+        });
       });
 
     if (this.authService.isLoggedIn()) {
@@ -173,54 +177,67 @@ export class Navbar implements OnInit {
     }
 
     this.tenantContext.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ctx) => {
-      this.selectedOrganizationId = ctx.organizationId;
-      this.selectedTeamId = ctx.teamId;
-      this.selectedRole = ctx.myRole;
-      if (ctx.organizationId) {
-        this.loadTeams(ctx.organizationId);
-      }
+      this.scheduleUi(() => {
+        this.selectedOrganizationId = ctx.organizationId;
+        this.selectedTeamId = ctx.teamId;
+        this.selectedRole = ctx.myRole;
+        if (ctx.organizationId) {
+          this.loadTeams(ctx.organizationId);
+        }
+      });
+    });
+  }
+
+  private scheduleUi(update: () => void): void {
+    queueMicrotask(() => {
+      update();
+      this.cdr.markForCheck();
     });
   }
 
   loadOrganizations(): void {
     this.apiService.getOrganizations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
-        this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
-        if (!this.selectedOrganizationId && this.organizations.length > 0) {
-          const first = this.organizations[0];
-          this.selectedOrganizationId = first._id;
-          this.selectedRole = first.myRole;
-          this.tenantContext.setOrganization({
-            id: first._id,
-            name: first.name,
-            myRole: first.myRole
-          });
-        }
+        this.scheduleUi(() => {
+          this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+          if (!this.selectedOrganizationId && this.organizations.length > 0) {
+            const first = this.organizations[0];
+            this.selectedOrganizationId = first._id;
+            this.selectedRole = first.myRole;
+            this.tenantContext.setOrganization({
+              id: first._id,
+              name: first.name,
+              myRole: first.myRole
+            });
+          }
 
-        if (this.selectedOrganizationId && !this.organizations.some((org) => org._id === this.selectedOrganizationId)) {
-          this.selectedOrganizationId = '';
-          this.selectedRole = '';
-          this.selectedTeamId = '';
-          this.teams = [];
-          this.tenantContext.clearAll();
-        }
+          if (this.selectedOrganizationId && !this.organizations.some((org) => org._id === this.selectedOrganizationId)) {
+            this.selectedOrganizationId = '';
+            this.selectedRole = '';
+            this.selectedTeamId = '';
+            this.teams = [];
+            this.tenantContext.clearAll();
+          }
 
-        const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
-        if (selectedOrg) {
-          this.selectedRole = selectedOrg.myRole;
-          this.tenantContext.syncOrganization({
-            id: selectedOrg._id,
-            name: selectedOrg.name,
-            myRole: selectedOrg.myRole
-          });
-        }
+          const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
+          if (selectedOrg) {
+            this.selectedRole = selectedOrg.myRole;
+            this.tenantContext.syncOrganization({
+              id: selectedOrg._id,
+              name: selectedOrg.name,
+              myRole: selectedOrg.myRole
+            });
+          }
 
-        if (this.selectedOrganizationId) {
-          this.loadTeams(this.selectedOrganizationId);
-        }
+          if (this.selectedOrganizationId) {
+            this.loadTeams(this.selectedOrganizationId);
+          }
+        });
       },
       error: () => {
-        this.organizations = [];
+        this.scheduleUi(() => {
+          this.organizations = [];
+        });
       }
     });
   }
@@ -283,14 +300,23 @@ export class Navbar implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: NotificationResponse) => {
-          this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
-          this.unreadNotifications = Number(res?.unreadCount || 0);
-          this.totalNotifications = Number(res?.total || this.notifications.length || 0);
+          const notifications = Array.isArray(res?.notifications) ? res.notifications : [];
+          const unreadNotifications = Number(res?.unreadCount || 0);
+          const totalNotifications = Number(res?.total || notifications.length || 0);
+          // Cached notification reads emit synchronously (of(...)); defer so *ngIf
+          // bindings do not flip during the same development-mode CD pass (NG0100).
+          this.scheduleUi(() => {
+            this.notifications = notifications;
+            this.unreadNotifications = unreadNotifications;
+            this.totalNotifications = totalNotifications;
+          });
         },
         error: () => {
-          this.notifications = [];
-          this.unreadNotifications = 0;
-          this.totalNotifications = 0;
+          this.scheduleUi(() => {
+            this.notifications = [];
+            this.unreadNotifications = 0;
+            this.totalNotifications = 0;
+          });
         }
       });
   }
