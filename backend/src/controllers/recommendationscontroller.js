@@ -19,30 +19,180 @@ const {
 } = require('../services/developerSignalService');
 const { extractSkillsFromRepositories, canonicalizeSkillName, detectSkillGaps } = require('../utils/skilldetector');
 const { resolvePreviewResume } = require('../services/previewResumeCacheService');
+const { parseGitHubUsername } = require('../services/githubservice');
 
 const RECOMMENDATION_ANALYSIS_VERSION = 'v5-career-advisor-data-quality';
 const SKILL_GAP_LOOKUP_VERSION = 'v5-skill-intelligence';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
-const STAGE_TIMINGS_ENABLED = process.env.NODE_ENV !== 'production' || process.env.RECOMMENDATIONS_STAGE_TIMINGS === 'true';
+const ALLOWED_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+const ALLOWED_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const RECOMMENDATION_MEMORY_TTL_MS = Math.min(
+  5 * 60 * 1000,
+  Math.max(15_000, Number.parseInt(process.env.RECOMMENDATIONS_MEMORY_TTL_MS || '60000', 10) || 60_000)
+);
+const RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS = Math.min(
+  250,
+  Math.max(40, Number.parseInt(process.env.RECOMMENDATIONS_REDIS_LOOKUP_BUDGET_MS || '120', 10) || 120)
+);
+const RECOMMENDATION_REDIS_TTL_SECONDS = Math.min(
+  3600,
+  Math.max(60, Number.parseInt(process.env.RECOMMENDATIONS_REDIS_TTL_SECONDS || '900', 10) || 900)
+);
+const EMPTY_RECOMMENDATION_ENRICHMENT = Object.freeze({
+  analysisSummary: '',
+  projectNarratives: [],
+  technologyNarratives: [],
+  careerPathNarratives: [],
+  portfolioRecommendations: [],
+  resumeRecommendations: [],
+  learningActions: [],
+  interviewReadinessActions: [],
+  aiUsed: false
+});
+const STAGE_TIMINGS_ENABLED = process.env.NODE_ENV !== 'production'
+  || process.env.RECOMMENDATIONS_STAGE_TIMINGS === 'true'
+  || process.env.NODE_ENV === 'test';
+const EMPTY_STAGE_TIMINGS = Object.freeze({
+  validation: 0,
+  cache: 0,
+  Redis: 0,
+  Mongo: 0,
+  'external provider': 0,
+  AI: 0,
+  'deterministic processing': 0,
+  persistence: 0,
+  total: 0
+});
 const createStageTimer = () => {
   const startedAt = process.hrtime.bigint();
-  const stages = {};
+  const stages = { ...EMPTY_STAGE_TIMINGS };
   return {
     async measure(name, work) {
       const stageStartedAt = process.hrtime.bigint();
       const value = await work();
-      stages[name] = Number(process.hrtime.bigint() - stageStartedAt) / 1e6;
+      const elapsed = Number(process.hrtime.bigint() - stageStartedAt) / 1e6;
+      stages[name] = Number(((Number(stages[name]) || 0) + elapsed).toFixed(4));
       return value;
+    },
+    mark(name, started) {
+      const elapsed = Number(process.hrtime.bigint() - started) / 1e6;
+      stages[name] = Number(((Number(stages[name]) || 0) + elapsed).toFixed(4));
     },
     attach(result) {
       if (!STAGE_TIMINGS_ENABLED || !result || typeof result !== 'object') return result;
       const total = Number(process.hrtime.bigint() - startedAt) / 1e6;
-      return { ...result, cacheMetadata: { ...(result.cacheMetadata || {}), stageTimingsMs: { ...stages, total }, requestCounters: { ...recommendationRuntimeCounters } } };
+      return {
+        ...result,
+        cacheMetadata: {
+          ...(result.cacheMetadata || {}),
+          stageTimingsMs: { ...stages, total: Number(total.toFixed(4)) },
+          requestCounters: { ...recommendationRuntimeCounters }
+        }
+      };
     }
   };
 };
 const recommendationInflight = new Map();
-const recommendationRuntimeCounters = { pipelineExecutions: 0, githubCalls: 0, aiCalls: 0, persistenceOperations: 0 };
+const recommendationMemoryCache = new Map();
+const recommendationRuntimeCounters = {
+  pipelineExecutions: 0,
+  githubCalls: 0,
+  aiCalls: 0,
+  persistenceOperations: 0,
+  memoryHits: 0,
+  redisHits: 0,
+  mongoHits: 0
+};
+
+const withBudget = async (promise, budgetMs, fallback = null) => {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(fallback), budgetMs);
+        timer.unref?.();
+      })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+const buildRecommendationSoftMemoryKey = ({
+  userId = '',
+  username = '',
+  careerStack = '',
+  experienceLevel = '',
+  isTemporaryMode = false,
+  resumeIdentity = 'profile-active',
+  signalHash = ''
+} = {}) => [
+  isTemporaryMode ? 'preview' : 'profile',
+  String(userId || 'anonymous'),
+  String(username || '').trim().toLowerCase(),
+  careerStack,
+  experienceLevel,
+  String(resumeIdentity || 'no-resume'),
+  String(signalHash || 'pending'),
+  RECOMMENDATION_ANALYSIS_VERSION
+].join('|');
+
+const readRecommendationMemory = (key) => {
+  if (!key) return null;
+  const entry = recommendationMemoryCache.get(key);
+  if (!entry) return null;
+  if (Number(entry.expiresAt || 0) <= Date.now()) {
+    recommendationMemoryCache.delete(key);
+    return null;
+  }
+  return entry;
+};
+
+const writeRecommendationMemory = (key, payload) => {
+  if (!key || !payload?.analysisData) return;
+  recommendationMemoryCache.set(key, {
+    ...payload,
+    expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS
+  });
+};
+
+const clearRecommendationMemoryCache = () => {
+  recommendationMemoryCache.clear();
+};
+
+const getRecommendationMemoryCacheSize = () => recommendationMemoryCache.size;
+
+const buildRecommendationResultCacheKey = (identity) => crypto
+  .createHash('sha256')
+  .update(JSON.stringify(identity))
+  .digest('hex');
+
+const isPersistableRecommendationResult = (result = {}) => {
+  if (!result || typeof result !== 'object') return false;
+  if (!Array.isArray(result.projects) || result.projects.length < 1) return false;
+  if (result.cacheMetadata?.partial === true) return false;
+  return true;
+};
+
+const voidRecommendationNotification = (payload) => {
+  setImmediate(() => {
+    createNotification(payload).catch((error) => {
+      console.warn('Recommendation notification failed:', error.message);
+    });
+  });
+};
+
+const ANALYSIS_CACHE_RESULT_FIELDS = {
+  analysisData: 1,
+  updatedAt: 1,
+  createdAt: 1,
+  signalHash: 1,
+  expiresAt: 1,
+  resumeHash: 1,
+  resumeAnalysisId: 1,
+  githubUsername: 1
+};
 const STACK_PROJECT_HINTS = {
   Frontend: ['React', 'TypeScript', 'Accessibility', 'Deployment'],
   Backend: ['Node.js', 'REST APIs', 'SQL', 'Deployment'],
@@ -263,13 +413,31 @@ const loadResumeAnalysis = async (userId) => {
     .select('defaultResumeFileId')
     .lean();
   const defaultResumeFileId = userContext?.defaultResumeFileId || null;
+  const resumeSelect = {
+    fileId: 1,
+    fileName: 1,
+    technicalSkills: 1,
+    skills: 1,
+    atsScore: 1,
+    keywordDensity: 1,
+    formatScore: 1,
+    contentQuality: 1,
+    analyzedAt: 1,
+    weaknesses: 1,
+    missingSections: 1,
+    keyAchievements: 1,
+    experienceKeywords: 1,
+    strengths: 1,
+    statusMessage: 1
+  };
   if (defaultResumeFileId) {
     const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
+      .select(resumeSelect)
       .sort({ analyzedAt: -1 })
       .lean();
     if (activeAnalysis) return activeAnalysis;
   }
-  return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
+  return ResumeAnalysis.findOne({ userId }).select(resumeSelect).sort({ analyzedAt: -1 }).lean();
 };
 
 const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
@@ -303,6 +471,160 @@ const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode =
   }
 };
 
+const isUsableRecommendationNarrative = (value, { min = 20, max = 800 } = {}) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (text.length < min || text.length > max) return false;
+  if (/[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|language model\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test summary|leverage synerg|in today's (?:fast-paced|digital)|cutting-edge solutions/i.test(text)) {
+    return false;
+  }
+  if ((text.match(/[!?.]/g) || []).length > 8) return false;
+  return true;
+};
+
+const isRecommendationNarrativeGrounded = (text, { careerStack = '', experienceLevel = '', anchors = [] } = {}) => {
+  const lower = String(text || '').toLowerCase();
+  if (!lower) return false;
+  if (careerStack && lower.includes(String(careerStack).toLowerCase())) return true;
+  if (experienceLevel && lower.includes(String(experienceLevel).toLowerCase())) return true;
+  return (Array.isArray(anchors) ? anchors : []).some((name) => {
+    const token = String(name || '').trim().toLowerCase();
+    return token.length >= 2 && lower.includes(token);
+  });
+};
+
+const hasRecommendationFactPollution = (aiResult = {}) => {
+  if (!aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)) return true;
+  return Array.isArray(aiResult.projects)
+    || Array.isArray(aiResult.technologies)
+    || Array.isArray(aiResult.careerPaths)
+    || Array.isArray(aiResult.structuredRecommendations)
+    || Array.isArray(aiResult.roadmap)
+    || (aiResult.recommendationScores != null && typeof aiResult.recommendationScores === 'object')
+    || typeof aiResult.readinessScore === 'number'
+    || typeof aiResult.overallRecommendationScore === 'number'
+    || typeof aiResult.impact === 'number'
+    || typeof aiResult.match === 'number'
+    || typeof aiResult.jobDemand === 'number'
+    || typeof aiResult.salaryRange === 'string'
+    || typeof aiResult.startUrl === 'string'
+    || typeof aiResult.exploreUrl === 'string'
+    || typeof aiResult.priority === 'string'
+    || typeof aiResult.difficulty === 'string';
+};
+
+const pickGroundedNarrative = (raw, fallbackText, context, bounds) => {
+  if (!isUsableRecommendationNarrative(raw, bounds)) return fallbackText;
+  const cleaned = String(raw).replace(/\s+/g, ' ').trim();
+  if (!isRecommendationNarrativeGrounded(cleaned, context)) return fallbackText;
+  return cleaned;
+};
+
+const pickGroundedActions = (raw, fallbackActions, min, max, context) => {
+  const cleaned = (Array.isArray(raw) ? raw : [])
+    .map((value) => String(value || '').replace(/\s+/g, ' ').trim())
+    .filter((value) => (
+      isUsableRecommendationNarrative(value, { min: 12, max: 240 })
+      && isRecommendationNarrativeGrounded(value, context)
+    ));
+  if (cleaned.length >= min) return uniqueStrings(cleaned, max);
+  return normalizeActionList(cleaned, fallbackActions, min, max);
+};
+
+const resolveRecommendationEnrichment = (aiResult, fallback = {}, {
+  aiOk = false,
+  careerStack = '',
+  experienceLevel = '',
+  anchors = []
+} = {}) => {
+  if (!aiOk || !aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult) || aiResult.__fallback === true) {
+    return { ...EMPTY_RECOMMENDATION_ENRICHMENT };
+  }
+  if (hasRecommendationFactPollution(aiResult)) {
+    return { ...EMPTY_RECOMMENDATION_ENRICHMENT };
+  }
+
+  const context = { careerStack, experienceLevel, anchors };
+  const planProjectIds = new Set((fallback.projects || []).map((item) => String(item.id || '').trim()).filter(Boolean));
+  const planTechNames = new Set((fallback.technologies || []).map((item) => String(item.name || '').trim().toLowerCase()).filter(Boolean));
+  const planPathIds = new Set((fallback.careerPaths || []).map((item) => String(item.id || '').trim()).filter(Boolean));
+
+  const projectNarratives = (Array.isArray(aiResult.projectNarratives) ? aiResult.projectNarratives : [])
+    .filter((item) => planProjectIds.has(String(item?.id || '').trim()))
+    .map((item) => {
+      const id = String(item.id || '').trim();
+      const base = (fallback.projects || []).find((project) => String(project.id || '').trim() === id) || {};
+      const description = pickGroundedNarrative(item.description, '', context, { min: 24, max: 500 });
+      const whyThisProject = pickGroundedNarrative(item.whyThisProject, '', context, { min: 24, max: 500 });
+      if (!description && !whyThisProject) return null;
+      return {
+        id,
+        description: description || base.description || '',
+        whyThisProject: whyThisProject || base.whyThisProject || ''
+      };
+    })
+    .filter(Boolean);
+
+  const technologyNarratives = (Array.isArray(aiResult.technologyNarratives) ? aiResult.technologyNarratives : [])
+    .filter((item) => planTechNames.has(String(item?.name || '').trim().toLowerCase()))
+    .map((item) => {
+      const name = String(item.name || '').trim();
+      const description = pickGroundedNarrative(
+        item.description,
+        '',
+        { ...context, anchors: [...anchors, name] },
+        { min: 20, max: 400 }
+      );
+      if (!description) return null;
+      return { name, description };
+    })
+    .filter(Boolean);
+
+  const careerPathNarratives = (Array.isArray(aiResult.careerPathNarratives) ? aiResult.careerPathNarratives : [])
+    .filter((item) => planPathIds.has(String(item?.id || '').trim()))
+    .map((item) => {
+      const id = String(item.id || '').trim();
+      const base = (fallback.careerPaths || []).find((path) => String(path.id || '').trim() === id) || {};
+      const description = pickGroundedNarrative(item.description, '', context, { min: 24, max: 500 });
+      const actionItems = pickGroundedActions(item.actionItems, [], 0, 6, context);
+      if (!description && !actionItems.length) return null;
+      return {
+        id,
+        description: description || base.description || '',
+        actionItems: actionItems.length ? actionItems : (base.actionItems || [])
+      };
+    })
+    .filter(Boolean);
+
+  const analysisSummary = pickGroundedNarrative(aiResult.analysisSummary, '', context, { min: 40, max: 800 });
+  const portfolioRecommendations = pickGroundedActions(aiResult.portfolioRecommendations, [], 0, 4, context);
+  const resumeRecommendations = pickGroundedActions(aiResult.resumeRecommendations, [], 0, 4, context);
+  const learningActions = pickGroundedActions(aiResult.learningActions, [], 0, 6, context);
+  const interviewReadinessActions = pickGroundedActions(aiResult.interviewReadinessActions, [], 0, 4, context);
+
+  const aiUsed = Boolean(
+    analysisSummary
+    || projectNarratives.length
+    || technologyNarratives.length
+    || careerPathNarratives.length
+    || portfolioRecommendations.length
+    || resumeRecommendations.length
+    || learningActions.length
+    || interviewReadinessActions.length
+  );
+
+  return {
+    analysisSummary,
+    projectNarratives,
+    technologyNarratives,
+    careerPathNarratives,
+    portfolioRecommendations,
+    resumeRecommendations,
+    learningActions,
+    interviewReadinessActions,
+    aiUsed
+  };
+};
+
 const mergeNarrativeEnrichment = (fallback, enrichment = {}) => {
   const projectNarratives = new Map((Array.isArray(enrichment.projectNarratives) ? enrichment.projectNarratives : [])
     .map((item) => [String(item?.id || '').trim(), item]));
@@ -318,7 +640,7 @@ const mergeNarrativeEnrichment = (fallback, enrichment = {}) => {
       const narrative = projectNarratives.get(String(project.id || '').trim()) || {};
       return {
         ...project,
-        title: String(narrative.title || project.title || '').trim(),
+        // Deterministic titles remain authoritative; AI may only enrich narrative fields.
         description: String(narrative.description || project.description || '').trim(),
         whyThisProject: String(narrative.whyThisProject || project.whyThisProject || '').trim()
       };
@@ -329,17 +651,20 @@ const mergeNarrativeEnrichment = (fallback, enrichment = {}) => {
     }),
     careerPaths: fallback.careerPaths.map((path) => {
       const narrative = careerPathNarratives.get(String(path.id || '').trim()) || {};
+      const actionItems = Array.isArray(narrative.actionItems) && narrative.actionItems.length
+        ? normalizeActionList(narrative.actionItems, path.actionItems, 2, 6)
+        : path.actionItems;
       return {
         ...path,
-        title: String(narrative.title || path.title || '').trim(),
         description: String(narrative.description || path.description || '').trim(),
-        actionItems: normalizeActionList(narrative.actionItems, path.actionItems, 2, 6)
+        actionItems
       };
     }),
     portfolioRecommendations: normalizeActionList(enrichment.portfolioRecommendations, fallback.portfolioRecommendations, 2, 4),
     resumeRecommendations: normalizeActionList(enrichment.resumeRecommendations, fallback.resumeRecommendations, 2, 4),
     learningActions: normalizeActionList(enrichment.learningActions, fallback.learningActions, 3, 6),
-    interviewReadinessActions: normalizeActionList(enrichment.interviewReadinessActions, fallback.interviewReadinessActions, 2, 4)
+    interviewReadinessActions: normalizeActionList(enrichment.interviewReadinessActions, fallback.interviewReadinessActions, 2, 4),
+    aiUsed: Boolean(enrichment.aiUsed)
   };
 };
 
@@ -1286,210 +1611,405 @@ const runRecommendationPipeline = async ({
 }) => {
   const isTemporaryMode = !allowSignals;
   const stageTimer = createStageTimer();
+  const validationStarted = process.hrtime.bigint();
   const cleanResume = isTemporaryMode ? String(resumeText || '').trim() : '';
+  const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
+  const providedKnownSkills = uniqueStrings(knownSkills || [], 30);
+  const providedMissingSkills = uniqueStrings(missingSkills || [], 20);
+  stageTimer.mark('validation', validationStarted);
 
-  let latestResumeAnalysis = null;
-  let storedResumeInsights;
-  let resumeCacheIdentity;
+  const inflightKey = JSON.stringify({
+    userId: String(userId || 'temporary'),
+    username: normalizedGithubUsername,
+    careerStack,
+    experienceLevel,
+    forceRefresh: Boolean(forceRefresh),
+    saveResult: Boolean(saveResult),
+    previewResumeId: String(previewResumeId || ''),
+    resumeHash: String(resumeHash || ''),
+    resumeTextFingerprint: cleanResume ? `${cleanResume.length}:${crypto.createHash('sha1').update(cleanResume).digest('hex').slice(0, 12)}` : '',
+    providedKnownSkills,
+    providedMissingSkills,
+    analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
+  });
 
-  if (isTemporaryMode) {
-    const previewResume = await stageTimer.measure('preview-resume resolution', () => resolvePreviewResume({ previewResumeId, resumeHash, resumeText: cleanResume, experienceLevel }));
-    if (previewResume.error) return res.status(previewResume.status).json({ message: previewResume.error });
-    storedResumeInsights = previewResume.resumeInsights;
-    resumeCacheIdentity = previewResume.resumeCacheIdentity;
-  } else {
-    latestResumeAnalysis = await stageTimer.measure('resume', () => loadResumeAnalysis(userId));
-    storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
-    resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
+  const existingInflight = recommendationInflight.get(inflightKey);
+  if (existingInflight) {
+    try {
+      const shared = await existingInflight;
+      return res.json(stageTimer.attach(normalizeRecommendationResponse({
+        ...shared,
+        fromCache: true,
+        cacheMetadata: {
+          ...(shared.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheLayer: shared.cacheMetadata?.cacheLayer || 'inflight'
+        }
+      })));
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        message: error.message || 'Failed to generate recommendations.'
+      });
+    }
   }
 
-  const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
-  const baseCacheKey = saveResult && userId
-    ? {
+  let settleInflight;
+  const workPromise = new Promise((resolve, reject) => {
+    settleInflight = { resolve, reject };
+  });
+  recommendationInflight.set(inflightKey, workPromise);
+
+  try {
+    const earlyMemoryKey = buildRecommendationSoftMemoryKey({
+      userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+      username: normalizedGithubUsername,
+      careerStack,
+      experienceLevel,
+      isTemporaryMode,
+      resumeIdentity: isTemporaryMode
+        ? `${previewResumeId || 'inline'}:${resumeHash || 'no-resume'}`
+        : 'profile-active',
+      signalHash: 'pending'
+    });
+    if (!forceRefresh) {
+      const earlyMemoryHit = await stageTimer.measure('cache', () => Promise.resolve(readRecommendationMemory(earlyMemoryKey)));
+      if (earlyMemoryHit?.analysisData) {
+        recommendationRuntimeCounters.memoryHits += 1;
+        const cachedResult = normalizeRecommendationResponse({
+          ...earlyMemoryHit.analysisData,
+          fromCache: true,
+          cacheMetadata: {
+            ...(earlyMemoryHit.analysisData.cacheMetadata || {}),
+            loadedFromCache: true,
+            cacheLayer: 'memory',
+            signalHash: earlyMemoryHit.signalHash || earlyMemoryHit.analysisData.cacheMetadata?.signalHash,
+            cachedAt: earlyMemoryHit.updatedAt || null
+          }
+        });
+        settleInflight.resolve(cachedResult);
+        return res.json(stageTimer.attach(cachedResult));
+      }
+    }
+
+    let latestResumeAnalysis = null;
+    let storedResumeInsights;
+    let resumeCacheIdentity;
+
+    if (isTemporaryMode) {
+      const previewResume = await stageTimer.measure('Mongo', () => resolvePreviewResume({
+        previewResumeId,
+        resumeHash,
+        resumeText: cleanResume,
+        experienceLevel
+      }));
+      if (previewResume.error) {
+        const error = new Error(previewResume.error);
+        error.status = previewResume.status;
+        throw error;
+      }
+      storedResumeInsights = previewResume.resumeInsights;
+      resumeCacheIdentity = previewResume.resumeCacheIdentity;
+    } else {
+      latestResumeAnalysis = await stageTimer.measure('Mongo', () => loadResumeAnalysis(userId));
+      storedResumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
+      resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
+    }
+
+    const resumeIdentity = `${resumeCacheIdentity.resumeAnalysisId || 'no-resume'}:${resumeCacheIdentity.resumeHash || 'no-resume'}`;
+
+    const runPipeline = async () => {
+      const softMemoryKeyPending = buildRecommendationSoftMemoryKey({
+        userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+        username: normalizedGithubUsername,
+        careerStack,
+        experienceLevel,
+        isTemporaryMode,
+        resumeIdentity,
+        signalHash: 'pending'
+      });
+
+      if (!forceRefresh) {
+        const memoryHit = await stageTimer.measure('cache', () => Promise.resolve(readRecommendationMemory(softMemoryKeyPending)));
+        if (memoryHit?.analysisData) {
+          recommendationRuntimeCounters.memoryHits += 1;
+          return normalizeRecommendationResponse({
+            ...memoryHit.analysisData,
+            fromCache: true,
+            cacheMetadata: {
+              ...(memoryHit.analysisData.cacheMetadata || {}),
+              loadedFromCache: true,
+              cacheLayer: 'memory',
+              signalHash: memoryHit.signalHash || memoryHit.analysisData.cacheMetadata?.signalHash,
+              cachedAt: memoryHit.updatedAt || null
+            }
+          });
+        }
+      }
+
+
+      const preliminarySignals = await stageTimer.measure('Mongo', () => loadDeveloperSignalsSafely({
         userId,
+        username,
+        resumeInsights: storedResumeInsights,
+        githubInsights: {},
+        allowSignals
+      }));
+      const upstreamSignalHash = buildSignalHash({
+        ...preliminarySignals.developerSignals,
+        recommendationSignal: {},
+        recommendationSignals: {}
+      });
+      const signalHash = crypto.createHash('sha256').update(JSON.stringify({
+        upstreamSignalHash,
+        providedKnownSkills,
+        providedMissingSkills
+      })).digest('hex');
+
+      const softMemoryKey = buildRecommendationSoftMemoryKey({
+        userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+        username: normalizedGithubUsername,
+        careerStack,
+        experienceLevel,
+        isTemporaryMode,
+        resumeIdentity,
+        signalHash
+      });
+
+      if (!forceRefresh) {
+        const memoryHit = await stageTimer.measure('cache', () => Promise.resolve(readRecommendationMemory(softMemoryKey)));
+        if (memoryHit?.analysisData) {
+          recommendationRuntimeCounters.memoryHits += 1;
+          return normalizeRecommendationResponse({
+            ...memoryHit.analysisData,
+            fromCache: true,
+            cacheMetadata: {
+              ...(memoryHit.analysisData.cacheMetadata || {}),
+              loadedFromCache: true,
+              cacheLayer: 'memory',
+              signalHash,
+              cachedAt: memoryHit.updatedAt || null
+            }
+          });
+        }
+      }
+
+      const cacheKey = {
         githubUsername: username,
         careerStack,
         experienceLevel,
         resumeHash: resumeCacheIdentity.resumeHash,
         resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+        signalHash,
         analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
-      }
-    : null;
-  // Do the cheapest possible candidate lookup before signal aggregation,
-  // GitHub fallback analysis, skill resolution, prompt construction, or AI.
-  const earlyCacheCandidate = !forceRefresh && baseCacheKey
-    ? await AnalysisCache.findOne(baseCacheKey).sort({ updatedAt: -1 }).lean()
-    : null;
-  const preliminarySignals = await stageTimer.measure('developer signals', () => loadDeveloperSignalsSafely({
-    userId,
-    username,
-    resumeInsights: storedResumeInsights,
-    githubInsights: {},
-    allowSignals
-  }));
-  // Preview results may only be shared when their public inputs are identical.
-  // This runs before GitHub/AI work so a cache hit makes neither provider call.
-  const upstreamSignalHash = buildSignalHash({
-    ...preliminarySignals.developerSignals,
-    recommendationSignal: {},
-    recommendationSignals: {}
-  });
-  const signalHash = crypto.createHash('sha256').update(JSON.stringify({
-    upstreamSignalHash,
-    providedKnownSkills: uniqueStrings(knownSkills || [], 30),
-    providedMissingSkills: uniqueStrings(missingSkills || [], 20)
-  })).digest('hex');
-  const previewCacheKey = `recommendations:preview:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
-
-  if (isTemporaryMode && !forceRefresh) {
-    const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
-    if (previewCached?.analysisData) {
-      const cachedResult = {
-        ...previewCached.analysisData,
-        analysisBasedOn: buildAnalysisBasedOn({ username, careerStack, experienceLevel, resumeInsights: storedResumeInsights }),
-        fromCache: true,
-        cacheMetadata: {
-          ...(previewCached.analysisData.cacheMetadata || {}),
-          loadedFromCache: true,
-          cacheKey: previewCacheKey,
-          signalHash,
-          cachedAt: previewCached.updatedAt || null
-        }
       };
-      return res.json(stageTimer.attach(normalizeRecommendationResponse(cachedResult)));
-    }
-  }
-  const resumeInsights = preliminarySignals.developerSignals.resumeSignals?.analyzed
-    ? preliminarySignals.developerSignals.resumeSignals
-    : storedResumeInsights;
-  const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
-    || await stageTimer.measure('GitHub', () => getGitHubData(username, { forceRefresh, isTemporaryMode }));
-  const githubInsights = buildGithubInsights(githubData);
-  const recommendationEvidence = buildRecommendationEvidence({
-    resumeInsights,
-    githubData,
-    careerStack
-  });
-  const developerSignals = preliminarySignals.developerSignals;
-  // A recommendation must not invalidate itself after it is saved.
-  const signalsUsed = buildSignalsUsedSummary({
-    username,
-    resumeInsights,
-    githubInsights,
-    signals: developerSignals
-  });
+      const scopedCacheKey = saveResult && req.user?._id
+        ? { ...cacheKey, userId: req.user._id }
+        : null;
+      const resultCacheIdentity = {
+        mode: isTemporaryMode ? 'preview' : 'profile',
+        userId: String(userId || 'temporary'),
+        ...cacheKey,
+        providedKnownSkills,
+        providedMissingSkills
+      };
+      const resultCacheKey = buildRecommendationResultCacheKey(resultCacheIdentity);
+      const previewCacheKey = `recommendations:preview:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
 
-  const resolvedSkills = await resolveKnownAndMissingSkills({
-    userId,
-    username,
-    careerStack,
-    experienceLevel,
-    resumeCacheIdentity,
-    resumeSkills: resumeInsights.skills,
-    githubData,
-    resumeInsights,
-    githubInsights,
-    developerSignals,
-    recommendationEvidence,
-    providedKnownSkills: knownSkills,
-    providedMissingSkills: missingSkills
-  });
-
-  const cacheKey = {
-    githubUsername: username,
-    careerStack,
-    experienceLevel,
-    resumeHash: resumeCacheIdentity.resumeHash,
-    resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-    signalHash,
-    analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
-  };
-
-  const scopedCacheKey = saveResult && req.user?._id
-    ? { ...cacheKey, userId: req.user._id }
-    : null;
-  const previousRecommendationPromise = scopedCacheKey
-    ? AnalysisCache.findOne({
-        userId: req.user._id,
-        analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
-        $or: [
-          { signalHash: { $ne: signalHash } },
-          { resumeHash: { $ne: resumeCacheIdentity.resumeHash } },
-          { githubUsername: { $ne: username } }
-        ]
-      }).sort({ updatedAt: -1 }).lean()
-    : Promise.resolve(null);
-
-  if (scopedCacheKey) {
-    const cached = earlyCacheCandidate?.signalHash === signalHash
-      ? earlyCacheCandidate
-      : await AnalysisCache.findOne(scopedCacheKey).lean();
-    if (!forceRefresh && isCacheFresh(cached) && cached?.analysisData?.projects?.length) {
-      const cachedResult = normalizeRecommendationResponse({
-        ...cached.analysisData,
-        ...normalizeRecommendationPayload(cached.analysisData),
-        analysisBasedOn: buildAnalysisBasedOn({
-          username,
-          careerStack,
-          experienceLevel,
-          resumeInsights
-        }),
-        resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
-        fromCache: true,
-        cacheMetadata: {
-          ...(cached.analysisData.cacheMetadata || {}),
-          loadedFromCache: true,
-          cacheKey,
-          signalHash,
-          analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
-          recommendationVersion: RECOMMENDATION_ANALYSIS_VERSION,
-          ttlHours: 24,
-          cachedAt: cached.updatedAt || cached.createdAt || null
+      if (!forceRefresh) {
+        const redisCached = await stageTimer.measure('Redis', () => withBudget(
+          aiService.getSharedCache(isTemporaryMode ? previewCacheKey : resultCacheKey, isTemporaryMode ? 'preview' : 'recommendations:result'),
+          RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS,
+          null
+        ));
+        if (redisCached?.analysisData && isPersistableRecommendationResult(redisCached.analysisData)) {
+          recommendationRuntimeCounters.redisHits += 1;
+          writeRecommendationMemory(softMemoryKey, {
+            analysisData: redisCached.analysisData,
+            updatedAt: redisCached.updatedAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          writeRecommendationMemory(softMemoryKeyPending, {
+            analysisData: redisCached.analysisData,
+            updatedAt: redisCached.updatedAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          writeRecommendationMemory(earlyMemoryKey, {
+            analysisData: redisCached.analysisData,
+            updatedAt: redisCached.updatedAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          return normalizeRecommendationResponse({
+            ...redisCached.analysisData,
+            analysisBasedOn: buildAnalysisBasedOn({
+              username,
+              careerStack,
+              experienceLevel,
+              resumeInsights: storedResumeInsights
+            }),
+            fromCache: true,
+            cacheMetadata: {
+              ...(redisCached.analysisData.cacheMetadata || {}),
+              loadedFromCache: true,
+              cacheLayer: 'redis',
+              cacheKey: isTemporaryMode ? previewCacheKey : cacheKey,
+              signalHash,
+              cachedAt: redisCached.updatedAt || null
+            }
+          });
         }
+      }
+
+      if (scopedCacheKey && !forceRefresh) {
+        const mongoCached = await stageTimer.measure('Mongo', () => AnalysisCache.findOne(scopedCacheKey)
+          .select(ANALYSIS_CACHE_RESULT_FIELDS)
+          .lean());
+        if (isCacheFresh(mongoCached) && isPersistableRecommendationResult(mongoCached?.analysisData)) {
+          recommendationRuntimeCounters.mongoHits += 1;
+          writeRecommendationMemory(softMemoryKey, {
+            analysisData: mongoCached.analysisData,
+            updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          writeRecommendationMemory(softMemoryKeyPending, {
+            analysisData: mongoCached.analysisData,
+            updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          writeRecommendationMemory(earlyMemoryKey, {
+            analysisData: mongoCached.analysisData,
+            updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+          });
+          setImmediate(() => {
+            aiService.setSharedCache(resultCacheKey, {
+              analysisData: mongoCached.analysisData,
+              updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date()
+            }, RECOMMENDATION_REDIS_TTL_SECONDS, 'recommendations:result').catch(() => {});
+          });
+          return normalizeRecommendationResponse({
+            ...mongoCached.analysisData,
+            ...normalizeRecommendationPayload(mongoCached.analysisData),
+            analysisBasedOn: buildAnalysisBasedOn({
+              username,
+              careerStack,
+              experienceLevel,
+              resumeInsights: storedResumeInsights
+            }),
+            resumeStatusMessage: mongoCached.analysisData.resumeStatusMessage || storedResumeInsights.statusMessage,
+            fromCache: true,
+            cacheMetadata: {
+              ...(mongoCached.analysisData.cacheMetadata || {}),
+              loadedFromCache: true,
+              cacheLayer: 'mongo',
+              cacheKey,
+              signalHash,
+              analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
+              recommendationVersion: RECOMMENDATION_ANALYSIS_VERSION,
+              ttlHours: 24,
+              cachedAt: mongoCached.updatedAt || mongoCached.createdAt || null
+            }
+          });
+        }
+      }
+
+      recommendationRuntimeCounters.pipelineExecutions += 1;
+
+      const resumeInsights = preliminarySignals.developerSignals.resumeSignals?.analyzed
+        ? preliminarySignals.developerSignals.resumeSignals
+        : storedResumeInsights;
+      const githubData = buildGithubDataFromSignals(preliminarySignals.developerSignals.githubSignals, username)
+        || await stageTimer.measure('external provider', () => getGitHubData(username, { forceRefresh, isTemporaryMode }));
+      const githubInsights = buildGithubInsights(githubData);
+      const recommendationEvidence = buildRecommendationEvidence({
+        resumeInsights,
+        githubData,
+        careerStack
       });
-      return res.json(stageTimer.attach(cachedResult));
-    }
-  }
+      const developerSignals = preliminarySignals.developerSignals;
+      const signalsUsed = buildSignalsUsedSummary({
+        username,
+        resumeInsights,
+        githubInsights,
+        signals: developerSignals
+      });
 
-  const previousRecommendation = await previousRecommendationPromise;
+      const resolvedSkills = await stageTimer.measure('deterministic processing', () => resolveKnownAndMissingSkills({
+        userId,
+        username,
+        careerStack,
+        experienceLevel,
+        resumeCacheIdentity,
+        resumeSkills: resumeInsights.skills,
+        githubData,
+        resumeInsights,
+        githubInsights,
+        developerSignals,
+        recommendationEvidence,
+        providedKnownSkills: knownSkills,
+        providedMissingSkills: missingSkills
+      }));
 
-  const fallback = buildRecommendationFallback({
-    username,
-    careerStack,
-    experienceLevel,
-    knownSkills: resolvedSkills.knownSkills,
-    missingSkills: resolvedSkills.missingSkills,
-    resumeInsights,
-    githubInsights,
-    developerSignals,
-    recommendationEvidence
-  });
-  const prompt = getRecommendationPrompt(
-    careerStack,
-    experienceLevel,
-    resolvedSkills.knownSkills,
-    resolvedSkills.missingSkills,
-    resumeInsights,
-    githubInsights,
-    summarizeSignalsForAI(developerSignals),
-    fallback
-  );
+      const previousRecommendation = scopedCacheKey
+        ? await stageTimer.measure('Mongo', () => AnalysisCache.findOne({
+          userId: req.user._id,
+          analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
+          $or: [
+            { signalHash: { $ne: signalHash } },
+            { resumeHash: { $ne: resumeCacheIdentity.resumeHash } },
+            { githubUsername: { $ne: username } }
+          ]
+        }).select(ANALYSIS_CACHE_RESULT_FIELDS).sort({ updatedAt: -1 }).lean())
+        : null;
 
-  const inflightKey = JSON.stringify({
-    userId: String(userId || 'temporary'),
-    ...cacheKey,
-    forceRefresh: Boolean(forceRefresh),
-    saveResult: Boolean(saveResult),
-    knownSkills: resolvedSkills.knownSkills,
-    missingSkills: resolvedSkills.missingSkills
-  });
-  let workPromise = recommendationInflight.get(inflightKey);
-  if (!workPromise) {
-    workPromise = (async () => {
+      const fallback = await stageTimer.measure('deterministic processing', async () => buildRecommendationFallback({
+        username,
+        careerStack,
+        experienceLevel,
+        knownSkills: resolvedSkills.knownSkills,
+        missingSkills: resolvedSkills.missingSkills,
+        resumeInsights,
+        githubInsights,
+        developerSignals,
+        recommendationEvidence
+      }));
+      const prompt = getRecommendationPrompt(
+        careerStack,
+        experienceLevel,
+        resolvedSkills.knownSkills,
+        resolvedSkills.missingSkills,
+        resumeInsights,
+        githubInsights,
+        summarizeSignalsForAI(developerSignals),
+        fallback
+      );
+
       recommendationRuntimeCounters.aiCalls += 1;
-      const aiEnrichment = await stageTimer.measure('AI', () => aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: 7000 }));
-      const deterministicResult = mergeNarrativeEnrichment(fallback, aiEnrichment);
-      const result = finalizeRecommendationResult({
+      const narrativeFallback = { __fallback: true };
+      const aiMeta = await stageTimer.measure('AI', () => aiService.runAIAnalysis(prompt, narrativeFallback, 0, {
+        timeoutMs: 7000,
+        returnMeta: true
+      }));
+      const aiOk = Boolean(aiMeta && aiMeta.ok === true);
+      const enrichment = await stageTimer.measure('deterministic processing', async () => resolveRecommendationEnrichment(aiOk ? aiMeta.value : null, fallback, {
+        aiOk,
+        careerStack,
+        experienceLevel,
+        anchors: uniqueStrings([
+          ...resolvedSkills.knownSkills,
+          ...resolvedSkills.missingSkills,
+          ...(recommendationEvidence?.claimedButNotProvenSkills || []),
+          ...(fallback.projects || []).map((project) => project.title),
+          ...(fallback.technologies || []).map((technology) => technology.name)
+        ], 24)
+      }));
+      const deterministicResult = mergeNarrativeEnrichment(fallback, enrichment);
+      const result = await stageTimer.measure('deterministic processing', async () => finalizeRecommendationResult({
         username,
         careerStack,
         experienceLevel,
@@ -1510,29 +2030,78 @@ const runRecommendationPipeline = async ({
         signalHash,
         cacheKey,
         previousRecommendation: previousRecommendation?.analysisData || null
-      });
+      }));
       result.cacheMetadata.temporary = !saveResult;
+      result.aiUsed = Boolean(enrichment.aiUsed);
+
+      if (!isPersistableRecommendationResult(result)) {
+        result.cacheMetadata.partial = true;
+        return result;
+      }
 
       if (isTemporaryMode) {
         result.mode = 'preview';
         result.isTemporary = true;
         result.savedToProfile = false;
-
-        const cachePayload = {
+        writeRecommendationMemory(softMemoryKey, {
           analysisData: result,
-          updatedAt: new Date()
-        };
-        recommendationRuntimeCounters.persistenceOperations += 1;
-        await aiService.setSharedCache(previewCacheKey, cachePayload, 1800, 'preview');
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
+        writeRecommendationMemory(softMemoryKeyPending, {
+          analysisData: result,
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
+        writeRecommendationMemory(earlyMemoryKey, {
+          analysisData: result,
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
+        setImmediate(() => {
+          recommendationRuntimeCounters.persistenceOperations += 1;
+          aiService.setSharedCache(previewCacheKey, {
+            analysisData: result,
+            updatedAt: new Date()
+          }, 1800, 'preview').catch(() => {});
+        });
+        stageTimer.mark('persistence', process.hrtime.bigint());
       } else {
+        writeRecommendationMemory(softMemoryKey, {
+          analysisData: result,
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
+        writeRecommendationMemory(softMemoryKeyPending, {
+          analysisData: result,
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
+        writeRecommendationMemory(earlyMemoryKey, {
+          analysisData: result,
+          updatedAt: new Date(),
+          signalHash,
+          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
+        });
         if (scopedCacheKey) {
           recommendationRuntimeCounters.persistenceOperations += 1;
-          await AnalysisCache.findOneAndUpdate(
+          await stageTimer.measure('persistence', () => AnalysisCache.findOneAndUpdate(
             scopedCacheKey,
             { $set: { analysisData: result, userId: req.user._id } },
             { upsert: true }
-          );
+          ));
         }
+        setImmediate(() => {
+          aiService.setSharedCache(resultCacheKey, {
+            analysisData: result,
+            updatedAt: new Date()
+          }, RECOMMENDATION_REDIS_TTL_SECONDS, 'recommendations:result').catch(() => {});
+        });
         if (saveResult) {
           queueAIVersionSnapshot({
             req,
@@ -1544,33 +2113,38 @@ const runRecommendationPipeline = async ({
               careerStack,
               experienceLevel,
               signalHash,
-              resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
+              resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+              aiUsed: Boolean(enrichment.aiUsed)
             }
+          });
+          voidRecommendationNotification({
+            userId: req.user._id,
+            type: 'career_update',
+            title: 'Career Recommendations Updated',
+            message: 'Your latest career recommendations are ready to review.',
+            dedupeKey: `recommendations:${signalHash || 'latest'}`,
+            dedupeWindowHours: 24,
+            preferenceKey: 'newRecommendations'
           });
         }
       }
+
       return result;
-    })();
-    recommendationInflight.set(inflightKey, workPromise);
-    workPromise.finally(() => recommendationInflight.delete(inflightKey)).catch(() => {});
+    };
+
+    const fullResult = normalizeRecommendationResponse(await runPipeline());
+    settleInflight.resolve(fullResult);
+    return res.json(stageTimer.attach(fullResult));
+  } catch (error) {
+    settleInflight.reject(error);
+    throw error;
+  } finally {
+    if (recommendationInflight.get(inflightKey) === workPromise) {
+      recommendationInflight.delete(inflightKey);
+    }
   }
-
-  const fullResult = normalizeRecommendationResponse(await workPromise);
-
-  if (!isTemporaryMode && req.user?._id) {
-    await createNotification({
-      userId: req.user._id,
-      type: 'career_update',
-      title: 'Career Recommendations Updated',
-      message: 'Your latest career recommendations are ready to review.',
-      dedupeKey: `recommendations:${fullResult?.signalHash || 'latest'}`,
-      dedupeWindowHours: 24,
-      preferenceKey: 'newRecommendations'
-    });
-  }
-
-  return res.json(stageTimer.attach(fullResult));
 };
+
 
 const PREVIEW_STACKS = new Set(['Frontend', 'Backend', 'Full Stack', 'AI/ML']);
 const PREVIEW_LEVELS = new Set(['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years']);
@@ -1673,7 +2247,7 @@ const deleteSavedPreview = async (req, res) => {
  */
 const getRecommendations = async (req, res) => {
   try {
-    let { username, knownSkills, missingSkills, forceRefresh } = req.body;
+    let { username, forceRefresh } = req.body;
     const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
 
     if (!req.user?._id) {
@@ -1685,13 +2259,21 @@ const getRecommendations = async (req, res) => {
       return res.status(400).json({ message: 'Use Preview mode to analyze another GitHub username.' });
     }
 
-    const finalUsername = activeGithub;
-    if (!finalUsername) {
-      return res.status(400).json({ message: 'GitHub username is required.' });
+    let finalUsername;
+    try {
+      finalUsername = parseGitHubUsername(activeGithub);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message || 'GitHub username is required.' });
     }
 
     const careerStack = req.user?.careerStack || req.body.careerStack || 'Full Stack';
     const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
+    if (!ALLOWED_STACKS.includes(careerStack)) {
+      return res.status(400).json({ message: `Target stack must be one of: ${ALLOWED_STACKS.join(', ')}` });
+    }
+    if (!ALLOWED_LEVELS.includes(experienceLevel)) {
+      return res.status(400).json({ message: `Experience level must be one of: ${ALLOWED_LEVELS.join(', ')}` });
+    }
 
     return runRecommendationPipeline({
       req,
@@ -1710,8 +2292,8 @@ const getRecommendations = async (req, res) => {
     });
   } catch (error) {
     console.error('Recommendations Error:', error.message);
-    return res.status(500).json({
-      message: 'Failed to generate recommendations.',
+    return res.status(error.status || 500).json({
+      message: error.status ? error.message : 'Failed to generate recommendations.',
     });
   }
 };
@@ -1747,10 +2329,11 @@ const generateRecommendations = async (req, res) => {
       }
     }
 
-    const username = isTemporaryMode ? String(githubUsername || '').trim() : activeGithub;
-
-    if (!username) {
-      return res.status(400).json({ message: 'GitHub username is required.' });
+    let username;
+    try {
+      username = parseGitHubUsername(isTemporaryMode ? githubUsername : activeGithub);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message || 'GitHub username is required.' });
     }
 
     const finalCareerStack = isTemporaryMode
@@ -1760,16 +2343,14 @@ const generateRecommendations = async (req, res) => {
       ? experienceLevel
       : (req.user?.experienceLevel || experienceLevel || 'Student');
 
-    // Validation for Preview Mode
+    // Validation for Preview Mode and profile fallbacks
+    if (!ALLOWED_STACKS.includes(finalCareerStack)) {
+      return res.status(400).json({ message: `Target stack is required and must be one of: ${ALLOWED_STACKS.join(', ')}` });
+    }
+    if (!ALLOWED_LEVELS.includes(finalExperienceLevel)) {
+      return res.status(400).json({ message: `Experience level is required and must be one of: ${ALLOWED_LEVELS.join(', ')}` });
+    }
     if (isTemporaryMode) {
-      const allowedStacks = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-      if (!finalCareerStack || !allowedStacks.includes(finalCareerStack)) {
-        return res.status(400).json({ message: `Target stack is required and must be one of: ${allowedStacks.join(', ')}` });
-      }
-      const allowedLevels = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
-      if (!finalExperienceLevel || !allowedLevels.includes(finalExperienceLevel)) {
-        return res.status(400).json({ message: `Experience level is required and must be one of: ${allowedLevels.join(', ')}` });
-      }
       if (resumeText !== undefined && typeof resumeText !== 'string') {
         return res.status(400).json({ message: 'Resume input must be a valid text string.' });
       }
@@ -1794,10 +2375,23 @@ const generateRecommendations = async (req, res) => {
     });
   } catch (error) {
     console.error('Generate Recommendations Error:', error.message);
-    return res.status(500).json({
-      message: 'Failed to generate recommendations.',
+    return res.status(error.status || 500).json({
+      message: error.status ? error.message : 'Failed to generate recommendations.',
     });
   }
 };
 
-module.exports = { getRecommendations, generateRecommendations, savePreview, listSavedPreviews, deleteSavedPreview };
+module.exports = {
+  getRecommendations,
+  generateRecommendations,
+  savePreview,
+  listSavedPreviews,
+  deleteSavedPreview,
+  resolveRecommendationEnrichment,
+  mergeNarrativeEnrichment,
+  isUsableRecommendationNarrative,
+  hasRecommendationFactPollution,
+  clearRecommendationMemoryCache,
+  getRecommendationMemoryCacheSize,
+  RECOMMENDATION_ANALYSIS_VERSION
+};

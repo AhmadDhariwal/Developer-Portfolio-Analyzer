@@ -312,8 +312,11 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
     this.loadingState = forceRefresh ? 'refreshing' : 'loading';
     this.errorMessage = '';
     this.actionMessage = '';
-    if (forceRefresh) this.result = this.result;
-    else this.result = null;
+    const previousResult = this.result;
+    const preservePrevious = Boolean(previousResult) && (forceRefresh || !isTemporary);
+    if (!preservePrevious) {
+      this.result = null;
+    }
     this.cdr.detectChanges();
 
     this.activeRequest = this.recService.getRecommendations(
@@ -352,8 +355,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.errorMessage = err?.error?.message || 'Failed to fetch recommendations. Please try again.';
         this.isLoading = false;
-        this.loadingState = 'error';
-        this.result = null;
+        if (preservePrevious && previousResult) {
+          this.result = previousResult;
+          this.loadingState = forceRefresh ? 'stale' : 'error';
+        } else {
+          this.result = null;
+          this.loadingState = 'error';
+        }
         this.cdr.detectChanges();
       }
     });

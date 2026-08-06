@@ -54,16 +54,18 @@ const getRecommendationPrompt = (
     STRICT RULES - you MUST follow ALL of these:
     1. Do not calculate or return scores, rankings, priorities, difficulty, effort, timelines, salary, URLs, or technology selections.
     2. Do not add or remove recommendation items. The backend owns all deterministic choices and scoring.
-    3. Recommendations MUST adapt to progress signals:
+    3. Do not rename projects or career paths. Keep the provided IDs and return narrative fields only for those IDs/names.
+    4. Recommendations MUST adapt to progress signals:
         - If weekly progress or sprint consistency is low, prefer smaller, practical next steps.
         - If portfolio completeness is low, include portfolio improvement actions.
         - If integration proof is weak (GitHub, LinkedIn, LeetCode, Kaggle, StackOverflow, certifications), recommend proof-building actions.
         - If repeated weak areas show up across signals, reflect them in technology and learning actions.
-    4. Use portfolio and integration signals only as supporting evidence. Do not treat them as stronger than GitHub plus resume.
-    5. Avoid generic filler. Every narrative should connect to a real signal from the input.
-    6. Keep the tone specific, realistic, and recruiter-useful.
-    7. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
-    8. AI may only enrich narrative and action wording. Deterministic platform output remains authoritative.
+    5. Use portfolio and integration signals only as supporting evidence. Do not treat them as stronger than GitHub plus resume.
+    6. Avoid generic filler. Every narrative should connect to a real signal from the input.
+    7. Keep the tone specific, realistic, and recruiter-useful.
+    8. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
+    9. AI may only enrich narrative and action wording. Deterministic platform output remains authoritative.
+    10. Never return projects, technologies, careerPaths, recommendationScores, roadmap, impact, match, jobDemand, salaryRange, startUrl, or exploreUrl fields.
 
     Return ONLY valid JSON (no markdown, no code fences):
 
@@ -72,7 +74,6 @@ const getRecommendationPrompt = (
       "projectNarratives": [
         {
           "id": string,
-          "title": string,
           "description": string,
           "whyThisProject": string
         }
@@ -86,7 +87,6 @@ const getRecommendationPrompt = (
       "careerPathNarratives": [
         {
           "id": string,
-          "title": string,
           "description": string,
           "actionItems": string[]
         }
