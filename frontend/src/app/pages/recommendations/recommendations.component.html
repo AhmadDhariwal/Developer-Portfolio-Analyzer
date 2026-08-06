@@ -172,7 +172,7 @@
           <p *ngIf="result.analysisSummary" title="{{ result.analysisSummary }}">{{ result.analysisSummary }}</p>
           <div class="career-summary-row">
             <span *ngIf="careerGoalLabel">Goal: {{ careerGoalLabel }}</span>
-            <span *ngIf="roadmapTimeline.length">Timeline: {{ roadmapTimeline[0].label }} Ã¢â€ â€™ {{ roadmapTimeline[roadmapTimeline.length - 1].label }}</span>
+            <span *ngIf="roadmapTimeline.length">Timeline: {{ roadmapTimeline[0].label }} → {{ roadmapTimeline[roadmapTimeline.length - 1].label }}</span>
             <span *ngIf="highestPrioritySkill">Focus: {{ highestPrioritySkill }}</span>
             <span *ngIf="analysisLastUpdatedLabel">Updated: {{ analysisLastUpdatedLabel }}</span>
           </div>
@@ -428,7 +428,7 @@
           <h2>Interview Readiness</h2>
           <p>Technical, behavioral, and system-design preparation based on your proof gaps.</p>
         </div>
-        <span class="section-count">{{ result.recommendationScores?.interviewScore || 0 }}% interview</span>
+        <span class="section-count">{{ scoreLabel(result.recommendationScores?.interviewScore, dataQuality.scoreAvailability?.interviewScore !== false) }}</span>
       </div>
       <div class="readiness-bars">
         <div class="readiness-bar" *ngFor="let metric of interviewReadinessMetrics">
