@@ -162,4 +162,24 @@ describe('CourseService caching', () => {
     expect(response.courses[0]?.rating).toBeUndefined();
   });
 
+  it('drops incomplete courses and does not invent ratings from null or zero', async () => {
+    const promise = firstValueFrom(service.getCourses({ topic: 'SQL' }, 1, 10));
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=SQL`).flush({
+      courses: [
+        { id: 'ok', title: 'SQL Basics', platform: 'Udemy', url: 'https://www.udemy.com/course/sql/', rating: null },
+        { id: 'bad', title: '', platform: 'Udemy', url: 'https://www.udemy.com/course/bad/' },
+        { id: 'zero', title: 'Zero Rated', platform: 'Coursera', url: 'https://www.coursera.org/learn/zero', rating: 0 }
+      ],
+      total: 3,
+      page: 1,
+      totalPages: 1,
+      hasMore: false
+    });
+
+    const response = await promise;
+    expect(response.courses.map((course) => course.id)).toEqual(['ok', 'zero']);
+    expect(response.courses[0]?.rating).toBeUndefined();
+    expect(response.courses[1]?.rating).toBeUndefined();
+  });
+
 });

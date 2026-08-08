@@ -30,8 +30,8 @@
         </div>
       </div>
 
-      <button class="secondary-button" type="button" (click)="refreshCourses()" [disabled]="isLoading || isLoadingMore">
-        Refresh Courses
+      <button class="secondary-button" type="button" (click)="refreshCourses()" [disabled]="isLoading || isLoadingMore || isRefreshing">
+        {{ isRefreshing ? 'Refreshing...' : 'Refresh Courses' }}
       </button>
 
       <button class="btn-mobile-filters" type="button" (click)="toggleMobileFilters()">
@@ -111,6 +111,12 @@
     <span>{{ sourceNotice }}</span>
   </div>
 
+  <div class="source-notice fallback" *ngIf="!isLoading && errorMessage && allCourses.length > 0" role="alert">
+    <strong>Refresh unavailable</strong>
+    <span>{{ errorMessage }} Previous recommendations are still shown.</span>
+    <button class="link-button" type="button" (click)="retryLoad()">Retry</button>
+  </div>
+
   <div class="courses-layout">
     <aside class="filters-column" [class.mobile-open]="isMobileFiltersOpen">
       <div class="filters-overlay" (click)="toggleMobileFilters()"></div>
@@ -118,7 +124,7 @@
         <button class="drawer-close" type="button" (click)="toggleMobileFilters()" aria-label="Close filters">Close</button>
         <app-course-filters
           [initialFilters]="activeFilters"
-          [isApplying]="isLoading || isLoadingMore"
+          [isApplying]="isLoading || isLoadingMore || isRefreshing"
           (filtersChange)="onFiltersChange($event)"
           (filtersReset)="onFiltersReset()"
         ></app-course-filters>
@@ -145,7 +151,7 @@
         </div>
       </ng-container>
 
-      <div class="error-state" *ngIf="!isLoading && errorMessage">
+      <div class="error-state" *ngIf="!isLoading && errorMessage && allCourses.length === 0">
         <div class="state-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" />
@@ -170,7 +176,7 @@
         <button class="primary-button" type="button" (click)="onFiltersReset()">Reset Filters</button>
       </div>
 
-      <ng-container *ngIf="!isLoading && !errorMessage && displayedCourses.length > 0">
+      <ng-container *ngIf="!isLoading && displayedCourses.length > 0 && (!errorMessage || allCourses.length > 0)">
         <div class="section-header">
           <div>
             <span class="eyebrow">Recommendations</span>
@@ -180,6 +186,7 @@
           <div class="section-meta">
             <span>Showing {{ displayedCourses.length }} of {{ totalCourses }}</span>
             <span *ngIf="hasActiveFilters">Filtered results</span>
+            <span *ngIf="isRefreshing">Refreshing…</span>
           </div>
         </div>
 
@@ -199,7 +206,7 @@
             class="primary-button load-more-button"
             type="button"
             (click)="loadMore()"
-            [disabled]="isLoadingMore"
+            [disabled]="isLoadingMore || isRefreshing"
           >
             <ng-container *ngIf="isLoadingMore">
               <span class="spinner"></span>

@@ -338,6 +338,7 @@
 
 .source-notice {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
@@ -347,6 +348,14 @@
   color: #bae6fd;
   font-size: 0.82rem;
   line-height: 1.5;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  span,
+  strong {
+    min-width: 0;
+  }
 
   &.fallback {
     border-color: rgba(251, 191, 36, 0.25);

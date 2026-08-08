@@ -73,10 +73,20 @@ analysisCacheSchema.index(
     }
 );
 analysisCacheSchema.index(
+    { userId: 1, careerStack: 1, experienceLevel: 1, analysisVersion: 1, updatedAt: -1 },
+    {
+        name: 'course_skill_signal_lookup',
+        partialFilterExpression: {
+            analysisVersion: 'v6-skill-intelligence',
+            'analysisData.missingSkills.0': { $exists: true }
+        }
+    }
+);
+analysisCacheSchema.index(
     { userId: 1, analysisVersion: 1, signalHash: 1, updatedAt: -1 },
     {
         name: 'course_pool_lookup',
-        partialFilterExpression: { analysisVersion: 'courses_pool_v4' }
+        partialFilterExpression: { analysisVersion: 'courses_pool_v5' }
     }
 );
 
