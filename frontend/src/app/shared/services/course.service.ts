@@ -161,6 +161,12 @@ export class CourseService {
       return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
     };
 
+    const rating = numeric(course?.rating);
+    const reviewCount = (() => {
+      const parsed = Number(course?.reviewCount);
+      return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : undefined;
+    })();
+
     return {
       id,
       title,
@@ -169,8 +175,8 @@ export class CourseService {
       topics,
       description: String(course?.description || '').trim() || undefined,
       instructor: String(course?.instructor || '').trim() || undefined,
-      rating: numeric(course?.rating),
-      reviewCount: numeric(course?.reviewCount),
+      rating,
+      reviewCount: reviewCount && reviewCount > 0 ? reviewCount : undefined,
       duration: String(course?.duration || '').trim() || undefined,
       durationHours: numeric(course?.durationHours),
       level: course?.level || undefined,

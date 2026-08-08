@@ -1,0 +1,76 @@
+{
+  "ok": true,
+  "authMode": "jwt-bootstrap",
+  "api": {
+    "counts": {
+      "coursesGets": 10,
+      "unauthorized": 1,
+      "rapid": 5
+    },
+    "rapidMs": 156,
+    "firstCount": 10,
+    "firstIds": [
+      "fb_u2",
+      "fb_u3",
+      "fb_u1",
+      "yt_zJSY8tbf_ys",
+      "yt_9cmy6AK3IBA",
+      "yt_MsnQ5uepIaE",
+      "fb_c3",
+      "fb_c1",
+      "fb_f1",
+      "fb_f4"
+    ],
+    "fromCacheSecond": true,
+    "total": 57,
+    "hasRecommended": true
+  },
+  "indexes": [
+    {
+      "name": "course_pool_lookup",
+      "action": "exists"
+    },
+    {
+      "name": "course_skill_signal_lookup",
+      "action": "exists"
+    }
+  ],
+  "browser": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "initialCourseGets": 1,
+      "rapidRefreshGets": 1,
+      "cardsBefore": 10,
+      "totalCourseGets": 6,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "title": "Learning Hub"
+    },
+    "mobile375": {
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "initialCourseGets": 1,
+      "rapidRefreshGets": 1,
+      "cardsBefore": 10,
+      "totalCourseGets": 6,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "overflow": false
+      },
+      "title": "Learning Hub"
+    }
+  }
+}

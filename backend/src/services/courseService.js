@@ -151,10 +151,12 @@ function parseDuration(iso) {
 }
 
 function calcYouTubeRating(views, likes) {
-  if (!views) return 4.1;
-  const ratio = likes > 0 ? likes / Math.max(views, 1) : 0;
+  const safeViews = Number.parseInt(views, 10);
+  if (!Number.isFinite(safeViews) || safeViews <= 0) return null;
+  const safeLikes = Math.max(0, Number.parseInt(likes, 10) || 0);
+  const ratio = safeLikes > 0 ? safeLikes / Math.max(safeViews, 1) : 0;
   const engagementBoost = clamp(ratio * 12, 0, 0.45);
-  const popularityBoost = clamp(Math.log10(Math.max(views, 10)) * 0.12, 0, 0.35);
+  const popularityBoost = clamp(Math.log10(Math.max(safeViews, 10)) * 0.12, 0, 0.35);
   return Number((4 + engagementBoost + popularityBoost).toFixed(1));
 }
 
@@ -163,15 +165,14 @@ function extractTopics(title, description = '') {
   return KNOWN_TOPICS.filter((topic) => haystack.includes(topic.toLowerCase())).slice(0, 5);
 }
 
-function buildFallbackUrl(course = {}) {
-  const query = `${course.title || 'software engineering course'} ${course.platform || ''}`.trim();
-  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+function hasValidCourseUrl(url) {
+  return /^https?:\/\/[^\s]+$/i.test(toTrimmedString(url));
 }
 
 function ensureTopics(topics = [], title = '', description = '') {
   const directTopics = Array.isArray(topics) ? topics : [];
   const normalized = directTopics
-    .map((topic) => toTrimmedString(topic))
+    .map((topic) => toTrimmedString(topic).slice(0, 40))
     .filter(Boolean);
 
   if (normalized.length) {
@@ -182,8 +183,10 @@ function ensureTopics(topics = [], title = '', description = '') {
 }
 
 function normaliseCourse(course = {}, index = 0) {
-  const title = toTrimmedString(course.title);
-  const description = toTrimmedString(course.description);
+  const title = toTrimmedString(course.title).slice(0, 200);
+  if (!title) return null;
+
+  const description = toTrimmedString(course.description).slice(0, 600);
   const normalizedPlatform = normalisePlatform(course.platform);
   const platform = course.platform === 'edX' || course.platform === 'freeCodeCamp'
     ? course.platform
@@ -192,32 +195,40 @@ function normaliseCourse(course = {}, index = 0) {
       : normalizedPlatform;
   const safePlatform = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(platform)
     ? platform
-    : 'Udemy';
-  const rating = clamp(Number.parseFloat(course.rating) || 0, 0, 5);
-  const reviewCount = Math.max(0, Number.parseInt(course.reviewCount, 10) || 0);
+    : null;
+  if (!safePlatform) return null;
+
+  const rawUrl = toTrimmedString(course.url);
+  if (!hasValidCourseUrl(rawUrl)) return null;
+
+  const parsedRating = Number.parseFloat(course.rating);
+  const rating = Number.isFinite(parsedRating) && parsedRating > 0
+    ? Number(clamp(parsedRating, 0, 5).toFixed(1))
+    : undefined;
+  const parsedReviews = Number.parseInt(course.reviewCount, 10);
+  const reviewCount = Number.isFinite(parsedReviews) && parsedReviews > 0 ? parsedReviews : 0;
   const durationHours = Math.max(0, Number(course.durationHours) || 0);
   const duration = toTrimmedString(course.duration)
     || (durationHours ? `${durationHours.toFixed(durationHours >= 10 ? 0 : 1)}h` : '');
   const level = ['Beginner', 'Intermediate', 'Advanced'].includes(course.level)
     ? course.level
     : 'All Levels';
-  const url = /^https?:\/\//i.test(toTrimmedString(course.url)) ? toTrimmedString(course.url) : buildFallbackUrl({ title, platform: safePlatform });
   const topics = ensureTopics(course.topics, title, description);
   const popularity = clamp(Number(course.popularity) || 0, 0, 100);
 
   return {
-    id: toTrimmedString(course.id) || `course_${safePlatform.toLowerCase()}_${index + 1}`,
+    id: toTrimmedString(course.id).slice(0, 120) || `course_${safePlatform.toLowerCase()}_${index + 1}`,
     title,
     description,
     platform: safePlatform,
-    instructor: toTrimmedString(course.instructor) || safePlatform,
-    rating: Number(rating.toFixed(1)),
+    instructor: toTrimmedString(course.instructor).slice(0, 120) || safePlatform,
+    rating,
     reviewCount,
     duration,
     durationHours: Number(durationHours.toFixed(2)),
     level,
-    thumbnail: toTrimmedString(course.thumbnail),
-    url,
+    thumbnail: toTrimmedString(course.thumbnail).slice(0, 500),
+    url: rawUrl,
     topics,
     popularity
   };
@@ -340,11 +351,15 @@ function scoreAndRank(courses = [], context = {}) {
   return courses
     .map((course) => {
       const relevanceScore = computeRelevance(course, context);
-      const finalScore = Math.round(
-        ((Number(course.rating || 0) / 5) * 100 * 0.38)
-        + (Number(course.popularity || 0) * 0.28)
-        + (relevanceScore * 0.34)
-      );
+      const hasRating = Number.isFinite(Number(course.rating)) && Number(course.rating) > 0;
+      const popularity = Number(course.popularity || 0);
+      const finalScore = hasRating
+        ? Math.round(
+          ((Number(course.rating) / 5) * 100 * 0.38)
+          + (popularity * 0.28)
+          + (relevanceScore * 0.34)
+        )
+        : Math.round((popularity * 0.45) + (relevanceScore * 0.55));
 
       return {
         ...course,
@@ -519,14 +534,14 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
           platform: 'YouTube',
           instructor: snippet.channelTitle || 'YouTube',
           rating: calcYouTubeRating(views, likes),
-          reviewCount: likes,
+          reviewCount: likes > 0 ? likes : undefined,
           duration,
           durationHours: Number(durationMeta.totalHours.toFixed(2)),
           level: 'All Levels',
           thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url || '',
           url: `https://www.youtube.com/watch?v=${item.id}`,
           topics: extractTopics(snippet.title, snippet.description),
-          popularity: Math.min(100, Math.max(10, Math.round((views / 200000) * 100)))
+          popularity: views > 0 ? Math.min(100, Math.max(10, Math.round((views / 200000) * 100))) : 0
         }, index);
       })
       .filter(Boolean)
@@ -592,7 +607,9 @@ function buildFallbackPool(platform = 'All', count = 20) {
     { id: 'fb_e6', title: 'Software Construction in Java', platform: 'edX', instructor: 'MIT', rating: 4.9, reviewCount: 28000, duration: '120h 00m', durationHours: 120, level: 'Advanced', url: 'https://www.edx.org/learn/software-construction/massachusetts-institute-of-technology-software-construction-in-java', topics: ['Java', 'Testing', 'Design Patterns', 'Architecture'], popularity: 78, description: 'Learn advanced software engineering techniques: correctness, design patterns, testing, and concurrent programming.', thumbnail: '' },
     { id: 'fb_e7', title: 'Data Science: Inference and Modeling', platform: 'edX', instructor: 'Harvard', rating: 4.8, reviewCount: 32000, duration: '80h 00m', durationHours: 80, level: 'Advanced', url: 'https://www.edx.org/learn/data-science/harvard-university-data-science-inference-and-modeling', topics: ['Data Science', 'Statistics', 'Machine Learning', 'R'], popularity: 76, description: 'Advanced statistical inference, predictive modeling, and Bayesian analysis for data-driven decision making.', thumbnail: '' },
     { id: 'fb_f5', title: 'Information Security Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.7, reviewCount: 220000, duration: '40h 00m', durationHours: 40, level: 'Advanced', url: 'https://www.freecodecamp.org/learn/information-security/', topics: ['Security', 'Penetration Testing', 'Python', 'Networking'], popularity: 79, description: 'Advanced cybersecurity concepts including penetration testing, secure coding, and threat modeling.', thumbnail: '' }
-  ].map((course, index) => normaliseCourse(course, index));
+  ]
+    .map((course, index) => normaliseCourse(course, index))
+    .filter(Boolean);
 
   let pool = allCourses;
   if (platform === 'Other') {
@@ -614,12 +631,41 @@ function dedupeCourses(courses = []) {
   });
 }
 
+function isPersistableCoursePool(courses = []) {
+  if (!Array.isArray(courses) || !courses.length) return false;
+  return courses.every((course) => (
+    course
+    && toTrimmedString(course.id)
+    && toTrimmedString(course.title)
+    && hasValidCourseUrl(course.url)
+    && ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform)
+  ));
+}
+
+function sanitizeSkillList(values = [], limit = 12) {
+  const list = Array.isArray(values)
+    ? values
+    : String(values || '').split(',');
+
+  const seen = new Set();
+  const output = [];
+  for (const value of list) {
+    const normalized = toTrimmedString(value).slice(0, 40);
+    const key = normalized.toLowerCase();
+    if (!normalized || seen.has(key)) continue;
+    seen.add(key);
+    output.push(normalized);
+    if (output.length >= limit) break;
+  }
+  return output;
+}
+
 async function buildCoursePoolWithMetadata(options = {}) {
   const filters = normaliseCourseFilters(options);
   const careerStack = toTrimmedString(options.careerStack) || 'Full Stack';
   const experienceLevel = toTrimmedString(options.experienceLevel) || 'Student';
-  const skillGaps = Array.isArray(options.skillGaps) ? options.skillGaps.map(toTrimmedString).filter(Boolean) : [];
-  const knownSkills = Array.isArray(options.knownSkills) ? options.knownSkills.map(toTrimmedString).filter(Boolean) : [];
+  const skillGaps = sanitizeSkillList(options.skillGaps, 12);
+  const knownSkills = sanitizeSkillList(options.knownSkills, 20);
   const query = filters.topic
     ? `${filters.topic} ${careerStack}`
     : `${careerStack} ${skillGaps.slice(0, 3).join(' ')} programming`.trim();
@@ -641,7 +687,7 @@ async function buildCoursePoolWithMetadata(options = {}) {
     Promise.resolve(buildFallbackPool(filters.platform, curatedCount))
   ]);
 
-  let pool = dedupeCourses([...youtubeResult.courses, ...curatedCourses]);
+  let pool = dedupeCourses([...youtubeResult.courses, ...curatedCourses].filter(Boolean));
   pool = applyCourseFilters(pool, filters);
   let fallbackUsed = youtubeCount > 0 && youtubeResult.status !== 'available';
 
@@ -688,5 +734,12 @@ async function buildCoursePool(options = {}) {
 module.exports = {
   buildCoursePool,
   buildCoursePoolWithMetadata,
-  normaliseCourseFilters
+  normaliseCourseFilters,
+  normaliseCourse,
+  calcYouTubeRating,
+  scoreAndRank,
+  applyCourseFilters,
+  isPersistableCoursePool,
+  sanitizeSkillList,
+  hasValidCourseUrl
 };

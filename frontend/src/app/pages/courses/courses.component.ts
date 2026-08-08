@@ -7,8 +7,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { CourseService } from '../../shared/services/course.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import {
@@ -39,6 +40,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   isLoadingMore = false;
+  isRefreshing = false;
   errorMessage = '';
 
   currentPage = 0;
@@ -57,10 +59,13 @@ export class CoursesComponent implements OnInit, OnDestroy {
   private readonly filterChanges = new Subject<CourseFilters>();
   private requestToken = 0;
   private lastProfileSignature = '';
+  private profileReady = false;
+  private refreshLockUntil = 0;
 
   constructor(
     private readonly courseService: CourseService,
     private readonly careerProfileService: CareerProfileService,
+    private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -77,7 +82,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   get canShowLoadMore(): boolean {
-    return !this.isLoading && (this.hasHiddenCourses || this.hasMorePages);
+    return !this.isLoading && !this.isRefreshing && (this.hasHiddenCourses || this.hasMorePages);
   }
 
   get hiddenCount(): number {
@@ -136,6 +141,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.applyTopicFromQuery(
+      this.route.snapshot.queryParamMap.get('skill')
+      || this.route.snapshot.queryParamMap.get('topic')
+    );
+
     this.subscriptions.add(
       this.filterChanges.pipe(
         distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
@@ -143,6 +153,22 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.activeFilters = normalizeCourseFilters(filters);
         this.isMobileFiltersOpen = false;
         this.resetAndFetch();
+      })
+    );
+
+    this.subscriptions.add(
+      this.route.queryParamMap.pipe(
+        map((params) => String(params.get('skill') || params.get('topic') || '').trim()),
+        distinctUntilChanged()
+      ).subscribe((topic) => {
+        if (!topic) return;
+        const nextFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
+        if (JSON.stringify(nextFilters) === JSON.stringify(this.activeFilters)) return;
+        this.activeFilters = nextFilters;
+        if (this.profileReady) {
+          this.resetAndFetch();
+        }
+        this.cdr.markForCheck();
       })
     );
 
@@ -161,6 +187,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
             this.courseService.clearCache();
           }
           this.lastProfileSignature = nextSignature;
+          this.profileReady = true;
           this.resetAndFetch();
         })
     );
@@ -201,7 +228,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   loadMore(): void {
-    if (this.isLoadingMore) {
+    if (this.isLoadingMore || this.isRefreshing) {
       return;
     }
 
@@ -229,38 +256,84 @@ export class CoursesComponent implements OnInit, OnDestroy {
   retryLoad(): void {
     this.errorMessage = '';
     this.courseService.clearCache();
-    this.resetAndFetch();
+    this.resetAndFetch({ preserveOnFailure: this.allCourses.length > 0 });
   }
 
   refreshCourses(): void {
+    const now = Date.now();
+    if (this.isLoading || this.isLoadingMore || this.isRefreshing || now < this.refreshLockUntil) {
+      return;
+    }
+    this.refreshLockUntil = now + 800;
     this.courseService.clearCache();
-    this.resetAndFetch();
+    this.resetAndFetch({ preserveOnFailure: this.allCourses.length > 0 });
   }
 
   trackById(_: number, course: Course): string {
     return course.id;
   }
 
-  private resetAndFetch(): void {
-    this.requestToken += 1;
-    this.allCourses = [];
-    this.displayCount = INITIAL_DISPLAY;
-    this.currentPage = 0;
-    this.totalPages = 1;
-    this.totalCourses = 0;
-    this.errorMessage = '';
-    this.recommendedBasedOn = null;
-    this.fetchPage(1, false);
+  private applyTopicFromQuery(raw: string | null): void {
+    const topic = String(raw || '').trim();
+    if (!topic) return;
+    this.activeFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
   }
 
-  private fetchPage(page: number, append: boolean): void {
+  private resetAndFetch(options: { preserveOnFailure?: boolean } = {}): void {
+    const preserveOnFailure = Boolean(options.preserveOnFailure) && this.allCourses.length > 0;
+    const previousResult = preserveOnFailure
+      ? {
+          courses: this.allCourses,
+          displayCount: this.displayCount,
+          page: this.currentPage,
+          totalPages: this.totalPages,
+          totalCourses: this.totalCourses,
+          recommendedBasedOn: this.recommendedBasedOn
+        }
+      : null;
+
+    this.requestToken += 1;
+    if (!preserveOnFailure) {
+      this.allCourses = [];
+      this.displayCount = INITIAL_DISPLAY;
+      this.currentPage = 0;
+      this.totalPages = 1;
+      this.totalCourses = 0;
+      this.recommendedBasedOn = null;
+    }
+    this.errorMessage = '';
+    this.fetchPage(1, false, { preserveOnFailure, previousResult });
+  }
+
+  private fetchPage(
+    page: number,
+    append: boolean,
+    options: {
+      preserveOnFailure?: boolean;
+      previousResult?: {
+        courses: Course[];
+        displayCount: number;
+        page: number;
+        totalPages: number;
+        totalCourses: number;
+        recommendedBasedOn: RecommendedBasedOn | null;
+      } | null;
+    } = {}
+  ): void {
     const currentRequest = ++this.requestToken;
+    const preservePrevious = Boolean(options.preserveOnFailure) && Boolean(options.previousResult);
 
     if (append) {
       this.isLoadingMore = true;
+      this.isRefreshing = false;
+    } else if (preservePrevious) {
+      this.isRefreshing = true;
+      this.isLoading = false;
+      this.isLoadingMore = false;
     } else {
       this.isLoading = true;
       this.isLoadingMore = false;
+      this.isRefreshing = false;
     }
 
     this.cdr.markForCheck();
@@ -292,6 +365,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.errorMessage = '';
         this.isLoading = false;
         this.isLoadingMore = false;
+        this.isRefreshing = false;
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -302,6 +376,17 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.errorMessage = error?.error?.message || 'Failed to load courses. Please try again.';
         this.isLoading = false;
         this.isLoadingMore = false;
+        this.isRefreshing = false;
+
+        if (preservePrevious && options.previousResult) {
+          this.allCourses = options.previousResult.courses;
+          this.displayCount = options.previousResult.displayCount;
+          this.currentPage = options.previousResult.page;
+          this.totalPages = options.previousResult.totalPages;
+          this.totalCourses = options.previousResult.totalCourses;
+          this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
+        }
+
         this.cdr.markForCheck();
       }
     });
