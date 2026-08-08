@@ -27,7 +27,7 @@ const getCareerSprintPrompt = ({
   return `
 You are generating a realistic developer sprint plan for DevInsight AI.
 
-Return valid JSON only with this exact shape:
+Return ONLY valid JSON with this exact shape:
 {
   "tasks": [
     {
@@ -38,17 +38,19 @@ Return valid JSON only with this exact shape:
   ]
 }
 
-Rules:
-- Return 6 to 8 tasks.
-- Keep tasks realistic for one sprint only.
-- Balance learning, project, and practice work.
-- Avoid duplicates.
-- Use clear action-oriented descriptions.
-- Keep titles short and professional.
-- Suggest task content only. Do not assign XP, points, streaks, scores, levels, or priorities.
-- Do not include markdown.
-- Do not invent unavailable personal data.
+Hard rules:
+- Return 6 to 8 tasks only.
+- Keep tasks realistic for one sprint window.
+- Include at least 2 distinct categories among learning, project, and practice.
+- Avoid duplicate titles.
+- Titles: 8-80 chars, action-oriented, professional.
+- Descriptions: 24-400 chars, concrete and measurable.
+- Suggest task content only.
+- Do NOT assign XP, points, streaks, scores, levels, priorities, confidence, or rankings.
+- Do NOT invent unavailable personal data.
+- Do NOT return markdown, code fences, commentary, or extra top-level keys.
 - Prefer smaller tasks if consistency is low or repeated misses are high.
+- Ground tasks in the provided stack, focus technology, missing skills, or weak areas.
 
 Developer context:
 - Career stack: ${careerStack || 'Full Stack'}

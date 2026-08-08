@@ -322,8 +322,12 @@ export class Navbar implements OnInit {
   }
 
   private loadGithubRepos(username: string): void {
+    const handle = String(username || '').trim();
+    // Skip emails / blank handles — GitHub usernames cannot contain '@'.
+    if (!handle || handle.includes('@') || /\s/.test(handle)) return;
+
     this.http.get<any[]>(
-      `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`
+      `https://api.github.com/users/${encodeURIComponent(handle)}/repos?per_page=100&sort=updated`
     ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: repos => {
         this.cachedRepos = repos;

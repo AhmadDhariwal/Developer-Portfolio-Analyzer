@@ -1,0 +1,71 @@
+{
+  "module": "career-sprint",
+  "authMode": "jwt-bootstrap",
+  "userId": "69ea7eab6b6eb9ef9d17c957",
+  "durationMs": 46490,
+  "api": {
+    "counts": {
+      "currentGets": 9,
+      "historyGets": 1,
+      "mutations": 3,
+      "generate": 1,
+      "unauthorized": 1,
+      "rapidShared": 5,
+      "dashboardGets": 1
+    },
+    "rapidMs": 153,
+    "sprintId": "6a770e65c61d3573d77ef508",
+    "previousProgress": 0,
+    "progressAfter": 0,
+    "taskCount": 8,
+    "historyCount": 1,
+    "planTaskCount": 8,
+    "hasAnalytics": true
+  },
+  "indexes": {
+    "created": [],
+    "skipped": [
+      "career_sprint_user_updated_at",
+      "career_sprint_user_sprint_window",
+      "career_sprint_user_week_start_desc",
+      "career_sprint_user_week_window",
+      "career_sprint_user_task_completion"
+    ],
+    "totalRequired": 5
+  },
+  "browser": {
+    "desktop": {
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "initialCurrent": 1,
+      "initialHistory": 1,
+      "refreshCurrent": 1,
+      "refreshHistory": 1,
+      "addPosts": 1,
+      "addGets": 0,
+      "requestCount": 11
+    },
+    "mobile375": {
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "overflow": false
+      },
+      "initialCurrent": 1,
+      "initialHistory": 1,
+      "refreshCurrent": 1,
+      "refreshHistory": 1,
+      "addPosts": 1,
+      "addGets": 0,
+      "requestCount": 11
+    }
+  },
+  "readiness": "FREEZE"
+}

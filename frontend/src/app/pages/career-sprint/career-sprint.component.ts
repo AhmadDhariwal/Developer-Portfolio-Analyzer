@@ -67,6 +67,8 @@ export class CareerSprintComponent implements OnInit {
   selectedDraftId = '';
   private profileSignature = '';
 
+  private pendingTaskIds = new Set<string>();
+
   readonly priorityOptions: TaskPriority[] = ['high', 'medium', 'low'];
   readonly categoryOptions: TaskCategory[] = ['learning', 'project', 'practice'];
 
@@ -105,7 +107,13 @@ export class CareerSprintComponent implements OnInit {
   }
 
   loadData(forceRefresh = false): void {
+    // Guard rapid/double-clicks before Angular can disable the button.
+    if (this.isRefreshing || (forceRefresh && this.isLoading)) return;
+
     const activeSprintId = this.sprint?._id || '';
+    const previousSprint = this.sprint;
+    const previousHistory = this.history;
+    const preservePrevious = Boolean(previousSprint);
     const cachedSprint = forceRefresh ? null : this.sprintService.getCurrentCached(this.profileSignature, activeSprintId);
     const cachedHistory = forceRefresh ? null : this.sprintService.getHistoryCached(8, this.profileSignature);
 
@@ -120,8 +128,8 @@ export class CareerSprintComponent implements OnInit {
       return;
     }
 
-    this.isLoading = !this.sprint;
-    this.isRefreshing = forceRefresh && !!this.sprint;
+    this.isLoading = !preservePrevious;
+    this.isRefreshing = forceRefresh && preservePrevious;
     this.isCached = false;
     this.isOffline = false;
     this.errorMessage = '';
@@ -129,7 +137,7 @@ export class CareerSprintComponent implements OnInit {
     forkJoin({
       sprint: this.sprintService.getCurrent(this.profileSignature, activeSprintId, forceRefresh),
       history: this.sprintService.getHistory(8, this.profileSignature, forceRefresh).pipe(
-        catchError(() => of({ history: [] }))
+        catchError(() => of({ history: previousHistory || [] }))
       )
     }).subscribe({
       next: ({ sprint, history }) => {
@@ -137,6 +145,7 @@ export class CareerSprintComponent implements OnInit {
         this.history = history.history || [];
         this.isLoading = false;
         this.isRefreshing = false;
+        this.isCached = false;
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -144,6 +153,11 @@ export class CareerSprintComponent implements OnInit {
         this.isOffline = error?.status === 0;
         this.isLoading = false;
         this.isRefreshing = false;
+        if (preservePrevious && previousSprint) {
+          this.applySprintState(previousSprint);
+          this.history = previousHistory || [];
+          this.isCached = true;
+        }
         this.cdr.markForCheck();
       }
     });
@@ -167,22 +181,11 @@ export class CareerSprintComponent implements OnInit {
     });
   }
 
-  private reloadAfterMutation(message: string): void {
-    const activeSprintId = this.sprint?._id || '';
-    this.isMutationSaving = true;
-    this.sprintService.getCurrent(this.profileSignature, activeSprintId, true).subscribe({
-      next: (sprint) => {
-        this.applySprintState(sprint);
-        this.isMutationSaving = false;
-        this.setAction(message, 'success');
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.isMutationSaving = false;
-        this.setAction(error?.error?.message || 'The change was saved, but the sprint could not be refreshed.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
+  private applyMutationResult(sprint: CareerSprint, message: string): void {
+    this.applySprintState(sprint);
+    this.isMutationSaving = false;
+    this.setAction(message, 'success');
+    this.cdr.markForCheck();
   }
 
   private syncDatePickers(): void {
@@ -452,7 +455,7 @@ export class CareerSprintComponent implements OnInit {
       next: (sprint) => {
         this.isSavingDates = false;
         this.sprint = sprint;
-        this.reloadAfterMutation('Sprint dates updated.');
+        this.applyMutationResult(sprint, 'Sprint dates updated.');
       },
       error: (error) => {
         this.isSavingDates = false;
@@ -481,7 +484,7 @@ export class CareerSprintComponent implements OnInit {
         this.newTaskPriority = 'medium';
         this.newTaskCategory = 'learning';
         this.isAddingTask = false;
-        this.reloadAfterMutation('Manual task added to sprint.');
+        this.applyMutationResult(sprint, 'Manual task added to sprint.');
       },
       error: (error) => {
         this.isAddingTask = false;
@@ -492,17 +495,21 @@ export class CareerSprintComponent implements OnInit {
   }
 
   toggleTask(task: SprintTask): void {
-    if (!this.sprint || !task._id) return;
+    if (!this.sprint || !task._id || this.pendingTaskIds.has(task._id)) return;
     const snapshot = structuredClone(this.sprint);
-    task.isCompleted = !task.isCompleted;
+    const nextCompleted = !task.isCompleted;
+    this.pendingTaskIds.add(task._id);
+    task.isCompleted = nextCompleted;
     this.cdr.markForCheck();
 
-    this.sprintService.toggleTask(this.sprint._id, task._id, task.isCompleted).subscribe({
+    this.sprintService.toggleTask(this.sprint._id, task._id, nextCompleted).subscribe({
       next: (sprint) => {
+        this.pendingTaskIds.delete(task._id!);
         this.sprint = sprint;
-        this.reloadAfterMutation(task.isCompleted ? 'Task completed and sprint progress updated.' : 'Task returned to pending.');
+        this.applyMutationResult(sprint, nextCompleted ? 'Task completed and sprint progress updated.' : 'Task returned to pending.');
       },
       error: (error) => {
+        this.pendingTaskIds.delete(task._id!);
         this.sprint = snapshot;
         this.setAction(error?.error?.message || 'Failed to update task.', 'error');
         this.cdr.markForCheck();
@@ -515,7 +522,7 @@ export class CareerSprintComponent implements OnInit {
     this.sprintService.restoreStreak(this.sprint._id).subscribe({
       next: (sprint) => {
         this.sprint = sprint;
-        this.reloadAfterMutation('Streak restored successfully.');
+        this.applyMutationResult(sprint, 'Streak restored successfully.');
       },
       error: (error) => {
         this.setAction(error?.error?.message || 'Failed to restore streak.', 'error');
@@ -525,9 +532,10 @@ export class CareerSprintComponent implements OnInit {
   }
 
   generateAiPlan(): void {
+    if (this.isGeneratingPlan || this.isGeneratingAi) return;
+    const previousTasks = [...this.generatedTasks];
+    const previousMeta = this.generatedPlanMeta;
     this.isGeneratingPlan = true;
-    this.generatedTasks = [];
-    this.generatedPlanMeta = null;
     this.sprintService.generateAiTasks({
       stack: this.goalStack || undefined,
       technology: this.goalTechnology || undefined,
@@ -544,6 +552,8 @@ export class CareerSprintComponent implements OnInit {
       },
       error: (error) => {
         this.isGeneratingPlan = false;
+        this.generatedTasks = previousTasks;
+        this.generatedPlanMeta = previousMeta;
         this.setAction(error?.error?.message || 'Failed to generate sprint plan.', 'error');
         this.cdr.markForCheck();
       }
@@ -551,9 +561,10 @@ export class CareerSprintComponent implements OnInit {
   }
 
   generateLlmAiPlan(): void {
+    if (this.isGeneratingPlan || this.isGeneratingAi) return;
+    const previousTasks = [...this.generatedTasks];
+    const previousMeta = this.generatedPlanMeta;
     this.isGeneratingAi = true;
-    this.generatedTasks = [];
-    this.generatedPlanMeta = null;
     this.sprintService.generateTrueAiPlan({
       stack: this.goalStack || undefined,
       technology: this.goalTechnology || undefined,
@@ -567,14 +578,16 @@ export class CareerSprintComponent implements OnInit {
         this.isGeneratingAi = false;
         this.setAction(
           this.generatedPlanMeta?.generationMode === 'llm'
-            ? 'AI sprint plan generated with LLM guidance.'
-            : 'AI provider unavailable, so the rules-based fallback plan was used.',
+            ? 'AI sprint plan generated.'
+            : 'AI unavailable, so the deterministic fallback plan was used.',
           'success'
         );
         this.cdr.markForCheck();
       },
       error: (error) => {
         this.isGeneratingAi = false;
+        this.generatedTasks = previousTasks;
+        this.generatedPlanMeta = previousMeta;
         this.setAction(error?.error?.message || 'Failed to generate AI sprint plan.', 'error');
         this.cdr.markForCheck();
       }
@@ -599,7 +612,7 @@ export class CareerSprintComponent implements OnInit {
       next: (sprint) => {
         this.sprint = sprint;
         this.isSavingAiPlan = false;
-        this.reloadAfterMutation('Plan saved to sprint drafts.');
+        this.applyMutationResult(sprint, 'Plan saved to sprint drafts.');
       },
       error: (error) => {
         this.isSavingAiPlan = false;
@@ -618,7 +631,7 @@ export class CareerSprintComponent implements OnInit {
       consistencyScore: plan.consistencyScore,
       signalsUsed: plan.signalsUsed || [],
       generationMode: plan.generatorType === 'llm' ? 'llm' : 'deterministic',
-      providerLabel: plan.generatorType === 'llm' ? 'LLM Planner' : plan.source === 'scenario' ? 'Scenario Simulator' : 'Rules Engine'
+      providerLabel: plan.generatorType === 'llm' ? 'AI-Assisted Plan' : plan.source === 'scenario' ? 'Scenario Simulator' : 'Deterministic Plan'
     };
     this.goalStack = plan.goalStack || this.goalStack;
     this.goalTechnology = plan.goalTechnology || this.goalTechnology;
@@ -636,7 +649,7 @@ export class CareerSprintComponent implements OnInit {
         const latestScenarioPlan = [...(sprint.aiPlans || [])].reverse().find((plan) => plan.source === 'scenario');
         if (latestScenarioPlan) this.loadDraft(latestScenarioPlan);
         this.isImportingScenario = false;
-        this.reloadAfterMutation('Scenario Simulator plan imported into sprint drafts.');
+        this.applyMutationResult(sprint, 'Scenario Simulator plan imported into sprint drafts.');
       },
       error: (error) => {
         this.isImportingScenario = false;
@@ -647,7 +660,7 @@ export class CareerSprintComponent implements OnInit {
   }
 
   addGeneratedTasksToSprint(): void {
-    if (!this.sprint || !this.generatedTasks.length) return;
+    if (!this.sprint || !this.generatedTasks.length || this.isMutationSaving) return;
 
     const existingTitles = new Set(this.allTasks.map((task) => task.title.trim().toLowerCase()));
     const tasks = this.dedupeTasks(this.generatedTasks).filter((task) => !existingTitles.has(task.title.trim().toLowerCase()));
@@ -656,13 +669,25 @@ export class CareerSprintComponent implements OnInit {
       return;
     }
     this.isMutationSaving = true;
+    let failed = 0;
     const addNext = (index: number) => {
       if (index >= tasks.length) {
-        this.generatedTasks = [];
-        this.generatedPlanMeta = null;
-        this.selectedDraftId = '';
-        this.showSetupPanel = false;
-        this.reloadAfterMutation('Generated task suggestions added to the current sprint.');
+        this.generatedTasks = failed === tasks.length ? this.generatedTasks : [];
+        this.generatedPlanMeta = failed === tasks.length ? this.generatedPlanMeta : null;
+        this.selectedDraftId = failed === tasks.length ? this.selectedDraftId : '';
+        this.showSetupPanel = failed !== tasks.length ? false : this.showSetupPanel;
+        this.isMutationSaving = false;
+        if (failed === tasks.length) {
+          this.setAction('Failed to add generated tasks. Previous plan was preserved.', 'error');
+          this.cdr.markForCheck();
+          return;
+        }
+        this.applyMutationResult(
+          this.sprint!,
+          failed > 0
+            ? `Added ${tasks.length - failed} generated tasks. ${failed} could not be added.`
+            : 'Generated task suggestions added to the current sprint.'
+        );
         return;
       }
 
@@ -681,7 +706,10 @@ export class CareerSprintComponent implements OnInit {
           this.sprint = sprint;
           addNext(index + 1);
         },
-        error: () => addNext(index + 1)
+        error: () => {
+          failed += 1;
+          addNext(index + 1);
+        }
       });
     };
 
