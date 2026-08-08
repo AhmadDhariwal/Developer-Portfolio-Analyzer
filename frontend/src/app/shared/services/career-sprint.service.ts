@@ -236,7 +236,8 @@ export class CareerSprintService {
         this.writeCache(this.currentKey(profile, 'active'), sprint);
       })
     );
-    return forceRefresh ? source$ : this.dedupe(key, source$);
+    // Always coalesce in-flight reads, including forceRefresh (double-click / rapid refresh).
+    return this.dedupe(forceRefresh ? `${key}:force` : key, source$);
   }
 
   getCurrentCached(profileSignature = '', activeSprintId = ''): CareerSprint | null {
@@ -289,7 +290,7 @@ export class CareerSprintService {
     const source$ = this.api.getCareerSprintHistory(limit).pipe(
       tap((data) => this.writeCache(key, { history: data.history || [] }))
     );
-    return forceRefresh ? source$ : this.dedupe(key, source$);
+    return this.dedupe(forceRefresh ? `${key}:force` : key, source$);
   }
 
   getHistoryCached(limit = 6, profileSignature = ''): CareerSprint[] | null {
@@ -318,14 +319,14 @@ export class CareerSprintService {
   }
 
   private invalidateMutationCaches(): void {
+    // Only clear caches that actually store career-sprint-derived data.
     this.cacheInvalidation.clearCareerSprintCaches();
-    this.cacheInvalidation.clearScenarioCaches();
     this.cacheInvalidation.clearDashboardCaches();
-    this.cacheInvalidation.clearRecommendationsCaches();
-    this.cacheInvalidation.clearSkillGapCaches();
     this.cacheInvalidation.clearWeeklyReportCaches();
+    this.cacheInvalidation.clearScenarioCaches();
     this.cacheInvalidation.clearNewsCaches();
-    this.cacheInvalidation.clearCoursesCaches();
+    this.cacheInvalidation.clearRecommendationsCaches();
+    this.cacheInvalidation.clearJobsCaches();
   }
 
   updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<CareerSprint> {

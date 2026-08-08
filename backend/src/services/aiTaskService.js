@@ -20,11 +20,41 @@ const { distributeTaskDates, phaseCategory, startOfDay, addDays } = require('../
 
 const MIN_TASKS = 6;
 const MAX_TASKS = 8;
+const CAREER_SPRINT_PLAN_VERSION = 'plan_v2';
 const PLANNING_CACHE_TTL_MS = Math.max(1_000, Number(process.env.CAREER_SPRINT_PLANNING_CACHE_TTL_MS) || 120_000);
 const PLANNING_CACHE_MAX_SIZE = Math.max(10, Number(process.env.CAREER_SPRINT_PLANNING_CACHE_MAX_SIZE) || 300);
+const PLAN_RESULT_CACHE_TTL_MS = Math.max(1_000, Number(process.env.CAREER_SPRINT_PLAN_RESULT_CACHE_TTL_MS) || 120_000);
+const PLAN_REDIS_BUDGET_MS = Math.max(20, Number(process.env.CAREER_SPRINT_PLAN_REDIS_BUDGET_MS) || 120);
+const PLAN_REDIS_TTL_SECONDS = Math.max(30, Number(process.env.CAREER_SPRINT_PLAN_REDIS_TTL_SECONDS) || 120);
+const AI_TIMEOUT_MS = Math.max(2_000, Math.min(5_000, Number(process.env.CAREER_SPRINT_AI_TIMEOUT_MS) || 4_500));
+const STAGE_TIMINGS_ENABLED = process.env.CAREER_SPRINT_STAGE_TIMINGS === '1'
+  || process.env.NODE_ENV !== 'production';
+const PLAN_REDIS_NAMESPACE = 'career_sprint:plan';
+
 const planningContextCache = new Map();
 const planningContextInflight = new Map();
+const planResultCache = new Map();
 const generationInflight = new Map();
+const planRuntimeCounters = {
+  pipelineExecutions: 0,
+  memoryHits: 0,
+  redisHits: 0,
+  mongoHits: 0,
+  signalCalls: 0,
+  aiCalls: 0,
+  redisWrites: 0
+};
+
+const EMPTY_STAGE_TIMINGS = Object.freeze({
+  cache: 0,
+  Redis: 0,
+  Mongo: 0,
+  'external provider': 0,
+  AI: 0,
+  'deterministic processing': 0,
+  validation: 0,
+  persistence: 0
+});
 
 const boundedSet = (cache, key, value) => {
   cache.delete(key);
@@ -32,18 +62,118 @@ const boundedSet = (cache, key, value) => {
   while (cache.size > PLANNING_CACHE_MAX_SIZE) cache.delete(cache.keys().next().value);
 };
 
+const cloneCached = (value) => {
+  if (typeof structuredClone === 'function') {
+    try {
+      return structuredClone(value);
+    } catch {
+      // fall through
+    }
+  }
+  return JSON.parse(JSON.stringify(value));
+};
+
+const withBudget = async (promise, budgetMs, fallback = null) => {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(fallback), budgetMs);
+        timer.unref?.();
+      })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+const createStageTimer = () => {
+  const startedAt = process.hrtime.bigint();
+  const stages = { ...EMPTY_STAGE_TIMINGS };
+  return {
+    async measure(name, work) {
+      const stageStartedAt = process.hrtime.bigint();
+      const value = await work();
+      const elapsed = Number(process.hrtime.bigint() - stageStartedAt) / 1e6;
+      stages[name] = Number(((Number(stages[name]) || 0) + elapsed).toFixed(4));
+      return value;
+    },
+    attach(result) {
+      if (!STAGE_TIMINGS_ENABLED || !result || typeof result !== 'object') return result;
+      const total = Number(process.hrtime.bigint() - startedAt) / 1e6;
+      return {
+        ...result,
+        cacheMetadata: {
+          ...(result.cacheMetadata || {}),
+          stageTimingsMs: { ...stages, total: Number(total.toFixed(4)) },
+          requestCounters: { ...planRuntimeCounters }
+        }
+      };
+    }
+  };
+};
+
 const planningKey = ({ userId, stack, technology, experienceLevel }) => JSON.stringify([
-  String(userId || ''), String(stack || '').trim().toLowerCase(),
-  String(technology || '').trim().toLowerCase(), String(experienceLevel || '').trim().toLowerCase()
+  CAREER_SPRINT_PLAN_VERSION,
+  String(userId || ''),
+  String(stack || '').trim().toLowerCase(),
+  String(technology || '').trim().toLowerCase(),
+  String(experienceLevel || '').trim().toLowerCase()
 ]);
 
 const generationKey = (mode, input) => JSON.stringify([
-  mode, planningKey(input), String(input.sprintStartDate || ''), String(input.sprintEndDate || '')
+  CAREER_SPRINT_PLAN_VERSION,
+  mode,
+  planningKey(input),
+  String(input.sprintStartDate || ''),
+  String(input.sprintEndDate || '')
 ]);
+
+const planResultIdentity = (mode, input) => `${CAREER_SPRINT_PLAN_VERSION}:${mode}:${planningKey(input)}:${String(input.sprintStartDate || '')}:${String(input.sprintEndDate || '')}`;
+
+const isPersistablePlan = (value) => Boolean(
+  value
+  && Array.isArray(value.tasks)
+  && value.tasks.length >= MIN_TASKS
+  && value.planMeta
+  && Number.isFinite(Number(value.planMeta.confidenceScore))
+);
+
+const readPlanMemory = (key) => {
+  const entry = planResultCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    planResultCache.delete(key);
+    return null;
+  }
+  planResultCache.delete(key);
+  planResultCache.set(key, entry);
+  return entry.value;
+};
+
+const writePlanMemory = (key, value) => {
+  if (!isPersistablePlan(value)) return;
+  const cacheable = cloneCached(value);
+  if (cacheable?.cacheMetadata) delete cacheable.cacheMetadata;
+  boundedSet(planResultCache, key, { value: cacheable, expiresAt: Date.now() + PLAN_RESULT_CACHE_TTL_MS });
+};
+
+const persistPlanAsync = (key, value) => {
+  if (!isPersistablePlan(value)) return;
+  const cacheable = cloneCached(value);
+  if (cacheable?.cacheMetadata) delete cacheable.cacheMetadata;
+  setImmediate(() => {
+    planRuntimeCounters.redisWrites += 1;
+    aiService.setSharedCache(key, cacheable, PLAN_REDIS_TTL_SECONDS, PLAN_REDIS_NAMESPACE).catch(() => {});
+  });
+};
 
 const dedupeGeneration = (key, factory, forceRefresh) => {
   if (!forceRefresh && generationInflight.has(key)) return generationInflight.get(key);
-  const request = Promise.resolve().then(factory).finally(() => generationInflight.delete(key));
+  const request = Promise.resolve().then(factory).finally(() => {
+    if (generationInflight.get(key) === request) generationInflight.delete(key);
+  });
   if (!forceRefresh) generationInflight.set(key, request);
   return request;
 };
@@ -78,17 +208,116 @@ const dedupe = (tasks = []) => {
   });
 };
 
-const normalizeTask = (task, taskType = 'ai') => ({
-  title: String(task?.title || 'Task').trim(),
-  description: String(task?.description || '').trim(),
-  points: Math.max(1, Math.min(10, Number(task?.points || 3))),
-  priority: ['high', 'medium', 'low'].includes(task?.priority) ? task.priority : 'medium',
-  category: ['learning', 'project', 'practice'].includes(task?.category) ? task.category : 'learning',
-  taskType,
-  isCompleted: false,
-  startDate: task?.startDate || null,
-  endDate: task?.endDate || null
-});
+const UNSAFE_TASK_TEXT = /[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|language model\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test task|depends on the situation|it is important to|generally speaking|leverage synerg|cutting-edge|stop winging it/i;
+
+const normalizeTask = (task, taskType = 'ai') => {
+  const title = String(task?.title || '').trim().replace(/\s+/g, ' ');
+  if (!title) return null;
+  return {
+    title: title.slice(0, 120),
+    description: String(task?.description || '').trim().slice(0, 1000),
+    points: Math.max(1, Math.min(10, Number.isFinite(Number(task?.points)) ? Number(task.points) : 3)),
+    priority: ['high', 'medium', 'low'].includes(task?.priority) ? task.priority : 'medium',
+    category: ['learning', 'project', 'practice'].includes(task?.category) ? task.category : 'learning',
+    taskType,
+    isCompleted: false,
+    startDate: task?.startDate || null,
+    endDate: task?.endDate || null
+  };
+};
+
+const assignDeterministicScoring = (tasks = []) =>
+  (Array.isArray(tasks) ? tasks : []).map((task, index) => ({
+    ...task,
+    points: task.category === 'project' ? 5 : task.category === 'practice' ? 4 : 3,
+    priority: index < 2 ? 'high' : index < 5 ? 'medium' : 'low'
+  }));
+
+const isUsableTaskText = (value, { min = 8, max = 500 } = {}) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (text.length < min || text.length > max) return false;
+  if (UNSAFE_TASK_TEXT.test(text)) return false;
+  if ((text.match(/[!?.]/g) || []).length > 8) return false;
+  return true;
+};
+
+const hasAiTaskFactPollution = (aiResult = {}) => {
+  if (!aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)) return true;
+  if (aiResult.__fallback === true) return true;
+  return typeof aiResult.xpPoints === 'number'
+    || typeof aiResult.level === 'number'
+    || typeof aiResult.confidenceScore === 'number'
+    || typeof aiResult.consistencyScore === 'number'
+    || typeof aiResult.progressPercent === 'number'
+    || typeof aiResult.readinessScore === 'number'
+    || typeof aiResult.streak === 'number'
+    || Array.isArray(aiResult.roadmap)
+    || Array.isArray(aiResult.yourSkills)
+    || Array.isArray(aiResult.missingSkills);
+};
+
+const isTaskGrounded = (task, anchors = []) => {
+  const blob = `${task?.title || ''} ${task?.description || ''}`.toLowerCase();
+  if (!blob.trim()) return false;
+  if (!anchors.length) return true;
+  return anchors.some((anchor) => {
+    const token = String(anchor || '').trim().toLowerCase();
+    return token.length >= 2 && blob.includes(token);
+  });
+};
+
+const validateAiTaskPlan = (aiResult, context = {}) => {
+  if (hasAiTaskFactPollution(aiResult)) {
+    return { ok: false, reason: 'pollution', tasks: [] };
+  }
+
+  const rawTasks = Array.isArray(aiResult?.tasks) ? aiResult.tasks : [];
+  if (rawTasks.length < MIN_TASKS || rawTasks.length > MAX_TASKS + 2) {
+    return { ok: false, reason: 'count', tasks: [] };
+  }
+
+  const cleaned = [];
+  const seen = new Set();
+  for (const task of rawTasks) {
+    const title = String(task?.title || '').replace(/\s+/g, ' ').trim();
+    const description = String(task?.description || '').replace(/\s+/g, ' ').trim();
+    const category = String(task?.category || '').trim().toLowerCase();
+    if (!isUsableTaskText(title, { min: 8, max: 120 })) continue;
+    if (!isUsableTaskText(description, { min: 24, max: 500 })) continue;
+    if (!['learning', 'project', 'practice'].includes(category)) continue;
+    const key = title.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cleaned.push({ title, description, category });
+  }
+
+  if (cleaned.length < MIN_TASKS) {
+    return { ok: false, reason: 'quality', tasks: [] };
+  }
+
+  const categories = new Set(cleaned.map((task) => task.category));
+  if (categories.size < 2) {
+    return { ok: false, reason: 'unbalanced', tasks: [] };
+  }
+
+  const anchors = uniqStrings([
+    context.focusTechnology,
+    context.effectiveStack,
+    context.effectiveExperience,
+    ...(context.missingSkills || []),
+    ...(context.recommendationTechnologies || []),
+    ...(context.githubWeakAreas || [])
+  ], 16);
+
+  if (anchors.length) {
+    const groundedCount = cleaned.filter((task) => isTaskGrounded(task, anchors)).length;
+    if (groundedCount < 2) {
+      return { ok: false, reason: 'ungrounded', tasks: [] };
+    }
+  }
+
+  return { ok: true, reason: 'ok', tasks: assignDeterministicScoring(cleaned).slice(0, MAX_TASKS) };
+};
 
 const enhanceDescription = (task, contextLabel, rationale) => {
   const base = String(task?.description || '').trim();
@@ -156,8 +385,8 @@ const buildTaskPlanMeta = ({
   experienceLevel,
   tasks,
   generationMode = 'deterministic',
-  providerLabel = 'Rules Engine'
-}) => {
+    providerLabel = 'Deterministic Plan'
+  }) => {
   const confidenceScore = Math.max(
     40,
     Math.min(
@@ -193,49 +422,56 @@ const loadPlanningContext = async ({
   stack,
   technology,
   experienceLevel,
-  forceRefresh = false
+  forceRefresh = false,
+  timer = null
 }) => {
   const key = planningKey({ userId, stack, technology, experienceLevel });
   const cached = planningContextCache.get(key);
   if (!forceRefresh && cached && cached.expiresAt > Date.now()) return cached.value;
   if (!forceRefresh && planningContextInflight.has(key)) return planningContextInflight.get(key);
 
+  const measure = async (name, work) => (timer ? timer.measure(name, work) : work());
+
   const request = (async () => {
-  const [user, signals, recommendationDocs, latestCache, githubAnalysis] = await Promise.all([
-    User.findById(userId).select('careerStack experienceLevel').lean(),
-    getDeveloperSignals(userId),
-    Recommendation.find({ userId }).sort({ createdAt: -1 }).limit(6).lean(),
-    AnalysisCache.findOne({ userId }).sort({ updatedAt: -1 }).lean(),
-    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean()
-  ]);
+    planRuntimeCounters.mongoHits += 1;
+    planRuntimeCounters.signalCalls += 1;
+    const [user, signals, recommendationDocs, latestCache, githubAnalysis] = await Promise.all([
+      measure('Mongo', () => User.findById(userId).select('careerStack experienceLevel').lean()),
+      measure('external provider', () => getDeveloperSignals(userId)),
+      measure('Mongo', () => Recommendation.find({ userId }).sort({ createdAt: -1 }).limit(6).select('techStack isNewTech').lean()),
+      measure('Mongo', () => AnalysisCache.findOne({ userId }).sort({ updatedAt: -1 }).select('analysisData.skillGap.missingSkills').lean()),
+      measure('Mongo', () => Analysis.findOne({ userId }).sort({ createdAt: -1 }).select('githubStats contributionActivity githubScore readinessScore').lean())
+    ]);
 
-  const effectiveStack = stack || user?.careerStack || 'Full Stack';
-  const effectiveExperience = experienceLevel || user?.experienceLevel || 'Student';
-  const focusTechnology = technology || signals?.careerSprintSignal?.activeLearningFocus || effectiveStack;
-  const missingSkills = uniqStrings([
-    ...(latestCache?.analysisData?.skillGap?.missingSkills || []).map((item) => (typeof item === 'string' ? item : item?.name || item?.skill)),
-    ...(signals?.weeklyReportSignal?.repeatedWeakAreas || [])
-  ], 4);
-  const githubWeakAreas = classifyGithubWeaknesses(githubAnalysis);
-  const recommendationTechnologies = uniqStrings(
-    recommendationDocs.flatMap((item) => [...(item.techStack || []), ...(item.isNewTech || [])]),
-    4
-  );
+    const effectiveStack = stack || user?.careerStack || 'Full Stack';
+    const effectiveExperience = experienceLevel || user?.experienceLevel || 'Student';
+    const focusTechnology = technology || signals?.careerSprintSignal?.activeLearningFocus || effectiveStack;
+    const missingSkills = uniqStrings([
+      ...(latestCache?.analysisData?.skillGap?.missingSkills || []).map((item) => (typeof item === 'string' ? item : item?.name || item?.skill)),
+      ...(signals?.weeklyReportSignal?.repeatedWeakAreas || [])
+    ], 4);
+    const githubWeakAreas = classifyGithubWeaknesses(githubAnalysis);
+    const recommendationTechnologies = uniqStrings(
+      recommendationDocs.flatMap((item) => [...(item.techStack || []), ...(item.isNewTech || [])]),
+      4
+    );
 
-  const context = {
-    user,
-    signals,
-    githubAnalysis,
-    effectiveStack,
-    effectiveExperience,
-    focusTechnology,
-    missingSkills,
-    githubWeakAreas,
-    recommendationTechnologies
-  };
+    const context = {
+      user,
+      signals,
+      githubAnalysis,
+      effectiveStack,
+      effectiveExperience,
+      focusTechnology,
+      missingSkills,
+      githubWeakAreas,
+      recommendationTechnologies
+    };
     boundedSet(planningContextCache, key, { value: context, expiresAt: Date.now() + PLANNING_CACHE_TTL_MS });
     return context;
-  })().finally(() => planningContextInflight.delete(key));
+  })().finally(() => {
+    if (planningContextInflight.get(key) === request) planningContextInflight.delete(key);
+  });
 
   if (!forceRefresh) planningContextInflight.set(key, request);
   return request;
@@ -250,7 +486,8 @@ const buildDeterministicTaskSet = ({
   recommendationTechnologies
 }) => {
   const seedTasks = getTasksForTechnology(focusTechnology || effectiveStack, effectiveExperience)
-    .map((task) => normalizeTask(task, 'ai'));
+    .map((task) => normalizeTask(task, 'ai'))
+    .filter(Boolean);
 
   const missingSkillTasks = missingSkills.map((skill) => {
     const task = getTaskForMissingSkill(skill);
@@ -262,7 +499,7 @@ const buildDeterministicTaskSet = ({
         'Use this task to close a concrete capability gap before the next sprint review'
       )
     }, 'ai');
-  });
+  }).filter(Boolean);
 
   const githubTasks = githubWeakAreas.map((weakness) => {
     const task = getTaskForGitHubWeakness(weakness);
@@ -291,11 +528,13 @@ const buildDeterministicTaskSet = ({
       ),
       category: 'project'
     }, 'ai');
-  });
+  }).filter(Boolean);
 
   let tasks = buildBalancedPlan(seedTasks, missingSkillTasks, githubTasks, recommendationTasks);
   if (tasks.length < MIN_TASKS) {
-    const fallback = getTasksForTechnology(effectiveStack, effectiveExperience).map((task) => normalizeTask(task, 'ai'));
+    const fallback = getTasksForTechnology(effectiveStack, effectiveExperience)
+      .map((task) => normalizeTask(task, 'ai'))
+      .filter(Boolean);
     tasks = dedupe([...tasks, ...fallback]).slice(0, MAX_TASKS);
   }
 
@@ -325,7 +564,7 @@ const finalizePlan = ({
   const normalizedTasks = dedupe(
     (Array.isArray(tasks) ? tasks : [])
       .map((task) => normalizeTask(task, 'ai'))
-      .filter((task) => task.title)
+      .filter(Boolean)
   ).slice(0, MAX_TASKS);
 
   const scheduledTasks = assignDates(
@@ -356,25 +595,48 @@ const finalizePlan = ({
 };
 
 const generateTasks = async (input) => dedupeGeneration(generationKey('deterministic', input), async () => {
+  const timer = createStageTimer();
   const {
-  userId,
-  stack,
-  technology,
-  experienceLevel,
-  sprintStartDate,
-  sprintEndDate,
-  forceRefresh = false
+    userId,
+    stack,
+    technology,
+    experienceLevel,
+    sprintStartDate,
+    sprintEndDate,
+    forceRefresh = false
   } = input;
+  const identity = planResultIdentity('deterministic', input);
+
+  if (!forceRefresh) {
+    const memoryHit = await timer.measure('cache', async () => readPlanMemory(identity));
+    if (memoryHit) {
+      planRuntimeCounters.memoryHits += 1;
+      return timer.attach(cloneCached(memoryHit));
+    }
+    const redisHit = await timer.measure('Redis', () => withBudget(
+      aiService.getSharedCache(identity, PLAN_REDIS_NAMESPACE),
+      PLAN_REDIS_BUDGET_MS,
+      null
+    ));
+    if (isPersistablePlan(redisHit)) {
+      planRuntimeCounters.redisHits += 1;
+      writePlanMemory(identity, redisHit);
+      return timer.attach(cloneCached(redisHit));
+    }
+  }
+
+  planRuntimeCounters.pipelineExecutions += 1;
   const context = await loadPlanningContext({
     userId,
     stack,
     technology,
     experienceLevel,
-    forceRefresh
+    forceRefresh,
+    timer
   });
 
-  const tasks = buildDeterministicTaskSet(context);
-  return finalizePlan({
+  const tasks = await timer.measure('deterministic processing', async () => buildDeterministicTaskSet(context));
+  const result = await timer.measure('validation', async () => finalizePlan({
     tasks,
     sprintStartDate,
     sprintEndDate,
@@ -384,29 +646,59 @@ const generateTasks = async (input) => dedupeGeneration(generationKey('determini
     focusTechnology: context.focusTechnology,
     experienceLevel: context.effectiveExperience,
     generationMode: 'deterministic',
-    providerLabel: 'Rules Engine'
-  });
+    providerLabel: 'Deterministic Plan'
+  }));
+
+  if (isPersistablePlan(result)) {
+    writePlanMemory(identity, result);
+    persistPlanAsync(identity, result);
+  }
+
+  return timer.attach(result);
 }, Boolean(input.forceRefresh));
 
 const generateAiTasksWithLLM = async (input) => dedupeGeneration(generationKey('llm', input), async () => {
+  const timer = createStageTimer();
   const {
-  userId,
-  stack,
-  technology,
-  experienceLevel,
-  sprintStartDate,
-  sprintEndDate,
-  forceRefresh = false
+    userId,
+    stack,
+    technology,
+    experienceLevel,
+    sprintStartDate,
+    sprintEndDate,
+    forceRefresh = false
   } = input;
+  const identity = planResultIdentity('llm', input);
+
+  if (!forceRefresh) {
+    const memoryHit = await timer.measure('cache', async () => readPlanMemory(identity));
+    if (memoryHit) {
+      planRuntimeCounters.memoryHits += 1;
+      return timer.attach(cloneCached(memoryHit));
+    }
+    const redisHit = await timer.measure('Redis', () => withBudget(
+      aiService.getSharedCache(identity, PLAN_REDIS_NAMESPACE),
+      PLAN_REDIS_BUDGET_MS,
+      null
+    ));
+    if (isPersistablePlan(redisHit)) {
+      planRuntimeCounters.redisHits += 1;
+      writePlanMemory(identity, redisHit);
+      return timer.attach(cloneCached(redisHit));
+    }
+  }
+
+  planRuntimeCounters.pipelineExecutions += 1;
   const context = await loadPlanningContext({
     userId,
     stack,
     technology,
     experienceLevel,
-    forceRefresh
+    forceRefresh,
+    timer
   });
 
-  const deterministicTasks = buildDeterministicTaskSet(context);
+  const deterministicTasks = await timer.measure('deterministic processing', async () => buildDeterministicTaskSet(context));
   const deterministicPlan = finalizePlan({
     tasks: deterministicTasks,
     sprintStartDate,
@@ -417,7 +709,7 @@ const generateAiTasksWithLLM = async (input) => dedupeGeneration(generationKey('
     focusTechnology: context.focusTechnology,
     experienceLevel: context.effectiveExperience,
     generationMode: 'deterministic',
-    providerLabel: 'Rules Engine'
+    providerLabel: 'Deterministic Plan'
   });
 
   const sprintWindow = `${startOfDay(new Date(sprintStartDate || new Date())).toISOString().slice(0, 10)} to ${startOfDay(new Date(sprintEndDate || addDays(new Date(), 6))).toISOString().slice(0, 10)}`;
@@ -433,25 +725,17 @@ const generateAiTasksWithLLM = async (input) => dedupeGeneration(generationKey('
     baselineTasks: deterministicPlan.tasks
   });
 
-  const aiFallback = {
-    tasks: deterministicPlan.tasks.map((task) => ({
-      title: task.title,
-      description: task.description,
-      category: task.category
-    }))
-  };
+  const aiFallback = { __fallback: true, tasks: [] };
+  planRuntimeCounters.aiCalls += 1;
+  const aiMeta = await timer.measure('AI', () => aiService.runAIAnalysis(prompt, aiFallback, 0, {
+    returnMeta: true,
+    timeoutMs: AI_TIMEOUT_MS
+  }));
+  const validated = await timer.measure('validation', async () => validateAiTaskPlan(aiMeta?.value, context));
+  const usedFallback = !aiMeta?.ok || !validated.ok || aiMeta?.value?.__fallback === true;
+  const aiTasks = usedFallback ? deterministicPlan.tasks : validated.tasks;
 
-  const aiResult = await aiService.runAIAnalysis(prompt, aiFallback);
-  const aiTasks = Array.isArray(aiResult?.tasks) && aiResult.tasks.length
-    ? aiResult.tasks.map((task, index) => ({
-        ...task,
-        points: deterministicPlan.tasks[index]?.points || 3,
-        priority: deterministicPlan.tasks[index]?.priority || 'medium'
-      }))
-    : deterministicPlan.tasks;
-  const usedFallback = aiTasks === deterministicPlan.tasks || !Array.isArray(aiResult?.tasks) || !aiResult.tasks.length;
-
-  return finalizePlan({
+  const result = finalizePlan({
     tasks: aiTasks,
     sprintStartDate,
     sprintEndDate,
@@ -461,12 +745,44 @@ const generateAiTasksWithLLM = async (input) => dedupeGeneration(generationKey('
     focusTechnology: context.focusTechnology,
     experienceLevel: context.effectiveExperience,
     generationMode: usedFallback ? 'deterministic' : 'llm',
-    providerLabel: usedFallback ? 'Rules Engine Fallback' : 'LLM Planner',
+    providerLabel: usedFallback ? 'Deterministic Plan' : 'AI-Assisted Plan',
     summaryOverride: ''
   });
+
+  // Only persist validated successful plans (including deterministic fallback results that are complete).
+  if (isPersistablePlan(result)) {
+    writePlanMemory(identity, result);
+    persistPlanAsync(identity, result);
+  }
+
+  return timer.attach(result);
 }, Boolean(input.forceRefresh));
+
+const clearCareerSprintPlanCaches = () => {
+  planningContextCache.clear();
+  planningContextInflight.clear();
+  planResultCache.clear();
+  generationInflight.clear();
+};
+
+const getCareerSprintPlanRuntimeCounters = () => ({ ...planRuntimeCounters });
+const resetCareerSprintPlanRuntimeCounters = () => {
+  Object.keys(planRuntimeCounters).forEach((key) => {
+    planRuntimeCounters[key] = 0;
+  });
+};
 
 module.exports = {
   generateTasks,
-  generateAiTasksWithLLM
+  generateAiTasksWithLLM,
+  validateAiTaskPlan,
+  hasAiTaskFactPollution,
+  isUsableTaskText,
+  assignDeterministicScoring,
+  clearCareerSprintPlanCaches,
+  getCareerSprintPlanRuntimeCounters,
+  resetCareerSprintPlanRuntimeCounters,
+  CAREER_SPRINT_PLAN_VERSION,
+  AI_TIMEOUT_MS,
+  PLAN_REDIS_BUDGET_MS
 };

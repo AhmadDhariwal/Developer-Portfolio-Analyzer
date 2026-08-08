@@ -1,17 +1,110 @@
 const CareerSprint = require('../models/careerSprint');
 const ScenarioSimulation = require('../models/scenarioSimulation');
+const mongoose = require('mongoose');
+const aiService = require('./aiservice');
 const { getDeveloperSignals } = require('./developerSignalService');
 const { recordActivity, checkInactivity, restoreStreak: restoreStreakFn, canRestore, MAX_RESTORE_DAYS } = require('./streakService');
 const { startOfDay, endOfDay, addDays, daysBetween } = require('../utils/dateUtils');
 
+const CAREER_SPRINT_OVERVIEW_VERSION = 'overview_v2';
 const SPRINT_CACHE_TTL_MS = Math.max(1_000, Number(process.env.CAREER_SPRINT_CACHE_TTL_MS) || 60_000);
 const SPRINT_CACHE_MAX_SIZE = Math.max(10, Number(process.env.CAREER_SPRINT_CACHE_MAX_SIZE) || 500);
+const SPRINT_REDIS_BUDGET_MS = Math.max(20, Number(process.env.CAREER_SPRINT_REDIS_BUDGET_MS) || 120);
+const SPRINT_REDIS_TTL_SECONDS = Math.max(30, Number(process.env.CAREER_SPRINT_REDIS_TTL_SECONDS) || 120);
+const STAGE_TIMINGS_ENABLED = process.env.CAREER_SPRINT_STAGE_TIMINGS === '1'
+  || process.env.NODE_ENV !== 'production';
+const OVERVIEW_REDIS_NAMESPACE = 'career_sprint:overview';
+
 const sprintOverviewCache = new Map();
 const sprintOverviewInflight = new Map();
 const sprintCacheEpoch = new Map();
+const runtimeCounters = {
+  pipelineExecutions: 0,
+  memoryHits: 0,
+  redisHits: 0,
+  mongoHits: 0,
+  signalCalls: 0,
+  persistenceOperations: 0,
+  redisWrites: 0
+};
+
+const EMPTY_STAGE_TIMINGS = Object.freeze({
+  cache: 0,
+  Redis: 0,
+  Mongo: 0,
+  'external provider': 0,
+  AI: 0,
+  'deterministic processing': 0,
+  validation: 0,
+  persistence: 0
+});
+
+const LIMITS = {
+  title: 120,
+  description: 1000,
+  goalField: 80,
+  planName: 120,
+  summary: 500,
+  signalsUsed: 12,
+  tasksPerPlan: 20,
+  tasksPerCreate: 30
+};
 
 const userCacheKey = (userId) => String(userId || '');
+const overviewWeekKey = (date = new Date()) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString().slice(0, 10);
+};
+const overviewIdentityKey = (userId, weekStartIso = overviewWeekKey()) => (
+  `${CAREER_SPRINT_OVERVIEW_VERSION}:${userCacheKey(userId)}:${weekStartIso}`
+);
+const memoryOverviewKey = (userId) => `${userCacheKey(userId)}:${overviewWeekKey()}`;
 const cloneCached = (value) => JSON.parse(JSON.stringify(value));
+
+const withBudget = async (promise, budgetMs, fallback = null) => {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(fallback), budgetMs);
+        timer.unref?.();
+      })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+const createStageTimer = () => {
+  const startedAt = process.hrtime.bigint();
+  const stages = { ...EMPTY_STAGE_TIMINGS };
+  return {
+    async measure(name, work) {
+      const stageStartedAt = process.hrtime.bigint();
+      const value = await work();
+      const elapsed = Number(process.hrtime.bigint() - stageStartedAt) / 1e6;
+      stages[name] = Number(((Number(stages[name]) || 0) + elapsed).toFixed(4));
+      return value;
+    },
+    attach(result) {
+      if (!STAGE_TIMINGS_ENABLED || !result || typeof result !== 'object' || Array.isArray(result)) return result;
+      const total = Number(process.hrtime.bigint() - startedAt) / 1e6;
+      return {
+        ...result,
+        cacheMetadata: {
+          ...(result.cacheMetadata || {}),
+          stageTimingsMs: { ...stages, total: Number(total.toFixed(4)) },
+          requestCounters: { ...runtimeCounters }
+        }
+      };
+    }
+  };
+};
 
 const setBoundedCache = (cache, key, value) => {
   cache.delete(key);
@@ -19,16 +112,98 @@ const setBoundedCache = (cache, key, value) => {
   while (cache.size > SPRINT_CACHE_MAX_SIZE) cache.delete(cache.keys().next().value);
 };
 
+const isPersistableOverview = (value) => Boolean(
+  value
+  && value._id
+  && Array.isArray(value.tasks)
+  && value.analytics
+  && Number.isFinite(Number(value.analytics.progressPercent))
+);
+
+const stripTimingMetadata = (value) => {
+  if (!value || typeof value !== 'object') return value;
+  const cloned = cloneCached(value);
+  if (cloned && Object.prototype.hasOwnProperty.call(cloned, 'cacheMetadata')) {
+    delete cloned.cacheMetadata;
+  }
+  return cloned;
+};
+
+const persistOverviewAsync = (userId, value) => {
+  if (!isPersistableOverview(value)) return;
+  const payload = stripTimingMetadata(value);
+  setImmediate(() => {
+    runtimeCounters.redisWrites += 1;
+    aiService.setSharedCache(
+      overviewIdentityKey(userId),
+      payload,
+      SPRINT_REDIS_TTL_SECONDS,
+      OVERVIEW_REDIS_NAMESPACE
+    ).catch(() => {});
+  });
+};
+
 const invalidateCareerSprintCache = (userId) => {
-  const key = userCacheKey(userId);
+  const key = memoryOverviewKey(userId);
   sprintOverviewCache.delete(key);
   sprintCacheEpoch.set(key, (sprintCacheEpoch.get(key) || 0) + 1);
+  // Also clear legacy user-only key if present.
+  sprintOverviewCache.delete(userCacheKey(userId));
+  setImmediate(() => {
+    aiService.invalidateCacheKey(overviewIdentityKey(userId), OVERVIEW_REDIS_NAMESPACE).catch(() => {});
+  });
+};
+
+const clearCareerSprintMemoryCache = () => {
+  sprintOverviewCache.clear();
+  sprintOverviewInflight.clear();
+  sprintCacheEpoch.clear();
+};
+
+const getCareerSprintRuntimeCounters = () => ({ ...runtimeCounters });
+const resetCareerSprintRuntimeCounters = () => {
+  Object.keys(runtimeCounters).forEach((key) => {
+    runtimeCounters[key] = 0;
+  });
 };
 
 const clamp = (value, min = 0, max = 100) => {
   const numeric = Number(value || 0);
   if (!Number.isFinite(numeric)) return min;
   return Math.max(min, Math.min(max, Math.round(numeric)));
+};
+
+const createHttpError = (statusCode, message, details = []) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  if (details.length) error.details = details;
+  return error;
+};
+
+const assertObjectId = (id, label = 'Resource') => {
+  if (!mongoose.Types.ObjectId.isValid(String(id || ''))) {
+    throw createHttpError(404, `${label} not found.`);
+  }
+};
+
+const sanitizeBoundedText = (value, max, field, { required = false } = {}) => {
+  const text = String(value ?? '').trim().replace(/\s+/g, ' ');
+  if (required && !text) throw createHttpError(400, `${field} is required.`);
+  if (text.length > max) throw createHttpError(413, `${field} is too large.`);
+  return text;
+};
+
+const parseDateOrNull = (value) => {
+  if (value == null || value === '') return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw createHttpError(400, 'Invalid date value.');
+  return parsed;
+};
+
+const assertDateRange = (start, end) => {
+  if (start && end && startOfDay(start).getTime() > startOfDay(end).getTime()) {
+    throw createHttpError(400, 'Sprint end date must be on or after the start date.');
+  }
 };
 
 const startOfWeek = (date = new Date()) => {
@@ -65,24 +240,36 @@ const calcWeightedProgress = (tasks) => {
 
 const normalizeTitle = (value) => String(value || '').trim().replace(/\s+/g, ' ');
 
-const normalizeTask = (task, taskTypeDefault = 'manual') => ({
-  title: normalizeTitle(task?.title || 'New Task'),
-  description: String(task?.description || '').trim(),
-  points: clamp(task?.points || 3, 1, 10),
-  priority: ['high', 'medium', 'low'].includes(task?.priority) ? task.priority : 'medium',
-  category: ['learning', 'project', 'practice'].includes(task?.category) ? task.category : 'learning',
-  taskType: task?.taskType === 'ai' ? 'ai' : taskTypeDefault,
-  startDate: task?.startDate ? startOfDay(new Date(task.startDate)) : null,
-  endDate: task?.endDate ? endOfDay(new Date(task.endDate)) : null,
-  isCompleted: Boolean(task?.isCompleted)
-});
+const normalizeTask = (task, taskTypeDefault = 'manual') => {
+  const title = sanitizeBoundedText(task?.title, LIMITS.title, 'Task title', { required: true });
+  const description = sanitizeBoundedText(task?.description || '', LIMITS.description, 'Task description');
+  const pointsRaw = Number(task?.points);
+  return {
+    title,
+    description,
+    points: clamp(Number.isFinite(pointsRaw) ? pointsRaw : 3, 1, 10),
+    priority: ['high', 'medium', 'low'].includes(task?.priority) ? task.priority : 'medium',
+    category: ['learning', 'project', 'practice'].includes(task?.category) ? task.category : 'learning',
+    taskType: task?.taskType === 'ai' ? 'ai' : taskTypeDefault,
+    startDate: task?.startDate ? startOfDay(parseDateOrNull(task.startDate)) : null,
+    endDate: task?.endDate ? endOfDay(parseDateOrNull(task.endDate)) : null,
+    isCompleted: Boolean(task?.isCompleted),
+    sourceScenarioId: task?.sourceScenarioId || null,
+    sourceScenarioHash: String(task?.sourceScenarioHash || '').trim().slice(0, 128)
+  };
+};
 
 const dedupeTasks = (tasks = [], existingTitles = []) => {
   const seen = new Set(existingTitles.map((title) => normalizeTitle(title).toLowerCase()).filter(Boolean));
   const clean = [];
 
   for (const task of Array.isArray(tasks) ? tasks : []) {
-    const normalized = normalizeTask(task, task?.taskType === 'ai' ? 'ai' : 'manual');
+    let normalized;
+    try {
+      normalized = normalizeTask(task, task?.taskType === 'ai' ? 'ai' : 'manual');
+    } catch {
+      continue;
+    }
     const key = normalized.title.toLowerCase();
     if (!normalized.title || seen.has(key)) continue;
     seen.add(key);
@@ -106,21 +293,26 @@ const buildSprintPayload = ({
 }) => {
   const weekStart = startOfWeek();
   const weekEnd = endOfWeek(weekStart);
-  const sprintStart = sprintStartDate ? startOfDay(new Date(sprintStartDate)) : weekStart;
-  const sprintEnd = sprintEndDate ? endOfDay(new Date(sprintEndDate)) : weekEnd;
+  const sprintStart = sprintStartDate ? startOfDay(parseDateOrNull(sprintStartDate)) : weekStart;
+  const sprintEnd = sprintEndDate ? endOfDay(parseDateOrNull(sprintEndDate)) : weekEnd;
+  assertDateRange(sprintStart, sprintEnd);
+
+  if (Array.isArray(tasks) && tasks.length > LIMITS.tasksPerCreate) {
+    throw createHttpError(413, 'Too many tasks in one request.');
+  }
 
   return {
     userId,
-    title: normalizeTitle(title || 'Career Sprint'),
+    title: sanitizeBoundedText(title || 'Career Sprint', LIMITS.title, 'Sprint title') || 'Career Sprint',
     weeklyGoal: clamp(weeklyGoal || 5, 1, 20),
     weekStartDate: weekStart,
     weekEndDate: weekEnd,
     sprintStartDate: sprintStart,
     sprintEndDate: sprintEnd,
-    goalStack: String(goalStack || '').trim(),
-    goalTechnology: String(goalTechnology || '').trim(),
-    goalTitle: String(goalTitle || '').trim(),
-    goalExperienceLevel: String(goalExperienceLevel || '').trim(),
+    goalStack: sanitizeBoundedText(goalStack || '', LIMITS.goalField, 'Goal stack'),
+    goalTechnology: sanitizeBoundedText(goalTechnology || '', LIMITS.goalField, 'Goal technology'),
+    goalTitle: sanitizeBoundedText(goalTitle || '', LIMITS.goalField, 'Goal title'),
+    goalExperienceLevel: sanitizeBoundedText(goalExperienceLevel || '', LIMITS.goalField, 'Experience level'),
     tasks: dedupeTasks(tasks)
   };
 };
@@ -218,7 +410,9 @@ const serializeSprint = async (sprintDoc, options = {}) => {
   const sprint = typeof sprintDoc.toObject === 'function' ? sprintDoc.toObject() : { ...sprintDoc };
   const tasks = Array.isArray(sprint.tasks) ? sprint.tasks : [];
   const previousSprint = options.previousSprint || null;
-  const signals = options.signals || (await getDeveloperSignals(sprint.userId));
+  const signals = Object.prototype.hasOwnProperty.call(options, 'signals')
+    ? (options.signals || {})
+    : await getDeveloperSignals(sprint.userId);
   const totalPoints = tasks.reduce((sum, task) => sum + (Number(task.points) || 1), 0);
   const completedTasks = tasks.filter((task) => task.isCompleted);
   const completedPoints = completedTasks.reduce((sum, task) => sum + (Number(task.points) || 1), 0);
@@ -287,6 +481,20 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     signals: sprint.signalsUsed
   });
 
+  // Normalize ids to stable strings so cache clones and API clients never see ObjectId artifacts.
+  sprint._id = sprint._id != null ? String(sprint._id) : sprint._id;
+  sprint.userId = sprint.userId != null ? String(sprint.userId) : sprint.userId;
+  sprint.tasks = tasks.map((task) => ({
+    ...task,
+    _id: task?._id != null ? String(task._id) : task?._id
+  }));
+  if (Array.isArray(sprint.aiPlans)) {
+    sprint.aiPlans = sprint.aiPlans.map((plan) => ({
+      ...plan,
+      _id: plan?._id != null ? String(plan._id) : plan?._id
+    }));
+  }
+
   return sprint;
 };
 
@@ -303,59 +511,153 @@ const findPreviousSprint = async (userId, sprint) => {
     userId,
     _id: { $ne: sprint._id },
     weekStartDate: { $lt: pivotDate }
-  }).sort({ weekStartDate: -1 }).lean();
+  })
+    .select('tasks xpPoints currentStreak streak weekStartDate')
+    .sort({ weekStartDate: -1 })
+    .lean();
 };
 
-const loadCurrentSprint = async (userId) => {
+const loadCurrentSprint = async (userId, timer = createStageTimer()) => {
   const now = new Date();
   const weekStart = startOfWeek();
   const weekEnd = endOfWeek(weekStart);
+  runtimeCounters.mongoHits += 1;
 
-  // Atomic create-or-return: prevents duplicate sprints under race conditions
-  let sprint = await CareerSprint.findOneAndUpdate(
-    {
+  let sprint = await timer.measure('Mongo', () => CareerSprint.findOne({
+    userId,
+    sprintStartDate: { $lte: now },
+    sprintEndDate: { $gte: now }
+  }).sort({ updatedAt: -1 }).lean());
+
+  if (!sprint) {
+    sprint = await timer.measure('Mongo', () => CareerSprint.findOne({
       userId,
-      $or: [
-        { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
-        { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
-      ]
-    },
-    {
-      $setOnInsert: {
-        ...buildSprintPayload({ userId }),
+      weekStartDate: { $lte: now },
+      weekEndDate: { $gte: now }
+    }).sort({ updatedAt: -1 }).lean());
+  }
+
+  if (!sprint) {
+    try {
+      const created = await timer.measure('persistence', async () => {
+        runtimeCounters.persistenceOperations += 1;
+        return CareerSprint.findOneAndUpdate(
+          { userId, weekStartDate: weekStart, weekEndDate: weekEnd },
+          {
+            $setOnInsert: {
+              ...buildSprintPayload({ userId }),
+              weekStartDate: weekStart,
+              weekEndDate: weekEnd
+            }
+          },
+          { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, lean: true }
+        );
+      });
+      sprint = created;
+    } catch (error) {
+      if (error?.code !== 11000) throw error;
+      sprint = await timer.measure('Mongo', () => CareerSprint.findOne({
+        userId,
         weekStartDate: weekStart,
         weekEndDate: weekEnd
-      }
-    },
-    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-  );
+      }).sort({ updatedAt: -1 }).lean());
+    }
+  }
 
-  const { changed } = checkInactivity(sprint);
-  if (changed) await sprint.save();
+  if (!sprint) {
+    throw createHttpError(500, 'Failed to load career sprint.');
+  }
+
+  const mutable = { ...sprint };
+  const { changed } = checkInactivity(mutable);
+  if (changed) {
+    await timer.measure('persistence', async () => {
+      runtimeCounters.persistenceOperations += 1;
+      await CareerSprint.updateOne(
+        { _id: sprint._id, userId },
+        {
+          $set: {
+            longestStreak: mutable.longestStreak,
+            streakBroken: mutable.streakBroken,
+            streakBrokenAt: mutable.streakBrokenAt,
+            streakWarning: mutable.streakWarning,
+            streakStatus: mutable.streakStatus,
+            currentStreak: mutable.currentStreak,
+            streak: mutable.streak
+          }
+        }
+      );
+    });
+    sprint = mutable;
+  }
 
   const [previousSprint, signals] = await Promise.all([
-    findPreviousSprint(userId, sprint),
-    getDeveloperSignals(userId)
+    timer.measure('Mongo', () => findPreviousSprint(userId, sprint)),
+    timer.measure('external provider', async () => {
+      runtimeCounters.signalCalls += 1;
+      return getDeveloperSignals(userId);
+    })
   ]);
 
-  return serializeSprint(sprint, { previousSprint, signals });
+  return timer.measure('deterministic processing', () => serializeSprint(sprint, { previousSprint, signals }));
 };
 
 const getCurrentSprint = async (userId, { forceRefresh = false } = {}) => {
-  const key = userCacheKey(userId);
+  const timer = createStageTimer();
+  const key = memoryOverviewKey(userId);
   const cached = sprintOverviewCache.get(key);
-  if (!forceRefresh && cached && cached.expiresAt > Date.now()) return cloneCached(cached.value);
-  if (!forceRefresh && sprintOverviewInflight.has(key)) return sprintOverviewInflight.get(key);
+
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
+    runtimeCounters.memoryHits += 1;
+    await timer.measure('cache', async () => cached.value);
+    return timer.attach(cloneCached(cached.value));
+  }
+
+  if (!forceRefresh && sprintOverviewInflight.has(key)) {
+    return sprintOverviewInflight.get(key);
+  }
 
   const epoch = sprintCacheEpoch.get(key) || 0;
-  const request = loadCurrentSprint(userId)
-    .then((value) => {
-      if ((sprintCacheEpoch.get(key) || 0) === epoch) {
-        setBoundedCache(sprintOverviewCache, key, { value: cloneCached(value), expiresAt: Date.now() + SPRINT_CACHE_TTL_MS });
+  const previousValid = cached?.value || null;
+
+  const request = (async () => {
+    if (!forceRefresh) {
+      const redisHit = await timer.measure('Redis', () => withBudget(
+        aiService.getSharedCache(overviewIdentityKey(userId), OVERVIEW_REDIS_NAMESPACE),
+        SPRINT_REDIS_BUDGET_MS,
+        null
+      ));
+      if (isPersistableOverview(redisHit)) {
+        runtimeCounters.redisHits += 1;
+        setBoundedCache(sprintOverviewCache, key, {
+          value: cloneCached(redisHit),
+          expiresAt: Date.now() + SPRINT_CACHE_TTL_MS
+        });
+        return timer.attach(cloneCached(redisHit));
       }
-      return value;
-    })
-    .finally(() => sprintOverviewInflight.delete(key));
+    }
+
+    runtimeCounters.pipelineExecutions += 1;
+    try {
+      const value = await loadCurrentSprint(userId, timer);
+      if ((sprintCacheEpoch.get(key) || 0) === epoch && isPersistableOverview(value)) {
+        const cacheable = stripTimingMetadata(value);
+        setBoundedCache(sprintOverviewCache, key, {
+          value: cloneCached(cacheable),
+          expiresAt: Date.now() + SPRINT_CACHE_TTL_MS
+        });
+        persistOverviewAsync(userId, cacheable);
+      }
+      return timer.attach(value);
+    } catch (error) {
+      if (forceRefresh && previousValid) return timer.attach(cloneCached(previousValid));
+      throw error;
+    }
+  })();
+
+  request.finally(() => {
+    if (sprintOverviewInflight.get(key) === request) sprintOverviewInflight.delete(key);
+  });
 
   if (!forceRefresh) sprintOverviewInflight.set(key, request);
   return request;
@@ -372,6 +674,8 @@ const assertUniqueTask = (sprint, title) => {
 };
 
 const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
+  assertObjectId(sprintId, 'Sprint');
+  assertObjectId(taskId, 'Task');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
 
@@ -399,26 +703,27 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
   await sprint.save();
   invalidateCareerSprintCache(userId);
 
-  // Task toggle only needs previous sprint for comparison — skip full signal reload
   const previousSprint = await findPreviousSprint(userId, sprint);
   return serializeSprint(sprint, { previousSprint, signals: null });
 };
 
 const addTaskToSprint = async (userId, sprintId, task) => {
+  assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
 
-  assertUniqueTask(sprint, task?.title);
-  sprint.tasks.push(normalizeTask(task));
+  const normalized = normalizeTask(task);
+  assertUniqueTask(sprint, normalized.title);
+  sprint.tasks.push(normalized);
   await sprint.save();
   invalidateCareerSprintCache(userId);
 
-  // Task addition doesn't need full developer signal enrichment — skip signal reload
   const previousSprint = await findPreviousSprint(userId, sprint);
   return serializeSprint(sprint, { previousSprint, signals: null });
 };
 
 const restoreStreak = async (userId, sprintId) => {
+  assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
 
@@ -436,11 +741,16 @@ const restoreStreak = async (userId, sprintId) => {
 };
 
 const updateSprintDates = async (userId, sprintId, sprintStartDate, sprintEndDate) => {
+  assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
 
-  if (sprintStartDate) sprint.sprintStartDate = startOfDay(new Date(sprintStartDate));
-  if (sprintEndDate) sprint.sprintEndDate = endOfDay(new Date(sprintEndDate));
+  const nextStart = sprintStartDate ? startOfDay(parseDateOrNull(sprintStartDate)) : sprint.sprintStartDate;
+  const nextEnd = sprintEndDate ? endOfDay(parseDateOrNull(sprintEndDate)) : sprint.sprintEndDate;
+  assertDateRange(nextStart, nextEnd);
+
+  if (sprintStartDate) sprint.sprintStartDate = nextStart;
+  if (sprintEndDate) sprint.sprintEndDate = nextEnd;
   await sprint.save();
   invalidateCareerSprintCache(userId);
 
@@ -480,29 +790,37 @@ const getSprintHistory = async (userId, limit = 6) => {
 };
 
 const saveAiPlanToSprint = async (userId, sprintId, payload = {}) => {
+  assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
 
+  if (Array.isArray(payload.tasks) && payload.tasks.length > LIMITS.tasksPerPlan) {
+    throw createHttpError(413, 'AI plan has too many tasks.');
+  }
+
   const tasks = dedupeTasks(payload.tasks || []);
   if (!tasks.length) {
-    const error = new Error('AI plan must include at least one task.');
-    error.statusCode = 400;
-    throw error;
+    throw createHttpError(400, 'AI plan must include at least one valid task.');
   }
 
   const plan = {
-    name: normalizeTitle(payload.name || 'AI Sprint Plan'),
+    name: sanitizeBoundedText(payload.name || 'AI Sprint Plan', LIMITS.planName, 'Plan name') || 'AI Sprint Plan',
     source: payload.source === 'scenario' ? 'scenario' : 'ai',
     generatorType: payload.source === 'scenario'
       ? 'scenario'
       : (payload.generatorType === 'llm' ? 'llm' : 'deterministic'),
-    goalStack: String(payload.goalStack || sprint.goalStack || '').trim(),
-    goalTechnology: String(payload.goalTechnology || sprint.goalTechnology || '').trim(),
-    goalExperienceLevel: String(payload.goalExperienceLevel || sprint.goalExperienceLevel || '').trim(),
-    summary: String(payload.summary || '').trim(),
-    confidenceScore: clamp(payload.confidenceScore || 0),
-    consistencyScore: clamp(payload.consistencyScore || 0),
-    signalsUsed: Array.isArray(payload.signalsUsed) ? payload.signalsUsed.map((item) => String(item || '').trim()).filter(Boolean) : [],
+    goalStack: sanitizeBoundedText(payload.goalStack || sprint.goalStack || '', LIMITS.goalField, 'Goal stack'),
+    goalTechnology: sanitizeBoundedText(payload.goalTechnology || sprint.goalTechnology || '', LIMITS.goalField, 'Goal technology'),
+    goalExperienceLevel: sanitizeBoundedText(payload.goalExperienceLevel || sprint.goalExperienceLevel || '', LIMITS.goalField, 'Experience level'),
+    summary: sanitizeBoundedText(payload.summary || '', LIMITS.summary, 'Plan summary'),
+    confidenceScore: clamp(Number.isFinite(Number(payload.confidenceScore)) ? Number(payload.confidenceScore) : 0),
+    consistencyScore: clamp(Number.isFinite(Number(payload.consistencyScore)) ? Number(payload.consistencyScore) : 0),
+    signalsUsed: Array.isArray(payload.signalsUsed)
+      ? payload.signalsUsed
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+        .slice(0, LIMITS.signalsUsed)
+      : [],
     tasks
   };
 
@@ -547,24 +865,23 @@ const buildScenarioTasks = (scenario) => {
 };
 
 const importScenarioPlanToSprint = async (userId, sprintId, scenarioId = '') => {
+  assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+
+  if (scenarioId) assertObjectId(scenarioId, 'Scenario');
 
   const scenario = scenarioId
     ? await ScenarioSimulation.findOne({ _id: scenarioId, userId }).lean()
     : await ScenarioSimulation.findOne({ userId }).sort({ createdAt: -1 }).lean();
 
   if (!scenario) {
-    const error = new Error('No saved scenario is available to import.');
-    error.statusCode = 404;
-    throw error;
+    throw createHttpError(404, 'No saved scenario is available to import.');
   }
 
   const tasks = buildScenarioTasks(scenario);
   if (!tasks.length) {
-    const error = new Error('The selected scenario does not include enough actionable items.');
-    error.statusCode = 400;
-    throw error;
+    throw createHttpError(400, 'The selected scenario does not include enough actionable items.');
   }
 
   return saveAiPlanToSprint(userId, sprintId, {
@@ -575,8 +892,10 @@ const importScenarioPlanToSprint = async (userId, sprintId, scenarioId = '') => 
     goalTechnology: (scenario.skills || []).slice(0, 2).join(', '),
     goalExperienceLevel: scenario.experienceLevel || sprint.goalExperienceLevel,
     summary: 'Imported from Scenario Simulator as a draft sprint plan.',
-    confidenceScore: scenario.confidenceScore || scenario.result?.confidenceScore || 0,
-    consistencyScore: clamp((scenario.improvements?.hiringScore || 0) * 2.4, 0, 100),
+    confidenceScore: Number.isFinite(Number(scenario.confidenceScore ?? scenario.result?.confidenceScore))
+      ? Number(scenario.confidenceScore ?? scenario.result?.confidenceScore)
+      : 0,
+    consistencyScore: clamp((Number(scenario.improvements?.hiringScore) || 0) * 2.4, 0, 100),
     signalsUsed: ['Scenario Simulator'],
     tasks
   });
@@ -596,5 +915,14 @@ module.exports = {
   calcWeightedProgress,
   xpForTask,
   levelFromXp,
-  invalidateCareerSprintCache
+  invalidateCareerSprintCache,
+  clearCareerSprintMemoryCache,
+  getCareerSprintRuntimeCounters,
+  resetCareerSprintRuntimeCounters,
+  assertObjectId,
+  sanitizeBoundedText,
+  LIMITS,
+  CAREER_SPRINT_OVERVIEW_VERSION,
+  SPRINT_REDIS_BUDGET_MS,
+  STAGE_TIMINGS_ENABLED
 };
