@@ -1,3 +1,5 @@
+const githubHealthScore = require('./scoring/githubHealthScore');
+const { clampScore: clamp } = require('./scoring/math');
 const axios = require('axios');
 const aiService = require('./aiservice');
 const { getGitHubPrompt } = require('../prompts/githubPrompt');
@@ -158,11 +160,6 @@ class GitHubRateLimitError extends Error {
   }
 }
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
 const average = (values = []) => {
   const safe = values.map(Number).filter(Number.isFinite);
@@ -717,16 +714,15 @@ const buildDeterministicScores = ({ repos = [], userData = {}, mainLanguageDistr
   const originality = clamp((starSignal * 0.35) + (forkSignal * 0.2) + (avgRepoQuality * 0.25) + (repoSignal * 0.2));
   const projectImpact = clamp((starSignal * 0.34) + (forkSignal * 0.2) + (repoSignal * 0.16) + (originality * 0.3));
   const profileStrength = clamp((repoSignal * 0.28) + (followerSignal * 0.18) + (starSignal * 0.2) + (activitySignal * 0.18) + (codeQuality * 0.16));
-  const healthScore = clamp(
-    (codeQuality * 0.24) +
-    (projectDiversity * 0.17) +
-    (contributionSignal * 0.18) +
-    (activitySignal * 0.13) +
-    (projectImpact * 0.14) +
-    (profileStrength * 0.14)
-  );
+  const scoring = githubHealthScore.calculate({
+    codeQuality, projectDiversity, contribution: contributionSignal, consistency: activitySignal, projectImpact, profileStrength
+  }, {
+    sources: userData.login ? [{ type: 'github-user', id: String(userData.login) }] : [],
+    facts: { repoCount, totalStars, totalForks, totalCommits, activeRepos }
+  });
+  const healthScore = scoring.score ?? 0;
 
-  return {
+  return { scoring, scores: {
     codeQuality,
     projectDiversity,
     originality,
@@ -737,7 +733,7 @@ const buildDeterministicScores = ({ repos = [], userData = {}, mainLanguageDistr
     profileStrength,
     healthScore,
     overall: healthScore
-  };
+  } };
 };
 
 const buildInsightFallback = ({ developerLevel, strongestRepos = [], weakAreas = [] }) => ({
@@ -1192,7 +1188,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
     commits: commitMap[repo.name] || 0
   }));
 
-  const scores = timing ? await timing.time('deterministic', () => buildDeterministicScores({
+  const { scores, scoring } = timing ? await timing.time('deterministic', () => buildDeterministicScores({
     repos, userData, mainLanguageDistribution, technologies: techResult.technologies, repositoryActivity, repositoryQuality
   })) : buildDeterministicScores({
     repos,
@@ -1275,6 +1271,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
   });
 
   const githubSignals = {
+    scoring,
     username,
     analyzedAt: new Date().toISOString(),
     analysisVersion: ANALYSIS_VERSION,

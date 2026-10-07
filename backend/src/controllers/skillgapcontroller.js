@@ -1,3 +1,4 @@
+const { clampScore: clamp } = require('../services/scoring/math');
 const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const {
@@ -706,11 +707,6 @@ const buildDeterministicRoadmap = (weeklyRoadmap = []) => (Array.isArray(weeklyR
       color: 'blue'
     };
   });
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
 const computeDeterministicConfidence = ({ evidenceBreakdown, resumeInsights, githubData, developerSignals }) => {
   const provenCount = (evidenceBreakdown?.provenSkills || []).length;
@@ -1155,8 +1151,8 @@ const buildDeterministicSkillGroups = ({
       const isProven = provenLookup.has(item.name.toLowerCase()) || item.source.includes('GitHub');
       const proficiency = clamp(
         entry.aiProficiency
-          || (isProven ? 74 : item.source.includes('Resume') ? 62 : 54)
-          + Math.min(12, item.evidence.length * 3)
+        || (isProven ? 74 : item.source.includes('Resume') ? 62 : 54)
+        + Math.min(12, item.evidence.length * 3)
       );
       return {
         ...item,
@@ -1364,7 +1360,7 @@ const createInflightDeferred = () => {
     resolve = promiseResolve;
     reject = promiseReject;
   });
-  promise.catch(() => {});
+  promise.catch(() => { });
   return { promise, resolve, reject };
 };
 
@@ -1698,7 +1694,7 @@ const analyzeSkillGap = async (req, res) => {
           updatedAt: cached.updatedAt || cached.createdAt || new Date()
         };
         setImmediate(() => {
-          aiService.setSharedCache(resultCacheKey, redisWarmPayload, 900, 'skill_gap:result').catch(() => {});
+          aiService.setSharedCache(resultCacheKey, redisWarmPayload, 900, 'skill_gap:result').catch(() => { });
         });
         timer.mark('redisResultCacheWriteMs', Date.now());
       }
@@ -2145,7 +2141,7 @@ const analyzeSkillGap = async (req, res) => {
       ));
       if (resultCacheKey) {
         setImmediate(() => {
-          aiService.setSharedCache(resultCacheKey, cachePayload, 900, 'skill_gap:result').catch(() => {});
+          aiService.setSharedCache(resultCacheKey, cachePayload, 900, 'skill_gap:result').catch(() => { });
         });
         timer.mark('redisResultCacheWriteMs', Date.now());
       }
