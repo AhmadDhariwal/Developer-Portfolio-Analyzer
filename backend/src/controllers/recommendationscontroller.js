@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const aiService = require('../services/aiservice');
 const { createNotification } = require('../services/notificationService');
@@ -407,12 +408,7 @@ const queueAIVersionSnapshot = (options) => {
   });
 };
 
-const loadResumeAnalysis = async (userId) => {
-  if (!userId) return null;
-  const userContext = await User.findById(userId)
-    .select('defaultResumeFileId')
-    .lean();
-  const defaultResumeFileId = userContext?.defaultResumeFileId || null;
+const loadResumeAnalysis = (userId) => {
   const resumeSelect = {
     fileId: 1,
     fileName: 1,
@@ -430,14 +426,7 @@ const loadResumeAnalysis = async (userId) => {
     strengths: 1,
     statusMessage: 1
   };
-  if (defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
-      .select(resumeSelect)
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-  return ResumeAnalysis.findOne({ userId }).select(resumeSelect).sort({ analyzedAt: -1 }).lean();
+  return developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis, select: resumeSelect });
 };
 
 const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
@@ -2248,7 +2237,7 @@ const deleteSavedPreview = async (req, res) => {
 const getRecommendations = async (req, res) => {
   try {
     let { username, forceRefresh } = req.body;
-    const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
+    const activeGithub = String(developerContext.resolveGithubUsername(req.user) || '').trim();
 
     if (!req.user?._id) {
       return res.status(401).json({ message: 'Authentication required.' });
@@ -2266,8 +2255,8 @@ const getRecommendations = async (req, res) => {
       return res.status(error.status || 400).json({ message: error.message || 'GitHub username is required.' });
     }
 
-    const careerStack = req.user?.careerStack || req.body.careerStack || 'Full Stack';
-    const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
+    const careerStack = developerContext.resolveCareerStack(req.user) || req.body.careerStack || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.body.experienceLevel || 'Student';
     if (!ALLOWED_STACKS.includes(careerStack)) {
       return res.status(400).json({ message: `Target stack must be one of: ${ALLOWED_STACKS.join(', ')}` });
     }
@@ -2317,7 +2306,7 @@ const generateRecommendations = async (req, res) => {
     } = req.body;
     const forceRefresh = req.body.forceRefresh === true || req.body.forceRefresh === 'true';
     const isTemporaryMode = isTemporary === true || isTemporary === 'true';
-    const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
+    const activeGithub = String(developerContext.resolveGithubUsername(req.user) || '').trim();
 
     if (!isTemporaryMode) {
       if (!req.user?._id) {
@@ -2338,10 +2327,10 @@ const generateRecommendations = async (req, res) => {
 
     const finalCareerStack = isTemporaryMode
       ? careerStack
-      : (req.user?.careerStack || careerStack || 'Full Stack');
+      : (developerContext.resolveCareerStack(req.user) || careerStack || 'Full Stack');
     const finalExperienceLevel = isTemporaryMode
       ? experienceLevel
-      : (req.user?.experienceLevel || experienceLevel || 'Student');
+      : (developerContext.resolveExperienceLevel(req.user) || experienceLevel || 'Student');
 
     // Validation for Preview Mode and profile fallbacks
     if (!ALLOWED_STACKS.includes(finalCareerStack)) {

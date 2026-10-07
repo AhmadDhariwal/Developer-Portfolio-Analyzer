@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const User     = require('../models/user');
 const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
@@ -33,9 +34,9 @@ const elapsedMs = (startedAt) => Math.round((performance.now() - startedAt) * 10
 const buildProfileHash = (user) => crypto
   .createHash('sha256')
   .update(JSON.stringify({
-    activeGithubUsername: sanitizeText(user?.activeGithubUsername || user?.githubUsername || '', 80).toLowerCase(),
-    activeCareerStack: sanitizeText(user?.activeCareerStack || user?.careerStack || 'Full Stack', 40),
-    activeExperienceLevel: sanitizeText(user?.activeExperienceLevel || user?.experienceLevel || 'Student', 40),
+    activeGithubUsername: sanitizeText(developerContext.resolveGithubUsername(user) || '', 80).toLowerCase(),
+    activeCareerStack: sanitizeText(developerContext.resolveCareerStack(user) || 'Full Stack', 40),
+    activeExperienceLevel: sanitizeText(developerContext.resolveExperienceLevel(user) || 'Student', 40),
     careerGoal: sanitizeText(user?.careerGoal || '', 80),
     targetTimeline: sanitizeText(user?.targetTimeline || '', 40),
     learningPreference: sanitizeText(user?.learningPreference || '', 40)
@@ -86,13 +87,13 @@ const isRecruiterProfileComplete = (user) => {
 const computeDeveloperProfileCompletion = (user) => {
   const fields = [
     user?.name,
-    user?.githubUsername,
+    developerContext.resolveGithubUsername(user),
     user?.jobTitle,
     user?.location,
     user?.bio,
     user?.linkedin || user?.website,
-    user?.careerStack,
-    user?.experienceLevel
+    developerContext.resolveCareerStack(user),
+    developerContext.resolveExperienceLevel(user)
   ];
   const completed = fields.filter((value) => String(value || '').trim().length > 0).length;
   return Math.round((completed / fields.length) * 100);
@@ -120,36 +121,15 @@ const getProfile = async (req, res) => {
     const user = await measure('userQuery', User.findById(req.user._id).select('-password'));
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    const activeGithubUsername = user.activeGithubUsername || user.githubUsername;
-
-    if (!user.defaultResumeFileId) {
-      const latestAnalyzed = await measure('resumeContextQuery', ResumeFile.findOne({ userId: user._id, isAnalyzed: true })
-        .sort({ uploadDate: -1 })
-        .select('_id')
-        .lean());
-      const latestAny = latestAnalyzed || await measure('resumeContextQuery', ResumeFile.findOne({ userId: user._id })
-        .sort({ uploadDate: -1 })
-        .select('_id')
-        .lean());
-      if (latestAny) {
-        user.defaultResumeFileId = latestAny._id;
-        user.activeResumeFileId = latestAny._id;
-        await user.save();
-      }
-    } else if (!user.activeResumeFileId) {
-      user.activeResumeFileId = user.defaultResumeFileId;
-      await user.save();
-    }
+    const activeGithubUsername = developerContext.resolveGithubUsername(user);
 
     const [defaultResumeFile, activeResumeFile] = await Promise.all([
       user.defaultResumeFileId ? measure('defaultResumeQuery', ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id })
         .select('_id fileName uploadDate isAnalyzed')
         .lean()) : null,
-      user.activeResumeFileId ? measure('activeResumeQuery', ResumeFile.findOne({ _id: user.activeResumeFileId, userId: user._id })
-        .select('_id fileName uploadDate isAnalyzed')
-        .lean()) : null
+      measure('activeResumeQuery', developerContext.resolveResumeFile(user._id, user, { ResumeFile }))
     ]);
-    const resolvedActiveResumeFile = activeResumeFile || defaultResumeFile;
+    const resolvedActiveResumeFile = activeResumeFile;
 
     // Pull stats from latest analyses
     const [analysis, latestResumeAnalysis] = await Promise.all([
@@ -157,10 +137,7 @@ const getProfile = async (req, res) => {
         .sort({ updatedAt: -1 })
         .select('githubScore githubStats.repos languageDistribution')
         .lean()),
-      measure('resumeAnalysisQuery', ResumeAnalysis.findOne({ userId: req.user._id })
-        .sort({ analyzedAt: -1 })
-        .select('atsScore keywordDensity formatScore contentQuality skills')
-        .lean())
+      measure('resumeAnalysisQuery', developerContext.resolveResumeAnalysis(req.user._id, user, { ResumeFile, ResumeAnalysis }))
     ]);
 
     const scoreAggregationStartedAt = performance.now();
@@ -205,12 +182,6 @@ const getProfile = async (req, res) => {
     };
     if (profileTimingEnabled()) timings.scoreAggregation = elapsedMs(scoreAggregationStartedAt);
 
-    if (!user.activeCareerStack) user.activeCareerStack = user.careerStack || 'Full Stack';
-    if (!user.activeExperienceLevel) user.activeExperienceLevel = user.experienceLevel || 'Student';
-    if (user.isModified('activeCareerStack') || user.isModified('activeExperienceLevel')) {
-      await user.save();
-    }
-
     const profileResponse = {
       _id:               user._id,
       name:              user.name,
@@ -236,8 +207,8 @@ const getProfile = async (req, res) => {
       },
       careerStack:        user.careerStack        || 'Full Stack',
       experienceLevel:    user.experienceLevel    || 'Student',
-      activeCareerStack:  user.activeCareerStack  || user.careerStack || 'Full Stack',
-      activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel || 'Student',
+      activeCareerStack:  developerContext.resolveCareerStack(user) || 'Full Stack',
+      activeExperienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
       careerGoal:         user.careerGoal         || '',
       targetTimeline:     user.targetTimeline     || '',
       learningPreference: user.learningPreference || '',
@@ -451,9 +422,7 @@ const updateProfile = async (req, res) => {
       updated.defaultResumeFileId
         ? ResumeFile.findOne({ _id: updated.defaultResumeFileId, userId: updated._id }).lean()
         : null,
-      updated.activeResumeFileId
-        ? ResumeFile.findOne({ _id: updated.activeResumeFileId, userId: updated._id }).lean()
-        : null
+      developerContext.resolveResumeFile(updated._id, updated, { ResumeFile })
     ]);
 
     res.json({
@@ -463,7 +432,7 @@ const updateProfile = async (req, res) => {
       phoneNumber: updated.phoneNumber || '',
       countryCode: updated.countryCode || '',
       githubUsername: updated.githubUsername,
-      activeGithubUsername: updated.activeGithubUsername || updated.githubUsername,
+      activeGithubUsername: developerContext.resolveGithubUsername(updated),
       defaultResume: defaultResume ? {
         fileId: defaultResume._id,
         fileName: defaultResume.fileName,
@@ -484,8 +453,8 @@ const updateProfile = async (req, res) => {
       linkedin: updated.linkedin,
       careerStack: updated.careerStack || 'Full Stack',
       experienceLevel: updated.experienceLevel || 'Student',
-      activeCareerStack: updated.activeCareerStack || updated.careerStack || 'Full Stack',
-      activeExperienceLevel: updated.activeExperienceLevel || updated.experienceLevel || 'Student',
+      activeCareerStack: developerContext.resolveCareerStack(updated) || 'Full Stack',
+      activeExperienceLevel: developerContext.resolveExperienceLevel(updated) || 'Student',
       careerGoal: updated.careerGoal || '',
       targetTimeline: updated.targetTimeline || '',
       learningPreference: updated.learningPreference || '',
@@ -749,7 +718,7 @@ const updateProfileVisibility = async (req, res) => {
       return res.status(403).json({ message: 'Public portfolio visibility is disabled by Super Admin settings.' });
     }
 
-    if (isPublic && developerSettings.githubRequirement !== false && !String(user.githubUsername || '').trim()) {
+    if (isPublic && developerSettings.githubRequirement !== false && !String(developerContext.resolveGithubUsername(user) || '').trim()) {
       return res.status(400).json({ message: 'A GitHub username is required before enabling public visibility.' });
     }
 
@@ -782,7 +751,7 @@ const updateProfileVisibility = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };
+module.exports = { __test: { computeDeveloperProfileCompletion }, getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };
 
 
 

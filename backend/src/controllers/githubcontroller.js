@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const Repository = require('../models/repository');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
@@ -254,7 +255,7 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized.' });
         }
 
-        const defaultGithubUsername = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
+        const defaultGithubUsername = String(developerContext.resolveGithubUsername(req.user) || '').trim();
         const requestedRaw = String(req.body?.username || defaultGithubUsername || '').trim();
         let githubUsername = '';
         try {
@@ -306,9 +307,7 @@ const getActiveUsername = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized.' });
         }
         const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername');
-        const defaultUsername = String(user?.githubUsername || '').trim();
-        const activeUsername = String(user?.activeGithubUsername || '').trim();
-        const username = activeUsername || defaultUsername;
+        const username = String(developerContext.resolveGithubUsername(user) || '').trim();
         res.json({
             username,
             isDefault: true,

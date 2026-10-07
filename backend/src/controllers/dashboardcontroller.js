@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
@@ -205,16 +206,7 @@ const persistGithubResultToAnalysis = async ({ userId, analysis, githubResult, m
 const latestCacheByPredicate = async (userId, predicate) =>
   AnalysisCache.findOne({ userId, ...predicate }).sort({ updatedAt: -1 }).lean();
 
-const loadDefaultResumeAnalysis = async (userId) => {
-  const user = await User.findById(userId).select('defaultResumeFileId').lean();
-  if (user?.defaultResumeFileId) {
-    const analysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (analysis) return analysis;
-  }
-  return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
-};
+const loadDefaultResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const getCachedDashboardContext = async (userId, careerStack, experienceLevel) => {
   const scopedCache = { careerStack, experienceLevel };
@@ -566,9 +558,9 @@ const getDashboardSummary = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const githubUsername = user.activeGithubUsername || user.githubUsername || '';
-    const careerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
-    const experienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
+    const githubUsername = developerContext.resolveGithubUsername(user) || '';
+    const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
     const [analysisState, cachedContext, integrationInsight] = await Promise.all([
       ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
       getCachedDashboardContext(req.user._id, careerStack, experienceLevel),
@@ -842,7 +834,7 @@ const getDashboardContributions = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
     const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const githubUsername = developerContext.resolveGithubUsername(user) || '';
     const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
     const data = Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
       ? analysis.contributionActivity
@@ -863,7 +855,7 @@ const getDashboardLanguages = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
     const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
+    const githubUsername = developerContext.resolveGithubUsername(user) || '';
     const { analysis, rateLimited, languageSource } = await ensureAnalysis(req.user._id, githubUsername, { forceRefresh });
 
     res.json({
@@ -882,9 +874,9 @@ const getDashboardSkills = async (req, res) => {
   try {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
     const user = await User.findById(req.user._id).select('githubUsername activeGithubUsername activeCareerStack careerStack activeExperienceLevel experienceLevel').lean();
-    const githubUsername = user?.activeGithubUsername || user?.githubUsername || '';
-    const careerStack = user?.activeCareerStack || user?.careerStack || 'Full Stack';
-    const experienceLevel = user?.activeExperienceLevel || user?.experienceLevel || 'Student';
+    const githubUsername = developerContext.resolveGithubUsername(user) || '';
+    const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
 
     const [{ analysis, rateLimited }, integrationInsight, latestSkillGapCache] = await Promise.all([
       ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
@@ -933,8 +925,8 @@ const getDashboardSkills = async (req, res) => {
 const getDashboardRecommendations = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('activeCareerStack careerStack activeExperienceLevel experienceLevel').lean();
-    const careerStack = user?.activeCareerStack || user?.careerStack || 'Full Stack';
-    const experienceLevel = user?.activeExperienceLevel || user?.experienceLevel || 'Student';
+    const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
     const [latestRecommendationCache, savedRecommendations] = await Promise.all([
       latestCacheByPredicate(req.user._id, { careerStack, experienceLevel, 'analysisData.projects': { $exists: true } }),
       Recommendation.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(4).lean()
@@ -1053,6 +1045,7 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
 };
 
 module.exports = {
+  __test: { loadDefaultResumeAnalysis },
   getDashboardSummary,
   getDashboardContributions,
   getDashboardLanguages,

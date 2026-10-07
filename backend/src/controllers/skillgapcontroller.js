@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const {
   getCachedGitHubAnalysis,
@@ -751,17 +752,7 @@ const queueAIVersionSnapshot = (payload) => {
   });
 };
 
-const loadResumeAnalysis = async (userId, userContext = null) => {
-  if (!userId) return null;
-  const defaultResumeFileId = userContext?.defaultResumeFileId || null;
-  if (defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-  return defaultResumeFileId ? null : ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
-};
+const loadResumeAnalysis = (userId, userContext) => developerContext.resolveResumeAnalysis(userId, userContext, { ResumeAnalysis });
 
 const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
   const startedAt = Date.now();
@@ -900,15 +891,15 @@ const buildSkillGapCacheSignalHash = ({
 
 const buildCareerProfileSignalFromUser = (user = {}) => ({
   present: Boolean(user?._id),
-  careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-  experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
-  activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-  activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+  careerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+  experienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
+  activeCareerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+  activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
   careerGoal: String(user?.careerGoal || '').trim(),
   targetTimeline: String(user?.targetTimeline || '').trim(),
   learningPreference: String(user?.learningPreference || '').trim(),
-  githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
-  activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+  githubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
+  activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
   updatedAt: user?.updatedAt || null
 });
 
@@ -1399,7 +1390,7 @@ const analyzeSkillGap = async (req, res) => {
   try {
     const forceRefresh = req.body?.forceRefresh === true || req.body?.forceRefresh === 'true';
     const isTemporaryMode = req.body?.isTemporary === true || req.body?.isTemporary === 'true';
-    const activeGithub = String(req.user?.activeGithubUsername || req.user?.githubUsername || '').trim();
+    const activeGithub = String(developerContext.resolveGithubUsername(req.user) || '').trim();
 
     if (!isTemporaryMode) {
       if (!req.user?._id) {
@@ -1421,10 +1412,10 @@ const analyzeSkillGap = async (req, res) => {
 
     let careerStack = isTemporaryMode
       ? String(req.body.careerStack || '').trim()
-      : String(req.user?.activeCareerStack || req.user?.careerStack || 'Full Stack').trim();
+      : String(developerContext.resolveCareerStack(req.user) || 'Full Stack').trim();
     let experienceLevel = isTemporaryMode
       ? String(req.body.experienceLevel || '').trim()
-      : String(req.user?.activeExperienceLevel || req.user?.experienceLevel || 'Student').trim();
+      : String(developerContext.resolveExperienceLevel(req.user) || 'Student').trim();
 
     if (isTemporaryMode) {
       if (!careerStack || !ALLOWED_STACKS.includes(careerStack)) {

@@ -1,3 +1,4 @@
+const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
@@ -55,9 +56,10 @@ const safeStrings = (values = [], limit = 6) => uniqLower(
 ).slice(0, limit);
 
 const buildProfileHash = (user = {}) => crypto.createHash('sha256').update(JSON.stringify({
-  activeGithubUsername: String(user.activeGithubUsername || user.githubUsername || '').trim().toLowerCase(),
-  activeCareerStack: String(user.activeCareerStack || user.careerStack || 'Full Stack').trim(),
-  activeExperienceLevel: String(user.activeExperienceLevel || user.experienceLevel || 'Student').trim(),
+  activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim().toLowerCase(),
+  activeCareerStack: String(developerContext.resolveCareerStack(user) || 'Full Stack').trim(),
+  activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || 'Student').trim(),
+  resumeFileId: String(developerContext.resolveSelectedResumeFileId(user) || ''),
   careerGoal: String(user.careerGoal || '').trim(),
   targetTimeline: String(user.targetTimeline || '').trim(),
   learningPreference: String(user.learningPreference || '').trim()
@@ -517,20 +519,20 @@ const summarizeIntegrationSignal = async (userId) => {
 
 const summarizeCareerProfileSignal = async (userId) => {
   const user = userId
-    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername updatedAt').lean()
+    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername activeResumeFileId defaultResumeFileId updatedAt').lean()
     : null;
 
   return {
     present: Boolean(user),
-    careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
-    activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+    careerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    experienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
+    activeCareerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
     careerGoal: String(user?.careerGoal || '').trim(),
     targetTimeline: String(user?.targetTimeline || '').trim(),
     learningPreference: String(user?.learningPreference || '').trim(),
-    githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
-    activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+    githubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
+    activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
     profileHash: user ? buildProfileHash(user) : 'no-profile',
     updatedAt: user?.updatedAt || null
   };
@@ -725,22 +727,7 @@ const summarizeGithubSignal = async (userId, source = {}) => {
   };
 };
 
-const loadDefaultResumeAnalysis = async (userId) => {
-  const user = userId
-    ? await User.findById(userId).select('defaultResumeFileId').lean()
-    : null;
-
-  if (user?.defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-
-  return userId
-    ? ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
-    : null;
-};
+const loadDefaultResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const summarizeResumeSignal = async (userId, sourceAnalysis) => {
   const latestResume = sourceAnalysis !== undefined ? sourceAnalysis : await loadDefaultResumeAnalysis(userId);
