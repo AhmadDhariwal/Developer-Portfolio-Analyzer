@@ -1,3 +1,4 @@
+const { clampScore: clamp } = require('../services/scoring/math');
 const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
@@ -31,11 +32,6 @@ const isRateLimitError = (error) => {
   );
 };
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
 const average = (values = []) => {
   if (!Array.isArray(values) || !values.length) return 0;

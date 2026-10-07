@@ -1,3 +1,4 @@
+const { clampScore: clamp, clamp: clampFloat, round } = require('./scoring/math');
 const developerContext = require('./developerContextService');
 /**
  * Scenario Simulator Service - Career Growth Simulation Engine
@@ -29,9 +30,7 @@ const {
 const { createSprint } = require('./careerSprintService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
 
-const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Math.round(Number(v) || 0)));
-const clampFloat = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v) || 0));
-const round1 = (v) => Math.round(Number(v || 0) * 10) / 10;
+const round1 = (v) => round(v, 1) ?? 0;
 const average = (values = [], fallback = 0) => {
   const valid = values.filter((value) => Number.isFinite(Number(value)) && Number(value) > 0).map(Number);
   if (!valid.length) return fallback;

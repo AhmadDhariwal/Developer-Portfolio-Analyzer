@@ -1,3 +1,5 @@
+const sprintProgressScore = require('./scoring/sprintProgressScore');
+const { clampScore: clamp } = require('./scoring/math');
 const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
@@ -23,21 +25,8 @@ const TOPIC_STOP_WORDS = new Set([
   'less', 'need', 'next', 'level', 'high', 'medium', 'low', 'setup', 'deploy'
 ]);
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
-const calcWeightedProgress = (tasks) => {
-  if (!Array.isArray(tasks) || tasks.length === 0) return 0;
-  const totalPoints = tasks.reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-  const completedPoints = tasks
-    .filter((task) => Boolean(task?.isCompleted))
-    .reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-
-  return totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
-};
+const calcWeightedProgress = (tasks) => sprintProgressScore.calculate(tasks).score ?? 0;
 
 const uniqLower = (values = []) => {
   const seen = new Set();
@@ -744,9 +733,9 @@ const normalizeSkillItems = (values = [], limit = 16) => safeStrings(
 const summarizeSkillGapSignal = async (userId) => {
   const cache = userId
     ? await AnalysisCache.findOne({
-        userId,
-        'analysisData.missingSkills.0': { $exists: true }
-      }).sort({ updatedAt: -1 }).lean()
+      userId,
+      'analysisData.missingSkills.0': { $exists: true }
+    }).sort({ updatedAt: -1 }).lean()
     : null;
 
   if (!cache?.analysisData) {

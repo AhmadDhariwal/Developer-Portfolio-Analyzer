@@ -1,3 +1,4 @@
+const { clampScore: clamp } = require('./scoring/math');
 const developerContext = require('./developerContextService');
 const nodemailer = require('nodemailer');
 const sendgrid = require('@sendgrid/mail');
@@ -28,12 +29,7 @@ const smartSkippedReports = new WeakSet();
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
-const clampPercent = (value) => Math.max(0, Math.min(100, Math.round(Number(value || 0))));
+const clampPercent = clamp;
 const toNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 const sumNumbers = (values = []) => values.reduce((sum, value) => sum + toNumber(value), 0);
 const signed = (value) => `${toNumber(value) > 0 ? '+' : ''}${Math.round(toNumber(value))}`;

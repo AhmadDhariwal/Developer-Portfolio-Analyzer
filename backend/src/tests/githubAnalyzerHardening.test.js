@@ -471,6 +471,10 @@ test('AI score pollution is ignored and narrative stays schema-safe', async () =
   const { service } = harness.loadInstance();
   const result = await service.analyzeGitHubProfile('ai-scores');
   assertScores(result);
+  assert.equal(result.githubSignals.scoring.ruleVersion, 'github-health-score-v1');
+  assert.equal(result.githubSignals.scoring.score, result.githubHealthScore);
+  assert.ok(Buffer.byteLength(JSON.stringify(result.githubSignals.scoring.evidence)) < 2048);
+  assert.equal(result.githubSignals.scoring.evidence.inputs.githubPayload, undefined);
   assert.equal(result.githubHealthScore, result.scores.healthScore);
   assert.notEqual(result.githubHealthScore, 999);
   assert.match(result.summary, /full-stack delivery/i);

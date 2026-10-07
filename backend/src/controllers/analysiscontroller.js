@@ -81,7 +81,7 @@ const getPortfolioReadiness = async (req, res) => {
     }
     resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
 
-    // AI Score Generation
+    // AI narrative generation; deterministic scoring owns all numeric fields.
     const prompt = getPortfolioScorePrompt(resumeAnalysis, githubAnalysis, careerStack, experienceLevel);
     const fallback = {
       overallScore: 70,
@@ -92,31 +92,34 @@ const getPortfolioReadiness = async (req, res) => {
     const aiResult = await aiService.runAIAnalysis(prompt, fallback);
     const integrationInsight = req.user?._id
       ? await getIntegrationInsight(req.user._id)
-      : { integrationScore: 0 };
+      : { providers: [], integrationScore: 0 };
 
     const transparentResult = calculateTransparentScore({
       githubAnalysis,
       resumeAnalysis,
       skillGapAnalysis: {
-        coverage: githubAnalysis?.scores?.skillCoverage || 0,
+        coverage: githubAnalysis?.scores?.skillCoverage,
         yourSkills: resumeAnalysis?.skills || [],
         missingSkills: []
       },
       integrationInsight,
-      aiBreakdown: aiResult?.breakdown || {},
-      aiOverallScore: aiResult?.overallScore || 0,
       careerStack
-    });
+    }, { sources: [
+      { type: 'github-user', id: username },
+      ...(resumeAnalysis?.resumeHash ? [{ type: 'resume-hash', id: resumeAnalysis.resumeHash }] : [])
+    ] });
 
     const scoredResult = normalizeTransparentScorePayload({
-      ...aiResult,
+      ...transparentResult,
       overallScore: transparentResult.overallScore,
       weightedScore: transparentResult.weightedScore,
       confidenceScore: transparentResult.confidenceScore,
       breakdown: transparentResult.breakdown,
       reasons: transparentResult.reasons,
       explainabilityBreakdown: transparentResult.explainabilityBreakdown,
-      summary: aiResult?.summary || 'Weighted score generated with confidence and explainability.'
+      summary: typeof aiResult?.summary === 'string' && aiResult.summary.trim()
+        ? aiResult.summary.trim().slice(0, 1200)
+        : 'Weighted score generated with confidence and explainability.'
     });
 
     if (req.user) {
