@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const aiService = require('../services/aiservice');
 const { getPortfolioScorePrompt } = require('../prompts/portfolioScorePrompt');
 const AnalysisCache = require('../models/analysisCache');
@@ -30,11 +31,11 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
 const getPortfolioReadiness = async (req, res) => {
   try {
     let { username, resumeAnalysis, githubAnalysis, resumeText } = req.body;
-    username = username || req.user?.githubUsername;
+    username = username || developerContext.resolveGithubUsername(req.user);
 
     // Career profile: prefer the authenticated user's saved profile, allow body override
-    const careerStack     = req.user?.careerStack     || req.body.careerStack     || 'Full Stack';
-    const experienceLevel = req.user?.experienceLevel || req.body.experienceLevel || 'Student';
+    const careerStack     = developerContext.resolveCareerStack(req.user)     || req.body.careerStack     || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.body.experienceLevel || 'Student';
 
     if (!username) {
       return res.status(400).json({ message: 'Username is required.' });

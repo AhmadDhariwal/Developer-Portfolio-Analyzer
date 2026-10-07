@@ -3,6 +3,7 @@ const { body, param, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const developerContext = require('../services/developerContextService');
 const Organization = require('../models/organization');
 const Team = require('../models/team');
 const Membership = require('../models/membership');
@@ -637,11 +638,11 @@ const acceptInvitationOnboard = async (req, res) => {
         name: user.name,
         email: user.email,
         githubUsername: user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
         careerStack: user.careerStack,
         experienceLevel: user.experienceLevel,
-        activeCareerStack: user.activeCareerStack || user.careerStack,
-        activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
         token: generateAuthToken(user._id)
       }
     });

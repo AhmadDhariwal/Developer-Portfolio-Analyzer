@@ -1,3 +1,4 @@
+const developerContext = require('./developerContextService');
 /**
  * Scenario Simulator Service - Career Growth Simulation Engine
  *
@@ -124,7 +125,7 @@ const buildContextCacheKey = ({ userId, signalHash, careerProfile }) => hashPayl
     careerStack: careerProfile?.careerStack || '',
     experienceLevel: careerProfile?.experienceLevel || '',
     careerGoal: careerProfile?.careerGoal || '',
-    githubUsername: careerProfile?.activeGithubUsername || careerProfile?.githubUsername || ''
+    githubUsername: developerContext.resolveGithubUsername(careerProfile) || ''
   }
 });
 
@@ -893,6 +894,8 @@ const buildFallbackContext = (warning, userId) => {
   return context;
 };
 
+const loadCurrentResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
+
 const loadScenarioContext = async (userId, options = {}) => {
   const startedAt = Date.now();
   const developerSignals = await getDeveloperSignals(userId);
@@ -925,10 +928,10 @@ const loadScenarioContext = async (userId, options = {}) => {
     integrationConnections
   ] = await Promise.all([
     User.findById(userId)
-      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle')
+      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle activeResumeFileId')
       .lean(),
     Analysis.findOne({ userId }).select('languageDistribution missingSkills readinessScore skillScore githubScore createdAt').sort({ createdAt: -1 }).lean(),
-    ResumeAnalysis.findOne({ userId }).select('fileId skills atsScore keywordDensity analyzedAt createdAt').sort({ analyzedAt: -1, createdAt: -1 }).lean(),
+    loadCurrentResumeAnalysis(userId),
     SkillGraph.findOne({ userId }).select('nodes weeklyRoadmap updatedAt').sort({ updatedAt: -1 }).lean(),
     Recommendation.find({ userId }).select('techStack isNewTech createdAt').sort({ createdAt: -1 }).limit(12).lean(),
     CareerSprint.findOne({
@@ -955,11 +958,7 @@ const loadScenarioContext = async (userId, options = {}) => {
   const integrationSignal = developerSignals.integrationSignal || developerSignals.integrationSignals || {};
 
   const sprint = currentSprint || latestSprint;
-  const resolvedResumeAnalysis = user?.defaultResumeFileId
-    ? await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1, createdAt: -1 })
-      .lean() || resumeAnalysis
-    : resumeAnalysis;
+  const resolvedResumeAnalysis = resumeAnalysis;
   const resumeSkills = uniqueStrings(resumeSignal.skills?.length ? resumeSignal.skills : mapResumeSkills(resolvedResumeAnalysis), 12);
   const githubSkills = uniqueStrings([
     ...(githubSignal.languageDistribution || []).map((item) => item.language || item.name || item),
@@ -1006,8 +1005,8 @@ const loadScenarioContext = async (userId, options = {}) => {
   ], 10);
   const connectedProviders = uniqueStrings((integrationConnections || []).map((connection) => connection.provider), 10);
 
-  const role = mapCareerStackToRole(user?.activeCareerStack || user?.careerStack);
-  const level = normalizeLevel(user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel);
+  const role = mapCareerStackToRole(developerContext.resolveCareerStack(user));
+  const level = normalizeLevel(developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel);
   const hiringBaselineSignals = [
     user?.score,
     analysis?.readinessScore,
@@ -1101,9 +1100,9 @@ const loadScenarioContext = async (userId, options = {}) => {
 
   const context = {
     profile: {
-      careerStack: user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack',
-      experienceLevel: user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'Student',
-      githubUsername: user?.activeGithubUsername || user?.githubUsername || careerProfile.activeGithubUsername || careerProfile.githubUsername || '',
+      careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || 'Full Stack',
+      experienceLevel: developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || 'Student',
+      githubUsername: developerContext.resolveGithubUsername(user) || developerContext.resolveGithubUsername(careerProfile) || '',
       role,
       level,
       baselineHiringScore,
@@ -1133,7 +1132,7 @@ const loadScenarioContext = async (userId, options = {}) => {
       skills: suggestedSkills,
       projects: suggestedProjects
     },
-    summary: `Recommendations are prefetched from your ${user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
+    summary: `Recommendations are prefetched from your ${developerContext.resolveCareerStack(user) || careerProfile.careerStack || 'Full Stack'} profile, ${developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
     signalHash,
     dataTrust: {
       baselineHiringScore: {
@@ -1408,6 +1407,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
 };
 
 module.exports = {
+  __test: { loadCurrentResumeAnalysis },
   sanitizeScenarioInput,
   simulateHiringOutcome,
   getScenarioContext,
