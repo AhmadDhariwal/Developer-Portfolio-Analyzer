@@ -53,7 +53,7 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       await delay(state.delays.github);
       if (/\/users\/[^/]+$/.test(url)) {
         state.counters.github.profile += 1;
-        return { data: { login: 'perfuser', followers: 3, public_repos: 8, bio: 'dev' }, headers: {} };
+        return { data: { login: decodeURIComponent(url.split('/').pop()), followers: 3, public_repos: 8, bio: 'dev' }, headers: {} };
       }
       if (url.endsWith('/repos')) {
         state.counters.github.repositories += 1;

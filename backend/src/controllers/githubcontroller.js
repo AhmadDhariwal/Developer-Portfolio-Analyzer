@@ -4,7 +4,7 @@ const Analysis = require('../models/analysis');
 const User = require('../models/user');
 const GitHubSaveLock = require('../models/githubSaveLock');
 const crypto = require('node:crypto');
-const { ANALYSIS_VERSION, analyzeGitHubProfile, isRateLimitError, parseGitHubUsername } = require('../services/githubservice');
+const { ANALYSIS_VERSION, analyzeGitHubProfile, isRateLimitError, parseGitHubUsername, invalidateSkillGapCachesForGitHub } = require('../services/githubservice');
 const { acquireCacheLock, releaseCacheLock, isRedisCacheEnabled } = require('../services/redisCacheService');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
@@ -82,7 +82,7 @@ const respondGitHubError = (res, error, fallbackMessage) => {
             message: sanitizeClientMessage(error, 'GitHub analysis save is already in progress. Please retry.')
         });
     }
-    return res.status(500).json({ message: sanitizeClientMessage(error, fallbackMessage) });
+    return res.status(500).json({ message: error?.transient ? 'Failed to fetch GitHub data. Please try again.' : fallbackMessage });
 };
 
 const buildLanguageMap = (languageDistribution = []) => {
@@ -94,7 +94,7 @@ const buildLanguageMap = (languageDistribution = []) => {
 };
 
 const buildHistorySnapshot = (data = {}) => ({
-    analyzedAt: new Date(),
+    analyzedAt: data.fetchedAt || data.scoring?.calculatedAt || new Date(),
     healthScore: Number(data.githubHealthScore || data.activityScore || 0),
     repos: Number(data.repoCount || 0),
     stars: Number(data.totalStars || 0),
@@ -120,7 +120,6 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
         .map((repo) => [String(repo.name).trim(), repo]))
         .values());
     const repoNames = uniqueRows.map((repo) => String(repo.name).trim());
-    const now = new Date();
 
     // Upsert every incoming row before removing stale rows.  A failed write
     // therefore leaves the prior repository set intact rather than empty.
@@ -130,10 +129,10 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
             update: {
                 $set: {
                     language: repo.language,
-                    stars: Number(repo.stars || 0),
-                    forks: Number(repo.forks || 0),
-                    commits: Number(repo.commits || 0),
-                    lastUpdated: now
+                    stars: repo.stars == null ? null : Number(repo.stars),
+                    forks: repo.forks == null ? null : Number(repo.forks),
+                    commits: repo.commits == null ? null : Number(repo.commits),
+                    lastUpdated: repo.updatedAt || repo.pushedAt || null
                 },
                 $setOnInsert: { ownerId: userId, repoName: String(repo.name).trim() }
             },
@@ -187,6 +186,7 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
     ].slice(-12);
     analysis.updatedAt = new Date();
     await analysis.save();
+    await invalidateSkillGapCachesForGitHub(githubUsername);
 
     await User.findByIdAndUpdate(user._id, {
         githubUsername: githubUsername.trim(),
@@ -256,7 +256,8 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
         }
 
         const defaultGithubUsername = String(developerContext.resolveGithubUsername(req.user) || '').trim();
-        const requestedRaw = String(req.body?.username || defaultGithubUsername || '').trim();
+        if (!defaultGithubUsername) return res.status(400).json({ message: 'Add a GitHub username to your profile before saving an analysis.' });
+        const requestedRaw = String(req.body?.username || defaultGithubUsername).trim();
         let githubUsername = '';
         try {
             githubUsername = parseGitHubUsername(requestedRaw || defaultGithubUsername);
@@ -270,7 +271,7 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             try {
                 parsedDefault = parseGitHubUsername(normalizedDefault);
             } catch {
-                parsedDefault = '';
+                return res.status(400).json({ message: 'Your saved GitHub username is invalid. Update your profile before analyzing.' });
             }
             if (parsedDefault && githubUsername.toLowerCase() !== parsedDefault.toLowerCase()) {
                 return res.status(400).json({

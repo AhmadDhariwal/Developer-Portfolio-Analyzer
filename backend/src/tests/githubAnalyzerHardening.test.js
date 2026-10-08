@@ -60,7 +60,7 @@ const createHarness = () => {
   }));
 
   const axios = {
-    async get(url) {
+    async get(url, config = {}) {
       await delay(state.delays.github);
       if (url.includes(`/users/`) && !url.includes('/repos/')) {
         if (url.endsWith('/repos')) state.counters.github.repositories += 1;
@@ -94,10 +94,10 @@ const createHarness = () => {
       }
       if (url.endsWith('/repos')) {
         const username = decodeURIComponent(url.split('/').at(-2));
-        return { data: reposFor(username), headers: {} };
+        return { data: state.repoPages ? (state.repoPages[config.params.page - 1] || []) : state.repoOverride ?? reposFor(username), headers: {} };
       }
-      if (url.includes('/languages')) return { data: { JavaScript: 7500, TypeScript: 2500 }, headers: {} };
-      if (url.includes('/contributors')) return { data: [{ login: 'developer', contributions: 12 }], headers: {} };
+      if (url.includes('/languages')) return { data: state.languageOverride ?? { JavaScript: 7500, TypeScript: 2500 }, headers: {} };
+      if (url.includes('/contributors')) return { data: state.contributorOverride ?? [{ login: 'developer', contributions: 12 }], headers: {} };
       if (url.includes('/contents/')) {
         const path = decodeURIComponent(url.split('/contents/')[1]);
         const content = path === 'README.md' ? '# Project\nDocumented application.' : '{"dependencies":{"react":"latest","express":"latest"}}';
@@ -111,6 +111,8 @@ const createHarness = () => {
   const aiService = {
     async runAIAnalysis(_prompt, fallback) {
       state.counters.ai += 1;
+      assert.ok(state.counters.cache.writes > 0, 'deterministic analysis must be durable before AI');
+      if (state.aiMode === 'throw') throw new Error('AI unavailable');
       await delay(state.delays.ai);
       if (state.aiMode === 'timeout') return fallback;
       if (state.aiMode === 'malformed') return { malformed: '{not-json' };
@@ -144,6 +146,11 @@ const createHarness = () => {
   };
 
   const GitHubAnalysisCache = {
+    async updateOne(query, update) {
+      const entry = state.cache.get(`${query.normalizedUsername}:${query.analysisVersion}`);
+      if (entry?.result?.scoring?.calculatedAt !== query['result.scoring.calculatedAt']) return;
+      for (const [key, value] of Object.entries(update.$set)) entry.result[key.slice(7)] = copy(value);
+    },
     collection: { async indexes() { return []; }, async dropIndex() {}, async createIndex() {} },
     findOne(query) {
       state.counters.cache.reads += 1;
@@ -571,6 +578,8 @@ test('GitHub optional and full failures are sanitized and never cached', async (
     const optional = optionalHarness.loadInstance();
     const optionalResult = await optional.service.analyzeGitHubProfile('optional');
     assert.equal(optionalResult.repoCount, 10);
+    assert.equal(optionalResult.repositoryQuality[0].hasReadme, null);
+    assert.equal(optionalResult.repositories[0].readmeQuality, null);
     assertScores(optionalResult);
 
     for (const [failure, expectedStatus, expectedText] of [['404', 404, /not found/i], ['429', 429, /rate limit/i], ['timeout', 500, /failed to fetch/i]]) {
@@ -640,4 +649,86 @@ test('deterministic timing benchmark', async (t) => {
     if (previousTiming === undefined) delete process.env.GITHUB_TIMING;
     else process.env.GITHUB_TIMING = previousTiming;
   }
+});
+
+const githubScoreEngine = require('../services/scoring/githubHealthScore');
+test('zero accessible repositories retain centralized metadata and measured zeros', async () => {
+  const h = createHarness(); h.state.repoOverride = [];
+  const { service } = h.loadInstance(); const result = await service.analyzeGitHubProfile('empty');
+  assert.equal(result.repoCount, 0); assert.equal(result.scoring.score, 0);
+  assert.equal(result.scoring.ruleVersion, 'github-health-score-v1');
+  assert.equal(result.githubSignals.scoring.score, 0); assertScores(result);
+  assert.equal(h.state.counters.ai, 0);
+});
+test('forked repositories do not supply original activity or technology scoring', async () => {
+  const h = createHarness(); h.state.repoOverride = [{ name: 'fork', fork: true, stars: 9999, stargazers_count: 9999, language: 'JavaScript', topics: [], archived: false }];
+  const { service } = h.loadInstance(); const result = await service.analyzeGitHubProfile('forked');
+  assert.equal(result.repoCount, 1); assert.equal(result.scoring.evidence.facts.originalRepoCount, 0);
+  assert.equal(result.scoring.evidence.facts.forkRepoCount, 1);
+  assert.equal(result.repositoryActivity.length, 0); assert.equal(result.scoring.breakdown.projectImpact.value, 0); assertScores(result);
+});
+test('normalization deduplicates repositories and preserves unavailable activity', async () => {
+  const h = createHarness(); h.state.optionalFailure = true;
+  h.state.repoOverride = [{ name: 'one', topics: null, stargazers_count: -3, pushed_at: 'invalid' }, { name: 'ONE' }, null];
+  const { service } = h.loadInstance(); const result = await service.analyzeGitHubProfile('partial');
+  assert.equal(result.repoCount, 1); assert.equal(result.repositories[0].pushedAt, null);
+  assert.equal(result.scoring.breakdown.contribution.available, false);
+  assert.equal(result.scoring.evidence.facts.totalCommits, null);
+  assert.ok(result.scoring.warnings.includes('activity_partial_or_unavailable')); assertScores(result);
+});
+test('measured zero stars and activity differ from unavailable data and preserve score parity', async () => {
+  const h = createHarness(); h.state.contributorOverride = []; h.state.languageOverride = {};
+  h.state.repoOverride = [{ name: 'zero', stargazers_count: 0, forks_count: 0, fork: false, archived: false, pushed_at: new Date().toISOString(), language: null }];
+  const { service } = h.loadInstance(); const result = await service.analyzeGitHubProfile('zeros');
+  assert.equal(result.totalStars, 0); assert.equal(result.scoring.evidence.facts.totalCommits, 0);
+  assert.equal(result.scoring.breakdown.contribution.available, true); assert.deepEqual(result.rawLanguageBytes, {});
+  const parity = githubScoreEngine.calculate(result.scoring.evidence.inputs);
+  assert.equal(parity.score, result.githubHealthScore); assertScores(result);
+  assert.ok(JSON.stringify(result.scoring.evidence).length < 2500);
+});
+test('AI thrown errors preserve durable scoring and repeat freshness', async () => {
+  const h = createHarness(); h.state.aiMode = 'throw'; const { service } = h.loadInstance();
+  const first = await service.analyzeGitHubProfile('aierror'); const second = await service.analyzeGitHubProfile('aierror');
+  assert.equal(second.fetchedAt, first.fetchedAt); assert.deepEqual(second.scoring, first.scoring);
+  assert.equal(h.state.counters.github.profile, 1); assertScores(first);
+  assert.match(first.summary, /Rule-based/);
+});
+test('canonical active identity takes priority and rejects preview overwrite', async () => {
+  const h = createHarness(); const { controller } = h.loadInstance();
+  const res = { statusCode: 200, status(code) { this.statusCode = code; return this; }, json(data) { this.body = data; return this; } };
+  await controller.analyzeAndSaveGitHubProfile({ body: {}, query: {}, user: { _id: 'canonical', activeGithubUsername: 'active', githubUsername: 'legacy' } }, res);
+  assert.equal(res.statusCode, 200); assert.equal(res.body.githubSignals.username, 'active');
+  assert.ok(h.state.analysisCacheDeletes.length > 0);
+  const saved = h.state.analyses.get('canonical'); const history = saved.githubAnalysisHistory.length;
+  await controller.analyzeAndSaveGitHubProfile({ body: { forceRefresh: true }, query: {}, user: { _id: 'canonical', activeGithubUsername: 'active', githubUsername: 'legacy' } }, res);
+  assert.equal(saved.githubAnalysisHistory.length, history + 1);
+  assert.equal(saved.githubAnalysisHistory[0].healthScore, res.body.analysisHistory[0].healthScore);
+});
+
+test('successful narrative cache preserves facts, dates and snapshot count', async () => {
+  const h = createHarness(); h.state.aiMode = 'score-pollution'; const { service } = h.loadInstance();
+  const first = await service.analyzeGitHubProfile('narrative'); const second = await service.analyzeGitHubProfile('narrative');
+  assert.equal(second.summary, first.summary); assert.deepEqual(second.scoring, first.scoring);
+  assert.equal(second.fetchedAt, first.fetchedAt); assert.equal(second.analysisHistory.length, 1);
+  assert.equal(second.repoCount, first.repoCount); assert.equal(second.totalStars, first.totalStars);
+});
+
+test('missing canonical identity cannot be replaced by a save request username', async () => {
+  const h = createHarness(); const { controller } = h.loadInstance();
+  const res = await invoke(controller.analyzeAndSaveGitHubProfile, { username: 'preview', savedUsername: '' });
+  assert.equal(res.statusCode, 400); assert.equal(h.state.counters.github.profile, 0);
+});
+test('mostly forked accounts score original work only', async () => {
+  const h = createHarness(); const original = { name: 'original', fork: false, archived: true, language: 'Python', stargazers_count: 0, forks_count: 0 };
+  h.state.repoOverride = [original]; const { service } = h.loadInstance(); const first = await service.analyzeGitHubProfile('mixed');
+  h.state.repoOverride = [original, ...Array.from({ length: 8 }, (_, i) => ({ name: 'fork' + i, fork: true, language: 'JavaScript', stargazers_count: 1000, forks_count: 200 }))];
+  const second = await service.analyzeGitHubProfile('mixed', { forceRefresh: true });
+  assert.equal(first.githubHealthScore, second.githubHealthScore); assert.equal(second.repoCount, 9);
+  assert.equal(second.scoring.evidence.facts.forkRepoCount, 8);
+});
+
+test('repository pagination includes later pages without duplicate influence', async () => {
+  const h = createHarness(); h.state.repoPages = [Array.from({ length: 100 }, (_, i) => ({ name: 'repo' + i, archived: true, stargazers_count: 0, forks_count: 0 })), [{ name: 'repo99' }, { name: 'last', archived: true, stargazers_count: 0, forks_count: 0 }]];
+  const { service } = h.loadInstance(); const result = await service.analyzeGitHubProfile('paged');
+  assert.equal(result.repoCount, 101); assert.equal(h.state.counters.github.repositories, 2); assertScores(result);
 });
