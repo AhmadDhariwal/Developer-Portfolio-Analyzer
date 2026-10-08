@@ -5,6 +5,8 @@ import { ProfileService, UserProfile, ResumeContextFile } from './profile.servic
 import { ApiService } from './api.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
+import { ResumeContentQualityState } from '../models/resume.model';
+
 export interface ResumeFile {
   fileId: string;
   fileName: string;
@@ -16,6 +18,7 @@ export interface ResumeFile {
   lastAnalyzed?: string | null;
   resumeHash?: string;
   analysisVersion?: string;
+  contentQualityState?: ResumeContentQualityState | null;
 }
 
 export interface PreviewResumeReference {
