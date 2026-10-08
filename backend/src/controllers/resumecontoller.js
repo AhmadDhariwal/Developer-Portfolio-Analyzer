@@ -8,6 +8,8 @@ const User = require('../models/user');
 const fs = require('fs/promises');
 const { createNotification } = require('../services/notificationService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
+const aiService = require('../services/aiservice');
+const { assessContent, requireReadableContent } = require('../services/resumeContentQuality');
 const { createPreviewResume } = require('../services/previewResumeCacheService');
 
 const analyzeInFlight = new Map();
@@ -38,7 +40,8 @@ const respondResumeError = (res, error, fallbackMessage) => {
   if (status === 409) {
     return res.status(409).json({ message: sanitizeClientMessage(error, 'Resume analysis is already in progress. Please retry.') });
   }
-  return res.status(500).json({ message: sanitizeClientMessage(error, fallbackMessage) });
+  if (status === 422) return res.status(422).json({ message: error.code?.startsWith('RESUME_') ? error.message : 'The resume could not be read. Upload a text-based PDF.', contentQualityState: error.contentQualityState || { state: 'INVALID', scoreable: false } });
+  return res.status(500).json({ message: fallbackMessage });
 };
 
 const parseResumeFileId = (raw) => {
@@ -110,6 +113,15 @@ const toForceRefresh = (req) => (
   String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true'
 );
 
+const validateResumeUploadMetadata = (file) => {
+  if (file?.mimetype !== 'application/pdf' || !/\.pdf$/i.test(String(file?.originalname || ''))) {
+    const error = new Error('Only PDF files are allowed.'); error.status = 400; throw error;
+  }
+  if (!Number.isFinite(file.size) || file.size > 10 * 1024 * 1024) {
+    const error = new Error('Resume PDF must be 10 MB or smaller.'); error.status = 413; throw error;
+  }
+};
+
 const ensureResumeContext = (userId) => User.findById(userId).select('defaultResumeFileId activeResumeFileId');
 
 // @desc    Upload resume file
@@ -122,6 +134,7 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ message: 'No resume file uploaded' });
     }
 
+    validateResumeUploadMetadata(req.file);
     const fileHandle = await fs.open(req.file.path, 'r');
     const signature = Buffer.alloc(5);
     try {
@@ -134,12 +147,15 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ message: 'Only valid PDF files are allowed' });
     }
 
+    const text = await extractTextFromPDF(req.file.path);
+    const contentQualityState = assessContent(text);
     const resumeFile = new ResumeFile({
       userId: req.user._id,
       fileName: req.file.originalname,
       fileUrl: req.file.path,
       fileSize: req.file.size,
-      mimeType: req.file.mimetype
+      mimeType: req.file.mimetype,
+      contentQualityState
     });
 
     await resumeFile.save();
@@ -147,6 +163,7 @@ const uploadResume = async (req, res) => {
 
     // New uploads become active resume context for this user.
     await User.findByIdAndUpdate(req.user._id, { activeResumeFileId: resumeFile._id });
+    await invalidateResumeDependents(req.user._id);
 
     await createNotification({
       userId: req.user._id,
@@ -161,7 +178,8 @@ const uploadResume = async (req, res) => {
       message: 'Resume uploaded successfully',
       fileId: resumeFile._id,
       fileName: resumeFile.fileName,
-      fileSize: resumeFile.fileSize
+      fileSize: resumeFile.fileSize,
+      contentQualityState
     });
   } catch (error) {
     if (req.file?.path && !resumeFilePersisted) {
@@ -170,6 +188,50 @@ const uploadResume = async (req, res) => {
     console.error('Resume Upload Error:', sanitizeClientMessage(error, 'Server Error'));
     respondResumeError(res, error, 'Server Error');
   }
+};
+
+const createAnalysisDocument = (userId, resumeFile, analysis) => {
+  return new ResumeAnalysis({
+      userId,
+      fileId: resumeFile._id,
+      fileName: analysis.fileName,
+      fileSize: analysis.fileSize,
+      atsScore: analysis.atsScore,
+      keywordDensity: analysis.keywordDensity,
+      formatScore: analysis.formatScore,
+      contentQuality: analysis.contentQuality,
+      skills: new Map(Object.entries(analysis.skills || {})),
+      experienceYears: analysis.experienceYears,
+      experienceLevel: analysis.experienceLevel,
+      certifications: analysis.certifications,
+      keyAchievements: analysis.keyAchievements,
+      scoreBreakdown: analysis.scoreBreakdown,
+      suggestions: analysis.suggestions,
+      resumeHash: analysis.resumeHash,
+      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
+      normalized: analysis.normalized,
+      qualityScores: analysis.qualityScores,
+      technologyCategories: analysis.technologyCategories,
+      consistencyWarnings: analysis.consistencyWarnings,
+      recruiterPerspective: analysis.recruiterPerspective,
+      resumeSignals: analysis.resumeSignals,
+      scoring: analysis.scoring || analysis.resumeSignals?.scoring,
+      contentQualityState: analysis.contentQualityState,
+      aiInsights: analysis.aiInsights,
+      cacheMetadata: analysis.cacheMetadata,
+      previousAnalysisId: analysis.previousAnalysisId,
+      improvementDelta: analysis.improvementDelta,
+      scoreChanges: analysis.scoreChanges,
+      newSkillsAdded: analysis.newSkillsAdded,
+      uploadDate: resumeFile.uploadDate,
+      analyzedAt: analysis.scoring?.calculatedAt || new Date()
+    });
+};
+
+// Existing downstream cache hooks, without changing downstream analysis logic.
+const invalidateResumeDependents = async (userId) => {
+  invalidateDashboardSummaryCache(userId);
+  await aiService.invalidateCachePrefix('skill_gap:result:');
 };
 
 // @desc    Analyze resume
@@ -203,38 +265,37 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     })
     : null;
 
-  let userContext;
-  if (analysis) {
-    userContext = await User.findById(req.user._id)
-      .select('defaultResumeFileId activeResumeFileId');
-  } else {
+  let deterministicRecord = null;
+  if (!analysis) {
     const extractionStartedAt = process.hrtime.bigint();
     const text = await extractTextFromPDF(resumeFile.fileUrl);
     const providerMs = elapsedMs(extractionStartedAt);
     addTiming('pdfTextExtractionMs', providerMs);
     addTiming('providerMs', providerMs);
 
-    const [loadedUserContext, previousAnalysis] = await Promise.all([
-      User.findById(req.user._id).select('defaultResumeFileId activeResumeFileId'),
-      ResumeAnalysis.findOne({ userId: req.user._id })
-        .sort({ analyzedAt: -1 })
-        .select('atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt')
-        .lean()
-    ]);
-    userContext = loadedUserContext;
+    const previousAnalysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: resumeFile._id })
+      .sort({ analyzedAt: -1, _id: -1 })
+      .select('atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt')
+      .lean();
     analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize, {
       userId: req.user._id,
       resumeFileId: resumeFile._id,
       forceRefresh,
       cacheLookupCompleted: canLookupBeforeExtraction,
       previousAnalysis,
+      onDeterministicPersist: async (result) => {
+        deterministicRecord = createAnalysisDocument(req.user._id, resumeFile, result);
+        const started = process.hrtime.bigint();
+        await deterministicRecord.save();
+        addTiming('persistenceMs', elapsedMs(started));
+      },
       onTiming: addTiming
     });
   }
 
   const cacheHit = Boolean(analysis.cacheMetadata?.loadedFromCache) && !forceRefresh;
 
-  let resumeAnalysis = null;
+  let resumeAnalysis = deterministicRecord;
   if (cacheHit) {
     resumeAnalysis = await ResumeAnalysis.findOne({
       userId: req.user._id,
@@ -246,41 +307,9 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
       .select('analyzedAt');
   }
 
-  let createdAnalysis = false;
+  let createdAnalysis = Boolean(deterministicRecord);
   if (!resumeAnalysis) {
-    resumeAnalysis = new ResumeAnalysis({
-      userId: req.user._id,
-      fileId: resumeFile._id,
-      fileName: analysis.fileName,
-      fileSize: analysis.fileSize,
-      atsScore: analysis.atsScore,
-      keywordDensity: analysis.keywordDensity,
-      formatScore: analysis.formatScore,
-      contentQuality: analysis.contentQuality,
-      skills: new Map(Object.entries(analysis.skills || {})),
-      experienceYears: analysis.experienceYears,
-      experienceLevel: analysis.experienceLevel,
-      certifications: analysis.certifications,
-      keyAchievements: analysis.keyAchievements,
-      scoreBreakdown: analysis.scoreBreakdown,
-      suggestions: analysis.suggestions,
-      resumeHash: analysis.resumeHash,
-      analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION,
-      normalized: analysis.normalized,
-      qualityScores: analysis.qualityScores,
-      technologyCategories: analysis.technologyCategories,
-      consistencyWarnings: analysis.consistencyWarnings,
-      recruiterPerspective: analysis.recruiterPerspective,
-      resumeSignals: analysis.resumeSignals,
-      aiInsights: analysis.aiInsights,
-      cacheMetadata: analysis.cacheMetadata,
-      previousAnalysisId: analysis.previousAnalysisId,
-      improvementDelta: analysis.improvementDelta,
-      scoreChanges: analysis.scoreChanges,
-      newSkillsAdded: analysis.newSkillsAdded,
-      uploadDate: resumeFile.uploadDate,
-      analyzedAt: new Date()
-    });
+    resumeAnalysis = createAnalysisDocument(req.user._id, resumeFile, analysis);
 
     const analysisWriteStartedAt = process.hrtime.bigint();
     await resumeAnalysis.save();
@@ -290,6 +319,10 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     createdAnalysis = true;
   }
 
+  if (deterministicRecord) {
+    // Only critique fields may change after deterministic persistence.
+    await ResumeAnalysis.updateOne({ _id: deterministicRecord._id }, { $set: { aiInsights: analysis.aiInsights, suggestions: analysis.suggestions, 'cacheMetadata.aiUsed': analysis.cacheMetadata?.aiUsed } }, { timestamps: false }).catch(() => {});
+  }
   const resolvedResumeHash = analysis.resumeHash || resumeFile.resumeHash || '';
   const resolvedAnalysisVersion = analysis.analysisVersion || ANALYSIS_VERSION;
   const resumeFileNeedsSave = !resumeFile.isAnalyzed
@@ -303,23 +336,9 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     resumeFile.analysisVersion = resolvedAnalysisVersion;
   }
 
-  let userNeedsSave = false;
-  if (userContext) {
-    if (String(userContext.activeResumeFileId || '') !== String(resumeFile._id)) {
-      userContext.activeResumeFileId = resumeFile._id;
-      userNeedsSave = true;
-    }
-    if (!userContext.defaultResumeFileId) {
-      userContext.defaultResumeFileId = resumeFile._id;
-      userNeedsSave = true;
-    }
-  }
-
+  // Analyzing a historical file does not select it. Upload/PUT active own selection.
   const contextWritesStartedAt = process.hrtime.bigint();
-  await Promise.all([
-    resumeFileNeedsSave ? resumeFile.save() : null,
-    userNeedsSave ? userContext.save() : null
-  ]);
+  if (resumeFileNeedsSave) await resumeFile.save();
   const contextMs = elapsedMs(contextWritesStartedAt);
   addTiming('mongoWritesMs', contextMs);
   addTiming('persistenceMs', contextMs);
@@ -339,13 +358,7 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     await notify();
   }
 
-  if (createdAnalysis || userNeedsSave) {
-    if (process.env.NODE_ENV === 'production') {
-      setImmediate(() => invalidateDashboardSummaryCache(req.user._id));
-    } else {
-      invalidateDashboardSummaryCache(req.user._id);
-    }
-  }
+  if (createdAnalysis) await invalidateResumeDependents(req.user._id);
 
   return {
     cacheHit,
@@ -375,6 +388,8 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
       consistencyWarnings: analysis.consistencyWarnings,
       recruiterPerspective: analysis.recruiterPerspective,
       resumeSignals: analysis.resumeSignals,
+      scoring: analysis.scoring || analysis.resumeSignals?.scoring,
+      contentQualityState: analysis.contentQualityState,
       aiInsights: analysis.aiInsights,
       cacheMetadata: analysis.cacheMetadata,
       previousAnalysisId: analysis.previousAnalysisId,
@@ -421,7 +436,7 @@ const analyzeResumeFile = async (req, res) => {
     addTiming('responseSerializationMs', elapsedMs(serializationStartedAt));
     status = 'success';
   } catch (error) {
-    if (error?.code === 'ENOENT' || /no such file|Unable to extract text from this PDF/i.test(String(error?.message || ''))) {
+    if (error?.code === 'ENOENT') {
       error.status = 404;
       if (!error.message || /ENOENT|no such file/i.test(error.message)) {
         error.message = 'Resume file is missing or unreadable. Please upload the PDF again.';
@@ -456,6 +471,8 @@ const mapToObj = (skills) => {
 };
 
 const serializeAnalysis = (analysis) => ({
+  scoring: analysis.scoring || analysis.resumeSignals?.scoring || null,
+  contentQualityState: analysis.contentQualityState || null,
   atsScore: analysis.atsScore,
   keywordDensity: analysis.keywordDensity,
   formatScore: analysis.formatScore,
@@ -589,6 +606,7 @@ const getResumeFiles = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
     const files = await ResumeFile.find({ userId: req.user._id }).sort({ uploadDate: -1 }).lean();
+    const active = await developerContext.resolveResumeFile(req.user._id, user, { ResumeFile });
 
     res.json({
       files: files.map((f) => ({
@@ -601,7 +619,8 @@ const getResumeFiles = async (req, res) => {
         resumeHash: f.resumeHash || '',
         analysisVersion: f.analysisVersion || '',
         isDefault: String(user?.defaultResumeFileId || '') === String(f._id),
-        isActive: String(user?.activeResumeFileId || '') === String(f._id)
+        isActive: String(active?._id || '') === String(f._id),
+        contentQualityState: f.contentQualityState || null
       }))
     });
   } catch (error) {
@@ -639,7 +658,8 @@ const getActiveResumeContext = async (req, res) => {
         isAnalyzed: !!activeFile.isAnalyzed,
         lastAnalyzed: activeFile.lastAnalyzedAt || null,
         resumeHash: activeFile.resumeHash || '',
-        analysisVersion: activeFile.analysisVersion || ''
+        analysisVersion: activeFile.analysisVersion || '',
+        contentQualityState: activeFile.contentQualityState || null
       } : null
     });
   } catch (error) {
@@ -666,6 +686,7 @@ const setActiveResume = async (req, res) => {
       update.defaultResumeFileId = resumeFile._id;
     }
     await User.findByIdAndUpdate(req.user._id, update);
+    await invalidateResumeDependents(req.user._id);
 
     res.json({
       message: setAsDefault ? 'Active and default resume updated' : 'Active resume updated',
@@ -721,6 +742,7 @@ const parsePreviewResume = async (req, res) => {
 
     let text = await extractTextFromPDF(req.file.path);
     if (text.length > 50000) text = text.substring(0, 50000);
+    requireReadableContent(text);
     const previewResume = await createPreviewResume(text);
 
     await fs.unlink(req.file.path).catch(() => {});
@@ -730,7 +752,7 @@ const parsePreviewResume = async (req, res) => {
       await fs.unlink(req.file.path).catch(() => {});
     }
     console.error('Preview resume parsing failed'); // DO NOT log raw resume text
-    return res.status(500).json({ message: 'Failed to parse PDF resume' });
+    return respondResumeError(res, error, 'Failed to parse PDF resume');
   }
 };
 
@@ -747,6 +769,8 @@ module.exports = {
   __test: {
     sanitizeClientMessage,
     parseResumeFileId,
-    canReadResumeAnalysisForUser
+    canReadResumeAnalysisForUser,
+    invalidateResumeDependents,
+    validateResumeUploadMetadata
   }
 };

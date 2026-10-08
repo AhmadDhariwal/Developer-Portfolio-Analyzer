@@ -1,0 +1,116 @@
+[AIProviderManager] DISABLED Groq (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+[AIProviderManager] DISABLED OpenAI (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+[AIProviderManager] DISABLED Gemini (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+[AIProviderManager] DISABLED Anthropic (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+[AIProviderManager] DISABLED OpenRouter (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+[AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+✔ active GitHub wins; legacy GitHub works; absent identity is clean null (3.3016ms)
+✔ active career stack and experience level win, with legacy compatibility (0.379ms)
+✔ active resume wins over default and newer historical resume (1.1852ms)
+✔ default resume wins when active is absent (0.3606ms)
+✔ latest valid owned historical resume is used only without either selection (0.4377ms)
+✔ no resume yields clean null context, even with orphan analyses (9.3216ms)
+✔ an unanalyzed selection never borrows historical analysis (0.4062ms)
+✔ Dashboard, Simulator, Weekly Reports read the same active resume; switching preserves history (5438.6548ms)
+✔ profile completion counts active-only developer identity (35.8265ms)
+✔ profile GET and resume context GET do not backfill legacy fields or save the user (53.0689ms)
+✔ selecting an active resume updates only selection and retains all historical files and analyses (1.4763ms)
+✔ null and undefined inputs return clean nulls without throwing (0.3107ms)
+✔ whitespace-only active fields cleanly fall back to legacy fields or null (0.2338ms)
+✔ context resolution does not cause circular dependencies across consumers (58.5323ms)
+[AIProviderManager] DISABLED Groq (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+[AIProviderManager] DISABLED OpenAI (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+[AIProviderManager] DISABLED Gemini (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+[AIProviderManager] DISABLED Anthropic (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+[AIProviderManager] DISABLED OpenRouter (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+[AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+✔ parseResumeFileId rejects missing and malformed ids (6.5372ms)
+✔ canReadResumeAnalysisForUser blocks cross-user IDOR reads (0.5009ms)
+✔ sanitizeClientMessage hides filesystem and stack details (0.6683ms)
+✔ missing PDF analyze errors map to safe 404 client messaging (0.873ms)
+✔ polluted AI narrative fields are ignored for resume insights (40.7732ms)
+✔ failed refresh does not write a new cache entry (23.9424ms)
+✔ non-finite scores are not persisted to resume cache (1.8554ms)
+RESUME_PERF {"cold":{"p50":31.516599999999983,"p95":73.1051},"memory":{"p50":0.03279999999995198,"p95":0.0809999999999036},"redis":{"p50":15.454900000000066,"p95":17.60220000000004},"mongo":{"p50":31.52520000000004,"p95":49.383699999999976},"counts":{"ai":1,"mongoReads":10,"mongoWrites":1,"redisGets":25,"redisSets":14}}
+✔ resume tiered cache paths and five-way concurrency (1023.4867ms)
+✔ resume cache index supports exact hashed lookup (3819.9736ms)
+[AIProviderManager] DISABLED Groq (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+[AIProviderManager] DISABLED OpenAI (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+[AIProviderManager] DISABLED Gemini (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+[AIProviderManager] DISABLED Anthropic (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+[AIProviderManager] DISABLED OpenRouter (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+[AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+✔ content quality rejects empty, unreadable and unsupported text without a score (20.0337ms)
+✔ very short readable content has unavailable inputs and no score floor (40.5023ms)
+✔ PDF parser classifies corrupt, empty and image-only data using safe errors (2.4472ms)
+✔ file metadata validation preserves PDF type and ten-megabyte limit (0.9979ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":18,"aiMs":0,"deterministicMs":10,"validationMs":1,"persistenceMs":0,"cacheWriteMs":1,"totalMs":0,"pdfTextExtractionMs":6,"cacheLookupMs":0,"deterministicAnalysisMs":10,"aiInsightsMs":0,"mongoWritesMs":1,"responseSerializationMs":0,"totalDurationMs":23}
+✔ normal extraction, score parity, bounds and bounded provenance (67.7136ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":7,"aiMs":0,"deterministicMs":2,"validationMs":0,"persistenceMs":0,"cacheWriteMs":1,"totalMs":0,"pdfTextExtractionMs":5,"cacheLookupMs":0,"deterministicAnalysisMs":2,"aiInsightsMs":0,"mongoWritesMs":1,"responseSerializationMs":0,"totalDurationMs":9}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":true,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":0,"aiMs":0,"deterministicMs":0,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":0,"cacheLookupMs":0,"deterministicAnalysisMs":0,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":0}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":true,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":6,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":1,"totalMs":0,"pdfTextExtractionMs":3,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":1,"responseSerializationMs":0,"totalDurationMs":8}
+✔ repeated analysis preserves source time, active identity and all histories (31.787ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":true,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":7,"aiMs":0,"deterministicMs":2,"validationMs":0,"persistenceMs":0,"cacheWriteMs":1,"totalMs":0,"pdfTextExtractionMs":5,"cacheLookupMs":0,"deterministicAnalysisMs":2,"aiInsightsMs":0,"mongoWritesMs":1,"responseSerializationMs":0,"totalDurationMs":9}
+[ResumeAnalysisPipeline] {"event":"ai_insights_fallback","reason":"provider_unavailable"}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":true,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":5,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":3,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":7}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":true,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":6,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":4,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":8}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":true,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":4,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":2,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":5}
+✔ AI success, failure, malformed and polluted output preserve deterministic facts (47.5169ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":12,"aiMs":5002,"deterministicMs":3,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":6,"cacheLookupMs":0,"deterministicAnalysisMs":3,"aiInsightsMs":5002,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":5016}
+✔ AI deadline returns a persisted deterministic analysis when provider hangs (5031.173ms)
+✔ uploads validate before persistence and invalidate dependent caches without deleting history (21.5153ms)
+Resume Upload Error: The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.
+✔ corrupt uploads and parser failures return safe errors without saving files or changing selection (17.5684ms)
+✔ duplicate bullet evidence, date gaps and employment overlaps do not inflate facts (3.9139ms)
+Warning: Indexing all PDF objects
+✔ installed PDF parser reads real text PDFs and rejects blank and corrupt PDFs (185.0175ms)
+✔ centralized eight-component zero, missing-input and rounding behavior is retained (1.6691ms)
+✔ missing sections and unusual Unicode formatting retain factual extraction (4.9479ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":13,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":11,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":14}
+✔ active selection invalidates current caches and selected unanalyzed files never borrow history (34.0703ms)
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":6,"aiMs":0,"deterministicMs":1,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":4,"cacheLookupMs":0,"deterministicAnalysisMs":1,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":6}
+[ResumeAnalysisPipeline] {"event":"resume_analysis_complete","userId":"user","fileId":"111111111111111111111111","forceRefresh":false,"cacheHit":false,"status":"success","memoryCacheMs":0,"redisMs":0,"mongoMs":0,"providerMs":3,"aiMs":0,"deterministicMs":0,"validationMs":0,"persistenceMs":0,"cacheWriteMs":0,"totalMs":0,"pdfTextExtractionMs":2,"cacheLookupMs":0,"deterministicAnalysisMs":0,"aiInsightsMs":0,"mongoWritesMs":0,"responseSerializationMs":0,"totalDurationMs":3}
+✔ expired resume caches cannot extend source freshness when warmed from Mongo (18.6118ms)
+[AIProviderManager] DISABLED Groq (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+[AIProviderManager] DISABLED OpenAI (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+[AIProviderManager] DISABLED Gemini (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+[AIProviderManager] DISABLED Anthropic (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+[AIProviderManager] DISABLED OpenRouter (missing_key)
+[AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+[AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+[ResumeAnalysisPipeline] {"event":"ai_insights_fallback","reason":"provider_unavailable"}
+✔ experience inference ignores education-only dates (3.0786ms)
+✔ personal information comes only from resume text (1.6851ms)
+✔ AI focus areas are selected only from deterministic evidence (3.5958ms)
+✔ persistent resume cache returns the exact versioned result (5.4281ms)
+✔ unexpected AI failure still returns a usable deterministic analysis (45.6233ms)
+✔ force refresh bypasses the result-cache read and repopulates it (26.6024ms)
+✔ polluted AI output does not enable aiUsed flag (3.411ms)
+✔ resume query indexes cover cache, latest file analysis, and active/default fallbacks (1.6429ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13209.444

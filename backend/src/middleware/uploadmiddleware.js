@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const { randomUUID } = require('node:crypto');
 const fs = require('fs');
 
 const MAX_RESUME_SIZE_BYTES = 10 * 1024 * 1024;
@@ -11,7 +12,7 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        cb(null, `${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
+        cb(null, `${req.user._id}-${Date.now()}-${randomUUID()}${path.extname(file.originalname)}`);
     }
 });
 
@@ -37,6 +38,6 @@ module.exports.resumePdf = (req, res, next) => {
         if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
             return res.status(413).json({ message: 'Resume PDF must be 10 MB or smaller' });
         }
-        return res.status(400).json({ message: error.message || 'Invalid resume upload' });
+        return res.status(400).json({ message: error.message === 'Only PDF files are allowed' ? error.message : 'Invalid resume upload' });
     });
 };

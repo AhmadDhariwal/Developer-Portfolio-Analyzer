@@ -8,6 +8,7 @@ const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 const { getCacheJsonWithMeta, setCacheJson } = require('./redisCacheService');
 
+const { VERSION: CONTENT_VERSION, assessContent, requireReadableContent } = require('./resumeContentQuality');
 const ANALYSIS_VERSION = 'resume-intel-v2';
 const RESUME_AI_TIMEOUT_MS = 5000;
 const RESUME_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -62,6 +63,8 @@ const buildMemoryCacheKey = ({ userId, resumeFileId, resumeHash, analysisVersion
 
 const isValidCachedResult = (result) => (
   Boolean(result)
+  && result.contentQualityState?.version === CONTENT_VERSION
+  && ['VALID', 'PARTIALLY_READABLE'].includes(result.contentQualityState.state)
   && Number.isFinite(result.atsScore)
   && Number.isFinite(result.keywordDensity)
   && Number.isFinite(result.formatScore)
@@ -134,11 +137,12 @@ const resolveTieredResumeCache = async ({ userId, resumeFileId, resumeHash, anal
   recordTiming(onTiming, 'memoryCacheMs', redisMeta.memoryMs || 0);
   recordTiming(onTiming, 'redisMs', redisMeta.redisMs || 0);
   recordTiming(onTiming, 'cacheLookupMs', (redisMeta.memoryMs || 0) + (redisMeta.redisMs || 0));
-  if (isValidCachedResult(redisMeta.value?.result)) {
+  const redisExpiresAt = new Date(redisMeta.value?.expiresAt || new Date(redisMeta.value?.analyzedAt).getTime() + RESUME_CACHE_TTL_MS).getTime();
+  if (isValidCachedResult(redisMeta.value?.result) && redisExpiresAt > Date.now()) {
     writeMemoryResumeCache(memoryKey, {
       result: redisMeta.value.result,
       analyzedAt: redisMeta.value.analyzedAt,
-      expiresAt: Date.now() + RESUME_CACHE_TTL_MS
+      expiresAt: redisExpiresAt
     });
     return {
       result: packCachedResult(redisMeta.value.result, {
@@ -152,25 +156,27 @@ const resolveTieredResumeCache = async ({ userId, resumeFileId, resumeHash, anal
 
   const mongoStarted = Date.now();
   const cached = await ResumeAnalysisCache.findOne({ userId, resumeFileId, resumeHash, analysisVersion })
-    .select('result analyzedAt')
+    .select('result analyzedAt expiresAt')
     .lean();
   const mongoMs = Date.now() - mongoStarted;
   if (timing) timing.add('mongo', mongoMs);
   recordTiming(onTiming, 'mongoMs', mongoMs);
   recordTiming(onTiming, 'cacheLookupMs', mongoMs);
-  if (!isValidCachedResult(cached?.result)) return null;
+  const mongoExpiresAt = new Date(cached?.expiresAt || new Date(cached?.analyzedAt).getTime() + RESUME_CACHE_TTL_MS).getTime();
+  if (!isValidCachedResult(cached?.result) || !Number.isFinite(mongoExpiresAt) || mongoExpiresAt <= Date.now()) return null;
 
   writeMemoryResumeCache(memoryKey, {
     result: cached.result,
     analyzedAt: cached.analyzedAt,
-    expiresAt: Date.now() + RESUME_CACHE_TTL_MS
+    expiresAt: mongoExpiresAt
   });
   setCacheJson(redisKey, {
     result: cached.result,
     analyzedAt: cached.analyzedAt,
+    expiresAt: new Date(mongoExpiresAt),
     analysisVersion,
     resumeHash
-  }, RESUME_CACHE_REDIS_TTL_SECONDS).catch(() => {});
+  }, Math.max(1, Math.floor((mongoExpiresAt - Date.now()) / 1000))).catch(() => {});
 
   return {
     result: packCachedResult(cached.result, {
@@ -187,11 +193,9 @@ const persistResumeCacheLayers = async ({ userId, resumeFileId, resumeHash, anal
   const writeStarted = Date.now();
   const memoryKey = buildMemoryCacheKey({ userId, resumeFileId, resumeHash, analysisVersion });
   const redisKey = buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion });
-  const analyzedAt = new Date();
-  const payload = { result, analyzedAt, analysisVersion, resumeHash };
-
-  writeMemoryResumeCache(memoryKey, { ...payload, expiresAt: Date.now() + RESUME_CACHE_TTL_MS });
-  setCacheJson(redisKey, payload, RESUME_CACHE_REDIS_TTL_SECONDS).catch(() => {});
+  const analyzedAt = new Date(result.scoring?.calculatedAt || result.resumeSignals?.scoring?.calculatedAt || Date.now());
+  const expiresAt = new Date(analyzedAt.getTime() + RESUME_CACHE_TTL_MS);
+  const payload = { result, analyzedAt, expiresAt, analysisVersion, resumeHash };
 
   const cacheQuery = { userId, resumeFileId, resumeHash, analysisVersion };
   const cacheUpdate = {
@@ -201,7 +205,8 @@ const persistResumeCacheLayers = async ({ userId, resumeFileId, resumeHash, anal
       resumeHash,
       analysisVersion,
       result,
-      analyzedAt
+      analyzedAt,
+      expiresAt
     },
     $setOnInsert: { createdAt: new Date() }
   };
@@ -215,13 +220,9 @@ const persistResumeCacheLayers = async ({ userId, resumeFileId, resumeHash, anal
     }
   };
 
-  if (process.env.NODE_ENV === 'production') {
-    setImmediate(() => {
-      writeMongo().catch(() => {});
-    });
-  } else {
-    await writeMongo();
-  }
+  await writeMongo();
+  writeMemoryResumeCache(memoryKey, { ...payload, expiresAt: expiresAt.getTime() });
+  setCacheJson(redisKey, payload, RESUME_CACHE_REDIS_TTL_SECONDS).catch(() => {});
 
   const writeMs = Date.now() - writeStarted;
   if (timing) timing.add('cacheWrite', writeMs);
@@ -319,18 +320,30 @@ const emptyTechnologyCategories = () => ({
 /**
  * Robustly extract text from a PDF file.
  */
-const extractTextFromPDF = async (filePath) => {
-  const dataBuffer = await fs.readFile(filePath);
-
-  try {
-    const parsed = await pdfParse(dataBuffer, { max: 0 });
-    const text = (parsed?.text || '').trim();
-    if (text.length > 20) return text;
-  } catch (primaryErr) {
-    console.warn('pdf-parse failed:', primaryErr.message);
+const parsePDFBuffer = async (dataBuffer, parser = pdfParse) => {
+  if (!Buffer.isBuffer(dataBuffer) || dataBuffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+    const error = new Error('Only valid PDF files are allowed.'); error.status = 400; error.code = 'RESUME_INVALID_PDF'; throw error;
   }
-
-  throw new Error('Unable to extract text from this PDF.');
+  if (dataBuffer.length > 10 * 1024 * 1024) {
+    const error = new Error('Resume PDF must be 10 MB or smaller.'); error.status = 413; throw error;
+  }
+  let parsed;
+  try {
+    // The installed PDF.js engine must receive an isolated byte view, not a pooled Node Buffer.
+    parsed = await parser(Uint8Array.from(dataBuffer), { max: 0 });
+  }
+  catch {
+    const error = new Error('The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.');
+    error.status = 422; error.code = 'RESUME_PARSER_FAILURE'; error.contentQualityState = { state: 'INVALID', scoreable: false, version: CONTENT_VERSION }; throw error;
+  }
+  const text = typeof parsed?.text === 'string' ? parsed.text.trim() : '';
+  requireReadableContent(text);
+  return text;
+};
+const extractTextFromPDF = async (filePath) => {
+  const stat = await fs.stat(filePath);
+  if (stat.size > 10 * 1024 * 1024) { const error = new Error('Resume PDF must be 10 MB or smaller.'); error.status = 413; throw error; }
+  return parsePDFBuffer(await fs.readFile(filePath));
 };
 
 /** Clamp a value to 0-100 and ensure it's an integer */
@@ -354,7 +367,8 @@ const uniqueStrings = (values = [], limit = 100) => {
 const countTruthy = (values = []) => values.filter(Boolean).length;
 
 const normalizeResumeText = (text = '') => String(text || '')
-  .replace(/\r/g, '\n')
+  .normalize('NFKC')
+  .replace(/\r\n?/g, '\n')
   .replace(/[ \t]+/g, ' ')
   .replace(/\n{3,}/g, '\n\n')
   .trim();
@@ -410,7 +424,7 @@ const detectSections = (text = '') => {
 const extractPersonalInfo = (text = '') => {
   const lines = splitLines(text);
   const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || '';
-  const phone = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/)?.[0]?.trim() || '';
+  const phone = (text.match(/(?:\+?\d[\d\s().-]{7,}\d)/g) || []).find(value => { const digits = value.replace(/\D/g, ''); return digits.length >= 10 && digits.length <= 15 && !/\b(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}\b/.test(value); })?.trim() || '';
   const urls = uniqueStrings(text.match(/https?:\/\/[^\s)]+|www\.[^\s)]+/gi) || [], 12);
   const linkedIn = urls.find((url) => /linkedin\.com/i.test(url)) || (text.match(/linkedin\.com\/[^\s)]+/i)?.[0] || '');
   const github = urls.find((url) => /github\.com/i.test(url)) || (text.match(/github\.com\/[^\s)]+/i)?.[0] || '');
@@ -478,11 +492,19 @@ const extractExperienceYears = (text = '', experienceText = '') => {
   const explicit = text.match(/(\d{1,2})\+?\s*(?:years|yrs)\s+(?:of\s+)?experience/i);
   if (explicit) return Math.min(40, Number(explicit[1]) || 0);
 
-  const years = uniqueStrings(experienceText.match(/\b(?:20\d{2}|19\d{2})\b/g) || [], 40)
-    .map((year) => Number(year))
-    .filter((year) => year >= 1980 && year <= new Date().getFullYear());
-  if (years.length < 2) return 0;
-  return Math.max(0, Math.min(40, Math.max(...years) - Math.min(...years)));
+  // Union dated employment intervals; gaps and overlapping jobs must not inflate tenure.
+  const currentYear = new Date().getUTCFullYear();
+  const ranges = [...experienceText.matchAll(/\b((?:19|20)\d{2})\s*(?:[-–—]|to)\s*((?:19|20)\d{2}|present|current)\b/gi)]
+    .map(match => [Number(match[1]), /present|current/i.test(match[2]) ? currentYear : Number(match[2])])
+    .filter(([start, end]) => start >= 1980 && end >= start && end <= currentYear).sort((a, b) => a[0] - b[0]);
+  let years = 0; let lastStart = null; let lastEnd = null;
+  for (const [start, end] of ranges) {
+    if (lastStart === null) { lastStart = start; lastEnd = end; }
+    else if (start <= lastEnd) lastEnd = Math.max(lastEnd, end);
+    else { years += lastEnd - lastStart; lastStart = start; lastEnd = end; }
+  }
+  if (lastStart !== null) years += lastEnd - lastStart;
+  return Math.min(40, years);
 };
 
 const getExperienceLevel = (years) => {
@@ -491,9 +513,9 @@ const getExperienceLevel = (years) => {
   return 'Junior';
 };
 
-const extractBullets = (lines = []) => lines
+const extractBullets = (lines = []) => uniqueStrings(lines
   .map((line) => line.replace(/^[\s\-*•]+/, '').trim())
-  .filter((line) => line.length >= 20);
+  .filter((line) => line.length >= 20));
 
 const hasMetric = (value = '') => /(\d+%|\$\d+|\b\d+x\b|\b\d+\+?\s*(users|clients|requests|projects|teams|engineers|hours|days|weeks|months|seconds|ms)\b)/i.test(value);
 const hasActionVerb = (value = '') => /^(built|led|created|designed|developed|implemented|improved|optimized|reduced|increased|launched|managed|owned|delivered|automated|integrated|migrated|mentored)\b/i.test(value.trim());
@@ -536,13 +558,13 @@ const buildWarnings = ({ personalInfo, present, projects, achievements, technolo
   return warnings;
 };
 
-const scoreDeterministically = ({ text, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash }) => {
+const scoreDeterministically = ({ text, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash, contentQualityState, resumeFileId }) => {
   const allTech = Object.values(technologyCategories).flat();
   const categoryCount = Object.values(technologyCategories).filter((values) => values.length).length;
   const bulletCount = extractBullets(splitLines(text)).length;
   const hasDates = /\b(?:20\d{2}|19\d{2}|present|current)\b/i.test(text);
-  const metricCount = [...projects, ...experience, ...achievements].filter(hasMetric).length;
-  const actionCount = [...projects, ...experience, ...achievements].filter(hasActionVerb).length;
+  const metricCount = uniqueStrings([...projects, ...experience, ...achievements]).filter(hasMetric).length;
+  const actionCount = uniqueStrings([...projects, ...experience, ...achievements]).filter(hasActionVerb).length;
   const criticalWarnings = warnings.filter((warning) => warning.severity === 'high').length;
 
   const atsScore = clamp(
@@ -561,13 +583,16 @@ const scoreDeterministically = ({ text, personalInfo, present, projects, experie
   const skillsCoverage = clamp(20 + Math.min(allTech.length * 3, 48) + Math.min(categoryCount * 5, 30));
   const technicalDepth = clamp(20 + Math.min(categoryCount * 7, 42) + Math.min(projects.length * 4, 16) + Math.min(experience.length * 2, 18));
   const recruiterReadiness = clamp((atsScore * 0.24) + (contentQuality * 0.24) + (projectQuality * 0.18) + (experienceStrength * 0.18) + (skillsCoverage * 0.16) - warnings.length);
-  const scoring = resumeOverallScore.calculate({ atsScore, keywordDensity, formatScore, contentQuality, projectQuality, experienceStrength, skillsCoverage, technicalDepth }, {
-    sources: [{ type: 'resume-hash', id: resumeHash }],
-    facts: { technologyCount: allTech.length, categoryCount, warningCount: warnings.length }
+  const inputs = { atsScore, keywordDensity, formatScore, contentQuality, projectQuality, experienceStrength, skillsCoverage, technicalDepth };
+  const available = contentQualityState?.scoreable !== false;
+  const scoring = resumeOverallScore.calculate(available ? inputs : Object.fromEntries(Object.keys(inputs).map(key => [key, null])), {
+    sources: [{ type: 'resume-hash', id: resumeHash }, ...(resumeFileId ? [{ type: 'resume-file', id: String(resumeFileId) }] : []), { type: 'content-quality', id: contentQualityState.state, ruleVersion: CONTENT_VERSION }],
+    facts: { technologyCount: allTech.length, categoryCount, warningCount: warnings.length, wordCount: contentQualityState.wordCount, scoreable: available, sectionCount: countTruthy(Object.values(present)), quantifiedAchievementCount: metricCount }
   });
+  if (contentQualityState.state === 'PARTIALLY_READABLE') scoring.warnings.push('resume_partially_readable');
   const overallResumeScore = scoring.score ?? 0;
 
-  return { scoring, qualityScores: {
+  const result = { scoring, qualityScores: {
     atsScore,
     keywordCoverage: keywordDensity,
     keywordDensity,
@@ -593,6 +618,11 @@ const scoreDeterministically = ({ text, personalInfo, present, projects, experie
       overallResumeScore: `${overallResumeScore}/100 weighted across ATS, content, projects, experience, skills, and technical depth.`
     }
   } };
+  if (!available) {
+    for (const key of Object.keys(result.qualityScores)) if (key !== 'explanations') result.qualityScores[key] = 0;
+    for (const key of Object.keys(result.qualityScores.explanations)) result.qualityScores.explanations[key] = 'Score unavailable: insufficient readable resume content.';
+  }
+  return result;
 };
 
 const buildSuggestions = ({ warnings, scores, projects, achievements }) => {
@@ -714,26 +744,24 @@ Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
 
   const aiStartedAt = process.hrtime.bigint();
   let aiResult = fallback;
+  let timer;
   try {
-    aiResult = await aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: RESUME_AI_TIMEOUT_MS });
+    aiResult = await Promise.race([aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: RESUME_AI_TIMEOUT_MS }), new Promise(resolve => { timer = setTimeout(() => resolve(fallback), RESUME_AI_TIMEOUT_MS); })]);
   } catch (error) {
     console.warn('[ResumeAnalysisPipeline]', JSON.stringify({
       event: 'ai_insights_fallback',
-      reason: error?.message || 'unknown_error'
+      reason: 'provider_unavailable'
     }));
   } finally {
+    clearTimeout(timer);
     const aiMs = elapsedMs(aiStartedAt);
     recordTiming(onTiming, 'aiInsightsMs', aiMs);
     recordTiming(onTiming, 'aiMs', aiMs);
   }
-  const selectedFocusAreas = uniqueStrings(Array.isArray(aiResult?.focusAreas) ? aiResult.focusAreas : [], 6)
+  const aiPolluted = !aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)
+    || Object.keys(aiResult).some(key => !['focusAreas', '__fallback'].includes(key));
+  const selectedFocusAreas = uniqueStrings(!aiPolluted && Array.isArray(aiResult?.focusAreas) ? aiResult.focusAreas : [], 6)
     .filter((area) => applicableFocusAreas.includes(area) && AI_FOCUS_AREAS[area]);
-  const aiPolluted = aiResult?.__fallback !== true && (
-    typeof aiResult?.resumeSummary === 'string'
-    || Array.isArray(aiResult?.strengths)
-    || Array.isArray(aiResult?.concerns)
-    || typeof aiResult?.hiringReadiness === 'string'
-  );
   const aiUsed = !aiPolluted && aiResult?.__fallback !== true && selectedFocusAreas.length > 0;
 
   return {
@@ -775,9 +803,10 @@ const buildImprovementDelta = (current, previous) => {
   };
 };
 
-const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAnalysis, onTiming }) => {
+const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAnalysis, onTiming, resumeFileId, deferAI = false }) => {
   const deterministicStartedAt = process.hrtime.bigint();
   const normalizedText = normalizeResumeText(text);
+  const contentQualityState = requireReadableContent(normalizedText);
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
   const { sections, present } = detectSections(normalizedText);
   const personalInfo = extractPersonalInfo(normalizedText);
@@ -811,11 +840,11 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
 
   const warnings = buildWarnings({ personalInfo, present, projects, achievements, technologyCategories, experience, education });
   const validationStartedAt = process.hrtime.bigint();
-  const { qualityScores, scoring } = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash });
+  const { qualityScores, scoring } = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash, contentQualityState, resumeFileId });
   recordTiming(onTiming, 'validationMs', elapsedMs(validationStartedAt));
   recordTiming(onTiming, 'deterministicAnalysisMs', elapsedMs(deterministicStartedAt));
   recordTiming(onTiming, 'deterministicMs', elapsedMs(deterministicStartedAt));
-  const aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, onTiming });
+  const aiInsights = { improvementSuggestions: [], focusAreas: [], aiUsed: false };
   const recruiterPerspective = buildRecruiterPerspective({ personalInfo, scores: qualityScores, warnings, achievements, technologyCategories, aiInsights });
   const suggestions = [
     ...buildSuggestions({ warnings, scores: qualityScores, projects, achievements }),
@@ -828,6 +857,7 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   ].slice(0, 6).map((suggestion, index) => ({ ...suggestion, id: `suggestion-${index + 1}` }));
 
   const result = {
+    contentQualityState, scoring,
     skills: normalized.skills,
     experienceYears,
     experienceLevel: normalized.experienceLevel,
@@ -859,7 +889,9 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
       cacheHit: false,
       aiUsed: Boolean(aiInsights.aiUsed),
       analysisVersion: ANALYSIS_VERSION,
-      resumeHash
+      resumeHash,
+      analyzedAt: scoring.calculatedAt,
+      expiresAt: new Date(new Date(scoring.calculatedAt).getTime() + RESUME_CACHE_TTL_MS).toISOString()
     }
   };
   result.resumeSignals = buildResumeSignals({ normalized, scores: qualityScores, technologyCategories, warnings, recruiterPerspective, resumeHash, analysisVersion: ANALYSIS_VERSION });
@@ -868,6 +900,15 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
   result.previousAnalysisId = result.improvementDelta.previousAnalysisId || null;
   result.scoreChanges = result.improvementDelta.scoreChanges || {};
   result.newSkillsAdded = result.improvementDelta.newSkillsAdded || [];
+  const critique = async () => {
+    if (!contentQualityState.scoreable) return;
+    result.aiInsights = await getCompactAiInsights({ normalized, scores: qualityScores, warnings, onTiming });
+    result.cacheMetadata.aiUsed = result.aiInsights.aiUsed;
+    const extra = result.aiInsights.improvementSuggestions.map((description, index) => ({ id: `ai-suggestion-${index + 1}`, title: 'Resume improvement', description, color: 'cyan' }));
+    result.suggestions = [...result.suggestions, ...extra].slice(0, 6);
+  };
+  if (deferAI) result._critique = critique;
+  else await critique();
   return result;
 };
 
@@ -876,6 +917,7 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
  */
 const analyzeResume = async (text, fileName, fileSize, options = {}) => {
   const timing = createTiming();
+  requireReadableContent(text);
   const normalizedText = normalizeResumeText(text);
   const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
   const userId = options.userId || null;
@@ -911,8 +953,10 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
       fileName,
       fileSize,
       previousAnalysis: options.previousAnalysis || null,
-      onTiming: options.onTiming
+      onTiming: options.onTiming, resumeFileId, deferAI: true
     });
+    const critique = result._critique; delete result._critique;
+    if (options.onDeterministicPersist) await options.onDeterministicPersist(result);
     if (timing) timing.add('provider', 0);
     recordTiming(options.onTiming, 'providerMs', Date.now() - providerStarted);
 
@@ -928,6 +972,16 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
       });
     }
 
+    if (critique) {
+      await critique();
+      if (userId && resumeFileId) {
+        try {
+          await ResumeAnalysisCache.updateOne({ userId, resumeFileId, resumeHash, analysisVersion, 'result.scoring.calculatedAt': result.scoring.calculatedAt }, { $set: { 'result.aiInsights': result.aiInsights, 'result.suggestions': result.suggestions, 'result.cacheMetadata.aiUsed': result.cacheMetadata.aiUsed } }, { timestamps: false });
+          const entry = memoryResumeCache.get(buildMemoryCacheKey({ userId, resumeFileId, resumeHash, analysisVersion }));
+          if (entry?.result?.scoring?.calculatedAt === result.scoring.calculatedAt) await setCacheJson(buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion }), { ...entry, expiresAt: new Date(entry.expiresAt), analysisVersion, resumeHash }, Math.max(1, Math.floor((entry.expiresAt - Date.now()) / 1000)));
+        } catch { /* Deterministic persistence is already durable. */ }
+      }
+    }
     return timing ? timing.attach(result) : result;
   };
 
@@ -967,6 +1021,8 @@ module.exports = {
     extractPersonalInfo,
     getApplicableAiFocusAreas,
     buildResumeRedisKey,
-    isValidCachedResult
+    isValidCachedResult,
+    parsePDFBuffer,
+    assessContent
   }
 };

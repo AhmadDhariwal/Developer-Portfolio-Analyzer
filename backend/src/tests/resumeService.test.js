@@ -55,8 +55,8 @@ test('persistent resume cache returns the exact versioned result', async (t) => 
     const chain = {
       select() { return chain; },
       lean: async () => ({
-        analyzedAt: new Date('2026-01-01T00:00:00.000Z'),
-        result: { atsScore: 77, keywordDensity: 70, formatScore: 70, contentQuality: 70, cacheMetadata: { aiUsed: true } }
+        analyzedAt: new Date(),
+        result: { contentQualityState: { state: 'VALID', scoreable: true, version: 'resume-content-quality-v1' }, atsScore: 77, keywordDensity: 70, formatScore: 70, contentQuality: 70, cacheMetadata: { aiUsed: true } }
       })
     };
     return chain;
