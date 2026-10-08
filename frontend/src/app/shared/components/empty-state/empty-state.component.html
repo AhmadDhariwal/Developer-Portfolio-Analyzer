@@ -1,4 +1,51 @@
-<div class="shared-empty-state">
-  <h4>{{ title }}</h4>
-  <p>{{ subtitle }}</p>
+<div class="ui-empty-state" [class.is-compact]="compact">
+  <div class="empty-icon-wrap" *ngIf="icon !== 'custom'">
+    <!-- Inbox -->
+    <svg *ngIf="icon === 'inbox'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+    </svg>
+
+    <!-- Search -->
+    <svg *ngIf="icon === 'search'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+
+    <!-- Folder -->
+    <svg *ngIf="icon === 'folder'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+    </svg>
+
+    <!-- Filter -->
+    <svg *ngIf="icon === 'filter'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+    </svg>
+
+    <!-- Chart -->
+    <svg *ngIf="icon === 'chart'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <line x1="18" y1="20" x2="18" y2="10"></line>
+      <line x1="12" y1="20" x2="12" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="14"></line>
+    </svg>
+
+    <!-- Alert -->
+    <svg *ngIf="icon === 'alert'" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+  </div>
+
+  <div class="empty-icon-wrap" *ngIf="icon === 'custom'">
+    <ng-content select="[empty-icon]"></ng-content>
+  </div>
+
+  <h4 class="empty-title">{{ title }}</h4>
+  <p *ngIf="resolvedDescription" class="empty-desc">{{ resolvedDescription }}</p>
+
+  <div class="empty-actions-slot">
+    <ng-content select="[empty-actions]"></ng-content>
+    <ng-content></ng-content>
+  </div>
 </div>

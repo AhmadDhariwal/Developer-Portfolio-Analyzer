@@ -1,0 +1,54 @@
+<div
+  class="ui-skeleton-container"
+  [class.is-animated]="animated"
+  aria-hidden="true">
+
+  <!-- Multi-line text or single text -->
+  <ng-container *ngIf="variant === 'text'">
+    <div
+      *ngFor="let i of lineArray; let last = last"
+      class="skeleton-item variant-text"
+      [style.width]="last && lineArray.length > 1 ? (width || '70%') : (width || '100%')"
+      [style.height]="height || '1rem'"
+      [style.border-radius]="borderRadius || null">
+    </div>
+  </ng-container>
+
+  <!-- Circular (avatars / icon placeholders) -->
+  <div
+    *ngIf="variant === 'circular'"
+    class="skeleton-item variant-circular"
+    [style.width]="width || height || '40px'"
+    [style.height]="height || width || '40px'"
+    [style.border-radius]="borderRadius || '50%'">
+  </div>
+
+  <!-- Rectangular (blocks / buttons / banners) -->
+  <div
+    *ngIf="variant === 'rectangular'"
+    class="skeleton-item variant-rectangular"
+    [style.width]="width || '100%'"
+    [style.height]="height || '80px'"
+    [style.border-radius]="borderRadius || null">
+  </div>
+
+  <!-- Card placeholder with header + body lines -->
+  <div
+    *ngIf="variant === 'card'"
+    class="skeleton-item variant-card"
+    [style.width]="width || '100%'"
+    [style.height]="height || null"
+    [style.border-radius]="borderRadius || null">
+    <div class="skeleton-card-header">
+      <div class="skeleton-card-avatar"></div>
+      <div class="skeleton-card-lines">
+        <div class="skeleton-line" style="width: 60%"></div>
+        <div class="skeleton-line" style="width: 40%"></div>
+      </div>
+    </div>
+    <div class="skeleton-card-body">
+      <div class="skeleton-line" style="width: 90%"></div>
+      <div class="skeleton-line" style="width: 75%"></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,61 @@
+<!-- Linear Bar -->
+<div
+  *ngIf="variant === 'bar'"
+  class="ui-progress-bar-container"
+  [class]="'size-' + size + ' color-' + color + (indeterminate ? ' is-indeterminate' : '')"
+  role="progressbar"
+  [attr.aria-valuenow]="indeterminate ? null : value"
+  aria-valuemin="0"
+  [attr.aria-valuemax]="max"
+  [attr.aria-label]="label || 'Progress'">
+
+  <div class="progress-info-row" *ngIf="showLabel || label">
+    <span *ngIf="label" class="progress-label-text">{{ label }}</span>
+    <span *ngIf="showLabel && !indeterminate" class="progress-percent-text">{{ percentage.toFixed(0) }}%</span>
+  </div>
+
+  <div class="progress-track">
+    <div
+      class="progress-fill"
+      [class.striped]="striped"
+      [style.width.%]="indeterminate ? null : percentage">
+    </div>
+  </div>
+</div>
+
+<!-- Circular Progress -->
+<div
+  *ngIf="variant === 'circle'"
+  class="ui-progress-circle-container"
+  [class]="'size-' + size + ' color-' + color + (indeterminate ? ' is-indeterminate' : '')"
+  role="progressbar"
+  [attr.aria-valuenow]="indeterminate ? null : value"
+  aria-valuemin="0"
+  [attr.aria-valuemax]="max"
+  [attr.aria-label]="label || 'Progress'">
+
+  <svg class="progress-circle-svg" viewBox="0 0 100 100">
+    <circle
+      class="circle-track"
+      cx="50"
+      cy="50"
+      [attr.r]="circleRadius"
+      fill="transparent"
+      stroke-width="8"
+    />
+    <circle
+      class="circle-fill"
+      cx="50"
+      cy="50"
+      [attr.r]="circleRadius"
+      fill="transparent"
+      stroke-width="8"
+      [style.strokeDasharray]="circleCircumference"
+      [style.strokeDashoffset]="indeterminate ? null : circleDashOffset"
+    />
+  </svg>
+
+  <div class="circle-content" *ngIf="showLabel && !indeterminate">
+    <span class="circle-percent">{{ percentage.toFixed(0) }}%</span>
+  </div>
+</div>
