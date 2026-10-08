@@ -260,7 +260,7 @@ const buildConfig = (extra = {}) => {
   };
 
   const integrationSettings = getIntegrationSecretsSync();
-  if (integrationSettings?.githubEnabled === false) return config;
+  if (integrationSettings?.githubEnabled === false || extra._skipToken) return config;
 
   const token = process.env.GITHUB_TOKEN || integrationSettings?.githubApiKey || '';
   if (token && token !== 'your_github_personal_access_token') {
@@ -282,6 +282,10 @@ const githubGet = async (url, options = {}) => {
   } catch (error) {
     const status = error.response?.status;
     const message = String(error.response?.data?.message || error.message || '').toLowerCase();
+    if (status === 401 && /bad credentials/i.test(message) && !options._retriedUnauthenticated) {
+      console.warn('[GitHubService] Configured GITHUB_TOKEN was rejected with 401 Bad credentials. Falling back to unauthenticated public request.');
+      return githubGet(url, { ...options, _retriedUnauthenticated: true, _skipToken: true });
+    }
     if (status === 429 || (status === 403 && (String(error.response?.headers?.['x-ratelimit-remaining']) === '0' || message.includes('rate limit'))) || message.includes('rate limit')) {
       throw new GitHubRateLimitError('GitHub API rate limit exceeded.', getResetAt(error.response?.headers || {}));
     }
