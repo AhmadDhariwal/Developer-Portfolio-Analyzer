@@ -1,0 +1,115 @@
+@use '../../styles/design-tokens' as *;
+
+.ui-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.7);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: drawer-fade 0.2s ease-out;
+}
+
+.ui-drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  background: var(--surface-drawer, #151F30);
+  border: 1px solid var(--border-color, #334155);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary, #F8FAFC);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  outline: none;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &.pos-right {
+    right: 0;
+    border-right: none;
+    animation: drawer-slide-in-right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &.pos-left {
+    left: 0;
+    border-left: none;
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.5);
+    animation: drawer-slide-in-left 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  // Sizes
+  &.size-sm   { max-width: 360px; }
+  &.size-md   { max-width: 480px; }
+  &.size-lg   { max-width: 680px; }
+  &.size-full { max-width: 100vw; }
+
+  @media (max-width: 576px) {
+    max-width: 100vw !important;
+  }
+
+  .ui-drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--spacing-md, 1.25rem) var(--spacing-lg, 1.75rem);
+    border-bottom: 1px solid var(--border-color, #334155);
+    gap: var(--spacing-md, 1rem);
+
+    .header-titles {
+      flex: 1;
+
+      .drawer-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-primary, #F8FAFC);
+        font-family: var(--font-heading, 'Poppins', sans-serif);
+      }
+
+      .drawer-subtitle {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.8125rem;
+        color: var(--text-secondary, #94A3B8);
+      }
+    }
+  }
+
+  .ui-drawer-body {
+    padding: var(--spacing-lg, 1.75rem);
+    overflow-y: auto;
+    flex: 1;
+
+    @include custom-scrollbar;
+  }
+
+  .ui-drawer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-xs, 8px);
+    padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.75rem);
+    border-top: 1px solid var(--border-color, #334155);
+    background: rgba(15, 23, 42, 0.4);
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+@keyframes drawer-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes drawer-slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes drawer-slide-in-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}

@@ -1,4 +1,4 @@
-@import './public-theme-tokens';
+@use './public-theme-tokens' as *;
 
 .auth-themed {
   @include landing-theme-dark;

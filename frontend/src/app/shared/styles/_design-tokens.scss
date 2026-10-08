@@ -1,0 +1,100 @@
+// =============================================================================
+// DevInsight Shared Design Tokens & Responsive Mixins
+// =============================================================================
+
+// Breakpoint Variables
+$breakpoint-xs: 320px;
+$breakpoint-sm: 425px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1440px;
+
+$breakpoints: (
+  'xs': $breakpoint-xs,
+  'sm': $breakpoint-sm,
+  'md': $breakpoint-md,
+  'lg': $breakpoint-lg,
+  'xl': $breakpoint-xl,
+  '2xl': $breakpoint-2xl
+);
+
+// Responsive Media Query Mixin
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media screen and (min-width: #{map-get($breakpoints, $breakpoint)}) {
+      @content;
+    }
+  } @else {
+    @media screen and (min-width: #{$breakpoint}) {
+      @content;
+    }
+  }
+}
+
+@mixin respond-below($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media screen and (max-width: #{map-get($breakpoints, $breakpoint) - 0.02px}) {
+      @content;
+    }
+  } @else {
+    @media screen and (max-width: #{$breakpoint}) {
+      @content;
+    }
+  }
+}
+
+// Accessible Focus Ring Mixin
+@mixin focus-visible {
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring, 0 0 0 2px #0f172a, 0 0 0 4px #818cf8);
+  }
+}
+
+// Touch Target Size (Minimum 44px for WCAG 2.5.5)
+@mixin touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+// Single-line text truncation
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Multi-line text truncation
+@mixin multiline-truncate($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Glassmorphism card surface
+@mixin glass-surface {
+  background: var(--surface-glass, rgba(30, 41, 59, 0.7));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+// Scrollbar styling helper
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-light, #475569);
+    border-radius: var(--radius-full, 9999px);
+    &:hover {
+      background: var(--text-muted, #64748B);
+    }
+  }
+}

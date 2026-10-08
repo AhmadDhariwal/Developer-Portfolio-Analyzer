@@ -1,52 +1,88 @@
+@use '../../styles/design-tokens' as *;
+
 .ui-card {
-  background: var(--auth-card-bg, var(--bg-card));
-  border-radius: var(--radius-lg);
+  background: var(--auth-card-bg, var(--bg-card, #1E293B));
+  border-radius: var(--radius-lg, 16px);
   box-shadow: var(--auth-shadow, var(--shadow-md));
-  border: 1px solid var(--auth-card-border, var(--border-color));
-  color: var(--auth-ink, var(--text-primary));
+  border: 1px solid var(--auth-card-border, var(--border-color, #334155));
+  color: var(--auth-ink, var(--text-primary, #F8FAFC));
   display: flex;
   flex-direction: column;
-  transition: all var(--transition-base);
+  transition: all var(--transition-base, 0.3s ease-in-out);
   overflow: hidden;
+  position: relative;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 
-  &.hover-effect:hover {
-    transform: translateY(-4px);
+  &.glass {
+    @include glass-surface;
+  }
+
+  &.bordered {
+    background: transparent;
+    border: 1px solid var(--border-light, #475569);
+    box-shadow: none;
+  }
+
+  &.elevated {
     box-shadow: var(--shadow-lg);
-    border-color: var(--color-primary);
+    border-color: var(--border-light, #475569);
+  }
+
+  &.hover-effect:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: var(--color-primary-light, #818CF8);
   }
 
   .card-header {
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md, 1.5rem) var(--spacing-lg, 2rem);
+    border-bottom: 1px solid var(--border-color, #334155);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: var(--spacing-md);
+    gap: var(--spacing-md, 1.5rem);
 
-    h3 {
-      margin: 0;
-      color: var(--text-primary);
-      font-size: 1.25rem;
-      font-weight: 700;
-      font-family: 'Poppins', sans-serif;
-    }
+    .header-titles {
+      flex: 1;
+      min-width: 0;
 
-    p {
-      margin: 0.5rem 0 0 0;
-      color: var(--text-secondary);
-      font-size: 0.875rem;
+      h3 {
+        margin: 0;
+        color: var(--text-primary, #F8FAFC);
+        font-size: 1.25rem;
+        font-weight: 700;
+        font-family: var(--font-heading, 'Poppins', sans-serif);
+        letter-spacing: -0.01em;
+      }
+
+      p {
+        margin: 0.35rem 0 0 0;
+        color: var(--text-secondary, #94A3B8);
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
     }
 
     ::ng-deep [card-header-actions] {
       margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
   }
 
   .card-body {
-    padding: var(--spacing-xl);
+    padding: var(--card-padding-md, 1.5rem);
     flex: 1;
+  }
+
+  &.pad-sm .card-body {
+    padding: var(--card-padding-sm, 1rem);
+  }
+
+  &.pad-lg .card-body {
+    padding: var(--card-padding-lg, 2rem);
   }
 
   &.no-padding .card-body {
@@ -54,12 +90,20 @@
   }
 
   .card-footer {
-    padding: var(--spacing-lg) var(--spacing-xl);
-    background: rgba(99, 102, 241, 0.05);
-    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-sm, 1rem) var(--spacing-lg, 2rem);
+    background: rgba(99, 102, 241, 0.04);
+    border-top: 1px solid var(--border-color, #334155);
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--spacing-md);
+    gap: var(--spacing-md, 1.5rem);
+
+    ::ng-deep [card-footer] {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: flex-end;
+    }
   }
 }

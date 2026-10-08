@@ -1,0 +1,212 @@
+// =============================================================================
+// DevInsight Layout & Responsive Utility Classes
+// =============================================================================
+
+@use './design-tokens' as *;
+
+// Containers
+.ui-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 3vw, 2.5rem);
+  padding-right: clamp(1rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+
+  &--narrow {
+    max-width: 960px;
+  }
+
+  &--fluid {
+    max-width: 100%;
+  }
+}
+
+// Grids
+.ui-grid {
+  display: grid;
+  gap: var(--spacing-md, 1.5rem);
+  width: 100%;
+
+  &.ui-grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+
+  &.ui-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &.ui-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &.ui-grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    @media (max-width: 1280px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &.ui-grid-auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  &.ui-grid-auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+}
+
+// Flex Utilities
+.ui-flex {
+  display: flex;
+
+  &.ui-flex-col {
+    flex-direction: column;
+  }
+
+  &.ui-flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  &.ui-flex-center {
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.ui-flex-between {
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &.ui-flex-align-center {
+    align-items: center;
+  }
+}
+
+.ui-inline-flex {
+  display: inline-flex;
+}
+
+// Gap Utilities
+.ui-gap-2xs { gap: var(--spacing-2xs, 4px); }
+.ui-gap-xs  { gap: var(--spacing-xs, 8px); }
+.ui-gap-sm  { gap: var(--spacing-sm, 16px); }
+.ui-gap-md  { gap: var(--spacing-md, 24px); }
+.ui-gap-lg  { gap: var(--spacing-lg, 32px); }
+.ui-gap-xl  { gap: var(--spacing-xl, 48px); }
+
+// Surfaces
+.ui-surface-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-surface-glass {
+  background: var(--surface-glass, rgba(30, 41, 59, 0.7));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.ui-surface-elevated {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.ui-surface-subtle {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+// State Presentation Helpers
+.ui-state-stale {
+  opacity: 0.8;
+  position: relative;
+  filter: saturate(0.85);
+
+  &::before {
+    content: 'Stale Cache';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--color-warning);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+
+.ui-state-partial {
+  border-style: dashed !important;
+}
+
+.ui-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Tooltip Bubble
+.ui-tooltip-bubble {
+  position: absolute;
+  z-index: 10000;
+  background: var(--bg-card, #1E293B);
+  color: var(--text-primary, #F8FAFC);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border-light, #475569);
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  max-width: 260px;
+  word-wrap: break-word;
+  animation: tooltip-fade-in 0.15s ease-out;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+

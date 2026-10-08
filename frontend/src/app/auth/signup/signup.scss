@@ -1,4 +1,4 @@
-@import '../../shared/styles/auth-theme';
+@use '../../shared/styles/auth-theme' as *;
 
 /* Reusing Auth page styles for consistent aesthetic */
 .auth-page {

@@ -1,8 +1,13 @@
-<button title="button"
+<button
+  [type]="type"
   [class]="'ui-btn ' + variant + ' ' + size + (fullWidth ? ' full-width' : '') + (loading ? ' loading' : '')"
   [disabled]="disabled || loading"
-  (click)="clicked.emit($event)"
-  [title]="disabled ? 'Button disabled' : 'Click to perform action'">
-  <span *ngIf="loading" class="spinner"></span>
-  <ng-content></ng-content>
+  [attr.aria-disabled]="disabled || loading"
+  [attr.aria-busy]="loading"
+  [attr.aria-label]="ariaLabel || null"
+  (click)="handleClick($event)">
+  <span *ngIf="loading" class="spinner" aria-hidden="true"></span>
+  <span class="btn-content" [class.invisible]="loading">
+    <ng-content></ng-content>
+  </span>
 </button>

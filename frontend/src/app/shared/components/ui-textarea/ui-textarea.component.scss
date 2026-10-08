@@ -1,0 +1,119 @@
+@use '../../styles/design-tokens' as *;
+
+.ui-textarea-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs, 4px);
+  width: 100%;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+
+  &.is-disabled {
+    opacity: var(--opacity-disabled, 0.55);
+    cursor: not-allowed;
+
+    .ui-native-textarea {
+      cursor: not-allowed;
+    }
+  }
+
+  .ui-textarea-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+
+  .ui-textarea-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary, #94A3B8);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .required-indicator {
+      color: var(--color-danger, #EF4444);
+    }
+  }
+
+  .char-count {
+    font-size: 0.75rem;
+    color: var(--text-muted, #64748B);
+    font-family: var(--font-mono, monospace);
+  }
+
+  .ui-textarea-wrapper {
+    position: relative;
+    background: var(--surface-input, rgba(15, 23, 42, 0.6));
+    border: 1px solid var(--border-color, #334155);
+    border-radius: var(--radius-md, 10px);
+    transition: all var(--transition-fast, 0.15s ease-in-out);
+    overflow: hidden;
+
+    &:hover:not(.is-disabled) {
+      border-color: var(--border-light, #475569);
+    }
+
+    &:focus-within {
+      border-color: var(--color-primary-light, #818CF8);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+  }
+
+  .ui-native-textarea {
+    width: 100%;
+    min-height: 80px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary, #F8FAFC);
+    font-size: 0.9375rem;
+    font-family: inherit;
+    padding: 0.75rem 1rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+
+    @include custom-scrollbar;
+
+    &::placeholder {
+      color: var(--text-muted, #64748B);
+      opacity: 0.8;
+    }
+  }
+
+  // Statuses
+  &.status-error {
+    .ui-textarea-wrapper {
+      border-color: var(--color-danger, #EF4444);
+
+      &:focus-within {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+      }
+    }
+  }
+
+  &.status-success {
+    .ui-textarea-wrapper {
+      border-color: var(--color-success, #22C55E);
+
+      &:focus-within {
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+      }
+    }
+  }
+
+  .ui-textarea-feedback {
+    font-size: 0.75rem;
+    margin-top: 2px;
+    line-height: 1.4;
+
+    &.error-text {
+      color: var(--color-danger, #EF4444);
+      font-weight: 500;
+    }
+
+    &.hint-text {
+      color: var(--text-muted, #64748B);
+    }
+  }
+}

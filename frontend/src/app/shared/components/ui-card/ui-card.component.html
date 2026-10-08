@@ -1,13 +1,22 @@
-  <div class="ui-card" [ngClass]="{'no-padding': noPadding, 'hover-effect': hoverEffect}">
-      <div class="card-header" *ngIf="!noHeader && (title || subtitle)">
-        <h3 *ngIf="title">{{ title }}</h3>
-        <p *ngIf="subtitle">{{ subtitle }}</p>
-        <ng-content select="[card-header-actions]"></ng-content>
-      </div>
-      <div class="card-body">
-        <ng-content></ng-content>
-      </div>
-      <div class="card-footer" *ngIf="hasFooter">
-        <ng-content select="[card-footer]"></ng-content>
-      </div>
+<div
+  class="ui-card"
+  [ngClass]="[
+    variant,
+    'pad-' + paddingSize,
+    noPadding ? 'no-padding' : '',
+    hoverEffect ? 'hover-effect' : ''
+  ]">
+  <div class="card-header" *ngIf="!noHeader && (title || subtitle)">
+    <div class="header-titles">
+      <h3 *ngIf="title">{{ title }}</h3>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
     </div>
+    <ng-content select="[card-header-actions]"></ng-content>
+  </div>
+  <div class="card-body">
+    <ng-content></ng-content>
+  </div>
+  <div class="card-footer" *ngIf="hasFooter">
+    <ng-content select="[card-footer]"></ng-content>
+  </div>
+</div>

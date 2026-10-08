@@ -1,0 +1,73 @@
+<div class="ui-input-group" [class]="'size-' + size + ' status-' + computedStatus + (disabled ? ' is-disabled' : '')">
+  <label *ngIf="label" [for]="id" class="ui-input-label">
+    {{ label }}
+    <span *ngIf="required" class="required-indicator" aria-hidden="true">*</span>
+  </label>
+
+  <div class="ui-input-wrapper">
+    <div class="prefix-slot">
+      <ng-content select="[prefix]"></ng-content>
+    </div>
+
+    <input
+      [id]="id"
+      [name]="name || id"
+      [type]="currentType"
+      [value]="value"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [readOnly]="readonly"
+      [required]="required"
+      [autocomplete]="autocomplete"
+      [attr.aria-invalid]="computedStatus === 'error'"
+      [attr.aria-describedby]="describedById"
+      (input)="handleInput($event)"
+      (focus)="handleFocus($event)"
+      (blur)="handleBlur($event)"
+      class="ui-native-input"
+    />
+
+    <button
+      *ngIf="clearable && value && !disabled && !readonly"
+      type="button"
+      class="clear-btn"
+      aria-label="Clear input"
+      (click)="clear()">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </button>
+
+    <button
+      *ngIf="type === 'password' && !disabled"
+      type="button"
+      class="password-toggle-btn"
+      [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+      (click)="togglePasswordVisibility()">
+      <!-- Eye Open -->
+      <svg *ngIf="!showPassword" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <!-- Eye Slashed -->
+      <svg *ngIf="showPassword" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+    </button>
+
+    <div class="suffix-slot">
+      <ng-content select="[suffix]"></ng-content>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" [id]="id + '-error'" class="ui-input-feedback error-text" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!errorMessage && hint" [id]="id + '-hint'" class="ui-input-feedback hint-text">
+    {{ hint }}
+  </div>
+</div>
