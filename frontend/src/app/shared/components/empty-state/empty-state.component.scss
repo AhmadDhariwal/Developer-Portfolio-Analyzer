@@ -1,17 +1,83 @@
-.shared-empty-state {
-  border: 1px dashed var(--border-light);
-  border-radius: var(--radius-sm);
-  background: rgba(15, 23, 42, 0.25);
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 1rem;
+@use '../../styles/design-tokens' as *;
 
-  h4 {
-    margin-bottom: 0.35rem;
-    color: var(--text-primary);
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--border-light, #475569);
+  border-radius: var(--radius-lg, 16px);
+  background: rgba(15, 23, 42, 0.35);
+  color: var(--text-secondary, #94A3B8);
+  padding: var(--spacing-xl, 3rem) var(--spacing-lg, 2rem);
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+
+  &.is-compact {
+    padding: var(--spacing-md, 1.5rem);
+    border-radius: var(--radius-md, 12px);
+
+    .empty-icon-wrap {
+      width: 44px;
+      height: 44px;
+      margin-bottom: var(--spacing-xs, 8px);
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .empty-title {
+      font-size: 0.9375rem;
+    }
+
+    .empty-desc {
+      font-size: 0.8125rem;
+    }
   }
 
-  p {
-    margin: 0;
+  .empty-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--color-primary-light, #818CF8);
+    margin-bottom: var(--spacing-md, 1rem);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+
+  .empty-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary, #F8FAFC);
+    margin: 0 0 0.35rem 0;
+    font-family: var(--font-heading, 'Poppins', sans-serif);
+    letter-spacing: -0.01em;
+  }
+
+  .empty-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted, #64748B);
+    max-width: 440px;
+    margin: 0 0 var(--spacing-md, 1.5rem) 0;
+    line-height: 1.5;
+  }
+
+  .empty-actions-slot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs, 8px);
+    flex-wrap: wrap;
+
+    &:empty {
+      display: none;
+    }
   }
 }

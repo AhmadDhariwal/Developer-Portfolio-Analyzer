@@ -1,0 +1,168 @@
+@use '../../styles/design-tokens' as *;
+
+.ui-metric-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--card-padding-md, 1.5rem);
+  background: var(--bg-card, #1E293B);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast, 0.15s ease-in-out);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+
+  &.glass {
+    @include glass-surface;
+  }
+
+  &.subtle {
+    background: rgba(15, 23, 42, 0.4);
+    border-color: rgba(51, 65, 85, 0.5);
+  }
+
+  &.is-stale {
+    opacity: 0.85;
+
+    &::after {
+      content: 'Cached';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--color-warning, #F59E0B);
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-light, #475569);
+  }
+
+  .metric-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xs, 8px);
+    margin-bottom: var(--spacing-xs, 8px);
+
+    .metric-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary, #94A3B8);
+      letter-spacing: -0.01em;
+      @include text-truncate;
+    }
+
+    .metric-icon-slot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md, 10px);
+      flex-shrink: 0;
+
+      &.icon-primary   { background: rgba(99, 102, 241, 0.12); color: var(--color-primary-light, #818CF8); }
+      &.icon-secondary { background: rgba(139, 92, 246, 0.12); color: var(--color-secondary, #8B5CF6); }
+      &.icon-success   { background: rgba(34, 197, 94, 0.12);  color: var(--color-success, #22C55E); }
+      &.icon-warning   { background: rgba(245, 158, 11, 0.12); color: var(--color-warning, #F59E0B); }
+      &.icon-danger    { background: rgba(239, 68, 68, 0.12);  color: var(--color-danger, #EF4444); }
+      &.icon-info      { background: rgba(59, 130, 246, 0.12); color: var(--color-info, #3B82F6); }
+    }
+  }
+
+  .metric-body {
+    margin-bottom: var(--spacing-2xs, 4px);
+
+    .metric-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+
+      .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+        color: var(--text-primary, #F8FAFC);
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+
+      .metric-unit {
+        font-size: 0.875rem;
+        color: var(--text-muted, #64748B);
+        font-weight: 500;
+      }
+    }
+  }
+
+  .metric-footer {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+
+    .metric-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+
+      &.trend-up {
+        color: var(--color-success, #22C55E);
+      }
+      &.trend-down {
+        color: var(--color-danger, #EF4444);
+      }
+      &.trend-neutral {
+        color: var(--text-muted, #64748B);
+      }
+
+      .trend-label {
+        font-weight: 400;
+        color: var(--text-muted, #64748B);
+        margin-left: 2px;
+      }
+    }
+
+    .metric-subtitle {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: var(--text-muted, #64748B);
+    }
+  }
+
+  /* Skeleton Loading Styles */
+  .metric-skeleton-value {
+    width: 60%;
+    height: 32px;
+    background: linear-gradient(90deg, rgba(51, 65, 85, 0.4) 0%, rgba(71, 85, 105, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+    background-size: 200% 100%;
+    animation: metric-shimmer 1.5s infinite;
+    border-radius: var(--radius-xs, 4px);
+  }
+
+  .metric-skeleton-sub {
+    width: 40%;
+    height: 16px;
+    background: linear-gradient(90deg, rgba(51, 65, 85, 0.4) 0%, rgba(71, 85, 105, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+    background-size: 200% 100%;
+    animation: metric-shimmer 1.5s infinite;
+    border-radius: var(--radius-xs, 4px);
+  }
+}
+
+@keyframes metric-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

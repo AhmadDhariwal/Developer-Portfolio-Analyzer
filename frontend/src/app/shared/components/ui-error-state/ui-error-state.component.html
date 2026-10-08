@@ -1,0 +1,27 @@
+<div class="ui-error-state" [class.is-compact]="compact" role="alert">
+  <div class="error-icon-wrap">
+    <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2" fill="none">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+  </div>
+
+  <div *ngIf="code" class="error-code-badge">
+    Error {{ code }}
+  </div>
+
+  <h4 class="error-title">{{ title }}</h4>
+  <p class="error-message">{{ message }}</p>
+
+  <div class="error-actions" *ngIf="retryable">
+    <app-ui-button variant="danger" size="sm" (clicked)="onRetry()">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" aria-hidden="true">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+      {{ retryLabel }}
+    </app-ui-button>
+    <ng-content select="[error-actions]"></ng-content>
+  </div>
+</div>

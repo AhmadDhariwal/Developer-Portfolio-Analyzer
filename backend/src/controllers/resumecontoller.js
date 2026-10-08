@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const mongoose = require('mongoose');
 const { extractTextFromPDF, analyzeResume, findCachedResumeAnalysis, ANALYSIS_VERSION } = require('../services/resumeservice');
 const { generateResumeGuide } = require('../services/resumeGuideService');
@@ -109,33 +110,7 @@ const toForceRefresh = (req) => (
   String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true'
 );
 
-const ensureResumeContext = async (userId) => {
-  const user = await User.findById(userId).select('defaultResumeFileId activeResumeFileId');
-  if (!user) return null;
-
-  if (!user.defaultResumeFileId) {
-    const latestAnalyzed = await ResumeFile.findOne({ userId, isAnalyzed: true })
-      .sort({ uploadDate: -1 })
-      .select('_id')
-      .lean();
-    const latestAny = latestAnalyzed || await ResumeFile.findOne({ userId })
-      .sort({ uploadDate: -1 })
-      .select('_id')
-      .lean();
-    if (latestAny) {
-      user.defaultResumeFileId = latestAny._id;
-      user.activeResumeFileId = latestAny._id;
-      await user.save();
-    }
-  }
-
-  if (!user.activeResumeFileId && user.defaultResumeFileId) {
-    user.activeResumeFileId = user.defaultResumeFileId;
-    await user.save();
-  }
-
-  return user;
-};
+const ensureResumeContext = (userId) => User.findById(userId).select('defaultResumeFileId activeResumeFileId');
 
 // @desc    Upload resume file
 // @route   POST /api/resume/upload
@@ -525,7 +500,6 @@ const getResumeAnalysis = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
     const requestedFileId = String(req.query.fileId || '').trim();
-    const defaultFileId = user?.defaultResumeFileId || null;
 
     let analysis = null;
     if (requestedFileId) {
@@ -539,17 +513,7 @@ const getResumeAnalysis = async (req, res) => {
       return res.json(serializeAnalysis(analysis));
     }
 
-    const targetFileId = defaultFileId;
-    if (targetFileId) {
-      analysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: targetFileId })
-        .sort({ analyzedAt: -1 })
-        .lean();
-    }
-    if (!analysis) {
-      analysis = await ResumeAnalysis.findOne({ userId: req.user._id })
-        .sort({ analyzedAt: -1 })
-        .lean();
-    }
+    analysis = await developerContext.resolveResumeAnalysis(req.user._id, user, { ResumeFile, ResumeAnalysis });
 
     if (!analysis) {
       return res.status(404).json({ message: 'No analysis found' });
@@ -575,9 +539,7 @@ const getResumeAnalysisByUserId = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const analysis = await ResumeAnalysis.findOne({ userId })
-      .sort({ analyzedAt: -1 })
-      .lean();
+    const analysis = await developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeFile, ResumeAnalysis });
 
     if (!analysis) {
       return res.status(404).json({ message: 'No analysis found for this user' });
@@ -595,9 +557,7 @@ const getResumeAnalysisByUserId = async (req, res) => {
 // @access  Private
 const downloadResumeGuide = async (req, res) => {
   try {
-    const analysis = await ResumeAnalysis.findOne({ userId: req.user._id })
-      .sort({ analyzedAt: -1 })
-      .lean();
+    const analysis = await developerContext.resolveResumeAnalysis(req.user._id, undefined, { User, ResumeFile, ResumeAnalysis });
 
     if (!analysis) {
       return res.status(404).json({
@@ -656,11 +616,10 @@ const getResumeFiles = async (req, res) => {
 const getActiveResumeContext = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
-    const activeFileId = user?.defaultResumeFileId || user?.activeResumeFileId || null;
 
     const [defaultFile, activeFile] = await Promise.all([
       user?.defaultResumeFileId ? ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: req.user._id }).lean() : null,
-      activeFileId ? ResumeFile.findOne({ _id: activeFileId, userId: req.user._id }).lean() : null
+      developerContext.resolveResumeFile(req.user._id, user, { ResumeFile })
     ]);
 
     res.json({

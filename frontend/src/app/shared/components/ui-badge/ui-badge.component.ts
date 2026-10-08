@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
 @Component({
@@ -15,4 +15,12 @@ export class UiBadgeComponent {
   @Input() variant: BadgeVariant = 'primary';
   @Input() size: BadgeSize = 'md';
   @Input() outlined: boolean = false;
+  @Input() dot: boolean = false;
+  @Input() removable: boolean = false;
+  @Output() removed = new EventEmitter<void>();
+
+  onRemove(event: MouseEvent): void {
+    event.stopPropagation();
+    this.removed.emit();
+  }
 }

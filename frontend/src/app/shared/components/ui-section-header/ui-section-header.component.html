@@ -1,0 +1,20 @@
+<div class="ui-section-header">
+  <div class="section-title-wrap">
+    <div class="section-icon-slot">
+      <ng-content select="[section-icon]"></ng-content>
+    </div>
+    <div class="titles">
+      <div class="title-row">
+        <h2 class="section-title">{{ title }}</h2>
+        <app-ui-badge *ngIf="badgeText" [variant]="badgeVariant" size="sm">
+          {{ badgeText }}
+        </app-ui-badge>
+      </div>
+      <p *ngIf="subtitle" class="section-subtitle">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <div class="actions-slot">
+    <ng-content select="[section-actions]"></ng-content>
+  </div>
+</div>

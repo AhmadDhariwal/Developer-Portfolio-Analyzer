@@ -1,0 +1,49 @@
+<div
+  class="ui-metric-card"
+  [ngClass]="[
+    variant,
+    'color-' + color,
+    loading ? 'is-loading' : '',
+    stale ? 'is-stale' : ''
+  ]"
+  role="region"
+  [attr.aria-label]="title + (loading ? ' loading' : ': ' + value + (unit ? ' ' + unit : ''))">
+
+  <div class="metric-top">
+    <span class="metric-title">{{ title }}</span>
+    <div class="metric-icon-slot" [class]="'icon-' + color">
+      <ng-content select="[metric-icon]"></ng-content>
+    </div>
+  </div>
+
+  <div class="metric-body">
+    <div *ngIf="loading" class="metric-skeleton-value" aria-hidden="true"></div>
+    <div *ngIf="!loading" class="metric-value-row">
+      <span class="metric-value">{{ value }}</span>
+      <span *ngIf="unit" class="metric-unit">{{ unit }}</span>
+    </div>
+  </div>
+
+  <div class="metric-footer" *ngIf="loading || trend || subtitle">
+    <div *ngIf="loading" class="metric-skeleton-sub" aria-hidden="true"></div>
+    <ng-container *ngIf="!loading">
+      <div *ngIf="trend && trendValue" class="metric-trend" [class]="'trend-' + trend">
+        <!-- Up arrow -->
+        <svg *ngIf="trend === 'up'" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+        <!-- Down arrow -->
+        <svg *ngIf="trend === 'down'" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+        <!-- Neutral dash -->
+        <svg *ngIf="trend === 'neutral'" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>{{ trendValue }}</span>
+        <span *ngIf="trendLabel" class="trend-label">{{ trendLabel }}</span>
+      </div>
+      <p *ngIf="subtitle && !trend" class="metric-subtitle">{{ subtitle }}</p>
+    </ng-container>
+  </div>
+</div>

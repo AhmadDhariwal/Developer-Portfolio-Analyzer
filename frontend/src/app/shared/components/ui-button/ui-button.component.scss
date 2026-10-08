@@ -1,14 +1,16 @@
+@use '../../styles/design-tokens' as *;
+
 .ui-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 10px);
   font-weight: 600;
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  border: none;
+  border: 1px solid transparent;
   position: relative;
   overflow: hidden;
   letter-spacing: -0.01em;
@@ -16,6 +18,9 @@
   white-space: nowrap;
   user-select: none;
   -webkit-user-select: none;
+  min-height: 44px;
+
+  @include focus-visible;
 
   /* Animated Shimmer Light Beam Effect */
   &::before {
@@ -43,21 +48,24 @@
   }
 
   &.sm {
+    min-height: 36px;
     padding: 6px 14px;
     font-size: 0.8125rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
   }
 
   &.md {
+    min-height: 44px;
     padding: 9px 20px;
     font-size: 0.9375rem;
-    border-radius: 10px;
+    border-radius: var(--radius-md, 10px);
   }
 
   &.lg {
-    padding: 12px 24px;
+    min-height: 52px;
+    padding: 12px 26px;
     font-size: 1rem;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
   }
 
   &.full-width {
@@ -65,43 +73,55 @@
   }
 
   &:disabled {
-    opacity: 0.55;
+    opacity: var(--opacity-disabled, 0.55);
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
     filter: grayscale(40%);
   }
 
+  .btn-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s ease;
+
+    &.invisible {
+      opacity: 0;
+    }
+  }
+
+  /* Variants */
   &.primary {
-    background: var(--landing-button-primary, linear-gradient(135deg, #F0D375 0%, #D4AF37 50%, #B89228 100%));
-    color: var(--landing-button-text, #080C14);
+    background: var(--landing-button-primary, linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%));
+    color: var(--landing-button-text, #ffffff);
     font-weight: 700;
-    box-shadow: var(--landing-button-primary-shadow, 0 4px 18px -2px rgba(212, 175, 55, 0.45), 0 2px 4px -1px rgba(0, 0, 0, 0.4));
+    box-shadow: var(--landing-button-primary-shadow, 0 4px 16px -2px rgba(99, 102, 241, 0.45), 0 2px 4px -1px rgba(0, 0, 0, 0.2));
 
     &:hover:not(:disabled) {
       transform: translateY(-2px) scale(1.015);
-      background: var(--landing-button-primary-hover, linear-gradient(135deg, #FFF099 0%, #E5C158 50%, #C5A059 100%));
-      box-shadow: var(--landing-button-primary-shadow-hover, 0 10px 28px -4px rgba(212, 175, 55, 0.65), 0 0 20px rgba(240, 211, 117, 0.4));
+      background: var(--landing-button-primary-hover, linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%));
+      box-shadow: var(--landing-button-primary-shadow-hover, 0 10px 28px -4px rgba(99, 102, 241, 0.65), 0 0 20px rgba(139, 92, 246, 0.4));
     }
 
     &:active:not(:disabled) {
       transform: translateY(0) scale(0.985);
-      box-shadow: var(--landing-button-primary-shadow-active, 0 2px 8px -1px rgba(212, 175, 55, 0.4));
+      box-shadow: var(--landing-button-primary-shadow-active, 0 2px 8px -1px rgba(99, 102, 241, 0.4));
     }
   }
 
   &.secondary {
-    background: var(--landing-button-secondary, #141E33);
+    background: var(--landing-button-secondary, #1E293B);
     color: var(--landing-button-secondary-text, #F8FAFC);
-    border: 1px solid var(--landing-button-secondary-border, rgba(212, 175, 55, 0.35));
+    border: 1px solid var(--landing-button-secondary-border, rgba(148, 163, 184, 0.25));
     box-shadow: var(--landing-button-secondary-shadow, 0 4px 14px -4px rgba(0, 0, 0, 0.4));
 
     &:hover:not(:disabled) {
       transform: translateY(-2px) scale(1.015);
-      background: var(--landing-button-secondary-hover, #1E293B);
-      border-color: var(--landing-button-secondary-border-hover, rgba(212, 175, 55, 0.7));
-      color: var(--landing-button-secondary-text-hover, #FFFFFF);
-      box-shadow: var(--landing-button-secondary-shadow-hover, 0 8px 24px -4px rgba(212, 175, 55, 0.3), 0 0 16px rgba(212, 175, 55, 0.2));
+      background: var(--landing-button-secondary-hover, #334155);
+      border-color: var(--landing-button-secondary-border-hover, rgba(129, 140, 248, 0.5));
+      color: #FFFFFF;
+      box-shadow: var(--landing-button-secondary-shadow-hover, 0 8px 24px -4px rgba(0, 0, 0, 0.45));
     }
 
     &:active:not(:disabled) {
@@ -110,16 +130,32 @@
     }
   }
 
-  &.ghost {
+  &.outline {
     background: transparent;
-    color: var(--landing-ghost-color, var(--landing-accent, #D4AF37));
-    border: 1px solid transparent;
+    color: var(--color-primary-light, #818CF8);
+    border: 1px solid var(--color-primary, #6366F1);
 
     &:hover:not(:disabled) {
       transform: translateY(-1px);
-      background: var(--landing-ghost-hover-bg, rgba(212, 175, 55, 0.12));
-      border-color: var(--landing-ghost-hover-border, rgba(212, 175, 55, 0.3));
-      color: var(--landing-ghost-hover-color, #F0D375);
+      background: rgba(99, 102, 241, 0.12);
+      border-color: var(--color-primary-light, #818CF8);
+      color: #FFFFFF;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &.ghost {
+    background: transparent;
+    color: var(--text-secondary, #94A3B8);
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary, #F8FAFC);
     }
 
     &:active:not(:disabled) {
@@ -128,9 +164,9 @@
   }
 
   &.danger {
-    background: rgba(239, 68, 68, 0.12);
+    background: rgba(239, 68, 68, 0.15);
     color: #EF4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.3);
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
@@ -146,15 +182,14 @@
   }
 
   &.loading {
-    color: transparent !important;
     pointer-events: none;
 
     .spinner {
       position: absolute;
-      width: 1.1em;
-      height: 1.1em;
-      border: 2px solid var(--landing-spinner-track, rgba(8, 12, 20, 0.3));
-      border-top-color: var(--landing-spinner-top, #080C14);
+      width: 1.2em;
+      height: 1.2em;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #FFFFFF;
       border-radius: 50%;
       animation: ui-btn-spin 0.75s linear infinite;
     }

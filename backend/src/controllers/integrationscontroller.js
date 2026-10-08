@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const IntegrationConnection = require('../models/integrationConnection');
 const IntegrationSyncLog = require('../models/integrationSyncLog');
@@ -170,7 +171,7 @@ const oauthCallback = async (req, res) => {
       {
         $set: {
           status: 'connected',
-          externalUsername: String(username || identity.username || req.user.githubUsername || '').trim(),
+          externalUsername: String(username || identity.username || developerContext.resolveGithubUsername(req.user) || '').trim(),
           accessToken: token.accessToken || '',
           refreshToken: token.refreshToken || '',
           tokenType: token.tokenType || 'Bearer',

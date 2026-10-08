@@ -1,9 +1,32 @@
+@use '../../styles/design-tokens' as *;
+
 .score-card {
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08));
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+
+  &.is-stale {
+    opacity: 0.85;
+
+    &::after {
+      content: 'Cached';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--color-warning, #F59E0B);
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+  }
 
   &:hover {
     border-color: var(--color-primary);
@@ -14,20 +37,42 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md, 1rem);
+
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
 
     .score-title {
       font-size: 0.9rem;
       color: var(--text-secondary);
-      font-weight: 500;
+      font-weight: 600;
+    }
+
+    .score-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
   }
 
   .score-number {
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md, 1rem);
     line-height: 1;
+    font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  }
+
+  .score-skeleton-num {
+    width: 80px;
+    height: 40px;
+    margin-bottom: var(--spacing-md, 1rem);
+    background: linear-gradient(90deg, rgba(51, 65, 85, 0.4) 0%, rgba(71, 85, 105, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+    background-size: 200% 100%;
+    animation: score-shimmer 1.5s infinite;
+    border-radius: var(--radius-xs, 4px);
   }
 
   .progress-container {
@@ -38,7 +83,7 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 3px;
       overflow: hidden;
-      margin-bottom: var(--spacing-md);
+      margin-bottom: var(--spacing-xs, 0.5rem);
 
       .progress-fill {
         height: 100%;
@@ -126,6 +171,29 @@
       box-shadow: 0 10px 15px rgba(245, 158, 11, 0.15);
     }
   }
+
+  &.score-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.05));
+    border-color: rgba(59, 130, 246, 0.2);
+
+    .score-number {
+      color: #3b82f6;
+    }
+
+    .progress-fill {
+      background: #3b82f6;
+    }
+
+    &:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 10px 15px rgba(59, 130, 246, 0.15);
+    }
+  }
+}
+
+@keyframes score-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @media (max-width: 768px) {

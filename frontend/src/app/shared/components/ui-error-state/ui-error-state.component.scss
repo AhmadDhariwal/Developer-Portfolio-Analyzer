@@ -1,0 +1,92 @@
+@use '../../styles/design-tokens' as *;
+
+.ui-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-lg, 16px);
+  background: rgba(239, 68, 68, 0.05);
+  color: var(--text-secondary, #94A3B8);
+  padding: var(--spacing-xl, 3rem) var(--spacing-lg, 2rem);
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+
+  &.is-compact {
+    padding: var(--spacing-md, 1.5rem);
+    border-radius: var(--radius-md, 12px);
+
+    .error-icon-wrap {
+      width: 44px;
+      height: 44px;
+      margin-bottom: var(--spacing-xs, 8px);
+
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    .error-title {
+      font-size: 0.9375rem;
+    }
+
+    .error-message {
+      font-size: 0.8125rem;
+    }
+  }
+
+  .error-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger, #EF4444);
+    margin-bottom: var(--spacing-sm, 1rem);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+  }
+
+  .error-code-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    color: var(--color-danger, #EF4444);
+    background: rgba(239, 68, 68, 0.12);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .error-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary, #F8FAFC);
+    margin: 0 0 0.35rem 0;
+    font-family: var(--font-heading, 'Poppins', sans-serif);
+    letter-spacing: -0.01em;
+  }
+
+  .error-message {
+    font-size: 0.875rem;
+    color: var(--text-muted, #64748B);
+    max-width: 440px;
+    margin: 0 0 var(--spacing-md, 1.5rem) 0;
+    line-height: 1.5;
+  }
+
+  .error-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs, 8px);
+    flex-wrap: wrap;
+  }
+}

@@ -1,3 +1,5 @@
+const { clampScore: clamp } = require('./scoring/math');
+const developerContext = require('./developerContextService');
 const nodemailer = require('nodemailer');
 const sendgrid = require('@sendgrid/mail');
 const cron = require('node-cron');
@@ -27,12 +29,7 @@ const smartSkippedReports = new WeakSet();
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
-const clampPercent = (value) => Math.max(0, Math.min(100, Math.round(Number(value || 0))));
+const clampPercent = clamp;
 const toNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 const sumNumbers = (values = []) => values.reduce((sum, value) => sum + toNumber(value), 0);
 const signed = (value) => `${toNumber(value) > 0 ? '+' : ''}${Math.round(toNumber(value))}`;
@@ -486,20 +483,7 @@ const buildWeeklySignalFromReports = (reports = []) => {
   };
 };
 
-const loadDefaultResumeAnalysis = async (userId, user = {}) => {
-  if (user?.defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1, updatedAt: -1 })
-      .select('atsScore keywordDensity formatScore contentQuality keyAchievements analyzedAt updatedAt createdAt fileId fileName')
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-
-  return ResumeAnalysis.findOne({ userId })
-    .sort({ analyzedAt: -1, updatedAt: -1 })
-    .select('atsScore keywordDensity formatScore contentQuality keyAchievements analyzedAt updatedAt createdAt fileId fileName')
-    .lean();
-};
+const loadDefaultResumeAnalysis = (userId, user) => developerContext.resolveResumeAnalysis(userId, user, { User, ResumeAnalysis, select: 'atsScore keywordDensity formatScore contentQuality keyAchievements analyzedAt updatedAt createdAt fileId fileName' });
 
 const toSourceFreshness = (lastAnalyzedAt) => {
   if (!lastAnalyzedAt) return 'unavailable';
@@ -863,8 +847,8 @@ const transformIntoAIInput = ({
     },
     profile: {
       name: user?.name || 'Developer',
-      careerStack: user?.activeCareerStack || user?.careerStack || 'Full Stack',
-      experienceLevel: user?.activeExperienceLevel || user?.experienceLevel || 'Student'
+      careerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
+      experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student'
     },
     current: userData,
     previous: previousData,
@@ -939,7 +923,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const { forceRefresh = false } = options;
 
   const user = await User.findById(userId)
-    .select('name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel defaultResumeFileId notifications')
+    .select('name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel defaultResumeFileId notifications activeResumeFileId')
     .lean();
   if (!user) return null;
 
@@ -1128,7 +1112,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     developerSignals: reportDeveloperSignals
   });
   const signalsUsedSummary = buildSignalsUsedSummary({
-    username: user.activeGithubUsername || user.githubUsername || (analysis ? 'github-connected' : ''),
+    username: developerContext.resolveGithubUsername(user) || (analysis ? 'github-connected' : ''),
     resumeInsights: {
       analyzed: Boolean(resumeAnalysis),
       analysisId: resumeAnalysis?._id ? String(resumeAnalysis._id) : '',
@@ -1136,7 +1120,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       lastAnalyzedAt: resumeAnalysis?.analyzedAt || resumeAnalysis?.updatedAt || resumeAnalysis?.createdAt || null,
       skills: reportDeveloperSignals?.resumeSignals?.skills || [],
       atsScore: userData.resume.atsScore,
-      experienceLevel: user.activeExperienceLevel || user.experienceLevel || ''
+      experienceLevel: developerContext.resolveExperienceLevel(user) || ''
     },
     githubInsights: {
       repoCount: userData.github.repos,
@@ -1178,8 +1162,8 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
 
   const prompt = getWeeklyReportPrompt({
     name: user.name,
-    careerStack: user.activeCareerStack || user.careerStack || 'Full Stack',
-    experienceLevel: user.activeExperienceLevel || user.experienceLevel || 'Student',
+    careerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
+    experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
     aiInput
   });
 
@@ -1499,6 +1483,7 @@ const startWeeklyReportScheduler = () => {
   return weeklyReportSchedulerTask;
 };
 module.exports = {
+  __test: { loadDefaultResumeAnalysis },
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,

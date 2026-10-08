@@ -1,3 +1,5 @@
+const { clampScore: clamp } = require('./scoring/math');
+const resumeOverallScore = require('./scoring/resumeOverallScore');
 const fs = require('fs/promises');
 const pdfParse = require('pdf-parse');
 const crypto = require('node:crypto');
@@ -332,7 +334,6 @@ const extractTextFromPDF = async (filePath) => {
 };
 
 /** Clamp a value to 0-100 and ensure it's an integer */
-const clamp = (val) => Math.min(100, Math.max(0, Math.round(Number(val) || 0)));
 
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -535,7 +536,7 @@ const buildWarnings = ({ personalInfo, present, projects, achievements, technolo
   return warnings;
 };
 
-const scoreDeterministically = ({ text, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings }) => {
+const scoreDeterministically = ({ text, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash }) => {
   const allTech = Object.values(technologyCategories).flat();
   const categoryCount = Object.values(technologyCategories).filter((values) => values.length).length;
   const bulletCount = extractBullets(splitLines(text)).length;
@@ -560,9 +561,13 @@ const scoreDeterministically = ({ text, personalInfo, present, projects, experie
   const skillsCoverage = clamp(20 + Math.min(allTech.length * 3, 48) + Math.min(categoryCount * 5, 30));
   const technicalDepth = clamp(20 + Math.min(categoryCount * 7, 42) + Math.min(projects.length * 4, 16) + Math.min(experience.length * 2, 18));
   const recruiterReadiness = clamp((atsScore * 0.24) + (contentQuality * 0.24) + (projectQuality * 0.18) + (experienceStrength * 0.18) + (skillsCoverage * 0.16) - warnings.length);
-  const overallResumeScore = clamp((atsScore * 0.18) + (keywordDensity * 0.12) + (formatScore * 0.12) + (contentQuality * 0.16) + (projectQuality * 0.12) + (experienceStrength * 0.12) + (skillsCoverage * 0.10) + (technicalDepth * 0.08));
+  const scoring = resumeOverallScore.calculate({ atsScore, keywordDensity, formatScore, contentQuality, projectQuality, experienceStrength, skillsCoverage, technicalDepth }, {
+    sources: [{ type: 'resume-hash', id: resumeHash }],
+    facts: { technologyCount: allTech.length, categoryCount, warningCount: warnings.length }
+  });
+  const overallResumeScore = scoring.score ?? 0;
 
-  return {
+  return { scoring, qualityScores: {
     atsScore,
     keywordCoverage: keywordDensity,
     keywordDensity,
@@ -587,7 +592,7 @@ const scoreDeterministically = ({ text, personalInfo, present, projects, experie
       recruiterReadiness: `${recruiterReadiness}/100 combining ATS readiness, impact evidence, project proof, and warnings.`,
       overallResumeScore: `${overallResumeScore}/100 weighted across ATS, content, projects, experience, skills, and technical depth.`
     }
-  };
+  } };
 };
 
 const buildSuggestions = ({ warnings, scores, projects, achievements }) => {
@@ -806,7 +811,7 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
 
   const warnings = buildWarnings({ personalInfo, present, projects, achievements, technologyCategories, experience, education });
   const validationStartedAt = process.hrtime.bigint();
-  const qualityScores = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings });
+  const { qualityScores, scoring } = scoreDeterministically({ text: normalizedText, personalInfo, present, projects, experience, achievements, certifications, technologyCategories, warnings, resumeHash });
   recordTiming(onTiming, 'validationMs', elapsedMs(validationStartedAt));
   recordTiming(onTiming, 'deterministicAnalysisMs', elapsedMs(deterministicStartedAt));
   recordTiming(onTiming, 'deterministicMs', elapsedMs(deterministicStartedAt));
@@ -858,6 +863,7 @@ const buildDeterministicAnalysis = async ({ text, fileName, fileSize, previousAn
     }
   };
   result.resumeSignals = buildResumeSignals({ normalized, scores: qualityScores, technologyCategories, warnings, recruiterPerspective, resumeHash, analysisVersion: ANALYSIS_VERSION });
+  result.resumeSignals.scoring = scoring;
   result.improvementDelta = buildImprovementDelta(result, previousAnalysis);
   result.previousAnalysisId = result.improvementDelta.previousAnalysisId || null;
   result.scoreChanges = result.improvementDelta.scoreChanges || {};

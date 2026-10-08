@@ -1,3 +1,6 @@
+const sprintProgressScore = require('./scoring/sprintProgressScore');
+const { clampScore: clamp } = require('./scoring/math');
+const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
@@ -22,21 +25,8 @@ const TOPIC_STOP_WORDS = new Set([
   'less', 'need', 'next', 'level', 'high', 'medium', 'low', 'setup', 'deploy'
 ]);
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
-const calcWeightedProgress = (tasks) => {
-  if (!Array.isArray(tasks) || tasks.length === 0) return 0;
-  const totalPoints = tasks.reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-  const completedPoints = tasks
-    .filter((task) => Boolean(task?.isCompleted))
-    .reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-
-  return totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
-};
+const calcWeightedProgress = (tasks) => sprintProgressScore.calculate(tasks).score ?? 0;
 
 const uniqLower = (values = []) => {
   const seen = new Set();
@@ -55,9 +45,10 @@ const safeStrings = (values = [], limit = 6) => uniqLower(
 ).slice(0, limit);
 
 const buildProfileHash = (user = {}) => crypto.createHash('sha256').update(JSON.stringify({
-  activeGithubUsername: String(user.activeGithubUsername || user.githubUsername || '').trim().toLowerCase(),
-  activeCareerStack: String(user.activeCareerStack || user.careerStack || 'Full Stack').trim(),
-  activeExperienceLevel: String(user.activeExperienceLevel || user.experienceLevel || 'Student').trim(),
+  activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim().toLowerCase(),
+  activeCareerStack: String(developerContext.resolveCareerStack(user) || 'Full Stack').trim(),
+  activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || 'Student').trim(),
+  resumeFileId: String(developerContext.resolveSelectedResumeFileId(user) || ''),
   careerGoal: String(user.careerGoal || '').trim(),
   targetTimeline: String(user.targetTimeline || '').trim(),
   learningPreference: String(user.learningPreference || '').trim()
@@ -517,20 +508,20 @@ const summarizeIntegrationSignal = async (userId) => {
 
 const summarizeCareerProfileSignal = async (userId) => {
   const user = userId
-    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername updatedAt').lean()
+    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername activeResumeFileId defaultResumeFileId updatedAt').lean()
     : null;
 
   return {
     present: Boolean(user),
-    careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
-    activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+    careerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    experienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
+    activeCareerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
     careerGoal: String(user?.careerGoal || '').trim(),
     targetTimeline: String(user?.targetTimeline || '').trim(),
     learningPreference: String(user?.learningPreference || '').trim(),
-    githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
-    activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+    githubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
+    activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
     profileHash: user ? buildProfileHash(user) : 'no-profile',
     updatedAt: user?.updatedAt || null
   };
@@ -725,22 +716,7 @@ const summarizeGithubSignal = async (userId, source = {}) => {
   };
 };
 
-const loadDefaultResumeAnalysis = async (userId) => {
-  const user = userId
-    ? await User.findById(userId).select('defaultResumeFileId').lean()
-    : null;
-
-  if (user?.defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-
-  return userId
-    ? ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
-    : null;
-};
+const loadDefaultResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const summarizeResumeSignal = async (userId, sourceAnalysis) => {
   const latestResume = sourceAnalysis !== undefined ? sourceAnalysis : await loadDefaultResumeAnalysis(userId);
@@ -757,9 +733,9 @@ const normalizeSkillItems = (values = [], limit = 16) => safeStrings(
 const summarizeSkillGapSignal = async (userId) => {
   const cache = userId
     ? await AnalysisCache.findOne({
-        userId,
-        'analysisData.missingSkills.0': { $exists: true }
-      }).sort({ updatedAt: -1 }).lean()
+      userId,
+      'analysisData.missingSkills.0': { $exists: true }
+    }).sort({ updatedAt: -1 }).lean()
     : null;
 
   if (!cache?.analysisData) {

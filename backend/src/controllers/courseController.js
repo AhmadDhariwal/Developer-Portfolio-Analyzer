@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const crypto = require('node:crypto');
 const {
   buildCoursePoolWithMetadata,
@@ -108,12 +109,12 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
 };
 
 const resolveCareerStack = (user, query = {}) => {
-  const candidate = String(user?.careerStack || query.stack || 'Full Stack').trim();
+  const candidate = String(developerContext.resolveCareerStack(user) || query.stack || 'Full Stack').trim();
   return VALID_CAREER_STACKS.includes(candidate) ? candidate : 'Full Stack';
 };
 
 const resolveExperienceLevel = (user, query = {}) => {
-  const candidate = String(user?.experienceLevel || query.experience || 'Student').trim();
+  const candidate = String(developerContext.resolveExperienceLevel(user) || query.experience || 'Student').trim();
   return VALID_EXPERIENCE_LEVELS.includes(candidate) ? candidate : 'Student';
 };
 
