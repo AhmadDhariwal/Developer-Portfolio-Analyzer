@@ -406,4 +406,70 @@ describe('GithubAnalyzerComponent', () => {
     component.toggleEvidenceDrawer();
     expect(component.showEvidenceDrawer).toBe(false);
   });
+
+  it('should compute executive summary qualitative state and strategic pillars accurately', () => {
+    component.defaultUsername = 'octocat';
+    component.username = 'octocat';
+    component.isAnalyzing = false;
+    component.analyze(false);
+    fixture.detectChanges();
+
+    expect(component.qualitativeState).toBe('Strong');
+    expect(component.qualitativeStateVariant).toBe('success');
+    expect(component.executiveHeadline).toBe('Full Stack Angular Engineer');
+    expect(component.executiveExplanation).toBe('Demonstrates solid frontend development expertise.');
+    expect(component.strongestSignal.label).toContain('Consistency');
+    expect(component.biggestWeakness.label).toContain('Project Impact');
+    expect(component.topRecommendedAction).toBeTruthy();
+
+    const executiveSection = fixture.nativeElement.querySelector('.executive-card');
+    expect(executiveSection).toBeTruthy();
+    expect(executiveSection.textContent).toContain('82');
+    expect(executiveSection.textContent).toContain('Strong');
+    expect(executiveSection.textContent).toContain('Strongest Signal');
+  });
+
+  it('should handle repository display controls: top prioritized repos and sorted full table', () => {
+    component.defaultUsername = 'octocat';
+    component.username = 'octocat';
+    component.isAnalyzing = false;
+    component.analyze(false);
+    fixture.detectChanges();
+
+    expect(component.showAllRepositories).toBe(false);
+    expect(component.topRepositories.length).toBe(2);
+
+    component.toggleShowAllRepositories();
+    expect(component.showAllRepositories).toBe(true);
+
+    // Default sort is activityScore desc
+    expect(component.sortedRepositoryRows[0].name).toBe('repo-one');
+
+    // Sort by stars asc
+    component.setRepoSort('stars');
+    expect(component.repoSortField).toBe('stars');
+    expect(component.repoSortAsc).toBe(false);
+    component.setRepoSort('stars');
+    expect(component.repoSortAsc).toBe(true);
+
+    // Toggle back to collapsed view
+    component.toggleShowAllRepositories();
+    expect(component.showAllRepositories).toBe(false);
+  });
+
+  it('should render the clean 6-item key metrics strip', () => {
+    component.defaultUsername = 'octocat';
+    component.username = 'octocat';
+    component.isAnalyzing = false;
+    component.analyze(false);
+    fixture.detectChanges();
+
+    const metricStrip = fixture.nativeElement.querySelector('.metrics-strip-grid');
+    expect(metricStrip).toBeTruthy();
+    const metricCells = fixture.nativeElement.querySelectorAll('.metric-cell');
+    expect(metricCells.length).toBe(6);
+    expect(metricStrip.textContent).toContain('Repositories');
+    expect(metricStrip.textContent).toContain('Sampled Commits');
+    expect(metricStrip.textContent).toContain('Total Stars');
+  });
 });

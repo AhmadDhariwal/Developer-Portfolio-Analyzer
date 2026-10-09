@@ -1,8 +1,8 @@
 .navbar {
   height: var(--navbar-height);
-  background: rgba(17, 24, 39, 0.95);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(8, 12, 20, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -12,7 +12,7 @@
   left: 260px;
   right: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   transition: left var(--transition-base);
 
   &.sidebar-closed {

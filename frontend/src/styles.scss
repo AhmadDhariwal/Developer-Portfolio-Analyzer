@@ -11,43 +11,47 @@
 
 :root {
   /* Primary Colors */
-  --color-primary: #6366F1;       /* Indigo */
+  --color-primary: #6366F1;       /* Refined Indigo */
   --color-primary-dark: #4F46E5;
   --color-primary-light: #818CF8;
+  --color-primary-hover: #7C83FF;
   
   --color-secondary: #8B5CF6;     /* Purple */
   --color-accent: #22C55E;        /* Green */
   
-  /* Background */
-  --bg-main: #0F172A;             /* Dark navy */
-  --bg-card: #1E293B;             /* Card background */
-  --bg-hover: #334155;            /* Hover state */
+  /* 4-Layer Surface System (High-Contrast Obsidian & Deep Slate) */
+  --bg-main: #080C14;             /* Layer 1: App background (deep obsidian) */
+  --bg-card: #131B2E;             /* Layer 2: Primary content surface */
+  --bg-hover: #1C263F;            /* Hover state */
   
   /* Surfaces */
-  --surface-base: var(--bg-main);
-  --surface-card: var(--bg-card);
-  --surface-hover: var(--bg-hover);
-  --surface-glass: rgba(30, 41, 59, 0.7);
-  --surface-modal: #1E293B;
-  --surface-drawer: #151F30;
-  --surface-input: rgba(15, 23, 42, 0.6);
-  --surface-subtle: rgba(15, 23, 42, 0.4);
+  --surface-base: #080C14;        /* Layer 1: App background */
+  --surface-card: #131B2E;        /* Layer 2: Primary content surface (clearly elevated) */
+  --surface-secondary: #1C263F;   /* Layer 3: Secondary section surface (distinct wells & headers) */
+  --surface-tertiary: #263454;    /* Layer 4: Subtle interactive / elevated element surface */
+  --surface-hover: #1C263F;
+  --surface-glass: rgba(19, 27, 46, 0.88);
+  --surface-modal: #131B2E;
+  --surface-drawer: #0D1322;
+  --surface-input: #1C263F;
+  --surface-subtle: #1C263F;
 
   /* Text Colors */
-  --text-primary: #F8FAFC;        /* White text */
-  --text-secondary: #94A3B8;      /* Gray text */
-  --text-muted: #64748B;          /* Muted gray */
+  --text-primary: #FFFFFF;        /* High-clarity white text */
+  --text-secondary: #94A3B8;      /* Clean slate text */
+  --text-muted: #64748B;          /* Secondary muted text */
   
-  /* Status Colors */
-  --color-success: #22C55E;
-  --color-success-dark: #16A34A;
+  /* Status Colors (Semantic Only) */
+  --color-success: #10B981;
+  --color-success-dark: #059669;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
-  --color-info: #3B82F6;
+  --color-info: #0284C7;
   
-  /* Borders */
-  --border-color: #334155;
-  --border-light: #475569;
+  /* Borders (Crisp, defined hairline borders) */
+  --border-color: rgba(148, 163, 184, 0.18);
+  --border-light: rgba(148, 163, 184, 0.25);
+  --border-subtle: rgba(148, 163, 184, 0.15);
   
   /* Shadows */
   --shadow-sm: 0px 2px 8px rgba(0, 0, 0, 0.15);
