@@ -79,6 +79,10 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   statusFilter = 'ALL';
   categoryFilter = 'ALL';
   sortBy = 'priority';
+  showAllSkills = false;
+  readonly initialSkillLimit = 8;
+  showAllProjects = false;
+  readonly initialProjectLimit = 3;
   private readonly subscriptions = new Subscription();
   private requestSubscription?: Subscription;
   private requestSequence = 0;
@@ -143,6 +147,16 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       }
       return (b.weight || 1) - (a.weight || 1);
     });
+  }
+  get displayedSkills(): EvidenceSkill[] {
+    return this.showAllSkills || this.visibleSkills.length <= this.initialSkillLimit
+      ? this.visibleSkills
+      : this.visibleSkills.slice(0, this.initialSkillLimit);
+  }
+  get displayedProjects(): SuggestedSkillProject[] {
+    return this.showAllProjects || this.suggestedProjects.length <= this.initialProjectLimit
+      ? this.suggestedProjects
+      : this.suggestedProjects.slice(0, this.initialProjectLimit);
   }
   get categories(): string[] {
     return Object.keys(this.result?.categoryBreakdown || {});
@@ -377,6 +391,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.search = '';
     this.statusFilter = this.requirementFilter = this.categoryFilter = 'ALL';
+    this.showAllSkills = false;
+    this.showAllProjects = false;
     if (preview) this.loadSavedPreviews();
     else this.loadProfile();
   }
@@ -450,6 +466,8 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     this.isTemporaryView = temporary;
     this.search = '';
     this.statusFilter = this.requirementFilter = this.categoryFilter = 'ALL';
+    this.showAllSkills = false;
+    this.showAllProjects = false;
   }
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];

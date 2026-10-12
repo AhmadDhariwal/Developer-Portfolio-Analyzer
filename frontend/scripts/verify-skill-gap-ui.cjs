@@ -64,8 +64,11 @@ function luminance(rgb) { const values = rgb.match(/[\d.]+/g).slice(0, 3).map(Nu
       const summary = page.locator('.skill-row summary').first(); await summary.focus(); await page.keyboard.press('Enter');
       assert.equal(await page.locator('.skill-row').first().getAttribute('open'), '');
       assert.equal(await summary.evaluate(el => getComputedStyle(el).outlineStyle), 'solid');
-      await page.locator('.filters select').nth(0).selectOption('OPTIONAL'); assert.equal(await page.locator('.skill-row').count(), 1);
+      await page.locator('.filters select').nth(0).selectOption('OPTIONAL');
+      await page.waitForFunction(() => document.querySelectorAll('.skill-row').length === 1);
+      assert.equal(await page.locator('.skill-row').count(), 1);
       await page.locator('.filters select').nth(0).selectOption('ALL');
+      await page.waitForFunction(() => document.querySelectorAll('.skill-row').length === 4);
       for (const coverage of [0, 50, 100, null]) {
         response = { ...fixture(), coverage }; await page.getByRole('button', { name: 'Refresh evidence' }).click();
         await page.waitForFunction(value => document.querySelector('[data-testid=coverage]')?.textContent.trim() === value, coverage === null ? 'Unavailable' : `${coverage}%`);
