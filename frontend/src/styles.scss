@@ -12,7 +12,8 @@
    LIGHT THEME (Default — Production Hybrid SaaS Theme)
    -------------------------------------------------------------------------- */
 :root,
-[data-theme="light"] {
+[data-theme="light"],
+.light {
   /* Brand Indigo Palette */
   --color-primary: #4F46E5;       /* Brand Indigo */
   --color-primary-dark: #4338CA;  /* Brand Hover */
@@ -66,7 +67,7 @@
   /* Text Colors */
   --text-primary: #0F172A;        /* Primary high-contrast text */
   --text-secondary: #475569;      /* Secondary text */
-  --text-muted: #64748B;          /* Muted metadata text */
+  --text-muted: #526075;          /* Muted metadata text (WCAG AA compliant 5.5:1 on light surfaces) */
   --text-inverse: #FFFFFF;
   
   /* Semantic Status Colors (Restrained Light Mode) */
@@ -111,7 +112,7 @@
 
   /* Chart Tokens */
   --chart-grid: #F1F5F9;
-  --chart-tick: #64748B;
+  --chart-tick: #526075;
   --chart-label: #475569;
   --chart-donut-border: #FFFFFF;
   --chart-bar-bg: rgba(79, 70, 229, 0.85);
@@ -193,7 +194,8 @@
 /* --------------------------------------------------------------------------
    DARK THEME (Coordinated Dark Mode Palette)
    -------------------------------------------------------------------------- */
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark {
   /* Brand Indigo Palette */
   --color-primary: #6366F1;       /* Indigo slightly brighter for dark contrast */
   --color-primary-dark: #4F46E5;

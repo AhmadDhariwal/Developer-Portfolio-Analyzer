@@ -382,7 +382,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
               beginAtZero: true,
               grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9' },
               ticks: {
-                color: isDark ? '#94A3B8' : '#64748B',
+                color: isDark ? '#94A3B8' : '#526075',
                 font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 }
               }
             },

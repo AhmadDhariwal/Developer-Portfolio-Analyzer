@@ -154,7 +154,7 @@
 }
 
 .helper-copy {
-  color: #64748b;
+  color: var(--text-muted, #94a3b8);
   font-size: 0.72rem;
 }
 
@@ -171,7 +171,7 @@
   svg {
     width: 15px;
     height: 15px;
-    color: #64748b;
+    color: var(--text-muted, #94a3b8);
     flex-shrink: 0;
   }
 
@@ -186,7 +186,7 @@
   }
 
   input::placeholder {
-    color: #64748b;
+    color: var(--text-muted, #94a3b8);
   }
 }
 
