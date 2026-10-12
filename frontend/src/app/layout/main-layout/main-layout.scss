@@ -43,11 +43,11 @@
   container-type: inline-size;
   margin-top: var(--navbar-height);
   overflow-y: auto;
-  padding: var(--spacing-2xl);
+  padding: clamp(16px, 2vw, 28px);
   min-width: 0;
 
   @media (max-width: 768px) {
-    padding: var(--spacing-lg);
+    padding: 16px 12px;
   }
 
   &::-webkit-scrollbar { width: 6px; }

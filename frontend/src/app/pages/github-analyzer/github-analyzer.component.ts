@@ -27,10 +27,6 @@ import {
 import { AuthService } from '../../shared/services/auth.service';
 import {
   UiButtonComponent,
-  UiCardComponent,
-  UiMetricCardComponent,
-  ScoreCardComponent,
-  ScoreCardColor,
   UiBadgeComponent,
   BadgeVariant,
   UiSkeletonComponent,
@@ -38,16 +34,16 @@ import {
   UiErrorStateComponent,
   UiProgressComponent,
   ProgressColor,
-  UiTooltipDirective,
+  ScoreCardColor,
   UiPageHeaderComponent,
-  UiSectionHeaderComponent
+  UiDrawerComponent
 } from '../../shared/components';
 
 Chart.register(...registerables);
 
 const LANG_COLOURS = [
-  '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6D5DF6',
-  '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#64748B'
+  '#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6',
+  '#EC4899', '#3B82F6', '#64748B', '#14B8A6', '#F97316'
 ];
 
 export interface DisplayBreakdownItem {
@@ -69,17 +65,13 @@ export interface DisplayBreakdownItem {
     FormsModule,
     RouterModule,
     UiButtonComponent,
-    UiCardComponent,
-    UiMetricCardComponent,
-    ScoreCardComponent,
     UiBadgeComponent,
     UiSkeletonComponent,
     UiEmptyStateComponent,
     UiErrorStateComponent,
     UiProgressComponent,
-    UiTooltipDirective,
     UiPageHeaderComponent,
-    UiSectionHeaderComponent
+    UiDrawerComponent
   ],
   templateUrl: './github-analyzer.component.html',
   styleUrl: './github-analyzer.component.scss'
@@ -99,6 +91,9 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   isTemporaryView = false;
   result: GitHubAnalysisResult | null = null;
   showEvidenceDrawer = false;
+  showAllRepositories = false;
+  repoSortField: 'score' | 'stars' | 'name' = 'score';
+  repoSortAsc = false;
 
   private donutChart: Chart | null = null;
   private barChart: Chart | null = null;
@@ -342,8 +337,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           datasets: [{
             label: 'Commits',
             data: top.map((repo) => repo.commits ?? 0),
-            backgroundColor: top.map((_, i) => `${LANG_COLOURS[i % LANG_COLOURS.length]}CC`),
-            borderColor: top.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+            borderColor: '#6366F1',
             borderWidth: 1,
             borderRadius: 4,
             barThickness: 16
@@ -364,7 +359,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           scales: {
             x: {
               beginAtZero: true,
-              grid: { color: 'rgba(255,255,255,0.05)' },
+              grid: { color: 'rgba(148, 163, 184, 0.08)' },
               ticks: {
                 color: '#94A3B8',
                 font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 }
@@ -645,6 +640,154 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         this.repositoryScore(b) - this.repositoryScore(a) ||
         Number(b.stars || 0) - Number(a.stars || 0) ||
         String(a.name || '').localeCompare(String(b.name || '')));
+  }
+
+  get topRepositories(): Repository[] {
+    return this.repositoryRows.slice(0, 5);
+  }
+
+  get sortedRepositoryRows(): Repository[] {
+    const rows = [...this.repositoryRows];
+    rows.sort((a, b) => {
+      let cmp = 0;
+      if (this.repoSortField === 'score') {
+        cmp = this.repositoryScore(b) - this.repositoryScore(a);
+      } else if (this.repoSortField === 'stars') {
+        cmp = Number(b.stars ?? 0) - Number(a.stars ?? 0);
+      } else if (this.repoSortField === 'name') {
+        cmp = String(a.name || '').localeCompare(String(b.name || ''));
+      }
+      return this.repoSortAsc ? -cmp : cmp;
+    });
+    return rows;
+  }
+
+  toggleShowAllRepositories(): void {
+    this.showAllRepositories = !this.showAllRepositories;
+  }
+
+  setRepoSort(field: 'score' | 'stars' | 'name'): void {
+    if (this.repoSortField === field) {
+      this.repoSortAsc = !this.repoSortAsc;
+    } else {
+      this.repoSortField = field;
+      this.repoSortAsc = false;
+    }
+  }
+
+  // ── Executive Summary Helpers ──────────────────────────────────
+
+  get qualitativeState(): string {
+    const score = this.healthScoreValue;
+    if (score === null) return 'Unavailable';
+    if (score >= 75) return 'Strong';
+    if (score >= 50) return 'Developing';
+    return 'Needs Improvement';
+  }
+
+  get qualitativeStateVariant(): BadgeVariant {
+    const score = this.healthScoreValue;
+    if (score === null) return 'neutral';
+    if (score >= 75) return 'success';
+    if (score >= 50) return 'info';
+    return 'warning';
+  }
+
+  get executiveHeadline(): string {
+    if (!this.result) return 'Evaluating GitHub profile...';
+    if (this.result.recruiterInsights?.headline) {
+      return this.result.recruiterInsights.headline;
+    }
+    if (this.result.developerLevel) {
+      return `${this.result.developerLevel} Developer Profile`;
+    }
+    return 'Technical Portfolio Evaluation';
+  }
+
+  get executiveExplanation(): string {
+    if (!this.result) return '';
+    if (this.result.summary) return this.result.summary;
+    if (this.result.explanation) return this.result.explanation;
+    const score = this.healthScoreValue;
+    if (score === null) {
+      return 'Core profile signals are partially restricted or unavailable. Health score could not be reliably calculated.';
+    }
+    if (score >= 75) {
+      return 'Profile demonstrates solid codebase hygiene, steady activity in active repositories, and well-structured project documentation.';
+    }
+    if (score >= 50) {
+      return 'Profile displays good engineering foundation. Deepening commit cadence and diversifying tech stacks will raise overall readiness.';
+    }
+    return 'Repository presence is in an early stage. Adding original project code, thorough README documentation, and steady commits will strengthen your signal.';
+  }
+
+  get strongestSignal(): { label: string; score: number | null; detail: string } {
+    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    if (breakdown.length) {
+      const top = [...breakdown].sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
+      return {
+        label: `${top.label} (${top.value}/100)`,
+        score: top.value,
+        detail: top.description
+      };
+    }
+    if (this.result?.strengths?.length) {
+      return {
+        label: 'Engineering Strength',
+        score: null,
+        detail: this.result.strengths[0]
+      };
+    }
+    return {
+      label: 'Repository Foundation',
+      score: null,
+      detail: `${this.result?.repoCount ?? 0} public repositories evaluated.`
+    };
+  }
+
+  get biggestWeakness(): { label: string; score: number | null; detail: string } {
+    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    if (breakdown.length) {
+      const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
+      return {
+        label: `${lowest.label} (${lowest.value}/100)`,
+        score: lowest.value,
+        detail: lowest.description
+      };
+    }
+    if (this.result?.weakAreas?.length) {
+      return {
+        label: 'Growth Opportunity',
+        score: null,
+        detail: this.result.weakAreas[0]
+      };
+    }
+    return {
+      label: 'Activity Cadence',
+      score: null,
+      detail: 'Increase commit consistency across public repositories.'
+    };
+  }
+
+  get topRecommendedAction(): { title: string; detail: string } {
+    if (this.result?.weakAreas?.length) {
+      return {
+        title: 'Address Identified Gap',
+        detail: this.result.weakAreas[0]
+      };
+    }
+    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    if (breakdown.length) {
+      const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
+      return {
+        title: `Strengthen ${lowest.label}`,
+        detail: `Focus on ${lowest.description.toLowerCase()} to gain up to +${lowest.weightPct} potential points.`
+      };
+    }
+    return {
+      title: 'Maintain Active Commits',
+      detail: 'Push regular commits and document architecture in your top projects.'
+    };
   }
 
   // ── Conditionals & UI State ────────────────────────────────────
