@@ -126,24 +126,22 @@
 }
 
 .ui-surface-glass {
-  background: var(--surface-glass, rgba(30, 41, 59, 0.7));
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
+  background: var(--surface-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-surface-elevated {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E2E8F0);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
 }
 
-.ui-surface-elevated {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-}
-
 .ui-surface-subtle {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid var(--border-color);
+  background: var(--surface-subtle, #F1F5F9);
+  border: 1px solid var(--border-color, #E2E8F0);
   border-radius: var(--radius-md);
 }
 
@@ -190,15 +188,15 @@
 .ui-tooltip-bubble {
   position: absolute;
   z-index: 10000;
-  background: var(--bg-card, #1E293B);
-  color: var(--text-primary, #F8FAFC);
+  background: #0F172A;
+  color: #FFFFFF;
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm, 8px);
-  border: 1px solid var(--border-light, #475569);
-  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.5));
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-md);
   pointer-events: none;
   max-width: 260px;
   word-wrap: break-word;

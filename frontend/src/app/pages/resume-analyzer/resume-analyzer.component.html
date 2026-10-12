@@ -349,49 +349,54 @@
       ></app-ui-metric-card>
     </div>
 
-    <!-- Score Breakdown Section (The 8 dimensions from backend) -->
+    <!-- Score Breakdown Section (Unified Analytical List) -->
     <div class="breakdown-section">
       <app-ui-section-header
         title="Score Breakdown"
         description="Eight deterministic weighted components calculated from extracted resume evidence. Values are authoritative from the backend engine."
       ></app-ui-section-header>
 
-      <div class="breakdown-cards-grid">
-        <app-ui-card *ngFor="let dim of breakdownDimensions" class="dimension-card">
-          <div class="dimension-card-head">
-            <div class="dimension-info">
-              <h4>{{ dim.label }}</h4>
-              <span class="dimension-weight">Weight: {{ dim.weightPct }}%</span>
+      <div class="breakdown-panel">
+        <div class="breakdown-rows-container">
+          <div *ngFor="let dim of breakdownDimensions" class="dimension-card breakdown-row">
+            <!-- Left: Dimension Info & Explanation -->
+            <div class="row-info-col">
+              <div class="row-heading-wrap">
+                <h4 class="row-label">{{ dim.label }}</h4>
+                <span class="row-weight-tag">Weight: {{ dim.weightPct }}%</span>
+              </div>
+              <p class="row-desc">{{ dim.explanation }}</p>
             </div>
-            <div class="dimension-score-badge">
-              <strong *ngIf="dim.available && dim.value !== null">{{ dim.value }}<small>/100</small></strong>
-              <span *ngIf="!dim.available || dim.value === null" class="score-omitted">Unavailable</span>
+
+            <!-- Right: Score, Contribution & Progress -->
+            <div class="row-data-col">
+              <div class="row-values-wrap">
+                <div class="row-score-unit">
+                  <strong *ngIf="dim.available && dim.value !== null" class="score-current">{{ dim.value }}<small class="score-total">/100</small></strong>
+                  <span *ngIf="!dim.available || dim.value === null" class="score-unavailable">Unavailable</span>
+                </div>
+
+                <div class="row-contrib-badge">
+                  <span class="contrib-val" *ngIf="dim.contribution !== null">+{{ dim.contribution }} pts</span>
+                  <span class="contrib-omitted" *ngIf="dim.contribution === null">Omitted</span>
+                </div>
+
+                <app-ui-badge [variant]="dim.available ? 'success' : 'neutral'" size="sm">
+                  {{ dim.available ? 'Available' : 'Omitted' }}
+                </app-ui-badge>
+              </div>
+
+              <div class="row-progress-wrap">
+                <app-ui-progress
+                  [value]="dim.value ?? 0"
+                  [max]="100"
+                  [color]="dim.tone"
+                  size="sm"
+                ></app-ui-progress>
+              </div>
             </div>
           </div>
-
-          <div class="dimension-progress-wrap">
-            <app-ui-progress
-              [value]="dim.value ?? 0"
-              [max]="100"
-              [color]="dim.tone"
-              size="sm"
-            ></app-ui-progress>
-          </div>
-
-          <div class="dimension-footer">
-            <span class="dimension-contrib" *ngIf="dim.contribution !== null">
-              Contribution: +{{ dim.contribution }} pts
-            </span>
-            <span class="dimension-contrib" *ngIf="dim.contribution === null">
-              Contribution: Omitted
-            </span>
-            <app-ui-badge [variant]="dim.available ? 'success' : 'neutral'" size="sm">
-              {{ dim.available ? 'Available' : 'Omitted' }}
-            </app-ui-badge>
-          </div>
-
-          <p class="dimension-explanation">{{ dim.explanation }}</p>
-        </app-ui-card>
+        </div>
       </div>
     </div>
 

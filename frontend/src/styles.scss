@@ -1,89 +1,166 @@
 /* ==========================================================================
-   DevInsight AI Design System
+   DevInsight AI Design System — Light, Dark & System Theme Architecture
    ========================================================================== */
 
-/* Google Fonts — loaded globally to avoid per-component budget overruns */
 @use './app/shared/styles/design-tokens' as *;
 @use './app/shared/styles/layout-helpers' as *;
 
-/* Google Fonts — loaded globally to avoid per-component budget overruns */
+/* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
 
-:root {
-  /* Primary Colors */
-  --color-primary: #6366F1;       /* Refined Indigo */
-  --color-primary-dark: #4F46E5;
-  --color-primary-light: #818CF8;
-  --color-primary-hover: #7C83FF;
+/* --------------------------------------------------------------------------
+   LIGHT THEME (Default — Production Hybrid SaaS Theme)
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme="light"] {
+  /* Brand Indigo Palette */
+  --color-primary: #4F46E5;       /* Brand Indigo */
+  --color-primary-dark: #4338CA;  /* Brand Hover */
+  --color-primary-light: #6366F1;
+  --color-primary-soft: #EEF2FF;  /* Brand Soft */
+  --color-primary-border: #C7D2FE;
+  --color-primary-text: #4338CA;
+  --color-primary-hover: #4338CA;
   
-  --color-secondary: #8B5CF6;     /* Purple */
-  --color-accent: #22C55E;        /* Green */
+  --color-secondary: #6366F1;
+  --color-secondary-soft: #F3E8FF;
+  --color-secondary-border: #DDD6FE;
+  --color-secondary-text: #6D28D9;
+  --color-accent: #10B981;
   
-  /* 4-Layer Surface System (High-Contrast Obsidian & Deep Slate) */
-  --bg-main: #080C14;             /* Layer 1: App background (deep obsidian) */
-  --bg-card: #131B2E;             /* Layer 2: Primary content surface */
-  --bg-hover: #1C263F;            /* Hover state */
+  /* Hybrid SaaS Surface Architecture */
+  --bg-main: #F6F8FB;             /* Workspace background */
+  --bg-card: #FFFFFF;             /* Primary content surface */
+  --bg-hover: #F8FAFC;            /* Hover state */
+  --bg-subtle: #F1F5F9;
   
   /* Surfaces */
-  --surface-base: #080C14;        /* Layer 1: App background */
-  --surface-card: #131B2E;        /* Layer 2: Primary content surface (clearly elevated) */
-  --surface-secondary: #1C263F;   /* Layer 3: Secondary section surface (distinct wells & headers) */
-  --surface-tertiary: #263454;    /* Layer 4: Subtle interactive / elevated element surface */
-  --surface-hover: #1C263F;
-  --surface-glass: rgba(19, 27, 46, 0.88);
-  --surface-modal: #131B2E;
-  --surface-drawer: #0D1322;
-  --surface-input: #1C263F;
-  --surface-subtle: #1C263F;
+  --surface-base: #F6F8FB;        /* Workspace background */
+  --surface-card: #FFFFFF;        /* Primary content surface (white) */
+  --surface-secondary: #F8FAFC;   /* Secondary surface (subtle off-white) */
+  --surface-tertiary: #F1F5F9;    /* Subtle surface */
+  --surface-subtle: #F1F5F9;      /* Subtle surface */
+  --surface-hover: #F8FAFC;
+  --surface-glass: #FFFFFF;
+  --surface-modal: #FFFFFF;
+  --surface-drawer: #FFFFFF;
+  --surface-input: #FFFFFF;
+
+  /* Sidebar Dark Branded Tokens (Preserved in light mode) */
+  --sidebar-bg: #111827;
+  --sidebar-elevated: #1F2937;
+  --sidebar-text: #CBD5E1;
+  --sidebar-text-muted: #94A3B8;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-active-bg: #4F46E5;
+  --sidebar-active-text: #FFFFFF;
+
+  /* Topbar Light Theme Tokens */
+  --navbar-bg: #FFFFFF;
+  --navbar-border: #E2E8F0;
+  --navbar-text: #0F172A;
+  --navbar-text-muted: #64748B;
+  --navbar-input-bg: #F8FAFC;
+  --navbar-input-border: #CBD5E1;
 
   /* Text Colors */
-  --text-primary: #FFFFFF;        /* High-clarity white text */
-  --text-secondary: #94A3B8;      /* Clean slate text */
-  --text-muted: #64748B;          /* Secondary muted text */
+  --text-primary: #0F172A;        /* Primary high-contrast text */
+  --text-secondary: #475569;      /* Secondary text */
+  --text-muted: #64748B;          /* Muted metadata text */
+  --text-inverse: #FFFFFF;
   
-  /* Status Colors (Semantic Only) */
+  /* Semantic Status Colors (Restrained Light Mode) */
   --color-success: #10B981;
   --color-success-dark: #059669;
+  --color-success-soft: #ECFDF5;
+  --color-success-border: #A7F3D0;
+  --color-success-text: #059669;
+  --color-success-bg: #ECFDF5;
+
   --color-warning: #F59E0B;
+  --color-warning-dark: #D97706;
+  --color-warning-soft: #FEF3C7;
+  --color-warning-border: #FDE68A;
+  --color-warning-text: #92400E;
+  --color-warning-bg: #FEF3C7;
+
   --color-danger: #EF4444;
+  --color-danger-dark: #DC2626;
+  --color-danger-soft: #FEF2F2;
+  --color-danger-border: #FECACA;
+  --color-danger-text: #991B1B;
+  --color-danger-bg: #FEF2F2;
+
   --color-info: #0284C7;
+  --color-info-dark: #0369A1;
+  --color-info-soft: #EFF6FF;
+  --color-info-border: #BFDBFE;
+  --color-info-text: #1E40AF;
+  --color-info-bg: #EFF6FF;
+
+  --color-neutral: #64748B;
+  --color-neutral-soft: #F1F5F9;
+  --color-neutral-border: #E2E8F0;
+  --color-neutral-text: #475569;
   
-  /* Borders (Crisp, defined hairline borders) */
-  --border-color: rgba(148, 163, 184, 0.18);
-  --border-light: rgba(148, 163, 184, 0.25);
-  --border-subtle: rgba(148, 163, 184, 0.15);
+  /* Crisp Hairline Borders */
+  --border-color: #E2E8F0;
+  --border-light: #CBD5E1;        /* Strong border */
+  --border-strong: #CBD5E1;
+  --border-subtle: #F1F5F9;
+
+  /* Chart Tokens */
+  --chart-grid: #F1F5F9;
+  --chart-tick: #64748B;
+  --chart-label: #475569;
+  --chart-donut-border: #FFFFFF;
+  --chart-bar-bg: rgba(79, 70, 229, 0.85);
+  --chart-bar-border: #4F46E5;
   
-  /* Shadows */
-  --shadow-sm: 0px 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0px 8px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0px 16px 32px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0px 0px 20px rgba(99, 102, 241, 0.2);
-  
+  /* Restrained SaaS Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-glow: none;
+
+  /* Focus & Disabled States */
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px #4F46E5;
+  --focus-ring-offset: 2px;
+  --opacity-disabled: 0.55;
+
+  /* Compatibility Aliases */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-muted);
+  --color-border-default: var(--border-color);
+  --color-border-strong: var(--border-strong);
+
   /* Layout & Spacing */
-  --sidebar-width: 280px;
-  --navbar-height: 70px;
-  --spacing-3xs: 0.125rem; /* 2px */
-  --spacing-2xs: 0.25rem;  /* 4px */
-  --spacing-xs: 0.5rem;    /* 8px */
-  --spacing-sm: 1rem;      /* 16px */
-  --spacing-md: 1.5rem;    /* 24px */
-  --spacing-lg: 2rem;      /* 32px */
-  --spacing-xl: 3rem;      /* 48px */
-  --spacing-2xl: 2.5rem;   /* 40px */
-  --spacing-3xl: 4rem;     /* 64px */
+  --sidebar-width: 260px;
+  --navbar-height: 64px;
+  --spacing-3xs: 0.125rem;
+  --spacing-2xs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 4rem;
   
   /* Border Radius */
   --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
   --radius-full: 9999px;
   
   /* Typography Tokens */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: 'Space Grotesk', 'Poppins', 'Inter', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -95,30 +172,152 @@
   --text-4xl: 2.25rem;
 
   /* Form Sizing Tokens */
-  --form-height-sm: 36px;
-  --form-height-md: 44px;
-  --form-height-lg: 52px;
+  --form-height-sm: 34px;
+  --form-height-md: 40px;
+  --form-height-lg: 48px;
   --form-padding-sm: 0 0.75rem;
   --form-padding-md: 0 1rem;
   --form-padding-lg: 0 1.25rem;
-  --form-radius: var(--radius-sm);
+  --form-radius: var(--radius-md);
 
   /* Card Padding Tokens */
   --card-padding-sm: 1rem;
   --card-padding-md: 1.5rem;
   --card-padding-lg: 2rem;
 
-  /* Focus & Disabled States */
-  --focus-ring: 0 0 0 2px var(--bg-main), 0 0 0 4px var(--color-primary-light);
-  --focus-ring-offset: 2px;
-  --opacity-disabled: 0.55;
-
   /* Transitions */
   --transition-fast: 0.15s ease-in-out;
-  --transition-base: 0.3s ease-in-out;
+  --transition-base: 0.25s ease-in-out;
 }
 
-/* Global Styles */
+/* --------------------------------------------------------------------------
+   DARK THEME (Coordinated Dark Mode Palette)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  /* Brand Indigo Palette */
+  --color-primary: #6366F1;       /* Indigo slightly brighter for dark contrast */
+  --color-primary-dark: #4F46E5;
+  --color-primary-light: #818CF8;
+  --color-primary-soft: rgba(99, 102, 241, 0.18);
+  --color-primary-border: rgba(99, 102, 241, 0.35);
+  --color-primary-text: #A5B4FC;
+  --color-primary-hover: #4F46E5;
+  
+  --color-secondary: #818CF8;
+  --color-secondary-soft: rgba(139, 92, 246, 0.16);
+  --color-secondary-border: rgba(139, 92, 246, 0.35);
+  --color-secondary-text: #C4B5FD;
+  --color-accent: #34D399;
+  
+  /* Dark Surface Architecture */
+  --bg-main: #0B0F17;             /* Sleek dark obsidian workspace */
+  --bg-card: #151D2A;             /* Elevated dark slate card surface */
+  --bg-hover: #1E293B;
+  --bg-subtle: #192231;
+  
+  /* Surfaces */
+  --surface-base: #0B0F17;
+  --surface-card: #151D2A;        /* Elevated dark card */
+  --surface-secondary: #101622;   /* Inner wells, table rows */
+  --surface-tertiary: #192231;    /* Tags, chips, secondary cards */
+  --surface-subtle: #192231;
+  --surface-hover: #1E293B;
+  --surface-glass: #151D2A;
+  --surface-modal: #151D2A;
+  --surface-drawer: #151D2A;
+  --surface-input: #101622;
+
+  /* Sidebar Dark Theme Tokens (Coordinated) */
+  --sidebar-bg: #0B0F17;
+  --sidebar-elevated: #151D2A;
+  --sidebar-text: #CBD5E1;
+  --sidebar-text-muted: #94A3B8;
+  --sidebar-border: #1E293B;
+  --sidebar-active-bg: #4F46E5;
+  --sidebar-active-text: #FFFFFF;
+
+  /* Topbar Dark Theme Tokens */
+  --navbar-bg: #151D2A;
+  --navbar-border: #1E293B;
+  --navbar-text: #F8FAFC;
+  --navbar-text-muted: #94A3B8;
+  --navbar-input-bg: #101622;
+  --navbar-input-border: #2E3C51;
+
+  /* Text Colors */
+  --text-primary: #F8FAFC;        /* High contrast crisp white */
+  --text-secondary: #CBD5E1;      /* Crisp light slate */
+  --text-muted: #94A3B8;          /* Accessible muted metadata */
+  --text-inverse: #0F172A;
+  
+  /* Semantic Status Colors (Dark Mode Accessible Tints) */
+  --color-success: #34D399;
+  --color-success-dark: #10B981;
+  --color-success-soft: rgba(16, 185, 129, 0.14);
+  --color-success-border: rgba(16, 185, 129, 0.3);
+  --color-success-text: #34D399;
+  --color-success-bg: rgba(16, 185, 129, 0.14);
+
+  --color-warning: #FBBF24;
+  --color-warning-dark: #F59E0B;
+  --color-warning-soft: rgba(245, 158, 11, 0.14);
+  --color-warning-border: rgba(245, 158, 11, 0.3);
+  --color-warning-text: #FDE68A;
+  --color-warning-bg: rgba(245, 158, 11, 0.14);
+
+  --color-danger: #F87171;
+  --color-danger-dark: #EF4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.14);
+  --color-danger-border: rgba(239, 68, 68, 0.3);
+  --color-danger-text: #FCA5A5;
+  --color-danger-bg: rgba(239, 68, 68, 0.14);
+
+  --color-info: #38BDF8;
+  --color-info-dark: #0284C7;
+  --color-info-soft: rgba(56, 189, 248, 0.14);
+  --color-info-border: rgba(56, 189, 248, 0.3);
+  --color-info-text: #BAE6FD;
+  --color-info-bg: rgba(56, 189, 248, 0.14);
+
+  --color-neutral: #94A3B8;
+  --color-neutral-soft: #192231;
+  --color-neutral-border: #2E3C51;
+  --color-neutral-text: #CBD5E1;
+  
+  /* Crisp Hairline Borders */
+  --border-color: #1E293B;
+  --border-light: #2A384F;
+  --border-strong: #334155;
+  --border-subtle: #151D2A;
+
+  /* Chart Tokens */
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-tick: #94A3B8;
+  --chart-label: #CBD5E1;
+  --chart-donut-border: #151D2A;
+  --chart-bar-bg: rgba(99, 102, 241, 0.85);
+  --chart-bar-border: #6366F1;
+  
+  /* Dark Mode Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+
+  /* Focus & Disabled States */
+  --focus-ring: 0 0 0 2px #0B0F17, 0 0 0 4px #6366F1;
+
+  /* Compatibility Aliases */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-muted);
+  --color-border-default: var(--border-color);
+  --color-border-strong: var(--border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL ELEMENT STYLES
+   -------------------------------------------------------------------------- */
 * {
   margin: 0;
   padding: 0;
@@ -133,14 +332,15 @@ body {
   background-color: var(--bg-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   line-height: 1.3;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 code, pre, .mono {
@@ -150,11 +350,11 @@ code, pre, .mono {
 
 a {
   text-decoration: none;
-  color: var(--color-primary-light);
+  color: var(--color-primary);
   transition: color var(--transition-fast);
   
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-primary-dark);
   }
 }
 
@@ -167,13 +367,14 @@ button {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border-light);
   border-radius: var(--radius-full);
   &:hover {
     background: var(--text-muted);
@@ -182,15 +383,12 @@ button {
 
 /* Utility Classes */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }

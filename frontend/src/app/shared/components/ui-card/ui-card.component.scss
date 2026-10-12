@@ -1,18 +1,16 @@
 @use '../../styles/design-tokens' as *;
 
 .ui-card {
-  background: var(--auth-card-bg, var(--bg-card, #1E293B));
-  border-radius: var(--radius-lg, 16px);
-  box-shadow: var(--auth-shadow, var(--shadow-md));
-  border: 1px solid var(--auth-card-border, var(--border-color, #334155));
-  color: var(--auth-ink, var(--text-primary, #F8FAFC));
+  background: var(--surface-card, #FFFFFF);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color, #E2E8F0);
+  color: var(--text-primary, #0F172A);
   display: flex;
   flex-direction: column;
-  transition: all var(--transition-base, 0.3s ease-in-out);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   overflow: hidden;
   position: relative;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 
   &.glass {
     @include glass-surface;
@@ -20,24 +18,23 @@
 
   &.bordered {
     background: transparent;
-    border: 1px solid var(--border-light, #475569);
+    border: 1px solid var(--border-color, #E2E8F0);
     box-shadow: none;
   }
 
   &.elevated {
-    box-shadow: var(--shadow-lg);
-    border-color: var(--border-light, #475569);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-color, #E2E8F0);
   }
 
   &.hover-effect:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg), var(--shadow-glow);
-    border-color: var(--color-primary-light, #818CF8);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-light, #CBD5E1);
   }
 
   .card-header {
-    padding: var(--spacing-md, 1.5rem) var(--spacing-lg, 2rem);
-    border-bottom: 1px solid var(--border-color, #334155);
+    padding: var(--spacing-sm, 1rem) var(--spacing-md, 1.5rem);
+    border-bottom: 1px solid var(--border-color, #E2E8F0);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -49,17 +46,17 @@
 
       h3 {
         margin: 0;
-        color: var(--text-primary, #F8FAFC);
-        font-size: 1.25rem;
-        font-weight: 700;
-        font-family: var(--font-heading, 'Poppins', sans-serif);
+        color: var(--text-primary, #0F172A);
+        font-size: 1.125rem;
+        font-weight: 600;
+        font-family: var(--font-heading, 'Inter', sans-serif);
         letter-spacing: -0.01em;
       }
 
       p {
-        margin: 0.35rem 0 0 0;
-        color: var(--text-secondary, #94A3B8);
-        font-size: 0.875rem;
+        margin: 0.25rem 0 0 0;
+        color: var(--text-secondary, #475569);
+        font-size: 0.84rem;
         line-height: 1.4;
       }
     }
@@ -90,9 +87,9 @@
   }
 
   .card-footer {
-    padding: var(--spacing-sm, 1rem) var(--spacing-lg, 2rem);
-    background: rgba(99, 102, 241, 0.04);
-    border-top: 1px solid var(--border-color, #334155);
+    padding: var(--spacing-xs, 0.75rem) var(--spacing-md, 1.5rem);
+    background: var(--surface-secondary, #F8FAFC);
+    border-top: 1px solid var(--border-color, #E2E8F0);
     display: flex;
     align-items: center;
     justify-content: flex-end;

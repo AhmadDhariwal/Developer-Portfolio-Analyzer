@@ -11,6 +11,7 @@ import { NotificationService, AppNotification, NotificationResponse } from '../.
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ApiService } from '../../../shared/services/api.service';
 import { ProfileService } from '../../../shared/services/profile.service';
+import { ThemeService, ThemePreference } from '../../../shared/services/theme.service';
 
 interface SearchSuggestion {
   type: 'page' | 'repo' | 'skill';
@@ -35,6 +36,8 @@ export class Navbar implements OnInit {
 
   @ViewChild('notificationButton') notificationButton?: ElementRef<HTMLElement>;
   @ViewChild('notificationDropdown') notificationDropdown?: ElementRef<HTMLElement>;
+
+  readonly themeService = inject(ThemeService);
 
   isLoggedIn$: Observable<boolean>;
   userName = 'Developer';

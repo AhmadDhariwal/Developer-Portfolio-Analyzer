@@ -7,7 +7,8 @@ import {
   ElementRef,
   ChangeDetectorRef,
   inject,
-  DestroyRef
+  DestroyRef,
+  effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +26,7 @@ import {
   ScoreEvidence
 } from '../../shared/services/github.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { ThemeService } from '../../shared/services/theme.service';
 import {
   UiButtonComponent,
   UiBadgeComponent,
@@ -105,6 +107,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly themeService = inject(ThemeService);
 
   constructor() {
     const stored = this.getStoredActiveUsername();
@@ -112,6 +115,20 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.applyDefaultUsername(stored);
       this.isInitLoading = false;
     }
+
+    // Dynamic reactive chart re-rendering on theme switch
+    effect(() => {
+      // Access signal to register dependency
+      const _ = this.themeService.activeTheme();
+      if (this.viewReady && this.result) {
+        if (this.displayLanguages?.length) {
+          this.buildDonutChart(this.displayLanguages);
+        }
+        if (this.result.repositoryActivity?.length) {
+          this.buildBarChart(this.result.repositoryActivity);
+        }
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -284,6 +301,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.donutChart?.destroy();
       if (!langs.length) return;
 
+      const isDark = this.themeService.isDark();
+
       const cfg: ChartConfiguration<'doughnut'> = {
         type: 'doughnut',
         data: {
@@ -291,8 +310,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           datasets: [{
             data: langs.map((lang) => lang.percentage),
             backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
-            borderColor: '#111827',
-            borderWidth: 3,
+            borderColor: isDark ? '#151D2A' : '#FFFFFF',
+            borderWidth: 2,
             hoverOffset: 6
           }]
         },
@@ -330,6 +349,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       const top = [...(activity || [])].sort((a, b) => (b.commits ?? 0) - (a.commits ?? 0)).slice(0, 7);
       if (!top.length) return;
 
+      const isDark = this.themeService.isDark();
+
       const cfg: ChartConfiguration<'bar'> = {
         type: 'bar',
         data: {
@@ -337,8 +358,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           datasets: [{
             label: 'Commits',
             data: top.map((repo) => repo.commits ?? 0),
-            backgroundColor: 'rgba(99, 102, 241, 0.75)',
-            borderColor: '#6366F1',
+            backgroundColor: isDark ? 'rgba(99, 102, 241, 0.85)' : 'rgba(79, 70, 229, 0.85)',
+            borderColor: isDark ? '#818CF8' : '#4F46E5',
             borderWidth: 1,
             borderRadius: 4,
             barThickness: 16
@@ -359,16 +380,16 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           scales: {
             x: {
               beginAtZero: true,
-              grid: { color: 'rgba(148, 163, 184, 0.08)' },
+              grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9' },
               ticks: {
-                color: '#94A3B8',
+                color: isDark ? '#94A3B8' : '#64748B',
                 font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 }
               }
             },
             y: {
               grid: { display: false },
               ticks: {
-                color: '#94A3B8',
+                color: isDark ? '#CBD5E1' : '#475569',
                 font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 },
                 callback: function(_val, idx) {
                   const label = this.getLabelForValue(idx);

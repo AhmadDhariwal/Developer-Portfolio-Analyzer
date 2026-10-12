@@ -51,19 +51,20 @@
 
       .page-title {
         margin: 0;
-        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-size: clamp(28px, 2.2vw, 32px);
         font-weight: 700;
-        color: var(--text-primary, #F8FAFC);
-        font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+        color: var(--text-primary, #0F172A);
+        font-family: var(--font-heading, 'Inter', sans-serif);
         letter-spacing: -0.02em;
-        line-height: 1.2;
+        line-height: 1.25;
       }
     }
 
     .page-subtitle {
-      margin: 0.35rem 0 0 0;
-      font-size: 0.9375rem;
-      color: var(--text-secondary, #94A3B8);
+      margin: 0.25rem 0 0 0;
+      font-size: 0.9375rem; // 15px
+      font-weight: 400;
+      color: var(--text-secondary, #475569);
       line-height: 1.5;
     }
   }

@@ -417,6 +417,95 @@
         </div>
       </div>
 
+      <!-- Appearance & Theme ───────────────────────────────────── -->
+      <div class="prof-card appearance-card">
+        <div class="section-head">
+          <div class="section-head__icon section-head__icon--purple">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Appearance & Theme</h2>
+            <p>Customize interface theme and display preferences</p>
+          </div>
+        </div>
+
+        <div class="theme-picker-grid">
+          <button type="button"
+                  class="theme-card-option"
+                  [class.theme-card-option--active]="themeService.preference() === 'light'"
+                  (click)="themeService.setTheme('light')"
+                  title="Select Light Theme"
+                  aria-label="Light Theme (Default)">
+            <div class="theme-preview theme-preview--light">
+              <div class="theme-preview__sidebar"></div>
+              <div class="theme-preview__content">
+                <div class="theme-preview__bar"></div>
+                <div class="theme-preview__box"></div>
+              </div>
+            </div>
+            <div class="theme-card-meta">
+              <span class="theme-card-title">Light (Default)</span>
+              <span class="theme-card-desc">Hybrid SaaS with dark sidebar and crisp light surfaces</span>
+            </div>
+            <div class="theme-card-check" *ngIf="themeService.preference() === 'light'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </button>
+
+          <button type="button"
+                  class="theme-card-option"
+                  [class.theme-card-option--active]="themeService.preference() === 'dark'"
+                  (click)="themeService.setTheme('dark')"
+                  title="Select Dark Theme"
+                  aria-label="Dark Theme">
+            <div class="theme-preview theme-preview--dark">
+              <div class="theme-preview__sidebar"></div>
+              <div class="theme-preview__content">
+                <div class="theme-preview__bar"></div>
+                <div class="theme-preview__box"></div>
+              </div>
+            </div>
+            <div class="theme-card-meta">
+              <span class="theme-card-title">Dark</span>
+              <span class="theme-card-desc">Deep slate theme with high contrast and relaxed eye strain</span>
+            </div>
+            <div class="theme-card-check" *ngIf="themeService.preference() === 'dark'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </button>
+
+          <button type="button"
+                  class="theme-card-option"
+                  [class.theme-card-option--active]="themeService.preference() === 'system'"
+                  (click)="themeService.setTheme('system')"
+                  title="Select System Theme"
+                  aria-label="System Theme">
+            <div class="theme-preview theme-preview--system">
+              <div class="theme-preview__half theme-preview__half--light"></div>
+              <div class="theme-preview__half theme-preview__half--dark"></div>
+            </div>
+            <div class="theme-card-meta">
+              <span class="theme-card-title">System</span>
+              <span class="theme-card-desc">Sync automatically with operating system appearance</span>
+            </div>
+            <div class="theme-card-check" *ngIf="themeService.preference() === 'system'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+
       <!-- Profile Visibility ─────────────────────────────────── -->
       <div class="prof-card" *ngIf="!isAdmin">
         <div class="section-head">
