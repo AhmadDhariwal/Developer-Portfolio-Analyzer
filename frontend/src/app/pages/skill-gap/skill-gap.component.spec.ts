@@ -253,4 +253,94 @@ describe('Skill Gap evidence presentation', () => {
     expect(fixture.nativeElement.querySelector('.skill-row summary')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('label select').length).toBe(3);
   });
+  it('renders restored high-level metrics, category matrix, roadmap, projects, and horizons', () => {
+    const rich = result(35);
+    rich.categoryBreakdown = {
+      Backend: {
+        requiredSkillCount: 2,
+        optionalSkillCount: 1,
+        requiredWeight: 2,
+        weightedCredit: 1,
+        coverage: 50,
+      },
+    };
+    rich.roadmap = [
+      {
+        phase: 'Week 1',
+        title: 'Master Containerization',
+        description: 'Set up Docker containers and compose.',
+        duration: '1 week',
+        skills: ['Docker'],
+        resources: [{ title: 'Docker docs', url: 'https://docs.docker.com' }],
+        objective: 'Containerize backend service',
+        expectedOutcome: 'Multi-container app',
+        measurableDeliverable: 'Dockerfile and compose file',
+        color: 'blue',
+        topSkill: 'Docker',
+      },
+    ];
+    rich.weeklyRoadmap = [
+      {
+        week: 1,
+        focusSkills: ['Docker'],
+        reason: 'Foundation for deployment',
+        outcomes: ['Build Dockerfile'],
+      },
+    ];
+    rich.suggestedProjects = [
+      {
+        title: 'CI/CD Pipeline Engine',
+        skill: 'CI/CD',
+        difficulty: 'Intermediate',
+        estimatedWeeks: 2,
+        outcome: 'Automated GitHub actions workflow',
+        deliverable: 'Tested workflow YAML',
+      },
+    ];
+    rich.immediateSkills = [
+      { name: 'Docker', category: 'DevOps', proficiency: null, isFoundational: false },
+    ];
+    rich.shortTermSkills = [
+      { name: 'PostgreSQL', category: 'Database', proficiency: null, isFoundational: false },
+    ];
+    component.result = rich;
+    fixture.detectChanges();
+
+    // Check Metrics Cards
+    expect(text()).toContain('Evidence-backed skills');
+    expect(text()).toContain('Validated requirement gaps');
+    expect(text()).toContain('Claims needing evidence');
+    expect(text()).toContain('Learning plan timeline');
+
+    // Check Category Matrix
+    expect(text()).toContain('Category breakdown');
+    expect(text()).toContain('Backend');
+    expect(text()).toContain('50%');
+
+    // Check Roadmap
+    expect(text()).toContain('Master Containerization');
+    expect(text()).toContain('Containerize backend service');
+    expect(text()).toContain('Weekly milestones breakdown');
+    expect(text()).toContain('Week 1');
+
+    // Check Suggested Proof Projects
+    expect(text()).toContain('Suggested proof projects');
+    expect(text()).toContain('CI/CD Pipeline Engine');
+    expect(text()).toContain('Tested workflow YAML');
+
+    // Check Sequenced Horizons
+    expect(text()).toContain('Skill acquisition horizons');
+    expect(text()).toContain('Immediate');
+    expect(text()).toContain('Docker');
+    expect(text()).toContain('PostgreSQL');
+  });
+
+  it('supports sorting skills by name, status, and confidence', () => {
+    component.sortBy = 'name';
+    expect(component.visibleSkills[0].name).toBe('Java');
+    component.sortBy = 'status';
+    expect(component.visibleSkills[0].name).toBe('TypeScript');
+    component.sortBy = 'priority';
+    expect(component.visibleSkills.length).toBe(4);
+  });
 });

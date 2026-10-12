@@ -1,7 +1,7 @@
 <div class="skill-gap-page" [attr.aria-busy]="isLoading || isInitLoading">
   <app-ui-page-header
     title="Skill Gap"
-    subtitle="Understand your career requirements through the evidence available today."
+    subtitle="Evidence-based technical requirements and actionable career intelligence."
   >
     <div page-actions class="header-actions">
       <a routerLink="/app/profile">Career profile</a>
@@ -132,6 +132,7 @@
       <p role="status">{{ previewSaveMessage }}</p>
     </section>
   }
+
   @if (!isPreviewMode && !hasCareerTarget && !isInitLoading) {
     <section class="panel empty-state">
       <h2>Choose a career target</h2>
@@ -142,6 +143,7 @@
       <a routerLink="/app/profile">Configure career profile →</a>
     </section>
   }
+
   @if (errorMessage) {
     <section class="notice" role="alert">
       <h2>Evidence could not be refreshed</h2>
@@ -154,6 +156,7 @@
       >
     </section>
   }
+
   @if (isInitLoading || (isLoading && !result)) {
     <section class="panel" role="status" aria-label="Loading skill evidence">
       <h2>Loading your evidence</h2>
@@ -162,6 +165,7 @@
       ><app-ui-skeleton variant="rectangular" height="180px"></app-ui-skeleton>
     </section>
   }
+
   @if (!result && !isLoading && !isInitLoading && isPreviewMode && !errorMessage) {
     <section class="panel empty-state">
       <h2>Explore a career target</h2>
@@ -170,6 +174,7 @@
       </p>
     </section>
   }
+
   @if (result; as analysis) {
     @if (!isCurrentContract) {
       <section class="panel empty-state">
@@ -194,6 +199,7 @@
         >
       </section>
     } @else {
+      <!-- 1. Executive Coverage Scoreboard -->
       <section class="panel coverage-summary" aria-labelledby="coverage-title">
         <div>
           <span class="eyebrow">Required skills only</span>
@@ -236,6 +242,500 @@
         </div>
       </section>
 
+      <!-- 2. High-Level Metric Cards Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Evidence-backed skills</span>
+          <strong class="metric-value">{{ evidenceBackedCount }}</strong>
+          <span class="metric-subtext"
+            >{{ demonstratedCount }} demonstrated · {{ partialCount }} partial</span
+          >
+        </div>
+        <div class="metric-card metric-card--warning">
+          <span class="metric-label">Validated requirement gaps</span>
+          <strong class="metric-value">{{ validatedGapsCount }}</strong>
+          <span class="metric-subtext">Missing technical proof</span>
+        </div>
+        <div class="metric-card metric-card--info">
+          <span class="metric-label">Claims needing evidence</span>
+          <strong class="metric-value">{{ claimedCount }}</strong>
+          <span class="metric-subtext">Resume claims without repo proof</span>
+        </div>
+        <div class="metric-card metric-card--primary">
+          <span class="metric-label">Learning plan timeline</span>
+          <strong class="metric-value">{{ totalWeeks }}</strong>
+          <span class="metric-subtext">{{ roadmapPhases.length }} phased milestones</span>
+        </div>
+      </div>
+
+      <!-- 3. Category Breakdown Matrix -->
+      <section class="panel category-matrix" aria-labelledby="categories-title">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Domain distribution</span>
+            <h2 id="categories-title">Category breakdown</h2>
+            <p>Each coverage value comes from the backend and includes required skills only.</p>
+          </div>
+          <span class="tag">{{ categories.length }} technical domains</span>
+        </div>
+        <div class="category-grid">
+          @for (category of categories; track category) {
+            <div class="category-card">
+              <div class="category-card__header">
+                <strong>{{ category }}</strong>
+                <span class="category-coverage-tag">{{
+                  analysis.categoryBreakdown![category].coverage === null
+                    ? 'Optional only'
+                    : analysis.categoryBreakdown![category].coverage + '%'
+                }}</span>
+              </div>
+              <span class="category-card__meta"
+                >{{ analysis.categoryBreakdown![category].requiredSkillCount }} required ·
+                {{ analysis.categoryBreakdown![category].optionalSkillCount }} optional</span
+              >
+              <div class="category-progress-track">
+                <i [style.width.%]="analysis.categoryBreakdown![category].coverage || 0"></i>
+              </div>
+            </div>
+          } @empty {
+            <p>Category breakdown unavailable.</p>
+          }
+        </div>
+      </section>
+
+      <!-- 4. Interactive Skill Explorer -->
+      <section class="panel explorer-section" aria-labelledby="skills-title">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Comprehensive inventory</span>
+            <h2 id="skills-title">Career requirements &amp; skill evidence</h2>
+            <p>
+              Required / optional describes the career matrix. Evidence status describes what the
+              available sources establish.
+            </p>
+          </div>
+          <span class="tag">{{ skills.length }} skills</span>
+        </div>
+        <details class="status-key">
+          <summary>Understand the five evidence classifications</summary>
+          <dl>
+            @for (status of statuses; track status) {
+              <dt>{{ statusLabels[status] }}</dt>
+              <dd>{{ statusReasons[status] }}</dd>
+            }
+          </dl>
+        </details>
+        <div class="filters">
+          <label
+            >Requirement<select [(ngModel)]="requirementFilter">
+              <option value="ALL">Required &amp; optional</option>
+              <option value="REQUIRED">Required</option>
+              <option value="OPTIONAL">Optional</option>
+            </select></label
+          >
+          <label
+            >Evidence status<select [(ngModel)]="statusFilter">
+              <option value="ALL">All classifications</option>
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabels[status] }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Category<select [(ngModel)]="categoryFilter">
+              <option value="ALL">All categories</option>
+              @for (category of categories; track category) {
+                <option>{{ category }}</option>
+              }
+            </select></label
+          >
+          <div class="filter-field">
+            <span class="filter-field__label">Sort by</span>
+            <select [(ngModel)]="sortBy" aria-label="Sort skills by">
+              <option value="priority">Requirement first</option>
+              <option value="name">Alphabetical (A-Z)</option>
+              <option value="status">Evidence status</option>
+              <option value="confidence">Confidence level</option>
+            </select>
+          </div>
+          <label class="search-filter"
+            >Find a skill<input type="search" [(ngModel)]="search" placeholder="Search skill names"
+          /></label>
+        </div>
+        <p class="results-count" role="status">
+          {{ visibleSkills.length }} of {{ skills.length }} skills shown
+        </p>
+        <div class="skill-list">
+          @for (skill of visibleSkills; track skill.name) {
+            <details class="skill-row" [attr.data-status]="skill.status">
+              <summary>
+                <span class="skill-name"
+                  ><strong>{{ skill.name }}</strong
+                  ><span>{{ skill.category }}</span></span
+                ><span class="designation">{{ skill.requirement | titlecase }}</span
+                ><span class="status" [attr.data-status]="skill.status">{{
+                  statusLabels[skill.status]
+                }}</span
+                ><span class="skill-confidence"
+                  >{{ skill.evidenceConfidence | titlecase }} confidence</span
+                ><span class="expand-label">Evidence</span>
+              </summary>
+              <div class="skill-detail">
+                <div class="skill-detail__header">
+                  <p class="reason-text">{{ statusReasons[skill.status] }}</p>
+                  <div class="skill-detail__actions">
+                    <a
+                      class="inline-link"
+                      routerLink="/app/courses"
+                      [queryParams]="{ skill: skill.name }"
+                      >View learning path →</a
+                    >
+                    <a
+                      class="inline-link"
+                      routerLink="/app/career-sprint"
+                      [queryParams]="{ skill: skill.name }"
+                      >Add to sprint →</a
+                    >
+                  </div>
+                </div>
+                <div class="detail-grid">
+                  <div class="detail-block">
+                    <span>Suggested next action</span>
+                    <strong>{{ nextAction(skill) }}</strong>
+                  </div>
+                  <div class="detail-block">
+                    <span>Independent technical sources</span>
+                    <strong>{{ skill.independentTechnicalSources }} sources</strong>
+                    <small
+                      >Repeated copies of the same repository or document do not provide independent
+                      confirmation.</small
+                    >
+                  </div>
+                </div>
+                <h4 class="evidence-heading">Source Evidence Trail</h4>
+                <ul class="evidence-list">
+                  @for (evidence of skill.evidence || []; track $index) {
+                    <li>
+                      <strong
+                        >{{ sourceLabel(evidence.type) }} ·
+                        {{ evidenceLabel(evidence.kind) }}</strong
+                      ><span>{{ evidence.artifact || evidence.origin || evidence.id }}</span
+                      ><span
+                        >{{
+                          evidence.timestamp
+                            ? (evidence.timestamp | date: 'medium')
+                            : 'Timestamp unavailable'
+                        }}
+                        ·
+                        {{
+                          evidence.freshness === 'STALE'
+                            ? 'Marked stale'
+                            : evidence.freshness === 'RECORDED'
+                              ? 'Timestamp recorded'
+                              : 'Freshness unknown'
+                        }}</span
+                      >
+                      @if (evidence.conflicting) {
+                        <span class="conflict-alert"
+                          >Conflicting positive evidence — review this source.</span
+                        >
+                      }
+                    </li>
+                  } @empty {
+                    <li>No supporting skill evidence was supplied in this snapshot.</li>
+                  }
+                </ul>
+                @for (warning of skill.warnings || []; track $index) {
+                  <p class="warning">{{ warningLabel(warning) }}</p>
+                }
+              </div>
+            </details>
+          } @empty {
+            <div class="empty-state">
+              <p>
+                {{
+                  skills.length
+                    ? 'No skills match these filters.'
+                    : 'No career requirements were supplied for this snapshot.'
+                }}
+              </p>
+              @if (skills.length) {
+                <button
+                  class="text-button"
+                  type="button"
+                  (click)="
+                    search = '';
+                    requirementFilter = statusFilter = categoryFilter = 'ALL';
+                    sortBy = 'priority'
+                  "
+                >
+                  Clear filters
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- 5. Priority Gaps & Suggested Proof Projects Grid -->
+      <div class="gaps-and-projects-grid">
+        <!-- Priority Improvement Opportunities -->
+        <section class="panel opportunities-panel" aria-labelledby="opportunities-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Actionable priorities</span>
+              <h2 id="opportunities-title">Priority improvement opportunities</h2>
+              <p>
+                Backend-supplied priorities identify required skills whose practical use is not yet
+                demonstrated. You may already use them; strengthen the evidence where appropriate.
+              </p>
+            </div>
+            <span class="tag">{{ opportunities.length }} gaps</span>
+          </div>
+          <ol class="opportunities">
+            @for (opportunity of opportunities.slice(0, 6); track opportunity.name) {
+              <li>
+                <div class="opportunity-header">
+                  <strong>{{ opportunity.name }}</strong>
+                  <span class="priority-badge" [attr.data-priority]="opportunity.priority"
+                    >{{ opportunity.priority }} priority</span
+                  >
+                </div>
+                <p class="opportunity-why">
+                  {{
+                    opportunity.whyItMatters ||
+                      opportunity.whyExists ||
+                      'Add concrete, relevant project examples to strengthen the available evidence.'
+                  }}
+                </p>
+                @if (opportunity.suggestedProject; as project) {
+                  <div class="opportunity-project">
+                    <span>Suggested project</span>
+                    <strong>{{ project.title }}</strong>
+                    <small>{{ project.deliverable || project.outcome }}</small>
+                  </div>
+                }
+                <div class="opportunity-links">
+                  <a routerLink="/app/courses" [queryParams]="{ skill: opportunity.name }"
+                    >Find courses →</a
+                  >
+                  <a routerLink="/app/career-sprint" [queryParams]="{ skill: opportunity.name }"
+                    >Sprint action →</a
+                  >
+                </div>
+              </li>
+            } @empty {
+              <li>No improvement priorities were supplied for this snapshot.</li>
+            }
+          </ol>
+          @if (opportunities.length > 6) {
+            <p class="more-notice">
+              Explore all {{ opportunities.length }} opportunities in the career requirements list
+              above.
+            </p>
+          }
+        </section>
+
+        <!-- Suggested Proof Projects -->
+        <section class="panel projects-panel" aria-labelledby="projects-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Implementation artifacts</span>
+              <h2 id="projects-title">Suggested proof projects</h2>
+              <p>
+                Targeted project architectures designed to produce verifiable implementation
+                evidence.
+              </p>
+            </div>
+            <span class="tag">{{ suggestedProjects.length }} projects</span>
+          </div>
+          <div class="project-cards">
+            @for (proj of suggestedProjects; track proj.title) {
+              <article class="project-card">
+                <div class="project-card__top">
+                  <span class="project-skill-tag">{{ proj.skill }}</span>
+                  <span class="project-difficulty"
+                    >{{ proj.difficulty || 'Intermediate' }} ·
+                    {{ proj.estimatedWeeks || 2 }} weeks</span
+                  >
+                </div>
+                <h3>{{ proj.title }}</h3>
+                @if (proj.outcome) {
+                  <p>{{ proj.outcome }}</p>
+                }
+                @if (proj.deliverable) {
+                  <div class="project-deliverable">
+                    <span>Deliverable</span>
+                    <strong>{{ proj.deliverable }}</strong>
+                  </div>
+                }
+              </article>
+            } @empty {
+              <p class="empty-notice">No specific proof projects generated for this snapshot.</p>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- 6. Sequenced Skill Acquisition Horizons -->
+      @if (
+        immediateSkills.length ||
+        shortTermSkills.length ||
+        midTermSkills.length ||
+        longTermSkills.length
+      ) {
+        <section class="panel horizons-section" aria-labelledby="horizons-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Sequenced execution</span>
+              <h2 id="horizons-title">Skill acquisition horizons</h2>
+              <p>Progression order optimized by dependency chains and market relevance.</p>
+            </div>
+          </div>
+          <div class="horizons-grid">
+            <div class="horizon-card horizon-card--immediate">
+              <div class="horizon-header">
+                <strong>Immediate</strong>
+                <span>Weeks 1–2</span>
+              </div>
+              <div class="horizon-tags">
+                @for (skill of immediateSkills; track skill) {
+                  <span>{{ skill }}</span>
+                } @empty {
+                  <em>None assigned</em>
+                }
+              </div>
+            </div>
+            <div class="horizon-card horizon-card--short">
+              <div class="horizon-header">
+                <strong>Short-term</strong>
+                <span>Weeks 3–4</span>
+              </div>
+              <div class="horizon-tags">
+                @for (skill of shortTermSkills; track skill) {
+                  <span>{{ skill }}</span>
+                } @empty {
+                  <em>None assigned</em>
+                }
+              </div>
+            </div>
+            <div class="horizon-card horizon-card--mid">
+              <div class="horizon-header">
+                <strong>Mid-term</strong>
+                <span>Weeks 5–6</span>
+              </div>
+              <div class="horizon-tags">
+                @for (skill of midTermSkills; track skill) {
+                  <span>{{ skill }}</span>
+                } @empty {
+                  <em>None assigned</em>
+                }
+              </div>
+            </div>
+            <div class="horizon-card horizon-card--long">
+              <div class="horizon-header">
+                <strong>Long-term</strong>
+                <span>Weeks 7+</span>
+              </div>
+              <div class="horizon-tags">
+                @for (skill of longTermSkills; track skill) {
+                  <span>{{ skill }}</span>
+                } @empty {
+                  <em>None assigned</em>
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 7. Actionable Learning Roadmap -->
+      @if (roadmapPhases.length) {
+        <section class="panel roadmap-section" aria-labelledby="roadmap-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Structured progression</span>
+              <h2 id="roadmap-title">Personalized learning roadmap</h2>
+              <p>Phased outcomes, verifiable deliverables, and targeted learning resources.</p>
+            </div>
+            <span class="tag">{{ totalWeeks }}</span>
+          </div>
+          <div class="roadmap-track">
+            @for (phase of roadmapPhases; track phase.title) {
+              <article class="roadmap-card">
+                <div class="phase-marker"></div>
+                <div class="phase-meta">
+                  <span class="phase-tag">{{ phase.phase }}</span>
+                  <span class="phase-duration">{{ phase.duration }}</span>
+                </div>
+                <h3>{{ phase.title }}</h3>
+                <p class="phase-desc">{{ phase.description }}</p>
+                <div class="phase-deliverables">
+                  @if (phase.objective) {
+                    <div class="phase-fact">
+                      <span>Objective</span><strong>{{ phase.objective }}</strong>
+                    </div>
+                  }
+                  @if (phase.expectedOutcome) {
+                    <div class="phase-fact">
+                      <span>Outcome</span><strong>{{ phase.expectedOutcome }}</strong>
+                    </div>
+                  }
+                  @if (phase.measurableDeliverable) {
+                    <div class="phase-fact">
+                      <span>Deliverable</span><strong>{{ phase.measurableDeliverable }}</strong>
+                    </div>
+                  }
+                </div>
+                <div class="phase-skills">
+                  @for (s of phase.skills; track s) {
+                    <span>{{ s }}</span>
+                  }
+                </div>
+                @if (phase.resources && phase.resources.length) {
+                  <div class="phase-resources">
+                    <span>Recommended resources:</span>
+                    @for (res of phase.resources; track $index) {
+                      <a [href]="getResourceUrl(res)" target="_blank" rel="noopener noreferrer"
+                        >{{ getResourceTitle(res) }} ↗</a
+                      >
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </div>
+          @if (weeklyMilestones.length) {
+            <details class="weekly-plan">
+              <summary>
+                Weekly milestones breakdown <span>{{ weeklyMilestones.length }} weeks</span>
+              </summary>
+              <div class="weekly-grid">
+                @for (w of weeklyMilestones; track w.week) {
+                  <article class="weekly-card">
+                    <strong>Week {{ w.week }}</strong>
+                    <p>{{ w.reason }}</p>
+                    <div class="weekly-skills">
+                      @for (fs of w.focusSkills; track fs) {
+                        <span>{{ fs }}</span>
+                      }
+                    </div>
+                    @if (w.outcomes && w.outcomes.length) {
+                      <ul class="weekly-outcomes">
+                        @for (out of w.outcomes; track out) {
+                          <li>{{ out }}</li>
+                        }
+                      </ul>
+                    }
+                  </article>
+                }
+              </div>
+            </details>
+          }
+        </section>
+      }
+
+      <!-- 8. Evidence Completeness & Freshness -->
       <section class="panel" aria-labelledby="sources-title">
         <div class="section-heading">
           <div>
@@ -309,197 +809,7 @@
         </details>
       </section>
 
-      <section class="panel" aria-labelledby="skills-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="skills-title">Career requirements &amp; skill evidence</h2>
-            <p>
-              Required / optional describes the career matrix. Evidence status describes what the
-              available sources establish.
-            </p>
-          </div>
-          <span class="tag">{{ skills.length }} skills</span>
-        </div>
-        <details class="status-key">
-          <summary>Understand the five evidence classifications</summary>
-          <dl>
-            @for (status of statuses; track status) {
-              <dt>{{ statusLabels[status] }}</dt>
-              <dd>{{ statusReasons[status] }}</dd>
-            }
-          </dl>
-        </details>
-        <div class="filters">
-          <label
-            >Find a skill<input type="search" [(ngModel)]="search" placeholder="Search skill names"
-          /></label>
-          <label
-            >Requirement<select [(ngModel)]="requirementFilter">
-              <option value="ALL">Required &amp; optional</option>
-              <option value="REQUIRED">Required</option>
-              <option value="OPTIONAL">Optional</option>
-            </select></label
-          >
-          <label
-            >Evidence status<select [(ngModel)]="statusFilter">
-              <option value="ALL">All classifications</option>
-              @for (status of statuses; track status) {
-                <option [value]="status">{{ statusLabels[status] }}</option>
-              }
-            </select></label
-          >
-          <label
-            >Category<select [(ngModel)]="categoryFilter">
-              <option value="ALL">All categories</option>
-              @for (category of categories; track category) {
-                <option>{{ category }}</option>
-              }
-            </select></label
-          >
-        </div>
-        <p class="results-count" role="status">
-          {{ visibleSkills.length }} of {{ skills.length }} skills shown
-        </p>
-        <div class="skill-list">
-          @for (skill of visibleSkills; track skill.name) {
-            <details class="skill-row" [attr.data-status]="skill.status">
-              <summary>
-                <span class="skill-name"
-                  ><strong>{{ skill.name }}</strong
-                  ><span>{{ skill.category }}</span></span
-                ><span class="designation">{{ skill.requirement | titlecase }}</span
-                ><span class="status" [attr.data-status]="skill.status">{{
-                  statusLabels[skill.status]
-                }}</span
-                ><span class="skill-confidence"
-                  >{{ skill.evidenceConfidence | titlecase }} confidence</span
-                ><span class="expand-label">Evidence</span>
-              </summary>
-              <div class="skill-detail">
-                <p>{{ statusReasons[skill.status] }}</p>
-                <p><strong>Suggested next action:</strong> {{ nextAction(skill) }}</p>
-                <p>
-                  Independent technical sources: {{ skill.independentTechnicalSources }}. Repeated
-                  copies of the same repository or document do not provide independent confirmation.
-                </p>
-                <ul class="evidence-list">
-                  @for (evidence of skill.evidence || []; track $index) {
-                    <li>
-                      <strong
-                        >{{ sourceLabel(evidence.type) }} ·
-                        {{ evidenceLabel(evidence.kind) }}</strong
-                      ><span>{{ evidence.artifact || evidence.origin || evidence.id }}</span
-                      ><span
-                        >{{
-                          evidence.timestamp
-                            ? (evidence.timestamp | date: 'medium')
-                            : 'Timestamp unavailable'
-                        }}
-                        ·
-                        {{
-                          evidence.freshness === 'STALE'
-                            ? 'Marked stale'
-                            : evidence.freshness === 'RECORDED'
-                              ? 'Timestamp recorded'
-                              : 'Freshness unknown'
-                        }}</span
-                      >
-                      @if (evidence.conflicting) {
-                        <span>Conflicting positive evidence — review this source.</span>
-                      }
-                    </li>
-                  } @empty {
-                    <li>No supporting skill evidence was supplied in this snapshot.</li>
-                  }
-                </ul>
-                @for (warning of skill.warnings || []; track $index) {
-                  <p class="warning">{{ warningLabel(warning) }}</p>
-                }
-              </div>
-            </details>
-          } @empty {
-            <div class="empty-state">
-              <p>
-                {{
-                  skills.length
-                    ? 'No skills match these filters.'
-                    : 'No career requirements were supplied for this snapshot.'
-                }}
-              </p>
-              @if (skills.length) {
-                <button
-                  class="text-button"
-                  type="button"
-                  (click)="search = ''; requirementFilter = statusFilter = categoryFilter = 'ALL'"
-                >
-                  Clear filters
-                </button>
-              }
-            </div>
-          }
-        </div>
-      </section>
-
-      <section class="panel" aria-labelledby="categories-title">
-        <h2 id="categories-title">Category breakdown</h2>
-        <p>Each coverage value comes from the backend and includes required skills only.</p>
-        <div class="category-list">
-          @for (category of categories; track category) {
-            <div class="category">
-              <strong>{{ category }}</strong
-              ><span
-                >{{ analysis.categoryBreakdown![category].requiredSkillCount }} required ·
-                {{ analysis.categoryBreakdown![category].optionalSkillCount }} optional</span
-              ><strong>{{
-                analysis.categoryBreakdown![category].coverage === null
-                  ? 'Unavailable'
-                  : analysis.categoryBreakdown![category].coverage + '%'
-              }}</strong>
-            </div>
-          } @empty {
-            <p>Category breakdown unavailable.</p>
-          }
-        </div>
-      </section>
-
-      <section class="panel" aria-labelledby="opportunities-title">
-        <h2 id="opportunities-title">Priority improvement opportunities</h2>
-        <p>
-          Backend-supplied priorities identify required skills whose practical use is not yet
-          demonstrated. You may already use them; strengthen the evidence where appropriate.
-        </p>
-        <ol class="opportunities">
-          @for (opportunity of opportunities.slice(0, 6); track opportunity.name) {
-            <li>
-              <div>
-                <strong>{{ opportunity.name }}</strong
-                ><span>{{ opportunity.priority }} priority</span>
-              </div>
-              <p>
-                {{
-                  opportunity.whyItMatters ||
-                    opportunity.whyExists ||
-                    'Add concrete, relevant project examples to strengthen the available evidence.'
-                }}
-              </p>
-              @if (opportunity.suggestedProject; as project) {
-                <p>
-                  Suggested project: {{ project.title
-                  }}{{ project.deliverable ? ' — ' + project.deliverable : '' }}
-                </p>
-              }
-            </li>
-          } @empty {
-            <li>No improvement priorities were supplied for this snapshot.</li>
-          }
-        </ol>
-        @if (opportunities.length > 6) {
-          <p>
-            Explore all {{ opportunities.length }} opportunities in the required skill list above.
-          </p>
-        }
-      </section>
-
+      <!-- 9. AI-Assisted Career Guidance -->
       <section class="panel guidance" aria-labelledby="guidance-title">
         <span class="eyebrow">Separate from evidence decisions</span>
         <h2 id="guidance-title">
@@ -519,6 +829,7 @@
         </p>
       </section>
 
+      <!-- 10. Scoring Methodology & Technical Provenance -->
       <section class="panel methodology">
         <details>
           <summary>Scoring methodology &amp; provenance</summary>

@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { SkillGapService, SkillGapResult } from '../../shared/services/skill-gap.service';
+import {
+  SkillGapService,
+  SkillGapResult,
+  RoadmapPhase,
+  WeeklyRoadmapWeek,
+  SuggestedSkillProject,
+} from '../../shared/services/skill-gap.service';
 import { GithubService } from '../../shared/services/github.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { ResumeService } from '../../shared/services/resume.service';
@@ -72,6 +78,7 @@ export class SkillGapComponent implements OnInit, OnDestroy {
   requirementFilter = 'ALL';
   statusFilter = 'ALL';
   categoryFilter = 'ALL';
+  sortBy = 'priority';
   private readonly subscriptions = new Subscription();
   private requestSubscription?: Subscription;
   private requestSequence = 0;
@@ -103,16 +110,109 @@ export class SkillGapComponent implements OnInit, OnDestroy {
     return this.isCurrentContract ? this.result?.skills || [] : [];
   }
   get visibleSkills(): EvidenceSkill[] {
-    return this.skills.filter(
+    const list = this.skills.filter(
       (skill) =>
         (this.requirementFilter === 'ALL' || skill.requirement === this.requirementFilter) &&
         (this.statusFilter === 'ALL' || skill.status === this.statusFilter) &&
         (this.categoryFilter === 'ALL' || skill.category === this.categoryFilter) &&
         skill.name.toLowerCase().includes(this.search.trim().toLowerCase()),
     );
+    if (this.sortBy === 'name') {
+      return [...list].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (this.sortBy === 'status') {
+      const order: Record<EvidenceStatus, number> = {
+        DEMONSTRATED: 0,
+        PARTIAL: 1,
+        CLAIMED_ONLY: 2,
+        NOT_EVIDENCED: 3,
+        UNKNOWN: 4,
+      };
+      return [...list].sort((a, b) => order[a.status] - order[b.status]);
+    }
+    if (this.sortBy === 'confidence') {
+      const order: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2, INSUFFICIENT: 3 };
+      return [...list].sort(
+        (a, b) => (order[a.evidenceConfidence] ?? 9) - (order[b.evidenceConfidence] ?? 9),
+      );
+    }
+    // Default 'priority': REQUIRED first, then by weight
+    return [...list].sort((a, b) => {
+      if (a.requirement !== b.requirement) {
+        return a.requirement === 'REQUIRED' ? -1 : 1;
+      }
+      return (b.weight || 1) - (a.weight || 1);
+    });
   }
   get categories(): string[] {
     return Object.keys(this.result?.categoryBreakdown || {});
+  }
+  get demonstratedCount(): number {
+    return this.skills.filter((s) => s.status === 'DEMONSTRATED').length;
+  }
+  get partialCount(): number {
+    return this.skills.filter((s) => s.status === 'PARTIAL').length;
+  }
+  get claimedCount(): number {
+    return this.skills.filter((s) => s.status === 'CLAIMED_ONLY').length;
+  }
+  get notEvidencedCount(): number {
+    return this.skills.filter((s) => s.status === 'NOT_EVIDENCED').length;
+  }
+  get requiredCount(): number {
+    return this.skills.filter((s) => s.requirement === 'REQUIRED').length;
+  }
+  get optionalCount(): number {
+    return this.skills.filter((s) => s.requirement === 'OPTIONAL').length;
+  }
+  get evidenceBackedCount(): number {
+    return this.skills.filter((s) => s.status === 'DEMONSTRATED' || s.status === 'PARTIAL').length;
+  }
+  get validatedGapsCount(): number {
+    return this.skills.filter(
+      (s) =>
+        s.requirement === 'REQUIRED' &&
+        (s.status === 'NOT_EVIDENCED' || s.status === 'CLAIMED_ONLY'),
+    ).length;
+  }
+  get totalWeeks(): string {
+    return (
+      this.result?.totalWeeks ||
+      (this.result?.estimatedWeeks ? `${this.result.estimatedWeeks} weeks` : '8 weeks')
+    );
+  }
+  get roadmapPhases(): RoadmapPhase[] {
+    return this.result?.roadmap || [];
+  }
+  get weeklyMilestones(): WeeklyRoadmapWeek[] {
+    return this.result?.weeklyRoadmap || [];
+  }
+  get suggestedProjects(): SuggestedSkillProject[] {
+    return this.result?.suggestedProjects || [];
+  }
+  get immediateSkills(): string[] {
+    return (this.result?.immediateSkills || []).map((s: any) =>
+      typeof s === 'string' ? s : s.name,
+    );
+  }
+  get shortTermSkills(): string[] {
+    return (this.result?.shortTermSkills || []).map((s: any) =>
+      typeof s === 'string' ? s : s.name,
+    );
+  }
+  get midTermSkills(): string[] {
+    return (this.result?.midTermSkills || []).map((s: any) => (typeof s === 'string' ? s : s.name));
+  }
+  get longTermSkills(): string[] {
+    return (this.result?.longTermSkills || []).map((s: any) =>
+      typeof s === 'string' ? s : s.name,
+    );
+  }
+  get highDemandSkills(): any[] {
+    return this.result?.highDemandSkills || [];
+  }
+  get jobsDemand() {
+    return this.result?.signalsUsed?.jobsDemand;
   }
   get opportunities() {
     // Keep the backend's priority and order; do not introduce a frontend ranking policy.
@@ -137,6 +237,22 @@ export class SkillGapComponent implements OnInit, OnDestroy {
       !!this.result?.sourceReferences?.some((source) => source.freshness === 'STALE') ||
       this.skills.some((skill) => skill.evidence.some((source) => source.freshness === 'STALE'))
     );
+  }
+  getResourceUrl(resource: any): string {
+    if (!resource) return '#';
+    if (typeof resource === 'string') return resource;
+    return resource.url || '#';
+  }
+  getResourceTitle(resource: any): string {
+    if (!resource) return '';
+    if (typeof resource === 'string') return resource;
+    return resource.title || resource.url || '';
+  }
+  getPriorityVariant(priority?: string): 'danger' | 'warning' | 'info' | 'neutral' {
+    if (priority === 'High') return 'danger';
+    if (priority === 'Medium') return 'warning';
+    if (priority === 'Low') return 'info';
+    return 'neutral';
   }
   get noCoreEvidence(): boolean {
     return this.isCurrentContract && this.result?.evidenceCompleteness?.availableCoreSources === 0;
