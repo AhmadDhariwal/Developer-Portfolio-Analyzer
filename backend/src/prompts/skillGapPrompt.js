@@ -34,7 +34,9 @@ Rules:
 - levelAssessment: 1-2 sentences on readiness gaps that are already visible in CONTEXT_JSON.
 - Mention the career stack or at least one listed skill name from CONTEXT_JSON.
 - Do not return skills arrays, coverage, missing counts, priorities, jobDemand, or roadmap.
-- Do not invent employers, credentials, or unsupported technologies.`;
+- Do not invent employers, credentials, or unsupported technologies.
+- Do not promote PARTIAL or CLAIMED_ONLY skills to DEMONSTRATED. Missing evidence does not imply inability.
+- Preserve the supplied coverage, evidence confidence, requirement classifications, rule versions, and timestamps in any explanation.`;
 };
 
 module.exports = { getSkillGapPrompt };

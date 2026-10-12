@@ -58,7 +58,7 @@ const harness = (options = {}) => {
       calls.github += 1;
       await new Promise((done) => setTimeout(done, 5));
       if (!githubData) return { status: 'miss', ageMs: null, data: null };
-      return { status: 'fresh', ageMs: 0, data: githubData };
+      return { status: options.githubStatus || 'fresh', ageMs: 0, data: githubData };
     },
     refreshGitHubAnalysisInBackground: () => ({ queued: true, running: false }),
     analyzeGitHubProfile: async () => githubData
@@ -74,6 +74,8 @@ const harness = (options = {}) => {
     setDeterministicSummary: async (_scope, key, value) => deterministic.set(JSON.stringify(key), value),
     runAIAnalysis: async (_prompt, fallback, _retries = 0, opts = {}) => {
       calls.ai += 1;
+      if (options.aiDelayMs) await new Promise(done => setTimeout(done, options.aiDelayMs));
+      if (options.aiMode === 'throw') throw new Error('AI unavailable');
       let value = groundedNarrative;
       if (options.aiMode === 'fail') value = fallback;
       if (options.aiMode === 'polluted') {
@@ -85,6 +87,9 @@ const harness = (options = {}) => {
           missingSkills: [{ name: 'Kubernetes' }]
         };
       }
+      if (options.aiMode === 'evidence-polluted') value = { ...groundedNarrative,
+        skills: [{ name: 'Kubernetes', status: 'DEMONSTRATED' }], requiredSkills: [],
+        evidenceConfidence: 'HIGH', ruleVersion: 'evil-v1', calculatedAt: '2099-01-01' };
       if (options.aiMode === 'low-quality') {
         value = { analysisSummary: 'As an AI I cannot help.', levelAssessment: 'N/A' };
       }
@@ -108,7 +113,9 @@ const harness = (options = {}) => {
       return null;
     }
   });
-  mock('models/resumeAnalysis.js', { findOne: () => chain({ fileId: 'default', fileName: 'default.pdf', technicalSkills: ['React', 'TypeScript'], atsScore: 80 }) });
+  mock('models/resumeAnalysis.js', { findOne: () => chain(options.resumeAnalysis === undefined
+    ? { fileId: 'default', fileName: 'default.pdf', technicalSkills: ['React', 'TypeScript'], atsScore: 80 }
+    : options.resumeAnalysis) });
   mock('services/aiVersionService.js', { createVersion: async () => {} });
   mock('services/notificationService.js', { createNotification: async () => {} });
   mock('prompts/skillGapPrompt.js', {
@@ -119,11 +126,11 @@ const harness = (options = {}) => {
     getDeveloperSignals: async () => {
       calls.private += 1;
       return {
-        integrationSignal: { present: true, integrationScore: 0, detectedSkills: [], weakProof: [] },
+        integrationSignal: { present: options.integrationPresent !== false, integrationScore: options.integrationScore ?? 0, detectedSkills: [], weakProof: [] },
         careerSprintSignal: { completedSkillSignals: [], repeatedIncompleteSkills: [] },
         weeklyReportSignal: { repeatedWeakAreas: [] },
         portfolioSignal: { portfolioSkills: [] },
-        jobsDemandSignal: { present: true, sampledJobs: 1, topSkills: [] }
+        jobsDemandSignal: { present: options.jobsPresent !== false, sampledJobs: 1, topSkills: [] }
       };
     },
     buildSignalHash: () => 'signals',
@@ -153,7 +160,7 @@ const harness = (options = {}) => {
     await analyzeSkillGap({ body, user, skillGapRouteStartedAt: Date.now(), skillGapAuthCompletedAt: Date.now() }, res);
     return out;
   };
-  return { call, calls, shared, deterministic };
+  return { call, calls, shared, deterministic, githubData };
 };
 
 test('aliases preserve distinct languages and recognized aliases', () => {
@@ -200,9 +207,131 @@ test('profile uses active user data while preview excludes private signals and A
 });
 
 test('cache hit skips AI while concurrent refreshes share one pipeline', async () => {
-  const h = harness(); const user = { _id: 'u2', activeGithubUsername: 'cache', activeCareerStack: 'Full Stack', activeExperienceLevel: 'Student', defaultResumeFileId: 'default' };
+  const h = harness({ aiDelayMs: 10 }); const user = { _id: 'u2', activeGithubUsername: 'cache', activeCareerStack: 'Full Stack', activeExperienceLevel: 'Student', defaultResumeFileId: 'default' };
   await h.call({}, user); h.calls.github = 0; h.calls.ai = 0; const hit = await h.call({}, user); assert.equal(hit.body.fromCache, true); assert.equal(h.calls.ai, 0);
   h.calls.ai = 0; const results = await Promise.all(Array.from({ length: 5 }, () => h.call({ forceRefresh: true }, user))); assert.ok(results.every((r) => r.status === 200)); assert.equal(h.calls.ai, 1);
+});
+
+test('memory and shared caches invalidate when GitHub evidence changes without a timestamp change', async () => {
+  const h = harness();
+  const user = { _id: 'rev-github', activeGithubUsername: 'revision', activeCareerStack: 'Backend', activeExperienceLevel: 'Student', activeResumeFileId: 'default' };
+  const first = await h.call({}, user);
+  const hit = await h.call({}, user);
+  assert.equal(hit.body.cacheMetadata.cacheLayer, 'memory');
+  h.githubData.repositories.push({ name: 'java-api', language: 'Java' });
+  const changed = await h.call({}, user);
+  assert.equal(changed.body.fromCache, undefined);
+  assert.notEqual(changed.body.cacheMetadata.signalHash, first.body.cacheMetadata.signalHash);
+  assert.ok(changed.body.githubSkills.includes('Java'));
+});
+
+test('resume reanalysis, active selection and career context invalidate cached results', async () => {
+  const options = { resumeAnalysis: { _id: 'same-id', fileId: 'default', atsScore: 80, technicalSkills: ['React'] } };
+  const h = harness(options);
+  const user = { _id: 'rev-resume', activeGithubUsername: 'revision', activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', activeResumeFileId: 'default' };
+  let previous = await h.call({}, user);
+  for (const mutate of [
+    () => { options.resumeAnalysis.technicalSkills = ['React', 'Java']; },
+    () => { options.resumeAnalysis.atsScore = 0; },
+    () => { user.activeResumeFileId = 'another'; },
+    () => { user.activeCareerStack = 'Backend'; },
+    () => { user.activeExperienceLevel = '1-2 years'; },
+    () => { user.activeGithubUsername = 'other'; }
+  ]) {
+    mutate(); const next = await h.call({}, user);
+    assert.equal(next.status, 200);
+    assert.notEqual(next.body.cacheMetadata.signalHash, previous.body.cacheMetadata.signalHash);
+    assert.equal(next.body.fromCache, undefined);
+    previous = next;
+  }
+  assert.equal(previous.body.legacyScoring.readiness.breakdown.resume.value, 0);
+  assert.equal(previous.body.coverageBreakdown.metricKind, 'requiredSkillEvidenceCoverage');
+});
+
+test('stale GitHub evidence bypasses result caches and is not persisted', async () => {
+  const options = {};
+  const h = harness(options);
+  const user = { _id: 'stale', activeGithubUsername: 'stale', activeCareerStack: 'Backend', activeExperienceLevel: 'Student', activeResumeFileId: 'default' };
+  await h.call({}, user);
+  const writes = h.calls.mongoWrites;
+  options.githubStatus = 'stale';
+  const stale = await h.call({}, user);
+  assert.equal(stale.status, 200);
+  assert.equal(stale.body.fromCache, undefined);
+  assert.equal(stale.body.cacheMetadata.githubCache.stale, true);
+  assert.equal(stale.body.evidenceCompleteness.githubAvailable, true);
+  assert.ok(stale.body.warnings.includes('stale_source:github'));
+  assert.equal(h.calls.mongoWrites, writes);
+});
+
+test('integration and public demand availability changes invalidate profile caches', async () => {
+  const options = {};
+  const h = harness(options);
+  const user = { _id: 'optional', activeGithubUsername: 'optional', activeCareerStack: 'Backend', activeExperienceLevel: 'Student', activeResumeFileId: 'default' };
+  const first = await h.call({}, user);
+  options.integrationPresent = false;
+  const disconnected = await h.call({}, user);
+  assert.notEqual(disconnected.body.cacheMetadata.signalHash, first.body.cacheMetadata.signalHash);
+  assert.equal(disconnected.body.legacyScoring.readiness.breakdown.integration.value, null);
+  assert.equal(disconnected.body.coverage, first.body.coverage);
+  options.jobsPresent = false;
+  const noJobs = await h.call({}, user);
+  assert.notEqual(noJobs.body.cacheMetadata.signalHash, disconnected.body.cacheMetadata.signalHash);
+  assert.equal(noJobs.body.scoring.confidence.breakdown.jobs.value, null);
+});
+
+test('thrown AI failure preserves deterministic scores, evidence and rule metadata', async () => {
+  const user = { _id: 'ai-throw', activeGithubUsername: 'ai-throw', activeCareerStack: 'Frontend', activeExperienceLevel: 'Intern', activeResumeFileId: 'default' };
+  const good = await harness().call({ forceRefresh: true }, user);
+  const failed = await harness({ aiMode: 'throw' }).call({ forceRefresh: true }, user);
+  assert.equal(failed.status, 200);
+  assert.equal(failed.body.aiUsed, false);
+  assert.equal(failed.body.coverage, good.body.coverage);
+  assert.equal(failed.body.deterministicConfidence, good.body.deterministicConfidence);
+  assert.deepEqual(failed.body.yourSkills, good.body.yourSkills);
+  assert.deepEqual(failed.body.scoring.coverage.evidence, good.body.scoring.coverage.evidence);
+  assert.deepEqual(failed.body.skills, good.body.skills);
+  assert.equal(failed.body.evidenceConfidence, good.body.evidenceConfidence);
+  assert.equal(failed.body.ruleVersion, good.body.ruleVersion);
+});
+
+test('adversarial AI cannot replace statuses, requirements, confidence, rules or calculation timestamps', async () => {
+  const user = { _id: 'facts', activeGithubUsername: 'facts', activeCareerStack: 'Frontend', activeExperienceLevel: 'Student', activeResumeFileId: 'default' };
+  const result = await harness({ aiMode: 'evidence-polluted' }).call({}, user);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.aiUsed, false);
+  assert.equal(result.body.ruleVersion, 'skill-evidence-coverage-v1');
+  assert.notEqual(result.body.calculatedAt, '2099-01-01');
+  assert.equal(result.body.demonstratedSkills.length, 0);
+  assert.equal(result.body.provenSkills.length, 0);
+  assert.ok(result.body.requiredSkills.length > 0);
+  assert.equal(result.body.skills.find(skill => skill.name === 'React').status, 'CLAIMED_ONLY');
+  assert.equal(result.body.skills.find(skill => skill.name === 'TypeScript').status, 'PARTIAL');
+  assert.equal(result.body.legacyReadinessScore, result.body.legacyScoring.readiness.score);
+  assert.equal(result.body.legacyConfidence, result.body.deterministicConfidence);
+});
+
+test('resume-only profile and total source absence have correct zero/null coverage without borrowing GitHub', async () => {
+  const user = { _id: 'resume-only', activeCareerStack: 'Frontend', activeExperienceLevel: 'Student', activeResumeFileId: 'default' };
+  const h = harness({ aiMode: 'fail' });
+  const result = await h.call({}, user);
+  assert.equal(result.status, 200);
+  assert.equal(result.body.coverage, 0);
+  assert.equal(result.body.evidenceCompleteness.githubAvailable, false);
+  assert.equal(h.calls.github, 0);
+  const unavailable = await harness({ resumeAnalysis: null, aiMode: 'fail' }).call({}, user);
+  assert.equal(unavailable.status, 200);
+  assert.equal(unavailable.body.coverage, null);
+  assert.equal(unavailable.body.evidenceConfidence, 'INSUFFICIENT');
+  assert.ok(unavailable.body.unknownSkills.length > 0);
+});
+
+test('absent career requirements return null and exact missing entries without invented context', async () => {
+  const result = await harness({ aiMode: 'fail' }).call({}, { _id: 'missing-career', activeGithubUsername: 'missing-career', activeResumeFileId: 'default' });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.coverage, null);
+  assert.ok(result.body.warnings.includes('missing_requirement_entry:careerStack:(absent)'));
+  assert.ok(result.body.warnings.includes('missing_requirement_entry:experienceLevel:(absent)'));
 });
 
 test('saved previews are owner-scoped, deduplicated, raw-text-free, and load without analysis', () => {

@@ -1,5 +1,10 @@
 const { clampScore: clamp } = require('../services/scoring/math');
 const developerContext = require('../services/developerContextService');
+const skillGapScoring = require('../services/skillGapScoringService');
+const skillGapEvidence = require('../services/skillGapEvidenceService');
+const skillGapCompatibility = require('../services/skillGapCompatibilityService');
+const skillGapRequirements = require('../services/skillGapRequirements');
+const { numeric } = require('../services/scoring/math');
 const crypto = require('node:crypto');
 const {
   getCachedGitHubAnalysis,
@@ -23,8 +28,7 @@ const {
   getPublicJobMarketSignal
 } = require('../services/developerSignalService');
 const {
-  estimateTokens,
-  buildSkillGapPromptContext
+  estimateTokens
 } = require('../services/promptBuilderService');
 const {
   extractSkillsFromRepositories,
@@ -34,7 +38,7 @@ const {
 } = require('../utils/skilldetector');
 const { resolvePreviewResume } = require('../services/previewResumeCacheService');
 
-const ANALYSIS_VERSION = 'v6-skill-intelligence';
+const ANALYSIS_VERSION = 'v8-skill-evidence-coverage';
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
 const DETERMINISTIC_CONFIDENCE_THRESHOLD = Math.min(
@@ -153,7 +157,8 @@ const resolveSkillGapNarratives = (aiResult, fallback, { aiOk, careerStack, expe
     };
   }
 
-  const factPollution = Array.isArray(aiResult.yourSkills)
+  const factPollution = Object.keys(aiResult).some(key => !['analysisSummary', 'levelAssessment'].includes(key))
+    || Array.isArray(aiResult.yourSkills)
     || Array.isArray(aiResult.missingSkills)
     || Array.isArray(aiResult.roadmap)
     || typeof aiResult.coverage === 'number'
@@ -186,6 +191,7 @@ const resolveSkillGapNarratives = (aiResult, fallback, { aiOk, careerStack, expe
 };
 
 const isPersistableSkillGapResult = (githubData = {}) => {
+  if (githubData?.cache?.stale === true) return false;
   if (githubData?.cache?.source === 'miss-background-refresh') return false;
   if (githubData?.cache?.cachedAt) return true;
   if (Number(githubData?.repoCount || 0) > 0) return true;
@@ -708,23 +714,6 @@ const buildDeterministicRoadmap = (weeklyRoadmap = []) => (Array.isArray(weeklyR
     };
   });
 
-const computeDeterministicConfidence = ({ evidenceBreakdown, resumeInsights, githubData, developerSignals }) => {
-  const provenCount = (evidenceBreakdown?.provenSkills || []).length;
-  const claimedNotProven = (evidenceBreakdown?.claimedButNotProvenSkills || []).length;
-  const missingExpected = (evidenceBreakdown?.missingExpectedSkills || []).length;
-  const totalGap = provenCount + claimedNotProven + missingExpected;
-  const evidenceRatio = totalGap > 0
-    ? (provenCount + claimedNotProven * 0.5) / totalGap
-    : 0.3;
-  const resumeFactor = clamp(resumeInsights?.atsScore || 0) / 100;
-  const githubFactor = Math.min(1, (githubData?.repoCount || 0) / 10);
-  const integrationFactor = developerSignals?.integrationSignal?.present ? 0.8 : 0.4;
-  const jobsFactor = developerSignals?.jobsDemandSignal?.present ? 0.8 : 0.4;
-  return clamp(
-    (evidenceRatio * 40) + (resumeFactor * 20) + (githubFactor * 20) + (integrationFactor * 10) + (jobsFactor * 10)
-  );
-};
-
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
   if (!req.user?._id || !output || typeof output !== 'object') return;
   try {
@@ -750,11 +739,12 @@ const queueAIVersionSnapshot = (payload) => {
 
 const loadResumeAnalysis = (userId, userContext) => developerContext.resolveResumeAnalysis(userId, userContext, { ResumeAnalysis });
 
-const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
+const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false, cachedPeek } = {}) => {
+  if (!username) return { repositories: [], languageDistribution: [], cache: { source: 'unavailable' } };
   const startedAt = Date.now();
   try {
     const normalizedUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
-    const cached = await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true });
+    const cached = cachedPeek || await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true });
 
     if (isTemporaryMode) {
       if (forceRefresh || !cached.data || cached.status !== 'fresh') {
@@ -789,7 +779,7 @@ const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode =
       durationMs: Date.now() - startedAt
     }));
 
-    if (cached.data) return cached.data;
+    if (cached.data) return { ...cached.data, cache: { ...cached.data.cache, stale: cached.status !== 'fresh' } };
 
     return {
       repoCount: 0,
@@ -869,7 +859,10 @@ const buildSkillGapCacheSignalHash = ({
   experienceLevel = '',
   resumeCacheIdentity = {},
   githubData = {},
-  user = {}
+  user = {},
+  resumeInsights = {},
+  resumeAnalysis = null,
+  developerSignals = {}
 } = {}) => crypto
   .createHash('sha256')
   .update(JSON.stringify({
@@ -880,6 +873,20 @@ const buildSkillGapCacheSignalHash = ({
     resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId || 'no-resume',
     githubCachedAt: githubData?.cache?.cachedAt || null,
     githubExpiresAt: githubData?.cache?.expiresAt || null,
+    githubEvidence: { repoCount: githubData.repoCount, repositories: githubData.repositories,
+      languageDistribution: githubData.languageDistribution, githubSignals: githubData.githubSignals,
+      dataAvailability: githubData.dataAvailability, fetchedAt: githubData.fetchedAt },
+    resumeEvidence: resumeInsights,
+    resumeRecordedEvidence: { skills: resumeAnalysis?.skills instanceof Map ? Object.fromEntries(resumeAnalysis.skills) : resumeAnalysis?.skills,
+      technicalSkills: resumeAnalysis?.technicalSkills, signals: resumeAnalysis?.resumeSignals,
+      analyzedAt: resumeAnalysis?.analyzedAt, fileId: resumeAnalysis?.fileId, analysisVersion: resumeAnalysis?.analysisVersion },
+    profileClaims: skillGapRequirements.normalize(user.skills || []),
+    requirementMatrixVersion: skillGapRequirements.MATRIX_VERSION,
+    evidenceRuleVersion: skillGapEvidence.RULE_VERSION,
+    selectedResume: developerContext.resolveSelectedResumeFileId(user),
+    supportingEvidence: { integration: developerSignals.integrationSignal, sprint: developerSignals.careerSprintSignal,
+      weekly: developerSignals.weeklyReportSignal, portfolio: developerSignals.portfolioSignal,
+      jobs: developerSignals.jobsDemandSignal },
     profileUpdatedAt: user?.updatedAt || null,
     analysisVersion: ANALYSIS_VERSION
   }))
@@ -1400,7 +1407,7 @@ const analyzeSkillGap = async (req, res) => {
 
     let username;
     try {
-      username = parseGitHubUsername(isTemporaryMode ? req.body.username : activeGithub);
+      username = !isTemporaryMode && !activeGithub ? '' : parseGitHubUsername(isTemporaryMode ? req.body.username : activeGithub);
     } catch (error) {
       return res.status(error.status || 400).json({ message: error.message || 'Username is required.' });
     }
@@ -1408,10 +1415,10 @@ const analyzeSkillGap = async (req, res) => {
 
     let careerStack = isTemporaryMode
       ? String(req.body.careerStack || '').trim()
-      : String(developerContext.resolveCareerStack(req.user) || 'Full Stack').trim();
+      : String(developerContext.resolveCareerStack(req.user) || '').trim();
     let experienceLevel = isTemporaryMode
       ? String(req.body.experienceLevel || '').trim()
-      : String(developerContext.resolveExperienceLevel(req.user) || 'Student').trim();
+      : String(developerContext.resolveExperienceLevel(req.user) || '').trim();
 
     if (isTemporaryMode) {
       if (!careerStack || !ALLOWED_STACKS.includes(careerStack)) {
@@ -1423,9 +1430,6 @@ const analyzeSkillGap = async (req, res) => {
       if (req.body.resumeText !== undefined && typeof req.body.resumeText !== 'string') {
         return res.status(400).json({ message: 'Resume input must be a valid text string.' });
       }
-    } else {
-      if (!ALLOWED_STACKS.includes(careerStack)) careerStack = 'Full Stack';
-      if (!ALLOWED_LEVELS.includes(experienceLevel)) experienceLevel = 'Student';
     }
 
     const validationStartedAt = Date.now();
@@ -1437,12 +1441,12 @@ const analyzeSkillGap = async (req, res) => {
     const userContext = req.user || {};
     const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
 
-    // Register in-flight early so identical callers share one pipeline (including resume/github I/O).
+    // Resolve canonical identity first; coalesce only after validating source revisions.
     const previewResumeIdentity = isTemporaryMode
       ? String(req.body.resumeHash || (cleanResume ? crypto.createHash('sha256').update(cleanResume).digest('hex') : 'no-resume'))
-      : 'profile-active';
+      : `${developerContext.resolveSelectedResumeFileId(req.user) || 'profile-active'}:${req.user?.updatedAt || ''}`;
     inflightKey = buildInflightRequestKey({
-      userId: isTemporaryMode ? null : (req.user?._id || null),
+      userId: req.user?._id || null,
       username,
       careerStack,
       experienceLevel,
@@ -1451,6 +1455,75 @@ const analyzeSkillGap = async (req, res) => {
       isTemporaryMode
     });
 
+    timer.mark('validationMs', validationStartedAt);
+
+    const softMemoryKey = buildSkillGapSoftMemoryKey({
+      userId: isTemporaryMode ? (req.user?._id || 'anonymous') : req.user?._id,
+      username,
+      careerStack,
+      experienceLevel,
+      isTemporaryMode,
+      resumeIdentity: previewResumeIdentity
+    });
+    if (isTemporaryMode) {
+      const previewResume = await resolvePreviewResume({
+        previewResumeId: req.body.previewResumeId,
+        resumeHash: req.body.resumeHash,
+        resumeText: cleanResume,
+        experienceLevel
+      });
+      if (previewResume.error) {
+        failInflightRequest(inflightKey, inflightDeferred, new Error(previewResume.error));
+        return res.status(previewResume.status).json({ message: previewResume.error });
+      }
+      resumeInsights = previewResume.resumeInsights;
+      resumeCacheIdentity = previewResume.resumeCacheIdentity;
+    }
+
+    const [resumeLoaded, githubPeek] = await Promise.all([
+      isTemporaryMode
+        ? Promise.resolve(null)
+        : timer.time('resumeFetchMs', () => loadResumeAnalysis(req.user?._id || null, userContext)),
+      timer.time('githubPeekMs', () => normalizedGithubUsername
+        ? getCachedGitHubAnalysis(normalizedGithubUsername, { allowStale: true })
+        : Promise.resolve({ status: 'miss', data: null }))
+    ]);
+
+    if (!isTemporaryMode) {
+      latestResumeAnalysis = resumeLoaded;
+      resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
+      // Preserve recorded zero and numerical absence in this feature adapter.
+      resumeInsights.atsScore = numeric(latestResumeAnalysis?.atsScore)
+        ?? numeric(latestResumeAnalysis?.resumeSignals?.scores?.atsScore);
+      resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
+    }
+
+    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim(), { forceRefresh, isTemporaryMode, cachedPeek: githubPeek }));
+    const githubInsights = buildGithubInsights(githubData);
+    const careerProfileSignal = isTemporaryMode ? { present: false } : buildCareerProfileSignalFromUser(req.user || {});
+    const { developerSignals, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
+      userId: isTemporaryMode ? null : (req.user?._id || null),
+      username,
+      resumeInsights,
+      githubInsights,
+      careerProfileSignal
+    }));
+    const validCareerRequirements = ALLOWED_STACKS.includes(careerStack) && ALLOWED_LEVELS.includes(experienceLevel);
+    const cacheReadable = !forceRefresh && validCareerRequirements && isPersistableSkillGapResult(githubData);
+    const signalHash = buildSkillGapCacheSignalHash({
+      username,
+      careerStack,
+      experienceLevel,
+      resumeCacheIdentity,
+      githubData,
+      user: isTemporaryMode ? {} : req.user || {},
+      resumeInsights,
+      resumeAnalysis: latestResumeAnalysis,
+      developerSignals
+    });
+
+    // A source revision must be known before requests can safely coalesce.
+    inflightKey = `${inflightKey}:${signalHash}`;
     const existingInflight = inflightSkillGapRequests.get(inflightKey);
     if (existingInflight) {
       logSkillGapPipeline('inflight_deduped', {
@@ -1470,19 +1543,9 @@ const analyzeSkillGap = async (req, res) => {
       startedAt: Date.now(),
       waiters: 0
     });
-    timer.mark('validationMs', validationStartedAt);
-
-    const softMemoryKey = buildSkillGapSoftMemoryKey({
-      userId: isTemporaryMode ? (req.user?._id || 'anonymous') : req.user?._id,
-      username,
-      careerStack,
-      experienceLevel,
-      isTemporaryMode,
-      resumeIdentity: previewResumeIdentity
-    });
-    if (!forceRefresh) {
+    if (cacheReadable) {
       const memoryHit = await timer.time('memoryCacheLookupMs', async () => readSkillGapMemory(softMemoryKey));
-      if (memoryHit?.analysisData) {
+      if (memoryHit?.analysisData && memoryHit.signalHash === signalHash) {
         const cachedResult = {
           ...memoryHit.analysisData,
           fromCache: true,
@@ -1506,52 +1569,15 @@ const analyzeSkillGap = async (req, res) => {
       }
     }
 
-    if (isTemporaryMode) {
-      const previewResume = await resolvePreviewResume({
-        previewResumeId: req.body.previewResumeId,
-        resumeHash: req.body.resumeHash,
-        resumeText: cleanResume,
-        experienceLevel
-      });
-      if (previewResume.error) {
-        failInflightRequest(inflightKey, inflightDeferred, new Error(previewResume.error));
-        return res.status(previewResume.status).json({ message: previewResume.error });
-      }
-      resumeInsights = previewResume.resumeInsights;
-      resumeCacheIdentity = previewResume.resumeCacheIdentity;
-    }
+    const previewCacheKey = `skillgap:preview:${String(req.user?._id || 'anonymous')}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${ANALYSIS_VERSION}`;
 
-    const [resumeLoaded, githubPeek] = await Promise.all([
-      isTemporaryMode
-        ? Promise.resolve(null)
-        : timer.time('resumeFetchMs', () => loadResumeAnalysis(req.user?._id || null, userContext)),
-      timer.time('githubPeekMs', () => getCachedGitHubAnalysis(normalizedGithubUsername, { allowStale: true }))
-    ]);
-
-    if (!isTemporaryMode) {
-      latestResumeAnalysis = resumeLoaded;
-      resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
-      resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
-    }
-
-    const signalHash = isTemporaryMode ? 'no-signals' : buildSkillGapCacheSignalHash({
-      username,
-      careerStack,
-      experienceLevel,
-      resumeCacheIdentity,
-      githubData: githubPeek?.data || {},
-      user: req.user || {}
-    });
-
-    const previewCacheKey = `skillgap:preview:${String(req.user?._id || 'anonymous')}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:no-signals:${ANALYSIS_VERSION}`;
-
-    if (isTemporaryMode && !forceRefresh) {
+    if (isTemporaryMode && cacheReadable) {
       const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
       if (previewCached?.analysisData) {
         writeSkillGapMemory(softMemoryKey, {
           analysisData: previewCached.analysisData,
           updatedAt: previewCached.updatedAt || new Date(),
-          signalHash: 'no-signals'
+          signalHash
         });
         const cachedResult = {
           ...previewCached.analysisData,
@@ -1596,7 +1622,7 @@ const analyzeSkillGap = async (req, res) => {
       ? crypto.createHash('sha256').update(JSON.stringify(cacheKey)).digest('hex')
       : '';
     const sharedCached = await timer.time('redisResultCacheLookupMs', () => (
-      resultCacheKey && !forceRefresh
+      resultCacheKey && cacheReadable
         ? withBudget(aiService.getSharedCache(resultCacheKey, 'skill_gap:result'), SKILL_GAP_REDIS_LOOKUP_BUDGET_MS, null)
         : Promise.resolve(null)
     ));
@@ -1657,7 +1683,7 @@ const analyzeSkillGap = async (req, res) => {
       return res.json(cachedResult);
     }
     const cached = await timer.time('cacheLookupMs', async () => (
-      scopedCacheKey && !forceRefresh
+      scopedCacheKey && cacheReadable
         ? AnalysisCache.findOne(scopedCacheKey).select({ analysisData: 1, updatedAt: 1, createdAt: 1 }).lean()
         : null
     ));
@@ -1727,24 +1753,6 @@ const analyzeSkillGap = async (req, res) => {
     }
     logSkillGapPipeline('cache_miss', { username, forceRefresh, cacheEligible: Boolean(scopedCacheKey) });
 
-    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim(), { forceRefresh, isTemporaryMode }));
-    const githubInsights = buildGithubInsights(githubData);
-    const careerProfileSignal = isTemporaryMode ? { present: false } : buildCareerProfileSignalFromUser(req.user || {});
-    const { developerSignals, signalHash: aggregatedSignalHash, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
-      userId: isTemporaryMode ? null : (req.user?._id || null),
-      username,
-      resumeInsights,
-      githubInsights,
-      careerProfileSignal
-    }));
-    if (aggregatedSignalHash !== signalHash) {
-      logSkillGapPipeline('self_signal_hash_normalized', {
-        username,
-        original: aggregatedSignalHash.slice(0, 12),
-        stable: signalHash.slice(0, 12)
-      });
-    }
-
     const skillDetectionStartedAt = Date.now();
     const evidenceBreakdown = buildSkillEvidenceBreakdown({
       resumeInsights,
@@ -1754,12 +1762,22 @@ const analyzeSkillGap = async (req, res) => {
     });
     timer.mark('skillDetectionMs', skillDetectionStartedAt);
 
-    const deterministicConfidence = computeDeterministicConfidence({
-      evidenceBreakdown,
-      resumeInsights,
-      githubData,
-      developerSignals
-    });
+    const scoringOptions = { sources: [
+      { type: 'github-user', id: username, ruleVersion: githubData.githubSignals?.scoring?.ruleVersion },
+      ...(latestResumeAnalysis ? [{ type: 'resume-analysis', id: String(latestResumeAnalysis._id || resumeCacheIdentity.resumeAnalysisId),
+        ruleVersion: latestResumeAnalysis.resumeSignals?.scoring?.ruleVersion }] : [])
+    ] };
+    const scoringInputs = { evidenceBreakdown, resumeInsights, githubData, developerSignals,
+      resumeAvailable: isTemporaryMode ? resumeInsights.analyzed === true : latestResumeAnalysis !== null,
+      githubAvailable: isPersistableSkillGapResult(githubData) };
+    const initialScoring = skillGapScoring.calculateLegacy(scoringInputs, scoringOptions);
+    const evidenceResolution = skillGapEvidence.resolve({ githubData, resumeAnalysis: latestResumeAnalysis, resumeInsights,
+      profile: isTemporaryMode ? { githubUsername: username } : req.user || {},
+      profileSignal: isTemporaryMode ? {} : developerSignals.portfolioSignal,
+      integrationSignal: developerSignals.integrationSignal, careerStack, experienceLevel, preview: isTemporaryMode
+    }, { calculatedAt: initialScoring.confidence.calculatedAt });
+    const deterministicNarrative = skillGapCompatibility.narrative(evidenceResolution);
+    const deterministicConfidence = initialScoring.confidence.score;
     const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
 
     // Deterministic evidence owns skills, priorities, coverage, graph, and schedule.
@@ -1801,31 +1819,17 @@ const analyzeSkillGap = async (req, res) => {
     let aiResult = null;
 
     if (!skipAI) {
-      const fallback = buildFallbackSkillGap({
-        resumeInsights,
-        githubInsights,
-        developerSignals,
-        evidenceBreakdown,
-        careerStack,
-        experienceLevel
-      });
+      const fallback = deterministicNarrative;
       const prompt = await timer.time('promptGenerationMs', () => {
-        const compactContext = buildSkillGapPromptContext({
-          careerStack,
-          experienceLevel,
-          evidenceBreakdown,
-          resumeInsights,
-          githubInsights,
-          developerSignals,
-          deterministicGroups
-        });
+        const compactContext = skillGapCompatibility.promptContext(evidenceResolution, careerStack, experienceLevel);
         const promptText = getSkillGapPrompt(
           careerStack,
           experienceLevel,
-          compactContext.detectedSkills,
-          compactContext.resume,
-          compactContext.github,
-          compactContext.signals
+          compactContext.skills,
+          { available: evidenceResolution.evidenceCompleteness.resumeAvailable },
+          { available: evidenceResolution.evidenceCompleteness.githubAvailable },
+          { coverage: compactContext.coverage, evidenceConfidence: compactContext.evidenceConfidence,
+            warnings: compactContext.warnings, limitations: compactContext.limitations }
         );
         logSkillGapPipeline('prompt_generated', {
           username,
@@ -1845,13 +1849,10 @@ const analyzeSkillGap = async (req, res) => {
       const aiMeta = await timer.time('aiResponseMs', () => aiService.runAIAnalysis(prompt, narrativeFallback, skillGapAiRetries, {
         timeoutMs: 7000,
         returnMeta: true
-      }));
+      }).catch(() => ({ ok: false, value: narrativeFallback })));
       const aiOk = Boolean(aiMeta && aiMeta.ok === true);
       aiResult = aiOk ? aiMeta.value : narrativeFallback;
-      const groundedNames = [
-        ...(deterministicGroups.yourSkills || []).map((skill) => skill.name),
-        ...(deterministicGroups.missingSkills || []).map((skill) => skill.name)
-      ].filter(Boolean).slice(0, 16);
+      const groundedNames = evidenceResolution.skills.map(skill => skill.name).slice(0, 24);
       const narratives = resolveSkillGapNarratives(aiResult, fallback, {
         aiOk,
         careerStack,
@@ -1916,8 +1917,8 @@ const analyzeSkillGap = async (req, res) => {
       ...(developerSignals.portfolioSignal?.portfolioSkills || [])
     ]);
 
-    while (yourSkills.length < MIN_KNOWN_SKILLS && detectedKnown[yourSkills.length]) {
-      const skillName = detectedKnown[yourSkills.length];
+    for (const skillName of detectedKnown) {
+      if (yourSkills.length >= MIN_KNOWN_SKILLS) break;
       if (!existingSkillNames.has(skillName.toLowerCase())) {
         existingSkillNames.add(skillName.toLowerCase());
         yourSkills.push({
@@ -1963,60 +1964,61 @@ const analyzeSkillGap = async (req, res) => {
     const priorityRank = { High: 3, Medium: 2, Low: 1 };
     missingSkills.sort((a, b) => (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) || clamp(b.jobDemand || 0) - clamp(a.jobDemand || 0));
 
-    const knownCount = yourSkills.length;
-    const missingCount = missingSkills.length;
-    const avgProficiency = knownCount > 0
-      ? Math.round(yourSkills.reduce((sum, skill) => sum + clamp(skill.proficiency || 0), 0) / knownCount)
-      : 0;
-    const balanceFactor = (knownCount + missingCount) > 0 ? (knownCount / (knownCount + missingCount)) : 0;
-    const proficiencyFactor = avgProficiency / 100;
-    const resumeFactorVal = clamp(resumeInsights.atsScore || 0) / 100;
-    const integrationFactor = clamp(developerSignals.integrationSignal?.integrationScore || 0) / 100;
-
-    const coverage = clamp(Math.round(((balanceFactor * 0.57) + (proficiencyFactor * 0.23) + (resumeFactorVal * 0.1) + (integrationFactor * 0.1)) * 100));
-    const missing = clamp(100 - coverage);
+    const scoring = skillGapScoring.calculateLegacy({ ...scoringInputs, yourSkills, missingSkills }, {
+      ...scoringOptions, calculatedAt: initialScoring.confidence.calculatedAt
+    });
+    const legacyReadinessScore = scoring.coverage.score;
+    const coverage = evidenceResolution.coverage;
+    const missing = coverage === null ? null : clamp(100 - coverage);
+    const approvedGroups = skillGapCompatibility.project(evidenceResolution, { yourSkills, missingSkills });
+    ({ yourSkills, missingSkills, weakSkills, highDemandSkills } = approvedGroups);
     const coverageBreakdown = {
-      knownSkillCount: knownCount,
-      missingSkillCount: missingCount,
-      averageProficiency: avgProficiency,
-      balanceFactor: clamp(balanceFactor * 100),
-      resumeFactor: clamp(resumeFactorVal * 100),
-      integrationFactor: clamp(integrationFactor * 100),
-      deterministicConfidence,
-      aiUsed,
-      formula: aiUsed
-        ? 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10% (deterministic; AI narrative only)'
-        : 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10% (deterministic only)'
+      knownSkillCount: yourSkills.length, missingSkillCount: missingSkills.length,
+      averageProficiency: scoring.averageProficiency,
+      balanceFactor: clamp(scoring.coverage.breakdown.balance.value),
+      resumeFactor: scoring.coverage.breakdown.resume.value,
+      integrationFactor: scoring.coverage.breakdown.integration.value,
+      deterministicConfidence, aiUsed,
+      legacyFactorFields: ['averageProficiency', 'balanceFactor', 'resumeFactor', 'integrationFactor', 'deterministicConfidence'],
+      formula: '100 * sum(requiredSkillWeight * evidenceCredit) / sum(requiredSkillWeight); DEMONSTRATED=1, PARTIAL=.5, CLAIMED_ONLY=0, NOT_EVIDENCED=0; OPTIONAL excluded',
+      metricKind: 'requiredSkillEvidenceCoverage',
+      weightedCredit: evidenceResolution.scoring.evidence.inputs.weightedCredit,
+      requiredWeight: evidenceResolution.scoring.evidence.inputs.requiredWeight,
+      legacyReadinessScore,
+      legacyFactors: { balanceFactor: clamp(scoring.coverage.breakdown.balance.value),
+        resumeFactor: scoring.coverage.breakdown.resume.value, integrationFactor: scoring.coverage.breakdown.integration.value },
+      evidenceCompleteness: evidenceResolution.evidenceCompleteness
     };
 
-    const fallback = buildFallbackSkillGap({
-      resumeInsights,
-      githubInsights,
-      developerSignals,
-      evidenceBreakdown,
-      careerStack,
-      experienceLevel
-    });
+    const fallback = deterministicNarrative;
+    const { scoring: evidenceScoring, ...evidenceFields } = evidenceResolution;
 
     const fullResult = {
+      ...evidenceFields,
       username,
       careerStack,
       experienceLevel,
       analysisSummary: String((aiUsed && aiResult?.analysisSummary) || fallback.analysisSummary || '').trim(),
       aiUsed,
       deterministicConfidence,
+      legacyConfidence: deterministicConfidence,
+      confidenceKind: 'legacyHeuristic',
+      legacyReadinessScore,
+      legacyScoring: { readiness: scoring.coverage, confidence: scoring.confidence },
       skipAI,
       yourSkills,
       missingSkills,
-      resumeSkills: deterministicGroups.resumeSkills,
-      githubSkills: deterministicGroups.githubSkills,
-      provenSkills: deterministicGroups.provenSkills,
-      claimedButNotProvenSkills: deterministicGroups.claimedButNotProvenSkills,
+      resumeSkills: approvedGroups.resumeSkills,
+      githubSkills: approvedGroups.githubSkills,
+      provenSkills: approvedGroups.provenSkills,
+      claimedButNotProvenSkills: approvedGroups.claimedButNotProvenSkills,
       weakSkills,
       highDemandSkills,
       coverage,
       missing,
       coverageBreakdown,
+      scoring: { coverage: evidenceScoring, confidence: scoring.confidence, confidenceKind: 'legacyHeuristic' },
+      evidenceCompleteness: evidenceResolution.evidenceCompleteness,
       levelAssessment: String((aiUsed && aiResult?.levelAssessment) || fallback.levelAssessment || '').trim(),
       roadmap: [],
       totalWeeks: '',
@@ -2042,7 +2044,7 @@ const analyzeSkillGap = async (req, res) => {
     };
 
     const skillGraph = buildSkillGraph({
-      currentSkills: fullResult.yourSkills,
+      currentSkills: fullResult.yourSkills.filter(skill => skill.status === 'DEMONSTRATED'),
       missingSkills: fullResult.missingSkills
     });
 
@@ -2070,6 +2072,12 @@ const analyzeSkillGap = async (req, res) => {
       experienceLevel,
       coverage,
       coverageBreakdown,
+      scoring: fullResult.scoring,
+      ruleVersion: fullResult.ruleVersion,
+      requirementMatrixVersion: fullResult.requirementMatrixVersion,
+      calculatedAt: fullResult.calculatedAt,
+      evidenceConfidence: fullResult.evidenceConfidence,
+      evidenceCompleteness: fullResult.evidenceCompleteness,
       provenSkills: fullResult.provenSkills,
       resumeSkills: fullResult.resumeSkills,
       claimedButNotProvenSkills: fullResult.claimedButNotProvenSkills,
@@ -2098,7 +2106,7 @@ const analyzeSkillGap = async (req, res) => {
       signalHash
     };
 
-    const canPersist = isPersistableSkillGapResult(githubData);
+    const canPersist = validCareerRequirements && isPersistableSkillGapResult(githubData);
     if (!canPersist) {
       logSkillGapPipeline('cache_write_skipped_partial_github', {
         username,

@@ -265,7 +265,7 @@ test('skill-gap memory/redis/cold/concurrency performance', async (t) => {
     notifications: harness.counters.notifications
   };
 
-  // Memory hits: zero provider/AI/redis/mongo
+  // Memory hits validate current source revisions, but skip AI and result storage.
   harness.counters.ai = 0;
   harness.counters.github = 0;
   harness.counters.resume = 0;
@@ -282,8 +282,8 @@ test('skill-gap memory/redis/cold/concurrency performance', async (t) => {
     memorySamples.push(performance.now() - started);
   }
   assert.equal(harness.counters.ai, 0);
-  assert.equal(harness.counters.github, 0);
-  assert.equal(harness.counters.resume, 0);
+  assert.equal(harness.counters.github, 20);
+  assert.equal(harness.counters.resume, 20);
   assert.equal(harness.counters.redisGets, 0);
   assert.equal(harness.counters.mongoReads, 0);
   assert.equal(harness.counters.mongoWrites, 0);
@@ -319,8 +319,9 @@ test('skill-gap memory/redis/cold/concurrency performance', async (t) => {
   assert.ok(concurrent.every((item) => item.status === 200));
   assert.equal(harness.counters.ai, 1);
   assert.ok(harness.counters.mongoWrites <= 1);
-  assert.ok(harness.counters.github <= 2, `expected <=2 github calls after early inflight, got ${harness.counters.github}`);
-  assert.ok(harness.counters.resume <= 1, `expected <=1 resume fetch after early inflight, got ${harness.counters.resume}`);
+  // Every caller validates source revisions; matching snapshots share calculation/AI/write.
+  assert.equal(harness.counters.github, 5);
+  assert.equal(harness.counters.resume, 5);
 
   const after = {
     cold: { p50: percentile(coldSamples, 50), p95: percentile(coldSamples, 95) },
