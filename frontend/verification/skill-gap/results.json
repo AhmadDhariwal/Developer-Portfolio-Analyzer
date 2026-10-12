@@ -1,0 +1,176 @@
+{
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 320,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 375,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 425,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 768,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    },
+    {
+      "theme": "system",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4
+    }
+  ],
+  "keyboard": "passed",
+  "themes": "light/dark/system; live system switch passed",
+  "states": "0/50/100/null, unavailable core evidence, historical contract, initial preview, partial sources, stale, AI fallback, error/retry",
+  "consoleErrors": 0
+}
