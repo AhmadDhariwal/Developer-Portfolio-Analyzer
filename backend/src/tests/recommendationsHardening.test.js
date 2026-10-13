@@ -6,7 +6,10 @@ const Module = require('node:module');
 
 const root = path.resolve(__dirname, '../../..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
-const controller = read('backend', 'src', 'controllers', 'recommendationscontroller.js');
+const controller =
+  read('backend', 'src', 'controllers', 'recommendationscontroller.js') +
+  read('backend', 'src', 'services', 'recommendationService.js') +
+  read('backend', 'src', 'services', 'recommendationNarrativeService.js');
 const client = read('frontend', 'src', 'app', 'shared', 'services', 'recommendations.service.ts');
 const component = read(
   'frontend',
@@ -18,6 +21,7 @@ const component = read(
 );
 const routes = read('backend', 'src', 'routes', 'recommendations.routes.js');
 const promptSource = read('backend', 'src', 'prompts', 'recommendationPrompt.js');
+const generationSource = read('backend', 'src', 'services', 'recommendationGenerationService.js');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 const {
   resolveRecommendationEnrichment,
@@ -155,7 +159,8 @@ test('profile and preview isolation plus provider/cache invariants are enforced'
   assert.match(controller, /cacheLayer: 'mongo'/);
   assert.match(controller, /resolveRecommendationEnrichment\(/);
   assert.match(controller, /mergeNarrativeEnrichment\(fallback, enrichment\)/);
-  assert.match(controller, /returnMeta:\s*true/);
+  assert.match(controller, /generation.enrich\(/);
+  assert.match(generationSource, /returnMeta:\s*true/);
   assert.match(controller, /parseGitHubUsername/);
   assert.match(controller, /readRecommendationMemory/);
   assert.match(controller, /withBudget\(/);
