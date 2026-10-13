@@ -1,0 +1,926 @@
+{
+  "developerLevel": "Intermediate",
+  "strengths": [
+    "Demonstrates strong project impact through highly forked and starred repositories.",
+    "Maintains a portfolio with a notable number of public repositories.",
+    "Possesses experience with HTML and CSS, as evidenced by popular projects.",
+    "Engages with the open-source community, contributing to widely used projects.",
+    "Exhibits originality in project development."
+  ],
+  "weakAreas": [
+    "Several repositories lack strong README documentation, hindering project understanding.",
+    "Descriptions are missing for multiple repositories, impacting discoverability.",
+    "Repository quality varies significantly across the portfolio.",
+    "Contribution depth is low in recently updated repositories.",
+    "Signals for testing tools are not clearly visible.",
+    "DevOps and CI/CD practices are not prominently showcased."
+  ],
+  "summary": "Octocat presents a GitHub profile with significant project impact and a history of engaging with the open-source community. The profile highlights experience with foundational web technologies and a notable number of public repositories.",
+  "explanation": "The profile's overall standing is influenced by strong project impact and originality, balanced against areas needing improvement such as code quality, consistency, and the depth of recent contributions.",
+  "dataVersion": "github-normalized-v1",
+  "scoring": {
+    "score": 37,
+    "breakdown": {
+      "codeQuality": {
+        "value": 28,
+        "weight": 0.24,
+        "contribution": 6.72,
+        "available": true
+      },
+      "projectDiversity": {
+        "value": 13,
+        "weight": 0.17,
+        "contribution": 2.21,
+        "available": true
+      },
+      "contribution": {
+        "value": 52,
+        "weight": 0.18,
+        "contribution": 9.36,
+        "available": true
+      },
+      "consistency": {
+        "value": 0,
+        "weight": 0.13,
+        "contribution": 0,
+        "available": true
+      },
+      "projectImpact": {
+        "value": 81,
+        "weight": 0.14,
+        "contribution": 11.340000000000002,
+        "available": true
+      },
+      "profileStrength": {
+        "value": 52,
+        "weight": 0.14,
+        "contribution": 7.280000000000001,
+        "available": true
+      }
+    },
+    "warnings": [
+      "activity_sampled_repository_history",
+      "repository_quality_uses_sampled_signals"
+    ],
+    "evidence": {
+      "sources": [
+        {
+          "type": "github-user",
+          "id": "octocat"
+        }
+      ],
+      "inputs": {
+        "codeQuality": 28,
+        "projectDiversity": 13,
+        "contribution": 52,
+        "consistency": 0,
+        "projectImpact": 81,
+        "profileStrength": 52
+      },
+      "facts": {
+        "repoCount": 8,
+        "originalRepoCount": 6,
+        "forkRepoCount": 2,
+        "archivedRepoCount": 0,
+        "languageCount": 1,
+        "totalStars": 21069,
+        "totalForks": 168263,
+        "totalCommits": 17,
+        "activeRepos": 0
+      }
+    },
+    "ruleVersion": "github-health-score-v1",
+    "calculatedAt": "2026-10-13T10:37:38.246Z"
+  },
+  "fetchedAt": "2026-10-13T10:37:38.246Z",
+  "dataAvailability": {
+    "repositories": "complete",
+    "activity": "sampled",
+    "activityScope": "repository_contributor_history",
+    "activityRepositoryLimit": 5,
+    "repositorySignals": "sampled",
+    "signalRepositoryLimit": 2,
+    "languageRepositoryLimit": 8,
+    "languages": "language_bytes",
+    "stars": "complete"
+  },
+  "scores": {
+    "codeQuality": 28,
+    "projectDiversity": 13,
+    "originality": 71,
+    "contribution": 36,
+    "consistency": 0,
+    "projectImpact": 81,
+    "skillCoverage": 11,
+    "profileStrength": 52,
+    "healthScore": 37,
+    "overall": 37
+  },
+  "repoCount": 8,
+  "totalStars": 22322,
+  "totalForks": 168577,
+  "followers": 24569,
+  "githubHealthScore": 37,
+  "activityScore": 37,
+  "languageDistribution": [
+    {
+      "language": "CSS",
+      "bytes": 14950,
+      "percentage": 77
+    },
+    {
+      "language": "HTML",
+      "bytes": 4338,
+      "percentage": 22
+    },
+    {
+      "language": "JavaScript",
+      "bytes": 48,
+      "percentage": 1
+    }
+  ],
+  "mainLanguageDistribution": [
+    {
+      "language": "JavaScript",
+      "bytes": 48,
+      "percentage": 1
+    }
+  ],
+  "supportLanguageDistribution": [
+    {
+      "language": "CSS",
+      "bytes": 14950,
+      "percentage": 77
+    },
+    {
+      "language": "HTML",
+      "bytes": 4338,
+      "percentage": 22
+    }
+  ],
+  "rawLanguageBytes": {
+    "HTML": 4338,
+    "CSS": 14950,
+    "JavaScript": 48
+  },
+  "languageDistributionSource": "language_bytes",
+  "technologyDistribution": [
+    {
+      "technology": "JavaScript",
+      "category": "Frontend",
+      "percentage": 100,
+      "confidence": 8
+    }
+  ],
+  "technologies": [
+    {
+      "name": "JavaScript",
+      "category": "Frontend",
+      "confidence": 8,
+      "sources": [
+        "language"
+      ]
+    }
+  ],
+  "technologyCategories": {
+    "Frontend": [
+      {
+        "name": "JavaScript",
+        "category": "Frontend",
+        "confidence": 8,
+        "sources": [
+          "language"
+        ]
+      }
+    ],
+    "Backend": [],
+    "Database": [],
+    "DevOps": [],
+    "Cloud": [],
+    "Testing": [],
+    "Mobile": [],
+    "AI/ML": []
+  },
+  "repositoryActivity": [
+    {
+      "repo": "Spoon-Knife",
+      "commits": 3
+    },
+    {
+      "repo": "Hello-World",
+      "commits": 3
+    },
+    {
+      "repo": "octocat.github.io",
+      "commits": 4
+    },
+    {
+      "repo": "hello-worId",
+      "commits": 1
+    },
+    {
+      "repo": "git-consortium",
+      "commits": 6
+    }
+  ],
+  "commitMap": {
+    "Spoon-Knife": 3,
+    "Hello-World": 3,
+    "octocat.github.io": 4,
+    "hello-worId": 1,
+    "git-consortium": 6
+  },
+  "repositories": [
+    {
+      "name": "Hello-World",
+      "description": "My first repository on GitHub!",
+      "topics": [],
+      "language": "Unknown",
+      "stars": 3842,
+      "forks": 7078,
+      "commits": 3,
+      "activityScore": 40,
+      "qualityScore": 40,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": false,
+      "readmeQuality": 0,
+      "updatedAt": "2026-10-13T09:57:49.000Z",
+      "pushedAt": "2024-08-20T23:54:42.000Z",
+      "createdAt": "2011-01-26T19:01:12.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 1
+    },
+    {
+      "name": "Spoon-Knife",
+      "description": "This repo is for demonstration purposes only.",
+      "topics": [],
+      "language": "HTML",
+      "stars": 14108,
+      "forks": 160043,
+      "commits": 3,
+      "activityScore": 47,
+      "qualityScore": 47,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": true,
+      "readmeQuality": 43,
+      "updatedAt": "2026-10-13T07:57:38.000Z",
+      "pushedAt": "2024-08-21T15:25:42.000Z",
+      "createdAt": "2011-01-27T19:30:43.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 2
+    },
+    {
+      "name": "linguist",
+      "description": "Language Savant. If your repository's language is being reported incorrectly, send us a pull request!",
+      "topics": [],
+      "language": "Ruby",
+      "stars": 770,
+      "forks": 286,
+      "commits": null,
+      "activityScore": 37,
+      "qualityScore": 37,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:47.000Z",
+      "pushedAt": "2024-08-14T07:35:16.000Z",
+      "createdAt": "2016-08-02T17:35:14.000Z",
+      "archived": false,
+      "fork": true,
+      "size": 32899
+    },
+    {
+      "name": "git-consortium",
+      "description": "This repo is for demonstration purposes only.",
+      "topics": [],
+      "language": "Unknown",
+      "stars": 619,
+      "forks": 198,
+      "commits": 6,
+      "activityScore": 44,
+      "qualityScore": 44,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:45.000Z",
+      "pushedAt": "2024-07-12T15:04:33.000Z",
+      "createdAt": "2014-03-28T17:55:38.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 190
+    },
+    {
+      "name": "boysenberry-repo-1",
+      "description": "Testing",
+      "topics": [],
+      "language": "Unknown",
+      "stars": 483,
+      "forks": 28,
+      "commits": null,
+      "activityScore": 35,
+      "qualityScore": 35,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:42.000Z",
+      "pushedAt": "2024-05-26T07:02:05.000Z",
+      "createdAt": "2018-05-10T17:51:29.000Z",
+      "archived": false,
+      "fork": true,
+      "size": 4
+    },
+    {
+      "name": "hello-worId",
+      "description": "My first repository on GitHub.",
+      "topics": [],
+      "language": "Unknown",
+      "stars": 822,
+      "forks": 308,
+      "commits": 1,
+      "activityScore": 40,
+      "qualityScore": 40,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:40.000Z",
+      "pushedAt": "2024-05-06T10:29:56.000Z",
+      "createdAt": "2014-06-18T21:26:19.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 160
+    },
+    {
+      "name": "test-repo1",
+      "description": "",
+      "topics": [],
+      "language": "Unknown",
+      "stars": 494,
+      "forks": 53,
+      "commits": null,
+      "activityScore": 26,
+      "qualityScore": 26,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:36.000Z",
+      "pushedAt": "2024-03-07T11:37:27.000Z",
+      "createdAt": "2016-04-14T21:29:25.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 1
+    },
+    {
+      "name": "octocat.github.io",
+      "description": "",
+      "topics": [],
+      "language": "CSS",
+      "stars": 1184,
+      "forks": 583,
+      "commits": 4,
+      "activityScore": 33,
+      "qualityScore": 33,
+      "category": "Open Source",
+      "technologies": [],
+      "hasReadme": null,
+      "readmeQuality": null,
+      "updatedAt": "2026-10-13T01:59:34.000Z",
+      "pushedAt": "2024-08-11T11:57:01.000Z",
+      "createdAt": "2014-03-18T20:54:39.000Z",
+      "archived": false,
+      "fork": false,
+      "size": 335
+    }
+  ],
+  "repositoryQuality": [
+    {
+      "name": "Hello-World",
+      "description": "My first repository on GitHub!",
+      "qualityScore": 40,
+      "hasReadme": false,
+      "readmeQuality": 0,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 3842,
+      "forks": 7078,
+      "commits": 3,
+      "updatedAt": "2026-10-13T09:57:49.000Z",
+      "pushedAt": "2024-08-20T23:54:42.000Z"
+    },
+    {
+      "name": "Spoon-Knife",
+      "description": "This repo is for demonstration purposes only.",
+      "qualityScore": 47,
+      "hasReadme": true,
+      "readmeQuality": 43,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 14108,
+      "forks": 160043,
+      "commits": 3,
+      "updatedAt": "2026-10-13T07:57:38.000Z",
+      "pushedAt": "2024-08-21T15:25:42.000Z"
+    },
+    {
+      "name": "linguist",
+      "description": "Language Savant. If your repository's language is being reported incorrectly, send us a pull request!",
+      "qualityScore": 37,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 770,
+      "forks": 286,
+      "commits": 0,
+      "updatedAt": "2026-10-13T01:59:47.000Z",
+      "pushedAt": "2024-08-14T07:35:16.000Z"
+    },
+    {
+      "name": "git-consortium",
+      "description": "This repo is for demonstration purposes only.",
+      "qualityScore": 44,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 619,
+      "forks": 198,
+      "commits": 6,
+      "updatedAt": "2026-10-13T01:59:45.000Z",
+      "pushedAt": "2024-07-12T15:04:33.000Z"
+    },
+    {
+      "name": "boysenberry-repo-1",
+      "description": "Testing",
+      "qualityScore": 35,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 483,
+      "forks": 28,
+      "commits": 0,
+      "updatedAt": "2026-10-13T01:59:42.000Z",
+      "pushedAt": "2024-05-26T07:02:05.000Z"
+    },
+    {
+      "name": "hello-worId",
+      "description": "My first repository on GitHub.",
+      "qualityScore": 40,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 822,
+      "forks": 308,
+      "commits": 1,
+      "updatedAt": "2026-10-13T01:59:40.000Z",
+      "pushedAt": "2024-05-06T10:29:56.000Z"
+    },
+    {
+      "name": "test-repo1",
+      "description": "",
+      "qualityScore": 26,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 494,
+      "forks": 53,
+      "commits": 0,
+      "updatedAt": "2026-10-13T01:59:36.000Z",
+      "pushedAt": "2024-03-07T11:37:27.000Z"
+    },
+    {
+      "name": "octocat.github.io",
+      "description": "",
+      "qualityScore": 33,
+      "hasReadme": null,
+      "readmeQuality": null,
+      "topics": [],
+      "category": "Open Source",
+      "technologies": [],
+      "stars": 1184,
+      "forks": 583,
+      "commits": 4,
+      "updatedAt": "2026-10-13T01:59:34.000Z",
+      "pushedAt": "2024-08-11T11:57:01.000Z"
+    }
+  ],
+  "recruiterInsights": {
+    "headline": "Early GitHub signal; needs stronger project proof",
+    "proofPoints": [
+      "8 repositories show production or open-source signal.",
+      "Visible hands-on stack: JavaScript.",
+      "22322 stars and 24569 followers provide external validation."
+    ],
+    "recruiterSummary": "8 repositories analyzed with a deterministic GitHub Health Score of 37/100.",
+    "interviewTalkingPoints": [
+      "Discuss architecture and tradeoffs in Hello-World",
+      "Discuss architecture and tradeoffs in Spoon-Knife",
+      "Discuss architecture and tradeoffs in linguist",
+      "Show practical experience with JavaScript"
+    ]
+  },
+  "githubSignals": {
+    "scoring": {
+      "score": 37,
+      "breakdown": {
+        "codeQuality": {
+          "value": 28,
+          "weight": 0.24,
+          "contribution": 6.72,
+          "available": true
+        },
+        "projectDiversity": {
+          "value": 13,
+          "weight": 0.17,
+          "contribution": 2.21,
+          "available": true
+        },
+        "contribution": {
+          "value": 52,
+          "weight": 0.18,
+          "contribution": 9.36,
+          "available": true
+        },
+        "consistency": {
+          "value": 0,
+          "weight": 0.13,
+          "contribution": 0,
+          "available": true
+        },
+        "projectImpact": {
+          "value": 81,
+          "weight": 0.14,
+          "contribution": 11.340000000000002,
+          "available": true
+        },
+        "profileStrength": {
+          "value": 52,
+          "weight": 0.14,
+          "contribution": 7.280000000000001,
+          "available": true
+        }
+      },
+      "warnings": [
+        "activity_sampled_repository_history",
+        "repository_quality_uses_sampled_signals"
+      ],
+      "evidence": {
+        "sources": [
+          {
+            "type": "github-user",
+            "id": "octocat"
+          }
+        ],
+        "inputs": {
+          "codeQuality": 28,
+          "projectDiversity": 13,
+          "contribution": 52,
+          "consistency": 0,
+          "projectImpact": 81,
+          "profileStrength": 52
+        },
+        "facts": {
+          "repoCount": 8,
+          "originalRepoCount": 6,
+          "forkRepoCount": 2,
+          "archivedRepoCount": 0,
+          "languageCount": 1,
+          "totalStars": 21069,
+          "totalForks": 168263,
+          "totalCommits": 17,
+          "activeRepos": 0
+        }
+      },
+      "ruleVersion": "github-health-score-v1",
+      "calculatedAt": "2026-10-13T10:37:38.246Z"
+    },
+    "username": "octocat",
+    "analyzedAt": "2026-10-13T10:37:38.247Z",
+    "analysisVersion": "github-v2",
+    "healthScore": 37,
+    "developerLevel": "Intermediate",
+    "stats": {
+      "repos": 8,
+      "stars": 22322,
+      "forks": 168577,
+      "followers": 24569
+    },
+    "languages": {
+      "rawBytes": {
+        "HTML": 4338,
+        "CSS": 14950,
+        "JavaScript": 48
+      },
+      "normalized": [
+        {
+          "language": "CSS",
+          "bytes": 14950,
+          "percentage": 77
+        },
+        {
+          "language": "HTML",
+          "bytes": 4338,
+          "percentage": 22
+        },
+        {
+          "language": "JavaScript",
+          "bytes": 48,
+          "percentage": 1
+        }
+      ],
+      "main": [
+        {
+          "language": "JavaScript",
+          "bytes": 48,
+          "percentage": 1
+        }
+      ],
+      "support": [
+        {
+          "language": "CSS",
+          "bytes": 14950,
+          "percentage": 77
+        },
+        {
+          "language": "HTML",
+          "bytes": 4338,
+          "percentage": 22
+        }
+      ]
+    },
+    "technologies": [
+      {
+        "name": "JavaScript",
+        "category": "Frontend",
+        "confidence": 8,
+        "sources": [
+          "language"
+        ]
+      }
+    ],
+    "technologyCategories": {
+      "Frontend": [
+        {
+          "name": "JavaScript",
+          "category": "Frontend",
+          "confidence": 8,
+          "sources": [
+            "language"
+          ]
+        }
+      ],
+      "Backend": [],
+      "Database": [],
+      "DevOps": [],
+      "Cloud": [],
+      "Testing": [],
+      "Mobile": [],
+      "AI/ML": []
+    },
+    "repositories": [
+      {
+        "name": "Hello-World",
+        "description": "My first repository on GitHub!",
+        "qualityScore": 40,
+        "hasReadme": false,
+        "readmeQuality": 0,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 3842,
+        "forks": 7078,
+        "commits": 3,
+        "updatedAt": "2026-10-13T09:57:49.000Z",
+        "pushedAt": "2024-08-20T23:54:42.000Z"
+      },
+      {
+        "name": "Spoon-Knife",
+        "description": "This repo is for demonstration purposes only.",
+        "qualityScore": 47,
+        "hasReadme": true,
+        "readmeQuality": 43,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 14108,
+        "forks": 160043,
+        "commits": 3,
+        "updatedAt": "2026-10-13T07:57:38.000Z",
+        "pushedAt": "2024-08-21T15:25:42.000Z"
+      },
+      {
+        "name": "linguist",
+        "description": "Language Savant. If your repository's language is being reported incorrectly, send us a pull request!",
+        "qualityScore": 37,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 770,
+        "forks": 286,
+        "commits": 0,
+        "updatedAt": "2026-10-13T01:59:47.000Z",
+        "pushedAt": "2024-08-14T07:35:16.000Z"
+      },
+      {
+        "name": "git-consortium",
+        "description": "This repo is for demonstration purposes only.",
+        "qualityScore": 44,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 619,
+        "forks": 198,
+        "commits": 6,
+        "updatedAt": "2026-10-13T01:59:45.000Z",
+        "pushedAt": "2024-07-12T15:04:33.000Z"
+      },
+      {
+        "name": "boysenberry-repo-1",
+        "description": "Testing",
+        "qualityScore": 35,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 483,
+        "forks": 28,
+        "commits": 0,
+        "updatedAt": "2026-10-13T01:59:42.000Z",
+        "pushedAt": "2024-05-26T07:02:05.000Z"
+      },
+      {
+        "name": "hello-worId",
+        "description": "My first repository on GitHub.",
+        "qualityScore": 40,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 822,
+        "forks": 308,
+        "commits": 1,
+        "updatedAt": "2026-10-13T01:59:40.000Z",
+        "pushedAt": "2024-05-06T10:29:56.000Z"
+      },
+      {
+        "name": "test-repo1",
+        "description": "",
+        "qualityScore": 26,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 494,
+        "forks": 53,
+        "commits": 0,
+        "updatedAt": "2026-10-13T01:59:36.000Z",
+        "pushedAt": "2024-03-07T11:37:27.000Z"
+      },
+      {
+        "name": "octocat.github.io",
+        "description": "",
+        "qualityScore": 33,
+        "hasReadme": null,
+        "readmeQuality": null,
+        "topics": [],
+        "category": "Open Source",
+        "technologies": [],
+        "stars": 1184,
+        "forks": 583,
+        "commits": 4,
+        "updatedAt": "2026-10-13T01:59:34.000Z",
+        "pushedAt": "2024-08-11T11:57:01.000Z"
+      }
+    ],
+    "recruiterInsights": {
+      "headline": "Early GitHub signal; needs stronger project proof",
+      "proofPoints": [
+        "8 repositories show production or open-source signal.",
+        "Visible hands-on stack: JavaScript.",
+        "22322 stars and 24569 followers provide external validation."
+      ],
+      "recruiterSummary": "8 repositories analyzed with a deterministic GitHub Health Score of 37/100.",
+      "interviewTalkingPoints": [
+        "Discuss architecture and tradeoffs in Hello-World",
+        "Discuss architecture and tradeoffs in Spoon-Knife",
+        "Discuss architecture and tradeoffs in linguist",
+        "Show practical experience with JavaScript"
+      ]
+    }
+  },
+  "comparison": {
+    "previousAnalyzedAt": "2026-08-06T11:06:46.341Z",
+    "currentAnalyzedAt": "2026-10-13T10:37:38.246Z",
+    "healthScoreDelta": -9,
+    "repoCountDelta": 0,
+    "starsDelta": 406,
+    "forksDelta": 2321,
+    "followersDelta": 1014
+  },
+  "analysisVersion": "github-v2",
+  "cache": {
+    "source": "fresh",
+    "hit": false,
+    "expiresAt": "2026-10-14T10:37:38.247Z",
+    "cachedAt": "2026-10-13T10:37:38.252Z",
+    "fetchedAt": "2026-10-13T10:37:38.246Z",
+    "stale": false
+  },
+  "analysisHistory": [
+    {
+      "analyzedAt": "2026-07-14T14:18:27.732Z",
+      "healthScore": 46,
+      "repoCount": 8,
+      "totalStars": 21759,
+      "totalForks": 165573,
+      "followers": 23297,
+      "topLanguages": [
+        "JavaScript"
+      ],
+      "topTechnologies": [
+        "JavaScript"
+      ]
+    },
+    {
+      "analyzedAt": "2026-08-06T10:50:26.301Z",
+      "healthScore": 46,
+      "repoCount": 8,
+      "totalStars": 21916,
+      "totalForks": 166255,
+      "followers": 23555,
+      "topLanguages": [
+        "JavaScript"
+      ],
+      "topTechnologies": [
+        "JavaScript"
+      ]
+    },
+    {
+      "analyzedAt": "2026-08-06T10:53:14.111Z",
+      "healthScore": 46,
+      "repoCount": 8,
+      "totalStars": 21916,
+      "totalForks": 166255,
+      "followers": 23555,
+      "topLanguages": [
+        "JavaScript"
+      ],
+      "topTechnologies": [
+        "JavaScript"
+      ]
+    },
+    {
+      "analyzedAt": "2026-08-06T11:06:46.341Z",
+      "healthScore": 46,
+      "repoCount": 8,
+      "totalStars": 21916,
+      "totalForks": 166256,
+      "followers": 23555,
+      "topLanguages": [
+        "JavaScript"
+      ],
+      "topTechnologies": [
+        "JavaScript"
+      ]
+    },
+    {
+      "analyzedAt": "2026-10-13T10:37:38.246Z",
+      "healthScore": 37,
+      "repoCount": 8,
+      "totalStars": 22322,
+      "totalForks": 168577,
+      "followers": 24569,
+      "topLanguages": [
+        "JavaScript"
+      ],
+      "topTechnologies": [
+        "JavaScript"
+      ]
+    }
+  ]
+}

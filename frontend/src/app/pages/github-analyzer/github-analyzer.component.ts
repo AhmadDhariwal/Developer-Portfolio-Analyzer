@@ -8,7 +8,8 @@ import {
   ChangeDetectorRef,
   inject,
   DestroyRef,
-  effect
+  effect,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +24,7 @@ import {
   Repository,
   TechnologySignal,
   ScoreBreakdownItem,
-  ScoreEvidence
+  ScoreEvidence,
 } from '../../shared/services/github.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { ThemeService } from '../../shared/services/theme.service';
@@ -38,14 +39,22 @@ import {
   ProgressColor,
   ScoreCardColor,
   UiPageHeaderComponent,
-  UiDrawerComponent
+  UiDrawerComponent,
 } from '../../shared/components';
 
 Chart.register(...registerables);
 
 const LANG_COLOURS = [
-  '#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6',
-  '#EC4899', '#3B82F6', '#64748B', '#14B8A6', '#F97316'
+  '#6366F1',
+  '#06B6D4',
+  '#10B981',
+  '#F59E0B',
+  '#8B5CF6',
+  '#EC4899',
+  '#3B82F6',
+  '#64748B',
+  '#14B8A6',
+  '#F97316',
 ];
 
 export interface DisplayBreakdownItem {
@@ -73,10 +82,10 @@ export interface DisplayBreakdownItem {
     UiErrorStateComponent,
     UiProgressComponent,
     UiPageHeaderComponent,
-    UiDrawerComponent
+    UiDrawerComponent,
   ],
   templateUrl: './github-analyzer.component.html',
-  styleUrl: './github-analyzer.component.scss'
+  styleUrl: './github-analyzer.component.scss',
 })
 export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('donutCanvas') donutCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -108,6 +117,29 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
+  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+
+  @HostListener('document:keydown', ['$event'])
+  containAuditFocus(event: KeyboardEvent): void {
+    if (!this.showEvidenceDrawer || event.key !== 'Tab') return;
+    const panel = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"]');
+    if (!panel) return;
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>('button, a[href], input, summary, [tabindex="0"]'),
+    ).filter((element) => !element.hasAttribute('disabled') && element.getClientRects().length > 0);
+    const first = focusable[0] || panel;
+    const last = focusable[focusable.length - 1] || panel;
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      (document.activeElement === last || document.activeElement === panel)
+    ) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   constructor() {
     const stored = this.getStoredActiveUsername();
@@ -147,7 +179,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       return;
     }
 
-    this.github.getActiveUsername()
+    this.github
+      .getActiveUsername()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
@@ -161,7 +194,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         error: () => {
           this.isInitLoading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -177,11 +210,15 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
   private getStoredActiveUsername(): string {
     const user = this.authService.getCurrentUser();
-    return String(user?.activeGithubUsername || user?.githubUsername || '').trim().replace(/^@/, '');
+    return String(user?.activeGithubUsername || user?.githubUsername || '')
+      .trim()
+      .replace(/^@/, '');
   }
 
   private applyDefaultUsername(username: string): void {
-    this.defaultUsername = String(username || '').trim().replace(/^@/, '');
+    this.defaultUsername = String(username || '')
+      .trim()
+      .replace(/^@/, '');
     this.username = this.defaultUsername;
     this.viewedUsername = this.defaultUsername;
     this.isTemporaryView = false;
@@ -205,7 +242,10 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       return;
     }
 
-    if (trimmed.length > 39 || !/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(trimmed)) {
+    if (
+      trimmed.length > 39 ||
+      !/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(trimmed)
+    ) {
       this.errorMessage = 'GitHub username format is invalid.';
       this.invalidUsername = true;
       return;
@@ -213,7 +253,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
     const normalizedDefault = this.defaultUsername.trim().toLowerCase();
     const normalizedCurrent = trimmed.toLowerCase();
-    const isDefaultProfileAnalysis = Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
+    const isDefaultProfileAnalysis =
+      Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
 
     if (this.isAnalyzing) return;
 
@@ -221,7 +262,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.errorMessage = '';
     this.invalidUsername = false;
 
-    const keepCurrentResult = forceRefresh && this.viewedUsername.toLowerCase() === normalizedCurrent;
+    const keepCurrentResult =
+      forceRefresh && this.viewedUsername.toLowerCase() === normalizedCurrent;
     if (!keepCurrentResult) {
       this.analysisReady = false;
       this.result = null;
@@ -232,21 +274,21 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       ? this.github.analyzeAndSave(trimmed, forceRefresh)
       : this.github.analyzeProfile(trimmed, forceRefresh);
 
-    request$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.isAnalyzing = false;
-          this.applyResult(data, trimmed, isDefaultProfileAnalysis);
-        },
-        error: (err) => {
-          this.isAnalyzing = false;
-          this.analysisReady = Boolean(this.result);
-          this.invalidUsername = err.status === 404 || err.error?.status === 404;
-          this.errorMessage = err.error?.message ?? 'Failed to analyze GitHub profile. Please check the username and try again.';
-          this.cdr.detectChanges();
-        }
-      });
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
+        this.isAnalyzing = false;
+        this.applyResult(data, trimmed, isDefaultProfileAnalysis);
+      },
+      error: (err) => {
+        this.isAnalyzing = false;
+        this.analysisReady = Boolean(this.result);
+        this.invalidUsername = err.status === 404 || err.error?.status === 404;
+        this.errorMessage =
+          err.error?.message ??
+          'Failed to analyze GitHub profile. Please check the username and try again.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   refreshAnalysis(): void {
@@ -263,7 +305,11 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.showEvidenceDrawer = !this.showEvidenceDrawer;
   }
 
-  private applyResult(data: GitHubAnalysisResult, username: string, isDefaultProfileAnalysis: boolean): void {
+  private applyResult(
+    data: GitHubAnalysisResult,
+    username: string,
+    isDefaultProfileAnalysis: boolean,
+  ): void {
     this.result = data;
     this.viewedUsername = username;
     this.isTemporaryView = !isDefaultProfileAnalysis;
@@ -301,20 +347,22 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.donutChart?.destroy();
       if (!langs.length) return;
 
-      const isDark = this.themeService.isDark();
-      const chartFont = getComputedStyle(canvas).fontFamily;
+      const style = getComputedStyle(canvas);
+      const chartFont = style.fontFamily;
 
       const cfg: ChartConfiguration<'doughnut'> = {
         type: 'doughnut',
         data: {
           labels: langs.map((lang) => lang.language),
-          datasets: [{
-            data: langs.map((lang) => lang.percentage),
-            backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
-            borderColor: isDark ? '#151D2A' : '#FFFFFF',
-            borderWidth: 2,
-            hoverOffset: 6
-          }]
+          datasets: [
+            {
+              data: langs.map((lang) => lang.percentage),
+              backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
+              borderColor: style.getPropertyValue('--surface-card').trim(),
+              borderWidth: 2,
+              hoverOffset: 6,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -326,11 +374,11 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
               titleFont: { family: chartFont, size: 12, weight: 600 },
               bodyFont: { family: chartFont, size: 12 },
               callbacks: {
-                label: (c) => ` ${c.label}: ${c.parsed}%`
-              }
-            }
-          }
-        }
+                label: (c) => ` ${c.label}: ${c.parsed}%`,
+              },
+            },
+          },
+        },
       };
       this.donutChart = new Chart(canvas, cfg);
     } catch {
@@ -347,25 +395,32 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       }
       this.barChart?.destroy();
 
-      const top = [...(activity || [])].sort((a, b) => (b.commits ?? 0) - (a.commits ?? 0)).slice(0, 7);
+      const top = [...(activity || [])]
+        .sort((a, b) => (b.commits ?? 0) - (a.commits ?? 0))
+        .slice(0, 7);
       if (!top.length) return;
 
-      const isDark = this.themeService.isDark();
-      const chartFont = getComputedStyle(canvas).fontFamily;
+      const style = getComputedStyle(canvas);
+      const chartFont = style.fontFamily;
+      const primary = style.getPropertyValue('--color-primary').trim();
+      const muted = style.getPropertyValue('--text-muted').trim();
+      const border = style.getPropertyValue('--border-color').trim();
 
       const cfg: ChartConfiguration<'bar'> = {
         type: 'bar',
         data: {
           labels: top.map((repo) => repo.repo),
-          datasets: [{
-            label: 'Commits',
-            data: top.map((repo) => repo.commits ?? 0),
-            backgroundColor: isDark ? 'rgba(99, 102, 241, 0.85)' : 'rgba(79, 70, 229, 0.85)',
-            borderColor: isDark ? '#818CF8' : '#4F46E5',
-            borderWidth: 1,
-            borderRadius: 4,
-            barThickness: 16
-          }]
+          datasets: [
+            {
+              label: 'Commits',
+              data: top.map((repo) => repo.commits ?? 0),
+              backgroundColor: primary,
+              borderColor: primary,
+              borderWidth: 1,
+              borderRadius: 4,
+              barThickness: 16,
+            },
+          ],
         },
         options: {
           indexAxis: 'y',
@@ -376,31 +431,31 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
             tooltip: {
               titleFont: { family: chartFont, size: 12, weight: 600 },
               bodyFont: { family: chartFont, size: 12 },
-              callbacks: { label: (c) => ` ${c.parsed.x} commits (sampled)` }
-            }
+              callbacks: { label: (c) => ` ${c.parsed.x} commits (sampled)` },
+            },
           },
           scales: {
             x: {
               beginAtZero: true,
-              grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9' },
+              grid: { color: border },
               ticks: {
-                color: isDark ? '#94A3B8' : '#526075',
-                font: { family: chartFont, size: 12, weight: 500 }
-              }
+                color: muted,
+                font: { family: chartFont, size: 12, weight: 500 },
+              },
             },
             y: {
               grid: { display: false },
               ticks: {
-                color: isDark ? '#CBD5E1' : '#475569',
+                color: muted,
                 font: { family: chartFont, size: 12, weight: 500 },
-                callback: function(_val, idx) {
+                callback: function (_val, idx) {
                   const label = this.getLabelForValue(idx);
                   return label.length > 18 ? `${label.slice(0, 17)}...` : label;
-                }
-              }
-            }
-          }
-        }
+                },
+              },
+            },
+          },
+        },
       };
       this.barChart = new Chart(canvas, cfg);
     } catch {
@@ -445,52 +500,58 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     const breakdown = this.result.scoring?.breakdown || {};
     const scores = this.result.scores || {};
 
-    const definitions: Array<{ id: string; label: string; description: string; weight: number; color: ProgressColor }> = [
+    const definitions: Array<{
+      id: string;
+      label: string;
+      description: string;
+      weight: number;
+      color: ProgressColor;
+    }> = [
       {
         id: 'codeQuality',
         label: 'Code Quality',
         description: 'Repo documentation, README cleanliness, and engineering stack depth',
         weight: 24,
-        color: 'primary'
+        color: 'primary',
       },
       {
         id: 'projectDiversity',
         label: 'Project Diversity',
         description: 'Language distribution balance and tech stack breadth across projects',
         weight: 17,
-        color: 'info'
+        color: 'info',
       },
       {
         id: 'contribution',
         label: 'Contribution Signal',
         description: 'Commit depth across top active repositories (sampled contributor history)',
         weight: 18,
-        color: 'success'
+        color: 'success',
       },
       {
         id: 'consistency',
         label: 'Consistency',
         description: 'Push frequency and active repository updates over the past 6 months',
         weight: 13,
-        color: 'warning'
+        color: 'warning',
       },
       {
         id: 'projectImpact',
         label: 'Project Impact',
         description: 'Community adoption, stars, forks, and project visibility',
         weight: 14,
-        color: 'primary'
+        color: 'primary',
       },
       {
         id: 'profileStrength',
         label: 'Profile Strength',
         description: 'Profile completeness, follower network, and repository volume',
         weight: 14,
-        color: 'secondary'
-      }
+        color: 'secondary',
+      },
     ];
 
-    return definitions.map(def => {
+    return definitions.map((def) => {
       const item: ScoreBreakdownItem | undefined = breakdown[def.id];
       let value: number | null = null;
       let contribution: number | null = null;
@@ -498,7 +559,10 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
       if (item) {
         value = item.value !== null && Number.isFinite(item.value) ? Math.round(item.value) : null;
-        contribution = item.contribution !== null && Number.isFinite(item.contribution) ? Number(item.contribution.toFixed(1)) : null;
+        contribution =
+          item.contribution !== null && Number.isFinite(item.contribution)
+            ? Number(item.contribution.toFixed(1))
+            : null;
         available = item.available === true && value !== null;
       } else if (scores[def.id] !== undefined && scores[def.id] !== null) {
         const num = Number(scores[def.id]);
@@ -516,7 +580,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
         value,
         contribution,
         available,
-        color: def.color
+        color: def.color,
       };
     });
   }
@@ -531,21 +595,21 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.evidenceFacts?.originalRepoCount !== undefined) {
       return this.evidenceFacts.originalRepoCount;
     }
-    return (this.result?.repositories || []).filter(r => !r.fork).length;
+    return (this.result?.repositories || []).filter((r) => !r.fork).length;
   }
 
   get forkedRepoCount(): number {
     if (this.evidenceFacts?.forkRepoCount !== undefined) {
       return this.evidenceFacts.forkRepoCount;
     }
-    return (this.result?.repositories || []).filter(r => r.fork).length;
+    return (this.result?.repositories || []).filter((r) => r.fork).length;
   }
 
   get archivedRepoCount(): number {
     if (this.evidenceFacts?.archivedRepoCount !== undefined) {
       return this.evidenceFacts.archivedRepoCount;
     }
-    return (this.result?.repositories || []).filter(r => r.archived).length;
+    return (this.result?.repositories || []).filter((r) => r.archived).length;
   }
 
   get totalSampledCommits(): number | null {
@@ -554,15 +618,21 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     }
     const activity = this.result?.repositoryActivity || [];
     if (!activity.length) return null;
-    return activity.reduce((sum, item) => sum + (Number.isFinite(item.commits) ? Number(item.commits) : 0), 0);
+    return activity.reduce(
+      (sum, item) => sum + (Number.isFinite(item.commits) ? Number(item.commits) : 0),
+      0,
+    );
   }
 
   get ruleVersion(): string {
-    return this.result?.scoring?.ruleVersion || this.result?.analysisVersion || 'github-health-score-v1';
+    return (
+      this.result?.scoring?.ruleVersion || this.result?.analysisVersion || 'github-health-score-v1'
+    );
   }
 
   get calculationTimestamp(): string {
-    const ts = this.result?.scoring?.calculatedAt ||
+    const ts =
+      this.result?.scoring?.calculatedAt ||
       this.result?.fetchedAt ||
       this.result?.cache?.cachedAt ||
       this.result?.githubSignals?.analyzedAt;
@@ -580,7 +650,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.result?.cache?.stale ||
       this.result?.cache?.source === 'stale-cache' ||
       this.result?.rateLimited ||
-      (this.result?.warning && this.result.warning.toLowerCase().includes('rate limit'))
+      (this.result?.warning && this.result.warning.toLowerCase().includes('rate limit')),
     );
   }
 
@@ -595,31 +665,38 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.result) return '';
     if (this.isStale) return 'Cached Fallback (Stale)';
     switch (this.result.cache?.source) {
-      case 'frontend-cache': return 'Browser Cache';
-      case 'cache': return 'Backend Cache';
-      case 'fresh': return 'Fresh Analysis';
-      default: return this.result.cache?.hit ? 'Cached' : 'Fresh Analysis';
+      case 'frontend-cache':
+        return 'Browser Cache';
+      case 'cache':
+        return 'Backend Cache';
+      case 'fresh':
+        return 'Fresh Analysis';
+      default:
+        return this.result.cache?.hit ? 'Cached' : 'Fresh Analysis';
     }
   }
 
   get scoringWarnings(): string[] {
     const warnings = this.result?.scoring?.warnings || [];
     const map: Record<string, string> = {
-      'activity_sampled_repository_history': 'Activity metrics reflect sampled history across the top 5 active repositories.',
-      'repository_quality_uses_sampled_signals': 'Repository scores are derived from manifests, docs, and public heuristics.',
-      'activity_partial_or_unavailable': 'Commit activity was partially restricted by API rate limits.',
-      'repository_metrics_partial': 'Some repository metrics were partially collected.',
-      'language_data_unavailable': 'Language byte distribution is temporarily unavailable.',
-      'score_unavailable': 'Health score calculation was omitted due to missing core signals.'
+      activity_sampled_repository_history:
+        'Activity metrics reflect sampled history across the top 5 active repositories.',
+      repository_quality_uses_sampled_signals:
+        'Repository scores are derived from manifests, docs, and public heuristics.',
+      activity_partial_or_unavailable:
+        'Commit activity was partially restricted by API rate limits.',
+      repository_metrics_partial: 'Some repository metrics were partially collected.',
+      language_data_unavailable: 'Language byte distribution is temporarily unavailable.',
+      score_unavailable: 'Health score calculation was omitted due to missing core signals.',
     };
-    return warnings.map(w => map[w] || w);
+    return warnings.map((w) => map[w] || w);
   }
 
   // ── Languages & Technologies ───────────────────────────────────
 
   get displayLanguages(): LanguageDistribution[] {
     const main = this.result?.mainLanguageDistribution || [];
-    return this.sortedLanguages(main.length ? main : (this.result?.languageDistribution || []));
+    return this.sortedLanguages(main.length ? main : this.result?.languageDistribution || []);
   }
 
   get supportLanguages(): LanguageDistribution[] {
@@ -631,7 +708,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     const signals = [
       ...(this.result?.technologies || []),
       ...Object.entries(categories).flatMap(([category, items]) =>
-        (items || []).map((item) => ({ ...item, category: item.category || category })))
+        (items || []).map((item) => ({ ...item, category: item.category || category })),
+      ),
     ];
     const deduped = new Map<string, TechnologySignal>();
     signals.forEach((item) => {
@@ -652,17 +730,21 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     return Array.from(grouped.entries())
       .map(([category, items]) => ({
         category,
-        items: items.sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0) || a.name.localeCompare(b.name))
+        items: items.sort(
+          (a, b) =>
+            Number(b.confidence || 0) - Number(a.confidence || 0) || a.name.localeCompare(b.name),
+        ),
       }))
       .sort((a, b) => a.category.localeCompare(b.category));
   }
 
   get repositoryRows(): Repository[] {
-    return [...(this.result?.repositories || [])]
-      .sort((a, b) =>
+    return [...(this.result?.repositories || [])].sort(
+      (a, b) =>
         this.repositoryScore(b) - this.repositoryScore(a) ||
         Number(b.stars || 0) - Number(a.stars || 0) ||
-        String(a.name || '').localeCompare(String(b.name || '')));
+        String(a.name || '').localeCompare(String(b.name || '')),
+    );
   }
 
   get topRepositories(): Repository[] {
@@ -745,50 +827,50 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   get strongestSignal(): { label: string; score: number | null; detail: string } {
-    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
     if (breakdown.length) {
       const top = [...breakdown].sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
       return {
         label: `${top.label} (${top.value}/100)`,
         score: top.value,
-        detail: top.description
+        detail: top.description,
       };
     }
     if (this.result?.strengths?.length) {
       return {
         label: 'Engineering Strength',
         score: null,
-        detail: this.result.strengths[0]
+        detail: this.result.strengths[0],
       };
     }
     return {
       label: 'Repository Foundation',
       score: null,
-      detail: `${this.result?.repoCount ?? 0} public repositories evaluated.`
+      detail: `${this.result?.repoCount ?? 0} public repositories evaluated.`,
     };
   }
 
   get biggestWeakness(): { label: string; score: number | null; detail: string } {
-    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
     if (breakdown.length) {
       const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
       return {
         label: `${lowest.label} (${lowest.value}/100)`,
         score: lowest.value,
-        detail: lowest.description
+        detail: lowest.description,
       };
     }
     if (this.result?.weakAreas?.length) {
       return {
         label: 'Growth Opportunity',
         score: null,
-        detail: this.result.weakAreas[0]
+        detail: this.result.weakAreas[0],
       };
     }
     return {
       label: 'Activity Cadence',
       score: null,
-      detail: 'Increase commit consistency across public repositories.'
+      detail: 'Increase commit consistency across public repositories.',
     };
   }
 
@@ -796,31 +878,41 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.result?.weakAreas?.length) {
       return {
         title: 'Address Identified Gap',
-        detail: this.result.weakAreas[0]
+        detail: this.result.weakAreas[0],
       };
     }
-    const breakdown = this.scoreBreakdownList.filter(b => b.available && b.value !== null);
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
     if (breakdown.length) {
       const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
       return {
         title: `Strengthen ${lowest.label}`,
-        detail: `Focus on ${lowest.description.toLowerCase()} to gain up to +${lowest.weightPct} potential points.`
+        detail: `Focus on ${lowest.description.toLowerCase()} to gain up to +${lowest.weightPct} potential points.`,
       };
     }
     return {
       title: 'Maintain Active Commits',
-      detail: 'Push regular commits and document architecture in your top projects.'
+      detail: 'Push regular commits and document architecture in your top projects.',
     };
   }
 
   // ── Conditionals & UI State ────────────────────────────────────
 
   get hasNoConfiguredGithub(): boolean {
-    return !this.isInitLoading && !this.defaultUsername && !this.analysisReady && !this.isAnalyzing && !this.errorMessage;
+    return (
+      !this.isInitLoading &&
+      !this.defaultUsername &&
+      !this.analysisReady &&
+      !this.isAnalyzing &&
+      !this.errorMessage
+    );
   }
 
   get hasEmptyRepositories(): boolean {
-    return this.analysisReady && Boolean(this.result) && (this.result?.repoCount === 0 || !this.result?.repositories?.length);
+    return (
+      this.analysisReady &&
+      Boolean(this.result) &&
+      (this.result?.repoCount === 0 || !this.result?.repositories?.length)
+    );
   }
 
   get hasLanguageData(): boolean {
@@ -841,7 +933,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       this.result?.explanation ||
       this.result?.strengths?.length ||
       this.result?.weakAreas?.length ||
-      this.result?.recruiterInsights?.proofPoints?.length
+      this.result?.recruiterInsights?.proofPoints?.length,
     );
   }
 
@@ -862,7 +954,9 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   repositoryTechnologies(repo: Repository): string[] {
-    return Array.from(new Set((repo.technologies || []).map((tech) => String(tech || '').trim()).filter(Boolean))).slice(0, 3);
+    return Array.from(
+      new Set((repo.technologies || []).map((tech) => String(tech || '').trim()).filter(Boolean)),
+    ).slice(0, 3);
   }
 
   getLangColour(index: number): string {
@@ -897,14 +991,16 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
   private sortedLanguages(languages: LanguageDistribution[]): LanguageDistribution[] {
     return [...languages]
       .filter((item) => Boolean(item?.language) && Number.isFinite(Number(item.percentage)))
-      .sort((a, b) => Number(b.percentage) - Number(a.percentage) || a.language.localeCompare(b.language));
+      .sort(
+        (a, b) =>
+          Number(b.percentage) - Number(a.percentage) || a.language.localeCompare(b.language),
+      );
   }
 }
-
