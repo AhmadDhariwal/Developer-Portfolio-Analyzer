@@ -1,7 +1,11 @@
 /** Backend-owned facts. Presentation must never derive proficiency or scores. */
 export const SKILL_EVIDENCE_VERSION = 'skill-evidence-coverage-v1';
 export type EvidenceStatus =
-  'DEMONSTRATED' | 'PARTIAL' | 'CLAIMED_ONLY' | 'NOT_EVIDENCED' | 'UNKNOWN';
+  | 'DEMONSTRATED'
+  | 'PARTIAL'
+  | 'CLAIMED_ONLY'
+  | 'NOT_EVIDENCED'
+  | 'UNKNOWN';
 export type EvidenceConfidence = 'HIGH' | 'MEDIUM' | 'LOW' | 'INSUFFICIENT';
 export interface SourceReference {
   type: string;

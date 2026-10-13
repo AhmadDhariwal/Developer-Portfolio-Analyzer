@@ -8,14 +8,14 @@ const getSkillGapPrompt = (
   detectedSkills,
   resumeInsights = {},
   githubInsights = {},
-  developerSignals = {}
+  developerSignals = {},
 ) => {
   const compactContext = {
     profile: { careerStack, experienceLevel },
     skills: detectedSkills,
     resume: resumeInsights,
     github: githubInsights,
-    signals: developerSignals
+    signals: developerSignals,
   };
 
   return `You are a senior engineering career coach. Write narrative only from the compact evidence below. Do not invent skills, scores, rankings, coverage, or roadmap phases.

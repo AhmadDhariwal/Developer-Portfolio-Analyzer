@@ -151,7 +151,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     // Dynamic reactive chart re-rendering on theme switch
     effect(() => {
       // Access signal to register dependency
-      const _ = this.themeService.activeTheme();
+      this.themeService.activeTheme();
       if (this.viewReady && this.result) {
         if (this.displayLanguages?.length) {
           this.buildDonutChart(this.displayLanguages);

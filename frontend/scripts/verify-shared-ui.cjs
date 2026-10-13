@@ -28,7 +28,12 @@ const server = http.createServer((req, res) => {
 async function settle(page) {
   await page.evaluate(async () => {
     await new Promise(requestAnimationFrame);
-    await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
+    await Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => {})),
+    );
   });
 }
 async function session(browser, theme, role = 'developer') {

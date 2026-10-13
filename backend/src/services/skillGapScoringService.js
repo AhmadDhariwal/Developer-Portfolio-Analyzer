@@ -123,4 +123,9 @@ const calculate = (
   };
 };
 
-module.exports = { calculate, calculateLegacy: calculate, COVERAGE_WEIGHTS, CONFIDENCE_WEIGHTS };
+module.exports = {
+  calculate,
+  calculateLegacy: calculate,
+  COVERAGE_WEIGHTS,
+  CONFIDENCE_WEIGHTS,
+};

@@ -46,13 +46,13 @@ The pure engine accepts trusted, artifact-referenced observations. Its productio
 adapter derives observations only from validated existing analyzer/profile outputs;
 it never accepts evidence/status/score overrides from request bodies or AI.
 
-| Status | Exact condition |
-| --- | --- |
-| DEMONSTRATED | Positive technical IMPLEMENTATION observation, explicitly inspected and meaningful, with an artifact reference, from GitHub or an approved integration; no recorded technical conflict |
-| PARTIAL | Positive relevant METADATA observation; or demonstrated implementation with an explicit conflicting technical observation |
-| CLAIMED_ONLY | Positive claims only, including resume/profile statements and unverified integration summaries |
-| NOT_EVIDENCED | Relevant analyzed sources are available but establish no positive observation for the skill |
-| UNKNOWN | No relevant analyzed source establishes an assessment for the skill |
+| Status        | Exact condition                                                                                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DEMONSTRATED  | Positive technical IMPLEMENTATION observation, explicitly inspected and meaningful, with an artifact reference, from GitHub or an approved integration; no recorded technical conflict |
+| PARTIAL       | Positive relevant METADATA observation; or demonstrated implementation with an explicit conflicting technical observation                                                              |
+| CLAIMED_ONLY  | Positive claims only, including resume/profile statements and unverified integration summaries                                                                                         |
+| NOT_EVIDENCED | Relevant analyzed sources are available but establish no positive observation for the skill                                                                                            |
+| UNKNOWN       | No relevant analyzed source establishes an assessment for the skill                                                                                                                    |
 
 Strong evidence takes precedence over weaker claims/metadata. Independent weak
 evidence stays PARTIAL; it never promotes practical proficiency to DEMONSTRATED.
@@ -129,15 +129,14 @@ UNKNOWN is never silently assigned zero credit.
 
 Three manually verified, equal-weight, two-required-skill fixtures:
 
-| Required skill statuses | Calculation | Coverage |
-| --- | --- | --- |
-| Two CLAIMED_ONLY skills | 100 × (0 + 0) / 2 | 0% |
-| Two PARTIAL skills | 100 × (0.5 + 0.5) / 2 | 50% |
-| Two DEMONSTRATED skills | 100 × (1 + 1) / 2 | 100% |
+| Required skill statuses | Calculation           | Coverage |
+| ----------------------- | --------------------- | -------- |
+| Two CLAIMED_ONLY skills | 100 × (0 + 0) / 2     | 0%       |
+| Two PARTIAL skills      | 100 × (0.5 + 0.5) / 2 | 50%      |
+| Two DEMONSTRATED skills | 100 × (1 + 1) / 2     | 100%     |
 
 A weighted fixture also verifies a required demonstrated skill of weight two and
-a required partial skill of weight one: 100 × (2 + .5) / 3 = 83.333..., rounded to
-83. A demonstrated OPTIONAL skill of weight 50 changes neither numerator nor
+a required partial skill of weight one: 100 × (2 + .5) / 3 = 83.333..., rounded to 83. A demonstrated OPTIONAL skill of weight 50 changes neither numerator nor
 denominator. These are mathematical test fixtures, not newly invented role matrices.
 
 Unavailable requirements yield `career_requirements_unavailable`. No relevant

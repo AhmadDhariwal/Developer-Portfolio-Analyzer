@@ -73,14 +73,14 @@ Paths above are relative to `frontend`. Earlier shared-shell and Skill Gap work 
 
 ## Light/Dark screenshots
 
-Native device scale factor 1. Full document screenshots retain the requested viewport width; fold screenshots show the normal 1000px-high viewport. Synthetic fixtures are intentionally labeled Fixture Developer.
+| Appearance | Desktop (1440px)          | Mobile (375px)          |
+| ---------- | ------------------------- | ----------------------- |
+| Light      | [Desktop](light-1440.png) | [Mobile](light-375.png) |
+| Dark       | [Desktop](dark-1440.png)  | [Mobile](dark-375.png)  |
 
-| Appearance | Desktop (1440px)                                                 | Mobile (375px)                                                |
-| ---------- | ---------------------------------------------------------------- | ------------------------------------------------------------- |
-| Light      | [Desktop fold](light-1440-fold.png), [full page](light-1440.png) | [Mobile fold](light-375-fold.png), [full page](light-375.png) |
-| Dark       | [Desktop fold](dark-1440-fold.png), [full page](dark-1440.png)   | [Mobile fold](dark-375-fold.png), [full page](dark-375.png)   |
+These native-resolution screenshots were refreshed during cleanup. All viewport, theme and interaction measurements remain in results.json; redundant captures were removed.
 
-Additional PNGs cover 320, 425, 768, 1024, 1280 and 1600px in every appearance, mobile evidence/focus states, real octocat analysis and the Skill Gap visual reference.
+Live Light/Dark octocat captures are also preserved.
 
 ## Responsive results
 

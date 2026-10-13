@@ -27,7 +27,7 @@ import {
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ApiService } from '../../../shared/services/api.service';
 import { ProfileService } from '../../../shared/services/profile.service';
-import { ThemeService, ThemePreference } from '../../../shared/services/theme.service';
+import { ThemeService } from '../../../shared/services/theme.service';
 
 interface SearchSuggestion {
   type: 'page' | 'repo' | 'skill';

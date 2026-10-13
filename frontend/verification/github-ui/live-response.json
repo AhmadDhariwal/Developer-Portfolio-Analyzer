@@ -58,10 +58,7 @@
         "available": true
       }
     },
-    "warnings": [
-      "activity_sampled_repository_history",
-      "repository_quality_uses_sampled_signals"
-    ],
+    "warnings": ["activity_sampled_repository_history", "repository_quality_uses_sampled_signals"],
     "evidence": {
       "sources": [
         {
@@ -177,9 +174,7 @@
       "name": "JavaScript",
       "category": "Frontend",
       "confidence": 8,
-      "sources": [
-        "language"
-      ]
+      "sources": ["language"]
     }
   ],
   "technologyCategories": {
@@ -188,9 +183,7 @@
         "name": "JavaScript",
         "category": "Frontend",
         "confidence": 8,
-        "sources": [
-          "language"
-        ]
+        "sources": ["language"]
       }
     ],
     "Backend": [],
@@ -671,9 +664,7 @@
         "name": "JavaScript",
         "category": "Frontend",
         "confidence": 8,
-        "sources": [
-          "language"
-        ]
+        "sources": ["language"]
       }
     ],
     "technologyCategories": {
@@ -682,9 +673,7 @@
           "name": "JavaScript",
           "category": "Frontend",
           "confidence": 8,
-          "sources": [
-            "language"
-          ]
+          "sources": ["language"]
         }
       ],
       "Backend": [],
@@ -859,12 +848,8 @@
       "totalStars": 21759,
       "totalForks": 165573,
       "followers": 23297,
-      "topLanguages": [
-        "JavaScript"
-      ],
-      "topTechnologies": [
-        "JavaScript"
-      ]
+      "topLanguages": ["JavaScript"],
+      "topTechnologies": ["JavaScript"]
     },
     {
       "analyzedAt": "2026-08-06T10:50:26.301Z",
@@ -873,12 +858,8 @@
       "totalStars": 21916,
       "totalForks": 166255,
       "followers": 23555,
-      "topLanguages": [
-        "JavaScript"
-      ],
-      "topTechnologies": [
-        "JavaScript"
-      ]
+      "topLanguages": ["JavaScript"],
+      "topTechnologies": ["JavaScript"]
     },
     {
       "analyzedAt": "2026-08-06T10:53:14.111Z",
@@ -887,12 +868,8 @@
       "totalStars": 21916,
       "totalForks": 166255,
       "followers": 23555,
-      "topLanguages": [
-        "JavaScript"
-      ],
-      "topTechnologies": [
-        "JavaScript"
-      ]
+      "topLanguages": ["JavaScript"],
+      "topTechnologies": ["JavaScript"]
     },
     {
       "analyzedAt": "2026-08-06T11:06:46.341Z",
@@ -901,12 +878,8 @@
       "totalStars": 21916,
       "totalForks": 166256,
       "followers": 23555,
-      "topLanguages": [
-        "JavaScript"
-      ],
-      "topTechnologies": [
-        "JavaScript"
-      ]
+      "topLanguages": ["JavaScript"],
+      "topTechnologies": ["JavaScript"]
     },
     {
       "analyzedAt": "2026-10-13T10:37:38.246Z",
@@ -915,12 +888,8 @@
       "totalStars": 22322,
       "totalForks": 168577,
       "followers": 24569,
-      "topLanguages": [
-        "JavaScript"
-      ],
-      "topTechnologies": [
-        "JavaScript"
-      ]
+      "topLanguages": ["JavaScript"],
+      "topTechnologies": ["JavaScript"]
     }
   ]
 }
