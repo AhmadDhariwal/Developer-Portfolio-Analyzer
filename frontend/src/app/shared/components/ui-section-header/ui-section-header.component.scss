@@ -5,7 +5,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--spacing-md, 1rem);
-  margin-bottom: var(--spacing-md, 1.25rem);
+  margin-bottom: var(--dev-space-3, var(--spacing-md, 1.25rem));
   flex-wrap: wrap;
   width: 100%;
   font-family: var(--font-sans, 'Inter', sans-serif);
@@ -47,9 +47,9 @@
 
       .section-title {
         margin: 0;
-        font-size: 1.1875rem; // ~19px
+        font-size: var(--dev-text-section, 1.1875rem);
         font-weight: 600;
-        color: var(--text-primary, #0F172A);
+        color: var(--text-primary, #0f172a);
         font-family: var(--font-heading, 'Inter', sans-serif);
         letter-spacing: -0.015em;
       }
@@ -57,9 +57,9 @@
 
     .section-subtitle {
       margin: 0.25rem 0 0 0;
-      font-size: 0.875rem; // 14px
+      font-size: var(--dev-text-body, 0.875rem);
       color: var(--text-secondary, #475569);
-      line-height: 1.45;
+      line-height: var(--dev-leading-body, 1.45);
     }
   }
 

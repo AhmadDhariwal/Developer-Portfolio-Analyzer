@@ -1,3 +1,5 @@
+@use '../../shared/styles/developer-ui' as developer;
+
 .dashboard-shell {
   --sidebar-expanded-width: 260px;
   --sidebar-collapsed-width: 72px;
@@ -10,8 +12,6 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
   z-index: 210;
 }
 
@@ -40,6 +40,7 @@
 }
 
 .main-content {
+  scroll-margin-top: var(--navbar-height);
   flex: 1;
   container-type: inline-size;
   margin-top: var(--navbar-height);
@@ -52,11 +53,44 @@
     padding: 16px 14px;
   }
 
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
   &::-webkit-scrollbar-thumb {
     background: var(--border-light);
     border-radius: var(--radius-full);
-    &:hover { background: var(--text-muted); }
+    &:hover {
+      background: var(--text-muted);
+    }
+  }
+}
+
+.dashboard-shell.developer-workspace {
+  @include developer.tokens;
+  .main-content {
+    padding: var(--dev-workspace-padding);
+  }
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 500;
+  transform: translateY(-150%);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--color-primary-text);
+  &:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--color-primary);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-body {
+    transition: none;
   }
 }

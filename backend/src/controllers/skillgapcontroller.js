@@ -1,18 +1,26 @@
-const { clampScore: clamp } = require('../services/scoring/math');
-const developerContext = require('../services/developerContextService');
-const crypto = require('node:crypto');
+const { clampScore: clamp } = require("../services/scoring/math");
+const developerContext = require("../services/developerContextService");
+const skillGapScoring = require("../services/skillGapScoringService");
+const skillGapEvidence = require("../services/skillGapEvidenceService");
+const skillGapCompatibility = require("../services/skillGapCompatibilityService");
+const skillGapRequirements = require("../services/skillGapRequirements");
+const { numeric } = require("../services/scoring/math");
+const crypto = require("node:crypto");
 const {
   getCachedGitHubAnalysis,
   refreshGitHubAnalysisInBackground,
-  parseGitHubUsername
-} = require('../services/githubservice');
-const aiService = require('../services/aiservice');
-const { createNotification } = require('../services/notificationService');
-const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
-const AnalysisCache = require('../models/analysisCache');
-const ResumeAnalysis = require('../models/resumeAnalysis');
-const { createVersion } = require('../services/aiVersionService');
-const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/skillGraphService');
+  parseGitHubUsername,
+} = require("../services/githubservice");
+const aiService = require("../services/aiservice");
+const { createNotification } = require("../services/notificationService");
+const { getSkillGapPrompt } = require("../prompts/skillGapPrompt");
+const AnalysisCache = require("../models/analysisCache");
+const ResumeAnalysis = require("../models/resumeAnalysis");
+const { createVersion } = require("../services/aiVersionService");
+const {
+  buildSkillGraph,
+  generateWeeklyLearningRoadmap,
+} = require("../services/skillGraphService");
 const {
   getDeveloperSignals,
   buildSignalHash,
@@ -20,59 +28,83 @@ const {
   buildResumeAnalysisSignals,
   buildResumeCacheIdentity,
   buildAnalysisBasedOn,
-  getPublicJobMarketSignal
-} = require('../services/developerSignalService');
-const {
-  estimateTokens,
-  buildSkillGapPromptContext
-} = require('../services/promptBuilderService');
+  getPublicJobMarketSignal,
+} = require("../services/developerSignalService");
+const { estimateTokens } = require("../services/promptBuilderService");
 const {
   extractSkillsFromRepositories,
   canonicalizeSkillName,
   normalizeSkillList,
-  INDUSTRY_SKILLS
-} = require('../utils/skilldetector');
-const { resolvePreviewResume } = require('../services/previewResumeCacheService');
+  INDUSTRY_SKILLS,
+} = require("../utils/skilldetector");
+const {
+  resolvePreviewResume,
+} = require("../services/previewResumeCacheService");
 
-const ANALYSIS_VERSION = 'v6-skill-intelligence';
+const ANALYSIS_VERSION = "v8-skill-evidence-coverage";
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
 const DETERMINISTIC_CONFIDENCE_THRESHOLD = Math.min(
   100,
-  Math.max(0, Number.parseInt(process.env.SKILL_GAP_AI_THRESHOLD || '70', 10) || 70)
+  Math.max(
+    0,
+    Number.parseInt(process.env.SKILL_GAP_AI_THRESHOLD || "70", 10) || 70,
+  ),
 );
-const ALLOWED_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-const ALLOWED_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const ALLOWED_STACKS = ["Frontend", "Backend", "Full Stack", "AI/ML"];
+const ALLOWED_LEVELS = [
+  "Student",
+  "Intern",
+  "0-1 years",
+  "1-2 years",
+  "2-3 years",
+  "3-5 years",
+  "5+ years",
+];
 const inflightSkillGapRequests = new Map();
 const SKILL_GAP_MEMORY_TTL_MS = Math.min(
   5 * 60 * 1000,
-  Math.max(15_000, Number.parseInt(process.env.SKILL_GAP_MEMORY_TTL_MS || '60000', 10) || 60_000)
+  Math.max(
+    15_000,
+    Number.parseInt(process.env.SKILL_GAP_MEMORY_TTL_MS || "60000", 10) ||
+      60_000,
+  ),
 );
 const SKILL_GAP_REDIS_LOOKUP_BUDGET_MS = Math.min(
   250,
-  Math.max(40, Number.parseInt(process.env.SKILL_GAP_REDIS_LOOKUP_BUDGET_MS || '120', 10) || 120)
+  Math.max(
+    40,
+    Number.parseInt(
+      process.env.SKILL_GAP_REDIS_LOOKUP_BUDGET_MS || "120",
+      10,
+    ) || 120,
+  ),
 );
-const STAGE_TIMINGS_ENABLED = process.env.NODE_ENV !== 'production'
-  || process.env.SKILL_GAP_STAGE_TIMINGS === '1'
-  || process.env.NODE_ENV === 'test';
+const STAGE_TIMINGS_ENABLED =
+  process.env.NODE_ENV !== "production" ||
+  process.env.SKILL_GAP_STAGE_TIMINGS === "1" ||
+  process.env.NODE_ENV === "test";
 const skillGapMemoryCache = new Map();
 
 const buildSkillGapSoftMemoryKey = ({
-  userId = '',
-  username = '',
-  careerStack = '',
-  experienceLevel = '',
+  userId = "",
+  username = "",
+  careerStack = "",
+  experienceLevel = "",
   isTemporaryMode = false,
-  resumeIdentity = 'profile-active'
-} = {}) => [
-  isTemporaryMode ? 'preview' : 'profile',
-  String(userId || 'anonymous'),
-  String(username || '').trim().toLowerCase(),
-  careerStack,
-  experienceLevel,
-  String(resumeIdentity || 'no-resume'),
-  ANALYSIS_VERSION
-].join('|');
+  resumeIdentity = "profile-active",
+} = {}) =>
+  [
+    isTemporaryMode ? "preview" : "profile",
+    String(userId || "anonymous"),
+    String(username || "")
+      .trim()
+      .toLowerCase(),
+    careerStack,
+    experienceLevel,
+    String(resumeIdentity || "no-resume"),
+    ANALYSIS_VERSION,
+  ].join("|");
 
 const readSkillGapMemory = (key) => {
   if (!key) return null;
@@ -89,7 +121,7 @@ const writeSkillGapMemory = (key, payload) => {
   if (!key || !payload?.analysisData) return;
   skillGapMemoryCache.set(key, {
     ...payload,
-    expiresAt: Date.now() + SKILL_GAP_MEMORY_TTL_MS
+    expiresAt: Date.now() + SKILL_GAP_MEMORY_TTL_MS,
   });
 };
 
@@ -107,7 +139,7 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
       new Promise((resolve) => {
         timer = setTimeout(() => resolve(fallback), budgetMs);
         timer.unref?.();
-      })
+      }),
     ]);
   } finally {
     if (timer) clearTimeout(timer);
@@ -117,237 +149,398 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
 const voidSkillGapNotification = (payload) => {
   setImmediate(() => {
     createNotification(payload).catch((error) => {
-      logSkillGapPipeline('notification_failed', { message: error.message }, 'warn');
+      logSkillGapPipeline(
+        "notification_failed",
+        { message: error.message },
+        "warn",
+      );
     });
   });
 };
 
-
 const isUsableSkillGapNarrative = (value, { min = 24, max = 800 } = {}) => {
-  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const text = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (text.length < min || text.length > max) return false;
-  if (/[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test summary/i.test(text)) {
+  if (
+    /[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test summary/i.test(
+      text,
+    )
+  ) {
     return false;
   }
   if ((text.match(/[!?.]/g) || []).length > 8) return false;
   return true;
 };
 
-const isNarrativeGrounded = (text, { careerStack, experienceLevel, skillNames = [] } = {}) => {
-  const lower = String(text || '').toLowerCase();
+const isNarrativeGrounded = (
+  text,
+  { careerStack, experienceLevel, skillNames = [] } = {},
+) => {
+  const lower = String(text || "").toLowerCase();
   if (!lower) return false;
-  if (careerStack && lower.includes(String(careerStack).toLowerCase())) return true;
-  if (experienceLevel && lower.includes(String(experienceLevel).toLowerCase())) return true;
+  if (careerStack && lower.includes(String(careerStack).toLowerCase()))
+    return true;
+  if (experienceLevel && lower.includes(String(experienceLevel).toLowerCase()))
+    return true;
   return (Array.isArray(skillNames) ? skillNames : []).some((name) => {
-    const token = String(name || '').trim().toLowerCase();
+    const token = String(name || "")
+      .trim()
+      .toLowerCase();
     return token.length >= 2 && lower.includes(token);
   });
 };
 
-const resolveSkillGapNarratives = (aiResult, fallback, { aiOk, careerStack, experienceLevel, skillNames = [] } = {}) => {
-  if (!aiOk || !aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult) || aiResult.__fallback === true) {
+const resolveSkillGapNarratives = (
+  aiResult,
+  fallback,
+  { aiOk, careerStack, experienceLevel, skillNames = [] } = {},
+) => {
+  if (
+    !aiOk ||
+    !aiResult ||
+    typeof aiResult !== "object" ||
+    Array.isArray(aiResult) ||
+    aiResult.__fallback === true
+  ) {
     return {
       analysisSummary: fallback.analysisSummary,
       levelAssessment: fallback.levelAssessment,
-      aiUsed: false
+      aiUsed: false,
     };
   }
 
-  const factPollution = Array.isArray(aiResult.yourSkills)
-    || Array.isArray(aiResult.missingSkills)
-    || Array.isArray(aiResult.roadmap)
-    || typeof aiResult.coverage === 'number'
-    || typeof aiResult.missing === 'number'
-    || typeof aiResult.totalWeeks === 'string'
-    || typeof aiResult.jobDemand === 'number';
+  const factPollution =
+    Object.keys(aiResult).some(
+      (key) => !["analysisSummary", "levelAssessment"].includes(key),
+    ) ||
+    Array.isArray(aiResult.yourSkills) ||
+    Array.isArray(aiResult.missingSkills) ||
+    Array.isArray(aiResult.roadmap) ||
+    typeof aiResult.coverage === "number" ||
+    typeof aiResult.missing === "number" ||
+    typeof aiResult.totalWeeks === "string" ||
+    typeof aiResult.jobDemand === "number";
   if (factPollution) {
     return {
       analysisSummary: fallback.analysisSummary,
       levelAssessment: fallback.levelAssessment,
-      aiUsed: false
+      aiUsed: false,
     };
   }
 
   const pick = (raw, fallbackText) => {
     if (!isUsableSkillGapNarrative(raw)) return fallbackText;
-    const cleaned = String(raw).replace(/\s+/g, ' ').trim();
-    if (!isNarrativeGrounded(cleaned, { careerStack, experienceLevel, skillNames })) return fallbackText;
+    const cleaned = String(raw).replace(/\s+/g, " ").trim();
+    if (
+      !isNarrativeGrounded(cleaned, {
+        careerStack,
+        experienceLevel,
+        skillNames,
+      })
+    )
+      return fallbackText;
     return cleaned;
   };
 
-  const analysisSummary = pick(aiResult.analysisSummary, fallback.analysisSummary);
-  const levelAssessment = pick(aiResult.levelAssessment, fallback.levelAssessment);
-  const aiUsed = (
-    (analysisSummary !== fallback.analysisSummary && isUsableSkillGapNarrative(aiResult.analysisSummary))
-    || (levelAssessment !== fallback.levelAssessment && isUsableSkillGapNarrative(aiResult.levelAssessment))
+  const analysisSummary = pick(
+    aiResult.analysisSummary,
+    fallback.analysisSummary,
   );
+  const levelAssessment = pick(
+    aiResult.levelAssessment,
+    fallback.levelAssessment,
+  );
+  const aiUsed =
+    (analysisSummary !== fallback.analysisSummary &&
+      isUsableSkillGapNarrative(aiResult.analysisSummary)) ||
+    (levelAssessment !== fallback.levelAssessment &&
+      isUsableSkillGapNarrative(aiResult.levelAssessment));
 
   return { analysisSummary, levelAssessment, aiUsed };
 };
 
 const isPersistableSkillGapResult = (githubData = {}) => {
-  if (githubData?.cache?.source === 'miss-background-refresh') return false;
+  if (githubData?.cache?.stale === true) return false;
+  if (githubData?.cache?.source === "miss-background-refresh") return false;
   if (githubData?.cache?.cachedAt) return true;
   if (Number(githubData?.repoCount || 0) > 0) return true;
-  if (Array.isArray(githubData?.repositories) && githubData.repositories.length > 0) return true;
+  if (
+    Array.isArray(githubData?.repositories) &&
+    githubData.repositories.length > 0
+  )
+    return true;
   return false;
 };
 
 const DEFAULT_MISSING_SKILLS = [
-  'Testing',
-  'System Design',
-  'CI/CD',
-  'Docker',
-  'SQL',
-  'Cloud Basics',
-  'Security Basics',
-  'Performance Optimization',
-  'Design Patterns',
-  'Monitoring and Observability',
-  'API Versioning',
-  'Caching Strategies',
-  'Scalability Patterns',
-  'Accessibility',
-  'Documentation'
+  "Testing",
+  "System Design",
+  "CI/CD",
+  "Docker",
+  "SQL",
+  "Cloud Basics",
+  "Security Basics",
+  "Performance Optimization",
+  "Design Patterns",
+  "Monitoring and Observability",
+  "API Versioning",
+  "Caching Strategies",
+  "Scalability Patterns",
+  "Accessibility",
+  "Documentation",
 ];
 
 const STACK_SKILL_HINTS = {
-  Frontend: ['React', 'TypeScript', 'Next.js', 'Accessibility', 'Testing', 'CI/CD', 'Deployment'],
-  Backend: ['Node.js', 'REST APIs', 'SQL', 'PostgreSQL', 'Docker', 'CI/CD', 'Caching Strategies', 'Deployment'],
-  'Full Stack': ['React', 'TypeScript', 'Node.js', 'REST APIs', 'SQL', 'Docker', 'CI/CD', 'Deployment'],
-  'AI/ML': ['Python', 'SQL', 'Docker', 'AWS', 'CI/CD', 'Deployment', 'Monitoring and Observability']
+  Frontend: [
+    "React",
+    "TypeScript",
+    "Next.js",
+    "Accessibility",
+    "Testing",
+    "CI/CD",
+    "Deployment",
+  ],
+  Backend: [
+    "Node.js",
+    "REST APIs",
+    "SQL",
+    "PostgreSQL",
+    "Docker",
+    "CI/CD",
+    "Caching Strategies",
+    "Deployment",
+  ],
+  "Full Stack": [
+    "React",
+    "TypeScript",
+    "Node.js",
+    "REST APIs",
+    "SQL",
+    "Docker",
+    "CI/CD",
+    "Deployment",
+  ],
+  "AI/ML": [
+    "Python",
+    "SQL",
+    "Docker",
+    "AWS",
+    "CI/CD",
+    "Deployment",
+    "Monitoring and Observability",
+  ],
 };
 
 const STACK_ALLOWED_CATEGORIES = {
-  Frontend: new Set(['Frontend', 'Language', 'Testing', 'Tools', 'DevOps', 'Cloud', 'Backend', 'General']),
-  Backend: new Set(['Backend', 'Language', 'Database', 'Testing', 'Tools', 'DevOps', 'Cloud', 'General']),
-  'Full Stack': new Set(['Frontend', 'Backend', 'Language', 'Database', 'Testing', 'Tools', 'DevOps', 'Cloud', 'General']),
-  'AI/ML': new Set(['Language', 'Database', 'DevOps', 'Cloud', 'Testing', 'Tools', 'AI/ML', 'General'])
+  Frontend: new Set([
+    "Frontend",
+    "Language",
+    "Testing",
+    "Tools",
+    "DevOps",
+    "Cloud",
+    "Backend",
+    "General",
+  ]),
+  Backend: new Set([
+    "Backend",
+    "Language",
+    "Database",
+    "Testing",
+    "Tools",
+    "DevOps",
+    "Cloud",
+    "General",
+  ]),
+  "Full Stack": new Set([
+    "Frontend",
+    "Backend",
+    "Language",
+    "Database",
+    "Testing",
+    "Tools",
+    "DevOps",
+    "Cloud",
+    "General",
+  ]),
+  "AI/ML": new Set([
+    "Language",
+    "Database",
+    "DevOps",
+    "Cloud",
+    "Testing",
+    "Tools",
+    "AI/ML",
+    "General",
+  ]),
 };
 
 const EXPERIENCE_PRIORITY_LIMITS = {
   Student: 8,
   Intern: 8,
-  '0-1 years': 9,
-  '1-2 years': 10,
-  '2-3 years': 12,
-  '3-5 years': 14,
-  '5+ years': 16
+  "0-1 years": 9,
+  "1-2 years": 10,
+  "2-3 years": 12,
+  "3-5 years": 14,
+  "5+ years": 16,
 };
 
 const EXPERIENCE_SKILL_HINTS = {
-  Student: ['Git', 'Testing', 'Documentation', 'Deployment'],
-  Intern: ['Git', 'Testing', 'Documentation', 'Deployment'],
-  '0-1 years': ['Testing', 'SQL', 'Deployment', 'Documentation'],
-  '1-2 years': ['Testing', 'SQL', 'CI/CD', 'Deployment'],
-  '2-3 years': ['System Design', 'CI/CD', 'Docker', 'Performance Optimization'],
-  '3-5 years': ['System Design', 'CI/CD', 'Monitoring and Observability', 'Security Basics'],
-  '5+ years': ['System Design', 'Scalability Patterns', 'Security Basics', 'Monitoring and Observability']
+  Student: ["Git", "Testing", "Documentation", "Deployment"],
+  Intern: ["Git", "Testing", "Documentation", "Deployment"],
+  "0-1 years": ["Testing", "SQL", "Deployment", "Documentation"],
+  "1-2 years": ["Testing", "SQL", "CI/CD", "Deployment"],
+  "2-3 years": ["System Design", "CI/CD", "Docker", "Performance Optimization"],
+  "3-5 years": [
+    "System Design",
+    "CI/CD",
+    "Monitoring and Observability",
+    "Security Basics",
+  ],
+  "5+ years": [
+    "System Design",
+    "Scalability Patterns",
+    "Security Basics",
+    "Monitoring and Observability",
+  ],
 };
 
 const SKILL_RESOURCE_HINTS = {
   React: [
-    { title: 'React docs', url: 'https://react.dev/learn' },
-    { title: 'React Testing Library', url: 'https://testing-library.com/docs/react-testing-library/intro/' }
+    { title: "React docs", url: "https://react.dev/learn" },
+    {
+      title: "React Testing Library",
+      url: "https://testing-library.com/docs/react-testing-library/intro/",
+    },
   ],
   JavaScript: [
-    { title: 'MDN JavaScript guide', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide' }
+    {
+      title: "MDN JavaScript guide",
+      url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+    },
   ],
   TypeScript: [
-    { title: 'TypeScript handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' }
+    {
+      title: "TypeScript handbook",
+      url: "https://www.typescriptlang.org/docs/handbook/intro.html",
+    },
   ],
-  'Node.js': [
-    { title: 'Node.js docs', url: 'https://nodejs.org/en/learn' }
-  ],
-  'REST APIs': [
-    { title: 'Microsoft REST API guidelines', url: 'https://github.com/microsoft/api-guidelines' }
+  "Node.js": [{ title: "Node.js docs", url: "https://nodejs.org/en/learn" }],
+  "REST APIs": [
+    {
+      title: "Microsoft REST API guidelines",
+      url: "https://github.com/microsoft/api-guidelines",
+    },
   ],
   SQL: [
-    { title: 'PostgreSQL tutorial', url: 'https://www.postgresql.org/docs/current/tutorial.html' }
+    {
+      title: "PostgreSQL tutorial",
+      url: "https://www.postgresql.org/docs/current/tutorial.html",
+    },
   ],
   Docker: [
-    { title: 'Docker docs', url: 'https://docs.docker.com/get-started/' }
+    { title: "Docker docs", url: "https://docs.docker.com/get-started/" },
   ],
-  'CI/CD': [
-    { title: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }
+  "CI/CD": [
+    { title: "GitHub Actions docs", url: "https://docs.github.com/en/actions" },
   ],
   Testing: [
-    { title: 'Testing JavaScript guide', url: 'https://testingjavascript.com/' }
+    {
+      title: "Testing JavaScript guide",
+      url: "https://testingjavascript.com/",
+    },
   ],
-  'System Design': [
-    { title: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' }
+  "System Design": [
+    {
+      title: "System Design Primer",
+      url: "https://github.com/donnemartin/system-design-primer",
+    },
   ],
   Accessibility: [
-    { title: 'WCAG quick reference', url: 'https://www.w3.org/WAI/WCAG22/quickref/' }
+    {
+      title: "WCAG quick reference",
+      url: "https://www.w3.org/WAI/WCAG22/quickref/",
+    },
   ],
-  'Security Basics': [
-    { title: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' }
+  "Security Basics": [
+    { title: "OWASP Top 10", url: "https://owasp.org/www-project-top-ten/" },
   ],
-  'Monitoring and Observability': [
-    { title: 'OpenTelemetry docs', url: 'https://opentelemetry.io/docs/' }
+  "Monitoring and Observability": [
+    { title: "OpenTelemetry docs", url: "https://opentelemetry.io/docs/" },
   ],
   Kubernetes: [
-    { title: 'Kubernetes docs', url: 'https://kubernetes.io/docs/home/' }
+    { title: "Kubernetes docs", url: "https://kubernetes.io/docs/home/" },
   ],
   AWS: [
-    { title: 'AWS getting started', url: 'https://aws.amazon.com/getting-started/' }
+    {
+      title: "AWS getting started",
+      url: "https://aws.amazon.com/getting-started/",
+    },
   ],
   Terraform: [
-    { title: 'Terraform docs', url: 'https://developer.hashicorp.com/terraform/docs' }
+    {
+      title: "Terraform docs",
+      url: "https://developer.hashicorp.com/terraform/docs",
+    },
   ],
   PostgreSQL: [
-    { title: 'PostgreSQL docs', url: 'https://www.postgresql.org/docs/' }
+    { title: "PostgreSQL docs", url: "https://www.postgresql.org/docs/" },
   ],
-  Redis: [
-    { title: 'Redis docs', url: 'https://redis.io/docs/latest/' }
-  ],
-  MongoDB: [
-    { title: 'MongoDB docs', url: 'https://www.mongodb.com/docs/' }
-  ],
-  Git: [
-    { title: 'Git documentation', url: 'https://git-scm.com/doc' }
-  ],
-  Jest: [
-    { title: 'Jest docs', url: 'https://jestjs.io/docs/getting-started' }
-  ],
+  Redis: [{ title: "Redis docs", url: "https://redis.io/docs/latest/" }],
+  MongoDB: [{ title: "MongoDB docs", url: "https://www.mongodb.com/docs/" }],
+  Git: [{ title: "Git documentation", url: "https://git-scm.com/doc" }],
+  Jest: [{ title: "Jest docs", url: "https://jestjs.io/docs/getting-started" }],
   Python: [
-    { title: 'Python tutorial', url: 'https://docs.python.org/3/tutorial/' }
+    { title: "Python tutorial", url: "https://docs.python.org/3/tutorial/" },
   ],
-  Go: [
-    { title: 'Go docs', url: 'https://go.dev/doc/' }
-  ],
-  Java: [
-    { title: 'Java tutorials', url: 'https://dev.java/learn/' }
-  ],
-  GraphQL: [
-    { title: 'GraphQL learn', url: 'https://graphql.org/learn/' }
-  ],
-  'Design Patterns': [
-    { title: 'Refactoring Guru design patterns', url: 'https://refactoring.guru/design-patterns' }
+  Go: [{ title: "Go docs", url: "https://go.dev/doc/" }],
+  Java: [{ title: "Java tutorials", url: "https://dev.java/learn/" }],
+  GraphQL: [{ title: "GraphQL learn", url: "https://graphql.org/learn/" }],
+  "Design Patterns": [
+    {
+      title: "Refactoring Guru design patterns",
+      url: "https://refactoring.guru/design-patterns",
+    },
   ],
   Documentation: [
-    { title: 'Google technical writing courses', url: 'https://developers.google.com/tech-writing' }
-  ]
+    {
+      title: "Google technical writing courses",
+      url: "https://developers.google.com/tech-writing",
+    },
+  ],
 };
 
-const isValidUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
+const isValidUrl = (value) =>
+  typeof value === "string" && /^https?:\/\//i.test(value.trim());
 
-const DEFAULT_RESOURCE = { title: 'Developer Roadmaps', url: 'https://roadmap.sh/' };
+const DEFAULT_RESOURCE = {
+  title: "Developer Roadmaps",
+  url: "https://roadmap.sh/",
+};
 
-const normalizeRoadmapResource = (resource, fallbackTopic = 'software engineering docs') => {
-  if (typeof resource === 'object' && resource !== null) {
-    const title = String(resource.title || resource.name || fallbackTopic).trim();
-    const url = isValidUrl(resource.url) ? resource.url.trim() : DEFAULT_RESOURCE.url;
+const normalizeRoadmapResource = (
+  resource,
+  fallbackTopic = "software engineering docs",
+) => {
+  if (typeof resource === "object" && resource !== null) {
+    const title = String(
+      resource.title || resource.name || fallbackTopic,
+    ).trim();
+    const url = isValidUrl(resource.url)
+      ? resource.url.trim()
+      : DEFAULT_RESOURCE.url;
     return { title, url };
   }
 
-  const text = String(resource || '').trim();
+  const text = String(resource || "").trim();
   if (!text) {
     return { title: fallbackTopic, url: DEFAULT_RESOURCE.url };
   }
 
   if (isValidUrl(text)) {
-    return { title: text.replace(/^https?:\/\//i, '').slice(0, 80), url: text };
+    return { title: text.replace(/^https?:\/\//i, "").slice(0, 80), url: text };
   }
 
   return { title: text, url: DEFAULT_RESOURCE.url };
@@ -356,41 +549,50 @@ const normalizeRoadmapResource = (resource, fallbackTopic = 'software engineerin
 const normalizeRoadmap = (roadmap = [], min = 3) => {
   const defaults = [
     {
-      phase: 'Phase 1',
-      title: 'Core Foundations',
-      description: 'Build strong fundamentals for your current stack.',
-      duration: '2-3 weeks',
-      skills: ['JavaScript', 'Git', 'Testing'],
+      phase: "Phase 1",
+      title: "Core Foundations",
+      description: "Build strong fundamentals for your current stack.",
+      duration: "2-3 weeks",
+      skills: ["JavaScript", "Git", "Testing"],
       resources: [
-        { title: 'Official language docs', url: 'https://developer.mozilla.org/' },
-        { title: 'Git documentation', url: 'https://git-scm.com/doc' }
+        {
+          title: "Official language docs",
+          url: "https://developer.mozilla.org/",
+        },
+        { title: "Git documentation", url: "https://git-scm.com/doc" },
       ],
-      color: 'blue'
+      color: "blue",
     },
     {
-      phase: 'Phase 2',
-      title: 'Project Depth',
-      description: 'Apply missing skills in practical projects.',
-      duration: '3-4 weeks',
-      skills: ['Docker', 'CI/CD', 'Testing'],
+      phase: "Phase 2",
+      title: "Project Depth",
+      description: "Apply missing skills in practical projects.",
+      duration: "3-4 weeks",
+      skills: ["Docker", "CI/CD", "Testing"],
       resources: [
-        { title: 'Docker docs', url: 'https://docs.docker.com/' },
-        { title: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }
+        { title: "Docker docs", url: "https://docs.docker.com/" },
+        {
+          title: "GitHub Actions docs",
+          url: "https://docs.github.com/en/actions",
+        },
       ],
-      color: 'green'
+      color: "green",
     },
     {
-      phase: 'Phase 3',
-      title: 'Interview Readiness',
-      description: 'Prepare portfolio and interview-focused practice.',
-      duration: '2-3 weeks',
-      skills: ['System Design', 'Documentation'],
+      phase: "Phase 3",
+      title: "Interview Readiness",
+      description: "Prepare portfolio and interview-focused practice.",
+      duration: "2-3 weeks",
+      skills: ["System Design", "Documentation"],
       resources: [
-        { title: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' },
-        { title: 'LeetCode', url: 'https://leetcode.com/' }
+        {
+          title: "System Design Primer",
+          url: "https://github.com/donnemartin/system-design-primer",
+        },
+        { title: "LeetCode", url: "https://leetcode.com/" },
       ],
-      color: 'orange'
-    }
+      color: "orange",
+    },
   ];
 
   const safe = Array.isArray(roadmap) ? [...roadmap] : [];
@@ -398,39 +600,61 @@ const normalizeRoadmap = (roadmap = [], min = 3) => {
 
   return safe.map((phase, index) => {
     const fallbackPhase = defaults[index % defaults.length];
-    const phaseSkills = uniqueSkillNames(Array.isArray(phase.skills) ? phase.skills : fallbackPhase.skills);
-    const firstSkill = phaseSkills[0] || fallbackPhase.skills[0] || 'Testing';
+    const phaseSkills = uniqueSkillNames(
+      Array.isArray(phase.skills) ? phase.skills : fallbackPhase.skills,
+    );
+    const firstSkill = phaseSkills[0] || fallbackPhase.skills[0] || "Testing";
     const resources = Array.isArray(phase.resources)
-      ? phase.resources.map((resource) => normalizeRoadmapResource(resource, firstSkill))
+      ? phase.resources.map((resource) =>
+          normalizeRoadmapResource(resource, firstSkill),
+        )
       : [];
-    const objective = String(phase.objective || `Build practical confidence in ${firstSkill} for the target role.`).trim();
-    const expectedOutcome = String(phase.expectedOutcome || `Use ${firstSkill} in a working, reviewable implementation.`).trim();
-    const measurableDeliverable = String(phase.measurableDeliverable || `Publish a commit, PR, or portfolio note showing ${firstSkill} with tests or documentation.`).trim();
+    const objective = String(
+      phase.objective ||
+        `Build practical confidence in ${firstSkill} for the target role.`,
+    ).trim();
+    const expectedOutcome = String(
+      phase.expectedOutcome ||
+        `Use ${firstSkill} in a working, reviewable implementation.`,
+    ).trim();
+    const measurableDeliverable = String(
+      phase.measurableDeliverable ||
+        `Publish a commit, PR, or portfolio note showing ${firstSkill} with tests or documentation.`,
+    ).trim();
 
     return {
       phase: String(phase.phase || `Phase ${index + 1}`).trim(),
       title: String(phase.title || `Milestone ${index + 1}`).trim(),
-      description: String(phase.description || 'Complete focused practice for this milestone.').trim(),
-      duration: String(phase.duration || '2-3 weeks').trim(),
+      description: String(
+        phase.description || "Complete focused practice for this milestone.",
+      ).trim(),
+      duration: String(phase.duration || "2-3 weeks").trim(),
       skills: phaseSkills,
       resources: resources.length ? resources : getSkillResources(firstSkill),
       objective,
       expectedOutcome,
       measurableDeliverable,
       topSkill: firstSkill,
-      color: ['purple', 'blue', 'green', 'orange'].includes(String(phase.color || '').trim())
+      color: ["purple", "blue", "green", "orange"].includes(
+        String(phase.color || "").trim(),
+      )
         ? String(phase.color).trim()
-        : fallbackPhase.color
+        : fallbackPhase.color,
     };
   });
 };
 
-const toSkillName = (value) => canonicalizeSkillName(typeof value === 'string' ? value : value?.name || value?.skill || '');
+const toSkillName = (value) =>
+  canonicalizeSkillName(
+    typeof value === "string" ? value : value?.name || value?.skill || "",
+  );
 
 const uniqueByLower = (values = []) => {
   const seen = new Set();
   return values.filter((value) => {
-    const key = String(value || '').trim().toLowerCase();
+    const key = String(value || "")
+      .trim()
+      .toLowerCase();
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -442,42 +666,53 @@ const uniqueSkillNames = (values = []) => normalizeSkillList(values);
 const uniqueObjectsByName = (values = []) => {
   const seen = new Set();
   return values.filter((item) => {
-    const key = String(item?.name || '').trim().toLowerCase();
+    const key = String(item?.name || "")
+      .trim()
+      .toLowerCase();
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 };
 
-const getSkillMeta = (skillName = '') => {
+const getSkillMeta = (skillName = "") => {
   const canonical = canonicalizeSkillName(skillName);
   if (!canonical) {
-    return { name: '', category: '', priority: '', jobDemand: 0 };
+    return { name: "", category: "", priority: "", jobDemand: 0 };
   }
-  const known = INDUSTRY_SKILLS.find((skill) => skill.name.toLowerCase() === canonical.toLowerCase());
+  const known = INDUSTRY_SKILLS.find(
+    (skill) => skill.name.toLowerCase() === canonical.toLowerCase(),
+  );
   return {
     name: canonical,
-    category: known?.category || 'General',
-    priority: known?.priority || 'Medium',
-    jobDemand: clamp(known?.jobDemand || 62)
+    category: known?.category || "General",
+    priority: known?.priority || "Medium",
+    jobDemand: clamp(known?.jobDemand || 62),
   };
 };
 
 const sourceLabel = (source) => {
   const labels = {
-    github: 'GitHub',
-    resume: 'Resume',
-    portfolio: 'Portfolio',
-    integration: 'Integration',
-    jobs: 'Jobs',
-    expected: 'Career Profile',
-    weekly: 'Weekly Reports',
-    sprint: 'Career Sprint'
+    github: "GitHub",
+    resume: "Resume",
+    portfolio: "Portfolio",
+    integration: "Integration",
+    jobs: "Jobs",
+    expected: "Career Profile",
+    weekly: "Weekly Reports",
+    sprint: "Career Sprint",
   };
-  return labels[source] || 'Signal';
+  return labels[source] || "Signal";
 };
 
-const addSkillEvidence = (map, rawName, source, evidence, score = 40, extra = {}) => {
+const addSkillEvidence = (
+  map,
+  rawName,
+  source,
+  evidence,
+  score = 40,
+  extra = {},
+) => {
   const meta = getSkillMeta(rawName);
   if (!meta.name) return;
   const key = meta.name.toLowerCase();
@@ -489,7 +724,7 @@ const addSkillEvidence = (map, rawName, source, evidence, score = 40, extra = {}
     sources: new Set(),
     evidence: [],
     score: 0,
-    weight: 0
+    weight: 0,
   };
 
   existing.sources.add(sourceLabel(source));
@@ -502,39 +737,48 @@ const addSkillEvidence = (map, rawName, source, evidence, score = 40, extra = {}
 
 const materializeSkillEvidence = (entry, overrides = {}) => {
   const source = Array.from(entry.sources || []);
-  const confidenceScore = clamp((entry.score / Math.max(entry.weight || 1, 1)) + (source.length - 1) * 8);
+  const confidenceScore = clamp(
+    entry.score / Math.max(entry.weight || 1, 1) + (source.length - 1) * 8,
+  );
   return {
     name: entry.name,
-    source: source.join(' + ') || 'Signal',
+    source: source.join(" + ") || "Signal",
     confidenceScore,
     evidence: uniqueByLower(entry.evidence || []).slice(0, 5),
-    category: entry.category || 'General',
-    priority: overrides.priority || entry.priority || 'Medium',
+    category: entry.category || "General",
+    priority: overrides.priority || entry.priority || "Medium",
     jobDemand: clamp(overrides.jobDemand || entry.jobDemand || 60),
-    ...overrides
+    ...overrides,
   };
 };
 
 const evidenceSentenceForCurrent = (skill, careerStack) => {
-  const sources = String(skill.source || '').trim();
-  if (sources.includes('GitHub') && sources.includes('Resume')) {
+  const sources = String(skill.source || "").trim();
+  if (sources.includes("GitHub") && sources.includes("Resume")) {
     return `${skill.name} appears in both GitHub evidence and resume analysis for ${careerStack}.`;
   }
-  if (sources.includes('GitHub')) return `${skill.name} was detected from repository languages, topics, or descriptions.`;
-  if (sources.includes('Resume')) return `${skill.name} was extracted from the latest resume analysis.`;
-  if (sources.includes('Portfolio')) return `${skill.name} appears in portfolio project evidence.`;
-  if (sources.includes('Integration')) return `${skill.name} was detected through connected integration evidence.`;
+  if (sources.includes("GitHub"))
+    return `${skill.name} was detected from repository languages, topics, or descriptions.`;
+  if (sources.includes("Resume"))
+    return `${skill.name} was extracted from the latest resume analysis.`;
+  if (sources.includes("Portfolio"))
+    return `${skill.name} appears in portfolio project evidence.`;
+  if (sources.includes("Integration"))
+    return `${skill.name} was detected through connected integration evidence.`;
   return `${skill.name} is supported by available developer signals.`;
 };
 
 const evidenceSentenceForMissing = (skill, careerStack, experienceLevel) => {
-  const sources = String(skill.source || '').trim();
-  if (sources.includes('Career Profile')) {
+  const sources = String(skill.source || "").trim();
+  if (sources.includes("Career Profile")) {
     return `${skill.name} is expected for ${careerStack} at ${experienceLevel} level but is not yet proven in the strongest signals.`;
   }
-  if (sources.includes('Resume')) return `${skill.name} is claimed in the resume but needs project or GitHub proof.`;
-  if (sources.includes('Jobs')) return `${skill.name} appears in cached job-demand signals for the target profile.`;
-  if (sources.includes('Weekly Reports') || sources.includes('Career Sprint')) return `${skill.name} has appeared as a repeated weak or incomplete learning area.`;
+  if (sources.includes("Resume"))
+    return `${skill.name} is claimed in the resume but needs project or GitHub proof.`;
+  if (sources.includes("Jobs"))
+    return `${skill.name} appears in cached job-demand signals for the target profile.`;
+  if (sources.includes("Weekly Reports") || sources.includes("Career Sprint"))
+    return `${skill.name} has appeared as a repeated weak or incomplete learning area.`;
   return `${skill.name} is a recognized ${careerStack} skill that is not yet sufficiently evidenced.`;
 };
 
@@ -548,35 +792,73 @@ const cleanSkillObjects = (skills = [], kind, careerStack, experienceLevel) => {
       if (seen.has(key)) return null;
       seen.add(key);
       const meta = getSkillMeta(name);
-      const demand = kind === 'missing' ? clamp(skill.jobDemand || meta.jobDemand || 60) : skill.jobDemand;
-      const confidenceScore = clamp(skill.confidenceScore || (kind === 'current' ? 58 : 52));
-      const priority = normalizePriority(skill.priority || meta.priority, demand || meta.jobDemand, confidenceScore);
-      const learningEffort = estimateLearningEffort({ ...skill, name, jobDemand: demand, priority, confidenceScore }, experienceLevel);
+      const demand =
+        kind === "missing"
+          ? clamp(skill.jobDemand || meta.jobDemand || 60)
+          : skill.jobDemand;
+      const confidenceScore = clamp(
+        skill.confidenceScore || (kind === "current" ? 58 : 52),
+      );
+      const priority = normalizePriority(
+        skill.priority || meta.priority,
+        demand || meta.jobDemand,
+        confidenceScore,
+      );
+      const learningEffort = estimateLearningEffort(
+        { ...skill, name, jobDemand: demand, priority, confidenceScore },
+        experienceLevel,
+      );
       const evidence = uniqueByLower([
         ...(Array.isArray(skill.evidence) ? skill.evidence : []),
-        kind === 'current'
+        kind === "current"
           ? evidenceSentenceForCurrent({ ...skill, name }, careerStack)
-          : evidenceSentenceForMissing({ ...skill, name }, careerStack, experienceLevel)
+          : evidenceSentenceForMissing(
+              { ...skill, name },
+              careerStack,
+              experienceLevel,
+            ),
       ]).slice(0, 5);
 
       return {
         ...skill,
         name,
-        category: meta.category || skill.category || 'General',
+        category: meta.category || skill.category || "General",
         priority,
         jobDemand: demand,
         confidenceScore,
         evidence,
-        source: String(skill.source || '').trim() || (kind === 'current' ? 'Evidence' : 'Career Profile'),
-        detectionMethod: String(skill.source || '').trim() || (kind === 'current' ? 'Developer Evidence' : 'Career Profile'),
-        whyExists: kind === 'current'
-          ? evidenceSentenceForCurrent({ ...skill, name }, careerStack)
-          : evidenceSentenceForMissing({ ...skill, name }, careerStack, experienceLevel),
-        whyItMatters: businessImpactForSkill({ ...skill, name, category: meta.category, jobDemand: demand }, careerStack),
-        businessImpact: businessImpactForSkill({ ...skill, name, category: meta.category, jobDemand: demand }, careerStack),
-        learningEffort: kind === 'missing' ? learningEffort : undefined,
-        recommendedResources: kind === 'missing' ? getSkillResources(name) : undefined,
-        suggestedProject: kind === 'missing' ? buildSkillProject({ ...skill, name, jobDemand: demand, priority }, careerStack) : undefined
+        source:
+          String(skill.source || "").trim() ||
+          (kind === "current" ? "Evidence" : "Career Profile"),
+        detectionMethod:
+          String(skill.source || "").trim() ||
+          (kind === "current" ? "Developer Evidence" : "Career Profile"),
+        whyExists:
+          kind === "current"
+            ? evidenceSentenceForCurrent({ ...skill, name }, careerStack)
+            : evidenceSentenceForMissing(
+                { ...skill, name },
+                careerStack,
+                experienceLevel,
+              ),
+        whyItMatters: businessImpactForSkill(
+          { ...skill, name, category: meta.category, jobDemand: demand },
+          careerStack,
+        ),
+        businessImpact: businessImpactForSkill(
+          { ...skill, name, category: meta.category, jobDemand: demand },
+          careerStack,
+        ),
+        learningEffort: kind === "missing" ? learningEffort : undefined,
+        recommendedResources:
+          kind === "missing" ? getSkillResources(name) : undefined,
+        suggestedProject:
+          kind === "missing"
+            ? buildSkillProject(
+                { ...skill, name, jobDemand: demand, priority },
+                careerStack,
+              )
+            : undefined,
       };
     })
     .filter(Boolean);
@@ -584,31 +866,49 @@ const cleanSkillObjects = (skills = [], kind, careerStack, experienceLevel) => {
 
 const isRelevantForStack = (skillName, careerStack) => {
   const meta = getSkillMeta(skillName);
-  const allowed = STACK_ALLOWED_CATEGORIES[careerStack] || STACK_ALLOWED_CATEGORIES['Full Stack'];
+  const allowed =
+    STACK_ALLOWED_CATEGORIES[careerStack] ||
+    STACK_ALLOWED_CATEGORIES["Full Stack"];
   if (allowed.has(meta.category)) return true;
-  return getExpectedSkills(careerStack, 'Student').some((skill) => skill.toLowerCase() === meta.name.toLowerCase());
+  return getExpectedSkills(careerStack, "Student").some(
+    (skill) => skill.toLowerCase() === meta.name.toLowerCase(),
+  );
 };
 
 const normalizePriority = (priority, demand = 0, confidence = 0) => {
-  const value = String(priority || '').trim();
-  if (['High', 'Medium', 'Low'].includes(value)) return value;
-  if (demand >= 84 || confidence >= 78) return 'High';
-  if (demand >= 64 || confidence >= 52) return 'Medium';
-  return 'Low';
+  const value = String(priority || "").trim();
+  if (["High", "Medium", "Low"].includes(value)) return value;
+  if (demand >= 84 || confidence >= 78) return "High";
+  if (demand >= 64 || confidence >= 52) return "Medium";
+  return "Low";
 };
 
-const estimateLearningEffort = (skill, experienceLevel = 'Student') => {
-  const demand = clamp(skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60);
-  const priority = normalizePriority(skill.priority, demand, skill.confidenceScore);
-  const seniorLevels = new Set(['2-3 years', '3-5 years', '5+ years']);
-  const baseWeeks = priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1;
+const estimateLearningEffort = (skill, experienceLevel = "Student") => {
+  const demand = clamp(
+    skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60,
+  );
+  const priority = normalizePriority(
+    skill.priority,
+    demand,
+    skill.confidenceScore,
+  );
+  const seniorLevels = new Set(["2-3 years", "3-5 years", "5+ years"]);
+  const baseWeeks = priority === "High" ? 3 : priority === "Medium" ? 2 : 1;
   const demandWeeks = demand >= 85 ? 1 : 0;
   const experienceWeeks = seniorLevels.has(experienceLevel) ? 1 : 0;
-  const weeks = Math.max(1, Math.min(6, baseWeeks + demandWeeks + experienceWeeks));
+  const weeks = Math.max(
+    1,
+    Math.min(6, baseWeeks + demandWeeks + experienceWeeks),
+  );
   return {
     weeks,
-    label: weeks === 1 ? '1 focused week' : `${weeks} focused weeks`,
-    level: weeks >= 4 ? 'Deep practice' : weeks >= 2 ? 'Applied practice' : 'Quick validation'
+    label: weeks === 1 ? "1 focused week" : `${weeks} focused weeks`,
+    level:
+      weeks >= 4
+        ? "Deep practice"
+        : weeks >= 2
+          ? "Applied practice"
+          : "Quick validation",
   };
 };
 
@@ -616,54 +916,62 @@ const getSkillResources = (skillName) => {
   const name = toSkillName(skillName);
   const resources = SKILL_RESOURCE_HINTS[name] || [
     DEFAULT_RESOURCE,
-    { title: 'freeCodeCamp curriculum', url: 'https://www.freecodecamp.org/learn/' }
+    {
+      title: "freeCodeCamp curriculum",
+      url: "https://www.freecodecamp.org/learn/",
+    },
   ];
-  return resources.slice(0, 2).map((resource) => normalizeRoadmapResource(resource, name));
+  return resources
+    .slice(0, 2)
+    .map((resource) => normalizeRoadmapResource(resource, name));
 };
 
 const businessImpactForSkill = (skill, careerStack) => {
-  const demand = clamp(skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60);
+  const demand = clamp(
+    skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60,
+  );
   if (demand >= 85) {
     return `${skill.name} is likely to improve match quality for ${careerStack} roles because demand is high and it appears in core hiring signals.`;
   }
-  if (String(skill.category || '').includes('DevOps')) {
+  if (String(skill.category || "").includes("DevOps")) {
     return `${skill.name} improves delivery reliability, deployment confidence, and production-readiness signals.`;
   }
-  if (String(skill.category || '').includes('Testing')) {
+  if (String(skill.category || "").includes("Testing")) {
     return `${skill.name} reduces regression risk and makes portfolio projects more credible to reviewers.`;
   }
-  if (String(skill.category || '').includes('Database')) {
+  if (String(skill.category || "").includes("Database")) {
     return `${skill.name} improves data-modeling credibility and backend role alignment.`;
   }
   return `${skill.name} strengthens practical role fit and gives reviewers clearer evidence of production-ready engineering.`;
 };
 
-const buildSkillProject = (skill, careerStack = 'Full Stack') => {
+const buildSkillProject = (skill, careerStack = "Full Stack") => {
   const name = toSkillName(skill);
   return {
     title: `${careerStack} ${name} proof project`,
     skill: name,
-    difficulty: (skill.jobDemand || 0) >= 84 ? 'Intermediate' : 'Focused',
+    difficulty: (skill.jobDemand || 0) >= 84 ? "Intermediate" : "Focused",
     estimatedWeeks: estimateLearningEffort(skill).weeks,
     outcome: `Ship a small, reviewable feature that proves ${name} with tests, documentation, and deployment notes.`,
-    deliverable: `A repository PR or portfolio case study showing ${name} in a realistic workflow.`
+    deliverable: `A repository PR or portfolio case study showing ${name} in a realistic workflow.`,
   };
 };
 
-const buildSuggestedProjects = (skills = [], careerStack = 'Full Stack') => skills.slice(0, 5).map((skill, index) => {
-  const name = toSkillName(skill);
-  return {
-    ...buildSkillProject({ ...skill, name }, careerStack),
-    difficulty: index < 2 ? 'Intermediate' : 'Focused'
-  };
-});
+const buildSuggestedProjects = (skills = [], careerStack = "Full Stack") =>
+  skills.slice(0, 5).map((skill, index) => {
+    const name = toSkillName(skill);
+    return {
+      ...buildSkillProject({ ...skill, name }, careerStack),
+      difficulty: index < 2 ? "Intermediate" : "Focused",
+    };
+  });
 
 const buildRoadmapBuckets = ({ missingSkills, weakSkills, weeklyRoadmap }) => {
   const ordered = uniqueObjectsByName([
-    ...missingSkills.filter((skill) => skill.priority === 'High'),
+    ...missingSkills.filter((skill) => skill.priority === "High"),
     ...weakSkills,
-    ...missingSkills.filter((skill) => skill.priority === 'Medium'),
-    ...missingSkills.filter((skill) => skill.priority === 'Low')
+    ...missingSkills.filter((skill) => skill.priority === "Medium"),
+    ...missingSkills.filter((skill) => skill.priority === "Low"),
   ]);
 
   const immediateSkills = ordered.slice(0, 3);
@@ -673,7 +981,7 @@ const buildRoadmapBuckets = ({ missingSkills, weakSkills, weeklyRoadmap }) => {
   const prerequisites = {};
   (weeklyRoadmap || []).forEach((week) => {
     (week.focusSkills || []).forEach((skill) => {
-      prerequisites[skill] = week.reason || '';
+      prerequisites[skill] = week.reason || "";
     });
   });
 
@@ -684,58 +992,56 @@ const buildRoadmapBuckets = ({ missingSkills, weakSkills, weeklyRoadmap }) => {
     longTermSkills,
     prerequisites,
     estimatedWeeks: Array.isArray(weeklyRoadmap) ? weeklyRoadmap.length : 0,
-    suggestedProjects: buildSuggestedProjects(ordered)
+    suggestedProjects: buildSuggestedProjects(ordered),
   };
 };
 
-const buildDeterministicRoadmap = (weeklyRoadmap = []) => (Array.isArray(weeklyRoadmap) ? weeklyRoadmap : [])
-  .filter((week) => Array.isArray(week?.focusSkills) && week.focusSkills.length)
-  .map((week) => {
-    const skills = uniqueSkillNames(week.focusSkills).slice(0, 2);
-    const firstSkill = skills[0] || 'Testing';
-    return {
-      phase: `Week ${week.week}`,
-      title: `Build ${skills.join(' and ')}`,
-      description: String(week.reason || `Build practical proof for ${skills.join(' and ')}.`),
-      duration: '1 week',
-      skills,
-      resources: getSkillResources(firstSkill),
-      objective: `Practice ${skills.join(' and ')} in one focused week.`,
-      expectedOutcome: String((week.outcomes || [])[0] || `Produce evidence of ${firstSkill}.`),
-      measurableDeliverable: String((week.outcomes || [])[1] || `Publish a small artifact demonstrating ${firstSkill}.`),
-      topSkill: firstSkill,
-      color: 'blue'
-    };
-  });
+const buildDeterministicRoadmap = (weeklyRoadmap = []) =>
+  (Array.isArray(weeklyRoadmap) ? weeklyRoadmap : [])
+    .filter(
+      (week) => Array.isArray(week?.focusSkills) && week.focusSkills.length,
+    )
+    .map((week) => {
+      const skills = uniqueSkillNames(week.focusSkills).slice(0, 2);
+      const firstSkill = skills[0] || "Testing";
+      return {
+        phase: `Week ${week.week}`,
+        title: `Build ${skills.join(" and ")}`,
+        description: String(
+          week.reason || `Build practical proof for ${skills.join(" and ")}.`,
+        ),
+        duration: "1 week",
+        skills,
+        resources: getSkillResources(firstSkill),
+        objective: `Practice ${skills.join(" and ")} in one focused week.`,
+        expectedOutcome: String(
+          (week.outcomes || [])[0] || `Produce evidence of ${firstSkill}.`,
+        ),
+        measurableDeliverable: String(
+          (week.outcomes || [])[1] ||
+            `Publish a small artifact demonstrating ${firstSkill}.`,
+        ),
+        topSkill: firstSkill,
+        color: "blue",
+      };
+    });
 
-const computeDeterministicConfidence = ({ evidenceBreakdown, resumeInsights, githubData, developerSignals }) => {
-  const provenCount = (evidenceBreakdown?.provenSkills || []).length;
-  const claimedNotProven = (evidenceBreakdown?.claimedButNotProvenSkills || []).length;
-  const missingExpected = (evidenceBreakdown?.missingExpectedSkills || []).length;
-  const totalGap = provenCount + claimedNotProven + missingExpected;
-  const evidenceRatio = totalGap > 0
-    ? (provenCount + claimedNotProven * 0.5) / totalGap
-    : 0.3;
-  const resumeFactor = clamp(resumeInsights?.atsScore || 0) / 100;
-  const githubFactor = Math.min(1, (githubData?.repoCount || 0) / 10);
-  const integrationFactor = developerSignals?.integrationSignal?.present ? 0.8 : 0.4;
-  const jobsFactor = developerSignals?.jobsDemandSignal?.present ? 0.8 : 0.4;
-  return clamp(
-    (evidenceRatio * 40) + (resumeFactor * 20) + (githubFactor * 20) + (integrationFactor * 10) + (jobsFactor * 10)
-  );
-};
-
-const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
-  if (!req.user?._id || !output || typeof output !== 'object') return;
+const saveAIVersionSnapshot = async ({
+  req,
+  source,
+  output,
+  metadata = {},
+}) => {
+  if (!req.user?._id || !output || typeof output !== "object") return;
   try {
     await createVersion({
       userId: req.user._id,
       source,
       outputJson: output,
-      metadata
+      metadata,
     });
   } catch (error) {
-    console.error('Skill gap AI snapshot error:', error.message);
+    console.error("Skill gap AI snapshot error:", error.message);
   }
 };
 
@@ -743,105 +1049,162 @@ const queueAIVersionSnapshot = (payload) => {
   const startedAt = Date.now();
   setImmediate(() => {
     saveAIVersionSnapshot(payload)
-      .then(() => logSkillGapPipeline('version_snapshot_saved', { durationMs: Date.now() - startedAt }))
-      .catch((error) => logSkillGapPipeline('version_snapshot_failed', { message: error.message }, 'warn'));
+      .then(() =>
+        logSkillGapPipeline("version_snapshot_saved", {
+          durationMs: Date.now() - startedAt,
+        }),
+      )
+      .catch((error) =>
+        logSkillGapPipeline(
+          "version_snapshot_failed",
+          { message: error.message },
+          "warn",
+        ),
+      );
   });
 };
 
-const loadResumeAnalysis = (userId, userContext) => developerContext.resolveResumeAnalysis(userId, userContext, { ResumeAnalysis });
+const loadResumeAnalysis = (userId, userContext) =>
+  developerContext.resolveResumeAnalysis(userId, userContext, {
+    ResumeAnalysis,
+  });
 
-const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
+const getGitHubData = async (
+  username,
+  { forceRefresh = false, isTemporaryMode = false, cachedPeek } = {},
+) => {
+  if (!username)
+    return {
+      repositories: [],
+      languageDistribution: [],
+      cache: { source: "unavailable" },
+    };
   const startedAt = Date.now();
   try {
-    const normalizedUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
-    const cached = await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true });
+    const normalizedUsername = String(username || "")
+      .trim()
+      .replace(/^@/, "")
+      .toLowerCase();
+    const cached =
+      cachedPeek ||
+      (await getCachedGitHubAnalysis(normalizedUsername, { allowStale: true }));
 
     if (isTemporaryMode) {
-      if (forceRefresh || !cached.data || cached.status !== 'fresh') {
-        const { analyzeGitHubProfile } = require('../services/githubservice');
-        const freshData = await analyzeGitHubProfile(normalizedUsername, { forceRefresh });
+      if (forceRefresh || !cached.data || cached.status !== "fresh") {
+        const { analyzeGitHubProfile } = require("../services/githubservice");
+        const freshData = await analyzeGitHubProfile(normalizedUsername, {
+          forceRefresh,
+        });
         if (!freshData || freshData.repoCount === 0) {
-          throw new Error('GitHub profile has no public repositories or analysis is in progress.');
+          throw new Error(
+            "GitHub profile has no public repositories or analysis is in progress.",
+          );
         }
         return freshData;
       }
       return cached.data;
     }
 
-    const shouldRefresh = forceRefresh || cached.status !== 'fresh';
-    let refreshState = { queued: false, running: false, reason: 'fresh' };
+    const shouldRefresh = forceRefresh || cached.status !== "fresh";
+    let refreshState = { queued: false, running: false, reason: "fresh" };
 
     if (shouldRefresh) {
       refreshState = refreshGitHubAnalysisInBackground(normalizedUsername, {
-        reason: forceRefresh ? 'manual_refresh' : cached.status === 'stale' ? 'stale_cache' : 'cache_miss'
+        reason: forceRefresh
+          ? "manual_refresh"
+          : cached.status === "stale"
+            ? "stale_cache"
+            : "cache_miss",
       });
     }
 
-    console.log('[SkillGapPipeline]', JSON.stringify({
-      event: 'github_cache_status',
-      username: normalizedUsername,
-      status: cached.status,
-      staleServed: cached.status === 'stale',
-      cacheAgeMs: cached.ageMs,
-      forceRefresh,
-      refreshQueued: Boolean(refreshState.queued),
-      refreshAlreadyRunning: Boolean(refreshState.running),
-      durationMs: Date.now() - startedAt
-    }));
+    console.log(
+      "[SkillGapPipeline]",
+      JSON.stringify({
+        event: "github_cache_status",
+        username: normalizedUsername,
+        status: cached.status,
+        staleServed: cached.status === "stale",
+        cacheAgeMs: cached.ageMs,
+        forceRefresh,
+        refreshQueued: Boolean(refreshState.queued),
+        refreshAlreadyRunning: Boolean(refreshState.running),
+        durationMs: Date.now() - startedAt,
+      }),
+    );
 
-    if (cached.data) return cached.data;
+    if (cached.data)
+      return {
+        ...cached.data,
+        cache: { ...cached.data.cache, stale: cached.status !== "fresh" },
+      };
 
     return {
       repoCount: 0,
-      developerLevel: 'Unknown',
+      developerLevel: "Unknown",
       strengths: [],
-      weakAreas: ['GitHub analysis is being refreshed in the background.'],
+      weakAreas: ["GitHub analysis is being refreshed in the background."],
       scores: {},
       languageDistribution: [],
       repositories: [],
       cache: {
-        source: 'miss-background-refresh',
+        source: "miss-background-refresh",
         hit: false,
         expiresAt: null,
-        cachedAt: null
-      }
+        cachedAt: null,
+      },
     };
   } catch (error) {
-    console.warn('[SkillGapPipeline]', JSON.stringify({
-      event: 'github_swr_fallback',
-      username: String(username || '').trim(),
-      error: error.message,
-      durationMs: Date.now() - startedAt
-    }));
+    console.warn(
+      "[SkillGapPipeline]",
+      JSON.stringify({
+        event: "github_swr_fallback",
+        username: String(username || "").trim(),
+        error: error.message,
+        durationMs: Date.now() - startedAt,
+      }),
+    );
     if (isTemporaryMode) {
       throw error;
     }
     return {
       repoCount: 0,
-      developerLevel: 'Unknown',
+      developerLevel: "Unknown",
       strengths: [],
       weakAreas: [],
       scores: {},
       languageDistribution: [],
-      repositories: []
+      repositories: [],
     };
   }
 };
 
 const buildGithubInsights = (githubData = {}) => ({
-  present: Boolean(githubData?.repoCount || (githubData?.repositories || []).length),
-  username: String(githubData?.githubSignals?.username || '').trim(),
+  present: Boolean(
+    githubData?.repoCount || (githubData?.repositories || []).length,
+  ),
+  username: String(githubData?.githubSignals?.username || "").trim(),
   repoCount: githubData?.repoCount || 0,
-  developerLevel: githubData?.developerLevel || '',
+  developerLevel: githubData?.developerLevel || "",
   strengths: githubData?.strengths || [],
   weakAreas: githubData?.weakAreas || [],
   languageDistribution: githubData?.languageDistribution || [],
   repositories: githubData?.repositories || [],
-  technologies: githubData?.technologies || githubData?.githubSignals?.technologies || [],
-  technologyCategories: githubData?.technologyCategories || githubData?.githubSignals?.technologyCategories || {},
+  technologies:
+    githubData?.technologies || githubData?.githubSignals?.technologies || [],
+  technologyCategories:
+    githubData?.technologyCategories ||
+    githubData?.githubSignals?.technologyCategories ||
+    {},
   scores: githubData?.scores || {},
-  recruiterInsights: githubData?.recruiterInsights || githubData?.githubSignals?.recruiterInsights || {},
-  updatedAt: githubData?.cache?.cachedAt || githubData?.githubSignals?.analyzedAt || null
+  recruiterInsights:
+    githubData?.recruiterInsights ||
+    githubData?.githubSignals?.recruiterInsights ||
+    {},
+  updatedAt:
+    githubData?.cache?.cachedAt ||
+    githubData?.githubSignals?.analyzedAt ||
+    null,
 });
 
 const buildCompactGithubStats = (githubData = {}) => ({
@@ -852,97 +1215,263 @@ const buildCompactGithubStats = (githubData = {}) => ({
   totalForks: Number(githubData?.totalForks || 0),
   forks: Number(githubData?.totalForks || 0),
   followers: Number(githubData?.followers || 0),
-  developerLevel: String(githubData?.developerLevel || '').trim(),
-  githubHealthScore: Number(githubData?.githubHealthScore || githubData?.activityScore || githubData?.scores?.healthScore || 0),
-  activityScore: Number(githubData?.activityScore || githubData?.githubHealthScore || githubData?.scores?.healthScore || 0),
-  languageDistribution: Array.isArray(githubData?.languageDistribution) ? githubData.languageDistribution.slice(0, 12) : [],
-  mainLanguageDistribution: Array.isArray(githubData?.mainLanguageDistribution) ? githubData.mainLanguageDistribution.slice(0, 8) : [],
-  technologies: Array.isArray(githubData?.technologies) ? githubData.technologies.slice(0, 18) : [],
-  strengths: Array.isArray(githubData?.strengths) ? githubData.strengths.slice(0, 8) : [],
-  weakAreas: Array.isArray(githubData?.weakAreas) ? githubData.weakAreas.slice(0, 8) : [],
-  cache: githubData?.cache || null
+  developerLevel: String(githubData?.developerLevel || "").trim(),
+  githubHealthScore: Number(
+    githubData?.githubHealthScore ||
+      githubData?.activityScore ||
+      githubData?.scores?.healthScore ||
+      0,
+  ),
+  activityScore: Number(
+    githubData?.activityScore ||
+      githubData?.githubHealthScore ||
+      githubData?.scores?.healthScore ||
+      0,
+  ),
+  languageDistribution: Array.isArray(githubData?.languageDistribution)
+    ? githubData.languageDistribution.slice(0, 12)
+    : [],
+  mainLanguageDistribution: Array.isArray(githubData?.mainLanguageDistribution)
+    ? githubData.mainLanguageDistribution.slice(0, 8)
+    : [],
+  technologies: Array.isArray(githubData?.technologies)
+    ? githubData.technologies.slice(0, 18)
+    : [],
+  strengths: Array.isArray(githubData?.strengths)
+    ? githubData.strengths.slice(0, 8)
+    : [],
+  weakAreas: Array.isArray(githubData?.weakAreas)
+    ? githubData.weakAreas.slice(0, 8)
+    : [],
+  cache: githubData?.cache || null,
 });
 
 const buildSkillGapCacheSignalHash = ({
-  username = '',
-  careerStack = '',
-  experienceLevel = '',
+  username = "",
+  careerStack = "",
+  experienceLevel = "",
   resumeCacheIdentity = {},
   githubData = {},
-  user = {}
-} = {}) => crypto
-  .createHash('sha256')
-  .update(JSON.stringify({
-    username: String(username || '').trim().toLowerCase(),
-    careerStack,
-    experienceLevel,
-    resumeHash: resumeCacheIdentity.resumeHash || 'no-resume',
-    resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId || 'no-resume',
-    githubCachedAt: githubData?.cache?.cachedAt || null,
-    githubExpiresAt: githubData?.cache?.expiresAt || null,
-    profileUpdatedAt: user?.updatedAt || null,
-    analysisVersion: ANALYSIS_VERSION
-  }))
-  .digest('hex');
+  user = {},
+  resumeInsights = {},
+  resumeAnalysis = null,
+  developerSignals = {},
+} = {}) =>
+  crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify({
+        username: String(username || "")
+          .trim()
+          .toLowerCase(),
+        careerStack,
+        experienceLevel,
+        resumeHash: resumeCacheIdentity.resumeHash || "no-resume",
+        resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId || "no-resume",
+        githubCachedAt: githubData?.cache?.cachedAt || null,
+        githubExpiresAt: githubData?.cache?.expiresAt || null,
+        githubEvidence: {
+          repoCount: githubData.repoCount,
+          repositories: githubData.repositories,
+          languageDistribution: githubData.languageDistribution,
+          githubSignals: githubData.githubSignals,
+          dataAvailability: githubData.dataAvailability,
+          fetchedAt: githubData.fetchedAt,
+        },
+        resumeEvidence: resumeInsights,
+        resumeRecordedEvidence: {
+          skills:
+            resumeAnalysis?.skills instanceof Map
+              ? Object.fromEntries(resumeAnalysis.skills)
+              : resumeAnalysis?.skills,
+          technicalSkills: resumeAnalysis?.technicalSkills,
+          signals: resumeAnalysis?.resumeSignals,
+          analyzedAt: resumeAnalysis?.analyzedAt,
+          fileId: resumeAnalysis?.fileId,
+          analysisVersion: resumeAnalysis?.analysisVersion,
+        },
+        profileClaims: skillGapRequirements.normalize(user.skills || []),
+        requirementMatrixVersion: skillGapRequirements.MATRIX_VERSION,
+        evidenceRuleVersion: skillGapEvidence.RULE_VERSION,
+        selectedResume: developerContext.resolveSelectedResumeFileId(user),
+        supportingEvidence: {
+          integration: developerSignals.integrationSignal,
+          sprint: developerSignals.careerSprintSignal,
+          weekly: developerSignals.weeklyReportSignal,
+          portfolio: developerSignals.portfolioSignal,
+          jobs: developerSignals.jobsDemandSignal,
+        },
+        profileUpdatedAt: user?.updatedAt || null,
+        analysisVersion: ANALYSIS_VERSION,
+      }),
+    )
+    .digest("hex");
 
 const buildCareerProfileSignalFromUser = (user = {}) => ({
   present: Boolean(user?._id),
-  careerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
-  experienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
-  activeCareerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
-  activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
-  careerGoal: String(user?.careerGoal || '').trim(),
-  targetTimeline: String(user?.targetTimeline || '').trim(),
-  learningPreference: String(user?.learningPreference || '').trim(),
-  githubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
-  activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
-  updatedAt: user?.updatedAt || null
+  careerStack: String(developerContext.resolveCareerStack(user) || "").trim(),
+  experienceLevel: String(
+    developerContext.resolveExperienceLevel(user) || "",
+  ).trim(),
+  activeCareerStack: String(
+    developerContext.resolveCareerStack(user) || "",
+  ).trim(),
+  activeExperienceLevel: String(
+    developerContext.resolveExperienceLevel(user) || "",
+  ).trim(),
+  careerGoal: String(user?.careerGoal || "").trim(),
+  targetTimeline: String(user?.targetTimeline || "").trim(),
+  learningPreference: String(user?.learningPreference || "").trim(),
+  githubUsername: String(
+    developerContext.resolveGithubUsername(user) || "",
+  ).trim(),
+  activeGithubUsername: String(
+    developerContext.resolveGithubUsername(user) || "",
+  ).trim(),
+  updatedAt: user?.updatedAt || null,
 });
 
-const getExpectedSkills = (careerStack = 'Full Stack', experienceLevel = 'Student') => uniqueSkillNames([
-  ...(STACK_SKILL_HINTS[careerStack] || STACK_SKILL_HINTS['Full Stack']),
-  ...(EXPERIENCE_SKILL_HINTS[experienceLevel] || EXPERIENCE_SKILL_HINTS.Student),
-  ...DEFAULT_MISSING_SKILLS
-]);
+const getExpectedSkills = (
+  careerStack = "Full Stack",
+  experienceLevel = "Student",
+) =>
+  uniqueSkillNames([
+    ...(STACK_SKILL_HINTS[careerStack] || STACK_SKILL_HINTS["Full Stack"]),
+    ...(EXPERIENCE_SKILL_HINTS[experienceLevel] ||
+      EXPERIENCE_SKILL_HINTS.Student),
+    ...DEFAULT_MISSING_SKILLS,
+  ]);
 
-const buildGithubSkills = (githubData = {}) => uniqueSkillNames(
-  extractSkillsFromRepositories(githubData?.repositories || [], githubData?.languageDistribution || [])
-    .concat((githubData?.languageDistribution || []).map((entry) => entry?.language))
-).slice(0, 25);
+const buildGithubSkills = (githubData = {}) =>
+  uniqueSkillNames(
+    extractSkillsFromRepositories(
+      githubData?.repositories || [],
+      githubData?.languageDistribution || [],
+    ).concat(
+      (githubData?.languageDistribution || []).map((entry) => entry?.language),
+    ),
+  ).slice(0, 25);
 
-const buildSkillEvidenceBreakdown = ({ resumeInsights, githubData, careerStack, experienceLevel }) => {
-  const resumeSkills = uniqueSkillNames(resumeInsights?.technicalSkills || resumeInsights?.skills || []);
+const buildSkillEvidenceBreakdown = ({
+  resumeInsights,
+  githubData,
+  careerStack,
+  experienceLevel,
+}) => {
+  const resumeSkills = uniqueSkillNames(
+    resumeInsights?.technicalSkills || resumeInsights?.skills || [],
+  );
   const githubSkills = buildGithubSkills(githubData);
-  const githubLookup = new Set(githubSkills.map((skill) => skill.toLowerCase()));
-  const resumeLookup = new Set(resumeSkills.map((skill) => skill.toLowerCase()));
+  const githubLookup = new Set(
+    githubSkills.map((skill) => skill.toLowerCase()),
+  );
+  const resumeLookup = new Set(
+    resumeSkills.map((skill) => skill.toLowerCase()),
+  );
   const expectedSkills = getExpectedSkills(careerStack, experienceLevel);
 
   return {
     resumeSkills,
     githubSkills,
-    provenSkills: resumeSkills.filter((skill) => githubLookup.has(skill.toLowerCase())),
-    claimedButNotProvenSkills: resumeSkills.filter((skill) => !githubLookup.has(skill.toLowerCase())),
-    missingExpectedSkills: expectedSkills.filter((skill) => !resumeLookup.has(skill.toLowerCase()) && !githubLookup.has(skill.toLowerCase()))
+    provenSkills: resumeSkills.filter((skill) =>
+      githubLookup.has(skill.toLowerCase()),
+    ),
+    claimedButNotProvenSkills: resumeSkills.filter(
+      (skill) => !githubLookup.has(skill.toLowerCase()),
+    ),
+    missingExpectedSkills: expectedSkills.filter(
+      (skill) =>
+        !resumeLookup.has(skill.toLowerCase()) &&
+        !githubLookup.has(skill.toLowerCase()),
+    ),
   };
 };
 
 const emptySignals = {
-  careerSprintSignal: { present: false, completedTasks: 0, missedTasks: 0, streak: 0, consistencyScore: 0, activeLearningFocus: '', repeatedIncompleteSkills: [], completedSkillSignals: [], progressPercent: 0, status: 'Unavailable', updatedAt: null },
-  weeklyReportSignal: { present: false, weeklyProgressScore: 0, status: 'Unavailable', completedRecommendations: null, missedRecommendations: null, skillsImprovedThisWeek: [], repeatedWeakAreas: [], trendDelta: 0, updatedAt: null },
-  portfolioSignal: { present: false, completenessScore: 0, listedProjects: 0, liveLinks: 0, githubLinks: 0, contactVisibility: false, projectPresentationQuality: 0, publicEnabled: false, portfolioSkills: [], updatedAt: null },
-  integrationSignal: { present: false, usedProviders: [], integrationScore: 0, strongestProof: [], weakProof: [], detectedSkills: [], certifications: [], updatedAt: null },
-  careerProfileSignal: { present: false, careerStack: '', experienceLevel: '', careerGoal: '', githubUsername: '', updatedAt: null },
-  jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [], updatedAt: null }
+  careerSprintSignal: {
+    present: false,
+    completedTasks: 0,
+    missedTasks: 0,
+    streak: 0,
+    consistencyScore: 0,
+    activeLearningFocus: "",
+    repeatedIncompleteSkills: [],
+    completedSkillSignals: [],
+    progressPercent: 0,
+    status: "Unavailable",
+    updatedAt: null,
+  },
+  weeklyReportSignal: {
+    present: false,
+    weeklyProgressScore: 0,
+    status: "Unavailable",
+    completedRecommendations: null,
+    missedRecommendations: null,
+    skillsImprovedThisWeek: [],
+    repeatedWeakAreas: [],
+    trendDelta: 0,
+    updatedAt: null,
+  },
+  portfolioSignal: {
+    present: false,
+    completenessScore: 0,
+    listedProjects: 0,
+    liveLinks: 0,
+    githubLinks: 0,
+    contactVisibility: false,
+    projectPresentationQuality: 0,
+    publicEnabled: false,
+    portfolioSkills: [],
+    updatedAt: null,
+  },
+  integrationSignal: {
+    present: false,
+    usedProviders: [],
+    integrationScore: 0,
+    strongestProof: [],
+    weakProof: [],
+    detectedSkills: [],
+    certifications: [],
+    updatedAt: null,
+  },
+  careerProfileSignal: {
+    present: false,
+    careerStack: "",
+    experienceLevel: "",
+    careerGoal: "",
+    githubUsername: "",
+    updatedAt: null,
+  },
+  jobsDemandSignal: {
+    present: false,
+    sampledJobs: 0,
+    topSkills: [],
+    updatedAt: null,
+  },
 };
 
-const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, githubInsights, careerProfileSignal }) => {
+const loadDeveloperSignalsSafely = async ({
+  userId,
+  username,
+  resumeInsights,
+  githubInsights,
+  careerProfileSignal,
+}) => {
   if (!userId) {
     const publicJobsDemand = await getPublicJobMarketSignal();
-    const previewSignals = { ...emptySignals, jobsDemandSignal: publicJobsDemand };
+    const previewSignals = {
+      ...emptySignals,
+      jobsDemandSignal: publicJobsDemand,
+    };
     return {
       developerSignals: previewSignals,
-      signalHash: 'no-signals',
-      signalsUsed: buildSignalsUsedSummary({ username, resumeInsights, githubInsights, signals: previewSignals })
+      signalHash: "no-signals",
+      signalsUsed: buildSignalsUsedSummary({
+        username,
+        resumeInsights,
+        githubInsights,
+        signals: previewSignals,
+      }),
     };
   }
 
@@ -950,37 +1479,64 @@ const loadDeveloperSignalsSafely = async ({ userId, username, resumeInsights, gi
     const developerSignals = await getDeveloperSignals(userId, {
       resumeSignals: resumeInsights,
       githubSignals: githubInsights,
-      careerProfileSignal
+      careerProfileSignal,
     });
     return {
       developerSignals,
       signalHash: buildSignalHash(developerSignals),
-      signalsUsed: buildSignalsUsedSummary({ username, resumeInsights, githubInsights, signals: developerSignals })
+      signalsUsed: buildSignalsUsedSummary({
+        username,
+        resumeInsights,
+        githubInsights,
+        signals: developerSignals,
+      }),
     };
   } catch (error) {
-    console.warn('Skill gap signal fallback:', error.message);
+    console.warn("Skill gap signal fallback:", error.message);
     return {
       developerSignals: emptySignals,
-      signalHash: 'no-signals',
-      signalsUsed: buildSignalsUsedSummary({ username, resumeInsights, githubInsights, signals: emptySignals })
+      signalHash: "no-signals",
+      signalsUsed: buildSignalsUsedSummary({
+        username,
+        resumeInsights,
+        githubInsights,
+        signals: emptySignals,
+      }),
     };
   }
 };
 
 const buildEvidenceBuckets = (signals = {}) => {
-  const integrationSkills = new Set(uniqueSkillNames(signals.integrationSignal?.detectedSkills || []).map((skill) => skill.toLowerCase()));
-  const sprintSkills = new Set(uniqueSkillNames(signals.careerSprintSignal?.completedSkillSignals || []).map((skill) => skill.toLowerCase()));
-  const repeatedWeakSkills = new Set([
-    ...(signals.careerSprintSignal?.repeatedIncompleteSkills || []),
-    ...(signals.weeklyReportSignal?.repeatedWeakAreas || [])
-  ].map((skill) => canonicalizeSkillName(skill)).filter(Boolean).map((skill) => skill.toLowerCase()));
-  const portfolioSkills = new Set(uniqueSkillNames(signals.portfolioSignal?.portfolioSkills || []).map((skill) => skill.toLowerCase()));
+  const integrationSkills = new Set(
+    uniqueSkillNames(signals.integrationSignal?.detectedSkills || []).map(
+      (skill) => skill.toLowerCase(),
+    ),
+  );
+  const sprintSkills = new Set(
+    uniqueSkillNames(
+      signals.careerSprintSignal?.completedSkillSignals || [],
+    ).map((skill) => skill.toLowerCase()),
+  );
+  const repeatedWeakSkills = new Set(
+    [
+      ...(signals.careerSprintSignal?.repeatedIncompleteSkills || []),
+      ...(signals.weeklyReportSignal?.repeatedWeakAreas || []),
+    ]
+      .map((skill) => canonicalizeSkillName(skill))
+      .filter(Boolean)
+      .map((skill) => skill.toLowerCase()),
+  );
+  const portfolioSkills = new Set(
+    uniqueSkillNames(signals.portfolioSignal?.portfolioSkills || []).map(
+      (skill) => skill.toLowerCase(),
+    ),
+  );
 
   return {
     integrationSkills,
     sprintSkills,
     repeatedWeakSkills,
-    portfolioSkills
+    portfolioSkills,
   };
 };
 
@@ -990,7 +1546,7 @@ const buildFallbackSkillGap = ({
   developerSignals,
   evidenceBreakdown,
   careerStack,
-  experienceLevel
+  experienceLevel,
 }) => {
   const focusSkills = uniqueSkillNames([
     ...(evidenceBreakdown?.missingExpectedSkills || []),
@@ -998,7 +1554,7 @@ const buildFallbackSkillGap = ({
     ...(developerSignals.weeklyReportSignal?.repeatedWeakAreas || []),
     ...(developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []),
     ...(developerSignals.integrationSignal?.weakProof || []),
-    ...getExpectedSkills(careerStack, experienceLevel)
+    ...getExpectedSkills(careerStack, experienceLevel),
   ]);
 
   return {
@@ -1006,37 +1562,62 @@ const buildFallbackSkillGap = ({
     yourSkills: uniqueSkillNames([
       ...(evidenceBreakdown?.provenSkills || []),
       ...(resumeInsights.skills || []),
-      ...(evidenceBreakdown?.githubSkills || [])
-    ]).slice(0, 8).map((skill) => ({
-      name: skill,
-      category: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase())
-        ? 'Proven by GitHub'
-        : 'Resume Signal',
-      proficiency: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 72 : 60,
-      isFoundational: true,
-      source: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 'GitHub + Resume' : 'Resume',
-      confidenceScore: (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase()) ? 78 : 62,
-      evidence: [
-        (evidenceBreakdown?.provenSkills || []).some((item) => item.toLowerCase() === skill.toLowerCase())
-          ? `${skill} appears in both resume analysis and GitHub evidence.`
-          : `${skill} appears in the available resume or GitHub signal.`
-      ]
-    })),
-    missingSkills: focusSkills.slice(0, MIN_MISSING_SKILLS).map((skill, index) => ({
-      name: skill,
-      category: index < 4 ? 'Priority Gap' : 'General',
-      priority: index < 4 ? 'High' : index < 8 ? 'Medium' : 'Low',
-      jobDemand: clamp(88 - (index * 3)),
-      levelRelevance: index < 6 ? 'Current' : 'Next Level',
-      source: 'Career Profile',
-      confidenceScore: clamp(76 - (index * 2), 45, 86),
-      evidence: [`${skill} is a recognized ${careerStack} skill not yet strongly proven for ${experienceLevel} level.`]
-    })),
-    coverage: clamp((resumeInsights.atsScore * 0.18) + ((githubInsights.repoCount || 0) * 4)),
+      ...(evidenceBreakdown?.githubSkills || []),
+    ])
+      .slice(0, 8)
+      .map((skill) => ({
+        name: skill,
+        category: (evidenceBreakdown?.provenSkills || []).some(
+          (item) => item.toLowerCase() === skill.toLowerCase(),
+        )
+          ? "Proven by GitHub"
+          : "Resume Signal",
+        proficiency: (evidenceBreakdown?.provenSkills || []).some(
+          (item) => item.toLowerCase() === skill.toLowerCase(),
+        )
+          ? 72
+          : 60,
+        isFoundational: true,
+        source: (evidenceBreakdown?.provenSkills || []).some(
+          (item) => item.toLowerCase() === skill.toLowerCase(),
+        )
+          ? "GitHub + Resume"
+          : "Resume",
+        confidenceScore: (evidenceBreakdown?.provenSkills || []).some(
+          (item) => item.toLowerCase() === skill.toLowerCase(),
+        )
+          ? 78
+          : 62,
+        evidence: [
+          (evidenceBreakdown?.provenSkills || []).some(
+            (item) => item.toLowerCase() === skill.toLowerCase(),
+          )
+            ? `${skill} appears in both resume analysis and GitHub evidence.`
+            : `${skill} appears in the available resume or GitHub signal.`,
+        ],
+      })),
+    missingSkills: focusSkills
+      .slice(0, MIN_MISSING_SKILLS)
+      .map((skill, index) => ({
+        name: skill,
+        category: index < 4 ? "Priority Gap" : "General",
+        priority: index < 4 ? "High" : index < 8 ? "Medium" : "Low",
+        jobDemand: clamp(88 - index * 3),
+        levelRelevance: index < 6 ? "Current" : "Next Level",
+        source: "Career Profile",
+        confidenceScore: clamp(76 - index * 2, 45, 86),
+        evidence: [
+          `${skill} is a recognized ${careerStack} skill not yet strongly proven for ${experienceLevel} level.`,
+        ],
+      })),
+    coverage: clamp(
+      resumeInsights.atsScore * 0.18 + (githubInsights.repoCount || 0) * 4,
+    ),
     missing: 50,
-    levelAssessment: 'Your current evidence shows a workable foundation, but several role-relevant gaps still need stronger proof in code, documentation, or consistent practice.',
+    levelAssessment:
+      "Your current evidence shows a workable foundation, but several role-relevant gaps still need stronger proof in code, documentation, or consistent practice.",
     roadmap: [],
-    totalWeeks: '8 weeks'
+    totalWeeks: "8 weeks",
   };
 };
 
@@ -1046,36 +1627,44 @@ const applySkillEvidence = ({ yourSkills, missingSkills, signals }) => {
 
   const enrichedCurrent = uniqueObjectsByName(
     yourSkills.map((skill) => {
-      const lowerName = String(skill.name || '').toLowerCase();
+      const lowerName = String(skill.name || "").toLowerCase();
       let proficiency = clamp(skill.proficiency || 0);
-      if (evidence.integrationSkills.has(lowerName)) proficiency = clamp(proficiency + 6);
-      if (evidence.sprintSkills.has(lowerName)) proficiency = clamp(proficiency + 4);
-      if (evidence.portfolioSkills.has(lowerName)) proficiency = clamp(proficiency + 3);
+      if (evidence.integrationSkills.has(lowerName))
+        proficiency = clamp(proficiency + 6);
+      if (evidence.sprintSkills.has(lowerName))
+        proficiency = clamp(proficiency + 4);
+      if (evidence.portfolioSkills.has(lowerName))
+        proficiency = clamp(proficiency + 3);
       presentSkillNames.add(lowerName);
       return {
         ...skill,
-        proficiency
+        proficiency,
       };
-    })
+    }),
   );
 
   const enrichedMissing = uniqueObjectsByName(
     missingSkills
-      .filter((skill) => !presentSkillNames.has(String(skill.name || '').toLowerCase()))
+      .filter(
+        (skill) =>
+          !presentSkillNames.has(String(skill.name || "").toLowerCase()),
+      )
       .map((skill) => {
-        const lowerName = String(skill.name || '').toLowerCase();
+        const lowerName = String(skill.name || "").toLowerCase();
         const repeatedWeak = evidence.repeatedWeakSkills.has(lowerName);
         return {
           ...skill,
-          priority: repeatedWeak ? 'High' : skill.priority,
-          jobDemand: repeatedWeak ? clamp((skill.jobDemand || 60) + 6) : clamp(skill.jobDemand || 60)
+          priority: repeatedWeak ? "High" : skill.priority,
+          jobDemand: repeatedWeak
+            ? clamp((skill.jobDemand || 60) + 6)
+            : clamp(skill.jobDemand || 60),
         };
-      })
+      }),
   );
 
   return {
     yourSkills: enrichedCurrent,
-    missingSkills: enrichedMissing
+    missingSkills: enrichedMissing,
   };
 };
 
@@ -1087,16 +1676,29 @@ const buildDeterministicSkillGroups = ({
   careerStack,
   experienceLevel,
   aiKnownSkills = [],
-  aiMissingSkills = []
+  aiMissingSkills = [],
 }) => {
   const evidenceMap = new Map();
-  const githubRepos = Array.isArray(githubData.repositories) ? githubData.repositories : [];
+  const githubRepos = Array.isArray(githubData.repositories)
+    ? githubData.repositories
+    : [];
 
   (evidenceBreakdown.githubSkills || []).forEach((skill) => {
     const repoNames = githubRepos
       .filter((repo) => {
-        const haystack = [repo?.name, repo?.description, repo?.language, ...(repo?.topics || [])].join(' ').toLowerCase();
-        return haystack.includes(String(skill).toLowerCase()) || canonicalizeSkillName(repo?.language || '').toLowerCase() === String(skill).toLowerCase();
+        const haystack = [
+          repo?.name,
+          repo?.description,
+          repo?.language,
+          ...(repo?.topics || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return (
+          haystack.includes(String(skill).toLowerCase()) ||
+          canonicalizeSkillName(repo?.language || "").toLowerCase() ===
+            String(skill).toLowerCase()
+        );
       })
       .map((repo) => repo.name)
       .filter(Boolean)
@@ -1104,132 +1706,268 @@ const buildDeterministicSkillGroups = ({
     addSkillEvidence(
       evidenceMap,
       skill,
-      'github',
-      repoNames.length ? `Detected in repositories: ${repoNames.join(', ')}` : 'Detected from GitHub language or repository metadata',
-      82
+      "github",
+      repoNames.length
+        ? `Detected in repositories: ${repoNames.join(", ")}`
+        : "Detected from GitHub language or repository metadata",
+      82,
     );
   });
 
   (evidenceBreakdown.resumeSkills || []).forEach((skill) => {
-    addSkillEvidence(evidenceMap, skill, 'resume', resumeInsights.fileName ? `Listed in resume ${resumeInsights.fileName}` : 'Listed in resume analysis', 64);
+    addSkillEvidence(
+      evidenceMap,
+      skill,
+      "resume",
+      resumeInsights.fileName
+        ? `Listed in resume ${resumeInsights.fileName}`
+        : "Listed in resume analysis",
+      64,
+    );
   });
 
   (developerSignals.portfolioSignal?.portfolioSkills || []).forEach((skill) => {
-    addSkillEvidence(evidenceMap, skill, 'portfolio', 'Appears in public portfolio skills or project tech', 58);
+    addSkillEvidence(
+      evidenceMap,
+      skill,
+      "portfolio",
+      "Appears in public portfolio skills or project tech",
+      58,
+    );
   });
 
-  (developerSignals.integrationSignal?.detectedSkills || []).forEach((skill) => {
-    addSkillEvidence(evidenceMap, skill, 'integration', 'Detected through connected integration evidence', 66);
-  });
+  (developerSignals.integrationSignal?.detectedSkills || []).forEach(
+    (skill) => {
+      addSkillEvidence(
+        evidenceMap,
+        skill,
+        "integration",
+        "Detected through connected integration evidence",
+        66,
+      );
+    },
+  );
 
-  (developerSignals.careerSprintSignal?.completedSkillSignals || []).forEach((skill) => {
-    addSkillEvidence(evidenceMap, skill, 'sprint', 'Completed Career Sprint work references this skill', 52);
-  });
+  (developerSignals.careerSprintSignal?.completedSkillSignals || []).forEach(
+    (skill) => {
+      addSkillEvidence(
+        evidenceMap,
+        skill,
+        "sprint",
+        "Completed Career Sprint work references this skill",
+        52,
+      );
+    },
+  );
 
   (aiKnownSkills || []).forEach((skill) => {
     const name = toSkillName(skill);
     if (!name) return;
-    addSkillEvidence(evidenceMap, name, 'expected', 'AI sequencing agreed this is part of the current skill base', 48, {
-      aiProficiency: clamp(skill?.proficiency || 0)
-    });
+    addSkillEvidence(
+      evidenceMap,
+      name,
+      "expected",
+      "AI sequencing agreed this is part of the current skill base",
+      48,
+      {
+        aiProficiency: clamp(skill?.proficiency || 0),
+      },
+    );
   });
 
-  const provenLookup = new Set((evidenceBreakdown.provenSkills || []).map((skill) => skill.toLowerCase()));
-  const resumeLookup = new Set((evidenceBreakdown.resumeSkills || []).map((skill) => skill.toLowerCase()));
-  const githubLookup = new Set((evidenceBreakdown.githubSkills || []).map((skill) => skill.toLowerCase()));
+  const provenLookup = new Set(
+    (evidenceBreakdown.provenSkills || []).map((skill) => skill.toLowerCase()),
+  );
+  const resumeLookup = new Set(
+    (evidenceBreakdown.resumeSkills || []).map((skill) => skill.toLowerCase()),
+  );
+  const githubLookup = new Set(
+    (evidenceBreakdown.githubSkills || []).map((skill) => skill.toLowerCase()),
+  );
   const expectedSkills = getExpectedSkills(careerStack, experienceLevel);
-  const expectedLookup = new Set(expectedSkills.map((skill) => skill.toLowerCase()));
+  const expectedLookup = new Set(
+    expectedSkills.map((skill) => skill.toLowerCase()),
+  );
   const jobsDemandLookup = new Map(
     (developerSignals.jobsDemandSignal?.topSkills || [])
-      .map((skill) => [canonicalizeSkillName(skill?.name || '').toLowerCase(), skill])
-      .filter(([key]) => key)
+      .map((skill) => [
+        canonicalizeSkillName(skill?.name || "").toLowerCase(),
+        skill,
+      ])
+      .filter(([key]) => key),
   );
 
   const currentSkillObjects = Array.from(evidenceMap.values())
     .map((entry) => {
       const item = materializeSkillEvidence(entry);
-      const isProven = provenLookup.has(item.name.toLowerCase()) || item.source.includes('GitHub');
+      const isProven =
+        provenLookup.has(item.name.toLowerCase()) ||
+        item.source.includes("GitHub");
       const proficiency = clamp(
-        entry.aiProficiency
-        || (isProven ? 74 : item.source.includes('Resume') ? 62 : 54)
-        + Math.min(12, item.evidence.length * 3)
+        entry.aiProficiency ||
+          (isProven ? 74 : item.source.includes("Resume") ? 62 : 54) +
+            Math.min(12, item.evidence.length * 3),
       );
       return {
         ...item,
         proficiency,
-        isFoundational: expectedLookup.has(item.name.toLowerCase())
+        isFoundational: expectedLookup.has(item.name.toLowerCase()),
       };
     })
-    .sort((a, b) => (b.confidenceScore - a.confidenceScore) || (b.proficiency - a.proficiency) || a.name.localeCompare(b.name));
+    .sort(
+      (a, b) =>
+        b.confidenceScore - a.confidenceScore ||
+        b.proficiency - a.proficiency ||
+        a.name.localeCompare(b.name),
+    );
 
   const missingMap = new Map();
-  const addMissing = (rawName, source, evidence, baseScore = 62, priorityOverride = '') => {
+  const addMissing = (
+    rawName,
+    source,
+    evidence,
+    baseScore = 62,
+    priorityOverride = "",
+  ) => {
     const meta = getSkillMeta(rawName);
     if (!meta.name || evidenceMap.has(meta.name.toLowerCase())) return;
     if (!isRelevantForStack(meta.name, careerStack)) return;
     addSkillEvidence(missingMap, meta.name, source, evidence, baseScore, {
       priority: priorityOverride || meta.priority,
-      jobDemand: jobsDemandLookup.get(meta.name.toLowerCase())?.demandScore || meta.jobDemand
+      jobDemand:
+        jobsDemandLookup.get(meta.name.toLowerCase())?.demandScore ||
+        meta.jobDemand,
     });
   };
 
   (evidenceBreakdown.missingExpectedSkills || []).forEach((skill) => {
-    addMissing(skill, 'expected', `${skill} is expected for ${careerStack} at ${experienceLevel} level but was not proven in GitHub or resume`, 76, 'High');
+    addMissing(
+      skill,
+      "expected",
+      `${skill} is expected for ${careerStack} at ${experienceLevel} level but was not proven in GitHub or resume`,
+      76,
+      "High",
+    );
   });
 
   (evidenceBreakdown.claimedButNotProvenSkills || []).forEach((skill) => {
-    addMissing(skill, 'resume', `${skill} is claimed in the resume but not visible in GitHub/project proof`, 70, 'High');
+    addMissing(
+      skill,
+      "resume",
+      `${skill} is claimed in the resume but not visible in GitHub/project proof`,
+      70,
+      "High",
+    );
   });
 
-  (developerSignals.weeklyReportSignal?.repeatedWeakAreas || []).forEach((skill) => {
-    addMissing(skill, 'weekly', 'Repeated weak area in weekly reports', 72, 'High');
-  });
+  (developerSignals.weeklyReportSignal?.repeatedWeakAreas || []).forEach(
+    (skill) => {
+      addMissing(
+        skill,
+        "weekly",
+        "Repeated weak area in weekly reports",
+        72,
+        "High",
+      );
+    },
+  );
 
-  (developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []).forEach((skill) => {
-    addMissing(skill, 'sprint', 'Repeated incomplete Career Sprint focus', 68, 'High');
-  });
+  (developerSignals.careerSprintSignal?.repeatedIncompleteSkills || []).forEach(
+    (skill) => {
+      addMissing(
+        skill,
+        "sprint",
+        "Repeated incomplete Career Sprint focus",
+        68,
+        "High",
+      );
+    },
+  );
 
   (developerSignals.integrationSignal?.weakProof || []).forEach((skill) => {
-    addMissing(skill, 'integration', 'Connected integration has weak proof for this area', 58, 'Medium');
+    addMissing(
+      skill,
+      "integration",
+      "Connected integration has weak proof for this area",
+      58,
+      "Medium",
+    );
   });
 
   (developerSignals.jobsDemandSignal?.topSkills || []).forEach((skill) => {
-    const demandName = canonicalizeSkillName(skill?.name || '');
+    const demandName = canonicalizeSkillName(skill?.name || "");
     if (demandName && expectedLookup.has(demandName.toLowerCase())) {
-      addMissing(demandName, 'jobs', `High demand in ${developerSignals.jobsDemandSignal.sampledJobs || 0} cached jobs`, 66, 'High');
+      addMissing(
+        demandName,
+        "jobs",
+        `High demand in ${developerSignals.jobsDemandSignal.sampledJobs || 0} cached jobs`,
+        66,
+        "High",
+      );
     }
   });
 
   (aiMissingSkills || []).forEach((skill) => {
-    addMissing(toSkillName(skill), 'expected', 'AI prioritization selected this as a learning candidate', 52, skill?.priority);
+    addMissing(
+      toSkillName(skill),
+      "expected",
+      "AI prioritization selected this as a learning candidate",
+      52,
+      skill?.priority,
+    );
   });
 
-  expectedSkills.forEach((skill) => addMissing(skill, 'expected', `Baseline ${careerStack} expectation for ${experienceLevel}`, 55));
+  expectedSkills.forEach((skill) =>
+    addMissing(
+      skill,
+      "expected",
+      `Baseline ${careerStack} expectation for ${experienceLevel}`,
+      55,
+    ),
+  );
 
   const missingSkillObjects = Array.from(missingMap.values())
     .map((entry) => {
       const item = materializeSkillEvidence(entry);
-      const confidenceScore = clamp(item.confidenceScore + (expectedLookup.has(item.name.toLowerCase()) ? 8 : 0));
-      const jobDemand = clamp(item.jobDemand || jobsDemandLookup.get(item.name.toLowerCase())?.demandScore || 60);
+      const confidenceScore = clamp(
+        item.confidenceScore +
+          (expectedLookup.has(item.name.toLowerCase()) ? 8 : 0),
+      );
+      const jobDemand = clamp(
+        item.jobDemand ||
+          jobsDemandLookup.get(item.name.toLowerCase())?.demandScore ||
+          60,
+      );
       return {
         ...item,
         confidenceScore,
         priority: normalizePriority(item.priority, jobDemand, confidenceScore),
         jobDemand,
-        levelRelevance: confidenceScore >= 72 ? 'Current' : confidenceScore >= 52 ? 'Next Level' : 'Advanced'
+        levelRelevance:
+          confidenceScore >= 72
+            ? "Current"
+            : confidenceScore >= 52
+              ? "Next Level"
+              : "Advanced",
       };
     })
     .sort((a, b) => {
       const priorityRank = { High: 3, Medium: 2, Low: 1 };
-      return ((priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0))
-        || (b.jobDemand - a.jobDemand)
-        || (b.confidenceScore - a.confidenceScore)
-        || a.name.localeCompare(b.name);
+      return (
+        (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) ||
+        b.jobDemand - a.jobDemand ||
+        b.confidenceScore - a.confidenceScore ||
+        a.name.localeCompare(b.name)
+      );
     });
 
   const weakSkills = uniqueObjectsByName([
-    ...currentSkillObjects.filter((skill) => skill.confidenceScore < 66 || skill.proficiency < 62),
-    ...missingSkillObjects.filter((skill) => skill.priority === 'High').slice(0, 4)
+    ...currentSkillObjects.filter(
+      (skill) => skill.confidenceScore < 66 || skill.proficiency < 62,
+    ),
+    ...missingSkillObjects
+      .filter((skill) => skill.priority === "High")
+      .slice(0, 4),
   ]).slice(0, 10);
 
   const highDemandSkills = uniqueObjectsByName([
@@ -1241,34 +1979,48 @@ const buildDeterministicSkillGroups = ({
         return {
           name,
           category: getSkillMeta(name).category,
-          priority: 'High',
+          priority: "High",
           jobDemand: clamp(skill.demandScore || getSkillMeta(name).jobDemand),
-          source: 'Jobs',
-          confidenceScore: clamp(58 + Math.min(32, Number(skill.postings || 0) * 2)),
-          evidence: [`Appears across ${skill.postings || 0} cached job postings`]
+          source: "Jobs",
+          confidenceScore: clamp(
+            58 + Math.min(32, Number(skill.postings || 0) * 2),
+          ),
+          evidence: [
+            `Appears across ${skill.postings || 0} cached job postings`,
+          ],
         };
       })
-      .filter(Boolean)
-  ]).filter((skill) => isRelevantForStack(skill.name, careerStack)).slice(0, 10);
+      .filter(Boolean),
+  ])
+    .filter((skill) => isRelevantForStack(skill.name, careerStack))
+    .slice(0, 10);
 
-  const maxMissing = Math.max(MIN_MISSING_SKILLS, EXPERIENCE_PRIORITY_LIMITS[experienceLevel] || MIN_MISSING_SKILLS);
+  const maxMissing = Math.max(
+    MIN_MISSING_SKILLS,
+    EXPERIENCE_PRIORITY_LIMITS[experienceLevel] || MIN_MISSING_SKILLS,
+  );
 
   return {
     yourSkills: uniqueObjectsByName(currentSkillObjects).slice(0, 30),
-    missingSkills: uniqueObjectsByName(missingSkillObjects).slice(0, maxMissing),
+    missingSkills: uniqueObjectsByName(missingSkillObjects).slice(
+      0,
+      maxMissing,
+    ),
     weakSkills,
     highDemandSkills,
     provenSkills: uniqueSkillNames(evidenceBreakdown.provenSkills || []),
     resumeSkills: uniqueSkillNames(evidenceBreakdown.resumeSkills || []),
     githubSkills: uniqueSkillNames(evidenceBreakdown.githubSkills || []),
-    claimedButNotProvenSkills: uniqueSkillNames(evidenceBreakdown.claimedButNotProvenSkills || [])
+    claimedButNotProvenSkills: uniqueSkillNames(
+      evidenceBreakdown.claimedButNotProvenSkills || [],
+    ),
   };
 };
 
-const logSkillGapPipeline = (event, data = {}, level = 'log') => {
+const logSkillGapPipeline = (event, data = {}, level = "log") => {
   const line = `[SkillGapPipeline] ${JSON.stringify({ event, ...data })}`;
-  if (level === 'warn') console.warn(line);
-  else if (level === 'error') console.error(line);
+  if (level === "warn") console.warn(line);
+  else if (level === "error") console.error(line);
   else console.log(line);
 };
 
@@ -1289,20 +2041,32 @@ const createStageTimer = () => {
     },
     snapshot() {
       const cacheMs = Number(stages.memoryCacheLookupMs || 0);
-      const redisMs = Number(stages.redisResultCacheLookupMs || 0) + Number(stages.redisResultCacheWriteMs || 0);
-      const mongoMs = Number(stages.resumeFetchMs || 0)
-        + Number(stages.cacheLookupMs || 0)
-        + Number(stages.cacheWriteMs || 0);
-      const providerMs = Number(stages.githubPeekMs || 0) + Number(stages.githubFetchMs || 0);
-      const aiMs = Number(stages.promptGenerationMs || 0) + Number(stages.aiResponseMs || 0);
-      const deterministicMs = Number(stages.deterministicAnalysisMs || 0)
-        + Number(stages.deterministicCacheLookupMs || 0)
-        + Number(stages.deterministicCacheWriteMs || 0)
-        + Number(stages.skillDetectionMs || 0)
-        + Number(stages.signalAggregationMs || 0);
+      const redisMs =
+        Number(stages.redisResultCacheLookupMs || 0) +
+        Number(stages.redisResultCacheWriteMs || 0);
+      const mongoMs =
+        Number(stages.resumeFetchMs || 0) +
+        Number(stages.cacheLookupMs || 0) +
+        Number(stages.cacheWriteMs || 0);
+      const providerMs =
+        Number(stages.githubPeekMs || 0) + Number(stages.githubFetchMs || 0);
+      const aiMs =
+        Number(stages.promptGenerationMs || 0) +
+        Number(stages.aiResponseMs || 0);
+      const deterministicMs =
+        Number(stages.deterministicAnalysisMs || 0) +
+        Number(stages.deterministicCacheLookupMs || 0) +
+        Number(stages.deterministicCacheWriteMs || 0) +
+        Number(stages.skillDetectionMs || 0) +
+        Number(stages.signalAggregationMs || 0);
       const validationMs = Number(stages.validationMs || 0);
-      const persistenceMs = Number(stages.cacheWriteMs || 0) + Number(stages.redisResultCacheWriteMs || 0);
-      const dbQueryMs = mongoMs + Number(stages.deterministicCacheLookupMs || 0) + Number(stages.deterministicCacheWriteMs || 0);
+      const persistenceMs =
+        Number(stages.cacheWriteMs || 0) +
+        Number(stages.redisResultCacheWriteMs || 0);
+      const dbQueryMs =
+        mongoMs +
+        Number(stages.deterministicCacheLookupMs || 0) +
+        Number(stages.deterministicCacheWriteMs || 0);
       const aiPipelineMs = aiMs;
       return {
         ...stages,
@@ -1316,9 +2080,9 @@ const createStageTimer = () => {
         persistenceMs,
         dbQueryMs,
         aiPipelineMs,
-        totalMs: Date.now() - startedAt
+        totalMs: Date.now() - startedAt,
       };
-    }
+    },
   };
 };
 
@@ -1331,7 +2095,10 @@ const buildSkillGapTimingSnapshot = (timer, req) => {
     snapshot.appMiddlewareMs = Math.max(0, routeStartedAt - httpStartedAt);
   }
   if (routeStartedAt > 0) {
-    snapshot.routeToControllerMs = Math.max(0, Date.now() - routeStartedAt - snapshot.totalMs);
+    snapshot.routeToControllerMs = Math.max(
+      0,
+      Date.now() - routeStartedAt - snapshot.totalMs,
+    );
   }
   if (routeStartedAt > 0 && authCompletedAt >= routeStartedAt) {
     snapshot.authAndRouteMs = Math.max(0, authCompletedAt - routeStartedAt);
@@ -1339,19 +2106,34 @@ const buildSkillGapTimingSnapshot = (timer, req) => {
   return snapshot;
 };
 
-const buildInflightRequestKey = ({ userId, username, careerStack, experienceLevel, resumeText, forceRefresh, isTemporaryMode }) => crypto
-  .createHash('sha256')
-  .update(JSON.stringify({
-    userId: userId ? String(userId) : 'anonymous',
-    username: String(username || '').trim().toLowerCase(),
-    careerStack,
-    experienceLevel,
-    resumeTextHash: resumeText ? crypto.createHash('sha256').update(String(resumeText)).digest('hex') : 'no-inline-resume',
-    forceRefresh: Boolean(forceRefresh),
-    isTemporaryMode: Boolean(isTemporaryMode),
-    analysisVersion: ANALYSIS_VERSION
-  }))
-  .digest('hex');
+const buildInflightRequestKey = ({
+  userId,
+  username,
+  careerStack,
+  experienceLevel,
+  resumeText,
+  forceRefresh,
+  isTemporaryMode,
+}) =>
+  crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify({
+        userId: userId ? String(userId) : "anonymous",
+        username: String(username || "")
+          .trim()
+          .toLowerCase(),
+        careerStack,
+        experienceLevel,
+        resumeTextHash: resumeText
+          ? crypto.createHash("sha256").update(String(resumeText)).digest("hex")
+          : "no-inline-resume",
+        forceRefresh: Boolean(forceRefresh),
+        isTemporaryMode: Boolean(isTemporaryMode),
+        analysisVersion: ANALYSIS_VERSION,
+      }),
+    )
+    .digest("hex");
 
 const createInflightDeferred = () => {
   let resolve;
@@ -1360,7 +2142,7 @@ const createInflightDeferred = () => {
     resolve = promiseResolve;
     reject = promiseReject;
   });
-  promise.catch(() => { });
+  promise.catch(() => {});
   return { promise, resolve, reject };
 };
 
@@ -1380,84 +2162,223 @@ const failInflightRequest = (key, deferred, error) => {
  */
 const analyzeSkillGap = async (req, res) => {
   const timer = createStageTimer();
-  let usernameForLog = '';
-  let inflightKey = '';
+  let usernameForLog = "";
+  let inflightKey = "";
   let inflightDeferred = null;
   try {
-    const forceRefresh = req.body?.forceRefresh === true || req.body?.forceRefresh === 'true';
-    const isTemporaryMode = req.body?.isTemporary === true || req.body?.isTemporary === 'true';
-    const activeGithub = String(developerContext.resolveGithubUsername(req.user) || '').trim();
+    const forceRefresh =
+      req.body?.forceRefresh === true || req.body?.forceRefresh === "true";
+    const isTemporaryMode =
+      req.body?.isTemporary === true || req.body?.isTemporary === "true";
+    const activeGithub = String(
+      developerContext.resolveGithubUsername(req.user) || "",
+    ).trim();
 
     if (!isTemporaryMode) {
       if (!req.user?._id) {
-        return res.status(401).json({ message: 'Authentication required for profile mode.' });
+        return res
+          .status(401)
+          .json({ message: "Authentication required for profile mode." });
       }
-      const requestedUsername = String(req.body.username || '').trim();
-      if (requestedUsername && activeGithub && requestedUsername.toLowerCase() !== activeGithub.toLowerCase()) {
-        return res.status(400).json({ message: 'Use Preview mode to analyze another GitHub username.' });
+      const requestedUsername = String(req.body.username || "").trim();
+      if (
+        requestedUsername &&
+        activeGithub &&
+        requestedUsername.toLowerCase() !== activeGithub.toLowerCase()
+      ) {
+        return res.status(400).json({
+          message: "Use Preview mode to analyze another GitHub username.",
+        });
       }
     }
 
     let username;
     try {
-      username = parseGitHubUsername(isTemporaryMode ? req.body.username : activeGithub);
+      username =
+        !isTemporaryMode && !activeGithub
+          ? ""
+          : parseGitHubUsername(
+              isTemporaryMode ? req.body.username : activeGithub,
+            );
     } catch (error) {
-      return res.status(error.status || 400).json({ message: error.message || 'Username is required.' });
+      return res
+        .status(error.status || 400)
+        .json({ message: error.message || "Username is required." });
     }
     usernameForLog = username;
 
     let careerStack = isTemporaryMode
-      ? String(req.body.careerStack || '').trim()
-      : String(developerContext.resolveCareerStack(req.user) || 'Full Stack').trim();
+      ? String(req.body.careerStack || "").trim()
+      : String(developerContext.resolveCareerStack(req.user) || "").trim();
     let experienceLevel = isTemporaryMode
-      ? String(req.body.experienceLevel || '').trim()
-      : String(developerContext.resolveExperienceLevel(req.user) || 'Student').trim();
+      ? String(req.body.experienceLevel || "").trim()
+      : String(developerContext.resolveExperienceLevel(req.user) || "").trim();
 
     if (isTemporaryMode) {
       if (!careerStack || !ALLOWED_STACKS.includes(careerStack)) {
-        return res.status(400).json({ message: `Target stack is required and must be one of: ${ALLOWED_STACKS.join(', ')}` });
+        return res.status(400).json({
+          message: `Target stack is required and must be one of: ${ALLOWED_STACKS.join(", ")}`,
+        });
       }
       if (!experienceLevel || !ALLOWED_LEVELS.includes(experienceLevel)) {
-        return res.status(400).json({ message: `Experience level is required and must be one of: ${ALLOWED_LEVELS.join(', ')}` });
+        return res.status(400).json({
+          message: `Experience level is required and must be one of: ${ALLOWED_LEVELS.join(", ")}`,
+        });
       }
-      if (req.body.resumeText !== undefined && typeof req.body.resumeText !== 'string') {
-        return res.status(400).json({ message: 'Resume input must be a valid text string.' });
+      if (
+        req.body.resumeText !== undefined &&
+        typeof req.body.resumeText !== "string"
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Resume input must be a valid text string." });
       }
-    } else {
-      if (!ALLOWED_STACKS.includes(careerStack)) careerStack = 'Full Stack';
-      if (!ALLOWED_LEVELS.includes(experienceLevel)) experienceLevel = 'Student';
     }
 
     const validationStartedAt = Date.now();
     // Resolve only temporary preview data in Preview mode; profile mode reads the saved resume.
-    const cleanResume = isTemporaryMode ? String(req.body.resumeText || '').trim() : '';
+    const cleanResume = isTemporaryMode
+      ? String(req.body.resumeText || "").trim()
+      : "";
     let resumeInsights;
     let resumeCacheIdentity;
     let latestResumeAnalysis = null;
     const userContext = req.user || {};
-    const normalizedGithubUsername = String(username || '').trim().replace(/^@/, '').toLowerCase();
+    const normalizedGithubUsername = String(username || "")
+      .trim()
+      .replace(/^@/, "")
+      .toLowerCase();
 
-    // Register in-flight early so identical callers share one pipeline (including resume/github I/O).
+    // Resolve canonical identity first; coalesce only after validating source revisions.
     const previewResumeIdentity = isTemporaryMode
-      ? String(req.body.resumeHash || (cleanResume ? crypto.createHash('sha256').update(cleanResume).digest('hex') : 'no-resume'))
-      : 'profile-active';
+      ? String(
+          req.body.resumeHash ||
+            (cleanResume
+              ? crypto.createHash("sha256").update(cleanResume).digest("hex")
+              : "no-resume"),
+        )
+      : `${developerContext.resolveSelectedResumeFileId(req.user) || "profile-active"}:${req.user?.updatedAt || ""}`;
     inflightKey = buildInflightRequestKey({
-      userId: isTemporaryMode ? null : (req.user?._id || null),
+      userId: req.user?._id || null,
       username,
       careerStack,
       experienceLevel,
       resumeText: previewResumeIdentity,
       forceRefresh,
-      isTemporaryMode
+      isTemporaryMode,
     });
 
+    timer.mark("validationMs", validationStartedAt);
+
+    const softMemoryKey = buildSkillGapSoftMemoryKey({
+      userId: isTemporaryMode ? req.user?._id || "anonymous" : req.user?._id,
+      username,
+      careerStack,
+      experienceLevel,
+      isTemporaryMode,
+      resumeIdentity: previewResumeIdentity,
+    });
+    if (isTemporaryMode) {
+      const previewResume = await resolvePreviewResume({
+        previewResumeId: req.body.previewResumeId,
+        resumeHash: req.body.resumeHash,
+        resumeText: cleanResume,
+        experienceLevel,
+      });
+      if (previewResume.error) {
+        failInflightRequest(
+          inflightKey,
+          inflightDeferred,
+          new Error(previewResume.error),
+        );
+        return res
+          .status(previewResume.status)
+          .json({ message: previewResume.error });
+      }
+      resumeInsights = previewResume.resumeInsights;
+      resumeCacheIdentity = previewResume.resumeCacheIdentity;
+    }
+
+    const [resumeLoaded, githubPeek] = await Promise.all([
+      isTemporaryMode
+        ? Promise.resolve(null)
+        : timer.time("resumeFetchMs", () =>
+            loadResumeAnalysis(req.user?._id || null, userContext),
+          ),
+      timer.time("githubPeekMs", () =>
+        normalizedGithubUsername
+          ? getCachedGitHubAnalysis(normalizedGithubUsername, {
+              allowStale: true,
+            })
+          : Promise.resolve({ status: "miss", data: null }),
+      ),
+    ]);
+
+    if (!isTemporaryMode) {
+      latestResumeAnalysis = resumeLoaded;
+      resumeInsights = buildResumeAnalysisSignals(
+        latestResumeAnalysis,
+        experienceLevel,
+      );
+      // Preserve recorded zero and numerical absence in this feature adapter.
+      resumeInsights.atsScore =
+        numeric(latestResumeAnalysis?.atsScore) ??
+        numeric(latestResumeAnalysis?.resumeSignals?.scores?.atsScore);
+      resumeCacheIdentity = buildResumeCacheIdentity({
+        resumeAnalysis: latestResumeAnalysis,
+      });
+    }
+
+    const githubData = await timer.time("githubFetchMs", () =>
+      getGitHubData(username.trim(), {
+        forceRefresh,
+        isTemporaryMode,
+        cachedPeek: githubPeek,
+      }),
+    );
+    const githubInsights = buildGithubInsights(githubData);
+    const careerProfileSignal = isTemporaryMode
+      ? { present: false }
+      : buildCareerProfileSignalFromUser(req.user || {});
+    const { developerSignals, signalsUsed } = await timer.time(
+      "signalAggregationMs",
+      () =>
+        loadDeveloperSignalsSafely({
+          userId: isTemporaryMode ? null : req.user?._id || null,
+          username,
+          resumeInsights,
+          githubInsights,
+          careerProfileSignal,
+        }),
+    );
+    const validCareerRequirements =
+      ALLOWED_STACKS.includes(careerStack) &&
+      ALLOWED_LEVELS.includes(experienceLevel);
+    const cacheReadable =
+      !forceRefresh &&
+      validCareerRequirements &&
+      isPersistableSkillGapResult(githubData);
+    const signalHash = buildSkillGapCacheSignalHash({
+      username,
+      careerStack,
+      experienceLevel,
+      resumeCacheIdentity,
+      githubData,
+      user: isTemporaryMode ? {} : req.user || {},
+      resumeInsights,
+      resumeAnalysis: latestResumeAnalysis,
+      developerSignals,
+    });
+
+    // A source revision must be known before requests can safely coalesce.
+    inflightKey = `${inflightKey}:${signalHash}`;
     const existingInflight = inflightSkillGapRequests.get(inflightKey);
     if (existingInflight) {
-      logSkillGapPipeline('inflight_deduped', {
+      logSkillGapPipeline("inflight_deduped", {
         username,
         forceRefresh,
         waiters: existingInflight.waiters + 1,
-        ageMs: Date.now() - existingInflight.startedAt
+        ageMs: Date.now() - existingInflight.startedAt,
       });
       existingInflight.waiters += 1;
       const completed = await existingInflight.deferred.promise;
@@ -1468,90 +2389,50 @@ const analyzeSkillGap = async (req, res) => {
     inflightSkillGapRequests.set(inflightKey, {
       deferred: inflightDeferred,
       startedAt: Date.now(),
-      waiters: 0
+      waiters: 0,
     });
-    timer.mark('validationMs', validationStartedAt);
-
-    const softMemoryKey = buildSkillGapSoftMemoryKey({
-      userId: isTemporaryMode ? (req.user?._id || 'anonymous') : req.user?._id,
-      username,
-      careerStack,
-      experienceLevel,
-      isTemporaryMode,
-      resumeIdentity: previewResumeIdentity
-    });
-    if (!forceRefresh) {
-      const memoryHit = await timer.time('memoryCacheLookupMs', async () => readSkillGapMemory(softMemoryKey));
-      if (memoryHit?.analysisData) {
+    if (cacheReadable) {
+      const memoryHit = await timer.time("memoryCacheLookupMs", async () =>
+        readSkillGapMemory(softMemoryKey),
+      );
+      if (memoryHit?.analysisData && memoryHit.signalHash === signalHash) {
         const cachedResult = {
           ...memoryHit.analysisData,
           fromCache: true,
           cacheMetadata: {
             ...(memoryHit.analysisData.cacheMetadata || {}),
             loadedFromCache: true,
-            cacheLayer: 'memory',
+            cacheLayer: "memory",
             cachedAt: memoryHit.updatedAt || null,
-            ...(STAGE_TIMINGS_ENABLED ? { stageTimings: buildSkillGapTimingSnapshot(timer, req) } : {})
-          }
+            ...(STAGE_TIMINGS_ENABLED
+              ? { stageTimings: buildSkillGapTimingSnapshot(timer, req) }
+              : {}),
+          },
         };
-        logSkillGapPipeline('request_complete', {
+        logSkillGapPipeline("request_complete", {
           username,
-          cache: 'memory_hit',
+          cache: "memory_hit",
           aiUsed: Boolean(cachedResult.aiUsed),
           deterministicConfidence: cachedResult.deterministicConfidence || 0,
-          timings: buildSkillGapTimingSnapshot(timer, req)
+          timings: buildSkillGapTimingSnapshot(timer, req),
         });
         completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
         return res.json(cachedResult);
       }
     }
 
-    if (isTemporaryMode) {
-      const previewResume = await resolvePreviewResume({
-        previewResumeId: req.body.previewResumeId,
-        resumeHash: req.body.resumeHash,
-        resumeText: cleanResume,
-        experienceLevel
-      });
-      if (previewResume.error) {
-        failInflightRequest(inflightKey, inflightDeferred, new Error(previewResume.error));
-        return res.status(previewResume.status).json({ message: previewResume.error });
-      }
-      resumeInsights = previewResume.resumeInsights;
-      resumeCacheIdentity = previewResume.resumeCacheIdentity;
-    }
+    const previewCacheKey = `skillgap:preview:${String(req.user?._id || "anonymous")}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || "no-resume"}:${careerStack}:${experienceLevel}:${signalHash}:${ANALYSIS_VERSION}`;
 
-    const [resumeLoaded, githubPeek] = await Promise.all([
-      isTemporaryMode
-        ? Promise.resolve(null)
-        : timer.time('resumeFetchMs', () => loadResumeAnalysis(req.user?._id || null, userContext)),
-      timer.time('githubPeekMs', () => getCachedGitHubAnalysis(normalizedGithubUsername, { allowStale: true }))
-    ]);
-
-    if (!isTemporaryMode) {
-      latestResumeAnalysis = resumeLoaded;
-      resumeInsights = buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel);
-      resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis: latestResumeAnalysis });
-    }
-
-    const signalHash = isTemporaryMode ? 'no-signals' : buildSkillGapCacheSignalHash({
-      username,
-      careerStack,
-      experienceLevel,
-      resumeCacheIdentity,
-      githubData: githubPeek?.data || {},
-      user: req.user || {}
-    });
-
-    const previewCacheKey = `skillgap:preview:${String(req.user?._id || 'anonymous')}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:no-signals:${ANALYSIS_VERSION}`;
-
-    if (isTemporaryMode && !forceRefresh) {
-      const previewCached = await aiService.getSharedCache(previewCacheKey, 'preview');
+    if (isTemporaryMode && cacheReadable) {
+      const previewCached = await aiService.getSharedCache(
+        previewCacheKey,
+        "preview",
+      );
       if (previewCached?.analysisData) {
         writeSkillGapMemory(softMemoryKey, {
           analysisData: previewCached.analysisData,
           updatedAt: previewCached.updatedAt || new Date(),
-          signalHash: 'no-signals'
+          signalHash,
         });
         const cachedResult = {
           ...previewCached.analysisData,
@@ -1559,18 +2440,22 @@ const analyzeSkillGap = async (req, res) => {
             username,
             careerStack,
             experienceLevel,
-            resumeInsights
+            resumeInsights,
           }),
-          resumeStatusMessage: previewCached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+          resumeStatusMessage:
+            previewCached.analysisData.resumeStatusMessage ||
+            resumeInsights.statusMessage,
           fromCache: true,
           cacheMetadata: {
             ...(previewCached.analysisData.cacheMetadata || {}),
             loadedFromCache: true,
-            cacheLayer: 'redis_or_memory',
+            cacheLayer: "redis_or_memory",
             cacheKey: previewCacheKey,
             cachedAt: previewCached.updatedAt || null,
-            ...(STAGE_TIMINGS_ENABLED ? { stageTimings: buildSkillGapTimingSnapshot(timer, req) } : {})
-          }
+            ...(STAGE_TIMINGS_ENABLED
+              ? { stageTimings: buildSkillGapTimingSnapshot(timer, req) }
+              : {}),
+          },
         };
         completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
         return res.json(cachedResult);
@@ -1578,106 +2463,134 @@ const analyzeSkillGap = async (req, res) => {
     }
 
     const cacheKey = {
-      userId: isTemporaryMode ? 'preview' : String(req.user?._id || ''),
-      mode: isTemporaryMode ? 'preview' : 'profile',
+      userId: isTemporaryMode ? "preview" : String(req.user?._id || ""),
+      mode: isTemporaryMode ? "preview" : "profile",
       githubUsername: username,
       careerStack,
       experienceLevel,
       resumeHash: resumeCacheIdentity.resumeHash,
       resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
       signalHash,
-      analysisVersion: ANALYSIS_VERSION
+      analysisVersion: ANALYSIS_VERSION,
     };
 
-    const scopedCacheKey = req.user?._id && !isTemporaryMode
-      ? { userId: req.user._id, githubUsername: username, careerStack, experienceLevel, resumeHash: resumeCacheIdentity.resumeHash, resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId, signalHash, analysisVersion: ANALYSIS_VERSION }
-      : null;
+    const scopedCacheKey =
+      req.user?._id && !isTemporaryMode
+        ? {
+            userId: req.user._id,
+            githubUsername: username,
+            careerStack,
+            experienceLevel,
+            resumeHash: resumeCacheIdentity.resumeHash,
+            resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+            signalHash,
+            analysisVersion: ANALYSIS_VERSION,
+          }
+        : null;
     const resultCacheKey = scopedCacheKey
-      ? crypto.createHash('sha256').update(JSON.stringify(cacheKey)).digest('hex')
-      : '';
-    const sharedCached = await timer.time('redisResultCacheLookupMs', () => (
-      resultCacheKey && !forceRefresh
-        ? withBudget(aiService.getSharedCache(resultCacheKey, 'skill_gap:result'), SKILL_GAP_REDIS_LOOKUP_BUDGET_MS, null)
-        : Promise.resolve(null)
-    ));
+      ? crypto
+          .createHash("sha256")
+          .update(JSON.stringify(cacheKey))
+          .digest("hex")
+      : "";
+    const sharedCached = await timer.time("redisResultCacheLookupMs", () =>
+      resultCacheKey && cacheReadable
+        ? withBudget(
+            aiService.getSharedCache(resultCacheKey, "skill_gap:result"),
+            SKILL_GAP_REDIS_LOOKUP_BUDGET_MS,
+            null,
+          )
+        : Promise.resolve(null),
+    );
     if (sharedCached?.analysisData) {
       writeSkillGapMemory(softMemoryKey, {
         analysisData: sharedCached.analysisData,
         updatedAt: sharedCached.updatedAt || new Date(),
         resultCacheKey,
-        signalHash
+        signalHash,
       });
-      const cachedDeterministicConfidence = sharedCached.analysisData.deterministicConfidence || 0;
+      const cachedDeterministicConfidence =
+        sharedCached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
         ...sharedCached.analysisData,
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
           experienceLevel,
-          resumeInsights
+          resumeInsights,
         }),
-        resumeStatusMessage: sharedCached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+        resumeStatusMessage:
+          sharedCached.analysisData.resumeStatusMessage ||
+          resumeInsights.statusMessage,
         fromCache: true,
         aiUsed: Boolean(sharedCached.analysisData.aiUsed),
         deterministicConfidence: cachedDeterministicConfidence,
         cacheMetadata: {
           ...(sharedCached.analysisData.cacheMetadata || {}),
           loadedFromCache: true,
-          cacheLayer: 'redis_or_memory',
+          cacheLayer: "redis_or_memory",
           cacheKey,
-          cachedAt: sharedCached.updatedAt || null
-        }
+          cachedAt: sharedCached.updatedAt || null,
+        },
       };
       queueAIVersionSnapshot({
         req,
-        source: 'skill_gap',
+        source: "skill_gap",
         output: cachedResult,
         metadata: {
           fromCache: true,
-          cacheLayer: 'redis_or_memory',
+          cacheLayer: "redis_or_memory",
           username,
           careerStack,
           experienceLevel,
           signalHash,
-          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-        }
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+        },
       });
       const serializationStartedAt = Date.now();
-      const responseSizeBytes = Buffer.byteLength(JSON.stringify(cachedResult), 'utf8');
-      timer.mark('responseSerializationMs', serializationStartedAt);
-      logSkillGapPipeline('request_complete', {
+      const responseSizeBytes = Buffer.byteLength(
+        JSON.stringify(cachedResult),
+        "utf8",
+      );
+      timer.mark("responseSerializationMs", serializationStartedAt);
+      logSkillGapPipeline("request_complete", {
         username,
-        cache: 'shared_hit',
+        cache: "shared_hit",
         aiUsed: Boolean(cachedResult.aiUsed),
         deterministicConfidence: cachedDeterministicConfidence,
         responseSizeBytes,
-        timings: buildSkillGapTimingSnapshot(timer, req)
+        timings: buildSkillGapTimingSnapshot(timer, req),
       });
       completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
       return res.json(cachedResult);
     }
-    const cached = await timer.time('cacheLookupMs', async () => (
-      scopedCacheKey && !forceRefresh
-        ? AnalysisCache.findOne(scopedCacheKey).select({ analysisData: 1, updatedAt: 1, createdAt: 1 }).lean()
-        : null
-    ));
+    const cached = await timer.time("cacheLookupMs", async () =>
+      scopedCacheKey && cacheReadable
+        ? AnalysisCache.findOne(scopedCacheKey)
+            .select({ analysisData: 1, updatedAt: 1, createdAt: 1 })
+            .lean()
+        : null,
+    );
     if (cached?.analysisData) {
       writeSkillGapMemory(softMemoryKey, {
         analysisData: cached.analysisData,
         updatedAt: cached.updatedAt || cached.createdAt || new Date(),
         resultCacheKey,
-        signalHash
+        signalHash,
       });
-      const cachedDeterministicConfidence = cached.analysisData.deterministicConfidence || 0;
+      const cachedDeterministicConfidence =
+        cached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
         ...cached.analysisData,
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
           experienceLevel,
-          resumeInsights
+          resumeInsights,
         }),
-        resumeStatusMessage: cached.analysisData.resumeStatusMessage || resumeInsights.statusMessage,
+        resumeStatusMessage:
+          cached.analysisData.resumeStatusMessage ||
+          resumeInsights.statusMessage,
         fromCache: true,
         aiUsed: Boolean(cached.analysisData.aiUsed),
         deterministicConfidence: cachedDeterministicConfidence,
@@ -1685,22 +2598,29 @@ const analyzeSkillGap = async (req, res) => {
           ...(cached.analysisData.cacheMetadata || {}),
           loadedFromCache: true,
           cacheKey,
-          cachedAt: cached.updatedAt || cached.createdAt || null
-        }
+          cachedAt: cached.updatedAt || cached.createdAt || null,
+        },
       };
       if (resultCacheKey) {
         const redisWarmPayload = {
           analysisData: cached.analysisData,
-          updatedAt: cached.updatedAt || cached.createdAt || new Date()
+          updatedAt: cached.updatedAt || cached.createdAt || new Date(),
         };
         setImmediate(() => {
-          aiService.setSharedCache(resultCacheKey, redisWarmPayload, 900, 'skill_gap:result').catch(() => { });
+          aiService
+            .setSharedCache(
+              resultCacheKey,
+              redisWarmPayload,
+              900,
+              "skill_gap:result",
+            )
+            .catch(() => {});
         });
-        timer.mark('redisResultCacheWriteMs', Date.now());
+        timer.mark("redisResultCacheWriteMs", Date.now());
       }
       queueAIVersionSnapshot({
         req,
-        source: 'skill_gap',
+        source: "skill_gap",
         output: cachedResult,
         metadata: {
           fromCache: true,
@@ -1708,64 +2628,172 @@ const analyzeSkillGap = async (req, res) => {
           careerStack,
           experienceLevel,
           signalHash,
-          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-        }
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+        },
       });
       const serializationStartedAt = Date.now();
-      const responseSizeBytes = Buffer.byteLength(JSON.stringify(cachedResult), 'utf8');
-      timer.mark('responseSerializationMs', serializationStartedAt);
-      logSkillGapPipeline('request_complete', {
+      const responseSizeBytes = Buffer.byteLength(
+        JSON.stringify(cachedResult),
+        "utf8",
+      );
+      timer.mark("responseSerializationMs", serializationStartedAt);
+      logSkillGapPipeline("request_complete", {
         username,
-        cache: 'backend_hit',
+        cache: "backend_hit",
         aiUsed: Boolean(cachedResult.aiUsed),
         deterministicConfidence: cachedDeterministicConfidence,
         responseSizeBytes,
-        timings: buildSkillGapTimingSnapshot(timer, req)
+        timings: buildSkillGapTimingSnapshot(timer, req),
       });
       completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
       return res.json(cachedResult);
     }
-    logSkillGapPipeline('cache_miss', { username, forceRefresh, cacheEligible: Boolean(scopedCacheKey) });
 
-    const githubData = await timer.time('githubFetchMs', () => getGitHubData(username.trim(), { forceRefresh, isTemporaryMode }));
-    const githubInsights = buildGithubInsights(githubData);
-    const careerProfileSignal = isTemporaryMode ? { present: false } : buildCareerProfileSignalFromUser(req.user || {});
-    const { developerSignals, signalHash: aggregatedSignalHash, signalsUsed } = await timer.time('signalAggregationMs', () => loadDeveloperSignalsSafely({
-      userId: isTemporaryMode ? null : (req.user?._id || null),
-      username,
-      resumeInsights,
-      githubInsights,
-      careerProfileSignal
-    }));
-    if (aggregatedSignalHash !== signalHash) {
-      logSkillGapPipeline('self_signal_hash_normalized', {
-        username,
-        original: aggregatedSignalHash.slice(0, 12),
-        stable: signalHash.slice(0, 12)
-      });
+    let historical = null;
+    if (scopedCacheKey && cacheReadable) {
+      const historicalKey = {
+        userId: req.user._id,
+        githubUsername: username,
+        careerStack,
+        experienceLevel,
+        resumeHash: resumeCacheIdentity.resumeHash,
+        analysisVersion: { $ne: ANALYSIS_VERSION },
+      };
+      historical = await timer.time("historicalCacheLookupMs", async () =>
+        AnalysisCache.findOne(historicalKey)
+          .sort({ updatedAt: -1 })
+          .select({
+            analysisData: 1,
+            updatedAt: 1,
+            createdAt: 1,
+            analysisVersion: 1,
+          })
+          .lean(),
+      );
     }
+    if (historical?.analysisData && !historical.analysisData.ruleVersion) {
+      const cachedDeterministicConfidence =
+        historical.analysisData.deterministicConfidence || 0;
+      const cachedResult = {
+        ...historical.analysisData,
+        analysisBasedOn: buildAnalysisBasedOn({
+          username,
+          careerStack,
+          experienceLevel,
+          resumeInsights,
+        }),
+        resumeStatusMessage:
+          historical.analysisData.resumeStatusMessage ||
+          resumeInsights.statusMessage,
+        fromCache: true,
+        isHistorical: true,
+        aiUsed: Boolean(historical.analysisData.aiUsed),
+        deterministicConfidence: cachedDeterministicConfidence,
+        cacheMetadata: {
+          ...(historical.analysisData.cacheMetadata || {}),
+          loadedFromCache: true,
+          cacheLayer: "historical_backend",
+          cacheKey: {
+            ...cacheKey,
+            analysisVersion: historical.analysisVersion || "unversioned",
+          },
+          cachedAt: historical.updatedAt || historical.createdAt || null,
+        },
+      };
+      const serializationStartedAt = Date.now();
+      const responseSizeBytes = Buffer.byteLength(
+        JSON.stringify(cachedResult),
+        "utf8",
+      );
+      timer.mark("responseSerializationMs", serializationStartedAt);
+      logSkillGapPipeline("request_complete", {
+        username,
+        cache: "historical_hit",
+        aiUsed: Boolean(cachedResult.aiUsed),
+        deterministicConfidence: cachedDeterministicConfidence,
+        responseSizeBytes,
+        timings: buildSkillGapTimingSnapshot(timer, req),
+      });
+      completeInflightRequest(inflightKey, inflightDeferred, cachedResult);
+      return res.json(cachedResult);
+    }
+    logSkillGapPipeline("cache_miss", {
+      username,
+      forceRefresh,
+      cacheEligible: Boolean(scopedCacheKey),
+    });
 
     const skillDetectionStartedAt = Date.now();
     const evidenceBreakdown = buildSkillEvidenceBreakdown({
       resumeInsights,
       githubData,
       careerStack,
-      experienceLevel
+      experienceLevel,
     });
-    timer.mark('skillDetectionMs', skillDetectionStartedAt);
+    timer.mark("skillDetectionMs", skillDetectionStartedAt);
 
-    const deterministicConfidence = computeDeterministicConfidence({
+    const scoringOptions = {
+      sources: [
+        {
+          type: "github-user",
+          id: username,
+          ruleVersion: githubData.githubSignals?.scoring?.ruleVersion,
+        },
+        ...(latestResumeAnalysis
+          ? [
+              {
+                type: "resume-analysis",
+                id: String(
+                  latestResumeAnalysis._id ||
+                    resumeCacheIdentity.resumeAnalysisId,
+                ),
+                ruleVersion:
+                  latestResumeAnalysis.resumeSignals?.scoring?.ruleVersion,
+              },
+            ]
+          : []),
+      ],
+    };
+    const scoringInputs = {
       evidenceBreakdown,
       resumeInsights,
       githubData,
-      developerSignals
-    });
-    const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
+      developerSignals,
+      resumeAvailable: isTemporaryMode
+        ? resumeInsights.analyzed === true
+        : latestResumeAnalysis !== null,
+      githubAvailable: isPersistableSkillGapResult(githubData),
+    };
+    const initialScoring = skillGapScoring.calculateLegacy(
+      scoringInputs,
+      scoringOptions,
+    );
+    const evidenceResolution = skillGapEvidence.resolve(
+      {
+        githubData,
+        resumeAnalysis: latestResumeAnalysis,
+        resumeInsights,
+        profile: isTemporaryMode
+          ? { githubUsername: username }
+          : req.user || {},
+        profileSignal: isTemporaryMode ? {} : developerSignals.portfolioSignal,
+        integrationSignal: developerSignals.integrationSignal,
+        careerStack,
+        experienceLevel,
+        preview: isTemporaryMode,
+      },
+      { calculatedAt: initialScoring.confidence.calculatedAt },
+    );
+    const deterministicNarrative =
+      skillGapCompatibility.narrative(evidenceResolution);
+    const deterministicConfidence = initialScoring.confidence.score;
+    const skipAI =
+      deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
 
     // Deterministic evidence owns skills, priorities, coverage, graph, and schedule.
     const deterministicIdentity = {
-      userId: isTemporaryMode ? 'preview' : String(req.user?._id || ''),
-      mode: isTemporaryMode ? 'preview' : 'profile',
+      userId: isTemporaryMode ? "preview" : String(req.user?._id || ""),
+      mode: isTemporaryMode ? "preview" : "profile",
       username,
       careerStack,
       experienceLevel,
@@ -1774,64 +2802,86 @@ const analyzeSkillGap = async (req, res) => {
       signalHash,
       githubCachedAt: githubData?.cache?.cachedAt || null,
       githubExpiresAt: githubData?.cache?.expiresAt || null,
-      analysisVersion: ANALYSIS_VERSION
+      analysisVersion: ANALYSIS_VERSION,
     };
-    const deterministicCacheKey = crypto.createHash('sha256').update(JSON.stringify(deterministicIdentity)).digest('hex');
-    let deterministicGroups = await timer.time('deterministicCacheLookupMs', () => aiService.getDeterministicSummary('skill_gap', deterministicIdentity));
+    const deterministicCacheKey = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(deterministicIdentity))
+      .digest("hex");
+    let deterministicGroups = await timer.time(
+      "deterministicCacheLookupMs",
+      () =>
+        aiService.getDeterministicSummary("skill_gap", deterministicIdentity),
+    );
     if (deterministicGroups) {
-      logSkillGapPipeline('deterministic_summary_cache_hit', { username, cacheKey: deterministicCacheKey.slice(0, 12) });
+      logSkillGapPipeline("deterministic_summary_cache_hit", {
+        username,
+        cacheKey: deterministicCacheKey.slice(0, 12),
+      });
     } else {
-      deterministicGroups = await timer.time('deterministicAnalysisMs', () => buildDeterministicSkillGroups({
-        resumeInsights,
-        githubData,
-        developerSignals,
-        evidenceBreakdown,
-        careerStack,
-        experienceLevel,
-        aiKnownSkills: [],
-        aiMissingSkills: []
-      }));
+      deterministicGroups = await timer.time("deterministicAnalysisMs", () =>
+        buildDeterministicSkillGroups({
+          resumeInsights,
+          githubData,
+          developerSignals,
+          evidenceBreakdown,
+          careerStack,
+          experienceLevel,
+          aiKnownSkills: [],
+          aiMissingSkills: [],
+        }),
+      );
       if (isPersistableSkillGapResult(githubData)) {
-        await timer.time('deterministicCacheWriteMs', () => aiService.setDeterministicSummary('skill_gap', deterministicIdentity, deterministicGroups));
+        await timer.time("deterministicCacheWriteMs", () =>
+          aiService.setDeterministicSummary(
+            "skill_gap",
+            deterministicIdentity,
+            deterministicGroups,
+          ),
+        );
       }
-      logSkillGapPipeline('deterministic_summary_cache_miss', { username, cacheKey: deterministicCacheKey.slice(0, 12) });
+      logSkillGapPipeline("deterministic_summary_cache_miss", {
+        username,
+        cacheKey: deterministicCacheKey.slice(0, 12),
+      });
     }
 
     let aiUsed = false;
     let aiResult = null;
 
     if (!skipAI) {
-      const fallback = buildFallbackSkillGap({
-        resumeInsights,
-        githubInsights,
-        developerSignals,
-        evidenceBreakdown,
-        careerStack,
-        experienceLevel
-      });
-      const prompt = await timer.time('promptGenerationMs', () => {
-        const compactContext = buildSkillGapPromptContext({
+      const fallback = deterministicNarrative;
+      const prompt = await timer.time("promptGenerationMs", () => {
+        const compactContext = skillGapCompatibility.promptContext(
+          evidenceResolution,
           careerStack,
           experienceLevel,
-          evidenceBreakdown,
-          resumeInsights,
-          githubInsights,
-          developerSignals,
-          deterministicGroups
-        });
+        );
         const promptText = getSkillGapPrompt(
           careerStack,
           experienceLevel,
-          compactContext.detectedSkills,
-          compactContext.resume,
-          compactContext.github,
-          compactContext.signals
+          compactContext.skills,
+          {
+            available: evidenceResolution.evidenceCompleteness.resumeAvailable,
+          },
+          {
+            available: evidenceResolution.evidenceCompleteness.githubAvailable,
+          },
+          {
+            coverage: compactContext.coverage,
+            evidenceConfidence: compactContext.evidenceConfidence,
+            warnings: compactContext.warnings,
+            limitations: compactContext.limitations,
+          },
         );
-        logSkillGapPipeline('prompt_generated', {
+        logSkillGapPipeline("prompt_generated", {
           username,
-          chars: Buffer.byteLength(promptText, 'utf8'),
+          chars: Buffer.byteLength(promptText, "utf8"),
           estimatedTokens: estimateTokens(promptText),
-          compactContextChars: Buffer.byteLength(JSON.stringify(compactContext), 'utf8')
+          compactContextChars: Buffer.byteLength(
+            JSON.stringify(compactContext),
+            "utf8",
+          ),
         });
         return promptText;
       });
@@ -1840,49 +2890,56 @@ const analyzeSkillGap = async (req, res) => {
       const narrativeFallback = {
         __fallback: true,
         analysisSummary: fallback.analysisSummary,
-        levelAssessment: fallback.levelAssessment
+        levelAssessment: fallback.levelAssessment,
       };
-      const aiMeta = await timer.time('aiResponseMs', () => aiService.runAIAnalysis(prompt, narrativeFallback, skillGapAiRetries, {
-        timeoutMs: 7000,
-        returnMeta: true
-      }));
+      const aiMeta = await timer.time("aiResponseMs", () =>
+        aiService
+          .runAIAnalysis(prompt, narrativeFallback, skillGapAiRetries, {
+            timeoutMs: 7000,
+            returnMeta: true,
+          })
+          .catch(() => ({ ok: false, value: narrativeFallback })),
+      );
       const aiOk = Boolean(aiMeta && aiMeta.ok === true);
       aiResult = aiOk ? aiMeta.value : narrativeFallback;
-      const groundedNames = [
-        ...(deterministicGroups.yourSkills || []).map((skill) => skill.name),
-        ...(deterministicGroups.missingSkills || []).map((skill) => skill.name)
-      ].filter(Boolean).slice(0, 16);
+      const groundedNames = evidenceResolution.skills
+        .map((skill) => skill.name)
+        .slice(0, 24);
       const narratives = resolveSkillGapNarratives(aiResult, fallback, {
         aiOk,
         careerStack,
         experienceLevel,
-        skillNames: groundedNames
+        skillNames: groundedNames,
       });
       aiResult = {
         analysisSummary: narratives.analysisSummary,
-        levelAssessment: narratives.levelAssessment
+        levelAssessment: narratives.levelAssessment,
       };
       aiUsed = narratives.aiUsed;
-      logSkillGapPipeline('ai_executed', {
+      logSkillGapPipeline("ai_executed", {
         username,
         deterministicConfidence,
         threshold: DETERMINISTIC_CONFIDENCE_THRESHOLD,
         aiOk,
-        aiUsed
+        aiUsed,
       });
     } else {
-      aiService.recordDeterministicSkip('skill_gap');
-      logSkillGapPipeline('ai_skipped', { username, deterministicConfidence, threshold: DETERMINISTIC_CONFIDENCE_THRESHOLD });
+      aiService.recordDeterministicSkip("skill_gap");
+      logSkillGapPipeline("ai_skipped", {
+        username,
+        deterministicConfidence,
+        threshold: DETERMINISTIC_CONFIDENCE_THRESHOLD,
+      });
       aiResult = {
         __fallback: true,
         yourSkills: [],
         missingSkills: [],
         coverage: 0,
         missing: 0,
-        levelAssessment: '',
+        levelAssessment: "",
         roadmap: [],
-        totalWeeks: '',
-        analysisSummary: ''
+        totalWeeks: "",
+        analysisSummary: "",
       };
     }
 
@@ -1893,14 +2950,18 @@ const analyzeSkillGap = async (req, res) => {
     let weakSkills = [...(deterministicGroups.weakSkills || [])];
     let highDemandSkills = [...(deterministicGroups.highDemandSkills || [])];
     const existingSkillNames = new Set([
-      ...yourSkills.map((skill) => String(skill.name || '').toLowerCase()).filter(Boolean),
-      ...missingSkills.map((skill) => String(skill.name || '').toLowerCase()).filter(Boolean)
+      ...yourSkills
+        .map((skill) => String(skill.name || "").toLowerCase())
+        .filter(Boolean),
+      ...missingSkills
+        .map((skill) => String(skill.name || "").toLowerCase())
+        .filter(Boolean),
     ]);
     // Apply evidence adjustments to enrich proficiency and priority
     const evidenceAdjusted = applySkillEvidence({
       yourSkills,
       missingSkills,
-      signals: developerSignals
+      signals: developerSignals,
     });
     yourSkills = evidenceAdjusted.yourSkills;
     missingSkills = evidenceAdjusted.missingSkills;
@@ -1910,30 +2971,39 @@ const analyzeSkillGap = async (req, res) => {
       ...evidenceBreakdown.provenSkills,
       ...resumeInsights.skills,
       ...evidenceBreakdown.githubSkills,
-      ...(githubData.repositories || []).map((repo) => repo.language || '').filter(Boolean),
+      ...(githubData.repositories || [])
+        .map((repo) => repo.language || "")
+        .filter(Boolean),
       ...(developerSignals.integrationSignal?.detectedSkills || []),
       ...(developerSignals.careerSprintSignal?.completedSkillSignals || []),
-      ...(developerSignals.portfolioSignal?.portfolioSkills || [])
+      ...(developerSignals.portfolioSignal?.portfolioSkills || []),
     ]);
 
-    while (yourSkills.length < MIN_KNOWN_SKILLS && detectedKnown[yourSkills.length]) {
-      const skillName = detectedKnown[yourSkills.length];
+    for (const skillName of detectedKnown) {
+      if (yourSkills.length >= MIN_KNOWN_SKILLS) break;
       if (!existingSkillNames.has(skillName.toLowerCase())) {
         existingSkillNames.add(skillName.toLowerCase());
         yourSkills.push({
           name: skillName,
-          category: 'General',
+          category: "General",
           proficiency: 60,
           isFoundational: true,
           confidenceScore: 60,
-          source: 'Developer Evidence',
-          evidence: [`${skillName} was detected in available GitHub, resume, integration, sprint, or portfolio signals.`]
+          source: "Developer Evidence",
+          evidence: [
+            `${skillName} was detected in available GitHub, resume, integration, sprint, or portfolio signals.`,
+          ],
         });
       }
     }
 
-    const stackFilteredExpected = getExpectedSkills(careerStack, experienceLevel);
-    const existingMissing = new Set(missingSkills.map((skill) => String(skill.name || '').toLowerCase()));
+    const stackFilteredExpected = getExpectedSkills(
+      careerStack,
+      experienceLevel,
+    );
+    const existingMissing = new Set(
+      missingSkills.map((skill) => String(skill.name || "").toLowerCase()),
+    );
     for (const fallbackSkill of stackFilteredExpected) {
       if (missingSkills.length >= MIN_MISSING_SKILLS) break;
       const lower = fallbackSkill.toLowerCase();
@@ -1943,83 +3013,146 @@ const analyzeSkillGap = async (req, res) => {
       existingSkillNames.add(lower);
       missingSkills.push({
         name: fallbackSkill,
-        category: getSkillMeta(fallbackSkill).category || 'General',
-        priority: 'Medium',
+        category: getSkillMeta(fallbackSkill).category || "General",
+        priority: "Medium",
         jobDemand: clamp(getSkillMeta(fallbackSkill).jobDemand || 65),
-        levelRelevance: 'Current',
+        levelRelevance: "Current",
         confidenceScore: 56,
-        source: 'Stack expectation',
-        evidence: [`${fallbackSkill} is a baseline ${careerStack} expectation for ${experienceLevel} level.`]
+        source: "Stack expectation",
+        evidence: [
+          `${fallbackSkill} is a baseline ${careerStack} expectation for ${experienceLevel} level.`,
+        ],
       });
     }
 
-    yourSkills = cleanSkillObjects(yourSkills, 'current', careerStack, experienceLevel);
-    missingSkills = cleanSkillObjects(missingSkills, 'missing', careerStack, experienceLevel);
-    weakSkills = cleanSkillObjects(weakSkills, 'missing', careerStack, experienceLevel).slice(0, 10);
-    highDemandSkills = cleanSkillObjects(highDemandSkills, 'missing', careerStack, experienceLevel).slice(0, 10);
+    yourSkills = cleanSkillObjects(
+      yourSkills,
+      "current",
+      careerStack,
+      experienceLevel,
+    );
+    missingSkills = cleanSkillObjects(
+      missingSkills,
+      "missing",
+      careerStack,
+      experienceLevel,
+    );
+    weakSkills = cleanSkillObjects(
+      weakSkills,
+      "missing",
+      careerStack,
+      experienceLevel,
+    ).slice(0, 10);
+    highDemandSkills = cleanSkillObjects(
+      highDemandSkills,
+      "missing",
+      careerStack,
+      experienceLevel,
+    ).slice(0, 10);
 
     // Sort: yourSkills by proficiency + confidence, missingSkills by priority then jobDemand
-    yourSkills.sort((a, b) => (clamp(b.proficiency || 0) + clamp(b.confidenceScore || 0)) - (clamp(a.proficiency || 0) + clamp(a.confidenceScore || 0)));
+    yourSkills.sort(
+      (a, b) =>
+        clamp(b.proficiency || 0) +
+        clamp(b.confidenceScore || 0) -
+        (clamp(a.proficiency || 0) + clamp(a.confidenceScore || 0)),
+    );
     const priorityRank = { High: 3, Medium: 2, Low: 1 };
-    missingSkills.sort((a, b) => (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) || clamp(b.jobDemand || 0) - clamp(a.jobDemand || 0));
+    missingSkills.sort(
+      (a, b) =>
+        (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) ||
+        clamp(b.jobDemand || 0) - clamp(a.jobDemand || 0),
+    );
 
-    const knownCount = yourSkills.length;
-    const missingCount = missingSkills.length;
-    const avgProficiency = knownCount > 0
-      ? Math.round(yourSkills.reduce((sum, skill) => sum + clamp(skill.proficiency || 0), 0) / knownCount)
-      : 0;
-    const balanceFactor = (knownCount + missingCount) > 0 ? (knownCount / (knownCount + missingCount)) : 0;
-    const proficiencyFactor = avgProficiency / 100;
-    const resumeFactorVal = clamp(resumeInsights.atsScore || 0) / 100;
-    const integrationFactor = clamp(developerSignals.integrationSignal?.integrationScore || 0) / 100;
-
-    const coverage = clamp(Math.round(((balanceFactor * 0.57) + (proficiencyFactor * 0.23) + (resumeFactorVal * 0.1) + (integrationFactor * 0.1)) * 100));
-    const missing = clamp(100 - coverage);
+    const scoring = skillGapScoring.calculateLegacy(
+      { ...scoringInputs, yourSkills, missingSkills },
+      {
+        ...scoringOptions,
+        calculatedAt: initialScoring.confidence.calculatedAt,
+      },
+    );
+    const legacyReadinessScore = scoring.coverage.score;
+    const coverage = evidenceResolution.coverage;
+    const missing = coverage === null ? null : clamp(100 - coverage);
+    const approvedGroups = skillGapCompatibility.project(evidenceResolution, {
+      yourSkills,
+      missingSkills,
+    });
+    ({ yourSkills, missingSkills, weakSkills, highDemandSkills } =
+      approvedGroups);
     const coverageBreakdown = {
-      knownSkillCount: knownCount,
-      missingSkillCount: missingCount,
-      averageProficiency: avgProficiency,
-      balanceFactor: clamp(balanceFactor * 100),
-      resumeFactor: clamp(resumeFactorVal * 100),
-      integrationFactor: clamp(integrationFactor * 100),
+      knownSkillCount: yourSkills.length,
+      missingSkillCount: missingSkills.length,
+      averageProficiency: scoring.averageProficiency,
+      balanceFactor: clamp(scoring.coverage.breakdown.balance.value),
+      resumeFactor: scoring.coverage.breakdown.resume.value,
+      integrationFactor: scoring.coverage.breakdown.integration.value,
       deterministicConfidence,
       aiUsed,
-      formula: aiUsed
-        ? 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10% (deterministic; AI narrative only)'
-        : 'coverage = known/missing balance 57% + proficiency 23% + resume 10% + integrations 10% (deterministic only)'
+      legacyFactorFields: [
+        "averageProficiency",
+        "balanceFactor",
+        "resumeFactor",
+        "integrationFactor",
+        "deterministicConfidence",
+      ],
+      formula:
+        "100 * sum(requiredSkillWeight * evidenceCredit) / sum(requiredSkillWeight); DEMONSTRATED=1, PARTIAL=.5, CLAIMED_ONLY=0, NOT_EVIDENCED=0; OPTIONAL excluded",
+      metricKind: "requiredSkillEvidenceCoverage",
+      weightedCredit: evidenceResolution.scoring.evidence.inputs.weightedCredit,
+      requiredWeight: evidenceResolution.scoring.evidence.inputs.requiredWeight,
+      legacyReadinessScore,
+      legacyFactors: {
+        balanceFactor: clamp(scoring.coverage.breakdown.balance.value),
+        resumeFactor: scoring.coverage.breakdown.resume.value,
+        integrationFactor: scoring.coverage.breakdown.integration.value,
+      },
+      evidenceCompleteness: evidenceResolution.evidenceCompleteness,
     };
 
-    const fallback = buildFallbackSkillGap({
-      resumeInsights,
-      githubInsights,
-      developerSignals,
-      evidenceBreakdown,
-      careerStack,
-      experienceLevel
-    });
+    const fallback = deterministicNarrative;
+    const { scoring: evidenceScoring, ...evidenceFields } = evidenceResolution;
 
     const fullResult = {
+      ...evidenceFields,
       username,
       careerStack,
       experienceLevel,
-      analysisSummary: String((aiUsed && aiResult?.analysisSummary) || fallback.analysisSummary || '').trim(),
+      analysisSummary: String(
+        (aiUsed && aiResult?.analysisSummary) || fallback.analysisSummary || "",
+      ).trim(),
       aiUsed,
       deterministicConfidence,
+      legacyConfidence: deterministicConfidence,
+      confidenceKind: "legacyHeuristic",
+      legacyReadinessScore,
+      legacyScoring: {
+        readiness: scoring.coverage,
+        confidence: scoring.confidence,
+      },
       skipAI,
       yourSkills,
       missingSkills,
-      resumeSkills: deterministicGroups.resumeSkills,
-      githubSkills: deterministicGroups.githubSkills,
-      provenSkills: deterministicGroups.provenSkills,
-      claimedButNotProvenSkills: deterministicGroups.claimedButNotProvenSkills,
+      resumeSkills: approvedGroups.resumeSkills,
+      githubSkills: approvedGroups.githubSkills,
+      provenSkills: approvedGroups.provenSkills,
+      claimedButNotProvenSkills: approvedGroups.claimedButNotProvenSkills,
       weakSkills,
       highDemandSkills,
       coverage,
       missing,
       coverageBreakdown,
-      levelAssessment: String((aiUsed && aiResult?.levelAssessment) || fallback.levelAssessment || '').trim(),
+      scoring: {
+        coverage: evidenceScoring,
+        confidence: scoring.confidence,
+        confidenceKind: "legacyHeuristic",
+      },
+      evidenceCompleteness: evidenceResolution.evidenceCompleteness,
+      levelAssessment: String(
+        (aiUsed && aiResult?.levelAssessment) || fallback.levelAssessment || "",
+      ).trim(),
       roadmap: [],
-      totalWeeks: '',
+      totalWeeks: "",
       resumeInsights,
       githubStats: buildCompactGithubStats(githubData),
       signalsUsed,
@@ -2027,7 +3160,7 @@ const analyzeSkillGap = async (req, res) => {
         username,
         careerStack,
         experienceLevel,
-        resumeInsights
+        resumeInsights,
       }),
       resumeStatusMessage: resumeInsights.statusMessage,
       cacheMetadata: {
@@ -2037,13 +3170,15 @@ const analyzeSkillGap = async (req, res) => {
         analysisVersion: ANALYSIS_VERSION,
         temporary: isTemporaryMode,
         githubCache: githubData?.cache || null,
-        aiThreshold: DETERMINISTIC_CONFIDENCE_THRESHOLD
-      }
+        aiThreshold: DETERMINISTIC_CONFIDENCE_THRESHOLD,
+      },
     };
 
     const skillGraph = buildSkillGraph({
-      currentSkills: fullResult.yourSkills,
-      missingSkills: fullResult.missingSkills
+      currentSkills: fullResult.yourSkills.filter(
+        (skill) => skill.status === "DEMONSTRATED",
+      ),
+      missingSkills: fullResult.missingSkills,
     });
 
     fullResult.skillGraph = skillGraph;
@@ -2053,7 +3188,7 @@ const analyzeSkillGap = async (req, res) => {
     const roadmapBuckets = buildRoadmapBuckets({
       missingSkills: fullResult.missingSkills,
       weakSkills: fullResult.weakSkills,
-      weeklyRoadmap: fullResult.weeklyRoadmap
+      weeklyRoadmap: fullResult.weeklyRoadmap,
     });
     fullResult.immediateSkills = roadmapBuckets.immediateSkills;
     fullResult.shortTermSkills = roadmapBuckets.shortTermSkills;
@@ -2061,7 +3196,10 @@ const analyzeSkillGap = async (req, res) => {
     fullResult.longTermSkills = roadmapBuckets.longTermSkills;
     fullResult.prerequisites = roadmapBuckets.prerequisites;
     fullResult.estimatedWeeks = roadmapBuckets.estimatedWeeks;
-    fullResult.suggestedProjects = buildSuggestedProjects(fullResult.immediateSkills, careerStack);
+    fullResult.suggestedProjects = buildSuggestedProjects(
+      fullResult.immediateSkills,
+      careerStack,
+    );
     fullResult.skillGapSignals = {
       version: ANALYSIS_VERSION,
       generatedAt: new Date().toISOString(),
@@ -2070,6 +3208,12 @@ const analyzeSkillGap = async (req, res) => {
       experienceLevel,
       coverage,
       coverageBreakdown,
+      scoring: fullResult.scoring,
+      ruleVersion: fullResult.ruleVersion,
+      requirementMatrixVersion: fullResult.requirementMatrixVersion,
+      calculatedAt: fullResult.calculatedAt,
+      evidenceConfidence: fullResult.evidenceConfidence,
+      evidenceCompleteness: fullResult.evidenceCompleteness,
       provenSkills: fullResult.provenSkills,
       resumeSkills: fullResult.resumeSkills,
       claimedButNotProvenSkills: fullResult.claimedButNotProvenSkills,
@@ -2079,32 +3223,37 @@ const analyzeSkillGap = async (req, res) => {
         confidenceScore: skill.confidenceScore,
         category: skill.category,
         jobDemand: skill.jobDemand,
-        evidence: skill.evidence || []
+        evidence: skill.evidence || [],
       })),
       weakSkills: fullResult.weakSkills.map((skill) => ({
         name: skill.name,
         priority: skill.priority,
         confidenceScore: skill.confidenceScore,
-        category: skill.category
+        category: skill.category,
       })),
       highDemandSkills: fullResult.highDemandSkills.map((skill) => ({
         name: skill.name,
         jobDemand: skill.jobDemand,
         priority: skill.priority,
-        evidence: skill.evidence || []
+        evidence: skill.evidence || [],
       })),
       immediateSkills: fullResult.immediateSkills.map((skill) => skill.name),
       shortTermSkills: fullResult.shortTermSkills.map((skill) => skill.name),
-      signalHash
+      signalHash,
     };
 
-    const canPersist = isPersistableSkillGapResult(githubData);
+    const canPersist =
+      validCareerRequirements && isPersistableSkillGapResult(githubData);
     if (!canPersist) {
-      logSkillGapPipeline('cache_write_skipped_partial_github', {
-        username,
-        source: githubData?.cache?.source || 'unknown',
-        repoCount: Number(githubData?.repoCount || 0)
-      }, 'warn');
+      logSkillGapPipeline(
+        "cache_write_skipped_partial_github",
+        {
+          username,
+          source: githubData?.cache?.source || "unknown",
+          repoCount: Number(githubData?.repoCount || 0),
+        },
+        "warn",
+      );
     }
 
     if (canPersist) {
@@ -2112,45 +3261,61 @@ const analyzeSkillGap = async (req, res) => {
         analysisData: fullResult,
         updatedAt: new Date(),
         resultCacheKey,
-        signalHash
+        signalHash,
       });
     }
 
     if (isTemporaryMode) {
-      fullResult.mode = 'preview';
+      fullResult.mode = "preview";
       fullResult.isTemporary = true;
       fullResult.savedToProfile = false;
 
       if (canPersist) {
         const cachePayload = {
           analysisData: fullResult,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         };
         // Preview cache is response-critical for repeated preview; keep awaited but bounded by aiservice/redis.
-        await timer.time('cacheWriteMs', () => aiService.setSharedCache(previewCacheKey, cachePayload, 1800, 'preview'));
+        await timer.time("cacheWriteMs", () =>
+          aiService.setSharedCache(
+            previewCacheKey,
+            cachePayload,
+            1800,
+            "preview",
+          ),
+        );
       }
     } else if (scopedCacheKey && canPersist) {
       const cachePayload = {
         analysisData: fullResult,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-      await timer.time('cacheWriteMs', () => AnalysisCache.findOneAndUpdate(
-        scopedCacheKey,
-        { $set: { analysisData: fullResult, userId: req.user._id } },
-        { upsert: true }
-      ));
+      await timer.time("cacheWriteMs", () =>
+        AnalysisCache.findOneAndUpdate(
+          scopedCacheKey,
+          { $set: { analysisData: fullResult, userId: req.user._id } },
+          { upsert: true },
+        ),
+      );
       if (resultCacheKey) {
         setImmediate(() => {
-          aiService.setSharedCache(resultCacheKey, cachePayload, 900, 'skill_gap:result').catch(() => { });
+          aiService
+            .setSharedCache(
+              resultCacheKey,
+              cachePayload,
+              900,
+              "skill_gap:result",
+            )
+            .catch(() => {});
         });
-        timer.mark('redisResultCacheWriteMs', Date.now());
+        timer.mark("redisResultCacheWriteMs", Date.now());
       }
     }
 
     if (!isTemporaryMode) {
       queueAIVersionSnapshot({
         req,
-        source: 'skill_gap',
+        source: "skill_gap",
         output: fullResult,
         metadata: {
           fromCache: false,
@@ -2158,52 +3323,71 @@ const analyzeSkillGap = async (req, res) => {
           careerStack,
           experienceLevel,
           signalHash,
-          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId
-        }
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+        },
       });
     }
 
     const serializationStartedAt = Date.now();
-    const responseSizeBytes = Buffer.byteLength(JSON.stringify(fullResult), 'utf8');
-    timer.mark('responseSerializationMs', serializationStartedAt);
-    logSkillGapPipeline('request_complete', {
+    const responseSizeBytes = Buffer.byteLength(
+      JSON.stringify(fullResult),
+      "utf8",
+    );
+    timer.mark("responseSerializationMs", serializationStartedAt);
+    logSkillGapPipeline("request_complete", {
       username,
-      cache: isTemporaryMode ? 'temporary_preview_cache' : scopedCacheKey ? 'backend_stored' : 'temporary_no_backend_cache',
+      cache: isTemporaryMode
+        ? "temporary_preview_cache"
+        : scopedCacheKey
+          ? "backend_stored"
+          : "temporary_no_backend_cache",
       aiUsed,
       skipAI,
       deterministicConfidence,
       responseSizeBytes,
-      timings: buildSkillGapTimingSnapshot(timer, req)
+      timings: buildSkillGapTimingSnapshot(timer, req),
     });
 
     completeInflightRequest(inflightKey, inflightDeferred, fullResult);
-    if (!isTemporaryMode && req.user?._id && Array.isArray(fullResult.missingSkills) && fullResult.missingSkills.length >= 3) {
+    if (
+      !isTemporaryMode &&
+      req.user?._id &&
+      Array.isArray(fullResult.missingSkills) &&
+      fullResult.missingSkills.length >= 3
+    ) {
       voidSkillGapNotification({
         userId: req.user._id,
-        type: 'career_update',
-        title: 'Major Skill Gaps Identified',
+        type: "career_update",
+        title: "Major Skill Gaps Identified",
         message: `${fullResult.missingSkills.length} priority skill gaps are ready for review.`,
         dedupeKey: `skill_gap:${signalHash}`,
         dedupeWindowHours: 24,
-        preferenceKey: 'skillTrendAlerts',
-        meta: { gapCount: fullResult.missingSkills.length }
+        preferenceKey: "skillTrendAlerts",
+        meta: { gapCount: fullResult.missingSkills.length },
       });
     }
     if (STAGE_TIMINGS_ENABLED) {
       fullResult.cacheMetadata = {
         ...(fullResult.cacheMetadata || {}),
-        stageTimings: buildSkillGapTimingSnapshot(timer, req)
+        stageTimings: buildSkillGapTimingSnapshot(timer, req),
       };
     }
     return res.json(fullResult);
   } catch (error) {
     failInflightRequest(inflightKey, inflightDeferred, error);
-    console.error('Skill Gap Error:', { message: error.message, username: usernameForLog || req.body?.username, timings: buildSkillGapTimingSnapshot(timer, req) });
+    console.error("Skill Gap Error:", {
+      message: error.message,
+      username: usernameForLog || req.body?.username,
+      timings: buildSkillGapTimingSnapshot(timer, req),
+    });
     return res.status(500).json({
-      message: 'Analysis could not be completed. Please try again shortly.'
+      message: "Analysis could not be completed. Please try again shortly.",
     });
   } finally {
-    if (inflightKey && inflightSkillGapRequests.get(inflightKey)?.deferred === inflightDeferred) {
+    if (
+      inflightKey &&
+      inflightSkillGapRequests.get(inflightKey)?.deferred === inflightDeferred
+    ) {
       inflightSkillGapRequests.delete(inflightKey);
     }
   }
@@ -2213,5 +3397,5 @@ module.exports = {
   analyzeSkillGap,
   clearSkillGapMemoryCache,
   getSkillGapMemoryCacheSize,
-  ANALYSIS_VERSION
+  ANALYSIS_VERSION,
 };

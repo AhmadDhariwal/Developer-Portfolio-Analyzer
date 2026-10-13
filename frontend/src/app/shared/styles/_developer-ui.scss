@@ -1,0 +1,221 @@
+// Approved Developer workspace standard. Colors remain supplied by theme tokens.
+// Mixins work in encapsulated component styles; utilities are opt-in classes.
+@mixin tokens {
+  --dev-font: 'Manrope', 'Segoe UI', sans-serif;
+  --font-sans: var(--dev-font);
+  --font-heading: var(--dev-font);
+  --dev-text-xs: 12px;
+  --dev-text-sm: 13px;
+  --dev-text-body: 14px;
+  --dev-text-section: 19px;
+  --dev-text-title: 28px;
+  --dev-text-coverage: 44px;
+  --dev-leading-body: 1.55;
+  --dev-leading-heading: 1.2;
+  --dev-weight-medium: 500;
+  --dev-weight-semibold: 600;
+  --dev-weight-bold: 700;
+  --dev-space-1: 4px;
+  --dev-space-2: 8px;
+  --dev-space-3: 12px;
+  --dev-space-4: 16px;
+  --dev-space-5: 20px;
+  --dev-space-6: 24px;
+  --dev-workspace-padding: 24px;
+  --dev-section-gap: 20px;
+  --dev-radius-control: 6px;
+  --dev-radius-surface: 8px;
+  --dev-surface-shadow: none;
+  --dev-reading-width: 85ch;
+  --dev-header-margin: 0px;
+  --dev-nav-size: 13px;
+  --dev-nav-height: 42px;
+  --dev-nav-weight: 500;
+  --dev-nav-radius: 6px;
+  --dev-toolbar-shadow: none;
+  --dev-search-width: 260px;
+  --dev-avatar-bg: var(--color-primary-soft);
+  --dev-avatar-border: var(--color-primary-border);
+  font-family: var(--dev-font);
+  font-size: var(--dev-text-body);
+  line-height: 1.5;
+  @media (max-width: 480px) {
+    --dev-search-width: 100%;
+  }
+  @media (max-width: 768px) {
+    --dev-workspace-padding: 14px;
+    --dev-section-gap: 16px;
+  }
+}
+@mixin page-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--dev-text-title, 28px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+@mixin section-title {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: var(--dev-text-section, 19px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+@mixin metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  gap: 4px 16px;
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+@mixin metric-item {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  padding-right: 16px;
+  border-right: 1px solid var(--border-color);
+  &:last-child {
+    border-right: 0;
+    padding-right: 0;
+  }
+  @media (max-width: 768px) {
+    &:nth-child(2) {
+      border-right: 0;
+    }
+  }
+}
+@mixin inventory-surface {
+  min-width: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--dev-radius-surface, 8px);
+  padding: 16px;
+}
+@mixin utilities {
+  .dev-page {
+    display: grid;
+    gap: var(--dev-section-gap);
+    width: 100%;
+    min-width: 0;
+  }
+  .dev-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .dev-page-title {
+    @include page-title;
+  }
+  .dev-section {
+    min-width: 0;
+  }
+  .dev-section-title {
+    @include section-title;
+  }
+  .dev-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .dev-description {
+    max-width: var(--dev-reading-width);
+    margin: 4px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+  .dev-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .dev-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .dev-metric-strip {
+    @include metric-strip;
+    font-variant-numeric: tabular-nums;
+  }
+  .dev-metric-item {
+    @include metric-item;
+  }
+  .dev-metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .dev-inventory {
+    @include inventory-surface;
+    overflow-x: auto;
+  }
+  .dev-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .dev-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    background: var(--surface-secondary);
+    color: var(--text-muted);
+  }
+  .dev-table th,
+  .dev-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .dev-table tbody tr:hover {
+    background: var(--surface-hover);
+  }
+  .dev-divided-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dev-divided-list > li {
+    padding-block: 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .dev-divider {
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 0;
+  }
+  .dev-disclosure {
+    border-bottom: 1px solid var(--border-color);
+  }
+  .dev-disclosure > summary {
+    cursor: pointer;
+    padding-block: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+  .dev-disclosure > summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
