@@ -1,7 +1,15 @@
-<nav class="navbar" [class.sidebar-closed]="!sidebarOpen">
+<nav aria-label="Workspace toolbar" class="navbar" [class.sidebar-closed]="!sidebarOpen">
   <!-- Left: hamburger toggle -->
   <div class="navbar-left">
-    <button class="menu-toggle" (click)="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+    <button
+      class="menu-toggle"
+      (click)="toggleSidebar()"
+      title="Toggle sidebar"
+      aria-label="Toggle sidebar"
+      aria-controls="application-navigation"
+      [attr.aria-expanded]="sidebarOpen"
+      type="button"
+    >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="3" y1="8" x2="21" y2="8"></line>
         <line x1="3" y1="16" x2="21" y2="16"></line>
@@ -10,12 +18,29 @@
 
     <!-- Search bar -->
     <div class="search-bar">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        class="search-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
       <input
         type="text"
+        aria-label="Search workspace"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-controls="workspace-search-results"
+        [attr.aria-expanded]="showSuggestions"
+        [attr.aria-activedescendant]="
+          showSuggestions && activeSuggestion >= 0
+            ? 'workspace-suggestion-' + activeSuggestion
+            : null
+        "
+        (keydown)="onSearchKeydown($event)"
         placeholder="Search repositories, skills..."
         autocomplete="off"
         [value]="searchQuery"
@@ -24,9 +49,18 @@
         (focus)="showSuggestions = suggestions.length > 0"
       />
       <!-- Suggestions dropdown -->
-      <div class="search-suggestions" *ngIf="showSuggestions">
+      <div
+        id="workspace-search-results"
+        role="listbox"
+        aria-label="Search results"
+        class="search-suggestions"
+        *ngIf="showSuggestions"
+      >
         <div
-          *ngFor="let s of suggestions"
+          *ngFor="let s of suggestions; let suggestionIndex = index"
+          role="option"
+          [id]="'workspace-suggestion-' + suggestionIndex"
+          [attr.aria-selected]="activeSuggestion === suggestionIndex"
           class="suggestion-item"
           [class.suggestion-page]="s.type === 'page'"
           [class.suggestion-repo]="s.type === 'repo'"
@@ -34,15 +68,38 @@
           (mousedown)="selectSuggestion(s)"
         >
           <span class="suggestion-icon">
-            <svg *ngIf="s.type === 'page'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+            <svg
+              *ngIf="s.type === 'page'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-            <svg *ngIf="s.type === 'repo'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            <svg
+              *ngIf="s.type === 'repo'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
+              ></path>
             </svg>
-            <svg *ngIf="s.type === 'skill'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
+            <svg
+              *ngIf="s.type === 'skill'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
             </svg>
           </span>
           <span class="suggestion-text">
@@ -57,11 +114,13 @@
     <div class="team-switcher" *ngIf="organizations.length > 0">
       <div class="switcher-group" *ngIf="isSuperAdmin">
         <a routerLink="/super-admin/dashboard" class="sa-console-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
           <span>Super Admin</span>
         </a>
       </div>
-      
+
       <div class="switcher-group">
         <label for="organization-switch">Organization</label>
         <select
@@ -69,7 +128,8 @@
           class="switch-select"
           title="Select organization context"
           [ngModel]="selectedOrganizationId"
-          (ngModelChange)="onOrganizationSwitch($event)">
+          (ngModelChange)="onOrganizationSwitch($event)"
+        >
           <option value="">Select organization</option>
           <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
         </select>
@@ -82,7 +142,8 @@
           class="switch-select"
           title="Select team context"
           [ngModel]="selectedTeamId"
-          (ngModelChange)="onTeamSwitch($event)">
+          (ngModelChange)="onTeamSwitch($event)"
+        >
           <option value="">All teams</option>
           <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
         </select>
@@ -94,20 +155,79 @@
 
   <!-- Right: actions + avatar -->
   <div class="navbar-right">
+    <!-- Theme Toggle Button -->
+    <button
+      class="icon-btn theme-toggle-btn"
+      type="button"
+      [title]="'Theme: ' + themeService.preference() + ' (Click to toggle)'"
+      [attr.aria-label]="
+        'Current theme is ' + themeService.preference() + '. Click to toggle theme.'
+      "
+      (click)="themeService.toggleTheme()"
+    >
+      <!-- Sun icon shown when dark -->
+      <svg
+        *ngIf="themeService.isDark()"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <!-- Moon icon shown when light -->
+      <svg
+        *ngIf="!themeService.isDark()"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
     <!-- Notification Bell -->
-  <button #notificationButton class="icon-btn" title="Notifications" aria-label="Notifications" (click)="toggleNotifications()">
+    <button
+      #notificationButton
+      class="icon-btn"
+      title="Notifications"
+      aria-label="Notifications"
+      [attr.aria-expanded]="showNotifications"
+      aria-controls="workspace-notifications"
+      (click)="toggleNotifications()"
+    >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
       </svg>
       <span class="notif-dot" *ngIf="unreadNotifications > 0"></span>
-      <span class="notif-count" *ngIf="unreadNotifications > 0">{{ unreadNotifications > 9 ? '9+' : unreadNotifications }}</span>
+      <span class="notif-count" *ngIf="unreadNotifications > 0">{{
+        unreadNotifications > 9 ? '9+' : unreadNotifications
+      }}</span>
     </button>
 
-  <div #notificationDropdown class="notifications-dropdown" *ngIf="showNotifications">
+    <div
+      #notificationDropdown
+      id="workspace-notifications"
+      class="notifications-dropdown"
+      *ngIf="showNotifications"
+    >
       <div class="notif-header">
         <h4>Notifications</h4>
-        <button type="button" class="mark-all-btn" (click)="markAllNotificationsRead()" [disabled]="unreadNotifications === 0">
+        <button
+          type="button"
+          class="mark-all-btn"
+          (click)="markAllNotificationsRead()"
+          [disabled]="unreadNotifications === 0"
+        >
           Mark all read
         </button>
       </div>
@@ -118,7 +238,8 @@
           class="notif-item"
           [class.notif-item--unread]="!n.isRead"
           *ngFor="let n of notifications"
-          (click)="markNotificationRead(n)">
+          (click)="markNotificationRead(n)"
+        >
           <div class="notif-item__title">{{ n.title }}</div>
           <div class="notif-item__message">{{ n.message }}</div>
           <div class="notif-item__time">{{ formatNotificationTime(n.createdAt) }}</div>
@@ -129,7 +250,8 @@
         *ngIf="totalNotifications > notifications.length"
         class="view-all-btn"
         routerLink="/notifications"
-        (click)="closeNotifications()">
+        (click)="closeNotifications()"
+      >
         View All Activities
       </a>
 
@@ -139,14 +261,23 @@
     </div>
 
     <!-- User avatar block with dropdown -->
-    <div class="user-avatar-block" *ngIf="(isLoggedIn$ | async)">
-      <button class="avatar-button" (click)="toggleUserMenu()">
+    <div class="user-avatar-block" *ngIf="isLoggedIn$ | async">
+      <button
+        class="avatar-button"
+        type="button"
+        aria-label="Account menu"
+        aria-controls="workspace-account-menu"
+        [attr.aria-expanded]="showUserMenu"
+        (click)="toggleUserMenu()"
+      >
         <div class="avatar-circle">
-          <img *ngIf="userAvatar; else navbarAvatarInitial"
-               [src]="avatarSrc"
-               alt="User avatar"
-               title="User avatar"
-               (error)="onAvatarError($event)" />
+          <img
+            *ngIf="userAvatar; else navbarAvatarInitial"
+            [src]="avatarSrc"
+            alt="User avatar"
+            title="User avatar"
+            (error)="onAvatarError($event)"
+          />
           <ng-template #navbarAvatarInitial>
             <span>{{ userInitial }}</span>
           </ng-template>
@@ -158,7 +289,7 @@
       </button>
 
       <!-- User Dropdown Menu -->
-      <div class="user-dropdown" *ngIf="showUserMenu">
+      <div id="workspace-account-menu" class="user-dropdown" *ngIf="showUserMenu">
         <a routerLink="/app/profile" class="dropdown-item" (click)="closeUserMenu()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -175,6 +306,55 @@
           </svg>
           <span>Dashboard</span>
         </a>
+        <!-- Theme Selection in User Dropdown -->
+        <div class="dropdown-theme-section">
+          <span class="dropdown-theme-title">Theme</span>
+          <div class="dropdown-theme-buttons">
+            <button
+              type="button"
+              class="theme-btn-option"
+              [class.active]="themeService.preference() === 'light'"
+              [attr.aria-pressed]="themeService.preference() === 'light'"
+              (click)="themeService.setTheme('light')"
+              title="Light mode"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+              </svg>
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              class="theme-btn-option"
+              [class.active]="themeService.preference() === 'dark'"
+              [attr.aria-pressed]="themeService.preference() === 'dark'"
+              (click)="themeService.setTheme('dark')"
+              title="Dark mode"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              <span>Dark</span>
+            </button>
+            <button
+              type="button"
+              class="theme-btn-option"
+              [class.active]="themeService.preference() === 'system'"
+              [attr.aria-pressed]="themeService.preference() === 'system'"
+              (click)="themeService.setTheme('system')"
+              title="System auto"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+              </svg>
+              <span>Auto</span>
+            </button>
+          </div>
+        </div>
+
         <div class="dropdown-divider"></div>
         <button class="dropdown-item logout" (click)="logout()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

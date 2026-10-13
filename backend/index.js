@@ -204,6 +204,8 @@ const initializeRedisAtStartup = async () => {
     } else {
       console.warn('[redis] connection unavailable; using application fallbacks.');
     }
+  } catch (error) {
+    console.warn('[redis] initialization error; using application fallbacks:', error?.message);
   } finally {
     if (timer) clearTimeout(timer);
   }

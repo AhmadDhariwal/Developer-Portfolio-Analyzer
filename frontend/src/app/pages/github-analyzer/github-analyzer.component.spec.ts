@@ -35,7 +35,7 @@ describe('GithubAnalyzerComponent', () => {
     cache: {
       source: 'fresh',
       hit: false,
-      cachedAt: '2026-10-08T10:00:00.000Z'
+      cachedAt: '2026-10-08T10:00:00.000Z',
     },
     scoring: {
       score: 82,
@@ -53,41 +53,75 @@ describe('GithubAnalyzerComponent', () => {
           totalStars: 45,
           totalForks: 10,
           totalCommits: 320,
-          activeRepos: 6
-        }
+          activeRepos: 6,
+        },
       },
       breakdown: {
-        codeQuality: { id: 'codeQuality', value: 85, weight: 0.24, contribution: 20.4, available: true },
-        projectDiversity: { id: 'projectDiversity', value: 78, weight: 0.17, contribution: 13.3, available: true },
-        contribution: { id: 'contribution', value: 80, weight: 0.18, contribution: 14.4, available: true },
-        consistency: { id: 'consistency', value: 90, weight: 0.13, contribution: 11.7, available: true },
-        projectImpact: { id: 'projectImpact', value: 75, weight: 0.14, contribution: 10.5, available: true },
-        profileStrength: { id: 'profileStrength', value: 84, weight: 0.14, contribution: 11.8, available: true }
-      }
+        codeQuality: {
+          id: 'codeQuality',
+          value: 85,
+          weight: 0.24,
+          contribution: 20.4,
+          available: true,
+        },
+        projectDiversity: {
+          id: 'projectDiversity',
+          value: 78,
+          weight: 0.17,
+          contribution: 13.3,
+          available: true,
+        },
+        contribution: {
+          id: 'contribution',
+          value: 80,
+          weight: 0.18,
+          contribution: 14.4,
+          available: true,
+        },
+        consistency: {
+          id: 'consistency',
+          value: 90,
+          weight: 0.13,
+          contribution: 11.7,
+          available: true,
+        },
+        projectImpact: {
+          id: 'projectImpact',
+          value: 75,
+          weight: 0.14,
+          contribution: 10.5,
+          available: true,
+        },
+        profileStrength: {
+          id: 'profileStrength',
+          value: 84,
+          weight: 0.14,
+          contribution: 11.8,
+          available: true,
+        },
+      },
     },
     languageDistribution: [
       { language: 'TypeScript', percentage: 65 },
       { language: 'HTML', percentage: 20 },
-      { language: 'SCSS', percentage: 15 }
+      { language: 'SCSS', percentage: 15 },
     ],
-    mainLanguageDistribution: [
-      { language: 'TypeScript', percentage: 65 }
-    ],
+    mainLanguageDistribution: [{ language: 'TypeScript', percentage: 65 }],
     supportLanguageDistribution: [
       { language: 'HTML', percentage: 20 },
-      { language: 'SCSS', percentage: 15 }
+      { language: 'SCSS', percentage: 15 },
     ],
     technologies: [
       { name: 'Angular', category: 'Frontend', confidence: 95 },
-      { name: 'Node.js', category: 'Backend', confidence: 85 }
+      { name: 'Node.js', category: 'Backend', confidence: 85 },
     ],
     technologyCategories: {
       Frontend: [{ name: 'Angular', category: 'Frontend', confidence: 95 }],
-      Backend: [{ name: 'Node.js', category: 'Backend', confidence: 85 }]
+      Backend: [{ name: 'Node.js', category: 'Backend', confidence: 85 }],
     },
     repositoryActivity: [
       { repo: 'repo-one', commits: 150 },
-      { repo: 'repo-two', commits: 90 }
+      { repo: 'repo-two', commits: 90 },
     ],
     repositories: [
       {
@@ -102,7 +136,7 @@ describe('GithubAnalyzerComponent', () => {
         category: 'Production',
         technologies: ['Angular', 'TypeScript'],
         fork: false,
-        archived: false
+        archived: false,
       },
       {
         name: 'repo-two',
@@ -116,13 +150,13 @@ describe('GithubAnalyzerComponent', () => {
         category: 'Learning',
         technologies: ['Node.js'],
         fork: true,
-        archived: true
-      }
+        archived: true,
+      },
     ],
     recruiterInsights: {
       headline: 'Full Stack Angular Engineer',
-      proofPoints: ['Maintains clean documentation', 'Proven Angular mastery']
-    }
+      proofPoints: ['Maintains clean documentation', 'Proven Angular mastery'],
+    },
   };
 
   beforeEach(async () => {
@@ -130,15 +164,15 @@ describe('GithubAnalyzerComponent', () => {
       getActiveUsername: vi.fn().mockReturnValue(of({ username: 'octocat', isDefault: true })),
       analyzeProfile: vi.fn().mockReturnValue(of(sampleResult)),
       analyzeAndSave: vi.fn().mockReturnValue(of(sampleResult)),
-      getCachedAnalysis: vi.fn().mockReturnValue(null)
+      getCachedAnalysis: vi.fn().mockReturnValue(null),
     };
 
     authServiceMock = {
       getCurrentUser: vi.fn().mockReturnValue({
         _id: 'usr-1',
         githubUsername: 'octocat',
-        activeGithubUsername: 'octocat'
-      })
+        activeGithubUsername: 'octocat',
+      }),
     };
 
     await TestBed.configureTestingModule({
@@ -146,8 +180,8 @@ describe('GithubAnalyzerComponent', () => {
       providers: [
         provideRouter([]),
         { provide: GithubService, useValue: githubServiceMock },
-        { provide: AuthService, useValue: authServiceMock }
-      ]
+        { provide: AuthService, useValue: authServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GithubAnalyzerComponent);
@@ -226,9 +260,15 @@ describe('GithubAnalyzerComponent', () => {
         score: null,
         breakdown: {
           ...sampleResult.scoring!.breakdown,
-          projectImpact: { id: 'projectImpact', value: null, weight: 0.14, contribution: null, available: false }
-        }
-      }
+          projectImpact: {
+            id: 'projectImpact',
+            value: null,
+            weight: 0.14,
+            contribution: null,
+            available: false,
+          },
+        },
+      },
     };
     githubServiceMock.analyzeAndSave.mockReturnValue(of(unavailableResult));
     githubServiceMock.analyzeProfile.mockReturnValue(of(unavailableResult));
@@ -243,7 +283,7 @@ describe('GithubAnalyzerComponent', () => {
     expect(component.formatNumber(component.result?.totalStars)).toBe('Unavailable');
     expect(component.formatNumber(component.result?.followers)).toBe('Unavailable');
 
-    const impact = component.scoreBreakdownList.find(b => b.id === 'projectImpact');
+    const impact = component.scoreBreakdownList.find((b) => b.id === 'projectImpact');
     expect(impact?.value).toBeNull();
     expect(impact?.available).toBe(false);
     expect(impact?.contribution).toBeNull();
@@ -261,9 +301,15 @@ describe('GithubAnalyzerComponent', () => {
         score: 0,
         breakdown: {
           ...sampleResult.scoring!.breakdown,
-          contribution: { id: 'contribution', value: 0, weight: 0.18, contribution: 0, available: true }
-        }
-      }
+          contribution: {
+            id: 'contribution',
+            value: 0,
+            weight: 0.18,
+            contribution: 0,
+            available: true,
+          },
+        },
+      },
     };
     githubServiceMock.analyzeAndSave.mockReturnValue(of(zeroResult));
     githubServiceMock.analyzeProfile.mockReturnValue(of(zeroResult));
@@ -278,7 +324,7 @@ describe('GithubAnalyzerComponent', () => {
     expect(component.formatNumber(component.result?.totalStars)).toBe('0');
     expect(component.formatNumber(component.result?.followers)).toBe('0');
 
-    const contribution = component.scoreBreakdownList.find(b => b.id === 'contribution');
+    const contribution = component.scoreBreakdownList.find((b) => b.id === 'contribution');
     expect(contribution?.value).toBe(0);
     expect(contribution?.available).toBe(true);
   });
@@ -292,8 +338,8 @@ describe('GithubAnalyzerComponent', () => {
         source: 'stale-cache',
         hit: true,
         stale: true,
-        cachedAt: '2026-10-07T12:00:00.000Z'
-      }
+        cachedAt: '2026-10-07T12:00:00.000Z',
+      },
     };
     githubServiceMock.analyzeAndSave.mockReturnValue(of(staleResult));
     githubServiceMock.analyzeProfile.mockReturnValue(of(staleResult));
@@ -344,10 +390,12 @@ describe('GithubAnalyzerComponent', () => {
   });
 
   it('should handle 404 not found error with user-friendly error state', () => {
-    githubServiceMock.analyzeProfile.mockReturnValue(throwError(() => ({
-      status: 404,
-      error: { message: 'GitHub user not found.' }
-    })));
+    githubServiceMock.analyzeProfile.mockReturnValue(
+      throwError(() => ({
+        status: 404,
+        error: { message: 'GitHub user not found.' },
+      })),
+    );
 
     component.defaultUsername = 'octocat';
     component.username = 'nonexistent-user-404';
@@ -370,7 +418,7 @@ describe('GithubAnalyzerComponent', () => {
       explanation: undefined,
       strengths: [],
       weakAreas: [],
-      recruiterInsights: undefined
+      recruiterInsights: undefined,
     };
     githubServiceMock.analyzeAndSave.mockReturnValue(of(deterministicOnlyResult));
     githubServiceMock.analyzeProfile.mockReturnValue(of(deterministicOnlyResult));
@@ -417,7 +465,9 @@ describe('GithubAnalyzerComponent', () => {
     expect(component.qualitativeState).toBe('Strong');
     expect(component.qualitativeStateVariant).toBe('success');
     expect(component.executiveHeadline).toBe('Full Stack Angular Engineer');
-    expect(component.executiveExplanation).toBe('Demonstrates solid frontend development expertise.');
+    expect(component.executiveExplanation).toBe(
+      'Demonstrates solid frontend development expertise.',
+    );
     expect(component.strongestSignal.label).toContain('Consistency');
     expect(component.biggestWeakness.label).toContain('Project Impact');
     expect(component.topRecommendedAction).toBeTruthy();
@@ -455,6 +505,49 @@ describe('GithubAnalyzerComponent', () => {
     // Toggle back to collapsed view
     component.toggleShowAllRepositories();
     expect(component.showAllRepositories).toBe(false);
+  });
+
+  it('shows five sorted repositories initially, expands evidence, and reveals all rows', () => {
+    component.result = {
+      ...sampleResult,
+      repositories: Array.from({ length: 7 }, (_, index) => ({
+        ...sampleResult.repositories[0],
+        name: `project-${index}`,
+        qualityScore: index * 10,
+        hasReadme: true,
+        readmeQuality: 75,
+      })),
+    };
+    component.analysisReady = true;
+    component.isInitLoading = false;
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('tbody tr').length).toBe(5);
+    expect(root.querySelector('.table-repo-name')?.textContent).toContain('project-6');
+    const details = root.querySelector('details') as HTMLDetailsElement;
+    expect(details.querySelector('summary')?.textContent).toContain('Repository evidence');
+    expect(details.textContent).toContain('README detected');
+    expect(details.textContent).toContain('75');
+    Array.from(root.querySelectorAll('button'))
+      .find((button) => button.textContent?.includes('View All Repositories'))!
+      .click();
+    fixture.detectChanges();
+    expect(root.querySelectorAll('tbody tr').length).toBe(7);
+  });
+
+  it('projects refresh and audit controls and provides chart text equivalents', () => {
+    component.result = sampleResult;
+    component.analysisReady = true;
+    component.isInitLoading = false;
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.actions-slot')?.textContent).toContain('Refresh Analysis');
+    expect(root.querySelector('.actions-slot')?.textContent).toContain('Analysis Details & Audit');
+    expect(root.querySelector('.activity-values')?.textContent).toContain('150 sampled commits');
+    expect(root.querySelector('canvas')?.getAttribute('role')).toBe('img');
+    expect(root.querySelector('.insights-notice-banner')?.textContent).toContain(
+      'AI-assisted interpretation',
+    );
   });
 
   it('should render the clean 6-item key metrics strip', () => {

@@ -15,7 +15,7 @@
   --bg-inner: #0F172A;
   --text-primary: #E5E7EB;
   --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-muted: var(--color-text-tertiary, #94A3B8);
   --border-ghost: rgba(255, 255, 255, 0.06);
 }
 

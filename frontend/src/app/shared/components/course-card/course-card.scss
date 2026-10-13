@@ -342,7 +342,7 @@
 }
 
 .review-count {
-  color: #64748b;
+  color: var(--text-muted, #94a3b8);
   font-size: 0.74rem;
   white-space: nowrap;
 }

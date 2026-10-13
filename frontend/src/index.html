@@ -5,6 +5,23 @@
   <title>DevInsight AI - Portfolio Analyzer</title>
   <base href="/">
   <script>window.__DEVINSIGHT_API_ORIGIN__ = 'http://localhost:5000';</script>
+  <script>
+    (function() {
+      try {
+        var preference = localStorage.getItem('devinsight_theme') || 'light';
+        var resolved = preference;
+        if (preference === 'system') {
+          resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', resolved);
+        if (resolved === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <!-- Premium Typography: Inter, Plus Jakarta Sans, Outfit, Space Grotesk -->

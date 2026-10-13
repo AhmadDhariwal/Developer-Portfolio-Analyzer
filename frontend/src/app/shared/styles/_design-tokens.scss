@@ -48,7 +48,7 @@ $breakpoints: (
 @mixin focus-visible {
   &:focus-visible {
     outline: none;
-    box-shadow: var(--focus-ring, 0 0 0 2px #0f172a, 0 0 0 4px #818cf8);
+    box-shadow: var(--focus-ring, 0 0 0 2px #FFFFFF, 0 0 0 4px #4F46E5);
   }
 }
 
@@ -73,12 +73,11 @@ $breakpoints: (
   overflow: hidden;
 }
 
-// Glassmorphism card surface
+// Card surface mixin
 @mixin glass-surface {
-  background: var(--surface-glass, rgba(30, 41, 59, 0.7));
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--surface-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E2E8F0);
+  box-shadow: var(--shadow-sm);
 }
 
 // Scrollbar styling helper
@@ -91,7 +90,7 @@ $breakpoints: (
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--border-light, #475569);
+    background: var(--border-light, #CBD5E1);
     border-radius: var(--radius-full, 9999px);
     &:hover {
       background: var(--text-muted, #64748B);

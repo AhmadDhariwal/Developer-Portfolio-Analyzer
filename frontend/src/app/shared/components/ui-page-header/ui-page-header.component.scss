@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: var(--spacing-xs, 8px);
   width: 100%;
-  margin-bottom: var(--spacing-lg, 2rem);
+  margin-bottom: var(--dev-header-margin, var(--spacing-lg, 2rem));
   font-family: var(--font-sans, 'Inter', sans-serif);
 
   .breadcrumbs-slot:empty {
@@ -51,20 +51,21 @@
 
       .page-title {
         margin: 0;
-        font-size: clamp(1.5rem, 2.5vw, 2rem);
-        font-weight: 700;
-        color: var(--text-primary, #F8FAFC);
-        font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+        font-size: var(--dev-text-title, clamp(28px, 2.2vw, 32px));
+        font-weight: var(--dev-weight-semibold, 700);
+        color: var(--text-primary, #0f172a);
+        font-family: var(--font-heading, 'Inter', sans-serif);
         letter-spacing: -0.02em;
-        line-height: 1.2;
+        line-height: var(--dev-leading-heading, 1.25);
       }
     }
 
     .page-subtitle {
-      margin: 0.35rem 0 0 0;
-      font-size: 0.9375rem;
-      color: var(--text-secondary, #94A3B8);
-      line-height: 1.5;
+      margin: 0.25rem 0 0 0;
+      font-size: var(--dev-text-body, 0.9375rem);
+      font-weight: 400;
+      color: var(--text-secondary, #475569);
+      line-height: var(--dev-leading-body, 1.5);
     }
   }
 
