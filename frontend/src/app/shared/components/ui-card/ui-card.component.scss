@@ -1,14 +1,16 @@
 @use '../../styles/design-tokens' as *;
 
 .ui-card {
-  background: var(--surface-card, #FFFFFF);
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color, #E2E8F0);
-  color: var(--text-primary, #0F172A);
+  background: var(--surface-card, #ffffff);
+  border-radius: var(--dev-radius-surface, var(--radius-lg, 12px));
+  box-shadow: var(--dev-surface-shadow, var(--shadow-sm));
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-primary, #0f172a);
   display: flex;
   flex-direction: column;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   overflow: hidden;
   position: relative;
 
@@ -18,23 +20,23 @@
 
   &.bordered {
     background: transparent;
-    border: 1px solid var(--border-color, #E2E8F0);
+    border: 1px solid var(--border-color, #e2e8f0);
     box-shadow: none;
   }
 
   &.elevated {
     box-shadow: var(--shadow-md);
-    border-color: var(--border-color, #E2E8F0);
+    border-color: var(--border-color, #e2e8f0);
   }
 
   &.hover-effect:hover {
     box-shadow: var(--shadow-md);
-    border-color: var(--border-light, #CBD5E1);
+    border-color: var(--border-light, #cbd5e1);
   }
 
   .card-header {
     padding: var(--spacing-sm, 1rem) var(--spacing-md, 1.5rem);
-    border-bottom: 1px solid var(--border-color, #E2E8F0);
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -46,7 +48,7 @@
 
       h3 {
         margin: 0;
-        color: var(--text-primary, #0F172A);
+        color: var(--text-primary, #0f172a);
         font-size: 1.125rem;
         font-weight: 600;
         font-family: var(--font-heading, 'Inter', sans-serif);
@@ -88,8 +90,8 @@
 
   .card-footer {
     padding: var(--spacing-xs, 0.75rem) var(--spacing-md, 1.5rem);
-    background: var(--surface-secondary, #F8FAFC);
-    border-top: 1px solid var(--border-color, #E2E8F0);
+    background: var(--surface-secondary, #f8fafc);
+    border-top: 1px solid var(--border-color, #e2e8f0);
     display: flex;
     align-items: center;
     justify-content: flex-end;

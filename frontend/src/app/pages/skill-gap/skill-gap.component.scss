@@ -1,16 +1,9 @@
-@font-face {
-  font-family: 'Manrope';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/manrope/Manrope.ttf') format('truetype');
-}
+@use '../../shared/styles/developer-ui' as developer;
 
 :host {
   display: block;
   min-width: 0;
-  // Compensate for shell padding on this route only: total workspace inset is 24px.
-  margin: calc(24px - clamp(20px, 2.5vw, 36px));
+  margin: 0;
   font-family: 'Manrope', 'Segoe UI', sans-serif;
   --font-sans: 'Manrope', 'Segoe UI', sans-serif;
   --font-heading: 'Manrope', 'Segoe UI', sans-serif;
@@ -32,18 +25,10 @@ h3 {
   color: var(--text-primary);
 }
 h1 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  @include developer.page-title;
 }
 h2 {
-  margin: 0 0 4px;
-  font-size: 19px;
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  @include developer.section-title;
 }
 h3 {
   margin: 0;
@@ -286,25 +271,12 @@ select {
   margin: 0;
 }
 .metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-  gap: 4px 16px;
+  @include developer.metric-strip;
 }
 .metric-card {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-  grid-row: span 3;
-  grid-template-rows: subgrid;
-  padding-right: 16px;
-  border-right: 1px solid var(--border-color);
+  @include developer.metric-item;
 }
-.metric-card:last-child {
-  border-right: 0;
-  padding-right: 0;
-}
+
 .metric-label,
 .metric-subtext {
   font-size: 12px;
@@ -917,13 +889,7 @@ dd {
     flex-wrap: wrap;
     gap: 8px;
   }
-  .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .metric-card:nth-child(2) {
-    border-right: 0;
-  }
+
   .limitation {
     grid-template-columns: 1fr;
     gap: 4px;

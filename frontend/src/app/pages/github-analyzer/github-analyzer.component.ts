@@ -302,6 +302,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       if (!langs.length) return;
 
       const isDark = this.themeService.isDark();
+      const chartFont = getComputedStyle(canvas).fontFamily;
 
       const cfg: ChartConfiguration<'doughnut'> = {
         type: 'doughnut',
@@ -322,8 +323,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           plugins: {
             legend: { display: false },
             tooltip: {
-              titleFont: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 600 },
-              bodyFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
+              titleFont: { family: chartFont, size: 12, weight: 600 },
+              bodyFont: { family: chartFont, size: 12 },
               callbacks: {
                 label: (c) => ` ${c.label}: ${c.parsed}%`
               }
@@ -350,6 +351,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
       if (!top.length) return;
 
       const isDark = this.themeService.isDark();
+      const chartFont = getComputedStyle(canvas).fontFamily;
 
       const cfg: ChartConfiguration<'bar'> = {
         type: 'bar',
@@ -372,8 +374,8 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           plugins: {
             legend: { display: false },
             tooltip: {
-              titleFont: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 600 },
-              bodyFont: { family: 'Inter, system-ui, sans-serif', size: 12 },
+              titleFont: { family: chartFont, size: 12, weight: 600 },
+              bodyFont: { family: chartFont, size: 12 },
               callbacks: { label: (c) => ` ${c.parsed.x} commits (sampled)` }
             }
           },
@@ -383,14 +385,14 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
               grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9' },
               ticks: {
                 color: isDark ? '#94A3B8' : '#526075',
-                font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 }
+                font: { family: chartFont, size: 12, weight: 500 }
               }
             },
             y: {
               grid: { display: false },
               ticks: {
                 color: isDark ? '#CBD5E1' : '#475569',
-                font: { family: 'Inter, system-ui, sans-serif', size: 12, weight: 500 },
+                font: { family: chartFont, size: 12, weight: 500 },
                 callback: function(_val, idx) {
                   const label = this.getLabelForValue(idx);
                   return label.length > 18 ? `${label.slice(0, 17)}...` : label;

@@ -2,7 +2,7 @@
   --sidebar-expanded-width: 260px;
   --sidebar-collapsed-width: 72px;
   width: var(--sidebar-expanded-width);
-  height: 100vh;
+  height: 100dvh;
   position: fixed;
   left: 0;
   top: 0;
@@ -11,7 +11,9 @@
   z-index: 220;
   display: flex;
   flex-direction: column;
-  transition: width 0.2s ease, transform 0.2s ease;
+  transition:
+    width 0.2s ease,
+    transform 0.2s ease;
   overflow: visible;
 
   &.closed {
@@ -21,11 +23,16 @@
   &.mobile {
     width: var(--sidebar-expanded-width);
     transform: translateX(-100%);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: none;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   &.mobile-open {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    box-shadow: var(--shadow-lg);
   }
 
   .sidebar-logo {
@@ -41,8 +48,8 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #4F46E5;
-    color: #FFFFFF;
+    background: var(--sidebar-active-bg, #4f46e5);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,12 +71,12 @@
   .logo-text {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #ffffff;
     letter-spacing: -0.01em;
     white-space: nowrap;
 
     .ai-tag {
-      color: #818CF8;
+      color: #818cf8;
       font-weight: 700;
       background: none;
       -webkit-text-fill-color: initial;
@@ -78,10 +85,24 @@
 
   .logo-subtitle {
     font-size: 0.7rem;
-    color: #94A3B8;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 500;
+  }
+
+  .drawer-close {
+    margin-left: auto;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sidebar-text);
+    cursor: pointer;
   }
 
   .sidebar-nav {
@@ -115,7 +136,7 @@
   }
 
   .nav-group--active > .nav-group-header .nav-group-link {
-    color: #FFFFFF;
+    color: #ffffff;
   }
 
   .nav-group-header {
@@ -130,16 +151,18 @@
     align-items: center;
     gap: 10px;
     width: 100%;
-    min-height: 38px;
+    min-height: var(--dev-nav-height, 38px);
     padding: 8px 12px;
     border-radius: 6px;
-    color: #CBD5E1;
+    color: #cbd5e1;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: var(--dev-nav-size, 0.875rem);
     text-decoration: none;
     background: transparent;
     border: 1px solid transparent;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
     white-space: nowrap;
     cursor: pointer;
 
@@ -150,7 +173,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #94A3B8;
+      color: #94a3b8;
       transition: color 0.15s ease;
 
       ::ng-deep svg {
@@ -168,20 +191,20 @@
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
+      color: #ffffff;
 
       .nav-icon {
-        color: #FFFFFF;
+        color: #ffffff;
       }
     }
 
     &.active {
-      background: #4F46E5;
-      color: #FFFFFF;
+      background: #4f46e5;
+      color: #ffffff;
       font-weight: 600;
 
       .nav-icon {
-        color: #FFFFFF;
+        color: #ffffff;
       }
     }
 
@@ -206,12 +229,14 @@
     border-radius: 6px;
     border: 1px solid transparent;
     background: transparent;
-    color: #94A3B8;
+    color: #94a3b8;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
 
     svg {
       width: 14px;
@@ -221,7 +246,7 @@
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
+      color: #ffffff;
     }
   }
 
@@ -240,7 +265,9 @@
     max-height: 640px;
     opacity: 1;
     overflow: hidden;
-    transition: max-height 0.2s ease, opacity 0.15s ease;
+    transition:
+      max-height 0.2s ease,
+      opacity 0.15s ease;
   }
 
   .nav-submenu.collapsed {
@@ -257,20 +284,20 @@
     font-size: 0.8125rem;
     padding: 6px 10px;
     border-radius: 6px;
-    color: #94A3B8;
+    color: #94a3b8;
 
     &:hover {
-      color: #FFFFFF;
+      color: #ffffff;
       background: rgba(255, 255, 255, 0.05);
     }
 
     &.active {
-      color: #FFFFFF;
+      color: #ffffff;
       background: rgba(79, 70, 229, 0.25);
       font-weight: 600;
 
       .nav-icon {
-        color: #FFFFFF;
+        color: #ffffff;
       }
     }
   }
@@ -281,8 +308,8 @@
     left: calc(100% + 12px);
     top: 50%;
     transform: translateY(-50%);
-    background: #1F2937;
-    color: #FFFFFF;
+    background: #1f2937;
+    color: #ffffff;
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
@@ -306,14 +333,14 @@
     min-width: 200px;
     padding: 8px;
     border-radius: 8px;
-    background: #1F2937;
+    background: #1f2937;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-lg);
     z-index: 430;
 
     &__label {
       padding: 4px 8px 8px;
-      color: #94A3B8;
+      color: #94a3b8;
       font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
@@ -327,11 +354,13 @@
     gap: 8px;
     padding: 8px 10px;
     border-radius: 6px;
-    color: #CBD5E1;
+    color: #cbd5e1;
     font-size: 0.825rem;
     font-weight: 500;
     text-decoration: none;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
 
     .flyout-icon {
       width: 16px;
@@ -349,12 +378,12 @@
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
+      color: #ffffff;
     }
 
     &.flyout-item-active {
-      background: #4F46E5;
-      color: #FFFFFF;
+      background: #4f46e5;
+      color: #ffffff;
     }
   }
 
@@ -370,7 +399,7 @@
     padding: 8px 10px;
     margin-bottom: 6px;
     border-radius: 8px;
-    background: #1F2937;
+    background: #1f2937;
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
@@ -383,7 +412,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #F3F4F6;
+    color: #f3f4f6;
     font-weight: 600;
     font-size: 0.8rem;
     flex-shrink: 0;
@@ -404,7 +433,7 @@
   }
 
   .sidebar-user-name {
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 0.825rem;
     font-weight: 600;
     overflow: hidden;
@@ -413,7 +442,7 @@
   }
 
   .sidebar-user-handle {
-    color: #94A3B8;
+    color: #94a3b8;
     font-size: 0.72rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -431,11 +460,13 @@
     border-radius: 6px;
     border: 1px solid transparent;
     background: transparent;
-    color: #94A3B8;
+    color: #94a3b8;
     font-weight: 500;
     font-size: 0.84rem;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
 
     .nav-icon {
       width: 18px;
@@ -454,7 +485,7 @@
     &:hover {
       background: rgba(239, 68, 68, 0.12);
       border-color: rgba(239, 68, 68, 0.2);
-      color: #FCA5A5;
+      color: #fca5a5;
     }
   }
 
@@ -513,7 +544,7 @@
       padding-left: 0;
       padding-right: 0;
       min-height: 40px;
-      border-radius: 10px;
+      border-radius: var(--dev-nav-radius, 10px);
 
       .nav-icon {
         width: 20px;
@@ -546,5 +577,42 @@
     .nav-group-header {
       justify-content: space-between;
     }
+  }
+}
+
+.sidebar.developer-navigation {
+  .nav-group-link.active {
+    background: transparent;
+    color: var(--sidebar-text);
+    font-weight: 600;
+  }
+  .sidebar-user-card {
+    background: transparent;
+    border-color: transparent;
+  }
+  .sidebar-logo {
+    padding-block: 12px;
+  }
+  .logo-text {
+    font-size: 15px;
+  }
+  .nav-sublink {
+    font-size: 13px;
+  }
+}
+.sidebar a:focus-visible,
+.sidebar button:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: -2px;
+}
+@media (max-width: 768px) {
+  .sidebar .nav-link,
+  .sidebar .logout-btn {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
   }
 }

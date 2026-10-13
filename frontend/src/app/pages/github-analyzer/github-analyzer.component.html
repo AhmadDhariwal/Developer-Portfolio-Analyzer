@@ -1,10 +1,9 @@
 <div class="analyzer-page">
   <!-- Page Header -->
   <app-ui-page-header
-    eyebrow="Developer Intelligence"
     title="GitHub Analysis"
-    description="Authoritative repository code quality, technology signals, and verifiable engineering evidence.">
-    <div class="page-header-actions" *ngIf="analysisReady && result">
+    subtitle="Repository quality, engineering signals, and verifiable GitHub evidence.">
+    <div page-actions class="page-header-actions" *ngIf="analysisReady && result">
       <app-ui-button
         *ngIf="isTemporaryView"
         variant="ghost"
@@ -176,11 +175,12 @@
 
     <!-- 1. Executive Summary -->
     <section class="executive-summary-section" aria-label="Executive Summary">
+      <h2 class="panel-title">GitHub Executive Summary</h2>
       <div class="executive-card">
         <!-- Left: Readiness & Health Score -->
         <div class="exec-score-block">
           <div class="exec-score-meta">
-            <span class="exec-eyebrow">GitHub Readiness</span>
+            <span class="exec-eyebrow">GitHub Health</span>
             <div class="exec-score-display">
               <span class="exec-score-number" [ngClass]="getScoreClass(healthScoreValue ?? 0)">
                 {{ healthScoreValue !== null ? healthScoreValue : '—' }}
@@ -194,6 +194,7 @@
 
           <div class="exec-headline-block">
             <h3 class="exec-headline">{{ executiveHeadline }}</h3>
+            <span class="interpretation-label" *ngIf="result.recruiterInsights?.headline || result.summary || result.explanation">AI-assisted profile interpretation</span>
             <p class="exec-explanation">{{ executiveExplanation }}</p>
           </div>
         </div>
@@ -221,7 +222,7 @@
           <div class="exec-pillar">
             <div class="pillar-label">
               <span class="pillar-dot pillar-dot--action" aria-hidden="true">→</span>
-              <span>Recommended Action</span>
+              <span>Recommended Action <small *ngIf="result.weakAreas?.length">· AI-assisted</small></span>
             </div>
             <strong class="pillar-title">{{ topRecommendedAction.title }}</strong>
             <p class="pillar-detail">{{ topRecommendedAction.detail }}</p>
@@ -260,7 +261,7 @@
         <div class="metric-cell">
           <span class="metric-label">Community Forks</span>
           <span class="metric-number">{{ formatNumber(result.totalForks) }}</span>
-          <span class="metric-support">Repositories forked</span>
+          <span class="metric-support">Forks earned across repositories</span>
         </div>
 
         <div class="metric-cell">
@@ -276,8 +277,8 @@
           <div class="breakdown-panel">
             <div class="panel-header-row">
               <div>
-                <h3 class="panel-title">Score Breakdown</h3>
-                <p class="panel-subtitle">Six deterministic components calculated authoritatively by github-health-score-v1.</p>
+                <h2 class="panel-title">Score Breakdown</h2>
+                <p class="panel-subtitle">Backend scores and weighted contributions · {{ ruleVersion }}</p>
               </div>
               <app-ui-button
                 variant="ghost"
@@ -342,14 +343,14 @@
             <div class="chart-panel" *ngIf="hasLanguageData">
               <div class="panel-header-row">
                 <div>
-                  <h3 class="panel-title">Language Distribution</h3>
+                  <h2 class="panel-title">Language Distribution</h2>
                   <p class="panel-subtitle">Which languages constitute your codebase? ({{ result.languageDistributionSource === 'language_bytes' ? 'From byte counts' : 'Primary languages' }})</p>
                 </div>
               </div>
 
               <div class="chart-body donut-chart-layout">
                 <div class="donut-canvas-wrap">
-                  <canvas #donutCanvas></canvas>
+                  <canvas #donutCanvas role="img" aria-label="Language distribution; percentages listed alongside"></canvas>
                 </div>
                 <ul class="lang-legend-list">
                   <li *ngFor="let lang of displayLanguages; let i = index" class="legend-row">
@@ -374,7 +375,7 @@
             <div class="chart-panel" *ngIf="hasActivityData">
               <div class="panel-header-row">
                 <div>
-                  <h3 class="panel-title">Sampled Commit Activity</h3>
+                  <h2 class="panel-title">Sampled Commit Activity</h2>
                   <p class="panel-subtitle">Where is commit effort concentrated across top projects?</p>
                 </div>
                 <app-ui-badge variant="neutral" size="sm">Sampled</app-ui-badge>
@@ -386,18 +387,16 @@
               </div>
 
               <div class="chart-body bar-chart-layout">
-                <canvas #barCanvas></canvas>
-              </div>
-            </div>
-          </div>
-        </section>
+                <canvas #barCanvas role="img" aria-label="Sampled repository commits; exact counts listed below"></canvas>
+              </div><ul class="activity-values"><li *ngFor="let activity of result.repositoryActivity"><span>{{ activity.repo }}</span><strong>{{ formatNumber(activity.commits) }} sampled commits</strong></li></ul>
+            </div></div></section>
 
         <!-- 5. Repository Evidence -->
         <section class="repositories-section" *ngIf="repositoryRows.length" aria-label="Repository Evidence">
           <div class="repositories-panel">
             <div class="panel-header-row">
               <div>
-                <h3 class="panel-title">{{ showAllRepositories ? 'All Repositories' : 'Top Repositories' }}</h3>
+                <h2 class="panel-title">{{ showAllRepositories ? 'All Repositories' : 'Top Repositories' }}</h2>
                 <p class="panel-subtitle">Evaluated by code documentation, testing signals, commit cadence, and community adoption.</p>
               </div>
               <div class="panel-actions-wrap">
@@ -410,58 +409,8 @@
               </div>
             </div>
 
-            <!-- Mode A: Prioritized Top Repositories List -->
-            <div class="top-repos-list" *ngIf="!showAllRepositories">
-              <div class="top-repo-item" *ngFor="let repo of topRepositories">
-                <div class="repo-main-info">
-                  <div class="repo-title-line">
-                    <a
-                      [href]="'https://github.com/' + (viewedUsername || username) + '/' + repo.name"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="repo-name-link">
-                      {{ repo.name }}
-                    </a>
-                    <app-ui-badge *ngIf="repo.fork" variant="neutral" size="sm">Fork</app-ui-badge>
-                    <app-ui-badge *ngIf="repo.archived" variant="warning" size="sm">Archived</app-ui-badge>
-                    <span class="repo-category-tag" *ngIf="repo.category">{{ repo.category }}</span>
-                  </div>
-                  <p class="repo-description-text" *ngIf="repo.description">{{ repo.description }}</p>
-                  
-                  <div class="repo-meta-line">
-                    <span class="repo-lang" *ngIf="repo.language && repo.language !== 'Unknown'">
-                      <span class="lang-dot" aria-hidden="true"></span>
-                      {{ repo.language }}
-                    </span>
-                    <span class="repo-stat" *ngIf="repo.stars">★ {{ formatNumber(repo.stars) }}</span>
-                    <span class="repo-stat" *ngIf="repo.forks">⑂ {{ formatNumber(repo.forks) }}</span>
-                    <div class="repo-tech-chips" *ngIf="repositoryTechnologies(repo).length">
-                      <span class="mini-tech-chip" *ngFor="let tech of repositoryTechnologies(repo)">{{ tech }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="repo-score-block">
-                  <div class="repo-score-numeric">
-                    <span class="score-label">Quality Score</span>
-                    <span class="score-digits" [ngClass]="getScoreClass(repositoryScore(repo))">
-                      {{ repositoryScore(repo) }}
-                    </span>
-                  </div>
-                  <div class="repo-score-bar">
-                    <app-ui-progress
-                      [value]="repositoryScore(repo)"
-                      [max]="100"
-                      [color]="repositoryScore(repo) >= 70 ? 'success' : (repositoryScore(repo) >= 45 ? 'warning' : 'danger')"
-                      size="sm">
-                    </app-ui-progress>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Mode B: Full Interactive Repositories Table -->
-            <div class="full-table-wrap" *ngIf="showAllRepositories">
+            <div class="full-table-wrap">
               <!-- Sort Controls Strip -->
               <div class="table-sort-strip">
                 <span class="sort-strip-label">Sort by:</span>
@@ -492,25 +441,30 @@
                 <table class="clean-repo-table">
                   <thead>
                     <tr>
-                      <th scope="col" (click)="setRepoSort('name')" class="sortable-th">Repository</th>
+                      <th scope="col"><button type="button" (click)="setRepoSort('name')">Repository</button></th>
                       <th scope="col">Category</th>
                       <th scope="col">Language</th>
                       <th scope="col">Tech Stack</th>
-                      <th scope="col" (click)="setRepoSort('stars')" class="sortable-th">Stars</th>
+                      <th scope="col"><button type="button" (click)="setRepoSort('stars')">Stars</button></th>
                       <th scope="col">Forks</th>
-                      <th scope="col" (click)="setRepoSort('score')" class="sortable-th">Quality Score</th>
+                      <th scope="col"><button type="button" (click)="setRepoSort('score')">Quality Score</button></th>
                       <th scope="col">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let repo of sortedRepositoryRows">
+                    <tr *ngFor="let repo of (showAllRepositories ? sortedRepositoryRows : sortedRepositoryRows.slice(0, 5))">
                       <td class="td-name" data-label="Repository">
                         <div class="table-repo-name-wrap">
                           <strong class="table-repo-name">{{ repo.name }}</strong>
                           <app-ui-badge *ngIf="repo.fork" variant="neutral" size="sm">Fork</app-ui-badge>
                           <app-ui-badge *ngIf="repo.archived" variant="warning" size="sm">Archived</app-ui-badge>
                         </div>
-                        <small class="table-repo-desc" *ngIf="repo.description">{{ repo.description }}</small>
+                        <small class="table-repo-desc" *ngIf="repo.description">{{ repo.description }}</small><details class="repository-evidence"><summary>Repository evidence</summary><dl>
+<div><dt>README detected</dt><dd>{{ repo.hasReadme === true ? 'Yes' : repo.hasReadme === false ? 'No' : 'Unavailable' }}</dd></div>
+<div><dt>README quality</dt><dd>{{ repo.readmeQuality ?? 'Unavailable' }}</dd></div>
+<div><dt>Sampled commits</dt><dd>{{ repo.commits ?? 'Unavailable' }}</dd></div>
+<div><dt>Last push</dt><dd>{{ repo.pushedAt ? formatDateTime(repo.pushedAt) : 'Unavailable' }}</dd></div>
+<div><dt>Repository size (KB)</dt><dd>{{ repo.size ?? 'Unavailable' }}</dd></div></dl><p>Quality signals are heuristic evidence, not a code review.</p></details>
                       </td>
 
                       <td data-label="Category">
@@ -573,7 +527,7 @@
           <div class="tech-panel">
             <div class="panel-header-row">
               <div>
-                <h3 class="panel-title">Detected Technologies & Frameworks</h3>
+                <h2 class="panel-title">Detected Technologies & Frameworks</h2>
                 <p class="panel-subtitle">Libraries, tools, and frameworks detected across repository manifests and codebases.</p>
               </div>
             </div>
@@ -599,7 +553,7 @@
           <div class="insights-panel">
             <div class="panel-header-row">
               <div>
-                <h3 class="panel-title">Profile Insights & Talking Points</h3>
+                <h2 class="panel-title">Profile Insights & Talking Points</h2>
                 <p class="panel-subtitle">Qualitative narrative and interview positioning grounded in verified repository signals.</p>
               </div>
               <app-ui-badge variant="info" size="sm">AI-assisted interpretation</app-ui-badge>
@@ -607,7 +561,7 @@
 
             <div class="insights-notice-banner">
               <span class="notice-icon" aria-hidden="true">💡</span>
-              <span>Deterministic scores, breakdown, and repository metrics above are factual engineering data. Below is AI-assisted interpretation for interviews and portfolio positioning.</span>
+              <span>Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The narrative below is AI-assisted interpretation, not an additional score or verified fact.</span>
             </div>
 
             <!-- Narrative Summary & Explanation -->
@@ -618,7 +572,7 @@
 
             <!-- Fallback notice if AI content is absent -->
             <div class="ai-fallback-notice" *ngIf="!hasAiContent">
-              <p>AI qualitative narrative is temporarily unavailable for this profile. All deterministic scores, component breakdowns, and repository evaluations above remain fully verified and authoritative.</p>
+              <p>AI qualitative narrative is temporarily unavailable for this profile. All deterministic scores, component breakdowns, and repository evaluations above remain available from the backend rule engine.</p>
             </div>
 
             <!-- Three Pillars: Strengths, Growth Areas, Recruiter Talking Points -->
@@ -736,6 +690,7 @@
         </div>
       </div>
 
+      <div class="drawer-section"><h4 class="drawer-section-title">Source Metadata</h4><p>Analysis version: {{ result.analysisVersion || 'Unavailable' }} · Data version: {{ result.dataVersion || 'Unavailable' }}</p><ul><li *ngFor="let source of result.scoring?.evidence?.sources">{{ source.type }}: {{ source.id }}</li></ul><p>Activity scope: {{ result.dataAvailability?.activityScope || 'Sampled repository contributor history' }}</p><p *ngIf="result.warning">{{ result.warning }}</p></div>
       <!-- Group 4: Backend Audit Notices -->
       <div class="drawer-section" *ngIf="scoringWarnings.length">
         <h4 class="drawer-section-title">Backend Audit Notices</h4>
