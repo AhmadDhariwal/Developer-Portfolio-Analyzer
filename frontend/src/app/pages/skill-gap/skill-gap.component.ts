@@ -20,7 +20,6 @@ import {
   CAREER_STACKS,
   EXPERIENCE_LEVELS,
 } from '../../shared/models/career-profile.model';
-import { UiPageHeaderComponent } from '../../shared/components/ui-page-header/ui-page-header.component';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiSkeletonComponent } from '../../shared/components/ui-skeleton/ui-skeleton.component';
 import {
@@ -34,14 +33,7 @@ import {
 @Component({
   selector: 'app-skill-gap',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink,
-    UiPageHeaderComponent,
-    UiButtonComponent,
-    UiSkeletonComponent,
-  ],
+  imports: [CommonModule, FormsModule, RouterLink, UiButtonComponent, UiSkeletonComponent],
   templateUrl: './skill-gap.component.html',
   styleUrl: './skill-gap.component.scss',
 })

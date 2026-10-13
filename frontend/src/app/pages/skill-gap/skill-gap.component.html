@@ -1,10 +1,12 @@
 <div class="skill-gap-page" [attr.aria-busy]="isLoading || isInitLoading">
   <!-- A. Page Header -->
-  <app-ui-page-header
-    title="Skill Gap"
-    subtitle="Evidence-based technical requirements and actionable career intelligence."
-  >
-    <div page-actions class="header-actions">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Career intelligence</span>
+      <h1>Skill Gap</h1>
+      <p>Evidence-based technical requirements and actionable career intelligence.</p>
+    </div>
+    <div class="header-actions">
       <a routerLink="/app/profile">Career profile</a>
       <app-ui-button
         [disabled]="isLoading || isInitLoading || (!isPreviewMode && !hasCareerTarget)"
@@ -13,7 +15,7 @@
         >Refresh evidence</app-ui-button
       >
     </div>
-  </app-ui-page-header>
+  </header>
 
   <!-- Context Bar: Target, Experience, Freshness & Mode Switching -->
   <div class="context-bar">
@@ -246,41 +248,41 @@
         <div class="limitation wide">
           <strong>Current evidence limitation</strong>
           <p>
-            The current GitHub and Resume analyzers do not provide inspected code implementation
-            evidence. Repository metadata can support Partial; resume mentions and self-reported
-            skills are claims. Neither alone establishes Demonstrated proficiency.
+            GitHub and resume sources do not inspect code implementation. Metadata supports Partial;
+            resume mentions and self-reported skills are claims. Neither alone demonstrates
+            proficiency.
           </p>
+        </div>
+
+        <!-- Supporting metrics belong to the executive overview. -->
+        <div class="metrics-grid wide">
+          <div class="metric-card">
+            <span class="metric-label">Evidence-backed skills</span>
+            <strong class="metric-value">{{ evidenceBackedCount }}</strong>
+            <span class="metric-subtext"
+              >{{ demonstratedCount }} demonstrated · {{ partialCount }} partial</span
+            >
+          </div>
+          <div class="metric-card metric-card--warning">
+            <span class="metric-label">Validated requirement gaps</span>
+            <strong class="metric-value">{{ validatedGapsCount }}</strong>
+            <span class="metric-subtext">Missing technical proof</span>
+          </div>
+          <div class="metric-card metric-card--info">
+            <span class="metric-label">Claims needing evidence</span>
+            <strong class="metric-value">{{ claimedCount }}</strong>
+            <span class="metric-subtext">Claims without implementation evidence</span>
+          </div>
+          <div class="metric-card metric-card--primary">
+            <span class="metric-label">Learning plan timeline</span>
+            <strong class="metric-value metric-value--timeline">{{ totalWeeks }}</strong>
+            <span class="metric-subtext">{{ roadmapPhases.length }} phased milestones</span>
+          </div>
         </div>
       </section>
 
-      <!-- Executive Overview Core Summary Metrics -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <span class="metric-label">Evidence-backed skills</span>
-          <strong class="metric-value">{{ evidenceBackedCount }}</strong>
-          <span class="metric-subtext"
-            >{{ demonstratedCount }} demonstrated · {{ partialCount }} partial</span
-          >
-        </div>
-        <div class="metric-card metric-card--warning">
-          <span class="metric-label">Validated requirement gaps</span>
-          <strong class="metric-value">{{ validatedGapsCount }}</strong>
-          <span class="metric-subtext">Missing technical proof</span>
-        </div>
-        <div class="metric-card metric-card--info">
-          <span class="metric-label">Claims needing evidence</span>
-          <strong class="metric-value">{{ claimedCount }}</strong>
-          <span class="metric-subtext">Resume claims without repo proof</span>
-        </div>
-        <div class="metric-card metric-card--primary">
-          <span class="metric-label">Learning plan timeline</span>
-          <strong class="metric-value">{{ totalWeeks }}</strong>
-          <span class="metric-subtext">{{ roadmapPhases.length }} phased milestones</span>
-        </div>
-      </div>
-
       <!-- C. Priority Improvements: Top 3 High-Leverage Opportunities -->
-      <section class="panel opportunities-panel" aria-labelledby="opportunities-title">
+      <section class="opportunities-panel" aria-labelledby="opportunities-title">
         <div class="section-heading">
           <div>
             <span class="eyebrow">Actionable priorities</span>
@@ -343,7 +345,7 @@
       </section>
 
       <!-- D. Career Skill Categories: Compact Domain Breakdown -->
-      <section class="panel category-matrix" aria-labelledby="categories-title">
+      <section class="category-matrix" aria-labelledby="categories-title">
         <div class="section-heading">
           <div>
             <span class="eyebrow">Domain distribution</span>
@@ -378,7 +380,7 @@
       </section>
 
       <!-- E. Career Skill Explorer: Interactive Inventory & Progressive Disclosure -->
-      <section class="panel explorer-section" aria-labelledby="skills-title">
+      <section class="explorer-section" aria-labelledby="skills-title">
         <div class="section-heading">
           <div>
             <span class="eyebrow">Comprehensive inventory</span>
@@ -390,188 +392,197 @@
           </div>
           <span class="tag">{{ skills.length }} skills</span>
         </div>
-        <details class="status-key">
-          <summary>Understand the five evidence classifications</summary>
-          <dl>
-            @for (status of statuses; track status) {
-              <dt>{{ statusLabels[status] }}</dt>
-              <dd>{{ statusReasons[status] }}</dd>
-            }
-          </dl>
-        </details>
-        <div class="filters">
-          <label
-            >Requirement<select [(ngModel)]="requirementFilter">
-              <option value="ALL">Required &amp; optional</option>
-              <option value="REQUIRED">Required</option>
-              <option value="OPTIONAL">Optional</option>
-            </select></label
-          >
-          <label
-            >Evidence status<select [(ngModel)]="statusFilter">
-              <option value="ALL">All classifications</option>
+        <div class="explorer-surface">
+          <details class="status-key">
+            <summary>Understand the five evidence classifications</summary>
+            <dl>
               @for (status of statuses; track status) {
-                <option [value]="status">{{ statusLabels[status] }}</option>
+                <dt>{{ statusLabels[status] }}</dt>
+                <dd>{{ statusReasons[status] }}</dd>
               }
-            </select></label
-          >
-          <label
-            >Category<select [(ngModel)]="categoryFilter">
-              <option value="ALL">All categories</option>
-              @for (category of categories; track category) {
-                <option>{{ category }}</option>
-              }
-            </select></label
-          >
-          <div class="filter-field">
-            <span class="filter-field__label">Sort by</span>
-            <select [(ngModel)]="sortBy" aria-label="Sort skills by">
-              <option value="priority">Requirement first</option>
-              <option value="name">Alphabetical (A-Z)</option>
-              <option value="status">Evidence status</option>
-              <option value="confidence">Confidence level</option>
-            </select>
+            </dl>
+          </details>
+          <div class="filters">
+            <label
+              >Requirement<select [(ngModel)]="requirementFilter">
+                <option value="ALL">Required &amp; optional</option>
+                <option value="REQUIRED">Required</option>
+                <option value="OPTIONAL">Optional</option>
+              </select></label
+            >
+            <label
+              >Evidence status<select [(ngModel)]="statusFilter">
+                <option value="ALL">All classifications</option>
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ statusLabels[status] }}</option>
+                }
+              </select></label
+            >
+            <label
+              >Category<select [(ngModel)]="categoryFilter">
+                <option value="ALL">All categories</option>
+                @for (category of categories; track category) {
+                  <option>{{ category }}</option>
+                }
+              </select></label
+            >
+            <div class="filter-field">
+              <span class="filter-field__label">Sort by</span>
+              <select [(ngModel)]="sortBy" aria-label="Sort skills by">
+                <option value="priority">Requirement first</option>
+                <option value="name">Alphabetical (A-Z)</option>
+                <option value="status">Evidence status</option>
+                <option value="confidence">Confidence level</option>
+              </select>
+            </div>
+            <label class="search-filter"
+              >Find a skill<input
+                type="search"
+                [(ngModel)]="search"
+                placeholder="Search skill names"
+            /></label>
           </div>
-          <label class="search-filter"
-            >Find a skill<input type="search" [(ngModel)]="search" placeholder="Search skill names"
-          /></label>
-        </div>
-        <p class="results-count" role="status">
-          Showing {{ displayedSkills.length }} of {{ visibleSkills.length }}
-          {{ visibleSkills.length === skills.length ? 'skills' : 'filtered skills' }} ({{
-            skills.length
-          }}
-          total in matrix)
-        </p>
-        <div class="skill-list">
-          @for (skill of displayedSkills; track skill.name) {
-            <details class="skill-row" [attr.data-status]="skill.status">
-              <summary>
-                <span class="skill-name"
-                  ><strong>{{ skill.name }}</strong
-                  ><span>{{ skill.category }}</span></span
-                ><span class="designation">{{ skill.requirement | titlecase }}</span
-                ><span class="status" [attr.data-status]="skill.status">{{
-                  statusLabels[skill.status]
-                }}</span
-                ><span class="skill-confidence"
-                  >{{ skill.evidenceConfidence | titlecase }} confidence</span
-                ><span class="expand-label">Evidence</span>
-              </summary>
-              <div class="skill-detail">
-                <div class="skill-detail__header">
-                  <p class="reason-text">{{ statusReasons[skill.status] }}</p>
-                  <div class="skill-detail__actions">
-                    <a
-                      class="inline-link"
-                      routerLink="/app/courses"
-                      [queryParams]="{ skill: skill.name }"
-                      >View learning path →</a
-                    >
-                    <a
-                      class="inline-link"
-                      routerLink="/app/career-sprint"
-                      [queryParams]="{ skill: skill.name }"
-                      >Add to sprint →</a
-                    >
-                  </div>
-                </div>
-                <div class="detail-grid">
-                  <div class="detail-block">
-                    <span>Suggested next action</span>
-                    <strong>{{ nextAction(skill) }}</strong>
-                  </div>
-                  <div class="detail-block">
-                    <span>Independent technical sources</span>
-                    <strong>{{ skill.independentTechnicalSources }} sources</strong>
-                    <small
-                      >Repeated copies of the same repository or document do not provide independent
-                      confirmation.</small
-                    >
-                  </div>
-                </div>
-                <h4 class="evidence-heading">Source Evidence Trail</h4>
-                <ul class="evidence-list">
-                  @for (evidence of skill.evidence || []; track $index) {
-                    <li>
-                      <strong
-                        >{{ sourceLabel(evidence.type) }} ·
-                        {{ evidenceLabel(evidence.kind) }}</strong
-                      ><span>{{ evidence.artifact || evidence.origin || evidence.id }}</span
-                      ><span
-                        >{{
-                          evidence.timestamp
-                            ? (evidence.timestamp | date: 'medium')
-                            : 'Timestamp unavailable'
-                        }}
-                        ·
-                        {{
-                          evidence.freshness === 'STALE'
-                            ? 'Marked stale'
-                            : evidence.freshness === 'RECORDED'
-                              ? 'Timestamp recorded'
-                              : 'Freshness unknown'
-                        }}</span
+          <p class="results-count" role="status">
+            Showing {{ displayedSkills.length }} of {{ visibleSkills.length }}
+            {{ visibleSkills.length === skills.length ? 'skills' : 'filtered skills' }} ({{
+              skills.length
+            }}
+            total in matrix)
+          </p>
+          <div class="skill-table-heading" aria-hidden="true">
+            <span>Skill / category</span><span>Requirement</span><span>Evidence status</span
+            ><span>Confidence</span><span>Details</span>
+          </div>
+          <div class="skill-list">
+            @for (skill of displayedSkills; track skill.name) {
+              <details class="skill-row" [attr.data-status]="skill.status">
+                <summary>
+                  <span class="skill-name"
+                    ><strong>{{ skill.name }}</strong
+                    ><span>{{ skill.category }}</span></span
+                  ><span class="designation">{{ skill.requirement | titlecase }}</span
+                  ><span class="status" [attr.data-status]="skill.status">{{
+                    statusLabels[skill.status]
+                  }}</span
+                  ><span class="skill-confidence"
+                    >{{ skill.evidenceConfidence | titlecase }} confidence</span
+                  ><span class="expand-label">Evidence</span>
+                </summary>
+                <div class="skill-detail">
+                  <div class="skill-detail__header">
+                    <p class="reason-text">{{ statusReasons[skill.status] }}</p>
+                    <div class="skill-detail__actions">
+                      <a
+                        class="inline-link"
+                        routerLink="/app/courses"
+                        [queryParams]="{ skill: skill.name }"
+                        >View learning path →</a
                       >
-                      @if (evidence.conflicting) {
-                        <span class="conflict-alert"
-                          >Conflicting positive evidence — review this source.</span
+                      <a
+                        class="inline-link"
+                        routerLink="/app/career-sprint"
+                        [queryParams]="{ skill: skill.name }"
+                        >Add to sprint →</a
+                      >
+                    </div>
+                  </div>
+                  <div class="detail-grid">
+                    <div class="detail-block">
+                      <span>Suggested next action</span>
+                      <strong>{{ nextAction(skill) }}</strong>
+                    </div>
+                    <div class="detail-block">
+                      <span>Independent technical sources</span>
+                      <strong>{{ skill.independentTechnicalSources }} sources</strong>
+                      <small
+                        >Repeated copies of the same repository or document do not provide
+                        independent confirmation.</small
+                      >
+                    </div>
+                  </div>
+                  <h4 class="evidence-heading">Source Evidence Trail</h4>
+                  <ul class="evidence-list">
+                    @for (evidence of skill.evidence || []; track $index) {
+                      <li>
+                        <strong
+                          >{{ sourceLabel(evidence.type) }} ·
+                          {{ evidenceLabel(evidence.kind) }}</strong
+                        ><span>{{ evidence.artifact || evidence.origin || evidence.id }}</span
+                        ><span
+                          >{{
+                            evidence.timestamp
+                              ? (evidence.timestamp | date: 'medium')
+                              : 'Timestamp unavailable'
+                          }}
+                          ·
+                          {{
+                            evidence.freshness === 'STALE'
+                              ? 'Marked stale'
+                              : evidence.freshness === 'RECORDED'
+                                ? 'Timestamp recorded'
+                                : 'Freshness unknown'
+                          }}</span
                         >
-                      }
-                    </li>
-                  } @empty {
-                    <li>No supporting skill evidence was supplied in this snapshot.</li>
+                        @if (evidence.conflicting) {
+                          <span class="conflict-alert"
+                            >Conflicting positive evidence — review this source.</span
+                          >
+                        }
+                      </li>
+                    } @empty {
+                      <li>No supporting skill evidence was supplied in this snapshot.</li>
+                    }
+                  </ul>
+                  @for (warning of skill.warnings || []; track $index) {
+                    <p class="warning">{{ warningLabel(warning) }}</p>
                   }
-                </ul>
-                @for (warning of skill.warnings || []; track $index) {
-                  <p class="warning">{{ warningLabel(warning) }}</p>
+                </div>
+              </details>
+            } @empty {
+              <div class="empty-state">
+                <p>
+                  {{
+                    skills.length
+                      ? 'No skills match these filters.'
+                      : 'No career requirements were supplied for this snapshot.'
+                  }}
+                </p>
+                @if (skills.length) {
+                  <button
+                    class="text-button"
+                    type="button"
+                    (click)="
+                      search = '';
+                      requirementFilter = statusFilter = categoryFilter = 'ALL';
+                      sortBy = 'priority'
+                    "
+                  >
+                    Clear filters
+                  </button>
                 }
               </div>
-            </details>
-          } @empty {
-            <div class="empty-state">
-              <p>
+            }
+          </div>
+          @if (visibleSkills.length > initialSkillLimit) {
+            <div class="explorer-footer">
+              <button
+                type="button"
+                class="disclosure-button"
+                (click)="showAllSkills = !showAllSkills"
+              >
                 {{
-                  skills.length
-                    ? 'No skills match these filters.'
-                    : 'No career requirements were supplied for this snapshot.'
+                  showAllSkills
+                    ? 'Show fewer skills (top 8)'
+                    : 'Show all ' + visibleSkills.length + ' skills'
                 }}
-              </p>
-              @if (skills.length) {
-                <button
-                  class="text-button"
-                  type="button"
-                  (click)="
-                    search = '';
-                    requirementFilter = statusFilter = categoryFilter = 'ALL';
-                    sortBy = 'priority'
-                  "
-                >
-                  Clear filters
-                </button>
-              }
+              </button>
             </div>
           }
         </div>
-        @if (visibleSkills.length > initialSkillLimit) {
-          <div class="explorer-footer">
-            <button
-              type="button"
-              class="disclosure-button"
-              (click)="showAllSkills = !showAllSkills"
-            >
-              {{
-                showAllSkills
-                  ? 'Show fewer skills (top 8)'
-                  : 'Show all ' + visibleSkills.length + ' skills'
-              }}
-            </button>
-          </div>
-        }
       </section>
 
       <!-- F. Suggested Proof Projects: Relevant 2-3 First with View More -->
-      <section class="panel projects-panel" aria-labelledby="projects-title">
+      <section class="projects-panel" aria-labelledby="projects-title">
         <div class="section-heading">
           <div>
             <span class="eyebrow">Implementation artifacts</span>
@@ -625,8 +636,14 @@
       </section>
 
       <!-- G. Personalized Learning Roadmap: Elegant Timeline Accordion -->
-      @if (roadmapPhases.length) {
-        <section class="panel roadmap-section" aria-labelledby="roadmap-title">
+      @if (
+        roadmapPhases.length ||
+        immediateSkills.length ||
+        shortTermSkills.length ||
+        midTermSkills.length ||
+        longTermSkills.length
+      ) {
+        <section class="roadmap-section" aria-labelledby="roadmap-title">
           <div class="section-heading">
             <div>
               <span class="eyebrow">Structured progression</span>
@@ -635,6 +652,84 @@
             </div>
             <span class="tag">{{ totalWeeks }}</span>
           </div>
+          <!-- H. Sequenced Skill Acquisition Horizons: Compact Visual Stepper -->
+          @if (
+            immediateSkills.length ||
+            shortTermSkills.length ||
+            midTermSkills.length ||
+            longTermSkills.length
+          ) {
+            <details class="horizons-section">
+              <summary>Skill acquisition horizons</summary>
+              <div class="horizons-stepper">
+                <div class="horizon-step horizon-step--immediate">
+                  <div class="horizon-step__header">
+                    <span class="horizon-step__badge">1</span>
+                    <div>
+                      <strong>Immediate</strong>
+                      <span>Weeks 1–2</span>
+                    </div>
+                  </div>
+                  <div class="horizon-step__tags">
+                    @for (skill of immediateSkills; track skill) {
+                      <span>{{ skill }}</span>
+                    } @empty {
+                      <em>None assigned</em>
+                    }
+                  </div>
+                </div>
+                <div class="horizon-step horizon-step--short">
+                  <div class="horizon-step__header">
+                    <span class="horizon-step__badge">2</span>
+                    <div>
+                      <strong>Short-term</strong>
+                      <span>Weeks 3–4</span>
+                    </div>
+                  </div>
+                  <div class="horizon-step__tags">
+                    @for (skill of shortTermSkills; track skill) {
+                      <span>{{ skill }}</span>
+                    } @empty {
+                      <em>None assigned</em>
+                    }
+                  </div>
+                </div>
+                <div class="horizon-step horizon-step--mid">
+                  <div class="horizon-step__header">
+                    <span class="horizon-step__badge">3</span>
+                    <div>
+                      <strong>Mid-term</strong>
+                      <span>Weeks 5–6</span>
+                    </div>
+                  </div>
+                  <div class="horizon-step__tags">
+                    @for (skill of midTermSkills; track skill) {
+                      <span>{{ skill }}</span>
+                    } @empty {
+                      <em>None assigned</em>
+                    }
+                  </div>
+                </div>
+                <div class="horizon-step horizon-step--long">
+                  <div class="horizon-step__header">
+                    <span class="horizon-step__badge">4</span>
+                    <div>
+                      <strong>Long-term</strong>
+                      <span>Weeks 7+</span>
+                    </div>
+                  </div>
+                  <div class="horizon-step__tags">
+                    @for (skill of longTermSkills; track skill) {
+                      <span>{{ skill }}</span>
+                    } @empty {
+                      <em>None assigned</em>
+                    }
+                  </div>
+                </div>
+              </div>
+            </details>
+          }
+
           <div class="roadmap-accordion">
             @for (phase of roadmapPhases; track phase.title; let i = $index) {
               <details class="roadmap-accordion-phase">
@@ -716,188 +811,120 @@
         </section>
       }
 
-      <!-- H. Sequenced Skill Acquisition Horizons: Compact Visual Stepper -->
-      @if (
-        immediateSkills.length ||
-        shortTermSkills.length ||
-        midTermSkills.length ||
-        longTermSkills.length
-      ) {
-        <section class="panel horizons-section" aria-labelledby="horizons-title">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">Sequenced execution</span>
-              <h2 id="horizons-title">Skill acquisition horizons</h2>
-              <p>Progression order optimized by dependency chains and market relevance.</p>
-            </div>
-          </div>
-          <div class="horizons-stepper">
-            <div class="horizon-step horizon-step--immediate">
-              <div class="horizon-step__header">
-                <span class="horizon-step__badge">1</span>
-                <div>
-                  <strong>Immediate</strong>
-                  <span>Weeks 1–2</span>
-                </div>
-              </div>
-              <div class="horizon-step__tags">
-                @for (skill of immediateSkills; track skill) {
-                  <span>{{ skill }}</span>
-                } @empty {
-                  <em>None assigned</em>
-                }
-              </div>
-            </div>
-            <div class="horizon-step horizon-step--short">
-              <div class="horizon-step__header">
-                <span class="horizon-step__badge">2</span>
-                <div>
-                  <strong>Short-term</strong>
-                  <span>Weeks 3–4</span>
-                </div>
-              </div>
-              <div class="horizon-step__tags">
-                @for (skill of shortTermSkills; track skill) {
-                  <span>{{ skill }}</span>
-                } @empty {
-                  <em>None assigned</em>
-                }
-              </div>
-            </div>
-            <div class="horizon-step horizon-step--mid">
-              <div class="horizon-step__header">
-                <span class="horizon-step__badge">3</span>
-                <div>
-                  <strong>Mid-term</strong>
-                  <span>Weeks 5–6</span>
-                </div>
-              </div>
-              <div class="horizon-step__tags">
-                @for (skill of midTermSkills; track skill) {
-                  <span>{{ skill }}</span>
-                } @empty {
-                  <em>None assigned</em>
-                }
-              </div>
-            </div>
-            <div class="horizon-step horizon-step--long">
-              <div class="horizon-step__header">
-                <span class="horizon-step__badge">4</span>
-                <div>
-                  <strong>Long-term</strong>
-                  <span>Weeks 7+</span>
-                </div>
-              </div>
-              <div class="horizon-step__tags">
-                @for (skill of longTermSkills; track skill) {
-                  <span>{{ skill }}</span>
-                } @empty {
-                  <em>None assigned</em>
-                }
-              </div>
-            </div>
-          </div>
-        </section>
-      }
-
       <!-- I. Evidence Sources, AI Guidance & Methodology: Clearly Labeled Collapsible Sections -->
-      <section class="panel" aria-labelledby="sources-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="sources-title">Evidence completeness &amp; freshness</h2>
-            <p>Source availability is separate from skill coverage and proficiency.</p>
-          </div>
-          <span class="tag"
-            >{{ analysis.evidenceCompleteness?.availableCoreSources ?? 'Unknown' }} /
-            {{ analysis.evidenceCompleteness?.totalCoreSources ?? 'Unknown' }} core sources</span
-          >
-        </div>
-        @if (noCoreEvidence) {
-          <p class="notice">
-            No analyzed GitHub or resume evidence is available. This indicates insufficient
-            evidence, not poor proficiency.
-          </p>
-        } @else if (analysis.evidenceCompleteness && !analysis.evidenceCompleteness.complete) {
-          <p class="notice">
-            Partial sources: this snapshot uses the analyzed sources available. An unavailable
-            optional integration does not reduce coverage.
-          </p>
-        }
-        @if (staleEvidence) {
-          <p class="notice">
-            Some evidence is marked stale. Existing classifications are retained; reanalyze the
-            affected source to update this snapshot.
-          </p>
-        }
-        <div class="sources">
-          @for (source of analysis.sourceReferences || []; track $index) {
-            <div class="source">
-              <h3>{{ sourceLabel(source.type) }}</h3>
-              <strong>{{ source.available ? 'Available' : 'Unavailable' }}</strong>
-              <p>Completeness: {{ source.completeness | titlecase }}</p>
-              <p>
-                {{
-                  source.timestamp ? (source.timestamp | date: 'medium') : 'Timestamp unavailable'
-                }}
-              </p>
-              <span>{{
-                source.freshness === 'STALE'
-                  ? 'Marked stale'
-                  : source.freshness === 'RECORDED'
-                    ? 'Timestamp recorded · age not calibrated'
-                    : 'Freshness unknown'
-              }}</span>
-            </div>
-          } @empty {
-            <p>Source references were not provided.</p>
-          }
-        </div>
-        <nav class="recovery-links" aria-label="Update evidence">
-          <a routerLink="/app/github-analyzer">Update GitHub evidence →</a
-          ><a routerLink="/app/resume-analyzer">Analyze / select a resume →</a
-          ><a routerLink="/app/profile">Review career context →</a>
-        </nav>
-        <details class="info-disclosure">
-          <summary>How evidence confidence works</summary>
+      <section class="evidence-section" aria-labelledby="sources-title">
+        <h2 id="sources-title">Evidence &amp; methodology</h2>
+        <details class="info-disclosure source-disclosure">
+          <summary>
+            Evidence completeness &amp; freshness ·
+            {{ analysis.evidenceCompleteness?.availableCoreSources ?? 'Unknown' }} /
+            {{ analysis.evidenceCompleteness?.totalCoreSources ?? 'Unknown' }} core sources
+          </summary>
           <div class="disclosure-body">
-            <p>
-              Confidence describes the evidence for each skill, not your ability. See each skill
-              below. The backend overall value is
-              <strong>{{ analysis.evidenceConfidence || 'Unavailable' }}</strong
-              >, reflecting the weakest required skill; it is not an average or a statistically
-              calibrated percentage.
-            </p>
-            <p>
-              Confidence considers evidence strength, independent sources, completeness, relevance,
-              and recorded freshness. Missing evidence can make overall confidence Insufficient even
-              when other skills have useful evidence.
+            <div class="section-heading">
+              <div>
+                <h2>Evidence completeness &amp; freshness</h2>
+                <p>Source availability is separate from skill coverage and proficiency.</p>
+              </div>
+              <span class="tag"
+                >{{ analysis.evidenceCompleteness?.availableCoreSources ?? 'Unknown' }} /
+                {{ analysis.evidenceCompleteness?.totalCoreSources ?? 'Unknown' }} core
+                sources</span
+              >
+            </div>
+            @if (noCoreEvidence) {
+              <p class="notice">
+                No analyzed GitHub or resume evidence is available. This indicates insufficient
+                evidence, not poor proficiency.
+              </p>
+            } @else if (analysis.evidenceCompleteness && !analysis.evidenceCompleteness.complete) {
+              <p class="notice">
+                Partial sources: this snapshot uses the analyzed sources available. An unavailable
+                optional integration does not reduce coverage.
+              </p>
+            }
+            @if (staleEvidence) {
+              <p class="notice">
+                Some evidence is marked stale. Existing classifications are retained; reanalyze the
+                affected source to update this snapshot.
+              </p>
+            }
+            <div class="sources">
+              @for (source of analysis.sourceReferences || []; track $index) {
+                <div class="source">
+                  <h3>{{ sourceLabel(source.type) }}</h3>
+                  <strong>{{ source.available ? 'Available' : 'Unavailable' }}</strong>
+                  <p>Completeness: {{ source.completeness | titlecase }}</p>
+                  <p>
+                    {{
+                      source.timestamp
+                        ? (source.timestamp | date: 'medium')
+                        : 'Timestamp unavailable'
+                    }}
+                  </p>
+                  <span>{{
+                    source.freshness === 'STALE'
+                      ? 'Marked stale'
+                      : source.freshness === 'RECORDED'
+                        ? 'Timestamp recorded · age not calibrated'
+                        : 'Freshness unknown'
+                  }}</span>
+                </div>
+              } @empty {
+                <p>Source references were not provided.</p>
+              }
+            </div>
+            <nav class="recovery-links" aria-label="Update evidence">
+              <a routerLink="/app/github-analyzer">Update GitHub evidence →</a
+              ><a routerLink="/app/resume-analyzer">Analyze / select a resume →</a
+              ><a routerLink="/app/profile">Review career context →</a>
+            </nav>
+            <details class="info-disclosure">
+              <summary>How evidence confidence works</summary>
+              <div class="disclosure-body">
+                <p>
+                  Confidence describes the evidence for each skill, not your ability. See each skill
+                  below. The backend overall value is
+                  <strong>{{ analysis.evidenceConfidence || 'Unavailable' }}</strong
+                  >, reflecting the weakest required skill; it is not an average or a statistically
+                  calibrated percentage.
+                </p>
+                <p>
+                  Confidence considers evidence strength, independent sources, completeness,
+                  relevance, and recorded freshness. Missing evidence can make overall confidence
+                  Insufficient even when other skills have useful evidence.
+                </p>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- AI-Assisted Career Guidance Section -->
+        <details class="info-disclosure guidance">
+          <summary>{{ analysis.aiUsed ? 'AI-assisted guidance' : 'Guidance fallback' }}</summary>
+          <div class="disclosure-body">
+            <span class="eyebrow">Separate from evidence decisions</span>
+            <h2 id="guidance-title">
+              {{ analysis.aiUsed ? 'AI-assisted guidance' : 'Guidance fallback' }}
+            </h2>
+            @if (analysis.aiUsed && analysis.analysisSummary) {
+              <p class="narrative">{{ analysis.analysisSummary }}</p>
+            } @else {
+              <p>
+                AI guidance is unavailable for this snapshot. Review the deterministic skill
+                evidence and backend-supplied improvement priorities above; they remain available
+                without AI.
+              </p>
+            }
+            <p class="quarantine-note">
+              Guidance is explanatory. It cannot change classifications, coverage, confidence,
+              requirements, or source timestamps.
             </p>
           </div>
         </details>
-      </section>
 
-      <!-- AI-Assisted Career Guidance Section -->
-      <section class="panel guidance" aria-labelledby="guidance-title">
-        <span class="eyebrow">Separate from evidence decisions</span>
-        <h2 id="guidance-title">
-          {{ analysis.aiUsed ? 'AI-assisted guidance' : 'Guidance fallback' }}
-        </h2>
-        @if (analysis.aiUsed && analysis.analysisSummary) {
-          <p class="narrative">{{ analysis.analysisSummary }}</p>
-        } @else {
-          <p>
-            AI guidance is unavailable for this snapshot. Review the deterministic skill evidence
-            and backend-supplied improvement priorities above; they remain available without AI.
-          </p>
-        }
-        <p class="quarantine-note">
-          Guidance is explanatory. It cannot change classifications, coverage, confidence,
-          requirements, or source timestamps.
-        </p>
-      </section>
+        <!-- Scoring Methodology & Technical Provenance Section -->
 
-      <!-- Scoring Methodology & Technical Provenance Section -->
-      <section class="panel methodology">
         <details class="info-disclosure">
           <summary>Scoring methodology &amp; provenance</summary>
           <div class="disclosure-body">

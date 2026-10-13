@@ -173,7 +173,7 @@ describe('Skill Gap evidence presentation', () => {
     expect(text()).toContain('Optional');
     expect(text()).toContain('Claimed only');
     expect(text()).not.toContain('Injected AI claims');
-    expect(text()).toContain('do not provide inspected code');
+    expect(text()).toContain('do not inspect code implementation');
   });
   it('explains not-evidenced status without asserting inability and preserves false equivalences', () => {
     expect(component.skills.map((s) => s.name)).toEqual([
