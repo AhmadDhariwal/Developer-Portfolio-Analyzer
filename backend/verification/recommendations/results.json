@@ -1,0 +1,60 @@
+{
+  "status": "VERIFIED",
+  "branch": "codex/recommendations-backend-finalization",
+  "baseline": "843dcacc3cae83a7bb1bd4984251920e7b100671",
+  "full": {
+    "passed": 325,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 114598.8448
+  },
+  "focused": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0
+  },
+  "mongoHttpIntegration": {
+    "passed": 9,
+    "skipped": 0,
+    "realMongo": true,
+    "realHttp": true
+  },
+  "checks": {
+    "prettierWrite": "passed",
+    "prettierCheck": "passed",
+    "javascriptSyntax": "passed",
+    "gitWhitespace": "passed"
+  },
+  "changedSourceFiles": [
+    "backend/src/controllers/recommendationscontroller.js",
+    "backend/src/models/recommendation.js",
+    "backend/src/prompts/recommendationPrompt.js",
+    "backend/src/routes/recommendations.routes.js",
+    "backend/src/scripts/recommendationsReleaseVerify.js",
+    "backend/src/tests/recommendationsHardening.test.js",
+    "backend/src/tests/recommendationsPerfMeasure.js",
+    "backend/src/tests/recommendationsPerformance.test.js",
+    "backend/src/scripts/migrateRecommendationSnapshotIndex.js",
+    "backend/src/services/recommendationEngineService.js",
+    "backend/src/services/recommendationGenerationService.js",
+    "backend/src/services/recommendationHandoffService.js",
+    "backend/src/services/recommendationHistoryService.js",
+    "backend/src/services/recommendationNarrativeService.js",
+    "backend/src/services/recommendationService.js",
+    "backend/src/tests/recommendationEngine.test.js",
+    "backend/src/tests/recommendationGeneration.test.js",
+    "backend/src/tests/recommendationsMongo.integration.test.js",
+    "backend/src/utils/recommendationUtilities.js"
+  ],
+  "movedFiles": [],
+  "removedTaskArtifacts": [
+    "backend/src/scripts/finalizeRecommendations.tmp.cjs",
+    "backend/verification/recommendations/full-tests.log",
+    "backend/verification/recommendations/focused-tests.log"
+  ],
+  "limitations": [
+    "Paid live AI not called; adversarial and failure fixtures tested.",
+    "Live multi-host Redis not exercised; lease and fallback fixtures tested.",
+    "Frontend adoption is the next task."
+  ]
+}

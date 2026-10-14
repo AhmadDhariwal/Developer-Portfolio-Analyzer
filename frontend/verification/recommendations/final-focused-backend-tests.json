@@ -1,0 +1,27 @@
+{
+  "focused": true,
+  "exitCode": 0,
+  "concurrency": 1,
+  "database": "devinsight_rec_verify_e9ba929a6cdc",
+  "suiteFiles": [
+    "backend\\src\\tests\\recommendationEngine.test.js",
+    "backend\\src\\tests\\recommendationGeneration.test.js",
+    "backend\\src\\tests\\recommendationsHardening.test.js",
+    "backend\\src\\tests\\recommendationsMongo.integration.test.js",
+    "backend\\src\\tests\\recommendationsPerformance.test.js"
+  ],
+  "summary": {
+    "tests": 36,
+    "suites": 0,
+    "pass": 36,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 13776.6969
+  },
+  "failures": [],
+  "cleanup": {
+    "ownedDatabaseRemoved": true
+  }
+}

@@ -1,0 +1,134 @@
+<section class="resources dev-section" aria-labelledby="projects-title">
+  <div class="dev-section-header">
+    <h2 id="projects-title" class="dev-section-title">Projects & learning resources</h2>
+    <a routerLink="/app/courses" aria-label="Browse learning resources"
+      >Browse learning resources <span aria-hidden="true">↗</span></a
+    >
+  </div>
+  <p>
+    Explore the suggestions behind your action plan. Check course availability with the provider.
+  </p>
+  <div class="resource-grid">
+    <details class="resource-panel" *ngIf="result.projects.length">
+      <summary>
+        <span
+          ><strong>Suggested projects</strong
+          ><small>{{ result.projects.length }} recorded suggestions</small></span
+        >
+      </summary>
+      <div class="panel-body">
+        <details class="resource-item" *ngFor="let project of result.projects">
+          <summary>
+            {{ project.title
+            }}<span *ngIf="project.aiGenerated" class="attribution">AI-assisted</span>
+          </summary>
+          <p>{{ project.description }}</p>
+          <p *ngIf="project.whyThisProject && project.whyThisProject !== project.description">
+            <strong>Why:</strong> {{ project.whyThisProject }}
+          </p>
+          <p *ngIf="project.actionableNextStep">
+            <strong>Deliverable:</strong> {{ project.actionableNextStep }}
+          </p>
+          <p *ngIf="project.tech?.length">
+            <strong>Target technologies:</strong> {{ project.tech?.join(', ') }}
+          </p>
+          <p *ngIf="project.estimatedWeeks">Recorded estimate: {{ project.estimatedWeeks }}</p>
+          <ul>
+            <li *ngFor="let fact of project.evidence">{{ fact }}</li>
+          </ul>
+          <a *ngIf="safeRoute(project.startUrl) as route" [routerLink]="route"
+            >Review project source</a
+          >
+          <a
+            *ngIf="externalUrl(project.startUrl) as url"
+            [href]="url"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Explore resource (opens new tab)</a
+          >
+        </details>
+      </div>
+    </details>
+    <details class="resource-panel" *ngIf="result.technologies.length || supplementalGroups.length">
+      <summary>
+        <span
+          ><strong>Learning & development</strong
+          ><small>Recorded skills and next steps</small></span
+        >
+      </summary>
+      <div class="panel-body">
+        <details class="resource-item" *ngFor="let group of supplementalGroups">
+          <summary>
+            {{ group.title }} <span class="count">{{ group.items.length }}</span>
+          </summary>
+          <ul>
+            <li *ngFor="let item of group.items">{{ item }}</li>
+          </ul>
+        </details>
+        <details class="resource-item" *ngIf="result.technologies.length">
+          <summary>
+            Suggested technologies <span class="count">{{ result.technologies.length }}</span>
+          </summary>
+          <div *ngFor="let tech of result.technologies" class="technology">
+            <strong>{{ tech.name }}</strong>
+            <p *ngIf="tech.description">{{ tech.description }}</p>
+            <a routerLink="/app/courses" [queryParams]="{ skill: tech.name }"
+              >Find learning resources</a
+            >
+          </div>
+        </details>
+      </div>
+    </details>
+    <details
+      class="resource-panel"
+      *ngIf="result.careerPaths.length || result.roadmap?.timeline?.length"
+    >
+      <summary>
+        <span
+          ><strong>Career directions & timeline</strong><small>Recorded career context</small></span
+        >
+      </summary>
+      <div class="panel-body">
+        <div *ngFor="let path of result.careerPaths">
+          <h3>{{ path.title }}</h3>
+          <p>{{ path.description }}</p>
+          <ul>
+            <li *ngFor="let action of path.actionItems">{{ action }}</li>
+          </ul>
+          <a
+            *ngIf="externalUrl(path.exploreUrl) as url"
+            [href]="url"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Explore direction (opens new tab)</a
+          >
+        </div>
+        <div *ngFor="let phase of result.roadmap?.timeline">
+          <h3>{{ phase.label }}</h3>
+          <ul>
+            <li *ngFor="let item of phase.items">{{ item }}</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="resource-panel" *ngIf="result.aiSuggestions?.length">
+      <summary>
+        <span
+          ><strong>AI-assisted ideas</strong
+          ><small>Supplemental advice, separate from source facts</small></span
+        >
+      </summary>
+      <div class="panel-body">
+        <ul>
+          <li *ngFor="let idea of result.aiSuggestions">{{ idea.suggestion }}</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+  <p class="empty-note" *ngIf="!result.projects.length">
+    No additional project suggestion was returned for this context.
+  </p>
+  <p class="empty-note" *ngIf="result.aiUsed === false">
+    AI enrichment is not in use. Your evidence-based recommendations remain available.
+  </p>
+</section>
