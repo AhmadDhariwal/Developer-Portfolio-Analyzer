@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, finalize, map, shareReplay, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   Course,
+  CourseProgressUpdate,
+  CourseSprintResponse,
+  LearningStatus,
+  MyLearningResponse,
+  UserCourseProgress,
   CourseFilters,
   CoursePlatform,
   CoursesResponse,
@@ -35,6 +40,7 @@ export class CourseService {
     filters: Partial<CourseFilters> = {},
     page = 1,
     limit = 10,
+    options: { refresh?: boolean } = {},
   ): Observable<CoursesResponse> {
     const normalizedFilters = normalizeCourseFilters(filters);
     const safePage = Math.max(1, page);
@@ -43,9 +49,11 @@ export class CourseService {
       ...normalizedFilters,
       page: safePage,
       limit: safeLimit,
+      refresh: options.refresh || false,
     });
     let params = new HttpParams().set('page', String(safePage)).set('limit', String(safeLimit));
 
+    if (options.refresh) params = params.set('refresh', 'true');
     if (normalizedFilters.platform !== 'All')
       params = params.set('platform', normalizedFilters.platform);
     if (normalizedFilters.rating) params = params.set('rating', normalizedFilters.rating);
@@ -60,6 +68,40 @@ export class CourseService {
         .get<CoursesResponse>(`${this.baseUrl}/courses`, { params })
         .pipe(map((response) => this.normalizeResponse(response, normalizedFilters, safePage))),
     );
+  }
+
+  getMyLearning(status?: LearningStatus, page = 1, limit = 50): Observable<MyLearningResponse> {
+    let params = new HttpParams()
+      .set('page', String(Math.max(1, page)))
+      .set('limit', String(Math.max(1, Math.min(50, limit))));
+    if (status) params = params.set('status', status);
+    return this.http.get<MyLearningResponse>(`${this.baseUrl}/courses/my-learning`, { params });
+  }
+
+  saveProgress(courseId: string, update: CourseProgressUpdate): Observable<UserCourseProgress> {
+    // Never send provider metadata or ownership fields to the progress endpoint.
+    const body: CourseProgressUpdate = { status: update.status };
+    if (update.notes !== undefined) body.notes = update.notes;
+    if (update.progressPercent !== undefined) body.progressPercent = update.progressPercent;
+    return this.http.put<UserCourseProgress>(
+      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
+      body,
+    );
+  }
+
+  removeProgress(courseId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
+    );
+  }
+
+  addToSprint(courseId: string): Observable<CourseSprintResponse> {
+    return this.http
+      .post<CourseSprintResponse>(
+        `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/career-sprint`,
+        {},
+      )
+      .pipe(tap(() => this.cacheInvalidation.clearCareerSprintCaches()));
   }
 
   clearCache(): void {
@@ -137,6 +179,9 @@ export class CourseService {
     );
 
     return {
+      personalization: response?.personalization,
+      requestedSkills: response?.requestedSkills,
+      cacheMetadata: response?.cacheMetadata,
       courses,
       total,
       page,
@@ -179,20 +224,16 @@ export class CourseService {
       return null;
 
     const topics = Array.isArray(course?.topics)
-      ? [
-          ...new Set(course.topics.map((topic) => String(topic || '').trim()).filter(Boolean)),
-        ].slice(0, 5)
+      ? [...new Set(course.topics.map((topic) => String(topic || '').trim()).filter(Boolean))]
       : [];
-    const numeric = (value: unknown): number | undefined => {
+    const numeric = (value: unknown): number | null | undefined => {
+      if (value === null) return null;
+      if (value === undefined || value === '') return undefined;
       const parsed = Number(value);
-      return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
     };
 
     const rating = numeric(course?.rating);
-    const reviewCount = (() => {
-      const parsed = Number(course?.reviewCount);
-      return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : undefined;
-    })();
 
     return {
       id,
@@ -203,16 +244,23 @@ export class CourseService {
       description: String(course?.description || '').trim() || undefined,
       instructor: String(course?.instructor || '').trim() || undefined,
       rating,
-      reviewCount: reviewCount && reviewCount > 0 ? reviewCount : undefined,
+      reviewCount: numeric(course?.reviewCount),
       duration: String(course?.duration || '').trim() || undefined,
       durationHours: numeric(course?.durationHours),
-      level: course?.level || undefined,
+      level: course?.level,
       thumbnail: String(course?.thumbnail || '').trim() || undefined,
       popularity: numeric(course?.popularity),
-      relevanceScore: numeric(course?.relevanceScore),
-      finalScore: numeric(course?.finalScore),
+      relevanceScore: numeric(course?.relevanceScore) ?? undefined,
+      finalScore: numeric(course?.finalScore) ?? undefined,
       whyRecommended: String(course?.whyRecommended || '').trim() || undefined,
       platformColor: course?.platformColor,
+      provenance: course?.provenance,
+      engagementScore: numeric(course?.engagementScore),
+      viewCount: numeric(course?.viewCount),
+      likeCount: numeric(course?.likeCount),
+      matchedRequiredTargets: course?.matchedRequiredTargets,
+      matchedTargets: course?.matchedTargets,
+      matchedCareerSkills: course?.matchedCareerSkills,
     };
   }
 }

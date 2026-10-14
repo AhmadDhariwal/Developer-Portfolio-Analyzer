@@ -46,7 +46,14 @@ const samePartial = (left = null, right = null) =>
   JSON.stringify(left || null) === JSON.stringify(right || null);
 
 const ensureIndex = async (collection, index) => {
-  const existing = await collection.indexes();
+  let existing;
+  try {
+    existing = await collection.indexes();
+  } catch (error) {
+    // A fresh database has no namespace yet; createIndex safely creates it.
+    if (error.code !== 26 && error.codeName !== 'NamespaceNotFound') throw error;
+    existing = [];
+  }
   const byName = existing.find((item) => item.name === index.name);
   if (
     byName &&

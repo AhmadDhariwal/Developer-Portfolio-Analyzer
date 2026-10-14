@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CourseService } from './course.service';
+import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 describe('CourseService caching', () => {
   let service: CourseService;
@@ -218,7 +219,92 @@ describe('CourseService caching', () => {
 
     const response = await promise;
     expect(response.courses.map((course) => course.id)).toEqual(['ok', 'zero']);
-    expect(response.courses[0]?.rating).toBeUndefined();
-    expect(response.courses[1]?.rating).toBeUndefined();
+    expect(response.courses[0]?.rating).toBeNull();
+    expect(response.courses[1]?.rating).toBe(0);
+  });
+  it('preserves provenance, missing values, actual zero counts and backend ranking order', async () => {
+    const promise = firstValueFrom(service.getCourses({}, 1, 10, { refresh: true }));
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&refresh=true`).flush({
+      courses: [
+        {
+          id: 'yt_abcdefghijk',
+          title: 'Video',
+          platform: 'YouTube',
+          url: 'https://www.youtube.com/watch?v=abcdefghijk',
+          topics: [],
+          rating: null,
+          reviewCount: null,
+          viewCount: 0,
+          likeCount: 0,
+          engagementScore: 4.1,
+          provenance: {
+            source: 'youtube-api',
+            ratingSource: 'unavailable',
+            availability: 'observed',
+            metadataVerifiedAt: null,
+          },
+        },
+      ],
+      personalization: { status: 'career-context-only', limitation: 'No current evidence' },
+      cacheMetadata: { cacheLayer: 'mongo', loadedFromCache: true },
+    });
+    const result = await promise;
+    expect(result.courses[0]).toMatchObject({
+      rating: null,
+      reviewCount: null,
+      viewCount: 0,
+      likeCount: 0,
+      engagementScore: 4.1,
+    });
+    expect(result.personalization?.limitation).toBe('No current evidence');
+    expect(result.cacheMetadata?.cacheLayer).toBe('mongo');
+  });
+  it('uses the owned progress and Sprint contracts without metadata or ownership fields', async () => {
+    const list = firstValueFrom(service.getMyLearning('completed', 2, 10));
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses/my-learning?page=2&limit=10&status=completed`)
+      .flush({ courses: [], page: 2, totalPages: 2, total: 0 });
+    await list;
+    const save = firstValueFrom(
+      service.saveProgress('fb_a1', {
+        status: 'saved',
+        notes: 'Notes',
+        progressPercent: 0,
+        userId: 'forged',
+      } as Parameters<typeof service.saveProgress>[1]),
+    );
+    const put = httpMock.expectOne(`${environment.apiBaseUrl}/courses/fb_a1/progress`);
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ status: 'saved', notes: 'Notes', progressPercent: 0 });
+    put.flush({ courseId: 'fb_a1' });
+    await save;
+    const sprint = firstValueFrom(service.addToSprint('fb_a1'));
+    const post = httpMock.expectOne(`${environment.apiBaseUrl}/courses/fb_a1/career-sprint`);
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({});
+    post.flush({ alreadyAdded: true });
+    await sprint;
+    const remove = firstValueFrom(service.removeProgress('fb_a1'));
+    const deletion = httpMock.expectOne(`${environment.apiBaseUrl}/courses/fb_a1/progress`);
+    expect(deletion.request.method).toBe('DELETE');
+    deletion.flush(null, { status: 204, statusText: 'No Content' });
+    await remove;
+  });
+  it('invalidates a previously viewed Sprint only after a confirmed course handoff', async () => {
+    const clearSprint = vi.fn();
+    TestBed.inject(FrontendCacheInvalidationService).register('career-sprint', clearSprint);
+    const pending = firstValueFrom(service.addToSprint('fb_u2'));
+    expect(clearSprint).not.toHaveBeenCalled();
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses/fb_u2/career-sprint`)
+      .flush({ alreadyAdded: false });
+    await pending;
+    expect(clearSprint).toHaveBeenCalledOnce();
+    const failed = firstValueFrom(service.addToSprint('fb_u3')).catch(() => undefined);
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses/fb_u3/career-sprint`)
+      .flush({ message: 'Conflict' }, { status: 409, statusText: 'Conflict' });
+    await failed;
+    expect(clearSprint).toHaveBeenCalledOnce();
   });
 });

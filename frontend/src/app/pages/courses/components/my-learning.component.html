@@ -1,0 +1,60 @@
+<section aria-labelledby="my-learning-heading" [attr.aria-busy]="loading">
+  <div class="section-header">
+    <div>
+      <h2 id="my-learning-heading">My Learning</h2>
+      <p>Keep your learning plans, private notes and self-reported completion in one place.</p>
+    </div>
+    <button type="button" [disabled]="loading" (click)="refreshLearning()">
+      {{ loading ? 'Refreshing…' : 'Refresh My Learning' }}
+    </button>
+  </div>
+  <label class="status-filter"
+    >Show learning status<select
+      aria-label="Show learning status"
+      [(ngModel)]="status"
+      (ngModelChange)="changeFilter()"
+    >
+      <option value="">All saved courses</option>
+      <option value="saved">Saved for Later</option>
+      <option value="in_progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select></label
+  >
+  <p class="error" role="alert" *ngIf="error">
+    {{ error }}
+    <span *ngIf="records.length">Previously loaded learning records are still shown.</span
+    ><button type="button" (click)="load(failedPage)">Retry My Learning</button>
+  </p>
+  <p role="status" *ngIf="loading && !records.length">Loading your learning records…</p>
+  <div class="empty" *ngIf="!loading && !error && !records.length">
+    <h3>{{ status ? 'No courses in this status' : 'Your learning list starts here' }}</h3>
+    <p>
+      {{
+        status
+          ? 'Choose another status or save a course from Discover Courses.'
+          : 'Save a course to return to it, add notes or plan your next Sprint.'
+      }}
+    </p>
+    <button type="button" (click)="discover.emit()">Discover Courses</button>
+  </div>
+  <p class="count" *ngIf="records.length">
+    Showing {{ records.length }} of {{ total }} saved courses
+  </p>
+  <div class="course-grid">
+    <app-course-card
+      *ngFor="let record of records; trackBy: trackRecord"
+      [course]="record.course"
+      [progress]="learning.records()[record.courseId] || record"
+      [action]="learning.actions()[record.courseId] || {}"
+      [learningReady]="learning.ready()"
+      (progressChange)="learning.save(record.courseId, $event)"
+      (remove)="learning.remove(record.courseId)"
+      (sprint)="learning.addToSprint(record.courseId)"
+    />
+  </div>
+  <div class="load-more" *ngIf="records.length && page < totalPages">
+    <button type="button" [disabled]="loading" (click)="load(page + 1)">
+      {{ loading ? 'Loading…' : 'Load more saved courses' }}
+    </button>
+  </div>
+</section>

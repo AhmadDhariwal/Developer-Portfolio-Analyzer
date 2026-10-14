@@ -1,94 +1,164 @@
 <article
   class="course-card"
-  (click)="openCourse()"
-  role="button"
-  tabindex="0"
-  (keydown.enter)="openCourse()"
-  [style.--platform-glow]="platformColors.bg"
-  [style.--platform-accent]="platformColors.accent"
+  [attr.aria-label]="course.title"
+  [attr.aria-busy]="action.pending || false"
 >
-  <div class="card-thumb">
-    <img
-      *ngIf="course.thumbnail && !thumbnailError"
-      [src]="course.thumbnail"
-      [alt]="course.title"
-      (error)="onThumbnailError()"
-      loading="lazy"
-    />
-
-    <div
-      *ngIf="!course.thumbnail || thumbnailError"
-      class="thumb-fallback"
-      [style.background]="'linear-gradient(135deg, ' + platformColors.bg + 'd9, ' + platformColors.accent + ')'"
-    >
-      <span class="thumb-initial">{{ course.platform.charAt(0) }}</span>
-      <span class="thumb-platform-name">{{ course.platform }}</span>
+  <div class="course-heading">
+    <div class="thumbnail" aria-hidden="true">
+      <img
+        *ngIf="thumbnail && !thumbnailError; else fallback"
+        [src]="thumbnail"
+        alt=""
+        loading="lazy"
+        (error)="thumbnailError = true"
+      />
+      <ng-template #fallback
+        ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path
+            d="M4 4h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v15h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4zM12 5v15"
+          /></svg
+      ></ng-template>
     </div>
-
-    <div class="thumb-top">
-      <span class="platform-chip" [ngClass]="platformClass">{{ course.platform }}</span>
-      <span class="level-badge" *ngIf="course.level" [ngClass]="levelClass">{{ course.level }}</span>
-    </div>
-
-    <div class="thumb-score" *ngIf="course.relevanceScore">
-      <span class="score-label">{{ relevanceLabel }}</span>
-      <strong>{{ course.relevanceScore }}/100</strong>
+    <div>
+      <p class="provider">
+        {{ course.platform }}<span *ngIf="course.instructor"> · {{ course.instructor }}</span>
+      </p>
+      <h3>{{ course.title }}</h3>
     </div>
   </div>
-
-  <div class="card-body">
-    <div class="meta-row">
-      <span class="duration-chip" *ngIf="course.duration">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        {{ course.duration }}
-      </span>
-      <span class="score-chip" *ngIf="course.finalScore">Score {{ course.finalScore }}</span>
-    </div>
-
-    <h3 class="course-title" [title]="course.title">{{ course.title }}</h3>
-
-    <p class="instructor" *ngIf="course.instructor">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-      {{ course.instructor }}
+  <p class="reason" *ngIf="course.whyRecommended">{{ course.whyRecommended }}</p>
+  <p class="topics" *ngIf="course.topics.length">{{ course.topics.join(' · ') }}</p>
+  <div class="metadata">
+    <span>{{ course.level || 'Level not supplied' }}</span
+    ><span>{{ course.duration || 'Duration not supplied' }}</span>
+    <span *ngIf="providerRating; else noReview"
+      >{{ course.rating | number: '1.1-1' }}/5 provider rating<span
+        *ngIf="course.reviewCount != null"
+      >
+        · {{ course.reviewCount | number }} reviews</span
+      ></span
+    >
+    <ng-template #noReview><span>Provider rating unavailable</span></ng-template>
+    <span *ngIf="course.viewCount != null"
+      >{{ course.viewCount | number }} views<span *ngIf="course.likeCount != null">
+        · {{ course.likeCount | number }} likes</span
+      ></span
+    >
+    <span *ngIf="course.engagementScore != null"
+      >{{ course.engagementScore | number: '1.1-1' }}/5 derived engagement · not a review
+      rating</span
+    >
+  </div>
+  <div class="course-actions">
+    <a
+      *ngIf="externalUrl; else unavailable"
+      class="primary"
+      [href]="externalUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      [attr.aria-label]="'Open course: ' + course.title + ' (new tab)'"
+      >Open Course <span aria-hidden="true">↗</span></a
+    >
+    <ng-template #unavailable><span class="metadata">Provider link unavailable</span></ng-template>
+    <button
+      *ngIf="!progress"
+      type="button"
+      [disabled]="busy"
+      (click)="progressChange.emit({ status: 'saved' })"
+    >
+      {{ action.pending ? 'Saving…' : 'Save for Later' }}
+    </button>
+    <label *ngIf="progress" class="status-control"
+      >Learning status<select
+        aria-label="Learning status"
+        [value]="progress.status"
+        [disabled]="busy"
+        (change)="changeStatus($event)"
+      >
+        <option value="saved">Saved for Later</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select></label
+    >
+  </div>
+  <div class="learning-details" *ngIf="progress">
+    <p class="metadata" *ngIf="progress.progressPercent != null">
+      {{ progress.progressPercent }}% · user-entered progress
     </p>
-
-    <p class="description" *ngIf="course.description">{{ course.description }}</p>
-
-    <p class="why-recommended" *ngIf="course.whyRecommended">
-      <span>Why recommended</span>
-      {{ course.whyRecommended }}
+    <p class="completion" *ngIf="progress.status === 'completed'">
+      Completed · self-reported<span *ngIf="progress.completedAt">
+        · {{ progress.completedAt | date: 'mediumDate' }}</span
+      >
     </p>
-
-    <div class="topics" *ngIf="course.topics.length">
-      <span class="topic-tag" *ngFor="let topic of course.topics.slice(0, 4)">{{ topic }}</span>
-    </div>
-
-    <div class="card-footer">
-      <div class="rating-block" *ngIf="course.rating || course.reviewCount">
-        <span class="rating-value" *ngIf="course.rating">{{ course.rating.toFixed(1) }}</span>
-        <span class="stars" *ngIf="course.rating">
-          <span
-            *ngFor="let star of starsArray; let i = index"
-            class="star"
-            [ngClass]="getStarClass(i)"
-          ></span>
-        </span>
-        <span class="review-count" *ngIf="course.reviewCount">{{ formatReviews(course.reviewCount) }} reviews</span>
-      </div>
-
-      <button class="btn-view" (click)="$event.stopPropagation(); openCourse()">
-        View Course
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
+    <p class="metadata" *ngIf="progress.status === 'completed'">
+      Completion does not verify proficiency or create a public credential.
+    </p>
+    <div class="sprint-actions">
+      <a *ngIf="action.sprintAdded" routerLink="/app/career-sprint">Open Career Sprint →</a
+      ><button
+        *ngIf="!action.sprintAdded && progress.status !== 'completed'"
+        type="button"
+        [disabled]="busy"
+        (click)="sprint.emit()"
+      >
+        {{ action.pending ? 'Please wait…' : 'Add to Sprint' }}
       </button>
     </div>
+    <details>
+      <summary>Notes and progress</summary>
+      <form (ngSubmit)="saveDetails()">
+        <label
+          >Private learning notes<textarea
+            name="notes"
+            [(ngModel)]="notes"
+            maxlength="2000"
+            rows="3"
+            [disabled]="busy"
+          ></textarea>
+        </label>
+        <label
+          >Progress % (optional, user-entered)<input
+            type="number"
+            name="percent"
+            [(ngModel)]="percent"
+            min="0"
+            max="100"
+            step="any"
+            [disabled]="busy"
+        /></label>
+        <p class="metadata">
+          {{ notes.length }}/2000 characters. Leave progress empty when unknown.
+        </p>
+        <div class="course-actions">
+          <button type="submit" [disabled]="busy || !validProgress">Save notes and progress</button
+          ><button type="button" [disabled]="busy" (click)="remove.emit()">
+            Remove from My Learning
+          </button>
+        </div>
+      </form>
+    </details>
   </div>
+  <p class="feedback" [class.error]="action.error" *ngIf="action.message">{{ action.message }}</p>
+  <details class="source-details">
+    <summary>Course and source details</summary>
+    <p *ngIf="course.description">{{ course.description }}</p>
+    <p>
+      Availability:
+      {{
+        course.provenance?.availability === 'observed'
+          ? 'observed by provider'
+          : 'unverified; check the provider'
+      }}.
+    </p>
+    <p *ngIf="course.provenance">
+      Source: {{ course.provenance.source
+      }}<span *ngIf="course.provenance.metadataVerifiedAt">
+        · Metadata observed {{ course.provenance.metadataVerifiedAt | date: 'medium' }}</span
+      >
+    </p>
+    <p *ngIf="course.finalScore != null">
+      Ranking score: {{ course.finalScore | number: '1.0-2' }}. This orders recommendations; it is
+      not a proficiency or readiness score.
+    </p>
+  </details>
 </article>

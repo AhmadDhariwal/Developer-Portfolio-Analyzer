@@ -1,250 +1,212 @@
-<div class="courses-page">
-  <header class="page-header">
-    <div class="header-copy">
-      <div class="title-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
-      </div>
-
-      <div class="header-text">
-        <h1>Learning Hub</h1>
-        <p>Personalized courses based on your analysis, stack, and current growth gaps.</p>
-      </div>
+<div class="courses-page dev-page">
+  <header class="dev-page-header">
+    <div>
+      <h1>Learning Hub</h1>
+      <p class="description">
+        Find relevant courses and turn learning plans into your next practical step.
+      </p>
+      <p class="context" *ngIf="hasCareerContext">
+        {{ currentCareerStack }} · {{ currentExperienceLevel }}
+      </p>
+      <p class="context" *ngIf="!hasCareerContext">
+        Set your career context to improve course discovery.
+        <a routerLink="/app/profile">Open profile</a>
+      </p>
     </div>
-
     <div class="header-actions">
-      <div class="header-stats" *ngIf="!isLoading && totalCourses > 0">
-        <div class="stat-chip">
-          <span class="stat-label">Courses</span>
-          <strong>{{ totalCourses }}</strong>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-label">Page</span>
-          <strong>{{ currentPage || 1 }}/{{ totalPages }}</strong>
-        </div>
-        <div class="stat-chip accent" *ngIf="recommendedBasedOn?.fromCache">
-          <span class="stat-label">Source</span>
-          <strong>Cached pool</strong>
-        </div>
-      </div>
-
-      <button class="secondary-button" type="button" (click)="refreshCourses()" [disabled]="isLoading || isLoadingMore || isRefreshing">
-        {{ isRefreshing ? 'Refreshing...' : 'Refresh Courses' }}
-      </button>
-
-      <button class="btn-mobile-filters" type="button" (click)="toggleMobileFilters()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
-        Filters
-        <span class="mobile-filter-count" *ngIf="hasActiveFilters">{{ activeFilterChips.length }}</span>
-      </button>
+      <button
+        type="button"
+        [disabled]="isLoading || isLoadingMore || isRefreshing"
+        (click)="refreshCourses()"
+      >
+        {{ isRefreshing ? 'Refreshing…' : 'Refresh courses' }}</button
+      ><span class="metadata" *ngIf="loadedAt"
+        >Loaded {{ loadedAt | date: 'shortTime'
+        }}{{ recommendedBasedOn?.fromCache ? ' · cached source pool' : '' }}</span
+      >
     </div>
   </header>
-
-  <section class="insight-strip" [class.with-filters]="hasActiveFilters" *ngIf="recommendedBasedOn">
-    <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters" [class.mobile-collapsed]="!isInsightsExpanded">
-      <div class="insight-header">
-        <div>
-          <span class="eyebrow">Recommended Based On</span>
-          <h2>Your current developer context</h2>
-        </div>
-        <div class="insight-actions">
-          <span class="cache-pill" *ngIf="recommendedBasedOn.fromCache">Cached</span>
-          <button class="insight-toggle" type="button" (click)="toggleInsights()" [attr.aria-expanded]="isInsightsExpanded">
-            {{ isInsightsExpanded ? 'Hide context' : 'Show context' }}
-          </button>
-        </div>
-      </div>
-
-      <div class="insight-details">
-        <p class="insight-summary">{{ recommendationSummary }}</p>
-
-        <div class="context-grid">
-          <div class="context-pill">
-            <span>Career Stack</span>
-            <strong>{{ recommendedBasedOn.careerStack }}</strong>
-          </div>
-          <div class="context-pill">
-            <span>Experience</span>
-            <strong>{{ recommendedBasedOn.experienceLevel }}</strong>
-          </div>
-          <div class="context-pill wide" *ngIf="recommendedBasedOn.skillGapsUsed.length">
-            <span>Top Skill Gaps</span>
-            <strong>{{ recommendedBasedOn.skillGapsUsed.join(', ') }}</strong>
-          </div>
-        </div>
-      </div>
-    </article>
-
-    <article class="insight-card filter-chip-card" *ngIf="hasActiveFilters">
-      <div class="insight-header compact">
-        <div>
-          <span class="eyebrow">Active Filters</span>
-          <h2>Narrowed recommendations</h2>
-        </div>
-        <button class="link-button" type="button" (click)="onFiltersReset()">Reset all</button>
-      </div>
-
-      <div class="active-filter-list">
-        <button
-          *ngFor="let chip of activeFilterChips"
-          class="active-filter-chip"
-          type="button"
-          (click)="clearFilter(chip.key)"
-        >
-          <span>{{ chip.label }}</span>
-          <strong>{{ chip.value }}</strong>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-    </article>
+  <section class="overview" aria-labelledby="overview-heading">
+    <h2 id="overview-heading">Learning for your next step</h2>
+    <p>
+      {{
+        recommendationSummary ||
+          'Explore courses matched to your career context and available skill evidence.'
+      }}
+    </p>
+    <p class="target-skills" *ngIf="recommendedBasedOn?.skillGapsUsed?.length">
+      <strong>Target skills:</strong> {{ recommendedBasedOn?.skillGapsUsed?.join(' · ') }}
+    </p>
+    <p class="metadata">
+      {{
+        personalization?.limitation ||
+          'Recommendations depend on available career and skill evidence. Missing evidence does not establish inability.'
+      }}
+    </p>
+    <p class="metadata" *ngIf="sourceNotice">{{ sourceNotice }}</p>
   </section>
-
-  <div class="source-notice" *ngIf="sourceNotice" [class.fallback]="isFallbackSource" role="status">
-    <strong>{{ isFallbackSource ? 'Provider fallback active' : 'Course source' }}</strong>
-    <span>{{ sourceNotice }}</span>
+  <div class="view-tabs" role="group" aria-label="Learning Hub views">
+    <button type="button" [attr.aria-pressed]="view === 'discover'" (click)="view = 'discover'">
+      Discover Courses</button
+    ><button type="button" [attr.aria-pressed]="view === 'learning'" (click)="view = 'learning'">
+      My Learning
+    </button>
   </div>
-
-  <div class="source-notice fallback" *ngIf="!isLoading && errorMessage && allCourses.length > 0" role="alert">
-    <strong>Refresh unavailable</strong>
-    <span>{{ errorMessage }} Previous recommendations are still shown.</span>
-    <button class="link-button" type="button" (click)="retryLoad()">Retry</button>
+  <p class="learning-notice" role="status" *ngIf="learning.loading()">
+    Checking saved-course status…
+  </p>
+  <div class="error-notice" role="alert" *ngIf="learning.error()">
+    <p>
+      {{ learning.error() }} Saved-course actions are unavailable until your learning list loads.
+    </p>
+    <button type="button" (click)="learning.load()">Retry saved courses</button
+    ><a routerLink="/auth/login" *ngIf="learning.error().includes('session')">Sign in</a>
   </div>
-
-  <div class="courses-layout">
-    <aside class="filters-column" [class.mobile-open]="isMobileFiltersOpen">
-      <div class="filters-overlay" (click)="toggleMobileFilters()"></div>
-      <div class="filters-inner">
-        <button class="drawer-close" type="button" (click)="toggleMobileFilters()" aria-label="Close filters">Close</button>
-        <app-course-filters
-          [initialFilters]="activeFilters"
-          [isApplying]="isLoading || isLoadingMore || isRefreshing"
-          (filtersChange)="onFiltersChange($event)"
-          (filtersReset)="onFiltersReset()"
-        ></app-course-filters>
+  <p class="announcement" role="status" aria-live="polite">{{ learning.announcement() }}</p>
+  <section
+    *ngIf="view === 'discover'"
+    aria-labelledby="discover-heading"
+    [attr.aria-busy]="isLoading || isRefreshing || isLoadingMore"
+  >
+    <div class="section-header">
+      <div>
+        <h2 id="discover-heading">Discover Courses</h2>
+        <p class="metadata">
+          Provider destinations open in a new tab. Confirm current details with the provider.
+        </p>
       </div>
-    </aside>
-
-    <section class="courses-content">
-      <ng-container *ngIf="isLoading">
-        <div class="loading-header">
-          <div class="shimmer-block large"></div>
-          <div class="shimmer-block small"></div>
-        </div>
-
-        <div class="courses-grid">
-          <div class="skeleton-card" *ngFor="let item of skeletonItems">
-            <div class="sk-thumb"></div>
-            <div class="sk-body">
-              <div class="sk-line sk-short"></div>
-              <div class="sk-line sk-long"></div>
-              <div class="sk-line sk-medium"></div>
-              <div class="sk-line sk-long"></div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <div class="error-state" *ngIf="!isLoading && errorMessage && allCourses.length === 0">
-        <div class="state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-        </div>
-        <h3>Unable to load recommendations</h3>
-        <p>{{ errorMessage }}</p>
-        <button class="primary-button" type="button" (click)="retryLoad()">Try again</button>
+      <button
+        #filterTrigger
+        type="button"
+        class="mobile-filter-trigger"
+        aria-haspopup="dialog"
+        [attr.aria-expanded]="isMobileFiltersOpen"
+        (click)="openMobileFilters()"
+      >
+        Filters{{ hasActiveFilters ? ' (' + activeFilterChips.length + ')' : '' }}
+      </button>
+    </div>
+    <app-course-filters
+      class="desktop-filters"
+      [initialFilters]="activeFilters"
+      [isApplying]="isLoading || isRefreshing"
+      (filtersChange)="onFiltersChange($event)"
+      (filtersReset)="onFiltersReset()"
+    />
+    <div class="active-filters" *ngIf="hasActiveFilters" aria-label="Applied filters">
+      <button
+        *ngFor="let chip of activeFilterChips"
+        type="button"
+        [attr.aria-label]="'Remove ' + chip.label + ' filter: ' + chip.value"
+        (click)="clearFilter(chip.key)"
+      >
+        {{ chip.label }}: {{ chip.value }} <span aria-hidden="true">×</span></button
+      ><button type="button" (click)="onFiltersReset()">Clear all</button>
+    </div>
+    <div class="error-notice" role="alert" *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+      <p *ngIf="allCourses.length">Previous recommendations are still shown.</p>
+      <button type="button" (click)="retryLoad()">Retry courses</button
+      ><a *ngIf="errorMessage.includes('session')" routerLink="/auth/login">Sign in</a>
+    </div>
+    <p *ngIf="isRefreshing" role="status" class="metadata">
+      Refreshing recommendations. Current courses remain available.
+    </p>
+    <div class="course-grid skeleton-grid" *ngIf="isLoading" aria-label="Loading courses">
+      <div class="skeleton" *ngFor="let item of skeletonItems" aria-hidden="true">
+        <span></span><span></span><span></span>
       </div>
-
-      <div class="empty-state" *ngIf="!isLoading && !errorMessage && allCourses.length === 0 && currentPage > 0">
-        <div class="state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-          </svg>
-        </div>
-        <h3>No courses match these filters</h3>
-        <p>Try a broader topic, switch the platform, or clear filters to reload your default recommendations.</p>
-        <button class="primary-button" type="button" (click)="onFiltersReset()">Reset Filters</button>
+    </div>
+    <div class="error-state" *ngIf="errorMessage && allCourses.length === 0">
+      <h3>Courses could not be loaded</h3>
+      <p>Your filters are preserved. Retry when the service is available.</p>
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && !errorMessage && !allCourses.length">
+      <h3>
+        {{ hasActiveFilters ? 'No courses match these filters' : 'No courses available yet' }}
+      </h3>
+      <p>
+        {{
+          hasActiveFilters
+            ? 'Try a broader topic or clear filters. Courses with unknown ratings or durations may be excluded.'
+            : 'Refresh later or review your career context.'
+        }}
+      </p>
+      <button *ngIf="hasActiveFilters" type="button" (click)="onFiltersReset()">
+        Clear filters
+      </button>
+    </div>
+    <p class="result-count metadata" *ngIf="allCourses.length" role="status">
+      Showing {{ displayedCourses.length }} of {{ totalCourses }} courses · backend recommendation
+      order
+    </p>
+    <div class="course-grid" *ngIf="!isLoading">
+      <app-course-card
+        *ngFor="let course of displayedCourses; trackBy: trackById"
+        [course]="course"
+        [progress]="learning.records()[course.id] || null"
+        [action]="learning.actions()[course.id] || {}"
+        [learningReady]="learning.ready()"
+        (progressChange)="learning.save(course.id, $event)"
+        (remove)="learning.remove(course.id)"
+        (sprint)="learning.addToSprint(course.id)"
+      />
+    </div>
+    <div class="load-more" *ngIf="canShowLoadMore">
+      <button type="button" [disabled]="isLoadingMore" (click)="loadMore()">
+        {{ isLoadingMore ? 'Loading more…' : 'Load more courses' }}
+      </button>
+    </div>
+  </section>
+  <app-my-learning *ngIf="view === 'learning'" (discover)="view = 'discover'" />
+  <details class="methodology">
+    <summary>How recommendations and learning records work</summary>
+    <p>
+      Courses are ranked by the backend using career context, target skills and available evidence.
+      Ranking scores describe ordering, not readiness or proficiency. Skill evidence may be
+      incomplete or unavailable.
+    </p>
+    <p>
+      Source pools may be cached. “Loaded” shows when this page received a response, not when your
+      skill evidence or a provider changed. Refresh requests a new source pool where provider
+      availability permits. Curated courses remain available when an external provider cannot
+      respond.
+    </p>
+    <p>
+      Provider reviews and derived video engagement are separate signals. Unknown metadata stays
+      unknown. Curated availability is unverified; check the provider before enrolling.
+    </p>
+    <p>
+      Saved status, notes and optional percentages are your own records. Completion is self-reported
+      and does not verify skills, create certificates or publish portfolio credentials. Save a
+      course before adding it to Career Sprint.
+    </p>
+  </details>
+  <nav class="related-links" aria-label="Related learning tools">
+    <a routerLink="/app/skill-gap">Skill Gap Analyzer →</a
+    ><a routerLink="/app/recommendations">Recommendations →</a
+    ><a routerLink="/app/career-sprint">Career Sprint →</a>
+  </nav>
+  <dialog
+    #filterDialog
+    class="filter-dialog"
+    aria-labelledby="filter-heading"
+    (keydown)="trapFilterFocus($event)"
+    (cancel)="cancelFilters($event)"
+    (click)="backdropFilters($event)"
+  >
+    <div class="dialog-content">
+      <div class="section-header">
+        <h2 id="filter-heading">Course filters</h2>
+        <button type="button" autofocus (click)="closeMobileFilters()">Close filters</button>
       </div>
-
-      <ng-container *ngIf="!isLoading && displayedCourses.length > 0 && (!errorMessage || allCourses.length > 0)">
-        <div class="section-header">
-          <div>
-            <span class="eyebrow">Recommendations</span>
-            <h2>Suggested learning path</h2>
-          </div>
-
-          <div class="section-meta">
-            <span>Showing {{ displayedCourses.length }} of {{ totalCourses }}</span>
-            <span *ngIf="hasActiveFilters">Filtered results</span>
-            <span *ngIf="isRefreshing">Refreshing…</span>
-          </div>
-        </div>
-
-        <div class="progress-strip" *ngIf="totalCourses > 0">
-          <div class="progress-fill" [style.width.%]="(displayedCourses.length / totalCourses) * 100"></div>
-        </div>
-
-        <div class="courses-grid">
-          <app-course-card
-            *ngFor="let course of displayedCourses; trackBy: trackById"
-            [course]="course"
-          ></app-course-card>
-        </div>
-
-        <div class="load-more-row" *ngIf="canShowLoadMore || isLoadingMore">
-          <button
-            class="primary-button load-more-button"
-            type="button"
-            (click)="loadMore()"
-            [disabled]="isLoadingMore || isRefreshing"
-          >
-            <ng-container *ngIf="isLoadingMore">
-              <span class="spinner"></span>
-              Fetching more courses...
-            </ng-container>
-
-            <ng-container *ngIf="!isLoadingMore && hasHiddenCourses">
-              Show {{ hiddenCount }} more
-            </ng-container>
-
-            <ng-container *ngIf="!isLoadingMore && hasMorePages">
-              Load more courses
-            </ng-container>
-          </button>
-
-          <p class="load-more-hint">
-            {{ displayedCourses.length }} shown · {{ totalCourses }} total · page {{ currentPage || 1 }}/{{ totalPages }}
-          </p>
-        </div>
-
-        <div class="all-loaded" *ngIf="!canShowLoadMore && !isLoadingMore && currentPage > 0 && totalCourses > 0">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          All available recommendations are loaded
-        </div>
-      </ng-container>
-
-      <div class="loading-more-grid" *ngIf="isLoadingMore">
-        <div class="skeleton-card" *ngFor="let item of skeletonItems">
-          <div class="sk-thumb"></div>
-          <div class="sk-body">
-            <div class="sk-line sk-short"></div>
-            <div class="sk-line sk-long"></div>
-            <div class="sk-line sk-medium"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+      <app-course-filters
+        *ngIf="isMobileFiltersOpen"
+        [initialFilters]="activeFilters"
+        [isApplying]="isLoading || isRefreshing"
+        (filtersChange)="onFiltersChange($event)"
+        (filtersReset)="onFiltersReset()"
+      />
+    </div>
+  </dialog>
 </div>

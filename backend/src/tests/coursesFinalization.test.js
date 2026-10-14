@@ -311,3 +311,41 @@ test('career-only fallback ranks actual track topics ahead of unrelated subjects
   assert.deepEqual(ranked[0].matchedCareerSkills, ['React']);
   assert.match(ranked[0].whyRecommended, /React.*Frontend/);
 });
+
+test('course migration creates indexes on a fresh namespace and remains idempotent', async () => {
+  const { migrateCourseIndexes } = require('../scripts/migrateCourseIndexes');
+  const indexes = [];
+  const collection = {
+    indexes: async () => {
+      if (!indexes.length) {
+        const error = new Error('namespace missing');
+        error.code = 26;
+        throw error;
+      }
+      return indexes;
+    },
+    createIndex: async (key, options) => indexes.push({ key, ...options }),
+    dropIndex: async () => assert.fail('Fresh migration must not drop indexes'),
+  };
+  const first = await migrateCourseIndexes({ collection });
+  assert.ok(first.results.every((item) => item.action === 'created'));
+  const repeated = await migrateCourseIndexes({ collection });
+  assert.ok(repeated.results.every((item) => item.action === 'exists'));
+  assert.equal(indexes.length, 2);
+});
+
+test('course migration does not conceal genuine index-read failures', async () => {
+  const { migrateCourseIndexes } = require('../scripts/migrateCourseIndexes');
+  await assert.rejects(
+    migrateCourseIndexes({
+      collection: {
+        indexes: async () => {
+          const error = new Error('not authorized');
+          error.code = 13;
+          throw error;
+        },
+      },
+    }),
+    /not authorized/,
+  );
+});

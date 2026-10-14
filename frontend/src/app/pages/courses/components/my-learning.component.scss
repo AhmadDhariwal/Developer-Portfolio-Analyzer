@@ -1,0 +1,87 @@
+@use '../../../shared/styles/developer-ui' as developer;
+:host {
+  scroll-margin-top: 80px;
+  display: block;
+  min-width: 0;
+}
+h2 {
+  @include developer.section-title;
+}
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+p {
+  color: var(--text-secondary);
+  margin: 6px 0 14px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+button,
+select {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: 500 13px/1.5 var(--font-sans);
+  max-width: 100%;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.status-filter {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  max-width: 300px;
+  margin: 12px 0;
+}
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.count {
+  font-size: 12px;
+}
+.error {
+  color: var(--color-danger-text);
+}
+.error button {
+  margin: 8px;
+}
+.empty {
+  border-block: 1px solid var(--border-color);
+  padding: 24px 0;
+  margin: 20px 0;
+}
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+:is(button, select):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+@media (min-width: 1500px) {
+  .course-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1024px) {
+  .course-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
