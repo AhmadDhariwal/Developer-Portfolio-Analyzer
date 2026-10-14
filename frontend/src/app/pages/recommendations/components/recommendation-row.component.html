@@ -1,0 +1,113 @@
+<article class="recommendation-row" [class.featured]="featured">
+  <span class="rank" *ngIf="rank !== null" aria-hidden="true"
+    >{{ rank! < 10 ? '0' : '' }}{{ rank }}</span
+  >
+  <div class="row-body">
+    <div class="row-heading">
+      <h3>{{ card.title }}</h3>
+      <div class="badges">
+        <span class="priority" [class]="'priority ' + priorityTone" *ngIf="card.priority"
+          >{{ card.priority }} priority</span
+        >
+        <span class="category">{{ categoryLabel(card.category) }}</span>
+        <span class="category" *ngIf="card.aiGenerated">AI-assisted</span>
+      </div>
+    </div>
+    <div class="row-content">
+      <div class="field reason" *ngIf="featured">
+        <span class="field-label">Why this matters</span>
+        <p>{{ card.reason || card.description }}</p>
+      </div>
+      <div class="field next-step" *ngIf="card.actionableNextStep">
+        <span class="field-label">Next action</span>
+        <p>{{ card.actionableNextStep }}</p>
+      </div>
+    </div>
+    <div class="row-actions">
+      <button
+        type="button"
+        class="sprint-action"
+        *ngIf="sprintEnabled && !sprintState?.success"
+        (click)="sprint.emit(card)"
+        [disabled]="sprintState?.loading"
+      >
+        {{ sprintState?.loading ? 'Adding…' : 'Add to Career Sprint' }}
+      </button>
+      <a *ngIf="sprintState?.success" class="sprint-action added" routerLink="/app/career-sprint"
+        >Open Career Sprint <span aria-hidden="true">↗</span></a
+      >
+      <a class="source-action" *ngIf="reviewRoute as route" [routerLink]="route">Review source</a>
+      <a
+        *ngIf="card.targetSkill"
+        routerLink="/app/courses"
+        [queryParams]="{ skill: card.targetSkill }"
+        [attr.aria-label]="'Browse courses for ' + card.targetSkill"
+        >Browse courses</a
+      >
+      <ng-container *ngIf="safeRoute(card.actionUrl) as route"
+        ><a
+          *ngIf="route !== reviewRoute && (!card.targetSkill || route !== '/app/courses')"
+          [routerLink]="route"
+          >{{ card.actionLabel || 'Review next step' }}</a
+        ></ng-container
+      >
+      <a
+        *ngIf="externalUrl(card.actionUrl) as url"
+        [href]="url"
+        target="_blank"
+        rel="noopener noreferrer"
+        >{{ card.actionLabel || 'Visit resource' }} ↗<span class="visually-hidden">
+          (opens new tab)</span
+        ></a
+      >
+    </div>
+    <p
+      *ngIf="sprintState?.message"
+      class="sprint-message"
+      [class.success]="sprintState?.success"
+      [class.failure]="!sprintState?.success && !sprintState?.loading"
+      role="status"
+    >
+      {{ sprintState?.message }}
+    </p>
+    <details class="evidence">
+      <summary>
+        {{ featured ? 'Supporting evidence' : 'Details & evidence'
+        }}<span class="evidence-preview" *ngIf="featured && card.evidence?.length">{{
+          card.evidence?.[0]
+        }}</span>
+      </summary>
+      <div class="evidence-content">
+        <div *ngIf="!featured">
+          <span class="field-label">Why this matters</span>
+          <p>{{ card.reason || card.description }}</p>
+          <p *ngIf="card.actionableNextStep">
+            <strong>Full next action:</strong> {{ card.actionableNextStep }}
+          </p>
+        </div>
+        <span class="field-label">Recorded facts</span>
+        <ul *ngIf="(card.evidence?.length || 0) > (featured ? 1 : 0)">
+          <li *ngFor="let fact of card.evidence | slice: (featured ? 1 : 0)">{{ fact }}</li>
+        </ul>
+        <ng-container *ngIf="!card.evidence?.length"
+          ><p>
+            Supporting evidence was not included in this result. Inspect the source before acting.
+          </p></ng-container
+        >
+        <div class="source-metadata">
+          <span *ngIf="card.evidenceStatus">Evidence status: {{ card.evidenceStatus }}</span>
+          <span *ngIf="card.freshness">Freshness: {{ card.freshness }}</span>
+          <span *ngIf="card.sourceConfidence">Source confidence: {{ card.sourceConfidence }}</span>
+          <span *ngIf="card.estimatedEffort">Recorded effort: {{ card.estimatedEffort }}</span>
+        </div>
+        <p *ngFor="let source of card.sources">
+          {{ source.type }} · {{ source.freshness || 'Freshness unknown' }} ·
+          {{ source.timestamp ? (source.timestamp | date: 'medium') : 'Date unavailable' }}
+        </p>
+        <p *ngIf="card.sourceSignalsUsed?.length">
+          Signals: {{ card.sourceSignalsUsed?.join(', ') }}
+        </p>
+      </div>
+    </details>
+  </div>
+</article>

@@ -195,16 +195,13 @@ test('frontend separates profile identities, inline resumes, and duplicate reque
   assert.match(client, /removeSavedPreviewFromCache/);
 });
 
-test('UI has seven primary tabs and safe score rendering', () => {
-  const declaration = component.match(/readonly sections: AdvisorSection\[\] = \[([\s\S]*?)\];/)[1];
-  assert.equal((declaration.match(/'/g) || []).length / 2, 7);
-  assert.match(component, /Number\.isFinite\(Number\(value\)\)/);
+test('frontend preserves authoritative recommendations and isolates saved previews', () => {
+  assert.match(component, /Array\.isArray\(this\.result\?\.recommendations\)/);
+  assert.match(component, /return this\.result!\.recommendations!/);
+  assert.doesNotMatch(component, /valueRank|fallbackCardsFor|targetReadiness/);
   assert.match(component, /if \(!preview \|\| this\.isLoading\) return/);
-  assert.match(
-    component,
-    /if \(!this\.result \|\| !this\.isTemporaryView \|\| !this\.isAuthenticated \|\| this\.isSavingPreview\) return/,
-  );
-  assert.match(component, /openSavedPreview[\s\S]{0,1300}this\.applyResult/);
+  assert.match(component, /!this\.isTemporaryView \|\| !this\.isAuthenticated/);
+  assert.match(component, /openSavedPreview[\s\S]{0,1500}this\.applyResult/);
 });
 
 test('failed refresh preserves previous valid result in the frontend component', () => {

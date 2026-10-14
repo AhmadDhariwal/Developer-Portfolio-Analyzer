@@ -1,0 +1,113 @@
+@use '../../../shared/styles/developer-ui' as developer;
+:host {
+  display: block;
+  min-width: 0;
+}
+h2 {
+  @include developer.section-title;
+}
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+p {
+  color: var(--text-secondary);
+  margin: 6px 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+.resource-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-card);
+  min-width: 0;
+}
+.resource-panel > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+summary {
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.panel-body {
+  padding: 0 16px 14px;
+}
+.resource-item {
+  border-top: 1px solid var(--border-color);
+  padding: 8px 0;
+}
+.resource-item > summary {
+  padding-block: 10px;
+  font-weight: 600;
+}
+a {
+  color: var(--color-primary-text);
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 44px;
+  text-underline-offset: 3px;
+}
+ul {
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+li {
+  margin: 6px 0;
+}
+.count,
+.attribution {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-left: 8px;
+}
+.technology {
+  padding: 10px 0;
+  border-top: 1px solid var(--border-color);
+  font-size: 14px;
+}
+p.empty-note {
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+:is(a, summary):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 768px) {
+  .resource-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.resource-panel > summary::after {
+  content: '+';
+  font-size: 18px;
+  color: var(--color-primary-text);
+}
+.resource-panel[open] > summary::after {
+  content: '−';
+}
