@@ -11,11 +11,7 @@ describe('CourseService caching', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        CourseService,
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      providers: [CourseService, provideHttpClient(), provideHttpClientTesting()],
     });
 
     service = TestBed.inject(CourseService);
@@ -30,13 +26,22 @@ describe('CourseService caching', () => {
     const firstPromise = firstValueFrom(service.getCourses({ topic: 'Angular' }, 1, 10));
     const secondPromise = firstValueFrom(service.getCourses({ topic: 'Angular' }, 1, 10));
 
-    const request = httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Angular`);
+    const request = httpMock.expectOne(
+      `${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Angular`,
+    );
     request.flush({
-      courses: [{ id: 'course-1', title: 'Angular Patterns', platform: 'Udemy', url: 'https://example.com/course/1' }],
+      courses: [
+        {
+          id: 'course-1',
+          title: 'Angular Patterns',
+          platform: 'Udemy',
+          url: 'https://example.com/course/1',
+        },
+      ],
       total: 1,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
 
     const [first, second] = await Promise.all([firstPromise, secondPromise]);
@@ -46,24 +51,48 @@ describe('CourseService caching', () => {
     httpMock.expectNone(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Angular`);
   });
 
-  it('reuses the cached getCourses response on a later call with the same params', async () => {
+  it('rechecks backend source freshness on a later call with the same params', async () => {
     const initialPromise = firstValueFrom(service.getCourses({ platform: 'Coursera' }, 1, 10));
 
-    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&platform=Coursera`).flush({
-      courses: [{ id: 'course-2', title: 'Backend Foundations', platform: 'Coursera', url: 'https://example.com/course/2' }],
-      total: 1,
-      page: 1,
-      totalPages: 1,
-      hasMore: false
-    });
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&platform=Coursera`)
+      .flush({
+        courses: [
+          {
+            id: 'course-2',
+            title: 'Backend Foundations',
+            platform: 'Coursera',
+            url: 'https://example.com/course/2',
+          },
+        ],
+        total: 1,
+        page: 1,
+        totalPages: 1,
+        hasMore: false,
+      });
 
     await initialPromise;
 
-    const cached = await firstValueFrom(service.getCourses({ platform: 'Coursera' }, 1, 10));
-
-    expect(cached.courses[0]?.title).toBe('Backend Foundations');
-    expect(cached.fromFrontendCache).toBe(true);
-    httpMock.expectNone(`${environment.apiBaseUrl}/courses?page=1&limit=10&platform=Coursera`);
+    const next = firstValueFrom(service.getCourses({ platform: 'Coursera' }, 1, 10));
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&platform=Coursera`)
+      .flush({
+        courses: [
+          {
+            id: 'course-new',
+            title: 'New context course',
+            platform: 'Coursera',
+            url: 'https://example.com/course/new',
+          },
+        ],
+        total: 1,
+        page: 1,
+        totalPages: 1,
+        hasMore: false,
+      });
+    const updated = await next;
+    expect(updated.courses[0]?.title).toBe('New context course');
+    expect(updated.fromFrontendCache).toBe(false);
   });
 
   it('creates a new request when the filter key changes', async () => {
@@ -73,7 +102,7 @@ describe('CourseService caching', () => {
       total: 0,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
     await firstPromise;
 
@@ -83,7 +112,7 @@ describe('CourseService caching', () => {
       total: 0,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
     await secondPromise;
   });
@@ -95,7 +124,7 @@ describe('CourseService caching', () => {
       total: 0,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
     await firstPromise;
 
@@ -107,17 +136,16 @@ describe('CourseService caching', () => {
       total: 0,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
     await secondPromise;
   });
 
   it('evicts failed requests so retry can reach the backend', async () => {
     const failedPromise = firstValueFrom(service.getCourses({ topic: 'Testing' }, 1, 10));
-    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Testing`).flush(
-      { message: 'Temporary failure' },
-      { status: 503, statusText: 'Service Unavailable' }
-    );
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Testing`)
+      .flush({ message: 'Temporary failure' }, { status: 503, statusText: 'Service Unavailable' });
     let rejected = false;
     try {
       await failedPromise;
@@ -132,7 +160,7 @@ describe('CourseService caching', () => {
       total: 0,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
     await retryPromise;
   });
@@ -144,7 +172,7 @@ describe('CourseService caching', () => {
       title: 'Production Angular',
       platform: 'Coursera',
       url: 'https://example.com/course/3',
-      topics: ['Angular', 'Angular']
+      topics: ['Angular', 'Angular'],
     };
 
     httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10`).flush({
@@ -152,7 +180,7 @@ describe('CourseService caching', () => {
       total: 1,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
 
     const response = await promise;
@@ -166,14 +194,26 @@ describe('CourseService caching', () => {
     const promise = firstValueFrom(service.getCourses({ topic: 'SQL' }, 1, 10));
     httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=SQL`).flush({
       courses: [
-        { id: 'ok', title: 'SQL Basics', platform: 'Udemy', url: 'https://www.udemy.com/course/sql/', rating: null },
+        {
+          id: 'ok',
+          title: 'SQL Basics',
+          platform: 'Udemy',
+          url: 'https://www.udemy.com/course/sql/',
+          rating: null,
+        },
         { id: 'bad', title: '', platform: 'Udemy', url: 'https://www.udemy.com/course/bad/' },
-        { id: 'zero', title: 'Zero Rated', platform: 'Coursera', url: 'https://www.coursera.org/learn/zero', rating: 0 }
+        {
+          id: 'zero',
+          title: 'Zero Rated',
+          platform: 'Coursera',
+          url: 'https://www.coursera.org/learn/zero',
+          rating: 0,
+        },
       ],
       total: 3,
       page: 1,
       totalPages: 1,
-      hasMore: false
+      hasMore: false,
     });
 
     const response = await promise;
@@ -181,5 +221,4 @@ describe('CourseService caching', () => {
     expect(response.courses[0]?.rating).toBeUndefined();
     expect(response.courses[1]?.rating).toBeUndefined();
   });
-
 });
