@@ -163,6 +163,85 @@ export class CoursesComponent implements OnInit, OnDestroy {
     return Boolean(this.recommendedBasedOn?.fallbackUsed);
   }
 
+  get targetSkillGaps(): string[] {
+    return this.recommendedBasedOn?.skillGapsUsed || [];
+  }
+
+  get savedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'saved').length;
+  }
+
+  get inProgressCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'in_progress').length;
+  }
+
+  get completedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'completed').length;
+  }
+
+  get totalSavedCourses(): number {
+    return Object.keys(this.learning.records()).length;
+  }
+
+  get averageLearningProgress(): number {
+    const list = Object.values(this.learning.records()).filter(
+      (r) => r.status === 'in_progress' && r.progressPercent != null,
+    );
+    if (!list.length) return 0;
+    const sum = list.reduce((acc, curr) => acc + (curr.progressPercent || 0), 0);
+    return Math.round(sum / list.length);
+  }
+
+  onQuickTopicSelect(topic: string): void {
+    const current = (this.activeFilters.topic || '').trim().toLowerCase();
+    if (current === topic.trim().toLowerCase()) {
+      this.clearFilter('topic');
+    } else {
+      this.onFiltersChange({ ...this.activeFilters, topic: topic.trim() });
+    }
+  }
+
+  onQuickPreset(preset: 'all' | 'free' | 'udemy' | 'coursera' | 'short' | 'advanced'): void {
+    if (preset === 'all') {
+      this.onFiltersReset();
+      return;
+    }
+    const next: CourseFilters = { ...this.activeFilters };
+    if (preset === 'free') {
+      next.platform = next.platform === 'YouTube' ? 'All' : 'YouTube';
+    } else if (preset === 'udemy') {
+      next.platform = next.platform === 'Udemy' ? 'All' : 'Udemy';
+    } else if (preset === 'coursera') {
+      next.platform = next.platform === 'Coursera' ? 'All' : 'Coursera';
+    } else if (preset === 'short') {
+      next.duration = next.duration === '0-2' ? 'All' : '0-2';
+    } else if (preset === 'advanced') {
+      next.level = next.level === 'Advanced' ? 'All' : 'Advanced';
+    }
+    this.onFiltersChange(next);
+  }
+
+  isPresetActive(preset: 'all' | 'free' | 'udemy' | 'coursera' | 'short' | 'advanced'): boolean {
+    if (preset === 'all') {
+      return (
+        !this.hasActiveFilters &&
+        this.activeFilters.platform === 'All' &&
+        this.activeFilters.duration === 'All' &&
+        this.activeFilters.level === 'All'
+      );
+    }
+    if (preset === 'free') return this.activeFilters.platform === 'YouTube';
+    if (preset === 'udemy') return this.activeFilters.platform === 'Udemy';
+    if (preset === 'coursera') return this.activeFilters.platform === 'Coursera';
+    if (preset === 'short') return this.activeFilters.duration === '0-2';
+    if (preset === 'advanced') return this.activeFilters.level === 'Advanced';
+    return false;
+  }
+
+  onTopicClickedFromCard(topic: string): void {
+    this.onQuickTopicSelect(topic);
+  }
+
   ngOnInit(): void {
     this.learning.load();
     this.applyTopicFromQuery(

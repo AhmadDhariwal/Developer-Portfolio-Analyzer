@@ -26,6 +26,7 @@ export class CourseCardComponent implements OnChanges {
   @Output() progressChange = new EventEmitter<CourseProgressUpdate>();
   @Output() remove = new EventEmitter<void>();
   @Output() sprint = new EventEmitter<void>();
+  @Output() topicClick = new EventEmitter<string>();
   thumbnailError = false;
   notes = '';
   percent: number | null = null;
@@ -91,5 +92,17 @@ export class CourseCardComponent implements OnChanges {
       notes: this.notes,
       progressPercent: this.percent,
     });
+  }
+  onTopicClicked(topic: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.topicClick.emit(topic);
+  }
+  get levelBadgeClass(): string {
+    const lvl = (this.course.level || '').toLowerCase();
+    if (lvl.includes('begin')) return 'badge-level-beginner';
+    if (lvl.includes('inter')) return 'badge-level-intermediate';
+    if (lvl.includes('adv')) return 'badge-level-advanced';
+    return 'badge-level-general';
   }
 }

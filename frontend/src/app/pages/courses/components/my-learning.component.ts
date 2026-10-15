@@ -42,6 +42,37 @@ export class MyLearningComponent {
   total = 0;
   failedPage = 1;
 
+  get savedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'saved').length;
+  }
+
+  get inProgressCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'in_progress').length;
+  }
+
+  get completedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'completed').length;
+  }
+
+  get totalSavedCount(): number {
+    return Object.keys(this.learning.records()).length;
+  }
+
+  get averageProgress(): number {
+    const list = Object.values(this.learning.records()).filter(
+      (r) => r.status === 'in_progress' && r.progressPercent != null,
+    );
+    if (!list.length) return 0;
+    const sum = list.reduce((acc, curr) => acc + (curr.progressPercent || 0), 0);
+    return Math.round(sum / list.length);
+  }
+
+  setStatusFilter(nextStatus: LearningStatus | ''): void {
+    if (this.status === nextStatus) return;
+    this.status = nextStatus;
+    this.changeFilter();
+  }
+
   constructor() {
     effect(() => {
       this.learning.revision();

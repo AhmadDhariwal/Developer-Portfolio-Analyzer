@@ -1,32 +1,139 @@
-<section aria-labelledby="my-learning-heading" [attr.aria-busy]="loading">
+<section
+  class="my-learning-section"
+  aria-labelledby="my-learning-heading"
+  [attr.aria-busy]="loading"
+>
+  <!-- Section Header -->
   <div class="section-header">
-    <div>
+    <div class="header-copy">
       <h2 id="my-learning-heading">My Learning</h2>
       <p>Keep your learning plans, private notes and self-reported completion in one place.</p>
     </div>
-    <button type="button" [disabled]="loading" (click)="refreshLearning()">
-      {{ loading ? 'Refreshing…' : 'Refresh My Learning' }}
+    <div class="header-actions">
+      <button
+        type="button"
+        class="refresh-learning-btn"
+        [disabled]="loading"
+        (click)="refreshLearning()"
+      >
+        <svg
+          class="refresh-icon"
+          [class.spinning]="loading"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M23 4v6h-6M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        <span>{{ loading ? 'Refreshing…' : 'Refresh My Learning' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Learning Tracker Dashboard Strip -->
+  <div class="learning-tracker-strip" *ngIf="totalSavedCount > 0 || records.length > 0">
+    <div class="tracker-item">
+      <span class="tracker-num">{{ totalSavedCount || total }}</span>
+      <span class="tracker-desc">Total Tracked</span>
+    </div>
+    <div class="tracker-item in-progress-item">
+      <span class="tracker-num">{{ inProgressCount }}</span>
+      <span class="tracker-desc">In Progress</span>
+    </div>
+    <div class="tracker-item saved-item">
+      <span class="tracker-num">{{ savedCount }}</span>
+      <span class="tracker-desc">Saved for Later</span>
+    </div>
+    <div class="tracker-item completed-item">
+      <span class="tracker-num">{{ completedCount }}</span>
+      <span class="tracker-desc">Completed</span>
+    </div>
+  </div>
+
+  <!-- Segmented Status Filter Bar -->
+  <div class="filter-controls-bar">
+    <div class="status-segmented-tabs">
+      <button
+        type="button"
+        class="status-tab"
+        [class.active]="status === ''"
+        (click)="setStatusFilter('')"
+      >
+        <span>All</span>
+        <span class="tab-badge" *ngIf="totalSavedCount">{{ totalSavedCount }}</span>
+      </button>
+      <button
+        type="button"
+        class="status-tab in-progress"
+        [class.active]="status === 'in_progress'"
+        (click)="setStatusFilter('in_progress')"
+      >
+        <span>In Progress</span>
+        <span class="tab-badge" *ngIf="inProgressCount">{{ inProgressCount }}</span>
+      </button>
+      <button
+        type="button"
+        class="status-tab saved"
+        [class.active]="status === 'saved'"
+        (click)="setStatusFilter('saved')"
+      >
+        <span>Saved</span>
+        <span class="tab-badge" *ngIf="savedCount">{{ savedCount }}</span>
+      </button>
+      <button
+        type="button"
+        class="status-tab completed"
+        [class.active]="status === 'completed'"
+        (click)="setStatusFilter('completed')"
+      >
+        <span>Completed</span>
+        <span class="tab-badge" *ngIf="completedCount">{{ completedCount }}</span>
+      </button>
+    </div>
+
+    <!-- Accessible & Test-Compatible Native Select -->
+    <label class="status-filter">
+      <span class="filter-label-text">Show learning status</span>
+      <select
+        aria-label="Show learning status"
+        [(ngModel)]="status"
+        (ngModelChange)="changeFilter()"
+      >
+        <option value="">All saved courses</option>
+        <option value="saved">Saved for Later</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Error Notice Banner -->
+  <div class="error-notice-card" role="alert" *ngIf="error">
+    <p class="error">
+      {{ error }}
+      <span *ngIf="records.length">Previously loaded learning records are still shown.</span>
+    </p>
+    <button type="button" class="retry-learning-btn" (click)="load(failedPage)">
+      Retry My Learning
     </button>
   </div>
-  <label class="status-filter"
-    >Show learning status<select
-      aria-label="Show learning status"
-      [(ngModel)]="status"
-      (ngModelChange)="changeFilter()"
-    >
-      <option value="">All saved courses</option>
-      <option value="saved">Saved for Later</option>
-      <option value="in_progress">In Progress</option>
-      <option value="completed">Completed</option>
-    </select></label
-  >
-  <p class="error" role="alert" *ngIf="error">
-    {{ error }}
-    <span *ngIf="records.length">Previously loaded learning records are still shown.</span
-    ><button type="button" (click)="load(failedPage)">Retry My Learning</button>
+
+  <!-- Loading State -->
+  <p role="status" class="loading-status" *ngIf="loading && !records.length">
+    Loading your learning records…
   </p>
-  <p role="status" *ngIf="loading && !records.length">Loading your learning records…</p>
+
+  <!-- Empty State -->
   <div class="empty" *ngIf="!loading && !error && !records.length">
+    <div class="empty-icon-shell" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    </div>
     <h3>{{ status ? 'No courses in this status' : 'Your learning list starts here' }}</h3>
     <p>
       {{
@@ -35,12 +142,18 @@
           : 'Save a course to return to it, add notes or plan your next Sprint.'
       }}
     </p>
-    <button type="button" (click)="discover.emit()">Discover Courses</button>
+    <button type="button" class="discover-cta-btn" (click)="discover.emit()">
+      Discover Courses
+    </button>
   </div>
+
+  <!-- Count Line -->
   <p class="count" *ngIf="records.length">
     Showing {{ records.length }} of {{ total }} saved courses
   </p>
-  <div class="course-grid">
+
+  <!-- Saved Courses Grid -->
+  <div class="course-grid" *ngIf="records.length">
     <app-course-card
       *ngFor="let record of records; trackBy: trackRecord"
       [course]="record.course"
@@ -52,8 +165,10 @@
       (sprint)="learning.addToSprint(record.courseId)"
     />
   </div>
+
+  <!-- Load More -->
   <div class="load-more" *ngIf="records.length && page < totalPages">
-    <button type="button" [disabled]="loading" (click)="load(page + 1)">
+    <button type="button" class="load-more-btn" [disabled]="loading" (click)="load(page + 1)">
       {{ loading ? 'Loading…' : 'Load more saved courses' }}
     </button>
   </div>
