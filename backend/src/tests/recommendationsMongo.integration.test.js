@@ -104,6 +104,8 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       ),
     );
     await GitHubAnalysisCache.deleteMany({ normalizedUsername: username });
+    await require('../models/sprintSchedule').deleteMany({ _id: { $in: [owner, foreign] } });
+    await require('../models/sprintPreference').deleteMany({ _id: { $in: [owner, foreign] } });
     await mongoose.disconnect();
   });
   await Recommendation.createIndexes();

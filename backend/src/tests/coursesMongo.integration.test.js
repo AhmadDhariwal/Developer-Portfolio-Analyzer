@@ -59,6 +59,8 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     await new Promise((resolve) => setTimeout(resolve, 50));
     await Promise.all([
       User.deleteMany({ _id: { $in: [owner, foreign] } }),
+      require('../models/sprintSchedule').deleteMany({ _id: { $in: [owner, foreign] } }),
+      require('../models/sprintPreference').deleteMany({ _id: { $in: [owner, foreign] } }),
       ...[ResumeFile, ResumeAnalysis, AnalysisCache, CareerSprint, Progress].map((model) =>
         model.deleteMany({ userId: { $in: [owner, foreign] } }),
       ),

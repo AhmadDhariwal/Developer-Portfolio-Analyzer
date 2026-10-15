@@ -53,9 +53,10 @@ const handoff = async (userId, courseId, body = {}) => {
       _id: sprint._id,
       userId,
       'tasks.title': { $ne: title },
+      $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
       tasks: { $not: { $elemMatch: sourceMatch } },
     },
-    { $push: { tasks: task } },
+    { $push: { tasks: task }, $inc: { __v: 1 } },
     { returnDocument: 'after', runValidators: true },
   ).lean();
   if (!updated) {

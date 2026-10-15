@@ -17,6 +17,10 @@ const handoff = async ({ userId, recommendation, signalHash, expectedSignalHash 
   if (!sprint?._id) return { status: 503, message: 'Career Sprint is unavailable.' };
   const title = recommendation.title.slice(0, 120);
   const task = {
+    sourceRecommendationId: recommendation.id,
+    sourceRecommendationHash: signalHash,
+    sourceRule: 'recommendations-evidence-v1',
+    evidenceLimitation: 'Proposed action from recorded evidence; not verified proficiency.',
     title,
     description:
       `${recommendation.actionableNextStep}\nRecommendation: ${recommendation.id}\nContext: ${signalHash}`.slice(
@@ -33,15 +37,21 @@ const handoff = async ({ userId, recommendation, signalHash, expectedSignalHash 
     taskType: 'manual',
   };
   const updated = await CareerSprint.findOneAndUpdate(
-    { _id: sprint._id, userId, 'tasks.title': { $ne: title } },
-    { $push: { tasks: task } },
+    {
+      _id: sprint._id,
+      userId,
+      'tasks.title': { $ne: title },
+      'tasks.sourceRecommendationId': { $ne: recommendation.id },
+      $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
+    },
+    { $push: { tasks: task }, $inc: { __v: 1 } },
     { returnDocument: 'after', runValidators: true },
   ).lean();
   if (!updated) {
     const existing = await CareerSprint.findOne({
       _id: sprint._id,
       userId,
-      'tasks.title': title,
+      $or: [{ 'tasks.title': title }, { 'tasks.sourceRecommendationId': recommendation.id }],
     }).lean();
     if (!existing) return { status: 409, message: 'Sprint changed. Retry the handoff.' };
   }

@@ -51,30 +51,43 @@ const sampleSprint = (userId) => ({
   goalStack: 'Frontend',
   goalTechnology: 'React',
   goalExperienceLevel: 'Intern',
-  tasks: [{
-    _id: '507f1f77bcf86cd799439012',
-    title: 'Learn React hooks',
-    description: 'Practice hooks',
-    points: 3,
-    priority: 'high',
-    category: 'learning',
-    taskType: 'manual',
-    isCompleted: false,
-    completedAt: null,
-    startDate: new Date('2026-08-03T00:00:00.000Z'),
-    endDate: new Date('2026-08-05T23:59:59.999Z')
-  }],
+  tasks: [
+    {
+      _id: '507f1f77bcf86cd799439012',
+      title: 'Learn React hooks',
+      description: 'Practice hooks',
+      points: 3,
+      priority: 'high',
+      category: 'learning',
+      taskType: 'manual',
+      isCompleted: false,
+      completedAt: null,
+      startDate: new Date('2026-08-03T00:00:00.000Z'),
+      endDate: new Date('2026-08-05T23:59:59.999Z')
+    }
+  ],
   aiPlans: []
 });
 
 const createQuery = (loader) => {
   const state = { lean: false };
   const api = {
-    select() { return api; },
-    sort() { return api; },
-    limit() { return api; },
-    lean() { state.lean = true; return api; },
-    then(resolve, reject) { return loader(state).then(resolve, reject); }
+    select() {
+      return api;
+    },
+    sort() {
+      return api;
+    },
+    limit() {
+      return api;
+    },
+    lean() {
+      state.lean = true;
+      return api;
+    },
+    then(resolve, reject) {
+      return loader(state).then(resolve, reject);
+    }
   };
   return api;
 };
@@ -134,11 +147,12 @@ const createHarness = () => {
   });
 
   mock('models/careerSprint.js', {
-    findOne: (query) => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return sampleSprint(String(query.userId || 'u1'));
-    }),
+    findOne: (query) =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return sampleSprint(String(query.userId || 'u1'));
+      }),
     findOneAndUpdate: async () => {
       counters.mongoWrites += 1;
       await delay(MONGO_DELAY_MS);
@@ -149,11 +163,12 @@ const createHarness = () => {
       await delay(MONGO_DELAY_MS);
       return { acknowledged: true };
     },
-    find: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return [sampleSprint('u1')];
-    }),
+    find: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return [sampleSprint('u1')];
+      }),
     create: async () => {
       counters.mongoWrites += 1;
       return sampleSprint('u1');
@@ -168,41 +183,53 @@ const createHarness = () => {
   });
 
   mock('models/user.js', {
-    findById: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { careerStack: 'Frontend', experienceLevel: 'Intern' };
-    })
+    findById: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return { careerStack: 'Frontend', experienceLevel: 'Intern' };
+      })
   });
   mock('models/recommendation.js', {
-    find: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return [{ techStack: ['React'], isNewTech: ['TypeScript'] }];
-    })
+    find: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return [{ techStack: ['React'], isNewTech: ['TypeScript'] }];
+      })
   });
   mock('models/analysisCache.js', {
-    findOne: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { analysisData: { skillGap: { missingSkills: ['Testing'] } } };
-    })
+    findOne: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return { analysisData: { skillGap: { missingSkills: ['Testing'] } } };
+      })
   });
   mock('models/analysis.js', {
-    findOne: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { githubStats: { repos: 2 }, contributionActivity: [{ count: 20 }], githubScore: 70, readinessScore: 60 };
-    })
+    findOne: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return {
+          githubStats: { repos: 2 },
+          contributionActivity: [{ count: 20 }],
+          githubScore: 70,
+          readinessScore: 60
+        };
+      })
   });
   mock('models/scenarioSimulation.js', {
     findOne: () => createQuery(async () => null)
   });
 
   Object.keys(require.cache).forEach((entry) => {
-    if (entry.includes(`${path.sep}services${path.sep}careerSprintService`)
-      || entry.includes(`${path.sep}services${path.sep}aiTaskService`)
-      || entry.includes(`${path.sep}scripts${path.sep}ensureCareerSprintIndexes`)) {
+    if (
+      entry.includes(`${path.sep}services${path.sep}careerSprintService`) ||
+      entry.includes(`${path.sep}services${path.sep}aiTaskService`) ||
+      entry.includes(`${path.sep}services${path.sep}sprintOverviewCacheService`) ||
+      entry.includes(`${path.sep}scripts${path.sep}ensureCareerSprintIndexes`)
+    ) {
       delete require.cache[entry];
     }
   });
@@ -229,7 +256,7 @@ const measure = async (runs, fn) => {
   };
 };
 
-test('memory cache hits stay under 50ms p95 and skip mongo/signals', async () => {
+test('database-validated memory serialization stays under 50ms p95 and skips optional signals', async () => {
   const harness = createHarness();
   await harness.sprintService.getCurrentSprint('u-mem', { forceRefresh: true });
   harness.counters.mongoReads = 0;
@@ -239,12 +266,12 @@ test('memory cache hits stay under 50ms p95 and skip mongo/signals', async () =>
     assert.ok(result.analytics);
     assert.ok(result.cacheMetadata?.stageTimingsMs);
   });
-  assert.equal(harness.counters.mongoReads, 0);
+  assert.equal(harness.counters.mongoReads, 40); // Fresh current + previous snapshots for every read.
   assert.equal(harness.counters.signalCalls, 0);
   assert.ok(stats.p95 < 50, `memory p95 ${stats.p95}`);
 });
 
-test('Redis hit path is bounded and skips cold pipeline work', async () => {
+test('Redis serialization is bounded and always validates fresh database snapshots', async () => {
   const harness = createHarness();
   const cold = await harness.sprintService.getCurrentSprint('u-redis', { forceRefresh: true });
   await flushAsync();
@@ -260,7 +287,7 @@ test('Redis hit path is bounded and skips cold pipeline work', async () => {
   });
 
   assert.ok(harness.counters.redisGets >= 12);
-  assert.equal(harness.counters.mongoReads, 0);
+  assert.equal(harness.counters.mongoReads, 24);
   assert.equal(harness.counters.signalCalls, 0);
   assert.ok(stats.p95 < 250, `redis p95 ${stats.p95}`);
 });
@@ -272,7 +299,7 @@ test('five identical callers share one expensive pipeline', async () => {
   const beforeMongo = harness.counters.mongoReads;
   await Promise.all(Array.from({ length: 5 }, () => harness.sprintService.getCurrentSprint('u-concurrent')));
   assert.equal(harness.counters.signalCalls - beforeSignals, 1);
-  assert.ok(harness.counters.mongoReads - beforeMongo <= 2);
+  assert.ok(harness.counters.mongoReads - beforeMongo === 10);
 });
 
 test('AI generation uses one attempt, caches persistable plans, and concurrent callers share work', async () => {
@@ -325,7 +352,7 @@ test('index migration is idempotent and only creates missing indexes', async () 
     collection: {
       indexes: async () => indexes,
       createIndex: async (key, options) => {
-        indexes.push({ name: options.name, key });
+        indexes.push({ ...options, key });
         return options.name;
       }
     }
@@ -362,13 +389,13 @@ test('optimized paths keep versioned cache identity, lean lookups, and zero AI r
   const fs = require('node:fs');
   const serviceSource = fs.readFileSync(path.join(__dirname, '../services/careerSprintService.js'), 'utf8');
   const aiServiceSource = fs.readFileSync(path.join(__dirname, '../services/aiTaskService.js'), 'utf8');
-  assert.match(serviceSource, /overview_v2/);
-  assert.match(serviceSource, /memoryOverviewKey/);
+  assert.match(serviceSource, /overview_v4/);
+  assert.match(serviceSource, /overviewCache.load/);
   assert.match(serviceSource, /sprintStartDate:\s*\{\s*\$lte:\s*now\s*\}/);
-  assert.match(serviceSource, /\.sort\(\{\s*updatedAt:\s*-1\s*\}\)\.lean\(\)/);
+  assert.match(serviceSource, /\.sort\(\{\s*updatedAt:\s*-1\s*\}\)\s*\.lean\(\)/);
   assert.match(serviceSource, /\.select\('tasks xpPoints currentStreak streak weekStartDate'\)/);
-  assert.match(serviceSource, /withBudget\(/);
-  assert.match(aiServiceSource, /plan_v2/);
+  assert.doesNotMatch(serviceSource, /previousValid/);
+  assert.match(aiServiceSource, /plan_v4/);
   assert.match(aiServiceSource, /runAIAnalysis\(prompt, aiFallback, 0,/);
   assert.match(aiServiceSource, /setImmediate\(/);
 });
