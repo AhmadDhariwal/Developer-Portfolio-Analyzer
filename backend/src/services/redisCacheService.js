@@ -30,7 +30,8 @@ const getRedisUrl = () => {
   const token = String(process.env.UPSTASH_REDIS_TOKEN || '').trim();
   if (!token) return '';
 
-  const host = String(process.env.UPSTASH_REDIS_HOST || UPSTASH_DEFAULT_HOST).trim() || UPSTASH_DEFAULT_HOST;
+  let host = String(process.env.UPSTASH_REDIS_HOST || UPSTASH_DEFAULT_HOST).trim() || UPSTASH_DEFAULT_HOST;
+  host = host.replace(/^["']|["']$/g, '').replace(/^[a-zA-Z]+:\/\//, '').replace(/[/?#].*$/, '').trim();
   if (!host) return '';
   const requestedPort = Number.parseInt(process.env.UPSTASH_REDIS_PORT || String(UPSTASH_DEFAULT_PORT), 10);
   const port = Number.isInteger(requestedPort) && requestedPort > 0 && requestedPort <= 65535
@@ -104,17 +105,23 @@ const initRedisCache = async ({ silent = false } = {}) => {
     return connectPromise;
   }
 
-  const redisClient = createClient({
-    url: redisUrl,
-    disableOfflineQueue: true,
-    socket: {
-      connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
-      reconnectStrategy: (retries) => {
-        if (closing || retries >= 2) return false;
-        return Math.min(500, 150 * (retries + 1));
+  let redisClient;
+  try {
+    redisClient = createClient({
+      url: redisUrl,
+      disableOfflineQueue: true,
+      socket: {
+        connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
+        reconnectStrategy: (retries) => {
+          if (closing || retries >= 2) return false;
+          return Math.min(500, 150 * (retries + 1));
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    if (!silent) console.warn('[redis] invalid configuration; using application fallbacks:', error?.message);
+    return null;
+  }
   client = redisClient;
   clientProxy = createCommandProxy(redisClient);
   redisClient.on('error', () => {

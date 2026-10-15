@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-10-14T10:45:25.433Z",
+  "before": {
+    "cold": {
+      "p50": 255.23,
+      "p95": 318.11
+    },
+    "mongo_or_redis": {
+      "p50": 70.07,
+      "p95": 103.4
+    },
+    "memory": {
+      "p50": 69.4,
+      "p95": 100.7
+    },
+    "concurrent": {
+      "providerCalls": 1,
+      "mongoWrites": 5
+    }
+  },
+  "after": {
+    "cold": {
+      "label": "cold",
+      "p50": 156.63,
+      "p95": 172.15
+    },
+    "redisWarm": {
+      "label": "redis_warm",
+      "p50": 47.05,
+      "p95": 48
+    },
+    "memoryWarm": {
+      "label": "memory_warm",
+      "p50": 31.14,
+      "p95": 32.32
+    },
+    "concurrent": {
+      "poolBuilds": 1,
+      "providerCalls": 1,
+      "mongoWrites": 1,
+      "redisSets": 1
+    }
+  }
+}

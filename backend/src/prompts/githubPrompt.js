@@ -24,6 +24,8 @@ Rules:
 - summary: 1-2 sentences, recruiter-friendly, no hype, grounded in facts.
 - explanation: 1-2 sentences describing the deterministic score drivers without inventing numbers.
 - Reject generic filler, placeholders, apologies, or content unrelated to this profile.
+- Activity represents sampled repository contributor history, not verified personal commits. Do not attribute it to the developer.
+- Missing or unsampled README, language, or activity data is unavailable evidence, not proof of absence.
 - Never include scores, healthScore, tokens, prompts, or provider details.
 `.trim();
 };

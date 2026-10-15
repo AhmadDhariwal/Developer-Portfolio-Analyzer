@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const { buildJobPool, findCachedJobById, getSourceHealth, getCacheHealth, normaliseJobFilters, isUsableJob } = require('../services/jobService');
 const AnalysisCache = require('../models/analysisCache');
 const Analysis = require('../models/analysis');
@@ -62,16 +63,7 @@ const flattenResumeSignals = (resumeAnalysis = {}) => {
   return flattenResumeSkills(resumeAnalysis?.skills);
 };
 
-const loadDefaultResumeAnalysis = async (userId) => {
-  const user = await User.findById(userId).select('defaultResumeFileId').lean();
-  if (user?.defaultResumeFileId) {
-    const analysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (analysis) return analysis;
-  }
-  return ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
-};
+const loadDefaultResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const resolveDeveloperSignals = async (userId) => {
   if (!userId) {
@@ -446,8 +438,8 @@ const buildRecommendedBasedOn = ({
 
 const fetchJobs = async (req, res) => {
   try {
-    const careerStack = req.user?.careerStack || req.query.stack || 'Full Stack';
-    const experienceLevel = req.user?.experienceLevel || req.query.experience || 'Student';
+    const careerStack = developerContext.resolveCareerStack(req.user) || req.query.stack || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.query.experience || 'Student';
     const filters = normaliseJobFilters(req.query);
     const developerSignals = await resolveDeveloperSignals(req.user?._id);
     const jobPool = await buildJobPool({
@@ -513,8 +505,8 @@ const getJobById = async (req, res) => {
       return res.status(400).json({ message: 'Job id is required.' });
     }
 
-    const careerStack = req.user?.careerStack || 'Full Stack';
-    const experienceLevel = req.user?.experienceLevel || 'Student';
+    const careerStack = developerContext.resolveCareerStack(req.user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || 'Student';
     const developerSignals = await resolveDeveloperSignals(req.user?._id);
     const cachedJob = await findCachedJobById(id);
     if (cachedJob && isUsableJob(cachedJob)) {

@@ -12,6 +12,8 @@ const suggestionSchema = new mongoose.Schema({
 });
 
 const resumeAnalysisSchema = new mongoose.Schema({
+  contentQualityState: { type: mongoose.Schema.Types.Mixed, default: null },
+  scoring: { type: mongoose.Schema.Types.Mixed, default: null },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

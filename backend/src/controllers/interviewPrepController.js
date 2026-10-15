@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const {
   DEFAULT_PAGE_LIMIT,
   generateInterviewPrepSessionFromBank,
@@ -40,7 +41,7 @@ const generateInterviewPrepSession = async (req, res) => {
     const { skill = '', query = '', skillGaps = [], careerStack, experienceLevel } = req.body || {};
     const inferredSkill = sanitizeSkill(skill)
       || sanitizeSkill(skillGaps[0])
-      || mapCareerStackToSkill(careerStack || req.user.careerStack || '');
+      || mapCareerStackToSkill(careerStack || developerContext.resolveCareerStack(req.user) || '');
     const topicInput = readTopicInput(req.body || {});
 
     const generated = await generateInterviewPrepSessionFromBank({
@@ -48,8 +49,8 @@ const generateInterviewPrepSession = async (req, res) => {
       skill: inferredSkill,
       query,
       ...topicInput,
-      careerStack: careerStack || req.user.careerStack || 'Full Stack',
-      experienceLevel: experienceLevel || req.user.experienceLevel || 'Student'
+      careerStack: careerStack || developerContext.resolveCareerStack(req.user) || 'Full Stack',
+      experienceLevel: experienceLevel || developerContext.resolveExperienceLevel(req.user) || 'Student'
     });
 
     res.json(generated);

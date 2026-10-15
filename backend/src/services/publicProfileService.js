@@ -1,3 +1,4 @@
+const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -641,7 +642,7 @@ const getSkillScores = async (userId) => {
   }
 
   const analysis = await Analysis.findOne({ userId }).lean();
-  const resumeAnalysis = await ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean();
+  const resumeAnalysis = await developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeFile, ResumeAnalysis });
   let resumeSkills = [];
   if (resumeAnalysis?.skills) {
     const skillSource = resumeAnalysis.skills instanceof Map

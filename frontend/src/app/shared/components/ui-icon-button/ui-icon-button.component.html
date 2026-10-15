@@ -1,0 +1,14 @@
+<button
+  [type]="type"
+  [class]="'ui-icon-btn ' + variant + ' ' + size + ' ' + shape + (loading ? ' loading' : '')"
+  [disabled]="disabled || loading"
+  [attr.aria-disabled]="disabled || loading"
+  [attr.aria-busy]="loading"
+  [attr.aria-label]="ariaLabel"
+  [title]="tooltip || ariaLabel"
+  (click)="handleClick($event)">
+  <span *ngIf="loading" class="spinner" aria-hidden="true"></span>
+  <span class="icon-slot" [class.invisible]="loading">
+    <ng-content></ng-content>
+  </span>
+</button>

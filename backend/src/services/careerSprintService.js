@@ -1,3 +1,5 @@
+const sprintProgressScore = require('./scoring/sprintProgressScore');
+const { clampScore: clamp } = require('./scoring/math');
 const CareerSprint = require('../models/careerSprint');
 const ScenarioSimulation = require('../models/scenarioSimulation');
 const mongoose = require('mongoose');
@@ -167,11 +169,6 @@ const resetCareerSprintRuntimeCounters = () => {
   });
 };
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
 
 const createHttpError = (statusCode, message, details = []) => {
   const error = new Error(message);
@@ -231,12 +228,7 @@ const xpForTask = (task) => {
 
 const levelFromXp = (xp) => Math.max(1, Math.floor(Number(xp || 0) / 100) + 1);
 
-const calcWeightedProgress = (tasks) => {
-  if (!Array.isArray(tasks) || tasks.length === 0) return 0;
-  const totalPts = tasks.reduce((sum, task) => sum + (Number(task.points) || 1), 0);
-  const donePts = tasks.filter((task) => task.isCompleted).reduce((sum, task) => sum + (Number(task.points) || 1), 0);
-  return totalPts > 0 ? Math.round((donePts / totalPts) * 100) : 0;
-};
+const calcWeightedProgress = (tasks) => sprintProgressScore.calculate(tasks).score ?? 0;
 
 const normalizeTitle = (value) => String(value || '').trim().replace(/\s+/g, ' ');
 

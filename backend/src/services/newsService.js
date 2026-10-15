@@ -1,3 +1,4 @@
+const developerContext = require('./developerContextService');
 const axios = require('axios');
 const crypto = require('node:crypto');
 const NewsCache = require('../models/news');
@@ -434,15 +435,15 @@ const invalidateNewsSignalCache = (userId) => {
 
 const buildUserContext = async (user, options = {}) => {
   const defaults = {
-    careerStack: user?.careerStack || 'Full Stack',
-    experienceLevel: user?.experienceLevel || 'Student',
+    careerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
+    experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
     careerGoal: user?.careerGoal || '',
     resumeSkills: [],
     githubTechnologies: [],
     skillGaps: [],
     detectedSkills: [],
     knownSkills: [],
-    targetRole: user?.careerGoal || user?.careerStack || 'Developer',
+    targetRole: user?.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
     jobDemandSkills: [],
     recommendationTechnologies: [],
     activeLearningFocus: '',
@@ -499,15 +500,15 @@ const buildUserContext = async (user, options = {}) => {
 
   return {
     ...defaults,
-    careerStack: user.activeCareerStack || user.careerStack || careerProfile.careerStack || defaults.careerStack,
-    experienceLevel: user.activeExperienceLevel || user.experienceLevel || careerProfile.experienceLevel || defaults.experienceLevel,
+    careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
+    experienceLevel: developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || defaults.experienceLevel,
     careerGoal: user.careerGoal || careerProfile.careerGoal || '',
     resumeSkills,
     githubTechnologies,
     skillGaps,
     detectedSkills: knownSkills.slice(0, 18),
     knownSkills,
-    targetRole: user.careerGoal || careerProfile.careerGoal || user.careerStack || 'Developer',
+    targetRole: user.careerGoal || careerProfile.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
     jobDemandSkills,
     recommendationTechnologies,
     activeLearningFocus: sprint.activeLearningFocus || '',

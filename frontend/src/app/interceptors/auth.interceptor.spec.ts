@@ -1,6 +1,6 @@
-import '@angular/compiler';
+import { TestBed } from '@angular/core/testing';
 import { HttpRequest, HttpErrorResponse } from '@angular/common/http';
-import { createEnvironmentInjector, runInInjectionContext, EnvironmentInjector } from '@angular/core';
+import { runInInjectionContext, EnvironmentInjector } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
@@ -36,11 +36,14 @@ describe('authInterceptor - Token Expiration and 401 Handling', () => {
     };
     maintenanceModeMock = { open: vi.fn() };
 
-    injector = createEnvironmentInjector([
-      { provide: AuthService, useValue: authServiceMock },
-      { provide: Router, useValue: routerMock },
-      { provide: MaintenanceModeService, useValue: maintenanceModeMock }
-    ]);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: Router, useValue: routerMock },
+        { provide: MaintenanceModeService, useValue: maintenanceModeMock }
+      ]
+    });
+    injector = TestBed.inject(EnvironmentInjector);
   });
 
   const runInterceptor = (req: HttpRequest<any>, nextFn: any) => {

@@ -1,3 +1,4 @@
+const developerContext = require('./developerContextService');
 /**
  * Career Sprint planning service.
  * Supports both deterministic planning and LLM-enhanced planning with
@@ -436,15 +437,15 @@ const loadPlanningContext = async ({
     planRuntimeCounters.mongoHits += 1;
     planRuntimeCounters.signalCalls += 1;
     const [user, signals, recommendationDocs, latestCache, githubAnalysis] = await Promise.all([
-      measure('Mongo', () => User.findById(userId).select('careerStack experienceLevel').lean()),
+      measure('Mongo', () => User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel').lean()),
       measure('external provider', () => getDeveloperSignals(userId)),
       measure('Mongo', () => Recommendation.find({ userId }).sort({ createdAt: -1 }).limit(6).select('techStack isNewTech').lean()),
       measure('Mongo', () => AnalysisCache.findOne({ userId }).sort({ updatedAt: -1 }).select('analysisData.skillGap.missingSkills').lean()),
       measure('Mongo', () => Analysis.findOne({ userId }).sort({ createdAt: -1 }).select('githubStats contributionActivity githubScore readinessScore').lean())
     ]);
 
-    const effectiveStack = stack || user?.careerStack || 'Full Stack';
-    const effectiveExperience = experienceLevel || user?.experienceLevel || 'Student';
+    const effectiveStack = stack || developerContext.resolveCareerStack(user) || 'Full Stack';
+    const effectiveExperience = experienceLevel || developerContext.resolveExperienceLevel(user) || 'Student';
     const focusTechnology = technology || signals?.careerSprintSignal?.activeLearningFocus || effectiveStack;
     const missingSkills = uniqStrings([
       ...(latestCache?.analysisData?.skillGap?.missingSkills || []).map((item) => (typeof item === 'string' ? item : item?.name || item?.skill)),

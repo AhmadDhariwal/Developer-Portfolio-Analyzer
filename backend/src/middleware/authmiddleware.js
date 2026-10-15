@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
@@ -38,8 +39,8 @@ const protect = async (req, res, next) => {
                 return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
             }
 
-            req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;
-            req.user.experienceLevel = req.user.activeExperienceLevel || req.user.experienceLevel;
+            req.user.careerStack = developerContext.resolveCareerStack(req.user) || req.user.careerStack;
+            req.user.experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.user.experienceLevel;
 
             next();
         } catch (error) {
@@ -116,8 +117,8 @@ const optionalProtect = (req, res, next) => {
             return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
           }
           req.user = user;
-          req.user.careerStack = req.user.activeCareerStack || req.user.careerStack;
-          req.user.experienceLevel = req.user.activeExperienceLevel || req.user.experienceLevel;
+          req.user.careerStack = developerContext.resolveCareerStack(req.user) || req.user.careerStack;
+          req.user.experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.user.experienceLevel;
           next();
         }).catch((err) => {
           console.error(err);

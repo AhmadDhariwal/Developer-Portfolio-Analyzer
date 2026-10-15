@@ -1,0 +1,1593 @@
+{
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 320,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 375,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 425,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 740,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 768,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 446,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 716,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 764,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 422,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 753.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 972,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1020,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 429,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 913.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1132,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1180,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 589,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 17.85,
+      "secondaryContrast": 7.58,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 1073.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1340,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 749,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 320,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 375,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 425,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 740,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 768,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 446,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 716,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 764,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 422,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 753.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 972,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1020,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 429,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 913.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1132,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1180,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 589,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 1073.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1340,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 749,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 320,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 320,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 258,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 375,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 347,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 375,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 313,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 425,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "40px",
+          "weight": "700",
+          "lineHeight": "44px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 397,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 425,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 363,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 768,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 529.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 740,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 768,
+          "padding": "14px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 446,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 1024,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 497.140625,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 716,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 764,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 422,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 1280,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 753.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 972,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1020,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 429,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 1440,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 913.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1132,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1180,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 589,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    },
+    {
+      "theme": "system",
+      "width": 1600,
+      "overflow": false,
+      "contrast": 16.17,
+      "secondaryContrast": 11.4,
+      "computed": {
+        "title": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "28px",
+          "weight": "600",
+          "lineHeight": "33.6px",
+          "width": 481.109375,
+          "padding": "0px"
+        },
+        "section": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "19px",
+          "weight": "600",
+          "lineHeight": "25.65px",
+          "width": 1073.140625,
+          "padding": "0px"
+        },
+        "body": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21.7px",
+          "width": 683.1875,
+          "padding": "0px"
+        },
+        "coverage": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "44px",
+          "weight": "700",
+          "lineHeight": "48.4px",
+          "width": 152.859375,
+          "padding": "0px"
+        },
+        "workspace": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1292,
+          "padding": "0px"
+        },
+        "shell": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "lineHeight": "21px",
+          "width": 1340,
+          "padding": "24px"
+        },
+        "skill": {
+          "font": "Manrope, \"Segoe UI\", sans-serif",
+          "size": "14px",
+          "weight": "600",
+          "lineHeight": "21px",
+          "width": 749,
+          "padding": "0px"
+        },
+        "fontLoaded": true
+      }
+    }
+  ],
+  "keyboard": "passed",
+  "interactions": "search; requirement/status/category filters; all sort options; evidence disclosure; Show More/Fewer skills and projects; phase keyboard toggle; horizons; weekly milestones; course/sprint navigation; preview analyze/save/open/delete",
+  "themes": "light/dark/system; live system switch passed",
+  "states": "0/50/100/null, unavailable core evidence, historical contract, initial preview, partial sources, stale, AI fallback, error/retry",
+  "consoleErrors": 0
+}

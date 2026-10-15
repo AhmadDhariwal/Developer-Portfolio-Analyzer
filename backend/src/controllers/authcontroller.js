@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const User = require('../models/user');
 const PendingRegistration = require('../models/pendingRegistration');
 const Invitation = require('../models/invitation');
@@ -70,12 +71,12 @@ const buildAuthPayload = async (user) => {
     linkedin: user.linkedin || '',
     profileCompleted: isRecruiterProfileComplete(user),
     githubUsername: user.githubUsername || '',
-    activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+    activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
     avatar: user.avatar || user.avatarUrl || '',
     careerStack: user.careerStack,
     experienceLevel: user.experienceLevel,
-    activeCareerStack: user.activeCareerStack || user.careerStack,
-    activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+    activeCareerStack: developerContext.resolveCareerStack(user),
+    activeExperienceLevel: developerContext.resolveExperienceLevel(user),
     token: generateToken(user._id)
   };
 };
@@ -337,12 +338,12 @@ const loginUser = async (req, res) => {
         linkedin:             user.linkedin || '',
         profileCompleted:     isRecruiterProfileComplete(user),
         githubUsername:       user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user),
         avatar:               user.avatar || '',
         careerStack:          user.careerStack,
         experienceLevel:      user.experienceLevel,
-        activeCareerStack:    user.activeCareerStack    || user.careerStack,
-        activeExperienceLevel:user.activeExperienceLevel|| user.experienceLevel,
+        activeCareerStack:    developerContext.resolveCareerStack(user),
+        activeExperienceLevel:developerContext.resolveExperienceLevel(user),
         token:                generateToken(user._id)
       });
     }
@@ -490,12 +491,12 @@ const verifyOtp = async (req, res) => {
         organizationId:       user.organizationId || null,
         isPublic:             Boolean(user.isPublic),
         githubUsername:       user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user),
         avatar:               user.avatar || '',
         careerStack:          user.careerStack,
         experienceLevel:      user.experienceLevel,
-        activeCareerStack:    user.activeCareerStack    || user.careerStack,
-        activeExperienceLevel:user.activeExperienceLevel|| user.experienceLevel,
+        activeCareerStack:    developerContext.resolveCareerStack(user),
+        activeExperienceLevel:developerContext.resolveExperienceLevel(user),
         token:                generateToken(user._id)
       });
     }
@@ -758,14 +759,14 @@ const acceptInvite = async (req, res) => {
         isActive: user.isActive !== false,
         isPublic: Boolean(user.isPublic),
         githubUsername: user.githubUsername || '',
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+        activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
         phoneNumber: user.phoneNumber || '',
         linkedin: user.linkedin || '',
         avatar: user.avatar || '',
         careerStack: user.careerStack,
         experienceLevel: user.experienceLevel,
-        activeCareerStack: user.activeCareerStack || user.careerStack,
-        activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
         profileCompleted,
         token: generateToken(user._id)
       }

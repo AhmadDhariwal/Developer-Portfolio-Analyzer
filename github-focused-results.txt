@@ -1,0 +1,54 @@
+✔ fresh analysis, cache hit, concurrency, force refresh, and username isolation (290.8195ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"shared","mongoDeleted":0}
+✔ two instances deduplicate analyze-save with Redis authority (123.6551ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"shared","mongoDeleted":0}
+✔ two instances deduplicate analyze-save with Mongo fallback authority (110.0836ms)
+GitHub Save Error: required repository upsert failed
+✔ repository failure preserves old rows and prevents later commits (78.053ms)
+✔ AI timeout and malformed output preserve deterministic scoring (186.569ms)
+✔ AI score pollution is ignored and narrative stays schema-safe (50.7175ms)
+[GitHubSWR] {"event":"refresh_started","username":"octo-cat","reason":"stale_cache"}
+✔ failed refresh preserves previous valid cache and skips unsafe persistence (105.7241ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"octo-cat","mongoDeleted":0}
+[GitHubSWR] {"event":"refresh_completed","username":"octo-cat","durationMs":40}
+✔ username validation returns 400/413 and skill-gap invalidation escapes safely (51.1674ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"owner","mongoDeleted":0}
+✔ saveJobs only clears the owning in-flight promise (197.5537ms)
+✔ GitHub optional and full failures are sanitized and never cached (122.5695ms)
+✔ preview mode is side-effect free and save rejects mismatched usernames (64.6794ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"benchmark-0","mongoDeleted":0}
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"benchmark-1","mongoDeleted":0}
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"benchmark-2","mongoDeleted":0}
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"benchmark-3","mongoDeleted":0}
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"benchmark-4","mongoDeleted":0}
+✔ deterministic timing benchmark (667.8371ms)
+ℹ TIMING fresh p50=39.1ms p95=63.0ms
+ℹ TIMING cache p50=0.2ms p95=0.5ms
+ℹ TIMING forceRefresh p50=62.3ms p95=75.7ms
+ℹ TIMING analyze-save p50=30.8ms p95=36.0ms
+ℹ COUNTS GitHub=270 AI=10 persistence=5
+✔ zero accessible repositories retain centralized metadata and measured zeros (15.3381ms)
+✔ forked repositories do not supply original activity or technology scoring (30.8718ms)
+✔ normalization deduplicates repositories and preserves unavailable activity (64.173ms)
+✔ measured zero stars and activity differ from unavailable data and preserve score parity (61.6666ms)
+✔ AI thrown errors preserve durable scoring and repeat freshness (46.3726ms)
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"active","mongoDeleted":0}
+[GitHubSWR] {"event":"skill_gap_cache_invalidated","username":"active","mongoDeleted":0}
+✔ canonical active identity takes priority and rejects preview overwrite (169.9353ms)
+✔ successful narrative cache preserves facts, dates and snapshot count (60.5002ms)
+✔ missing canonical identity cannot be replaced by a save request username (6.8356ms)
+✔ mostly forked accounts score original work only (101.138ms)
+✔ repository pagination includes later pages without duplicate influence (68.2992ms)
+✔ tiered cache paths and concurrency counts (397.8252ms)
+ℹ MEMORY p50=0.04ms p95=0.13ms
+ℹ REDIS p50=0.03ms p95=0.15ms
+ℹ MONGO p50=0.04ms p95=44.48ms
+ℹ COUNTS githubProfile=2 ai=2 redisGets=10 mongoReads=9 mongoWrites=2
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2954.9498

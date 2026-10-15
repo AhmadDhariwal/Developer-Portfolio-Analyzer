@@ -1,52 +1,86 @@
 <aside
   class="sidebar"
+  id="application-navigation"
+  [class.developer-navigation]="developerWorkspace"
+  [attr.role]="isMobile && isOpen ? 'dialog' : null"
+  [attr.aria-modal]="isMobile && isOpen ? 'true' : null"
+  aria-label="Application navigation"
+  [attr.inert]="isMobile && !isOpen ? '' : null"
+  [attr.aria-hidden]="isMobile && !isOpen ? 'true' : null"
   [class.open]="isOpen"
   [class.closed]="!isOpen"
   [class.mobile]="isMobile"
-  [class.mobile-open]="isMobile && isOpen">
+  [class.mobile-open]="isMobile && isOpen"
+>
   <div class="sidebar-logo">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        <polygon
+          points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        ></polygon>
       </svg>
     </div>
     <div class="logo-copy">
       <span class="logo-text">DevInsight <span class="ai-tag">AI</span></span>
       <span class="logo-subtitle">Workspace</span>
     </div>
+    <button
+      *ngIf="isMobile"
+      type="button"
+      class="drawer-close"
+      aria-label="Close navigation"
+      (click)="collapse.emit()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m6 6 12 12M6 18 18 6" />
+      </svg>
+    </button>
   </div>
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Primary">
     <ul class="nav-menu">
       <li *ngFor="let item of visibleNavItems">
         <a
           [routerLink]="item.route"
           routerLinkActive="active"
+          ariaCurrentWhenActive="page"
           class="nav-link"
           [attr.aria-label]="item.label"
           [attr.title]="!isOpen && !isMobile ? item.label : null"
-          (click)="onNavigate()">
+          (click)="onNavigate()"
+        >
           <span class="nav-icon" [innerHTML]="item.icon"></span>
           <span class="nav-label">{{ item.label }}</span>
         </a>
       </li>
 
       <li
-        *ngFor="let group of visibleNavGroups"
+        *ngFor="let group of visibleNavGroups; let groupIndex = index"
         class="nav-group"
         [class.nav-group--active]="isGroupActive(group)"
         (mouseenter)="onGroupMouseEnter(group.label)"
-        (mouseleave)="onGroupMouseLeave(group.label)">
-        <div class="nav-group-header" (click)="onGroupHeaderClick(group)">
+        (mouseleave)="onGroupMouseLeave(group.label)"
+      >
+        <div class="nav-group-header">
           <ng-container *ngIf="group.route; else groupToggleOnly">
             <a
               [routerLink]="group.route"
               routerLinkActive="active"
+              ariaCurrentWhenActive="page"
               class="nav-link nav-group-link"
               [class.active]="isGroupActive(group)"
               [attr.aria-label]="group.label"
               [attr.title]="!isOpen && !isMobile ? group.label : null"
-              (click)="onNavigate()">
+              (click)="onNavigate()"
+            >
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
             </a>
@@ -55,9 +89,13 @@
             <button
               type="button"
               class="nav-link nav-group-link nav-group-link--button"
+              (click)="onGroupHeaderClick(group)"
+              [attr.aria-expanded]="isGroupOpen(group.label)"
+              [attr.aria-controls]="'nav-group-' + groupIndex"
               [class.active]="isGroupActive(group)"
               [attr.aria-label]="group.label"
-              [attr.title]="!isOpen && !isMobile ? group.label : null">
+              [attr.title]="!isOpen && !isMobile ? group.label : null"
+            >
               <span class="nav-icon" [innerHTML]="group.icon"></span>
               <span class="nav-label">{{ group.label }}</span>
             </button>
@@ -69,22 +107,32 @@
             type="button"
             (click)="$event.stopPropagation(); toggleGroup(group.label)"
             [attr.aria-expanded]="isGroupOpen(group.label)"
-            [attr.aria-label]="'Toggle ' + group.label">
+            [attr.aria-controls]="'nav-group-' + groupIndex"
+            [attr.aria-label]="'Toggle ' + group.label"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
         </div>
 
-        <ul class="nav-submenu" [class.collapsed]="!isGroupOpen(group.label)">
+        <ul
+          class="nav-submenu"
+          [id]="'nav-group-' + groupIndex"
+          [class.collapsed]="!isGroupOpen(group.label)"
+          [attr.inert]="(isOpen || isMobile) && !isGroupOpen(group.label) ? '' : null"
+        >
           <li *ngFor="let item of group.items">
             <ng-container *ngIf="item.route === '/app/admin'; else normalSubLink">
               <a
                 [routerLink]="item.route"
                 class="nav-link nav-sublink"
+                [attr.aria-label]="item.label"
                 [class.active]="isAdminConsoleActive()"
+                [attr.aria-current]="isAdminConsoleActive() ? 'page' : null"
                 [attr.title]="!isOpen && !isMobile ? item.label : null"
-                (click)="onNavigate()">
+                (click)="onNavigate()"
+              >
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -93,10 +141,13 @@
               <a
                 [routerLink]="item.route"
                 routerLinkActive="active"
+                ariaCurrentWhenActive="page"
                 [routerLinkActiveOptions]="{ exact: item.route === '/app/admin/console' }"
                 class="nav-link nav-sublink"
+                [attr.aria-label]="item.label"
                 [attr.title]="!isOpen && !isMobile ? item.label : null"
-                (click)="onNavigate()">
+                (click)="onNavigate()"
+              >
                 <span class="nav-icon" [innerHTML]="item.icon"></span>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -111,7 +162,8 @@
             [routerLink]="item.route"
             class="nav-group-flyout-item"
             [class.flyout-item-active]="isItemActive(item)"
-            (click)="onNavigate()">
+            (click)="onNavigate()"
+          >
             <span class="flyout-icon" [innerHTML]="item.icon"></span>
             <span>{{ item.label }}</span>
           </a>
@@ -123,11 +175,13 @@
   <div class="sidebar-footer">
     <div class="sidebar-user-card">
       <div class="sidebar-user-avatar">
-        <img *ngIf="userAvatar; else sidebarAvatarFallback"
-             [src]="avatarSrc"
-             [alt]="userName"
-             title="User avatar"
-             (error)="onAvatarError($event)" />
+        <img
+          *ngIf="userAvatar; else sidebarAvatarFallback"
+          [src]="avatarSrc"
+          [alt]="userName"
+          title="User avatar"
+          (error)="onAvatarError($event)"
+        />
         <ng-template #sidebarAvatarFallback>
           <span>{{ userInitial }}</span>
         </ng-template>
@@ -138,7 +192,13 @@
       </div>
     </div>
 
-    <button class="logout-btn" type="button" (click)="logout()" [attr.title]="!isOpen && !isMobile ? 'Logout' : null">
+    <button
+      class="logout-btn"
+      type="button"
+      (click)="logout()"
+      aria-label="Logout"
+      [attr.title]="!isOpen && !isMobile ? 'Logout' : null"
+    >
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

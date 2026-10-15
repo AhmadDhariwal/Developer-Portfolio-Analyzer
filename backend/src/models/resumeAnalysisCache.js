@@ -24,6 +24,7 @@ const resumeAnalysisCacheSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true
   },
+  expiresAt: { type: Date },
   analyzedAt: {
     type: Date,
     default: Date.now
