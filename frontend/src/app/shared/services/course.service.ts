@@ -1,14 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
   Course,
+  CourseProgressUpdate,
+  CourseSprintResponse,
+  LearningStatus,
+  MyLearningResponse,
+  UserCourseProgress,
   CourseFilters,
   CoursePlatform,
   CoursesResponse,
-  normalizeCourseFilters
+  normalizeCourseFilters,
 } from '../models/course.model';
 
 interface CourseCacheEntry {
@@ -20,38 +25,83 @@ interface CourseCacheEntry {
 export class CourseService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly cache = new Map<string, CourseCacheEntry>();
-  private readonly cacheTtlMs = 24 * 60 * 60 * 1000;
+  // Share only pending HTTP requests. Backend source identity must be rechecked on every later read.
+  private readonly cacheTtlMs = 60 * 1000;
   private readonly maxCacheEntries = 50;
 
-  constructor(private readonly http: HttpClient, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
+  ) {
     this.cacheInvalidation.register('courses', () => this.clearCache());
   }
 
-  getCourses(filters: Partial<CourseFilters> = {}, page = 1, limit = 10): Observable<CoursesResponse> {
+  getCourses(
+    filters: Partial<CourseFilters> = {},
+    page = 1,
+    limit = 10,
+    options: { refresh?: boolean } = {},
+  ): Observable<CoursesResponse> {
     const normalizedFilters = normalizeCourseFilters(filters);
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, Math.min(20, limit));
     const cacheKey = this.buildKey('courses', {
       ...normalizedFilters,
       page: safePage,
-      limit: safeLimit
+      limit: safeLimit,
+      refresh: options.refresh || false,
     });
-    let params = new HttpParams()
-      .set('page', String(safePage))
-      .set('limit', String(safeLimit));
+    let params = new HttpParams().set('page', String(safePage)).set('limit', String(safeLimit));
 
-    if (normalizedFilters.platform !== 'All') params = params.set('platform', normalizedFilters.platform);
+    if (options.refresh) params = params.set('refresh', 'true');
+    if (normalizedFilters.platform !== 'All')
+      params = params.set('platform', normalizedFilters.platform);
     if (normalizedFilters.rating) params = params.set('rating', normalizedFilters.rating);
     if (normalizedFilters.level !== 'All') params = params.set('level', normalizedFilters.level);
-    if (normalizedFilters.duration !== 'All') params = params.set('duration', normalizedFilters.duration);
+    if (normalizedFilters.duration !== 'All')
+      params = params.set('duration', normalizedFilters.duration);
     if (normalizedFilters.topic) params = params.set('topic', normalizedFilters.topic);
 
     return this.once(
       cacheKey,
-      this.http.get<CoursesResponse>(`${this.baseUrl}/courses`, { params }).pipe(
-        map((response) => this.normalizeResponse(response, normalizedFilters, safePage))
-      )
+      this.http
+        .get<CoursesResponse>(`${this.baseUrl}/courses`, { params })
+        .pipe(map((response) => this.normalizeResponse(response, normalizedFilters, safePage))),
     );
+  }
+
+  getMyLearning(status?: LearningStatus, page = 1, limit = 50): Observable<MyLearningResponse> {
+    let params = new HttpParams()
+      .set('page', String(Math.max(1, page)))
+      .set('limit', String(Math.max(1, Math.min(50, limit))));
+    if (status) params = params.set('status', status);
+    return this.http.get<MyLearningResponse>(`${this.baseUrl}/courses/my-learning`, { params });
+  }
+
+  saveProgress(courseId: string, update: CourseProgressUpdate): Observable<UserCourseProgress> {
+    // Never send provider metadata or ownership fields to the progress endpoint.
+    const body: CourseProgressUpdate = { status: update.status };
+    if (update.notes !== undefined) body.notes = update.notes;
+    if (update.progressPercent !== undefined) body.progressPercent = update.progressPercent;
+    return this.http.put<UserCourseProgress>(
+      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
+      body,
+    );
+  }
+
+  removeProgress(courseId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
+    );
+  }
+
+  addToSprint(courseId: string): Observable<CourseSprintResponse> {
+    return this.http
+      .post<CourseSprintResponse>(
+        `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/career-sprint`,
+        {},
+      )
+      .pipe(tap(() => this.cacheInvalidation.clearCareerSprintCaches()));
   }
 
   clearCache(): void {
@@ -82,17 +132,20 @@ export class CourseService {
       this.cache.delete(key);
       this.cache.set(key, existing);
       return existing.observable.pipe(
-        map((response) => ({ ...response, fromFrontendCache: true }))
+        map((response) => ({ ...response, fromFrontendCache: false })),
       );
     }
     if (existing) this.cache.delete(key);
 
     const shared$ = source$.pipe(
       catchError((error) => {
-        this.cache.delete(key);
+        if (this.cache.get(key)?.observable === shared$) this.cache.delete(key);
         return throwError(() => error);
       }),
-      shareReplay({ bufferSize: 1, refCount: false })
+      finalize(() => {
+        if (this.cache.get(key)?.observable === shared$) this.cache.delete(key);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     this.cache.set(key, { observable: shared$, expiresAt: now + this.cacheTtlMs });
@@ -105,7 +158,7 @@ export class CourseService {
   private normalizeResponse(
     response: CoursesResponse | null | undefined,
     filters: CourseFilters,
-    requestedPage: number
+    requestedPage: number,
   ): CoursesResponse {
     const seen = new Set<string>();
     const courses = (Array.isArray(response?.courses) ? response.courses : [])
@@ -120,27 +173,37 @@ export class CourseService {
 
     const total = Math.max(0, Number(response?.total ?? courses.length) || 0);
     const totalPages = Math.max(1, Number(response?.totalPages ?? 1) || 1);
-    const page = Math.min(Math.max(1, Number(response?.page ?? requestedPage) || requestedPage), totalPages);
+    const page = Math.min(
+      Math.max(1, Number(response?.page ?? requestedPage) || requestedPage),
+      totalPages,
+    );
 
     return {
+      personalization: response?.personalization,
+      requestedSkills: response?.requestedSkills,
+      cacheMetadata: response?.cacheMetadata,
       courses,
       total,
       page,
       totalPages,
-      hasMore: Boolean(response?.hasMore ?? (page < totalPages)),
+      hasMore: Boolean(response?.hasMore ?? page < totalPages),
       fromCache: Boolean(response?.fromCache),
       fromFrontendCache: false,
       recommendedBasedOn: response?.recommendedBasedOn
         ? {
             ...response.recommendedBasedOn,
-            activeFilters: normalizeCourseFilters(response.recommendedBasedOn.activeFilters || filters),
+            activeFilters: normalizeCourseFilters(
+              response.recommendedBasedOn.activeFilters || filters,
+            ),
             skillGapsUsed: Array.isArray(response.recommendedBasedOn.skillGapsUsed)
-              ? response.recommendedBasedOn.skillGapsUsed.map((value) => String(value || '').trim()).filter(Boolean)
+              ? response.recommendedBasedOn.skillGapsUsed
+                  .map((value) => String(value || '').trim())
+                  .filter(Boolean)
               : [],
             summary: String(response.recommendedBasedOn.summary || '').trim(),
-            sourceMessage: String(response.recommendedBasedOn.sourceMessage || '').trim()
+            sourceMessage: String(response.recommendedBasedOn.sourceMessage || '').trim(),
           }
-        : null
+        : null,
     };
   }
 
@@ -149,23 +212,28 @@ export class CourseService {
     const title = String(course?.title || '').trim();
     const platform = String(course?.platform || '').trim() as CoursePlatform;
     const url = String(course?.url || '').trim();
-    const validPlatforms: CoursePlatform[] = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'];
+    const validPlatforms: CoursePlatform[] = [
+      'Udemy',
+      'Coursera',
+      'YouTube',
+      'edX',
+      'freeCodeCamp',
+    ];
 
-    if (!id || !title || !validPlatforms.includes(platform) || !/^https?:\/\//i.test(url)) return null;
+    if (!id || !title || !validPlatforms.includes(platform) || !/^https?:\/\//i.test(url))
+      return null;
 
     const topics = Array.isArray(course?.topics)
-      ? [...new Set(course.topics.map((topic) => String(topic || '').trim()).filter(Boolean))].slice(0, 5)
+      ? [...new Set(course.topics.map((topic) => String(topic || '').trim()).filter(Boolean))]
       : [];
-    const numeric = (value: unknown): number | undefined => {
+    const numeric = (value: unknown): number | null | undefined => {
+      if (value === null) return null;
+      if (value === undefined || value === '') return undefined;
       const parsed = Number(value);
-      return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
     };
 
     const rating = numeric(course?.rating);
-    const reviewCount = (() => {
-      const parsed = Number(course?.reviewCount);
-      return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : undefined;
-    })();
 
     return {
       id,
@@ -176,16 +244,23 @@ export class CourseService {
       description: String(course?.description || '').trim() || undefined,
       instructor: String(course?.instructor || '').trim() || undefined,
       rating,
-      reviewCount: reviewCount && reviewCount > 0 ? reviewCount : undefined,
+      reviewCount: numeric(course?.reviewCount),
       duration: String(course?.duration || '').trim() || undefined,
       durationHours: numeric(course?.durationHours),
-      level: course?.level || undefined,
+      level: course?.level,
       thumbnail: String(course?.thumbnail || '').trim() || undefined,
       popularity: numeric(course?.popularity),
-      relevanceScore: numeric(course?.relevanceScore),
-      finalScore: numeric(course?.finalScore),
+      relevanceScore: numeric(course?.relevanceScore) ?? undefined,
+      finalScore: numeric(course?.finalScore) ?? undefined,
       whyRecommended: String(course?.whyRecommended || '').trim() || undefined,
-      platformColor: course?.platformColor
+      platformColor: course?.platformColor,
+      provenance: course?.provenance,
+      engagementScore: numeric(course?.engagementScore),
+      viewCount: numeric(course?.viewCount),
+      likeCount: numeric(course?.likeCount),
+      matchedRequiredTargets: course?.matchedRequiredTargets,
+      matchedTargets: course?.matchedTargets,
+      matchedCareerSkills: course?.matchedCareerSkills,
     };
   }
 }

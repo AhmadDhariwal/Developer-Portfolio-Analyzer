@@ -569,6 +569,31 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get availableSourceCount(): number {
     return this.sourceEntries.filter((source) => source.available === true).length;
   }
+  get highPriorityCount(): number {
+    return this.allCards.filter((c) => (c.priority || '').toLowerCase() === 'high').length;
+  }
+  get mediumPriorityCount(): number {
+    return this.allCards.filter((c) => (c.priority || '').toLowerCase() === 'medium').length;
+  }
+  get lowPriorityCount(): number {
+    return this.allCards.filter((c) => (c.priority || '').toLowerCase() === 'low').length;
+  }
+  onQuickCategorySelect(cat: string): void {
+    if (this.category === cat) {
+      this.category = '';
+    } else {
+      this.category = cat;
+    }
+    this.onFiltersChanged();
+  }
+  onQuickPrioritySelect(p: string): void {
+    if (this.priority === p) {
+      this.priority = '';
+    } else {
+      this.priority = p;
+    }
+    this.onFiltersChanged();
+  }
   onFiltersChanged(): void {
     this.visibleCount = 8;
     this.includeFeatured = true;

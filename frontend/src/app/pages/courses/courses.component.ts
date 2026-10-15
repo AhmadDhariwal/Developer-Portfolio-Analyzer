@@ -3,12 +3,14 @@ import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
-  OnInit
+  OnInit,
+  ElementRef,
+  ViewChild,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { CourseService } from '../../shared/services/course.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -16,12 +18,16 @@ import {
   ActiveCourseFilterChip,
   Course,
   CourseFilters,
+  CoursePersonalization,
   DEFAULT_FILTERS,
   RecommendedBasedOn,
-  normalizeCourseFilters
+  normalizeCourseFilters,
 } from '../../shared/models/course.model';
 import { CourseCardComponent } from '../../shared/components/course-card/course-card';
 import { CourseFiltersComponent } from '../../shared/components/course-filters/course-filters';
+
+import { CourseLearningStore, learningError } from './services/course-learning.store';
+import { MyLearningComponent } from './components/my-learning.component';
 
 const INITIAL_DISPLAY = 10;
 const PAGE_SIZE = 10;
@@ -29,12 +35,29 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, FormsModule, CourseCardComponent, CourseFiltersComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    CourseCardComponent,
+    CourseFiltersComponent,
+    MyLearningComponent,
+  ],
+  providers: [CourseLearningStore],
   templateUrl: './courses.component.html',
   styleUrl: './courses.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CoursesComponent implements OnInit, OnDestroy {
+  @ViewChild('filterDialog') filterDialog!: ElementRef<HTMLDialogElement>;
+  @ViewChild('filterTrigger') filterTrigger!: ElementRef<HTMLButtonElement>;
+  view: 'discover' | 'learning' = 'discover';
+  loadedAt: Date | null = null;
+  personalization: CoursePersonalization | null = null;
+  private scrollContainer: HTMLElement | null = null;
+  private previousOverflow = '';
+  private previousBodyOverflow = '';
+  private loadMoreFailed = false;
+  private forceRefresh = false;
   allCourses: Course[] = [];
   displayCount = INITIAL_DISPLAY;
 
@@ -50,13 +73,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
   recommendedBasedOn: RecommendedBasedOn | null = null;
   isMobileFiltersOpen = false;
-  isInsightsExpanded = false;
 
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
   readonly PAGE_SIZE = PAGE_SIZE;
 
   private readonly subscriptions = new Subscription();
-  private readonly filterChanges = new Subject<CourseFilters>();
+  private previousQueryTopic = '';
   private requestToken = 0;
   private lastProfileSignature = '';
   private profileReady = false;
@@ -66,7 +88,8 @@ export class CoursesComponent implements OnInit, OnDestroy {
     private readonly courseService: CourseService,
     private readonly careerProfileService: CareerProfileService,
     private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef
+    readonly learning: CourseLearningStore,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   get displayedCourses(): Course[] {
@@ -140,36 +163,109 @@ export class CoursesComponent implements OnInit, OnDestroy {
     return Boolean(this.recommendedBasedOn?.fallbackUsed);
   }
 
+  get targetSkillGaps(): string[] {
+    return this.recommendedBasedOn?.skillGapsUsed || [];
+  }
+
+  get savedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'saved').length;
+  }
+
+  get inProgressCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'in_progress').length;
+  }
+
+  get completedCount(): number {
+    return Object.values(this.learning.records()).filter((r) => r.status === 'completed').length;
+  }
+
+  get totalSavedCourses(): number {
+    return Object.keys(this.learning.records()).length;
+  }
+
+  get averageLearningProgress(): number {
+    const list = Object.values(this.learning.records()).filter(
+      (r) => r.status === 'in_progress' && r.progressPercent != null,
+    );
+    if (!list.length) return 0;
+    const sum = list.reduce((acc, curr) => acc + (curr.progressPercent || 0), 0);
+    return Math.round(sum / list.length);
+  }
+
+  onQuickTopicSelect(topic: string): void {
+    const current = (this.activeFilters.topic || '').trim().toLowerCase();
+    if (current === topic.trim().toLowerCase()) {
+      this.clearFilter('topic');
+    } else {
+      this.onFiltersChange({ ...this.activeFilters, topic: topic.trim() });
+    }
+  }
+
+  onQuickPreset(preset: 'all' | 'free' | 'udemy' | 'coursera' | 'short' | 'advanced'): void {
+    if (preset === 'all') {
+      this.onFiltersReset();
+      return;
+    }
+    const next: CourseFilters = { ...this.activeFilters };
+    if (preset === 'free') {
+      next.platform = next.platform === 'YouTube' ? 'All' : 'YouTube';
+    } else if (preset === 'udemy') {
+      next.platform = next.platform === 'Udemy' ? 'All' : 'Udemy';
+    } else if (preset === 'coursera') {
+      next.platform = next.platform === 'Coursera' ? 'All' : 'Coursera';
+    } else if (preset === 'short') {
+      next.duration = next.duration === '0-2' ? 'All' : '0-2';
+    } else if (preset === 'advanced') {
+      next.level = next.level === 'Advanced' ? 'All' : 'Advanced';
+    }
+    this.onFiltersChange(next);
+  }
+
+  isPresetActive(preset: 'all' | 'free' | 'udemy' | 'coursera' | 'short' | 'advanced'): boolean {
+    if (preset === 'all') {
+      return (
+        !this.hasActiveFilters &&
+        this.activeFilters.platform === 'All' &&
+        this.activeFilters.duration === 'All' &&
+        this.activeFilters.level === 'All'
+      );
+    }
+    if (preset === 'free') return this.activeFilters.platform === 'YouTube';
+    if (preset === 'udemy') return this.activeFilters.platform === 'Udemy';
+    if (preset === 'coursera') return this.activeFilters.platform === 'Coursera';
+    if (preset === 'short') return this.activeFilters.duration === '0-2';
+    if (preset === 'advanced') return this.activeFilters.level === 'Advanced';
+    return false;
+  }
+
+  onTopicClickedFromCard(topic: string): void {
+    this.onQuickTopicSelect(topic);
+  }
+
   ngOnInit(): void {
+    this.learning.load();
     this.applyTopicFromQuery(
-      this.route.snapshot.queryParamMap.get('skill')
-      || this.route.snapshot.queryParamMap.get('topic')
+      this.route.snapshot.queryParamMap.get('skill') ||
+        this.route.snapshot.queryParamMap.get('topic'),
     );
 
     this.subscriptions.add(
-      this.filterChanges.pipe(
-        distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
-      ).subscribe((filters) => {
-        this.activeFilters = normalizeCourseFilters(filters);
-        this.isMobileFiltersOpen = false;
-        this.resetAndFetch();
-      })
-    );
-
-    this.subscriptions.add(
-      this.route.queryParamMap.pipe(
-        map((params) => String(params.get('skill') || params.get('topic') || '').trim()),
-        distinctUntilChanged()
-      ).subscribe((topic) => {
-        if (!topic) return;
-        const nextFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
-        if (JSON.stringify(nextFilters) === JSON.stringify(this.activeFilters)) return;
-        this.activeFilters = nextFilters;
-        if (this.profileReady) {
-          this.resetAndFetch();
-        }
-        this.cdr.markForCheck();
-      })
+      this.route.queryParamMap
+        .pipe(
+          map((params) => String(params.get('skill') || params.get('topic') || '').trim()),
+          distinctUntilChanged(),
+        )
+        .subscribe((topic) => {
+          if (!topic && !this.previousQueryTopic) return;
+          this.previousQueryTopic = topic;
+          const nextFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
+          if (JSON.stringify(nextFilters) === JSON.stringify(this.activeFilters)) return;
+          this.activeFilters = nextFilters;
+          if (this.profileReady) {
+            this.resetAndFetch();
+          }
+          this.cdr.markForCheck();
+        }),
     );
 
     this.subscriptions.add(
@@ -177,9 +273,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
         .pipe(
           distinctUntilChanged(
             (previous, current) =>
-              previous.careerStack === current.careerStack
-              && previous.experienceLevel === current.experienceLevel
-          )
+              previous.careerStack === current.careerStack &&
+              previous.experienceLevel === current.experienceLevel,
+          ),
         )
         .subscribe((profile) => {
           const nextSignature = `${profile.careerStack}|${profile.experienceLevel}`.toLowerCase();
@@ -189,22 +285,26 @@ export class CoursesComponent implements OnInit, OnDestroy {
           this.lastProfileSignature = nextSignature;
           this.profileReady = true;
           this.resetAndFetch();
-        })
+        }),
     );
   }
 
   ngOnDestroy(): void {
+    this.closeMobileFilters(false);
     this.subscriptions.unsubscribe();
   }
 
   onFiltersChange(filters: CourseFilters): void {
-    this.activeFilters = normalizeCourseFilters(filters);
-    this.filterChanges.next(this.activeFilters);
+    this.closeMobileFilters();
+    const normalized = normalizeCourseFilters(filters);
+    if (JSON.stringify(normalized) === JSON.stringify(this.activeFilters)) return;
+    this.activeFilters = normalized;
+    this.resetAndFetch();
   }
 
   onFiltersReset(): void {
     this.activeFilters = { ...DEFAULT_FILTERS };
-    this.isMobileFiltersOpen = false;
+    this.closeMobileFilters();
     this.courseService.clearCache();
     this.resetAndFetch();
   }
@@ -243,19 +343,72 @@ export class CoursesComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleMobileFilters(): void {
-    this.isMobileFiltersOpen = !this.isMobileFiltersOpen;
-    this.cdr.markForCheck();
+  get hasCareerContext(): boolean {
+    return this.careerProfileService.isConfigured;
   }
 
-  toggleInsights(): void {
-    this.isInsightsExpanded = !this.isInsightsExpanded;
+  openMobileFilters(): void {
+    this.isMobileFiltersOpen = true;
+    this.cdr.detectChanges();
+    this.filterDialog.nativeElement.showModal();
+    this.scrollContainer = document.querySelector<HTMLElement>('.main-content');
+    this.previousOverflow = this.scrollContainer?.style.overflow || '';
+    this.previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (this.scrollContainer) this.scrollContainer.style.overflow = 'hidden';
+  }
+  closeMobileFilters(restoreFocus = true): void {
+    if (!this.isMobileFiltersOpen) return;
+    this.filterDialog?.nativeElement.close();
+    this.isMobileFiltersOpen = false;
+    if (this.scrollContainer) this.scrollContainer.style.overflow = this.previousOverflow;
+    this.scrollContainer = null;
+    document.body.style.overflow = this.previousBodyOverflow;
+    if (restoreFocus) this.filterTrigger?.nativeElement.focus();
     this.cdr.markForCheck();
+  }
+  trapFilterFocus(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+    const dialog = this.filterDialog.nativeElement;
+    const controls = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex="0"]',
+      ),
+    ).filter((element) => element.getClientRects().length > 0);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (
+      event.shiftKey &&
+      (document.activeElement === first || !dialog.contains(document.activeElement))
+    ) {
+      event.preventDefault();
+      last?.focus();
+    } else if (
+      !event.shiftKey &&
+      (document.activeElement === last || !dialog.contains(document.activeElement))
+    ) {
+      event.preventDefault();
+      first?.focus();
+    }
+  }
+  cancelFilters(event: Event): void {
+    event.preventDefault();
+    this.closeMobileFilters();
+  }
+  backdropFilters(event: MouseEvent): void {
+    if (event.target === this.filterDialog.nativeElement) this.closeMobileFilters();
+  }
+  @HostListener('window:resize') onResize(): void {
+    if (window.innerWidth > 768) this.closeMobileFilters(false);
   }
 
   retryLoad(): void {
     this.errorMessage = '';
     this.courseService.clearCache();
+    if (this.loadMoreFailed) {
+      this.fetchPage(this.currentPage + 1, true);
+      return;
+    }
     this.resetAndFetch({ preserveOnFailure: this.allCourses.length > 0 });
   }
 
@@ -265,6 +418,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
       return;
     }
     this.refreshLockUntil = now + 800;
+    this.forceRefresh = true;
     this.courseService.clearCache();
     this.resetAndFetch({ preserveOnFailure: this.allCourses.length > 0 });
   }
@@ -288,7 +442,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
           page: this.currentPage,
           totalPages: this.totalPages,
           totalCourses: this.totalCourses,
-          recommendedBasedOn: this.recommendedBasedOn
+          recommendedBasedOn: this.recommendedBasedOn,
         }
       : null;
 
@@ -300,6 +454,8 @@ export class CoursesComponent implements OnInit, OnDestroy {
       this.totalPages = 1;
       this.totalCourses = 0;
       this.recommendedBasedOn = null;
+      this.personalization = null;
+      this.loadedAt = null;
     }
     this.errorMessage = '';
     this.fetchPage(1, false, { preserveOnFailure, previousResult });
@@ -318,7 +474,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
         totalCourses: number;
         recommendedBasedOn: RecommendedBasedOn | null;
       } | null;
-    } = {}
+    } = {},
   ): void {
     const currentRequest = ++this.requestToken;
     const preservePrevious = Boolean(options.preserveOnFailure) && Boolean(options.previousResult);
@@ -338,58 +494,65 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
     this.cdr.markForCheck();
 
-    this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE).subscribe({
-      next: (response) => {
-        if (currentRequest !== this.requestToken) {
-          return;
-        }
+    const refresh = this.forceRefresh;
+    this.forceRefresh = false;
+    this.subscriptions.add(
+      this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE, { refresh }).subscribe({
+        next: (response) => {
+          if (currentRequest !== this.requestToken) {
+            return;
+          }
 
-        const incoming = Array.isArray(response.courses) ? response.courses : [];
-        this.allCourses = append
-          ? this.mergeCourses(this.allCourses, incoming)
-          : incoming;
+          const incoming = Array.isArray(response.courses) ? response.courses : [];
+          this.allCourses = append ? this.mergeCourses(this.allCourses, incoming) : incoming;
 
-        this.displayCount = append
-          ? this.allCourses.length
-          : Math.min(INITIAL_DISPLAY, this.allCourses.length);
+          this.displayCount = append
+            ? this.allCourses.length
+            : Math.min(INITIAL_DISPLAY, this.allCourses.length);
 
-        this.currentPage = response.page ?? page;
-        this.totalPages = response.totalPages ?? 1;
-        this.totalCourses = response.total ?? this.allCourses.length;
-        this.recommendedBasedOn = response.recommendedBasedOn
-          ? {
-              ...response.recommendedBasedOn,
-              fromCache: Boolean(response.fromCache || response.fromFrontendCache)
-            }
-          : null;
-        this.errorMessage = '';
-        this.isLoading = false;
-        this.isLoadingMore = false;
-        this.isRefreshing = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        if (currentRequest !== this.requestToken) {
-          return;
-        }
+          this.loadedAt = new Date();
+          this.personalization =
+            response.personalization || response.recommendedBasedOn?.personalization || null;
+          this.loadMoreFailed = false;
+          this.currentPage = response.page ?? page;
+          this.totalPages = response.totalPages ?? 1;
+          this.totalCourses = response.total ?? this.allCourses.length;
+          this.recommendedBasedOn = response.recommendedBasedOn
+            ? {
+                ...response.recommendedBasedOn,
+                fromCache: Boolean(response.fromCache || response.fromFrontendCache),
+              }
+            : null;
+          this.errorMessage = '';
+          this.isLoading = false;
+          this.isLoadingMore = false;
+          this.isRefreshing = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (currentRequest !== this.requestToken) {
+            return;
+          }
 
-        this.errorMessage = error?.error?.message || 'Failed to load courses. Please try again.';
-        this.isLoading = false;
-        this.isLoadingMore = false;
-        this.isRefreshing = false;
+          this.errorMessage = learningError(error);
+          this.loadMoreFailed = append;
+          this.isLoading = false;
+          this.isLoadingMore = false;
+          this.isRefreshing = false;
 
-        if (preservePrevious && options.previousResult) {
-          this.allCourses = options.previousResult.courses;
-          this.displayCount = options.previousResult.displayCount;
-          this.currentPage = options.previousResult.page;
-          this.totalPages = options.previousResult.totalPages;
-          this.totalCourses = options.previousResult.totalCourses;
-          this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
-        }
+          if (preservePrevious && options.previousResult) {
+            this.allCourses = options.previousResult.courses;
+            this.displayCount = options.previousResult.displayCount;
+            this.currentPage = options.previousResult.page;
+            this.totalPages = options.previousResult.totalPages;
+            this.totalCourses = options.previousResult.totalCourses;
+            this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
+          }
 
-        this.cdr.markForCheck();
-      }
-    });
+          this.cdr.markForCheck();
+        },
+      }),
+    );
   }
 
   private mergeCourses(existing: Course[], incoming: Course[]): Course[] {

@@ -1,0 +1,68 @@
+{
+  "isolatedLocalOnly": true,
+  "port": 27018,
+  "databases": [
+    {
+      "name": "devinsight_learning_browser",
+      "documentCountsBeforeCleanup": {
+        "recommendations": 0,
+        "integrationinsights": 0,
+        "platformsettings": 0,
+        "newsprovidercircuits": 0,
+        "integrationsynclogs": 0,
+        "users": 2,
+        "integrationconnections": 0,
+        "githubanalysiscaches": 1,
+        "publicprofileviews": 0,
+        "newscaches": 0,
+        "weeklyreports": 0,
+        "jobcaches": 0,
+        "usercourseprogresses": 1,
+        "resumeanalyses": 1,
+        "publicprofiles": 0,
+        "analyses": 0,
+        "analysiscaches": 5,
+        "resumefiles": 1,
+        "notifications": 0,
+        "scenariosimulations": 0,
+        "careersprints": 1,
+        "repositories": 0,
+        "skillgraphs": 0
+      },
+      "dropped": true
+    },
+    {
+      "name": "devinsight_learning_final",
+      "documentCountsBeforeCleanup": {
+        "skillgraphs": 0,
+        "analyses": 0,
+        "resumeanalyses": 0,
+        "supporttickets": 0,
+        "careersprints": 0,
+        "repositories": 0,
+        "platformsettings": 0,
+        "analysiscaches": 0,
+        "notifications": 0,
+        "weeklyreports": 0,
+        "savedpreviews": 0,
+        "integrationinsights": 0,
+        "recommendations": 0,
+        "usercourseprogresses": 0,
+        "supportticketdedupes": 0,
+        "githubanalysiscaches": 0,
+        "supportticketquotas": 0,
+        "publicprofiles": 0,
+        "jobcaches": 0,
+        "scenariosimulations": 0,
+        "users": 0,
+        "publicprofileviews": 0,
+        "resumefiles": 0
+      },
+      "dropped": true
+    }
+  ],
+  "remainingOwnedDatabases": [],
+  "repositoryFilesDeleted": [],
+  "processCleanup": "Owned mongod PID 38936 on port 27018 stopped; exact owned temporary directory verified and removed.",
+  "temporaryMongoFilesRemoved": 26
+}

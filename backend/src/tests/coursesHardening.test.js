@@ -8,7 +8,10 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../../..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 
-const controllerSource = read('backend', 'src', 'controllers', 'courseController.js');
+const controllerSource =
+  read('backend', 'src', 'controllers', 'courseController.js') +
+  read('backend', 'src', 'services', 'courseRecommendationService.js') +
+  read('backend', 'src', 'services', 'coursePersonalizationService.js');
 const serviceSource = read('backend', 'src', 'services', 'courseService.js');
 const routesSource = read('backend', 'src', 'routes', 'courseRoutes.js');
 const promptSource = read('backend', 'src', 'prompts', 'coursePrompt.js');
@@ -24,7 +27,7 @@ const {
   isPersistableCoursePool,
   sanitizeSkillList,
   buildCoursePoolWithMetadata,
-  hasValidCourseUrl
+  hasValidCourseUrl,
 } = require('../services/courseService');
 
 const {
@@ -33,7 +36,7 @@ const {
   buildPoolCacheKey,
   buildOrShareCoursePool,
   COURSE_POOL_VERSION,
-  SKILL_GAP_ANALYSIS_VERSION
+  SKILL_GAP_ANALYSIS_VERSION,
 } = require('../controllers/courseController');
 
 test('Learning Hub route requires JWT protect middleware', () => {
@@ -49,10 +52,10 @@ test('controller never returns provider tokens, stack traces, or raw error.messa
 });
 
 test('skill signals are scoped to user, active stack, experience, and skill-gap version', () => {
-  assert.match(controllerSource, /analysisVersion:\s*SKILL_GAP_ANALYSIS_VERSION/);
+  assert.match(controllerSource, /'analysisData.ruleVersion': SKILL_RULE/);
   assert.match(controllerSource, /careerStack,\s*experienceLevel/);
-  assert.equal(SKILL_GAP_ANALYSIS_VERSION, 'v6-skill-intelligence');
-  assert.match(controllerSource, /resolveSkillSignals\(userId, careerStack, experienceLevel/);
+  assert.equal(SKILL_GAP_ANALYSIS_VERSION, 'skill-evidence-coverage-v1');
+  assert.match(controllerSource, /resolveSkillSignals\([\s\S]{0,100}userId,/);
 });
 
 test('pool cache keys remain user-owned and versioned', () => {
@@ -62,7 +65,7 @@ test('pool cache keys remain user-owned and versioned', () => {
     experienceLevel: 'Intern',
     skillGaps: ['SQL'],
     knownSkills: ['Node.js'],
-    filters: normaliseCourseFilters({ platform: 'All' })
+    filters: normaliseCourseFilters({ platform: 'All' }),
   });
   const keyB = buildPoolCacheKey({
     userId: 'user-b',
@@ -70,7 +73,7 @@ test('pool cache keys remain user-owned and versioned', () => {
     experienceLevel: 'Intern',
     skillGaps: ['SQL'],
     knownSkills: ['Node.js'],
-    filters: normaliseCourseFilters({ platform: 'All' })
+    filters: normaliseCourseFilters({ platform: 'All' }),
   });
   const keyC = buildPoolCacheKey({
     userId: 'user-a',
@@ -78,12 +81,12 @@ test('pool cache keys remain user-owned and versioned', () => {
     experienceLevel: 'Intern',
     skillGaps: ['SQL'],
     knownSkills: ['Node.js'],
-    filters: normaliseCourseFilters({ platform: 'All' })
+    filters: normaliseCourseFilters({ platform: 'All' }),
   });
 
   assert.equal(keyA.cacheLookup.userId, 'user-a');
   assert.equal(keyA.cacheLookup.analysisVersion, COURSE_POOL_VERSION);
-  assert.equal(COURSE_POOL_VERSION, 'courses_pool_v5');
+  assert.equal(COURSE_POOL_VERSION, 'courses_pool_v6_evidence');
   assert.notEqual(keyA.cacheLookup.userId, keyB.cacheLookup.userId);
   assert.notEqual(keyA.poolHash, keyC.poolHash);
 });
@@ -96,9 +99,19 @@ test('career stack and experience resolve to allowed enums only', () => {
 });
 
 test('invalid and empty courses are rejected before ranking or persistence', () => {
-  assert.equal(normaliseCourse({ title: '', platform: 'Udemy', url: 'https://www.udemy.com/course/x/' }), null);
+  assert.equal(
+    normaliseCourse({ title: '', platform: 'Udemy', url: 'https://www.udemy.com/course/x/' }),
+    null,
+  );
   assert.equal(normaliseCourse({ title: 'No URL', platform: 'Udemy' }), null);
-  assert.equal(normaliseCourse({ title: 'Bad platform', platform: 'FakeSchool', url: 'https://example.com/x' }), null);
+  assert.equal(
+    normaliseCourse({
+      title: 'Bad platform',
+      platform: 'FakeSchool',
+      url: 'https://example.com/x',
+    }),
+    null,
+  );
   assert.equal(hasValidCourseUrl('not-a-url'), false);
 
   const valid = normaliseCourse({
@@ -108,7 +121,7 @@ test('invalid and empty courses are rejected before ranking or persistence', () 
     url: 'https://www.udemy.com/course/node-apis/',
     rating: 4.6,
     popularity: 80,
-    topics: ['Node.js']
+    topics: ['Node.js'],
   });
   assert.ok(valid);
   assert.equal(isPersistableCoursePool([valid]), true);
@@ -116,7 +129,7 @@ test('invalid and empty courses are rejected before ranking or persistence', () 
   assert.equal(isPersistableCoursePool([{ title: 'x' }]), false);
 });
 
-test('missing YouTube engagement does not invent a rating', () => {
+test('derived YouTube engagement remains a separate optional indicator', () => {
   assert.equal(calcYouTubeRating(0, 0), null);
   assert.equal(calcYouTubeRating(undefined, 10), null);
   assert.ok(Number.isFinite(calcYouTubeRating(1000, 50)));
@@ -131,7 +144,7 @@ test('ranking is deterministic and does not invent ratings for unscored courses'
       platform: 'Coursera',
       url: 'https://www.coursera.org/learn/sql',
       topics: ['SQL'],
-      popularity: 70
+      popularity: 70,
     }),
     normaliseCourse({
       id: 'b',
@@ -140,28 +153,36 @@ test('ranking is deterministic and does not invent ratings for unscored courses'
       url: 'https://www.udemy.com/course/sql-masterclass/',
       rating: 4.8,
       topics: ['SQL'],
-      popularity: 70
-    })
+      popularity: 70,
+    }),
   ].filter(Boolean);
 
   const rankedOnce = scoreAndRank(courses, {
     careerStack: 'Backend',
     experienceLevel: 'Intern',
     skillGaps: ['SQL'],
-    knownSkills: ['Node.js']
+    knownSkills: ['Node.js'],
   });
   const rankedTwice = scoreAndRank(courses, {
     careerStack: 'Backend',
     experienceLevel: 'Intern',
     skillGaps: ['SQL'],
-    knownSkills: ['Node.js']
+    knownSkills: ['Node.js'],
   });
 
   assert.deepEqual(
-    rankedOnce.map((course) => ({ id: course.id, finalScore: course.finalScore, relevanceScore: course.relevanceScore })),
-    rankedTwice.map((course) => ({ id: course.id, finalScore: course.finalScore, relevanceScore: course.relevanceScore }))
+    rankedOnce.map((course) => ({
+      id: course.id,
+      finalScore: course.finalScore,
+      relevanceScore: course.relevanceScore,
+    })),
+    rankedTwice.map((course) => ({
+      id: course.id,
+      finalScore: course.finalScore,
+      relevanceScore: course.relevanceScore,
+    })),
   );
-  assert.equal(rankedOnce.find((course) => course.id === 'a')?.rating, undefined);
+  assert.equal(rankedOnce.find((course) => course.id === 'a')?.rating, null);
   assert.equal(rankedOnce.find((course) => course.id === 'b')?.rating, 4.8);
 });
 
@@ -178,7 +199,7 @@ test('filter normalisation clamps paging and rejects unknown enums', () => {
     rating: '9',
     topic: ` ${'x'.repeat(100)} `,
     page: '-3',
-    limit: '999'
+    limit: '999',
   });
   assert.equal(filters.platform, 'All');
   assert.equal(filters.level, 'All');
@@ -199,7 +220,7 @@ test('concurrent pool builds share one inflight promise', async () => {
 
   const [first, second] = await Promise.all([
     buildOrShareCoursePool('inflight-test-key', buildFn),
-    buildOrShareCoursePool('inflight-test-key', buildFn)
+    buildOrShareCoursePool('inflight-test-key', buildFn),
   ]);
 
   assert.equal(runs, 1);
@@ -215,7 +236,7 @@ test('empty or unsafe pools are never marked persistable', async () => {
       careerStack: 'Backend',
       experienceLevel: 'Intern',
       platform: 'Coursera',
-      skillGaps: ['SQL']
+      skillGaps: ['SQL'],
     });
     assert.ok(built.courses.length > 0);
     assert.equal(isPersistableCoursePool(built.courses), true);
@@ -228,7 +249,7 @@ test('empty or unsafe pools are never marked persistable', async () => {
 test('live Learning Hub path owns facts without calling Gemini AI', () => {
   assert.doesNotMatch(serviceSource, /getCoursePrompt|generateContent|gemini/i);
   assert.doesNotMatch(controllerSource, /getCoursePrompt|generateContent|gemini|runAIAnalysis/i);
-  assert.match(controllerSource, /require\('\.\.\/services\/aiservice'\)/);
+  assert.match(controllerSource, /require\('\.\/aiservice'\)/);
   assert.match(serviceSource, /scoreAndRank/);
   assert.match(serviceSource, /buildFallbackPool/);
   assert.match(promptSource, /Return ONLY a valid JSON object/);

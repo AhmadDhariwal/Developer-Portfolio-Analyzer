@@ -10,7 +10,7 @@
           >{{ card.priority }} priority</span
         >
         <span class="category">{{ categoryLabel(card.category) }}</span>
-        <span class="category" *ngIf="card.aiGenerated">AI-assisted</span>
+        <span class="category ai-badge" *ngIf="card.aiGenerated">AI-assisted</span>
       </div>
     </div>
     <div class="row-content">

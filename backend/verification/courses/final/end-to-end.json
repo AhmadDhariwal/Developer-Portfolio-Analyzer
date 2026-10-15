@@ -1,0 +1,369 @@
+{
+  "startedAt": "2026-10-14T12:43:59.901Z",
+  "bundle": "main-ME5VABAA.js",
+  "fixtureOwners": ["6acf790f0eb927072ff8c6a6", "6acf790f0eb927072ff8c6a7"],
+  "environment": "Real local MongoDB, real JWT middleware, production course/progress/Sprint/profile HTTP handlers, production Angular bundle. Owned seeded evidence, no pre-existing users. Redis configured off.",
+  "traces": [
+    {
+      "id": "fb_c5",
+      "skill": "SQL",
+      "status": "CLAIMED_ONLY",
+      "terms": {
+        "base": 25,
+        "target": 18,
+        "known": 0,
+        "career": 10,
+        "level": 12
+      },
+      "expected": 65,
+      "title": "Meta Back-End Developer Professional Certificate",
+      "source": {
+        "source": "curated-catalog",
+        "ratingSource": "unavailable",
+        "popularitySource": "unavailable",
+        "engagementSource": "unavailable",
+        "metadataVerifiedAt": null,
+        "availability": "unverified",
+        "durationSource": "unavailable"
+      },
+      "unfiltered": {
+        "relevanceScore": 65,
+        "finalScore": 36,
+        "reason": "Learning/evidence review targets: SQL • Fits your Intern learning stage"
+      },
+      "deepLink": {
+        "topicBonus": 14,
+        "relevanceScore": 79,
+        "finalScore": 43,
+        "reason": "Learning/evidence review targets: SQL • Matches your SQL filter"
+      },
+      "uiTitle": "Meta Back-End Developer Professional Certificate",
+      "uiReason": "Learning/evidence review targets: SQL • Matches your SQL filter",
+      "sourceHash": "f1127807cdbf1ce9e3aa"
+    },
+    {
+      "id": "fb_u3",
+      "skill": "Docker",
+      "status": "PARTIAL",
+      "terms": {
+        "base": 25,
+        "target": 18,
+        "known": 0,
+        "career": 10,
+        "level": 0
+      },
+      "expected": 53,
+      "title": "Docker & Kubernetes: The Practical Guide",
+      "source": {
+        "source": "curated-catalog",
+        "ratingSource": "unavailable",
+        "popularitySource": "unavailable",
+        "engagementSource": "unavailable",
+        "metadataVerifiedAt": null,
+        "availability": "unverified",
+        "durationSource": "unavailable"
+      },
+      "unfiltered": {
+        "relevanceScore": 53,
+        "finalScore": 29,
+        "reason": "Learning/evidence review targets: Docker • Covers Docker for your Backend track"
+      },
+      "deepLink": {
+        "topicBonus": 14,
+        "relevanceScore": 67,
+        "finalScore": 37,
+        "reason": "Learning/evidence review targets: Docker • Matches your Docker filter"
+      },
+      "uiTitle": "Docker & Kubernetes: The Practical Guide",
+      "uiReason": "Learning/evidence review targets: Docker • Matches your Docker filter",
+      "sourceHash": "b63b534d11ee089a980e"
+    },
+    {
+      "id": "fb_u2",
+      "skill": "Node.js",
+      "status": "DEMONSTRATED",
+      "terms": {
+        "base": 25,
+        "target": 0,
+        "known": 4,
+        "career": 10,
+        "level": 0
+      },
+      "expected": 39,
+      "title": "Node.js, Express, MongoDB & More: The Complete Bootcamp",
+      "source": {
+        "source": "curated-catalog",
+        "ratingSource": "unavailable",
+        "popularitySource": "unavailable",
+        "engagementSource": "unavailable",
+        "metadataVerifiedAt": null,
+        "availability": "unverified",
+        "durationSource": "unavailable"
+      },
+      "unfiltered": {
+        "relevanceScore": 39,
+        "finalScore": 21,
+        "reason": "Covers Node.js, Express, MongoDB for your Backend track"
+      },
+      "deepLink": {
+        "topicBonus": 14,
+        "relevanceScore": 53,
+        "finalScore": 29,
+        "reason": "Matches your Node.js filter • Covers Node.js, Express, MongoDB for your Backend track"
+      },
+      "uiTitle": "Node.js, Express, MongoDB & More: The Complete Bootcamp",
+      "uiReason": "Matches your Node.js filter • Covers Node.js, Express, MongoDB for your Backend track",
+      "sourceHash": "aec48b407e6d73c52d56"
+    }
+  ],
+  "security": [
+    "Missing/expired real JWT rejected; duplicate scalar query and invalid IDs/metadata rejected; Express bracket-notation keys are ignored rather than interpreted as database operators."
+  ],
+  "journeys": [
+    "Browser Save → real Mongo In Progress/notes/0% → atomic Sprint task → visible in real Career Sprint UI; duplicate/conflict/ownership checks passed.",
+    "Reload persisted status/notes; self-reported completion retains 0%; transient storage failure retained status/data; removal persisted; skill snapshot and public portfolio unchanged.",
+    "skillGap UI smoke with existing synthetic neighboring-module fixture: actual /app/courses?skill=Docker link opens real personalized Courses API/UI.",
+    "recommendations UI smoke with existing synthetic neighboring-module fixture: actual /app/courses?skill=Node.js link opens real personalized Courses API/UI."
+  ],
+  "screenshots": [
+    "real-light-1440.png",
+    "real-light-375.png",
+    "real-dark-1440.png",
+    "real-dark-375.png"
+  ],
+  "pageErrors": [],
+  "freshNamespaceMigration": {
+    "created": [
+      {
+        "name": "course_pool_evidence_lookup",
+        "action": "created"
+      },
+      {
+        "name": "course_skill_evidence_lookup",
+        "action": "created"
+      }
+    ],
+    "repeated": [
+      {
+        "name": "course_pool_evidence_lookup",
+        "action": "exists"
+      },
+      {
+        "name": "course_skill_evidence_lookup",
+        "action": "exists"
+      }
+    ]
+  },
+  "initial": {
+    "total": 27,
+    "source": "curated-fallback",
+    "personalization": {
+      "status": "evidence-informed",
+      "targets": [
+        {
+          "name": "SQL",
+          "status": "CLAIMED_ONLY",
+          "requirement": "REQUIRED"
+        },
+        {
+          "name": "Docker",
+          "status": "PARTIAL",
+          "requirement": "REQUIRED"
+        },
+        {
+          "name": "Testing",
+          "status": "UNKNOWN",
+          "requirement": "REQUIRED"
+        },
+        {
+          "name": "React",
+          "status": "NOT_EVIDENCED",
+          "requirement": "OPTIONAL"
+        },
+        {
+          "name": "Node.js",
+          "status": "DEMONSTRATED",
+          "requirement": "REQUIRED"
+        }
+      ],
+      "ruleVersion": "skill-evidence-coverage-v1",
+      "limitation": "Skill classifications describe recorded evidence, not verified proficiency or inability."
+    },
+    "signalHash": "4b61e2c1c3818f5010f3",
+    "aiCalls": 0
+  },
+  "catalog": [
+    {
+      "id": "fb_e1",
+      "relevanceScore": 89,
+      "finalScore": 49,
+      "whyRecommended": "Learning/evidence review targets: SQL, Testing, React • Covers SQL, Python, Testing for your Backend track"
+    },
+    {
+      "id": "fb_c2",
+      "relevanceScore": 87,
+      "finalScore": 48,
+      "whyRecommended": "Learning/evidence review targets: Docker, React • Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_u8",
+      "relevanceScore": 75,
+      "finalScore": 41,
+      "whyRecommended": "Learning/evidence review targets: Docker, React • Covers Node.js, Docker for your Backend track"
+    },
+    {
+      "id": "fb_c5",
+      "relevanceScore": 65,
+      "finalScore": 36,
+      "whyRecommended": "Learning/evidence review targets: SQL • Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_e6",
+      "relevanceScore": 53,
+      "finalScore": 29,
+      "whyRecommended": "Learning/evidence review targets: Testing • Covers Java, Testing for your Backend track"
+    },
+    {
+      "id": "fb_f5",
+      "relevanceScore": 53,
+      "finalScore": 29,
+      "whyRecommended": "Learning/evidence review targets: Testing • Covers Python, Testing for your Backend track"
+    },
+    {
+      "id": "fb_u3",
+      "relevanceScore": 53,
+      "finalScore": 29,
+      "whyRecommended": "Learning/evidence review targets: Docker • Covers Docker for your Backend track"
+    },
+    {
+      "id": "fb_u7",
+      "relevanceScore": 53,
+      "finalScore": 29,
+      "whyRecommended": "Learning/evidence review targets: React • Covers APIs, GraphQL for your Backend track"
+    },
+    {
+      "id": "fb_c4",
+      "relevanceScore": 55,
+      "finalScore": 30,
+      "whyRecommended": "Learning/evidence review targets: React • Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_u5",
+      "relevanceScore": 55,
+      "finalScore": 30,
+      "whyRecommended": "Learning/evidence review targets: React • Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_f4",
+      "relevanceScore": 43,
+      "finalScore": 24,
+      "whyRecommended": "Learning/evidence review targets: React"
+    },
+    {
+      "id": "fb_c1",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Python, Git for your Backend track"
+    },
+    {
+      "id": "fb_e3",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_e4",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_u6",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_f3",
+      "relevanceScore": 39,
+      "finalScore": 21,
+      "whyRecommended": "Covers Node.js, Express, MongoDB for your Backend track"
+    },
+    {
+      "id": "fb_u2",
+      "relevanceScore": 39,
+      "finalScore": 21,
+      "whyRecommended": "Covers Node.js, Express, MongoDB for your Backend track"
+    },
+    {
+      "id": "fb_c3",
+      "relevanceScore": 35,
+      "finalScore": 19,
+      "whyRecommended": "Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_e2",
+      "relevanceScore": 37,
+      "finalScore": 20,
+      "whyRecommended": "Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_e5",
+      "relevanceScore": 37,
+      "finalScore": 20,
+      "whyRecommended": "Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_f2",
+      "relevanceScore": 37,
+      "finalScore": 20,
+      "whyRecommended": "Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_u1",
+      "relevanceScore": 37,
+      "finalScore": 20,
+      "whyRecommended": "Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_u4",
+      "relevanceScore": 37,
+      "finalScore": 20,
+      "whyRecommended": "Fits your Intern learning stage"
+    },
+    {
+      "id": "fb_c6",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
+      "id": "fb_e7",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
+      "id": "fb_f1",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
+      "id": "fb_u9",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    }
+  ],
+  "sourceFreshness": {
+    "changedFingerprint": true,
+    "incompatibleEvidenceExcluded": true
+  },
+  "aiCalls": 0,
+  "status": "VERIFIED",
+  "cleanup": {
+    "ownedUsersRemaining": 0,
+    "ownedProgressRemaining": 0
+  }
+}

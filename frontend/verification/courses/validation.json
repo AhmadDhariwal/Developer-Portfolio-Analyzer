@@ -1,0 +1,113 @@
+{
+  "scope": "Learning Hub frontend modernization; backend implementation and pre-existing staged changes preserved",
+  "sourceFiles": {
+    "changed": [
+      "frontend/src/app/pages/courses/courses.component.ts",
+      "frontend/src/app/pages/courses/courses.component.html",
+      "frontend/src/app/pages/courses/courses.component.scss",
+      "frontend/src/app/shared/components/course-card/course-card.ts",
+      "frontend/src/app/shared/components/course-card/course-card.html",
+      "frontend/src/app/shared/components/course-card/course-card.scss",
+      "frontend/src/app/shared/components/course-filters/course-filters.ts",
+      "frontend/src/app/shared/components/course-filters/course-filters.html",
+      "frontend/src/app/shared/components/course-filters/course-filters.scss",
+      "frontend/src/app/shared/models/course.model.ts",
+      "frontend/src/app/shared/services/course.service.ts",
+      "frontend/src/app/shared/services/course.service.spec.ts"
+    ],
+    "added": [
+      "frontend/src/app/pages/courses/courses.component.spec.ts",
+      "frontend/src/app/pages/courses/components/my-learning.component.ts",
+      "frontend/src/app/pages/courses/components/my-learning.component.html",
+      "frontend/src/app/pages/courses/components/my-learning.component.scss",
+      "frontend/src/app/pages/courses/components/my-learning.component.spec.ts",
+      "frontend/src/app/pages/courses/services/course-learning.store.ts",
+      "frontend/src/app/pages/courses/services/course-learning.store.spec.ts",
+      "frontend/src/app/shared/components/course-card/course-card.spec.ts",
+      "frontend/src/app/shared/components/course-filters/course-filters.spec.ts",
+      "frontend/scripts/courses-browser-fixture.cjs",
+      "frontend/scripts/verify-courses-ui.cjs"
+    ],
+    "moved": [],
+    "deleted": []
+  },
+  "retainedEvidence": [
+    "frontend/verification/courses/REPORT.md",
+    "frontend/verification/courses/validation.json",
+    "frontend/verification/courses/browser-results.json",
+    "frontend/verification/courses/dark-1440-discover.png",
+    "frontend/verification/courses/dark-1440-learning.png",
+    "frontend/verification/courses/dark-375-course.png",
+    "frontend/verification/courses/dark-375-discover.png",
+    "frontend/verification/courses/dark-375-filters.png",
+    "frontend/verification/courses/dark-375-learning.png",
+    "frontend/verification/courses/light-1440-discover.png",
+    "frontend/verification/courses/light-1440-learning.png",
+    "frontend/verification/courses/light-375-course.png",
+    "frontend/verification/courses/light-375-discover.png",
+    "frontend/verification/courses/light-375-filters.png",
+    "frontend/verification/courses/light-375-learning.png"
+  ],
+  "formatting": {
+    "formatter": "frontend/node_modules/prettier/bin/prettier.cjs",
+    "config": "frontend/.prettierrc",
+    "mode": ["--write", "--check"],
+    "sourceFiles": 23,
+    "result": "PASS"
+  },
+  "checks": [
+    {
+      "command": "npm test -- --watch=false",
+      "cwd": "frontend",
+      "result": "PASS",
+      "tests": 224,
+      "files": 45
+    },
+    {
+      "command": "npm test -- --watch=false --include=src/app/pages/courses/**/*.spec.ts --include=src/app/shared/components/course-card/*.spec.ts --include=src/app/shared/components/course-filters/*.spec.ts --include=src/app/shared/services/course.service.spec.ts",
+      "cwd": "frontend",
+      "result": "PASS",
+      "tests": 31,
+      "files": 6
+    },
+    {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "result": "PASS"
+    },
+    {
+      "command": "npm run build",
+      "cwd": "frontend",
+      "result": "PASS",
+      "bundle": "main-CUJGYFZ7.js",
+      "warnings": ["Existing landing-page.component.scss: 55.89 kB vs 48 kB warning budget"]
+    },
+    {
+      "command": "node --test src/tests/coursesHardening.test.js",
+      "cwd": "backend",
+      "result": "PASS",
+      "tests": 17
+    },
+    {
+      "command": "node frontend/scripts/verify-courses-ui.cjs",
+      "result": "PASS",
+      "layouts": 24,
+      "themes": 3,
+      "edgeStates": 11,
+      "screenshots": 12,
+      "environment": "Production build and synthetic authenticated HTTP fixtures; no live account writes"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --cached --check",
+      "result": "PASS"
+    }
+  ],
+  "limitations": [
+    "Live provider, MongoDB, JWT integration and complete backend suites were not rerun in this frontend task; refer to backend/verification/courses/REPORT.md.",
+    "Existing unrelated jsdom canvas/navigation notices remain in the full frontend test run."
+  ],
+  "cleanup": "Reviewed task-owned files and references. No temporary scripts, traces, logs or redundant reports were created in the repository. Repeated screenshots overwrite their named final evidence. No files moved or deleted; unrelated and staged work preserved."
+}
