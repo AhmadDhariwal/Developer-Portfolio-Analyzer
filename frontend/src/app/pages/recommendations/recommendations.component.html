@@ -1,85 +1,172 @@
 <div class="rec-page dev-page">
+  <!-- Enhanced Modern Workspace Header -->
   <header class="dev-page-header">
-    <div>
-      <h1 class="dev-page-title">Recommendations</h1>
+    <div class="header-main-content">
+      <span class="dev-eyebrow">Strategic Growth & Priority Engine</span>
+      <div class="title-row">
+        <h1 class="dev-page-title">Recommendations</h1>
+        <span class="actions-badge" *ngIf="result && allCards.length">
+          {{ allCards.length }} Actions Identified
+        </span>
+      </div>
       <p class="dev-description">
         Turn recorded evidence into practical steps for your next career move.
       </p>
-      <p class="dev-meta">
-        {{ result?.careerStack || currentCareerStack }} ·
-        {{ result?.experienceLevel || currentExperienceLevel
-        }}<span *ngIf="result?.username"> · @{{ result?.username }}</span>
-      </p>
-      <p class="dev-meta updated" *ngIf="result">
-        {{
-          lastUpdated
-            ? 'Updated ' + (lastUpdated | date: 'MMM d, y, h:mm a')
-            : 'Analysis date unavailable'
-        }}
-      </p>
+
+      <!-- Career Context & Last Updated Capsule Bar -->
+      <div class="context-capsules-bar">
+        <div class="capsule context-capsule">
+          <svg
+            class="capsule-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span class="dev-meta">
+            <strong>{{ result?.careerStack || currentCareerStack }}</strong> ·
+            {{ result?.experienceLevel || currentExperienceLevel
+            }}<span *ngIf="result?.username"> · @{{ result?.username }}</span>
+          </span>
+        </div>
+        <div class="capsule updated-capsule" *ngIf="result">
+          <svg
+            class="capsule-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span class="dev-meta updated">
+            {{
+              lastUpdated
+                ? 'Updated ' + (lastUpdated | date: 'MMM d, y, h:mm a')
+                : 'Analysis date unavailable'
+            }}
+          </span>
+        </div>
+      </div>
     </div>
+
+    <!-- Header Controls & Mode Tabs -->
     <div class="header-controls">
       <button
         type="button"
-        class="primary"
+        class="primary refresh-rec-btn"
         (click)="analyze(true)"
         [disabled]="isLoading || isUploading"
       >
-        {{ isLoading ? (result ? 'Refreshing…' : 'Loading…') : 'Refresh recommendations' }}
+        <svg
+          class="refresh-icon"
+          [class.spinning]="isLoading"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M23 4v6h-6M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        <span>{{
+          isLoading ? (result ? 'Refreshing…' : 'Loading…') : 'Refresh recommendations'
+        }}</span>
       </button>
 
       <nav class="mode-tabs" aria-label="Recommendation mode">
         <button
           type="button"
+          class="mode-tab-btn"
           [attr.aria-pressed]="!isPreviewMode"
           (click)="setMode(false)"
           [disabled]="isLoading"
         >
-          My Profile
+          <svg
+            class="mode-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span>My Profile</span>
         </button>
         <button
           type="button"
+          class="mode-tab-btn"
           [attr.aria-pressed]="isPreviewMode"
           (click)="setMode(true)"
           [disabled]="isLoading"
         >
-          Preview Candidate
+          <svg
+            class="mode-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>Preview Candidate</span>
         </button>
       </nav>
     </div>
   </header>
 
-  <section class="dev-section preview" *ngIf="isPreviewMode" aria-labelledby="preview-title">
-    <h2 id="preview-title" class="dev-section-title">Candidate preview</h2>
-    <p>
-      Explore another career context without changing your profile. Saved previews are historical
-      summaries, not verified current evidence.
-    </p>
-    <div class="filter-bar">
-      <label
-        >GitHub username<input
+  <!-- Candidate Preview Drawer (When Activated) -->
+  <section
+    class="dev-section preview-panel preview"
+    *ngIf="isPreviewMode"
+    aria-labelledby="preview-title"
+  >
+    <div class="preview-panel-header">
+      <div class="preview-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </div>
+      <div>
+        <h2 id="preview-title" class="dev-section-title">Candidate preview</h2>
+        <p>
+          Explore another career context without changing your profile. Saved previews are
+          historical summaries, not verified current evidence.
+        </p>
+      </div>
+    </div>
+
+    <div class="filter-bar preview-grid">
+      <label>
+        <span class="input-label-text">GitHub username</span>
+        <input
           [(ngModel)]="previewGithubUsername"
           [disabled]="isLoading"
-          placeholder="Username"
-      /></label>
-      <label
-        >Target stack<select
-          aria-label="Target stack"
-          [(ngModel)]="previewCareerStack"
-          [disabled]="isLoading"
-        >
+          placeholder="e.g. torvalds"
+        />
+      </label>
+      <label>
+        <span class="input-label-text">Target stack</span>
+        <select aria-label="Target stack" [(ngModel)]="previewCareerStack" [disabled]="isLoading">
           <option>Frontend</option>
           <option>Backend</option>
           <option>Full Stack</option>
           <option>AI/ML</option>
-        </select></label
-      >
-      <label
-        >Experience<select
-          aria-label="Experience"
-          [(ngModel)]="previewExperienceLevel"
-          [disabled]="isLoading"
-        >
+        </select>
+      </label>
+      <label>
+        <span class="input-label-text">Experience</span>
+        <select aria-label="Experience" [(ngModel)]="previewExperienceLevel" [disabled]="isLoading">
           <option>Student</option>
           <option>Intern</option>
           <option>0-1 years</option>
@@ -87,34 +174,50 @@
           <option>2-3 years</option>
           <option>3-5 years</option>
           <option>5+ years</option>
-        </select></label
-      >
-    </div>
-    <details class="dev-disclosure">
-      <summary>Temporary resume input</summary>
-      <label
-        >Resume PDF (maximum 5 MB)<input
-          type="file"
-          accept="application/pdf"
-          (change)="onFileSelected($event)"
-          [disabled]="isLoading || isUploading"
-      /></label>
-      <p *ngIf="isUploading" role="status">Parsing resume…</p>
-      <div class="actions" *ngIf="previewFileName">
-        <span>{{ previewFileName }}</span
-        ><button type="button" (click)="clearPreviewFile()" [disabled]="isLoading || isUploading">
-          Clear file
-        </button>
-      </div>
-      <label
-        >Or paste resume text<textarea
-          [(ngModel)]="previewResumeText"
-          rows="4"
-          [disabled]="isLoading || isUploading"
-        ></textarea>
+        </select>
       </label>
+    </div>
+
+    <details class="dev-disclosure resume-disclosure">
+      <summary>
+        <span>Temporary resume input</span>
+        <span class="disclosure-arrow">▾</span>
+      </summary>
+      <div class="resume-input-body">
+        <label>
+          <span class="input-label-text">Resume PDF (maximum 5 MB)</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            (change)="onFileSelected($event)"
+            [disabled]="isLoading || isUploading"
+          />
+        </label>
+        <p *ngIf="isUploading" role="status" class="uploading-status">Parsing resume…</p>
+        <div class="actions file-actions" *ngIf="previewFileName">
+          <span class="file-name-tag">📎 {{ previewFileName }}</span>
+          <button
+            type="button"
+            class="btn-clear-file"
+            (click)="clearPreviewFile()"
+            [disabled]="isLoading || isUploading"
+          >
+            Clear file
+          </button>
+        </div>
+        <label>
+          <span class="input-label-text">Or paste resume text</span>
+          <textarea
+            [(ngModel)]="previewResumeText"
+            rows="4"
+            placeholder="Paste raw resume text or key skills..."
+            [disabled]="isLoading || isUploading"
+          ></textarea>
+        </label>
+      </div>
     </details>
-    <div class="actions">
+
+    <div class="actions preview-actions">
       <button
         type="button"
         class="primary"
@@ -135,14 +238,19 @@
         Return to My Profile
       </button>
     </div>
-    <p *ngIf="isTemporaryView" class="notice">
+
+    <p *ngIf="isTemporaryView" class="notice preview-notice">
       Preview only. This result does not update your profile or create Career Sprint tasks.
     </p>
-    <p role="status" *ngIf="previewSaveMessage">{{ previewSaveMessage }}</p>
-    <p role="status" *ngIf="isSavedPreviewsLoading">Loading saved previews…</p>
-    <div class="actions" *ngIf="savedPreviews.length">
-      <label
-        >Saved previews<select
+    <p role="status" *ngIf="previewSaveMessage" class="save-status-msg">{{ previewSaveMessage }}</p>
+    <p role="status" *ngIf="isSavedPreviewsLoading" class="loading-previews-msg">
+      Loading saved previews…
+    </p>
+
+    <div class="actions saved-previews-bar" *ngIf="savedPreviews.length">
+      <label>
+        <span class="input-label-text">Saved previews</span>
+        <select
           aria-label="Saved previews"
           [(ngModel)]="selectedSavedPreviewId"
           (ngModelChange)="openSavedPreview($event)"
@@ -152,10 +260,11 @@
           <option *ngFor="let preview of savedPreviews" [value]="preview._id">
             {{ preview.title }}
           </option>
-        </select></label
-      >
+        </select>
+      </label>
       <button
         type="button"
+        class="btn-delete-preview"
         (click)="deleteSavedPreview()"
         [disabled]="!selectedSavedPreviewId || isLoading"
       >
@@ -164,39 +273,167 @@
     </div>
   </section>
 
-  <div class="notice" *ngIf="errorMessage" role="alert">
+  <!-- Error & Status Banners -->
+  <div class="notice error-banner" *ngIf="errorMessage" role="alert">
     <strong>Unable to complete request</strong>
     <p>{{ errorMessage }}</p>
-    <button type="button" (click)="analyze(true)" [disabled]="isLoading">Retry</button
-    ><a routerLink="/app/profile">Review profile</a>
+    <div class="error-actions">
+      <button type="button" (click)="analyze(true)" [disabled]="isLoading">Retry</button>
+      <a routerLink="/app/profile">Review profile</a>
+    </div>
   </div>
-  <p class="notice" *ngIf="isLoading" role="status">
+
+  <p class="notice loading-notice" *ngIf="isLoading" role="status">
     {{
       result
         ? 'Refreshing recommendations. The previous result remains visible.'
         : 'Gathering your career context and recorded evidence…'
     }}
   </p>
-  <section class="dev-section" *ngIf="!result && !isLoading && !errorMessage">
+
+  <!-- Onboarding Empty State -->
+  <section class="dev-section onboarding-section" *ngIf="!result && !isLoading && !errorMessage">
+    <div class="onboarding-icon" aria-hidden="true">🚀</div>
     <h2 class="dev-section-title">Start with your career context</h2>
     <p>Set your target role and connect an evidence source to receive relevant recommendations.</p>
-    <div class="actions">
-      <a routerLink="/app/profile">Complete profile</a
-      ><a routerLink="/app/github-analyzer">Analyze GitHub</a
-      ><a routerLink="/app/resume-analyzer">Analyze resume</a>
+    <div class="actions onboarding-actions">
+      <a routerLink="/app/profile" class="onboarding-btn primary">Complete profile</a>
+      <a routerLink="/app/github-analyzer" class="onboarding-btn">Analyze GitHub</a>
+      <a routerLink="/app/resume-analyzer" class="onboarding-btn">Analyze resume</a>
     </div>
   </section>
 
-  <p class="notice" *ngIf="!isPreviewMode && !defaultUsername && !isLoading">
+  <p class="notice missing-github-notice" *ngIf="!isPreviewMode && !defaultUsername && !isLoading">
     Your profile has no connected GitHub username. Add GitHub or resume evidence and review your
     career context for more relevant actions. <a routerLink="/app/profile">Complete your profile</a>
   </p>
+
+  <!-- ACTIVE RECOMMENDATIONS CONTENT -->
   <ng-container *ngIf="result as data">
-    <section class="dev-section overview" aria-labelledby="overview-title">
-      <div class="dev-section-header">
-        <h2 id="overview-title" class="dev-section-title">Improvement overview</h2>
-        <span class="dev-meta">Evidence-led priorities</span>
+    <!-- Executive Intelligence Metric Strip -->
+    <section class="rec-metrics-strip" aria-label="Recommendation metrics and momentum">
+      <div class="metric-card">
+        <div class="metric-icon-wrap action-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <div class="metric-body">
+          <div class="metric-header">
+            <span class="metric-label">Total Actions</span>
+            <span class="metric-pill active">Identified</span>
+          </div>
+          <div class="metric-value">{{ allCards.length }}</div>
+          <div class="metric-sub">Ranked actionable next steps</div>
+        </div>
       </div>
+
+      <div class="metric-card">
+        <div class="metric-icon-wrap high-priority-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            />
+          </svg>
+        </div>
+        <div class="metric-body">
+          <div class="metric-header">
+            <span class="metric-label">High Priority</span>
+            <span class="metric-pill urgent" *ngIf="highPriorityCount > 0">Urgent</span>
+          </div>
+          <div class="metric-value">{{ highPriorityCount }}</div>
+          <div class="metric-sub">Immediate impact focus</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon-wrap sources-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <path
+              d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+            />
+          </svg>
+        </div>
+        <div class="metric-body">
+          <div class="metric-header">
+            <span class="metric-label">Evidence Sources</span>
+            <span class="metric-pill success" *ngIf="availableSourceCount > 0">Live</span>
+          </div>
+          <div class="metric-value">
+            {{ availableSourceCount }} / {{ sourceEntries.length || 1 }}
+          </div>
+          <div class="metric-sub">Verified data signals</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon-wrap domains-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+        </div>
+        <div class="metric-body">
+          <div class="metric-header">
+            <span class="metric-label">Focus Domains</span>
+            <span class="metric-pill neutral">Categorized</span>
+          </div>
+          <div class="metric-value">{{ categories.length }}</div>
+          <div class="metric-sub">Skills, GitHub, Resume, Career</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overview Intelligence Banner -->
+    <section class="dev-section overview overview-banner" aria-labelledby="overview-title">
+      <div class="dev-section-header">
+        <div class="overview-title-group">
+          <div class="spark-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 id="overview-title" class="dev-section-title">Improvement overview</h2>
+            <p class="overview-subtitle">
+              Comprehensive intelligence derived from your portfolio, code, and resume signals.
+            </p>
+          </div>
+        </div>
+        <span class="dev-meta evidence-badge">Evidence-led priorities</span>
+      </div>
+
+      <!-- Preserved overview-strip verbatim for test contract -->
       <div class="overview-strip">
         <span
           ><strong>{{ allCards.length }}</strong> actions</span
@@ -204,43 +441,58 @@
         <span
           ><strong>{{ categories.length }}</strong> categories</span
         >
-        <span *ngIf="sourceEntries.length; else unknownSources"
-          ><strong>{{ availableSourceCount }} / {{ sourceEntries.length }}</strong> sources
-          available</span
-        >
+        <span *ngIf="sourceEntries.length; else unknownSources">
+          <strong>{{ availableSourceCount }} / {{ sourceEntries.length }}</strong> sources available
+        </span>
         <ng-template #unknownSources><span>Source availability unknown</span></ng-template>
       </div>
+
       <p class="overview-summary">
         {{
           data.analysisSummary ||
             'Based on your career context and recorded evidence. Review the source before choosing your next step.'
         }}
       </p>
-      <p class="notice" *ngIf="legacy">
-        Historical or legacy result. Evidence, ranking and freshness may be incomplete. Refresh to
-        use current profile recommendations.
-      </p>
-      <p class="notice" *ngIf="stale">
-        Some evidence is stale. Refresh the relevant analyzer before treating an older observation
-        as outstanding work.
-      </p>
-      <p class="notice" *ngIf="data.cacheMetadata?.partial">
-        Partial result: some sources could not be loaded. Available evidence does not establish
-        missing ability.
-      </p>
-      <p *ngIf="!allCards.length">
-        No relevant recommendation actions were returned. This does not establish career readiness.
-        Review your context or refresh your sources.
-      </p>
+
+      <div
+        class="overview-notices"
+        *ngIf="legacy || stale || data.cacheMetadata?.partial || !allCards.length"
+      >
+        <p class="notice warning-notice" *ngIf="legacy">
+          Historical or legacy result. Evidence, ranking and freshness may be incomplete. Refresh to
+          use current profile recommendations.
+        </p>
+        <p class="notice stale-notice" *ngIf="stale">
+          Some evidence is stale. Refresh the relevant analyzer before treating an older observation
+          as outstanding work.
+        </p>
+        <p class="notice partial-notice" *ngIf="data.cacheMetadata?.partial">
+          Partial result: some sources could not be loaded. Available evidence does not establish
+          missing ability.
+        </p>
+        <p class="notice empty-notice" *ngIf="!allCards.length">
+          No relevant recommendation actions were returned. This does not establish career
+          readiness. Review your context or refresh your sources.
+        </p>
+      </div>
     </section>
 
-    <section class="dev-section" *ngIf="topActions.length" aria-labelledby="top-title">
+    <!-- Top Recommended Actions (Featured Spotlight) -->
+    <section
+      class="dev-section featured-section"
+      *ngIf="topActions.length"
+      aria-labelledby="top-title"
+    >
       <div class="dev-section-header">
-        <h2 id="top-title" class="dev-section-title">Top recommended actions</h2>
-        <span class="dev-meta">{{
+        <div class="section-title-wrap">
+          <span class="spotlight-tag">🏆 Immediate Focus</span>
+          <h2 id="top-title" class="dev-section-title">Top recommended actions</h2>
+        </div>
+        <span class="dev-meta order-tag">{{
           legacy ? 'Recorded result order' : 'Backend priority order'
         }}</span>
       </div>
+
       <div class="featured-list">
         <app-recommendation-row
           *ngFor="let card of topActions; let i = index"
@@ -254,65 +506,101 @@
       </div>
     </section>
 
+    <!-- All Recommendations Explorer Section -->
     <section class="dev-section explorer" aria-labelledby="all-title">
       <div class="dev-section-header">
-        <h2 id="all-title" class="dev-section-title">All recommendations</h2>
-        <span class="dev-meta" role="status"
-          >{{ explorerCards.length }}
-          {{ includeFeatured ? 'matching actions' : 'remaining actions' }}</span
-        >
+        <div>
+          <h2 id="all-title" class="dev-section-title">All recommendations</h2>
+          <p class="section-desc">
+            Search, filter by category or priority, and drill down into supporting evidence.
+          </p>
+        </div>
+        <span class="dev-meta results-count-pill" role="status">
+          {{ explorerCards.length }}
+          {{ includeFeatured ? 'matching actions' : 'remaining actions' }}
+        </span>
       </div>
-      <div class="filter-bar">
-        <label
-          >Search recommendations<input
-            type="search"
-            [(ngModel)]="search"
-            (ngModelChange)="onFiltersChanged()"
-            placeholder="Search actions or evidence"
-        /></label>
-        <label *ngIf="categories.length"
-          >Category<select
-            aria-label="Category"
-            [(ngModel)]="category"
-            (ngModelChange)="onFiltersChanged()"
+
+      <!-- Quick Category & Priority Pills (Productivity Booster) -->
+      <div class="quick-filter-pills-bar" *ngIf="categories.length">
+        <span class="pills-label">Quick Category:</span>
+        <div class="pills-scroll">
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="category === ''"
+            (click)="onQuickCategorySelect('')"
           >
+            All ({{ allCards.length }})
+          </button>
+          <button
+            *ngFor="let item of categories"
+            type="button"
+            class="filter-pill"
+            [class.active]="category === item"
+            (click)="onQuickCategorySelect(item)"
+          >
+            {{ categoryLabel(item) }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Filter Bar -->
+      <div class="filter-bar">
+        <label class="search-input-wrap">
+          <span class="input-label-text">Search recommendations</span>
+          <div class="search-control">
+            <input
+              type="search"
+              [(ngModel)]="search"
+              (ngModelChange)="onFiltersChanged()"
+              placeholder="Search actions or evidence"
+            />
+            <button
+              type="button"
+              class="clear-search-btn"
+              *ngIf="search"
+              (click)="search = ''; onFiltersChanged()"
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          </div>
+        </label>
+        <label *ngIf="categories.length">
+          <span class="input-label-text">Category</span>
+          <select aria-label="Category" [(ngModel)]="category" (ngModelChange)="onFiltersChanged()">
             <option value="">All categories</option>
             <option *ngFor="let item of categories" [value]="item">
               {{ categoryLabel(item) }}
             </option>
-          </select></label
-        >
-        <label *ngIf="priorities.length"
-          >Priority<select
-            aria-label="Priority"
-            [(ngModel)]="priority"
-            (ngModelChange)="onFiltersChanged()"
-          >
+          </select>
+        </label>
+        <label *ngIf="priorities.length">
+          <span class="input-label-text">Priority</span>
+          <select aria-label="Priority" [(ngModel)]="priority" (ngModelChange)="onFiltersChanged()">
             <option value="">All priorities</option>
             <option *ngFor="let item of priorities" [value]="item">{{ item }}</option>
-          </select></label
-        >
-        <label *ngIf="sources.length"
-          >Source<select
-            aria-label="Source"
-            [(ngModel)]="source"
-            (ngModelChange)="onFiltersChanged()"
-          >
+          </select>
+        </label>
+        <label *ngIf="sources.length">
+          <span class="input-label-text">Source</span>
+          <select aria-label="Source" [(ngModel)]="source" (ngModelChange)="onFiltersChanged()">
             <option value="">All sources</option>
             <option *ngFor="let item of sources" [value]="item">{{ item }}</option>
-          </select></label
-        >
+          </select>
+        </label>
       </div>
+
+      <!-- Explorer Options Bar -->
       <div class="explorer-options">
-        <label class="include-featured"
-          ><input
-            type="checkbox"
-            [(ngModel)]="includeFeatured"
-            (ngModelChange)="visibleCount = 8"
-          />Include the top {{ topActions.length }} featured actions</label
-        >
+        <label class="include-featured">
+          <input type="checkbox" [(ngModel)]="includeFeatured" (ngModelChange)="visibleCount = 8" />
+          <span>Include the top {{ topActions.length }} featured actions</span>
+        </label>
         <button
           type="button"
+          class="btn-reset-filters"
           *ngIf="search || category || priority || source"
           (click)="resetFilters()"
         >
@@ -320,13 +608,27 @@
         </button>
         <span class="dev-meta">Original priority order</span>
       </div>
-      <p *ngIf="!explorerCards.length && allCards.length">
-        {{
-          search || category || priority || source
-            ? 'No matching recommendations. Try another search or clear the filters.'
-            : 'Your recommendations are featured above. Include featured actions to see the full inventory.'
-        }}
-      </p>
+
+      <!-- No Match Notification -->
+      <div class="no-match-box" *ngIf="!explorerCards.length && allCards.length">
+        <p>
+          {{
+            search || category || priority || source
+              ? 'No matching recommendations. Try another search or clear the filters.'
+              : 'Your recommendations are featured above. Include featured actions to see the full inventory.'
+          }}
+        </p>
+        <button
+          type="button"
+          class="btn-clear-empty"
+          *ngIf="search || category || priority || source"
+          (click)="resetFilters()"
+        >
+          Clear filters
+        </button>
+      </div>
+
+      <!-- Inventory List Container -->
       <div class="inventory" *ngIf="explorerCards.length">
         <app-recommendation-row
           *ngFor="let card of explorerCards | slice: 0 : visibleCount"
@@ -336,139 +638,204 @@
           (sprint)="startSprint($event)"
         />
       </div>
-      <div class="actions pagination">
+
+      <!-- Pagination Actions -->
+      <div class="actions pagination" *ngIf="explorerCards.length">
         <button
           type="button"
+          class="btn-pagination"
           *ngIf="explorerCards.length > visibleCount"
           (click)="visibleCount = visibleCount + 8"
         >
-          Show more</button
-        ><button type="button" *ngIf="visibleCount > 8" (click)="visibleCount = 8">
+          Show more ({{ explorerCards.length - visibleCount }} remaining)
+        </button>
+        <button
+          type="button"
+          class="btn-pagination ghost"
+          *ngIf="visibleCount > 8"
+          (click)="visibleCount = 8"
+        >
           Show fewer
         </button>
       </div>
     </section>
 
-    <section class="dev-section" *ngIf="focusGroups.length" aria-labelledby="development-title">
-      <h2 id="development-title" class="dev-section-title">Development focus</h2>
-      <p class="section-intro">
-        Explore related actions or update the evidence behind them. Evidence coverage describes
-        available proof, not ability.
-      </p>
+    <!-- Development Focus Areas Grid -->
+    <section
+      class="dev-section focus-section"
+      *ngIf="focusGroups.length"
+      aria-labelledby="development-title"
+    >
+      <div class="dev-section-header">
+        <div>
+          <h2 id="development-title" class="dev-section-title">Development focus</h2>
+          <p class="section-intro">
+            Explore related actions or update the evidence behind them. Evidence coverage describes
+            available proof, not ability.
+          </p>
+        </div>
+      </div>
+
       <div class="focus-grid">
         <div *ngFor="let group of focusGroups" class="focus-group">
           <div class="focus-heading">
             <h3>{{ group.title }}</h3>
-            <span class="count"
-              >{{ group.cards.length }} {{ group.cards.length === 1 ? 'action' : 'actions' }}</span
-            >
+            <span class="count">
+              {{ group.cards.length }} {{ group.cards.length === 1 ? 'action' : 'actions' }}
+            </span>
           </div>
           <p class="focus-action">{{ group.cards[0].title }}</p>
-          <details *ngIf="group.cards.length > 1">
+          <details *ngIf="group.cards.length > 1" class="focus-details">
             <summary>More key actions</summary>
             <ul>
               <li *ngFor="let card of group.cards | slice: 1 : 3">{{ card.title }}</li>
             </ul>
           </details>
-          <div class="actions">
-            <button type="button" (click)="exploreCategory(group.cards[0].category)">
-              View {{ categoryLabel(group.cards[0].category) }} actions</button
-            ><a [routerLink]="group.route">{{ group.label }}</a>
+          <div class="actions focus-actions">
+            <button
+              type="button"
+              class="btn-explore-cat"
+              (click)="exploreCategory(group.cards[0].category)"
+            >
+              View {{ categoryLabel(group.cards[0].category) }} actions
+            </button>
+            <a [routerLink]="group.route" class="focus-route-link">{{ group.label }} →</a>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- Projects & Learning Resources -->
     <app-recommendation-resources [result]="data" />
 
+    <!-- Connected Career Sprint Handoff Card -->
     <section class="dev-section sprint-summary" aria-labelledby="sprint-title">
-      <div>
-        <h2 id="sprint-title" class="dev-section-title">Make progress with Career Sprint</h2>
-        <p>
-          Add a supported current-profile action using its recommendation row. Review the task in
-          Career Sprint and choose your own schedule.
-        </p>
+      <div class="sprint-summary-copy">
+        <div class="sprint-icon-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <div>
+          <h2 id="sprint-title" class="dev-section-title">Make progress with Career Sprint</h2>
+          <p>
+            Add a supported current-profile action using its recommendation row. Review the task in
+            Career Sprint and choose your own schedule.
+          </p>
+        </div>
       </div>
-      <a routerLink="/app/career-sprint" aria-label="Open Career Sprint"
-        >Open Career Sprint <span aria-hidden="true">→</span></a
-      >
+      <a routerLink="/app/career-sprint" class="sprint-cta-link" aria-label="Open Career Sprint">
+        <span>Open Career Sprint</span>
+        <span aria-hidden="true">→</span>
+      </a>
     </section>
 
-    <section class="dev-section" aria-labelledby="method-title">
-      <h2 id="method-title" class="dev-section-title">Evidence and methodology</h2>
-      <details class="dev-disclosure">
-        <summary>Signal sources and freshness</summary>
-        <p *ngIf="!sourceEntries.length">Source metadata is unavailable for this result.</p>
-        <div *ngFor="let source of sourceEntries" class="source-row">
-          <strong>{{ source.type }}</strong>
-          <p>
-            {{
-              source.available === true
-                ? 'Available'
-                : source.available === false
-                  ? 'Unavailable'
-                  : 'Availability unknown'
-            }}
-            · {{ source.freshness || 'Freshness unknown' }} ·
-            {{ source.timestamp ? (source.timestamp | date: 'medium') : 'Date unavailable' }}
-          </p>
-          <small
-            >Source reference: {{ source.id || 'Unavailable' }} · Rule:
-            {{ source.ruleVersion || 'Unavailable' }}</small
-          >
-        </div>
-        <div class="actions">
-          <a routerLink="/app/profile">Review profile</a
-          ><a routerLink="/app/skill-gap">Refresh Skill Gap</a
-          ><a routerLink="/app/github-analyzer">Review GitHub</a
-          ><a routerLink="/app/resume-analyzer">Review resume</a>
-        </div>
-      </details>
-      <details class="dev-disclosure">
-        <summary>Ranking and AI attribution</summary>
-        <p>
-          Recommendations retain the backend's deterministic priority order. Filtering does not
-          re-rank them. Missing sources and absent evidence do not prove missing competence.
-        </p>
-        <p>
-          Factual evidence appears in each recommendation's disclosure. AI-assisted ideas are
-          labeled separately.
-        </p>
-        <p>
-          {{
-            data.scoreProvenance?.reason ||
-              'No frontend readiness scores or improvement forecasts are calculated.'
-          }}
-        </p>
-        <p>
-          AI enrichment:
-          {{
-            data.aiUsed === true
-              ? 'Included'
-              : data.aiUsed === false
-                ? 'Not in use'
-                : 'Not reported in this result'
-          }}
-        </p>
-      </details>
-      <details class="dev-disclosure">
-        <summary>Technical provenance and history</summary>
-        <p>Rule version: {{ data.ruleVersion || 'Legacy / unavailable' }}</p>
-        <p>Analysis version: {{ data.cacheMetadata?.analysisVersion || 'Unavailable' }}</p>
-        <p class="hash">
-          Signal identity:
-          {{
-            data.cacheMetadata?.signalHash ||
-              data.cacheMetadata?.cacheKey?.signalHash ||
-              'Unavailable'
-          }}
-        </p>
-        <p>
-          Changes between snapshots describe differences in recorded recommendations. Disappearance
-          does not establish task completion.
-        </p>
-        <pre *ngIf="data.recommendationVersioning">{{ data.recommendationVersioning | json }}</pre>
-      </details>
+    <!-- Evidence and Methodology Accordion -->
+    <section class="dev-section methodology-section" aria-labelledby="method-title">
+      <div class="dev-section-header">
+        <h2 id="method-title" class="dev-section-title">Evidence and methodology</h2>
+        <span class="dev-meta">Verified Signals</span>
+      </div>
+
+      <div class="methodology-panels">
+        <details class="dev-disclosure method-panel">
+          <summary>
+            <span>Signal sources and freshness</span>
+            <span class="disclosure-arrow">▾</span>
+          </summary>
+          <div class="disclosure-body">
+            <p *ngIf="!sourceEntries.length">Source metadata is unavailable for this result.</p>
+            <div *ngFor="let source of sourceEntries" class="source-row">
+              <div class="source-type-pill">{{ source.type }}</div>
+              <p>
+                <strong>{{
+                  source.available === true
+                    ? 'Available'
+                    : source.available === false
+                      ? 'Unavailable'
+                      : 'Availability unknown'
+                }}</strong>
+                · {{ source.freshness || 'Freshness unknown' }} ·
+                {{ source.timestamp ? (source.timestamp | date: 'medium') : 'Date unavailable' }}
+              </p>
+              <small>
+                Source reference: {{ source.id || 'Unavailable' }} · Rule:
+                {{ source.ruleVersion || 'Unavailable' }}
+              </small>
+            </div>
+            <div class="actions method-source-links">
+              <a routerLink="/app/profile">Review profile</a>
+              <a routerLink="/app/skill-gap">Refresh Skill Gap</a>
+              <a routerLink="/app/github-analyzer">Review GitHub</a>
+              <a routerLink="/app/resume-analyzer">Review resume</a>
+            </div>
+          </div>
+        </details>
+
+        <details class="dev-disclosure method-panel">
+          <summary>
+            <span>Ranking and AI attribution</span>
+            <span class="disclosure-arrow">▾</span>
+          </summary>
+          <div class="disclosure-body">
+            <p>
+              Recommendations retain the backend's deterministic priority order. Filtering does not
+              re-rank them. Missing sources and absent evidence do not prove missing competence.
+            </p>
+            <p>
+              Factual evidence appears in each recommendation's disclosure. AI-assisted ideas are
+              labeled separately.
+            </p>
+            <p>
+              {{
+                data.scoreProvenance?.reason ||
+                  'No frontend readiness scores or improvement forecasts are calculated.'
+              }}
+            </p>
+            <p class="ai-status">
+              AI enrichment:
+              <strong>{{
+                data.aiUsed === true
+                  ? 'Included'
+                  : data.aiUsed === false
+                    ? 'Not in use'
+                    : 'Not reported in this result'
+              }}</strong>
+            </p>
+          </div>
+        </details>
+
+        <details class="dev-disclosure method-panel">
+          <summary>
+            <span>Technical provenance and history</span>
+            <span class="disclosure-arrow">▾</span>
+          </summary>
+          <div class="disclosure-body">
+            <p>
+              Rule version: <strong>{{ data.ruleVersion || 'Legacy / unavailable' }}</strong>
+            </p>
+            <p>
+              Analysis version:
+              <strong>{{ data.cacheMetadata?.analysisVersion || 'Unavailable' }}</strong>
+            </p>
+            <p class="hash">
+              Signal identity:
+              <code>{{
+                data.cacheMetadata?.signalHash ||
+                  data.cacheMetadata?.cacheKey?.signalHash ||
+                  'Unavailable'
+              }}</code>
+            </p>
+            <p>
+              Changes between snapshots describe differences in recorded recommendations.
+              Disappearance does not establish task completion.
+            </p>
+            <pre *ngIf="data.recommendationVersioning">{{
+              data.recommendationVersioning | json
+            }}</pre>
+          </div>
+        </details>
+      </div>
     </section>
   </ng-container>
 </div>

@@ -1,98 +1,150 @@
 <section class="resources dev-section" aria-labelledby="projects-title">
   <div class="dev-section-header">
-    <h2 id="projects-title" class="dev-section-title">Projects & learning resources</h2>
-    <a routerLink="/app/courses" aria-label="Browse learning resources"
-      >Browse learning resources <span aria-hidden="true">↗</span></a
-    >
+    <div class="section-title-wrap">
+      <span class="resource-section-tag">🚀 Practical Proof</span>
+      <h2 id="projects-title" class="dev-section-title">Projects & learning resources</h2>
+      <p class="section-desc">
+        Explore targeted project suggestions and learning pathways derived from your portfolio gaps.
+        Check course availability with the provider.
+      </p>
+    </div>
+    <a routerLink="/app/courses" class="browse-courses-cta" aria-label="Browse learning resources">
+      <span>Browse learning resources</span>
+      <span class="cta-arrow" aria-hidden="true">↗</span>
+    </a>
   </div>
-  <p>
-    Explore the suggestions behind your action plan. Check course availability with the provider.
-  </p>
+
   <div class="resource-grid">
+    <!-- Suggested Projects Panel -->
     <details class="resource-panel" *ngIf="result.projects.length">
       <summary>
-        <span
-          ><strong>Suggested projects</strong
-          ><small>{{ result.projects.length }} recorded suggestions</small></span
-        >
+        <div class="panel-summary-content">
+          <div class="panel-title-group">
+            <span class="panel-icon" aria-hidden="true">💼</span>
+            <strong>Suggested projects</strong>
+          </div>
+          <small class="panel-count-badge">{{ result.projects.length }} suggestions</small>
+        </div>
       </summary>
       <div class="panel-body">
-        <details class="resource-item" *ngFor="let project of result.projects">
-          <summary>
-            {{ project.title
-            }}<span *ngIf="project.aiGenerated" class="attribution">AI-assisted</span>
+        <details class="resource-item project-card" *ngFor="let project of result.projects">
+          <summary class="project-header">
+            <span class="project-title">{{ project.title }}</span>
+            <span *ngIf="project.aiGenerated" class="attribution ai-tag">AI-assisted</span>
           </summary>
-          <p>{{ project.description }}</p>
-          <p *ngIf="project.whyThisProject && project.whyThisProject !== project.description">
-            <strong>Why:</strong> {{ project.whyThisProject }}
-          </p>
-          <p *ngIf="project.actionableNextStep">
-            <strong>Deliverable:</strong> {{ project.actionableNextStep }}
-          </p>
-          <p *ngIf="project.tech?.length">
-            <strong>Target technologies:</strong> {{ project.tech?.join(', ') }}
-          </p>
-          <p *ngIf="project.estimatedWeeks">Recorded estimate: {{ project.estimatedWeeks }}</p>
-          <ul>
-            <li *ngFor="let fact of project.evidence">{{ fact }}</li>
-          </ul>
-          <a *ngIf="safeRoute(project.startUrl) as route" [routerLink]="route"
-            >Review project source</a
-          >
-          <a
-            *ngIf="externalUrl(project.startUrl) as url"
-            [href]="url"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Explore resource (opens new tab)</a
-          >
-        </details>
-      </div>
-    </details>
-    <details class="resource-panel" *ngIf="result.technologies.length || supplementalGroups.length">
-      <summary>
-        <span
-          ><strong>Learning & development</strong
-          ><small>Recorded skills and next steps</small></span
-        >
-      </summary>
-      <div class="panel-body">
-        <details class="resource-item" *ngFor="let group of supplementalGroups">
-          <summary>
-            {{ group.title }} <span class="count">{{ group.items.length }}</span>
-          </summary>
-          <ul>
-            <li *ngFor="let item of group.items">{{ item }}</li>
-          </ul>
-        </details>
-        <details class="resource-item" *ngIf="result.technologies.length">
-          <summary>
-            Suggested technologies <span class="count">{{ result.technologies.length }}</span>
-          </summary>
-          <div *ngFor="let tech of result.technologies" class="technology">
-            <strong>{{ tech.name }}</strong>
-            <p *ngIf="tech.description">{{ tech.description }}</p>
-            <a routerLink="/app/courses" [queryParams]="{ skill: tech.name }"
-              >Find learning resources</a
+          <div class="project-details">
+            <p class="project-desc">{{ project.description }}</p>
+            <div
+              class="callout-box why-box"
+              *ngIf="project.whyThisProject && project.whyThisProject !== project.description"
             >
+              <span class="box-label">Strategic Value</span>
+              <p>{{ project.whyThisProject }}</p>
+            </div>
+            <div class="callout-box deliverable-box" *ngIf="project.actionableNextStep">
+              <span class="box-label">Proof Deliverable</span>
+              <p>{{ project.actionableNextStep }}</p>
+            </div>
+            <div class="project-meta-row" *ngIf="project.tech?.length || project.estimatedWeeks">
+              <div class="tech-tags-list" *ngIf="project.tech?.length">
+                <span class="meta-label">Target Tech:</span>
+                <span class="tech-tag" *ngFor="let t of project.tech">{{ t }}</span>
+              </div>
+              <span class="estimate-tag" *ngIf="project.estimatedWeeks"
+                >⏱ {{ project.estimatedWeeks }}</span
+              >
+            </div>
+            <ul class="evidence-list" *ngIf="project.evidence?.length">
+              <li *ngFor="let fact of project.evidence">{{ fact }}</li>
+            </ul>
+            <div class="project-links">
+              <a
+                *ngIf="safeRoute(project.startUrl) as route"
+                [routerLink]="route"
+                class="btn-res-link"
+              >
+                Review project source →
+              </a>
+              <a
+                *ngIf="externalUrl(project.startUrl) as url"
+                [href]="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-res-link external"
+              >
+                Explore resource (opens new tab) ↗
+              </a>
+            </div>
           </div>
         </details>
       </div>
     </details>
+
+    <!-- Learning & Development Panel -->
+    <details class="resource-panel" *ngIf="result.technologies.length || supplementalGroups.length">
+      <summary>
+        <div class="panel-summary-content">
+          <div class="panel-title-group">
+            <span class="panel-icon" aria-hidden="true">📚</span>
+            <strong>Learning & development</strong>
+          </div>
+          <small class="panel-count-badge">Recorded skills & next steps</small>
+        </div>
+      </summary>
+      <div class="panel-body">
+        <details class="resource-item dev-subitem" *ngFor="let group of supplementalGroups">
+          <summary>
+            <span>{{ group.title }}</span>
+            <span class="count">{{ group.items.length }}</span>
+          </summary>
+          <ul class="subitem-list">
+            <li *ngFor="let item of group.items">{{ item }}</li>
+          </ul>
+        </details>
+
+        <details class="resource-item dev-subitem" *ngIf="result.technologies.length">
+          <summary>
+            <span>Suggested technologies</span>
+            <span class="count">{{ result.technologies.length }}</span>
+          </summary>
+          <div class="tech-list-grid">
+            <div *ngFor="let tech of result.technologies" class="technology">
+              <div class="tech-header">
+                <strong>{{ tech.name }}</strong>
+                <a
+                  routerLink="/app/courses"
+                  [queryParams]="{ skill: tech.name }"
+                  class="find-courses-link"
+                >
+                  Find courses →
+                </a>
+              </div>
+              <p *ngIf="tech.description">{{ tech.description }}</p>
+            </div>
+          </div>
+        </details>
+      </div>
+    </details>
+
+    <!-- Career Directions & Timeline Panel -->
     <details
       class="resource-panel"
       *ngIf="result.careerPaths.length || result.roadmap?.timeline?.length"
     >
       <summary>
-        <span
-          ><strong>Career directions & timeline</strong><small>Recorded career context</small></span
-        >
+        <div class="panel-summary-content">
+          <div class="panel-title-group">
+            <span class="panel-icon" aria-hidden="true">🗺️</span>
+            <strong>Career directions & timeline</strong>
+          </div>
+          <small class="panel-count-badge">Recorded career context</small>
+        </div>
       </summary>
       <div class="panel-body">
-        <div *ngFor="let path of result.careerPaths">
+        <div *ngFor="let path of result.careerPaths" class="career-path-card">
           <h3>{{ path.title }}</h3>
           <p>{{ path.description }}</p>
-          <ul>
+          <ul *ngIf="path.actionItems.length">
             <li *ngFor="let action of path.actionItems">{{ action }}</li>
           </ul>
           <a
@@ -100,10 +152,12 @@
             [href]="url"
             target="_blank"
             rel="noopener noreferrer"
-            >Explore direction (opens new tab)</a
+            class="direction-link"
           >
+            Explore direction (opens new tab) ↗
+          </a>
         </div>
-        <div *ngFor="let phase of result.roadmap?.timeline">
+        <div *ngFor="let phase of result.roadmap?.timeline" class="timeline-phase-card">
           <h3>{{ phase.label }}</h3>
           <ul>
             <li *ngFor="let item of phase.items">{{ item }}</li>
@@ -111,20 +165,29 @@
         </div>
       </div>
     </details>
+
+    <!-- AI-assisted Ideas Panel -->
     <details class="resource-panel" *ngIf="result.aiSuggestions?.length">
       <summary>
-        <span
-          ><strong>AI-assisted ideas</strong
-          ><small>Supplemental advice, separate from source facts</small></span
-        >
+        <div class="panel-summary-content">
+          <div class="panel-title-group">
+            <span class="panel-icon" aria-hidden="true">✨</span>
+            <strong>AI-assisted ideas</strong>
+          </div>
+          <small class="panel-count-badge">Supplemental advice</small>
+        </div>
       </summary>
       <div class="panel-body">
-        <ul>
-          <li *ngFor="let idea of result.aiSuggestions">{{ idea.suggestion }}</li>
+        <ul class="ai-ideas-list">
+          <li *ngFor="let idea of result.aiSuggestions" class="ai-idea-item">
+            <span class="ai-bullet">✦</span>
+            <span>{{ idea.suggestion }}</span>
+          </li>
         </ul>
       </div>
     </details>
   </div>
+
   <p class="empty-note" *ngIf="!result.projects.length">
     No additional project suggestion was returned for this context.
   </p>
