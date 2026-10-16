@@ -1,0 +1,325 @@
+{
+  "startedAt": "2026-10-16T11:49:33.233Z",
+  "checks": [
+    {
+      "name": "JWT rejects unauthenticated request",
+      "status": "PASS"
+    },
+    {
+      "name": "independent mathematics: weighted partial",
+      "status": "PASS",
+      "detail": {
+        "name": "weighted partial",
+        "tasks": [
+          [
+            10,
+            "high"
+          ],
+          [
+            5,
+            "medium"
+          ],
+          [
+            1,
+            "low"
+          ]
+        ],
+        "done": [
+          0
+        ],
+        "xp": 25,
+        "level": 1,
+        "progress": 63,
+        "equation": "XP=15+10=25; level=1; progress=round(10/16*100)=63 (integer score contract)",
+        "reversalXp": 0,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "independent mathematics: level boundary",
+      "status": "PASS",
+      "detail": {
+        "name": "level boundary",
+        "tasks": [
+          [
+            10,
+            "high"
+          ],
+          [
+            10,
+            "high"
+          ],
+          [
+            10,
+            "high"
+          ],
+          [
+            10,
+            "high"
+          ],
+          [
+            10,
+            "high"
+          ]
+        ],
+        "done": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "xp": 100,
+        "level": 2,
+        "progress": 80,
+        "equation": "XP=4*(15+10)=100; level=2; progress=40/50*100=80",
+        "reversalXp": 75,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "independent mathematics: mixed all complete",
+      "status": "PASS",
+      "detail": {
+        "name": "mixed all complete",
+        "tasks": [
+          [
+            1,
+            "low"
+          ],
+          [
+            4,
+            "medium"
+          ],
+          [
+            8,
+            "high"
+          ]
+        ],
+        "done": [
+          0,
+          1,
+          2
+        ],
+        "xp": 43,
+        "level": 1,
+        "progress": 100,
+        "equation": "XP=(5+1)+(10+4)+(15+8)=43; level=1; progress=13/13*100=100",
+        "reversalXp": 37,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "Learning Hub handoff replay after Sprint task edit",
+      "status": "PASS"
+    },
+    {
+      "name": "all 15 actual legacy records: read-only source, isolated HTTP rejection and preservation",
+      "status": "PASS",
+      "detail": {
+        "count": 15,
+        "unchangedHash": "8f6c62bba1bba3056fb564b2a422cbdbb17909e64e534cf4ed6aa4629c0e8e8f",
+        "indexes": [
+          {
+            "v": 2,
+            "key": {
+              "_id": 1
+            },
+            "name": "_id_"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1
+            },
+            "name": "userId_1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "updatedAt": -1
+            },
+            "name": "userId_1_updatedAt_-1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "weekStartDate": -1
+            },
+            "name": "userId_1_weekStartDate_-1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "weekStartDate": 1,
+              "weekEndDate": 1
+            },
+            "name": "userId_1_weekStartDate_1_weekEndDate_1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "sprintStartDate": 1,
+              "sprintEndDate": 1
+            },
+            "name": "userId_1_sprintStartDate_1_sprintEndDate_1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "tasks.isCompleted": 1,
+              "tasks.endDate": 1
+            },
+            "name": "userId_1_tasks.isCompleted_1_tasks.endDate_1"
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "creationKey": 1
+            },
+            "name": "userId_1_creationKey_1",
+            "unique": true,
+            "partialFilterExpression": {
+              "creationKey": {
+                "$type": "string"
+              }
+            }
+          },
+          {
+            "v": 2,
+            "key": {
+              "userId": 1,
+              "occupiedDays": 1
+            },
+            "name": "userId_1_occupiedDays_1",
+            "unique": true,
+            "partialFilterExpression": {
+              "occupiedDays.0": {
+                "$exists": true
+              }
+            }
+          }
+        ],
+        "readOnlyRejections": 15,
+        "unresolvedTimezones": 15
+      }
+    }
+  ],
+  "limitations": [
+    "External AI provider success is controlled in existing tests; this run injects provider unavailability and makes no paid provider request."
+  ],
+  "courseReplay": {
+    "beforeEdit": 200,
+    "edit": 200,
+    "afterEdit": 200,
+    "response": {
+      "sprintId": "856fcf92199743ed6a6f4e18",
+      "courseId": "fb_u2",
+      "targetSkill": "Node.js",
+      "alreadyAdded": true,
+      "route": "/app/career-sprint"
+    },
+    "taskCount": 1
+  },
+  "legacy": {
+    "count": 15,
+    "unchangedHash": "8f6c62bba1bba3056fb564b2a422cbdbb17909e64e534cf4ed6aa4629c0e8e8f",
+    "indexes": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1
+        },
+        "name": "userId_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "updatedAt": -1
+        },
+        "name": "userId_1_updatedAt_-1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "weekStartDate": -1
+        },
+        "name": "userId_1_weekStartDate_-1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "weekStartDate": 1,
+          "weekEndDate": 1
+        },
+        "name": "userId_1_weekStartDate_1_weekEndDate_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "sprintStartDate": 1,
+          "sprintEndDate": 1
+        },
+        "name": "userId_1_sprintStartDate_1_sprintEndDate_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "tasks.isCompleted": 1,
+          "tasks.endDate": 1
+        },
+        "name": "userId_1_tasks.isCompleted_1_tasks.endDate_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "creationKey": 1
+        },
+        "name": "userId_1_creationKey_1",
+        "unique": true,
+        "partialFilterExpression": {
+          "creationKey": {
+            "$type": "string"
+          }
+        }
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "occupiedDays": 1
+        },
+        "name": "userId_1_occupiedDays_1",
+        "unique": true,
+        "partialFilterExpression": {
+          "occupiedDays.0": {
+            "$exists": true
+          }
+        }
+      }
+    ],
+    "readOnlyRejections": 15,
+    "unresolvedTimezones": 15
+  }
+}

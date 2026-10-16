@@ -7,12 +7,19 @@
  *   - If today == lastActiveDate + 1 day  → currentStreak++
  *   - If today >  lastActiveDate + 1 day  → streak broken, reset to 1
  *   - On break: update longestStreak if needed
- *   - Restore: allowed if missedDays ≤ 3 (within 72 h of last active day)
+ *   - Restore: allowed for 1–3 missed calendar days (not elapsed hours).
  */
 
 const { startOfDay, daysBetween, isSameDay } = require('../utils/dateUtils');
 
 const MAX_RESTORE_DAYS = 3;
+
+// Restoration bridges a gap without claiming a task was completed that day.
+const activityAnchor = (sprint) => {
+  const real = sprint.lastActiveDate ? startOfDay(sprint.lastActiveDate) : null;
+  const restored = sprint.streakRestoredAt ? startOfDay(sprint.streakRestoredAt) : null;
+  return restored && real && restored > real ? restored : real;
+};
 
 /**
  * Call this whenever a task is completed.
@@ -23,10 +30,11 @@ const MAX_RESTORE_DAYS = 3;
  */
 const recordActivity = (sprint) => {
   const today = startOfDay(new Date());
-  const last  = sprint.lastActiveDate ? startOfDay(sprint.lastActiveDate) : null;
+  const last = activityAnchor(sprint);
 
   // Already recorded today — nothing to do
   if (last && isSameDay(last, today)) {
+    sprint.lastActiveDate = today;
     sprint.streakStatus = resolveStatus(sprint);
     return { changed: false, streakStatus: sprint.streakStatus };
   }
@@ -43,7 +51,7 @@ const recordActivity = (sprint) => {
       // Gap > 1 — streak broken
       sprint.longestStreak = Math.max(sprint.longestStreak || 0, sprint.currentStreak || 0);
       sprint.currentStreak = 1;
-      sprint.streakBroken  = true;
+      sprint.streakBroken = true;
       sprint.streakBrokenAt = new Date();
     }
   }
@@ -53,7 +61,7 @@ const recordActivity = (sprint) => {
 
   // Clear broken flag if we're back on track
   if (sprint.streakBroken && sprint.currentStreak > 0) {
-    sprint.streakBroken   = false;
+    sprint.streakBroken = false;
     sprint.streakBrokenAt = null;
   }
 
@@ -61,8 +69,8 @@ const recordActivity = (sprint) => {
   sprint.streakWarning = false;
 
   sprint.lastActiveDate = today;
-  sprint.streak         = sprint.currentStreak; // keep legacy field in sync
-  sprint.streakStatus   = resolveStatus(sprint);
+  sprint.streak = sprint.currentStreak; // keep legacy field in sync
+  sprint.streakStatus = resolveStatus(sprint);
 
   return { changed: true, streakStatus: sprint.streakStatus };
 };
@@ -74,7 +82,7 @@ const recordActivity = (sprint) => {
  */
 const checkInactivity = (sprint) => {
   const today = startOfDay(new Date());
-  const last  = sprint.lastActiveDate ? startOfDay(sprint.lastActiveDate) : null;
+  const last = activityAnchor(sprint);
 
   if (!last || (sprint.currentStreak || 0) === 0) {
     sprint.streakStatus = resolveStatus(sprint);
@@ -85,18 +93,18 @@ const checkInactivity = (sprint) => {
 
   if (gap > 1 && !sprint.streakBroken) {
     // Missed at least one day
-    sprint.longestStreak  = Math.max(sprint.longestStreak || 0, sprint.currentStreak || 0);
-    sprint.streakBroken   = true;
+    sprint.longestStreak = Math.max(sprint.longestStreak || 0, sprint.currentStreak || 0);
+    sprint.streakBroken = true;
     sprint.streakBrokenAt = new Date();
-    sprint.streakWarning  = false;
-    sprint.streakStatus   = 'broken';
+    sprint.streakWarning = false;
+    sprint.streakStatus = 'broken';
     return { changed: true, streakStatus: 'broken' };
   }
 
   if (gap === 1 && !sprint.streakWarning && !sprint.streakBroken) {
     // Haven't done anything today yet — warn
     sprint.streakWarning = true;
-    sprint.streakStatus  = 'warning';
+    sprint.streakStatus = 'warning';
     return { changed: true, streakStatus: 'warning' };
   }
 
@@ -110,37 +118,51 @@ const checkInactivity = (sprint) => {
  * Returns true if restore was applied.
  */
 const restoreStreak = (sprint) => {
-  if (!sprint.streakBroken || !sprint.streakBrokenAt) return false;
+  if (!canRestore(sprint)) return false;
 
   const today = startOfDay(new Date());
-  const last  = sprint.lastActiveDate ? startOfDay(sprint.lastActiveDate) : null;
+  const last = activityAnchor(sprint);
   const missedDays = last ? daysBetween(last, today) - 1 : 999;
 
   if (missedDays > MAX_RESTORE_DAYS) return false;
 
   // Restore: keep the streak as-is (don't increment — user just bridged the gap)
-  sprint.streakBroken   = false;
+  sprint.streakBroken = false;
   sprint.streakBrokenAt = null;
-  sprint.streakWarning  = false;
-  sprint.streakStatus   = 'active';
-  // Don't reset lastActiveDate — next real completion will advance it
+  sprint.streakWarning = false;
+  sprint.streakStatus = 'active';
+  sprint.streakRestoredAt = new Date();
+  // Keep the actual activity date; streakRestoredAt records the bridge separately.
   return true;
 };
 
 /** True if the user is eligible to restore their streak. */
 const canRestore = (sprint) => {
   if (!sprint.streakBroken || !sprint.streakBrokenAt) return false;
-  const last = sprint.lastActiveDate ? startOfDay(sprint.lastActiveDate) : null;
+  const last = activityAnchor(sprint);
   if (!last) return false;
   const today = startOfDay(new Date());
   const missedDays = daysBetween(last, today) - 1;
-  return missedDays <= MAX_RESTORE_DAYS;
+  return missedDays >= 1 && missedDays <= MAX_RESTORE_DAYS;
 };
 
 const resolveStatus = (sprint) => {
-  if (sprint.streakBroken)  return 'broken';
+  if (sprint.streakBroken) return 'broken';
   if (sprint.streakWarning) return 'warning';
   return 'active';
 };
 
-module.exports = { recordActivity, checkInactivity, restoreStreak, canRestore, MAX_RESTORE_DAYS };
+const current = require('./sprintStreakPolicy');
+const { isCurrentPolicy } = require('../utils/sprintCalendar');
+const dispatch =
+  (legacyFn, currentFn) =>
+  (sprint, ...args) =>
+    (isCurrentPolicy(sprint) ? currentFn : legacyFn)(sprint, ...args);
+module.exports = {
+  recordActivity: dispatch(recordActivity, current.recordActivity),
+  checkInactivity: dispatch(checkInactivity, current.checkInactivity),
+  restoreStreak: dispatch(restoreStreak, current.restoreStreak),
+  canRestore: dispatch(canRestore, (sprint, now) => current.restoreState(sprint, now).canRestore),
+  activityAnchor: dispatch(activityAnchor, current.anchor),
+  MAX_RESTORE_DAYS
+};

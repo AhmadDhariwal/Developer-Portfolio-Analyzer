@@ -59,6 +59,8 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     await new Promise((resolve) => setTimeout(resolve, 50));
     await Promise.all([
       User.deleteMany({ _id: { $in: [owner, foreign] } }),
+      require('../models/sprintSchedule').deleteMany({ _id: { $in: [owner, foreign] } }),
+      require('../models/sprintPreference').deleteMany({ _id: { $in: [owner, foreign] } }),
       ...[ResumeFile, ResumeAnalysis, AnalysisCache, CareerSprint, Progress].map((model) =>
         model.deleteMany({ userId: { $in: [owner, foreign] } }),
       ),
@@ -456,6 +458,19 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       const renamed = await http('/fb_u2/career-sprint', 'POST', { targetSkill: 'Node.js' });
       assert.equal(renamed.status, 200);
       assert.equal(renamed.body.alreadyAdded, true);
+      assert.equal((await CareerSprint.findOne({ userId: owner }).lean()).tasks.length, 1);
+      const sprintDoc = await CareerSprint.findOne({ userId: owner });
+      const sprintTask = sprintDoc.tasks[0];
+      const sprintService = require('../services/careerSprintService');
+      await sprintService.editTask(owner, sprintDoc._id, sprintTask._id, {
+        title: 'User Edited Title',
+        description: 'User completely modified their course description notes.',
+      });
+      const replayAfterEdit = await http('/fb_u2/career-sprint', 'POST', {
+        targetSkill: 'Node.js',
+      });
+      assert.equal(replayAfterEdit.status, 200);
+      assert.equal(replayAfterEdit.body.alreadyAdded, true);
       assert.equal((await CareerSprint.findOne({ userId: owner }).lean()).tasks.length, 1);
       assert.equal(
         (await http('/fb_u2/career-sprint', 'POST', { targetSkill: 'Express' })).status,
