@@ -1,0 +1,62 @@
+[
+  {
+    "path": "frontend/verification/career-sprint/browser-run.txt",
+    "sha256": "0A34A4601644126F6368079499665C17B046D4867591118BA99B11DB9B65426B"
+  },
+  {
+    "path": "frontend/verification/career-sprint/build.txt",
+    "sha256": "BECC0D9B3EE81CDA2629543AE136C697A558E33282FF6DDB94A289C092CE86D2"
+  },
+  {
+    "path": "frontend/verification/career-sprint/dark-1440-dashboard.png",
+    "sha256": "45C1DDA43D3A6BC76370B9A7F1CABBC939E5AAA4D0826E5E17077218CE0E1CFC"
+  },
+  {
+    "path": "frontend/verification/career-sprint/dark-375-dashboard.png",
+    "sha256": "2D7402FBA01BEE68154377706023AE2523A8D0D8F7AA56EE972147B9883F3E0D"
+  },
+  {
+    "path": "frontend/verification/career-sprint/dark-desktop-history.png",
+    "sha256": "2645E078F65E51B3C15215967C24F000557706F73920FDADC21CA94C810BA6E4"
+  },
+  {
+    "path": "frontend/verification/career-sprint/dark-mobile-tasks.png",
+    "sha256": "300C70E2C066529DD4FA2C25F347D2B7199451F235BE17C2EBE2443AD5265331"
+  },
+  {
+    "path": "frontend/verification/career-sprint/focused-tests.txt",
+    "sha256": "E6D1501627A701086A9D358745B6C3406D80533BE667F21322AFBB8B07015F0A"
+  },
+  {
+    "path": "frontend/verification/career-sprint/full-tests.txt",
+    "sha256": "25884E5F3B252AB348673C1FF2E6D125EA514C405E22515CDBC04C70D62360CA"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-1440-dashboard.png",
+    "sha256": "CB60A09CB68DD63606032D4F622C7B68EB741E73945128D691ABEE98E733591B"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-375-dashboard.png",
+    "sha256": "6ACEEA84E41E50EAFBB695C3482DEF5382E074ECFFB085D8308DED0CDE265B67"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-desktop-planner.png",
+    "sha256": "B550349CDFE1025166E1ACD1BC4ED3C197A7F84659C63C2F63940084FD660EF0"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-loading.png",
+    "sha256": "1E802F19BCFC350BEEFA0C9D4F4EA0412CCDC8D16A2740D092C7E9EE79971FE4"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-mobile-legacy.png",
+    "sha256": "BCD34A8874A22803FD3DC3C278EDCD9832EFB02B307908C5031CE622E0569493"
+  },
+  {
+    "path": "frontend/verification/career-sprint/light-mobile-tasks.png",
+    "sha256": "2B58609816D4EFF9E20313A33ECF4FC0DB5687141EC62D9A5B7CD0CCAC7FD570"
+  },
+  {
+    "path": "frontend/verification/career-sprint/typecheck.txt",
+    "sha256": "BDB619F3D5FAD1960403055179B15D53C541BDA989C2003AFD9102877E7BA9DA"
+  }
+]

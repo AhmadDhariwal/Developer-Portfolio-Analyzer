@@ -1,0 +1,20 @@
+[
+  "backend/verification/career-sprint/final-e2e/backend-full.log",
+  "backend/verification/career-sprint/final-e2e/backend-full-serial.log",
+  "backend/verification/career-sprint/final-e2e/browser-matrix.log",
+  "backend/verification/career-sprint/final-e2e/browser-session.json",
+  "backend/verification/career-sprint/final-e2e/integrated.log",
+  "backend/verification/career-sprint/final-e2e/integrated-results.json",
+  "backend/verification/career-sprint/final-e2e/live-browser-diagnostic.log",
+  "backend/verification/career-sprint/final-e2e/live-browser-final.log",
+  "backend/verification/career-sprint/final-e2e/live-browser-recheck.log",
+  "backend/verification/career-sprint/final-e2e/live-browser.log",
+  "backend/verification/career-sprint/final-e2e/live-browser-final-verified.log",
+  "backend/verification/career-sprint/final-e2e/live-final.log",
+  "backend/verification/career-sprint/final-e2e/live-verified.log",
+  "backend/verification/career-sprint/final-e2e/live-final-retained.log",
+  "backend/verification/career-sprint/final-e2e/live-clean-final.log",
+  "backend/verification/career-sprint/final-e2e/browser-latest.log",
+  "backend/verification/career-sprint/final-e2e/browser-final.log",
+  "frontend/verification/career-sprint/final-e2e/live-initial-state.png"
+]

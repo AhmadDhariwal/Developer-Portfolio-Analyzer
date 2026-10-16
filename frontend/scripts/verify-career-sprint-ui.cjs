@@ -14,7 +14,9 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { sprintWindow } = require('../../backend/src/utils/sprintCalendar');
 const root = path.resolve(__dirname, '../dist/frontend/browser');
-const output = path.resolve(__dirname, '../verification/career-sprint');
+const output = path.resolve(
+  process.env.SPRINT_UI_OUTPUT || path.resolve(__dirname, '../verification/career-sprint'),
+);
 const origin = 'http://127.0.0.1:4326';
 const server = http.createServer((req, res) => {
   let file = path.resolve(root, '.' + new URL(req.url, origin).pathname);
@@ -658,19 +660,43 @@ async function interactions(session, results, theme) {
           await screenshot(page, results, 'diagnostic-layout.png');
           results.failedLayout = measured;
         }
-        assert.equal(measured.overflow, false, `${theme}/${width}: horizontal overflow`);
-        assert.match(measured.font, /Manrope/);
-        assert.equal(measured.title, '28px');
-        assert.equal(measured.padding, '0px');
         const measuredContrast = await contrast(page);
-        assert.deepEqual(measuredContrast.failures, [], `${theme}/${width}: text contrast`);
-        results.layouts.push({ theme, width, ...measured, contrast: measuredContrast });
+        const failures = [];
+        // Preserve every assertion and threshold, but collect failures so one bad
+        // viewport cannot prevent verification of the other 23 combinations.
+        for (const validate of [
+          () => assert.equal(measured.overflow, false, `${theme}/${width}: horizontal overflow`),
+          () => assert.match(measured.font, /Manrope/),
+          () => assert.equal(measured.title, '28px'),
+          () => assert.equal(measured.padding, '0px'),
+          () => assert.deepEqual(measuredContrast.failures, [], `${theme}/${width}: text contrast`),
+        ]) {
+          try {
+            validate();
+          } catch (error) {
+            failures.push(error.message);
+          }
+        }
+        results.layouts.push({
+          theme,
+          width,
+          ...measured,
+          contrast: measuredContrast,
+          passed: failures.length === 0,
+          failures,
+        });
         if (theme !== 'system' && [375, 1440].includes(width))
           await screenshot(page, results, `${theme}-${width}-dashboard.png`);
       }
-      await interactions(s, results, theme);
-      assert.deepEqual(s.errors, []);
-      await s.context.close();
+      try {
+        await interactions(s, results, theme);
+        assert.deepEqual(s.errors, []);
+      } catch (error) {
+        results.interactionFailures ||= [];
+        results.interactionFailures.push({ theme, error: error.message });
+      } finally {
+        await s.context.close();
+      }
     }
     for (const mode of [
       'legacy',
@@ -752,7 +778,11 @@ async function interactions(session, results, theme) {
       results.states.push({ mode, passed: true });
       await s.context.close();
     }
-    results.status = 'VERIFIED';
+    results.status =
+      results.layouts.some((layout) => !layout.passed) || results.interactionFailures?.length
+        ? 'BLOCKED'
+        : 'VERIFIED';
+    if (results.status === 'BLOCKED') process.exitCode = 1;
   } catch (error) {
     results.status = 'BLOCKED';
     results.error = error.stack;
