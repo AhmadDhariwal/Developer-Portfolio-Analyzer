@@ -1,0 +1,113 @@
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--dev-radius-control, 6px);
+  color: var(--text-primary);
+  background: var(--surface-card);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.4;
+}
+button:hover:not(:disabled),
+.button-link:hover {
+  background: var(--surface-hover);
+  border-color: var(--color-primary-border);
+}
+button.primary {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--text-on-primary, white);
+}
+button.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+button.danger {
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 0;
+}
+input,
+select,
+textarea {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-primary);
+  background: var(--surface-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 42px;
+}
+textarea {
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  accent-color: var(--color-primary);
+}
+fieldset:disabled {
+  opacity: 0.65;
+}
+.meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.notice {
+  padding: 14px 16px;
+  border: 1px solid var(--color-warning-border);
+  border-radius: 8px;
+  background: var(--color-warning-soft);
+  color: var(--color-warning-text);
+  line-height: 1.6;
+}
+.notice.error {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+  background: var(--color-danger-soft);
+}
+.notice.success {
+  border-color: var(--color-success-border);
+  color: var(--text-primary);
+  background: var(--color-success-soft);
+}

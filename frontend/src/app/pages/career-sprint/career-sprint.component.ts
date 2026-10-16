@@ -1,788 +1,503 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, of } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, forkJoin, Observable, of } from 'rxjs';
 import {
-  AiPlanDraft,
   CareerSprint,
   CareerSprintService,
-  GenerateAiTasksResponse,
-  PlannerFilter,
   SprintTask,
-  TaskCategory,
-  TaskPriority,
-  StreakStatus
+  SprintTaskInput,
 } from '../../shared/services/career-sprint.service';
 import { ProfileService } from '../../shared/services/profile.service';
+import { SprintTaskEditorComponent } from './components/sprint-task-editor.component';
+import { SprintPlannerComponent } from './components/sprint-planner.component';
+import {
+  calendarKey,
+  formatSprintDate,
+  restoreEligible,
+  sprintError,
+  sprintReadOnly,
+  sprintZone,
+  taskDescription,
+} from './utils/sprint-presentation';
 
 @Component({
   selector: 'app-career-sprint',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    SprintTaskEditorComponent,
+    SprintPlannerComponent,
+  ],
   templateUrl: './career-sprint.component.html',
   styleUrl: './career-sprint.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CareerSprintComponent implements OnInit {
+export class CareerSprintComponent implements OnInit, OnDestroy {
+  readonly taskDescription = taskDescription;
+  readonly Math = Math;
+  private readonly api = inject(CareerSprintService);
+  private readonly profile = inject(ProfileService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private profileSignature = '';
+  private timer?: ReturnType<typeof setInterval>;
   sprint: CareerSprint | null = null;
   history: CareerSprint[] = [];
-  userAvatar = '';
-  userName = '';
-  userInitial = 'D';
-  avatarVersion = Date.now();
-  isLoading = false;
+  historyError = '';
+  userName = 'Developer';
+  careerStack = '';
+  experienceLevel = '';
+  isLoading = true;
   isRefreshing = false;
-  isCached = false;
-  isOffline = false;
-  isMutationSaving = false;
+  stale = false;
   errorMessage = '';
   actionMessage = '';
-  actionTone: 'success' | 'error' | 'info' = 'info';
-
-  newTaskTitle = '';
-  newTaskDescription = '';
-  newTaskPoints = 3;
-  newTaskPriority: TaskPriority = 'medium';
-  newTaskCategory: TaskCategory = 'learning';
-  isAddingTask = false;
-
-  goalStack = '';
-  goalTechnology = '';
-  goalExperienceLevel = '';
-  isGeneratingPlan = false;
-  isGeneratingAi = false;
-  isSavingAiPlan = false;
-  isImportingScenario = false;
-  generatedTasks: SprintTask[] = [];
-  generatedPlanMeta: GenerateAiTasksResponse['planMeta'] | null = null;
-  showSetupPanel = false;
-
+  actionFailed = false;
+  busy = '';
+  view: 'tasks' | 'plans' | 'history' = 'tasks';
+  now = Date.now();
+  showEditor = false;
+  taskToEdit: SprintTask | null = null;
+  deleteTaskId = '';
+  search = '';
+  statusFilter = 'all';
+  priorityFilter = 'all';
+  categoryFilter = 'all';
+  dateFilter = 'all';
+  customStart = '';
+  customEnd = '';
+  expandedHistoryId = '';
+  settingsOpen = false;
+  newSprintOpen = false;
+  newTitle = 'Career Sprint';
+  newStart = '';
+  newEnd = '';
   sprintStartDate = '';
   sprintEndDate = '';
-  isSavingDates = false;
+  preferenceZone = '';
+  savedPreferenceZone = '';
+  preferencesLoaded = false;
+  preferenceError = '';
+  zones = this.timeZones();
 
-  plannerFilter: PlannerFilter = 'week';
-  customRangeStart = '';
-  customRangeEnd = '';
-  selectedDraftId = '';
-  private profileSignature = '';
-
-  private pendingTaskIds = new Set<string>();
-
-  readonly priorityOptions: TaskPriority[] = ['high', 'medium', 'low'];
-  readonly categoryOptions: TaskCategory[] = ['learning', 'project', 'practice'];
-
-  constructor(
-    private readonly sprintService: CareerSprintService,
-    private readonly profileService: ProfileService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
-    this.loadProfile();
+  get readOnly(): boolean {
+    return Boolean(this.sprint && sprintReadOnly(this.sprint));
   }
-
-  loadProfile(): void {
-    this.profileService.getProfile().subscribe({
-      next: (profile) => {
-        this.profileSignature = profile.profileHash || JSON.stringify([
-          profile._id || '', profile.careerStack || '', profile.experienceLevel || '',
-          profile.activeGithubUsername || profile.githubUsername || ''
-        ]);
-        this.userAvatar = this.profileService.resolveAvatarUrl(profile.avatar || '');
-        this.userName = profile.name || '';
-        this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
-        if (!this.goalStack && profile.careerStack) this.goalStack = profile.careerStack;
-        if (!this.goalExperienceLevel && profile.experienceLevel) this.goalExperienceLevel = profile.experienceLevel;
-        this.avatarVersion = Date.now();
-        this.loadData();
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.profileSignature = 'signed-in-user';
-        this.loadData();
-        this.cdr.markForCheck();
-      }
-    });
+  get mutationsDisabled(): boolean {
+    return this.readOnly || this.stale || this.isRefreshing || !!this.busy;
   }
-
-  loadData(forceRefresh = false): void {
-    // Guard rapid/double-clicks before Angular can disable the button.
-    if (this.isRefreshing || (forceRefresh && this.isLoading)) return;
-
-    const activeSprintId = this.sprint?._id || '';
-    const previousSprint = this.sprint;
-    const previousHistory = this.history;
-    const preservePrevious = Boolean(previousSprint);
-    const cachedSprint = forceRefresh ? null : this.sprintService.getCurrentCached(this.profileSignature, activeSprintId);
-    const cachedHistory = forceRefresh ? null : this.sprintService.getHistoryCached(8, this.profileSignature);
-
-    if (cachedSprint && cachedHistory) {
-      this.applySprintState(cachedSprint);
-      this.history = cachedHistory;
-      this.isLoading = false;
-      this.isRefreshing = false;
-      this.isCached = true;
-      this.isOffline = false;
-      this.cdr.markForCheck();
-      return;
-    }
-
-    this.isLoading = !preservePrevious;
-    this.isRefreshing = forceRefresh && preservePrevious;
-    this.isCached = false;
-    this.isOffline = false;
-    this.errorMessage = '';
-
-    forkJoin({
-      sprint: this.sprintService.getCurrent(this.profileSignature, activeSprintId, forceRefresh),
-      history: this.sprintService.getHistory(8, this.profileSignature, forceRefresh).pipe(
-        catchError(() => of({ history: previousHistory || [] }))
+  get zone(): string | null {
+    return this.sprint ? sprintZone(this.sprint) : null;
+  }
+  get analytics() {
+    return this.sprint?.analytics;
+  }
+  get progress(): number | null {
+    return this.analytics?.progressPercent ?? null;
+  }
+  get xpProgress(): number {
+    return this.sprint
+      ? Math.min(100, Math.max(0, this.sprint.xpPoints - (this.sprint.level - 1) * 100))
+      : 0;
+  }
+  get canRestore(): boolean {
+    return Boolean(
+      this.sprint && !this.mutationsDisabled && restoreEligible(this.sprint, this.now),
+    );
+  }
+  get restoreCountdown(): string {
+    const expires = this.sprint?.restoreMeta?.expiresAt;
+    if (!expires) return '';
+    const seconds = Math.max(0, Math.ceil((+new Date(expires) - this.now) / 1000));
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m ${seconds % 60}s`;
+  }
+  get activity() {
+    return (this.analytics?.dailyActivity || []).slice(-7).map((item) => ({
+      ...item,
+      date: calendarKey(item.date, this.zone) || item.date,
+      label: new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(
+        new Date((calendarKey(item.date, this.zone) || item.date.slice(0, 10)) + 'T12:00:00Z'),
+      ),
+    }));
+  }
+  get visibleTasks(): SprintTask[] {
+    const query = this.search.trim().toLowerCase();
+    const today = calendarKey(new Date(this.now), this.zone);
+    return (this.sprint?.tasks || []).filter((task) => {
+      if (query && !`${task.title} ${task.description}`.toLowerCase().includes(query)) return false;
+      if (
+        (this.statusFilter === 'pending' && task.isCompleted) ||
+        (this.statusFilter === 'completed' && !task.isCompleted)
       )
-    }).subscribe({
-      next: ({ sprint, history }) => {
-        this.applySprintState(sprint);
-        this.history = history.history || [];
-        this.isLoading = false;
-        this.isRefreshing = false;
-        this.isCached = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.errorMessage = error?.error?.message || 'Failed to load Career Sprint.';
-        this.isOffline = error?.status === 0;
-        this.isLoading = false;
-        this.isRefreshing = false;
-        if (preservePrevious && previousSprint) {
-          this.applySprintState(previousSprint);
-          this.history = previousHistory || [];
-          this.isCached = true;
-        }
-        this.cdr.markForCheck();
+        return false;
+      if (this.priorityFilter !== 'all' && task.priority !== this.priorityFilter) return false;
+      if (this.categoryFilter !== 'all' && task.category !== this.categoryFilter) return false;
+      const due = task.endDate || task.deadline || task.dueDate;
+      if (this.dateFilter === 'overdue')
+        return Boolean(!task.isCompleted && due && +new Date(due) < this.now);
+      if (this.dateFilter === 'unscheduled') return !task.startDate && !due;
+      if (this.dateFilter === 'sprint') {
+        const start = this.sprint?.sprintStartDate || this.sprint?.weekStartDate;
+        const end = this.sprint?.sprintEndDate || this.sprint?.weekEndDate;
+        return (
+          (!task.startDate || !end || +new Date(task.startDate) <= +new Date(end)) &&
+          (!due || !start || +new Date(due) >= +new Date(start))
+        );
       }
-    });
-  }
-
-  private applySprintState(sprint: CareerSprint): void {
-    this.sprint = { ...sprint, tasks: this.dedupeTasks(sprint.tasks || []) };
-    this.syncDatePickers();
-    if (!this.goalStack && sprint.goalStack) this.goalStack = sprint.goalStack;
-    if (!this.goalTechnology && sprint.goalTechnology) this.goalTechnology = sprint.goalTechnology;
-    if (!this.goalExperienceLevel && sprint.goalExperienceLevel) this.goalExperienceLevel = sprint.goalExperienceLevel;
-  }
-
-  private dedupeTasks(tasks: SprintTask[]): SprintTask[] {
-    const seen = new Set<string>();
-    return tasks.filter((task) => {
-      const key = task._id || `${task.title || ''}:${task.startDate || ''}:${task.endDate || ''}`.trim().toLowerCase();
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
+      const key = calendarKey(due, this.zone);
+      if (this.dateFilter === 'today') return !!today && key === today;
+      if (this.dateFilter === 'week') {
+        if (!today || !key) return false;
+        const start = new Date(today + 'T12:00:00Z');
+        start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+        const end = new Date(start);
+        end.setUTCDate(end.getUTCDate() + 6);
+        return key >= start.toISOString().slice(0, 10) && key <= end.toISOString().slice(0, 10);
+      }
+      if (this.dateFilter === 'custom')
+        return Boolean(
+          key &&
+          (!this.customStart || key >= this.customStart) &&
+          (!this.customEnd || key <= this.customEnd),
+        );
       return true;
     });
   }
 
-  private applyMutationResult(sprint: CareerSprint, message: string): void {
-    this.applySprintState(sprint);
-    this.isMutationSaving = false;
-    this.setAction(message, 'success');
-    this.cdr.markForCheck();
+  ngOnInit(): void {
+    this.profile
+      .getProfile()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (profile) => {
+          this.userName = profile.name?.split(' ')[0] || 'Developer';
+          this.careerStack = profile.activeCareerStack || profile.careerStack || '';
+          this.experienceLevel = profile.activeExperienceLevel || profile.experienceLevel || '';
+          this.profileSignature = JSON.stringify([
+            profile._id,
+            profile.profileHash,
+            this.careerStack,
+            this.experienceLevel,
+          ]);
+          this.loadData();
+        },
+        error: () => this.loadData(),
+      });
+    this.loadPreferences();
+    this.timer = setInterval(() => {
+      this.now = Date.now();
+      this.cdr.markForCheck();
+    }, 1000);
+  }
+  ngOnDestroy(): void {
+    if (this.timer) clearInterval(this.timer);
+  }
+  @HostListener('window:focus') onFocus(): void {
+    if (this.sprint && !this.busy) this.loadData(true);
+  }
+  @HostListener('window:devinsight:profile-personalization-changed') onProfileChange(): void {
+    this.api.clearCache();
+    this.loadData(true);
   }
 
-  private syncDatePickers(): void {
-    if (!this.sprint) return;
-    const start = this.sprint.sprintStartDate || this.sprint.weekStartDate;
-    const end = this.sprint.sprintEndDate || this.sprint.weekEndDate;
-    this.sprintStartDate = this.toDateInputValue(start);
-    this.sprintEndDate = this.toDateInputValue(end);
-  }
-
-  private setAction(message: string, tone: 'success' | 'error' | 'info' = 'info'): void {
-    this.actionMessage = message;
-    this.actionTone = tone;
-  }
-
-  private parseDate(value: string | Date | null | undefined): Date | null {
-    if (!value) return null;
-    const parsed = value instanceof Date ? new Date(value) : new Date(String(value));
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  private toDateInputValue(value: string | Date | null | undefined): string {
-    const parsed = this.parseDate(value);
-    return parsed ? parsed.toISOString().split('T')[0] : '';
-  }
-
-  get analytics() {
-    return this.sprint?.analytics || null;
-  }
-
-  get comparison() {
-    return this.sprint?.comparison || null;
-  }
-
-  get restoreMeta() {
-    return this.sprint?.restoreMeta || null;
-  }
-
-  get hasInsights(): boolean {
-    return Boolean(this.sprint?.insights?.length);
-  }
-
-  get hasCareerFocusSignal(): boolean {
-    return Boolean(this.sprint?.signalsUsed?.careerSprint?.activeLearningFocus?.trim());
-  }
-
-  get hasWeeklySignal(): boolean {
-    const weekly = this.sprint?.signalsUsed?.weeklyReport;
-    return Boolean(weekly && weekly.status && weekly.status.toLowerCase() !== 'unavailable');
-  }
-
-  get hasPortfolioSignal(): boolean {
-    return Number(this.sprint?.signalsUsed?.portfolio?.completenessScore || 0) > 0;
-  }
-
-  get hasIntegrationSignal(): boolean {
-    return Boolean(this.sprint?.signalsUsed?.integrations?.usedProviders?.length);
-  }
-
-  get hasSignalContext(): boolean {
-    return this.hasCareerFocusSignal || this.hasWeeklySignal || this.hasPortfolioSignal || this.hasIntegrationSignal;
-  }
-
-  get generatedTaskCount(): number {
-    return this.allTasks.filter((task) => task.taskType === 'ai').length;
-  }
-
-  get progressPercent(): number {
-    return this.analytics?.progressPercent || 0;
-  }
-
-  get totalPoints(): number {
-    return this.analytics?.totalPoints || 0;
-  }
-
-  get completedPoints(): number {
-    return this.analytics?.completedPoints || 0;
-  }
-
-  get completedCount(): number {
-    return this.analytics?.completedTasks || 0;
-  }
-
-  get remainingTasksCount(): number {
-    return this.analytics?.pendingTasks || 0;
-  }
-
-  get overdueCount(): number {
-    return this.analytics?.overdueTasks || 0;
-  }
-
-  get progressRingOffset(): number {
-    const circumference = 2 * Math.PI * 45;
-    return circumference - (this.progressPercent / 100) * circumference;
-  }
-
-  get xpPoints(): number {
-    return this.sprint?.xpPoints || 0;
-  }
-
-  get level(): number {
-    return this.sprint?.level || 1;
-  }
-
-  get xpToNextLevel(): number {
-    return this.level * 100;
-  }
-
-  get xpInCurrentLevel(): number {
-    return this.xpPoints - ((this.level - 1) * 100);
-  }
-
-  get xpProgressPercent(): number {
-    return Math.min(100, Math.max(0, Math.round((this.xpInCurrentLevel / 100) * 100)));
-  }
-
-  get currentStreak(): number {
-    return this.sprint?.currentStreak ?? this.sprint?.streak ?? 0;
-  }
-
-  get longestStreak(): number {
-    return this.sprint?.longestStreak ?? 0;
-  }
-
-  get canRestore(): boolean {
-    return !!this.sprint?._canRestore;
-  }
-
-  getStreakStatus(): StreakStatus {
-    if (!this.sprint) return 'active';
-    return this.sprint.streakStatus || (this.sprint.streakBroken ? 'broken' : this.sprint.streakWarning ? 'warning' : 'active');
-  }
-
-  get motivationalText(): string {
-    const progress = this.progressPercent;
-    if (progress === 0) return 'Ready to start';
-    if (progress < 25) return 'Build momentum today';
-    if (progress < 60) return 'Steady execution';
-    if (progress < 100) return 'Closing the sprint strong';
-    return 'Sprint goal achieved';
-  }
-
-  get effectiveStartDate(): Date | null {
-    const value = this.sprint?.sprintStartDate || this.sprint?.weekStartDate;
-    return this.parseDate(value);
-  }
-
-  get effectiveEndDate(): Date | null {
-    const value = this.sprint?.sprintEndDate || this.sprint?.weekEndDate;
-    return this.parseDate(value);
-  }
-
-  get sprintDurationDays(): number {
-    if (!this.effectiveStartDate || !this.effectiveEndDate) return 7;
-    const milliseconds = new Date(this.effectiveEndDate).setHours(0, 0, 0, 0) - new Date(this.effectiveStartDate).setHours(0, 0, 0, 0);
-    return Math.max(1, Math.round(milliseconds / (1000 * 60 * 60 * 24)) + 1);
-  }
-
-  get allTasks(): SprintTask[] {
-    return this.dedupeTasks(this.sprint?.tasks || []);
-  }
-
-  get pendingTasks(): SprintTask[] {
-    return this.allTasks.filter((task) => !task.isCompleted);
-  }
-
-  get completedTasks(): SprintTask[] {
-    return this.allTasks.filter((task) => task.isCompleted);
-  }
-
-  get todayTasks(): SprintTask[] {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    return this.pendingTasks.filter((task) => {
-      const dueDate = task.endDate || task.deadline || task.dueDate;
-      if (!dueDate) return false;
-      const parsed = this.parseDate(dueDate);
-      if (!parsed) return false;
-      return parsed >= today && parsed < tomorrow;
-    });
-  }
-
-  get overdueTasks(): SprintTask[] {
-    const now = new Date();
-    return this.pendingTasks.filter((task) => {
-      const dueDate = task.endDate || task.deadline || task.dueDate;
-      const parsed = this.parseDate(dueDate);
-      return parsed ? parsed < now : false;
-    });
-  }
-
-  get sprintTasks(): SprintTask[] {
-    const start = this.effectiveStartDate;
-    const end = this.effectiveEndDate;
-    if (!start || !end) return this.pendingTasks;
-
-    return this.pendingTasks.filter((task) => {
-      const taskStart = this.parseDate(task.startDate);
-      const taskEnd = this.parseDate(task.endDate);
-      if (!taskStart && !taskEnd) return true;
-      return (!taskStart || taskStart <= end) && (!taskEnd || taskEnd >= start);
-    });
-  }
-
-  get customRangeTasks(): SprintTask[] {
-    if (!this.customRangeStart || !this.customRangeEnd) return this.pendingTasks;
-    const start = new Date(this.customRangeStart);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(this.customRangeEnd);
-    end.setHours(23, 59, 59, 999);
-    return this.pendingTasks.filter((task) => {
-      const dueDate = task.endDate || task.deadline || task.dueDate;
-      if (!dueDate) return true;
-      const parsed = this.parseDate(dueDate);
-      if (!parsed) return false;
-      return parsed >= start && parsed <= end;
-    });
-  }
-
-  get plannerTasks(): SprintTask[] {
-    switch (this.plannerFilter) {
-      case 'all':
-        return this.allTasks;
-      case 'sprint':
-        return this.sprintTasks;
-      case 'today':
-        return this.todayTasks;
-      case 'overdue':
-        return this.overdueTasks;
-      case 'custom':
-        return this.customRangeTasks;
-      case 'week':
-      default:
-        return this.pendingTasks;
-    }
-  }
-
-  get latestHistory(): CareerSprint | null {
-    return this.history[0] || null;
-  }
-
-  get sprintDaysLabel(): string {
-    const days = this.sprintDurationDays;
-    return `${days}-day sprint`;
-  }
-
-  get trendActivity(): Array<{ date: string; count: number; active: boolean; label: string }> {
-    const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    const activity = (this.analytics?.dailyActivity || []).slice(-7);
-    return activity.map((item) => {
-      const parsed = this.parseDate(item.date);
-      const dayIndex = parsed ? parsed.getDay() : 0;
-      return {
-        ...item,
-        label: labels[dayIndex] || 'S'
-      };
-    });
-  }
-
-  saveDates(): void {
-    if (!this.sprint || !this.sprintStartDate || !this.sprintEndDate) return;
-    this.isSavingDates = true;
-    this.sprintService.updateSprintDates(this.sprint._id, this.sprintStartDate, this.sprintEndDate).subscribe({
-      next: (sprint) => {
-        this.isSavingDates = false;
-        this.sprint = sprint;
-        this.applyMutationResult(sprint, 'Sprint dates updated.');
-      },
-      error: (error) => {
-        this.isSavingDates = false;
-        this.setAction(error?.error?.message || 'Failed to update sprint dates.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  addTask(): void {
-    if (!this.sprint || !this.newTaskTitle.trim() || this.isAddingTask) return;
-    this.isAddingTask = true;
-    this.sprintService.addTask(this.sprint._id, {
-      title: this.newTaskTitle.trim(),
-      description: this.newTaskDescription.trim() || undefined,
-      points: this.newTaskPoints,
-      priority: this.newTaskPriority,
-      category: this.newTaskCategory,
-      taskType: 'manual'
-    }).subscribe({
-      next: (sprint) => {
-        this.sprint = sprint;
-        this.newTaskTitle = '';
-        this.newTaskDescription = '';
-        this.newTaskPoints = 3;
-        this.newTaskPriority = 'medium';
-        this.newTaskCategory = 'learning';
-        this.isAddingTask = false;
-        this.applyMutationResult(sprint, 'Manual task added to sprint.');
-      },
-      error: (error) => {
-        this.isAddingTask = false;
-        this.setAction(error?.error?.message || 'Failed to add task.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  toggleTask(task: SprintTask): void {
-    if (!this.sprint || !task._id || this.pendingTaskIds.has(task._id)) return;
-    const snapshot = structuredClone(this.sprint);
-    const nextCompleted = !task.isCompleted;
-    this.pendingTaskIds.add(task._id);
-    task.isCompleted = nextCompleted;
-    this.cdr.markForCheck();
-
-    this.sprintService.toggleTask(this.sprint._id, task._id, nextCompleted).subscribe({
-      next: (sprint) => {
-        this.pendingTaskIds.delete(task._id!);
-        this.sprint = sprint;
-        this.applyMutationResult(sprint, nextCompleted ? 'Task completed and sprint progress updated.' : 'Task returned to pending.');
-      },
-      error: (error) => {
-        this.pendingTaskIds.delete(task._id!);
-        this.sprint = snapshot;
-        this.setAction(error?.error?.message || 'Failed to update task.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  restoreStreak(): void {
-    if (!this.sprint) return;
-    this.sprintService.restoreStreak(this.sprint._id).subscribe({
-      next: (sprint) => {
-        this.sprint = sprint;
-        this.applyMutationResult(sprint, 'Streak restored successfully.');
-      },
-      error: (error) => {
-        this.setAction(error?.error?.message || 'Failed to restore streak.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  generateAiPlan(): void {
-    if (this.isGeneratingPlan || this.isGeneratingAi) return;
-    const previousTasks = [...this.generatedTasks];
-    const previousMeta = this.generatedPlanMeta;
-    this.isGeneratingPlan = true;
-    this.sprintService.generateAiTasks({
-      stack: this.goalStack || undefined,
-      technology: this.goalTechnology || undefined,
-      experienceLevel: this.goalExperienceLevel || undefined,
-      sprintStartDate: this.sprintStartDate || undefined,
-      sprintEndDate: this.sprintEndDate || undefined
-    }).subscribe({
-      next: (response) => {
-        this.generatedTasks = this.dedupeTasks(response.tasks || []);
-        this.generatedPlanMeta = response.planMeta || null;
-        this.isGeneratingPlan = false;
-        this.setAction('Sprint plan generated from real developer signals.', 'success');
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.isGeneratingPlan = false;
-        this.generatedTasks = previousTasks;
-        this.generatedPlanMeta = previousMeta;
-        this.setAction(error?.error?.message || 'Failed to generate sprint plan.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  generateLlmAiPlan(): void {
-    if (this.isGeneratingPlan || this.isGeneratingAi) return;
-    const previousTasks = [...this.generatedTasks];
-    const previousMeta = this.generatedPlanMeta;
-    this.isGeneratingAi = true;
-    this.sprintService.generateTrueAiPlan({
-      stack: this.goalStack || undefined,
-      technology: this.goalTechnology || undefined,
-      experienceLevel: this.goalExperienceLevel || undefined,
-      sprintStartDate: this.sprintStartDate || undefined,
-      sprintEndDate: this.sprintEndDate || undefined
-    }).subscribe({
-      next: (response) => {
-        this.generatedTasks = this.dedupeTasks(response.tasks || []);
-        this.generatedPlanMeta = response.planMeta || null;
-        this.isGeneratingAi = false;
-        this.setAction(
-          this.generatedPlanMeta?.generationMode === 'llm'
-            ? 'AI sprint plan generated.'
-            : 'AI unavailable, so the deterministic fallback plan was used.',
-          'success'
-        );
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.isGeneratingAi = false;
-        this.generatedTasks = previousTasks;
-        this.generatedPlanMeta = previousMeta;
-        this.setAction(error?.error?.message || 'Failed to generate AI sprint plan.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  saveGeneratedPlan(): void {
-    if (!this.sprint || !this.generatedTasks.length || this.isSavingAiPlan) return;
-    this.isSavingAiPlan = true;
-    this.sprintService.saveAiPlan(this.sprint._id, {
-      name: `${this.goalTechnology || this.goalStack || 'Career Sprint'} ${this.generatedPlanMeta?.generationMode === 'llm' ? 'AI' : 'Plan'} Draft`,
-      goalStack: this.goalStack,
-      goalTechnology: this.goalTechnology,
-      goalExperienceLevel: this.goalExperienceLevel,
-      summary: this.generatedPlanMeta?.summary || '',
-      confidenceScore: this.generatedPlanMeta?.confidenceScore || 0,
-      consistencyScore: this.generatedPlanMeta?.consistencyScore || 0,
-      signalsUsed: this.generatedPlanMeta?.signalsUsed || [],
-      generatorType: this.generatedPlanMeta?.generationMode || 'deterministic',
-      tasks: this.generatedTasks
-    }).subscribe({
-      next: (sprint) => {
-        this.sprint = sprint;
-        this.isSavingAiPlan = false;
-        this.applyMutationResult(sprint, 'Plan saved to sprint drafts.');
-      },
-      error: (error) => {
-        this.isSavingAiPlan = false;
-        this.setAction(error?.error?.message || 'Failed to save AI plan.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  loadDraft(plan: AiPlanDraft): void {
-    this.selectedDraftId = plan._id;
-    this.generatedTasks = plan.tasks.map((task) => ({ ...task }));
-    this.generatedPlanMeta = {
-      summary: plan.summary,
-      confidenceScore: plan.confidenceScore,
-      consistencyScore: plan.consistencyScore,
-      signalsUsed: plan.signalsUsed || [],
-      generationMode: plan.generatorType === 'llm' ? 'llm' : 'deterministic',
-      providerLabel: plan.generatorType === 'llm' ? 'AI-Assisted Plan' : plan.source === 'scenario' ? 'Scenario Simulator' : 'Deterministic Plan'
-    };
-    this.goalStack = plan.goalStack || this.goalStack;
-    this.goalTechnology = plan.goalTechnology || this.goalTechnology;
-    this.goalExperienceLevel = plan.goalExperienceLevel || this.goalExperienceLevel;
-    this.showSetupPanel = true;
-    this.setAction(`Loaded draft "${plan.name}".`, 'info');
-  }
-
-  importScenarioPlan(): void {
-    if (!this.sprint || this.isImportingScenario) return;
-    this.isImportingScenario = true;
-    this.sprintService.importScenarioPlan(this.sprint._id).subscribe({
-      next: (sprint) => {
-        this.sprint = sprint;
-        const latestScenarioPlan = [...(sprint.aiPlans || [])].reverse().find((plan) => plan.source === 'scenario');
-        if (latestScenarioPlan) this.loadDraft(latestScenarioPlan);
-        this.isImportingScenario = false;
-        this.applyMutationResult(sprint, 'Scenario Simulator plan imported into sprint drafts.');
-      },
-      error: (error) => {
-        this.isImportingScenario = false;
-        this.setAction(error?.error?.message || 'Failed to import Scenario Simulator plan.', 'error');
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  addGeneratedTasksToSprint(): void {
-    if (!this.sprint || !this.generatedTasks.length || this.isMutationSaving) return;
-
-    const existingTitles = new Set(this.allTasks.map((task) => task.title.trim().toLowerCase()));
-    const tasks = this.dedupeTasks(this.generatedTasks).filter((task) => !existingTitles.has(task.title.trim().toLowerCase()));
-    if (!tasks.length) {
-      this.setAction('All generated suggestions already exist in this sprint.', 'info');
-      return;
-    }
-    this.isMutationSaving = true;
-    let failed = 0;
-    const addNext = (index: number) => {
-      if (index >= tasks.length) {
-        this.generatedTasks = failed === tasks.length ? this.generatedTasks : [];
-        this.generatedPlanMeta = failed === tasks.length ? this.generatedPlanMeta : null;
-        this.selectedDraftId = failed === tasks.length ? this.selectedDraftId : '';
-        this.showSetupPanel = failed !== tasks.length ? false : this.showSetupPanel;
-        this.isMutationSaving = false;
-        if (failed === tasks.length) {
-          this.setAction('Failed to add generated tasks. Previous plan was preserved.', 'error');
+  loadData(forceRefresh = false): void {
+    if (this.isRefreshing) return;
+    this.isLoading = !this.sprint;
+    this.isRefreshing = !!this.sprint;
+    this.errorMessage = '';
+    this.historyError = '';
+    forkJoin({
+      sprint: this.api.getCurrent(this.profileSignature, '', forceRefresh),
+      history: this.api.getHistory(12, this.profileSignature, true).pipe(
+        catchError(() => {
+          this.historyError = 'History is unavailable. Previously loaded records are preserved.';
+          return of({ history: this.history });
+        }),
+      ),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.acceptSprint(result.sprint);
+          this.history = result.history.history || [];
+          this.isLoading = false;
+          this.isRefreshing = false;
+          this.stale = false;
+          if (this.actionFailed) {
+            this.actionFailed = false;
+            this.actionMessage = 'Sprint refreshed. Review the current data and retry your change.';
+          }
           this.cdr.markForCheck();
-          return;
-        }
-        this.applyMutationResult(
-          this.sprint!,
-          failed > 0
-            ? `Added ${tasks.length - failed} generated tasks. ${failed} could not be added.`
-            : 'Generated task suggestions added to the current sprint.'
-        );
-        return;
-      }
+        },
+        error: (error) => {
+          this.errorMessage = sprintError(
+            error,
+            'Career Sprint could not be loaded. Retry to reconnect.',
+          );
+          this.stale = !!this.sprint;
+          this.isLoading = false;
+          this.isRefreshing = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
 
-      const task = tasks[index];
-      this.sprintService.addTask(this.sprint!._id, {
-        title: task.title,
-        description: task.description,
-        points: task.points,
-        priority: task.priority,
-        category: task.category,
-        taskType: 'ai',
-        startDate: task.startDate || undefined,
-        endDate: task.endDate || undefined
-      }).subscribe({
-        next: (sprint) => {
-          this.sprint = sprint;
-          addNext(index + 1);
+  private acceptSprint(sprint: CareerSprint): void {
+    this.sprint = sprint;
+    this.sprintStartDate = calendarKey(
+      sprint.sprintStartDate || sprint.weekStartDate,
+      sprintZone(sprint),
+    );
+    this.sprintEndDate = calendarKey(
+      sprint.sprintEndDate || sprint.weekEndDate,
+      sprintZone(sprint),
+    );
+    if (!this.zone && ['today', 'week', 'custom'].includes(this.dateFilter))
+      this.dateFilter = 'all';
+  }
+  plannerUpdated(sprint: CareerSprint): void {
+    this.acceptSprint(sprint);
+    this.refreshHistory();
+  }
+  private refreshHistory(): void {
+    this.api
+      .getHistory(12, this.profileSignature, true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.history = result.history;
+          this.historyError = '';
+          this.cdr.markForCheck();
         },
         error: () => {
-          failed += 1;
-          addNext(index + 1);
-        }
+          this.historyError =
+            'History could not be refreshed. Retry without losing your current Sprint.';
+          this.cdr.markForCheck();
+        },
       });
-    };
-
-    addNext(0);
   }
-
-  getPriorityColor(priority: TaskPriority): string {
-    return { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }[priority] || '#6366f1';
+  openEditor(task: SprintTask | null = null): void {
+    if (this.mutationsDisabled || task?.isCompleted) return;
+    this.taskToEdit = task;
+    this.showEditor = true;
   }
-
-  getGeneratedModeLabel(): string {
-    if (this.generatedPlanMeta?.generationMode === 'llm') return 'LLM AI Plan';
-    return 'Signal-Based Plan';
+  saveTask(payload: SprintTaskInput): void {
+    if (!this.sprint || this.mutationsDisabled) return;
+    const request = this.taskToEdit?._id
+      ? this.api.editTask(this.sprint._id, this.taskToEdit._id, payload)
+      : this.api.addTask(this.sprint._id, {
+          ...payload,
+          startDate: payload.startDate || undefined,
+          endDate: payload.endDate || undefined,
+        });
+    this.mutate('task', request, this.taskToEdit ? 'Task updated.' : 'Task created.', () => {
+      this.showEditor = false;
+      this.taskToEdit = null;
+    });
   }
-
-  getDraftModeLabel(plan: AiPlanDraft): string {
-    if (plan.source === 'scenario') return 'Scenario Draft';
-    if (plan.generatorType === 'llm') return 'AI Draft';
-    return 'Planned Draft';
+  toggleTask(task: SprintTask): void {
+    if (!this.sprint || !task._id || this.mutationsDisabled) return;
+    this.mutate(
+      `toggle:${task._id}`,
+      this.api.toggleTask(this.sprint._id, task._id, !task.isCompleted),
+      task.isCompleted
+        ? 'Task reopened. XP and progress reflect the server response.'
+        : 'Task completed. XP and progress updated.',
+    );
   }
-
-  openSetupPanel(): void {
-    this.showSetupPanel = true;
-    this.setAction('Configure your sprint context to generate a new plan.', 'info');
+  deleteTask(task: SprintTask): void {
+    if (
+      !this.sprint ||
+      !task._id ||
+      task.isCompleted ||
+      this.mutationsDisabled ||
+      this.deleteTaskId !== task._id
+    )
+      return;
+    this.mutate(
+      'delete',
+      this.api.deleteTask(this.sprint._id, task._id),
+      'Task deleted.',
+      () => (this.deleteTaskId = ''),
+    );
   }
-
-  getCategoryIcon(category: TaskCategory): string {
-    return { learning: 'Study', project: 'Build', practice: 'Polish' }[category] || 'Task';
+  saveDates(): void {
+    if (
+      !this.sprint ||
+      this.mutationsDisabled ||
+      !this.sprintStartDate ||
+      !this.sprintEndDate ||
+      this.sprintStartDate > this.sprintEndDate
+    )
+      return;
+    this.mutate(
+      'dates',
+      this.api.updateSprintDates(this.sprint._id, this.sprintStartDate, this.sprintEndDate),
+      'Sprint dates updated.',
+    );
   }
-
-  formatTaskDate(dateStr: string | null | undefined): string {
-    const date = this.parseDate(dateStr);
-    if (!date) return '';
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  restoreStreak(): void {
+    if (!this.sprint || !this.canRestore) return;
+    this.mutate(
+      'restore',
+      this.api.restoreStreak(this.sprint._id),
+      'Streak restored. No activity or XP was created.',
+    );
   }
-
-  getTaskDateRange(task: SprintTask): string {
-    const start = task.startDate;
-    const end = task.endDate || task.deadline || task.dueDate;
-    if (start && end) return `${this.formatTaskDate(start)} to ${this.formatTaskDate(end)}`;
-    if (end) return `Due ${this.formatTaskDate(end)}`;
-    return '';
+  private mutate(
+    kind: string,
+    request: Observable<CareerSprint>,
+    message: string,
+    done?: () => void,
+  ): void {
+    this.busy = kind;
+    this.actionMessage = '';
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (sprint) => {
+        this.acceptSprint(sprint);
+        this.busy = '';
+        this.actionMessage = message;
+        this.actionFailed = false;
+        done?.();
+        this.refreshHistory();
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.busy = '';
+        this.actionMessage = sprintError(error, 'This change could not be saved. Please retry.');
+        this.actionFailed = true;
+        if (error?.status === 409) this.stale = true;
+        this.cdr.markForCheck();
+      },
+    });
   }
-
-  isTaskActive(task: SprintTask): boolean {
-    const now = new Date();
-    const start = this.parseDate(task.startDate);
-    const end = this.parseDate(task.endDate);
-    if (!start && !end) return true;
-    return (!start || start <= now) && (!end || end >= now);
+  loadPreferences(): void {
+    this.api
+      .getPreferences()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.preferenceZone = this.savedPreferenceZone = result.timeZone;
+          this.preferencesLoaded = true;
+          this.preferenceError = '';
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.preferencesLoaded = false;
+          this.preferenceError =
+            'Timezone preference is unavailable. Retry before creating a Sprint.';
+          this.cdr.markForCheck();
+        },
+      });
   }
-
-  getAvatarSrc(): string {
-    const raw = String(this.userAvatar || '').trim();
-    if (!raw) return '';
-    if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
-    const separator = raw.includes('?') ? '&' : '?';
-    return `${raw}${separator}v=${this.avatarVersion}`;
+  savePreference(): void {
+    if (this.busy || !this.preferenceZone.trim()) return;
+    this.busy = 'zone';
+    this.api
+      .savePreferences(this.preferenceZone.trim())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.preferenceZone = this.savedPreferenceZone = result.timeZone;
+          this.preferencesLoaded = true;
+          this.busy = '';
+          this.preferenceError = '';
+          this.actionFailed = false;
+          this.actionMessage =
+            'Timezone preference saved for future Sprints. Existing Sprint dates and calendars are unchanged.';
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.busy = '';
+          this.preferenceError = sprintError(error, 'Timezone preference could not be saved.');
+          this.cdr.markForCheck();
+        },
+      });
   }
-
-  trackByTask(_: number, task: SprintTask): string {
-    return task._id || `${task.title}-${task.startDate || ''}-${task.endDate || ''}`;
+  createSprint(): void {
+    if (
+      this.busy ||
+      !this.preferencesLoaded ||
+      !this.newStart ||
+      !this.newEnd ||
+      this.newStart > this.newEnd ||
+      !this.newTitle.trim()
+    )
+      return;
+    this.busy = 'create';
+    this.api
+      .create({
+        title: this.newTitle.trim(),
+        sprintStartDate: this.newStart,
+        sprintEndDate: this.newEnd,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.busy = '';
+          this.newSprintOpen = false;
+          this.actionMessage =
+            'Sprint saved. The active Sprint is selected by its dates; future Sprints are available in history.';
+          this.actionFailed = false;
+          this.loadData(true);
+        },
+        error: (error) => {
+          this.busy = '';
+          this.actionFailed = true;
+          this.actionMessage = sprintError(error, 'Sprint could not be created.');
+          this.cdr.markForCheck();
+        },
+      });
   }
-
-  trackByDraft(_: number, plan: AiPlanDraft): string {
-    return plan._id;
+  date(value: string | null | undefined, sprint = this.sprint): string {
+    return sprint ? formatSprintDate(value, sprint) : 'Unavailable';
   }
-
-  trackByHistory(_: number, sprint: CareerSprint): string {
-    return sprint._id;
+  metric(value: number | null | undefined, suffix = ''): string {
+    return value == null || !Number.isFinite(value) ? 'Unavailable' : `${value}${suffix}`;
   }
-
-  trackByActivity(_: number, item: { date: string; count: number; active: boolean }): string {
-    return String(item.date);
+  overdue(task: SprintTask): boolean {
+    const due = task.endDate || task.deadline || task.dueDate;
+    return Boolean(!task.isCompleted && due && +new Date(due) < this.now);
+  }
+  source(task: SprintTask): string {
+    return task.sourceRecommendationId
+      ? 'Recommendation'
+      : task.sourceScenarioId
+        ? 'Scenario'
+        : taskDescription(task).sourceDetails.trimStart().startsWith('Course:')
+          ? 'Learning Hub'
+          : task.taskType === 'ai'
+            ? 'Planned task'
+            : 'Manual';
+  }
+  resetFilters(): void {
+    this.search = '';
+    this.statusFilter = this.priorityFilter = this.categoryFilter = this.dateFilter = 'all';
+    this.customStart = this.customEnd = '';
+  }
+  private timeZones(): string[] {
+    const intl = Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] };
+    return [
+      ...new Set([
+        'UTC',
+        'Asia/Karachi',
+        'America/New_York',
+        ...(intl.supportedValuesOf?.('timeZone') || []),
+      ]),
+    ].sort();
   }
 }

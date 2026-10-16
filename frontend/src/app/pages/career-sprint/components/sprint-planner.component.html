@@ -1,0 +1,301 @@
+<div class="planner" [attr.aria-busy]="!!busy">
+  <header class="section-heading">
+    <div>
+      <span class="eyebrow">Plan with intention</span>
+      <h2>Sprint studio</h2>
+      <p>Turn career signals into proposed work. You decide what enters your Sprint.</p>
+    </div>
+    <span class="count">{{ sprint.aiPlans?.length || 0 }} / 8 drafts</span>
+  </header>
+  @if (message) {
+    <div class="notice" [class.error]="failed" [class.success]="!failed" role="status">
+      {{ message }}
+      @if (failed) {
+        <button type="button" (click)="refreshRequested.emit()">Refresh Sprint context</button>
+      }
+    </div>
+  }
+  @if (disabled) {
+    <p class="notice">
+      Planning changes are disabled for this read-only or unverified Sprint. Your saved drafts
+      remain available to inspect.
+    </p>
+  }
+  <div class="planning-grid">
+    <section class="surface" aria-label="Generate a plan">
+      <h3>A focused plan, grounded in your context</h3>
+      <p>
+        Your profile and recorded recommendations guide the preview. AI can optionally order the
+        permitted tasks.
+      </p>
+      <label
+        >Focus technology
+        <input
+          [(ngModel)]="technology"
+          maxlength="80"
+          placeholder="e.g. Angular or Docker"
+          [disabled]="disabled || !!busy"
+      /></label>
+      <div class="actions">
+        <button type="button" class="primary" (click)="generate()" [disabled]="disabled || !!busy">
+          {{ busy === 'generate' ? 'Building preview…' : 'Build signal-based plan' }}</button
+        ><button type="button" (click)="generate(true)" [disabled]="disabled || !!busy">
+          {{ busy === 'ai' ? 'Planning…' : 'Try AI planning' }}
+        </button>
+      </div>
+      <p class="meta">Preview only. No tasks or XP are added automatically.</p>
+    </section>
+    <section class="surface" aria-label="Scenario Simulator integration">
+      <h3>Explore, then execute</h3>
+      <p>
+        Bring a saved Scenario Simulator plan into your drafts. Scenarios describe proposed work,
+        not completed skills.
+      </p>
+      <label
+        >Saved scenario
+        <select
+          aria-label="Saved scenario"
+          [(ngModel)]="scenarioId"
+          [disabled]="disabled || !!busy || scenariosLoading"
+        >
+          <option value="">
+            {{ scenariosLoading ? 'Loading scenarios…' : 'Select a scenario' }}
+          </option>
+          @for (scenario of scenarios; track scenario._id) {
+            <option [value]="scenario._id">{{ scenario.name }}</option>
+          }
+        </select></label
+      >
+      @if (scenarioError) {
+        <p role="status">
+          {{ scenarioError }}
+          <button type="button" (click)="loadScenarios()">Retry scenarios</button>
+        </p>
+      }
+      <div class="actions">
+        <button
+          type="button"
+          (click)="importScenario()"
+          [disabled]="disabled || !!busy || !scenarioId"
+        >
+          {{ busy === 'scenario' ? 'Importing…' : 'Import scenario draft' }}</button
+        ><a routerLink="/app/scenario-simulator">Open Scenario Simulator ↗</a>
+      </div>
+    </section>
+  </div>
+  <section aria-label="Saved drafts" class="draft-library">
+    <div class="section-heading">
+      <div>
+        <h3>Saved drafts</h3>
+        <p>Preserved plans with their original career context.</p>
+      </div>
+    </div>
+    <div class="draft-list">
+      @for (plan of sprint.aiPlans || []; track plan._id) {
+        <button
+          type="button"
+          class="draft-button"
+          [class.selected]="selectedDraftId === plan._id"
+          [attr.aria-pressed]="selectedDraftId === plan._id"
+          (click)="selectDraft(plan._id)"
+          [disabled]="!!busy"
+        >
+          <span class="draft-icon" aria-hidden="true">{{
+            plan.source === 'scenario' ? '◇' : '▤'
+          }}</span
+          ><span
+            ><strong>{{ plan.name }}</strong
+            ><small
+              >{{ plan.tasks.length }} tasks ·
+              {{
+                plan.source === 'scenario'
+                  ? 'Scenario'
+                  : plan.generatorType === 'llm'
+                    ? 'AI-assisted'
+                    : 'Signal-based'
+              }}
+              ·
+              {{
+                plan.compatibility?.status === 'current' ? 'Current context' : 'Review context'
+              }}</small
+            ></span
+          ><span aria-hidden="true">→</span>
+        </button>
+      } @empty {
+        <p class="empty">
+          No saved drafts yet. Build a preview or import a scenario to get started.
+        </p>
+      }
+    </div>
+  </section>
+  @if (draft || preview) {
+    <section class="surface preview" aria-label="Plan preview">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">{{
+            draft
+              ? 'Saved draft'
+              : preview?.planMeta?.generationMode === 'llm'
+                ? 'AI-assisted preview'
+                : 'Signal-based preview'
+          }}</span>
+          <h3>{{ draft?.name || 'Your next steps, ready for review' }}</h3>
+          <p>{{ draft?.summary || preview?.planMeta?.summary }}</p>
+        </div>
+        <span class="count">{{ tasks.length }} tasks</span>
+      </div>
+      <details class="plan-evidence">
+        <summary>Planning context & signals</summary>
+        <p>
+          {{
+            draft?.context?.careerStack || draft?.goalStack || sprint.goalStack || 'Current profile'
+          }}
+          ·
+          {{
+            draft?.context?.experienceLevel ||
+              draft?.goalExperienceLevel ||
+              sprint.goalExperienceLevel ||
+              'Current experience level'
+          }}
+        </p>
+        <p>
+          Planning confidence:
+          {{ draft?.confidenceScore ?? preview?.planMeta?.confidenceScore ?? 'Unavailable' }} ·
+          Proposed consistency:
+          {{ draft?.consistencyScore ?? preview?.planMeta?.consistencyScore ?? 'Unavailable' }}
+        </p>
+        <ul>
+          @for (
+            signal of draft?.signalsUsed || preview?.planMeta?.signalsUsed || [];
+            track $index
+          ) {
+            <li>{{ signal }}</li>
+          }
+        </ul>
+        <p class="meta">Planning estimates describe proposed work, not verified proficiency.</p>
+      </details>
+      @for (limitation of preview?.planMeta?.limitations || []; track $index) {
+        <p class="notice">{{ limitation }}</p>
+      }
+      @if (draft && requiresAcknowledgement) {
+        <div class="notice">
+          <strong>{{
+            draft.compatibility?.status === 'legacy-context-unknown'
+              ? 'Original context is unknown'
+              : 'Your career context has changed'
+          }}</strong>
+          <p>
+            Recorded focus: {{ draft.context?.careerStack || draft.goalStack || 'Not recorded' }} ·
+            {{ draft.context?.experienceLevel || draft.goalExperienceLevel || 'Not recorded' }}.
+            Review these tasks for your current profile before importing. The original draft will be
+            preserved.
+          </p>
+          <label class="check-label"
+            ><input
+              type="checkbox"
+              [checked]="acknowledged"
+              (change)="acknowledge($any($event.target).checked)"
+              [disabled]="disabled || !!busy || !draft.compatibility?.currentFingerprint"
+            />I reviewed this draft for my current career context.</label
+          >
+        </div>
+      }
+      @if (draft) {
+        <div class="actions">
+          <button type="button" (click)="selectAll()" [disabled]="disabled || !!busy">
+            Select all tasks</button
+          ><button type="button" (click)="selected.clear()" [disabled]="disabled || !!busy">
+            Clear selection</button
+          ><span class="meta">{{ selected.size }} selected</span>
+        </div>
+      }
+      <ol class="preview-tasks">
+        @for (task of tasks; track $index; let index = $index) {
+          <li>
+            <div class="preview-title">
+              @if (draft) {
+                <input
+                  type="checkbox"
+                  [attr.aria-label]="'Select ' + task.title"
+                  [checked]="selected.has(index)"
+                  (change)="toggle(index)"
+                  [disabled]="disabled || !!busy"
+                />
+              }
+              <div>
+                <strong>{{ task.title }}</strong>
+                <p>{{ task.description }}</p>
+                <small
+                  >{{ task.category }} · {{ task.priority }} priority ·
+                  {{ task.points }} points</small
+                ><small>{{ date(task.startDate) }} → {{ date(task.endDate) }}</small>
+                @if (task.evidenceLimitation) {
+                  <p class="meta">{{ task.evidenceLimitation }}</p>
+                }
+              </div>
+            </div>
+          </li>
+        }
+      </ol>
+      @if (draft) {
+        <div class="actions">
+          <button
+            class="primary"
+            type="button"
+            (click)="importSelected()"
+            [disabled]="
+              disabled || !!busy || !selected.size || (requiresAcknowledgement && !acknowledged)
+            "
+          >
+            {{ busy === 'import' ? 'Importing…' : 'Add selected to Sprint' }}</button
+          ><button
+            type="button"
+            (click)="confirmDelete = !confirmDelete"
+            [disabled]="disabled || !!busy"
+          >
+            Delete draft…
+          </button>
+        </div>
+        @if (confirmDelete) {
+          <div class="notice">
+            <p>Delete this saved draft? Tasks already imported will stay in your Sprint.</p>
+            <button
+              type="button"
+              class="danger"
+              (click)="deleteDraft()"
+              [disabled]="disabled || !!busy"
+            >
+              Confirm delete draft</button
+            ><button type="button" (click)="confirmDelete = false" [disabled]="!!busy">
+              Keep draft
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="save-preview">
+          <label
+            >Draft name
+            <input [(ngModel)]="draftName" maxlength="120" [disabled]="disabled || !!busy" /></label
+          ><button
+            type="button"
+            class="primary"
+            (click)="save()"
+            [disabled]="
+              disabled ||
+              !!busy ||
+              !draftName.trim() ||
+              !tasks.length ||
+              (sprint.aiPlans?.length || 0) >= 8
+            "
+          >
+            {{ busy === 'save' ? 'Saving…' : 'Save as draft' }}
+          </button>
+        </div>
+        <p class="meta">
+          Save first, then selectively import tasks. Points and dates remain subject to the Sprint’s
+          calendar and backend validation.
+        </p>
+      }
+    </section>
+  }
+</div>

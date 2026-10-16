@@ -1,0 +1,68 @@
+@use '../styles/sprint-controls';
+:host {
+  display: block;
+}
+.source-details {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  summary {
+    cursor: pointer;
+  }
+  p {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+}
+.task-editor {
+  padding: 20px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--color-primary-border);
+  border-radius: 8px;
+}
+.editor-heading {
+  margin-bottom: 16px;
+  h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+  p {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+  }
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.wide {
+  grid-column: 1 / -1;
+}
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  span {
+    margin-right: auto;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+}
+.error {
+  color: var(--color-danger-text);
+}
+@media (max-width: 600px) {
+  fieldset {
+    grid-template-columns: 1fr;
+  }
+  .task-editor {
+    padding: 14px;
+  }
+}
