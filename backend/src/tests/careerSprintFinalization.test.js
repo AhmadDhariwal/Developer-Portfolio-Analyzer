@@ -70,6 +70,8 @@ test('analytics exclude incomplete work from activity and apply overdue penalty'
   const result = await serializeSprint(
     {
       userId: 'owner',
+      calendarPolicy: 'sprint-calendar-48h-v1',
+      timeZone: 'UTC',
       tasks: [
         { points: 5, isCompleted: true, completedAt: new Date(), endDate: new Date('2026-10-14') },
         { points: 5, isCompleted: false, completedAt: null, endDate: new Date('2026-10-14') }

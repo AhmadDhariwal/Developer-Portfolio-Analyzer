@@ -14,6 +14,8 @@ const options = {
 const main = async () => {
   const policyAt = args.indexOf('--legacy-policy-file');
   if (policyAt >= 0) options.legacyTimeZones = JSON.parse(fs.readFileSync(args[policyAt + 1], 'utf8'));
+  const exceptionAt = args.indexOf('--legacy-exceptions-file');
+  if (exceptionAt >= 0) options.legacyExceptions = JSON.parse(fs.readFileSync(args[exceptionAt + 1], 'utf8'));
   if (args.includes('--apply') && !options.deploymentAuthorized)
     throw new Error('Explicit deployment authorization is required.');
   await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {

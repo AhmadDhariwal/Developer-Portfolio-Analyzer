@@ -392,7 +392,7 @@ test('optimized paths keep versioned cache identity, lean lookups, and zero AI r
   assert.match(serviceSource, /overview_v4/);
   assert.match(serviceSource, /overviewCache.load/);
   assert.match(serviceSource, /sprintStartDate:\s*\{\s*\$lte:\s*now\s*\}/);
-  assert.match(serviceSource, /\.sort\(\{\s*updatedAt:\s*-1\s*\}\)\s*\.lean\(\)/);
+  assert.match(serviceSource, /\.sort\(\{\s*updatedAt:\s*-1,\s*_id:\s*-1\s*\}\)\s*\.lean\(\)/);
   assert.match(serviceSource, /\.select\('tasks xpPoints currentStreak streak weekStartDate'\)/);
   assert.doesNotMatch(serviceSource, /previousValid/);
   assert.match(aiServiceSource, /plan_v4/);

@@ -21,6 +21,7 @@ const preferences = require('./sprintPreferenceService');
 const reservations = require('./sprintReservationService');
 const draftContext = require('./sprintDraftContextService');
 const provenance = require('./sprintTaskProvenanceService');
+const legacyPolicy = require('./sprintLegacyPolicy');
 const CAREER_SPRINT_OVERVIEW_VERSION = 'overview_v4';
 const SPRINT_REDIS_BUDGET_MS = 120;
 const STAGE_TIMINGS_ENABLED = process.env.NODE_ENV !== 'production' || process.env.CAREER_SPRINT_STAGE_TIMINGS === '1';
@@ -332,7 +333,7 @@ const buildInsights = ({ analytics, comparison, restoreMeta, signals }) => {
 
   if (analytics.consistencyScore >= 75) {
     insights.push('Consistency is a strength right now. Your recent task completion pattern is stable.');
-  } else if (analytics.consistencyScore < 45) {
+  } else if (analytics.consistencyScore !== null && analytics.consistencyScore < 45) {
     insights.push('Consistency is slipping. Smaller daily tasks or tighter task scope would improve follow-through.');
   }
 
@@ -368,6 +369,8 @@ const buildInsights = ({ analytics, comparison, restoreMeta, signals }) => {
 const serializeSprint = async (sprintDoc, options = {}) => {
   const sprint = typeof sprintDoc.toObject === 'function' ? sprintDoc.toObject() : { ...sprintDoc };
   const tasks = Array.isArray(sprint.tasks) ? sprint.tasks : [];
+  sprint.legacyAccess = legacyPolicy.access(sprint);
+  const unresolved = sprint.legacyAccess.calendarStatus === 'provenance-unresolved';
   const previousSprint = options.previousSprint || null;
   const signals = Object.prototype.hasOwnProperty.call(options, 'signals')
     ? options.signals || {}
@@ -380,21 +383,28 @@ const serializeSprint = async (sprintDoc, options = {}) => {
   ).length;
   const progressPercent = calcWeightedProgress(tasks);
   const currentStreak = Number(sprint.currentStreak || sprint.streak || 0);
-  const activeWindowDays =
-    sprint.sprintStartDate && sprint.sprintEndDate
+  const activeWindowDays = unresolved
+    ? null
+    : sprint.sprintStartDate && sprint.sprintEndDate
       ? Math.max(1, calendar(sprint).difference(sprint.sprintStartDate, sprint.sprintEndDate) + 1)
       : 7;
-  const completedInLastSevenDays = buildDailyActivity(sprint, 7).reduce((sum, day) => sum + day.count, 0);
-  const consistencyScore = clamp(
-    progressPercent * 0.62 + (Math.min(currentStreak, 14) / 14) * 23 + Math.min(completedInLastSevenDays, 10) * 1.5
-  );
+  const completedInLastSevenDays = unresolved
+    ? null
+    : buildDailyActivity(sprint, 7).reduce((sum, day) => sum + day.count, 0);
+  const consistencyScore = unresolved
+    ? null
+    : clamp(
+        progressPercent * 0.62 + (Math.min(currentStreak, 14) / 14) * 23 + Math.min(completedInLastSevenDays, 10) * 1.5
+      );
   const productivityScore = clamp(completedPoints * 4 + completedTasks.length * 5 - overdueTasks * 6, 0, 100);
   const previousProgress = previousSprint ? calcWeightedProgress(previousSprint.tasks || []) : 0;
   const previousCompleted = previousSprint ? (previousSprint.tasks || []).filter((task) => task.isCompleted).length : 0;
   const previousXp = Number(previousSprint?.xpPoints || 0);
-  const restoreMeta = buildRestoreMeta(sprint);
+  const restoreMeta = unresolved
+    ? { policy: 'legacy-calendar-unresolved', canRestore: false, reason: sprint.legacyAccess.reason }
+    : buildRestoreMeta(sprint);
 
-  sprint._canRestore = restoreMeta.canRestore;
+  sprint._canRestore = !sprint.legacyAccess.readOnly && restoreMeta.canRestore;
   sprint.analytics = {
     totalTasks: tasks.length,
     completedTasks: completedTasks.length,
@@ -409,7 +419,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     aiTaskCount: tasks.filter((task) => task.taskType === 'ai').length,
     manualTaskCount: tasks.filter((task) => task.taskType !== 'ai').length,
     completedInLastSevenDays,
-    dailyActivity: buildDailyActivity(sprint, 14)
+    dailyActivity: unresolved ? [] : buildDailyActivity(sprint, 14)
   };
   sprint.comparison = {
     progressDelta: progressPercent - previousProgress,
@@ -417,10 +427,10 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     streakDelta: currentStreak - Number(previousSprint?.currentStreak || previousSprint?.streak || 0),
     xpDelta: Number(sprint.xpPoints || 0) - previousXp
   };
-  sprint.restoreMeta = restoreMeta;
+  sprint.restoreMeta = sprint.legacyAccess.readOnly ? { ...restoreMeta, canRestore: false } : restoreMeta;
   sprint.signalsUsed = {
     careerSprint: {
-      consistencyScore: Number(signals?.careerSprintSignal?.consistencyScore || consistencyScore),
+      consistencyScore: unresolved ? null : Number(signals?.careerSprintSignal?.consistencyScore || consistencyScore),
       activeLearningFocus: String(
         signals?.careerSprintSignal?.activeLearningFocus || sprint.goalTechnology || sprint.goalStack || ''
       ).trim(),
@@ -539,7 +549,7 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
       sprintStartDate: { $lte: now },
       sprintEndDate: { $gte: now }
     })
-      .sort({ updatedAt: -1 })
+      .sort({ updatedAt: -1, _id: -1 })
       .lean()
   );
 
@@ -552,7 +562,7 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
         weekStartDate: { $lte: now },
         weekEndDate: { $gte: now }
       })
-        .sort({ updatedAt: -1 })
+        .sort({ updatedAt: -1, _id: -1 })
         .lean()
     );
   }
@@ -567,7 +577,7 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
   }
 
   const mutable = { ...sprint };
-  const { changed } = checkInactivity(mutable);
+  const { changed } = legacyPolicy.access(sprint).readOnly ? { changed: false } : checkInactivity(mutable);
   if (changed) {
     await timer.measure('persistence', async () => {
       runtimeCounters.persistenceOperations += 1;
@@ -630,6 +640,7 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
   assertObjectId(taskId, 'Task');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   const task = sprint.tasks.id(taskId);
   if (!task) return null;
@@ -663,6 +674,7 @@ const addTaskToSprint = async (userId, sprintId, task) => {
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   const [normalized] = await provenance.attach(userId, [task], [normalizeTask(task, 'manual', false, sprint)]);
   const duplicate = (sprint.tasks || []).some(
@@ -684,6 +696,7 @@ const restoreStreak = async (userId, sprintId) => {
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   const restored = restoreStreakFn(sprint);
   if (!restored) return null;
@@ -698,6 +711,7 @@ const updateSprintDates = async (userId, sprintId, sprintStartDate, sprintEndDat
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   const nextStart = sprintStartDate
     ? calendar(sprint).start(sprint.calendarPolicy ? sprintStartDate : parseDateOrNull(sprintStartDate))
@@ -764,13 +778,14 @@ const summarizeHistoryItem = (sprint) => {
 
 const getSprintHistory = async (userId, limit = 6) => {
   const history = await CareerSprint.find({ userId })
-    .sort({ weekStartDate: -1 })
+    .sort({ weekStartDate: -1, _id: -1 })
     .limit(clamp(limit, 1, 12))
     .lean();
 
   const context = history.some((item) => item.aiPlans?.length) ? await draftContext.currentContext(userId) : null;
   return history.map((item) => ({
     ...summarizeHistoryItem(item),
+    legacyAccess: legacyPolicy.access(item),
     aiPlans: (item.aiPlans || []).map((plan) => ({
       ...plan,
       ...(context ? { compatibility: draftContext.compatibility(plan, context) } : {})
@@ -782,6 +797,7 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}, trustedSource 
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   if (Array.isArray(payload.tasks) && payload.tasks.length > LIMITS.tasksPerPlan) {
     throw createHttpError(413, 'AI plan has too many tasks.');
@@ -893,6 +909,7 @@ const importScenarioPlanToSprint = async (userId, sprintId, scenarioId = '') => 
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
 
   if (scenarioId) assertObjectId(scenarioId, 'Scenario');
 
@@ -951,6 +968,7 @@ const editTask = async (userId, sprintId, taskId, payload = {}) => {
   assertObjectId(sprintId, 'Sprint');
   assertObjectId(taskId, 'Task');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
+  if (sprint) legacyPolicy.assertWritable(sprint);
   const task = sprint?.tasks.id(taskId);
   if (!task) return null;
   if (task.isCompleted) throw createHttpError(409, 'Uncomplete this task before editing it.');
@@ -970,6 +988,7 @@ const deleteTask = async (userId, sprintId, taskId) => {
   assertObjectId(taskId, 'Task');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
   const task = sprint.tasks.id(taskId);
   if (task?.isCompleted) throw createHttpError(409, 'Uncomplete this task before deleting it.');
   if (task) {
@@ -985,6 +1004,7 @@ const mutateDraft = async (userId, sprintId, planId, selection = null, acknowled
   assertObjectId(planId, 'Plan');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
   const plan = sprint.aiPlans.id(planId);
   if (!plan) return null;
   if (selection === null) {
@@ -1023,6 +1043,7 @@ const mergeProposedTasks = async (userId, sprintId, proposedTasks) => {
   assertObjectId(sprintId, 'Sprint');
   const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
   if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
   if (!Array.isArray(proposedTasks) || proposedTasks.length > LIMITS.tasksPerCreate)
     throw createHttpError(400, 'Invalid proposed tasks.');
   for (const id of new Set(proposedTasks.map((task) => task?.sourceScenarioId).filter(Boolean))) {

@@ -99,6 +99,13 @@ const careerSprintSchema = new mongoose.Schema(
     scheduleToken: { type: String },
     migrationCalendarTimeZone: { type: String },
     reservationPolicy: { type: String },
+    legacyException: {
+      owner: String,
+      start: String,
+      end: String,
+      reason: String,
+      evidence: String
+    },
 
     // ── Sprint date range (user-selectable) ───────────────────────────────
     // sprintStartDate / sprintEndDate = user-chosen range (may differ from week)

@@ -1,6 +1,7 @@
 'use strict';
 
 const CareerSprint = require('../models/careerSprint');
+const legacyPolicy = require('./sprintLegacyPolicy');
 const { getCurrentSprint, invalidateCareerSprintCache } = require('./careerSprintService');
 
 // The current snapshot is resolved server-side. Callers cannot supply task content,
@@ -15,6 +16,7 @@ const handoff = async ({ userId, recommendation, signalHash, expectedSignalHash 
     };
   const sprint = await getCurrentSprint(userId);
   if (!sprint?._id) return { status: 503, message: 'Career Sprint is unavailable.' };
+  legacyPolicy.assertWritable(sprint);
   const title = recommendation.title.slice(0, 120);
   const task = {
     sourceRecommendationId: recommendation.id,
@@ -40,6 +42,11 @@ const handoff = async ({ userId, recommendation, signalHash, expectedSignalHash 
     {
       _id: sprint._id,
       userId,
+      reservationPolicy: { $ne: legacyPolicy.EXCEPTION_POLICY },
+      $or: [
+        { calendarPolicy: 'sprint-calendar-48h-v1' },
+        { migrationCalendarTimeZone: { $type: 'string' } },
+      ],
       'tasks.title': { $ne: title },
       'tasks.sourceRecommendationId': { $ne: recommendation.id },
       $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },

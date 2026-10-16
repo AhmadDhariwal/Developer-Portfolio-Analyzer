@@ -114,7 +114,7 @@ test('ownership is enforced on every sprint and scenario mutation query', () => 
   assert.match(serviceSource, /findOne\(\{\s*_id:\s*sprintId,\s*userId\s*\}\)/);
   assert.match(serviceSource, /ScenarioSimulation\.findOne\(\{\s*_id:\s*scenarioId,\s*userId\s*\}\)/);
   assert.match(serviceSource, /CareerSprint\.find\(\{\s*userId\s*\}/);
-  assert.match(serviceSource, /sort\(\{\s*updatedAt:\s*-1\s*\}\)/);
+  assert.match(serviceSource, /sort\(\{\s*updatedAt:\s*-1,\s*_id:\s*-1\s*\}\)/);
 });
 
 test('overview reads fail closed and immutable cache keys depend on fresh database snapshots', () => {

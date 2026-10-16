@@ -3,6 +3,7 @@
 const { createHash } = require('node:crypto');
 const aiService = require('./aiservice');
 const { calendar } = require('../utils/sprintCalendar');
+const legacyPolicy = require('./sprintLegacyPolicy');
 const NAMESPACE = 'career_sprint:overview-v4';
 const cache = new Map();
 const pending = new Map();
@@ -27,7 +28,7 @@ const identity = (sprint, previous, now = new Date(), context = null) =>
         sprint,
         previous,
         context,
-        day: calendar(sprint).key(now),
+        day: legacyPolicy.access(sprint).calendarStatus === 'provenance-unresolved' ? null : calendar(sprint).key(now),
         overdue: (sprint.tasks || []).map(
           (task) =>
             !task.isCompleted &&

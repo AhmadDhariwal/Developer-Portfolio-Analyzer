@@ -1,5 +1,6 @@
 'use strict';
 const CareerSprint = require('../models/careerSprint');
+const legacyPolicy = require('./sprintLegacyPolicy');
 const { getCurrentSprint, invalidateCareerSprintCache } = require('./careerSprintService');
 const { ownedProgress, fail } = require('./courseProgressService');
 const { digest, skills, safeCourseUrl } = require('../utils/courseIdentity');
@@ -35,6 +36,7 @@ const handoff = async (userId, courseId, body = {}) => {
   const sprint = await getCurrentSprint(userId);
   if (!sprint?._id) fail(503, 'Career Sprint is unavailable.');
   // Same owned atomic insertion pattern as Recommendations. Sprint supplies its existing manual-task defaults.
+  legacyPolicy.assertWritable(sprint);
   const title = `Study ${course.title.slice(0, 88)} [${digest(courseId).slice(0, 12)}]`;
   const task = {
     title,
@@ -52,6 +54,11 @@ const handoff = async (userId, courseId, body = {}) => {
     {
       _id: sprint._id,
       userId,
+      reservationPolicy: { $ne: legacyPolicy.EXCEPTION_POLICY },
+      $or: [
+        { calendarPolicy: 'sprint-calendar-48h-v1' },
+        { migrationCalendarTimeZone: { $type: 'string' } },
+      ],
       'tasks.title': { $ne: title },
       $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
       tasks: { $not: { $elemMatch: sourceMatch } },

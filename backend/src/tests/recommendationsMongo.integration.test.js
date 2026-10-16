@@ -427,6 +427,8 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     const sprint = await CareerSprint.create({
       userId: owner,
       title: 'Recommendation fixture sprint',
+      calendarPolicy: 'sprint-calendar-48h-v1',
+      timeZone: 'UTC',
       tasks: [],
       weekStartDate: new Date(),
       weekEndDate: new Date(Date.now() + 7 * 86400000),
