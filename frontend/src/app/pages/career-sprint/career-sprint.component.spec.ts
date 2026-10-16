@@ -19,12 +19,14 @@ describe('Career Sprint dashboard', () => {
     restoreStreak: vi.fn(),
     create: vi.fn(),
     clearCache: vi.fn(),
+    getScenarios: vi.fn(),
   };
   beforeEach(() => {
     vi.resetAllMocks();
     api.getCurrent.mockReturnValue(of(sprintFixture()));
     api.getHistory.mockReturnValue(of({ history: [sprintFixture()] }));
     api.getPreferences.mockReturnValue(of({ timeZone: 'Asia/Karachi' }));
+    api.getScenarios.mockReturnValue(of({ history: [] }));
     TestBed.configureTestingModule({
       imports: [CareerSprintComponent],
       providers: [
@@ -142,5 +144,87 @@ describe('Career Sprint dashboard', () => {
     ];
     expect(component.activity[0].date).toBe('2026-10-16');
     expect(component.activity[0].label).toBe('Fri');
+  });
+  it('suggests non-overlapping dates and blocks known overlaps without disabling current planning', () => {
+    const fixture = mount(),
+      component = fixture.componentInstance;
+    component.now = +new Date('2026-10-16T12:00:00Z');
+    component.openNewSprint();
+    expect(component.newStart).toBe('2026-10-19');
+    expect(component.newEnd).toBe('2026-10-25');
+    component.newStart = '2026-10-16';
+    component.newEnd = '2026-10-22';
+    component.createSprint();
+    expect(api.create).not.toHaveBeenCalled();
+    expect(component.actionMessage).toMatch(/overlap.*current Sprint/);
+    expect(component.mutationsDisabled).toBe(false);
+    component.useAvailableDates();
+    expect(component.newSprintConflict).toBeUndefined();
+  });
+  it('keeps planning usable after rejected overlapping date edits and explains genuine planning locks', () => {
+    const fixture = mount(),
+      component = fixture.componentInstance;
+    component.sprintEndDate = '2026-10-20';
+    api.updateSprintDates.mockReturnValue(
+      throwError(() => ({
+        status: 409,
+        error: { message: 'Sprint dates overlap an existing sprint.' },
+      })),
+    );
+    component.saveDates();
+    expect(api.updateSprintDates).toHaveBeenCalledTimes(1);
+    expect(component.stale).toBe(false);
+    expect(component.mutationsDisabled).toBe(false);
+    expect(component.actionMessage).toMatch(/Choose dates/);
+    component.stale = true;
+    expect(component.planningDisabledReason).toMatch(/Refresh Sprint/);
+    component.sprint = legacyFixture();
+    expect(component.planningDisabledReason).toMatch(/historical Sprint is read-only/);
+    expect(component.mutationsDisabled).toBe(true);
+  });
+  it('opens a newly created writable Sprint for planning while keeping the legacy dashboard unchanged', () => {
+    const legacy = legacyFixture();
+    const before = structuredClone(legacy);
+    const future = sprintFixture({
+      _id: 'future-sprint',
+      title: 'My AI Sprint',
+      weekStartDate: '2026-12-01T00:00:00Z',
+      weekEndDate: '2026-12-07T23:59:59.999Z',
+    });
+    api.getCurrent.mockReturnValue(of(legacy));
+    api.getHistory.mockReturnValue(of({ history: [future, legacy] }));
+    api.create.mockReturnValue(of(future));
+    const fixture = mount(),
+      component = fixture.componentInstance;
+    component.newStart = '2027-01-01';
+    component.newEnd = '2027-01-07';
+    component.createSprint();
+    fixture.detectChanges();
+    expect(component.sprint).toBe(legacy);
+    expect(component.plannerSprint?._id).toBe('future-sprint');
+    expect(component.mutationsDisabled).toBe(true);
+    expect(component.planningDisabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('app-sprint-planner input').disabled).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Planning for “My AI Sprint”');
+    expect(legacy).toEqual(before);
+    component.plannerUpdated({ ...future, aiPlans: [] });
+    expect(component.sprint).toBe(legacy);
+    expect(legacy).toEqual(before);
+  });
+  it('can select a writable history Sprint but fails closed when its refresh is unavailable', () => {
+    const legacy = legacyFixture(),
+      future = sprintFixture({ _id: 'future-sprint' });
+    api.getCurrent.mockReturnValue(of(legacy));
+    api.getHistory.mockReturnValue(of({ history: [future, legacy] }));
+    const fixture = mount(),
+      component = fixture.componentInstance;
+    component.selectPlanningSprint('future-sprint');
+    expect(component.planningDisabled).toBe(false);
+    expect(component.sprint).toBe(legacy);
+    api.getHistory.mockReturnValueOnce(throwError(() => ({ status: 503 })));
+    component.loadData(true);
+    expect(component.planningDisabled).toBe(true);
+    expect(component.planningDisabledReason).toMatch(/selected Sprint could not be refreshed/);
+    expect(component.plannerSprint?._id).toBe('future-sprint');
   });
 });

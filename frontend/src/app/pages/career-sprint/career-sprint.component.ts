@@ -25,10 +25,12 @@ import { SprintPlannerComponent } from './components/sprint-planner.component';
 import {
   calendarKey,
   formatSprintDate,
+  nextSprintWindow,
   restoreEligible,
   sprintError,
   sprintReadOnly,
   sprintZone,
+  sprintWindowConflict,
   taskDescription,
 } from './utils/sprint-presentation';
 
@@ -56,6 +58,8 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
   private profileSignature = '';
   private timer?: ReturnType<typeof setInterval>;
   sprint: CareerSprint | null = null;
+  planningTarget: CareerSprint | null = null;
+  planningTargetVerified = true;
   history: CareerSprint[] = [];
   historyError = '';
   userName = 'Developer';
@@ -99,6 +103,99 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
   }
   get mutationsDisabled(): boolean {
     return this.readOnly || this.stale || this.isRefreshing || !!this.busy;
+  }
+  get planningDisabledReason(): string {
+    if (this.planningReadOnly)
+      return 'This historical Sprint is read-only. Its original calendar cannot be verified or its window is a preserved legacy exception. Create a separate, non-overlapping Sprint to save plans and tasks; history stays unchanged.';
+    if (this.planningTarget && !this.planningTargetVerified)
+      return 'The selected Sprint could not be refreshed. Refresh Sprint before changing its plans.';
+    if (this.stale)
+      return 'The current Sprint could not be verified after a refresh or conflicting change. Refresh Sprint to re-enable planning.';
+    if (this.isRefreshing)
+      return 'Sprint data is refreshing. Planning will be available when it finishes.';
+    if (this.busy)
+      return 'A Sprint change is being saved. Planning will be available when it finishes.';
+    return '';
+  }
+  get plannerSprint(): CareerSprint | null {
+    return this.planningTarget || this.sprint;
+  }
+  get planningReadOnly(): boolean {
+    return !this.plannerSprint || sprintReadOnly(this.plannerSprint);
+  }
+  get planningDisabled(): boolean {
+    return (
+      this.planningReadOnly ||
+      this.stale ||
+      this.isRefreshing ||
+      !!this.busy ||
+      Boolean(this.planningTarget && !this.planningTargetVerified)
+    );
+  }
+  get writablePlanningSprints(): CareerSprint[] {
+    const records = this.planningTarget
+      ? [this.planningTarget, ...this.knownSprints]
+      : this.knownSprints;
+    return records.filter(
+      (record, index) =>
+        !sprintReadOnly(record) && records.findIndex((item) => item._id === record._id) === index,
+    );
+  }
+  selectPlanningSprint(id: string): void {
+    if (this.busy || this.isRefreshing) return;
+    const record = this.writablePlanningSprints.find((item) => item._id === id);
+    if (id === this.sprint?._id) this.planningTarget = null;
+    else if (record) this.planningTarget = record;
+    else return;
+    this.planningTargetVerified = false;
+    this.view = 'plans';
+    this.loadData(true);
+  }
+  beginPlanningSprint(): void {
+    if (this.busy) return;
+    this.newSprintOpen = true;
+    this.useAvailableDates();
+    this.cdr.markForCheck();
+    setTimeout(
+      () =>
+        document
+          .getElementById('new-sprint')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      50,
+    );
+  }
+  private refreshPlanningTarget(): void {
+    if (!this.planningTarget) return;
+    const fresh =
+      !this.historyError && this.history.find((record) => record._id === this.planningTarget?._id);
+    this.planningTargetVerified = Boolean(fresh);
+    if (fresh) this.planningTarget = fresh;
+  }
+  private get knownSprints(): CareerSprint[] {
+    return this.sprint ? [this.sprint, ...this.history] : this.history;
+  }
+  get newSprintConflict(): CareerSprint | undefined {
+    return this.preferencesLoaded
+      ? sprintWindowConflict(
+          this.knownSprints,
+          this.newStart,
+          this.newEnd,
+          this.savedPreferenceZone,
+        )
+      : undefined;
+  }
+  openNewSprint(): void {
+    if (this.busy) return;
+    this.newSprintOpen = !this.newSprintOpen;
+    if (this.newSprintOpen && (!this.newStart || !this.newEnd)) this.useAvailableDates();
+  }
+  useAvailableDates(): void {
+    if (!this.preferencesLoaded || this.busy) return;
+    const window = nextSprintWindow(this.knownSprints, this.savedPreferenceZone, this.now);
+    if (window) {
+      this.newStart = window.start;
+      this.newEnd = window.end;
+    }
   }
   get zone(): string | null {
     return this.sprint ? sprintZone(this.sprint) : null;
@@ -234,6 +331,7 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.acceptSprint(result.sprint);
           this.history = result.history.history || [];
+          this.refreshPlanningTarget();
           this.isLoading = false;
           this.isRefreshing = false;
           this.stale = false;
@@ -270,7 +368,10 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
       this.dateFilter = 'all';
   }
   plannerUpdated(sprint: CareerSprint): void {
-    this.acceptSprint(sprint);
+    if (this.planningTarget?._id === sprint._id) {
+      this.planningTarget = sprint;
+      this.planningTargetVerified = true;
+    } else this.acceptSprint(sprint);
     this.refreshHistory();
   }
   private refreshHistory(): void {
@@ -281,9 +382,11 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.history = result.history;
           this.historyError = '';
+          this.refreshPlanningTarget();
           this.cdr.markForCheck();
         },
         error: () => {
+          if (this.planningTarget) this.planningTargetVerified = false;
           this.historyError =
             'History could not be refreshed. Retry without losing your current Sprint.';
           this.cdr.markForCheck();
@@ -380,7 +483,13 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
         this.busy = '';
         this.actionMessage = sprintError(error, 'This change could not be saved. Please retry.');
         this.actionFailed = true;
-        if (error?.status === 409) this.stale = true;
+        // A rejected date overlap does not invalidate the current Sprint snapshot.
+        // Other conflicts still fail closed until a successful refresh.
+        if (
+          error?.status === 409 &&
+          !(kind === 'dates' && /overlap/i.test(error?.error?.message || ''))
+        )
+          this.stale = true;
         this.cdr.markForCheck();
       },
     });
@@ -438,6 +547,12 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
       !this.newTitle.trim()
     )
       return;
+    if (this.newSprintConflict) {
+      this.actionFailed = true;
+      this.actionMessage =
+        'These dates overlap a saved Sprint. Choose another window or use the current Sprint and its Sprint studio. Your saved work is unchanged.';
+      return;
+    }
     this.busy = 'create';
     this.api
       .create({
@@ -447,11 +562,14 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.busy = '';
           this.newSprintOpen = false;
+          this.planningTarget = created;
+          this.planningTargetVerified = true;
+          this.view = 'plans';
           this.actionMessage =
-            'Sprint saved. The active Sprint is selected by its dates; future Sprints are available in history.';
+            'Sprint saved. Sprint studio is open for the new Sprint. The dashboard current Sprint remains selected by its dates.';
           this.actionFailed = false;
           this.loadData(true);
         },
@@ -483,6 +601,18 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
           : task.taskType === 'ai'
             ? 'Planned task'
             : 'Manual';
+  }
+  exploreSprintStudio(): void {
+    this.view = 'plans';
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      const planner =
+        document.getElementById('sprint-planner-section') ||
+        document.querySelector('.workspace-nav');
+      if (planner) {
+        planner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
   }
   resetFilters(): void {
     this.search = '';

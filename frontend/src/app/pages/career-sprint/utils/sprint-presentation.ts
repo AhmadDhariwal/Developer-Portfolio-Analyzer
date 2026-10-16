@@ -56,11 +56,46 @@ export function formatSprintDate(value: string | null | undefined, sprint: Caree
 export function sprintError(error: unknown, fallback: string): string {
   const response = error as { status?: number; error?: { message?: string } };
   const message = response?.error?.message || fallback;
+  if (response?.status === 409 && /overlap/i.test(message))
+    return `${message} Your saved data is preserved. Choose dates outside your existing Sprint windows, or keep working in your current Sprint.`;
   if (response?.status === 409)
     return `${message} Your saved data is preserved. Refresh to review the latest Sprint or draft context before retrying.`;
   if (response?.status === 0)
     return 'Connection unavailable. Your saved data is preserved. Reconnect and retry.';
   return message;
+}
+
+export function sprintWindowConflict(
+  records: CareerSprint[],
+  start: string,
+  end: string,
+  zone: string,
+): CareerSprint | undefined {
+  if (!zone || !start || !end || start > end) return undefined;
+  return records.find((record) => {
+    // Compare the original instants in the NEW calendar, without assigning a
+    // calendar to historical records. New Sprint windows occupy whole local days.
+    const from = calendarKey(record.sprintStartDate || record.weekStartDate, zone);
+    const to = calendarKey(record.sprintEndDate || record.weekEndDate, zone);
+    return Boolean(from && to && start <= to && end >= from);
+  });
+}
+
+export function nextSprintWindow(records: CareerSprint[], zone: string, now: number) {
+  const addDate = (value: string, days: number) => {
+    const date = new Date(`${value}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  };
+  let start = calendarKey(new Date(now), zone);
+  if (!start) return null;
+  for (let attempt = 0; attempt <= records.length; attempt++) {
+    const end = addDate(start, 6);
+    const conflict = sprintWindowConflict(records, start, end, zone);
+    if (!conflict) return { start, end };
+    start = addDate(calendarKey(conflict.sprintEndDate || conflict.weekEndDate, zone), 1);
+  }
+  return null;
 }
 
 export function restoreEligible(sprint: CareerSprint, now: number): boolean {

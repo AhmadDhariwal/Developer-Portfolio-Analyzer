@@ -14,6 +14,15 @@ const aiServiceSource = read('backend', 'src', 'services', 'aiTaskService.js');
 const routesSource = read('backend', 'src', 'routes', 'careerSprint.routes.js');
 const promptSource = read('backend', 'src', 'prompts', 'careerSprintPrompt.js');
 const componentSource = read('frontend', 'src', 'app', 'pages', 'career-sprint', 'career-sprint.component.ts');
+const plannerSource = read(
+  'frontend',
+  'src',
+  'app',
+  'pages',
+  'career-sprint',
+  'components',
+  'sprint-planner.component.ts'
+);
 const clientSource = read('frontend', 'src', 'app', 'shared', 'services', 'career-sprint.service.ts');
 
 const {
@@ -269,13 +278,10 @@ test('prompt is compact, schema-bound, and forbids score invention', () => {
 });
 
 test('frontend failed refresh and failed AI generation preserve previous valid results', () => {
-  assert.match(componentSource, /const previousSprint = this\.sprint/);
-  assert.match(componentSource, /const preservePrevious = Boolean\(previousSprint\)/);
-  assert.match(componentSource, /if \(preservePrevious && previousSprint\)/);
-  assert.match(componentSource, /const previousTasks = \[\.\.\.this\.generatedTasks\]/);
-  assert.match(componentSource, /this\.generatedTasks = previousTasks/);
-  assert.match(componentSource, /pendingTaskIds/);
-  assert.match(componentSource, /Failed to add generated tasks\. Previous plan was preserved\./);
+  assert.match(componentSource, /this\.stale = !!this\.sprint/);
+  assert.match(componentSource, /Previously loaded records are preserved/);
+  assert.match(plannerSource, /Planning failed\. Your previous preview is still available\./);
+  assert.match(plannerSource, /The action could not be saved\. Retry when ready\./);
 });
 
 test('frontend request dedupe and profile-scoped cache keys prevent cross-user bleed', () => {

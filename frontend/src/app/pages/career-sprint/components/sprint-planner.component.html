@@ -17,8 +17,11 @@
   }
   @if (disabled) {
     <p class="notice">
-      Planning changes are disabled for this read-only or unverified Sprint. Your saved drafts
-      remain available to inspect.
+      {{
+        disabledReason ||
+          'Planning is temporarily unavailable. Refresh Sprint to verify its current access. Your saved drafts remain available to inspect.'
+      }}
+      <button type="button" (click)="refreshRequested.emit()">Refresh Sprint</button>
     </p>
   }
   <div class="planning-grid">
@@ -59,7 +62,13 @@
           [disabled]="disabled || !!busy || scenariosLoading"
         >
           <option value="">
-            {{ scenariosLoading ? 'Loading scenarios…' : 'Select a scenario' }}
+            {{
+              scenariosLoading
+                ? 'Loading scenarios…'
+                : scenarios.length
+                  ? 'Select a scenario'
+                  : 'No saved scenarios yet'
+            }}
           </option>
           @for (scenario of scenarios; track scenario._id) {
             <option [value]="scenario._id">{{ scenario.name }}</option>

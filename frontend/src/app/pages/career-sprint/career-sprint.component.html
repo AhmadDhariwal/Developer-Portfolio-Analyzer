@@ -51,7 +51,7 @@
       ><button
         type="button"
         class="primary"
-        (click)="newSprintOpen = !newSprintOpen"
+        (click)="openNewSprint()"
         [attr.aria-expanded]="newSprintOpen"
         aria-controls="new-sprint"
       >
@@ -164,6 +164,24 @@
         </div>
         <button type="button" (click)="newSprintOpen = false" [disabled]="!!busy">Close</button>
       </div>
+      <p class="meta">
+        A new Sprint needs its own dates. To add work to your current Sprint, use Tasks or Sprint
+        studio. Suggested dates check loaded history; the server verifies all saved windows.
+      </p>
+      <button type="button" (click)="useAvailableDates()" [disabled]="!!busy || !preferencesLoaded">
+        Use next available dates
+      </button>
+      @if (newSprintConflict; as conflict) {
+        <p class="notice error" role="status">
+          These dates overlap “{{ conflict.title || 'Career Sprint' }}”. Choose another window or
+          use the existing Sprint. Refreshing alone will not remove an overlap.
+          @if (conflict._id === sprint?._id && !mutationsDisabled) {
+            <button type="button" (click)="newSprintOpen = false; view = 'plans'">
+              Plan current Sprint
+            </button>
+          }
+        </p>
+      }
       <form #newSprintForm="ngForm" (ngSubmit)="createSprint()" class="new-sprint-form">
         <label
           >Sprint title<input
@@ -187,7 +205,13 @@
         ><button
           class="primary"
           type="submit"
-          [disabled]="!!busy || !preferencesLoaded || newSprintForm.invalid || newStart > newEnd"
+          [disabled]="
+            !!busy ||
+            !preferencesLoaded ||
+            newSprintForm.invalid ||
+            newStart > newEnd ||
+            !!newSprintConflict
+          "
         >
           {{ busy === 'create' ? 'Creating…' : 'Create Sprint' }}
         </button>
@@ -303,7 +327,9 @@
                 [disabled]="mutationsDisabled"
               >
                 + Add task</button
-              ><button type="button" (click)="view = 'plans'">Explore Sprint studio →</button>
+              ><button type="button" (click)="exploreSprintStudio()">
+                Explore Sprint studio →
+              </button>
             </div>
           </div>
         </div>
@@ -649,12 +675,58 @@
       </section>
     }
     @if (view === 'plans') {
-      <app-sprint-planner
-        [sprint]="sprint"
-        [disabled]="mutationsDisabled"
-        (updated)="plannerUpdated($event)"
-        (refreshRequested)="loadData(true)"
-      />
+      <section class="surface" aria-label="Choose a Sprint to plan">
+        <h2>Choose a Sprint to plan</h2>
+        <p>
+          The dashboard shows your current Sprint. You can also prepare AI plans for a separate
+          writable Sprint, including a future one.
+        </p>
+        @if (writablePlanningSprints.length) {
+          <label
+            >Writable Sprint
+            <select
+              aria-label="Writable Sprint to plan"
+              [ngModel]="plannerSprint?._id"
+              (ngModelChange)="selectPlanningSprint($event)"
+              [disabled]="!!busy || isRefreshing"
+            >
+              @if (planningReadOnly) {
+                <option [value]="plannerSprint?._id" disabled>Select a writable Sprint</option>
+              }
+              @for (record of writablePlanningSprints; track record._id) {
+                <option [value]="record._id">
+                  {{ record.title }} ·
+                  {{ date(record.sprintStartDate || record.weekStartDate, record) }} –
+                  {{ date(record.sprintEndDate || record.weekEndDate, record) }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+        <button type="button" (click)="beginPlanningSprint()" [disabled]="!!busy || isRefreshing">
+          Create writable Sprint
+        </button>
+        @if (planningTarget) {
+          <p role="status">
+            Planning for “{{ planningTarget.title }}” ({{
+              date(planningTarget.sprintStartDate || planningTarget.weekStartDate, planningTarget)
+            }}
+            –
+            {{ date(planningTarget.sprintEndDate || planningTarget.weekEndDate, planningTarget) }}).
+            Current Sprint history, XP and dates stay unchanged.
+          </p>
+        }
+      </section>
+      @if (plannerSprint; as target) {
+        <app-sprint-planner
+          id="sprint-planner-section"
+          [sprint]="target"
+          [disabled]="planningDisabled"
+          [disabledReason]="planningDisabledReason"
+          (updated)="plannerUpdated($event)"
+          (refreshRequested)="loadData(true)"
+        />
+      }
     }
     @if (view === 'history') {
       <section aria-labelledby="history-heading">

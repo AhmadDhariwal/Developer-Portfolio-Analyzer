@@ -92,15 +92,20 @@ async function session(browser, theme = 'light', mode = 'normal') {
       endpoint = url.pathname,
       method = request.method();
     const data = request.postDataJSON?.() || {};
+    const recordId = endpoint.split('/')[3];
+    const target =
+      recordId === controls.current._id
+        ? controls.current
+        : controls.history.find((item) => item._id === recordId) || controls.current;
     const send = (json, status = 200) => route.fulfill({ status, json: clone(json) });
     if (method === 'GET') controls.reads.push(endpoint);
     else controls.writes.push({ endpoint, method, data });
     const sync = () => {
-      controls.current.__v++;
+      target.__v++;
       controls.history = controls.history.map((item) =>
-        item._id === controls.current._id ? clone(controls.current) : item,
+        item._id === target._id ? clone(target) : item,
       );
-      return controls.current;
+      return target;
     };
     if (endpoint === '/api/career-sprints/current') {
       if (controls.delay) await new Promise((resolve) => setTimeout(resolve, controls.delay));
@@ -145,7 +150,7 @@ async function session(browser, theme = 'light', mode = 'normal') {
     if (endpoint.startsWith('/api/career-sprints') && method !== 'GET') {
       if (controls.failMutation)
         return send({ message: 'Sprint changed. Review current data before retrying.' }, 409);
-      if (controls.current.legacyAccess.readOnly && endpoint !== '/api/career-sprints')
+      if (target.legacyAccess.readOnly && endpoint !== '/api/career-sprints')
         return send({ message: 'Historical Sprint is read-only.' }, 409);
       if (endpoint === '/api/career-sprints') {
         const pinned = sprintWindow(controls.preference, data.sprintStartDate, data.sprintEndDate);
@@ -174,34 +179,34 @@ async function session(browser, theme = 'light', mode = 'normal') {
         return send(future, 201);
       }
       if (endpoint.endsWith('/restore-streak')) {
-        if (!controls.current.restoreMeta.canRestore)
+        if (!target.restoreMeta.canRestore)
           return send({ message: 'Recovery window expired.' }, 400);
-        controls.current.restoreMeta.canRestore = false;
-        controls.current.streakStatus = 'active';
+        target.restoreMeta.canRestore = false;
+        target.streakStatus = 'active';
         return send(sync());
       }
       if (endpoint.endsWith('/dates')) {
-        controls.current.sprintStartDate = data.sprintStartDate + 'T19:00:00Z';
-        controls.current.sprintEndDate = data.sprintEndDate + 'T18:59:59.999Z';
+        target.sprintStartDate = data.sprintStartDate + 'T19:00:00Z';
+        target.sprintEndDate = data.sprintEndDate + 'T18:59:59.999Z';
         return send(sync());
       }
       if (endpoint.endsWith('/import-scenario')) {
         const plan = draft('scenario-plan');
         plan.source = plan.generatorType = 'scenario';
         plan.name = 'Full-stack scenario draft';
-        controls.current.aiPlans.push(plan);
+        target.aiPlans.push(plan);
         return send(sync());
       }
       if (endpoint.endsWith('/ai-plans')) {
         const plan = { ...draft('saved-draft-' + ++controls.serial), ...data };
-        controls.current.aiPlans.push(plan);
+        target.aiPlans.push(plan);
         return send(sync());
       }
       const draftMatch = endpoint.match(/\/ai-plans\/([^/]+)(\/tasks)?$/);
       if (draftMatch) {
-        const plan = controls.current.aiPlans.find((item) => item._id === draftMatch[1]);
+        const plan = target.aiPlans.find((item) => item._id === draftMatch[1]);
         if (method === 'DELETE') {
-          controls.current.aiPlans = controls.current.aiPlans.filter((item) => item !== plan);
+          target.aiPlans = target.aiPlans.filter((item) => item !== plan);
           return send(sync());
         }
         if (
@@ -212,21 +217,21 @@ async function session(browser, theme = 'light', mode = 'normal') {
         for (const index of data.taskIndexes) {
           const task = plan.tasks[index];
           if (
-            !controls.current.tasks.some(
+            !target.tasks.some(
               (item) =>
                 item.title === task.title ||
                 (task.sourceRecommendationId &&
                   item.sourceRecommendationId === task.sourceRecommendationId),
             )
           )
-            controls.current.tasks.push({ ...clone(task), _id: 'imported-' + ++controls.serial });
+            target.tasks.push({ ...clone(task), _id: 'imported-' + ++controls.serial });
         }
         return send(sync());
       }
       const taskMatch = endpoint.match(/\/tasks(?:\/([^/]+))?$/);
       if (taskMatch) {
         if (method === 'POST') {
-          controls.current.tasks.push({
+          target.tasks.push({
             ...data,
             _id: 'created-' + ++controls.serial,
             isCompleted: false,
@@ -234,14 +239,14 @@ async function session(browser, theme = 'light', mode = 'normal') {
           });
           return send(sync());
         }
-        const task = controls.current.tasks.find((item) => item._id === taskMatch[1]);
+        const task = target.tasks.find((item) => item._id === taskMatch[1]);
         if (method === 'DELETE') {
-          controls.current.tasks = controls.current.tasks.filter((item) => item !== task);
+          target.tasks = target.tasks.filter((item) => item !== task);
           return send(sync());
         }
         if (Object.hasOwn(data, 'isCompleted')) {
           task.isCompleted = data.isCompleted;
-          controls.current.xpPoints += data.isCompleted ? 19 : -19;
+          target.xpPoints += data.isCompleted ? 19 : -19;
         } else
           Object.assign(task, data, {
             description: String(data.description || '')
@@ -518,6 +523,30 @@ async function interactions(session, results, theme) {
   await assertText(app, 'Timezone preference saved');
   assert.equal(controls.current.timeZone, 'Asia/Karachi');
   await app.getByRole('button', { name: '+ New Sprint', exact: true }).click();
+  assert.ok(await app.getByLabel('New Sprint start', { exact: true }).inputValue());
+  await app.getByLabel('New Sprint start', { exact: true }).fill('2026-10-16');
+  await app.getByLabel('New Sprint end', { exact: true }).fill('2026-10-17');
+  assert.equal(
+    await app.getByRole('button', { name: 'Create Sprint', exact: true }).isDisabled(),
+    true,
+  );
+  await assertText(app, 'Refreshing alone will not remove an overlap.');
+  if (theme === 'light')
+    await screenshot(page, results, 'sprint-overlap-guidance.png', app.locator('#new-sprint'));
+  await app.getByRole('button', { name: 'Use next available dates', exact: true }).click();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll('app-career-sprint button')].some(
+      (button) => button.textContent.trim() === 'Create Sprint' && !button.disabled,
+    ),
+  );
+  assert.equal(
+    await app.getByRole('button', { name: 'Create Sprint', exact: true }).isEnabled(),
+    true,
+  );
+  results.overlapChecks ||= [];
+  results.overlapChecks.push({ theme, passed: true });
+  if (theme === 'light')
+    await screenshot(page, results, 'sprint-available-dates.png', app.locator('#new-sprint'));
   await app.getByLabel('Sprint title', { exact: true }).fill('A new focused Sprint');
   await app.getByLabel('New Sprint start', { exact: true }).fill('2026-12-01');
   await app.getByLabel('New Sprint end', { exact: true }).fill('2026-12-07');
@@ -693,7 +722,7 @@ async function interactions(session, results, theme) {
         assert.deepEqual(s.errors, []);
       } catch (error) {
         results.interactionFailures ||= [];
-        results.interactionFailures.push({ theme, error: error.message });
+        results.interactionFailures.push({ theme, error: error.stack });
       } finally {
         await s.context.close();
       }
@@ -741,6 +770,39 @@ async function interactions(session, results, theme) {
         await app.getByRole('button', { name: /^Tasks/ }).click();
         await s.page.setViewportSize({ width: 375, height: 1000 });
         await screenshot(s.page, results, 'light-mobile-legacy.png');
+        const preservedLegacy = clone(s.controls.current);
+        await app.getByRole('button', { name: /^Sprint studio/ }).click();
+        await app.getByRole('button', { name: 'Create writable Sprint', exact: true }).click();
+        await app.getByLabel('Sprint title', { exact: true }).fill('AI planning Sprint');
+        await app.getByRole('button', { name: 'Create Sprint', exact: true }).click();
+        await assertText(app, 'Sprint studio is open for the new Sprint');
+        const planner = app.locator('app-sprint-planner');
+        await s.page.waitForFunction(() =>
+          Boolean(document.querySelector('app-sprint-planner input:not(:disabled)')),
+        );
+        await planner.getByLabel('Focus technology', { exact: true }).fill('Angular');
+        await planner.getByRole('button', { name: 'Try AI planning', exact: true }).click();
+        await planner.getByRole('button', { name: 'Save as draft', exact: true }).waitFor();
+        await planner.getByRole('button', { name: 'Save as draft', exact: true }).click();
+        await assertText(app, 'Draft saved.');
+        assert.equal(
+          s.controls.history.find((record) => record._id === 'future-sprint').aiPlans.length,
+          1,
+        );
+        await planner.getByRole('button', { name: 'Select all tasks', exact: true }).click();
+        await planner.getByRole('button', { name: 'Add selected to Sprint', exact: true }).click();
+        await assertText(app, 'Selected tasks imported.');
+        assert.equal(
+          s.controls.history.find((record) => record._id === 'future-sprint').tasks.length,
+          proposed.length,
+        );
+        assert.deepEqual(s.controls.current, preservedLegacy);
+        await screenshot(s.page, results, 'legacy-to-writable-planner.png', planner);
+        results.writablePlannerHandoff = {
+          passed: true,
+          legacyUnchanged: true,
+          previewSaveAndImport: true,
+        };
       }
       if (mode === 'empty') await assertText(app, 'A little focus goes a long way');
       if (mode === 'history-error') {

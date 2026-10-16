@@ -38,6 +38,7 @@ import {
 export class SprintPlannerComponent implements OnInit, OnChanges {
   @Input({ required: true }) sprint!: CareerSprint;
   @Input() disabled = false;
+  @Input() disabledReason = '';
   @Output() updated = new EventEmitter<CareerSprint>();
   @Output() refreshRequested = new EventEmitter<void>();
   private readonly destroyRef = inject(DestroyRef);

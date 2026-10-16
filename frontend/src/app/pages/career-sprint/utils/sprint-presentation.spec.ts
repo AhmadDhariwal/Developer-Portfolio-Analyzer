@@ -1,10 +1,12 @@
 import {
   calendarKey,
   formatSprintDate,
+  nextSprintWindow,
   restoreEligible,
   sprintError,
   sprintReadOnly,
   sprintZone,
+  sprintWindowConflict,
 } from './sprint-presentation';
 import { legacyFixture, sprintFixture } from '../testing/sprint.fixture';
 
@@ -45,8 +47,27 @@ describe('Sprint calendar and preservation contracts', () => {
   });
   it('explains 409 conflicts and network failures without discarding saved data', () => {
     expect(sprintError({ status: 409, error: { message: 'Window overlaps.' } }, 'Failed')).toMatch(
-      /Window overlaps.*preserved.*Refresh/,
+      /Window overlaps.*preserved.*Choose dates/,
     );
     expect(sprintError({ status: 0 }, 'Failed')).toMatch(/Reconnect and retry/);
+  });
+  it('finds available whole-day windows across DST and preserves unresolved legacy instants', () => {
+    const record = {
+      ...legacyFixture(),
+      weekStartDate: '2026-03-06T05:00:00Z',
+      weekEndDate: '2026-03-09T03:59:59.999Z',
+    };
+    const original = structuredClone(record);
+    expect(sprintWindowConflict([record], '2026-03-08', '2026-03-14', 'America/New_York')).toBe(
+      record,
+    );
+    expect(
+      nextSprintWindow([record], 'America/New_York', +new Date('2026-03-08T12:00:00Z')),
+    ).toEqual({ start: '2026-03-09', end: '2026-03-15' });
+    expect(
+      sprintWindowConflict([record], '2026-03-09', '2026-03-15', 'America/New_York'),
+    ).toBeUndefined();
+    expect(record).toEqual(original);
+    expect(nextSprintWindow([], '', Date.now())).toBeNull();
   });
 });

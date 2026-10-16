@@ -32,6 +32,8 @@ const sprintTaskSchema = new mongoose.Schema(
     deadline: { type: Date, default: null },
     sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
     sourceScenarioHash: { type: String, default: '' },
+    sourceCourseId: { type: String, default: null },
+    sourceCourseSkill: { type: String, default: null },
     ...recommendationProvenance
   },
   { _id: true }
@@ -56,6 +58,8 @@ const aiPlanTaskSchema = new mongoose.Schema(
     endDate: { type: Date, default: null },
     sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
     sourceScenarioHash: { type: String, default: '' },
+    sourceCourseId: { type: String, default: null },
+    sourceCourseSkill: { type: String, default: null },
     ...recommendationProvenance
   },
   { _id: false }

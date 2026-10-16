@@ -459,6 +459,19 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal(renamed.status, 200);
       assert.equal(renamed.body.alreadyAdded, true);
       assert.equal((await CareerSprint.findOne({ userId: owner }).lean()).tasks.length, 1);
+      const sprintDoc = await CareerSprint.findOne({ userId: owner });
+      const sprintTask = sprintDoc.tasks[0];
+      const sprintService = require('../services/careerSprintService');
+      await sprintService.editTask(owner, sprintDoc._id, sprintTask._id, {
+        title: 'User Edited Title',
+        description: 'User completely modified their course description notes.',
+      });
+      const replayAfterEdit = await http('/fb_u2/career-sprint', 'POST', {
+        targetSkill: 'Node.js',
+      });
+      assert.equal(replayAfterEdit.status, 200);
+      assert.equal(replayAfterEdit.body.alreadyAdded, true);
+      assert.equal((await CareerSprint.findOne({ userId: owner }).lean()).tasks.length, 1);
       assert.equal(
         (await http('/fb_u2/career-sprint', 'POST', { targetSkill: 'Express' })).status,
         409,

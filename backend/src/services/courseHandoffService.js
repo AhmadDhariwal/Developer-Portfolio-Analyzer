@@ -39,6 +39,8 @@ const handoff = async (userId, courseId, body = {}) => {
   legacyPolicy.assertWritable(sprint);
   const title = `Study ${course.title.slice(0, 88)} [${digest(courseId).slice(0, 12)}]`;
   const task = {
+    sourceCourseId: courseId,
+    sourceCourseSkill: targetSkill || null,
     title,
     description:
       `Study the recorded course and review what you learned.\nCourse: ${courseId}\nSkill: ${targetSkill || 'Not specified'}\n${course.url}`.slice(
@@ -49,7 +51,7 @@ const handoff = async (userId, courseId, body = {}) => {
     taskType: 'manual',
   };
   const marker = `\nCourse: ${courseId}\n`;
-  const sourceMatch = { description: { $regex: marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') } };
+  const legacyMatch = { description: { $regex: marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') } };
   const updated = await CareerSprint.findOneAndUpdate(
     {
       _id: sprint._id,
@@ -59,9 +61,10 @@ const handoff = async (userId, courseId, body = {}) => {
         { calendarPolicy: 'sprint-calendar-48h-v1' },
         { migrationCalendarTimeZone: { $type: 'string' } },
       ],
+      'tasks.sourceCourseId': { $ne: courseId },
       'tasks.title': { $ne: title },
+      tasks: { $not: { $elemMatch: legacyMatch } },
       $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
-      tasks: { $not: { $elemMatch: sourceMatch } },
     },
     { $push: { tasks: task }, $inc: { __v: 1 } },
     { returnDocument: 'after', runValidators: true },
@@ -70,13 +73,31 @@ const handoff = async (userId, courseId, body = {}) => {
     const existing = await CareerSprint.findOne({
       _id: sprint._id,
       userId,
-      $or: [{ tasks: { $elemMatch: sourceMatch } }, { 'tasks.title': title }],
+      $or: [
+        { 'tasks.sourceCourseId': courseId },
+        { 'tasks.title': title },
+        { tasks: { $elemMatch: legacyMatch } },
+      ],
     }).lean();
     if (!existing) fail(409, 'Sprint changed. Retry the handoff.');
-    const task = existing.tasks.find(
-      (item) => item.description.includes(marker) || item.title === title,
+    const matchedTask = existing.tasks.find(
+      (item) =>
+        item.sourceCourseId === courseId ||
+        item.title === title ||
+        (item.description && item.description.includes(marker)),
     );
-    if (!task?.description.includes(`\nSkill: ${targetSkill || 'Not specified'}\n`))
+    let skillMatched = false;
+    if (matchedTask?.sourceCourseSkill !== undefined && matchedTask?.sourceCourseSkill !== null) {
+      skillMatched =
+        (matchedTask.sourceCourseSkill || '').toLowerCase() === (targetSkill || '').toLowerCase();
+    } else {
+      skillMatched = Boolean(
+        matchedTask?.description &&
+        (matchedTask.description.includes(`\nSkill: ${targetSkill || 'Not specified'}\n`) ||
+          matchedTask.description.includes(`Skill: ${targetSkill || 'Not specified'}`)),
+      );
+    }
+    if (!skillMatched)
       fail(409, 'This course is already in the current Sprint with a different target skill.');
   }
   invalidateCareerSprintCache(userId);

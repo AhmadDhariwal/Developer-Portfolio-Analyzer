@@ -200,6 +200,8 @@ const normalizeTask = (task, taskTypeDefault = 'manual', trustedSource = false, 
       ? {
           sourceScenarioId: task.sourceScenarioId || null,
           sourceScenarioHash: String(task.sourceScenarioHash || '').slice(0, 128),
+          sourceCourseId: task.sourceCourseId || null,
+          sourceCourseSkill: task.sourceCourseSkill || null,
           ...Object.fromEntries(provenance.fields.filter((key) => task[key]).map((key) => [key, task[key]]))
         }
       : {})
@@ -977,7 +979,18 @@ const editTask = async (userId, sprintId, taskId, payload = {}) => {
   const normalized = normalizeTask({ ...task.toObject(), ...payload }, task.taskType, false, sprint);
   if (normalizeTitle(task.title).toLowerCase() !== normalized.title.toLowerCase())
     assertUniqueTask(sprint, normalized.title);
-  Object.assign(task, normalized);
+  const preservedProvenance = {
+    sourceCourseId: task.sourceCourseId || null,
+    sourceCourseSkill: task.sourceCourseSkill || null,
+    sourceScenarioId: task.sourceScenarioId || null,
+    sourceScenarioHash: task.sourceScenarioHash || '',
+    sourceRecommendationId: task.sourceRecommendationId || undefined,
+    sourceRecommendationSnapshotId: task.sourceRecommendationSnapshotId || undefined,
+    sourceRecommendationHash: task.sourceRecommendationHash || undefined,
+    sourceRule: task.sourceRule || undefined,
+    evidenceLimitation: task.evidenceLimitation || undefined
+  };
+  Object.assign(task, normalized, preservedProvenance);
   await sprint.save();
   invalidateCareerSprintCache(userId);
   return serializeSprint(sprint, { signals: null });
