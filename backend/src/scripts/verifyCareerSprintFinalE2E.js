@@ -16,7 +16,9 @@ const remoteReadUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 process.env.MONGODB_URI = uri;
 process.env.MONGO_URI = uri;
 process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
-const output = path.resolve(__dirname, '../../verification/career-sprint/final-e2e');
+const output = path.resolve(
+  process.env.SPRINT_E2E_OUTPUT || path.resolve(__dirname, '../../verification/career-sprint/final-e2e')
+);
 const Sprint = require('../models/careerSprint');
 const User = require('../models/user');
 const Progress = require('../models/userCourseProgress');
@@ -41,7 +43,10 @@ const main = async () => {
   await Sprint.init();
   // AI failure is injected only at the external provider boundary; all application,
   // calendar, cache, signal, controller, auth and persistence code remains real.
-  require('../services/aiservice').runAIAnalysis = async () => ({ ok: false, error: 'isolated-provider-unavailable' });
+  require('../services/aiservice').runAIAnalysis = async () => ({
+    ok: false,
+    error: 'isolated-provider-unavailable'
+  });
   const app = express();
   app.use(express.json());
   app.use('/api/career-sprints', require('../routes/careerSprint.routes'));
@@ -51,7 +56,11 @@ const main = async () => {
   app.use('/api/recommendations', require('../routes/recommendations.routes'));
   app.use('/api/weekly-reports', require('../routes/weeklyReport.routes'));
   const { protect } = require('../middleware/authmiddleware');
-  app.get('/api/dashboard/summary', protect, require('../controllers/dashboardcontroller').getDashboardSummary);
+  app.get(
+    '/api/dashboard/summary',
+    protect,
+    require('../controllers/dashboardcontroller').getDashboardSummary
+  );
   const root = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
   app.use(express.static(root));
   app.get('/app/{*rest}', (_req, res) => res.sendFile(path.join(root, 'index.html')));
@@ -68,7 +77,10 @@ const main = async () => {
   const request = async (owner, route, method = 'GET', body) => {
     const response = await fetch(`http://127.0.0.1:${port}/api${route}`, {
       method,
-      headers: { 'Content-Type': 'application/json', ...(owner ? { Authorization: `Bearer ${token(owner)}` } : {}) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(owner ? { Authorization: `Bearer ${token(owner)}` } : {})
+      },
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
     return { status: response.status, body: await response.json() };
@@ -80,6 +92,8 @@ const main = async () => {
       password: 'fixture',
       notifications: { weeklyScoreReport: false },
       careerStack: 'Backend',
+      activeCareerStack: 'Backend',
+      activeExperienceLevel: 'Intern',
       experienceLevel: 'Intern'
     });
   await check('JWT rejects unauthenticated request', async () =>
@@ -159,8 +173,14 @@ const main = async () => {
       assert.ok(replay.every((r) => r.status === 200 && r.body.xpPoints === scenario.xp));
       const [points, priority] = scenario.tasks[scenario.done[0]];
       const reversalXp = scenario.xp - points - { high: 15, medium: 10, low: 5 }[priority];
-      assert.equal((await request(owner._id, target, 'PUT', { isCompleted: false })).body.xpPoints, reversalXp);
-      assert.equal((await request(owner._id, target, 'PUT', { isCompleted: true })).body.xpPoints, scenario.xp);
+      assert.equal(
+        (await request(owner._id, target, 'PUT', { isCompleted: false })).body.xpPoints,
+        reversalXp
+      );
+      assert.equal(
+        (await request(owner._id, target, 'PUT', { isCompleted: true })).body.xpPoints,
+        scenario.xp
+      );
       assert.equal((await Sprint.findById(created.body._id).lean()).xpPoints, scenario.xp);
       return { ...scenario, reversalXp, replayRequests: 5, persisted: true };
     });
@@ -183,7 +203,10 @@ const main = async () => {
     const route = `/courses/${courseId}/career-sprint`;
     const first = await request(owner._id, route, 'POST', { targetSkill: 'Node.js' });
     assert.equal(first.status, 200);
-    assert.equal((await request(owner._id, route, 'POST', { targetSkill: 'Node.js' })).body.alreadyAdded, true);
+    assert.equal(
+      (await request(owner._id, route, 'POST', { targetSkill: 'Node.js' })).body.alreadyAdded,
+      true
+    );
     const current = (await request(owner._id, '/career-sprints/current')).body;
     const task = current.tasks.find((item) => item.title.startsWith('Study '));
     const edited = await request(owner._id, `/career-sprints/${current._id}/tasks/${task._id}`, 'PUT', {

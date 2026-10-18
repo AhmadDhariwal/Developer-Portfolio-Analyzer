@@ -1,0 +1,499 @@
+{
+  "verifiedAt": "2026-10-17T19:31:52.625Z",
+  "synthetic": true,
+  "scope": "Career Sprint frontend; production bundle with synthetic intercepted HTTP, no production data or backend writes",
+  "bundle": "main-OXJGD6RK.js",
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    }
+  ],
+  "interactions": [
+    {
+      "theme": "light",
+      "taskCreateEditDelete": true,
+      "completeReopen": true,
+      "filters": true,
+      "conflictPreservation": true,
+      "refreshRetry": true,
+      "deterministicAndAiFallback": true,
+      "savedDrafts": true,
+      "selectiveBulkImports": true,
+      "duplicateProtection": true,
+      "contextAcknowledgement": true,
+      "scenarioImportAndDelete": true,
+      "prospectiveTimezone": true,
+      "futureSprint": true,
+      "overlappingHistory": true,
+      "themeSwitch": true,
+      "mobileSearchAndEditor": true,
+      "keyboardFocusAndHistoryDisclosure": true
+    },
+    {
+      "theme": "dark",
+      "taskCreateEditDelete": true,
+      "completeReopen": true,
+      "filters": true,
+      "conflictPreservation": true,
+      "refreshRetry": true,
+      "deterministicAndAiFallback": true,
+      "savedDrafts": true,
+      "selectiveBulkImports": true,
+      "duplicateProtection": true,
+      "contextAcknowledgement": true,
+      "scenarioImportAndDelete": true,
+      "prospectiveTimezone": true,
+      "futureSprint": true,
+      "overlappingHistory": true,
+      "themeSwitch": true,
+      "mobileSearchAndEditor": true,
+      "keyboardFocusAndHistoryDisclosure": true
+    },
+    {
+      "theme": "system",
+      "taskCreateEditDelete": true,
+      "completeReopen": true,
+      "filters": true,
+      "conflictPreservation": true,
+      "refreshRetry": true,
+      "deterministicAndAiFallback": true,
+      "savedDrafts": true,
+      "selectiveBulkImports": true,
+      "duplicateProtection": true,
+      "contextAcknowledgement": true,
+      "scenarioImportAndDelete": true,
+      "prospectiveTimezone": true,
+      "futureSprint": true,
+      "overlappingHistory": true,
+      "themeSwitch": true,
+      "mobileSearchAndEditor": true,
+      "keyboardFocusAndHistoryDisclosure": true
+    }
+  ],
+  "states": [
+    {
+      "mode": "legacy",
+      "passed": true
+    },
+    {
+      "mode": "empty",
+      "passed": true
+    },
+    {
+      "mode": "unavailable",
+      "passed": true
+    },
+    {
+      "mode": "loading",
+      "passed": true
+    },
+    {
+      "mode": "history-error",
+      "passed": true
+    },
+    {
+      "mode": "restore",
+      "passed": true
+    },
+    {
+      "mode": "expired",
+      "passed": true
+    },
+    {
+      "mode": "boundary",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "light-375-dashboard.png",
+    "light-1440-dashboard.png",
+    "light-desktop-planner.png",
+    "sprint-overlap-guidance.png",
+    "sprint-available-dates.png",
+    "light-mobile-tasks.png",
+    "dark-375-dashboard.png",
+    "dark-1440-dashboard.png",
+    "dark-desktop-history.png",
+    "dark-mobile-tasks.png",
+    "light-mobile-legacy.png",
+    "legacy-to-writable-planner.png",
+    "light-loading.png"
+  ],
+  "overlapChecks": [
+    {
+      "theme": "light",
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "passed": true
+    },
+    {
+      "theme": "system",
+      "passed": true
+    }
+  ],
+  "writablePlannerHandoff": {
+    "passed": true,
+    "legacyUnchanged": true,
+    "previewSaveAndImport": true
+  },
+  "status": "VERIFIED"
+}

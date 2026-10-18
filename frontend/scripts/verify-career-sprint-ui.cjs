@@ -39,12 +39,25 @@ async function settle(page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise(requestAnimationFrame);
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
-        .map((animation) => animation.finished.catch(() => {})),
-    );
+    let timer;
+    try {
+      await Promise.race([
+        Promise.all(
+          document
+            .getAnimations()
+            .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+            .map((animation) => animation.finished.catch(() => {})),
+        ),
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('Finite UI animations did not settle within 5 seconds.')),
+            5000,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
   });
@@ -305,11 +318,36 @@ async function contrast(page) {
     };
     const blend = (fg, bg) =>
       [0, 1, 2].map((i) => fg[i] * (fg[3] ?? 1) + bg[i] * (1 - (fg[3] ?? 1)));
-    const bg = (el) => {
+    // Measure gradient stops and intermediate colors with the same WCAG thresholds.
+    const backgrounds = (el) => {
       const layers = [];
-      for (let p = el; p; p = p.parentElement)
-        layers.push(rgba(getComputedStyle(p).backgroundColor));
-      return layers.reverse().reduce((b, a) => blend(a, b), [255, 255, 255]);
+      for (let p = el; p; p = p.parentElement) {
+        const style = getComputedStyle(p);
+        const colors = [rgba(style.backgroundColor)];
+        if (style.backgroundImage !== 'none') {
+          const stops = style.backgroundImage.match(/rgba?\([^)]+\)/g) || [];
+          if (!stops.length)
+            throw new Error(`Unsupported contrast background: ${style.backgroundImage}`);
+          const parsed = stops.map(rgba);
+          for (let i = 0; i < parsed.length - 1; i++) {
+            for (let step = 0; step <= 16; step++) {
+              const t = step / 16;
+              colors.push(
+                [0, 1, 2, 3].map(
+                  (c) => (parsed[i][c] ?? 1) * (1 - t) + (parsed[i + 1][c] ?? 1) * t,
+                ),
+              );
+            }
+          }
+        }
+        layers.push(colors);
+      }
+      return layers
+        .reverse()
+        .reduce(
+          (bases, colors) => colors.flatMap((color) => bases.map((base) => blend(color, base))),
+          [[255, 255, 255]],
+        );
     };
     const lum = (rgb) =>
       rgb
@@ -329,10 +367,15 @@ async function contrast(page) {
         el.closest('button:disabled')
       )
         continue;
-      const style = getComputedStyle(el),
-        background = bg(el),
-        values = [lum(background), lum(blend(rgba(style.color), background))].sort((a, b) => a - b),
-        ratio = (values[1] + 0.05) / (values[0] + 0.05);
+      const style = getComputedStyle(el);
+      const ratio = Math.min(
+        ...backgrounds(el).map((background) => {
+          const values = [lum(background), lum(blend(rgba(style.color), background))].sort(
+            (a, b) => a - b,
+          );
+          return (values[1] + 0.05) / (values[0] + 0.05);
+        }),
+      );
       const large =
         parseFloat(style.fontSize) >= 24 ||
         (parseFloat(style.fontSize) >= 18.66 && Number(style.fontWeight) >= 700);
@@ -361,6 +404,8 @@ async function interactions(session, results, theme) {
   await editor.getByLabel('Points', { exact: true }).fill('5');
   await editor.getByLabel('Start date', { exact: true }).fill('2026-10-16');
   await editor.getByLabel('End date', { exact: true }).fill('2026-10-17');
+  await settle(page);
+  assert.deepEqual((await contrast(page)).failures, [], `${theme}: task editor contrast`);
   await editor.getByRole('button', { name: 'Create task', exact: true }).click();
   await app
     .getByRole('heading', { name: 'Ship a keyboard-accessible portfolio menu', exact: true })
@@ -460,9 +505,13 @@ async function interactions(session, results, theme) {
   controls.aiFallback = true;
   await studio.getByRole('button', { name: 'Try AI planning', exact: true }).click();
   await assertText(studio, 'deterministic fallback');
+  await settle(page);
+  assert.deepEqual((await contrast(page)).failures, [], `${theme}: AI preview contrast`);
   await studio.getByLabel('Draft name', { exact: true }).fill('Reviewed UI verification plan');
   await studio.getByRole('button', { name: 'Save as draft', exact: true }).click();
   await assertText(studio, 'Draft saved.');
+  await settle(page);
+  assert.deepEqual((await contrast(page)).failures, [], `${theme}: saved draft contrast`);
   await studio
     .getByRole('checkbox', { name: 'Select Build an accessible command palette', exact: true })
     .check();
@@ -722,6 +771,7 @@ async function interactions(session, results, theme) {
         assert.deepEqual(s.errors, []);
       } catch (error) {
         results.interactionFailures ||= [];
+        await screenshot(s.page, results, `${theme}-interaction-failure.png`);
         results.interactionFailures.push({ theme, error: error.stack });
       } finally {
         await s.context.close();

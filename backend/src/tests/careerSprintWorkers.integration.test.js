@@ -42,7 +42,10 @@ const startWorker = (owner) =>
       if ('ready' in message) {
         clearTimeout(timer);
         if (message.ready) resolve({ process, request, redis: message.redis });
-        else reject(new Error(`Worker initialization failed: ${message.errorType} ${JSON.stringify(message.codes)}`));
+        else
+          reject(
+            new Error(`Worker initialization failed: ${message.errorType} ${JSON.stringify(message.codes)}`)
+          );
       } else {
         pending.get(message.id)?.(message);
         pending.delete(message.id);
@@ -55,16 +58,21 @@ const startWorker = (owner) =>
   });
 
 test('two real processes: fresh Mongo revisions, stale Redis writes, restart, fallback and concurrent windows', async (t) => {
-  await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+  await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000
+  });
   const owner = new mongoose.Types.ObjectId();
   const workers = [];
   t.after(async () => {
+    const cleanupErrors = [];
     for (const worker of workers)
       if (worker.process.connected) {
         try {
-          await worker.request('stop', { cleanup: true });
-        } catch {
+          const stopped = await worker.request('stop', { cleanup: true });
+          assert.equal(stopped.error, undefined, stopped.error?.message);
+        } catch (error) {
           worker.process.kill();
+          cleanupErrors.push(error.message);
         }
       }
     await Promise.all([
@@ -74,6 +82,7 @@ test('two real processes: fresh Mongo revisions, stale Redis writes, restart, fa
       Preference.deleteOne({ _id: owner })
     ]);
     await mongoose.disconnect();
+    assert.deepEqual(cleanupErrors, [], 'Every worker must acknowledge successful fixture cleanup.');
   });
   await User.create({
     _id: owner,
@@ -101,7 +110,10 @@ test('two real processes: fresh Mongo revisions, stale Redis writes, restart, fa
   assert.equal(initial.value.xpPoints, 0);
   await b.request('hold');
   assert.equal((await b.request('read', { forceRefresh: true })).value.xpPoints, 0);
-  const complete = await a.request('complete', { sprintId: String(record._id), taskId: String(record.tasks[0]._id) });
+  const complete = await a.request('complete', {
+    sprintId: String(record._id),
+    taskId: String(record.tasks[0]._id)
+  });
   assert.equal(complete.value.xpPoints, 20);
   await b.request('release');
   assert.equal((await b.request('read')).value.xpPoints, 20);

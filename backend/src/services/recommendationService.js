@@ -157,6 +157,28 @@ const buildRecommendationSoftMemoryKey = ({
     RECOMMENDATION_ANALYSIS_VERSION,
   ].join('|');
 
+const buildRecommendationSourceMemoryKey = ({
+  userId = '',
+  username = '',
+  careerStack = '',
+  experienceLevel = '',
+  isTemporaryMode = false,
+  resumeIdentity = 'no-resume',
+  sourceFingerprint = '',
+} = {}) =>
+  [
+    isTemporaryMode ? 'preview' : 'profile',
+    String(userId || 'anonymous'),
+    String(username || '')
+      .trim()
+      .toLowerCase(),
+    careerStack,
+    experienceLevel,
+    String(resumeIdentity || 'no-resume'),
+    String(sourceFingerprint || 'no-source'),
+    RECOMMENDATION_ANALYSIS_VERSION,
+  ].join('|');
+
 const readRecommendationMemory = (key) => {
   if (!key) return null;
   const entry = recommendationMemoryCache.get(key);
@@ -168,12 +190,16 @@ const readRecommendationMemory = (key) => {
   return entry;
 };
 
-const writeRecommendationMemory = (key, payload) => {
+const writeRecommendationMemory = (key, payload, altKey = null) => {
   if (!key || !payload?.analysisData) return;
-  recommendationMemoryCache.set(key, {
+  const entry = {
     ...payload,
     expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS,
-  });
+  };
+  recommendationMemoryCache.set(key, entry);
+  if (altKey) {
+    recommendationMemoryCache.set(altKey, entry);
+  }
 };
 
 const clearRecommendationMemoryCache = () => {
@@ -854,7 +880,10 @@ const runRecommendationPipeline = async ({
           getGitHubData(username),
           AnalysisCache.findOne({
             userId,
-            githubUsername: { $regex: '^' + normalizedGithubUsername + '$', $options: 'i' },
+            githubUsername: {
+              $regex: '^' + normalizedGithubUsername + '$',
+              $options: 'i',
+            },
             careerStack,
             experienceLevel,
             resumeHash: shared.cacheMetadata.cacheKey.resumeHash,
@@ -936,42 +965,23 @@ const runRecommendationPipeline = async ({
   recommendationInflight.set(inflightKey, workPromise);
 
   try {
-    const supportingSignalsPromise = loadDeveloperSignalsSafely({
-      userId,
-      username,
-      allowSignals,
-      resumeInsights: {},
-      githubInsights: {},
-    });
-    const githubSourcePromise = getGitHubData(username, { forceRefresh, isTemporaryMode });
-    githubSourcePromise.catch(() => {});
-    const latestSkillGapPromise =
-      allowSignals && userId
-        ? Promise.resolve(
-            AnalysisCache.findOne({
-              userId,
-              githubUsername: { $regex: '^' + normalizedGithubUsername + '$', $options: 'i' },
-              careerStack,
-              experienceLevel,
-              'analysisData.ruleVersion': engine.SKILL_RULE,
-            })
-              .sort({ updatedAt: -1 })
-              .lean(),
-          )
-        : Promise.resolve(null);
-    latestSkillGapPromise.catch(() => {});
     let latestResumeAnalysis = null;
     let storedResumeInsights;
     let resumeCacheIdentity;
+    let githubData;
+    let skillGapCandidate;
 
     if (isTemporaryMode) {
-      const previewResume = await stageTimer.measure('Mongo', () =>
-        resolvePreviewResume({
-          previewResumeId,
-          resumeHash,
-          resumeText: cleanResume,
-          experienceLevel,
-        }),
+      const [previewResume, rawGithub] = await stageTimer.measure('Mongo', () =>
+        Promise.all([
+          resolvePreviewResume({
+            previewResumeId,
+            resumeHash,
+            resumeText: cleanResume,
+            experienceLevel,
+          }),
+          getGitHubData(username, { forceRefresh, isTemporaryMode }),
+        ]),
       );
       if (previewResume.error) {
         const error = new Error(previewResume.error);
@@ -980,10 +990,30 @@ const runRecommendationPipeline = async ({
       }
       storedResumeInsights = previewResume.resumeInsights;
       resumeCacheIdentity = previewResume.resumeCacheIdentity;
+      githubData = rawGithub;
+      skillGapCandidate = null;
     } else {
-      latestResumeAnalysis = await stageTimer.measure('Mongo', () =>
-        loadResumeAnalysis(userId, req.user),
+      const [loadedResume, rawGithub, loadedSkillGap] = await stageTimer.measure('Mongo', () =>
+        Promise.all([
+          loadResumeAnalysis(userId, req.user),
+          getGitHubData(username, { forceRefresh, isTemporaryMode }),
+          allowSignals && userId
+            ? AnalysisCache.findOne({
+                userId,
+                githubUsername: {
+                  $regex: '^' + normalizedGithubUsername + '$',
+                  $options: 'i',
+                },
+                careerStack,
+                experienceLevel,
+                'analysisData.ruleVersion': engine.SKILL_RULE,
+              })
+                .sort({ updatedAt: -1 })
+                .lean()
+            : Promise.resolve(null),
+        ]),
       );
+      latestResumeAnalysis = loadedResume;
       storedResumeInsights = engine.resumeSignals(
         latestResumeAnalysis,
         buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel),
@@ -991,53 +1021,102 @@ const runRecommendationPipeline = async ({
       resumeCacheIdentity = buildResumeCacheIdentity({
         resumeAnalysis: latestResumeAnalysis,
       });
+      githubData = rawGithub;
+      skillGapCandidate = loadedSkillGap;
     }
 
     const resumeIdentity = `${resumeCacheIdentity.resumeAnalysisId || 'no-resume'}:${resumeCacheIdentity.resumeHash || 'no-resume'}`;
-    const skillGapCachePromise = latestSkillGapPromise.then((candidate) => {
-      if (
-        !candidate ||
-        (candidate.resumeHash === resumeCacheIdentity.resumeHash &&
-          candidate.resumeAnalysisId === resumeCacheIdentity.resumeAnalysisId)
-      )
-        return candidate;
-      return AnalysisCache.findOne({
-        userId,
-        githubUsername: { $regex: '^' + normalizedGithubUsername + '$', $options: 'i' },
-        careerStack,
-        experienceLevel,
-        resumeHash: resumeCacheIdentity.resumeHash,
-        resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-        'analysisData.ruleVersion': engine.SKILL_RULE,
-      })
-        .sort({ updatedAt: -1 })
-        .lean();
+    let skillGapCache = skillGapCandidate;
+    if (
+      !isTemporaryMode &&
+      skillGapCandidate &&
+      (skillGapCandidate.resumeHash !== resumeCacheIdentity.resumeHash ||
+        skillGapCandidate.resumeAnalysisId !== resumeCacheIdentity.resumeAnalysisId)
+    ) {
+      skillGapCache = await stageTimer.measure('Mongo', () =>
+        AnalysisCache.findOne({
+          userId,
+          githubUsername: {
+            $regex: '^' + normalizedGithubUsername + '$',
+            $options: 'i',
+          },
+          careerStack,
+          experienceLevel,
+          resumeHash: resumeCacheIdentity.resumeHash,
+          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
+          'analysisData.ruleVersion': engine.SKILL_RULE,
+        })
+          .sort({ updatedAt: -1 })
+          .lean(),
+      );
+    }
+
+    const sourceMetadata = engine.sourceMetadata({
+      username,
+      githubData,
+      resumeAnalysis: latestResumeAnalysis,
+      resumeInsights: storedResumeInsights,
     });
-    skillGapCachePromise.catch(() => {});
+    const snapshotContext = {
+      userId,
+      username,
+      careerStack,
+      experienceLevel,
+      ...resumeCacheIdentity,
+      sources: sourceMetadata,
+    };
+    const skillGap = engine.compatibleSkillGap(skillGapCache, snapshotContext);
+    const sourceFingerprint = engine.sourceFingerprint({
+      githubData,
+      resumeInsights: storedResumeInsights,
+      skillGap,
+    });
+    const sourceMemoryKey = buildRecommendationSourceMemoryKey({
+      userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+      username: normalizedGithubUsername,
+      careerStack,
+      experienceLevel,
+      isTemporaryMode,
+      resumeIdentity,
+      sourceFingerprint,
+    });
+
+    if (!forceRefresh) {
+      const memoryHit = await stageTimer.measure('cache', () =>
+        Promise.resolve(readRecommendationMemory(sourceMemoryKey)),
+      );
+      if (memoryHit?.analysisData) {
+        recommendationRuntimeCounters.memoryHits += 1;
+        const fullResult = normalizeRecommendationResponse({
+          ...memoryHit.analysisData,
+          fromCache: true,
+          cacheMetadata: {
+            ...(memoryHit.analysisData.cacheMetadata || {}),
+            loadedFromCache: true,
+            cacheLayer: 'memory',
+            signalHash: memoryHit.signalHash,
+            cachedAt: memoryHit.updatedAt || null,
+          },
+        });
+        settleInflight.resolve(fullResult);
+        return res.json(stageTimer.attach(fullResult));
+      }
+    }
 
     const runPipeline = async () => {
-      const preliminarySignals = await stageTimer.measure('Mongo', () => supportingSignalsPromise);
+      const preliminarySignals = await stageTimer.measure('Mongo', () =>
+        loadDeveloperSignalsSafely({
+          userId,
+          username,
+          allowSignals,
+          resumeInsights: storedResumeInsights,
+          githubInsights: buildGithubInsights(githubData),
+        }),
+      );
       preliminarySignals.developerSignals.resumeSignals = storedResumeInsights;
       // Exclude this module's own previous output from its input fingerprint.
       preliminarySignals.developerSignals.recommendationSignal = {};
       preliminarySignals.developerSignals.recommendationSignals = {};
-      const githubData = await stageTimer.measure('Mongo', () => githubSourcePromise);
-      const sourceMetadata = engine.sourceMetadata({
-        username,
-        githubData,
-        resumeAnalysis: latestResumeAnalysis,
-        resumeInsights: storedResumeInsights,
-      });
-      const snapshotContext = {
-        userId,
-        username,
-        careerStack,
-        experienceLevel,
-        ...resumeCacheIdentity,
-        sources: sourceMetadata,
-      };
-      const skillGapCache = await skillGapCachePromise;
-      const skillGap = engine.compatibleSkillGap(skillGapCache, snapshotContext);
       preliminarySignals.developerSignals.skillGapSignals = skillGap
         ? {
             present: true,
@@ -1160,12 +1239,16 @@ const runRecommendationPipeline = async ({
           isPersistableRecommendationResult(redisCached.analysisData)
         ) {
           recommendationRuntimeCounters.redisHits += 1;
-          writeRecommendationMemory(softMemoryKey, {
-            analysisData: redisCached.analysisData,
-            updatedAt: redisCached.updatedAt || new Date(),
-            signalHash,
-            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
-          });
+          writeRecommendationMemory(
+            softMemoryKey,
+            {
+              analysisData: redisCached.analysisData,
+              updatedAt: redisCached.updatedAt || new Date(),
+              signalHash,
+              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+            },
+            sourceMemoryKey,
+          );
           return normalizeRecommendationResponse({
             ...redisCached.analysisData,
             analysisBasedOn: buildAnalysisBasedOn({
@@ -1196,12 +1279,16 @@ const runRecommendationPipeline = async ({
           isPersistableRecommendationResult(mongoCached?.analysisData)
         ) {
           recommendationRuntimeCounters.mongoHits += 1;
-          writeRecommendationMemory(softMemoryKey, {
-            analysisData: mongoCached.analysisData,
-            updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
-            signalHash,
-            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
-          });
+          writeRecommendationMemory(
+            softMemoryKey,
+            {
+              analysisData: mongoCached.analysisData,
+              updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
+              signalHash,
+              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+            },
+            sourceMemoryKey,
+          );
           setImmediate(() => {
             aiService
               .setSharedCache(
@@ -1387,7 +1474,11 @@ const runRecommendationPipeline = async ({
         }),
       );
       result.cacheMetadata.temporary = !saveResult;
-      result.sourceFingerprint = engine.sourceFingerprint({ githubData, resumeInsights, skillGap });
+      result.sourceFingerprint = engine.sourceFingerprint({
+        githubData,
+        resumeInsights,
+        skillGap,
+      });
       for (const card of result.recommendations) {
         card.navigation.careerSprint.api = {
           method: 'POST',
@@ -1417,12 +1508,16 @@ const runRecommendationPipeline = async ({
         result.mode = 'preview';
         result.isTemporary = true;
         result.savedToProfile = false;
-        writeRecommendationMemory(softMemoryKey, {
-          analysisData: result,
-          updatedAt: new Date(),
-          signalHash,
-          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
-        });
+        writeRecommendationMemory(
+          softMemoryKey,
+          {
+            analysisData: result,
+            updatedAt: new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+          },
+          sourceMemoryKey,
+        );
         setImmediate(() => {
           recommendationRuntimeCounters.persistenceOperations += 1;
           aiService
@@ -1451,7 +1546,11 @@ const runRecommendationPipeline = async ({
         }
         if (saveResult && req.user?._id) {
           await Recommendation.findOneAndUpdate(
-            { userId: req.user._id, snapshotVersion: engine.RULE_VERSION, contextHash: signalHash },
+            {
+              userId: req.user._id,
+              snapshotVersion: engine.RULE_VERSION,
+              contextHash: signalHash,
+            },
             {
               $setOnInsert: {
                 title: result.recommendations[0]?.title || result.analysisSummary,
@@ -1468,12 +1567,16 @@ const runRecommendationPipeline = async ({
             { upsert: true, runValidators: true },
           );
         }
-        writeRecommendationMemory(softMemoryKey, {
-          analysisData: result,
-          updatedAt: new Date(),
-          signalHash,
-          expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
-        });
+        writeRecommendationMemory(
+          softMemoryKey,
+          {
+            analysisData: result,
+            updatedAt: new Date(),
+            signalHash,
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+          },
+          sourceMemoryKey,
+        );
         setImmediate(() => {
           aiService
             .setSharedCache(

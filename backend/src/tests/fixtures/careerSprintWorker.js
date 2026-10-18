@@ -14,6 +14,7 @@ const {
 const owner = process.env.CAREER_SPRINT_TEST_OWNER;
 if (!/^[a-f0-9]{24}$/.test(owner || '')) throw new Error('An isolated fixture owner is required.');
 const prefix = `career-sprint-test:${owner}:`;
+const writtenKeys = new Set();
 let redis;
 let releaseWrite;
 let holdNextWrite = false;
@@ -35,7 +36,9 @@ mock('../../services/aiservice', {
       });
     }
     if (!isRedisCacheEnabled()) throw new Error('Redis unavailable');
-    await redis.set(prefix + namespace + ':' + key, JSON.stringify(value), { EX: ttl });
+    const ownedKey = prefix + namespace + ':' + key;
+    writtenKeys.add(ownedKey);
+    await redis.set(ownedKey, JSON.stringify(value), { EX: ttl });
   }
 });
 mock('../../services/developerSignalService', { getDeveloperSignals: async () => ({}) });
@@ -58,7 +61,8 @@ process.on('message', async (message) => {
       value = await sprint.getCurrentSprint(owner, { forceRefresh: Boolean(message.forceRefresh) });
     else if (message.action === 'complete')
       value = await sprint.toggleTaskCompletion(owner, message.sprintId, message.taskId, true);
-    else if (message.action === 'create') value = await sprint.createSprint({ userId: owner, ...message.payload });
+    else if (message.action === 'create')
+      value = await sprint.createSprint({ userId: owner, ...message.payload });
     else if (message.action === 'hold') {
       holdNextWrite = true;
       value = true;
@@ -74,13 +78,35 @@ process.on('message', async (message) => {
       await mongoose.disconnect();
       value = true;
     } else if (message.action === 'stop') {
-      releaseWrite?.();
-      if (message.cleanup && isRedisCacheEnabled())
-        for await (const key of redis.scanIterator({ MATCH: prefix + '*', COUNT: 100 })) await redis.del(key);
-      await closeRedisCache();
-      await mongoose.disconnect();
-      process.send({ id: message.id, value: true });
-      process.exit(0);
+      let cleanupError;
+      try {
+        releaseWrite?.();
+        if (isRedisCacheEnabled() && writtenKeys.size) {
+          // Fixture teardown is not a measured cache operation. Use one exact-key
+          // transaction so remote latency cannot leave the process or keys behind.
+          const transaction = await redis.multi();
+          let cleanupTimer;
+          try {
+            await Promise.race([
+              transaction.del([...writtenKeys]).exec(),
+              new Promise((_, reject) => {
+                cleanupTimer = setTimeout(() => reject(new Error('Fixture cleanup timed out.')), 3000);
+              })
+            ]);
+          } finally {
+            clearTimeout(cleanupTimer);
+          }
+        }
+      } catch (error) {
+        cleanupError = { statusCode: 500, message: `Fixture cleanup failed: ${error.code || error.message}` };
+      } finally {
+        await closeRedisCache();
+        await mongoose.disconnect();
+        // Flush the final IPC reply before exiting, including cleanup failures.
+        process.send({ id: message.id, ...(cleanupError ? { error: cleanupError } : { value: true }) }, () =>
+          process.exit(cleanupError ? 1 : 0)
+        );
+      }
       return;
     } else throw new Error('Unknown test action');
     process.send({

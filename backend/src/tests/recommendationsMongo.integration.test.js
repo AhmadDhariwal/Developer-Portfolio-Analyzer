@@ -3,7 +3,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
 const path = require('node:path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../.env'),
+  quiet: true,
+});
 const User = require('../models/user');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -51,7 +54,9 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       return aiOutput;
     },
   });
-  mock('../services/notificationService', { createNotification: async () => {} });
+  mock('../services/notificationService', {
+    createNotification: async () => {},
+  });
   mock('../services/aiVersionService', { createVersion: async () => {} });
   // Supporting sources are deterministic fixtures; identity, all source documents,
   // recommendation persistence, cache queries and Sprint mutation use real MongoDB.
@@ -85,7 +90,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     return out;
   };
   t.after(async () => {
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 50));
     await Promise.all(
       [
         User,
@@ -104,9 +109,14 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       ),
     );
     await GitHubAnalysisCache.deleteMany({ normalizedUsername: username });
-    await require('../models/sprintSchedule').deleteMany({ _id: { $in: [owner, foreign] } });
-    await require('../models/sprintPreference').deleteMany({ _id: { $in: [owner, foreign] } });
+    await require('../models/sprintSchedule').deleteMany({
+      _id: { $in: [owner, foreign] },
+    });
+    await require('../models/sprintPreference').deleteMany({
+      _id: { $in: [owner, foreign] },
+    });
     await mongoose.disconnect();
+    await new Promise((resolve) => setTimeout(resolve, 50));
   });
   await Recommendation.createIndexes();
   const { migrate } = require('../scripts/migrateRecommendationSnapshotIndex');
@@ -148,12 +158,19 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       fileName: `${name}.pdf`,
       fileSize: 1,
       analyzedAt,
-      scoring: { score: index === 0 ? null : 0, ruleVersion: 'resume-overall-score-v1' },
+      scoring: {
+        score: index === 0 ? null : 0,
+        ruleVersion: 'resume-overall-score-v1',
+      },
       resumeSignals: {
         analysisVersion: 'resume-v3',
         skills: [index ? 'Docker' : 'SQL'],
         warnings: [
-          { code: 'missing_metrics', severity: 'high', message: 'Few quantified achievements.' },
+          {
+            code: 'missing_metrics',
+            severity: 'high',
+            message: 'Few quantified achievements.',
+          },
         ],
       },
     })),
@@ -178,19 +195,35 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     analysisVersion: 'github-v2',
     expiresAt: new Date(Date.now() + 3600000),
   });
-  const resumeIdentity = signals.buildResumeCacheIdentity({ resumeAnalysis: a.toObject() });
+  const resumeIdentity = signals.buildResumeCacheIdentity({
+    resumeAnalysis: a.toObject(),
+  });
   const skillGap = {
     ruleVersion: engine.SKILL_RULE,
     coverage: 0,
     calculatedAt: analyzedAt.toISOString(),
     requiredSkills: [
-      { name: 'SQL', status: 'CLAIMED_ONLY', requirement: 'REQUIRED', evidenceConfidence: 'LOW' },
+      {
+        name: 'SQL',
+        status: 'CLAIMED_ONLY',
+        requirement: 'REQUIRED',
+        evidenceConfidence: 'LOW',
+      },
     ],
     skills: [
-      { name: 'SQL', status: 'CLAIMED_ONLY', requirement: 'REQUIRED', evidenceConfidence: 'LOW' },
+      {
+        name: 'SQL',
+        status: 'CLAIMED_ONLY',
+        requirement: 'REQUIRED',
+        evidenceConfidence: 'LOW',
+      },
     ],
     sourceReferences: Object.values(
-      engine.sourceMetadata({ username, githubData: github, resumeAnalysis: a.toObject() }),
+      engine.sourceMetadata({
+        username,
+        githubData: github,
+        resumeAnalysis: a.toObject(),
+      }),
     ),
   };
   await AnalysisCache.create({
@@ -217,7 +250,10 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     assert.equal(out.body.technologies[0].evidenceStatus, 'CLAIMED_ONLY');
     assert.equal(aiCalls, 0, 'passive cold reads must not call Recommendations AI');
     assert.equal(
-      await Recommendation.countDocuments({ userId: owner, snapshotVersion: engine.RULE_VERSION }),
+      await Recommendation.countDocuments({
+        userId: owner,
+        snapshotVersion: engine.RULE_VERSION,
+      }),
       1,
     );
     assert.ok(await Recommendation.findById(legacy._id));
@@ -301,7 +337,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         resumeText: 'PRIVATE RAW TEXT',
         recommendationScores: { readinessScore: null },
         projects: [
-          { title: 'Review fixture', description: 'Inspect evidence', estimatedImpact: null },
+          {
+            title: 'Review fixture',
+            description: 'Inspect evidence',
+            estimatedImpact: null,
+          },
         ],
       },
     });
@@ -359,7 +399,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       const provider = require('../services/githubservice');
       const original = provider.analyzeGitHubProfile;
       provider.analyzeGitHubProfile = async () =>
-        (await GitHubAnalysisCache.findOne({ normalizedUsername: username }).lean()).result;
+        (
+          await GitHubAnalysisCache.findOne({
+            normalizedUsername: username,
+          }).lean()
+        ).result;
       try {
         const before = aiCalls;
         const outputs = await Promise.all(
@@ -376,7 +420,9 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
             readinessScore: 99,
           },
         };
-        const attacked = await call('getRecommendations', { forceRefresh: true });
+        const attacked = await call('getRecommendations', {
+          forceRefresh: true,
+        });
         assert.equal(attacked.body.aiUsed, false);
         assert.equal(JSON.stringify(attacked.body).includes('Injected'), false);
         let release;
@@ -412,7 +458,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       }
       assert.equal((await call('generateRecommendations', {}, null)).status, 401);
       assert.equal(
-        (await call('generateRecommendations', { githubUsername: 'someone-else' })).status,
+        (
+          await call('generateRecommendations', {
+            githubUsername: 'someone-else',
+          })
+        ).status,
         400,
       );
       const other = await call('getRecommendations', {}, foreign);
@@ -452,11 +502,19 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       409,
     );
     assert.equal(
-      (await call('handoffToCareerSprint', { signalHash }, foreign, { id: card.id })).status,
+      (
+        await call('handoffToCareerSprint', { signalHash }, foreign, {
+          id: card.id,
+        })
+      ).status,
       404,
     );
     assert.equal(
-      (await call('handoffToCareerSprint', { signalHash }, null, { id: card.id })).status,
+      (
+        await call('handoffToCareerSprint', { signalHash }, null, {
+          id: card.id,
+        })
+      ).status,
       401,
     );
   });
@@ -488,7 +546,10 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         ).status,
         401,
       );
-      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
       const history = await fetch(`${base}/history`, { headers });
       assert.equal(history.status, 200);
       assert.ok((await history.json()).snapshots.some((row) => row.legacy));
@@ -512,7 +573,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       assert.equal(JSON.stringify(result).includes('Preview-only private text'), false);
       assert.equal(await Recommendation.countDocuments({ userId: owner }), before);
     } finally {
-      await new Promise((resolve) => server.close(resolve));
+      if (server) {
+        server.closeAllConnections?.();
+        await new Promise((resolve) => server.close(resolve));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
   });
 });

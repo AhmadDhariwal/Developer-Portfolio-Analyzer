@@ -1,0 +1,393 @@
+{
+  "live": true,
+  "verifiedAt": "2026-10-17T19:31:23.220Z",
+  "providers": [
+    {
+      "provider": "groq",
+      "status": "FAIL",
+      "reason": "404",
+      "elapsedMs": 1320
+    },
+    {
+      "provider": "gemini",
+      "status": "PASS",
+      "model": "gemini-2.5-flash",
+      "elapsedMs": 3323
+    },
+    {
+      "provider": "openai",
+      "status": "NOT_CONFIGURED"
+    },
+    {
+      "provider": "anthropic",
+      "status": "NOT_CONFIGURED"
+    },
+    {
+      "provider": "openrouter",
+      "status": "NOT_CONFIGURED"
+    }
+  ],
+  "plans": [
+    {
+      "stack": "Frontend",
+      "technology": "React",
+      "level": "Intern",
+      "tasks": [
+        {
+          "title": "Learn React hooks (useState, useEffect)",
+          "description": "Study the two most essential React hooks. Build 3 small components using useState for local state and useEffect for data fetching. Understand the dependency array and cleanup functions to avoid memory leaks. Goal: Write functional components without class syntax. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "learning",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-10-17T23:59:59.999Z"
+        },
+        {
+          "title": "Fetch and display data from a REST API",
+          "description": "Build a data-fetching layer using useEffect and useState. Handle loading, error, and success states with proper UI feedback. Implement pagination or infinite scroll for a list of items. Goal: Connect a React app to a real backend API. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-10-17T23:59:59.999Z"
+        },
+        {
+          "title": "Manage state with Context API or Redux",
+          "description": "Implement a global state solution using React Context and useReducer. Create an auth context that persists login state across page refreshes using localStorage. Goal: Understand when to use local vs global state. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-18T00:00:00.000Z",
+          "endDate": "2026-10-18T23:59:59.999Z"
+        },
+        {
+          "title": "Write React component tests with Jest",
+          "description": "Add unit tests for 5 components using React Testing Library. Test user interactions, async state updates, and conditional rendering. Mock API calls and aim for 80%+ coverage. Goal: Build confidence that your UI works as expected. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "low",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-19T00:00:00.000Z",
+          "endDate": "2026-10-19T23:59:59.999Z"
+        },
+        {
+          "title": "Build a React UI component library",
+          "description": "Create reusable components: Button (with variants), Input (with validation), Modal, and Card. Use TypeScript props interfaces and document each component with usage examples. Goal: Have a personal component kit you can reuse across projects. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-20T00:00:00.000Z",
+          "endDate": "2026-10-20T23:59:59.999Z"
+        },
+        {
+          "title": "Implement React Router navigation",
+          "description": "Add multi-page routing using React Router v6. Implement nested routes, dynamic route params, and a 404 page. Use useNavigate and useParams hooks. Goal: Build a multi-page SPA with clean URL structure. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-21T00:00:00.000Z",
+          "endDate": "2026-10-21T23:59:59.999Z"
+        },
+        {
+          "title": "Build a full React CRUD application",
+          "description": "Create a complete task manager or notes app with Create, Read, Update, Delete operations. Use a backend API or localStorage. Include form validation, optimistic UI updates, and error boundaries. Goal: Demonstrate end-to-end React proficiency. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-22T00:00:00.000Z",
+          "endDate": "2026-10-22T23:59:59.999Z"
+        },
+        {
+          "title": "Deploy React app to Vercel/Netlify",
+          "description": "Connect your GitHub repo to Vercel. Configure environment variables, set up preview deployments for PRs, and add a custom domain. Verify the production build works and Lighthouse scores are above 90. Goal: Ship a production-ready React app. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-23T00:00:00.000Z",
+          "endDate": "2026-10-23T23:59:59.999Z"
+        }
+      ],
+      "planMeta": {
+        "summary": "Generated an AI-enhanced Intern sprint plan focused on React.",
+        "confidenceScore": 80,
+        "consistencyScore": 78,
+        "signalsUsed": ["React"],
+        "generationMode": "llm",
+        "providerLabel": "AI-Assisted Plan",
+        "limitations": [
+          "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.",
+          "No compatible current Recommendation actions are available; general career suggestions are proposed work."
+        ],
+        "context": {
+          "careerStack": "Frontend",
+          "experienceLevel": "Intern",
+          "fingerprint": "4c8428454e17baf1772d684a9cb63d9e85768d8c8286c2d53511eb8f2b11da1f",
+          "timeZone": "UTC",
+          "proposedWorkOnly": true
+        }
+      },
+      "previewWrites": false
+    },
+    {
+      "stack": "Backend",
+      "technology": "Docker",
+      "level": "0-1 years",
+      "tasks": [
+        {
+          "title": "Learn Docker basics",
+          "description": "Understand the difference between images and containers. Learn essential commands: build, run, exec, logs, ps, stop, rm. Understand layers, caching, and how Docker uses the host kernel for isolation. Goal: Run any application in a container confidently. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "learning",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-10-17T23:59:59.999Z"
+        },
+        {
+          "title": "Write a Dockerfile for your app",
+          "description": "Containerize an existing app using multi-stage builds to minimize image size. Leverage layer caching for faster builds, use a non-root user for security, and add a .dockerignore file. Goal: Produce a lean, secure production Docker image. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-18T00:00:00.000Z",
+          "endDate": "2026-10-18T23:59:59.999Z"
+        },
+        {
+          "title": "Push image to Docker Hub",
+          "description": "Tag and push images to Docker Hub. Set up automated builds triggered by GitHub pushes using GitHub Actions. Use semantic versioning for image tags. Goal: Publish versioned Docker images automatically on every release. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-19T00:00:00.000Z",
+          "endDate": "2026-10-19T23:59:59.999Z"
+        },
+        {
+          "title": "Learn Docker networking",
+          "description": "Understand bridge, host, and overlay networks. Create custom networks to isolate services. Configure container-to-container communication using service names. Goal: Connect microservices securely without exposing unnecessary ports. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "low",
+          "category": "learning",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-20T00:00:00.000Z",
+          "endDate": "2026-10-20T23:59:59.999Z"
+        },
+        {
+          "title": "Set up Docker Compose",
+          "description": "Create a docker-compose.yml orchestrating your app, database (PostgreSQL/MongoDB), and Redis. Configure volumes for data persistence, health checks, and service dependencies. Goal: Spin up your entire dev environment with one command. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-21T00:00:00.000Z",
+          "endDate": "2026-10-21T23:59:59.999Z"
+        },
+        {
+          "title": "Implement Docker security best practices",
+          "description": "Scan images for vulnerabilities with Trivy or Snyk. Use read-only filesystems, drop Linux capabilities, and implement resource limits (CPU/memory). Goal: Harden your containers against common security threats. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "low",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-22T00:00:00.000Z",
+          "endDate": "2026-10-22T23:59:59.999Z"
+        },
+        {
+          "title": "Deploy Docker containers to production",
+          "description": "Deploy a multi-container app to a VPS using Docker Compose. Set up Nginx as a reverse proxy, configure SSL with Let's Encrypt, and implement zero-downtime deployments. Goal: Run a production-grade containerized app on a real server. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-23T00:00:00.000Z",
+          "endDate": "2026-10-23T23:59:59.999Z"
+        }
+      ],
+      "planMeta": {
+        "summary": "Generated a balanced 0-1 years sprint plan focused on Docker.",
+        "confidenceScore": 80,
+        "consistencyScore": 78,
+        "signalsUsed": ["Docker"],
+        "generationMode": "deterministic",
+        "providerLabel": "Deterministic Plan",
+        "limitations": [
+          "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.",
+          "No compatible current Recommendation actions are available; general career suggestions are proposed work."
+        ],
+        "context": {
+          "careerStack": "Backend",
+          "experienceLevel": "0-1 years",
+          "fingerprint": "097b550a1d745cee142689d3991f88ee0bce91902e862954c3867b7cebe6f437",
+          "timeZone": "UTC",
+          "proposedWorkOnly": true
+        }
+      },
+      "previewWrites": false
+    },
+    {
+      "stack": "Frontend",
+      "technology": "Angular",
+      "level": "5+ years",
+      "tasks": [
+        {
+          "title": "Learn Angular standalone components",
+          "description": "Build 3 standalone components without NgModule. Understand the imports array, component lifecycle hooks (ngOnInit, ngOnDestroy), and OnPush change detection strategy. Goal: Write modern Angular without legacy module boilerplate. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "learning",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-10-17T23:59:59.999Z"
+        },
+        {
+          "title": "Implement Angular services with HttpClient",
+          "description": "Create a data service that fetches from a REST API using HttpClient. Handle errors with catchError, add loading states, and use RxJS operators like map and switchMap. Goal: Build a reusable data layer for your Angular app. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-17T00:00:00.000Z",
+          "endDate": "2026-10-17T23:59:59.999Z"
+        },
+        {
+          "title": "Build Angular reactive forms with validation",
+          "description": "Create a registration form using FormBuilder and Validators. Add custom validators, cross-field validation (password match), and display error messages. Goal: Handle complex form logic cleanly with reactive patterns. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-18T00:00:00.000Z",
+          "endDate": "2026-10-18T23:59:59.999Z"
+        },
+        {
+          "title": "Set up Angular routing with guards",
+          "description": "Implement feature-based routing with lazy-loaded modules. Add route guards (CanActivate) for auth protection and route resolvers for data pre-loading. Goal: Build a performant multi-page Angular app with protected routes. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-19T00:00:00.000Z",
+          "endDate": "2026-10-19T23:59:59.999Z"
+        },
+        {
+          "title": "Write Angular unit tests with Jasmine",
+          "description": "Test 5 components and 3 services using TestBed. Mock HTTP calls with HttpClientTestingModule, test async operations with fakeAsync/tick, and verify template bindings. Goal: Ensure your Angular code is reliable and regression-free. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "low",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-20T00:00:00.000Z",
+          "endDate": "2026-10-20T23:59:59.999Z"
+        },
+        {
+          "title": "Architect a scalable Frontend system",
+          "description": "Design a production-grade architecture for a complex Frontend system. Document the architecture with diagrams (C4 model), justify technology choices, and identify potential failure points. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-21T00:00:00.000Z",
+          "endDate": "2026-10-21T23:59:59.999Z"
+        },
+        {
+          "title": "Implement CI/CD and DevOps for Frontend",
+          "description": "Set up a complete DevOps pipeline: automated testing, Docker containerization, staging environment, and production deployment with rollback capability. Add monitoring and alerting. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 5,
+          "priority": "high",
+          "category": "project",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-22T00:00:00.000Z",
+          "endDate": "2026-10-22T23:59:59.999Z"
+        },
+        {
+          "title": "Mentor others in Frontend",
+          "description": "Write a comprehensive tutorial or record a video series on an advanced Frontend topic. Review code from junior developers and provide constructive feedback. Host a knowledge-sharing session. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+          "points": 3,
+          "priority": "medium",
+          "category": "practice",
+          "taskType": "ai",
+          "isCompleted": false,
+          "startDate": "2026-10-23T00:00:00.000Z",
+          "endDate": "2026-10-23T23:59:59.999Z"
+        }
+      ],
+      "planMeta": {
+        "summary": "Generated an AI-enhanced 5+ years sprint plan focused on Angular.",
+        "confidenceScore": 80,
+        "consistencyScore": 78,
+        "signalsUsed": ["Angular"],
+        "generationMode": "llm",
+        "providerLabel": "AI-Assisted Plan",
+        "limitations": [
+          "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.",
+          "No compatible current Recommendation actions are available; general career suggestions are proposed work."
+        ],
+        "context": {
+          "careerStack": "Frontend",
+          "experienceLevel": "5+ years",
+          "fingerprint": "42830ab69f563d2b345121921746bc7352126a938e5403ccead4358a1ad46191",
+          "timeZone": "UTC",
+          "proposedWorkOnly": true
+        }
+      },
+      "previewWrites": false
+    }
+  ],
+  "responses": [
+    {
+      "providerOk": true,
+      "fields": ["taskIds"],
+      "expected": 8,
+      "received": 8,
+      "unique": 8,
+      "unknownIds": 0
+    },
+    {
+      "providerOk": true,
+      "fields": ["taskIds"],
+      "expected": 7,
+      "received": 7,
+      "unique": 7,
+      "unknownIds": 1
+    },
+    {
+      "providerOk": true,
+      "fields": ["taskIds"],
+      "expected": 8,
+      "received": 8,
+      "unique": 8,
+      "unknownIds": 0
+    }
+  ],
+  "status": "BLOCKED"
+}

@@ -4,12 +4,18 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const sessionPath = path.resolve(
-  __dirname,
-  '../../backend/verification/career-sprint/final-e2e/browser-session.json',
+  process.env.SPRINT_E2E_SESSION ||
+    path.resolve(
+      __dirname,
+      '../../backend/verification/career-sprint/final-e2e/browser-session.json',
+    ),
 );
 const session = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
 assert.match(session.origin, /^http:\/\/127\.0\.0\.1:\d+$/);
-const output = path.resolve(__dirname, '../verification/career-sprint/final-e2e');
+const output = path.resolve(
+  process.env.SPRINT_LIVE_OUTPUT ||
+    path.resolve(__dirname, '../verification/career-sprint/final-e2e'),
+);
 fs.mkdirSync(output, { recursive: true });
 const report = { checks: [], screenshots: [], failures: [] };
 const call = async (route, method = 'GET', body) => {
@@ -158,6 +164,75 @@ const main = async () => {
       await page.screenshot({ path: path.join(output, 'live-initial-state.png') });
       throw error;
     }
+    await check(
+      'real browser AI preview, save, context acknowledgement and selective/bulk imports',
+      async () => {
+        const before = (await call('/career-sprints/current')).body;
+        await app.getByRole('button', { name: /Explore Sprint studio/ }).click();
+        const studio = app.locator('app-sprint-planner');
+        await studio.getByLabel('Focus technology', { exact: true }).fill('Docker');
+        const response = page.waitForResponse(
+          (r) =>
+            r.url().endsWith('/career-sprints/generate-ai-plan') && r.request().method() === 'POST',
+        );
+        await studio.getByRole('button', { name: 'Try AI planning', exact: true }).click();
+        const generated = await response;
+        assert.equal(generated.status(), 200);
+        const body = await generated.json();
+        assert.ok(body.tasks.length >= 6);
+        assert.equal(body.planMeta.generationMode, 'deterministic');
+        const preview = studio.locator('.preview');
+        await preview.waitFor();
+        assert.equal(await preview.locator('.preview-tasks > li').count(), body.tasks.length);
+        const afterPreview = (await call('/career-sprints/current')).body;
+        assert.deepEqual(afterPreview.tasks, before.tasks);
+        assert.equal(afterPreview.xpPoints, before.xpPoints);
+        const name = `Browser AI draft ${Date.now()}`;
+        await studio.getByLabel('Draft name', { exact: true }).fill(name);
+        await studio.getByRole('button', { name: 'Save as draft', exact: true }).click();
+        await studio.getByRole('button', { name: 'Select all tasks', exact: true }).waitFor();
+        const acknowledge = studio.getByRole('checkbox', {
+          name: 'I reviewed this draft for my current career context.',
+          exact: true,
+        });
+        if (await acknowledge.isVisible()) await acknowledge.check();
+        await preview
+          .getByRole('checkbox', { name: /^Select / })
+          .first()
+          .check();
+        const selective = page.waitForResponse(
+          (r) => /ai-plans\/[^/]+\/tasks$/.test(r.url()) && r.request().method() === 'POST',
+        );
+        await studio.getByRole('button', { name: 'Add selected to Sprint', exact: true }).click();
+        assert.equal((await selective).status(), 200);
+        await studio.getByRole('button', { name: 'Select all tasks', exact: true }).click();
+        const bulk = page.waitForResponse(
+          (r) => /ai-plans\/[^/]+\/tasks$/.test(r.url()) && r.request().method() === 'POST',
+        );
+        await studio.getByRole('button', { name: 'Add selected to Sprint', exact: true }).click();
+        assert.equal((await bulk).status(), 200);
+        const after = (await call('/career-sprints/current')).body;
+        assert.equal(after.tasks.length, before.tasks.length + body.tasks.length);
+        assert.equal(after.xpPoints, before.xpPoints);
+        assert.deepEqual(
+          after.tasks.slice(0, before.tasks.length).map((t) => t.isCompleted),
+          before.tasks.map((t) => t.isCompleted),
+        );
+        await page.reload();
+        await app.getByRole('button', { name: /Explore Sprint studio/ }).click();
+        await app
+          .locator('app-sprint-planner')
+          .getByRole('button', { name: new RegExp(name) })
+          .waitFor();
+        await app.getByRole('button', { name: /^Tasks / }).click();
+        return {
+          generationMode: body.planMeta.generationMode,
+          tasks: body.tasks.length,
+          persistedDraft: true,
+          authoritativeXpUnchanged: true,
+        };
+      },
+    );
     await check('real browser task CRUD, completion, reversal and reload persistence', async () => {
       await app.getByRole('button', { name: '+ Add task', exact: true }).first().click();
       const editor = app.getByRole('form', { name: 'Task editor' });
