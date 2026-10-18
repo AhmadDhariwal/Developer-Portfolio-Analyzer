@@ -1,0 +1,53 @@
+<article class="question-card" [class.expanded]="expanded">
+  <div class="metadata">
+    <span class="rank" *ngIf="showRank && question.rank" title="Backend catalog rank"
+      >#{{ question.rank }}</span
+    >
+    <span class="difficulty" [attr.data-level]="question.difficulty">{{
+      question.difficulty || 'Not specified'
+    }}</span>
+    <span *ngIf="topic">{{ topic }}</span>
+    <span class="category" *ngIf="category">{{ category }}</span>
+    <span class="source" [class.verified]="verified">{{ source }}</span>
+  </div>
+  <h3>
+    <button type="button" (click)="expanded = !expanded" [attr.aria-expanded]="expanded">
+      {{ question.question
+      }}<span class="chevron" aria-hidden="true">{{ expanded ? '−' : '+' }}</span>
+    </button>
+  </h3>
+  <div class="card-footer">
+    <div class="tags">
+      <span *ngFor="let tag of (question.tags || []).slice(0, 4)">#{{ tag }}</span>
+    </div>
+    <button
+      type="button"
+      class="answer-toggle"
+      (click)="expanded = !expanded"
+      [attr.aria-expanded]="expanded"
+    >
+      {{ expanded ? 'Hide answer' : 'Reveal answer' }}
+    </button>
+  </div>
+  <div *ngIf="expanded" class="answer">
+    <p class="trust-note" *ngIf="!verified && question.sourceType !== 'no_verified_answer'">
+      This answer has not been independently verified. Check technical claims against official
+      documentation.
+    </p>
+    <section *ngFor="let section of sections" [class.tip]="section.title === 'Interview tip'">
+      <h4>{{ section.title }}</h4>
+      <ul *ngIf="section.items">
+        <li *ngFor="let point of section.items">{{ point }}</li>
+      </ul>
+      <pre *ngIf="section.code"><code>{{ section.text }}</code></pre>
+      <p *ngIf="section.text && !section.code">{{ section.text }}</p>
+    </section>
+    <div class="answer-actions">
+      <a *ngIf="sourceUrl" [href]="sourceUrl" target="_blank" rel="noopener noreferrer"
+        >View source ↗</a
+      >
+      <button type="button" (click)="copyAnswer()">Copy answer</button
+      ><span role="status">{{ copyStatus }}</span>
+    </div>
+  </div>
+</article>
