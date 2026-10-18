@@ -1,0 +1,122 @@
+[
+  {
+    "path": "frontend/src/app/pages/career-sprint/career-sprint.component.ts",
+    "sha256": "83C01EEA2B19677097B6CFAACCA02F66837E4DD721B8F6ED104BC8788DC668B7",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/career-sprint.component.html",
+    "sha256": "43F62B3F351ED57E6CC6F2B934578C11D7943B760EDE8BB31AEC30EB2AE3EC07",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/career-sprint.component.spec.ts",
+    "sha256": "D87EF0697358974A279E3521565525266F9A8F4CC4A9BA0A09A3336344F417AE",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/components/sprint-planner.component.ts",
+    "sha256": "8B3BA89977D7BE0BD8C2D30BE525A2D103DE6E0DB435EEC8A598690A77A6962B",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/components/sprint-planner.component.html",
+    "sha256": "73A5BBC4EBC6444E2C37C4D3110FB95E0807F1E219E4C76C8493BC75E5167B66",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/utils/sprint-presentation.ts",
+    "sha256": "AD00F4ED06F3F4FB0C5DB68598B3659D6C3A3AFB2FC0383BA902DBE7BD701E8A",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/src/app/pages/career-sprint/utils/sprint-presentation.spec.ts",
+    "sha256": "0FF374CE8BC02119EE1C7A4FAE8CC5472FD96ABB83E693804EF61922502E2CE8",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/scripts/verify-career-sprint-ui.cjs",
+    "sha256": "827948E0C860020B3DA00A67FA3CEF2B502ED62A26A08B68B6EBE8DDF0C3D78F",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/REPORT.md",
+    "sha256": "19642B3D1B89DE893F5B7E195FEDF5F87603E98355699098ADD8AEAA2D644FF9",
+    "type": "changed source or report"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/browser-results.json",
+    "sha256": "D1DB3FDB501A27D427A1491C638FD6EBBB246C906B9B1DD0AF5D00B74C307868",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/dark-1440-dashboard.png",
+    "sha256": "914AA26178485BF7D740D6DB28704479428A6F2EDABE7B3D1771661D07144994",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/dark-375-dashboard.png",
+    "sha256": "91F03890C64CA48EDD399C66C900612077E923399E6B99FB4ECB445927787496",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/dark-desktop-history.png",
+    "sha256": "20B1AF4BAE1DEA97E5C21A580EC258D338E0380ADCD3B73F3F6A152242F54106",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/dark-mobile-tasks.png",
+    "sha256": "7617CC16C5A2FEBD830F9DC261B1A936CE006B4AB675DD4A6F3C1EFB765EF9E3",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-1440-dashboard.png",
+    "sha256": "D5A142CE9463B8B9AE952746908BD092A4AA1E583DBFEAD0B7F95555431C9F09",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-375-dashboard.png",
+    "sha256": "2305D916B4DDAF068EFCECC258A3AB21F6667D84B49C835DFD9AA8839A8689AB",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-desktop-planner.png",
+    "sha256": "37908781FEC997ADB14E78A3EBA030EF80487FA4E211AAD3EF348F69E6D28A99",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-loading.png",
+    "sha256": "1CE1357E8C6EC9AE155E8D618A975C011574EA632E0F1078C40700673A18ED94",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-mobile-legacy.png",
+    "sha256": "09D76290F43FEC683A5D113FFB0ED7C4B3FFBA7712FE522997E6337232DFD982",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/light-mobile-tasks.png",
+    "sha256": "CF752F64F021A635BFD2C64FE9D364D8F88B699890F6D9AC8BBE7D524C6DAC56",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/sprint-available-dates.png",
+    "sha256": "9454349ADECD842FDB9D47469EAB2516062E71852AFABE6FBD4E3E8844BF164A",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/sprint-overlap-guidance.png",
+    "sha256": "6299621DE918D3704CDF124B9E2A1F00B1B8887143A01A37E84DEA4F98984463",
+    "type": "retained verification evidence"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/validation.json",
+    "sha256": "A6E387A358073FB96EEC702D5055A45C25A65ADDAADC91B0080E54D4007F9EDB",
+    "type": "retained validation summary"
+  },
+  {
+    "path": "frontend/verification/career-sprint/final-e2e/overlap-fix/legacy-to-writable-planner.png",
+    "sha256": "7758D011F47924951C7CDEF19141F055733A237E063720B49604EDA70D886F02",
+    "type": "retained verification evidence"
+  }
+]

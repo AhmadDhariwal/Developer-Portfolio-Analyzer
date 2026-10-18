@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-15",
+  "status": "BLOCKED",
+  "readyForCareerSprintFrontend": false,
+  "focused": {
+    "command": "node --test --test-concurrency=1 src/tests/careerSprint*.test.js",
+    "passed": 46,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 37208.2883,
+    "log": "focused.txt"
+  },
+  "full": {
+    "command": "node --test --test-concurrency=1 src/tests/**/*.test.js",
+    "passed": 372,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 165754.1856,
+    "log": "full-backend.txt"
+  },
+  "integrations": {
+    "mongoJwt": "passed in focused and full; isolated generated owners cleaned",
+    "redis": "actual Redis available in both real worker processes; passed",
+    "migration": "fixture-only authorized application passed; no production apply"
+  },
+  "preflight": {
+    "recordCount": 15,
+    "safe": false,
+    "missingOriginalCalendar": 15,
+    "historicalConflicts": [
+      {
+        "owner": "69e9efd85a0084c767771781",
+        "ids": ["6a4e4ff719b693d01b6dc086", "6a5482ee19b693d01b6dc300"],
+        "windows": [
+          {
+            "id": "6a4e4ff719b693d01b6dc086",
+            "start": "2026-07-05T19:00:00.000Z",
+            "end": "2026-07-12T18:59:59.999Z"
+          },
+          {
+            "id": "6a5482ee19b693d01b6dc300",
+            "start": "2026-07-10T19:00:00.000Z",
+            "end": "2026-07-22T18:59:59.999Z"
+          }
+        ],
+        "reason": "historical-window-overlap"
+      }
+    ],
+    "pendingOrOrphanedReservations": [],
+    "utcCandidateConflicts": 6,
+    "utcIsConfirmedOrigin": false
+  },
+  "checks": {
+    "javascriptSyntax": "passed for 34 current-task JavaScript files",
+    "prettier": "explicit write then check passed; two preserved per-file backend style groups",
+    "gitUnstagedWhitespace": "passed",
+    "gitStagedWhitespace": "passed",
+    "frontend": "not run: backend-only task, no frontend changes"
+  },
+  "preliminaryFailure": {
+    "fullPassed": 371,
+    "fullFailed": 1,
+    "test": "unchanged Recommendations memory performance",
+    "observedP95Ms": 58.2,
+    "thresholdMs": 50,
+    "finalRerun": "passed without changes to threshold or locked module"
+  },
+  "productionMigrationApplied": false
+}

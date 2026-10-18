@@ -5,6 +5,7 @@ describe('ThemeService', () => {
   let service: ThemeService;
   let storageMap: Map<string, string>;
   let htmlElement: HTMLElement;
+  const originalMatchMedia = window.matchMedia;
 
   beforeEach(() => {
     storageMap = new Map<string, string>();
@@ -12,7 +13,7 @@ describe('ThemeService', () => {
       getItem: (key: string) => storageMap.get(key) ?? null,
       setItem: (key: string, value: string) => storageMap.set(key, value),
       removeItem: (key: string) => storageMap.delete(key),
-      clear: () => storageMap.clear()
+      clear: () => storageMap.clear(),
     });
 
     htmlElement = document.documentElement;
@@ -33,6 +34,8 @@ describe('ThemeService', () => {
   });
 
   afterEach(() => {
+    window.matchMedia = originalMatchMedia;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 

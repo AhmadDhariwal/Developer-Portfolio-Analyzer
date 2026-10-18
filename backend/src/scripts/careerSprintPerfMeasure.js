@@ -53,29 +53,41 @@ const sampleSprint = (userId) => ({
   goalStack: 'Frontend',
   goalTechnology: 'React',
   goalExperienceLevel: 'Intern',
-  tasks: [{
-    _id: '507f1f77bcf86cd799439012',
-    title: 'Learn React hooks',
-    description: 'Practice hooks',
-    points: 3,
-    priority: 'high',
-    category: 'learning',
-    taskType: 'manual',
-    isCompleted: false,
-    completedAt: null,
-    startDate: new Date('2026-08-03T00:00:00.000Z'),
-    endDate: new Date('2026-08-05T23:59:59.999Z')
-  }],
+  tasks: [
+    {
+      _id: '507f1f77bcf86cd799439012',
+      title: 'Learn React hooks',
+      description: 'Practice hooks',
+      points: 3,
+      priority: 'high',
+      category: 'learning',
+      taskType: 'manual',
+      isCompleted: false,
+      completedAt: null,
+      startDate: new Date('2026-08-03T00:00:00.000Z'),
+      endDate: new Date('2026-08-05T23:59:59.999Z')
+    }
+  ],
   aiPlans: []
 });
 
 const createQuery = (loader) => {
   const api = {
-    select() { return api; },
-    sort() { return api; },
-    limit() { return api; },
-    lean() { return api; },
-    then(resolve, reject) { return loader().then(resolve, reject); }
+    select() {
+      return api;
+    },
+    sort() {
+      return api;
+    },
+    limit() {
+      return api;
+    },
+    lean() {
+      return api;
+    },
+    then(resolve, reject) {
+      return loader().then(resolve, reject);
+    }
   };
   return api;
 };
@@ -132,11 +144,12 @@ const createHarness = () => {
   });
 
   mock('models/careerSprint.js', {
-    findOne: (query) => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return sampleSprint(String(query.userId || 'u1'));
-    }),
+    findOne: (query) =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return sampleSprint(String(query.userId || 'u1'));
+      }),
     findOneAndUpdate: async () => {
       counters.mongoWrites += 1;
       await delay(MONGO_DELAY_MS);
@@ -146,47 +159,60 @@ const createHarness = () => {
       counters.mongoWrites += 1;
       return { acknowledged: true };
     },
-    find: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return [sampleSprint('u1')];
-    }),
+    find: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return [sampleSprint('u1')];
+      }),
     create: async () => sampleSprint('u1')
   });
 
   mock('models/user.js', {
-    findById: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { careerStack: 'Frontend', experienceLevel: 'Intern' };
-    })
+    findById: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return { careerStack: 'Frontend', experienceLevel: 'Intern' };
+      })
   });
   mock('models/recommendation.js', {
-    find: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return [{ techStack: ['React'], isNewTech: ['TypeScript'] }];
-    })
+    find: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return [{ techStack: ['React'], isNewTech: ['TypeScript'] }];
+      })
   });
   mock('models/analysisCache.js', {
-    findOne: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { analysisData: { skillGap: { missingSkills: ['Testing'] } } };
-    })
+    findOne: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return { analysisData: { skillGap: { missingSkills: ['Testing'] } } };
+      })
   });
   mock('models/analysis.js', {
-    findOne: () => createQuery(async () => {
-      counters.mongoReads += 1;
-      await delay(MONGO_DELAY_MS);
-      return { githubStats: { repos: 2 }, contributionActivity: [{ count: 20 }], githubScore: 70, readinessScore: 60 };
-    })
+    findOne: () =>
+      createQuery(async () => {
+        counters.mongoReads += 1;
+        await delay(MONGO_DELAY_MS);
+        return {
+          githubStats: { repos: 2 },
+          contributionActivity: [{ count: 20 }],
+          githubScore: 70,
+          readinessScore: 60
+        };
+      })
   });
   mock('models/scenarioSimulation.js', { findOne: () => createQuery(async () => null) });
 
   Object.keys(require.cache).forEach((entry) => {
-    if (entry.includes(`${path.sep}services${path.sep}careerSprintService`)
-      || entry.includes(`${path.sep}services${path.sep}aiTaskService`)) {
+    if (
+      entry.includes(`${path.sep}services${path.sep}careerSprintService`) ||
+      entry.includes(`${path.sep}services${path.sep}aiTaskService`) ||
+      entry.includes(`${path.sep}services${path.sep}sprintOverviewCacheService`)
+    ) {
       delete require.cache[entry];
     }
   });
@@ -262,26 +288,32 @@ const measure = async (label, runs, fn) => {
   const beforeMongo = concurrentHarness.counters.mongoReads;
   await Promise.all(Array.from({ length: 5 }, () => concurrentHarness.sprintService.getCurrentSprint('u-concurrent')));
 
-  console.log(JSON.stringify({
-    phase: 'AFTER',
-    BEFORE,
-    cold,
-    memory,
-    redis,
-    deterministic,
-    ai,
-    concurrent: {
-      signalCalls: concurrentHarness.counters.signalCalls - beforeSignals,
-      mongoReads: concurrentHarness.counters.mongoReads - beforeMongo
-    },
-    counters: {
-      cold: coldHarness.counters,
-      memory: memHarness.counters,
-      redis: redisHarness.counters,
-      plan: planHarness.counters,
-      ai: aiHarness.counters
-    }
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        phase: 'AFTER',
+        BEFORE,
+        cold,
+        memory,
+        redis,
+        deterministic,
+        ai,
+        concurrent: {
+          signalCalls: concurrentHarness.counters.signalCalls - beforeSignals,
+          mongoReads: concurrentHarness.counters.mongoReads - beforeMongo
+        },
+        counters: {
+          cold: coldHarness.counters,
+          memory: memHarness.counters,
+          redis: redisHarness.counters,
+          plan: planHarness.counters,
+          ai: aiHarness.counters
+        }
+      },
+      null,
+      2
+    )
+  );
 })().catch((error) => {
   console.error(error);
   process.exit(1);

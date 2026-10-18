@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-18",
+  "status": "BLOCKED",
+  "readyToLock": false,
+  "fullBackend": {
+    "tests": 376,
+    "passed": 372,
+    "failed": 4,
+    "skipped": 0,
+    "failedChecks": [
+      "Sprint after/before memory p95 <= 50ms",
+      "Learning Hub memory p95 60.19ms < 50ms",
+      "Recommendations memory p95 58.06ms < 50ms",
+      "Windows Node/libuv process abort after all Recommendations Mongo assertions passed"
+    ]
+  },
+  "frontend": {
+    "tests": 253,
+    "passed": 253,
+    "failed": 0,
+    "files": 50,
+    "skipped": 0,
+    "maxWorkers": 1,
+    "timeoutsChanged": false
+  },
+  "postCleanupBackend": {
+    "passed": 38,
+    "failed": 0,
+    "skipped": 0
+  },
+  "isolatedPerformance": {
+    "passed": 16,
+    "failed": 0,
+    "thresholdsChanged": false
+  },
+  "realMongoRedisWorkers": {
+    "passed": 1,
+    "redisAvailableInBothProcesses": true,
+    "cleanupPassed": true
+  },
+  "realJwtMongoGroups": {
+    "passed": 5,
+    "failed": 0
+  },
+  "realFrontendBackendGroups": {
+    "passed": 5,
+    "failed": 0,
+    "routeInterception": false,
+    "externalAiBoundary": "controlled unavailability"
+  },
+  "ui": {
+    "passedLayouts": 24,
+    "passedThemeInteractions": 3,
+    "passedAdditionalStates": 8,
+    "editorPreviewDraftContrast": true,
+    "bundle": "main-OXJGD6RK.js",
+    "visualReview": [
+      "light-1440-dashboard.png",
+      "dark-375-dashboard.png",
+      "light-desktop-planner.png",
+      "dark-1440-dashboard.png"
+    ]
+  },
+  "typescript": "PASS",
+  "syntax": "PASS for all six changed JavaScript verifiers/tests",
+  "whitespace": "PASS staged and unstaged",
+  "legacyAudit": {
+    "expected": 15,
+    "found": 0,
+    "status": "BLOCKED",
+    "remoteWrites": 0,
+    "productionMigration": false
+  },
+  "cleanup": {
+    "taskServicesStopped": true,
+    "temporaryDatabasesRemoved": true,
+    "temporarySessionTokensRemoved": true,
+    "sourceFilesMovedOrDeleted": 0
+  },
+  "limitations": [
+    "Complete backend regression is not clean; standalone Recommendations performance also fails at 72.76ms p95 versus <50ms.",
+    "Groq live provider returns HTTP 404; Gemini rejects one invented Docker target ID safely via deterministic fallback.",
+    "Protected legacy source records are absent from this laptop\u2019s configured database.",
+    "Existing unrelated Landing Page SCSS budget warning remains."
+  ],
+  "productionBuild": {
+    "status": "PASS",
+    "postCleanup": true,
+    "seconds": 114.323,
+    "bundle": "main-OXJGD6RK.js",
+    "warning": "Existing unrelated Landing Page SCSS 55.89kB versus 48kB warning budget"
+  },
+  "formatting": {
+    "status": "PASS",
+    "writeThenCheck": true,
+    "explicitSourceAndEvidenceFiles": 19
+  },
+  "references": {
+    "all17ScreenshotsExist": true,
+    "removedTemporaryArtifactsAbsent": true
+  },
+  "recommendationsPerformanceStandalone": {
+    "tests": 2,
+    "passed": 1,
+    "failed": 1,
+    "skipped": 0,
+    "memoryP95Ms": 72.76,
+    "requiredLessThanMs": 50
+  }
+}

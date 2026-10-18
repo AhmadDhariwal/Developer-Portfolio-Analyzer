@@ -1,0 +1,87 @@
+<form #editor="ngForm" (ngSubmit)="submit()" class="task-editor" aria-label="Task editor">
+  <div class="editor-heading">
+    <h3>{{ task ? 'Edit task' : 'Create a task' }}</h3>
+    <p>Keep the next step specific and achievable.</p>
+  </div>
+  <fieldset [disabled]="disabled || busy">
+    <label class="wide"
+      >Task title
+      <input
+        name="title"
+        [(ngModel)]="form.title"
+        [readonly]="courseLinked"
+        [attr.aria-describedby]="courseLinked ? 'course-title-note' : null"
+        required
+        maxlength="120"
+        placeholder="e.g. Add tests for the authentication flow"
+    /></label>
+    @if (courseLinked) {
+      <p id="course-title-note" class="wide meta">
+        This task’s title follows its saved course. You can edit the description, priority, points
+        and schedule.
+      </p>
+    }
+    <label class="wide"
+      >Description
+      <textarea
+        name="description"
+        [(ngModel)]="form.description"
+        [maxlength]="1000 - sourceDetails.length"
+        rows="3"
+        placeholder="What does done look like?"
+      ></textarea>
+    </label>
+    <label
+      >Priority
+      <select name="priority" [(ngModel)]="form.priority">
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select></label
+    >
+    <label
+      >Category
+      <select name="category" [(ngModel)]="form.category">
+        <option value="learning">Learning</option>
+        <option value="project">Project</option>
+        <option value="practice">Practice</option>
+      </select></label
+    >
+    <label
+      >Points
+      <input
+        type="number"
+        name="points"
+        [(ngModel)]="form.points"
+        required
+        min="1"
+        max="10"
+        step="1"
+    /></label>
+    <label>Start date <input type="date" name="startDate" [(ngModel)]="form.startDate" /></label>
+    <label
+      >End date
+      <input type="date" name="endDate" [(ngModel)]="form.endDate" [min]="form.startDate || ''"
+    /></label>
+  </fieldset>
+  @if (invalidRange) {
+    <p class="error" role="alert">End date must be on or after the start date.</p>
+  }
+  @if (sourceDetails) {
+    <details class="source-details">
+      <summary>Recorded source details (preserved with edits)</summary>
+      <p>{{ sourceDetails }}</p>
+    </details>
+  }
+  <div class="editor-actions">
+    <span>Dates use {{ zone || 'the Sprint calendar' }}.</span
+    ><button type="button" (click)="cancelled.emit()" [disabled]="busy">Cancel</button
+    ><button
+      type="submit"
+      class="primary"
+      [disabled]="disabled || busy || editor.invalid || invalidRange"
+    >
+      {{ busy ? 'Saving…' : task ? 'Save changes' : 'Create task' }}
+    </button>
+  </div>
+</form>
