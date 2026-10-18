@@ -502,6 +502,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           if (version === this.historyVersion) {
             this.sessions = sessions;
             this.historyLoaded = true;
+            if (!this.selectedSession && sessions.length) {
+              this.selectedSession = sessions[0];
+            }
           }
         },
         error: (error) => {
@@ -512,6 +515,39 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
   openSession(session: InterviewSession): void {
     this.selectedSession = session;
+  }
+  scrollToQuestion(index: number): void {
+    const el = document.getElementById(`session-q-${index}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  setDifficulty(level: string): void {
+    if (this.difficulty === level) {
+      this.difficulty = '';
+    } else {
+      this.difficulty = level;
+    }
+    this.filtersDirty = true;
+    this.applyFilters();
+  }
+  get activeFilterCount(): number {
+    let count = 0;
+    if (this.difficulty) count++;
+    if (this.category) count++;
+    if (this.source) count++;
+    if (this.tags?.trim()) count++;
+    if (this.query?.trim()) count++;
+    return count;
+  }
+  clearFilter(name: 'difficulty' | 'category' | 'source' | 'tags' | 'query'): void {
+    if (name === 'difficulty') this.difficulty = '';
+    if (name === 'category') this.category = '';
+    if (name === 'source') this.source = '';
+    if (name === 'tags') this.tags = '';
+    if (name === 'query') this.query = '';
+    this.filtersDirty = true;
+    this.applyFilters();
   }
   resumeSession(session: InterviewSession): void {
     this.cancelPractice();

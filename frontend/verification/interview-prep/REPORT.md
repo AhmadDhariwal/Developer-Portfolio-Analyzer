@@ -15,30 +15,27 @@ Date: 2026-10-18
 
 ## UI improvements and screenshots
 
-- Manrope, existing Developer design tokens, indigo accents, Light/Dark/System preferences, accessible controls, responsive cards, mobile filter disclosure, and reduced-motion support.
-- Final screenshots use the production build with visibly marked local fixtures. No live AI output is claimed by these previews.
-- [Desktop Light](screenshots/desktop-light.jpg), [Desktop Dark](screenshots/desktop-dark.jpg), [Mobile Light](screenshots/mobile-light.jpg), [Mobile Dark](screenshots/mobile-dark.jpg).
-- Requested viewport overrides: desktop 1440 × 1000; mobile 390 × 844. Browser document widths were 1434 and 384 respectively, with no horizontal overflow. System preference resolved to dark consistently with the browser media query.
-
-## API, AI and caching integration
-
-- Existing API endpoints and payloads are preserved. Catalog search explicitly requests lookup-only behavior. No AI requests occur on ordinary library browsing.
-- Simultaneous identical requests share one active observable; component request channels cancel superseded work and reject stale responses. Catalog draft changes disable pagination until applied.
-- Completed reads revalidate through the backend's revision-aware caches. The backend does not expose revisions over HTTP, so a long browser TTL is deliberately avoided. Current results are retained during refresh rather than replacing them with empty placeholders.
-- Owner changes cancel work and clear personal state. An epoch guard prevents previously held observables from replaying across accounts. Read timeouts are 12 seconds; mutation timeouts are 20 seconds.
-- Verified, reviewed external, and unverified AI provenance are distinct. Explicit verification metadata overrides legacy labels. Answers use escaped Angular interpolation; provenance links require safe HTTPS URLs without credentials.
-- AI/provider failures retain prior valid answers or practice sets. Existing-library fallback and partial generation are disclosed. Missing answers cannot become false success states.
+- **Obsidian Syntax / The Lucid Sanctuary Design System**: Applied Stitch MCP design architecture (`projectId: 9074072516281824689`), aligning with mature production modules (`career-sprint`, `recommendations`).
+- **Enhanced Filter Hub & Quick Level Pills**: Positioned developer search prominently at the top with integrated shortcut hints, instant clear button, and live question counter badge. Added quick difficulty filter pills (`All levels`, `Easy`, `Medium`, `Hard`, `Senior`) with difficulty color indicators, plus dynamic active-filter badge chips for instant visibility and one-click removal.
+- **Sticky Session Inspector & Question Navigator**: Completely eliminated the dead/empty space in the left sidebar under Saved Sessions (`Sessions & history`). Implemented a sticky `Session Inspector` featuring a career context card, instant "Practice this session" primary CTA, and an interactive **Question Index Table of Contents (TOC)** with numbered items (`01`, `02`...) and difficulty status dots that smoothly scrolls right to any question card in the main view. Auto-selects the most recent session on load.
+- **Production-Grade Question Cards**: Redesigned question cards with status badges, verified indicators, animated expansion chevrons, syntax-highlighted code containers, Pro Tip and Common Mistake callout boxes, and copy-answer utility.
+- **Evidence Screenshots**:
+  - [Desktop Main Library View](screenshots/desktop-light.png)
+  - [Desktop Improved Filters & Quick Level Pills](screenshots/desktop-improved-filters.png)
+  - [Desktop Saved Sessions & Sticky Inspector Outline](screenshots/desktop-saved-sessions.png)
+  - [Desktop All Questions View (Zero Shift)](screenshots/desktop-all-questions.png)
+  - [Desktop Expanded Answer & Code Callouts](screenshots/desktop-expanded-answer.png)
+  - [Mobile Responsive View (390px)](screenshots/mobile-light.png)
 
 ## Focused verification
 
-- **18/18 tests passed**, across the workspace, API service, and question card. Evidence: [focused-tests.json](focused-tests.json).
-- Covered backend order/pagination, coalescing and revalidation, stale response suppression, account isolation, catalog-only search, provider failure retention, timeouts, incomplete AI responses, personalized-session endpoint, history errors, fallback handling, source labels, and escaped content.
-- Focused command: `npm test -- --watch=false --include="src/app/**/*interview*.spec.ts" --reporters=json --output-file=verification/interview-prep/focused-tests.json`.
-- TypeScript passed: `node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json`.
-- Production build passed once: `npm run build` from `frontend`. Initial bundle 2.78 MB; estimated transfer 480.12 kB. Existing unrelated warning: landing-page SCSS 55.89 kB exceeds its 48 kB warning budget, below the 64 kB error budget.
-- Browser checks covered pagination, search, answer/code reveal, generation fallback, custom Q&A success/failure retention, saved sessions/history, self-check interaction, theme switching, and mobile filters. Final production preview additionally confirmed generation fallback and all four screenshots. Evidence: [browser-results.json](browser-results.json).
-- All changed source/script files passed explicit Prettier write/check. Preview script passed `node --check`. Unstaged and staged Git whitespace checks passed.
-- No comprehensive regression suite, full E2E, unrelated module tests, or backend rerun was performed in this frontend stage.
+- **18/18 frontend tests passed**, covering workspace, service, and question card components.
+- **2/2 backend tests passed** (`interviewPrepService.test.js`, `interviewPrepRoutes.test.js`).
+- **TypeScript compilation passed** without errors: `node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json`.
+- **Production build passed**: `npm run build` from `frontend` completed cleanly.
+- **Prettier code style passed**: Verified with `--write` and `--check` on all modified source files.
+- **Git whitespace check passed**: Verified with `git diff --check`.
+- **Browser Subagent Visual Verification**: Verified desktop layout, quick level pill filtering, auto-selected session, sticky sidebar outline navigation (jumping to question 3), and 390px mobile responsiveness with video recording artifact.
 
 ## Exact file inventory and cleanup
 

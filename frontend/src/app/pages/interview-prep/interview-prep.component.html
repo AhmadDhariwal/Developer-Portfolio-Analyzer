@@ -1,260 +1,589 @@
-<section class="interview-workspace" aria-labelledby="interview-title">
-  <header class="workspace-header">
-    <div>
-      <span class="eyebrow">Developer workspace / Interview preparation</span>
-      <h1 id="interview-title">Interview Prep</h1>
-      <p>Understand the concepts. Practice your reasoning. Walk in prepared.</p>
+<section class="interview-workspace dev-page" aria-labelledby="interview-title">
+  <!-- Enhanced Modern Workspace Header -->
+  <header class="workspace-header dev-page-header">
+    <div class="header-main">
+      <span class="eyebrow dev-eyebrow">Developer workspace · Interview preparation</span>
+      <div class="title-row">
+        <h1 id="interview-title" class="dev-page-title">Interview Prep</h1>
+        <span class="total-pill" *ngIf="total > 0">{{ total }} Questions Available</span>
+      </div>
+      <p class="description dev-description">
+        Understand the core concepts, master system architecture, and practice technical reasoning.
+      </p>
+
+      <!-- Context Capsule Bar -->
       <div class="context-line">
-        <span class="context-dot" aria-hidden="true"></span>{{ context
-        }}<span class="muted">· {{ skills.length }} technologies</span>
+        <span class="context-pill">
+          <svg
+            class="pill-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span class="context-dot" aria-hidden="true"></span>
+          <strong>{{ skillLabel(selectedSkill) }}</strong>
+          <span class="sep" aria-hidden="true">·</span>
+          <span>{{ context || 'Your own pace' }}</span>
+        </span>
+        <span class="context-pill">
+          <svg
+            class="pill-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <span class="muted">{{ skills.length }} technologies covered</span>
+        </span>
+        <span class="context-pill verified-pill">
+          <svg
+            class="pill-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>Verified Question Bank</span>
+        </span>
       </div>
     </div>
+
+    <!-- Header Actions (Theme & Refresh) -->
     <div class="header-actions">
-      <label class="sr-only" for="interview-theme">Workspace theme</label
-      ><select
-        id="interview-theme"
-        [ngModel]="theme.preference()"
-        (ngModelChange)="setTheme($event)"
-      >
-        <option value="light">Light theme</option>
-        <option value="dark">Dark theme</option>
-        <option value="system">System theme</option></select
-      ><button
+      <div class="theme-select-wrapper">
+        <label class="sr-only" for="interview-theme">Workspace theme</label>
+        <select
+          id="interview-theme"
+          class="theme-select"
+          [ngModel]="theme.preference()"
+          (ngModelChange)="setTheme($event)"
+        >
+          <option value="light">Light theme</option>
+          <option value="dark">Dark theme</option>
+          <option value="system">System theme</option>
+        </select>
+      </div>
+
+      <button
         type="button"
-        class="button secondary"
+        class="button secondary refresh-btn"
         (click)="tab === 'sessions' ? loadHistory(true) : loadCatalog(page)"
         [disabled]="loading || historyLoading"
       >
-        ↻ Refresh {{ tab === 'sessions' ? 'history' : 'library' }}
+        <svg
+          class="refresh-icon"
+          [class.spinning]="loading || historyLoading"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M23 4v6h-6M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        <span>Refresh {{ tab === 'sessions' ? 'history' : 'library' }}</span>
       </button>
     </div>
   </header>
 
+  <!-- Workspace Section Tabs -->
   <nav class="workspace-nav" aria-label="Interview Prep sections">
     <button
       type="button"
+      class="nav-tab"
       [class.active]="tab === 'library'"
       [attr.aria-current]="tab === 'library' ? 'page' : null"
       (click)="changeTab('library')"
     >
-      Question library
+      <svg
+        class="tab-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+      <span>Question library</span>
+      <span class="tab-count" *ngIf="total > 0 && tab === 'library'">{{ total }}</span>
     </button>
+
     <button
       type="button"
+      class="nav-tab"
       [class.active]="tab === 'practice'"
       [attr.aria-current]="tab === 'practice' ? 'page' : null"
       (click)="changeTab('practice')"
     >
-      Practice studio
+      <svg
+        class="tab-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polygon
+          points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        />
+      </svg>
+      <span>Practice studio</span>
     </button>
+
     <button
       type="button"
+      class="nav-tab"
       [class.active]="tab === 'sessions'"
       [attr.aria-current]="tab === 'sessions' ? 'page' : null"
       (click)="changeTab('sessions')"
     >
-      Sessions & history
+      <svg
+        class="tab-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span>Sessions & history</span>
+      <span class="tab-count" *ngIf="sessions.length">{{ sessions.length }}</span>
     </button>
   </nav>
 
-  <div *ngIf="tab === 'library'" class="library-layout">
-    <aside
+  <!-- ══════════════════════════════════════════════
+       TAB 1: QUESTION LIBRARY
+       ══════════════════════════════════════════════ -->
+  <div *ngIf="tab === 'library'" class="library-view-container">
+    <!-- Unified Filter & Search Control Hub (Zero Layout Shifts) -->
+    <section
       class="filter-panel surface"
       [class.mobile-open]="showFilters"
       aria-labelledby="filter-heading"
     >
-      <div class="section-heading">
-        <h2 id="filter-heading">Refine your focus</h2>
-        <button
-          type="button"
-          class="text-button filter-toggle"
-          [attr.aria-expanded]="showFilters"
-          aria-controls="interview-filters"
-          (click)="showFilters = !showFilters"
-        >
-          {{ showFilters ? 'Hide filters −' : 'Show filters +' }}</button
-        ><button type="button" class="text-button" (click)="resetFilters()">Reset</button>
-      </div>
-      <p class="muted small">Choose a technology, then narrow your practice.</p>
-      <form id="interview-filters" (ngSubmit)="applyFilters()" class="filter-form">
-        <label for="library-topic">Technology</label
-        ><select
-          id="library-topic"
-          name="skill"
-          [ngModel]="selectedSkill"
-          (ngModelChange)="changeSkill($event)"
-        >
-          <option *ngFor="let skill of skills" [value]="skill">{{ skillLabel(skill) }}</option>
-        </select>
-        <label for="library-difficulty">Difficulty</label
-        ><select
-          id="library-difficulty"
-          name="difficulty"
-          [(ngModel)]="difficulty"
-          (ngModelChange)="filtersDirty = true"
-        >
-          <option value="">All levels</option>
-          <option value="easy">Easy · fundamentals</option>
-          <option value="medium">Medium · application</option>
-          <option value="hard">Hard · advanced</option>
-          <option value="senior">Senior · architecture</option>
-        </select>
-        <label for="library-tags">Tags</label
-        ><input
-          id="library-tags"
-          name="tags"
-          [(ngModel)]="tags"
-          (ngModelChange)="filtersDirty = true"
-          maxlength="500"
-          placeholder="closures, async"
-        /><span class="field-hint">Separate tags with commas.</span>
-        <ng-container *ngIf="libraryKind === 'all' && !query.trim()">
-          <label for="library-category">Category</label
-          ><select
-            id="library-category"
-            name="category"
-            [(ngModel)]="category"
-            (ngModelChange)="filtersDirty = true"
-          >
-            <option value="">All categories</option>
-            <option *ngFor="let value of categories" [value]="value">{{ label(value) }}</option>
-          </select>
-          <label for="library-source">Source</label
-          ><select
-            id="library-source"
-            name="source"
-            [(ngModel)]="source"
-            (ngModelChange)="filtersDirty = true"
-          >
-            <option value="">All sources</option>
-            <option value="seed">Verified library</option>
-            <option value="ai">AI generated</option>
-            <option value="scraped">Reviewed external sources</option>
-          </select>
-        </ng-container>
-        <p *ngIf="query.trim()" class="field-hint">
-          Search uses technology, difficulty and tags. Category and source filters apply to All
-          questions.
-        </p>
-        <button class="button primary" type="submit">Apply filters</button
-        ><span *ngIf="filtersDirty" class="field-hint" role="status"
-          >Apply to update the results.</span
-        >
-      </form>
-      <div class="learning-note">
-        <span class="note-icon" aria-hidden="true">✦</span>
-        <h3>Make it a conversation</h3>
-        <p>
-          Answer out loud before revealing the explanation. Explain the tradeoff, then give an
-          example.
-        </p>
-        <button type="button" class="text-button" (click)="changeTab('practice')">
-          Open practice studio →
-        </button>
-      </div>
-    </aside>
-
-    <section class="library-content" aria-labelledby="library-heading" [attr.aria-busy]="loading">
-      <div class="library-intro">
-        <div>
-          <span class="eyebrow">Your question library</span>
-          <h2 id="library-heading">A stronger answer starts here.</h2>
-          <p class="muted">
-            Explore the essentials, then go deeper with the full question library.
-          </p>
+      <div class="filter-panel-header">
+        <div class="panel-header-left">
+          <span class="panel-kicker">QUESTION EXPLORER & FILTERS</span>
+          <div class="title-with-badge">
+            <h2 id="filter-heading" class="filter-heading">Refine your question focus</h2>
+            <span class="count-pill" *ngIf="total">{{ total }} questions available</span>
+          </div>
         </div>
-        <span class="topic-pill">{{ skillLabel(selectedSkill) }}</span>
-      </div>
-      <form class="search-bar" (ngSubmit)="loadCatalog(1)">
-        <label class="sr-only" for="library-search">Search interview questions</label
-        ><span aria-hidden="true">⌕</span
-        ><input
-          id="library-search"
-          name="query"
-          [(ngModel)]="query"
-          (ngModelChange)="filtersDirty = true"
-          maxlength="500"
-          placeholder="Search concepts or questions…"
-        /><button class="button primary" type="submit">Search</button>
-      </form>
-      <div class="library-toolbar">
-        <div class="segmented" aria-label="Question collection">
+        <div class="panel-header-actions">
           <button
             type="button"
-            [class.selected]="libraryKind === 'top' && !loadedQuery"
-            [attr.aria-pressed]="libraryKind === 'top' && !loadedQuery"
-            (click)="changeLibrary('top')"
+            class="text-button filter-toggle"
+            [attr.aria-expanded]="showFilters"
+            aria-controls="interview-filters"
+            (click)="showFilters = !showFilters"
           >
-            Top 30</button
-          ><button
-            type="button"
-            [class.selected]="libraryKind === 'all' && !loadedQuery"
-            [attr.aria-pressed]="libraryKind === 'all' && !loadedQuery"
-            (click)="changeLibrary('all')"
-          >
-            All questions
+            {{ showFilters ? 'Hide filters −' : 'Show filters +' }}
+          </button>
+          <button type="button" class="text-button reset-top-btn" (click)="resetFilters()">
+            Reset all
           </button>
         </div>
-        <span class="muted small" *ngIf="loadedAt">Updated {{ loadedAt | date: 'shortTime' }}</span>
       </div>
+
+      <!-- Main Filter Form: Stable, Fixed Multi-column Grid -->
+      <form id="interview-filters" (ngSubmit)="applyFilters()" class="filter-form">
+        <!-- Integrated Search & Action Toolbar at the Top -->
+        <div class="toolbar-wrapper">
+          <!-- Search Box -->
+          <div class="search-box-container">
+            <label class="sr-only" for="library-search">Search interview questions</label>
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input
+              id="library-search"
+              name="query"
+              class="search-input"
+              [(ngModel)]="query"
+              (ngModelChange)="filtersDirty = true"
+              maxlength="500"
+              placeholder="Search concepts, technical questions, or algorithms…"
+            />
+            <button
+              *ngIf="query"
+              type="button"
+              class="clear-search-btn"
+              (click)="clearFilter('query')"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Action Buttons & Badges -->
+          <div class="filter-button-group">
+            <button
+              class="button primary apply-button"
+              [class.has-pending]="filtersDirty"
+              type="submit"
+              [disabled]="loading"
+            >
+              <span *ngIf="filtersDirty" class="pending-dot" aria-hidden="true"></span>
+              <span>Apply filters</span>
+            </button>
+
+            <button
+              type="button"
+              class="button secondary reset-button"
+              (click)="resetFilters()"
+              [disabled]="loading"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Level Pills Strip (Productivity Booster) -->
+        <div class="quick-level-strip">
+          <span class="quick-strip-label">Level:</span>
+          <div class="level-pills-row">
+            <button
+              type="button"
+              class="level-pill"
+              [class.active]="!difficulty"
+              (click)="setDifficulty('')"
+            >
+              All levels
+            </button>
+            <button
+              type="button"
+              class="level-pill"
+              [class.active]="difficulty === 'easy'"
+              (click)="setDifficulty('easy')"
+            >
+              <span class="level-dot easy" aria-hidden="true"></span>
+              <span>Easy</span>
+            </button>
+            <button
+              type="button"
+              class="level-pill"
+              [class.active]="difficulty === 'medium'"
+              (click)="setDifficulty('medium')"
+            >
+              <span class="level-dot medium" aria-hidden="true"></span>
+              <span>Medium</span>
+            </button>
+            <button
+              type="button"
+              class="level-pill"
+              [class.active]="difficulty === 'hard'"
+              (click)="setDifficulty('hard')"
+            >
+              <span class="level-dot hard" aria-hidden="true"></span>
+              <span>Hard</span>
+            </button>
+            <button
+              type="button"
+              class="level-pill"
+              [class.active]="difficulty === 'senior'"
+              (click)="setDifficulty('senior')"
+            >
+              <span class="level-dot senior" aria-hidden="true"></span>
+              <span>Senior</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stable, Fixed 5-Column Grid -->
+        <div class="filters-grid">
+          <!-- Technology Field -->
+          <div class="filter-field">
+            <label for="library-topic">Technology</label>
+            <div class="select-wrapper">
+              <select
+                id="library-topic"
+                name="skill"
+                [ngModel]="selectedSkill"
+                (ngModelChange)="changeSkill($event)"
+              >
+                <option *ngFor="let skill of skills" [value]="skill">
+                  {{ skillLabel(skill) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Difficulty Field -->
+          <div class="filter-field">
+            <label for="library-difficulty">Difficulty</label>
+            <div class="select-wrapper">
+              <select
+                id="library-difficulty"
+                name="difficulty"
+                [(ngModel)]="difficulty"
+                (ngModelChange)="filtersDirty = true"
+              >
+                <option value="">All levels</option>
+                <option value="easy">Easy · fundamentals</option>
+                <option value="medium">Medium · application</option>
+                <option value="hard">Hard · advanced</option>
+                <option value="senior">Senior · architecture</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Category Field (Always visible to prevent vertical layout shifts) -->
+          <div class="filter-field">
+            <label for="library-category">Category</label>
+            <div class="select-wrapper">
+              <select
+                id="library-category"
+                name="category"
+                [(ngModel)]="category"
+                (ngModelChange)="filtersDirty = true"
+              >
+                <option value="">All categories</option>
+                <option *ngFor="let value of categories" [value]="value">{{ label(value) }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Source Field (Always visible) -->
+          <div class="filter-field">
+            <label for="library-source">Source</label>
+            <div class="select-wrapper">
+              <select
+                id="library-source"
+                name="source"
+                [(ngModel)]="source"
+                (ngModelChange)="filtersDirty = true"
+              >
+                <option value="">All sources</option>
+                <option value="seed">Verified library</option>
+                <option value="ai">AI generated</option>
+                <option value="scraped">Reviewed external sources</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tags Field -->
+          <div class="filter-field tags-field">
+            <label for="library-tags">Tags</label>
+            <input
+              id="library-tags"
+              name="tags"
+              class="text-input"
+              [(ngModel)]="tags"
+              (ngModelChange)="filtersDirty = true"
+              maxlength="500"
+              placeholder="closures, async, hooks…"
+            />
+          </div>
+        </div>
+
+        <!-- Active Filter Badges Strip (When Active) -->
+        <div *ngIf="activeFilterCount > 0" class="active-filters-strip">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="active-chips-wrap">
+            <button
+              *ngIf="difficulty"
+              type="button"
+              class="active-chip"
+              (click)="clearFilter('difficulty')"
+            >
+              <span>Level: {{ difficulty }}</span>
+              <span class="chip-remove" aria-hidden="true">✕</span>
+            </button>
+            <button
+              *ngIf="category"
+              type="button"
+              class="active-chip"
+              (click)="clearFilter('category')"
+            >
+              <span>Category: {{ label(category) }}</span>
+              <span class="chip-remove" aria-hidden="true">✕</span>
+            </button>
+            <button
+              *ngIf="source"
+              type="button"
+              class="active-chip"
+              (click)="clearFilter('source')"
+            >
+              <span>Source: {{ source }}</span>
+              <span class="chip-remove" aria-hidden="true">✕</span>
+            </button>
+            <button
+              *ngIf="tags.trim()"
+              type="button"
+              class="active-chip"
+              (click)="clearFilter('tags')"
+            >
+              <span>Tags: {{ tags }}</span>
+              <span class="chip-remove" aria-hidden="true">✕</span>
+            </button>
+            <button
+              *ngIf="query.trim()"
+              type="button"
+              class="active-chip"
+              (click)="clearFilter('query')"
+            >
+              <span>Search: "{{ query }}"</span>
+              <span class="chip-remove" aria-hidden="true">✕</span>
+            </button>
+            <button type="button" class="text-button clear-all-btn" (click)="resetFilters()">
+              Clear all
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="filtersDirty" class="filter-hint-row" role="status">
+          <span class="hint-bullet">•</span> Unapplied filter changes. Press
+          <strong>Apply filters</strong> or Enter to update results.
+        </div>
+      </form>
+    </section>
+
+    <!-- Library Content Section -->
+    <section class="library-content" aria-labelledby="library-heading" [attr.aria-busy]="loading">
+      <!-- Content Toolbar (Collection Selector + Status) -->
+      <div class="collection-toolbar">
+        <div class="toolbar-left">
+          <div class="segmented" aria-label="Question collection">
+            <button
+              type="button"
+              class="segmented-btn"
+              [class.selected]="libraryKind === 'top' && !loadedQuery"
+              [attr.aria-pressed]="libraryKind === 'top' && !loadedQuery"
+              (click)="changeLibrary('top')"
+            >
+              <span>Top 30 Curated</span>
+            </button>
+
+            <button
+              type="button"
+              class="segmented-btn"
+              [class.selected]="libraryKind === 'all' && !loadedQuery"
+              [attr.aria-pressed]="libraryKind === 'all' && !loadedQuery"
+              (click)="changeLibrary('all')"
+            >
+              <span>All Questions</span>
+            </button>
+          </div>
+
+          <span class="active-topic-chip">{{ skillLabel(selectedSkill) }}</span>
+        </div>
+
+        <div class="toolbar-right">
+          <span class="muted small status-range" *ngIf="total > 0">{{ range }}</span>
+          <span class="muted small status-time" *ngIf="loadedAt"
+            >· Updated {{ loadedAt | date: 'shortTime' }}</span
+          >
+        </div>
+      </div>
+
+      <!-- Error Notification Banner -->
       <div *ngIf="catalogError" class="notice error" role="alert">
-        <span>{{ catalogError }}</span
-        ><button type="button" (click)="loadCatalog(page)" class="text-button">Retry</button>
+        <div class="notice-body">
+          <svg
+            class="notice-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{{ catalogError }}</span>
+        </div>
+        <button type="button" (click)="loadCatalog(page)" class="text-button retry-btn">
+          Retry
+        </button>
       </div>
-      <div class="results-heading" *ngIf="loadedAt">
+
+      <!-- Results Title Heading -->
+      <div class="results-heading" *ngIf="loadedAt && !catalogError">
         <div>
           <h3>{{ resultsTitle }}</h3>
-          <p *ngIf="loadedSkill !== selectedSkill" class="muted small">
+          <p *ngIf="loadedSkill && loadedSkill !== selectedSkill" class="muted small">
             Showing previous results for {{ skillLabel(loadedSkill) }}.
           </p>
         </div>
-        <span class="muted small">{{ range }}</span>
       </div>
+
+      <!-- Loading Status Bar -->
       <div *ngIf="loading" class="loading-status" role="status">
-        <span class="spinner" aria-hidden="true"></span
-        >{{
+        <span class="spinner" aria-hidden="true"></span>
+        <span>{{
           questions.length
             ? 'Refreshing questions… Current results remain available.'
             : 'Loading your question library…'
-        }}
+        }}</span>
       </div>
+
+      <!-- Skeletons Loader when initial loading -->
       <div class="skeleton-list" *ngIf="loading && !questions.length" aria-hidden="true">
-        <div class="skeleton" *ngFor="let item of skeletons">
-          <span></span><span></span><span></span>
+        <div class="skeleton-card surface" *ngFor="let item of skeletons">
+          <div class="sk-line sk-rank"></div>
+          <div class="sk-line sk-title"></div>
+          <div class="sk-line sk-desc"></div>
         </div>
       </div>
-      <div class="question-list">
+
+      <!-- Main Question Cards List -->
+      <div class="question-list" *ngIf="visibleQuestions.length">
         <app-interview-question-card
           *ngFor="let question of visibleQuestions; trackBy: trackQuestion"
           [question]="question"
           [showRank]="localTop"
         />
       </div>
+
+      <!-- Empty State Panel -->
       <div class="empty-state surface" *ngIf="!loading && loadedAt && !questions.length">
-        <span class="empty-symbol" aria-hidden="true">⌕</span>
+        <div class="empty-icon-wrap" aria-hidden="true">⌕</div>
         <h3>No questions match this focus</h3>
         <p>
           Try a broader search or reset your filters. You can also ask a specific question in the
           practice studio.
         </p>
-        <button class="button secondary" type="button" (click)="resetFilters()">
-          Reset filters</button
-        ><button class="text-button" type="button" (click)="changeTab('practice')">
-          Ask a custom question →
-        </button>
+        <div class="empty-actions">
+          <button class="button secondary" type="button" (click)="resetFilters()">
+            Reset filters
+          </button>
+          <button class="button primary" type="button" (click)="changeTab('practice')">
+            Ask a custom question →
+          </button>
+        </div>
       </div>
+
+      <!-- Pagination Navigation Bar -->
       <nav class="pagination" aria-label="Question pages" *ngIf="total > 0">
-        <span class="muted small">Page {{ page }} of {{ totalPages }}</span>
-        <div>
+        <span class="muted small pagination-label">Page {{ page }} of {{ totalPages }}</span>
+        <div class="pagination-buttons">
           <button
-            class="button secondary"
+            class="button secondary page-btn"
             type="button"
             (click)="goPage(page - 1)"
             [disabled]="page <= 1 || loading || filtersDirty"
           >
-            ← Previous</button
-          ><button
-            class="button secondary"
+            ← Previous
+          </button>
+          <button
+            class="button secondary page-btn"
             type="button"
             (click)="goPage(page + 1)"
             [disabled]="page >= totalPages || loading || filtersDirty"
@@ -263,119 +592,168 @@
           </button>
         </div>
       </nav>
-      <p class="provenance-note">
-        <span class="legend-dot verified" aria-hidden="true"></span>Verified library
-        <span class="legend-dot ai" aria-hidden="true"></span>AI generated answers are unverified.
-        Source labels are shown on every question.
-      </p>
+
+      <!-- Provenance Footnote -->
+      <div class="provenance-note">
+        <div class="legend-item">
+          <span class="legend-dot verified" aria-hidden="true"></span>
+          <span>Verified library (curated)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot ai" aria-hidden="true"></span>
+          <span>AI generated answers are unverified</span>
+        </div>
+        <span class="legend-note">Source labels are shown on every question.</span>
+      </div>
     </section>
   </div>
 
-  <section *ngIf="tab === 'practice'" class="studio" aria-labelledby="studio-heading">
+  <!-- ══════════════════════════════════════════════
+       TAB 2: PRACTICE STUDIO
+       ══════════════════════════════════════════════ -->
+  <section *ngIf="tab === 'practice'" class="studio-section" aria-labelledby="studio-heading">
     <div class="section-intro">
-      <span class="eyebrow">Focused, thoughtful practice</span>
+      <span class="eyebrow dev-eyebrow">FOCUSED, THOUGHTFUL PRACTICE</span>
       <h2 id="studio-heading">Turn knowledge into an answer.</h2>
       <p class="muted">
-        Build a practice set or work through one question. Your saved answers stay private.
+        Build a practice drill or work through one question. Your saved answers stay private.
       </p>
-      <label for="studio-topic">Practice technology</label
-      ><select id="studio-topic" [ngModel]="selectedSkill" (ngModelChange)="changeSkill($event)">
-        <option *ngFor="let skill of skills" [value]="skill">{{ skillLabel(skill) }}</option>
-      </select>
+
+      <div class="studio-topic-selector">
+        <label for="studio-topic">Practice technology</label>
+        <div class="select-wrapper">
+          <select id="studio-topic" [ngModel]="selectedSkill" (ngModelChange)="changeSkill($event)">
+            <option *ngFor="let skill of skills" [value]="skill">{{ skillLabel(skill) }}</option>
+          </select>
+        </div>
+      </div>
     </div>
+
     <div class="studio-grid">
+      <!-- Card 1: AI Practice Set -->
       <section class="surface studio-panel" aria-labelledby="practice-heading">
-        <span class="panel-kicker">01 / Practice set</span>
-        <h3 id="practice-heading">Train your reasoning</h3>
+        <div class="panel-header-badge">
+          <span class="panel-kicker">01 / PRACTICE SET</span>
+        </div>
+        <h3 id="practice-heading" class="studio-panel-title">Train your reasoning</h3>
         <p class="muted small">
           Choose a focus for AI practice, or start a saved session from your library and current
           career context.
         </p>
-        <form (ngSubmit)="generatePractice()">
-          <label for="practice-focus">Focus <span class="muted">(optional)</span></label
-          ><input
-            id="practice-focus"
-            name="focus"
-            [(ngModel)]="practiceFocus"
-            (ngModelChange)="cancelPractice()"
-            maxlength="500"
-            placeholder="e.g. async patterns and debugging"
-          />
+
+        <form (ngSubmit)="generatePractice()" class="studio-form">
+          <div class="form-group">
+            <label for="practice-focus">Focus <span class="muted">(optional)</span></label>
+            <input
+              id="practice-focus"
+              name="focus"
+              class="text-input"
+              [(ngModel)]="practiceFocus"
+              (ngModelChange)="cancelPractice()"
+              maxlength="500"
+              placeholder="e.g. async patterns and debugging, memory leaks…"
+            />
+          </div>
+
           <div class="form-columns">
-            <div>
-              <label for="practice-level">Difficulty</label
-              ><select
-                id="practice-level"
-                name="level"
-                [(ngModel)]="practiceDifficulty"
-                (ngModelChange)="cancelPractice()"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
+            <div class="form-group">
+              <label for="practice-level">Difficulty</label>
+              <div class="select-wrapper">
+                <select
+                  id="practice-level"
+                  name="level"
+                  [(ngModel)]="practiceDifficulty"
+                  (ngModelChange)="cancelPractice()"
+                >
+                  <option value="easy">Easy · fundamentals</option>
+                  <option value="medium">Medium · application</option>
+                  <option value="hard">Hard · advanced</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label for="practice-count">Questions</label
-              ><select
-                id="practice-count"
-                name="count"
-                [(ngModel)]="practiceCount"
-                (ngModelChange)="cancelPractice()"
-              >
-                <option [ngValue]="5">5 questions</option>
-                <option [ngValue]="10">10 questions</option>
-              </select>
+
+            <div class="form-group">
+              <label for="practice-count">Questions</label>
+              <div class="select-wrapper">
+                <select
+                  id="practice-count"
+                  name="count"
+                  [(ngModel)]="practiceCount"
+                  (ngModelChange)="cancelPractice()"
+                >
+                  <option [ngValue]="5">5 questions drill</option>
+                  <option [ngValue]="10">10 questions drill</option>
+                </select>
+              </div>
             </div>
           </div>
-          <button class="button primary" type="submit" [disabled]="generating">
-            <span *ngIf="generating" class="spinner" aria-hidden="true"></span
-            >{{ generating ? 'Preparing practice…' : 'Generate practice set' }}
+
+          <button class="button primary submit-drill-btn" type="submit" [disabled]="generating">
+            <span *ngIf="generating" class="spinner" aria-hidden="true"></span>
+            <span>{{ generating ? 'Preparing practice…' : 'Generate practice set' }}</span>
           </button>
         </form>
-        <button
-          type="button"
-          class="text-button saved-session"
-          (click)="generatePractice(true)"
-          [disabled]="generating"
-        >
-          Start a saved personalized session →
-        </button>
-        <p class="field-hint">
-          Saved sessions use career context; focus, difficulty and count apply to AI sets.
-        </p>
+
+        <div class="studio-footer">
+          <button
+            type="button"
+            class="text-button saved-session"
+            (click)="generatePractice(true)"
+            [disabled]="generating"
+          >
+            Start a saved personalized session →
+          </button>
+          <p class="field-hint">
+            Saved sessions use career context; focus, difficulty and count apply to AI sets.
+          </p>
+        </div>
       </section>
+
+      <!-- Card 2: Custom Q&A -->
       <section class="surface studio-panel" aria-labelledby="ask-heading">
-        <span class="panel-kicker">02 / Custom Q&A</span>
-        <h3 id="ask-heading">Get unstuck on a concept</h3>
+        <div class="panel-header-badge">
+          <span class="panel-kicker">02 / CUSTOM Q&A</span>
+        </div>
+        <h3 id="ask-heading" class="studio-panel-title">Get unstuck on a concept</h3>
         <p class="muted small">
           Existing answers are reused first. AI answers are clearly labeled and remain unverified.
         </p>
-        <form (ngSubmit)="askCustomQuestion()">
-          <label for="custom-question">Your {{ skillLabel(selectedSkill) }} question</label
-          ><textarea
-            id="custom-question"
-            name="question"
-            [(ngModel)]="customQuestion"
-            (ngModelChange)="cancelAsk()"
-            rows="4"
-            minlength="12"
-            maxlength="500"
-            placeholder="What would you like to understand better?"
-            aria-describedby="custom-question-help"
-          ></textarea
-          ><span class="field-hint" id="custom-question-help"
-            >12–500 characters · {{ customQuestion.length }}/500</span
-          ><button class="button primary" type="submit" [disabled]="!canAsk">
-            <span *ngIf="asking" class="spinner" aria-hidden="true"></span
-            >{{ asking ? 'Finding an answer…' : 'Ask question' }}
+
+        <form (ngSubmit)="askCustomQuestion()" class="studio-form">
+          <div class="form-group">
+            <label for="custom-question">Your {{ skillLabel(selectedSkill) }} question</label>
+            <textarea
+              id="custom-question"
+              name="question"
+              class="textarea-input"
+              [(ngModel)]="customQuestion"
+              (ngModelChange)="cancelAsk()"
+              rows="4"
+              minlength="12"
+              maxlength="500"
+              placeholder="What specific concept, tradeoff, or edge-case would you like to understand better?"
+              aria-describedby="custom-question-help"
+            ></textarea>
+            <div class="char-count-row">
+              <span class="field-hint" id="custom-question-help">12–500 characters</span>
+              <span class="count-badge" [class.valid]="canAsk"
+                >{{ customQuestion.trim().length }}/500</span
+              >
+            </div>
+          </div>
+
+          <button class="button primary submit-ask-btn" type="submit" [disabled]="!canAsk">
+            <span *ngIf="asking" class="spinner" aria-hidden="true"></span>
+            <span>{{ asking ? 'Finding an answer…' : 'Ask question' }}</span>
           </button>
         </form>
       </section>
     </div>
+
+    <!-- Practice Notices & Errors -->
     <div *ngIf="practiceError" class="notice error" role="alert">
-      {{ practiceError
-      }}<button
+      <span>{{ practiceError }}</span>
+      <button
         type="button"
         class="text-button"
         (click)="generatePractice()"
@@ -387,14 +765,16 @@
     <div *ngIf="practiceNotice && !practiceError" class="notice" role="status">
       {{ practiceNotice }}
     </div>
+
+    <!-- Active Practice Question Runner -->
     <section
       *ngIf="currentPractice as question"
       class="practice-result"
       aria-labelledby="practice-result-heading"
     >
-      <div class="section-heading">
+      <div class="practice-stepper-header">
         <div>
-          <span class="eyebrow">{{ skillLabel(practiceSkill) }} practice</span>
+          <span class="eyebrow dev-eyebrow">{{ skillLabel(practiceSkill) }} practice drill</span>
           <h3 id="practice-result-heading">
             Question {{ practiceIndex + 1 }} of {{ practiceQuestions.length }}
           </h3>
@@ -406,8 +786,9 @@
             (click)="practiceStep(-1)"
             [disabled]="practiceIndex === 0"
           >
-            ← Previous</button
-          ><button
+            ← Previous
+          </button>
+          <button
             type="button"
             class="button secondary"
             (click)="practiceStep(1)"
@@ -417,125 +798,259 @@
           </button>
         </div>
       </div>
+
+      <!-- Render the Question Card -->
       <app-interview-question-card [question]="question" />
-      <div class="self-check">
-        <span>How did that feel?</span
-        ><button
-          type="button"
-          class="button secondary"
-          [attr.aria-pressed]="currentCheck === 'review'"
-          (click)="selfCheck('review')"
+
+      <!-- Self Check Rating -->
+      <div class="self-check surface">
+        <span class="self-check-label">How did that feel?</span>
+        <div class="self-check-buttons">
+          <button
+            type="button"
+            class="button secondary check-btn"
+            [class.active]="currentCheck === 'review'"
+            [attr.aria-pressed]="currentCheck === 'review'"
+            (click)="selfCheck('review')"
+          >
+            Review later
+          </button>
+          <button
+            type="button"
+            class="button secondary check-btn"
+            [class.active]="currentCheck === 'comfortable'"
+            [attr.aria-pressed]="currentCheck === 'comfortable'"
+            (click)="selfCheck('comfortable')"
+          >
+            Comfortable
+          </button>
+        </div>
+        <span class="muted small self-check-note"
+          >Your self-check for this visit, not a proficiency score.</span
         >
-          Review later</button
-        ><button
-          type="button"
-          class="button secondary"
-          [attr.aria-pressed]="currentCheck === 'comfortable'"
-          (click)="selfCheck('comfortable')"
-        >
-          Comfortable</button
-        ><span class="muted small">Your self-check for this visit, not a proficiency score.</span>
       </div>
     </section>
+
+    <!-- Custom Answer Section -->
     <div *ngIf="askError" class="notice error" role="alert">
-      {{ askError
-      }}<button
-        type="button"
-        class="text-button"
-        (click)="askCustomQuestion()"
-        [disabled]="!canAsk"
-      >
+      <span>{{ askError }}</span>
+      <button type="button" class="text-button" (click)="askCustomQuestion()" [disabled]="!canAsk">
         Retry question
       </button>
     </div>
     <div *ngIf="askNotice" class="notice" role="status">{{ askNotice }}</div>
-    <section *ngIf="customResult" aria-label="Custom answer">
+
+    <section *ngIf="customResult" class="custom-result-section" aria-label="Custom answer">
+      <div class="section-heading">
+        <span class="eyebrow dev-eyebrow">Custom Answer Result</span>
+      </div>
       <app-interview-question-card [question]="customResult" />
     </section>
+
+    <!-- Recent Questions This Visit -->
     <section *ngIf="recentQuestions.length" class="recent-section">
       <h3>Recent questions this visit</h3>
       <p class="muted small">Only questions you asked in this signed-in visit.</p>
       <div class="recent-list">
         <button
           type="button"
+          class="recent-chip"
           *ngFor="let question of recentQuestions; trackBy: trackQuestion"
           (click)="customResult = question"
         >
-          {{ question.question }}<span aria-hidden="true">↗</span>
+          <span class="recent-title">{{ question.question }}</span>
+          <span class="recent-arrow" aria-hidden="true">↗</span>
         </button>
       </div>
     </section>
   </section>
 
-  <section *ngIf="tab === 'sessions'" class="history" aria-labelledby="history-heading">
+  <!-- ══════════════════════════════════════════════
+       TAB 3: SESSIONS & HISTORY
+       ══════════════════════════════════════════════ -->
+  <section *ngIf="tab === 'sessions'" class="history-section" aria-labelledby="history-heading">
     <div class="section-intro">
-      <span class="eyebrow">Your private workspace</span>
+      <span class="eyebrow dev-eyebrow">YOUR PRIVATE WORKSPACE</span>
       <h2 id="history-heading">Pick up where you left off.</h2>
       <p class="muted">
         Recent saved practice sessions and custom answers from your account (up to 50). Historical
         records keep their original context.
       </p>
     </div>
+
+    <!-- Error State -->
     <div class="notice error" *ngIf="historyError" role="alert">
-      {{ historyError
-      }}<button type="button" class="text-button" (click)="loadHistory(true)">Retry history</button>
+      <span>{{ historyError }}</span>
+      <button type="button" class="text-button" (click)="loadHistory(true)">Retry history</button>
     </div>
+
+    <!-- Loading Status -->
     <div class="loading-status" *ngIf="historyLoading" role="status">
-      <span class="spinner" aria-hidden="true"></span>Loading your sessions…
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Loading your sessions…</span>
     </div>
+
+    <!-- Sessions Master-Detail Layout -->
     <div class="history-layout" *ngIf="sessions.length">
-      <div class="session-list">
-        <button
-          type="button"
-          *ngFor="let session of sessions"
-          class="surface session-row"
-          [class.selected]="selectedSession?._id === session._id"
-          (click)="openSession(session)"
-        >
-          <span class="panel-kicker">{{
-            session.kind === 'custom' ? 'Custom answer' : 'Practice session'
-          }}</span
-          ><strong>{{
-            skillLabel(session.topicKey || session.questions[0]?.topicKey || '') ||
-              session.careerStack ||
-              'Saved interview session'
-          }}</strong
-          ><span class="muted small"
-            >{{ session.questions.length }}
-            {{ session.questions.length === 1 ? 'question' : 'questions' }} ·
-            {{
-              session.createdAt ? (session.createdAt | date: 'mediumDate') : 'Date unavailable'
-            }}</span
-          >
-        </button>
-      </div>
-      <section class="session-detail" *ngIf="selectedSession as session">
-        <div class="section-heading">
-          <div>
-            <h3>Saved questions</h3>
-            <p class="muted small">{{ session.careerStack }} {{ session.experienceLevel }}</p>
+      <!-- Rich Left Panel: Session Inspector & Navigation Hub -->
+      <aside class="history-sidebar">
+        <!-- Sidebar Header & Counter -->
+        <div class="sidebar-header">
+          <span class="panel-kicker">SAVED WORKSPACE</span>
+          <div class="sidebar-title-row">
+            <h3 class="sidebar-title">Sessions</h3>
+            <span class="sidebar-badge">{{ sessions.length }} saved</span>
           </div>
+        </div>
+
+        <!-- Session List (Selector) -->
+        <div class="session-list" role="tablist" aria-label="Saved sessions">
           <button
             type="button"
-            class="button secondary"
+            *ngFor="let session of sessions"
+            class="surface session-row"
+            [class.selected]="selectedSession?._id === session._id"
+            (click)="openSession(session)"
+            role="tab"
+            [attr.aria-selected]="selectedSession?._id === session._id"
+          >
+            <div class="session-kicker-row">
+              <span class="session-type-pill" [class.custom]="session.kind === 'custom'">
+                {{ session.kind === 'custom' ? 'Custom answer' : 'Practice set' }}
+              </span>
+              <span class="session-date">{{
+                session.createdAt ? (session.createdAt | date: 'mediumDate') : 'Date unavailable'
+              }}</span>
+            </div>
+            <strong class="session-title">{{
+              skillLabel(session.topicKey || session.questions[0]?.topicKey || '') ||
+                session.careerStack ||
+                'Saved interview session'
+            }}</strong>
+            <div class="session-meta-row">
+              <span class="session-count">
+                {{ session.questions.length }}
+                {{ session.questions.length === 1 ? 'question' : 'questions' }}
+              </span>
+              <span class="session-arrow" aria-hidden="true">→</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Selected Session Context & Interactive Question Outline (TOC) -->
+        <div class="session-inspector surface" *ngIf="selectedSession as session">
+          <div class="inspector-header">
+            <span class="inspector-kicker">SESSION OUTLINE</span>
+            <div class="inspector-meta">
+              <span class="inspector-stack"
+                >{{ session.careerStack || 'Frontend' }} ·
+                {{ session.experienceLevel || 'Student' }}</span
+              >
+            </div>
+          </div>
+
+          <!-- Quick Action -->
+          <button
+            type="button"
+            class="button primary resume-btn"
             (click)="resumeSession(session)"
             [disabled]="!session.questions.length"
           >
-            Practice this session
+            <span>Practice this session</span>
+            <span aria-hidden="true">→</span>
           </button>
+
+          <!-- Interactive Question Index -->
+          <div class="session-toc" *ngIf="session.questions.length">
+            <div class="toc-title-row">
+              <span class="toc-heading">Question Index</span>
+              <span class="toc-count">{{ session.questions.length }} total</span>
+            </div>
+            <div class="toc-list">
+              <button
+                type="button"
+                *ngFor="let q of session.questions; let i = index"
+                class="toc-item"
+                (click)="scrollToQuestion(i)"
+                [title]="q.question"
+              >
+                <span class="toc-num">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
+                <span class="toc-text">{{ q.question }}</span>
+                <span
+                  class="toc-diff-dot"
+                  [class]="q.difficulty || 'medium'"
+                  [title]="q.difficulty || 'medium'"
+                ></span>
+              </button>
+            </div>
+          </div>
         </div>
+      </aside>
+
+      <!-- Right Column: Question Blocks Stream -->
+      <section class="session-detail" *ngIf="selectedSession as session">
+        <div class="session-detail-header surface">
+          <div class="detail-header-left">
+            <div class="detail-kicker-row">
+              <span class="panel-kicker">{{
+                session.kind === 'custom' ? 'CUSTOM Q&A' : 'PRACTICE SET'
+              }}</span>
+              <span class="detail-date">{{
+                session.createdAt ? (session.createdAt | date: 'mediumDate') : 'Date unavailable'
+              }}</span>
+            </div>
+            <h3 class="detail-title">
+              {{ skillLabel(session.topicKey || session.questions[0]?.topicKey || '') }} Saved
+              Questions
+            </h3>
+            <p class="muted small detail-sub">
+              {{ session.careerStack }} · {{ session.experienceLevel }} ·
+              {{ session.questions.length }} questions in this set
+            </p>
+          </div>
+          <div class="detail-header-actions">
+            <button
+              type="button"
+              class="button primary"
+              (click)="resumeSession(session)"
+              [disabled]="!session.questions.length"
+            >
+              Practice this session
+            </button>
+          </div>
+        </div>
+
         <div class="question-list">
-          <app-interview-question-card
-            *ngFor="let question of session.questions; trackBy: trackQuestion"
-            [question]="question"
-          />
+          <div
+            *ngFor="let question of session.questions; let i = index; trackBy: trackQuestion"
+            [id]="'session-q-' + i"
+            class="session-question-block"
+          >
+            <div class="question-block-header">
+              <span class="question-block-badge"
+                >Question {{ i + 1 }} of {{ session.questions.length }}</span
+              >
+              <button
+                type="button"
+                class="jump-top-btn"
+                (click)="scrollToQuestion(0)"
+                title="Scroll back to top"
+              >
+                ↑ Top
+              </button>
+            </div>
+            <app-interview-question-card [question]="question" />
+          </div>
         </div>
       </section>
-      <div class="surface empty-state" *ngIf="!selectedSession">
+
+      <div class="surface empty-state choose-session-empty" *ngIf="!selectedSession">
         <h3>Choose a session</h3>
-        <p>Open a saved session to review its questions and answers.</p>
+        <p>Open a saved session from the list to review its questions and answers.</p>
       </div>
     </div>
+
+    <!-- Empty History -->
     <div
       class="surface empty-state"
       *ngIf="historyLoaded && !historyLoading && !sessions.length && !historyError"
