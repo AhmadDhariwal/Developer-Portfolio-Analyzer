@@ -213,4 +213,17 @@ describe('Interview Prep workspace', () => {
     expect(component.selectedSkill).toBe('python');
     expect(component.context).toContain('AI/ML');
   });
+  it('does not auto-load catalog when technology filter changes until applyFilters is called', () => {
+    const calls = api.getTopQuestions.mock.calls.length;
+    component.onTechnologyChange('python');
+    expect(component.selectedSkill).toBe('python');
+    expect(component.filtersDirty).toBe(true);
+    expect(api.getTopQuestions.mock.calls.length).toBe(calls);
+
+    component.applyFilters();
+    expect(api.getTopQuestions.mock.calls.length).toBe(calls + 1);
+    expect(api.getTopQuestions).toHaveBeenLastCalledWith(
+      expect.objectContaining({ skill: 'python' }),
+    );
+  });
 });

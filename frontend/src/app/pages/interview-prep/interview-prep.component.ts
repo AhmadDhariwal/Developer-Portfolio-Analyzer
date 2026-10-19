@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription, finalize, skip } from 'rxjs';
+import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, skip } from 'rxjs';
 import { InterviewPrepService } from '../../shared/services/interview-prep.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { ThemeService, ThemePreference } from '../../shared/services/theme.service';
@@ -102,6 +102,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   private destroyed = false;
   private skillWasChosen = false;
   private pendingCatalogKey = '';
+  private readonly searchDebounce$ = new Subject<string>();
 
   constructor(
     private readonly prep: InterviewPrepService,
@@ -112,6 +113,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedSkill = this.profileSkill();
+    this.subscriptions.add(
+      this.searchDebounce$.pipe(debounceTime(350), distinctUntilChanged()).subscribe((val) => {
+        const trimmed = val.replace(/\s+/g, ' ').trim();
+        if (!trimmed || trimmed.length >= 3) {
+          this.loadCatalog(1);
+        }
+      }),
+    );
     this.subscriptions.add(
       this.prep.owner$.pipe(skip(1)).subscribe((owner) => {
         this.cancelRequests();
@@ -146,7 +155,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         if (owner) this.loadCatalog(1);
         else {
           this.catalogError = 'Sign in to load your question library.';
-          this.cdr.markForCheck();
+          if (!this.destroyed) this.cdr.detectChanges();
         }
       }),
     );
@@ -163,7 +172,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           this.selectedSkill = this.profileSkill();
           this.loadCatalog(1);
         }
-        this.cdr.markForCheck();
+        if (!this.destroyed) this.cdr.detectChanges();
       }),
     );
     this.loadCatalog(1);
@@ -227,10 +236,26 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.query = '';
     this.loadCatalog(1);
   }
+  onQueryInput(value: string): void {
+    this.query = value;
+    this.filtersDirty = true;
+    this.searchDebounce$.next(value);
+  }
+  onTechnologyChange(skill: string): void {
+    this.skillWasChosen = true;
+    this.selectedSkill = skill;
+    this.filtersDirty = true;
+    if (!this.destroyed) this.cdr.detectChanges();
+  }
   applyFilters(): void {
+    this.cancelAsk();
+    this.cancelPractice();
     this.loadCatalog(1);
   }
   resetFilters(): void {
+    if (this.loadedSkill) {
+      this.selectedSkill = this.loadedSkill;
+    }
     this.difficulty = '';
     this.tags = '';
     this.category = '';
@@ -242,6 +267,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     const query = this.query.replace(/\s+/g, ' ').trim();
     if (query && query.length < 3) {
       this.catalogError = 'Enter at least 3 characters to search.';
+      this.loading = false;
+      if (!this.destroyed) this.cdr.detectChanges();
       return;
     }
     const draftKey = this.catalogDraftKey();
@@ -252,6 +279,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.catalogSub?.unsubscribe();
     this.loading = true;
     this.catalogError = '';
+    if (!this.destroyed) this.cdr.detectChanges();
     const params: InterviewCatalogParams = {
       skill: this.selectedSkill,
       difficulty: this.difficulty || undefined,
@@ -281,7 +309,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         finalize(() => {
           if (version === this.catalogVersion && !this.destroyed) {
             this.loading = false;
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           }
         }),
       )
@@ -297,13 +325,18 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           this.loadedSkill = params.skill;
           this.loadedAt = new Date();
           this.filtersDirty = this.catalogDraftKey() !== draftKey;
+          this.loading = false;
+          if (!this.destroyed) this.cdr.detectChanges();
         },
         error: (error) => {
-          if (version === this.catalogVersion)
+          if (version === this.catalogVersion) {
             this.catalogError = this.errorText(
               error,
               'Could not refresh questions. Your previous results are still available.',
             );
+            this.loading = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+          }
         },
       });
   }
@@ -362,12 +395,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   askCustomQuestion(): void {
     if (!this.canAsk) {
       if (!this.asking) this.askError = 'Enter a question between 12 and 500 characters.';
+      if (!this.destroyed) this.cdr.detectChanges();
       return;
     }
     const version = ++this.askVersion;
     this.asking = true;
     this.askError = '';
     this.askNotice = '';
+    if (!this.destroyed) this.cdr.detectChanges();
     const skill = this.selectedSkill;
     this.askSub = this.prep
       .askQuestion({ question: this.customQuestion.trim(), skill })
@@ -375,7 +410,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         finalize(() => {
           if (version === this.askVersion && !this.destroyed) {
             this.asking = false;
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           }
         }),
       )
@@ -385,6 +420,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           if (answer.sourceType === 'no_verified_answer') {
             this.askError =
               'No verified answer is available for this question. Try rephrasing it or search the library.';
+            this.asking = false;
+            if (!this.destroyed) this.cdr.detectChanges();
             return;
           }
           this.customResult = { ...answer, topicKey: answer.topicKey || skill };
@@ -395,13 +432,18 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
               : 'Answer saved to your private history.'
             : 'Using an existing answer. Its source is shown below.';
           this.historyLoaded = false;
+          this.asking = false;
+          if (!this.destroyed) this.cdr.detectChanges();
         },
         error: (error) => {
-          if (version === this.askVersion)
+          if (version === this.askVersion) {
             this.askError = this.errorText(
               error,
               'Could not answer this question. Your previous answer is still available.',
             );
+            this.asking = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+          }
         },
       });
   }
@@ -416,6 +458,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     const version = ++this.practiceVersion;
     this.generating = true;
     this.practiceError = '';
+    if (!this.destroyed) this.cdr.detectChanges();
     const skill = this.selectedSkill;
     const request = saved
       ? this.prep.startSession(skill)
@@ -431,7 +474,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         finalize(() => {
           if (version === this.practiceVersion && !this.destroyed) {
             this.generating = false;
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           }
         }),
       )
@@ -441,6 +484,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           if (!response.questions?.length) {
             this.practiceError =
               'No practice questions were returned. Adjust the focus and try again.';
+            this.generating = false;
+            if (!this.destroyed) this.cdr.detectChanges();
             return;
           }
           this.practiceQuestions = response.questions;
@@ -455,13 +500,18 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           if (response.personalization?.limitation)
             this.practiceNotice += ` ${response.personalization.limitation}`;
           if (saved) this.historyLoaded = false;
+          this.generating = false;
+          if (!this.destroyed) this.cdr.detectChanges();
         },
         error: (error) => {
-          if (version === this.practiceVersion)
+          if (version === this.practiceVersion) {
             this.practiceError = this.errorText(
               error,
               'Could not generate a practice set. Your previous set is still available.',
             );
+            this.generating = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+          }
         },
       });
   }
@@ -487,13 +537,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     const version = ++this.historyVersion;
     this.historyLoading = true;
     this.historyError = '';
+    if (!this.destroyed) this.cdr.detectChanges();
     this.historySub = this.prep
       .getSessions(50)
       .pipe(
         finalize(() => {
           if (version === this.historyVersion && !this.destroyed) {
             this.historyLoading = false;
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           }
         }),
       )
@@ -505,11 +556,16 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
             if (!this.selectedSession && sessions.length) {
               this.selectedSession = sessions[0];
             }
+            this.historyLoading = false;
+            if (!this.destroyed) this.cdr.detectChanges();
           }
         },
         error: (error) => {
-          if (version === this.historyVersion)
+          if (version === this.historyVersion) {
             this.historyError = this.errorText(error, 'Could not load history. Try again.');
+            this.historyLoading = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+          }
         },
       });
   }
