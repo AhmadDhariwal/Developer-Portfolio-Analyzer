@@ -1,4 +1,6 @@
-const axios = require('axios');
+const transport = require('./jobProviderTransport');
+const poolCache = require('./jobPoolCacheService');
+const governance = require('./jobGovernanceService');
 const crypto = require('node:crypto');
 const { rankJobs } = require('../utils/jobRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
@@ -8,13 +10,15 @@ const JobSourceHealth = require('../models/jobSourceHealth');
 const JSEARCH_HOST = 'jsearch.p.rapidapi.com';
 const JSEARCH_BASE = 'https://jsearch.p.rapidapi.com/search';
 const JSEARCH_TIMEOUT_MS = Number.parseInt(process.env.JSEARCH_TIMEOUT_MS || '10000', 10);
-const JSEARCH_RETRIES = Math.min(1, Math.max(0, Number.parseInt(process.env.JSEARCH_RETRIES || '1', 10) || 0));
 const JOOBLE_BASE = 'https://jooble.org/api';
 const ADZUNA_BASE = 'https://api.adzuna.com/v1/api/jobs';
 const REMOTIVE_BASE = 'https://remotive.com/api/remote-jobs';
 const ARBEITNOW_BASE = 'https://www.arbeitnow.com/api/job-board-api';
 const REMOTEOK_BASE = 'https://remoteok.com/api';
-const SECONDARY_SOURCE_TIMEOUT_MS = Number.parseInt(process.env.JOB_SOURCE_TIMEOUT_MS || '9000', 10);
+const SECONDARY_SOURCE_TIMEOUT_MS = Number.parseInt(
+  process.env.JOB_SOURCE_TIMEOUT_MS || '9000',
+  10
+);
 const JOB_LIMITS = {
   defaultPage: 1,
   minPage: 1,
@@ -53,10 +57,32 @@ const LOCATION_ALIASES = {
   anywhere: 'Worldwide'
 };
 
-const VALID_PLATFORMS = ['All', 'JSearch', 'Jooble', 'Adzuna', 'Remotive', 'Arbeitnow', 'LinkedIn', 'Indeed', 'Rozee', 'Glassdoor', 'RemoteOK'];
+const VALID_PLATFORMS = [
+  'All',
+  'JSearch',
+  'Jooble',
+  'Adzuna',
+  'Remotive',
+  'Arbeitnow',
+  'LinkedIn',
+  'Indeed',
+  'Rozee',
+  'Glassdoor',
+  'RemoteOK'
+];
 const VALID_JOB_TYPES = ['All', 'Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
 const VALID_EXP_LEVELS = ['All', 'Intern', 'Entry', '1-2 years', '3-5 years', '5+ years'];
-const VALID_LOCATIONS = ['All', 'Pakistan', 'Asia', 'Middle East', 'United States', 'United Kingdom', 'Europe', 'Remote', 'Worldwide'];
+const VALID_LOCATIONS = [
+  'All',
+  'Pakistan',
+  'Asia',
+  'Middle East',
+  'United States',
+  'United Kingdom',
+  'Europe',
+  'Remote',
+  'Worldwide'
+];
 const LIVE_SOURCE_KEYS = ['jsearch', 'jooble', 'adzuna', 'remotive', 'arbeitnow', 'remoteok'];
 const SOURCE_DISPLAY_NAMES = {
   jsearch: 'JSearch',
@@ -96,44 +122,137 @@ const ADZUNA_COUNTRY_ALIASES = {
   in: 'in'
 };
 const ADZUNA_SUPPORTED_COUNTRIES = new Set([
-  'au', 'br', 'ca', 'de', 'fr', 'gb', 'in', 'it', 'nl', 'nz', 'pl', 'ru', 'sg', 'us', 'za', 'es'
+  'au',
+  'br',
+  'ca',
+  'de',
+  'fr',
+  'gb',
+  'in',
+  'it',
+  'nl',
+  'nz',
+  'pl',
+  'ru',
+  'sg',
+  'us',
+  'za',
+  'es'
 ]);
 const SKILL_ALIASES = {
-  angular: ['angular', 'angularjs', 'typescript', 'javascript', 'frontend', 'front end', 'front-end'],
-  angularjs: ['angular', 'angularjs', 'typescript', 'javascript', 'frontend', 'front end', 'front-end'],
-  'angular js': ['angular', 'angularjs', 'typescript', 'javascript', 'frontend', 'front end', 'front-end'],
-  react: ['react', 'react.js', 'reactjs', 'javascript', 'typescript', 'frontend', 'front end', 'front-end'],
-  'react.js': ['react', 'react.js', 'reactjs', 'javascript', 'typescript', 'frontend', 'front end', 'front-end'],
-  reactjs: ['react', 'react.js', 'reactjs', 'javascript', 'typescript', 'frontend', 'front end', 'front-end'],
+  angular: [
+    'angular',
+    'angularjs',
+    'typescript',
+    'javascript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
+  angularjs: [
+    'angular',
+    'angularjs',
+    'typescript',
+    'javascript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
+  'angular js': [
+    'angular',
+    'angularjs',
+    'typescript',
+    'javascript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
+  react: [
+    'react',
+    'react.js',
+    'reactjs',
+    'javascript',
+    'typescript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
+  'react.js': [
+    'react',
+    'react.js',
+    'reactjs',
+    'javascript',
+    'typescript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
+  reactjs: [
+    'react',
+    'react.js',
+    'reactjs',
+    'javascript',
+    'typescript',
+    'frontend',
+    'front end',
+    'front-end'
+  ],
   node: ['node', 'node.js', 'nodejs', 'express', 'backend', 'back end', 'back-end', 'javascript'],
-  'node.js': ['node', 'node.js', 'nodejs', 'express', 'backend', 'back end', 'back-end', 'javascript'],
-  'node js': ['node', 'node.js', 'nodejs', 'express', 'backend', 'back end', 'back-end', 'javascript'],
+  'node.js': [
+    'node',
+    'node.js',
+    'nodejs',
+    'express',
+    'backend',
+    'back end',
+    'back-end',
+    'javascript'
+  ],
+  'node js': [
+    'node',
+    'node.js',
+    'nodejs',
+    'express',
+    'backend',
+    'back end',
+    'back-end',
+    'javascript'
+  ],
   nodejs: ['node', 'node.js', 'nodejs', 'express', 'backend', 'back end', 'back-end', 'javascript']
 };
-const JOB_CACHE_TTL_HOURS = Math.max(24, Math.min(48, Number.parseInt(process.env.JOB_CACHE_TTL_HOURS || '36', 10) || 36));
+const JOB_CACHE_TTL_HOURS = Math.max(
+  24,
+  Math.min(48, Number.parseInt(process.env.JOB_CACHE_TTL_HOURS || '36', 10) || 36)
+);
 const JOB_CACHE_TTL_MS = JOB_CACHE_TTL_HOURS * 60 * 60 * 1000;
-const JOB_CACHE_RETENTION_MS = Math.max(3, Number.parseInt(process.env.JOB_CACHE_RETENTION_DAYS || '7', 10) || 7) * 86400000;
-const JOB_POOL_CACHE_TTL_MS = Math.max(30000, Number.parseInt(process.env.JOB_POOL_CACHE_TTL_MS || '300000', 10) || 300000);
-const JOB_SOURCE_DEADLINE_MS = Math.max(3000, Number.parseInt(process.env.JOB_SOURCE_DEADLINE_MS || '12000', 10) || 12000);
-const SOURCE_HEALTH_WRITE_INTERVAL_MS = Math.max(60000, Number.parseInt(process.env.JOB_SOURCE_HEALTH_WRITE_INTERVAL_MS || '300000', 10) || 300000);
-const SOURCE_WARNING_DEDUPE_MS = Math.max(60000, Number.parseInt(process.env.JOB_SOURCE_WARNING_DEDUPE_MS || '300000', 10) || 300000);
-const JSEARCH_QUOTA_COOLDOWN_MS = Math.max(60000, Math.min(86400000, Number.parseInt(process.env.JSEARCH_QUOTA_COOLDOWN_MS || '21600000', 10) || 21600000));
-const jobPoolCache = new Map();
-const jobPoolInflight = new Map();
+const JOB_CACHE_RETENTION_MS =
+  Math.max(3, Number.parseInt(process.env.JOB_CACHE_RETENTION_DAYS || '7', 10) || 7) * 86400000;
+const SOURCE_HEALTH_WRITE_INTERVAL_MS = Math.max(
+  60000,
+  Number.parseInt(process.env.JOB_SOURCE_HEALTH_WRITE_INTERVAL_MS || '300000', 10) || 300000
+);
+const SOURCE_WARNING_DEDUPE_MS = Math.max(
+  60000,
+  Number.parseInt(process.env.JOB_SOURCE_WARNING_DEDUPE_MS || '300000', 10) || 300000
+);
 const sourceHealthWriteState = new Map();
 const sourceWarningState = new Map();
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const toText = (value) => String(value || '').trim();
-const buildSourceSummarySeed = () => LIVE_SOURCE_KEYS.reduce((accumulator, key) => {
-  accumulator[key] = 0;
-  return accumulator;
-}, {});
+const toText = (value) =>
+  typeof value === 'string' || typeof value === 'number'
+    ? String(value).trim().slice(0, 30000)
+    : '';
+const buildSourceSummarySeed = () =>
+  LIVE_SOURCE_KEYS.reduce((accumulator, key) => {
+    accumulator[key] = 0;
+    return accumulator;
+  }, {});
 const uniqueStrings = (values = [], limit = 12) => {
   const seen = new Set();
   const output = [];
 
-  for (const value of values) {
+  for (const value of Array.isArray(values) ? values : []) {
     const normalized = toText(value);
     const key = normalized.toLowerCase();
     if (!normalized || seen.has(key)) continue;
@@ -174,7 +293,11 @@ function buildSourceQuery(options = {}, filters = {}) {
     knownSkills.slice(0, 2).join(' '),
     resumeSkills.slice(0, 2).join(' '),
     filters.skills
-  ].map(toText).filter(Boolean).join(' ').slice(0, 90);
+  ]
+    .map(toText)
+    .filter(Boolean)
+    .join(' ')
+    .slice(0, 90);
 }
 
 function logSourceFailure(failure = {}) {
@@ -186,35 +309,22 @@ function logSourceFailure(failure = {}) {
   const now = Date.now();
   if (Number(sourceWarningState.get(key) || 0) > now) return;
   sourceWarningState.set(key, now + SOURCE_WARNING_DEDUPE_MS);
-  console.warn(`[JobService][SourceFailure] source=${source} reason=${reason}${status ? ` status=${status}` : ''}`);
+  while (sourceWarningState.size > 128)
+    sourceWarningState.delete(sourceWarningState.keys().next().value);
+  console.warn(
+    `[JobService][SourceFailure] source=${source} reason=${reason}${status ? ` status=${status}` : ''}`
+  );
 }
 
 function sourceErrorMessage(failure = null) {
   if (!failure) return '';
-  if (['quota_exceeded', 'circuit_open'].includes(failure.reason)) return 'Source quota is temporarily unavailable.';
+  if (['quota_exceeded', 'circuit_open'].includes(failure.reason))
+    return 'Source quota is temporarily unavailable.';
   return toText(failure.reason || 'Source request failed').slice(0, 120);
 }
 
-function redactRequestParams(params = {}) {
-  return Object.entries(params || {}).reduce((accumulator, [key, value]) => {
-    const normalizedKey = String(key || '').toLowerCase();
-    accumulator[key] = /(^|_)(key|secret|token|password)($|_)|^app_id$/.test(normalizedKey)
-      ? (toText(value) ? '[configured]' : '')
-      : value;
-    return accumulator;
-  }, {});
-}
-
 function safeResponseBody(value) {
-  if (value === undefined || value === null) return null;
-  if (typeof value === 'string') return value.slice(0, 1000);
-  try {
-    return JSON.parse(JSON.stringify(value)).toString === Object.prototype.toString
-      ? JSON.parse(JSON.stringify(value))
-      : value;
-  } catch {
-    return String(value).slice(0, 1000);
-  }
+  return Number.isFinite(value?.jobsFetched) ? { jobsFetched: value.jobsFetched } : null;
 }
 
 function buildProviderDiagnostics({
@@ -232,8 +342,8 @@ function buildProviderDiagnostics({
   return {
     source: normaliseSourceKey(source),
     endpoint: toText(endpoint),
-    requestQuery: toText(requestQuery),
-    requestParams: redactRequestParams(requestParams),
+    requestQuery: '',
+    requestParams: null,
     statusCode: statusCode || null,
     responseBody: safeResponseBody(responseBody),
     configured: Boolean(configured),
@@ -259,60 +369,90 @@ function buildSourceFailure({
     configured,
     detail: toText(detail),
     circuitOpenUntil,
-    ...(diagnostics ? buildProviderDiagnostics({ ...diagnostics, source, configured, reachable: false, lastFailureAt: new Date() }) : {})
+    ...(diagnostics
+      ? buildProviderDiagnostics({
+          ...diagnostics,
+          source,
+          configured,
+          reachable: false,
+          lastFailureAt: new Date()
+        })
+      : {})
   };
 }
 async function updateSourceHealthStats(sourceResults = []) {
   if (!Array.isArray(sourceResults) || !sourceResults.length) return;
   const now = new Date();
-  await Promise.all(sourceResults.map((result) => {
-    const source = normaliseSourceKey(result.source);
-    const failure = result.failure || null;
-    const jobsFetched = Array.isArray(result.jobs) ? result.jobs.length : 0;
-    const reachable = Boolean(result.configured && !failure);
-    const stateKey = `${Boolean(result.configured)}|${reachable}|${failure?.reason || ''}|${failure?.status || ''}|${failure?.circuitOpenUntil || ''}`;
-    const previous = sourceHealthWriteState.get(source);
-    if (previous?.stateKey === stateKey && Date.now() - previous.writtenAt < SOURCE_HEALTH_WRITE_INTERVAL_MS) return null;
-    sourceHealthWriteState.set(source, { stateKey, writtenAt: Date.now() });
-    const update = {
-      source, configured: Boolean(result.configured), reachable, jobsFetched,
-      error: failure ? sourceErrorMessage(failure) : '',
-      endpoint: result.diagnostics?.endpoint || failure?.endpoint || '',
-      requestQuery: result.diagnostics?.requestQuery || failure?.requestQuery || '',
-      requestParams: result.diagnostics?.requestParams || failure?.requestParams || null,
-      statusCode: result.diagnostics?.statusCode || failure?.statusCode || failure?.status || null,
-      responseBody: result.diagnostics?.responseBody || failure?.responseBody || null
-    };
-    if (reachable) {
-      update.lastSuccessAt = now;
-      update.circuitState = 'closed';
-      update.circuitOpenUntil = null;
-    } else if (failure) {
-      update.lastFailureAt = now;
-      if (['quota_exceeded', 'circuit_open'].includes(failure.reason)) {
-        update.circuitState = 'quota_exceeded';
-        update.circuitOpenUntil = failure.circuitOpenUntil || null;
-        update.error = 'Source quota is temporarily unavailable.';
-        update.responseBody = null;
+  await Promise.all(
+    sourceResults.map((result) => {
+      const source = normaliseSourceKey(result.source);
+      const failure = result.failure || null;
+      const jobsFetched = Array.isArray(result.jobs) ? result.jobs.length : 0;
+      const reachable = Boolean(result.configured && !failure);
+      const stateKey = `${Boolean(result.configured)}|${reachable}|${failure?.reason || ''}|${failure?.status || ''}|${failure?.circuitOpenUntil || ''}`;
+      const previous = sourceHealthWriteState.get(source);
+      if (
+        previous?.stateKey === stateKey &&
+        Date.now() - previous.writtenAt < SOURCE_HEALTH_WRITE_INTERVAL_MS
+      )
+        return null;
+      sourceHealthWriteState.set(source, { stateKey, writtenAt: Date.now() });
+      const update = {
+        source,
+        configured: Boolean(result.configured),
+        reachable,
+        jobsFetched,
+        error: failure ? sourceErrorMessage(failure) : '',
+        endpoint: result.diagnostics?.endpoint || failure?.endpoint || '',
+        requestQuery: result.diagnostics?.requestQuery || failure?.requestQuery || '',
+        requestParams: result.diagnostics?.requestParams || failure?.requestParams || null,
+        statusCode:
+          result.diagnostics?.statusCode || failure?.statusCode || failure?.status || null,
+        responseBody: result.diagnostics?.responseBody || failure?.responseBody || null
+      };
+      if (reachable) {
+        update.lastSuccessAt = now;
+        update.circuitState = 'closed';
+        update.circuitOpenUntil = null;
+      } else if (failure) {
+        update.lastFailureAt = now;
+        if (['quota_exceeded', 'circuit_open'].includes(failure.reason)) {
+          update.circuitState = 'quota_exceeded';
+          update.circuitOpenUntil = failure.circuitOpenUntil || null;
+          update.error = 'Source quota is temporarily unavailable.';
+          update.responseBody = null;
+        }
       }
-    }
-    return JobSourceHealth.findOneAndUpdate(
-      { source }, { $set: update }, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-    ).catch((error) => console.warn(`[JobService] Failed to update source health for ${source}: ${error.message}`));
-  }));
+      return JobSourceHealth.findOneAndUpdate(
+        { source },
+        { $set: update },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, maxTimeMS: 1500 }
+      ).catch((error) =>
+        console.warn(`[JobService] Failed to update source health for ${source}: ${error.message}`)
+      );
+    })
+  );
 }
-function buildSourceResult(source, jobs = [], failure = null, configured = true, diagnostics = null) {
+function buildSourceResult(
+  source,
+  jobs = [],
+  failure = null,
+  configured = true,
+  diagnostics = null
+) {
   return {
     source,
     jobs: Array.isArray(jobs) ? jobs : [],
     configured,
     failure,
-    diagnostics: diagnostics ? buildProviderDiagnostics({
-      ...diagnostics,
-      source,
-      configured,
-      reachable: configured && !failure
-    }) : null
+    diagnostics: diagnostics
+      ? buildProviderDiagnostics({
+          ...diagnostics,
+          source,
+          configured,
+          reachable: configured && !failure
+        })
+      : null
   };
 }
 
@@ -339,6 +479,8 @@ function toJobCacheDocument(job = {}) {
     benefits: Array.isArray(normalized.benefits) ? normalized.benefits : [],
     skills: Array.isArray(normalized.skills) ? normalized.skills : [],
     salary: normalized.salary,
+    salaryMetadata: normalized.salaryMetadata,
+    validThrough: normalized.validThrough,
     location: normalized.location,
     jobType: normalized.jobType,
     experienceLevel: normalized.experienceLevel,
@@ -351,29 +493,40 @@ function toJobCacheDocument(job = {}) {
 }
 
 function mapCachedJobRecord(record = {}, index = 0) {
-  return normaliseJob({
-    id: record.jobId,
-    externalJobId: record.externalJobId,
-    title: record.title,
-    company: record.company,
-    companyLogo: record.companyLogo,
-    location: record.location,
-    salary: record.salary,
-    jobType: record.jobType,
-    skills: record.skills,
-    postedDate: record.postedDate,
-    description: record.description,
-    requirements: record.requirements,
-    benefits: record.benefits,
-    platform: record.platform || record.source,
-    url: record.applyUrl,
-    applyUrl: record.applyUrl,
-    experienceLevel: record.experienceLevel
-  }, index, record.source || record.platform || 'Cached');
+  return normaliseJob(
+    {
+      id: record.jobId,
+      externalJobId: record.externalJobId,
+      title: record.title,
+      company: record.company,
+      companyLogo: record.companyLogo,
+      location: record.location,
+      salary: record.salary,
+      salaryMetadata: record.salaryMetadata,
+      validThrough: record.validThrough,
+      cacheExpiresAt: record.expiresAt,
+      freshUntil: record.freshUntil,
+      lastSynced: record.lastSynced,
+      hidden: record.hidden,
+      jobType: record.jobType,
+      skills: record.skills,
+      postedDate: record.postedDate,
+      description: record.description,
+      requirements: record.requirements,
+      benefits: record.benefits,
+      platform: record.platform || record.source,
+      url: record.applyUrl,
+      applyUrl: record.applyUrl,
+      experienceLevel: record.experienceLevel
+    },
+    index,
+    record.source || record.platform || 'Cached'
+  );
 }
 
 async function syncJobsToCache(jobs = []) {
   const documents = jobs
+    .slice(0, 1200)
     .map((job) => toJobCacheDocument(job))
     .filter(Boolean);
 
@@ -389,42 +542,8 @@ async function syncJobsToCache(jobs = []) {
     };
   }
 
-  const recentlySyncedSince = new Date(Date.now() - 60 * 60 * 1000);
-  const recentlySyncedKeys = await JobCache.find({
-    expiresAt: { $gt: new Date() },
-    lastSynced: { $gte: recentlySyncedSince }
-  }).select('source externalJobId applyUrl').lean();
-
-  const recentKeySet = new Set(
-    recentlySyncedKeys.map((record) => [
-      toText(record.source).toLowerCase(),
-      toText(record.externalJobId).toLowerCase(),
-      toText(record.applyUrl).toLowerCase().replace(/\/$/, '')
-    ].join('|'))
-  );
-
-  const deduped = documents.filter((document) => {
-    const key = [
-      toText(document.source).toLowerCase(),
-      toText(document.externalJobId).toLowerCase(),
-      toText(document.applyUrl).toLowerCase().replace(/\/$/, '')
-    ].join('|');
-    return !recentKeySet.has(key);
-  });
-
-  const skippedRecentlySynced = documents.length - deduped.length;
-
-  if (!deduped.length) {
-    return {
-      attempted: documents.length,
-      synced: 0,
-      upserted: 0,
-      modified: 0,
-      matched: 0,
-      skippedRecentlySynced,
-      failed: false
-    };
-  }
+  const deduped = [...new Map(documents.map((document) => [document.jobId, document])).values()];
+  const skippedRecentlySynced = 0;
 
   try {
     const result = await JobCache.bulkWrite(
@@ -435,7 +554,7 @@ async function syncJobsToCache(jobs = []) {
           upsert: true
         }
       })),
-      { ordered: false }
+      { ordered: false, maxTimeMS: 3000 }
     );
 
     return {
@@ -466,20 +585,26 @@ function buildCacheQuery(filters = {}, includeStale = false) {
   const now = new Date();
   const query = includeStale
     ? { expiresAt: { $gt: now } }
-    : { expiresAt: { $gt: now }, $or: [{ freshUntil: { $gt: now } }, { freshUntil: { $exists: false } }] };
+    : {
+        expiresAt: { $gt: now },
+        $or: [{ freshUntil: { $gt: now } }, { freshUntil: { $exists: false } }]
+      };
+  query.hidden = { $ne: true };
+  query.$and = [{ $or: [{ validThrough: null }, { validThrough: { $gt: now } }] }];
   if (filters.platform && filters.platform !== 'All') query.platform = filters.platform;
-  if (filters.jobType && filters.jobType !== 'All') query.jobType = new RegExp(`^${filters.jobType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+  if (filters.jobType && filters.jobType !== 'All')
+    query.jobType = new RegExp(`^${filters.jobType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
   return query;
 }
 
 async function loadCachedJobs(filters = {}, includeStale = false) {
   const records = await JobCache.find(buildCacheQuery(filters, includeStale))
-    .sort({ lastSynced: -1, updatedAt: -1 })
+    .sort({ lastSynced: -1, updatedAt: -1, _id: 1 })
+    .limit(1000)
+    .maxTimeMS(1500)
     .lean();
 
-  return records
-    .map((record, index) => mapCachedJobRecord(record, index))
-    .filter(isUsableJob);
+  return records.map((record, index) => mapCachedJobRecord(record, index)).filter(isUsableJob);
 }
 
 async function findCachedJobById(id = '') {
@@ -488,29 +613,38 @@ async function findCachedJobById(id = '') {
 
   const record = await JobCache.findOne({
     expiresAt: { $gt: new Date() },
-    $and: [{ $or: [{ freshUntil: { $gt: new Date() } }, { freshUntil: { $exists: false } }] }],
-    $or: [
-      { jobId: normalizedId },
-      { externalJobId: normalizedId }
-    ]
-  }).lean();
+    hidden: { $ne: true },
+    $and: [{ $or: [{ validThrough: null }, { validThrough: { $gt: new Date() } }] }],
+    $or: [{ jobId: normalizedId }, { externalJobId: normalizedId }]
+  })
+    .maxTimeMS(1500)
+    .lean();
 
   return record ? mapCachedJobRecord(record, 0) : null;
 }
 
 function inferJobStack(job = {}) {
-  const haystack = [
-    job.title,
-    job.description,
-    ...(job.skills || [])
-  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  const haystack = [job.title, job.description, ...(job.skills || [])]
+    .map((value) => String(value || '').toLowerCase())
+    .join(' ');
 
-  if (/(machine learning|tensorflow|pytorch|data science|\bai\b|\bml\b|llm)/.test(haystack)) return 'AI/ML';
+  if (/(machine learning|tensorflow|pytorch|data science|\bai\b|\bml\b|llm)/.test(haystack))
+    return 'AI/ML';
   if (/(react|angular|vue|frontend|front-end|html|css|ui|ux|next\.js)/.test(haystack)) {
-    if (/(node|express|api|backend|server|django|flask|spring|laravel|postgres|mongodb)/.test(haystack)) return 'Full Stack';
+    if (
+      /(node|express|api|backend|server|django|flask|spring|laravel|postgres|mongodb)/.test(
+        haystack
+      )
+    )
+      return 'Full Stack';
     return 'Frontend';
   }
-  if (/(node|express|api|backend|server|django|flask|spring|laravel|postgres|mongodb|java|golang|php)/.test(haystack)) return 'Backend';
+  if (
+    /(node|express|api|backend|server|django|flask|spring|laravel|postgres|mongodb|java|golang|php)/.test(
+      haystack
+    )
+  )
+    return 'Backend';
   return 'Full Stack';
 }
 
@@ -524,7 +658,11 @@ const QUALITY_THRESHOLDS = {
 async function getJobCacheMetrics() {
   const now = new Date();
   const records = await JobCache.find({ expiresAt: { $gt: now } })
-    .select('source title description skills location experienceLevel jobType applyUrl postedDate lastSynced createdAt updatedAt')
+    .limit(1000)
+    .maxTimeMS(1500)
+    .select(
+      'source title description skills location experienceLevel jobType applyUrl postedDate lastSynced createdAt updatedAt'
+    )
     .lean();
 
   const jobsBySource = records.reduce((accumulator, job) => {
@@ -561,8 +699,12 @@ async function getJobCacheMetrics() {
       locationCategories.onsiteJobs += 1;
     } else {
       locationCategories.onsiteJobs += 1;
-      if (/(usa|united states|new york|san francisco|seattle|austin|chicago)/.test(loc)) region = 'USA';
-      else if (/(europe|uk|london|germany|berlin|france|spain|netherlands|amsterdam|remote eu)/.test(loc)) region = 'Europe';
+      if (/(usa|united states|new york|san francisco|seattle|austin|chicago)/.test(loc))
+        region = 'USA';
+      else if (
+        /(europe|uk|london|germany|berlin|france|spain|netherlands|amsterdam|remote eu)/.test(loc)
+      )
+        region = 'Europe';
       else if (/(pakistan|lahore|karachi|islamabad)/.test(loc)) region = 'Pakistan';
       else if (/(india|bangalore|mumbai|delhi)/.test(loc)) region = 'India';
       else if (/(canada|toronto|vancouver)/.test(loc)) region = 'Canada';
@@ -577,12 +719,13 @@ async function getJobCacheMetrics() {
     .map((job) => new Date(job.lastSynced || job.updatedAt || job.createdAt).getTime())
     .filter((value) => Number.isFinite(value));
 
-  const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
+  const fortyEightHoursAgo = Date.now() - 48 * 60 * 60 * 1000;
   const freshJobs = timestamps.filter((ts) => ts >= fortyEightHoursAgo).length;
   const validApplyUrlJobs = records.filter((job) => isHttpUrl(job.applyUrl)).length;
 
   return {
     totalCachedJobs: records.length,
+    sampled: records.length === 1000,
     jobsBySource,
     jobsByStack,
     jobsByExperience,
@@ -602,17 +745,34 @@ async function getJobCacheMetrics() {
 }
 
 function computeQualityScore(qualityMetrics = {}) {
-  const { sourceDiversity = 0, stackDiversity = 0, freshnessRatio = 0, validApplyUrlRatio = 0 } = qualityMetrics;
+  const {
+    sourceDiversity = 0,
+    stackDiversity = 0,
+    freshnessRatio = 0,
+    validApplyUrlRatio = 0
+  } = qualityMetrics;
 
   const scores = [
-    sourceDiversity >= QUALITY_THRESHOLDS.sourceDiversity.excellent ? 2
-      : sourceDiversity >= QUALITY_THRESHOLDS.sourceDiversity.healthy ? 1 : 0,
-    stackDiversity >= QUALITY_THRESHOLDS.stackDiversity.excellent ? 2
-      : stackDiversity >= QUALITY_THRESHOLDS.stackDiversity.healthy ? 1 : 0,
-    freshnessRatio >= QUALITY_THRESHOLDS.freshnessRatio.excellent ? 2
-      : freshnessRatio >= QUALITY_THRESHOLDS.freshnessRatio.healthy ? 1 : 0,
-    validApplyUrlRatio >= QUALITY_THRESHOLDS.validApplyUrlRatio.excellent ? 2
-      : validApplyUrlRatio >= QUALITY_THRESHOLDS.validApplyUrlRatio.healthy ? 1 : 0
+    sourceDiversity >= QUALITY_THRESHOLDS.sourceDiversity.excellent
+      ? 2
+      : sourceDiversity >= QUALITY_THRESHOLDS.sourceDiversity.healthy
+        ? 1
+        : 0,
+    stackDiversity >= QUALITY_THRESHOLDS.stackDiversity.excellent
+      ? 2
+      : stackDiversity >= QUALITY_THRESHOLDS.stackDiversity.healthy
+        ? 1
+        : 0,
+    freshnessRatio >= QUALITY_THRESHOLDS.freshnessRatio.excellent
+      ? 2
+      : freshnessRatio >= QUALITY_THRESHOLDS.freshnessRatio.healthy
+        ? 1
+        : 0,
+    validApplyUrlRatio >= QUALITY_THRESHOLDS.validApplyUrlRatio.excellent
+      ? 2
+      : validApplyUrlRatio >= QUALITY_THRESHOLDS.validApplyUrlRatio.healthy
+        ? 1
+        : 0
   ];
 
   const total = scores.reduce((sum, s) => sum + s, 0);
@@ -642,24 +802,24 @@ async function getCacheHealth() {
     newestJob: metrics.newestJob,
     cacheStatus: computeCacheStatus(metrics.totalCachedJobs),
     qualityScore: computeQualityScore(metrics.qualityMetrics),
-    qualityMetrics: metrics.qualityMetrics
+    qualityMetrics: metrics.qualityMetrics,
+    sampled: metrics.sampled
   };
 }
 
 async function getSourceHealth() {
   const metrics = await getJobCacheMetrics();
-  const healthRows = await JobSourceHealth.find({}).lean();
+  const healthRows = await JobSourceHealth.find({}).limit(6).maxTimeMS(1500).lean();
+  const quotaHealth = await governance.health();
   const healthBySource = healthRows.reduce((accumulator, row) => {
     accumulator[normaliseSourceKey(row.source)] = row;
     return accumulator;
   }, {});
-  const integrations = getIntegrationSecretsSync();
-  const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
   const configuredBySource = {
-    jsearch: integrations?.jobsEnabled !== false && Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key'),
-    jooble: Boolean(toText(process.env.JOOBLE_API_KEY)),
-    adzuna: Boolean(toText(process.env.ADZUNA_APP_ID) && toText(process.env.ADZUNA_APP_KEY)),
-    remotive: true,
+    jsearch: sourceIsConfigured('jsearch'),
+    jooble: sourceIsConfigured('jooble'),
+    adzuna: sourceIsConfigured('adzuna'),
+    remotive: sourceIsConfigured('remotive'),
     arbeitnow: true,
     remoteok: true
   };
@@ -669,17 +829,17 @@ async function getSourceHealth() {
     const displayName = SOURCE_DISPLAY_NAMES[source] || source;
     accumulator[displayName] = {
       source: displayName,
-      configured: row.configured ?? configuredBySource[source] ?? false,
+      configured: configuredBySource[source] ?? false,
       reachable: Boolean(row.reachable),
       jobsFetched: Number(row.jobsFetched || 0),
       lastSuccessAt: row.lastSuccessAt || null,
       lastFailureAt: row.lastFailureAt || null,
-      error: row.error || '',
-      endpoint: row.endpoint || '',
-      requestQuery: row.requestQuery || '',
-      requestParams: row.requestParams || null,
+      error: row.error ? 'Source request failed.' : '',
+      endpoint: '',
+      requestQuery: '',
+      requestParams: null,
       statusCode: row.statusCode || null,
-      responseBody: row.responseBody || null,
+      responseBody: null,
       cacheCount: Number(metrics.jobsBySource[source] || 0)
     };
     return accumulator;
@@ -687,6 +847,7 @@ async function getSourceHealth() {
 
   return {
     sources,
+    governance: quotaHealth,
     cacheMetrics: metrics
   };
 }
@@ -719,7 +880,9 @@ function normaliseJobType(raw) {
 }
 
 function normaliseLocation(raw) {
-  const value = toText(raw).toLowerCase().replace(/[^a-z0-9 ]/g, '');
+  const value = toText(raw)
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, '');
   return LOCATION_ALIASES[value] || 'All';
 }
 
@@ -737,11 +900,20 @@ function normaliseExperienceFilter(raw) {
 function normaliseJobFilters(query = {}) {
   const platform = normalisePlatform(query.platform ?? query.source);
   const location = normaliseLocation(query.location);
-  const skills = toText(query.skills ?? query.skill).replace(/\s+/g, ' ').slice(0, 60);
+  const skills = toText(query.skills ?? query.skill)
+    .replace(/\s+/g, ' ')
+    .slice(0, 60);
   const jobType = normaliseJobType(query.jobType);
   const expLevel = normaliseExperienceFilter(query.expLevel ?? query.experienceLevel);
-  const page = Math.max(JOB_LIMITS.minPage, Number.parseInt(query.page, 10) || JOB_LIMITS.defaultPage);
-  const limit = clamp(Number.parseInt(query.limit, 10) || JOB_LIMITS.defaultLimit, 1, JOB_LIMITS.maxLimit);
+  const page = Math.max(
+    JOB_LIMITS.minPage,
+    Number.parseInt(query.page, 10) || JOB_LIMITS.defaultPage
+  );
+  const limit = clamp(
+    Number.parseInt(query.limit, 10) || JOB_LIMITS.defaultLimit,
+    1,
+    JOB_LIMITS.maxLimit
+  );
 
   return {
     platform: VALID_PLATFORMS.includes(platform) ? platform : 'All',
@@ -785,13 +957,16 @@ function mapExperienceMonthsToLabel(months) {
 
 function normaliseExperienceLabel(raw) {
   const value = toText(raw);
-  if (!value) return 'Entry';
+  if (!value) return '';
   const normalized = normaliseExperienceFilter(value);
-  return normalized === 'All' ? 'Entry' : normalized;
+  return normalized === 'All' ? '' : normalized;
 }
 
 function normalizeProviderQuery(query = '', fallback = 'software developer') {
-  const normalized = toText(query).replace(/[^\w\s+#./-]/g, ' ').replace(/\s+/g, ' ').trim();
+  const normalized = toText(query)
+    .replace(/[^\w\s+#./-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   return (normalized || fallback).slice(0, 90);
 }
 
@@ -811,18 +986,33 @@ function getAdzunaWhere(filters = {}, country = 'us') {
 }
 
 function isHttpUrl(value) {
-  return /^https?:\/\//i.test(toText(value));
+  try {
+    const url = new URL(toText(value));
+    const host = url.hostname.toLowerCase();
+    return (
+      ['http:', 'https:'].includes(url.protocol) &&
+      !url.username &&
+      !url.password &&
+      !url.port &&
+      host.includes('.') &&
+      !host.includes(':') &&
+      !/^(localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host) &&
+      !/\.(local|internal|localhost)$/.test(host)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function stripHtml(value = '') {
   return toText(value)
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|li|div|h\d)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
     .replace(/\s+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
@@ -838,12 +1028,53 @@ function normalizeStringList(values = [], limit = 12) {
 
 function extractSkillsFromText(...parts) {
   const catalog = [
-    'Angular', 'React', 'Vue.js', 'Next.js', 'Node.js', 'Express', 'TypeScript', 'JavaScript',
-    'Python', 'Django', 'Flask', 'Java', 'Spring Boot', 'PHP', 'Laravel', '.NET', 'C#',
-    'Ruby', 'Rails', 'Go', 'Golang', 'GraphQL', 'REST APIs', 'MongoDB', 'PostgreSQL',
-    'MySQL', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'CI/CD', 'Git',
-    'Tailwind CSS', 'SCSS', 'HTML', 'CSS', 'Redux', 'RxJS', 'Jest', 'Cypress',
-    'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Science', 'LLM'
+    'Angular',
+    'React',
+    'Vue.js',
+    'Next.js',
+    'Node.js',
+    'Express',
+    'TypeScript',
+    'JavaScript',
+    'Python',
+    'Django',
+    'Flask',
+    'Java',
+    'Spring Boot',
+    'PHP',
+    'Laravel',
+    '.NET',
+    'C#',
+    'Ruby',
+    'Rails',
+    'Go',
+    'Golang',
+    'GraphQL',
+    'REST APIs',
+    'MongoDB',
+    'PostgreSQL',
+    'MySQL',
+    'Redis',
+    'Docker',
+    'Kubernetes',
+    'AWS',
+    'Azure',
+    'GCP',
+    'CI/CD',
+    'Git',
+    'Tailwind CSS',
+    'SCSS',
+    'HTML',
+    'CSS',
+    'Redux',
+    'RxJS',
+    'Jest',
+    'Cypress',
+    'TensorFlow',
+    'PyTorch',
+    'Machine Learning',
+    'Data Science',
+    'LLM'
   ];
   const haystack = parts.map(stripHtml).join(' ').toLowerCase();
   return uniqueStrings(
@@ -853,36 +1084,72 @@ function extractSkillsFromText(...parts) {
 }
 
 function normaliseJob(job = {}, index = 0, source = 'Unknown') {
-  const title = toText(job.title) || 'Software Engineer';
-  const company = toText(job.company) || 'Technology Company';
-  const location = toText(job.location) || 'Remote';
-  const description = stripHtml(job.description) || 'Opportunity details were not provided by the source.';
-  const applyUrl = isHttpUrl(job.applyUrl) ? toText(job.applyUrl) : (isHttpUrl(job.url) ? toText(job.url) : '');
+  if (!job || typeof job !== 'object') return {};
+  const title = stripHtml(job.title).slice(0, 240);
+  const company = stripHtml(job.company).slice(0, 240);
+  const location = toText(job.location) || 'Unspecified';
+  const description = stripHtml(job.description).slice(0, 12000);
+  const applyUrl = isHttpUrl(job.applyUrl)
+    ? toText(job.applyUrl)
+    : isHttpUrl(job.url)
+      ? toText(job.url)
+      : '';
   const url = isHttpUrl(job.url) ? toText(job.url) : applyUrl;
   const platform = inferPlatform(job.url, job.platform);
   const skills = uniqueStrings(
-    Array.isArray(job.skills) && job.skills.length ? job.skills : extractSkillsFromText(title, description, job.requirements),
+    Array.isArray(job.skills) && job.skills.length
+      ? job.skills
+      : extractSkillsFromText(title, description, job.requirements),
     10
   );
-  const jobType = normaliseJobType(job.jobType) === 'All'
-    ? (location.toLowerCase().includes('remote') ? 'Remote' : 'Full Time')
-    : normaliseJobType(job.jobType);
-  const postedDate = /\d{4}-\d{2}-\d{2}/.test(toText(job.postedDate))
-    ? toText(job.postedDate)
-    : new Date().toISOString().split('T')[0];
+  const jobType =
+    normaliseJobType(job.jobType) === 'All'
+      ? location.toLowerCase().includes('remote')
+        ? 'Remote'
+        : ''
+      : normaliseJobType(job.jobType);
+  const postedDate =
+    /^\d{4}-\d{2}-\d{2}/.test(toText(job.postedDate)) && Number.isFinite(Date.parse(job.postedDate))
+      ? toText(job.postedDate)
+      : '';
   const experienceLevel = normaliseExperienceLabel(job.experienceLevel);
-  const salary = toText(job.salary) || 'Competitive';
+  const salary = toText(job.salary);
   const requirements = normalizeStringList(job.requirements, 12);
   const benefits = normalizeStringList(job.benefits, 10);
 
   return {
-    id: toText(job.id) || stableId('job', [source, title, company, location, platform, index]),
+    id: toText(job.id) || stableId('job', [source, title, company, location, platform, applyUrl]),
     externalJobId: toText(job.externalJobId || job.id),
     title,
     company,
-    companyLogo: toText(job.companyLogo),
+    companyLogo: isHttpUrl(job.companyLogo) ? toText(job.companyLogo) : '',
     location,
     salary,
+    salaryMetadata: {
+      min:
+        typeof job.salaryMetadata?.min === 'number' &&
+        Number.isFinite(job.salaryMetadata.min) &&
+        job.salaryMetadata.min >= 0
+          ? job.salaryMetadata.min
+          : null,
+      max:
+        typeof job.salaryMetadata?.max === 'number' &&
+        Number.isFinite(job.salaryMetadata.max) &&
+        job.salaryMetadata.max >= 0
+          ? job.salaryMetadata.max
+          : null,
+      currency: /^[A-Z]{3}$/.test(toText(job.salaryMetadata?.currency))
+        ? job.salaryMetadata.currency
+        : null,
+      period: toText(job.salaryMetadata?.period) || null
+    },
+    validThrough: Number.isFinite(Date.parse(job.validThrough))
+      ? new Date(job.validThrough).toISOString()
+      : null,
+    cacheExpiresAt: job.cacheExpiresAt || null,
+    freshUntil: job.freshUntil || null,
+    lastSynced: job.lastSynced || null,
+    hidden: job.hidden === true,
     jobType,
     skills,
     postedDate,
@@ -904,48 +1171,69 @@ function normaliseJob(job = {}, index = 0, source = 'Unknown') {
 
 function mapJSearchJob(job = {}, index = 0) {
   const applyLink = toText(job.job_apply_link);
-  const location = [job.job_city, job.job_state, job.job_country].filter(Boolean).join(', ') || (job.job_is_remote ? 'Remote' : 'Remote');
-  const salary = job.job_min_salary && job.job_max_salary
-    ? `$${job.job_min_salary}-${job.job_max_salary}/${job.job_salary_period || 'year'}`
-    : 'Competitive';
+  const location =
+    [job.job_city, job.job_state, job.job_country].filter(Boolean).join(', ') ||
+    (job.job_is_remote ? 'Remote' : 'Unspecified');
+  const salary =
+    job.job_min_salary && job.job_max_salary
+      ? `${job.job_salary_currency || ''} ${job.job_min_salary}-${job.job_max_salary}/${job.job_salary_period || ''}`.trim()
+      : '';
   const highlights = job.job_highlights || {};
   const skills = Array.isArray(job.job_required_skills)
     ? job.job_required_skills
     : extractSkillsFromText(job.job_title, job.job_description, highlights.Qualifications);
-  const experienceLevel = typeof job.job_required_experience?.required_experience_in_months === 'number'
-    ? mapExperienceMonthsToLabel(job.job_required_experience.required_experience_in_months)
-    : 'Entry';
+  const experienceLevel =
+    typeof job.job_required_experience?.required_experience_in_months === 'number'
+      ? mapExperienceMonthsToLabel(job.job_required_experience.required_experience_in_months)
+      : '';
 
-  return normaliseJob({
-    id: stableId('jsearch', [job.job_id || index, job.job_title, job.employer_name, applyLink]),
-    externalJobId: job.job_id,
-    title: job.job_title,
-    company: job.employer_name,
-    companyLogo: job.employer_logo || '',
-    location,
-    salary,
-    jobType: String(job.job_employment_type || '').replace('_', ' '),
-    skills,
-    postedDate: job.job_posted_at_datetime_utc ? String(job.job_posted_at_datetime_utc).split('T')[0] : '',
-    description: job.job_description,
-    requirements: highlights.Qualifications || [],
-    benefits: highlights.Benefits || [],
-    platform: 'JSearch',
-    url: applyLink,
-    applyUrl: applyLink,
-    experienceLevel
-  }, index, 'JSearch');
+  return normaliseJob(
+    {
+      id: stableId('jsearch', [job.job_id || index, job.job_title, job.employer_name, applyLink]),
+      externalJobId: job.job_id,
+      title: job.job_title,
+      company: job.employer_name,
+      companyLogo: job.employer_logo || '',
+      location,
+      salary,
+      salaryMetadata: {
+        min: job.job_min_salary,
+        max: job.job_max_salary,
+        currency: job.job_salary_currency,
+        period: job.job_salary_period
+      },
+      validThrough: job.job_offer_expiration_datetime_utc,
+      jobType: String(job.job_employment_type || '').replace('_', ' '),
+      skills,
+      postedDate: job.job_posted_at_datetime_utc
+        ? String(job.job_posted_at_datetime_utc).split('T')[0]
+        : '',
+      description: job.job_description,
+      requirements: highlights.Qualifications || [],
+      benefits: highlights.Benefits || [],
+      platform: 'JSearch',
+      url: applyLink,
+      applyUrl: applyLink,
+      experienceLevel
+    },
+    index,
+    'JSearch'
+  );
 }
 
 function sourceIsConfigured(source) {
+  const configured = (value) =>
+    /^[^\s]{8,240}$/.test(toText(value)) && !/^(your_|replace|placeholder)/i.test(toText(value));
   const integrations = getIntegrationSecretsSync();
   if (source === 'jsearch') {
     const key = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
-    return integrations?.jobsEnabled !== false && Boolean(key && key !== 'your_rapidapi_key');
+    return integrations?.jobsEnabled !== false && configured(key);
   }
-  if (source === 'jooble') return Boolean(toText(process.env.JOOBLE_API_KEY));
-  if (source === 'adzuna') return Boolean(toText(process.env.ADZUNA_APP_ID) && toText(process.env.ADZUNA_APP_KEY));
-  return ['remotive', 'arbeitnow', 'remoteok'].includes(source);
+  if (source === 'jooble') return configured(process.env.JOOBLE_API_KEY);
+  if (source === 'adzuna')
+    return configured(process.env.ADZUNA_APP_ID) && configured(process.env.ADZUNA_APP_KEY);
+  if (source === 'remotive') return process.env.JOB_REMOTIVE_ENABLED === 'true';
+  return ['arbeitnow', 'remoteok'].includes(source);
 }
 
 function selectedLiveSourceKeys(filters = {}) {
@@ -956,108 +1244,110 @@ function selectedLiveSourceKeys(filters = {}) {
   return LIVE_SOURCE_KEYS.filter(sourceIsConfigured);
 }
 
-function isRetryableProviderFailure(failure = {}) {
-  const safeFailure = failure || {};
-  const status = Number(safeFailure.statusCode || safeFailure.status) || 0;
-  return safeFailure.reason === 'timeout' || (safeFailure.reason === 'request_failed' && (!status || status >= 500));
-}
-
-function retryAfterMs(error) {
-  const value = error?.response?.headers?.['retry-after'];
-  if (value !== undefined && value !== null) {
-    const seconds = Number(value);
-    if (Number.isFinite(seconds) && seconds >= 0) return Math.min(86400000, Math.max(1000, seconds * 1000));
-    const retryAt = Date.parse(String(value));
-    if (Number.isFinite(retryAt)) return Math.min(86400000, Math.max(1000, retryAt - Date.now()));
-  }
-  return JSEARCH_QUOTA_COOLDOWN_MS;
-}
-
-async function openSourceQuotaCircuit(source, cooldownMs) {
-  const circuitOpenUntil = new Date(Date.now() + cooldownMs);
-  await JobSourceHealth.findOneAndUpdate(
-    { source: normaliseSourceKey(source) },
-    { $set: { source: normaliseSourceKey(source), configured: true, reachable: false, jobsFetched: 0,
-      error: 'Source quota is temporarily unavailable.', statusCode: 429, responseBody: null,
-      circuitState: 'quota_exceeded', circuitOpenUntil, lastFailureAt: new Date() } },
-    { upsert: true, setDefaultsOnInsert: true }
-  ).catch((error) => console.warn(`[JobService] Failed to open source circuit for ${source}: ${error.message}`));
-  return circuitOpenUntil;
-}
-
 async function getOpenSourceCircuits(sources = []) {
   if (!sources.length) return new Map();
-  const rows = await JobSourceHealth.find({ source: { $in: sources }, circuitState: 'quota_exceeded', circuitOpenUntil: { $gt: new Date() } })
-    .select('source circuitOpenUntil').lean().catch(() => []);
+  const rows = await JobSourceHealth.find({
+    source: { $in: sources },
+    circuitState: 'quota_exceeded',
+    circuitOpenUntil: { $gt: new Date() }
+  })
+    .select('source circuitOpenUntil')
+    .maxTimeMS(1500)
+    .lean()
+    .catch(() => []);
   return new Map(rows.map((row) => [normaliseSourceKey(row.source), row.circuitOpenUntil]));
 }
 
-async function fetchSourceWithRetry(source, fetcher) {
-  const first = await fetcher();
-  if (source === 'jsearch' || !isRetryableProviderFailure(first.failure)) return first;
-  await new Promise((resolve) => setTimeout(resolve, 250));
-  return fetcher();
+function providerFailure(error) {
+  const reasons = [
+    'cooldown',
+    'interval',
+    'concurrency',
+    'daily_budget',
+    'monthly_budget',
+    'budget_not_configured',
+    'quota_store_unavailable'
+  ];
+  const status = Number(error.response?.status) || undefined;
+  return {
+    reason: reasons.includes(error.code)
+      ? error.code
+      : status === 429
+        ? 'quota_exceeded'
+        : 'request_failed',
+    status,
+    configured: true,
+    circuitOpenUntil:
+      status === 429 ? new Date(Date.now() + governance.retryDelay(error.response?.headers)) : null
+  };
 }
-async function fetchJSearchJobs(query, maxResults = 80) {
-  const integrations = getIntegrationSecretsSync();
-  const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
-  const safeQuery = normalizeProviderQuery(query);
-  const baseDiagnostics = { source: 'jsearch', endpoint: JSEARCH_BASE, requestQuery: safeQuery, requestParams: { query: safeQuery, page: 1, num_pages: 1 } };
-  if (integrations?.jobsEnabled === false || !rapidApiKey || rapidApiKey === 'your_rapidapi_key') {
-    return buildSourceResult('jsearch', [], buildSourceFailure({ source: 'jsearch', reason: integrations?.jobsEnabled === false ? 'disabled_by_settings' : 'missing_api_key', configured: false, diagnostics: baseDiagnostics }), false, baseDiagnostics);
-  }
-  const headers = { 'X-RapidAPI-Key': rapidApiKey, 'X-RapidAPI-Host': JSEARCH_HOST, 'User-Agent': 'Developer-Portfolio-Analyzer/1.0' };
-  let lastFailure = null;
-  for (let attempt = 0; attempt <= JSEARCH_RETRIES; attempt += 1) {
-    const relaxedQuery = normalizeProviderQuery(attempt ? `${safeQuery} developer` : safeQuery);
-    const maxPages = Math.max(1, Math.min(Math.ceil(maxResults / 10), attempt ? 2 : 3));
-    const attemptDiagnostics = { ...baseDiagnostics, requestQuery: relaxedQuery, requestParams: { query: relaxedQuery, page: 1, num_pages: 1 } };
+function mapProviderRows(rows, mapper) {
+  return rows.flatMap((row, index) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
     try {
-      const aggregated = [];
-      for (let page = 1; page <= maxPages; page += 1) {
-        const requestParams = { query: relaxedQuery, page, num_pages: 1 };
-        const response = await axios.get(JSEARCH_BASE, { params: requestParams, headers, timeout: JSEARCH_TIMEOUT_MS });
-        const pageJobs = response.data?.data || [];
-        attemptDiagnostics.requestParams = requestParams;
-        if (!pageJobs.length) break;
-        aggregated.push(...pageJobs);
-        if (aggregated.length >= maxResults) break;
-      }
-      return buildSourceResult('jsearch', aggregated.slice(0, maxResults).map((job, index) => mapJSearchJob(job, index)), null, true, { ...attemptDiagnostics, statusCode: 200, responseBody: { jobsFetched: aggregated.length } });
-    } catch (error) {
-      const status = Number(error?.response?.status) || undefined;
-      const quotaExceeded = status === 429;
-      const circuitOpenUntil = quotaExceeded ? await openSourceQuotaCircuit('jsearch', retryAfterMs(error)) : null;
-      lastFailure = buildSourceFailure({ source: 'jsearch', reason: quotaExceeded ? 'quota_exceeded' : 'request_failed', status, configured: true, detail: quotaExceeded ? 'Source quota is temporarily unavailable.' : 'Source request failed.', circuitOpenUntil, diagnostics: { ...attemptDiagnostics, statusCode: status, responseBody: quotaExceeded ? null : { failed: true } } });
-      const retryable = !quotaExceeded && (status === undefined || status >= 500);
-      if (!retryable || attempt >= JSEARCH_RETRIES) break;
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      const job = mapper(row, index);
+      return isUsableJob(job) ? [job] : [];
+    } catch {
+      return [];
     }
-  }
-  return buildSourceResult('jsearch', [], lastFailure || buildSourceFailure({ source: 'jsearch', reason: 'request_failed', configured: true, detail: 'Source request failed.', diagnostics: baseDiagnostics }), true, lastFailure || baseDiagnostics);
+  });
 }
+
+async function fetchJSearchJobs(query, maxResults = 40) {
+  const integrations = getIntegrationSecretsSync();
+  const rapidApiKey = toText(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey);
+  if (!sourceIsConfigured('jsearch'))
+    return buildSourceResult(
+      'jsearch',
+      [],
+      buildSourceFailure({ source: 'jsearch', reason: 'not_configured', configured: false }),
+      false
+    );
+  try {
+    const response = await transport.get('jsearch', JSEARCH_BASE, {
+      params: { query: normalizeProviderQuery(query), page: 1, num_pages: 1 },
+      headers: { 'X-RapidAPI-Key': rapidApiKey, 'X-RapidAPI-Host': JSEARCH_HOST },
+      timeout: JSEARCH_TIMEOUT_MS
+    });
+    if (!Array.isArray(response.data?.data)) throw new Error('Invalid response');
+    const jobs = mapProviderRows(response.data.data.slice(0, maxResults), mapJSearchJob);
+    return buildSourceResult('jsearch', jobs, null, true);
+  } catch (error) {
+    return buildSourceResult(
+      'jsearch',
+      [],
+      buildSourceFailure({ source: 'jsearch', ...providerFailure(error) }),
+      true
+    );
+  }
+}
+
 function mapJoobleJob(job = {}, index = 0) {
   const url = toText(job.link || job.url);
   const description = stripHtml(job.snippet || job.description);
-  return normaliseJob({
-    id: stableId('jooble', [job.id || index, job.title, job.company, url]),
-    externalJobId: job.id,
-    title: job.title,
-    company: job.company,
-    companyLogo: '',
-    location: job.location || 'Remote',
-    salary: job.salary,
-    jobType: job.type,
-    skills: extractSkillsFromText(job.title, description),
-    postedDate: job.updated ? String(job.updated).split('T')[0] : '',
-    description,
-    requirements: [],
-    benefits: [],
-    platform: 'Jooble',
-    url,
-    applyUrl: url,
-    experienceLevel: job.experienceLevel
-  }, index, 'Jooble');
+  return normaliseJob(
+    {
+      id: stableId('jooble', [job.id || index, job.title, job.company, url]),
+      externalJobId: job.id,
+      title: job.title,
+      company: job.company,
+      companyLogo: '',
+      location: job.location || 'Remote',
+      salary: job.salary,
+      jobType: job.type,
+      skills: extractSkillsFromText(job.title, description),
+      postedDate: job.updated ? String(job.updated).split('T')[0] : '',
+      description,
+      requirements: [],
+      benefits: [],
+      platform: 'Jooble',
+      url,
+      applyUrl: url,
+      experienceLevel: job.experienceLevel
+    },
+    index,
+    'Jooble'
+  );
 }
 
 async function fetchJoobleJobs(query, filters = {}, maxResults = 40) {
@@ -1075,75 +1365,108 @@ async function fetchJoobleJobs(query, filters = {}, maxResults = 40) {
     requestParams
   };
   if (!apiKey) {
-    return buildSourceResult('jooble', [], buildSourceFailure({
-      source: 'jooble',
-      reason: 'missing_api_key',
-      configured: false,
+    return buildSourceResult(
+      'jooble',
+      [],
+      buildSourceFailure({
+        source: 'jooble',
+        reason: 'missing_api_key',
+        configured: false,
+        diagnostics
+      }),
+      false,
       diagnostics
-    }), false, diagnostics);
+    );
   }
 
   try {
-    const response = await axios.post(`${JOOBLE_BASE}/${apiKey}`, requestParams, {
-      timeout: SECONDARY_SOURCE_TIMEOUT_MS,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await transport.post(
+      'jooble',
+      `${JOOBLE_BASE}/${encodeURIComponent(apiKey)}`,
+      requestParams,
+      {
+        timeout: SECONDARY_SOURCE_TIMEOUT_MS,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
     const jobs = Array.isArray(response.data?.jobs) ? response.data.jobs : [];
-    return buildSourceResult('jooble', jobs.slice(0, maxResults).map((job, index) => mapJoobleJob(job, index)), null, true, {
-      ...diagnostics,
-      statusCode: response.status,
-      responseBody: { jobsFetched: jobs.length }
-    });
+    return buildSourceResult(
+      'jooble',
+      mapProviderRows(jobs.slice(0, maxResults), mapJoobleJob),
+      null,
+      true,
+      {
+        ...diagnostics,
+        statusCode: response.status,
+        responseBody: { jobsFetched: jobs.length }
+      }
+    );
   } catch (error) {
     const status = error?.response?.status;
     console.warn(`[JobService] Jooble failed: ${status || ''} ${error.message}`);
-    return buildSourceResult('jooble', [], buildSourceFailure({
-      source: 'jooble',
-      reason: 'request_failed',
-      status,
-      configured: true,
-      detail: error.message,
-      diagnostics: {
+    return buildSourceResult(
+      'jooble',
+      [],
+      buildSourceFailure({
+        source: 'jooble',
+        ...providerFailure(error),
+        status,
+        configured: true,
+        detail: error.message,
+        diagnostics: {
+          ...diagnostics,
+          statusCode: status,
+          responseBody: error?.response?.data || null
+        }
+      }),
+      true,
+      {
         ...diagnostics,
         statusCode: status,
         responseBody: error?.response?.data || null
       }
-    }), true, {
-      ...diagnostics,
-      statusCode: status,
-      responseBody: error?.response?.data || null
-    });
+    );
   }
 }
 
 function mapAdzunaJob(job = {}, index = 0) {
   const company = typeof job.company === 'object' ? job.company?.display_name : job.company;
-  const location = typeof job.location === 'object'
-    ? [job.location.display_name, job.location.area?.slice(-1)?.[0]].filter(Boolean).join(', ')
-    : job.location;
-  const salary = job.salary_min && job.salary_max
-    ? `${job.salary_min}-${job.salary_max}`
-    : '';
+  const location =
+    typeof job.location === 'object'
+      ? [job.location.display_name, job.location.area?.slice(-1)?.[0]].filter(Boolean).join(', ')
+      : job.location;
+  const salary = job.salary_min && job.salary_max ? `${job.salary_min}-${job.salary_max}` : '';
 
-  return normaliseJob({
-    id: stableId('adzuna', [job.id || index, job.title, company, job.redirect_url]),
-    externalJobId: job.id,
-    title: job.title,
-    company,
-    companyLogo: '',
-    location,
-    salary,
-    jobType: job.contract_time || job.contract_type,
-    skills: extractSkillsFromText(job.title, job.description),
-    postedDate: job.created ? String(job.created).split('T')[0] : '',
-    description: job.description,
-    requirements: [],
-    benefits: [],
-    platform: 'Adzuna',
-    url: job.redirect_url,
-    applyUrl: job.redirect_url,
-    experienceLevel: job.experienceLevel
-  }, index, 'Adzuna');
+  return normaliseJob(
+    {
+      id: stableId('adzuna', [job.id || index, job.title, company, job.redirect_url]),
+      externalJobId: job.id,
+      title: job.title,
+      company,
+      companyLogo: '',
+      location,
+      salary,
+      salaryMetadata: {
+        min: job.salary_min,
+        max: job.salary_max,
+        currency: job.salary_currency,
+        period: job.salary_period
+      },
+      validThrough: job.validThrough,
+      jobType: job.contract_time || job.contract_type,
+      skills: extractSkillsFromText(job.title, job.description),
+      postedDate: job.created ? String(job.created).split('T')[0] : '',
+      description: job.description,
+      requirements: [],
+      benefits: [],
+      platform: 'Adzuna',
+      url: job.redirect_url,
+      applyUrl: job.redirect_url,
+      experienceLevel: job.experienceLevel
+    },
+    index,
+    'Adzuna'
+  );
 }
 
 async function fetchAdzunaJobs(query, filters = {}, maxResults = 40) {
@@ -1171,23 +1494,29 @@ async function fetchAdzunaJobs(query, filters = {}, maxResults = 40) {
     requestParams
   };
   if (!appId || !appKey) {
-    return buildSourceResult('adzuna', [], buildSourceFailure({
-      source: 'adzuna',
-      reason: 'missing_api_key',
-      configured: false,
+    return buildSourceResult(
+      'adzuna',
+      [],
+      buildSourceFailure({
+        source: 'adzuna',
+        reason: 'missing_api_key',
+        configured: false,
+        diagnostics
+      }),
+      false,
       diagnostics
-    }), false, diagnostics);
+    );
   }
 
   try {
-    const response = await axios.get(endpoint, {
+    const response = await transport.get('adzuna', endpoint, {
       params: requestParams,
       timeout: SECONDARY_SOURCE_TIMEOUT_MS
     });
     const jobs = Array.isArray(response.data?.results) ? response.data.results : [];
     return buildSourceResult(
       'adzuna',
-      jobs.slice(0, maxResults).map((job, index) => mapAdzunaJob(job, index)),
+      mapProviderRows(jobs.slice(0, maxResults), mapAdzunaJob),
       null,
       true,
       {
@@ -1200,46 +1529,56 @@ async function fetchAdzunaJobs(query, filters = {}, maxResults = 40) {
     const status = error?.response?.status;
     const detail = error?.response?.data?.message || error.message;
     console.warn(`[JobService] Adzuna failed: ${status || ''} ${detail}`);
-    return buildSourceResult('adzuna', [], buildSourceFailure({
-      source: 'adzuna',
-      reason: 'request_failed',
-      status,
-      configured: true,
-      detail,
-      diagnostics: {
+    return buildSourceResult(
+      'adzuna',
+      [],
+      buildSourceFailure({
+        source: 'adzuna',
+        reason: 'request_failed',
+        status,
+        configured: true,
+        detail,
+        diagnostics: {
+          ...diagnostics,
+          statusCode: status,
+          responseBody: error?.response?.data || null
+        }
+      }),
+      true,
+      {
         ...diagnostics,
         statusCode: status,
         responseBody: error?.response?.data || null
       }
-    }), true, {
-      ...diagnostics,
-      statusCode: status,
-      responseBody: error?.response?.data || null
-    });
+    );
   }
 }
 
 function mapRemotiveJob(job = {}, index = 0) {
   const description = stripHtml(job.description);
-  return normaliseJob({
-    id: stableId('remotive', [job.id || index, job.title, job.company_name, job.url]),
-    externalJobId: job.id,
-    title: job.title,
-    company: job.company_name,
-    companyLogo: job.company_logo,
-    location: job.candidate_required_location || 'Remote',
-    salary: job.salary,
-    jobType: job.job_type,
-    skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
-    postedDate: job.publication_date ? String(job.publication_date).split('T')[0] : '',
-    description,
-    requirements: [],
-    benefits: [],
-    platform: 'Remotive',
-    url: job.url,
-    applyUrl: job.url,
-    experienceLevel: job.experienceLevel
-  }, index, 'Remotive');
+  return normaliseJob(
+    {
+      id: stableId('remotive', [job.id || index, job.title, job.company_name, job.url]),
+      externalJobId: job.id,
+      title: job.title,
+      company: job.company_name,
+      companyLogo: job.company_logo,
+      location: job.candidate_required_location || 'Remote',
+      salary: job.salary,
+      jobType: job.job_type,
+      skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
+      postedDate: job.publication_date ? String(job.publication_date).split('T')[0] : '',
+      description,
+      requirements: [],
+      benefits: [],
+      platform: 'Remotive',
+      url: job.url,
+      applyUrl: job.url,
+      experienceLevel: job.experienceLevel
+    },
+    index,
+    'Remotive'
+  );
 }
 
 async function fetchRemotiveJobs(query, maxResults = 40) {
@@ -1251,64 +1590,81 @@ async function fetchRemotiveJobs(query, maxResults = 40) {
     requestParams: { search: requestQuery }
   };
   try {
-    const response = await axios.get(REMOTIVE_BASE, {
-      params: { search: requestQuery },
+    const response = await transport.get('remotive', REMOTIVE_BASE, {
+      params: {},
       timeout: SECONDARY_SOURCE_TIMEOUT_MS
     });
     const jobs = Array.isArray(response.data?.jobs) ? response.data.jobs : [];
-    return buildSourceResult('remotive', jobs.slice(0, maxResults).map((job, index) => mapRemotiveJob(job, index)), null, true, {
-      ...diagnostics,
-      statusCode: response.status,
-      responseBody: { jobsFetched: jobs.length }
-    });
+    return buildSourceResult(
+      'remotive',
+      mapProviderRows(jobs.slice(0, maxResults), mapRemotiveJob),
+      null,
+      true,
+      {
+        ...diagnostics,
+        statusCode: response.status,
+        responseBody: { jobsFetched: jobs.length }
+      }
+    );
   } catch (error) {
     const status = error?.response?.status;
     console.warn(`[JobService] Remotive failed: ${status || ''} ${error.message}`);
-    return buildSourceResult('remotive', [], buildSourceFailure({
-      source: 'remotive',
-      reason: 'request_failed',
-      status,
-      configured: true,
-      detail: error.message,
-      diagnostics: {
+    return buildSourceResult(
+      'remotive',
+      [],
+      buildSourceFailure({
+        source: 'remotive',
+        reason: 'request_failed',
+        status,
+        configured: true,
+        detail: error.message,
+        diagnostics: {
+          ...diagnostics,
+          statusCode: status,
+          responseBody: error?.response?.data || null
+        }
+      }),
+      true,
+      {
         ...diagnostics,
         statusCode: status,
         responseBody: error?.response?.data || null
       }
-    }), true, {
-      ...diagnostics,
-      statusCode: status,
-      responseBody: error?.response?.data || null
-    });
+    );
   }
 }
 
 function mapArbeitnowJob(job = {}, index = 0) {
   const createdAt = Number(job.created_at);
-  const postedDate = Number.isFinite(createdAt) && createdAt > 0
-    ? new Date(createdAt * 1000).toISOString().split('T')[0]
-    : '';
+  const postedDate =
+    Number.isFinite(createdAt) && createdAt > 0
+      ? new Date(createdAt * 1000).toISOString().split('T')[0]
+      : '';
   const description = stripHtml(job.description);
 
-  return normaliseJob({
-    id: stableId('arbeitnow', [job.slug || index, job.title, job.company_name, job.url]),
-    externalJobId: job.slug,
-    title: job.title,
-    company: job.company_name,
-    companyLogo: '',
-    location: job.location || (job.remote ? 'Remote' : 'Europe'),
-    salary: job.salary,
-    jobType: Array.isArray(job.job_types) ? job.job_types[0] : job.job_types,
-    skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
-    postedDate,
-    description,
-    requirements: [],
-    benefits: [],
-    platform: 'Arbeitnow',
-    url: job.url,
-    applyUrl: job.url,
-    experienceLevel: job.experienceLevel
-  }, index, 'Arbeitnow');
+  return normaliseJob(
+    {
+      id: stableId('arbeitnow', [job.slug || index, job.title, job.company_name, job.url]),
+      externalJobId: job.slug,
+      title: job.title,
+      company: job.company_name,
+      companyLogo: '',
+      location: job.location || (job.remote ? 'Remote' : 'Unspecified'),
+      salary: job.salary,
+      jobType: Array.isArray(job.job_types) ? job.job_types[0] : job.job_types,
+      skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.title, description),
+      postedDate,
+      description,
+      requirements: [],
+      benefits: [],
+      platform: 'Arbeitnow',
+      url: job.url,
+      applyUrl: job.url,
+      experienceLevel: job.experienceLevel
+    },
+    index,
+    'Arbeitnow'
+  );
 }
 
 async function fetchArbeitnowJobs(query, maxResults = 40) {
@@ -1320,62 +1676,84 @@ async function fetchArbeitnowJobs(query, maxResults = 40) {
     requestParams: {}
   };
   try {
-    const response = await axios.get(ARBEITNOW_BASE, {
+    const response = await transport.get('arbeitnow', ARBEITNOW_BASE, {
       timeout: SECONDARY_SOURCE_TIMEOUT_MS
     });
     const jobs = Array.isArray(response.data?.data) ? response.data.data : [];
-    const needle = toText(requestQuery).toLowerCase();
-    const filtered = needle
-      ? jobs.filter((job) => `${job.title || ''} ${job.company_name || ''} ${(job.tags || []).join(' ')} ${stripHtml(job.description)}`.toLowerCase().includes(needle.split(' ')[0]))
-      : jobs;
-    return buildSourceResult('arbeitnow', filtered.slice(0, maxResults).map((job, index) => mapArbeitnowJob(job, index)), null, true, {
-      ...diagnostics,
-      statusCode: response.status,
-      responseBody: { jobsFetched: filtered.length }
-    });
+    const filtered = jobs;
+    return buildSourceResult(
+      'arbeitnow',
+      mapProviderRows(filtered.slice(0, maxResults), mapArbeitnowJob),
+      null,
+      true,
+      {
+        ...diagnostics,
+        statusCode: response.status,
+        responseBody: { jobsFetched: filtered.length }
+      }
+    );
   } catch (error) {
     const status = error?.response?.status;
     console.warn(`[JobService] Arbeitnow failed: ${status || ''} ${error.message}`);
-    return buildSourceResult('arbeitnow', [], buildSourceFailure({
-      source: 'arbeitnow',
-      reason: 'request_failed',
-      status,
-      configured: true,
-      detail: error.message,
-      diagnostics: {
+    return buildSourceResult(
+      'arbeitnow',
+      [],
+      buildSourceFailure({
+        source: 'arbeitnow',
+        reason: 'request_failed',
+        status,
+        configured: true,
+        detail: error.message,
+        diagnostics: {
+          ...diagnostics,
+          statusCode: status,
+          responseBody: error?.response?.data || null
+        }
+      }),
+      true,
+      {
         ...diagnostics,
         statusCode: status,
         responseBody: error?.response?.data || null
       }
-    }), true, {
-      ...diagnostics,
-      statusCode: status,
-      responseBody: error?.response?.data || null
-    });
+    );
   }
 }
 
 function mapRemoteOkJob(job = {}, index = 0) {
   const description = stripHtml(job.description);
-  return normaliseJob({
-    id: stableId('remoteok', [job.id || job.slug || index, job.position, job.company, job.url]),
-    externalJobId: job.id || job.slug,
-    title: job.position || job.title,
-    company: job.company,
-    companyLogo: job.company_logo || job.logo,
-    location: job.location || 'Remote',
-    salary: job.salary || '',
-    jobType: 'Remote',
-    skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.position, description),
-    postedDate: job.date ? String(job.date).split('T')[0] : '',
-    description,
-    requirements: [],
-    benefits: [],
-    platform: 'RemoteOK',
-    url: job.url || (job.slug ? `https://remoteok.com/remote-jobs/${job.slug}` : ''),
-    applyUrl: job.apply_url || job.url || (job.slug ? `https://remoteok.com/remote-jobs/${job.slug}` : ''),
-    experienceLevel: job.experienceLevel
-  }, index, 'RemoteOK');
+  return normaliseJob(
+    {
+      id: stableId('remoteok', [job.id || job.slug || index, job.position, job.company, job.url]),
+      externalJobId: job.id || job.slug,
+      title: job.position || job.title,
+      company: job.company,
+      companyLogo: job.company_logo || job.logo,
+      location: job.location || 'Remote',
+      salary: job.salary || '',
+      salaryMetadata: {
+        min: job.salary_min,
+        max: job.salary_max,
+        currency: job.salary_currency,
+        period: job.salary_period
+      },
+      jobType: 'Remote',
+      skills: Array.isArray(job.tags) ? job.tags : extractSkillsFromText(job.position, description),
+      postedDate: job.date ? String(job.date).split('T')[0] : '',
+      description,
+      requirements: [],
+      benefits: [],
+      platform: 'RemoteOK',
+      url: job.url || (job.slug ? `https://remoteok.com/remote-jobs/${job.slug}` : ''),
+      applyUrl:
+        job.apply_url ||
+        job.url ||
+        (job.slug ? `https://remoteok.com/remote-jobs/${job.slug}` : ''),
+      experienceLevel: job.experienceLevel
+    },
+    index,
+    'RemoteOK'
+  );
 }
 
 async function fetchRemoteOkJobs(query, maxResults = 40) {
@@ -1387,83 +1765,175 @@ async function fetchRemoteOkJobs(query, maxResults = 40) {
     requestParams: {}
   };
   try {
-    const response = await axios.get(REMOTEOK_BASE, {
+    const response = await transport.get('remoteok', REMOTEOK_BASE, {
       timeout: SECONDARY_SOURCE_TIMEOUT_MS,
       headers: { 'User-Agent': 'Developer-Portfolio-Analyzer/1.0' }
     });
     const rows = Array.isArray(response.data) ? response.data : [];
     const jobs = rows.filter((row) => row && typeof row === 'object' && !row.legal);
-    const needle = toText(requestQuery).toLowerCase().split(/\s+/).filter(Boolean)[0];
-    const filtered = needle
-      ? jobs.filter((job) => `${job.position || ''} ${job.company || ''} ${(job.tags || []).join(' ')} ${stripHtml(job.description)}`.toLowerCase().includes(needle))
-      : jobs;
-    return buildSourceResult('remoteok', filtered.slice(0, maxResults).map((job, index) => mapRemoteOkJob(job, index)), null, true, {
-      ...diagnostics,
-      statusCode: response.status,
-      responseBody: { jobsFetched: filtered.length }
-    });
+    const filtered = jobs;
+    return buildSourceResult(
+      'remoteok',
+      mapProviderRows(filtered.slice(0, maxResults), mapRemoteOkJob),
+      null,
+      true,
+      {
+        ...diagnostics,
+        statusCode: response.status,
+        responseBody: { jobsFetched: filtered.length }
+      }
+    );
   } catch (error) {
     const status = error?.response?.status;
     console.warn(`[JobService] RemoteOK failed: ${status || ''} ${error.message}`);
-    return buildSourceResult('remoteok', [], buildSourceFailure({
-      source: 'remoteok',
-      reason: 'request_failed',
-      status,
-      configured: true,
-      detail: error.message,
-      diagnostics: {
+    return buildSourceResult(
+      'remoteok',
+      [],
+      buildSourceFailure({
+        source: 'remoteok',
+        reason: 'request_failed',
+        status,
+        configured: true,
+        detail: error.message,
+        diagnostics: {
+          ...diagnostics,
+          statusCode: status,
+          responseBody: error?.response?.data || null
+        }
+      }),
+      true,
+      {
         ...diagnostics,
         statusCode: status,
         responseBody: error?.response?.data || null
       }
-    }), true, {
-      ...diagnostics,
-      statusCode: status,
-      responseBody: error?.response?.data || null
-    });
+    );
   }
 }
 
 const LOCATION_BUCKETS = {
   Pakistan: ['pakistan', 'lahore', 'karachi', 'islamabad', 'rawalpindi'],
   Asia: [
-    'pakistan', 'lahore', 'karachi', 'islamabad', 'rawalpindi',
-    'india', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'chennai', 'pune',
-    'bangladesh', 'dhaka',
-    'sri lanka', 'colombo',
-    'nepal', 'kathmandu',
-    'malaysia', 'kuala lumpur',
+    'pakistan',
+    'lahore',
+    'karachi',
+    'islamabad',
+    'rawalpindi',
+    'india',
+    'bangalore',
+    'bengaluru',
+    'mumbai',
+    'delhi',
+    'hyderabad',
+    'chennai',
+    'pune',
+    'bangladesh',
+    'dhaka',
+    'sri lanka',
+    'colombo',
+    'nepal',
+    'kathmandu',
+    'malaysia',
+    'kuala lumpur',
     'singapore',
-    'indonesia', 'jakarta',
-    'thailand', 'bangkok',
-    'philippines', 'manila',
-    'vietnam', 'ho chi minh', 'hanoi',
-    'japan', 'tokyo',
-    'south korea', 'seoul',
-    'china', 'beijing', 'shanghai', 'hong kong'
+    'indonesia',
+    'jakarta',
+    'thailand',
+    'bangkok',
+    'philippines',
+    'manila',
+    'vietnam',
+    'ho chi minh',
+    'hanoi',
+    'japan',
+    'tokyo',
+    'south korea',
+    'seoul',
+    'china',
+    'beijing',
+    'shanghai',
+    'hong kong'
   ],
   'Middle East': [
-    'uae', 'dubai', 'abu dhabi', 'united arab emirates',
-    'saudi arabia', 'ksa', 'riyadh', 'jeddah',
-    'qatar', 'doha',
+    'uae',
+    'dubai',
+    'abu dhabi',
+    'united arab emirates',
+    'saudi arabia',
+    'ksa',
+    'riyadh',
+    'jeddah',
+    'qatar',
+    'doha',
     'kuwait',
     'bahrain',
-    'oman', 'muscat',
-    'jordan', 'amman',
-    'egypt', 'cairo'
+    'oman',
+    'muscat',
+    'jordan',
+    'amman',
+    'egypt',
+    'cairo'
   ],
-  'United States': ['usa', 'united states', 'new york', 'san francisco', 'seattle', 'austin', 'chicago', 'boston', 'los angeles'],
-  'United Kingdom': ['uk', 'united kingdom', 'england', 'london', 'manchester', 'birmingham', 'edinburgh', 'glasgow'],
+  'United States': [
+    'usa',
+    'united states',
+    'new york',
+    'san francisco',
+    'seattle',
+    'austin',
+    'chicago',
+    'boston',
+    'los angeles'
+  ],
+  'United Kingdom': [
+    'uk',
+    'united kingdom',
+    'england',
+    'london',
+    'manchester',
+    'birmingham',
+    'edinburgh',
+    'glasgow'
+  ],
   Europe: [
-    'europe', 'germany', 'berlin', 'munich', 'france', 'paris',
-    'netherlands', 'amsterdam', 'spain', 'madrid', 'barcelona',
-    'italy', 'rome', 'milan', 'sweden', 'stockholm',
-    'denmark', 'copenhagen', 'norway', 'oslo',
-    'finland', 'helsinki', 'austria', 'vienna',
-    'belgium', 'brussels', 'ireland', 'dublin',
-    'poland', 'warsaw', 'czech', 'prague',
-    'portugal', 'lisbon', 'greece', 'athens',
-    'switzerland', 'zurich'
+    'europe',
+    'germany',
+    'berlin',
+    'munich',
+    'france',
+    'paris',
+    'netherlands',
+    'amsterdam',
+    'spain',
+    'madrid',
+    'barcelona',
+    'italy',
+    'rome',
+    'milan',
+    'sweden',
+    'stockholm',
+    'denmark',
+    'copenhagen',
+    'norway',
+    'oslo',
+    'finland',
+    'helsinki',
+    'austria',
+    'vienna',
+    'belgium',
+    'brussels',
+    'ireland',
+    'dublin',
+    'poland',
+    'warsaw',
+    'czech',
+    'prague',
+    'portugal',
+    'lisbon',
+    'greece',
+    'athens',
+    'switzerland',
+    'zurich'
   ]
 };
 
@@ -1498,10 +1968,14 @@ function matchesSkill(job, filterSkills) {
     ...(job.skills || []),
     ...(job.requirements || []),
     ...(job.benefits || [])
-  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  ]
+    .map((value) => String(value || '').toLowerCase())
+    .join(' ');
 
   return aliases.some((alias) => {
-    const normalizedAlias = String(alias || '').toLowerCase().trim();
+    const normalizedAlias = String(alias || '')
+      .toLowerCase()
+      .trim();
     if (!normalizedAlias) return false;
     return haystack.includes(normalizedAlias);
   });
@@ -1510,10 +1984,26 @@ function matchesSkill(job, filterSkills) {
 function experienceBucket(raw) {
   const value = toText(raw).toLowerCase();
   if (!value || value === 'all') return 'unknown';
-  if (['student', 'intern', 'internship', 'entry', 'entry level', 'junior', '0-1 years', '1-2 years', '0-2 years'].some((keyword) => value.includes(keyword))) {
+  if (
+    [
+      'student',
+      'intern',
+      'internship',
+      'entry',
+      'entry level',
+      'junior',
+      '0-1 years',
+      '1-2 years',
+      '0-2 years'
+    ].some((keyword) => value.includes(keyword))
+  ) {
     return 'junior';
   }
-  if (['3-5 years', '2-3 years', 'mid', 'mid-level', 'mid level'].some((keyword) => value.includes(keyword))) {
+  if (
+    ['3-5 years', '2-3 years', 'mid', 'mid-level', 'mid level'].some((keyword) =>
+      value.includes(keyword)
+    )
+  ) {
     return 'mid';
   }
   if (['5+ years', 'senior', 'lead', 'principal'].some((keyword) => value.includes(keyword))) {
@@ -1523,13 +2013,13 @@ function experienceBucket(raw) {
 }
 
 function jobHasExplicitExperienceSignal(job = {}) {
-  const haystack = [
-    job.title,
-    job.description,
-    ...(job.requirements || [])
-  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  const haystack = [job.title, job.description, ...(job.requirements || [])]
+    .map((value) => String(value || '').toLowerCase())
+    .join(' ');
 
-  return /\b(student|intern|internship|entry|junior|mid|senior|lead|principal|[0-9]\s*\+?\s*(years?|yrs?))\b/.test(haystack);
+  return /\b(student|intern|internship|entry|junior|mid|senior|lead|principal|[0-9]\s*\+?\s*(years?|yrs?))\b/.test(
+    haystack
+  );
 }
 
 function matchesExperience(job, filterExperience) {
@@ -1549,10 +2039,16 @@ function matchesExperience(job, filterExperience) {
 }
 
 function evaluateFilterRemoval(job = {}, filters = {}) {
-  if (filters.platform && filters.platform !== 'All' && job.platform !== filters.platform) return 'platform';
+  if (filters.platform && filters.platform !== 'All' && job.platform !== filters.platform)
+    return 'platform';
   if (!matchesLocation(job, filters.location)) return 'location';
   if (!matchesSkill(job, filters.skills)) return 'skill';
-  if (filters.jobType && filters.jobType !== 'All' && toText(job.jobType).toLowerCase() !== filters.jobType.toLowerCase()) return 'jobType';
+  if (
+    filters.jobType &&
+    filters.jobType !== 'All' &&
+    toText(job.jobType).toLowerCase() !== filters.jobType.toLowerCase()
+  )
+    return 'jobType';
   if (!matchesExperience(job, filters.expLevel)) return 'experience';
   return '';
 }
@@ -1616,55 +2112,149 @@ function applyFiltersWithDiagnostics(jobs = [], filters = {}, hasActiveFilters =
 function dedupeJobs(jobs = []) {
   const seen = new Set();
   return jobs.filter((job) => {
-    const urlKey = toText(job.applyUrl || job.url).toLowerCase().replace(/\/$/, '');
-    const key = `${job.title}|${job.company}|${urlKey}`.toLowerCase();
-    if (seen.has(key)) return false;
+    if (!isUsableJob(job)) return false;
+    const canonical = new URL(job.applyUrl || job.url);
+    for (const name of [...canonical.searchParams.keys()])
+      if (/^(utm_|ref$|source$)/i.test(name)) canonical.searchParams.delete(name);
+    canonical.hash = '';
+    const url = canonical.href.replace(/\/$/, '');
+    const key = [job.title, job.company, job.location]
+      .map(toText)
+      .join('|')
+      .toLowerCase()
+      .replace(/\s+/g, ' ');
+    if (seen.has(key) || seen.has(url)) return false;
     seen.add(key);
+    seen.add(url);
     return true;
   });
 }
-
 function isUsableJob(job = {}) {
-  return Boolean(toText(job.title) && toText(job.company) && isHttpUrl(job.applyUrl || job.url));
+  return Boolean(
+    toText(job.title) &&
+    toText(job.company) &&
+    isHttpUrl(job.applyUrl || job.url) &&
+    !job.hidden &&
+    (!job.validThrough || Date.parse(job.validThrough) > Date.now()) &&
+    (!job.cacheExpiresAt || Date.parse(job.cacheExpiresAt) > Date.now())
+  );
 }
 
 async function fetchLiveJobSources(query, filters = {}) {
   const selectedSources = selectedLiveSourceKeys(filters);
   const openCircuits = await getOpenSourceCircuits(selectedSources);
-  const fetchers = { jsearch: () => fetchJSearchJobs(query, 40), jooble: () => fetchJoobleJobs(query, filters, 35), adzuna: () => fetchAdzunaJobs(query, filters, 35), remotive: () => fetchRemotiveJobs(query, 35), arbeitnow: () => fetchArbeitnowJobs(query, 35), remoteok: () => fetchRemoteOkJobs(query, 35) };
-  const withDeadline = (source, fetcher) => new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(buildSourceResult(source, [], buildSourceFailure({ source, reason: 'timeout', configured: true, detail: 'Source request timed out.' }), true)), JOB_SOURCE_DEADLINE_MS);
-    Promise.resolve().then(fetcher).then((result) => { clearTimeout(timer); resolve(result); }, () => { clearTimeout(timer); resolve(buildSourceResult(source, [], buildSourceFailure({ source, reason: 'request_failed', configured: true, detail: 'Source request failed.' }), true)); });
-  });
-  const results = await Promise.all(selectedSources.map((source) => {
+  const fetchers = {
+    jsearch: () => fetchJSearchJobs(query, 40),
+    jooble: () => fetchJoobleJobs(query, filters, 35),
+    adzuna: () => fetchAdzunaJobs(query, filters, 35),
+    remotive: () => fetchRemotiveJobs(query, 400),
+    arbeitnow: () => fetchArbeitnowJobs(query, 300),
+    remoteok: () => fetchRemoteOkJobs(query, 300)
+  };
+  const fetchSource = async (source) => {
+    if (!sourceIsConfigured(source))
+      return buildSourceResult(
+        source,
+        [],
+        buildSourceFailure({ source, reason: 'not_configured', configured: false }),
+        false
+      );
     const circuitOpenUntil = openCircuits.get(source);
-    if (circuitOpenUntil) return buildSourceResult(source, [], buildSourceFailure({ source, reason: 'circuit_open', status: 429, configured: true, circuitOpenUntil }), true);
-    return withDeadline(source, () => fetchSourceWithRetry(source, fetchers[source]));
-  }));
-  results.map((result) => result.failure).filter(Boolean).forEach(logSourceFailure);
-  const fetchedSourceSummary = results.reduce((accumulator, result) => { accumulator[result.source] = Number(accumulator[result.source] || 0) + result.jobs.length; return accumulator; }, buildSourceSummarySeed());
+    if (circuitOpenUntil)
+      return buildSourceResult(
+        source,
+        [],
+        buildSourceFailure({
+          source,
+          reason: 'circuit_open',
+          status: 429,
+          configured: true,
+          circuitOpenUntil
+        }),
+        true
+      );
+    try {
+      return await fetchers[source]();
+    } catch {
+      return buildSourceResult(
+        source,
+        [],
+        buildSourceFailure({ source, reason: 'invalid_response', configured: true }),
+        true
+      );
+    }
+  };
+  const freeSources = selectedSources.filter((source) =>
+    ['remotive', 'arbeitnow', 'remoteok'].includes(source)
+  );
+  const paidSources = selectedSources.filter((source) => !freeSources.includes(source));
+  const results = await Promise.all(freeSources.map(fetchSource));
+  // Fall back to metered providers only when public sources have limited coverage.
+  if (
+    results.reduce((count, result) => count + result.jobs.length, 0) < 80 ||
+    (filters.platform !== 'All' && filters.platform)
+  ) {
+    results.push(...(await Promise.all(paidSources.map(fetchSource))));
+  }
+  results
+    .map((result) => result.failure)
+    .filter(Boolean)
+    .forEach(logSourceFailure);
+  const fetchedSourceSummary = results.reduce((accumulator, result) => {
+    accumulator[result.source] = Number(accumulator[result.source] || 0) + result.jobs.length;
+    return accumulator;
+  }, buildSourceSummarySeed());
   const liveJobs = results.flatMap((result) => result.jobs || []);
-  const usableJobs = liveJobs.map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Unknown')).filter(isUsableJob);
+  const usableJobs = liveJobs
+    .map((job, index) => normaliseJob(job, index, job.source || job.platform || 'Unknown'))
+    .filter(isUsableJob);
   const dedupedUsableJobs = dedupeJobs(usableJobs);
-  return { jobs: dedupedUsableJobs, sourceResults: results, diagnostics: {
-    sourceSummaryFetched: fetchedSourceSummary, sourceSummaryUsable: createSourceSummary(usableJobs), sourceSummaryAfterSourceDedupe: createSourceSummary(dedupedUsableJobs),
-    sourceFailures: results.map((result) => result.failure).filter(Boolean), sourceConfigs: results.reduce((accumulator, result) => { accumulator[result.source] = { configured: result.configured }; return accumulator; }, {}),
-    sourceDedupe: { before: usableJobs.length, after: dedupedUsableJobs.length, removed: Math.max(0, usableJobs.length - dedupedUsableJobs.length) }, liveJobsFetched: liveJobs.length, allLiveSourcesFailed: results.every((result) => !result.jobs.length)
-  } };
+  return {
+    jobs: dedupedUsableJobs,
+    sourceResults: results,
+    diagnostics: {
+      sourceSummaryFetched: fetchedSourceSummary,
+      sourceSummaryUsable: createSourceSummary(usableJobs),
+      sourceSummaryAfterSourceDedupe: createSourceSummary(dedupedUsableJobs),
+      sourceFailures: results.map((result) => result.failure).filter(Boolean),
+      sourceConfigs: results.reduce((accumulator, result) => {
+        accumulator[result.source] = { configured: result.configured };
+        return accumulator;
+      }, {}),
+      sourceDedupe: {
+        before: usableJobs.length,
+        after: dedupedUsableJobs.length,
+        removed: Math.max(0, usableJobs.length - dedupedUsableJobs.length)
+      },
+      liveJobsFetched: liveJobs.length,
+      allLiveSourcesFailed: results.every((result) => !result.jobs.length)
+    }
+  };
 }
 async function refreshJobCache(options = {}) {
-  const filters = normaliseJobFilters(options);
-  const query = buildSourceQuery(options, filters);
-  const liveResult = await fetchLiveJobSources(query, filters);
-  const cacheWrite = await syncJobsToCache(liveResult.jobs);
-  await updateSourceHealthStats(liveResult.sourceResults);
-
-  return {
-    query,
-    filters,
-    liveResult,
-    cacheWrite
-  };
+  return governance.withLease('refresh', 60, async () => {
+    const redis = require('./redisCacheService').getRedisCacheClient();
+    if (!redis || (await redis.set('jobs:v2:refresh-gate', '1', { NX: true, EX: 60 })) !== 'OK')
+      return { skipped: true, reason: 'refresh_interval' };
+    const filters = normaliseJobFilters(options);
+    const query = buildSourceQuery({ careerStack: options.careerStack }, filters);
+    const liveResult = await fetchLiveJobSources(query, filters);
+    const cacheWrite = await syncJobsToCache(liveResult.jobs);
+    await updateSourceHealthStats(liveResult.sourceResults);
+    if (cacheWrite.synced) await poolCache.publish(await loadCachedJobs({}, true));
+    return { query, filters, liveResult, cacheWrite };
+  });
+}
+let pendingRefresh = null;
+let nextRefreshAt = 0;
+function scheduleRefresh(options) {
+  if (pendingRefresh || nextRefreshAt > Date.now()) return;
+  nextRefreshAt = Date.now() + 60000;
+  pendingRefresh = refreshJobCache(options)
+    .catch(() => {})
+    .finally(() => {
+      pendingRefresh = null;
+    });
 }
 
 async function buildJobPool(options = {}) {
@@ -1675,39 +2265,28 @@ async function buildJobPool(options = {}) {
   const knownSkills = uniqueStrings(options.knownSkills || [], 18);
   const resumeSkills = uniqueStrings(options.resumeSkills || [], 18);
   const githubSkills = uniqueStrings(options.githubSkills || [], 18);
-  const query = buildSourceQuery({
-    careerStack,
-    knownSkills,
-    resumeSkills
-  }, filters);
+  const query = buildSourceQuery(
+    {
+      careerStack,
+      knownSkills,
+      resumeSkills
+    },
+    filters
+  );
 
-  const forceRefresh = options.forceRefresh === true;
-  const signature = crypto.createHash('sha1').update(JSON.stringify({
-    careerStack, experienceLevel, skillGaps, knownSkills, resumeSkills, githubSkills,
-    platform: filters.platform, location: filters.location, skills: filters.skills,
-    jobType: filters.jobType, expLevel: filters.expLevel
-  })).digest('hex');
-  const cachedPool = jobPoolCache.get(signature);
-  if (!forceRefresh && cachedPool?.expiresAt > Date.now()) return cachedPool.value;
-  if (!forceRefresh && jobPoolInflight.has(signature)) return jobPoolInflight.get(signature);
-
-  const build = (async () => {
-  const syncResult = await refreshJobCache({
-    careerStack,
-    knownSkills,
-    resumeSkills,
-    ...filters
-  });
-  let cachedJobs = await loadCachedJobs(filters, false);
-  let staleFallbackUsed = false;
-  if (!cachedJobs.length && syncResult.liveResult.diagnostics.allLiveSourcesFailed) {
-    cachedJobs = await loadCachedJobs(filters, true);
-    staleFallbackUsed = cachedJobs.length > 0;
-  }
+  const cachedJobs = (await poolCache.load(() => loadCachedJobs({}, true)))
+    .map((job, index) => normaliseJob(job, index, job?.source || 'Unknown'))
+    .filter(isUsableJob);
+  const staleFallbackUsed = cachedJobs.some(
+    (job) => !job.freshUntil || Date.parse(job.freshUntil) <= Date.now()
+  );
+  if (!cachedJobs.length || staleFallbackUsed || options.forceRefresh === true)
+    scheduleRefresh({ careerStack, platform: filters.platform });
   let pool = cachedJobs;
-  const hasActiveFilters = [filters.platform, filters.location, filters.jobType, filters.expLevel]
-    .some((value) => value && value !== 'All')
-    || Boolean(filters.skills);
+  const hasActiveFilters =
+    [filters.platform, filters.location, filters.jobType, filters.expLevel].some(
+      (value) => value && value !== 'All'
+    ) || Boolean(filters.skills);
   const filterResult = applyFiltersWithDiagnostics(pool, filters, hasActiveFilters);
   pool = filterResult.jobs;
   const cacheFilterStats = filterResult.diagnostics;
@@ -1725,18 +2304,21 @@ async function buildJobPool(options = {}) {
   return {
     jobs: rankedJobs,
     diagnostics: {
+      refreshScheduled: Boolean(pendingRefresh),
       query,
-      sourceSummaryFetched: syncResult.liveResult.diagnostics.sourceSummaryFetched,
-      sourceSummaryUsable: syncResult.liveResult.diagnostics.sourceSummaryUsable,
-      sourceSummaryAfterSourceDedupe: syncResult.liveResult.diagnostics.sourceSummaryAfterSourceDedupe,
+      sourceSummaryFetched: {},
+      sourceSummaryUsable: {},
+      sourceSummaryAfterSourceDedupe: {},
       sourceSummaryBeforeRank: createSourceSummary(rankInputJobs),
       sourceSummaryFinal: createSourceSummary(rankedJobs),
-      sourceFailures: syncResult.liveResult.diagnostics.sourceFailures,
-      sourceConfigs: syncResult.liveResult.diagnostics.sourceConfigs,
+      sourceFailures: [],
+      sourceConfigs: Object.fromEntries(
+        LIVE_SOURCE_KEYS.map((source) => [source, { configured: sourceIsConfigured(source) }])
+      ),
       cacheCount: cachedJobs.length,
-      cacheWrite: syncResult.cacheWrite,
-      liveJobsFetched: syncResult.liveResult.diagnostics.liveJobsFetched,
-      allLiveSourcesFailed: syncResult.liveResult.diagnostics.allLiveSourcesFailed,
+      cacheWrite: {},
+      liveJobsFetched: 0,
+      allLiveSourcesFailed: false,
       applyFilters: cacheFilterStats,
       dedupeJobs: {
         before: pool.length,
@@ -1749,21 +2331,12 @@ async function buildJobPool(options = {}) {
       },
       cacheFallback: {
         available: cachedJobs.length,
-        used: syncResult.liveResult.jobs.length === 0 && cachedJobs.length > 0,
+        used: cachedJobs.length > 0,
         stale: staleFallbackUsed
       },
-      fromCacheOnly: syncResult.liveResult.jobs.length === 0 && rankedJobs.length > 0
+      fromCacheOnly: rankedJobs.length > 0
     }
   };
-  })();
-  jobPoolInflight.set(signature, build);
-  try {
-    const value = await build;
-    jobPoolCache.set(signature, { value, expiresAt: Date.now() + JOB_POOL_CACHE_TTL_MS });
-    return value;
-  } finally {
-    jobPoolInflight.delete(signature);
-  }
 }
 
 module.exports = {
@@ -1779,5 +2352,7 @@ module.exports = {
   normaliseJob,
   applyFilters,
   isUsableJob,
-  computeCacheStatus
+  computeCacheStatus,
+  dedupeJobs,
+  loadCachedJobs
 };

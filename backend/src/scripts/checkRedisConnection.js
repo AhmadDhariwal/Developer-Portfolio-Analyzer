@@ -1,4 +1,5 @@
-require('dotenv').config({ quiet: true });
+const path = require('node:path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 
 const {
   initRedisCache,
@@ -15,7 +16,7 @@ const timeout = new Promise((resolve) => {
 
 const main = async () => {
   try {
-    const redis = await Promise.race([initRedisCache({ silent: true }), timeout]);
+    const redis = await Promise.race([initRedisCache({ silent: true, probeOnly: true }), timeout]);
     if (!redis) {
       console.log('Redis: unavailable');
       return;

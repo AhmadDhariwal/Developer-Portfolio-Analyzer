@@ -38,14 +38,18 @@ const getRedisUrl = () => {
   const token = String(process.env.UPSTASH_REDIS_TOKEN || '').trim();
   if (!token) return '';
 
-  let host = String(process.env.UPSTASH_REDIS_HOST || UPSTASH_DEFAULT_HOST).trim() || UPSTASH_DEFAULT_HOST;
+  let host =
+    String(process.env.UPSTASH_REDIS_HOST || UPSTASH_DEFAULT_HOST).trim() || UPSTASH_DEFAULT_HOST;
   host = host
     .replace(/^["']|["']$/g, '')
     .replace(/^[a-zA-Z]+:\/\//, '')
     .replace(/[/?#].*$/, '')
     .trim();
   if (!host) return '';
-  const requestedPort = Number.parseInt(process.env.UPSTASH_REDIS_PORT || String(UPSTASH_DEFAULT_PORT), 10);
+  const requestedPort = Number.parseInt(
+    process.env.UPSTASH_REDIS_PORT || String(UPSTASH_DEFAULT_PORT),
+    10
+  );
   const port =
     Number.isInteger(requestedPort) && requestedPort > 0 && requestedPort <= 65535
       ? requestedPort
@@ -59,7 +63,10 @@ const runWithCommandTimeout = async (operation) => {
     return await Promise.race([
       Promise.resolve().then(operation),
       new Promise((_, reject) => {
-        timeout = setTimeout(() => reject(new Error('Redis command timed out.')), REDIS_COMMAND_TIMEOUT_MS);
+        timeout = setTimeout(
+          () => reject(new Error('Redis command timed out.')),
+          REDIS_COMMAND_TIMEOUT_MS
+        );
         timeout.unref?.();
       })
     ]);
@@ -81,7 +88,10 @@ const createCommandProxy = (redisClient) =>
               return this;
             },
             next: () => runWithCommandTimeout(() => iterator.next()),
-            return: () => (typeof iterator.return === 'function' ? iterator.return() : Promise.resolve({ done: true }))
+            return: () =>
+              typeof iterator.return === 'function'
+                ? iterator.return()
+                : Promise.resolve({ done: true })
           };
         };
       }
@@ -105,7 +115,7 @@ const setUnavailable = (redisClient, { schedule = true } = {}) => {
   if (schedule) scheduleReconnect();
 };
 
-const initRedisCache = async ({ silent = false } = {}) => {
+const initRedisCache = async ({ silent = false, probeOnly = false } = {}) => {
   closing = false;
   const redisUrl = getRedisUrl();
   if (!redisUrl) {
@@ -135,7 +145,8 @@ const initRedisCache = async ({ silent = false } = {}) => {
       }
     });
   } catch (error) {
-    if (!silent) console.warn('[redis] invalid configuration; using application fallbacks:', error?.message);
+    if (!silent)
+      console.warn('[redis] invalid configuration; using application fallbacks:', error?.message);
     return null;
   }
   client = redisClient;
@@ -154,7 +165,7 @@ const initRedisCache = async ({ silent = false } = {}) => {
     clientProxy = createCommandProxy(redisClient);
     // Mutations may have succeeded while Redis was unavailable. Recovery starts
     // a fresh shared namespace instead of resurrecting pre-outage results.
-    redisClient.set('interview:revision:global', randomUUID()).catch(() => {});
+    if (!probeOnly) redisClient.set('interview:revision:global', randomUUID()).catch(() => {});
   });
 
   connectPromise = redisClient
@@ -208,7 +219,8 @@ const getCacheJsonWithMeta = async (key) => {
       Number(remainingMs),
       (isInterviewKey(key) ? INTERVIEW_MEMORY_TTL_SECONDS : CACHE_TTL_SECONDS) * 1000
     );
-    if (ttlMs > 0) setMemoryCacheJson(key, value, Math.max(0, readStartedAt + ttlMs - Date.now()) / 1000);
+    if (ttlMs > 0)
+      setMemoryCacheJson(key, value, Math.max(0, readStartedAt + ttlMs - Date.now()) / 1000);
     return { value, layer: 'redis', memoryMs, redisMs };
   } catch {
     console.warn('[redis] cache read failed; using application fallback.');
@@ -232,10 +244,13 @@ const pingRedisCache = async () => {
 };
 
 const setMemoryCacheJson = (key, payload, ttlSeconds = CACHE_TTL_SECONDS) => {
-  const ttl = isInterviewKey(key) ? Math.min(INTERVIEW_MEMORY_TTL_SECONDS, Number(ttlSeconds)) : Number(ttlSeconds);
+  const ttl = isInterviewKey(key)
+    ? Math.min(INTERVIEW_MEMORY_TTL_SECONDS, Number(ttlSeconds))
+    : Number(ttlSeconds);
   if (!Number.isFinite(ttl) || ttl <= 0) return;
   memoryCache.delete(key);
-  while (memoryCache.size >= MAX_MEMORY_ENTRIES) memoryCache.delete(memoryCache.keys().next().value);
+  while (memoryCache.size >= MAX_MEMORY_ENTRIES)
+    memoryCache.delete(memoryCache.keys().next().value);
   memoryCache.set(key, { value: payload, expiresAt: Date.now() + ttl * 1000 });
 };
 
@@ -312,7 +327,10 @@ const releaseCacheLock = async (key, token) => {
 // version before a loader runs prevents an old in-flight response from filling
 // a newly invalidated cache namespace on any worker.
 const resolveInterviewCacheKey = async (key, topicKey) => {
-  const names = ['interview:revision:global', `interview:revision:topic=${encodeURIComponent(topicKey)}`];
+  const names = [
+    'interview:revision:global',
+    `interview:revision:topic=${encodeURIComponent(topicKey)}`
+  ];
   const redis = getRedisCacheClient();
   if (redis) {
     try {
@@ -326,11 +344,14 @@ const resolveInterviewCacheKey = async (key, topicKey) => {
 };
 
 const invalidateInterviewPrepCache = async (topicKey = '') => {
-  const name = topicKey ? `interview:revision:topic=${encodeURIComponent(topicKey)}` : 'interview:revision:global';
+  const name = topicKey
+    ? `interview:revision:topic=${encodeURIComponent(topicKey)}`
+    : 'interview:revision:global';
   const revision = randomUUID();
   interviewRevisions.set(name, revision);
   for (const key of memoryCache.keys()) {
-    if (isInterviewKey(key) && (!topicKey || key.includes(`:topic=${topicKey}:`))) memoryCache.delete(key);
+    if (isInterviewKey(key) && (!topicKey || key.includes(`:topic=${topicKey}:`)))
+      memoryCache.delete(key);
   }
   const redis = getRedisCacheClient();
   if (redis) {
