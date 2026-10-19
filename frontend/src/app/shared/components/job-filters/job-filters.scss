@@ -1,74 +1,225 @@
 @use '../../styles/jobs-ui' as jobs;
+
 :host {
   display: block;
   min-width: 0;
 }
+
 .filters-panel {
   @include jobs.panel;
-  padding: 22px;
+  padding: 24px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    background: #151d2a;
+    border-color: rgba(99, 102, 241, 0.18);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.45);
+  }
 }
+
 .filter-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, rgba(226, 232, 240, 0.7));
+
   h2 {
-    font-family: inherit;
-    font-size: 14px;
+    font:
+      700 15px/1.3 'Space Grotesk',
+      'Inter',
+      sans-serif;
+    letter-spacing: -0.02em;
+    color: var(--text-primary, #0f172a);
     margin: 0;
   }
+
   button {
     border: 0;
     background: transparent;
-    color: var(--color-primary-text);
-    min-height: 44px;
+    color: var(--color-primary-text, #4f46e5);
+    font:
+      600 12px/1 'Inter',
+      sans-serif;
+    padding: 6px 10px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      background: var(--color-primary-soft, rgba(99, 102, 241, 0.08));
+      color: var(--color-primary, #6366f1);
+    }
+  }
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    border-bottom-color: rgba(99, 102, 241, 0.15);
+
+    h2 {
+      color: #f8fafc;
+    }
+
+    button {
+      color: #a5b4fc;
+
+      &:hover {
+        background: rgba(99, 102, 241, 0.15);
+        color: #c7d2fe;
+      }
+    }
   }
 }
+
 .filter-group {
   display: grid;
-  gap: 9px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 18px;
+
   label,
   .group-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 700;
+    font:
+      600 12px/1.4 'Inter',
+      sans-serif;
+    color: var(--text-secondary, #475569);
+    letter-spacing: -0.01em;
+  }
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    label,
+    .group-label {
+      color: #cbd5e1;
+    }
   }
 }
+
 select {
   @include jobs.input;
   width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: var(--surface-card, #ffffff);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+  padding-right: 38px;
+  cursor: pointer;
+
+  &::-ms-expand {
+    display: none;
+  }
+
+  option {
+    background-color: var(--surface-card, #ffffff);
+    color: var(--text-primary, #0f172a);
+  }
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    background-color: #091328;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px 16px;
+    color: #f1f5f9;
+
+    option {
+      background-color: #151d2a;
+      color: #f1f5f9;
+    }
+  }
 }
+
 .skill-options {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+
   button {
-    border: 1px solid var(--border-color);
-    border-radius: 7px;
-    padding: 7px 9px;
-    min-height: 36px;
-    font: inherit;
-    font-size: 11px;
+    border: 1px solid var(--border-color, rgba(226, 232, 240, 0.9));
+    border-radius: 9999px;
+    padding: 6px 12px;
+    min-height: 32px;
+    font:
+      550 11.5px/1.3 'Inter',
+      monospace;
     cursor: pointer;
-    color: var(--text-secondary);
-    background: var(--surface-card);
+    color: var(--text-secondary, #475569);
+    background: var(--surface-card, #ffffff);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      color: var(--color-primary-text, #4f46e5);
+      background: var(--surface-secondary, #f8fafc);
+      transform: translateY(-1px);
+    }
+
     &.selected {
-      background: var(--color-primary-soft);
-      color: var(--color-primary-text);
-      border-color: var(--color-primary-border);
+      background: linear-gradient(
+        135deg,
+        rgba(99, 102, 241, 0.14) 0%,
+        rgba(6, 182, 212, 0.08) 100%
+      );
+      color: var(--color-primary-text, #4f46e5);
+      border-color: var(--color-primary, #6366f1);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.18);
+      font-weight: 650;
+    }
+  }
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    button {
+      background: #141f38;
+      border-color: rgba(99, 102, 241, 0.18);
+      color: #cbd5e1;
+
+      &:hover {
+        background: #192540;
+        border-color: rgba(99, 102, 241, 0.5);
+        color: #a5b4fc;
+      }
+
+      &.selected {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.28) 0%,
+          rgba(6, 182, 212, 0.15) 100%
+        );
+        color: #c7d2fe;
+        border-color: #818cf8;
+        box-shadow: 0 0 14px rgba(99, 102, 241, 0.3);
+      }
     }
   }
 }
+
 .filter-note {
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.7;
-  margin: 0;
+  color: var(--text-muted, #64748b);
+  font:
+    450 11.5px/1.6 'Inter',
+    sans-serif;
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color, rgba(226, 232, 240, 0.7));
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    color: #94a3b8;
+    border-top-color: rgba(99, 102, 241, 0.12);
+  }
 }
+
 button:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
+  outline: 2px solid var(--color-primary, #6366f1);
+  outline-offset: 2px;
 }
