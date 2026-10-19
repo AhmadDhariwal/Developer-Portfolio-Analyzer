@@ -1,124 +1,87 @@
-<article class="job-card" [style.--platform-glow]="platformColor.bg">
-  <div class="job-card-header">
-    <div class="company-logo-wrap">
-      <img
-        *ngIf="logoUrl && !logoError"
-        [src]="logoUrl"
-        [alt]="job.company"
-        class="company-logo"
-        (error)="onLogoError()"
-      />
-      <span *ngIf="!logoUrl || logoError" class="logo-fallback">{{ logoFallback }}</span>
+<article
+  class="job-card"
+  [class.applied]="uiState.applied"
+  [attr.aria-label]="job.title + ' at ' + job.company"
+>
+  <div class="card-top">
+    <div class="company-mark" aria-hidden="true">
+      @if (logoUrl && !logoError) {
+        <img
+          [src]="logoUrl"
+          alt=""
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          (error)="logoError = true"
+        />
+      } @else {
+        {{ job.company.charAt(0).toUpperCase() }}
+      }
     </div>
-
-    <div class="job-title-block">
-      <div class="title-row">
-        <h3 class="job-title">{{ job.title }}</h3>
-        <span class="match-score" *ngIf="job.matchScore">{{ job.matchScore }}% Match</span>
-      </div>
-      <p class="job-company">{{ job.company }}</p>
-      <div class="badges-row">
-        <span class="platform-badge" *ngIf="job.platform" [style.background]="platformColor.bg" [style.color]="platformColor.text">
-          {{ job.platform }}
-        </span>
-        <span class="source-badge" *ngIf="sourceLabel">{{ sourceLabel }}</span>
-      </div>
+    <div class="company-info">
+      <span>{{ job.company }}</span
+      ><small>{{ job.source || job.platform || 'Source not provided' }}</small>
     </div>
-  </div>
-
-  <div class="job-meta-row">
-    <span class="meta-item" *ngIf="job.location">
-      <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 10c0 6-9 11-9 11S3 16 3 10a9 9 0 0 1 18 0Z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
-      </svg>
-      {{ job.location }}
-    </span>
-    <span class="meta-item" *ngIf="job.salary">
-      <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="1" x2="12" y2="23"></line>
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-      </svg>
-      {{ job.salary }}
-    </span>
-    <span class="job-type-badge" *ngIf="job.jobType" [ngClass]="jobTypeClass">{{ job.jobType }}</span>
-    <span class="exp-badge" *ngIf="job.experienceLevel">{{ job.experienceLevel }}</span>
-    <span class="posted-date" *ngIf="postedLabel">{{ postedLabel }}</span>
-  </div>
-
-  <div class="match-insights" *ngIf="job.skillMatch || job.experienceMatch">
-    <div class="insight-pill" *ngIf="job.skillMatch">
-      <span>Skill</span>
-      <strong>{{ job.skillMatch }}%</strong>
-    </div>
-    <div class="insight-pill" *ngIf="job.experienceMatch">
-      <span>Experience</span>
-      <strong>{{ job.experienceMatch }}%</strong>
-    </div>
-  </div>
-
-  <p class="job-description" *ngIf="job.description">{{ job.description }}</p>
-
-  <p class="why-matched" *ngIf="job.whyMatched">
-    <span>Why matched</span>
-    {{ job.whyMatched }}
-  </p>
-
-  <div class="skills-row" *ngIf="job.skills.length">
-    <span class="skill-chip" *ngFor="let skill of job.skills.slice(0, 6)">{{ skill }}</span>
-  </div>
-
-  <div class="missing-row" *ngIf="job.missingSkills?.length">
-    <span class="missing-label">Missing skills</span>
-    <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
-  </div>
-
-  <div class="career-signals" *ngIf="job.recommendedCourse || job.recommendedSprintTask">
-    <ng-container *ngIf="job.recommendedCourse as course">
-    <a
-      class="signal-row"
-      *ngIf="course.url; else courseText"
-      [href]="course.url"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <span>Recommended course</span>
-      <strong>{{ course.title }}</strong>
-    </a>
-    <ng-template #courseText>
-      <div class="signal-row" *ngIf="course.title">
-        <span>Recommended course</span>
-        <strong>{{ course.title }}</strong>
-      </div>
-    </ng-template>
-    </ng-container>
-    <div class="signal-row" *ngIf="job.recommendedSprintTask as task">
-      <span>Recommended sprint task</span>
-      <strong>{{ task.title }}</strong>
-    </div>
-  </div>
-
-  <div class="secondary-actions">
-    <button class="secondary-btn" type="button" (click)="onSave($event)">
-      {{ uiState.saved ? 'Saved' : 'Save Job' }}
-    </button>
-    <button class="secondary-btn" type="button" (click)="onApplied($event)">
-      {{ uiState.applied ? 'Applied' : 'Mark Applied' }}
-    </button>
-    <button class="secondary-btn" type="button" (click)="onHide($event)">Hide Job</button>
-    <button class="secondary-btn" type="button" (click)="onSimilar($event)">View Similar</button>
-  </div>
-
-  <div class="job-actions">
-    <a class="btn-view" [routerLink]="['/app/jobs', job.id]">View Details</a>
+    @if (job.matchScore !== undefined) {
+      <span class="match">{{ job.matchScore }}% <span>match</span></span>
+    }
     <button
-      class="btn-apply"
-      type="button"
-      [disabled]="!hasApplyLink"
-      [title]="hasApplyLink ? 'Open external application link' : 'Apply link unavailable'"
-      (click)="applyNow()"
+      class="save-button"
+      [disabled]="busy"
+      [attr.aria-pressed]="uiState.saved"
+      [attr.aria-label]="uiState.saved ? 'Remove saved job' : 'Save job'"
+      (click)="save.emit(job)"
     >
-      {{ hasApplyLink ? 'Apply Now' : 'Apply link unavailable' }}
+      <svg
+        viewBox="0 0 24 24"
+        [attr.fill]="uiState.saved ? 'currentColor' : 'none'"
+        stroke="currentColor"
+        stroke-width="1.7"
+        aria-hidden="true"
+      >
+        <path d="M6 4h12v17l-6-4-6 4z" />
+      </svg>
     </button>
   </div>
+  <h3>
+    <a [routerLink]="['/app/jobs', job.id]">{{ job.title }}</a>
+  </h3>
+  <p class="job-meta">
+    {{ job.location || 'Location not provided' }}
+    @if (job.jobType) {
+      <span aria-hidden="true"> · </span>{{ job.jobType }}
+    }
+  </p>
+  <p class="salary">{{ salary(job) }}</p>
+  <div class="skills" aria-label="Job skills">
+    @for (skill of job.skills.slice(0, 4); track skill) {
+      <span>{{ skill }}</span>
+    }
+    @if (job.skills.length > 4) {
+      <span>+{{ job.skills.length - 4 }}</span>
+    }
+  </div>
+  @if (job.whyMatched) {
+    <p class="explanation"><span class="spark" aria-hidden="true">✦</span> {{ job.whyMatched }}</p>
+  }
+  @if (job.missingSkills?.length) {
+    <p class="gaps">Evidence to review: {{ job.missingSkills?.slice(0, 3)?.join(', ') }}</p>
+  }
+  <div class="card-foot">
+    <small>Posted {{ date(job.postedDate) }}</small>
+    @if (uiState.applied) {
+      <span class="recorded">Marked applied</span>
+    }
+  </div>
+  <div class="actions">
+    <a class="primary" [routerLink]="['/app/jobs', job.id]"
+      >View details <span aria-hidden="true">↗</span></a
+    >
+    <button [disabled]="busy" (click)="markApplied.emit(job)" [attr.aria-pressed]="uiState.applied">
+      {{ uiState.applied ? 'Unmark applied' : 'Mark applied' }}
+    </button>
+    <button [disabled]="busy" (click)="hide.emit(job)">
+      {{ uiState.hidden ? 'Unhide' : 'Hide' }}
+    </button>
+  </div>
+  <small class="activity-note">Marking applied only updates your tracker.</small>
 </article>

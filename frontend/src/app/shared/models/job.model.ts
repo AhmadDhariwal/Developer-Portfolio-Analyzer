@@ -1,7 +1,34 @@
-export type JobPlatform = 'JSearch' | 'Jooble' | 'Adzuna' | 'Remotive' | 'Arbeitnow' | 'LinkedIn' | 'Indeed' | 'Rozee' | 'Glassdoor' | 'RemoteOK' | 'Other' | 'All';
+export type JobPlatform =
+  | 'JSearch'
+  | 'Jooble'
+  | 'Adzuna'
+  | 'Remotive'
+  | 'Arbeitnow'
+  | 'LinkedIn'
+  | 'Indeed'
+  | 'Rozee'
+  | 'Glassdoor'
+  | 'RemoteOK'
+  | 'Other'
+  | 'All';
 export type JobType = 'Full Time' | 'Part Time' | 'Contract' | 'Internship' | 'Remote' | 'All';
-export type JobExperienceFilter = 'Intern' | 'Entry' | '1-2 years' | '3-5 years' | '5+ years' | 'All';
-export type JobLocation = 'Pakistan' | 'Asia' | 'Middle East' | 'United States' | 'United Kingdom' | 'Europe' | 'Remote' | 'Worldwide' | 'All';
+export type JobExperienceFilter =
+  | 'Intern'
+  | 'Entry'
+  | '1-2 years'
+  | '3-5 years'
+  | '5+ years'
+  | 'All';
+export type JobLocation =
+  | 'Pakistan'
+  | 'Asia'
+  | 'Middle East'
+  | 'United States'
+  | 'United Kingdom'
+  | 'Europe'
+  | 'Remote'
+  | 'Worldwide'
+  | 'All';
 
 export interface PlatformColor {
   bg: string;
@@ -26,6 +53,17 @@ export interface Job {
   url: string;
   applyUrl: string;
   experienceLevel: string;
+  salaryMetadata?: {
+    min: number | null;
+    max: number | null;
+    currency: string | null;
+    period: string | null;
+  };
+  validThrough?: string | null;
+  cacheExpiresAt?: string | null;
+  freshUntil?: string | null;
+  lastSynced?: string | null;
+  actions?: JobUiState;
   source?: string;
   score?: number;
   matchScore?: number;
@@ -98,6 +136,7 @@ export interface JobsResponse {
   jsearchConfigured?: boolean;
   joobleConfigured?: boolean;
   diagnostics?: {
+    refreshScheduled?: boolean;
     query?: string;
     sourceSummaryFetched?: Record<string, number>;
     sourceSummaryUsable?: Record<string, number>;
@@ -137,6 +176,7 @@ export interface JobsResponse {
     cacheCount?: number;
     fromCacheOnly?: boolean;
   };
+  personalization?: { status?: string; limitation?: string };
   recommendedBasedOn?: JobRecommendedBasedOn | null;
 }
 
@@ -150,7 +190,7 @@ export interface JobUiState {
   saved: boolean;
   applied: boolean;
   hidden: boolean;
-  updatedAt?: number;
+  updatedAt?: string | number;
 }
 
 export const DEFAULT_JOB_FILTERS: JobFilters = {
@@ -158,7 +198,7 @@ export const DEFAULT_JOB_FILTERS: JobFilters = {
   experienceLevel: 'All',
   jobType: 'All',
   location: 'All',
-  skills: ''
+  skills: '',
 };
 
 export const JOB_PLATFORM_OPTIONS: { value: JobPlatform | 'All'; label: string }[] = [
@@ -172,7 +212,7 @@ export const JOB_PLATFORM_OPTIONS: { value: JobPlatform | 'All'; label: string }
   { value: 'Indeed', label: 'Indeed' },
   { value: 'Rozee', label: 'Rozee.pk' },
   { value: 'Glassdoor', label: 'Glassdoor' },
-  { value: 'RemoteOK', label: 'RemoteOK' }
+  { value: 'RemoteOK', label: 'RemoteOK' },
 ];
 
 export const JOB_EXPERIENCE_OPTIONS: { value: JobExperienceFilter | 'All'; label: string }[] = [
@@ -181,7 +221,7 @@ export const JOB_EXPERIENCE_OPTIONS: { value: JobExperienceFilter | 'All'; label
   { value: 'Entry', label: 'Entry Level' },
   { value: '1-2 years', label: '1-2 Years' },
   { value: '3-5 years', label: '3-5 Years' },
-  { value: '5+ years', label: '5+ Years' }
+  { value: '5+ years', label: '5+ Years' },
 ];
 
 export const JOB_TYPE_OPTIONS: { value: JobType | 'All'; label: string }[] = [
@@ -190,7 +230,7 @@ export const JOB_TYPE_OPTIONS: { value: JobType | 'All'; label: string }[] = [
   { value: 'Part Time', label: 'Part Time' },
   { value: 'Contract', label: 'Contract' },
   { value: 'Internship', label: 'Internship' },
-  { value: 'Remote', label: 'Remote' }
+  { value: 'Remote', label: 'Remote' },
 ];
 
 export const JOB_LOCATION_OPTIONS: { value: JobLocation | 'All'; label: string }[] = [
@@ -202,15 +242,37 @@ export const JOB_LOCATION_OPTIONS: { value: JobLocation | 'All'; label: string }
   { value: 'United Kingdom', label: 'United Kingdom' },
   { value: 'Europe', label: 'Europe' },
   { value: 'Remote', label: 'Remote' },
-  { value: 'Worldwide', label: 'Worldwide' }
+  { value: 'Worldwide', label: 'Worldwide' },
 ];
 
 export const JOB_SKILL_OPTIONS = [
-  'Node.js', 'Angular', 'React', 'Vue.js', 'TypeScript', 'JavaScript',
-  'Python', 'Django', 'Flask', 'Docker', 'Kubernetes', 'AWS',
-  'MongoDB', 'PostgreSQL', 'GraphQL', 'REST APIs', 'React Native',
-  'Next.js', 'Tailwind CSS', 'Git', 'CI/CD', 'Microservices',
-  'Spring Boot', 'PHP', 'Laravel', 'Redux', '.NET'
+  'Node.js',
+  'Angular',
+  'React',
+  'Vue.js',
+  'TypeScript',
+  'JavaScript',
+  'Python',
+  'Django',
+  'Flask',
+  'Docker',
+  'Kubernetes',
+  'AWS',
+  'MongoDB',
+  'PostgreSQL',
+  'GraphQL',
+  'REST APIs',
+  'React Native',
+  'Next.js',
+  'Tailwind CSS',
+  'Git',
+  'CI/CD',
+  'Microservices',
+  'Spring Boot',
+  'PHP',
+  'Laravel',
+  'Redux',
+  '.NET',
 ];
 
 export const JOB_PLATFORM_COLOR_MAP: Record<string, PlatformColor> = {
@@ -224,14 +286,16 @@ export const JOB_PLATFORM_COLOR_MAP: Record<string, PlatformColor> = {
   Rozee: { bg: '#e8282f', text: '#ffffff' },
   Glassdoor: { bg: '#0CAA41', text: '#ffffff' },
   RemoteOK: { bg: '#14b8a6', text: '#ffffff' },
-  Other: { bg: '#6366f1', text: '#ffffff' }
+  Other: { bg: '#6366f1', text: '#ffffff' },
 };
 
 export function normalizeJobFilters(filters: Partial<JobFilters> = {}): JobFilters {
   const platform = JOB_PLATFORM_OPTIONS.some((option) => option.value === filters.platform)
     ? (filters.platform as JobFilters['platform'])
     : 'All';
-  const experienceLevel = JOB_EXPERIENCE_OPTIONS.some((option) => option.value === filters.experienceLevel)
+  const experienceLevel = JOB_EXPERIENCE_OPTIONS.some(
+    (option) => option.value === filters.experienceLevel,
+  )
     ? (filters.experienceLevel as JobFilters['experienceLevel'])
     : 'All';
   const jobType = JOB_TYPE_OPTIONS.some((option) => option.value === filters.jobType)
@@ -240,13 +304,27 @@ export function normalizeJobFilters(filters: Partial<JobFilters> = {}): JobFilte
   const location = JOB_LOCATION_OPTIONS.some((option) => option.value === filters.location)
     ? (filters.location as JobFilters['location'])
     : 'All';
-  const skills = String(filters.skills || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+  const skills = String(filters.skills || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 60);
 
   return {
     platform,
     experienceLevel,
     jobType,
     location,
-    skills
+    skills,
   };
+}
+
+export type JobActionField = 'saved' | 'applied' | 'hidden';
+export interface JobActionRecord extends JobUiState {
+  jobId: string;
+  updatedAt?: string | number;
+}
+export interface JobActionsResponse {
+  actions: JobActionRecord[];
+  page: number;
+  hasMore: boolean;
 }

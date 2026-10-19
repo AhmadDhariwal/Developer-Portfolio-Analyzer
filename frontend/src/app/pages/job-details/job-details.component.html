@@ -1,140 +1,193 @@
-<section class="job-details-page">
-  <a class="back-link" routerLink="/app/jobs">
-    <span aria-hidden="true">&larr;</span>
-    Back to Jobs Hub
-  </a>
-
-  <div class="loading-state" *ngIf="isLoading">
-    <div class="shimmer hero"></div>
-    <div class="shimmer line"></div>
-    <div class="shimmer line short"></div>
-  </div>
-
-  <div class="error-state" *ngIf="!isLoading && errorMessage">
-    <div class="state-icon">!</div>
-    <h1>Job details unavailable</h1>
-    <p>{{ errorMessage }}</p>
-    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
-  </div>
-
-  <div class="error-state" *ngIf="!isLoading && !errorMessage && !job">
-    <div class="state-icon">?</div>
-    <h1>No job details found</h1>
-    <p>This job is not available in JobCache right now.</p>
-    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
-  </div>
-
-  <ng-container *ngIf="!isLoading && !errorMessage && job">
-    <header class="details-hero">
-      <div class="company-logo">
-        <img *ngIf="job.companyLogo" [src]="job.companyLogo" [alt]="job.company" />
-        <span *ngIf="!job.companyLogo">{{ job.company.charAt(0) }}</span>
+<div class="job-details-page">
+  <a class="back" routerLink="/app/jobs">← Back to Jobs Hub</a>
+  @if (offline) {
+    <div class="message" role="status">
+      You're offline. Retained details remain visible; reconnect to sync your activity.
+    </div>
+  }
+  @if (stale) {
+    <div class="message" role="status">
+      These details are from a retained listing. Confirm current availability at the source.
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="message" role="alert">
+      {{ errorMessage }}
+      <button [disabled]="blocked || isLoading" (click)="retry()">Try again</button>
+    </div>
+  }
+  @if (notice) {
+    <div class="message" role="status">{{ notice }}</div>
+  }
+  @if (isLoading && !job) {
+    <div class="loading" role="status">Loading source details…</div>
+  }
+  @if (job; as item) {
+    <header class="detail-heading">
+      <p class="eyebrow">{{ item.source || item.platform || 'SOURCE LISTING' }}</p>
+      <h1>{{ item.title }}</h1>
+      <p>
+        {{ item.company }} <span aria-hidden="true">·</span>
+        {{ item.location || 'Location not provided' }}
+      </p>
+      <div class="heading-tags">
+        @if (item.jobType) {
+          <span>{{ item.jobType }}</span>
+        }
+        @if (item.experienceLevel) {
+          <span>{{ item.experienceLevel }}</span>
+        }
+        <span>{{ salary(item) }}</span>
       </div>
-
-      <div class="hero-copy">
-        <div class="badge-row">
-          <span class="source-badge">{{ job.platform }}</span>
-          <span class="source-badge muted">{{ job.source || 'Live source' }}</span>
-          <span class="match-badge" *ngIf="job.matchScore">{{ job.matchScore }}% Match</span>
-        </div>
-        <h1>{{ job.title }}</h1>
-        <p>{{ job.company }} | {{ job.location }} | {{ job.jobType }} | {{ job.experienceLevel }}</p>
-      </div>
-
-      <button
-        class="primary-action"
-        type="button"
-        [disabled]="!hasApplyLink"
-        [title]="hasApplyLink ? 'Open external application link' : 'Apply link unavailable'"
-        (click)="applyNow()"
-      >
-        {{ hasApplyLink ? 'Apply Now' : 'Apply link unavailable' }}
-      </button>
     </header>
-
-    <div class="details-grid">
-      <main class="details-main">
-        <article class="panel">
-          <span class="eyebrow">Job Description</span>
-          <p class="description">{{ job.description }}</p>
-        </article>
-
-        <article class="panel" *ngIf="job.requirements.length">
-          <span class="eyebrow">Requirements</span>
-          <ul class="detail-list">
-            <li *ngFor="let requirement of job.requirements">{{ requirement }}</li>
-          </ul>
-        </article>
-
-        <article class="panel" *ngIf="job.benefits.length">
-          <span class="eyebrow">Benefits</span>
-          <ul class="detail-list">
-            <li *ngFor="let benefit of job.benefits">{{ benefit }}</li>
-          </ul>
-        </article>
-      </main>
-
-      <aside class="details-side">
-        <article class="panel stat-panel">
-          <span class="eyebrow">Role Snapshot</span>
-          <div class="stat-row">
-            <span>Salary</span>
-            <strong>{{ job.salary || 'Competitive' }}</strong>
+    <div class="detail-grid">
+      <div class="detail-content">
+        <section class="panel">
+          <h2>About this opportunity</h2>
+          <p class="description">
+            {{ item.description || 'The source did not provide a description.' }}
+          </p>
+          @if (item.requirements.length) {
+            <h2>What the source is looking for</h2>
+            <ul>
+              @for (requirement of item.requirements; track $index) {
+                <li>{{ requirement }}</li>
+              }
+            </ul>
+          }
+          @if (item.benefits.length) {
+            <h2>Benefits from the source</h2>
+            <ul>
+              @for (benefit of item.benefits; track $index) {
+                <li>{{ benefit }}</li>
+              }
+            </ul>
+          }
+        </section>
+        <section class="panel">
+          <h2>Skills in this listing</h2>
+          <div class="tags">
+            @for (skill of item.skills; track skill) {
+              <span>{{ skill }}</span>
+            } @empty {
+              <p>Skills were not provided by the source.</p>
+            }
           </div>
-          <div class="stat-row">
-            <span>Posted</span>
-            <strong>{{ postedLabel }}</strong>
-          </div>
-          <div class="stat-row">
-            <span>Source</span>
-            <strong>{{ job.source || job.platform }}</strong>
-          </div>
-          <div class="stat-row">
-            <span>Apply URL</span>
-            <strong>
-              <a *ngIf="hasApplyLink" [href]="applyLink" target="_blank" rel="noopener noreferrer">{{ applyLink }}</a>
-              <ng-container *ngIf="!hasApplyLink">Unavailable</ng-container>
-            </strong>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.skills.length">
-          <span class="eyebrow">Skills</span>
-          <div class="chips">
-            <span class="skill-chip" *ngFor="let skill of job.skills">{{ skill }}</span>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.whyMatched || job.missingSkills?.length">
-          <span class="eyebrow">Match Insight</span>
-          <p class="why" *ngIf="job.whyMatched">{{ job.whyMatched }}</p>
-          <div class="chips missing" *ngIf="job.missingSkills?.length">
-            <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.recommendedCourse || job.recommendedSprintTask">
-          <span class="eyebrow">Career Signals</span>
-          <div class="signal-list">
+        </section>
+        @if (item.recommendedCourse || item.recommendedSprintTask) {
+          <section class="panel learning">
+            <p class="eyebrow">MAKE YOUR NEXT MOVE</p>
+            <h2>Prepare with purpose</h2>
+            @if (item.recommendedCourse; as course) {
+              <h3>{{ course.title }}</h3>
+              <p>
+                {{
+                  course.whyRecommended ||
+                    'A related learning opportunity from your current recommendations.'
+                }}
+              </p>
+              @if (safeUrl(course.url)) {
+                <a
+                  [href]="safeUrl(course.url)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  referrerpolicy="no-referrer"
+                  >Explore course on {{ course.platform }} ↗</a
+                >
+              }
+            }
+            @if (item.recommendedSprintTask; as task) {
+              <h3>{{ task.title }}</h3>
+              <p>{{ task.description }}</p>
+              <a routerLink="/app/career-sprint">Open Career Sprint →</a>
+            }
+          </section>
+        }
+      </div>
+      <aside>
+        <section class="panel match-panel">
+          @if (item.matchScore !== undefined) {
+            <div class="score">{{ item.matchScore }}<span>%</span></div>
+            <p class="score-label">Profile match</p>
+          } @else {
+            <h2>Match evidence unavailable</h2>
+          }
+          <p>{{ item.whyMatched || 'No personalized explanation was provided.' }}</p>
+          @if (item.missingSkills?.length) {
+            <h3>Evidence to review</h3>
+            <div class="tags">
+              @for (skill of item.missingSkills; track skill) {
+                <span>{{ skill }}</span>
+              }
+            </div>
+            <p class="fine-print">
+              These signals describe recorded skill overlap, not verified inability.
+            </p>
+          }
+          <a routerLink="/app/skill-gap">Review skill evidence →</a>
+        </section>
+        <section class="panel action-panel">
+          <h2>Your next step</h2>
+          @if (applyLink) {
             <a
-              class="signal-row"
-              *ngIf="job.recommendedCourse as course"
-              [href]="course.url"
+              class="primary"
+              [href]="applyLink"
               target="_blank"
               rel="noopener noreferrer"
+              referrerpolicy="no-referrer"
+              >Visit application site ↗</a
             >
-              <span>Recommended Course</span>
-              <strong>{{ course.title }}</strong>
-              <small *ngIf="course.whyRecommended">{{ course.whyRecommended }}</small>
-            </a>
-            <div class="signal-row" *ngIf="job.recommendedSprintTask as task">
-              <span>Recommended Sprint Task</span>
-              <strong>{{ task.title }}</strong>
-              <small *ngIf="task.description">{{ task.description }}</small>
-            </div>
-          </div>
-        </article>
+          } @else {
+            <p>The application link is unavailable or this cached listing has expired.</p>
+          }
+          <button
+            [disabled]="blocked || actions.isBusy(item.id)"
+            [attr.aria-pressed]="actions.state(item.id).saved"
+            (click)="mutate('saved')"
+          >
+            {{ actions.state(item.id).saved ? 'Remove saved job' : 'Save job' }}</button
+          ><button
+            [disabled]="blocked || actions.isBusy(item.id)"
+            [attr.aria-pressed]="actions.state(item.id).applied"
+            (click)="mutate('applied')"
+          >
+            {{ actions.state(item.id).applied ? 'Unmark applied' : 'Mark applied' }}
+          </button>
+          <p class="fine-print">
+            Opening the source does not update your tracker. Marking applied does not submit an
+            application.
+          </p>
+          <button [disabled]="blocked || actions.isBusy(item.id)" (click)="mutate('hidden')">
+            Hide this listing
+          </button>
+        </section>
+        <section class="panel provenance">
+          <h2>From the source</h2>
+          <dl>
+            <dt>Source</dt>
+            <dd>{{ item.source || item.platform || 'Not provided' }}</dd>
+            <dt>Posted</dt>
+            <dd>{{ date(item.postedDate) }}</dd>
+            <dt>Last fetched</dt>
+            <dd>{{ date(item.lastSynced) }}</dd>
+            <dt>Source expiry</dt>
+            <dd>{{ date(item.validThrough) }}</dd>
+            <dt>Cache fresh until</dt>
+            <dd>{{ date(item.freshUntil) }}</dd>
+          </dl>
+          <p class="fine-print">
+            A cached listing does not confirm current employer availability. Check dates,
+            compensation and application requirements at the source. No currency conversion is
+            inferred.
+          </p>
+        </section>
       </aside>
     </div>
-  </ng-container>
-</section>
+  } @else if (!isLoading && !errorMessage) {
+    <section class="panel">
+      <h1>Listing hidden or unavailable</h1>
+      <p>Your saved activity is retained in your account.</p>
+      <a routerLink="/app/jobs" [queryParams]="{ view: 'hidden' }">Manage hidden jobs →</a>
+    </section>
+  }
+</div>
