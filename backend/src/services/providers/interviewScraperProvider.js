@@ -13,12 +13,27 @@ const inferDifficulty = (text = '') => {
   return 'easy';
 };
 
-const normalizeAnswer = (value = '', topicKey = '') => {
+const normalizeAnswer = (value = '') => {
   const cleaned = normalizeAnswerText(value);
   if (cleaned.length >= 45) {
     return cleaned.slice(0, 420);
   }
-  return `Describe ${topicKey} clearly, discuss practical usage, tradeoffs, and include a concise implementation example.`;
+  return '';
+};
+
+const sourceMeta = (url, host) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || parsed.hostname !== host || parsed.username || parsed.password || parsed.port)
+      return {};
+    return {
+      url: `${parsed.origin}${parsed.pathname}`,
+      verificationStatus: 'unverified',
+      fetchedAt: new Date().toISOString()
+    };
+  } catch {
+    return {};
+  }
 };
 
 const topicSearchTerms = (topicKey = '') => {
@@ -70,6 +85,7 @@ const normalizeScraped = ({ topicKey, topicType, devToItems = [], githubItems = 
     if (!question) continue;
     normalized.push({
       question,
+      sourceMeta: sourceMeta(item?.url, 'dev.to'),
       answer: normalizeAnswer(item?.description || item?.body_markdown || '', topicKey),
       difficulty: sanitizeDifficulty(inferDifficulty(`${item?.title || ''} ${item?.description || ''}`)),
       tags: sanitizeTags([topicKey, topicType, 'scraped', 'devto'])
@@ -81,6 +97,7 @@ const normalizeScraped = ({ topicKey, topicType, devToItems = [], githubItems = 
     if (!question) continue;
     normalized.push({
       question,
+      sourceMeta: sourceMeta(item?.html_url, 'github.com'),
       answer: normalizeAnswer(item?.body || '', topicKey),
       difficulty: sanitizeDifficulty(inferDifficulty(`${item?.title || ''} ${item?.body || ''}`)),
       tags: sanitizeTags([topicKey, topicType, 'scraped', 'github'])
@@ -95,12 +112,12 @@ const scrapeQuestionsForTopic = async ({ topicKey, topicType, count = 10 }) => {
   const devToTag = String(topicKey || '').replace(/[^a-z0-9]/g, '');
 
   try {
-    const [devToItems, githubItems] = await Promise.all([
-      fetchDevToArticles(devToTag),
-      fetchGitHubIssues(searchTerm)
-    ]);
+    const results = await Promise.allSettled([fetchDevToArticles(devToTag), fetchGitHubIssues(searchTerm)]);
 
-    return normalizeScraped({ topicKey, topicType, devToItems, githubItems }).slice(0, Math.max(1, count));
+    const [devToItems, githubItems] = results.map((result) => (result.status === 'fulfilled' ? result.value : []));
+    return normalizeScraped({ topicKey, topicType, devToItems, githubItems })
+      .filter((item) => item.answer && item.sourceMeta.url)
+      .slice(0, Math.min(50, Math.max(1, count)));
   } catch (_error) {
     return [];
   }

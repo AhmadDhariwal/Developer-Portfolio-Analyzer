@@ -42,52 +42,81 @@ const sectionTitles = [
 const normalizeStructuredSections = (sections = {}, answer = '') => {
   const incoming = sections && typeof sections === 'object' ? sections : {};
   const extracted = extractAnswerSections(answer);
-  const shortAnswer = incoming.shortAnswer || incoming.summary || incoming['Short answer'] || incoming['Short direct answer'] || extracted['Short answer'] || extracted['Short direct answer'] || '';
+  const shortAnswer =
+    incoming.shortAnswer ||
+    incoming.summary ||
+    incoming['Short answer'] ||
+    incoming['Short direct answer'] ||
+    extracted['Short answer'] ||
+    extracted['Short direct answer'] ||
+    '';
   const explanation = incoming.explanation || incoming.Explanation || extracted.Explanation || answer;
   const bulletPoints = Array.isArray(incoming.keyPoints)
     ? incoming.keyPoints
     : Array.isArray(incoming.bulletPoints)
       ? incoming.bulletPoints
-    : String(incoming['Key points'] || extracted['Key points'] || '')
-      .split(/\n|-/)
-      .map((point) => point.trim())
-      .filter(Boolean);
+      : String(incoming['Key points'] || extracted['Key points'] || '')
+          .split(/\n|-/)
+          .map((point) => point.trim())
+          .filter(Boolean);
   const commonMistakes = Array.isArray(incoming.commonMistakes)
-    ? incoming.commonMistakes.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 5)
+    ? incoming.commonMistakes
+        .map((point) => normalizeAnswerText(point))
+        .filter(Boolean)
+        .slice(0, 5)
     : [];
 
   return {
     shortAnswer: normalizeAnswerText(shortAnswer),
     summary: normalizeAnswerText(shortAnswer),
     explanation: normalizeAnswerText(explanation),
-    keyPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
-    bulletPoints: bulletPoints.map((point) => normalizeAnswerText(point)).filter(Boolean).slice(0, 6),
+    keyPoints: bulletPoints
+      .map((point) => normalizeAnswerText(point))
+      .filter(Boolean)
+      .slice(0, 6),
+    bulletPoints: bulletPoints
+      .map((point) => normalizeAnswerText(point))
+      .filter(Boolean)
+      .slice(0, 6),
     example: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
     codeExample: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
     realWorldUseCase: normalizeAnswerText(
-      incoming.realWorldUseCase || incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
+      incoming.realWorldUseCase ||
+        incoming.realWorldContext ||
+        incoming['Real-world use case'] ||
+        extracted['Real-world use case'] ||
+        ''
     ),
     realWorldContext: normalizeAnswerText(
-      incoming.realWorldUseCase || incoming.realWorldContext || incoming['Real-world use case'] || extracted['Real-world use case'] || ''
+      incoming.realWorldUseCase ||
+        incoming.realWorldContext ||
+        incoming['Real-world use case'] ||
+        extracted['Real-world use case'] ||
+        ''
     ),
     commonMistakes,
     interviewTip: normalizeAnswerText(incoming.interviewTip || '')
   };
 };
 
-const toStructuredText = (sections = {}) => normalizeAnswerText([
-  sections.shortAnswer ? `Short answer: ${sections.shortAnswer}` : '',
-  Array.isArray(sections.keyPoints) && sections.keyPoints.length
-    ? `Key points:\n${sections.keyPoints.map((point) => `- ${point}`).join('\n')}`
-    : '',
-  sections.explanation ? `Explanation: ${sections.explanation}` : '',
-  sections.example ? `Example:\n${sections.example}` : '',
-  sections.realWorldUseCase ? `Real-world use case: ${sections.realWorldUseCase}` : '',
-  Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
-    ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
-    : '',
-  sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : ''
-].filter(Boolean).join('\n\n'));
+const toStructuredText = (sections = {}) =>
+  normalizeAnswerText(
+    [
+      sections.shortAnswer ? `Short answer: ${sections.shortAnswer}` : '',
+      Array.isArray(sections.keyPoints) && sections.keyPoints.length
+        ? `Key points:\n${sections.keyPoints.map((point) => `- ${point}`).join('\n')}`
+        : '',
+      sections.explanation ? `Explanation: ${sections.explanation}` : '',
+      sections.example ? `Example:\n${sections.example}` : '',
+      sections.realWorldUseCase ? `Real-world use case: ${sections.realWorldUseCase}` : '',
+      Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
+        ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
+        : '',
+      sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : ''
+    ]
+      .filter(Boolean)
+      .join('\n\n')
+  );
 
 const sanitizeQualityScore = (value = 4) => {
   return normalizeQualityScore(value || 80);
@@ -97,7 +126,9 @@ const extractAnswerSections = (answer = '') => {
   const sections = {};
   for (const title of sectionTitles) {
     const pattern = new RegExp(`${title}:\\s*([\\s\\S]*?)(?=\\n(?:${sectionTitles.join('|')}):|$)`, 'i');
-    const value = String(answer || '').match(pattern)?.[1]?.trim();
+    const value = String(answer || '')
+      .match(pattern)?.[1]
+      ?.trim();
     if (value) sections[title] = value;
   }
   return sections;
@@ -106,9 +137,9 @@ const extractAnswerSections = (answer = '') => {
 const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity = 10, qualityState = 'approved' }) => {
   const question = normalizeQuestionText(item.question);
   const answerSections = normalizeStructuredSections(item.answerSections, item.answer);
-  const answer = normalizeAnswerText(item.answerFormat === 'structured' || item.answerSections
-    ? toStructuredText(answerSections)
-    : item.answer);
+  const answer = normalizeAnswerText(
+    item.answerFormat === 'structured' || item.answerSections ? toStructuredText(answerSections) : item.answer
+  );
   const confidenceScore = computeConfidenceScore({ sourceType, question, answer });
   const quality = validateInterviewQuestionQuality({
     question,
@@ -123,7 +154,8 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
     qualityScore: item.qualityScore,
     minimumScore: sourceType === 'scraped' ? 0.8 : 0.75
   });
-  const approved = qualityState === 'approved' && quality.isValid;
+  const needsReview = sourceType === 'scraped' && sourceMeta.verificationStatus !== 'verified';
+  const approved = !needsReview && qualityState === 'approved' && quality.isValid;
 
   return {
     topicKey: topic.topicKey,
@@ -139,16 +171,17 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
     tags: sanitizeTags([...(item.tags || []), topic.topicKey, topic.topicType]),
     source: sourceType === 'user_asked' ? 'ai_generated' : sourceType,
     sourceType,
-    sourceMeta,
+    sourceMeta: { ...sourceMeta, verificationStatus: sourceMeta.verificationStatus || 'unverified' },
     confidenceScore,
     relevanceScore: quality.relevanceScore,
     category: sanitizeCategory(item.category),
     qualityScore: sanitizeQualityScore(item.qualityScore || (confidenceScore >= 0.85 ? 4 : 3)),
     answerFormat: item.answerSections || item.answerFormat === 'structured' ? 'structured' : 'plain',
     isEnriched: Boolean(item.isEnriched || item.answerSections || item.answerFormat === 'structured'),
-    qualityState: approved ? 'approved' : 'rejected',
+    qualityState: needsReview ? 'review' : approved ? 'approved' : 'rejected',
     isApproved: approved,
-    qualityStatus: approved ? 'approved' : 'rejected',
+    qualityStatus: needsReview ? 'pending' : approved ? 'approved' : 'rejected',
+    reviewStatus: needsReview ? 'pending' : approved ? 'approved' : 'rejected',
     rejectedReason: approved ? '' : quality.reasons.join(', '),
     popularity,
     usageCount: 0,
@@ -156,11 +189,7 @@ const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity
   };
 };
 
-const createInterviewEnrichmentOrchestrator = ({
-  aiProvider,
-  scraperProvider,
-  questionRepository
-}) => {
+const createInterviewEnrichmentOrchestrator = ({ aiProvider, scraperProvider, questionRepository }) => {
   const enrichTopicQuestionPool = async ({
     topic,
     query = '',
@@ -171,7 +200,7 @@ const createInterviewEnrichmentOrchestrator = ({
     allowScraper = true,
     difficulty = ''
   }) => {
-    const target = Math.max(0, Number(requestedCount || 0));
+    const target = Math.min(100, Math.max(0, Number(requestedCount || 0)));
     if (target === 0) {
       return {
         insertedCount: 0,
@@ -240,17 +269,22 @@ const createInterviewEnrichmentOrchestrator = ({
       existingComparableQuestions
     });
 
-    const remainingAfterScrape = Math.max(0, missing - dedupedScrape.length);
+    // Pending scraped candidates cannot satisfy an approved practice-pool target.
+    const remainingAfterScrape = missing;
 
     if (remainingAfterScrape > 0) {
       try {
-        aiCandidates = await aiProvider.generateQuestionsFromAI({
-          topicKey: topic.topicKey,
-          topicType: topic.topicType,
-          query,
-          difficulty,
-          count: remainingAfterScrape
-        });
+        aiCandidates = await withTimeout(
+          aiProvider.generateQuestionsFromAI({
+            topicKey: topic.topicKey,
+            topicType: topic.topicType,
+            query,
+            difficulty,
+            count: remainingAfterScrape
+          }),
+          6500,
+          []
+        );
       } catch (error) {
         logger.warn('interview-prep ai enrichment failed', {
           topicKey: topic.topicKey,
@@ -284,21 +318,27 @@ const createInterviewEnrichmentOrchestrator = ({
     });
 
     const storable = [
-      ...dedupedScrape.map((item) => toStorableRecord({
-        item,
-        topic,
-        sourceType: 'scraped',
-        sourceMeta: { query, initiatedBy, expectedDifficulty: difficulty },
-        popularity: 12
-      })),
-      ...validAi.map((item) => toStorableRecord({
-        item,
-        topic,
-        sourceType: 'ai',
-        sourceMeta: { query, initiatedBy, expectedDifficulty: difficulty },
-        popularity: 10
-      }))
-    ].filter((record) => record.isApproved && record.qualityStatus === 'approved');
+      ...dedupedScrape.map((item) =>
+        toStorableRecord({
+          item,
+          topic,
+          sourceType: 'scraped',
+          sourceMeta: { ...(item.sourceMeta || {}), query, initiatedBy, expectedDifficulty: difficulty },
+          popularity: 12
+        })
+      ),
+      ...validAi.map((item) =>
+        toStorableRecord({
+          item,
+          topic,
+          sourceType: 'ai',
+          sourceMeta: { query, initiatedBy, expectedDifficulty: difficulty },
+          popularity: 10
+        })
+      )
+    ].filter(
+      (record) => record.qualityStatus === 'pending' || (record.isApproved && record.qualityStatus === 'approved')
+    );
 
     if (storable.length === 0) {
       return {
@@ -316,7 +356,7 @@ const createInterviewEnrichmentOrchestrator = ({
       insertedCount: Number(upsertResult.insertedCount || 0),
       aiAdded: validAi.length,
       scrapedAdded: dedupedScrape.length,
-      partial: validAi.length + dedupedScrape.length < missing,
+      partial: storable.filter((record) => record.isApproved).length < missing,
       attempted: true
     };
   };
