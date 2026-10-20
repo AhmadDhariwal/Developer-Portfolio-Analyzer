@@ -1,29 +1,53 @@
-<article class="project-item" [class.reverse]="reverse">
-  <div class="project-content" [class.content-left]="!reverse" [class.content-right]="reverse">
-    <span class="project-label">Featured Project</span>
-    <h3 class="project-title">{{ project.title }}</h3>
-
-    <div class="project-description-card">
-      <p>{{ project.description }}</p>
-    </div>
-
-    <div class="project-tech" *ngIf="project.tech.length">
-      <span class="project-tech-chip" *ngFor="let tech of project.tech">{{ tech }}</span>
-    </div>
-
-    <div class="project-links">
-      <a *ngIf="primaryLink" [href]="primaryLink" target="_blank" rel="noopener" class="project-link" title="Open project">
-        <i class="mdi mdi-open-in-new"></i>
-      </a>
-      <a *ngIf="repositoryLink" [href]="repositoryLink" target="_blank" rel="noopener" class="project-link" title="Open repository">
-        <i class="mdi mdi-github"></i>
-      </a>
-    </div>
+<article class="project-card">
+  <div class="project-image">
+    <span class="image-placeholder" aria-hidden="true"
+      >{{ project.title.charAt(0) }}<span>↗</span></span
+    ><img
+      *ngIf="image(previewImage || project.imageUrl) && !imageFailed"
+      [src]="image(previewImage || project.imageUrl)"
+      [alt]="project.title + ' project preview'"
+      loading="lazy"
+      decoding="async"
+      width="640"
+      height="360"
+      referrerpolicy="no-referrer"
+      (error)="imageFailed = true"
+    /><span class="project-status">{{
+      project.status === 'in-progress'
+        ? 'In progress'
+        : project.status === 'planned' || project.status === 'upcoming'
+          ? 'Planned'
+          : project.status === 'completed'
+            ? 'Completed'
+            : 'Project'
+    }}</span>
   </div>
-
-  <div class="project-preview" [class.preview-right]="!reverse" [class.preview-left]="reverse">
-    <div class="preview-frame">
-      <img [src]="previewImage" [alt]="project.title" class="preview-image" loading="lazy" decoding="async" (error)="onPreviewError($event)" />
+  <div class="project-body">
+    <h3>{{ project.title }}</h3>
+    <p class="project-description" *ngIf="project.description">{{ project.description }}</p>
+    <p class="expected-date" *ngIf="project.expectedDate">Expected: {{ project.expectedDate }}</p>
+    <div class="tech-list">
+      <span *ngFor="let tech of project.tech">{{ tech }}</span>
+    </div>
+    <details *ngIf="project.description">
+      <summary>Project details</summary>
+      <p>{{ project.description }}</p>
+      <p class="listed-note">Project information supplied by the portfolio owner.</p>
+    </details>
+    <div class="project-links">
+      <a
+        *ngIf="link(primaryLink || project.url)"
+        [href]="link(primaryLink || project.url)"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Visit project ↗</a
+      ><a
+        *ngIf="link(repositoryLink || project.repoUrl)"
+        [href]="link(repositoryLink || project.repoUrl)"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Source code ↗</a
+      >
     </div>
   </div>
 </article>
