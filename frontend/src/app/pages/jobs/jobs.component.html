@@ -1,17 +1,40 @@
 <div class="jobs-page">
+  <!-- Header -->
   <header class="page-header">
-    <div>
-      <p class="eyebrow">YOUR NEXT CHAPTER</p>
-      <h1>Jobs Hub<span class="title-dot">.</span></h1>
-      <p class="subtitle">Find your fit. Build your future.</p>
+    <div class="header-main">
+      <span class="eyebrow">CAREER OPPORTUNITIES</span>
+      <div class="title-row">
+        <h1>Jobs Hub</h1>
+        @if (total > 0 && view === 'discover') {
+          <span class="total-pill">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            {{ total }} {{ total === 1 ? 'match' : 'matches' }}
+          </span>
+        }
+      </div>
+      <p class="subtitle">
+        Curated developer roles matched to your active stack, skills, and experience level.
+      </p>
     </div>
-    <button class="refresh" [disabled]="isLoading || coolingDown || offline" (click)="revalidate()">
-      <span aria-hidden="true">↻</span> Recheck listings
-    </button>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="btn-refresh"
+        [disabled]="isLoading || coolingDown || offline"
+        (click)="revalidate()"
+      >
+        <span class="refresh-icon" [class.spinning]="isLoading" aria-hidden="true">↻</span>
+        <span>{{ isLoading ? 'Refreshing…' : 'Refresh listings' }}</span>
+      </button>
+    </div>
   </header>
+
+  <!-- Navigation Tabs -->
   <nav class="view-tabs" aria-label="Jobs Hub views">
     @for (tab of tabs; track tab.id) {
       <button
+        type="button"
+        class="tab-btn"
         [class.active]="view === tab.id"
         [attr.aria-current]="view === tab.id ? 'page' : null"
         (click)="setView(tab.id)"
@@ -20,37 +43,53 @@
       </button>
     }
   </nav>
+
+  <!-- Alerts & Status Messages -->
   @if (offline) {
     <div class="message warning" role="status">
-      You're offline. Last results remain visible; reconnect to sync your activity.
+      <span class="msg-text"
+        >You are currently offline. Retained results remain visible; reconnect to sync your
+        activity.</span
+      >
     </div>
   }
   @if (errorMessage) {
     <div class="message warning" role="alert">
-      <span
-        >{{ errorMessage }}
+      <span class="msg-text">
+        {{ errorMessage }}
         @if (coolingDown) {
           Retry in {{ (retryAt - now) / 1000 | number: '1.0-0' }} seconds.
-        }</span
-      ><button [disabled]="coolingDown || offline || isLoading" (click)="revalidate()">
+        }
+      </span>
+      <button
+        type="button"
+        class="btn-retry"
+        [disabled]="coolingDown || offline || isLoading"
+        (click)="revalidate()"
+      >
         Try again
       </button>
     </div>
   }
   @if (notice) {
-    <div class="message" role="status">{{ notice }}</div>
+    <div class="message info" role="status">
+      <span class="msg-text">{{ notice }}</span>
+    </div>
   }
+
+  <!-- Legacy Import Banner -->
   @if (legacyCount) {
-    <section class="legacy" aria-label="Browser activity import">
-      <div>
-        <strong>Bring your browser activity with you</strong>
+    <section class="legacy-banner" aria-label="Browser activity import">
+      <div class="legacy-content">
+        <strong>Sync local browser activity</strong>
         <p>
-          {{ legacyCount }} local records found for this account. Import up to 10 at a time;
-          existing account history wins. Unavailable records stay in this browser. Anonymous
-          activity is never imported.
+          {{ legacyCount }} local records found for this account. Import up to 10 at a time to
+          synchronize across devices.
         </p>
       </div>
       <button
+        type="button"
+        class="btn-import"
         [disabled]="
           importing ||
           actionBlocked ||
@@ -63,45 +102,61 @@
       </button>
     </section>
   }
+
+  <!-- DISCOVER VIEW -->
   @if (view === 'discover') {
+    <!-- Personalized Profile Context Banner -->
     <section class="context-banner">
-      <span class="context-icon" aria-hidden="true">✦</span>
-      <div>
-        <strong>A direction that feels like you</strong>
-        <p>
-          {{ profile.careerStack }} <span aria-hidden="true"> / </span>
-          {{ profile.experienceLevel }} <span aria-hidden="true"> · </span> Ranked using your
-          current developer context
-        </p>
+      <div class="context-info">
+        <span class="context-badge">Profile Context</span>
+        <div class="context-details">
+          <span class="context-stack">{{ profile.careerStack }}</span>
+          <span class="context-sep" aria-hidden="true">·</span>
+          <span class="context-level">{{ profile.experienceLevel }}</span>
+          <span class="context-desc"
+            >Ranked and filtered according to your active developer signals</span
+          >
+        </div>
       </div>
-      <a routerLink="/app/skill-gap"
-        >Review your skill evidence <span aria-hidden="true">↗</span></a
-      >
+      <a class="context-link" routerLink="/app/skill-gap">
+        Review skill evidence <span aria-hidden="true">→</span>
+      </a>
     </section>
-    <form class="search-bar" (ngSubmit)="applyFilters()">
-      <label class="search-field"
-        ><span aria-hidden="true">⌕</span
-        ><span class="sr-only">Search job titles, companies or skills</span
-        ><input
+
+    <!-- Search Toolbar -->
+    <form class="search-toolbar" (ngSubmit)="applyFilters()">
+      <div class="search-input-wrap">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
           type="search"
           name="search"
+          class="search-input"
           maxlength="60"
           [ngModel]="pendingFilters.skills"
           (ngModelChange)="search($event)"
-          placeholder="Search a role, company or skill…" /></label
-      ><button class="primary" type="submit" [disabled]="isLoading || coolingDown || offline">
-        Search jobs</button
-      ><button
-        class="mobile-filter"
+          placeholder="Search by role, company, or technical skill (e.g. Angular, Node.js)…"
+        />
+      </div>
+      <button
+        class="btn-search-submit"
+        type="submit"
+        [disabled]="isLoading || coolingDown || offline"
+      >
+        Search jobs
+      </button>
+      <button
+        class="btn-mobile-filters"
         type="button"
         [attr.aria-expanded]="filtersOpen"
         aria-controls="jobs-filter-panel"
         (click)="filtersOpen = !filtersOpen"
       >
-        Filters
+        <span>Filters</span>
       </button>
     </form>
-    <div class="workspace">
+
+    <!-- Workspace: Filters Sidebar + Results Grid -->
+    <div class="workspace-layout">
       <aside id="jobs-filter-panel" class="filter-sidebar" [class.open]="filtersOpen">
         <app-job-filters
           [initialFilters]="pendingFilters"
@@ -109,36 +164,90 @@
           [isApplying]="isLoading"
           (filtersChange)="stage($event)"
           (filtersReset)="resetFilters()"
-        /><button
-          class="apply-filter primary"
+        />
+
+        <button
+          type="button"
+          class="btn-apply-filters"
           [disabled]="isLoading || coolingDown || offline"
           (click)="applyFilters()"
         >
           Apply filters
         </button>
-        <div class="aside-note">
-          <span aria-hidden="true">◇</span><strong>Good opportunities take preparation.</strong>
-          <p>Turn a missing skill signal into your next learning step.</p>
-          <a routerLink="/app/courses">Explore Learning Hub ↗</a>
+
+        <div class="learning-hint-card">
+          <div class="hint-header">
+            <span class="hint-icon" aria-hidden="true">💡</span>
+            <strong>Skill Readiness</strong>
+          </div>
+          <p>Bridge missing requirements and level up with targeted courses.</p>
+          <a class="hint-link" routerLink="/app/courses">Open Learning Hub →</a>
+        </div>
+
+        <div class="sidebar-tips-card">
+          <div class="card-header-row">
+            <span class="card-icon" aria-hidden="true">✦</span>
+            <strong>Search & Matching Tips</strong>
+          </div>
+          <ul class="tips-list">
+            <li>
+              Roles are prioritized using skills confirmed across your GitHub profile and resume.
+            </li>
+            <li>Filter by location or "Remote" to find roles matching your timezone.</li>
+          </ul>
+        </div>
+
+        <div class="sidebar-tools-card">
+          <div class="card-header-row">
+            <span class="card-icon" aria-hidden="true">⚡</span>
+            <strong>Career Toolkit</strong>
+          </div>
+          <nav class="tools-nav">
+            <a routerLink="/app/skill-gap" class="tool-item">
+              <span>Skill Gap Analysis</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+            <a routerLink="/app/career-sprint" class="tool-item">
+              <span>Career Sprint</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+            <a routerLink="/app/interview-prep" class="tool-item">
+              <span>Interview Prep</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+          </nav>
         </div>
       </aside>
-      <section class="results" aria-labelledby="results-heading" [attr.aria-busy]="isLoading">
+
+      <section
+        class="results-container"
+        aria-labelledby="results-heading"
+        [attr.aria-busy]="isLoading"
+      >
         <div class="results-header">
           <div>
-            <h2 id="results-heading">Opportunities for you</h2>
-            <p>{{ total }} matches in the current source pool</p>
+            <h2 id="results-heading" class="results-title">Opportunities for You</h2>
+            <p class="results-count">{{ total }} matching listings found</p>
           </div>
-          <label class="sort-label"
-            >Sort this page<select [(ngModel)]="sort" aria-label="Sort this page">
+          <div class="sort-control">
+            <label for="jobs-sort-select" class="sort-label">Sort by</label>
+            <select
+              id="jobs-sort-select"
+              class="sort-select"
+              [(ngModel)]="sort"
+              aria-label="Sort opportunities"
+            >
               <option value="match">Best match</option>
               <option value="newest">Newest posted</option>
               <option value="company">Company A–Z</option>
-            </select></label
-          >
+            </select>
+          </div>
         </div>
+
         @if (response?.diagnostics?.cacheFallback?.stale) {
           <div class="message warning" role="status">
-            Showing retained listings while sources refresh. Confirm availability with the employer.
+            Showing retained listings while sources refresh. Confirm current availability with the
+            employer.
           </div>
         }
         @if (response?.diagnostics?.refreshScheduled) {
@@ -149,17 +258,25 @@
         }
         @if (response?.sourceFailures?.length) {
           <p class="feed-note">
-            Some sources are temporarily unavailable or quota-limited. Available cached listings are
-            shown.
+            Some source feeds are temporarily unavailable or quota-limited. Cached listings are
+            presented.
           </p>
         }
         @if (response?.personalization?.limitation) {
           <p class="feed-note">{{ response?.personalization?.limitation }}</p>
         }
+
+        <!-- Loading Skeletons -->
         @if (isLoading && !jobs.length) {
           <div class="jobs-grid">
             @for (item of [1, 2, 3, 4]; track item) {
-              <div class="skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              <div class="skeleton-card" aria-hidden="true">
+                <div class="skeleton-line line-header"></div>
+                <div class="skeleton-line line-title"></div>
+                <div class="skeleton-line line-meta"></div>
+                <div class="skeleton-line line-tags"></div>
+                <div class="skeleton-line line-action"></div>
+              </div>
             }
           </div>
           <span class="sr-only" role="status">Loading opportunities</span>
@@ -177,60 +294,81 @@
             }
           </div>
         } @else if (!errorMessage) {
-          <div class="empty">
-            <span aria-hidden="true">⌕</span>
-            <h3>No matches just yet</h3>
-            <p>Try a broader role or reset your filters. Sources may still be warming up.</p>
-            <button (click)="resetFilters()" [disabled]="coolingDown || offline">
-              Reset filters
+          <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">⌕</div>
+            <h3>No matching roles found</h3>
+            <p>
+              Try adjusting your filters, clearing your search keywords, or selecting broader
+              criteria.
+            </p>
+            <button
+              type="button"
+              class="btn-reset-filters"
+              (click)="resetFilters()"
+              [disabled]="coolingDown || offline"
+            >
+              Reset all filters
             </button>
           </div>
         }
-        <p class="feed-note">
-          {{ response?.sourceMessage }} Source listings can change. No availability or salary
-          conversion is inferred.
-        </p>
-        <div class="pagination" aria-label="Job results pages">
+
+        @if (response?.sourceMessage) {
+          <p class="feed-note">
+            {{ response?.sourceMessage }} Listings can change at any time. Confirm compensation and
+            details at the employer site.
+          </p>
+        }
+
+        <!-- Pagination -->
+        <nav class="pagination" aria-label="Job results pagination">
           <button
+            type="button"
+            class="btn-page"
             [disabled]="page <= 1 || isLoading || coolingDown || offline"
             (click)="load(page - 1)"
           >
-            ← Previous</button
-          ><span>Page {{ page }} of {{ totalPages }}</span
-          ><button
+            ← Previous
+          </button>
+          <span class="page-indicator">Page {{ page }} of {{ totalPages }}</span>
+          <button
+            type="button"
+            class="btn-page"
             [disabled]="!hasMore || isLoading || coolingDown || offline"
             (click)="load(page + 1)"
           >
             Next →
           </button>
-        </div>
+        </nav>
       </section>
     </div>
   } @else {
-    <section class="library" [attr.aria-busy]="isLoading">
-      <div class="results-header">
+    <!-- SAVED / APPLIED / HIDDEN VIEWS -->
+    <section class="library-container" [attr.aria-busy]="isLoading">
+      <div class="library-header">
         <div>
           <h2>
             {{
               view === 'saved'
-                ? 'Your next possibilities'
+                ? 'Saved Opportunities'
                 : view === 'applied'
-                  ? 'Your application journey'
-                  : 'Hidden from discovery'
+                  ? 'Application Tracker'
+                  : 'Hidden Listings'
             }}
           </h2>
           <p>
             {{
               view === 'applied'
-                ? 'A personal record of jobs you marked applied. We do not submit or verify employer applications.'
-                : 'Stored in your account. Rechecked when you return, so changes from other devices appear here.'
+                ? 'A personal record of jobs you marked as applied. DevInsight does not submit applications on your behalf.'
+                : 'Stored securely in your account and synchronized across devices.'
             }}
           </p>
         </div>
       </div>
+
       @if (isLoading) {
-        <p role="status" class="feed-note">Syncing your account activity…</p>
+        <p role="status" class="feed-note">Syncing your account records…</p>
       }
+
       <div class="jobs-grid">
         @for (row of rows; track row.action.jobId) {
           @if (row.job) {
@@ -243,78 +381,102 @@
               (hide)="mutate(row.action.jobId, 'hidden')"
             />
           } @else {
-            <article class="unavailable">
-              <span class="eyebrow">ACTIVITY RETAINED</span>
+            <article class="unavailable-card">
+              <span class="badge-retained">ACTIVITY RETAINED</span>
               <h3>{{ row.action.hidden ? 'Hidden listing' : 'Listing currently unavailable' }}</h3>
               <p>
-                Details may have expired or cannot be fetched right now. Your account activity is
-                safe.
+                Source details may have expired or are temporarily unreachable. Your account
+                tracking remains intact.
               </p>
-              <small
-                >Reference: {{ row.action.jobId }} · Updated {{ date(row.action.updatedAt) }}</small
-              >
+              <div class="meta-row">
+                <small
+                  >Reference: {{ row.action.jobId }} · Updated
+                  {{ date(row.action.updatedAt) }}</small
+                >
+              </div>
               <div class="history-actions">
-                @for (field of ['saved', 'applied', 'hidden']; track field) {
-                  @if (field === 'saved' && actions.state(row.action.jobId).saved) {
-                    <button
-                      [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
-                      (click)="mutate(row.action.jobId, 'saved')"
-                    >
-                      Remove saved
-                    </button>
-                  }
-                  @if (field === 'applied' && actions.state(row.action.jobId).applied) {
-                    <button
-                      [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
-                      (click)="mutate(row.action.jobId, 'applied')"
-                    >
-                      Unmark applied
-                    </button>
-                  }
-                  @if (field === 'hidden' && actions.state(row.action.jobId).hidden) {
-                    <button
-                      [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
-                      (click)="mutate(row.action.jobId, 'hidden')"
-                    >
-                      Unhide
-                    </button>
-                  }
+                @if (actions.state(row.action.jobId).saved) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'saved')"
+                  >
+                    Remove saved
+                  </button>
+                }
+                @if (actions.state(row.action.jobId).applied) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'applied')"
+                  >
+                    Unmark applied
+                  </button>
+                }
+                @if (actions.state(row.action.jobId).hidden) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'hidden')"
+                  >
+                    Unhide
+                  </button>
                 }
               </div>
             </article>
           }
         }
       </div>
+
       @if (!isLoading && !rows.length && !errorMessage) {
-        <div class="empty">
-          <span aria-hidden="true">◇</span>
+        <div class="empty-state">
+          <div class="empty-icon" aria-hidden="true">✦</div>
           <h3>
             {{
               view === 'saved'
-                ? 'Room for your next opportunity'
+                ? 'No saved jobs yet'
                 : view === 'applied'
-                  ? 'Your next step starts here'
-                  : 'Nothing hidden'
+                  ? 'No tracked applications yet'
+                  : 'No hidden listings'
             }}
           </h3>
-          <p>Discover jobs and use Save, Mark applied or Hide to organize your search.</p>
-          <button (click)="setView('discover')">Explore opportunities</button>
+          <p>
+            {{
+              view === 'saved'
+                ? 'Bookmark roles from Discover to easily compare them later.'
+                : view === 'applied'
+                  ? 'Mark roles as applied to keep track of your active job search.'
+                  : 'Jobs you choose to hide will appear here for reference.'
+            }}
+          </p>
+          <button type="button" class="btn-primary" (click)="setView('discover')">
+            Explore opportunities
+          </button>
         </div>
       }
-      <div class="pagination" aria-label="Activity pages">
+
+      <nav class="pagination" aria-label="Activity pagination">
         <button
+          type="button"
+          class="btn-page"
           [disabled]="page <= 1 || isLoading || coolingDown || offline"
           (click)="load(page - 1)"
         >
-          ← Previous</button
-        ><span>Page {{ page }}</span
-        ><button
+          ← Previous
+        </button>
+        <span class="page-indicator">Page {{ page }}</span>
+        <button
+          type="button"
+          class="btn-page"
           [disabled]="!hasMore || isLoading || coolingDown || offline"
           (click)="load(page + 1)"
         >
           Next →
         </button>
-      </div>
+      </nav>
     </section>
   }
 </div>

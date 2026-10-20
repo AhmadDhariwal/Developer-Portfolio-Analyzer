@@ -39,20 +39,83 @@
       }
     </select>
   </div>
-  <div class="filter-group">
-    <span class="group-label">Explore a skill</span>
-    <div class="skill-options">
-      @for (skill of skillOptions.slice(0, 8); track skill) {
+  <div class="filter-group skill-filter-group">
+    <div class="skill-group-header">
+      <span class="group-label">Explore skills</span>
+      @if (filters.skills) {
+        <button type="button" class="btn-clear-skill" (click)="clearSkill()">Clear</button>
+      }
+    </div>
+
+    @if (filters.skills) {
+      <div class="active-skill-pill">
+        <span class="pill-label">Selected:</span>
+        <strong class="pill-value">{{ filters.skills }}</strong>
         <button
           type="button"
-          [class.selected]="filters.skills === skill"
-          [attr.aria-pressed]="filters.skills === skill"
+          class="btn-remove-pill"
+          (click)="clearSkill()"
+          aria-label="Remove skill filter"
+        >
+          ×
+        </button>
+      </div>
+    }
+
+    <div class="skill-search-box">
+      <input
+        type="text"
+        [(ngModel)]="skillSearchQuery"
+        placeholder="Filter or type a skill…"
+        class="skill-search-input"
+        aria-label="Filter skills list"
+        (keydown.enter)="applyCustomSkill()"
+      />
+      @if (skillSearchQuery) {
+        <button
+          type="button"
+          class="btn-clear-search"
+          (click)="skillSearchQuery = ''"
+          aria-label="Clear skill search"
+        >
+          ×
+        </button>
+      }
+    </div>
+
+    @if (isCustomSkillPending) {
+      <div class="custom-skill-prompt">
+        <button type="button" class="btn-custom-skill" (click)="applyCustomSkill()">
+          + Filter by "{{ skillSearchQuery.trim() }}"
+        </button>
+      </div>
+    }
+
+    <div class="skill-options">
+      @for (skill of filteredSkillOptions; track skill) {
+        <button
+          type="button"
+          [class.selected]="filters.skills.toLowerCase() === skill.toLowerCase()"
+          [attr.aria-pressed]="filters.skills.toLowerCase() === skill.toLowerCase()"
           (click)="selectSkill(skill)"
         >
           {{ skill }}
         </button>
       }
+      @if (filteredSkillOptions.length === 0 && !isCustomSkillPending) {
+        <span class="no-skills-msg">No matching skills found</span>
+      }
     </div>
+
+    @if (!skillSearchQuery.trim() && skillOptions.length > initialSkillLimit) {
+      <button type="button" class="btn-toggle-skills" (click)="toggleShowAllSkills()">
+        {{
+          showAllSkills
+            ? 'Show fewer skills ↑'
+            : '+ Show all (' + skillOptions.length + ' skills) ↓'
+        }}
+      </button>
+    }
   </div>
   <p class="filter-note">Choose your filters, then select Search jobs to apply them together.</p>
 </section>

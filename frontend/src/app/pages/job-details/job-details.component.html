@@ -1,193 +1,383 @@
 <div class="job-details-page">
-  <a class="back" routerLink="/app/jobs">← Back to Jobs Hub</a>
+  <div class="navigation-row">
+    <a class="btn-back" routerLink="/app/jobs">
+      <span aria-hidden="true">←</span> Back to Jobs Hub
+    </a>
+  </div>
+
   @if (offline) {
-    <div class="message" role="status">
-      You're offline. Retained details remain visible; reconnect to sync your activity.
+    <div class="message warning" role="status">
+      You are currently offline. Retained details remain visible; reconnect to sync your activity.
     </div>
   }
   @if (stale) {
-    <div class="message" role="status">
-      These details are from a retained listing. Confirm current availability at the source.
+    <div class="message info" role="status">
+      These details are from a retained listing. Confirm current availability and details at the
+      source.
     </div>
   }
   @if (errorMessage) {
-    <div class="message" role="alert">
-      {{ errorMessage }}
-      <button [disabled]="blocked || isLoading" (click)="retry()">Try again</button>
+    <div class="message warning" role="alert">
+      <span>{{ errorMessage }}</span>
+      <button type="button" class="btn-retry" [disabled]="blocked || isLoading" (click)="retry()">
+        Try again
+      </button>
     </div>
   }
   @if (notice) {
-    <div class="message" role="status">{{ notice }}</div>
+    <div class="message info" role="status">{{ notice }}</div>
   }
+
   @if (isLoading && !job) {
-    <div class="loading" role="status">Loading source details…</div>
+    <div class="loading-state" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading source details…</p>
+    </div>
   }
+
   @if (job; as item) {
-    <header class="detail-heading">
-      <p class="eyebrow">{{ item.source || item.platform || 'SOURCE LISTING' }}</p>
-      <h1>{{ item.title }}</h1>
-      <p>
-        {{ item.company }} <span aria-hidden="true">·</span>
-        {{ item.location || 'Location not provided' }}
-      </p>
-      <div class="heading-tags">
-        @if (item.jobType) {
-          <span>{{ item.jobType }}</span>
-        }
-        @if (item.experienceLevel) {
-          <span>{{ item.experienceLevel }}</span>
-        }
-        <span>{{ salary(item) }}</span>
-      </div>
-    </header>
-    <div class="detail-grid">
-      <div class="detail-content">
-        <section class="panel">
-          <h2>About this opportunity</h2>
-          <p class="description">
-            {{ item.description || 'The source did not provide a description.' }}
-          </p>
-          @if (item.requirements.length) {
-            <h2>What the source is looking for</h2>
-            <ul>
-              @for (requirement of item.requirements; track $index) {
-                <li>{{ requirement }}</li>
-              }
-            </ul>
+    <header class="detail-header">
+      <div class="header-content">
+        <span class="source-tag">{{
+          decode(item.source || item.platform || 'DIRECT LISTING')
+        }}</span>
+        <h1 class="job-title">{{ cleanTitle(item.title) }}</h1>
+        <div class="company-row">
+          <strong class="company-name">{{ decode(item.company) }}</strong>
+          <span class="sep" aria-hidden="true">·</span>
+          <span class="location-text">{{ decode(item.location) || 'Location not specified' }}</span>
+          <span class="sep" aria-hidden="true">·</span>
+          <span class="posted-date">Posted {{ date(item.postedDate) }}</span>
+        </div>
+
+        <div class="attribute-badges">
+          @if (item.jobType) {
+            <span class="badge">{{ decode(item.jobType) }}</span>
           }
-          @if (item.benefits.length) {
-            <h2>Benefits from the source</h2>
-            <ul>
-              @for (benefit of item.benefits; track $index) {
-                <li>{{ benefit }}</li>
-              }
-            </ul>
+          @if (item.experienceLevel) {
+            <span class="badge">{{ decode(item.experienceLevel) }}</span>
           }
-        </section>
-        <section class="panel">
-          <h2>Skills in this listing</h2>
-          <div class="tags">
-            @for (skill of item.skills; track skill) {
-              <span>{{ skill }}</span>
-            } @empty {
-              <p>Skills were not provided by the source.</p>
-            }
-          </div>
-        </section>
-        @if (item.recommendedCourse || item.recommendedSprintTask) {
-          <section class="panel learning">
-            <p class="eyebrow">MAKE YOUR NEXT MOVE</p>
-            <h2>Prepare with purpose</h2>
-            @if (item.recommendedCourse; as course) {
-              <h3>{{ course.title }}</h3>
-              <p>
-                {{
-                  course.whyRecommended ||
-                    'A related learning opportunity from your current recommendations.'
-                }}
-              </p>
-              @if (safeUrl(course.url)) {
-                <a
-                  [href]="safeUrl(course.url)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  referrerpolicy="no-referrer"
-                  >Explore course on {{ course.platform }} ↗</a
-                >
-              }
-            }
-            @if (item.recommendedSprintTask; as task) {
-              <h3>{{ task.title }}</h3>
-              <p>{{ task.description }}</p>
-              <a routerLink="/app/career-sprint">Open Career Sprint →</a>
-            }
-          </section>
-        }
-      </div>
-      <aside>
-        <section class="panel match-panel">
-          @if (item.matchScore !== undefined) {
-            <div class="score">{{ item.matchScore }}<span>%</span></div>
-            <p class="score-label">Profile match</p>
-          } @else {
-            <h2>Match evidence unavailable</h2>
+          @if (hasSalary(item)) {
+            <span class="badge salary-badge">{{ salary(item) }}</span>
           }
-          <p>{{ item.whyMatched || 'No personalized explanation was provided.' }}</p>
-          @if (item.missingSkills?.length) {
-            <h3>Evidence to review</h3>
-            <div class="tags">
-              @for (skill of item.missingSkills; track skill) {
-                <span>{{ skill }}</span>
-              }
-            </div>
-            <p class="fine-print">
-              These signals describe recorded skill overlap, not verified inability.
-            </p>
-          }
-          <a routerLink="/app/skill-gap">Review skill evidence →</a>
-        </section>
-        <section class="panel action-panel">
-          <h2>Your next step</h2>
+        </div>
+
+        <div class="header-actions">
           @if (applyLink) {
             <a
-              class="primary"
+              class="btn-apply-primary"
               [href]="applyLink"
               target="_blank"
               rel="noopener noreferrer"
               referrerpolicy="no-referrer"
-              >Visit application site ↗</a
             >
-          } @else {
-            <p>The application link is unavailable or this cached listing has expired.</p>
+              Apply on Source Site
+              <span aria-hidden="true">↗</span>
+            </a>
           }
           <button
+            type="button"
+            class="btn-action-outline"
             [disabled]="blocked || actions.isBusy(item.id)"
             [attr.aria-pressed]="actions.state(item.id).saved"
             (click)="mutate('saved')"
           >
-            {{ actions.state(item.id).saved ? 'Remove saved job' : 'Save job' }}</button
-          ><button
+            {{ actions.state(item.id).saved ? '★ Saved' : '☆ Save job' }}
+          </button>
+          <button
+            type="button"
+            class="btn-action-outline"
             [disabled]="blocked || actions.isBusy(item.id)"
             [attr.aria-pressed]="actions.state(item.id).applied"
             (click)="mutate('applied')"
           >
-            {{ actions.state(item.id).applied ? 'Unmark applied' : 'Mark applied' }}
+            {{ actions.state(item.id).applied ? '✓ Applied' : 'Mark applied' }}
           </button>
-          <p class="fine-print">
-            Opening the source does not update your tracker. Marking applied does not submit an
-            application.
-          </p>
-          <button [disabled]="blocked || actions.isBusy(item.id)" (click)="mutate('hidden')">
-            Hide this listing
-          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="detail-layout">
+      <!-- Main Content Column -->
+      <main class="detail-main">
+        <!-- Job Description & Overview -->
+        <section class="panel description-panel">
+          <div class="panel-header">
+            <h2>About this Opportunity</h2>
+          </div>
+
+          @if (descriptionSections.length) {
+            <div class="formatted-description">
+              @for (sec of descriptionSections; track $index) {
+                <div class="desc-section">
+                  @if (sec.title) {
+                    <h3 class="section-title">{{ decode(sec.title) }}</h3>
+                  }
+                  @for (block of sec.blocks; track $index) {
+                    @if (block.type === 'paragraph') {
+                      <p class="description">{{ decode(block.content) }}</p>
+                    } @else if (block.type === 'bullets' && block.items?.length) {
+                      <ul class="bullet-list">
+                        @for (bullet of block.items; track $index) {
+                          <li>
+                            <span class="bullet-marker" aria-hidden="true">•</span>
+                            <span>{{ decode(bullet) }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="description empty-text">
+              {{ decode(item.description) || 'The source did not provide a description.' }}
+            </p>
+          }
         </section>
-        <section class="panel provenance">
-          <h2>From the source</h2>
-          <dl>
-            <dt>Source</dt>
-            <dd>{{ item.source || item.platform || 'Not provided' }}</dd>
-            <dt>Posted</dt>
-            <dd>{{ date(item.postedDate) }}</dd>
-            <dt>Last fetched</dt>
-            <dd>{{ date(item.lastSynced) }}</dd>
-            <dt>Source expiry</dt>
-            <dd>{{ date(item.validThrough) }}</dd>
-            <dt>Cache fresh until</dt>
-            <dd>{{ date(item.freshUntil) }}</dd>
+
+        <!-- Requirements from Source (if structured) -->
+        @if (item.requirements.length) {
+          <section class="panel requirements-panel">
+            <div class="panel-header">
+              <h2>Key Qualifications & Requirements</h2>
+            </div>
+            <ul class="checklist">
+              @for (requirement of item.requirements; track $index) {
+                <li>
+                  <span class="check-icon" aria-hidden="true">✓</span>
+                  <span>{{ decode(requirement) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <!-- Benefits from Source (if structured) -->
+        @if (item.benefits.length) {
+          <section class="panel benefits-panel">
+            <div class="panel-header">
+              <h2>Benefits & Compensation</h2>
+            </div>
+            <ul class="checklist benefits-list">
+              @for (benefit of item.benefits; track $index) {
+                <li>
+                  <span class="star-icon" aria-hidden="true">✦</span>
+                  <span>{{ decode(benefit) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <!-- Skills in Listing -->
+        <section class="panel skills-panel">
+          <div class="panel-header">
+            <h2>Skills in this Listing</h2>
+          </div>
+          <div class="skills-grid">
+            @for (skill of item.skills; track skill) {
+              <span class="skill-tag">{{ decode(skill) }}</span>
+            } @empty {
+              <p class="muted-note">No explicit skills tags provided by the source.</p>
+            }
+          </div>
+        </section>
+
+        <!-- Recommended Learning / Next Steps -->
+        @if (item.recommendedCourse || item.recommendedSprintTask) {
+          <section class="panel learning-panel">
+            <span class="eyebrow">CAREER GROWTH</span>
+            <h2>Recommended Preparation</h2>
+            <p class="section-intro">
+              Targeted resources to strengthen your profile for this and similar roles.
+            </p>
+
+            @if (item.recommendedCourse; as course) {
+              <div class="recommendation-item">
+                <div class="item-content">
+                  <h4 class="item-title">{{ decode(course.title) }}</h4>
+                  <p class="item-desc">
+                    {{
+                      decode(course.whyRecommended) ||
+                        'A relevant course matched to skill signals in this listing.'
+                    }}
+                  </p>
+                </div>
+                @if (safeUrl(course.url)) {
+                  <a
+                    class="btn-course-link"
+                    [href]="safeUrl(course.url)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    referrerpolicy="no-referrer"
+                  >
+                    View Course on {{ course.platform }} ↗
+                  </a>
+                }
+              </div>
+            }
+
+            @if (item.recommendedSprintTask; as task) {
+              <div class="recommendation-item">
+                <div class="item-content">
+                  <h4 class="item-title">{{ decode(task.title) }}</h4>
+                  <p class="item-desc">{{ decode(task.description) }}</p>
+                </div>
+                <a class="btn-sprint-link" routerLink="/app/career-sprint">
+                  Open in Career Sprint →
+                </a>
+              </div>
+            }
+          </section>
+        }
+      </main>
+
+      <!-- Sidebar Column -->
+      <aside class="detail-sidebar">
+        <!-- Match Intelligence Card -->
+        <section class="panel match-card">
+          <div class="match-header">
+            @if (item.matchScore !== undefined) {
+              <div class="score-display">
+                <span class="score-number">{{ item.matchScore }}</span>
+                <span class="score-percent">%</span>
+              </div>
+              <div class="score-meta">
+                <strong>Profile Match</strong>
+                <p>Based on your stack & skills</p>
+              </div>
+            } @else {
+              <div class="score-meta">
+                <strong>Match Score Unavailable</strong>
+              </div>
+            }
+          </div>
+
+          <p class="match-explanation">
+            {{
+              decode(item.whyMatched) || 'No personalized explanation was provided for this role.'
+            }}
+          </p>
+
+          @if (item.missingSkills?.length) {
+            <div class="missing-skills-block">
+              <span class="missing-label">Skill signals to review:</span>
+              <div class="missing-tags">
+                @for (skill of item.missingSkills; track skill) {
+                  <span class="missing-tag">{{ decode(skill) }}</span>
+                }
+              </div>
+              <p class="fine-print">
+                These represent gaps between your recorded skills and this listing's keywords.
+              </p>
+            </div>
+          }
+
+          <a class="btn-review-evidence" routerLink="/app/skill-gap"> Review skill evidence → </a>
+        </section>
+
+        <!-- Action Panel -->
+        <section class="panel action-card">
+          <h3>Your Next Step</h3>
+
+          @if (applyLink) {
+            <a
+              class="btn-apply-full"
+              [href]="applyLink"
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerpolicy="no-referrer"
+            >
+              Visit Application Site ↗
+            </a>
+          } @else {
+            <p class="warning-text">
+              The direct application link is currently unavailable or expired.
+            </p>
+          }
+
+          <div class="action-buttons">
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              [attr.aria-pressed]="actions.state(item.id).saved"
+              (click)="mutate('saved')"
+            >
+              {{ actions.state(item.id).saved ? 'Remove saved job' : 'Save job' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              [attr.aria-pressed]="actions.state(item.id).applied"
+              (click)="mutate('applied')"
+            >
+              {{ actions.state(item.id).applied ? 'Unmark applied' : 'Mark applied' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-action text-danger"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              (click)="mutate('hidden')"
+            >
+              Hide this listing
+            </button>
+          </div>
+
+          <p class="action-disclaimer">
+            Opening the employer link does not submit an application. Marking applied updates your
+            local tracker.
+          </p>
+        </section>
+
+        <!-- Source Provenance Details -->
+        <section class="panel provenance-card">
+          <h3>Listing Provenance</h3>
+          <dl class="provenance-list">
+            <div class="prov-row">
+              <dt>Source platform</dt>
+              <dd>{{ item.source || item.platform || 'Direct' }}</dd>
+            </div>
+            <div class="prov-row">
+              <dt>Posted date</dt>
+              <dd>{{ date(item.postedDate) }}</dd>
+            </div>
+            <div class="prov-row">
+              <dt>Last synced</dt>
+              <dd>{{ date(item.lastSynced) }}</dd>
+            </div>
+            @if (item.validThrough) {
+              <div class="prov-row">
+                <dt>Source expiry</dt>
+                <dd>{{ date(item.validThrough) }}</dd>
+              </div>
+            }
+            @if (item.freshUntil) {
+              <div class="prov-row">
+                <dt>Cache fresh until</dt>
+                <dd>{{ date(item.freshUntil) }}</dd>
+              </div>
+            }
           </dl>
           <p class="fine-print">
-            A cached listing does not confirm current employer availability. Check dates,
-            compensation and application requirements at the source. No currency conversion is
-            inferred.
+            Cached listings may change on the host site. Verify salary, eligibility, and dates
+            directly with the employer.
           </p>
         </section>
       </aside>
     </div>
   } @else if (!isLoading && !errorMessage) {
-    <section class="panel">
+    <section class="panel unavailable-panel">
       <h1>Listing hidden or unavailable</h1>
-      <p>Your saved activity is retained in your account.</p>
-      <a routerLink="/app/jobs" [queryParams]="{ view: 'hidden' }">Manage hidden jobs →</a>
+      <p>This job listing may have expired or is hidden in your account.</p>
+      <a class="btn-primary" routerLink="/app/jobs" [queryParams]="{ view: 'hidden' }">
+        Manage hidden jobs →
+      </a>
     </section>
   }
 </div>

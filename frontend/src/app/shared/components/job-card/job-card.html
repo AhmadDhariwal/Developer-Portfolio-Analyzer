@@ -1,87 +1,153 @@
 <article
   class="job-card"
   [class.applied]="uiState.applied"
-  [attr.aria-label]="job.title + ' at ' + job.company"
+  [attr.aria-label]="cleanTitle(job.title) + ' at ' + decode(job.company)"
 >
-  <div class="card-top">
-    <div class="company-mark" aria-hidden="true">
-      @if (logoUrl && !logoError) {
-        <img
-          [src]="logoUrl"
-          alt=""
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          (error)="logoError = true"
-        />
-      } @else {
-        {{ job.company.charAt(0).toUpperCase() }}
+  <div class="card-header">
+    <div class="company-block">
+      <div class="company-mark" aria-hidden="true">
+        @if (logoUrl && !logoError) {
+          <img
+            [src]="logoUrl"
+            alt=""
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            (error)="logoError = true"
+          />
+        } @else {
+          {{ decode(job.company).charAt(0).toUpperCase() }}
+        }
+      </div>
+      <div class="company-info">
+        <h4 class="company-name">{{ decode(job.company) }}</h4>
+        <span class="company-source">{{
+          decode(job.source || job.platform || 'Direct listing')
+        }}</span>
+      </div>
+    </div>
+
+    <div class="card-header-actions">
+      @if (job.matchScore !== undefined) {
+        <span class="match-badge">
+          <span class="match-score">{{ job.matchScore }}%</span>
+          <span class="match-label">match</span>
+        </span>
+      }
+      <button
+        class="save-button"
+        type="button"
+        [disabled]="busy"
+        [attr.aria-pressed]="uiState.saved"
+        [attr.aria-label]="uiState.saved ? 'Remove saved job' : 'Save job'"
+        (click)="save.emit(job)"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          [attr.fill]="uiState.saved ? 'currentColor' : 'none'"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <path d="M6 4h12v17l-6-4-6 4z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <h3 class="job-title">
+      <a [routerLink]="['/app/jobs', job.id]">{{ cleanTitle(job.title) }}</a>
+    </h3>
+
+    <div class="job-meta">
+      <span class="meta-item location">
+        <svg class="meta-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path
+            fill-rule="evenodd"
+            d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433 1.244-.77 3.13-2.28 4.628-4.632C17.488 11.45 18 9.297 18 7.5 18 3.358 14.418 0 10 0S2 3.358 2 7.5c0 1.797.512 3.95 2.001 6.22 1.498 2.353 3.384 3.863 4.628 4.633.311.193.571.337.757.433a5.733 5.733 0 00.281.14l.018.008.006.003zM10 10a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {{ decode(job.location) || 'Location not specified' }}
+      </span>
+
+      @if (job.jobType) {
+        <span class="meta-badge">{{ decode(job.jobType) }}</span>
+      }
+
+      @if (hasSalary(job)) {
+        <span class="salary-badge">{{ salary(job) }}</span>
       }
     </div>
-    <div class="company-info">
-      <span>{{ job.company }}</span
-      ><small>{{ job.source || job.platform || 'Source not provided' }}</small>
+
+    @if (job.skills.length) {
+      <div class="skills-wrap" aria-label="Required skills">
+        @for (skill of job.skills.slice(0, 4); track skill) {
+          <span class="skill-chip">{{ decode(skill) }}</span>
+        }
+        @if (job.skills.length > 4) {
+          <span class="skill-chip more">+{{ job.skills.length - 4 }}</span>
+        }
+      </div>
+    }
+
+    @if (job.whyMatched) {
+      <div class="match-insight">
+        <span class="insight-icon" aria-hidden="true">✦</span>
+        <p class="insight-text">{{ decode(job.whyMatched) }}</p>
+      </div>
+    }
+
+    @if (job.missingSkills?.length) {
+      <div class="skill-gap-note">
+        <span class="gap-label">Skill signal to review:</span>
+        <span class="gap-skills">{{ decode(job.missingSkills?.slice(0, 3)?.join(', ')) }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="card-footer">
+    <div class="foot-meta">
+      <span class="post-date">Posted {{ date(job.postedDate) }}</span>
+      @if (uiState.applied) {
+        <span class="status-pill applied">
+          <svg viewBox="0 0 16 16" fill="currentColor" class="status-icon" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M12.416 3.376a.75.75 0 01.208 1.04l-5 7.5a.75.75 0 01-1.154.114l-3-3a.75.75 0 011.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 011.04-.207z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Marked applied
+        </span>
+      }
     </div>
-    @if (job.matchScore !== undefined) {
-      <span class="match">{{ job.matchScore }}% <span>match</span></span>
-    }
-    <button
-      class="save-button"
-      [disabled]="busy"
-      [attr.aria-pressed]="uiState.saved"
-      [attr.aria-label]="uiState.saved ? 'Remove saved job' : 'Save job'"
-      (click)="save.emit(job)"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        [attr.fill]="uiState.saved ? 'currentColor' : 'none'"
-        stroke="currentColor"
-        stroke-width="1.7"
-        aria-hidden="true"
-      >
-        <path d="M6 4h12v17l-6-4-6 4z" />
-      </svg>
-    </button>
+
+    <div class="card-actions">
+      <a class="btn-primary" [routerLink]="['/app/jobs', job.id]">
+        View details
+        <span aria-hidden="true">→</span>
+      </a>
+      <div class="secondary-actions">
+        <button
+          type="button"
+          class="btn-subtle"
+          [disabled]="busy"
+          (click)="markApplied.emit(job)"
+          [attr.aria-pressed]="uiState.applied"
+        >
+          {{ uiState.applied ? 'Unmark applied' : 'Mark applied' }}
+        </button>
+        <button
+          type="button"
+          class="btn-subtle"
+          [disabled]="busy"
+          (click)="hide.emit(job)"
+          [attr.aria-pressed]="uiState.hidden"
+        >
+          {{ uiState.hidden ? 'Unhide' : 'Hide' }}
+        </button>
+      </div>
+    </div>
   </div>
-  <h3>
-    <a [routerLink]="['/app/jobs', job.id]">{{ job.title }}</a>
-  </h3>
-  <p class="job-meta">
-    {{ job.location || 'Location not provided' }}
-    @if (job.jobType) {
-      <span aria-hidden="true"> · </span>{{ job.jobType }}
-    }
-  </p>
-  <p class="salary">{{ salary(job) }}</p>
-  <div class="skills" aria-label="Job skills">
-    @for (skill of job.skills.slice(0, 4); track skill) {
-      <span>{{ skill }}</span>
-    }
-    @if (job.skills.length > 4) {
-      <span>+{{ job.skills.length - 4 }}</span>
-    }
-  </div>
-  @if (job.whyMatched) {
-    <p class="explanation"><span class="spark" aria-hidden="true">✦</span> {{ job.whyMatched }}</p>
-  }
-  @if (job.missingSkills?.length) {
-    <p class="gaps">Evidence to review: {{ job.missingSkills?.slice(0, 3)?.join(', ') }}</p>
-  }
-  <div class="card-foot">
-    <small>Posted {{ date(job.postedDate) }}</small>
-    @if (uiState.applied) {
-      <span class="recorded">Marked applied</span>
-    }
-  </div>
-  <div class="actions">
-    <a class="primary" [routerLink]="['/app/jobs', job.id]"
-      >View details <span aria-hidden="true">↗</span></a
-    >
-    <button [disabled]="busy" (click)="markApplied.emit(job)" [attr.aria-pressed]="uiState.applied">
-      {{ uiState.applied ? 'Unmark applied' : 'Mark applied' }}
-    </button>
-    <button [disabled]="busy" (click)="hide.emit(job)">
-      {{ uiState.hidden ? 'Unhide' : 'Hide' }}
-    </button>
-  </div>
-  <small class="activity-note">Marking applied only updates your tracker.</small>
 </article>

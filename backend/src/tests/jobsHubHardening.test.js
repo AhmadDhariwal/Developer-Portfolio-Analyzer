@@ -82,6 +82,22 @@ test('normalization rejects missing identities and unsafe application URLs witho
       .description,
     /<img/
   );
+  assert.equal(
+    jobs.normaliseJob(raw({ title: 'Backend Engineer (m/f/d)' })).title,
+    'Backend Engineer'
+  );
+  assert.equal(
+    jobs.normaliseJob(raw({ title: 'Full Stack Developer (m/w/d)' })).title,
+    'Full Stack Developer'
+  );
+  assert.equal(
+    jobs.normaliseJob(raw({ title: 'DevOps Engineer (all genders)' })).title,
+    'DevOps Engineer'
+  );
+  assert.equal(
+    jobs.normaliseJob(raw({ title: 'Cloud Architect [f/m/d]' })).title,
+    'Cloud Architect'
+  );
 });
 
 test('provider expiry and retention override cache freshness and hidden records stay hidden', () => {

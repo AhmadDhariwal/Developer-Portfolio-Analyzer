@@ -38,6 +38,55 @@ export function jobExpired(job: Job): boolean {
   );
 }
 
+export function hasJobSalary(job: Job | null | undefined): boolean {
+  if (!job) return false;
+  const data = job.salaryMetadata;
+  const min = typeof data?.min === 'number' && Number.isFinite(data.min) ? data.min : null;
+  const max = typeof data?.max === 'number' && Number.isFinite(data.max) ? data.max : null;
+  if (min !== null || max !== null) return true;
+  const s = String(job.salary || '').trim();
+  return Boolean(
+    s && s.toLowerCase() !== 'salary not provided' && s.toLowerCase() !== 'not provided',
+  );
+}
+
+export function decodeHtmlEntities(value: unknown): string {
+  if (!value) return '';
+  return String(value)
+    .replace(/&#(?:39|039|x27);/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&(?:rsquo|lsquo|#8217|#8216);/gi, "'")
+    .replace(/&(?:ldquo|rdquo|#8220|#8221);/gi, '"')
+    .replace(/&quot;/gi, '"')
+    .replace(/&(?:ndash|#8211);/gi, '–')
+    .replace(/&(?:mdash|#8212);/gi, '—')
+    .replace(/&(?:hellip|#8230);/gi, '…')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&');
+}
+
+export function cleanJobTitle(title: unknown): string {
+  if (!title) return '';
+  let cleaned = decodeHtmlEntities(title);
+  cleaned = cleaned.replace(
+    /\s*\(\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\)/gi,
+    '',
+  );
+  cleaned = cleaned.replace(
+    /\s*\[\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\]/gi,
+    '',
+  );
+  cleaned = cleaned.replace(
+    /\s*[-–—/|]\s*(?:\(?\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\)?)\s*$/gi,
+    '',
+  );
+  cleaned = cleaned
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s*[-–—:,]\s*$/, '')
+    .trim();
+  return cleaned || decodeHtmlEntities(title).trim();
+}
+
 export function jobSalary(job: Job): string {
   const data = job.salaryMetadata;
   const min = typeof data?.min === 'number' && Number.isFinite(data.min) ? data.min : null;

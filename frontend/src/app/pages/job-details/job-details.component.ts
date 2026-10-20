@@ -28,7 +28,22 @@ import {
   jobSalary,
   jobRequestError,
   safeJobUrl,
+  decodeHtmlEntities,
+  hasJobSalary,
+  cleanJobTitle,
 } from '../../shared/utils/job-presentation';
+
+export interface DescriptionBlock {
+  type: 'paragraph' | 'bullets';
+  content?: string;
+  items?: string[];
+}
+
+export interface DescriptionSection {
+  title?: string;
+  blocks: DescriptionBlock[];
+}
+
 @Component({
   selector: 'app-job-details',
   standalone: true,
@@ -47,11 +62,15 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
   readonly date = jobDate;
   readonly salary = jobSalary;
   readonly safeUrl = safeJobUrl;
+  readonly decode = decodeHtmlEntities;
+  readonly cleanTitle = cleanJobTitle;
+  readonly hasSalary = hasJobSalary;
   private readonly reload = new Subject<void>();
   private readonly subscriptions = new Subscription();
   private identity = '';
   private timer?: ReturnType<typeof setInterval>;
   private loadedAt = 0;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly jobs: JobService,
@@ -59,18 +78,108 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
     private readonly auth: AuthService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
+
   get applyLink(): string {
     return this.job && !jobExpired(this.job) ? safeJobUrl(this.job.applyUrl || this.job.url) : '';
   }
+
   get stale(): boolean {
     return !!this.job?.freshUntil && Date.parse(this.job.freshUntil) <= this.now;
   }
+
   get offline(): boolean {
     return !navigator.onLine;
   }
+
   get blocked(): boolean {
     return this.now < Math.max(this.retryAt, this.actions.retryAt) || !navigator.onLine;
   }
+
+  get descriptionSections(): DescriptionSection[] {
+    const raw = decodeHtmlEntities((this.job?.description || '').trim());
+    if (!raw) return [];
+
+    const lines = raw
+      .split(/\r?\n/)
+      .map((l) => decodeHtmlEntities(l.trim()))
+      .filter(Boolean);
+
+    const sections: DescriptionSection[] = [];
+    let currentSection: DescriptionSection = { blocks: [] };
+    let currentBulletList: string[] = [];
+
+    const flushBullets = () => {
+      if (currentBulletList.length > 0) {
+        currentSection.blocks.push({
+          type: 'bullets',
+          items: [...currentBulletList],
+        });
+        currentBulletList = [];
+      }
+    };
+
+    const isHeaderLine = (line: string): boolean => {
+      if (/^#{1,4}\s+/.test(line)) return true;
+      const clean = line.replace(/[:：\-_*]+$/, '').trim();
+      if (clean.length > 60 || clean.length < 3) return false;
+      const headerPatterns = [
+        /^(about|who we are|company overview|the role|about the role|role overview|job description|summary)/i,
+        /^(responsibilities|what you('ll| will) do|key responsibilities|core responsibilities|duties)/i,
+        /^(requirements|qualifications|what we('re| are) looking for|what you('ll| will) need|skills & experience|must haves|minimum qualifications|preferred qualifications)/i,
+        /^(benefits|perks|what we offer|compensation|our offer)/i,
+        /^(how to apply|interview process|next steps|location)/i,
+      ];
+      if (headerPatterns.some((p) => p.test(clean))) return true;
+      if (line.endsWith(':') && line.length < 50 && !line.includes('.')) return true;
+      return false;
+    };
+
+    const isBulletLine = (line: string): boolean => {
+      return /^([•*·\-\–—]|\d+[\.\)])\s+/.test(line);
+    };
+
+    const cleanBullet = (line: string): string => {
+      return decodeHtmlEntities(line.replace(/^([•*·\-\–—]|\d+[\.\)])\s+/, '').trim());
+    };
+
+    const cleanHeader = (line: string): string => {
+      return decodeHtmlEntities(
+        line
+          .replace(/^#{1,4}\s+/, '')
+          .replace(/[:：]+$/, '')
+          .trim(),
+      );
+    };
+
+    for (const line of lines) {
+      if (isHeaderLine(line)) {
+        flushBullets();
+        if (currentSection.blocks.length > 0 || currentSection.title) {
+          sections.push(currentSection);
+        }
+        currentSection = {
+          title: cleanHeader(line),
+          blocks: [],
+        };
+      } else if (isBulletLine(line)) {
+        currentBulletList.push(cleanBullet(line));
+      } else {
+        flushBullets();
+        currentSection.blocks.push({
+          type: 'paragraph',
+          content: decodeHtmlEntities(line),
+        });
+      }
+    }
+
+    flushBullets();
+    if (currentSection.blocks.length > 0 || currentSection.title) {
+      sections.push(currentSection);
+    }
+
+    return sections;
+  }
+
   ngOnInit(): void {
     this.subscriptions.add(
       combineLatest([
@@ -131,21 +240,26 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     }, 1000);
   }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     if (this.timer) clearInterval(this.timer);
   }
+
   @HostListener('window:focus') focus(): void {
     if (!this.isLoading && Date.now() - this.loadedAt > 30000) this.retry();
   }
+
   @HostListener('window:online') online(): void {
     this.retry();
   }
+
   retry(): void {
     if (this.blocked) return;
     this.jobs.clearCache();
     this.reload.next();
   }
+
   mutate(field: JobActionField): void {
     if (!this.job || this.blocked) return;
     const id = this.job.id;

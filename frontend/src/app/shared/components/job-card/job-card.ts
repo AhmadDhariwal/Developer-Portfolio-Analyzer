@@ -2,7 +2,15 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Job, JobUiState } from '../../models/job.model';
-import { jobDate, jobSalary, safeJobUrl } from '../../utils/job-presentation';
+import {
+  jobDate,
+  jobSalary,
+  safeJobUrl,
+  decodeHtmlEntities,
+  hasJobSalary,
+  cleanJobTitle,
+} from '../../utils/job-presentation';
+
 @Component({
   selector: 'app-job-card',
   standalone: true,
@@ -19,9 +27,14 @@ export class JobCardComponent {
   @Output() markApplied = new EventEmitter<Job>();
   @Output() hide = new EventEmitter<Job>();
   @Output() similar = new EventEmitter<Job>();
+
   logoError = false;
   readonly date = jobDate;
   readonly salary = jobSalary;
+  readonly decode = decodeHtmlEntities;
+  readonly cleanTitle = cleanJobTitle;
+  readonly hasSalary = hasJobSalary;
+
   get logoUrl(): string {
     return safeJobUrl(this.job.companyLogo);
   }

@@ -1006,12 +1006,18 @@ function isHttpUrl(value) {
 
 function stripHtml(value = '') {
   return toText(value)
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|li|div|h\d)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
+    .replace(/&#(?:39|039|x27);/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&(?:rsquo|lsquo|#8217|#8216);/gi, "'")
+    .replace(/&(?:ldquo|rdquo|#8220|#8221);/gi, '"')
+    .replace(/&quot;/gi, '"')
+    .replace(/&(?:ndash|#8211);/gi, '–')
+    .replace(/&(?:mdash|#8212);/gi, '—')
+    .replace(/&(?:hellip|#8230);/gi, '…')
+    .replace(/&amp;/gi, '&')
     .replace(/&nbsp;/gi, ' ')
     .replace(/\s+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
@@ -1083,9 +1089,28 @@ function extractSkillsFromText(...parts) {
   );
 }
 
+function cleanJobTitle(raw) {
+  if (!raw) return '';
+  let cleaned = String(raw);
+  cleaned = cleaned.replace(
+    /\s*\(\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\)/gi,
+    ''
+  );
+  cleaned = cleaned.replace(
+    /\s*\[\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\]/gi,
+    ''
+  );
+  cleaned = cleaned.replace(
+    /\s*[-–—/|]\s*(?:\(?\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\)?)\s*$/gi,
+    ''
+  );
+  cleaned = cleaned.replace(/\s{2,}/g, ' ').replace(/\s*[-–—:,]\s*$/, '').trim();
+  return cleaned || String(raw).trim();
+}
+
 function normaliseJob(job = {}, index = 0, source = 'Unknown') {
   if (!job || typeof job !== 'object') return {};
-  const title = stripHtml(job.title).slice(0, 240);
+  const title = cleanJobTitle(stripHtml(job.title)).slice(0, 240);
   const company = stripHtml(job.company).slice(0, 240);
   const location = toText(job.location) || 'Unspecified';
   const description = stripHtml(job.description).slice(0, 12000);
@@ -2350,6 +2375,7 @@ module.exports = {
   getJobCacheMetrics,
   normaliseJobFilters,
   normaliseJob,
+  cleanJobTitle,
   applyFilters,
   isUsableJob,
   computeCacheStatus,
