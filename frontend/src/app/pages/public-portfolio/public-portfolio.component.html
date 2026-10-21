@@ -1,11 +1,46 @@
 <div class="portfolio-page">
-  <!-- Subtle Stitch Kinetic Terminal Atmospheric Background -->
+  <!-- 3D Stitch Kinetic Terminal Atmospheric Background Decor -->
   <div class="portfolio-background-decor" aria-hidden="true">
     <div class="decor-glow decor-glow-top"></div>
+    <div class="decor-glow decor-glow-center"></div>
     <div class="decor-glow decor-glow-bottom"></div>
     <div class="decor-grid-pattern"></div>
+    <div class="decor-floating-orb orb-1"></div>
+    <div class="decor-floating-orb orb-2"></div>
+    <div class="decor-floating-orb orb-3"></div>
   </div>
 
+  <!-- Edge-to-Edge Sticky Preview Mode Strip (Only shown in preview mode) -->
+  <div class="preview-mode-bar" *ngIf="preview && profile" role="note">
+    <div class="preview-mode-container">
+      <div class="preview-mode-left">
+        <div class="preview-mode-badge">
+          <span class="preview-dot"></span>
+          <span>PRIVATE OWNER PREVIEW</span>
+        </div>
+        <span class="preview-mode-desc"
+          >Saved content only · Hidden sections stay hidden · Views are not tracked</span
+        >
+      </div>
+      <div class="preview-mode-actions">
+        <button
+          type="button"
+          class="avatar-toggle-btn"
+          (click)="toggleAvatarMode()"
+          [title]="'Switch to ' + (avatarMode === '3d' ? 'uploaded avatar' : '3D developer avatar')"
+        >
+          <span class="avatar-toggle-label">Avatar:</span>
+          <strong>{{ avatarMode === '3d' ? '3D Character' : 'Profile Photo' }}</strong>
+        </button>
+        <a routerLink="/app/portfolio" class="back-to-settings-btn">
+          <span>Back to settings</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Glassmorphic Fluid Navbar -->
   <header class="portfolio-nav">
     <div class="nav-container">
       <a class="brand" routerLink="/" aria-label="DevInsight AI home">
@@ -14,13 +49,14 @@
       </a>
       <div class="nav-actions">
         @if (profile) {
+          <a href="#about" class="nav-anchor">Home</a>
           <a href="#about" class="nav-anchor">About</a>
           <a href="#skills" class="nav-anchor" *ngIf="profile.skills.length">Skills</a>
           <a href="#projects" class="nav-anchor" *ngIf="profile.projects.length">Projects</a>
           <a href="#experience" class="nav-anchor" *ngIf="profile.workExperiences.length"
             >Experience</a
           >
-          <a href="#contact" class="nav-anchor">Connect</a>
+          <a href="#contact" class="nav-anchor">Contact</a>
         }
         <!-- Interactive Stitch Theme Toggle for Preview & Public Portfolio -->
         <button
@@ -94,7 +130,9 @@
           <span class="eyebrow">{{
             errorStatus === 404 ? 'Portfolio unavailable' : 'Please try again'
           }}</span>
-          <h1>{{ errorStatus === 404 ? 'Nothing public here yet.' : 'A brief interruption.' }}</h1>
+          <h1>
+            {{ errorStatus === 404 ? 'Nothing public here yet.' : 'Temporarily unavailable.' }}
+          </h1>
           <p>{{ errorMessage }}</p>
           <div class="page-state-actions">
             <button class="button primary" (click)="retry()">Try again</button>
@@ -103,14 +141,15 @@
         </section>
       </div>
     } @else {
-      <!-- Full-screen Hero Section -->
-      <section class="hero-section kinetic-block block-hero" id="about">
+      <!-- 3D Holographic Hero Section (Fluid & Unbounded) -->
+      <section class="hero-section" id="about">
         <div class="section-container hero-container">
+          <!-- Left Column: Hero Narrative, Name & Typewriter -->
           <div class="hero-main">
             <div class="hero-meta-row">
               <span class="eyebrow">
                 <span class="small-dot"></span>
-                {{ profile.sections.hero.greetingLabel || 'Meet the developer' }}
+                {{ profile.sections.hero.greetingLabel || 'Hello, I’m' }}
               </span>
               <span class="availability-badge">
                 <span class="pulse-bead" aria-hidden="true"></span>
@@ -118,29 +157,54 @@
               </span>
             </div>
 
-            <h1>{{ profile.user.name }}</h1>
-            <h2 *ngIf="profile.headline || profile.user.jobTitle">
-              {{ profile.headline || profile.user.jobTitle }}
-            </h2>
-            <p class="role-label" *ngIf="profile.sections.hero.roleLabel">
-              {{ profile.sections.hero.roleLabel }}
+            <!-- Prominent Developer Name Headline -->
+            <h1 class="hero-name">{{ profile.user.name }}</h1>
+
+            <!-- Role Lead Tagline -->
+            <p class="role-lead-label">
+              {{ profile.sections.hero.roleLabel || 'A Developer who' }}
             </p>
-            <p class="hero-copy" *ngIf="heroCopy">{{ heroCopy }}</p>
-            <p class="summary" *ngIf="profile.summary">{{ profile.summary }}</p>
-            <p class="muted hero-tagline" *ngIf="profile.sections.hero.tagline">
+
+            <!-- Bold Statement Headline with Gradient Accent -->
+            <h2 class="hero-statement-title">
+              <span>{{ heroTitleMain }}</span>
+              <span class="neon-gradient-text">{{ heroTitleAccent }}</span>
+            </h2>
+
+            <!-- Animated Dynamic Typewriter Line -->
+            <div class="typewriter-line" aria-label="Role headline">
+              <span class="typewriter-prefix">I'm a </span>
+              <span class="typewriter-word">{{ typewriterText }}</span>
+              <span class="typewriter-cursor" aria-hidden="true">|</span>
+            </div>
+
+            <!-- Profile Summary & Tagline -->
+            <p class="summary" *ngIf="profile.summary">
+              {{ profile.summary }}
+            </p>
+            <p class="summary muted" *ngIf="!profile.summary && profile.headline">
+              {{ profile.headline }}
+            </p>
+            <p class="hero-tagline" *ngIf="profile.sections.hero.tagline">
               {{ profile.sections.hero.tagline }}
             </p>
 
+            <!-- Action CTAs Group -->
             <div class="hero-actions">
-              <a class="button primary" href="#projects" *ngIf="profile.projects.length">
-                Explore my work <span aria-hidden="true">↗</span>
+              <a
+                class="button primary hero-cta-btn"
+                href="#projects"
+                *ngIf="profile.projects.length"
+              >
+                <span>Explore my work</span>
+                <span class="btn-arrow" aria-hidden="true">↗</span>
               </a>
-              <a class="button secondary" href="#contact">
-                {{
+              <a class="button secondary hero-cta-btn" href="#contact">
+                <span>{{
                   profile.sections.visibility.cta && profile.sections.cta.primaryLabel
                     ? profile.sections.cta.primaryLabel
                     : "Let's connect"
-                }}
+                }}</span>
               </a>
               <button
                 class="button secondary hero-resume-btn"
@@ -150,11 +214,11 @@
                 title="Download verified resume PDF"
               >
                 <span class="file-chip-tag" aria-hidden="true">PDF</span>
-                {{
+                <span>{{
                   downloadBusy
                     ? 'Preparing PDF…'
                     : profile.sections.cta.secondaryLabel || 'Download resume ↓'
-                }}
+                }}</span>
               </button>
               <a
                 class="button secondary hero-resume-btn"
@@ -169,7 +233,7 @@
                 title="View candidate resume"
               >
                 <span class="file-chip-tag" aria-hidden="true">CV</span>
-                {{ profile.sections.cta.secondaryLabel || 'View resume ↗' }}
+                <span>{{ profile.sections.cta.secondaryLabel || 'View resume ↗' }}</span>
               </a>
               <button class="button text-button" *ngIf="!preview" (click)="copyLink()">
                 Copy portfolio link
@@ -180,74 +244,411 @@
             </p>
           </div>
 
-          <aside class="identity-card">
-            <div class="avatar-frame">
-              <img
-                *ngIf="image(profile.user.avatar) && !avatarFailed; else initialsAvatar"
-                [src]="image(profile.user.avatar)"
-                [alt]="profile.user.name"
-                width="140"
-                height="140"
-                (error)="avatarFailed = true"
-                referrerpolicy="no-referrer"
-              />
-              <ng-template #initialsAvatar>
-                <span class="initials" aria-hidden="true">{{ initials }}</span>
-              </ng-template>
-              <span class="avatar-accent" aria-hidden="true">↗</span>
-            </div>
+          <!-- Right Column: 3D Kinetic Avatar Stage (Fluid, Unbounded & Floating) -->
+          <div class="hero-avatar-stage">
+            <div class="avatar-kinetic-sphere">
+              <!-- Ambient light emission field behind avatar -->
+              <div class="ambient-light-halo" aria-hidden="true"></div>
 
-            <strong class="identity-name">{{ profile.user.name }}</strong>
-            <span class="identity-location muted" *ngIf="profile.user.location">
-              <span class="location-icon" aria-hidden="true">📍</span> {{ profile.user.location }}
-            </span>
+              <!-- Concentric cosmic aura rings rotating in space -->
+              <div class="cosmic-aura-ring aura-outer" aria-hidden="true"></div>
+              <div class="cosmic-aura-ring aura-middle" aria-hidden="true"></div>
+              <div class="cosmic-aura-ring aura-inner" aria-hidden="true"></div>
 
-            <div class="identity-stats">
-              <div class="stat-box">
-                <strong>{{ profile.projects.length }}</strong>
-                <span>Projects shared</span>
+              <!-- Floating 3D Character Hologram Aperture -->
+              <div class="avatar-hologram-frame">
+                <img
+                  [src]="avatarSrc"
+                  [alt]="profile.user.name"
+                  class="avatar-hologram-img"
+                  width="260"
+                  height="260"
+                  (error)="avatarFailed = true"
+                />
+                <div class="avatar-scanline-sheen" aria-hidden="true"></div>
               </div>
-              <div class="stat-box">
-                <strong>{{ profile.skills.length }}</strong>
-                <span>Skills listed</span>
-              </div>
-            </div>
 
-            <div class="social-links" *ngIf="socialLinks.length">
-              <a
-                *ngFor="let social of socialLinks"
-                [href]="social.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="social-badge"
+              <!-- Free-Floating Kinetic Orbital Chips -->
+              <div class="orbital-chip chip-status" aria-hidden="true">
+                <span class="chip-status-dot"></span>
+                <span>Available for work</span>
+              </div>
+              <div
+                class="orbital-chip chip-skills"
+                aria-hidden="true"
+                *ngIf="profile.skills.length"
               >
-                {{ social.label }} <span aria-hidden="true">↗</span>
-              </a>
+                <span class="chip-icon">⚡</span>
+                <span>{{ profile.skills.length }} Skills listed</span>
+              </div>
+              <div
+                class="orbital-chip chip-projects"
+                aria-hidden="true"
+                *ngIf="profile.projects.length"
+              >
+                <span class="chip-icon">🚀</span>
+                <span>{{ profile.projects.length }} Projects shared</span>
+              </div>
+              <div class="orbital-chip chip-social" *ngIf="socialLinks.length">
+                <a
+                  [href]="socialLinks[0].url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="orbital-social-link"
+                >
+                  <span>{{ socialLinks[0].label }}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
             </div>
-          </aside>
+          </div>
         </div>
       </section>
 
-      <!-- Skills Section -->
+      <!-- Interactive Tech Constellation & Skills Section -->
       @if (profile.skills.length) {
         <section class="section skills-section kinetic-block block-skills" id="skills">
           <div class="section-container">
+            <div class="constellation-header">
+              <div class="constellation-header-meta">
+                <span class="eyebrow">Technical Ecosystem</span>
+                <span class="skills-owner-note">Listed by the portfolio owner</span>
+              </div>
+              <h2 class="constellation-title">
+                {{ profile.sections.skills.headline || 'Core Technical' }}
+                <span class="neon-gradient-text">{{
+                  profile.sections.skills.highlight || 'Architecture'
+                }}</span>
+                {{ profile.sections.skills.headlineSuffix || '& Ecosystem' }}
+              </h2>
+              <p class="constellation-subtitle">
+                {{
+                  profile.sections.skills.subheadline ||
+                    'A curated ecosystem of modern technologies, architectural patterns, and production engineering tools.'
+                }}
+              </p>
+            </div>
+
+            <!-- Constellation Diagram -->
+            <div class="tech-constellation-stage" aria-hidden="true">
+              <!-- Radial Laser Connector Beams (SVG) -->
+              <svg class="constellation-svg-lines" viewBox="0 0 800 240" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="laserGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#818cf8" stop-opacity="0.9" />
+                    <stop offset="60%" stop-color="#c084fc" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.3" />
+                  </linearGradient>
+                </defs>
+                <!-- Dynamically routed laser beams from bottom center beacon (400, 220) to orbital nodes -->
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="80"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="185"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="290"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="395"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="505"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="615"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+                <line
+                  x1="400"
+                  y1="220"
+                  x2="720"
+                  y2="40"
+                  stroke="url(#laserGrad)"
+                  stroke-width="1.8"
+                  stroke-dasharray="4 3"
+                />
+              </svg>
+
+              <!-- Orbital Skill Nodes Cluster -->
+              <div class="constellation-nodes-row">
+                <div
+                  class="constellation-node"
+                  *ngFor="let skill of constellationSkills; let idx = index"
+                >
+                  <div class="node-pill">
+                    <span class="node-icon-glow"></span>
+                    <span class="node-tech-name">{{ skill.name }}</span>
+                    <span class="node-pct" *ngIf="skill.score">{{ skill.score }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Central Power Beacon -->
+              <div class="constellation-central-core">
+                <div class="beacon-wave-ring wave-1"></div>
+                <div class="beacon-wave-ring wave-2"></div>
+                <div class="beacon-orb">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon points="12 2 2 22 22 22 12 2"></polygon>
+                    <line x1="12" y1="13" x2="12" y2="17"></line>
+                    <circle cx="12" cy="9" r="1"></circle>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Complete Toolkit Breakdown -->
+            <div class="skills-toolkit-grid">
+              <div class="toolkit-card" *ngFor="let skill of profile.skills">
+                <div class="toolkit-head">
+                  <span class="toolkit-name">{{ skill.name }}</span>
+                  <span class="toolkit-score" *ngIf="skill.score">{{ skill.score }}%</span>
+                </div>
+                <div class="toolkit-gauge-track" *ngIf="skill.score">
+                  <div
+                    class="toolkit-gauge-fill"
+                    [style.width.%]="skill.score > 100 ? 100 : skill.score || 0"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 3D Work Experience Cards Section -->
+      @if (profile.workExperiences.length) {
+        <section class="section experience-section kinetic-block block-experience" id="experience">
+          <div class="section-container">
             <div class="section-heading">
               <div>
-                <span class="eyebrow">The toolkit</span>
-                <h2>Skills & technologies</h2>
+                <span class="eyebrow">The Journey</span>
+                <h2>Work Experience</h2>
               </div>
-              <p>Listed by the portfolio owner</p>
+              <p>Engineering contributions, technical leadership, and production impact.</p>
             </div>
-            <p class="section-copy" *ngIf="profile.sections.skills.headline">
-              {{ profile.sections.skills.headline }} {{ profile.sections.skills.highlight }}
-              {{ profile.sections.skills.headlineSuffix }}
-            </p>
-            <p class="muted" *ngIf="profile.sections.skills.subheadline">
-              {{ profile.sections.skills.subheadline }}
-            </p>
-            <div class="skills-list">
-              <span class="skill" *ngFor="let skill of profile.skills">{{ skill.name }}</span>
+            <div class="experience-3d-grid">
+              <article
+                *ngFor="let experience of profile.workExperiences; let expIndex = index"
+                class="experience-card-3d"
+              >
+                <!-- Neon Glowing 3D Icon Badge -->
+                <div
+                  class="card-icon-3d"
+                  [attr.data-icon-type]="getExperienceIcon(experience.icon, expIndex)"
+                >
+                  <!-- Dynamic SVG representation -->
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'rocket'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"
+                    ></path>
+                    <path
+                      d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"
+                    ></path>
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'lightbulb'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="9" y1="18" x2="15" y2="18"></line>
+                    <line x1="10" y1="22" x2="14" y2="22"></line>
+                    <path
+                      d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"
+                    ></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'code'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'server'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'globe'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    ></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'palette'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="13.5" cy="6.5" r=".5"></circle>
+                    <circle cx="17.5" cy="10.5" r=".5"></circle>
+                    <circle cx="8.5" cy="7.5" r=".5"></circle>
+                    <circle cx="6.5" cy="12.5" r=".5"></circle>
+                    <path
+                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
+                    ></path>
+                  </svg>
+                </div>
+
+                <div class="experience-card-body">
+                  <h3>{{ experience.title }}</h3>
+                  <p class="experience-desc">{{ experience.description }}</p>
+                  <a
+                    *ngIf="link(experience.ctaUrl)"
+                    [href]="link(experience.ctaUrl)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="experience-learn-btn"
+                  >
+                    <span>{{ experience.ctaLabel || 'Learn More' }}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Academic & Professional Courses Section -->
+      @if (profile.completedCourses?.length) {
+        <section
+          class="section credentials-section kinetic-block block-credentials"
+          id="credentials"
+        >
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Continuous Learning</span>
+                <h2>Academic & Professional Courses</h2>
+              </div>
+              <p>A collection of completed coursework and specialized learning paths.</p>
+            </div>
+            <div class="courses-3d-grid">
+              <article class="course-card-3d" *ngFor="let course of profile.completedCourses">
+                <div class="course-card-top">
+                  <span class="course-provider-pill">{{ course.provider || 'Accredited' }}</span>
+                  <span class="course-date" *ngIf="course.completionDate">
+                    {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
+                  </span>
+                </div>
+                <h3>{{ course.title }}</h3>
+                <p class="course-desc" *ngIf="course.description">{{ course.description }}</p>
+                <div class="course-skills-list" *ngIf="course.skills?.length">
+                  <span class="course-skill-tag" *ngFor="let skill of course.skills">{{
+                    skill
+                  }}</span>
+                </div>
+                <a
+                  *ngIf="link(course.certificateUrl)"
+                  [href]="link(course.certificateUrl)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="course-cred-btn"
+                >
+                  <span>View credential</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </article>
             </div>
           </div>
         </section>
@@ -264,7 +665,7 @@
                   Selected projects<span class="count">{{ profile.projects.length }}</span>
                 </h2>
               </div>
-              <p>A closer look at the work.</p>
+              <p>A closer look at real-world engineering solutions.</p>
             </div>
             <div class="project-grid">
               <app-project-card *ngFor="let project of profile.projects" [project]="project" />
@@ -273,7 +674,7 @@
         </section>
       }
 
-      <!-- Upcoming Section -->
+      <!-- Upcoming Roadmap Section -->
       @if (upcomingCards.length) {
         <section class="section upcoming-section kinetic-block block-upcoming" id="upcoming">
           <div class="section-container">
@@ -291,78 +692,7 @@
         </section>
       }
 
-      <!-- Experience Section -->
-      @if (profile.workExperiences.length) {
-        <section class="section experience-section kinetic-block block-experience" id="experience">
-          <div class="section-container">
-            <div class="section-heading">
-              <div>
-                <span class="eyebrow">The journey</span>
-                <h2>Experience</h2>
-              </div>
-            </div>
-            <div class="experience-list">
-              <article *ngFor="let experience of profile.workExperiences" class="experience-card">
-                <span class="experience-marker" aria-hidden="true">↗</span>
-                <div class="experience-body">
-                  <h3>{{ experience.title }}</h3>
-                  <p>{{ experience.description }}</p>
-                  <a
-                    *ngIf="link(experience.ctaUrl)"
-                    [href]="link(experience.ctaUrl)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="experience-link"
-                  >
-                    {{ experience.ctaLabel || 'Learn more' }} ↗
-                  </a>
-                </div>
-              </article>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- Courses & Credentials -->
-      @if (profile.completedCourses?.length) {
-        <section
-          class="section credentials-section kinetic-block block-credentials"
-          id="credentials"
-        >
-          <div class="section-container">
-            <div class="section-heading">
-              <div>
-                <span class="eyebrow">Always learning</span>
-                <h2>Courses & credentials</h2>
-              </div>
-            </div>
-            <div class="credential-grid">
-              <article class="credential" *ngFor="let course of profile.completedCourses">
-                <span class="credential-icon" aria-hidden="true">↗</span>
-                <div class="credential-body">
-                  <p class="eyebrow">{{ course.provider }}</p>
-                  <h3>{{ course.title }}</h3>
-                  <p class="muted credential-date" *ngIf="course.completionDate">
-                    Completed {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
-                  </p>
-                  <p class="credential-desc" *ngIf="course.description">{{ course.description }}</p>
-                  <a
-                    *ngIf="link(course.certificateUrl)"
-                    [href]="link(course.certificateUrl)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="credential-link"
-                  >
-                    View credential ↗
-                  </a>
-                </div>
-              </article>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- Testimonials -->
+      <!-- Testimonials Section -->
       @if (profile.testimonials.length) {
         <section
           class="section testimonials-section kinetic-block block-testimonials"
@@ -372,10 +702,15 @@
             <div class="section-heading">
               <div>
                 <span class="eyebrow">In good company</span>
-                <h2>{{ profile.sections.testimonials.heading || 'Words from collaborators' }}</h2>
+                <h2>{{ profile.sections.testimonials.heading || 'Testimonials' }}</h2>
               </div>
+              <p>
+                {{
+                  profile.sections.testimonials.subheading ||
+                    'What collaborators say about our work together'
+                }}
+              </p>
             </div>
-            <p class="muted section-subheadline">{{ profile.sections.testimonials.subheading }}</p>
             <div class="testimonial-grid">
               <figure *ngFor="let item of profile.testimonials" class="testimonial-card">
                 <span class="quote-mark" aria-hidden="true">“</span>
@@ -390,6 +725,50 @@
         </section>
       }
 
+      <!-- "Let's Work Together" Glassmorphic CTA Card -->
+      <section class="section cta-glass-section">
+        <div class="section-container">
+          <div class="lets-work-card">
+            <div class="cta-inner-glow" aria-hidden="true"></div>
+            <h2>Let's Work Together</h2>
+            <p>
+              {{
+                profile.sections.cta.subtext ||
+                  "Have an opportunity or ambitious project in mind? Let's connect and build something meaningful."
+              }}
+            </p>
+            <div class="lets-work-actions">
+              <a class="button primary cta-main-btn" href="#contact">
+                <span>Contact Me</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+              <button
+                class="button secondary cta-resume-btn"
+                *ngIf="profile.defaultResumeUrl"
+                [disabled]="downloadBusy"
+                (click)="downloadResume()"
+              >
+                <span>{{ downloadBusy ? 'Preparing PDF…' : 'Download Resume ↓' }}</span>
+              </button>
+              <a
+                class="button secondary cta-resume-btn"
+                *ngIf="
+                  !profile.defaultResumeUrl &&
+                  profile.sections.visibility.cta &&
+                  link(profile.resumeUrl)
+                "
+                [href]="link(profile.resumeUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>View Resume ↗</span>
+              </a>
+            </div>
+            <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Contact Section -->
       <section class="section contact-section kinetic-block block-contact" id="contact">
         <div class="section-container contact-container">
@@ -397,10 +776,6 @@
             <span class="eyebrow">Start a conversation</span>
             <h2>{{ profile.sections.contact.heading || "Let's build something meaningful." }}</h2>
             <p class="contact-message">{{ profile.sections.contact.message }}</p>
-            <h3 *ngIf="profile.sections.visibility.cta && profile.sections.cta.heading">
-              {{ profile.sections.cta.heading }}
-            </h3>
-            <p *ngIf="profile.sections.visibility.cta">{{ profile.sections.cta.subtext }}</p>
             <div class="social-links" *ngIf="socialLinks.length">
               <a
                 *ngFor="let social of socialLinks"
@@ -409,60 +784,9 @@
                 rel="noopener noreferrer"
                 class="social-badge"
               >
-                {{ social.label }} ↗
+                <span>{{ social.label }}</span>
+                <span aria-hidden="true">↗</span>
               </a>
-            </div>
-            <div
-              class="resume-credentials-card"
-              *ngIf="
-                profile.defaultResumeUrl ||
-                (profile.sections.visibility.cta && link(profile.resumeUrl))
-              "
-            >
-              <div class="resume-card-header">
-                <div class="resume-doc-badge">
-                  <span class="doc-badge-pill">PDF</span>
-                  <span class="pulse-bead" aria-hidden="true"></span>
-                </div>
-                <div class="resume-doc-meta">
-                  <span class="doc-title">Curriculum Vitae</span>
-                  <span class="doc-status" *ngIf="profile.defaultResumeUrl">
-                    Attached from DevInsight Resume Analyzer
-                  </span>
-                  <span class="doc-status" *ngIf="!profile.defaultResumeUrl">
-                    Candidate verified resume link
-                  </span>
-                </div>
-              </div>
-              <div class="resume-action-wrap">
-                <button
-                  class="button secondary resume-btn"
-                  *ngIf="profile.defaultResumeUrl"
-                  [disabled]="downloadBusy"
-                  (click)="downloadResume()"
-                >
-                  <span class="download-arrow" aria-hidden="true">↓</span>
-                  {{
-                    downloadBusy
-                      ? 'Preparing PDF…'
-                      : profile.sections.cta.secondaryLabel || 'Download resume ↓'
-                  }}
-                </button>
-                <a
-                  class="button secondary resume-btn"
-                  *ngIf="
-                    !profile.defaultResumeUrl &&
-                    profile.sections.visibility.cta &&
-                    link(profile.resumeUrl)
-                  "
-                  [href]="link(profile.resumeUrl)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View resume ↗
-                </a>
-              </div>
-              <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
             </div>
           </div>
 
@@ -545,6 +869,7 @@
         </div>
       </section>
 
+      <!-- Footer -->
       <footer class="portfolio-footer">
         <div class="section-container footer-container">
           <a routerLink="/" class="footer-brand">Built with <strong>DevInsight AI</strong></a>

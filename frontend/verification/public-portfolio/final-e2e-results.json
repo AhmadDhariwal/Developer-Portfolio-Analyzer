@@ -1,0 +1,190 @@
+{
+  "title": "Public Portfolio Real E2E Verification",
+  "timestamp": "2026-10-21T13:46:49.864Z",
+  "status": "VERIFIED",
+  "categories": {
+    "realIntegration": [
+      {
+        "name": "Cold read on Worker A populates Redis and Mongo cache",
+        "status": "PASS",
+        "detail": {
+          "status": 200,
+          "headline": "Building resilient cloud & web platforms"
+        }
+      },
+      {
+        "name": "Warm read on Worker B serves identical payload from shared Upstash Redis",
+        "status": "PASS",
+        "detail": {
+          "status": 200
+        }
+      },
+      {
+        "name": "Owner settings endpoint /me returns private fields to authenticated owner",
+        "status": "PASS",
+        "detail": {
+          "email": "e2e-owner@example.test",
+          "hasPrivateId": true
+        }
+      },
+      {
+        "name": "Profile edit on Worker A immediately invalidates Upstash Redis across workers",
+        "status": "PASS",
+        "detail": {
+          "headline": "Updated Platform & Cloud Systems"
+        }
+      },
+      {
+        "name": "Slug rename immediately reflects across workers: old slug 404, new slug 200",
+        "status": "PASS",
+        "detail": {
+          "oldStatus": 404,
+          "newStatus": 200
+        }
+      }
+    ],
+    "privacySecurity": [
+      {
+        "name": "Public serializer strictly excludes email, phone, analytics, and sets momentum null",
+        "status": "PASS",
+        "detail": {
+          "momentum": null
+        }
+      },
+      {
+        "name": "Hidden sections (projects, cta) strip collections and resume URLs from public payload",
+        "status": "PASS",
+        "detail": {
+          "projectsCount": 0,
+          "hasResume": false
+        }
+      },
+      {
+        "name": "Unpublished portfolio returns 404 to public & foreign users; allows authenticated owner preview with private fields",
+        "status": "PASS",
+        "detail": {
+          "anonStatus": 404,
+          "foreignStatus": 404,
+          "ownerPreviewStatus": 200
+        }
+      },
+      {
+        "name": "Owner isolation enforced: foreign account cannot alter owner profile via /me",
+        "status": "PASS",
+        "detail": {
+          "currentHeadline": "Updated Platform & Cloud Systems"
+        }
+      },
+      {
+        "name": "Resume owner binding, uploads confinement, and path traversal protection verified",
+        "status": "PASS",
+        "detail": {
+          "pubResume": 200,
+          "ownerResume": 200,
+          "foreignResume": 404,
+          "traversalResume": 404
+        }
+      },
+      {
+        "name": "Account-level privacy revocation immediately unpublishes portfolio on all workers",
+        "status": "PASS",
+        "detail": {
+          "revokedStatus": 404
+        }
+      }
+    ],
+    "coreFunctionality": [
+      {
+        "name": "Project update persists and reflects in public response",
+        "status": "PASS",
+        "detail": {
+          "projectTitle": "Realtime Observability Mesh"
+        }
+      },
+      {
+        "name": "Image upload enforces authentication, MIME, headers, owner-prefixed storage, and nosniff static delivery",
+        "status": "PASS",
+        "detail": {
+          "uploadStatus": 201,
+          "assetStatus": 200,
+          "forgedStatus": 400,
+          "imageUrl": "/uploads/portfolio-images/6ad8c24be6c04047d8b12c17-d684611c-2f77-4e81-b5c5-abd74b96f91e.png"
+        }
+      },
+      {
+        "name": "Recruiter contact authorization strictly enforced; controlled mail transport dispatched to owner email",
+        "status": "PASS",
+        "detail": {
+          "anon": 401,
+          "dev": 403,
+          "unverified": 403,
+          "verified": 200,
+          "sent": true
+        }
+      },
+      {
+        "name": "Owner-only analytics returns deduplicated UTC counts; anonymous access blocked with 401",
+        "status": "PASS",
+        "detail": {
+          "totalViews": 3,
+          "uniqueViews": 3,
+          "daysCount": 7
+        }
+      }
+    ],
+    "cachingApiProtection": [
+      {
+        "name": "Distributed rate limiter enforces quotas with HTTP 429 and Retry-After",
+        "status": "PASS",
+        "detail": {
+          "admitted": 2,
+          "status": 429,
+          "retryAfter": "3"
+        }
+      },
+      {
+        "name": "Redis outage gracefully falls back to persistent cache/Mongo without exposing private data",
+        "status": "PASS",
+        "detail": {
+          "headline": "Updated Platform & Cloud Systems"
+        }
+      }
+    ],
+    "uiAndSeo": [
+      {
+        "name": "Non-JavaScript crawler audit: SPA returns generic static shell; per-portfolio OG requires edge/SSR prerendering",
+        "status": "PASS",
+        "detail": {
+          "receivedTitle": "DevInsight AI - Portfolio Analyzer",
+          "ogTagsCount": 0,
+          "ssrRequiredForSocialBots": true
+        }
+      },
+      {
+        "name": "Client-side SEO metadata generator produces tailored title, description, and OpenGraph values (noindex on preview)",
+        "status": "PASS",
+        "detail": {
+          "publicTitle": "E2E Owner - Senior Platform Engineer",
+          "previewTitle": "Private portfolio preview | DevInsight AI",
+          "previewRobots": "noindex, nofollow"
+        }
+      },
+      {
+        "name": "Responsive design and CSS theme tokens verified across desktop, tablet, and mobile breakpoints",
+        "status": "PASS",
+        "detail": {
+          "tabletBreakpoint": true,
+          "mobileBreakpoint": true,
+          "darkThemeSupport": true
+        }
+      }
+    ]
+  },
+  "metrics": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "evidence": {},
+  "durationMs": 7715
+}

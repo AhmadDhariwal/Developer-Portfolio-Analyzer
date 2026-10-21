@@ -123,9 +123,155 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
       .subscribe((profile) => {
         this.profile = profile;
         this.isLoading = false;
-        if (profile) this.updateMetadata(profile);
+        if (profile) {
+          this.updateMetadata(profile);
+          this.startTypewriter(profile);
+        }
         this.cdr.markForCheck();
       });
+  }
+
+  typewriterText = '';
+  private typewriterPhrases: string[] = [];
+  private typewriterPhraseIdx = 0;
+  private typewriterCharIdx = 0;
+  private isDeleting = false;
+  private typewriterTimer: ReturnType<typeof setTimeout> | null = null;
+
+  avatarMode: '3d' | 'custom' = '3d';
+
+  get heroTitleMain(): string {
+    const hero = this.profile?.sections.hero;
+    if (hero?.titleLineOne) {
+      return [hero.titleLineOne, hero.titleLineTwo].filter(Boolean).join(' ');
+    }
+    return 'Architecting Scalable Systems &';
+  }
+
+  get heroTitleAccent(): string {
+    const hero = this.profile?.sections.hero;
+    if (hero?.titleHighlight) {
+      return hero.titleHighlight + (hero.titleLineSuffix ? ' ' + hero.titleLineSuffix : '');
+    }
+    return 'Modern Interfaces';
+  }
+
+  get fallback3dAvatar(): string {
+    return '/avatar/dev_3d_avatar.jpg';
+  }
+
+  get avatarSrc(): string {
+    if (this.preview) {
+      if (this.avatarMode === '3d') {
+        return this.fallback3dAvatar;
+      }
+      return portfolioImage(this.profile?.user.avatar) || this.fallback3dAvatar;
+    }
+    if (this.avatarFailed) return this.fallback3dAvatar;
+    const userAvatar = portfolioImage(this.profile?.user.avatar);
+    return userAvatar || this.fallback3dAvatar;
+  }
+
+  toggleAvatarMode(): void {
+    this.avatarMode = this.avatarMode === '3d' ? 'custom' : '3d';
+    this.avatarFailed = false;
+    this.cdr.markForCheck();
+  }
+
+  get constellationSkills(): Array<{ name: string; score: number }> {
+    if (!this.profile?.skills?.length) return [];
+    return this.profile.skills.slice(0, 7);
+  }
+
+  getExperienceIcon(iconName?: string, index: number = 0): string {
+    const norm = (iconName || '').toLowerCase();
+    if (
+      norm.includes('rocket') ||
+      norm.includes('launch') ||
+      norm.includes('speed') ||
+      norm.includes('js')
+    )
+      return 'rocket';
+    if (
+      norm.includes('bulb') ||
+      norm.includes('idea') ||
+      norm.includes('light') ||
+      norm.includes('c++')
+    )
+      return 'lightbulb';
+    if (
+      norm.includes('code') ||
+      norm.includes('tag') ||
+      norm.includes('terminal') ||
+      norm.includes('python')
+    )
+      return 'code';
+    if (
+      norm.includes('flask') ||
+      norm.includes('api') ||
+      norm.includes('server') ||
+      norm.includes('backend')
+    )
+      return 'server';
+    if (norm.includes('palette') || norm.includes('design') || norm.includes('ui'))
+      return 'palette';
+    if (norm.includes('globe') || norm.includes('earth') || norm.includes('web')) return 'globe';
+    const fallbackList = ['rocket', 'lightbulb', 'code', 'server', 'globe', 'palette'];
+    return fallbackList[index % fallbackList.length];
+  }
+
+  startTypewriter(profile: PublicProfilePayload): void {
+    this.stopTypewriter();
+    const phrases: string[] = [];
+    if (profile.headline) phrases.push(profile.headline);
+    if (profile.user.jobTitle && !phrases.includes(profile.user.jobTitle))
+      phrases.push(profile.user.jobTitle);
+    if (profile.skills?.length) {
+      phrases.push(`${profile.skills[0].name} Specialist`);
+    }
+    phrases.push('Full-Stack Engineer', 'Creative Technologist', 'Systems Architect');
+    this.typewriterPhrases = Array.from(new Set(phrases.filter(Boolean)));
+    this.typewriterPhraseIdx = 0;
+    this.typewriterCharIdx = 0;
+    this.isDeleting = false;
+    this.typewriterText = '';
+    this.tickTypewriter();
+  }
+
+  private tickTypewriter(): void {
+    if (!this.typewriterPhrases.length) return;
+    const fullText =
+      this.typewriterPhrases[this.typewriterPhraseIdx % this.typewriterPhrases.length];
+    if (this.isDeleting) {
+      this.typewriterCharIdx--;
+      this.typewriterText = fullText.substring(0, this.typewriterCharIdx);
+      if (this.typewriterCharIdx <= 0) {
+        this.isDeleting = false;
+        this.typewriterPhraseIdx++;
+        this.typewriterTimer = setTimeout(() => this.tickTypewriter(), 400);
+        this.cdr.markForCheck();
+        return;
+      }
+    } else {
+      this.typewriterCharIdx++;
+      this.typewriterText = fullText.substring(0, this.typewriterCharIdx);
+      if (this.typewriterCharIdx >= fullText.length) {
+        this.isDeleting = true;
+        this.typewriterTimer = setTimeout(() => this.tickTypewriter(), 2200);
+        this.cdr.markForCheck();
+        return;
+      }
+    }
+    const speed = this.isDeleting ? 40 : 85;
+    this.typewriterTimer = setTimeout(() => this.tickTypewriter(), speed);
+    this.cdr.markForCheck();
+  }
+
+  stopTypewriter(): void {
+    if (this.typewriterTimer) {
+      clearTimeout(this.typewriterTimer);
+      this.typewriterTimer = null;
+    }
   }
 
   get canContact(): boolean {
@@ -292,6 +438,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
   }
 
   private clearView(): void {
+    this.stopTypewriter();
     this.profile = null;
     this.isLoading = true;
     this.errorMessage = '';
@@ -355,6 +502,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
       this.meta.removeTag(selector);
   }
   ngOnDestroy(): void {
+    this.stopTypewriter();
     this.contactGeneration++;
     this.clearMetadata();
     this.title.setTitle(this.oldTitle);
