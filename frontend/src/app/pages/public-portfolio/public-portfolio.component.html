@@ -49,14 +49,32 @@
       </a>
       <div class="nav-actions">
         @if (profile) {
-          <a href="#about" class="nav-anchor">Home</a>
-          <a href="#about" class="nav-anchor">About</a>
-          <a href="#skills" class="nav-anchor" *ngIf="profile.skills.length">Skills</a>
-          <a href="#projects" class="nav-anchor" *ngIf="profile.projects.length">Projects</a>
-          <a href="#experience" class="nav-anchor" *ngIf="profile.workExperiences.length"
+          <a href="#about" class="nav-anchor" (click)="scrollToSection('about', $event)">Home</a>
+          <a href="#about" class="nav-anchor" (click)="scrollToSection('about', $event)">About</a>
+          <a
+            href="#skills"
+            class="nav-anchor"
+            *ngIf="profile.skills.length"
+            (click)="scrollToSection('skills', $event)"
+            >Skills</a
+          >
+          <a
+            href="#projects"
+            class="nav-anchor"
+            *ngIf="profile.projects.length"
+            (click)="scrollToSection('projects', $event)"
+            >Projects</a
+          >
+          <a
+            href="#experience"
+            class="nav-anchor"
+            *ngIf="profile.workExperiences.length"
+            (click)="scrollToSection('experience', $event)"
             >Experience</a
           >
-          <a href="#contact" class="nav-anchor">Contact</a>
+          <a href="#contact" class="nav-anchor" (click)="scrollToSection('contact', $event)"
+            >Contact</a
+          >
         }
         <!-- Interactive Stitch Theme Toggle for Preview & Public Portfolio -->
         <button
@@ -195,11 +213,16 @@
                 class="button primary hero-cta-btn"
                 href="#projects"
                 *ngIf="profile.projects.length"
+                (click)="scrollToSection('projects', $event)"
               >
                 <span>Explore my work</span>
                 <span class="btn-arrow" aria-hidden="true">↗</span>
               </a>
-              <a class="button secondary hero-cta-btn" href="#contact">
+              <a
+                class="button secondary hero-cta-btn"
+                href="#contact"
+                (click)="scrollToSection('contact', $event)"
+              >
                 <span>{{
                   profile.sections.visibility.cta && profile.sections.cta.primaryLabel
                     ? profile.sections.cta.primaryLabel
@@ -334,75 +357,80 @@
               <!-- Radial Laser Connector Beams (SVG) -->
               <svg class="constellation-svg-lines" viewBox="0 0 800 240" preserveAspectRatio="none">
                 <defs>
-                  <linearGradient id="laserGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" stop-color="#818cf8" stop-opacity="0.9" />
-                    <stop offset="60%" stop-color="#c084fc" stop-opacity="0.6" />
-                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.3" />
+                  <linearGradient id="laserGradDark" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#818cf8" stop-opacity="0.95" />
+                    <stop offset="50%" stop-color="#c084fc" stop-opacity="0.75" />
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.45" />
+                  </linearGradient>
+                  <linearGradient id="laserGradLight" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.95" />
+                    <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.6" />
                   </linearGradient>
                 </defs>
                 <!-- Dynamically routed laser beams from bottom center beacon (400, 220) to orbital nodes -->
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="80"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="185"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="290"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="395"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="505"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="615"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
                 <line
+                  class="laser-beam-line"
                   x1="400"
                   y1="220"
                   x2="720"
                   y2="40"
-                  stroke="url(#laserGrad)"
-                  stroke-width="1.8"
-                  stroke-dasharray="4 3"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
                 />
               </svg>
 
@@ -447,14 +475,24 @@
             <div class="skills-toolkit-grid">
               <div class="toolkit-card" *ngFor="let skill of profile.skills">
                 <div class="toolkit-head">
-                  <span class="toolkit-name">{{ skill.name }}</span>
+                  <div class="toolkit-name-group">
+                    <span class="toolkit-dot" aria-hidden="true"></span>
+                    <span class="toolkit-name">{{ skill.name }}</span>
+                  </div>
                   <span class="toolkit-score" *ngIf="skill.score">{{ skill.score }}%</span>
                 </div>
                 <div class="toolkit-gauge-track" *ngIf="skill.score">
                   <div
                     class="toolkit-gauge-fill"
                     [style.width.%]="skill.score > 100 ? 100 : skill.score || 0"
-                  ></div>
+                  >
+                    <span class="gauge-glow-bead"></span>
+                  </div>
+                </div>
+                <div class="toolkit-footer" *ngIf="skill.score">
+                  <span class="toolkit-tier-badge">{{
+                    skill.score >= 70 ? 'Advanced' : skill.score >= 40 ? 'Proficient' : 'Familiar'
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -731,14 +769,18 @@
           <div class="lets-work-card">
             <div class="cta-inner-glow" aria-hidden="true"></div>
             <h2>Let's Work Together</h2>
-            <p>
+            <p class="cta-subtext">
               {{
                 profile.sections.cta.subtext ||
                   "Have an opportunity or ambitious project in mind? Let's connect and build something meaningful."
               }}
             </p>
             <div class="lets-work-actions">
-              <a class="button primary cta-main-btn" href="#contact">
+              <a
+                class="button primary cta-main-btn"
+                href="#contact"
+                (click)="scrollToSection('contact', $event)"
+              >
                 <span>Contact Me</span>
                 <span aria-hidden="true">↗</span>
               </a>
@@ -874,7 +916,14 @@
         <div class="section-container footer-container">
           <a routerLink="/" class="footer-brand">Built with <strong>DevInsight AI</strong></a>
           <span class="footer-tagline">Work, in its own words.</span>
-          <a href="#main-content" class="back-to-top">Back to top ↑</a>
+          <button
+            type="button"
+            class="back-to-top-btn"
+            (click)="scrollToTop()"
+            aria-label="Scroll back to top"
+          >
+            Back to top ↑
+          </button>
         </div>
       </footer>
     }

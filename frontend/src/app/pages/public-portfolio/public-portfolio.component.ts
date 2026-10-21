@@ -344,6 +344,26 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
     }
   }
 
+  scrollToTop(): void {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  scrollToSection(sectionId: string, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    if (typeof document !== 'undefined') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        this.scrollToTop();
+      }
+    }
+  }
+
   retry(): void {
     this.refresh.next();
   }
