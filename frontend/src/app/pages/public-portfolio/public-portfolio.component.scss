@@ -26,6 +26,22 @@
   --color-primary-border: rgba(163, 166, 255, 0.32);
 }
 
+:host-context([data-theme='light']) {
+  --surface-base: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-secondary: #f1f5f9;
+  --surface-bright: #ffffff;
+  --border-color: rgba(15, 23, 42, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --color-primary: #4f46e5;
+  --color-primary-dark: #4338ca;
+  --color-primary-text: #4f46e5;
+  --color-primary-soft: rgba(79, 70, 229, 0.08);
+  --color-primary-border: rgba(79, 70, 229, 0.28);
+}
+
 h1,
 h2,
 h3,
@@ -447,6 +463,21 @@ textarea {
   gap: 14px;
   margin-top: 32px;
   align-items: center;
+
+  .hero-resume-btn {
+    gap: 8px;
+
+    .file-chip-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary-text);
+      border: 1px solid var(--color-primary-border);
+    }
+  }
 }
 
 .button {
@@ -1010,8 +1041,104 @@ textarea {
     margin: 28px 0;
   }
 
-  .resume-action-wrap {
-    margin-top: 20px;
+  .resume-credentials-card {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+
+    &:hover {
+      border-color: var(--color-primary-border);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .resume-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .resume-doc-badge {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .doc-badge-pill {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        padding: 5px 9px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(56, 189, 248, 0.16));
+        color: var(--color-primary-text);
+        border: 1px solid var(--color-primary-border);
+      }
+
+      .pulse-bead {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 7px;
+        height: 7px;
+      }
+    }
+
+    .resume-doc-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .doc-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .doc-status {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+    }
+
+    .resume-action-wrap {
+      margin-top: 0;
+
+      .resume-btn {
+        width: 100%;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--color-primary), #4f46e5);
+        color: #ffffff;
+        border: 1px solid transparent;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, var(--color-primary-dark), #4338ca);
+          box-shadow: 0 6px 20px rgba(99, 102, 241, 0.38);
+          transform: translateY(-1px);
+        }
+
+        .download-arrow {
+          font-weight: 800;
+          font-size: 15px;
+        }
+      }
+    }
+
+    .error-text {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #ef4444;
+    }
   }
 }
 

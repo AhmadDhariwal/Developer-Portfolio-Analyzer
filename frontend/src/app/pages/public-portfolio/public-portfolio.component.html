@@ -142,6 +142,35 @@
                     : "Let's connect"
                 }}
               </a>
+              <button
+                class="button secondary hero-resume-btn"
+                *ngIf="profile.defaultResumeUrl"
+                [disabled]="downloadBusy"
+                (click)="downloadResume()"
+                title="Download verified resume PDF"
+              >
+                <span class="file-chip-tag" aria-hidden="true">PDF</span>
+                {{
+                  downloadBusy
+                    ? 'Preparing PDF…'
+                    : profile.sections.cta.secondaryLabel || 'Download resume ↓'
+                }}
+              </button>
+              <a
+                class="button secondary hero-resume-btn"
+                *ngIf="
+                  !profile.defaultResumeUrl &&
+                  profile.sections.visibility.cta &&
+                  link(profile.resumeUrl)
+                "
+                [href]="link(profile.resumeUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="View candidate resume"
+              >
+                <span class="file-chip-tag" aria-hidden="true">CV</span>
+                {{ profile.sections.cta.secondaryLabel || 'View resume ↗' }}
+              </a>
               <button class="button text-button" *ngIf="!preview" (click)="copyLink()">
                 Copy portfolio link
               </button>
@@ -383,34 +412,58 @@
                 {{ social.label }} ↗
               </a>
             </div>
-            <div class="resume-action-wrap">
-              <button
-                class="button secondary resume-btn"
-                *ngIf="profile.defaultResumeUrl"
-                [disabled]="downloadBusy"
-                (click)="downloadResume()"
-              >
-                {{
-                  downloadBusy
-                    ? 'Preparing PDF…'
-                    : profile.sections.cta.secondaryLabel || 'Download resume ↓'
-                }}
-              </button>
-              <a
-                class="button secondary"
-                *ngIf="
-                  !profile.defaultResumeUrl &&
-                  profile.sections.visibility.cta &&
-                  link(profile.resumeUrl)
-                "
-                [href]="link(profile.resumeUrl)"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View resume ↗
-              </a>
+            <div
+              class="resume-credentials-card"
+              *ngIf="
+                profile.defaultResumeUrl ||
+                (profile.sections.visibility.cta && link(profile.resumeUrl))
+              "
+            >
+              <div class="resume-card-header">
+                <div class="resume-doc-badge">
+                  <span class="doc-badge-pill">PDF</span>
+                  <span class="pulse-bead" aria-hidden="true"></span>
+                </div>
+                <div class="resume-doc-meta">
+                  <span class="doc-title">Curriculum Vitae</span>
+                  <span class="doc-status" *ngIf="profile.defaultResumeUrl">
+                    Attached from DevInsight Resume Analyzer
+                  </span>
+                  <span class="doc-status" *ngIf="!profile.defaultResumeUrl">
+                    Candidate verified resume link
+                  </span>
+                </div>
+              </div>
+              <div class="resume-action-wrap">
+                <button
+                  class="button secondary resume-btn"
+                  *ngIf="profile.defaultResumeUrl"
+                  [disabled]="downloadBusy"
+                  (click)="downloadResume()"
+                >
+                  <span class="download-arrow" aria-hidden="true">↓</span>
+                  {{
+                    downloadBusy
+                      ? 'Preparing PDF…'
+                      : profile.sections.cta.secondaryLabel || 'Download resume ↓'
+                  }}
+                </button>
+                <a
+                  class="button secondary resume-btn"
+                  *ngIf="
+                    !profile.defaultResumeUrl &&
+                    profile.sections.visibility.cta &&
+                    link(profile.resumeUrl)
+                  "
+                  [href]="link(profile.resumeUrl)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View resume ↗
+                </a>
+              </div>
+              <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
             </div>
-            <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
           </div>
 
           <div class="contact-panel">
