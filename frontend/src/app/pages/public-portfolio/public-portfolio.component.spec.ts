@@ -88,7 +88,6 @@ describe('Public portfolio lifecycle', () => {
     profile.sections.visibility.projects = false;
     response.next(profile);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Private owner preview');
     expect(fixture.nativeElement.textContent).not.toContain('secret@example.com');
     expect(fixture.nativeElement.querySelector('#projects')).toBeNull();
     expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(

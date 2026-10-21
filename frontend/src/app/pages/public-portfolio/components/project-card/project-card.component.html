@@ -12,7 +12,7 @@
       height="360"
       referrerpolicy="no-referrer"
       (error)="imageFailed = true"
-    /><span class="project-status">{{
+    /><span class="project-status" [ngClass]="'status--' + (project.status || 'default')">{{
       project.status === 'in-progress'
         ? 'In progress'
         : project.status === 'planned' || project.status === 'upcoming'
@@ -21,27 +21,35 @@
             ? 'Completed'
             : 'Project'
     }}</span>
+    <div class="image-gradient-overlay" aria-hidden="true"></div>
   </div>
   <div class="project-body">
     <h3>{{ project.title }}</h3>
     <p class="project-description" *ngIf="project.description">{{ project.description }}</p>
     <p class="expected-date" *ngIf="project.expectedDate">Expected: {{ project.expectedDate }}</p>
-    <div class="tech-list">
+    <div class="tech-list" *ngIf="project.tech && project.tech.length">
       <span *ngFor="let tech of project.tech">{{ tech }}</span>
     </div>
     <details *ngIf="project.description">
       <summary>Project details</summary>
-      <p>{{ project.description }}</p>
-      <p class="listed-note">Project information supplied by the portfolio owner.</p>
+      <div class="details-content">
+        <p>{{ project.description }}</p>
+        <p class="listed-note">Project information supplied by the portfolio owner.</p>
+      </div>
     </details>
-    <div class="project-links">
+    <div
+      class="project-links"
+      *ngIf="link(primaryLink || project.url) || link(repositoryLink || project.repoUrl)"
+    >
       <a
+        class="project-link project-link--primary"
         *ngIf="link(primaryLink || project.url)"
         [href]="link(primaryLink || project.url)"
         target="_blank"
         rel="noopener noreferrer"
         >Visit project ↗</a
       ><a
+        class="project-link project-link--ghost"
         *ngIf="link(repositoryLink || project.repoUrl)"
         [href]="link(repositoryLink || project.repoUrl)"
         target="_blank"

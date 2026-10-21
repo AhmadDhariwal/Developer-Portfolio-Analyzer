@@ -1,12 +1,17 @@
 <main class="portfolio-settings-container" *ngIf="!isLoading && profile; else loadingState">
   <header class="settings-header">
     <div class="header-content">
-      <span class="eyebrow">Your professional presence</span>
+      <span class="eyebrow"
+        ><span class="eyebrow-bead" aria-hidden="true"></span>Portfolio Studio & Public
+        Identity</span
+      >
       <h1 class="page-title">Portfolio studio</h1>
-      <p class="page-subtitle">Make your work easy to discover. Every detail, on your terms.</p>
+      <p class="page-subtitle">
+        Make your work easy to discover. High-performance public profile, entirely on your terms.
+      </p>
     </div>
     <div class="header-actions">
-      <label class="theme-control"
+      <label class="theme-control sr-only"
         ><span class="sr-only">Appearance</span
         ><select
           aria-label="Appearance"
@@ -51,11 +56,13 @@
     {{ errorMessage
     }}<button *ngIf="needsReload" (click)="reloadSettings()">Reload saved version</button>
   </div>
-  <div class="publication-strip">
-    <span class="publication-dot" [class.live]="published"></span
-    ><strong>{{ published ? 'Published' : 'Private' }}</strong
-    ><span>{{ published ? shareUrl : 'Only you can access the saved preview.' }}</span
-    ><small>Visibility changes apply when saved.</small>
+  <div class="publication-strip" [class.is-live]="published">
+    <span class="publication-dot" [class.live]="published"></span>
+    <div class="publication-meta">
+      <strong>{{ published ? 'Published' : 'Private' }}</strong>
+      <span>{{ published ? shareUrl : 'Only you can access the saved preview.' }}</span>
+    </div>
+    <small>Visibility changes apply when saved.</small>
   </div>
   <nav class="settings-tabs" aria-label="Portfolio settings sections">
     <button

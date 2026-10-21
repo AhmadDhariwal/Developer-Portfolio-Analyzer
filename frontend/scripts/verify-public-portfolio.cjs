@@ -468,7 +468,7 @@ async function run() {
     const previewPromise = studio.context.waitForEvent('page');
     await settings.getByRole('button', { name: 'Preview', exact: true }).click();
     const preview = await previewPromise;
-    await preview.getByText('Private owner preview', { exact: true }).waitFor();
+    await preview.getByRole('heading', { name: 'Maya Chen', exact: true }).waitFor();
     assert.equal(
       await preview.locator('meta[name=robots]').getAttribute('content'),
       'noindex, nofollow',

@@ -183,6 +183,21 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
       ? `${this.document.location.origin}/p/${encodeURIComponent(this.profile.slug)}`
       : '';
   }
+  get isDarkMode(): boolean {
+    if (typeof this.theme?.isDark === 'function') {
+      return this.theme.isDark();
+    }
+    return this.theme?.preference?.() === 'dark';
+  }
+
+  toggleThemeMode(): void {
+    if (typeof this.theme?.toggleTheme === 'function') {
+      this.theme.toggleTheme();
+    } else if (typeof this.theme?.setTheme === 'function') {
+      this.theme.setTheme(this.isDarkMode ? 'light' : 'dark');
+    }
+  }
+
   retry(): void {
     this.refresh.next();
   }

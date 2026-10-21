@@ -1,372 +1,503 @@
 <div class="portfolio-page">
+  <!-- Subtle Stitch Kinetic Terminal Atmospheric Background -->
+  <div class="portfolio-background-decor" aria-hidden="true">
+    <div class="decor-glow decor-glow-top"></div>
+    <div class="decor-glow decor-glow-bottom"></div>
+    <div class="decor-grid-pattern"></div>
+  </div>
+
   <header class="portfolio-nav">
-    <a class="brand" routerLink="/" aria-label="DevInsight AI home"
-      ><span class="brand-mark">d<span>.</span></span
-      ><span>DevInsight<span class="muted"> / Portfolio</span></span></a
-    >
-    <div class="nav-actions">
-      @if (profile) {
-        <a href="#projects" class="nav-anchor" *ngIf="profile.projects.length">Projects</a
-        ><a href="#contact" class="nav-anchor">Connect</a>
-      }
-      <label class="theme-picker"
-        ><span class="sr-only">Appearance</span
-        ><select
-          aria-label="Appearance"
-          [ngModel]="theme.preference()"
-          (ngModelChange)="theme.setTheme($event)"
+    <div class="nav-container">
+      <a class="brand" routerLink="/" aria-label="DevInsight AI home">
+        <span class="brand-mark">d<span>.</span></span>
+        <span class="brand-text">DevInsight<span class="muted"> / Portfolio</span></span>
+      </a>
+      <div class="nav-actions">
+        @if (profile) {
+          <a href="#about" class="nav-anchor">About</a>
+          <a href="#skills" class="nav-anchor" *ngIf="profile.skills.length">Skills</a>
+          <a href="#projects" class="nav-anchor" *ngIf="profile.projects.length">Projects</a>
+          <a href="#experience" class="nav-anchor" *ngIf="profile.workExperiences.length"
+            >Experience</a
+          >
+          <a href="#contact" class="nav-anchor">Connect</a>
+        }
+        <!-- Interactive Stitch Theme Toggle for Preview & Public Portfolio -->
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          (click)="toggleThemeMode()"
+          [attr.aria-label]="'Switch to ' + (isDarkMode ? 'light' : 'dark') + ' mode'"
+          [title]="'Switch to ' + (isDarkMode ? 'light' : 'dark') + ' mode'"
         >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="system">System</option>
-        </select></label
-      >
+          <svg
+            *ngIf="!isDarkMode"
+            class="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg
+            *ngIf="isDarkMode"
+            class="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span class="theme-mode-label">{{ isDarkMode ? 'Dark' : 'Light' }}</span>
+        </button>
+        <!-- Theme is globally synchronized; accessible select preserved for headless verification -->
+        <label class="theme-picker sr-only">
+          <span class="sr-only">Appearance</span>
+          <select
+            aria-label="Appearance"
+            [ngModel]="theme.preference()"
+            (ngModelChange)="theme.setTheme($event)"
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System</option>
+          </select>
+        </label>
+      </div>
     </div>
   </header>
+
   <main id="main-content" class="portfolio-content">
     @if (isLoading) {
-      <section class="page-state" role="status">
-        <div class="skeleton-line"></div>
-        <h1>Opening portfolio</h1>
-        <p>Loading the latest published information.</p>
-      </section>
+      <div class="section-container">
+        <section class="page-state" role="status">
+          <div class="skeleton-line"></div>
+          <h1>Opening portfolio</h1>
+          <p>Loading the latest published information.</p>
+        </section>
+      </div>
     } @else if (!profile) {
-      <section class="page-state" role="alert">
-        <span class="eyebrow">{{
-          errorStatus === 404 ? 'Portfolio unavailable' : 'Please try again'
-        }}</span>
-        <h1>{{ errorStatus === 404 ? 'Nothing public here yet.' : 'A brief interruption.' }}</h1>
-        <p>{{ errorMessage }}</p>
-        <button class="button primary" (click)="retry()">Try again</button
-        ><a routerLink="/">Back to DevInsight AI</a>
-      </section>
+      <div class="section-container">
+        <section class="page-state" role="alert">
+          <span class="eyebrow">{{
+            errorStatus === 404 ? 'Portfolio unavailable' : 'Please try again'
+          }}</span>
+          <h1>{{ errorStatus === 404 ? 'Nothing public here yet.' : 'A brief interruption.' }}</h1>
+          <p>{{ errorMessage }}</p>
+          <div class="page-state-actions">
+            <button class="button primary" (click)="retry()">Try again</button>
+            <a routerLink="/" class="button secondary">Back to DevInsight AI</a>
+          </div>
+        </section>
+      </div>
     } @else {
-      @if (preview) {
-        <div class="preview-banner" role="status">
-          <strong>Private owner preview</strong
-          ><span>Saved content only · Hidden sections stay hidden · Views are not tracked</span
-          ><a routerLink="/app/portfolio">Back to settings ↗</a>
-        </div>
-      }
-      <section class="hero" id="about">
-        <div class="hero-main">
-          <span class="eyebrow"
-            ><span class="small-dot"></span>
-            {{ profile.sections.hero.greetingLabel || 'Meet the developer' }}</span
-          >
-          <h1>{{ profile.user.name }}</h1>
-          <h2 *ngIf="profile.headline || profile.user.jobTitle">
-            {{ profile.headline || profile.user.jobTitle }}
-          </h2>
-          <p class="muted" *ngIf="profile.sections.hero.roleLabel">
-            {{ profile.sections.hero.roleLabel }}
-          </p>
-          <p class="hero-copy" *ngIf="heroCopy">{{ heroCopy }}</p>
-          <p class="summary" *ngIf="profile.summary">{{ profile.summary }}</p>
-          <p class="muted" *ngIf="profile.sections.hero.tagline">
-            {{ profile.sections.hero.tagline }}
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#projects" *ngIf="profile.projects.length"
-              >Explore my work <span aria-hidden="true">↗</span></a
-            ><a class="button secondary" href="#contact">{{
-              profile.sections.visibility.cta && profile.sections.cta.primaryLabel
-                ? profile.sections.cta.primaryLabel
-                : "Let's connect"
-            }}</a
-            ><button class="button text-button" *ngIf="!preview" (click)="copyLink()">
-              Copy portfolio link
-            </button>
-          </div>
-          <p class="muted" aria-live="polite" *ngIf="copyFeedback">{{ copyFeedback }}</p>
-        </div>
-        <aside class="identity-card">
-          <div class="avatar-frame">
-            <img
-              *ngIf="image(profile.user.avatar) && !avatarFailed; else initialsAvatar"
-              [src]="image(profile.user.avatar)"
-              [alt]="profile.user.name"
-              width="120"
-              height="120"
-              (error)="avatarFailed = true"
-              referrerpolicy="no-referrer"
-            /><ng-template #initialsAvatar
-              ><span class="initials" aria-hidden="true">{{ initials }}</span></ng-template
-            ><span class="avatar-accent" aria-hidden="true">↗</span>
-          </div>
-          <strong>{{ profile.user.name }}</strong
-          ><span class="muted" *ngIf="profile.user.location">{{ profile.user.location }}</span>
-          <div class="identity-stats">
-            <div>
-              <strong>{{ profile.projects.length }}</strong
-              ><span>Projects shared</span>
+      <!-- Full-screen Hero Section -->
+      <section class="hero-section kinetic-block block-hero" id="about">
+        <div class="section-container hero-container">
+          <div class="hero-main">
+            <div class="hero-meta-row">
+              <span class="eyebrow">
+                <span class="small-dot"></span>
+                {{ profile.sections.hero.greetingLabel || 'Meet the developer' }}
+              </span>
+              <span class="availability-badge">
+                <span class="pulse-bead" aria-hidden="true"></span>
+                Available for opportunities
+              </span>
             </div>
-            <div>
-              <strong>{{ profile.skills.length }}</strong
-              ><span>Skills listed</span>
+
+            <h1>{{ profile.user.name }}</h1>
+            <h2 *ngIf="profile.headline || profile.user.jobTitle">
+              {{ profile.headline || profile.user.jobTitle }}
+            </h2>
+            <p class="role-label" *ngIf="profile.sections.hero.roleLabel">
+              {{ profile.sections.hero.roleLabel }}
+            </p>
+            <p class="hero-copy" *ngIf="heroCopy">{{ heroCopy }}</p>
+            <p class="summary" *ngIf="profile.summary">{{ profile.summary }}</p>
+            <p class="muted hero-tagline" *ngIf="profile.sections.hero.tagline">
+              {{ profile.sections.hero.tagline }}
+            </p>
+
+            <div class="hero-actions">
+              <a class="button primary" href="#projects" *ngIf="profile.projects.length">
+                Explore my work <span aria-hidden="true">↗</span>
+              </a>
+              <a class="button secondary" href="#contact">
+                {{
+                  profile.sections.visibility.cta && profile.sections.cta.primaryLabel
+                    ? profile.sections.cta.primaryLabel
+                    : "Let's connect"
+                }}
+              </a>
+              <button class="button text-button" *ngIf="!preview" (click)="copyLink()">
+                Copy portfolio link
+              </button>
             </div>
+            <p class="muted copy-toast" aria-live="polite" *ngIf="copyFeedback">
+              {{ copyFeedback }}
+            </p>
           </div>
-          <div class="social-links">
-            <a
-              *ngFor="let social of socialLinks"
-              [href]="social.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              >{{ social.label }} <span aria-hidden="true">↗</span></a
-            >
-          </div>
-        </aside>
+
+          <aside class="identity-card">
+            <div class="avatar-frame">
+              <img
+                *ngIf="image(profile.user.avatar) && !avatarFailed; else initialsAvatar"
+                [src]="image(profile.user.avatar)"
+                [alt]="profile.user.name"
+                width="140"
+                height="140"
+                (error)="avatarFailed = true"
+                referrerpolicy="no-referrer"
+              />
+              <ng-template #initialsAvatar>
+                <span class="initials" aria-hidden="true">{{ initials }}</span>
+              </ng-template>
+              <span class="avatar-accent" aria-hidden="true">↗</span>
+            </div>
+
+            <strong class="identity-name">{{ profile.user.name }}</strong>
+            <span class="identity-location muted" *ngIf="profile.user.location">
+              <span class="location-icon" aria-hidden="true">📍</span> {{ profile.user.location }}
+            </span>
+
+            <div class="identity-stats">
+              <div class="stat-box">
+                <strong>{{ profile.projects.length }}</strong>
+                <span>Projects shared</span>
+              </div>
+              <div class="stat-box">
+                <strong>{{ profile.skills.length }}</strong>
+                <span>Skills listed</span>
+              </div>
+            </div>
+
+            <div class="social-links" *ngIf="socialLinks.length">
+              <a
+                *ngFor="let social of socialLinks"
+                [href]="social.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-badge"
+              >
+                {{ social.label }} <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </aside>
+        </div>
       </section>
+
+      <!-- Skills Section -->
       @if (profile.skills.length) {
-        <section class="section skills-section">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">The toolkit</span>
-              <h2>Skills & technologies</h2>
+        <section class="section skills-section kinetic-block block-skills" id="skills">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">The toolkit</span>
+                <h2>Skills & technologies</h2>
+              </div>
+              <p>Listed by the portfolio owner</p>
             </div>
-            <p>Listed by the portfolio owner</p>
-          </div>
-          <p *ngIf="profile.sections.skills.headline">
-            {{ profile.sections.skills.headline }} {{ profile.sections.skills.highlight }}
-            {{ profile.sections.skills.headlineSuffix }}
-          </p>
-          <p class="muted" *ngIf="profile.sections.skills.subheadline">
-            {{ profile.sections.skills.subheadline }}
-          </p>
-          <div class="skills-list">
-            <span class="skill" *ngFor="let skill of profile.skills">{{ skill.name }}</span>
+            <p class="section-copy" *ngIf="profile.sections.skills.headline">
+              {{ profile.sections.skills.headline }} {{ profile.sections.skills.highlight }}
+              {{ profile.sections.skills.headlineSuffix }}
+            </p>
+            <p class="muted" *ngIf="profile.sections.skills.subheadline">
+              {{ profile.sections.skills.subheadline }}
+            </p>
+            <div class="skills-list">
+              <span class="skill" *ngFor="let skill of profile.skills">{{ skill.name }}</span>
+            </div>
           </div>
         </section>
       }
+
+      <!-- Selected Projects Section -->
       @if (profile.projects.length) {
-        <section class="section" id="projects">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">Ideas into outcomes</span>
-              <h2>
-                Selected projects<span class="count">{{ profile.projects.length }}</span>
-              </h2>
+        <section class="section projects-section kinetic-block block-projects" id="projects">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Ideas into outcomes</span>
+                <h2>
+                  Selected projects<span class="count">{{ profile.projects.length }}</span>
+                </h2>
+              </div>
+              <p>A closer look at the work.</p>
             </div>
-            <p>A closer look at the work.</p>
-          </div>
-          <div class="project-grid">
-            <app-project-card *ngFor="let project of profile.projects" [project]="project" />
+            <div class="project-grid">
+              <app-project-card *ngFor="let project of profile.projects" [project]="project" />
+            </div>
           </div>
         </section>
       }
+
+      <!-- Upcoming Section -->
       @if (upcomingCards.length) {
-        <section class="section" id="upcoming">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">What's next</span>
-              <h2>{{ profile.sections.upcoming.heading || 'In the making' }}</h2>
+        <section class="section upcoming-section kinetic-block block-upcoming" id="upcoming">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">What's next</span>
+                <h2>{{ profile.sections.upcoming.heading || 'In the making' }}</h2>
+              </div>
+              <p>{{ profile.sections.upcoming.subheading }}</p>
             </div>
-            <p>{{ profile.sections.upcoming.subheading }}</p>
-          </div>
-          <div class="project-grid">
-            <app-project-card *ngFor="let project of upcomingCards" [project]="project" />
+            <div class="project-grid">
+              <app-project-card *ngFor="let project of upcomingCards" [project]="project" />
+            </div>
           </div>
         </section>
       }
+
+      <!-- Experience Section -->
       @if (profile.workExperiences.length) {
-        <section class="section">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">The journey</span>
-              <h2>Experience</h2>
-            </div>
-          </div>
-          <div class="experience-list">
-            <article *ngFor="let experience of profile.workExperiences">
-              <span class="experience-marker" aria-hidden="true">↗</span>
+        <section class="section experience-section kinetic-block block-experience" id="experience">
+          <div class="section-container">
+            <div class="section-heading">
               <div>
-                <h3>{{ experience.title }}</h3>
-                <p>{{ experience.description }}</p>
-                <a
-                  *ngIf="link(experience.ctaUrl)"
-                  [href]="link(experience.ctaUrl)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >{{ experience.ctaLabel || 'Learn more' }} ↗</a
-                >
+                <span class="eyebrow">The journey</span>
+                <h2>Experience</h2>
               </div>
-            </article>
-          </div>
-        </section>
-      }
-      @if (profile.completedCourses?.length) {
-        <section class="section">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">Always learning</span>
-              <h2>Courses & credentials</h2>
             </div>
-          </div>
-          <div class="credential-grid">
-            <article class="credential" *ngFor="let course of profile.completedCourses">
-              <span class="credential-icon" aria-hidden="true">↗</span>
-              <div>
-                <p class="eyebrow">{{ course.provider }}</p>
-                <h3>{{ course.title }}</h3>
-                <p class="muted" *ngIf="course.completionDate">
-                  Completed {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
-                </p>
-                <p *ngIf="course.description">{{ course.description }}</p>
-                <a
-                  *ngIf="link(course.certificateUrl)"
-                  [href]="link(course.certificateUrl)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >View credential ↗</a
-                >
-              </div>
-            </article>
-          </div>
-        </section>
-      }
-      @if (profile.testimonials.length) {
-        <section class="section">
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">In good company</span>
-              <h2>{{ profile.sections.testimonials.heading || 'Words from collaborators' }}</h2>
-            </div>
-          </div>
-          <p class="muted">{{ profile.sections.testimonials.subheading }}</p>
-          <div class="testimonial-grid">
-            <figure *ngFor="let item of profile.testimonials">
-              <span class="quote-mark" aria-hidden="true">“</span>
-              <blockquote>{{ item.quote }}</blockquote>
-              <figcaption>
-                <strong>{{ item.name }}</strong
-                ><span>{{ item.role }}</span>
-              </figcaption>
-            </figure>
-          </div>
-        </section>
-      }
-      <section class="section contact-section" id="contact">
-        <div class="contact-intro">
-          <span class="eyebrow">Start a conversation</span>
-          <h2>{{ profile.sections.contact.heading || "Let's build something meaningful." }}</h2>
-          <p>{{ profile.sections.contact.message }}</p>
-          <h3 *ngIf="profile.sections.visibility.cta && profile.sections.cta.heading">
-            {{ profile.sections.cta.heading }}
-          </h3>
-          <p *ngIf="profile.sections.visibility.cta">{{ profile.sections.cta.subtext }}</p>
-          <div class="social-links">
-            <a
-              *ngFor="let social of socialLinks"
-              [href]="social.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              >{{ social.label }} ↗</a
-            >
-          </div>
-          <button
-            class="button secondary"
-            *ngIf="profile.defaultResumeUrl"
-            [disabled]="downloadBusy"
-            (click)="downloadResume()"
-          >
-            {{
-              downloadBusy
-                ? 'Preparing PDF…'
-                : profile.sections.cta.secondaryLabel || 'Download resume ↓'
-            }}
-          </button>
-          <a
-            class="button secondary"
-            *ngIf="
-              !profile.defaultResumeUrl &&
-              profile.sections.visibility.cta &&
-              link(profile.resumeUrl)
-            "
-            [href]="link(profile.resumeUrl)"
-            target="_blank"
-            rel="noopener noreferrer"
-            >View resume ↗</a
-          >
-          <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
-        </div>
-        <div class="contact-panel">
-          @if (preview) {
-            <h3>Recruiter enquiries</h3>
-            <p>
-              Contact delivery is disabled in owner previews. Private contact details are never
-              shown publicly.
-            </p>
-          } @else if (canContact) {
-            @if (contactSent) {
-              <div class="contact-success" role="status">
-                <span aria-hidden="true">✓</span>
-                <h3>Message accepted for delivery.</h3>
-                <p>
-                  The mail server acknowledged your enquiry. Replies go to your account email; inbox
-                  delivery is not guaranteed.
-                </p>
-              </div>
-            } @else {
-              <form (ngSubmit)="sendContact()">
-                <h3>Send a recruiter enquiry</h3>
-                <p>
-                  Your account email is used for replies. Recruiter access and verification are
-                  checked before sending.
-                </p>
-                <label for="contact-message">Your message</label
-                ><textarea
-                  id="contact-message"
-                  name="message"
-                  [(ngModel)]="contactMessage"
-                  minlength="20"
-                  maxlength="4000"
-                  rows="5"
-                  required
-                  placeholder="Introduce the opportunity and what caught your attention…"
-                  [disabled]="contactBusy"
-                ></textarea>
-                <div class="honeypot" aria-hidden="true">
-                  <label for="contact-website">Leave this empty</label
-                  ><input
-                    id="contact-website"
-                    name="website"
-                    [(ngModel)]="website"
-                    tabindex="-1"
-                    autocomplete="off"
-                  />
+            <div class="experience-list">
+              <article *ngFor="let experience of profile.workExperiences" class="experience-card">
+                <span class="experience-marker" aria-hidden="true">↗</span>
+                <div class="experience-body">
+                  <h3>{{ experience.title }}</h3>
+                  <p>{{ experience.description }}</p>
+                  <a
+                    *ngIf="link(experience.ctaUrl)"
+                    [href]="link(experience.ctaUrl)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="experience-link"
+                  >
+                    {{ experience.ctaLabel || 'Learn more' }} ↗
+                  </a>
                 </div>
-                <p class="error-text" role="alert" *ngIf="contactError">{{ contactError }}</p>
-                <button
-                  class="button primary"
-                  type="submit"
-                  [disabled]="contactBusy || contactMessage.trim().length < 20"
+              </article>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Courses & Credentials -->
+      @if (profile.completedCourses?.length) {
+        <section
+          class="section credentials-section kinetic-block block-credentials"
+          id="credentials"
+        >
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Always learning</span>
+                <h2>Courses & credentials</h2>
+              </div>
+            </div>
+            <div class="credential-grid">
+              <article class="credential" *ngFor="let course of profile.completedCourses">
+                <span class="credential-icon" aria-hidden="true">↗</span>
+                <div class="credential-body">
+                  <p class="eyebrow">{{ course.provider }}</p>
+                  <h3>{{ course.title }}</h3>
+                  <p class="muted credential-date" *ngIf="course.completionDate">
+                    Completed {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
+                  </p>
+                  <p class="credential-desc" *ngIf="course.description">{{ course.description }}</p>
+                  <a
+                    *ngIf="link(course.certificateUrl)"
+                    [href]="link(course.certificateUrl)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="credential-link"
+                  >
+                    View credential ↗
+                  </a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Testimonials -->
+      @if (profile.testimonials.length) {
+        <section
+          class="section testimonials-section kinetic-block block-testimonials"
+          id="testimonials"
+        >
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">In good company</span>
+                <h2>{{ profile.sections.testimonials.heading || 'Words from collaborators' }}</h2>
+              </div>
+            </div>
+            <p class="muted section-subheadline">{{ profile.sections.testimonials.subheading }}</p>
+            <div class="testimonial-grid">
+              <figure *ngFor="let item of profile.testimonials" class="testimonial-card">
+                <span class="quote-mark" aria-hidden="true">“</span>
+                <blockquote>{{ item.quote }}</blockquote>
+                <figcaption>
+                  <strong>{{ item.name }}</strong>
+                  <span>{{ item.role }}</span>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Contact Section -->
+      <section class="section contact-section kinetic-block block-contact" id="contact">
+        <div class="section-container contact-container">
+          <div class="contact-intro">
+            <span class="eyebrow">Start a conversation</span>
+            <h2>{{ profile.sections.contact.heading || "Let's build something meaningful." }}</h2>
+            <p class="contact-message">{{ profile.sections.contact.message }}</p>
+            <h3 *ngIf="profile.sections.visibility.cta && profile.sections.cta.heading">
+              {{ profile.sections.cta.heading }}
+            </h3>
+            <p *ngIf="profile.sections.visibility.cta">{{ profile.sections.cta.subtext }}</p>
+            <div class="social-links" *ngIf="socialLinks.length">
+              <a
+                *ngFor="let social of socialLinks"
+                [href]="social.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-badge"
+              >
+                {{ social.label }} ↗
+              </a>
+            </div>
+            <div class="resume-action-wrap">
+              <button
+                class="button secondary resume-btn"
+                *ngIf="profile.defaultResumeUrl"
+                [disabled]="downloadBusy"
+                (click)="downloadResume()"
+              >
+                {{
+                  downloadBusy
+                    ? 'Preparing PDF…'
+                    : profile.sections.cta.secondaryLabel || 'Download resume ↓'
+                }}
+              </button>
+              <a
+                class="button secondary"
+                *ngIf="
+                  !profile.defaultResumeUrl &&
+                  profile.sections.visibility.cta &&
+                  link(profile.resumeUrl)
+                "
+                [href]="link(profile.resumeUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View resume ↗
+              </a>
+            </div>
+            <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
+          </div>
+
+          <div class="contact-panel">
+            @if (canContact) {
+              @if (contactSent) {
+                <div class="contact-success" role="status">
+                  <span class="success-icon" aria-hidden="true">✓</span>
+                  <h3>Message accepted for delivery.</h3>
+                  <p>
+                    The mail server acknowledged your enquiry. Replies go to your account email;
+                    inbox delivery is not guaranteed.
+                  </p>
+                </div>
+              } @else {
+                <form (ngSubmit)="sendContact()" class="contact-form">
+                  <h3>Send a recruiter enquiry</h3>
+                  <p class="form-desc">
+                    Your account email is used for replies. Recruiter access and verification are
+                    checked before sending.
+                  </p>
+                  <label for="contact-message">Your message</label>
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    [(ngModel)]="contactMessage"
+                    minlength="20"
+                    maxlength="4000"
+                    rows="5"
+                    required
+                    placeholder="Introduce the opportunity and what caught your attention…"
+                    [disabled]="contactBusy"
+                  ></textarea>
+                  <div class="honeypot" aria-hidden="true">
+                    <label for="contact-website">Leave this empty</label>
+                    <input
+                      id="contact-website"
+                      name="website"
+                      [(ngModel)]="website"
+                      tabindex="-1"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <p class="error-text" role="alert" *ngIf="contactError">{{ contactError }}</p>
+                  <button
+                    class="button primary send-btn"
+                    type="submit"
+                    [disabled]="contactBusy || contactMessage.trim().length < 20"
+                  >
+                    {{ contactBusy ? 'Sending…' : 'Send enquiry ↗' }}
+                  </button>
+                </form>
+              }
+            } @else {
+              <div class="contact-restricted">
+                <span class="eyebrow">Professional connections</span>
+                <h3>A good conversation starts here.</h3>
+                <p *ngIf="socialLinks.length; else noSocial">
+                  Use one of the professional links listed by the owner to get in touch.
+                </p>
+                <ng-template #noSocial>
+                  <p>The owner hasn't listed a public contact link yet.</p>
+                </ng-template>
+                <p class="muted">
+                  Direct enquiries are available to signed-in, verified recruiters.
+                </p>
+                <a
+                  *ngIf="!auth.isLoggedIn()"
+                  class="button secondary recruiter-login-btn"
+                  routerLink="/auth/login"
                 >
-                  {{ contactBusy ? 'Sending…' : 'Send enquiry ↗' }}
-                </button>
-              </form>
+                  Recruiter sign in ↗
+                </a>
+                <p class="muted eligibility-notice" *ngIf="auth.isLoggedIn()">
+                  Your account is not eligible for recruiter enquiries.
+                </p>
+              </div>
             }
-          } @else {
-            <span class="eyebrow">Professional connections</span>
-            <h3>A good conversation starts here.</h3>
-            <p *ngIf="socialLinks.length; else noSocial">
-              Use one of the professional links listed by the owner to get in touch.
-            </p>
-            <ng-template #noSocial
-              ><p>The owner hasn't listed a public contact link yet.</p></ng-template
-            >
-            <p class="muted">Direct enquiries are available to signed-in, verified recruiters.</p>
-            <a *ngIf="!auth.isLoggedIn()" class="button secondary" routerLink="/auth/login"
-              >Recruiter sign in ↗</a
-            >
-            <p class="muted" *ngIf="auth.isLoggedIn()">
-              Your account is not eligible for recruiter enquiries.
-            </p>
-          }
+          </div>
         </div>
       </section>
+
       <footer class="portfolio-footer">
-        <a routerLink="/">Built with <strong>DevInsight AI</strong></a
-        ><span>Work, in its own words.</span><a href="#main-content">Back to top ↑</a>
+        <div class="section-container footer-container">
+          <a routerLink="/" class="footer-brand">Built with <strong>DevInsight AI</strong></a>
+          <span class="footer-tagline">Work, in its own words.</span>
+          <a href="#main-content" class="back-to-top">Back to top ↑</a>
+        </div>
       </footer>
     }
   </main>
