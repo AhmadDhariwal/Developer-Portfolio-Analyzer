@@ -11,11 +11,22 @@ export type NewsCategory =
   | 'Cybersecurity'
   | 'Web3';
 
-export type NewsSource = 'All' | 'NewsAPI' | 'GNews' | 'Hacker News' | 'Dev.to' | 'Reddit';
+export type NewsSource =
+  | 'All'
+  | 'NewsAPI'
+  | 'GNews'
+  | 'Hacker News'
+  | 'Dev.to'
+  | 'Reddit'
+  | 'GitHub Releases'
+  | 'GitHub Security Advisories'
+  | 'Kubernetes Blog'
+  | 'Lobsters';
 export type NewsDateFilter = 'today' | 'week' | 'month';
 export type NewsPopularityFilter = 'all' | 'high';
 export type NewsSavedType = 'bookmark' | 'read_later';
-export type NewsHubView = NewsTab | 'bookmarks' | 'read_later';
+export type NewsHubView = NewsTab | 'explore' | 'bookmarks' | 'read_later';
+export type NewsMode = 'personalized' | 'explore';
 
 export type NewsSkillEvidenceStatus =
   | 'DEMONSTRATED'
@@ -46,6 +57,8 @@ export interface NewsItem {
   source: NewsSource | string;
   publisher?: string;
   attributionUrl?: string;
+  license?: string;
+  licenseUrl?: string;
   url: string;
   image: string;
   publishedAt: string;
@@ -63,6 +76,7 @@ export interface NewsItem {
 }
 
 export interface NewsFilters {
+  mode?: NewsMode;
   tab: NewsTab;
   category: NewsCategory;
   source: NewsSource;
@@ -119,6 +133,9 @@ export interface NewsProviderDiagnostic {
 }
 
 export interface NewsResponse {
+  mode?: NewsMode;
+  coverage?: NewsCoverage | null;
+  enrichment?: NewsEnrichment | null;
   items: NewsItem[];
   limit?: number;
   total: number;
@@ -148,6 +165,35 @@ export interface SavedNewsItem {
   firstReadAt?: string | null;
   lastReadAt?: string | null;
   readCount?: number | null;
+}
+
+export interface NewsCoverage {
+  status:
+    | 'sufficient'
+    | 'general_pool'
+    | 'unsupported_query'
+    | 'restrictive_filters'
+    | 'source_exhausted'
+    | 'coverage_gap';
+  topic: string | null;
+  cachedMatches: number;
+  minimum: number;
+}
+
+export interface NewsEnrichment {
+  status:
+    | 'not_needed'
+    | 'queued'
+    | 'searching'
+    | 'ready'
+    | 'exhausted'
+    | 'quota_limited'
+    | 'disabled'
+    | 'unavailable';
+  reason: string;
+  nextEligibleAt: string | null;
+  lastAttemptAt?: string;
+  sourceHealth?: { provider: string; status: string; articlesFound: number }[];
 }
 
 export interface ActiveNewsFilterChip {
@@ -181,9 +227,14 @@ export const NEWS_SOURCES: NewsSource[] = [
   'Hacker News',
   'Dev.to',
   'Reddit',
+  'GitHub Releases',
+  'GitHub Security Advisories',
+  'Kubernetes Blog',
+  'Lobsters',
 ];
 
 export const DEFAULT_NEWS_FILTERS: NewsFilters = {
+  mode: 'personalized',
   tab: 'for-you',
   category: 'All',
   source: 'All',
@@ -214,6 +265,7 @@ export function normalizeNewsFilters(filters: Partial<NewsFilters> = {}): NewsFi
     .slice(0, 80);
 
   return {
+    mode: filters.mode === 'explore' ? 'explore' : 'personalized',
     tab,
     category,
     source,

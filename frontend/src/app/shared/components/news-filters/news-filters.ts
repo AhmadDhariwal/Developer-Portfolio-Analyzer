@@ -69,12 +69,13 @@ export class NewsFiltersComponent implements OnChanges {
   }
 
   setSearch(search: string): void {
-    this.update({ search });
+    // Preserve spaces while typing; normalize only when submitting the query.
+    this.draftFilters = { ...this.draftFilters, search: search.slice(0, 80) };
   }
 
   resetFilters(): void {
-    this.draftFilters = { ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab };
-    this.filtersChange.emit({ ...this.draftFilters });
+    this.draftFilters = { ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab, mode: this.filters.mode };
+    this.filtersChange.emit(normalizeNewsFilters(this.draftFilters));
   }
 
   applyFilters(): void {
@@ -83,6 +84,6 @@ export class NewsFiltersComponent implements OnChanges {
   }
 
   private update(partial: Partial<NewsFilters>): void {
-    this.draftFilters = normalizeNewsFilters({ ...this.draftFilters, ...partial });
+    this.draftFilters = { ...this.draftFilters, ...partial };
   }
 }

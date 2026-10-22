@@ -98,6 +98,7 @@ export class NewsService {
   ): Observable<NewsResponse> {
     const normalized = normalizeNewsFilters(filters);
     let params = new HttpParams()
+      .set('mode', normalized.mode || 'personalized')
       .set('tab', normalized.tab)
       .set('date', normalized.date)
       .set('popularity', normalized.popularity)
@@ -311,6 +312,8 @@ export class NewsService {
       url,
       image: safeNewsUrl(item.image),
       attributionUrl: safeNewsUrl(item.attributionUrl) || url,
+      license: typeof item.license === 'string' ? item.license.slice(0, 120) : '',
+      licenseUrl: safeNewsUrl(item.licenseUrl),
       publishedAt: newsDate(item.publishedAt),
       description: item.description || '',
       publisher: item.publisher || '',

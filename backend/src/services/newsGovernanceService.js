@@ -1,7 +1,19 @@
 const { randomUUID } = require('node:crypto');
 const cache = require('./redisCacheService');
 
-const SOURCES = ['newsapi', 'gnews', 'hackernews', 'devto', 'reddit'];
+const SOURCES = [
+  'newsapi',
+  'gnews',
+  'hackernews',
+  'devto',
+  'reddit',
+  'hackernewssearch',
+  'githubreleases',
+  'githubadvisories',
+  'lobsters',
+  'devtosearch',
+  'kubernetesblog'
+];
 const positive = (value, fallback, maximum) => {
   const number = Number(value);
   return Number.isInteger(number) && number >= 0 ? Math.min(number, maximum) : fallback;
@@ -15,7 +27,10 @@ function policy(source) {
     daily: permitted ? positive(process.env[`${prefix}DAILY_BUDGET`], free ? 72 : 0, 1000) : 0,
     monthly: permitted ? positive(process.env[`${prefix}MONTHLY_BUDGET`], free ? 2200 : 0, 30000) : 0,
     concurrency: 1,
-    interval: Math.max(60000, positive(process.env[`${prefix}MIN_INTERVAL_MS`], 1200000, 86400000))
+    interval: Math.max(
+      source.startsWith('github') ? 300000 : source === 'lobsters' ? 600000 : 60000,
+      positive(process.env[`${prefix}MIN_INTERVAL_MS`], 1200000, 86400000)
+    )
   };
 }
 
@@ -45,7 +60,7 @@ async function reserve(source) {
   const limits = policy(source);
   if (!limits.daily || !limits.monthly || !limits.concurrency)
     return { allowed: false, reason: 'budget_not_configured' };
-  const redis = cache.getRedisCacheClient();
+  const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
   if (!redis) return { allowed: false, reason: 'quota_store_unavailable' };
   const now = Date.now();
   const date = new Date(now);
@@ -85,7 +100,7 @@ function retryDelay(headers = {}, now = Date.now()) {
 
 async function finish(reservation, { status = 200, headers = {}, failed = false } = {}) {
   if (!reservation.allowed) return;
-  const redis = cache.getRedisCacheClient();
+  const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
   if (!redis) return;
   const base = reservation.base;
   try {
@@ -113,6 +128,20 @@ async function finish(reservation, { status = 200, headers = {}, failed = false 
         keys: [`${base}:cooldown`],
         arguments: [String(Math.ceil(delay))]
       });
+    // Discovery budgets are independent, but a shared upstream's limit must not
+    // be bypassed by switching between its adapters.
+    if (delay && (status === 429 || status === 403 || (remaining !== undefined && Number(remaining) <= 0))) {
+      const families = [
+        ['hackernews', 'hackernewssearch'],
+        ['devto', 'devtosearch'],
+        ['githubreleases', 'githubadvisories']
+      ];
+      const family = families.find((names) => names.some((name) => base === `news:v3:{${name}}`));
+      for (const name of family || []) {
+        if (`news:v3:{${name}}` !== base)
+          await redis.eval(EXTEND, { keys: [`news:v3:{${name}}:cooldown`], arguments: [String(Math.ceil(delay))] });
+      }
+    }
     await redis.zRem(`${base}:active`, reservation.token);
   } catch {
     // Slot and interval leases expire. Never retry uncertain Redis writes locally.
@@ -120,7 +149,7 @@ async function finish(reservation, { status = 200, headers = {}, failed = false 
 }
 
 async function withLease(name, seconds, work) {
-  const redis = cache.getRedisCacheClient();
+  const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
   if (!redis) return { skipped: true, reason: 'quota_store_unavailable' };
   const key = `news:v3:lease:${name}`;
   const token = randomUUID();
@@ -138,7 +167,7 @@ async function withLease(name, seconds, work) {
 }
 
 async function health() {
-  const redis = cache.getRedisCacheClient();
+  const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
   const date = new Date().toISOString();
   const output = {};
   await Promise.all(

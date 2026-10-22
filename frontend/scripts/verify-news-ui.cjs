@@ -4,6 +4,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const exploreOnly = process.argv.includes('--explore-only');
 const root = path.resolve(__dirname, '../dist/frontend/browser');
 const output = path.resolve(__dirname, '../verification/tech-news');
 const results = {
@@ -87,6 +88,7 @@ async function session(browser, origin, theme, mobile) {
   );
   const controls = {
     mode: 'normal',
+    discovery: 'not_needed',
     writes: [],
     reads: [],
     saved: new Map(),
@@ -117,6 +119,23 @@ async function session(browser, origin, theme, mobile) {
         if (mode === '429' || mode === '503')
           return route.fulfill({ status: Number(mode), headers: { 'Retry-After': '2' }, json: {} });
         let items = ['empty', 'warming'].includes(mode) ? [] : catalog;
+        if (exploreOnly && params.get('mode') === 'explore') {
+          items = items.map((item, index) => ({
+            ...item,
+            title: `DevOps ${index + 1}: Kubernetes and CI/CD updates`,
+            category: 'DevOps',
+            source: 'Kubernetes Blog',
+            publisher: 'Kubernetes Blog',
+            license: 'CC BY 4.0',
+            licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+            rankScore: null,
+            relevanceScore: null,
+            relatedSkills: [],
+            relatedSkillGaps: [],
+            relevanceReasons: [],
+          }));
+          if (controls.discovery === 'queued') items = items.slice(0, 2);
+        }
         if (params.get('search'))
           items = items.filter((item) =>
             item.title.toLowerCase().includes(params.get('search').toLowerCase()),
@@ -127,7 +146,31 @@ async function session(browser, origin, theme, mobile) {
           items = items.filter((item) => item.category === params.get('category'));
         if (params.get('popularity') === 'high')
           items = items.filter((item) => item.popularity >= 200);
-        return route.fulfill({ json: response(items, params, mode) }).catch(() => {});
+        const payload = response(items, params, mode);
+        if (exploreOnly && params.get('mode') === 'explore') {
+          payload.mode = 'explore';
+          payload.recommendedBasedOn = null;
+          payload.sourceSummary = { 'Kubernetes Blog': items.length };
+          payload.trendingTopics = ['devops', 'kubernetes', 'CI/CD'];
+          payload.telemetry.providerUsed = ['Kubernetes Blog'];
+          payload.coverage = {
+            status:
+              params.get('search') === 'unknown technology'
+                ? 'unsupported_query'
+                : params.get('search')
+                  ? 'coverage_gap'
+                  : 'general_pool',
+            topic: params.get('search') ? 'devops' : null,
+            cachedMatches: items.length,
+            minimum: 6,
+          };
+          payload.enrichment = {
+            status: controls.discovery,
+            reason: 'controlled_fixture',
+            nextEligibleAt: null,
+          };
+        }
+        return route.fulfill({ json: payload }).catch(() => {});
       }
       if (pathname === '/api/news/saved') {
         const type = url.searchParams.get('type'),
@@ -228,15 +271,91 @@ async function session(browser, origin, theme, mobile) {
   const origin = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ headless: true });
   try {
-    const cases = [
-      ['light', false],
-      ['dark', false],
-      ['light', true],
-      ['dark', true],
-    ];
+    const cases = exploreOnly
+      ? [
+          ['light', false],
+          ['dark', true],
+        ]
+      : [
+          ['light', false],
+          ['dark', false],
+          ['light', true],
+          ['dark', true],
+        ];
     for (const [theme, mobile] of cases) {
       const { page, context, controls } = await session(browser, origin, theme, mobile);
       const label = `${mobile ? 'mobile' : 'desktop'}-${theme}`;
+      if (exploreOnly) {
+        await check(
+          label + ': broad Explore, independent search and bounded discovery status',
+          async () => {
+            await page
+              .locator('.view-tabs')
+              .getByRole('button', { name: 'Explore', exact: true })
+              .click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).mode, 'explore');
+            assert.equal(controls.reads.at(-1).search, undefined);
+            assert.equal(await page.locator('.context-disclosure').count(), 0);
+            assert.equal(await page.locator('.score-row').count(), 0);
+            assert.equal(await page.locator('.relevance-details').count(), 0);
+            await page.getByRole('button', { name: 'Next', exact: true }).click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).page, '2');
+            assert.equal(controls.reads.at(-1).refresh, undefined);
+            if (mobile)
+              await page.getByRole('button', { name: 'Search & filters', exact: true }).click();
+            controls.discovery = 'queued';
+            await page.locator('#news-search').fill('DevOps');
+            await page.locator('#news-search').press('Enter');
+            await page.getByText('Background discovery queued', { exact: true }).waitFor();
+            assert.equal(controls.reads.at(-1).page, '1');
+            assert.equal(await page.locator('app-news-card').count(), 2);
+            assert.equal(controls.reads.at(-1).search, 'DevOps');
+            assert.equal(
+              await page
+                .locator('app-news-card')
+                .first()
+                .getByRole('link', { name: 'CC BY 4.0', exact: true })
+                .getAttribute('href'),
+              'https://creativecommons.org/licenses/by/4.0/',
+            );
+            assert.ok(
+              await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+            );
+            const screenshot = `explore-${label}.png`;
+            // Capture sticky shell elements at their normal top-of-page position.
+            await page.evaluate(() => window.scrollTo(0, 0));
+            await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+            await page.screenshot({
+              path: path.join(output, screenshot),
+              fullPage: true,
+              animations: 'disabled',
+            });
+            results.screenshots.push(screenshot);
+            controls.discovery = 'ready';
+            await page.getByRole('button', { name: 'Refresh feed', exact: true }).click();
+            await page.getByText('Topic results cached', { exact: true }).waitFor();
+            assert.equal(await page.locator('app-news-card').count(), 12);
+            await page.locator('#news-search').fill('unknown technology');
+            await page.locator('#news-search').press('Enter');
+            await page.waitForFunction(() =>
+              document
+                .querySelector('.discovery-status')
+                ?.textContent.includes('cached articles only'),
+            );
+            assert.equal(await page.locator('app-news-card').count(), 0);
+            await page
+              .locator('.view-tabs')
+              .getByRole('button', { name: 'For You', exact: true })
+              .click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).mode, 'personalized');
+          },
+        );
+        await context.close();
+        continue;
+      }
       await check(label + ': Manrope, responsive layout and theme', async () => {
         assert.equal(await page.locator('app-news-card').count(), 12);
         assert.equal(await page.locator('html').getAttribute('data-theme'), theme);
@@ -485,7 +604,10 @@ async function session(browser, origin, theme, mobile) {
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
-    fs.writeFileSync(path.join(output, 'browser-results.json'), JSON.stringify(results, null, 2));
+    fs.writeFileSync(
+      path.join(output, exploreOnly ? 'explore-browser-results.json' : 'browser-results.json'),
+      JSON.stringify(results, null, 2),
+    );
     console.log(JSON.stringify(results, null, 2));
   }
 })();

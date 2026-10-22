@@ -161,6 +161,7 @@ test('controlled provider failure is bounded, secret-safe and retains partial su
       }
     },
     './newsGovernanceService': {
+      policy: () => ({ daily: 72, monthly: 2200 }),
       reserve: async (source) => ({ allowed: true, source }),
       finish: async (reservation, response) => finishes.push({ ...reservation, ...response })
     },

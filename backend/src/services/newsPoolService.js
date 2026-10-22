@@ -37,7 +37,7 @@ async function readPool({ bypass = false } = {}) {
   if (!bypass && inflight) return inflight;
   const read = async () => {
     let value;
-    const redis = cache.getRedisCacheClient();
+    const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (redis) {
       try {
         value = JSON.parse(await redis.get(KEY));
@@ -147,7 +147,7 @@ async function refreshPool(loader) {
       )
     };
     // Persist before publishing. A failed Mongo write cannot discard the last good snapshot.
-    const publisher = cache.getRedisCacheClient();
+    const publisher = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (!publisher || (await publisher.get(lease.key).catch(() => null)) !== lease.token)
       return { skipped: true, reason: 'lease_lost' };
     try {
@@ -165,7 +165,7 @@ async function refreshPool(loader) {
     }
     memory = snapshot;
     memoryUntil = now + 5000;
-    const redis = cache.getRedisCacheClient();
+    const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (redis)
       await redis
         .eval(

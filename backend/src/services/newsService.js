@@ -1,6 +1,8 @@
 const developerContext = require('./developerContextService');
 const axios = require('axios');
 const pool = require('./newsPoolService');
+const discovery = require('./newsDiscoveryService');
+const discoveryProviders = require('./newsDiscoveryProviders');
 const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
 const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = require('../utils/newsFormatter');
@@ -17,7 +19,17 @@ const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
 const PROVIDER_TIMEOUT_MS = 7000;
 const REDDIT_FEEDS = ['programming', 'webdev', 'MachineLearning', 'devops'];
-const SOURCE_NAMES = ['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'];
+const SOURCE_NAMES = [
+  'NewsAPI',
+  'GNews',
+  'Hacker News',
+  'Dev.to',
+  'Reddit',
+  'GitHub Releases',
+  'GitHub Security Advisories',
+  'Lobsters',
+  'Kubernetes Blog'
+];
 const NEWS_TABS = ['for-you', 'trending', 'latest'];
 const NEWS_CATEGORIES = [
   'All',
@@ -35,7 +47,8 @@ const NEWS_DATE_FILTERS = ['today', 'week', 'month'];
 const NEWS_POPULARITY_FILTERS = ['all', 'high'];
 const SAFE_PROVIDER_FAILURES = new Set([
   'Provider disabled in platform settings',
-  'Provider API key is not configured'
+  'Provider API key is not configured',
+  'Provider content approval or budget is missing'
 ]);
 
 const sanitizeProviderDiagnostics = (diagnostics = []) =>
@@ -101,6 +114,7 @@ const normalizeFilters = (filters = {}) => {
       .replace(/\s+/g, ' ')
       .slice(0, 80),
     popularity: NEWS_POPULARITY_FILTERS.includes(popularity) ? popularity : 'all',
+    mode: filters.mode === 'explore' ? 'explore' : 'personalized',
     page: Math.max(1, Number.parseInt(filters.page, 10) || 1),
     limit: clamp(Number.parseInt(filters.limit, 10) || DEFAULT_LIMIT, 1, MAX_LIMIT)
   };
@@ -193,7 +207,9 @@ const matchesFilters = (item, filters, sinceTimestamp) => {
   if (filters.category !== 'All' && item.category !== filters.category) return false;
   if (filters.search) {
     const haystack = `${item.title} ${item.description} ${item.source} ${(item.tags || []).join(' ')}`.toLowerCase();
-    if (!haystack.includes(filters.search.toLowerCase())) return false;
+    const topic = discoveryProviders.topicFor(filters.search);
+    if (topic ? !discoveryProviders.matchesTopic(item, topic) : !haystack.includes(filters.search.toLowerCase()))
+      return false;
   }
   const publishedAt = new Date(item.publishedAt).getTime();
   if (
@@ -372,6 +388,14 @@ const fetchAllSources = async (sinceDate) => {
   ];
 
   const nowIso = new Date().toISOString();
+  const policyKeys = ['newsapi', 'gnews', 'hackernews', 'devto', 'reddit'];
+  providers.forEach((provider, index) => {
+    const limits = governance.policy(policyKeys[index]);
+    if (provider.enabled && (!limits.daily || !limits.monthly)) {
+      provider.enabled = false;
+      provider.disabledReason = 'Provider content approval or budget is missing';
+    }
+  });
   const settled = await Promise.allSettled(
     providers.map((provider) => {
       if (!provider.enabled || !provider.configured) return Promise.resolve([]);
@@ -398,7 +422,7 @@ const fetchAllSources = async (sinceDate) => {
 
     if (!provider.enabled) {
       sourceBuckets[providerName] = [];
-      diagnostic.lastFailure = 'Provider disabled in platform settings';
+      diagnostic.lastFailure = provider.disabledReason || 'Provider disabled in platform settings';
       providerDiagnostics.push(diagnostic);
       return;
     }
@@ -478,55 +502,104 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
 const getNewsFeed = async ({ user, query = {} }) => {
   const startedAt = Date.now();
   const filters = normalizeFilters(query);
-  const [userContext, snapshot] = await Promise.all([
-    buildUserContext(user, {
-      forceRefresh: ['1', 'true', 'yes'].includes(String(query.refresh || query.bypassCache || '').toLowerCase())
-    }),
-    pool.readPool()
+  const topic = discoveryProviders.topicFor(filters.search);
+  const [userContext, snapshot, topicSnapshot] = await Promise.all([
+    filters.mode === 'explore'
+      ? Promise.resolve(null)
+      : buildUserContext(user, {
+          forceRefresh: ['1', 'true', 'yes'].includes(String(query.refresh || query.bypassCache || '').toLowerCase())
+        }),
+    pool.readPool(),
+    discovery.readTopic(topic)
   ]);
   const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
-  const ranked = rankNewsItems(
-    uniqueNewsItems(snapshot?.allItems || []).filter((item) => matchesFilters(item, filters, sinceTimestamp)),
-    userContext,
-    filters.tab
-  );
+  const availableItems = uniqueNewsItems([...(snapshot?.allItems || []), ...(topicSnapshot?.allItems || [])]);
+  const matching = availableItems.filter((item) => matchesFilters(item, filters, sinceTimestamp));
+  const ranked =
+    filters.mode === 'explore'
+      ? matching
+          .map((item) => ({
+            ...item,
+            rankScore: null,
+            relevanceScore: null,
+            relevanceReasons: [],
+            relatedSkills: [],
+            relatedSkillGaps: [],
+            relatedCareerGoals: [],
+            demandTags: []
+          }))
+          .sort(
+            (a, b) =>
+              (filters.tab === 'trending' ? (b.popularity || 0) - (a.popularity || 0) : 0) ||
+              new Date(b.publishedAt) - new Date(a.publishedAt) ||
+              String(a.id).localeCompare(String(b.id))
+          )
+      : rankNewsItems(matching, userContext, filters.tab);
+  const coverage = await discovery.coverage({
+    filters,
+    total: ranked.length,
+    broadTotal: topic ? availableItems.filter((item) => discoveryProviders.matchesTopic(item, topic)).length : 0,
+    revalidate: ['1', 'true', 'yes'].includes(String(query.refresh || '').toLowerCase()),
+    lastUpdated: topicSnapshot?.lastUpdated || snapshot?.lastUpdated || null,
+    diagnostics: snapshot?.providerDiagnostics || []
+  });
   const start = (filters.page - 1) * filters.limit;
   const sourceSummary = Object.fromEntries(
     SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
   );
-  const freshness = pool.freshness(snapshot);
+  const contributing = [snapshot, topicSnapshot].filter((value) => value?.allItems?.length);
+  const lastUpdated =
+    contributing
+      .map((value) => value.lastUpdated)
+      .filter(Boolean)
+      .sort((a, b) => new Date(a) - new Date(b))[0] || null;
+  const combined = {
+    ...snapshot,
+    allItems: availableItems,
+    lastUpdated,
+    expiresAt: contributing
+      .map((value) => value.expiresAt)
+      .filter(Boolean)
+      .sort((a, b) => new Date(a) - new Date(b))[0]
+  };
+  const freshness = topicSnapshot ? pool.freshness(combined) : pool.freshness(snapshot);
   return {
+    ...coverage,
+    mode: filters.mode,
     items: ranked.slice(start, start + filters.limit).map((item) => ({
       ...item,
-      relatedSkillEvidence: relatedNewsSkillEvidence(item, userContext.skillEvidence)
+      relatedSkillEvidence: userContext ? relatedNewsSkillEvidence(item, userContext.skillEvidence) : []
     })),
     total: ranked.length,
     sourceSummary,
     trendingTopics: extractTrendingTopics(ranked),
-    fromCache: Boolean(snapshot),
+    fromCache: Boolean(snapshot || topicSnapshot),
     filters,
-    recommendedBasedOn: buildRecommendedBasedOn({
-      userContext,
-      filters,
-      lastUpdated: snapshot?.lastUpdated || null,
-      sourceStatus:
-        freshness === 'fresh'
-          ? 'Cached source coverage is current.'
-          : freshness === 'stale'
-            ? 'Serving stale cached source coverage.'
-            : 'News ingestion is warming up.',
-      fromCache: Boolean(snapshot)
-    }),
+    recommendedBasedOn: userContext
+      ? buildRecommendedBasedOn({
+          userContext,
+          filters,
+          lastUpdated,
+          sourceStatus:
+            freshness === 'fresh'
+              ? 'Cached source coverage is current.'
+              : freshness === 'stale'
+                ? 'Serving stale cached source coverage.'
+                : 'News ingestion is warming up.',
+          fromCache: Boolean(snapshot || topicSnapshot)
+        })
+      : null,
     telemetry: {
-      cacheHit: Boolean(snapshot),
+      cacheHit: Boolean(snapshot || topicSnapshot),
       providerFailureCount: snapshot?.providerFailureCount || 0,
-      providerUsed: snapshot?.providerUsed || [],
+      providerUsed: [...new Set([...(snapshot?.providerUsed || []), ...(topicSnapshot?.providerUsed || [])])],
+      discoveryDiagnostics: topicSnapshot?.providerDiagnostics || [],
       providerDiagnostics: sanitizeProviderDiagnostics(snapshot?.providerDiagnostics),
-      signalHash: userContext.signalHash,
+      signalHash: userContext?.signalHash || 'public-explore',
       responseTimeMs: Date.now() - startedAt,
       freshness,
       staleFallback: freshness === 'stale',
-      lastUpdated: snapshot?.lastUpdated || null
+      lastUpdated
     }
   };
 };
@@ -534,7 +607,13 @@ const refreshNewsPool = () => pool.refreshPool(() => fetchAllSources(new Date(Da
 let scheduler;
 const startNewsIngestionScheduler = () => {
   if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;
-  const tick = () => refreshNewsPool().catch(() => logger.warn('news ingestion failed'));
+  const tick = () => {
+    refreshNewsPool().catch(() => logger.warn('news ingestion failed'));
+    discovery
+      .prewarm()
+      .then(() => discovery.processQueue())
+      .catch(() => logger.warn('news discovery failed'));
+  };
   scheduler = setInterval(tick, 60000);
   scheduler.unref?.();
   tick();

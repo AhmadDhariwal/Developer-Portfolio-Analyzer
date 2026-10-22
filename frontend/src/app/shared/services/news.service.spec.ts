@@ -41,6 +41,67 @@ describe('NewsService bounded account-scoped requests', () => {
     vi.restoreAllMocks();
   });
   const feed = (request: { url: string }) => request.url.endsWith('/news');
+  it('keeps Explore independent, shares identical reads, and separates personalized cache entries', () => {
+    let result: any;
+    const filters = { ...DEFAULT_NEWS_FILTERS, mode: 'explore' as const, search: 'CI/CD updates' };
+    service.getNews(filters).subscribe((value) => (result = value));
+    service.getNews(filters).subscribe();
+    const request = http.expectOne(feed);
+    expect(request.request.params.get('mode')).toBe('explore');
+    expect(request.request.params.get('search')).toBe('CI/CD updates');
+    expect(request.request.params.has('refresh')).toBe(false);
+    request.flush({
+      ...response,
+      mode: 'explore',
+      recommendedBasedOn: null,
+      coverage: { status: 'coverage_gap', topic: 'cicd', cachedMatches: 1, minimum: 6 },
+      enrichment: { status: 'queued', reason: 'background_discovery', nextEligibleAt: null },
+      items: [
+        {
+          ...article,
+          rankScore: null,
+          relevanceScore: null,
+          license: 'CC BY 4.0',
+          licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+        },
+      ],
+    });
+    expect(result.recommendedBasedOn).toBeNull();
+    expect(result.items[0].rankScore).toBeNull();
+    expect(result.items[0].license).toBe('CC BY 4.0');
+    expect(result.enrichment.status).toBe('queued');
+    service.getNews({ ...filters, mode: 'personalized' }).subscribe();
+    const personalized = http.expectOne(feed);
+    expect(personalized.request.params.get('mode')).toBe('personalized');
+    personalized.flush(response);
+  });
+  it('forwards all supported topics and unknown queries without a client taxonomy gate', () => {
+    const topics =
+      'javascript typescript react angular vue node python rust golang docker kubernetes devops cicd cloud aws azure gcp terraform gitops argocd ansible observability linux security devsecops ai ml llm pytorch tensorflow sql postgres redis mongodb kafka java dotnet gitlab githubactions webassembly'.split(
+        ' ',
+      );
+    for (const search of [...topics, 'CI/CD', 'Amazon Web Services', 'unknown technology']) {
+      service.getNews({ ...DEFAULT_NEWS_FILTERS, mode: 'explore', search }, 2).subscribe();
+      const request = http.expectOne(feed);
+      expect(request.request.params.get('search')).toBe(search);
+      expect(request.request.params.get('page')).toBe('2');
+      expect(request.request.params.has('refresh')).toBe(false);
+      request.flush({ ...response, page: 2 });
+    }
+  });
+  it('cancels Explore transport on account changes and revalidates without refresh or unsafe license links', () => {
+    const filters = { ...DEFAULT_NEWS_FILTERS, mode: 'explore' as const };
+    service.getNews(filters).subscribe();
+    const old = http.expectOne(feed);
+    user.next({ _id: 'two' });
+    expect(old.cancelled).toBe(true);
+    let result: any;
+    service.getNews(filters, 1, 12, { revalidate: true }).subscribe((value) => (result = value));
+    const request = http.expectOne(feed);
+    expect(request.request.params.has('refresh')).toBe(false);
+    request.flush({ ...response, items: [{ ...article, licenseUrl: 'javascript:alert(1)' }] });
+    expect(result.items[0].licenseUrl).toBe('');
+  });
   it('round trips read, unread and re-read using explicit booleans and server history', () => {
     const first = '2026-10-21T00:00:00.000Z';
     const latest = '2026-10-22T00:00:00.000Z';

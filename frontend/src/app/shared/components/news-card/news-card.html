@@ -33,14 +33,25 @@
     <p class="description">
       {{ news.description || 'Read the original article for the full story.' }}
     </p>
-    <div class="score-row" *ngIf="news.rankScore !== null">
+    <div class="score-row" *ngIf="personalized && news.rankScore !== null">
       <span>Rank score</span
       ><strong>{{ news.rankScore | number: '1.0-2' }}<small>/100</small></strong>
     </div>
-    <div class="score-track" *ngIf="news.rankScore !== null" aria-hidden="true">
+    <div class="score-track" *ngIf="personalized && news.rankScore !== null" aria-hidden="true">
       <span [style.width.%]="scoreWidth"></span>
     </div>
-    <details class="relevance-details">
+    <p class="formula" *ngIf="news.license">
+      License:
+      <a
+        *ngIf="news.licenseUrl; else licenseText"
+        [href]="news.licenseUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        >{{ news.license }}</a
+      >
+      <ng-template #licenseText>{{ news.license }}</ng-template>
+    </p>
+    <details class="relevance-details" *ngIf="personalized">
       <summary>Why this article <span aria-hidden="true">⌄</span></summary>
       <div class="relevance-content">
         <p *ngIf="news.relevanceScore !== null">

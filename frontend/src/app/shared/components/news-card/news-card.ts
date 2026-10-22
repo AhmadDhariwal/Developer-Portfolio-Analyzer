@@ -23,6 +23,7 @@ export class NewsCardComponent implements OnChanges {
   readonly evidenceLabels = NEWS_SKILL_EVIDENCE_LABELS;
   @Input({ required: true }) news!: NewsItem;
   @Input() bookmarked = false;
+  @Input() personalized = true;
   @Input() readLater = false;
   @Input() bookmarkLoading = false;
   @Input() readLaterLoading = false;

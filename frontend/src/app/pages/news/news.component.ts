@@ -47,6 +47,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   readonly evidenceLabels = NEWS_SKILL_EVIDENCE_LABELS;
   readonly viewTabs: { value: NewsHubView; label: string }[] = [
     { value: 'for-you', label: 'For You' },
+    { value: 'explore', label: 'Explore' },
     { value: 'trending', label: 'Trending' },
     { value: 'latest', label: 'Latest' },
     { value: 'bookmarks', label: 'Bookmarks' },
@@ -58,6 +59,10 @@ export class NewsComponent implements OnInit, OnDestroy {
   items: NewsItem[] = [];
   context: PersonalizedNewsContext | null = null;
   telemetry: NewsResponse['telemetry'];
+  coverage: NewsResponse['coverage'];
+  enrichment: NewsResponse['enrichment'];
+  discoveryChecks = 0;
+  private discoveryTimer?: ReturnType<typeof setTimeout>;
   trendingTopics: string[] = [];
   page = 1;
   pageSize = 12;
@@ -128,6 +133,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.discoveryTimer);
     this.scopeChanged.next();
     this.scopeChanged.complete();
     this.activeRequest?.unsubscribe();
@@ -142,7 +148,70 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   get isFeedView(): boolean {
-    return ['for-you', 'trending', 'latest'].includes(this.selectedView);
+    return ['for-you', 'explore', 'trending', 'latest'].includes(this.selectedView);
+  }
+  get discoveryPending(): boolean {
+    return this.enrichment?.status === 'queued' || this.enrichment?.status === 'searching';
+  }
+  get discoveryRecoverable(): boolean {
+    return (
+      this.enrichment?.status === 'unavailable' &&
+      ['quota_store_unavailable', 'queue_full'].includes(this.enrichment.reason)
+    );
+  }
+  get discoveryTitle(): string {
+    switch (this.enrichment?.status) {
+      case 'queued':
+        return 'Background discovery queued';
+      case 'searching':
+        return 'Searching additional sources';
+      case 'ready':
+        return 'Topic results cached';
+      case 'exhausted':
+        return 'No usable articles found in the last search';
+      case 'quota_limited':
+        return 'Discovery budget or cooldown reached';
+      case 'disabled':
+        return 'Background discovery is disabled';
+      case 'unavailable':
+        return 'Background discovery is temporarily unavailable';
+      default:
+        return this.total ? 'Cached matches available' : 'Cached search complete';
+    }
+  }
+  get discoveryMessage(): string {
+    if (this.discoveryPending)
+      return this.discoveryChecks >= 4
+        ? 'Automatic checks have finished. Check results later; more articles are not guaranteed.'
+        : this.page > 1
+          ? 'Discovery continues in the background. Return to page one to check results.'
+          : 'Available matches stay visible. We check briefly for cached updates; more articles are not guaranteed.';
+    switch (this.coverage?.status) {
+      case 'unsupported_query':
+        return 'This query searches cached articles only. Background discovery does not support this topic; try a technology such as DevOps, CI/CD or Kubernetes.';
+      case 'restrictive_filters':
+        return 'These filters may limit coverage. Try a broader date range, all sources or all popularity levels; filters have not been changed.';
+      case 'source_exhausted':
+        return 'The selected source returned no articles in its last ingestion check. This is not a search of its entire archive.';
+    }
+    switch (this.enrichment?.status) {
+      case 'ready':
+        return 'The last topic search cached results. Your selected filters still apply.';
+      case 'exhausted':
+        return 'The last bounded source search found no matching articles. Broaden your filters or check later.';
+      case 'quota_limited':
+        return 'Cached results remain available. The backend controls when another search may be admitted.';
+      case 'disabled':
+        return 'Only available cached articles are searched. No additional sources are being requested.';
+      case 'unavailable':
+        return this.items.length
+          ? 'Available cached matches are shown. Background search is temporarily unavailable; check cached results again shortly.'
+          : 'No cached articles match these filters yet. Background search is temporarily unavailable; check cached results again shortly.';
+      default:
+        return this.selectedView === 'explore'
+          ? 'Search available technology news independently of your skills. Source coverage is bounded.'
+          : 'Matching and totals come from the current cached news pool.';
+    }
   }
   get savedType(): NewsSavedType {
     return this.selectedView === 'bookmarks' ? 'bookmark' : 'read_later';
@@ -193,7 +262,9 @@ export class NewsComponent implements OnInit, OnDestroy {
       return 'Some sources are temporarily unavailable. Available and retained articles are shown below.';
     if (this.telemetry?.freshness === 'stale')
       return 'Showing retained articles while sources recover. Publication dates and the last update remain unchanged.';
-    return 'A shared news snapshot, ranked for your current developer context.';
+    return this.selectedView === 'explore'
+      ? 'A shared technology news snapshot, independent of your developer skills.'
+      : 'A shared news snapshot, ranked for your current developer context.';
   }
   get updatedAt(): string | null {
     return this.telemetry?.lastUpdated || this.context?.lastUpdated || null;
@@ -223,18 +294,23 @@ export class NewsComponent implements OnInit, OnDestroy {
   get hasFilters(): boolean {
     return (
       JSON.stringify(this.filters) !==
-      JSON.stringify({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab })
+      JSON.stringify({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab, mode: this.filters.mode })
     );
   }
 
   selectView(view: NewsHubView): void {
     if (view === this.selectedView) return;
     this.cancelFeed();
+    this.resetDiscovery();
     this.selectedView = view;
     this.errorMessage = '';
     this.savedError = '';
     if (this.isFeedView) {
-      this.filters = { ...this.filters, tab: view as NewsFilters['tab'] };
+      this.filters = {
+        ...this.filters,
+        mode: view === 'explore' ? 'explore' : 'personalized',
+        tab: view === 'explore' ? 'latest' : (view as NewsFilters['tab']),
+      };
       this.items = [];
       this.context = null;
       this.telemetry = undefined;
@@ -251,6 +327,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     const normalized = normalizeNewsFilters(filters);
     if (JSON.stringify(normalized) === JSON.stringify(this.filters)) return;
     this.filters = normalized;
+    this.resetDiscovery();
     this.items = [];
     this.context = null;
     this.telemetry = undefined;
@@ -260,7 +337,11 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.fetch(1);
   }
   resetFilters(): void {
-    this.onFiltersChange({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab });
+    this.onFiltersChange({
+      ...DEFAULT_NEWS_FILTERS,
+      tab: this.filters.tab,
+      mode: this.filters.mode,
+    });
   }
   searchTopic(topic: string): void {
     this.onFiltersChange({ ...this.filters, search: topic });
@@ -379,9 +460,12 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.totalPages = response.totalPages;
           this.context = response.recommendedBasedOn || null;
           this.telemetry = response.telemetry;
+          this.coverage = response.coverage;
+          this.enrichment = response.enrichment;
           this.trendingTopics = response.trendingTopics;
           this.isLoading = false;
           this.lastValidated = Date.now();
+          this.scheduleDiscoveryCheck();
           this.cdr.markForCheck();
         },
         error: (error) => {
@@ -466,6 +550,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   private resetScope(scope: string): void {
+    this.resetDiscovery();
     this.scope = scope;
     this.generation++;
     this.scopeChanged.next();
@@ -498,9 +583,50 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
   private cancelFeed(): void {
+    clearTimeout(this.discoveryTimer);
     this.feedNonce++;
     this.activeRequest?.unsubscribe();
     this.isLoading = false;
+  }
+  private resetDiscovery(): void {
+    clearTimeout(this.discoveryTimer);
+    this.discoveryChecks = 0;
+    this.coverage = undefined;
+    this.enrichment = undefined;
+  }
+  private scheduleDiscoveryCheck(): void {
+    clearTimeout(this.discoveryTimer);
+    if (
+      (!this.discoveryPending && !this.discoveryRecoverable) ||
+      this.discoveryChecks >= 4 ||
+      this.page !== 1 ||
+      !this.isFeedView ||
+      this.offline ||
+      document.visibilityState === 'hidden'
+    )
+      return;
+    const eligibleAt = Date.parse(this.enrichment?.nextEligibleAt || '');
+    // Retry only brief admission outages, at the server's next eligible time.
+    // Source failures and provider quota cooldowns never start this retry loop.
+    const delay =
+      this.discoveryRecoverable && Number.isFinite(eligibleAt)
+        ? Math.max(20000, eligibleAt - Date.now())
+        : 20000;
+    if (delay > 120000) return;
+    const nonce = this.feedNonce;
+    this.discoveryTimer = setTimeout(() => {
+      if (
+        nonce !== this.feedNonce ||
+        this.offline ||
+        document.visibilityState === 'hidden' ||
+        this.retrySeconds ||
+        this.isLoading
+      )
+        return;
+      this.discoveryChecks++;
+      // Ordinary cache revalidation only: never request provider refresh.
+      this.fetch(1);
+    }, delay);
   }
   private findSaved(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
     return [...this.library[type].values()].find(
@@ -553,6 +679,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   };
   private readonly onOffline = () => {
+    clearTimeout(this.discoveryTimer);
     this.offline = true;
     this.cdr.markForCheck();
   };

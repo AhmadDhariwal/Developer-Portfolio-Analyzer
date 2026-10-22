@@ -91,7 +91,191 @@ describe('News Hub lifecycle', () => {
   });
   afterEach(() => {
     component.ngOnDestroy();
+    vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+  it('opens broad independent Explore and preserves search/filters while resetting pagination', () => {
+    component.selectView('explore');
+    expect(api.getNews.mock.lastCall[0]).toMatchObject({
+      mode: 'explore',
+      tab: 'latest',
+      search: '',
+    });
+    expect(component.isFeedView).toBe(true);
+    component.onFiltersChange({ ...component.filters, search: 'DevOps', category: 'DevOps' });
+    component.selectPage(2);
+    expect(api.getNews.mock.lastCall[1]).toBe(2);
+    expect(api.getNews.mock.lastCall[2]).toBe(12);
+    expect(api.getNews.mock.lastCall[3].refresh).toBe(false);
+    component.onFiltersChange({ ...component.filters, search: 'CI/CD' });
+    expect(api.getNews.mock.lastCall[1]).toBe(1);
+    expect(component.filters.category).toBe('DevOps');
+    component.resetFilters();
+    expect(component.filters.mode).toBe('explore');
+    component.selectView('for-you');
+    expect(component.filters.mode).toBe('personalized');
+  });
+  it('performs at most four cancellable cache checks without refresh and adopts ready results', () => {
+    vi.useFakeTimers();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const pending = {
+      ...feed(),
+      enrichment: {
+        status: 'queued' as const,
+        reason: 'background_discovery',
+        nextEligibleAt: null,
+      },
+    };
+    api.getNews.mockReturnValue(of(pending));
+    component.selectView('explore');
+    const before = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(200000);
+    expect(api.getNews.mock.calls.length - before).toBe(4);
+    expect(component.items).toEqual([article]);
+    expect(component.discoveryMessage).toContain('Automatic checks have finished');
+    expect(api.getNews.mock.calls.slice(before).every((call: any[]) => !call[3].refresh)).toBe(
+      true,
+    );
+    component.onFiltersChange({ ...component.filters, search: 'AWS' });
+    api.getNews.mockReturnValue(
+      of({
+        ...feed(),
+        enrichment: { status: 'ready', reason: 'articles_cached', nextEligibleAt: null },
+      }),
+    );
+    vi.advanceTimersByTime(20000);
+    expect(component.enrichment?.status).toBe('ready');
+    const ready = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(100000);
+    expect(api.getNews.mock.calls.length).toBe(ready);
+  });
+  it('stops pending checks on pagination, account change, offline and request failure', () => {
+    vi.useFakeTimers();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    api.getNews.mockReturnValue(
+      of({
+        ...feed(),
+        enrichment: { status: 'searching', reason: 'background_discovery', nextEligibleAt: null },
+      }),
+    );
+    component.selectView('explore');
+    // Use a page-two response so background checks never navigate back to page one.
+    api.getNews.mockReturnValueOnce(
+      of({
+        ...feed([article], 2),
+        enrichment: { status: 'searching', reason: 'background_discovery', nextEligibleAt: null },
+      }),
+    );
+    component.selectPage(2);
+    let before = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(60000);
+    expect(api.getNews.mock.calls.length).toBe(before);
+    component.selectPage(1);
+    user.next({ _id: 'two' });
+    component.offline = true;
+    before = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(60000);
+    expect(api.getNews.mock.calls.length).toBe(before);
+    component.offline = false;
+    api.getNews.mockReturnValue(throwError(() => ({ status: 429 })));
+    component.retry();
+    before = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(60000);
+    expect(api.getNews.mock.calls.length).toBe(before);
+    expect(component.items).toEqual([article]);
+  });
+  it('labels unsupported, restrictive, exhausted, limited and disabled discovery honestly', () => {
+    component.coverage = { status: 'unsupported_query', topic: null, cachedMatches: 0, minimum: 6 };
+    expect(component.discoveryMessage).toContain('cached articles only');
+    component.coverage.status = 'restrictive_filters';
+    expect(component.discoveryMessage).toContain('filters have not been changed');
+    component.coverage = null;
+    for (const status of [
+      'exhausted',
+      'quota_limited',
+      'disabled',
+      'unavailable',
+      'ready',
+    ] as const) {
+      component.enrichment = { status, reason: '', nextEligibleAt: null };
+      expect(component.discoveryTitle.length).toBeGreaterThan(10);
+      expect(component.discoveryMessage.length).toBeGreaterThan(20);
+    }
+  });
+  it('recovers from brief admission outages at nextEligibleAt without requesting provider refresh', () => {
+    vi.useFakeTimers();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const unavailable = {
+      ...feed([]),
+      enrichment: {
+        status: 'unavailable' as const,
+        reason: 'quota_store_unavailable',
+        nextEligibleAt: new Date(Date.now() + 60000).toISOString(),
+      },
+    };
+    api.getNews.mockReturnValue(of(unavailable));
+    component.selectView('explore');
+    expect(component.discoveryMessage).toContain('No cached articles match');
+    const before = api.getNews.mock.calls.length;
+    api.getNews.mockReturnValue(
+      of({
+        ...feed(),
+        enrichment: { status: 'ready', reason: 'articles_cached', nextEligibleAt: null },
+      }),
+    );
+    vi.advanceTimersByTime(59999);
+    expect(api.getNews.mock.calls.length).toBe(before);
+    vi.advanceTimersByTime(1);
+    expect(api.getNews.mock.calls.length).toBe(before + 1);
+    expect(api.getNews.mock.lastCall[3]).toEqual({ refresh: false, revalidate: true });
+    expect(component.items).toEqual([article]);
+    expect(component.enrichment?.status).toBe('ready');
+  });
+  it('bounds admission recovery and never auto-retries source failures or provider cooldowns', () => {
+    vi.useFakeTimers();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    api.getNews.mockReturnValue(
+      of({
+        ...feed([]),
+        enrichment: { status: 'unavailable', reason: 'queue_full', nextEligibleAt: null },
+      }),
+    );
+    component.selectView('explore');
+    let before = api.getNews.mock.calls.length;
+    vi.advanceTimersByTime(200000);
+    expect(api.getNews.mock.calls.length - before).toBe(4);
+    for (const state of [
+      { status: 'unavailable', reason: 'source_failure' },
+      { status: 'quota_limited', reason: 'provider_admission' },
+      { status: 'unavailable', reason: 'cache_persistence_failed' },
+    ]) {
+      api.getNews.mockReturnValue(
+        of({
+          ...feed([]),
+          enrichment: { ...state, nextEligibleAt: new Date(Date.now() + 300000).toISOString() },
+        }),
+      );
+      component.onFiltersChange({ ...component.filters, search: state.reason });
+      before = api.getNews.mock.calls.length;
+      vi.advanceTimersByTime(360000);
+      expect(api.getNews.mock.calls.length).toBe(before);
+    }
+  });
+  it('preserves multiword search input and mode when submitting and resetting filters', () => {
+    const filters = new NewsFiltersComponent();
+    filters.filters = { ...component.filters, mode: 'explore' };
+    filters.ngOnChanges({ filters: {} as any });
+    filters.setSearch('Amazon ');
+    expect(filters.draftFilters.search).toBe('Amazon ');
+    filters.setSearch('Amazon Web Services');
+    const emit = vi.spyOn(filters.filtersChange, 'emit');
+    filters.applyFilters();
+    expect(emit.mock.lastCall![0]).toMatchObject({
+      search: 'Amazon Web Services',
+      mode: 'explore',
+    });
+    filters.resetFilters();
+    expect(emit.mock.lastCall![0]).toMatchObject({ search: '', mode: 'explore' });
   });
   it('replaces the page in authoritative order and requests next/previous without refresh', () => {
     api.getNews

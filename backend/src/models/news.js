@@ -8,6 +8,8 @@ const normalizedNewsSchema = new mongoose.Schema(
     source: { type: String, default: 'Unknown' },
     publisher: { type: String, default: '' },
     attributionUrl: { type: String, default: '' },
+    license: { type: String, default: '' },
+    licenseUrl: { type: String, default: '' },
     url: { type: String, required: true },
     image: { type: String, default: '' },
     publishedAt: { type: Date, required: true },

@@ -13,7 +13,7 @@ function limiter(kind, maximum) {
     legacyHeaders: false
   });
   return async (req, res, next) => {
-    const redis = cache.getRedisCacheClient();
+    const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (redis) {
       try {
         const count = Number(
@@ -48,9 +48,12 @@ function validateFeed(req, res, next) {
     'popularity',
     'page',
     'limit',
+    'mode',
     'refresh',
     'bypassCache'
   ]);
+  if (req.query.mode !== undefined && !['personalized', 'explore'].includes(req.query.mode))
+    return res.status(400).json({ message: 'News mode is invalid.' });
   for (const [key, value] of Object.entries(req.query || {})) {
     if (!allowed.has(key) || typeof value !== 'string' || value.length > 160)
       return res.status(400).json({ message: 'News filters are invalid.' });

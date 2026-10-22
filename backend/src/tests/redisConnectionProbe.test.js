@@ -10,6 +10,7 @@ test('read-only probes skip revision writes; ordinary startup still initializes 
   const previous = process.env.REDIS_URL;
   process.env.REDIS_URL = 'redis://fixture.invalid';
   let writes = 0;
+  let pingDelay = 0;
   class Client extends EventEmitter {
     isOpen = true;
     isReady = true;
@@ -21,6 +22,7 @@ test('read-only probes skip revision writes; ordinary startup still initializes 
       return 'OK';
     }
     async ping() {
+      if (pingDelay) await new Promise((resolve) => setTimeout(resolve, pingDelay));
       return 'PONG';
     }
     async quit() {
@@ -39,6 +41,10 @@ test('read-only probes skip revision writes; ordinary startup still initializes 
     await cache.initRedisCache({ silent: true, probeOnly: true });
     assert.equal(await cache.pingRedisCache(), 'PONG');
     assert.equal(writes, 0);
+    pingDelay = 220;
+    assert.equal(await cache.getRedisCacheClient({ commandTimeoutMs: 1000 }).ping(), 'PONG');
+    await assert.rejects(cache.getRedisCacheClient().ping(), /timed out/);
+    pingDelay = 0;
     await cache.closeRedisCache();
     await cache.initRedisCache({ silent: true });
     assert.equal(writes, 1);

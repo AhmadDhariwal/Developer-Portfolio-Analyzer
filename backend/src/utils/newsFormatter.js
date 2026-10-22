@@ -128,7 +128,17 @@ const normalizeItem = (item = {}) => {
     title.length < 8 ||
     !url ||
     !publishedAt ||
-    !['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'].includes(source) ||
+    ![
+      'NewsAPI',
+      'GNews',
+      'Hacker News',
+      'Dev.to',
+      'Reddit',
+      'GitHub Releases',
+      'GitHub Security Advisories',
+      'Lobsters',
+      'Kubernetes Blog'
+    ].includes(source) ||
     title === '[Removed]'
   )
     return null;
@@ -142,6 +152,8 @@ const normalizeItem = (item = {}) => {
     source,
     publisher: cleanText(item.publisher).slice(0, 120),
     attributionUrl: sanitizeHttpUrl(item.attributionUrl) || url,
+    license: item.license === 'CC-BY-4.0' ? item.license : '',
+    licenseUrl: item.license === 'CC-BY-4.0' ? 'https://creativecommons.org/licenses/by/4.0/' : '',
     url,
     image: sanitizeHttpUrl(item.image) || pickFallbackImage(category, title, description, source),
     publishedAt,
