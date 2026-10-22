@@ -1,56 +1,115 @@
 <article class="news-card">
-  <div class="image-wrap">
-    <img title="image news" class="news-image" [src]="imageSrc" [alt]="news.title" loading="lazy" (error)="onImageError($event)" />
-    <div class="overlay-badges">
-      <span class="source-badge" [ngClass]="sourceTone">{{ news.source }}</span>
-      <span class="category-badge">{{ news.category }}</span>
-    </div>
+  <div class="image-wrap" [class.no-image]="!imageSrc">
+    <img
+      *ngIf="imageSrc; else imagePlaceholder"
+      class="news-image"
+      [src]="imageSrc"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+      (error)="imageFailed = true"
+    />
+    <ng-template #imagePlaceholder
+      ><span class="image-placeholder" aria-hidden="true"
+        >&#123;&nbsp;{{ news.category }}&nbsp;&#125;</span
+      ></ng-template
+    >
+    <div class="image-overlay" aria-hidden="true"></div>
+    <span class="category-badge">{{ news.category }}</span>
   </div>
-
   <div class="news-body">
     <div class="meta-row">
-      <span>{{ news.publishedAt | date:'mediumDate' }}</span>
-      <span class="score-label">Rank {{ news.rankScore | number:'1.0-0' }}</span>
+      <a [href]="attributionUrl" target="_blank" rel="noopener noreferrer">{{
+        news.publisher || news.source
+      }}</a
+      ><time *ngIf="news.publishedAt" [attr.datetime]="news.publishedAt">{{
+        news.publishedAt | date: 'MMM d, y'
+      }}</time>
     </div>
-
-    <h3 class="title">{{ news.title }}</h3>
-    <p class="description">{{ news.description || 'No summary is available for this article yet.' }}</p>
-
-    <div class="score-track" aria-hidden="true">
-      <span class="score-fill" [style.width.%]="scoreWidth"></span>
+    <h3>
+      <a [href]="articleUrl" target="_blank" rel="noopener noreferrer">{{ news.title }}</a>
+    </h3>
+    <p class="description">
+      {{ news.description || 'Read the original article for the full story.' }}
+    </p>
+    <div class="score-row" *ngIf="news.rankScore !== null">
+      <span>Rank score</span
+      ><strong>{{ news.rankScore | number: '1.0-2' }}<small>/100</small></strong>
     </div>
-
-    <div class="relevance-block" *ngIf="relevanceReasons.length || signalPills.length">
-      <p *ngIf="relevanceReasons.length">{{ relevanceReasons[0] }}</p>
-      <div class="signal-tags" *ngIf="signalPills.length">
-        <span *ngFor="let signal of signalPills">{{ signal }}</span>
+    <div class="score-track" *ngIf="news.rankScore !== null" aria-hidden="true">
+      <span [style.width.%]="scoreWidth"></span>
+    </div>
+    <details class="relevance-details">
+      <summary>Why this article <span aria-hidden="true">⌄</span></summary>
+      <div class="relevance-content">
+        <p *ngIf="news.relevanceScore !== null">
+          Relevance: {{ news.relevanceScore | number: '1.0-2' }}/100
+        </p>
+        <p class="formula">
+          Ranking combines 50% relevance, 30% recency and 20% source popularity.
+        </p>
+        <ul *ngIf="news.relevanceReasons?.length">
+          <li *ngFor="let reason of news.relevanceReasons">{{ reason }}</li>
+        </ul>
+        <p *ngIf="!news.relevanceReasons?.length">
+          No specific evidence match was supplied for this article.
+        </p>
+        <div class="signal-row" *ngIf="news.relatedSkillEvidence?.length">
+          <strong>Related skill evidence</strong>
+          <span *ngFor="let skill of news.relatedSkillEvidence"
+            >{{ skill.name }} · {{ evidenceLabels[skill.status] }}</span
+          >
+        </div>
+        <p *ngIf="!news.relatedSkillEvidence?.length">
+          Skill evidence is unknown for these matches.
+        </p>
+        <div class="signal-row" *ngIf="news.relatedSkills?.length">
+          <strong>Detected signal matches · not proof of proficiency</strong
+          ><span *ngFor="let skill of news.relatedSkills">{{ skill }}</span>
+        </div>
+        <div class="signal-row" *ngIf="news.relatedSkillGaps?.length">
+          <strong>Growth areas</strong
+          ><span *ngFor="let skill of news.relatedSkillGaps">{{ skill }}</span>
+        </div>
+        <div class="signal-row" *ngIf="news.demandTags?.length">
+          <strong>Market demand</strong
+          ><span *ngFor="let skill of news.demandTags">{{ skill }}</span>
+        </div>
+        <p *ngIf="news.popularity !== null && news.popularity! > 0">
+          {{ news.popularity | number }} source-reported engagement
+        </p>
+        <p>
+          Via {{ news.source }}<span *ngIf="news.publisher"> · {{ news.publisher }}</span>
+        </p>
       </div>
-    </div>
-
-    <div class="tags" *ngIf="news.tags.length">
-      <span *ngFor="let tag of news.tags">{{ tag }}</span>
-    </div>
-
+    </details>
     <div class="actions">
       <button
         type="button"
-        class="action-button"
         [class.active]="bookmarked"
+        [attr.aria-pressed]="bookmarked"
+        [attr.aria-label]="(bookmarked ? 'Remove bookmark: ' : 'Bookmark: ') + news.title"
         [disabled]="bookmarkLoading"
         (click)="onBookmarkToggle()"
       >
-        {{ bookmarkLoading ? 'Saving...' : bookmarked ? 'Saved' : 'Bookmark' }}
+        <span aria-hidden="true">{{ bookmarked ? '▣' : '▢' }}</span
+        >{{ bookmarked ? 'Saved' : 'Save' }}
       </button>
       <button
         type="button"
-        class="action-button"
         [class.active]="readLater"
+        [attr.aria-pressed]="readLater"
+        [attr.aria-label]="(readLater ? 'Remove from Read Later: ' : 'Read Later: ') + news.title"
         [disabled]="readLaterLoading"
         (click)="onReadLaterToggle()"
       >
-        {{ readLaterLoading ? 'Saving...' : readLater ? 'Queued' : 'Read Later' }}
+        <span aria-hidden="true">◷</span>{{ readLater ? 'Queued' : 'Read Later' }}
       </button>
-      <a class="read-button" [href]="news.url" target="_blank" rel="noopener noreferrer">Read More</a>
+      <a class="read-link" [href]="articleUrl" target="_blank" rel="noopener noreferrer"
+        >Read <span aria-hidden="true">↗</span
+        ><span class="visually-hidden">{{ news.title }} (opens in a new tab)</span></a
+      >
     </div>
   </div>
 </article>

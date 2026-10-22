@@ -7,6 +7,11 @@ const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = requir
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
+const {
+  buildNewsSkillEvidence,
+  relatedNewsSkillEvidence,
+  SKILL_EVIDENCE_RULE_VERSION
+} = require('./newsSkillEvidenceService');
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
@@ -253,6 +258,7 @@ const buildUserContext = async (user, options = {}) => {
     githubTechnologies: [],
     skillGaps: [],
     detectedSkills: [],
+    skillEvidence: [],
     knownSkills: [],
     targetRole: user?.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
     jobDemandSkills: [],
@@ -315,7 +321,7 @@ const buildUserContext = async (user, options = {}) => {
   const jobDemandSkills = normalizeSkillNames(jobsDemand.topSkills || [], 18);
   const recommendationTechnologies = normalizeSkillNames(recommendations.skills?.recommendedTechnologies || [], 18);
 
-  return {
+  const context = {
     ...defaults,
     careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
     experienceLevel:
@@ -333,6 +339,7 @@ const buildUserContext = async (user, options = {}) => {
     signalHash,
     signals
   };
+  return { ...context, skillEvidence: buildNewsSkillEvidence(user, context) };
 };
 
 const fetchAllSources = async (sinceDate) => {
@@ -435,6 +442,8 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
     targetRole: userContext.targetRole,
     signalHash: userContext.signalHash,
     detectedSkills: userContext.detectedSkills.slice(0, 5),
+    skillEvidence: userContext.skillEvidence,
+    skillEvidenceRuleVersion: SKILL_EVIDENCE_RULE_VERSION,
     skillGaps: userContext.skillGaps.slice(0, 4),
     jobDemandSkills: userContext.jobDemandSkills.slice(0, 5),
     recommendationTechnologies: userContext.recommendationTechnologies.slice(0, 5),
@@ -487,7 +496,10 @@ const getNewsFeed = async ({ user, query = {} }) => {
   );
   const freshness = pool.freshness(snapshot);
   return {
-    items: ranked.slice(start, start + filters.limit),
+    items: ranked.slice(start, start + filters.limit).map((item) => ({
+      ...item,
+      relatedSkillEvidence: relatedNewsSkillEvidence(item, userContext.skillEvidence)
+    })),
     total: ranked.length,
     sourceSummary,
     trendingTopics: extractTrendingTopics(ranked),

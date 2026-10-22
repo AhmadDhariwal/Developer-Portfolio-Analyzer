@@ -3,47 +3,37 @@ import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  takeUntil,
+} from 'rxjs';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
-import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { NewsService } from '../../shared/services/news.service';
+import { NEWS_SKILL_EVIDENCE_LABELS } from '../../shared/utils/news-presentation';
 import { NewsCardComponent } from '../../shared/components/news-card/news-card';
 import { NewsFiltersComponent } from '../../shared/components/news-filters/news-filters';
 import {
-  ActiveNewsFilterChip,
   DEFAULT_NEWS_FILTERS,
   NewsFilters,
   NewsHubView,
   NewsItem,
   NewsProviderDiagnostic,
+  NewsResponse,
   NewsSavedType,
-  NewsTelemetry,
   PersonalizedNewsContext,
   SavedNewsItem,
-  normalizeNewsFilters
+  normalizeNewsFilters,
 } from '../../shared/models/news.model';
-
-const PAGE_SIZE = 12;
-const FEED_CACHE_TTL_MS = 20 * 60 * 1000;
-const SAVED_CACHE_TTL_MS = 5 * 60 * 1000;
-const SIGNAL_HASH_KEY = 'devinsight_news_signal_hash';
-const BOOKMARK_KEY = 'devinsight_news_bookmarks';
-const READ_LATER_KEY = 'devinsight_news_read_later';
-const DEFAULT_TELEMETRY: NewsTelemetry = {
-  cacheHit: false,
-  providerFailureCount: 0,
-  providerUsed: [],
-  providerDiagnostics: [],
-  signalHash: '',
-  responseTimeMs: 0
-};
-
-type ToastState = { visible: boolean; type: 'success' | 'error'; message: string };
 
 @Component({
   selector: 'app-news',
@@ -51,885 +41,519 @@ type ToastState = { visible: boolean; type: 'success' | 'error'; message: string
   imports: [CommonModule, NewsCardComponent, NewsFiltersComponent],
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewsComponent implements OnInit, OnDestroy {
-  readonly viewTabs: Array<{ value: NewsHubView; label: string }> = [
+  readonly evidenceLabels = NEWS_SKILL_EVIDENCE_LABELS;
+  readonly viewTabs: { value: NewsHubView; label: string }[] = [
     { value: 'for-you', label: 'For You' },
     { value: 'trending', label: 'Trending' },
     { value: 'latest', label: 'Latest' },
     { value: 'bookmarks', label: 'Bookmarks' },
-    { value: 'read_later', label: 'Read Later' }
+    { value: 'read_later', label: 'Read Later' },
   ];
-
+  readonly skeletonCards = [0, 1, 2, 3, 4, 5];
   selectedView: NewsHubView = 'for-you';
   filters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
   items: NewsItem[] = [];
-  savedItemsView: SavedNewsItem[] = [];
+  context: PersonalizedNewsContext | null = null;
+  telemetry: NewsResponse['telemetry'];
   trendingTopics: string[] = [];
-  sourceSummary: Record<string, number> = {};
-  recommendedBasedOn: PersonalizedNewsContext | null = null;
-  telemetry: NewsTelemetry = { ...DEFAULT_TELEMETRY };
-  bookmarks = new Set<string>();
-  readLater = new Set<string>();
-  bookmarkPending = new Set<string>();
-  readLaterPending = new Set<string>();
-  savedActionPending = new Set<string>();
-  toast: ToastState = { visible: false, type: 'success', message: '' };
   page = 1;
+  pageSize = 12;
   total = 0;
   totalPages = 1;
   isLoading = false;
-  isLoadingMore = false;
   errorMessage = '';
-  sourceBannerMessage = '';
-  lastUpdatedLabel = '';
+  savedError = '';
+  toast = '';
+  offline = typeof navigator !== 'undefined' && !navigator.onLine;
   filtersExpanded = false;
-  sourceHealthExpanded = false;
-
+  historyFilter: 'all' | 'unread' | 'read' = 'all';
+  readonly pending = new Set<string>();
+  readonly library: Record<NewsSavedType, Map<string, SavedNewsItem>> = {
+    bookmark: new Map(),
+    read_later: new Map(),
+  };
+  readonly savedTotal: Record<NewsSavedType, number> = { bookmark: 0, read_later: 0 };
+  readonly savedPage: Record<NewsSavedType, number> = { bookmark: 1, read_later: 1 };
+  readonly savedHasMore: Record<NewsSavedType, boolean> = { bookmark: false, read_later: false };
+  readonly savedKnown = new Set<NewsSavedType>();
+  readonly savedLoading = new Set<NewsSavedType>();
   private readonly subscriptions = new Subscription();
-  private readonly savedItemsByType: Record<NewsSavedType, Map<string, SavedNewsItem>> = {
-    bookmark: new Map<string, SavedNewsItem>(),
-    read_later: new Map<string, SavedNewsItem>()
-  };
-  private readonly savedViewLoaded: Record<NewsSavedType, boolean> = {
-    bookmark: false,
-    read_later: false
-  };
+  private readonly scopeChanged = new Subject<void>();
+  private readonly savedRequests: Partial<Record<NewsSavedType, Subscription>> = {};
   private activeRequest?: Subscription;
-  private requestNonce = 0;
-  private pendingSignature = '';
-  private lastCompletedSignature = '';
-  private profileSignature = '';
-  private currentSignalHash = '';
+  private generation = 0;
+  private feedNonce = 0;
+  private scope = '';
+  private lastValidated = 0;
+  private attemptedPage = 1;
+  private failedRefresh = false;
   private toastTimer?: ReturnType<typeof setTimeout>;
-  private readonly feedCacheEntries = new Map<string, FrontendAnalysisCacheKey>();
+  private clock?: ReturnType<typeof setInterval>;
+  now = Date.now();
 
   constructor(
-    private readonly newsService: NewsService,
-    private readonly careerProfileService: CareerProfileService,
-    private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly news: NewsService,
+    private readonly career: CareerProfileService,
+    private readonly auth: AuthService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.restoreClientState();
-    this.loadSavedItems();
-
     this.subscriptions.add(
-      this.careerProfileService.careerProfile$
+      combineLatest([this.auth.currentUser$, this.career.careerProfile$])
         .pipe(
-          debounceTime(180),
-          map((profile) => buildCareerProfileSignature(profile)),
-          distinctUntilChanged()
+          map(([user, profile]) =>
+            user?._id
+              ? JSON.stringify([
+                  user._id,
+                  user.activeGithubUsername,
+                  user['activeResumeFileId'],
+                  user.activeCareerStack,
+                  buildCareerProfileSignature(profile),
+                ])
+              : '',
+          ),
+          distinctUntilChanged(),
         )
-        .subscribe((signature) => {
-          if (signature === this.profileSignature) return;
-          const isInitialProfile = !this.profileSignature;
-          this.profileSignature = signature;
-          if (!isInitialProfile) this.clearFeedCache();
-          if (this.isFeedView) {
-            this.page = 1;
-            this.fetch(false);
-          }
-        })
+        .subscribe((scope) => this.resetScope(scope)),
     );
+    this.subscriptions.add(this.news.invalidated$.subscribe(() => this.resetScope(this.scope)));
+    window.addEventListener('focus', this.onFocus);
+    window.addEventListener('online', this.onOnline);
+    window.addEventListener('offline', this.onOffline);
+    document.addEventListener('visibilitychange', this.onFocus);
   }
 
   ngOnDestroy(): void {
+    this.scopeChanged.next();
+    this.scopeChanged.complete();
     this.activeRequest?.unsubscribe();
-    if (this.toastTimer) clearTimeout(this.toastTimer);
+    Object.values(this.savedRequests).forEach((request) => request?.unsubscribe());
     this.subscriptions.unsubscribe();
+    clearTimeout(this.toastTimer);
+    clearInterval(this.clock);
+    window.removeEventListener('focus', this.onFocus);
+    window.removeEventListener('online', this.onOnline);
+    window.removeEventListener('offline', this.onOffline);
+    document.removeEventListener('visibilitychange', this.onFocus);
   }
 
   get isFeedView(): boolean {
-    return this.selectedView === 'for-you' || this.selectedView === 'trending' || this.selectedView === 'latest';
+    return ['for-you', 'trending', 'latest'].includes(this.selectedView);
   }
-
-  get selectedSavedType(): NewsSavedType | null {
-    if (this.selectedView === 'bookmarks') return 'bookmark';
-    if (this.selectedView === 'read_later') return 'read_later';
-    return null;
+  get savedType(): NewsSavedType {
+    return this.selectedView === 'bookmarks' ? 'bookmark' : 'read_later';
   }
-
-  get displayedCount(): number {
-    return this.isFeedView ? this.items.length : this.savedItemsView.length;
+  get savedItems(): SavedNewsItem[] {
+    return [...this.library[this.savedType].values()].filter(
+      (item) =>
+        this.savedType !== 'read_later' ||
+        this.historyFilter === 'all' ||
+        (this.historyFilter === 'read'
+          ? !!(item.firstReadAt || item.lastReadAt || item.readAt || item.readCount)
+          : !item.readAt),
+    );
   }
-
-  get displayedTotalLabel(): string {
-    if (this.isFeedView) return `of ${this.total || this.items.length} articles`;
-    return this.selectedView === 'bookmarks' ? 'saved articles' : 'queued articles';
-  }
-
-  get selectedViewLabel(): string {
-    const found = this.viewTabs.find((tab) => tab.value === this.selectedView);
-    return found?.label || 'For You';
-  }
-
-  get sourceBreakdown(): Array<{ label: string; count: number }> {
-    return Object.entries(this.sourceSummary)
-      .filter(([, count]) => Number(count) > 0)
-      .sort((left, right) => right[1] - left[1])
-      .map(([label, count]) => ({ label, count: Number(count) }));
-  }
-
   get sourceDiagnostics(): NewsProviderDiagnostic[] {
-    return Array.isArray(this.telemetry.providerDiagnostics) ? this.telemetry.providerDiagnostics : [];
+    return this.telemetry?.providerDiagnostics || [];
   }
-
-  get activeFilterChips(): ActiveNewsFilterChip[] {
-    if (!this.isFeedView) return [];
-    const chips: ActiveNewsFilterChip[] = [];
-    if (this.filters.category !== 'All') chips.push({ key: 'category', label: 'Category', value: this.filters.category });
-    if (this.filters.source !== 'All') chips.push({ key: 'source', label: 'Source', value: this.filters.source });
-    if (this.filters.date !== DEFAULT_NEWS_FILTERS.date) chips.push({ key: 'date', label: 'Date', value: this.prettyLabel(this.filters.date) });
-    if (this.filters.popularity !== 'all') chips.push({ key: 'popularity', label: 'Popularity', value: 'High only' });
-    if (this.filters.search) chips.push({ key: 'search', label: 'Search', value: this.filters.search });
-    return chips;
+  get pageNumbers(): (number | null)[] {
+    const current = Math.min(this.page, this.totalPages);
+    const pages = new Set([1, this.totalPages]);
+    for (
+      let value = Math.max(1, current - 1);
+      value <= Math.min(this.totalPages, current + 1);
+      value++
+    )
+      pages.add(value);
+    const result: (number | null)[] = [];
+    for (const value of [...pages].sort((a, b) => a - b)) {
+      const previous = result[result.length - 1];
+      if (previous && value - previous > 1) result.push(null);
+      result.push(value);
+    }
+    return result;
   }
-
-  get hasActiveFilters(): boolean {
-    return this.activeFilterChips.length > 0;
+  get freshnessLabel(): string {
+    if (this.offline) return 'Offline';
+    if (this.telemetry?.freshness === 'warming') return 'Warming up';
+    if (this.telemetry?.freshness === 'stale' || this.telemetry?.staleFallback)
+      return 'Stale snapshot';
+    return this.telemetry?.freshness === 'fresh' ? 'Fresh snapshot' : 'Freshness unavailable';
   }
-
-  get skeletonCards(): number[] {
-    return Array.from({ length: 6 }, (_, index) => index);
+  get sourceMessage(): string {
+    if (this.offline)
+      return 'You are offline. Previously loaded articles remain available; saved changes need a connection.';
+    if (this.telemetry?.freshness === 'warming')
+      return 'Sources are warming up. Check again shortly; articles appear after the next background update.';
+    if (this.telemetry?.providerFailureCount)
+      return 'Some sources are temporarily unavailable. Available and retained articles are shown below.';
+    if (this.telemetry?.freshness === 'stale')
+      return 'Showing retained articles while sources recover. Publication dates and the last update remain unchanged.';
+    return 'A shared news snapshot, ranked for your current developer context.';
   }
-
-  get sourceStatusClass(): string {
-    if (this.telemetry.providerFailureCount > 0) return 'status-warning';
-    if (this.recommendedBasedOn?.fromCache) return 'status-cached';
-    return 'status-live';
+  get updatedAt(): string | null {
+    return this.telemetry?.lastUpdated || this.context?.lastUpdated || null;
   }
-
-  get emptyTitle(): string {
-    if (this.selectedView === 'bookmarks') return 'No bookmarks yet';
-    if (this.selectedView === 'read_later') return 'No read later items yet';
-    return 'No news matched these filters';
+  get retrySeconds(): number {
+    return Math.max(
+      0,
+      Math.ceil(
+        (Math.max(
+          this.news.retryAt('feed'),
+          this.failedRefresh && this.isFeedView ? this.news.retryAt('refresh') : 0,
+        ) -
+          this.now) /
+          1000,
+      ),
+    );
   }
-
-  get emptyMessage(): string {
-    if (this.selectedView === 'bookmarks') return 'Articles you bookmark will appear here so you can revisit them across devices.';
-    if (this.selectedView === 'read_later') return 'Save articles for later and they will stay here until you mark them as read or remove them.';
-    return 'Try broadening the source, category, or search query to bring more developer news back into the feed.';
+  get refreshSeconds(): number {
+    return Math.max(
+      this.retrySeconds,
+      Math.max(0, Math.ceil((this.news.retryAt('refresh') - this.now) / 1000)),
+    );
+  }
+  get mutationBlocked(): boolean {
+    return this.offline || this.news.retryAt('mutation') > this.now;
+  }
+  get hasFilters(): boolean {
+    return (
+      JSON.stringify(this.filters) !==
+      JSON.stringify({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab })
+    );
   }
 
   selectView(view: NewsHubView): void {
     if (view === this.selectedView) return;
-
+    this.cancelFeed();
     this.selectedView = view;
     this.errorMessage = '';
-
-    if (view === 'bookmarks') {
-      this.loadSavedView('bookmark');
-      return;
+    this.savedError = '';
+    if (this.isFeedView) {
+      this.filters = { ...this.filters, tab: view as NewsFilters['tab'] };
+      this.items = [];
+      this.context = null;
+      this.telemetry = undefined;
+      this.page = 1;
+      this.total = 0;
+      this.totalPages = 1;
+      this.fetch(1);
+    } else {
+      this.loadLibrary(this.savedType, 1, true);
     }
+  }
 
-    if (view === 'read_later') {
-      this.loadSavedView('read_later');
-      return;
-    }
-
-    this.filters = normalizeNewsFilters({ ...this.filters, tab: view });
+  onFiltersChange(filters: NewsFilters): void {
+    const normalized = normalizeNewsFilters(filters);
+    if (JSON.stringify(normalized) === JSON.stringify(this.filters)) return;
+    this.filters = normalized;
+    this.items = [];
+    this.context = null;
+    this.telemetry = undefined;
     this.page = 1;
-    this.fetch(false);
+    this.total = 0;
+    this.totalPages = 1;
+    this.fetch(1);
   }
-
-  onFiltersChange(nextFilters: NewsFilters): void {
-    if (!this.isFeedView) return;
-    const normalized = normalizeNewsFilters(nextFilters);
-    if (this.buildFilterSignature(normalized) === this.buildFilterSignature(this.filters)) return;
-    this.applyFilters(normalized);
-  }
-
-  clearFilter(key: keyof NewsFilters): void {
-    this.onFiltersChange({ ...this.filters, [key]: DEFAULT_NEWS_FILTERS[key] });
-  }
-
   resetFilters(): void {
-    if (!this.hasActiveFilters) return;
     this.onFiltersChange({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab });
   }
-
-  loadMore(): void {
-    if (!this.isFeedView || this.isLoadingMore || this.page >= this.totalPages) return;
-    this.page += 1;
-    this.fetch(true);
+  searchTopic(topic: string): void {
+    this.onFiltersChange({ ...this.filters, search: topic });
   }
-
+  selectPage(page: number): void {
+    if (
+      !this.isFeedView ||
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > this.totalPages ||
+      page === this.page ||
+      this.isLoading ||
+      this.offline ||
+      this.retrySeconds
+    )
+      return;
+    this.fetch(page);
+  }
   forceRefresh(): void {
-    if (!this.isFeedView || this.isLoading || this.isLoadingMore) return;
-    this.page = 1;
-    this.fetch(false, true);
+    if (!this.offline && !this.refreshSeconds && !this.isLoading) this.fetch(1, true);
+  }
+  retry(): void {
+    if (this.isFeedView) this.fetch(this.attemptedPage);
+    else this.loadLibrary(this.savedType, this.savedPage[this.savedType], true);
+  }
+  loadMoreSaved(): void {
+    if (!this.savedLoading.has(this.savedType) && this.savedHasMore[this.savedType])
+      this.loadLibrary(this.savedType, this.savedPage[this.savedType] + 1);
   }
 
-  retry(): void {
-    if (this.isFeedView) {
-      this.fetch(false, true);
+  isSaved(article: NewsItem, type: NewsSavedType): boolean {
+    return !!this.findSaved(article, type);
+  }
+  articlePending(article: NewsItem, type: NewsSavedType): boolean {
+    return (
+      this.pending.has(`${type}:${article.url}`) ||
+      this.mutationBlocked ||
+      this.savedLoading.has(type)
+    );
+  }
+  itemPending(item: SavedNewsItem): boolean {
+    return this.pending.has(`${item.type}:${item.url}`) || this.mutationBlocked;
+  }
+
+  toggleSave(article: NewsItem, type: NewsSavedType): void {
+    if (this.articlePending(article, type)) return;
+    const existing = this.findSaved(article, type);
+    if (existing) {
+      this.removeSavedItem(existing);
       return;
     }
-
-    const type = this.selectedSavedType;
-    if (type) this.loadSavedView(type, true);
+    this.runAction(`${type}:${article.url}`, this.news.saveNews(article, type), (item) => {
+      this.library[type].set(item.id, item);
+      this.showToast(type === 'bookmark' ? 'Bookmark saved.' : 'Added to Read Later.');
+      this.loadLibrary(type, 1, true);
+    });
   }
-
-  isBookmarked(articleId: string): boolean {
-    return this.bookmarks.has(articleId);
-  }
-
-  isReadLater(articleId: string): boolean {
-    return this.readLater.has(articleId);
-  }
-
-  isBookmarkPending(articleId: string): boolean {
-    return this.bookmarkPending.has(articleId);
-  }
-
-  isReadLaterPending(articleId: string): boolean {
-    return this.readLaterPending.has(articleId);
-  }
-
-  isSavedActionPending(itemId: string, action: string): boolean {
-    return this.savedActionPending.has(`${action}:${itemId}`);
-  }
-
-  onBookmarkToggle(article: NewsItem): void {
-    this.toggleSavedState(article, 'bookmark');
-  }
-
-  onReadLaterToggle(article: NewsItem): void {
-    this.toggleSavedState(article, 'read_later');
-  }
-
   removeSavedItem(item: SavedNewsItem): void {
-    const type = item.type;
-    const snapshot = this.captureSavedSnapshot();
-    const pendingKey = `remove:${item.id}`;
-    if (!item.id || this.savedActionPending.has(pendingKey)) return;
-
-    this.savedActionPending.add(pendingKey);
-    this.savedItemsByType[type].delete(item.articleId);
-    this.syncSavedSetsFromMaps();
-    this.refreshSavedViewCollection(type);
-    this.cdr.markForCheck();
-
-    this.subscriptions.add(
-      this.newsService.removeSavedNews(item.id).subscribe({
-        next: () => {
-          this.savedActionPending.delete(pendingKey);
-          this.showToast('success', type === 'bookmark' ? 'Bookmark removed.' : 'Removed from Read Later.');
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          this.restoreSavedSnapshot(snapshot);
-          this.savedActionPending.delete(pendingKey);
-          this.showToast('error', error?.error?.message || 'Unable to remove this saved article right now.');
-          this.cdr.markForCheck();
-        }
-      })
+    if (this.itemPending(item)) return;
+    this.runAction(`${item.type}:${item.url}`, this.news.removeSavedNews(item.id), () => {
+      this.library[item.type].delete(item.id);
+      this.showToast('Saved article removed.');
+      this.loadLibrary(item.type, 1, true);
+    });
+  }
+  markSavedItemAsRead(item: SavedNewsItem, read = true): void {
+    if (item.type !== 'read_later' || !!item.readAt === read || this.itemPending(item)) return;
+    this.runAction(
+      `${item.type}:${item.url}`,
+      this.news.markSavedNewsAsRead(item.id, read),
+      (updated) => {
+        this.library.read_later.set(updated.id, updated);
+        this.showToast(read ? 'Marked as read.' : 'Marked as unread. Reading history preserved.');
+      },
     );
   }
-
-  markSavedItemAsRead(item: SavedNewsItem): void {
-    const pendingKey = `read:${item.id}`;
-    if (!item.id || item.readAt || this.savedActionPending.has(pendingKey)) return;
-
-    const snapshot = this.captureSavedSnapshot();
-    this.savedActionPending.add(pendingKey);
-    this.patchSavedItemLocal({ ...item, readAt: new Date().toISOString() });
-    this.cdr.markForCheck();
-
-    this.subscriptions.add(
-      this.newsService.markSavedNewsAsRead(item.id).subscribe({
-        next: (updated) => {
-          this.patchSavedItemLocal(updated);
-          this.savedActionPending.delete(pendingKey);
-          this.showToast('success', 'Marked as read.');
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          this.restoreSavedSnapshot(snapshot);
-          this.savedActionPending.delete(pendingKey);
-          this.showToast('error', error?.error?.message || 'Unable to mark this item as read.');
-          this.cdr.markForCheck();
-        }
-      })
+  bookmarkSaved(item: SavedNewsItem): void {
+    if (this.itemPending(item) || this.pending.has(`bookmark:${item.url}`)) return;
+    this.runAction(
+      `bookmark:${item.url}`,
+      this.news.saveNews(
+        { ...item, id: item.articleId, publishedAt: item.publishedAt || '' },
+        'bookmark',
+      ),
+      (saved) => {
+        this.library.bookmark.set(saved.id, saved);
+        this.showToast('Bookmarked. Your reading history is preserved.');
+        this.loadLibrary('bookmark', 1, true);
+      },
     );
   }
-
-  moveReadLaterToBookmark(item: SavedNewsItem): void {
-    const pendingKey = `move:${item.id}`;
-    if (item.type !== 'read_later' || this.savedActionPending.has(pendingKey)) return;
-
-    const snapshot = this.captureSavedSnapshot();
-    const bookmarkPlaceholder: SavedNewsItem = {
-      ...item,
-      id: '',
-      type: 'bookmark',
-      readAt: item.readAt || new Date().toISOString()
-    };
-
-    this.savedActionPending.add(pendingKey);
-    this.savedItemsByType.read_later.delete(item.articleId);
-    this.savedItemsByType.bookmark.set(item.articleId, bookmarkPlaceholder);
-    this.syncSavedSetsFromMaps();
-    this.refreshSavedViewCollection('read_later');
-    this.cdr.markForCheck();
-
-    const article = this.toNewsItem(item);
-    this.subscriptions.add(
-      this.newsService.saveNews(article, 'bookmark').subscribe({
-        next: (savedBookmark) => {
-          this.savedItemsByType.bookmark.set(savedBookmark.articleId, savedBookmark);
-
-          const finalizeRemoval = item.id
-            ? this.newsService.removeSavedNews(item.id)
-            : null;
-
-          if (!finalizeRemoval) {
-            this.savedActionPending.delete(pendingKey);
-            this.showToast('success', 'Moved to bookmarks.');
-            this.cdr.markForCheck();
-            return;
-          }
-
-          this.subscriptions.add(
-            finalizeRemoval.subscribe({
-              next: () => {
-                this.savedActionPending.delete(pendingKey);
-                this.showToast('success', 'Moved to bookmarks.');
-                this.cdr.markForCheck();
-              },
-              error: (error) => {
-                this.restoreSavedSnapshot(snapshot);
-                this.savedActionPending.delete(pendingKey);
-                this.showToast('error', error?.error?.message || 'Unable to move this article right now.');
-                this.cdr.markForCheck();
-              }
-            })
-          );
-        },
-        error: (error) => {
-          this.restoreSavedSnapshot(snapshot);
-          this.savedActionPending.delete(pendingKey);
-          this.showToast('error', error?.error?.message || 'Unable to move this article right now.');
-          this.cdr.markForCheck();
-        }
-      })
-    );
-  }
-
-  trackById(_: number, item: NewsItem): string {
+  trackId(_: number, item: { id: string }): string {
     return item.id;
   }
 
-  trackBySavedId(_: number, item: SavedNewsItem): string {
-    return item.id || `${item.type}:${item.articleId}`;
-  }
-
-  trackByLabel(_: number, item: { label: string }): string {
-    return item.label;
-  }
-
-  trackByProvider(_: number, item: NewsProviderDiagnostic): string {
-    return item.provider;
-  }
-
-  trackByValue(_: number, value: string | number): string | number {
-    return value;
-  }
-
-  private applyFilters(nextFilters: NewsFilters): void {
-    const normalized = normalizeNewsFilters(nextFilters);
-    if (this.buildFilterSignature(normalized) === this.buildFilterSignature(this.filters)) return;
-    this.filters = normalized;
-    this.page = 1;
-    this.fetch(false);
-  }
-
-  private fetch(append: boolean, force = false): void {
-    const normalizedFilters = normalizeNewsFilters(this.filters);
-    const requestSignature = JSON.stringify({ filters: normalizedFilters, page: this.page, limit: PAGE_SIZE });
-
-    if (!force && this.pendingSignature === requestSignature) return;
-    if (!force && !append && this.lastCompletedSignature === requestSignature && !this.errorMessage) return;
-
-    if (!force) {
-      const cached = this.readFeedCache(normalizedFilters, this.page);
-      if (cached) {
-        this.applyFeedResponse(cached, append, requestSignature);
-        return;
-      }
-    }
-
-    this.activeRequest?.unsubscribe();
-    this.pendingSignature = requestSignature;
-    const requestId = ++this.requestNonce;
-
-    if (append) {
-      this.isLoadingMore = true;
-    } else {
-      this.isLoading = true;
-      this.errorMessage = '';
-    }
-    this.cdr.markForCheck();
-
-    this.activeRequest = this.newsService.getNews(normalizedFilters, this.page, PAGE_SIZE, { refresh: force }).subscribe({
-      next: (response) => {
-        if (requestId !== this.requestNonce) return;
-        this.applyFeedResponse(response, append, requestSignature);
-        this.writeFeedCache(normalizedFilters, this.page, response);
-      },
-      error: (error) => {
-        if (requestId !== this.requestNonce) return;
-        if (append) this.page = Math.max(1, this.page - 1);
-        this.errorMessage = error?.error?.message || 'Failed to load tech news right now.';
-        this.isLoading = false;
-        this.isLoadingMore = false;
-        this.pendingSignature = '';
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  private applyFeedResponse(response: any, append: boolean, requestSignature: string): void {
-    const incomingItems = Array.isArray(response.items) ? response.items : [];
-    this.items = append ? this.mergeUniqueItems(this.items, incomingItems) : incomingItems;
-    this.total = Number(response.total || this.items.length);
-    this.totalPages = Math.max(1, Number(response.totalPages || 1));
-    this.trendingTopics = Array.isArray(response.trendingTopics) ? response.trendingTopics : [];
-    this.sourceSummary = response.sourceSummary || {};
-    this.recommendedBasedOn = response.recommendedBasedOn || null;
-    this.telemetry = {
-      ...(response.telemetry || { ...DEFAULT_TELEMETRY }),
-      cacheHit: Boolean(response?.fromFrontendCache || response?.telemetry?.cacheHit)
-    };
-    this.rememberSignalHash(this.recommendedBasedOn?.signalHash || this.telemetry.signalHash || '');
-    this.sourceBannerMessage = this.buildSourceBanner();
-    this.lastUpdatedLabel = this.formatLastUpdated(this.recommendedBasedOn?.lastUpdated);
-    this.errorMessage = '';
-    this.isLoading = false;
-    this.isLoadingMore = false;
-    this.pendingSignature = '';
-    this.lastCompletedSignature = requestSignature;
-    this.cdr.markForCheck();
-  }
-
-  private readFeedCache(filters: NewsFilters, page: number): any | null {
-    return this.frontendCache.get<any>(this.buildFeedCacheKey(filters, page));
-  }
-
-  private writeFeedCache(filters: NewsFilters, page: number, response: any): void {
-    const key = this.buildFeedCacheKey(filters, page);
-    const identity = JSON.stringify(key);
-    this.feedCacheEntries.delete(identity);
-    this.feedCacheEntries.set(identity, key);
-    this.frontendCache.set(key, response);
-    while (this.feedCacheEntries.size > 50) {
-      const oldest = this.feedCacheEntries.entries().next().value as [string, FrontendAnalysisCacheKey] | undefined;
-      if (!oldest) break;
-      this.frontendCache.clear(oldest[1]);
-      this.feedCacheEntries.delete(oldest[0]);
-    }
-  }
-
-  private clearFeedCache(): void {
-    this.frontendCache.clearModule('news-feed');
-    this.feedCacheEntries.clear();
-    this.lastCompletedSignature = '';
-    this.pendingSignature = '';
-  }
-
-  private loadSavedItems(): void {
-    const cached = this.readSavedCache('all');
-    if (cached) {
-      this.replaceSavedMaps(cached);
-      if (!this.isFeedView && this.selectedSavedType) {
-        this.refreshSavedViewCollection(this.selectedSavedType);
-      }
-      return;
-    }
-
-    this.subscriptions.add(
-      this.newsService.getSavedNews().subscribe({
-        next: (items) => {
-          this.replaceSavedMaps(items);
-          this.writeSavedCache('all', items);
-          this.writeSavedCache('bookmark', Array.from(this.savedItemsByType.bookmark.values()));
-          this.writeSavedCache('read_later', Array.from(this.savedItemsByType.read_later.values()));
-          if (!this.isFeedView && this.selectedSavedType) {
-            this.refreshSavedViewCollection(this.selectedSavedType);
-          }
-          this.persistClientState(BOOKMARK_KEY, this.bookmarks);
-          this.persistClientState(READ_LATER_KEY, this.readLater);
-        },
-        error: () => {
-          this.savedItemsView = [];
-          if (!this.isFeedView && this.selectedSavedType) {
-            this.refreshSavedViewCollection(this.selectedSavedType);
-          }
-          this.cdr.markForCheck();
-        }
-      })
-    );
-  }
-
-  private loadSavedView(type: NewsSavedType, force = false): void {
-    const cached = !force ? this.readSavedCache(type) : null;
-    if (cached) {
-      this.savedItemsByType[type].clear();
-      cached.forEach((item) => this.savedItemsByType[type].set(item.articleId, item));
-      this.savedViewLoaded[type] = true;
-      this.syncSavedSetsFromMaps();
-      this.refreshSavedViewCollection(type);
-      return;
-    }
-
-    if (!force && this.savedViewLoaded[type]) {
-      this.refreshSavedViewCollection(type);
-      return;
-    }
-
+  private fetch(page: number, refresh = false): void {
+    if (!this.scope || this.offline || (!refresh && this.retrySeconds)) return;
+    this.cancelFeed();
+    const nonce = this.feedNonce;
+    const generation = this.generation;
+    this.attemptedPage = page;
+    this.failedRefresh = refresh;
     this.isLoading = true;
     this.errorMessage = '';
-    this.cdr.markForCheck();
-
-    this.subscriptions.add(
-      this.newsService.getSavedNewsByType(type).subscribe({
-        next: (items) => {
-          this.savedItemsByType[type].clear();
-          items.forEach((item) => this.savedItemsByType[type].set(item.articleId, item));
-          this.writeSavedCache(type, items);
-          this.writeSavedCache('all', [
-            ...Array.from(this.savedItemsByType.bookmark.values()),
-            ...Array.from(this.savedItemsByType.read_later.values())
-          ]);
-          this.savedViewLoaded[type] = true;
-          this.syncSavedSetsFromMaps();
-          this.refreshSavedViewCollection(type);
+    this.activeRequest = this.news
+      .getNews(this.filters, page, this.pageSize, { refresh, revalidate: true })
+      .subscribe({
+        next: (response) => {
+          if (generation !== this.generation || nonce !== this.feedNonce || !this.isFeedView)
+            return;
+          const incoming = response.items || [];
+          this.items = incoming;
+          this.page = response.page;
+          this.pageSize = response.limit || this.pageSize;
+          this.total = response.total;
+          this.totalPages = response.totalPages;
+          this.context = response.recommendedBasedOn || null;
+          this.telemetry = response.telemetry;
+          this.trendingTopics = response.trendingTopics;
           this.isLoading = false;
+          this.lastValidated = Date.now();
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage = error?.error?.message || 'Unable to load saved articles right now.';
-          this.refreshSavedViewCollection(type);
+          if (nonce !== this.feedNonce || generation !== this.generation) return;
+          this.errorMessage = this.errorText(error.status);
           this.isLoading = false;
+          this.startClock();
           this.cdr.markForCheck();
-        }
-      })
-    );
+        },
+      });
+    this.cdr.markForCheck();
   }
 
-  private toggleSavedState(article: NewsItem, type: NewsSavedType): void {
-    const articleId = article.id;
-    const pendingSet = type === 'bookmark' ? this.bookmarkPending : this.readLaterPending;
-    if (!articleId || pendingSet.has(articleId)) return;
-
-    const snapshot = this.captureSavedSnapshot();
-    const targetSet = type === 'bookmark' ? this.bookmarks : this.readLater;
-    const storageKey = type === 'bookmark' ? BOOKMARK_KEY : READ_LATER_KEY;
-    const wasSaved = targetSet.has(articleId);
-    const previousSavedItem = this.findSavedItem(article, type);
-
-    if (wasSaved) {
-      this.savedItemsByType[type].delete(articleId);
-      this.syncSavedSetsFromMaps();
-    } else {
-      targetSet.add(articleId);
-      this.persistClientState(storageKey, targetSet);
-    }
-
-    pendingSet.add(articleId);
-    if (!this.isFeedView && this.selectedSavedType === type) {
-      this.refreshSavedViewCollection(type);
-    }
-    this.cdr.markForCheck();
-
-    if (wasSaved) {
-      if (!previousSavedItem?.id) {
-        pendingSet.delete(articleId);
-        this.showToast('success', type === 'bookmark' ? 'Bookmark removed.' : 'Removed from Read Later.');
+  private loadLibrary(type: NewsSavedType, page = 1, force = false): void {
+    if (!this.scope || this.offline) return;
+    this.savedRequests[type]?.unsubscribe();
+    const generation = this.generation;
+    this.savedLoading.add(type);
+    this.savedRequests[type] = this.news.getSavedNewsByType(type, page, force).subscribe({
+      next: (response) => {
+        if (generation !== this.generation) return;
+        if (page === 1) this.library[type].clear();
+        response.items.forEach((item) => this.library[type].set(item.id, item));
+        this.savedKnown.add(type);
+        this.savedTotal[type] = response.total;
+        this.savedPage[type] = response.page;
+        this.savedHasMore[type] = response.hasMore;
+        this.savedError = '';
+        this.savedLoading.delete(type);
         this.cdr.markForCheck();
-        return;
-      }
+      },
+      error: (error) => {
+        if (generation !== this.generation) return;
+        this.savedError = this.errorText(error.status);
+        this.savedLoading.delete(type);
+        this.startClock();
+        this.cdr.markForCheck();
+      },
+      complete: () => {
+        this.savedLoading.delete(type);
+        this.cdr.markForCheck();
+      },
+    });
+    this.cdr.markForCheck();
+  }
 
-      this.subscriptions.add(
-        this.newsService.removeSavedNews(previousSavedItem.id).subscribe({
-          next: () => {
-            pendingSet.delete(articleId);
-            this.showToast('success', type === 'bookmark' ? 'Bookmark removed.' : 'Removed from Read Later.');
-            this.cdr.markForCheck();
-          },
-          error: (error) => {
-            this.restoreSavedSnapshot(snapshot);
-            pendingSet.delete(articleId);
-            this.showToast('error', error?.error?.message || 'Unable to update saved news right now.');
-            this.cdr.markForCheck();
-          }
-        })
-      );
-      return;
-    }
-
+  private runAction<T>(
+    key: string,
+    request: Observable<T>,
+    acknowledged: (value: T) => void,
+  ): void {
+    if (this.pending.has(key) || this.mutationBlocked) return;
+    const generation = this.generation;
+    this.pending.add(key);
+    // Cancel list reads so an older snapshot cannot undo a confirmed mutation.
+    Object.values(this.savedRequests).forEach((subscription) => subscription?.unsubscribe());
+    this.savedLoading.clear();
     this.subscriptions.add(
-      this.newsService.saveNews(article, type).subscribe({
-        next: (savedItem) => {
-          this.savedItemsByType[type].set(savedItem.articleId, savedItem);
-          this.syncSavedSetsFromMaps();
-          pendingSet.delete(articleId);
-          if (!this.isFeedView && this.selectedSavedType === type) {
-            this.refreshSavedViewCollection(type);
+      request.pipe(takeUntil(this.scopeChanged)).subscribe({
+        next: (value) => {
+          if (generation === this.generation) {
+            acknowledged(value);
+            this.cdr.markForCheck();
           }
-          this.showToast('success', type === 'bookmark' ? 'Article bookmarked.' : 'Saved to Read Later.');
-          this.cdr.markForCheck();
         },
         error: (error) => {
-          this.restoreSavedSnapshot(snapshot);
-          pendingSet.delete(articleId);
-          this.showToast('error', error?.error?.message || 'Unable to save this article right now.');
+          if (generation !== this.generation) return;
+          this.pending.delete(key);
+          this.showToast(this.errorText(error.status));
+          this.startClock();
+          // The server may have accepted a write before a transport failure.
+          this.loadLibrary('bookmark', 1, true);
+          this.loadLibrary('read_later', 1, true);
+        },
+        complete: () => {
+          this.pending.delete(key);
           this.cdr.markForCheck();
-        }
-      })
+        },
+      }),
+    );
+    this.cdr.markForCheck();
+  }
+
+  private resetScope(scope: string): void {
+    this.scope = scope;
+    this.generation++;
+    this.scopeChanged.next();
+    this.cancelFeed();
+    this.news.clearCache();
+    Object.values(this.savedRequests).forEach((subscription) => subscription?.unsubscribe());
+    this.library.bookmark.clear();
+    this.library.read_later.clear();
+    this.pending.clear();
+    this.savedLoading.clear();
+    this.savedKnown.clear();
+    this.savedTotal.bookmark = 0;
+    this.savedTotal.read_later = 0;
+    this.items = [];
+    this.context = null;
+    this.telemetry = undefined;
+    this.trendingTopics = [];
+    this.total = 0;
+    this.page = 1;
+    this.totalPages = 1;
+    this.errorMessage = '';
+    this.savedError = '';
+    this.toast = '';
+    this.historyFilter = 'all';
+    if (scope) {
+      this.loadLibrary('bookmark', 1, true);
+      this.loadLibrary('read_later', 1, true);
+      if (this.isFeedView) this.fetch(1);
+    }
+    this.cdr.markForCheck();
+  }
+  private cancelFeed(): void {
+    this.feedNonce++;
+    this.activeRequest?.unsubscribe();
+    this.isLoading = false;
+  }
+  private findSaved(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
+    return [...this.library[type].values()].find(
+      (item) => item.articleId === article.id || item.url === article.url,
     );
   }
-
-  private replaceSavedMaps(items: SavedNewsItem[]): void {
-    this.savedItemsByType.bookmark.clear();
-    this.savedItemsByType.read_later.clear();
-    items.forEach((item) => this.savedItemsByType[item.type].set(item.articleId, item));
-    this.syncSavedSetsFromMaps();
+  private errorText(status: number): string {
+    if (status === 429) return 'Too many requests. Wait for the retry timer before trying again.';
+    if (status === 503)
+      return 'News is temporarily unavailable. Your loaded articles are still here.';
+    if (status === 0) return 'Connection interrupted. Check your connection and try again.';
+    if ([401, 403].includes(status)) return 'Your session cannot access this news. Sign in again.';
+    return 'The server could not confirm this request. Please try again.';
   }
-
-  private refreshSavedViewCollection(type: NewsSavedType): void {
-    this.savedItemsView = Array.from(this.savedItemsByType[type].values()).sort(
-      (left, right) => new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime()
-    );
-  }
-
-  private syncSavedSetsFromMaps(): void {
-    this.bookmarks = new Set(Array.from(this.savedItemsByType.bookmark.keys()));
-    this.readLater = new Set(Array.from(this.savedItemsByType.read_later.keys()));
-    this.persistClientState(BOOKMARK_KEY, this.bookmarks);
-    this.persistClientState(READ_LATER_KEY, this.readLater);
-    this.writeAllSavedCaches();
-  }
-
-  private patchSavedItemLocal(item: SavedNewsItem): void {
-    this.savedItemsByType[item.type].set(item.articleId, item);
-    if (this.selectedSavedType === item.type) {
-      this.savedItemsView = this.savedItemsView.map((entry) => (entry.articleId === item.articleId ? item : entry));
-    }
-    this.writeAllSavedCaches();
-  }
-
-  private findSavedItem(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
-    const direct = this.savedItemsByType[type].get(article.id);
-    if (direct) return direct;
-
-    for (const item of this.savedItemsByType[type].values()) {
-      if (item.url === article.url) return item;
-    }
-
-    return undefined;
-  }
-
-  private toNewsItem(item: SavedNewsItem): NewsItem {
-    return {
-      id: item.articleId,
-      title: item.title,
-      description: '',
-      source: item.source,
-      url: item.url,
-      image: item.image,
-      publishedAt: item.publishedAt || item.createdAt || '',
-      category: item.category,
-      popularity: 0,
-      relevanceScore: 0,
-      rankScore: 0,
-      tags: []
-    };
-  }
-
-  private captureSavedSnapshot() {
-    return {
-      bookmarks: new Set(this.bookmarks),
-      readLater: new Set(this.readLater),
-      bookmarkMap: new Map(this.savedItemsByType.bookmark),
-      readLaterMap: new Map(this.savedItemsByType.read_later),
-      savedItemsView: [...this.savedItemsView]
-    };
-  }
-
-  private restoreSavedSnapshot(snapshot: {
-    bookmarks: Set<string>;
-    readLater: Set<string>;
-    bookmarkMap: Map<string, SavedNewsItem>;
-    readLaterMap: Map<string, SavedNewsItem>;
-    savedItemsView: SavedNewsItem[];
-  }): void {
-    this.bookmarks = new Set(snapshot.bookmarks);
-    this.readLater = new Set(snapshot.readLater);
-    this.savedItemsByType.bookmark.clear();
-    this.savedItemsByType.read_later.clear();
-    snapshot.bookmarkMap.forEach((value, key) => this.savedItemsByType.bookmark.set(key, value));
-    snapshot.readLaterMap.forEach((value, key) => this.savedItemsByType.read_later.set(key, value));
-    this.savedItemsView = [...snapshot.savedItemsView];
-    this.persistClientState(BOOKMARK_KEY, this.bookmarks);
-    this.persistClientState(READ_LATER_KEY, this.readLater);
-    this.writeAllSavedCaches();
-  }
-
-
-  private mergeUniqueItems(currentItems: NewsItem[], nextItems: NewsItem[]): NewsItem[] {
-    const seen = new Set(currentItems.map((item) => item.id));
-    const merged = [...currentItems];
-
-    nextItems.forEach((item) => {
-      if (!item?.id || seen.has(item.id)) return;
-      seen.add(item.id);
-      merged.push(item);
-    });
-
-    return merged;
-  }
-
-  private buildSourceBanner(): string {
-    const providers = Array.isArray(this.telemetry.providerUsed) ? this.telemetry.providerUsed : [];
-    if (providers.length && this.telemetry.providerFailureCount > 0) {
-      return `Showing live news from ${providers.join(', ')}. Some providers were unavailable, so the feed was safely reduced.`;
-    }
-    if (providers.length) {
-      return `Showing live developer news from ${providers.join(', ')}.`;
-    }
-    if (this.recommendedBasedOn?.sourceStatus) {
-      return this.recommendedBasedOn.sourceStatus;
-    }
-    return '';
-  }
-
-  private formatLastUpdated(value?: string): string {
-    if (!value) return '';
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return '';
-    return new Intl.DateTimeFormat('en', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(parsed);
-  }
-
-  formatSavedDate(value: string | null): string {
-    if (!value) return '';
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return '';
-    return new Intl.DateTimeFormat('en', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(parsed);
-  }
-
-  private prettyLabel(value: string): string {
-    if (value === 'today') return 'Today';
-    if (value === 'week') return 'This week';
-    if (value === 'month') return 'This month';
-    return value;
-  }
-
-  private showToast(type: 'success' | 'error', message: string): void {
-    if (this.toastTimer) clearTimeout(this.toastTimer);
-    this.toast = { visible: true, type, message };
+  private showToast(message: string): void {
+    clearTimeout(this.toastTimer);
+    this.toast = message;
     this.toastTimer = setTimeout(() => {
-      this.toast = { ...this.toast, visible: false };
+      this.toast = '';
       this.cdr.markForCheck();
-    }, 2800);
+    }, 5000);
     this.cdr.markForCheck();
   }
-
-  private buildFilterSignature(filters: NewsFilters): string {
-    return JSON.stringify(normalizeNewsFilters(filters));
+  private startClock(): void {
+    this.now = Date.now();
+    if (this.clock) return;
+    this.clock = setInterval(() => {
+      this.now = Date.now();
+      this.cdr.markForCheck();
+      if (!this.retrySeconds && !this.refreshSeconds && !this.mutationBlocked) {
+        clearInterval(this.clock);
+        this.clock = undefined;
+      }
+    }, 1000);
   }
-
-  private buildFeedCacheKey(filters: NewsFilters, page: number): FrontendAnalysisCacheKey {
-    const profile = this.careerProfileService.snapshot;
-    const normalized = normalizeNewsFilters(filters);
-    const filterHash = this.stableHash(JSON.stringify({ ...normalized, page, limit: PAGE_SIZE }));
-    const profileHash = this.stableHash(this.profileSignature || JSON.stringify(profile));
-    const signalHash = this.stableHash(`${this.currentSignalHash || 'no-server-signal'}:${profileHash}`);
-    return {
-      module: 'news-feed',
-      careerStack: profile.careerStack,
-      experienceLevel: profile.experienceLevel,
-      signalHash,
-      limit: PAGE_SIZE,
-      version: `${normalized.tab}:${page}:${filterHash}:${signalHash}`,
-      ttlMs: FEED_CACHE_TTL_MS
-    };
+  private revalidate(): void {
+    if (!this.scope || this.offline || this.pending.size) return;
+    this.loadLibrary('bookmark', 1, true);
+    this.loadLibrary('read_later', 1, true);
+    if (this.isFeedView && !this.isLoading) this.fetch(this.page);
+    this.lastValidated = Date.now();
   }
-
-  private buildSavedCacheKey(type: NewsSavedType | 'all'): FrontendAnalysisCacheKey {
-    const profile = this.careerProfileService.snapshot;
-    return {
-      module: 'news-saved',
-      careerStack: profile.careerStack,
-      experienceLevel: profile.experienceLevel,
-      signalHash: this.currentSignalHash || 'saved',
-      version: `${type}:${this.currentSignalHash || 'saved'}`,
-      ttlMs: SAVED_CACHE_TTL_MS
-    };
-  }
-
-  private readSavedCache(type: NewsSavedType | 'all'): SavedNewsItem[] | null {
-    const cached = this.frontendCache.get<{ items?: SavedNewsItem[] }>(this.buildSavedCacheKey(type));
-    if (Array.isArray(cached?.items)) return cached.items;
-    return null;
-  }
-
-  private writeSavedCache(type: NewsSavedType | 'all', items: SavedNewsItem[]): void {
-    this.frontendCache.set(this.buildSavedCacheKey(type), { items });
-  }
-
-  private writeAllSavedCaches(): void {
-    const bookmarks = Array.from(this.savedItemsByType.bookmark.values());
-    const readLater = Array.from(this.savedItemsByType.read_later.values());
-    this.writeSavedCache('bookmark', bookmarks);
-    this.writeSavedCache('read_later', readLater);
-    this.writeSavedCache('all', [...bookmarks, ...readLater]);
-  }
-
-  private rememberSignalHash(value: string): void {
-    const normalized = String(value || '').trim();
-    if (!normalized || normalized === this.currentSignalHash) return;
-    this.clearFeedCache();
-    this.currentSignalHash = normalized;
-    localStorage.setItem(SIGNAL_HASH_KEY, normalized);
-  }
-
-  private stableHash(value: string): string {
-    let hash = 2166136261;
-    for (let index = 0; index < value.length; index += 1) {
-      hash ^= value.charCodeAt(index);
-      hash = Math.imul(hash, 16777619);
-    }
-    return Math.abs(hash >>> 0).toString(36);
-  }
-
-  private restoreClientState(): void {
-    this.currentSignalHash = localStorage.getItem(SIGNAL_HASH_KEY) || '';
-    this.bookmarks = this.readSet(BOOKMARK_KEY);
-    this.readLater = this.readSet(READ_LATER_KEY);
-  }
-
-  private readSet(key: string): Set<string> {
-    try {
-      const raw = JSON.parse(localStorage.getItem(key) || '[]');
-      if (!Array.isArray(raw)) return new Set<string>();
-      return new Set<string>(raw.filter((value) => typeof value === 'string' && value.trim()));
-    } catch {
-      return new Set<string>();
-    }
-  }
-
-  private persistClientState(key: string, values: Set<string>): void {
-    localStorage.setItem(key, JSON.stringify([...values]));
+  private readonly onFocus = () => {
+    if (document.visibilityState === 'visible' && Date.now() - this.lastValidated > 30000)
+      this.revalidate();
+  };
+  private readonly onOnline = () => {
+    this.offline = false;
+    this.revalidate();
     this.cdr.markForCheck();
-  }
+  };
+  private readonly onOffline = () => {
+    this.offline = true;
+    this.cdr.markForCheck();
+  };
 }

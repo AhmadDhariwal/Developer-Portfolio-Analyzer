@@ -1,9 +1,11 @@
-<section class="filters-shell">
+<form class="filters-shell" (ngSubmit)="applyFilters()">
   <div class="filters-panel">
     <div class="search-control">
       <label for="news-search">Search</label>
       <input
         id="news-search"
+        name="news-search"
+        maxlength="80"
         type="text"
         [ngModel]="draftFilters.search"
         (ngModelChange)="setSearch($event)"
@@ -13,21 +15,36 @@
 
     <div class="select-control">
       <label for="news-category">Category</label>
-      <select id="news-category" [ngModel]="draftFilters.category" (ngModelChange)="setCategory($event)">
+      <select
+        id="news-category"
+        name="news-category"
+        [ngModel]="draftFilters.category"
+        (ngModelChange)="setCategory($event)"
+      >
         <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
       </select>
     </div>
 
     <div class="select-control">
       <label for="news-source">Source</label>
-      <select id="news-source" [ngModel]="draftFilters.source" (ngModelChange)="setSource($event)">
+      <select
+        id="news-source"
+        name="news-source"
+        [ngModel]="draftFilters.source"
+        (ngModelChange)="setSource($event)"
+      >
         <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
       </select>
     </div>
 
     <div class="select-control">
       <label for="news-date">Date</label>
-      <select id="news-date" [ngModel]="draftFilters.date" (ngModelChange)="setDate($event)">
+      <select
+        id="news-date"
+        name="news-date"
+        [ngModel]="draftFilters.date"
+        (ngModelChange)="setDate($event)"
+      >
         <option value="today">Today</option>
         <option value="week">This Week</option>
         <option value="month">This Month</option>
@@ -36,18 +53,28 @@
 
     <div class="select-control">
       <label for="news-popularity">Popularity</label>
-      <select id="news-popularity" [ngModel]="draftFilters.popularity" (ngModelChange)="setPopularity($event)">
+      <select
+        id="news-popularity"
+        name="news-popularity"
+        [ngModel]="draftFilters.popularity"
+        (ngModelChange)="setPopularity($event)"
+      >
         <option value="all">All</option>
         <option value="high">High Only</option>
       </select>
     </div>
 
-    <button type="button" class="reset-button" [disabled]="!hasActiveFilters" (click)="resetFilters()">
+    <button
+      type="button"
+      class="reset-button"
+      [disabled]="!hasActiveFilters"
+      (click)="resetFilters()"
+    >
       Reset Filters
     </button>
 
-    <button type="button" class="apply-button" [disabled]="!hasPendingChanges || isApplying" (click)="applyFilters()">
+    <button type="submit" class="apply-button" [disabled]="!hasPendingChanges || isApplying">
       {{ isApplying ? 'Applying...' : 'Apply Filters' }}
     </button>
   </div>
-</section>
+</form>

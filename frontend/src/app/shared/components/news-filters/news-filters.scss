@@ -1,120 +1,195 @@
 .filters-shell {
-  display: grid;
-  gap: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface-card);
+  padding: 18px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .filters-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(115px, 1fr)) auto auto;
+  gap: 14px;
   align-items: end;
-  padding: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 1.1rem;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96)),
-    rgba(15, 23, 42, 0.84);
-  box-shadow: 0 18px 42px rgba(2, 6, 23, 0.32);
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
 }
 
-.search-control {
-  grid-column: span 2;
-
-  @media (max-width: 900px) {
-    grid-column: span 1;
-  }
+label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
 }
 
-.search-control,
-.select-control {
-  display: grid;
-  gap: 0.45rem;
+input,
+select {
+  width: 100%;
   min-width: 0;
+  min-height: 42px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-secondary, #f8fafc);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
-  label {
-    color: var(--text-muted);
-    font-size: 0.73rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+  &:hover {
+    border-color: var(--color-primary-border);
   }
 
-  input,
-  select {
-    width: 100%;
-    min-width: 0;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(15, 23, 42, 0.94);
-    color: var(--text-primary);
-    border-radius: 0.9rem;
-    padding: 0.82rem 0.95rem;
-    font-size: 0.86rem;
-    transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease,
-      transform 160ms ease;
-
-    &:focus {
-      outline: none;
-      border-color: rgba(96, 165, 250, 0.45);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+    background: var(--surface-card);
   }
+}
+
+:host-context([data-theme='dark']) input,
+:host-context([data-theme='dark']) select,
+:host-context(.dark) input,
+:host-context(.dark) select {
+  background: rgba(15, 25, 48, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+
+  &:hover {
+    border-color: rgba(163, 166, 255, 0.4);
+  }
+
+  &:focus {
+    background: var(--surface-card);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(163, 166, 255, 0.18);
+  }
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+button {
+  min-height: 42px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reset-button {
-  height: 3rem;
-  padding: 0 1rem;
-  min-width: 0;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(30, 41, 59, 0.68);
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  font-weight: 700;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+  border-color: var(--border-color);
 
   &:hover:not(:disabled) {
+    background: var(--surface-secondary);
+    color: var(--text-primary);
+    border-color: var(--color-primary-border);
     transform: translateY(-1px);
-    border-color: rgba(251, 191, 36, 0.42);
-    background: rgba(51, 65, 85, 0.82);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
   }
 }
 
 .apply-button {
-  height: 3rem;
-  min-width: 0;
-  padding: 0 1rem;
-  border-radius: 0.9rem;
-  border: 1px solid transparent;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-  transition:
-    transform 160ms ease,
-    filter 160ms ease,
-    opacity 160ms ease;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary), #4338ca);
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.25);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    filter: brightness(1.05);
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
   }
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+:host-context([data-theme='dark']) .apply-button,
+:host-context(.dark) .apply-button {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+  }
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1200px) {
+  .filters-panel {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .search-control {
+    grid-column: 1 / -1;
+  }
+
+  .reset-button {
+    grid-column: 3;
+  }
+
+  .apply-button {
+    grid-column: 4;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .reset-button {
+    grid-column: 1;
+  }
+
+  .apply-button {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-shell {
+    padding: 14px;
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .reset-button,
+  .apply-button {
+    grid-column: 1;
+    width: 100%;
   }
 }

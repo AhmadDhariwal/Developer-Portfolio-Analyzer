@@ -5,7 +5,7 @@ import {
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +18,7 @@ import {
   NewsFilters,
   NewsPopularityFilter,
   NewsSource,
-  normalizeNewsFilters
+  normalizeNewsFilters,
 } from '../../models/news.model';
 
 @Component({
@@ -27,7 +27,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: './news-filters.html',
   styleUrl: './news-filters.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewsFiltersComponent implements OnChanges {
   @Input() filters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
@@ -73,7 +73,7 @@ export class NewsFiltersComponent implements OnChanges {
   }
 
   resetFilters(): void {
-    this.draftFilters = { ...DEFAULT_NEWS_FILTERS };
+    this.draftFilters = { ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab };
     this.filtersChange.emit({ ...this.draftFilters });
   }
 
