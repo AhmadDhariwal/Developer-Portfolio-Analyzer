@@ -7,8 +7,9 @@
 @use './app/shared/styles/developer-ui' as developer;
 @use './app/shared/styles/layout-helpers' as *;
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
+// Remote font styles are already linked in index.html. An @import here makes
+// loading the production stylesheet depend on that remote request succeeding,
+// leaving its deferred media="print" unchanged when offline. Manrope is local.
 
 /* --------------------------------------------------------------------------
    LIGHT THEME (Default — Production Hybrid SaaS Theme)

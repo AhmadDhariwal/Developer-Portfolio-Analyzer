@@ -1,15 +1,23 @@
 const developerContext = require('../services/developerContextService');
-const { buildJobPool, findCachedJobById, getSourceHealth, getCacheHealth, normaliseJobFilters, isUsableJob } = require('../services/jobService');
-const AnalysisCache = require('../models/analysisCache');
-const Analysis = require('../models/analysis');
-const ResumeAnalysis = require('../models/resumeAnalysis');
-const User = require('../models/user');
+const {
+  buildJobPool,
+  findCachedJobById,
+  getSourceHealth,
+  getCacheHealth,
+  normaliseJobFilters,
+  isUsableJob
+} = require('../services/jobService');
 const Recommendation = require('../models/recommendation');
 const CareerSprint = require('../models/careerSprint');
 const { getIntegrationSecretsSync } = require('../services/platformSettingsService');
 const { buildCoursePool } = require('../services/courseService');
+const actions = require('../services/jobActionService');
+const { resolveSkillSignals } = require('../services/coursePersonalizationService');
 const { rankJobs } = require('../utils/jobRanker');
-const COURSE_POOL_CACHE_TTL_MS = Math.max(60000, Number.parseInt(process.env.JOB_COURSE_POOL_CACHE_TTL_MS || '900000', 10) || 900000);
+const COURSE_POOL_CACHE_TTL_MS = Math.max(
+  60000,
+  Number.parseInt(process.env.JOB_COURSE_POOL_CACHE_TTL_MS || '900000', 10) || 900000
+);
 const coursePoolCache = new Map();
 const coursePoolInflight = new Map();
 
@@ -46,122 +54,70 @@ const SOURCE_LABELS = {
   unknown: 'Unknown'
 };
 
-const flattenResumeSkills = (skillsMap = {}) => {
-  if (!skillsMap) return [];
-  const values = skillsMap instanceof Map
-    ? Array.from(skillsMap.values())
-    : Object.values(skillsMap);
-  return uniqueStrings(values.flat(), 18);
-};
-
-const flattenResumeSignals = (resumeAnalysis = {}) => {
-  const signals = resumeAnalysis?.resumeSignals || {};
-  if (Array.isArray(signals.skills) && signals.skills.length) return uniqueStrings(signals.skills, 18);
-  if (signals.technologyCategories && typeof signals.technologyCategories === 'object') {
-    return uniqueStrings(Object.values(signals.technologyCategories).flat(), 18);
-  }
-  return flattenResumeSkills(resumeAnalysis?.skills);
-};
-
-const loadDefaultResumeAnalysis = (userId) => developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
-
-const resolveDeveloperSignals = async (userId) => {
-  if (!userId) {
-    return {
-      skillGaps: [],
-      knownSkills: [],
-      resumeSkills: [],
-      githubSkills: []
-    };
-  }
-
-  const [signalCacheResult, latestResume, latestAnalysis] = await Promise.all([
-    AnalysisCache.aggregate([
-      { $match: { userId } },
-      { $facet: {
-        skillGap: [
-          { $match: { 'analysisData.missingSkills.0': { $exists: true } } },
-          { $sort: { updatedAt: -1 } },
-          { $limit: 1 }
-        ],
-        recommendation: [
-          { $match: { 'analysisData.recommendationSignals.priorityRecommendations.0': { $exists: true } } },
-          { $sort: { updatedAt: -1 } },
-          { $limit: 1 }
-        ]
-      } }
-    ]),
-    loadDefaultResumeAnalysis(userId),
-    Analysis.findOne({ userId }).sort({ createdAt: -1 }).lean()
-  ]);
-  const latestCache = signalCacheResult?.[0]?.skillGap?.[0] || null;
-  const latestRecommendationCache = signalCacheResult?.[0]?.recommendation?.[0] || null;
-
-  const skillGaps = Array.isArray(latestCache?.analysisData?.missingSkills)
-    ? latestCache.analysisData.missingSkills.map((item) => item?.name || item)
-    : [];
-  const knownSkills = Array.isArray(latestCache?.analysisData?.yourSkills)
-    ? latestCache.analysisData.yourSkills.map((item) => item?.name || item)
-    : [];
-  const githubSkills = latestAnalysis?.languageDistribution
-    ? Object.keys(
-        latestAnalysis.languageDistribution instanceof Map
-          ? Object.fromEntries(latestAnalysis.languageDistribution)
-          : latestAnalysis.languageDistribution
-      )
-    : [];
-  const recommendationSignals = latestRecommendationCache?.analysisData?.recommendationSignals || {};
-  const recommendationSkills = uniqueStrings([
-    ...(recommendationSignals.skills?.recommendedTechnologies || []),
-    ...(recommendationSignals.skills?.missingSkills || []),
-    ...(recommendationSignals.skills?.weakSkills || [])
-  ], 16);
-
-  return {
-    skillGaps: uniqueStrings([...skillGaps, ...(recommendationSignals.skills?.missingSkills || [])], 12),
-    knownSkills: uniqueStrings([...knownSkills, ...recommendationSkills], 20),
-    resumeSkills: flattenResumeSignals(latestResume),
-    githubSkills: uniqueStrings(githubSkills, 12),
-    recommendationSkills
-  };
+// Reuse the current-evidence compatibility gate without changing scoring rules.
+const resolveDeveloperSignals = async (user) => {
+  const signals = await resolveSkillSignals(
+    user?._id,
+    developerContext.resolveCareerStack(user) || 'Full Stack',
+    developerContext.resolveExperienceLevel(user) || 'Student',
+    undefined,
+    user
+  );
+  return { ...signals, resumeSkills: [], githubSkills: [], recommendationSkills: [] };
 };
 
 const buildSourceMeta = (jobs = [], diagnostics = {}) => {
-  const sourceSummary = jobs.reduce((accumulator, job) => {
-    const rawSource = String(job?.source || 'Unknown').toLowerCase();
-    const source = rawSource.includes('arbeit') ? 'arbeitnow' : rawSource;
-    accumulator[source] = (accumulator[source] || 0) + 1;
-    return accumulator;
-  }, { jsearch: 0, jooble: 0, adzuna: 0, remotive: 0, arbeitnow: 0, remoteok: 0 });
+  const sourceSummary = jobs.reduce(
+    (accumulator, job) => {
+      const rawSource = String(job?.source || 'Unknown').toLowerCase();
+      const source = rawSource.includes('arbeit') ? 'arbeitnow' : rawSource;
+      accumulator[source] = (accumulator[source] || 0) + 1;
+      return accumulator;
+    },
+    { jsearch: 0, jooble: 0, adzuna: 0, remotive: 0, arbeitnow: 0, remoteok: 0 }
+  );
 
-  const primarySourceKey = Object.entries(sourceSummary)
-    .sort((left, right) => Number(right[1]) - Number(left[1]))[0]?.[0] || 'unknown';
+  const primarySourceKey =
+    Object.entries(sourceSummary).sort(
+      (left, right) => Number(right[1]) - Number(left[1])
+    )[0]?.[0] || 'unknown';
   const primarySource = SOURCE_LABELS[primarySourceKey] || primarySourceKey;
 
   const jsearchConfigured = hasJSearchConfig();
-  const joobleConfigured = diagnostics?.sourceConfigs?.jooble?.configured ?? Boolean(process.env.JOOBLE_API_KEY);
+  const joobleConfigured =
+    diagnostics?.sourceConfigs?.jooble?.configured ?? Boolean(process.env.JOOBLE_API_KEY);
   const jsearchCount = Number(sourceSummary.jsearch || 0);
-  const secondaryCount = Number(sourceSummary.jooble || 0)
-    + Number(sourceSummary.adzuna || 0)
-    + Number(sourceSummary.remotive || 0)
-    + Number(sourceSummary.arbeitnow || 0)
-    + Number(sourceSummary.remoteok || 0);
-  let sourceMessage = 'Showing real jobs from live sources and cached real-source results when needed.';
+  const secondaryCount =
+    Number(sourceSummary.jooble || 0) +
+    Number(sourceSummary.adzuna || 0) +
+    Number(sourceSummary.remotive || 0) +
+    Number(sourceSummary.arbeitnow || 0) +
+    Number(sourceSummary.remoteok || 0);
+  let sourceMessage =
+    'Showing real jobs from live sources and cached real-source results when needed.';
 
-  if (diagnostics?.allLiveSourcesFailed && jobs.length) {
-    sourceMessage = 'Live job sources are unavailable right now. Showing cached jobs from JobCache.';
+  if (diagnostics?.fromCacheOnly && jobs.length) {
+    sourceMessage = diagnostics?.cacheFallback?.stale
+      ? 'Showing retained source listings while quota-aware refresh runs. Availability must be confirmed with the source.'
+      : 'Showing cached source listings ranked for your current developer context.';
+  } else if (diagnostics?.allLiveSourcesFailed && jobs.length) {
+    sourceMessage =
+      'Live job sources are unavailable right now. Showing cached jobs from JobCache.';
   } else if (jsearchConfigured === false) {
     sourceMessage = joobleConfigured
       ? 'JSearch is disabled right now. Showing real jobs from Jooble, secondary sources, and cached real-source results.'
       : 'JSearch is disabled right now. Showing real jobs from secondary sources and cached real-source results only.';
   } else if (jsearchCount > 0) {
-    sourceMessage = secondaryCount > 0
-      ? 'Showing live jobs from JSearch plus secondary real job sources.'
-      : 'Showing live jobs from JSearch.';
+    sourceMessage =
+      secondaryCount > 0
+        ? 'Showing live jobs from JSearch plus secondary real job sources.'
+        : 'Showing live jobs from JSearch.';
   } else if (secondaryCount > 0) {
-    sourceMessage = 'Showing real jobs from secondary job sources because JSearch returned limited coverage.';
+    sourceMessage =
+      'Showing real jobs from secondary job sources because JSearch returned limited coverage.';
   } else if (!jobs.length) {
-    sourceMessage = 'No real jobs were available for these filters right now. Try broader filters or refresh later.';
+    sourceMessage =
+      'No real jobs were available for these filters right now. Try broader filters or refresh later.';
   }
 
   return {
@@ -173,34 +129,41 @@ const buildSourceMeta = (jobs = [], diagnostics = {}) => {
   };
 };
 
-const toSearchTokens = (...groups) => uniqueStrings(
-  groups
-    .flat()
-    .flatMap((value) => String(value || '').split(/[^a-zA-Z0-9+#.]+/))
-    .map((value) => value.trim())
-    .filter((value) => value.length >= 2),
-  18
-).map((value) => value.toLowerCase());
+const toSearchTokens = (...groups) =>
+  uniqueStrings(
+    groups
+      .flat()
+      .flatMap((value) => String(value || '').split(/[^a-zA-Z0-9+#.]+/))
+      .map((value) => value.trim())
+      .filter((value) => value.length >= 2),
+    18
+  ).map((value) => value.toLowerCase());
 
 const includesAnyToken = (text, tokens = []) => {
   const haystack = String(text || '').toLowerCase();
   return tokens.some((token) => haystack.includes(token));
 };
 
-const summarizeCourse = (course) => course ? {
-  title: String(course.title || '').trim(),
-  platform: String(course.platform || '').trim(),
-  url: String(course.url || '').trim(),
-  whyRecommended: String(course.whyRecommended || '').trim()
-} : null;
+const summarizeCourse = (course) =>
+  course
+    ? {
+        title: String(course.title || '').trim(),
+        platform: String(course.platform || '').trim(),
+        url: String(course.url || '').trim(),
+        whyRecommended: String(course.whyRecommended || '').trim()
+      }
+    : null;
 
-const summarizeSprintTask = (task) => task ? {
-  title: String(task.title || '').trim(),
-  description: String(task.description || '').trim(),
-  category: String(task.category || '').trim(),
-  priority: String(task.priority || '').trim(),
-  points: Number(task.points || 0)
-} : null;
+const summarizeSprintTask = (task) =>
+  task
+    ? {
+        title: String(task.title || '').trim(),
+        description: String(task.description || '').trim(),
+        category: String(task.category || '').trim(),
+        priority: String(task.priority || '').trim(),
+        points: Number(task.points || 0)
+      }
+    : null;
 
 const resolveCareerExplanationSignals = async ({
   userId,
@@ -218,16 +181,19 @@ const resolveCareerExplanationSignals = async ({
   ]);
 
   const recommendationSkills = uniqueStrings(
-    (Array.isArray(recommendations) ? recommendations : [])
-      .flatMap((item) => [
-        ...(Array.isArray(item?.techStack) ? item.techStack : []),
-        ...(Array.isArray(item?.isNewTech) ? item.isNewTech : []),
-        item?.title,
-        item?.category
-      ]),
+    (Array.isArray(recommendations) ? recommendations : []).flatMap((item) => [
+      ...(Array.isArray(item?.techStack) ? item.techStack : []),
+      ...(Array.isArray(item?.isNewTech) ? item.isNewTech : []),
+      item?.title,
+      item?.category
+    ]),
     12
   );
-  const courseTopic = developerSignals.skillGaps?.[0] || recommendationSkills[0] || developerSignals.knownSkills?.[0] || '';
+  const courseTopic =
+    developerSignals.skillGaps?.[0] ||
+    recommendationSkills[0] ||
+    developerSignals.knownSkills?.[0] ||
+    '';
   let courses = [];
 
   try {
@@ -237,7 +203,10 @@ const resolveCareerExplanationSignals = async ({
       careerStack,
       experienceLevel,
       topic: courseTopic,
-      skillGaps: uniqueStrings([...(developerSignals.skillGaps || []), ...recommendationSkills], 12),
+      skillGaps: uniqueStrings(
+        [...(developerSignals.skillGaps || []), ...recommendationSkills],
+        12
+      ),
       knownSkills: developerSignals.knownSkills || []
     };
     const courseKey = JSON.stringify(courseOptions);
@@ -252,7 +221,12 @@ const resolveCareerExplanationSignals = async ({
       }
       try {
         courses = await inflight;
-        coursePoolCache.set(courseKey, { value: courses, expiresAt: Date.now() + COURSE_POOL_CACHE_TTL_MS });
+        while (coursePoolCache.size >= 64)
+          coursePoolCache.delete(coursePoolCache.keys().next().value);
+        coursePoolCache.set(courseKey, {
+          value: courses,
+          expiresAt: Date.now() + COURSE_POOL_CACHE_TTL_MS
+        });
       } finally {
         coursePoolInflight.delete(courseKey);
       }
@@ -275,7 +249,10 @@ const resolveCareerExplanationSignals = async ({
 const chooseRecommendedCourse = (job = {}, courses = []) => {
   const tokens = toSearchTokens(job.skills || [], job.missingSkills || [], job.title);
   const matched = courses.find((course) =>
-    includesAnyToken(`${course?.title || ''} ${course?.description || ''} ${(course?.topics || []).join(' ')}`, tokens)
+    includesAnyToken(
+      `${course?.title || ''} ${course?.description || ''} ${(course?.topics || []).join(' ')}`,
+      tokens
+    )
   );
   return summarizeCourse(matched);
 };
@@ -283,7 +260,9 @@ const chooseRecommendedCourse = (job = {}, courses = []) => {
 const chooseRecommendedSprintTask = (job = {}, sprintTasks = []) => {
   if (!sprintTasks.length) return null;
   const tokens = toSearchTokens(job.skills || [], job.missingSkills || [], job.title);
-  const matched = sprintTasks.find((task) => includesAnyToken(`${task?.title || ''} ${task?.description || ''}`, tokens));
+  const matched = sprintTasks.find((task) =>
+    includesAnyToken(`${task?.title || ''} ${task?.description || ''}`, tokens)
+  );
   return summarizeSprintTask(matched);
 };
 
@@ -321,6 +300,7 @@ const sanitizeJobDiagnostics = (diagnostics = {}) => ({
   dedupeJobs: diagnostics.dedupeJobs || {},
   rankJobs: diagnostics.rankJobs || {},
   cacheFallback: diagnostics.cacheFallback || {},
+  refreshScheduled: Boolean(diagnostics.refreshScheduled),
   fromCacheOnly: Boolean(diagnostics.fromCacheOnly)
 });
 
@@ -339,6 +319,7 @@ const sanitizeSourceHealthPayload = (payload = {}) => ({
     };
     return sources;
   }, {}),
+  governance: payload.governance || {},
   cacheMetrics: payload.cacheMetrics || {}
 });
 const enrichJobsWithCareerSignals = async (jobs = [], context = {}) => {
@@ -350,12 +331,10 @@ const enrichJobsWithCareerSignals = async (jobs = [], context = {}) => {
   }));
 };
 
-const rankAndEnrichCachedJob = async (job, {
-  userId,
-  careerStack,
-  experienceLevel,
-  developerSignals
-}) => {
+const rankAndEnrichCachedJob = async (
+  job,
+  { userId, careerStack, experienceLevel, developerSignals }
+) => {
   const [rankedJob] = rankJobs([job], {
     careerStack,
     experienceLevel,
@@ -389,7 +368,9 @@ const getSourceHealthStatus = async (_req, res) => {
     return res.json(sanitizeSourceHealthPayload(payload));
   } catch (error) {
     console.error('[JobController] Failed to fetch source health:', error.message);
-    return res.status(500).json({ message: 'Failed to fetch job source health. Please try again.' });
+    return res
+      .status(500)
+      .json({ message: 'Failed to fetch job source health. Please try again.' });
   }
 };
 
@@ -419,8 +400,12 @@ const buildRecommendedBasedOn = ({
 
   const summary = [
     `Jobs are ranked for your ${careerStack} profile at ${experienceLevel} level.`,
-    skillGaps.length ? `Priority gaps used: ${skillGaps.slice(0, 4).join(', ')}.` : 'No explicit skill gaps were available, so broader stack matching was used.',
-    activeFilterParts.length ? `Active filters: ${activeFilterParts.join(', ')}.` : 'No extra feed filters are active right now.'
+    skillGaps.length
+      ? `Priority gaps used: ${skillGaps.slice(0, 4).join(', ')}.`
+      : 'No explicit skill gaps were available, so broader stack matching was used.',
+    activeFilterParts.length
+      ? `Active filters: ${activeFilterParts.join(', ')}.`
+      : 'No extra feed filters are active right now.'
   ].join(' ');
 
   return {
@@ -438,10 +423,12 @@ const buildRecommendedBasedOn = ({
 
 const fetchJobs = async (req, res) => {
   try {
-    const careerStack = developerContext.resolveCareerStack(req.user) || req.query.stack || 'Full Stack';
-    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || req.query.experience || 'Student';
+    const careerStack =
+      developerContext.resolveCareerStack(req.user) || req.query.stack || 'Full Stack';
+    const experienceLevel =
+      developerContext.resolveExperienceLevel(req.user) || req.query.experience || 'Student';
     const filters = normaliseJobFilters(req.query);
-    const developerSignals = await resolveDeveloperSignals(req.user?._id);
+    const developerSignals = await resolveDeveloperSignals(req.user);
     const jobPool = await buildJobPool({
       careerStack,
       experienceLevel,
@@ -449,24 +436,40 @@ const fetchJobs = async (req, res) => {
       knownSkills: developerSignals.knownSkills,
       resumeSkills: developerSignals.resumeSkills,
       githubSkills: developerSignals.githubSkills,
-      forceRefresh: ['true', '1'].includes(String(req.query.forceRefresh || req.query.refresh || '').toLowerCase()),
+      forceRefresh: ['true', '1'].includes(
+        String(req.query.forceRefresh || req.query.refresh || '').toLowerCase()
+      ),
       ...filters
     });
-    const allJobs = (jobPool.jobs || []).filter(isUsableJob);
-    const enrichedAllJobs = await enrichJobsWithCareerSignals(allJobs, {
-      userId: req.user?._id,
-      careerStack,
-      experienceLevel,
-      developerSignals
-    });
+    const visibleJobs = (jobPool.jobs || []).filter(isUsableJob);
+    const actionRows = await actions.forJobs(
+      req.user._id,
+      visibleJobs.map((job) => job.id)
+    );
+    const byJob = new Map(actionRows.map((action) => [action.jobId, action]));
+    const allJobs = visibleJobs.filter((job) => !byJob.get(job.id)?.hidden);
     const diagnostics = sanitizeJobDiagnostics(jobPool.diagnostics || {});
-    const fromCache = Boolean(diagnostics?.fromCacheOnly);
-
-    const total = Array.isArray(enrichedAllJobs) ? enrichedAllJobs.length : 0;
+    const fromCache = Boolean(diagnostics.fromCacheOnly);
+    const total = allJobs.length;
     const totalPages = Math.max(1, Math.ceil(total / filters.limit));
     const safePage = Math.min(filters.page, totalPages);
     const startIndex = (safePage - 1) * filters.limit;
-    const jobs = (enrichedAllJobs || []).slice(startIndex, startIndex + filters.limit);
+    const pageJobs = allJobs.slice(startIndex, startIndex + filters.limit);
+    const jobs = (
+      await enrichJobsWithCareerSignals(pageJobs, {
+        userId: req.user._id,
+        careerStack,
+        experienceLevel,
+        developerSignals
+      })
+    ).map((job) => ({
+      ...job,
+      actions: {
+        saved: Boolean(byJob.get(job.id)?.saved),
+        applied: Boolean(byJob.get(job.id)?.applied),
+        hidden: false
+      }
+    }));
     const sourceMeta = buildSourceMeta(allJobs || [], diagnostics || {});
 
     res.json({
@@ -481,6 +484,7 @@ const fetchJobs = async (req, res) => {
       cacheCount: Number(diagnostics?.cacheCount || 0),
       warning: diagnostics?.applyFilters?.warning || undefined,
       diagnostics,
+      personalization: developerSignals.personalization,
       recommendedBasedOn: buildRecommendedBasedOn({
         careerStack,
         experienceLevel,
@@ -500,26 +504,39 @@ const fetchJobs = async (req, res) => {
 
 const getJobById = async (req, res) => {
   try {
-    const id = decodeURIComponent(String(req.params.id || '').trim());
+    const id = String(req.params.id || '').trim();
     if (!id) {
       return res.status(400).json({ message: 'Job id is required.' });
     }
 
     const careerStack = developerContext.resolveCareerStack(req.user) || 'Full Stack';
     const experienceLevel = developerContext.resolveExperienceLevel(req.user) || 'Student';
-    const developerSignals = await resolveDeveloperSignals(req.user?._id);
+    const developerSignals = await resolveDeveloperSignals(req.user);
     const cachedJob = await findCachedJobById(id);
-    if (cachedJob && isUsableJob(cachedJob)) {
+    const [action] = cachedJob ? await actions.forJobs(req.user._id, [cachedJob.id]) : [];
+    if (cachedJob && isUsableJob(cachedJob) && !action?.hidden) {
       const job = await rankAndEnrichCachedJob(cachedJob, {
         userId: req.user?._id,
         careerStack,
         experienceLevel,
         developerSignals
       });
-      return res.json({ job });
+      return res.json({
+        job: {
+          ...job,
+          actions: {
+            saved: Boolean(action?.saved),
+            applied: Boolean(action?.applied),
+            hidden: false
+          }
+        }
+      });
     }
 
-    return res.status(404).json({ message: 'Job details are no longer available. The cached job may have expired; refresh Jobs Hub and try again.' });
+    return res.status(404).json({
+      message:
+        'Job details are no longer available. The cached job may have expired; refresh Jobs Hub and try again.'
+    });
   } catch (error) {
     console.error('[JobController] Failed to fetch job details:', error.message);
     return res.status(500).json({ message: 'Failed to fetch job details. Please try again.' });

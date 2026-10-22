@@ -6,7 +6,7 @@ import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service'
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
@@ -22,7 +22,7 @@ export class ApiService {
   constructor(
     private readonly http: HttpClient,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('scenario', () => this.clearScenarioCaches());
     globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
@@ -56,22 +56,32 @@ export class ApiService {
   }
 
   /* ── Career Profile ── */
-  updateCareerProfile(careerStack: string, experienceLevel: string, careerGoal?: string): Observable<any> {
-    return this.http.put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal }).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
-    );
+  updateCareerProfile(
+    careerStack: string,
+    experienceLevel: string,
+    careerGoal?: string,
+  ): Observable<any> {
+    return this.http
+      .put(`${this.baseUrl}/profile/career`, { careerStack, experienceLevel, careerGoal })
+      .pipe(tap(() => this.invalidateDeveloperSignalState()));
   }
 
   /* ── GitHub / Resume / Analysis ── */
   analyzeGitHub(username: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/github/analyze`, { username }).pipe(
-      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearGithubCaches(); })
+      tap(() => {
+        this.invalidateDeveloperSignalState();
+        this.cacheInvalidation.clearGithubCaches();
+      }),
     );
   }
 
   uploadResume(formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/upload`, formData).pipe(
-      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
+      tap(() => {
+        this.invalidateDeveloperSignalState();
+        this.cacheInvalidation.clearResumeCaches();
+      }),
     );
   }
 
@@ -81,7 +91,10 @@ export class ApiService {
 
   analyzeResume(fileId: string, forceRefresh = false): Observable<any> {
     return this.http.post(`${this.baseUrl}/resume/analyze`, { fileId, forceRefresh }).pipe(
-      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
+      tap(() => {
+        this.invalidateDeveloperSignalState();
+        this.cacheInvalidation.clearResumeCaches();
+      }),
     );
   }
 
@@ -100,7 +113,10 @@ export class ApiService {
 
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
     return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
-      tap(() => { this.invalidateDeveloperSignalState(); this.cacheInvalidation.clearResumeCaches(); })
+      tap(() => {
+        this.invalidateDeveloperSignalState();
+        this.cacheInvalidation.clearResumeCaches();
+      }),
     );
   }
 
@@ -110,111 +126,141 @@ export class ApiService {
 
   /* ── AI Analysis (career-profile-aware) ── */
   getSkillGap(
-    username:        string,
-    careerStack:     string,
+    username: string,
+    careerStack: string,
     experienceLevel: string,
-    resumeText?:     string,
-    isTemporary = false
+    resumeText?: string,
+    isTemporary = false,
   ): Observable<any> {
-    return this.http.post(`${this.baseUrl}/skillgap/skill-gap`, {
-      username, careerStack, experienceLevel, resumeText, isTemporary
-    }).pipe(
-      tap(() => this.invalidateScenarioContextCache())
-    );
+    return this.http
+      .post(`${this.baseUrl}/skillgap/skill-gap`, {
+        username,
+        careerStack,
+        experienceLevel,
+        resumeText,
+        isTemporary,
+      })
+      .pipe(tap(() => this.invalidateScenarioContextCache()));
   }
 
   getRecommendations(
-    username:        string,
-    careerStack:     string,
+    username: string,
+    careerStack: string,
     experienceLevel: string,
-    knownSkills?:    string[],
-    missingSkills?:  string[],
-    isTemporary = false
+    knownSkills?: string[],
+    missingSkills?: string[],
+    isTemporary = false,
   ): Observable<any> {
-    const endpoint = isTemporary ? `${this.baseUrl}/recommendations/generate` : `${this.baseUrl}/recommendations`;
-    return this.http.post(endpoint, isTemporary ? {
-      githubUsername: username,
-      careerStack,
-      experienceLevel,
-      knownSkills,
-      missingSkills,
-      isTemporary: true
-    } : {
-      username,
-      careerStack,
-      experienceLevel,
-      knownSkills,
-      missingSkills
-    }).pipe(
-      tap(() => this.invalidateScenarioContextCache())
-    );
+    const endpoint = isTemporary
+      ? `${this.baseUrl}/recommendations/generate`
+      : `${this.baseUrl}/recommendations`;
+    return this.http
+      .post(
+        endpoint,
+        isTemporary
+          ? {
+              githubUsername: username,
+              careerStack,
+              experienceLevel,
+              knownSkills,
+              missingSkills,
+              isTemporary: true,
+            }
+          : {
+              username,
+              careerStack,
+              experienceLevel,
+              knownSkills,
+              missingSkills,
+            },
+      )
+      .pipe(tap(() => this.invalidateScenarioContextCache()));
   }
 
   getPortfolioScore(
-    username:        string,
-    careerStack:     string,
+    username: string,
+    careerStack: string,
     experienceLevel: string,
-    resumeAnalysis:  any,
-    githubAnalysis:  any,
-    resumeText?:     string
+    resumeAnalysis: any,
+    githubAnalysis: any,
+    resumeText?: string,
   ): Observable<any> {
     return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, {
-      username, careerStack, experienceLevel, resumeAnalysis, githubAnalysis, resumeText
+      username,
+      careerStack,
+      experienceLevel,
+      resumeAnalysis,
+      githubAnalysis,
+      resumeText,
     });
   }
 
   /* ── Dashboard ── */
   getDashboardSummary(refresh = false): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/summary`, {
-      refresh: refresh ? 'true' : undefined
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/summary`, {
+        refresh: refresh ? 'true' : undefined,
+      }),
+    );
   }
 
   getDashboardContributions(refresh = false): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/contributions`, {
-      refresh: refresh ? 'true' : undefined
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/contributions`, {
+        refresh: refresh ? 'true' : undefined,
+      }),
+    );
   }
 
   getDashboardLanguages(refresh = false): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/languages`, {
-      refresh: refresh ? 'true' : undefined
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/languages`, {
+        refresh: refresh ? 'true' : undefined,
+      }),
+    );
   }
 
   getDashboardSkills(refresh = false): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/skills`, {
-      refresh: refresh ? 'true' : undefined
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/skills`, {
+        refresh: refresh ? 'true' : undefined,
+      }),
+    );
   }
 
   getDashboardRecommendations(refresh = false): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/recommendations`, {
-      refresh: refresh ? 'true' : undefined
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/recommendations`, {
+        refresh: refresh ? 'true' : undefined,
+      }),
+    );
   }
 
   getDashboardIntegrationAnalytics(days = 7): Observable<any> {
-    return this.http.get(this.withQuery(`${this.baseUrl}/dashboard/integration-analytics`, {
-      days: String(days)
-    }));
+    return this.http.get(
+      this.withQuery(`${this.baseUrl}/dashboard/integration-analytics`, {
+        days: String(days),
+      }),
+    );
   }
 
   /* ── Audit Logs ── */
-  getAuditLogs(params: {
-    actor?: string;
-    action?: string;
-    organizationId?: string;
-    teamId?: string;
-    role?: string;
-    method?: string;
-    statusCode?: string | number;
-    actionCategory?: string;
-    from?: string;
-    to?: string;
-    page?: number;
-    limit?: number;
-  } = {}): Observable<any> {
+  getAuditLogs(
+    params: {
+      actor?: string;
+      action?: string;
+      organizationId?: string;
+      teamId?: string;
+      role?: string;
+      method?: string;
+      statusCode?: string | number;
+      actionCategory?: string;
+      from?: string;
+      to?: string;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Observable<any> {
     const query = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -230,7 +276,9 @@ export class ApiService {
     const query = new URLSearchParams();
     if (params.organizationId) query.set('organizationId', params.organizationId);
     const suffix = query.toString();
-    const endpoint = suffix ? `${this.baseUrl}/audit-logs/${id}?${suffix}` : `${this.baseUrl}/audit-logs/${id}`;
+    const endpoint = suffix
+      ? `${this.baseUrl}/audit-logs/${id}?${suffix}`
+      : `${this.baseUrl}/audit-logs/${id}`;
     return this.http.delete(endpoint);
   }
 
@@ -258,18 +306,26 @@ export class ApiService {
   }
 
   /* ── AI Versions ── */
-  getAiVersions(options: { source?: string; includeOutput?: boolean; limit?: number; page?: number } = {}): Observable<any> {
+  getAiVersions(
+    options: { source?: string; includeOutput?: boolean; limit?: number; page?: number } = {},
+  ): Observable<any> {
     const query = new URLSearchParams();
     if (options.source) query.set('source', options.source);
     if (options.includeOutput) query.set('includeOutput', 'true');
     if (options.limit) query.set('limit', String(options.limit));
     if (options.page) query.set('page', String(options.page));
     const suffix = query.toString();
-    const endpoint = suffix ? `${this.baseUrl}/ai-versions?${suffix}` : `${this.baseUrl}/ai-versions`;
+    const endpoint = suffix
+      ? `${this.baseUrl}/ai-versions?${suffix}`
+      : `${this.baseUrl}/ai-versions`;
     return this.http.get(endpoint);
   }
 
-  createAiVersion(payload: { source?: string; outputJson: Record<string, unknown>; metadata?: Record<string, unknown> }): Observable<any> {
+  createAiVersion(payload: {
+    source?: string;
+    outputJson: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/ai-versions`, payload);
   }
 
@@ -286,7 +342,11 @@ export class ApiService {
   }
 
   /* ── Multi-Tenant Teams ── */
-  createOrganization(payload: { name: string; slug?: string; description?: string }): Observable<any> {
+  createOrganization(payload: {
+    name: string;
+    slug?: string;
+    description?: string;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/tenant/organizations`, payload);
   }
 
@@ -294,7 +354,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/tenant/organizations`);
   }
 
-  createTeam(organizationId: string, payload: { name: string; slug?: string; description?: string }): Observable<any> {
+  createTeam(
+    organizationId: string,
+    payload: { name: string; slug?: string; description?: string },
+  ): Observable<any> {
     return this.http.post(`${this.baseUrl}/tenant/organizations/${organizationId}/teams`, payload);
   }
 
@@ -302,11 +365,22 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/tenant/organizations/${organizationId}/teams`);
   }
 
-  inviteUser(organizationId: string, payload: { email: string; role: 'admin' | 'manager' | 'member'; teamId?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/tenant/organizations/${organizationId}/invitations`, payload);
+  inviteUser(
+    organizationId: string,
+    payload: { email: string; role: 'admin' | 'manager' | 'member'; teamId?: string },
+  ): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/tenant/organizations/${organizationId}/invitations`,
+      payload,
+    );
   }
 
-  createAdminRecruiterDirect(payload: { name: string; email: string; password: string; teamId?: string }): Observable<any> {
+  createAdminRecruiterDirect(payload: {
+    name: string;
+    email: string;
+    password: string;
+    teamId?: string;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/recruiters/direct`, payload);
   }
 
@@ -319,7 +393,10 @@ export class ApiService {
   }
 
   revokeInvitation(organizationId: string, invitationId: string): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/tenant/organizations/${organizationId}/invitations/${invitationId}/revoke`, {});
+    return this.http.patch(
+      `${this.baseUrl}/tenant/organizations/${organizationId}/invitations/${invitationId}/revoke`,
+      {},
+    );
   }
 
   acceptInvitation(invitationId: string): Observable<any> {
@@ -327,15 +404,24 @@ export class ApiService {
   }
 
   acceptInvitationByToken(token: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/tenant/invitations/accept/${encodeURIComponent(token)}`, {});
+    return this.http.post(
+      `${this.baseUrl}/tenant/invitations/accept/${encodeURIComponent(token)}`,
+      {},
+    );
   }
 
   getInvitationDetailsByToken(token: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/tenant/invitations/${encodeURIComponent(token)}/details`);
   }
 
-  acceptInvitationOnboard(token: string, payload: { name: string; password: string; githubUsername?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/tenant/invitations/accept/${encodeURIComponent(token)}/onboard`, payload);
+  acceptInvitationOnboard(
+    token: string,
+    payload: { name: string; password: string; githubUsername?: string },
+  ): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/tenant/invitations/accept/${encodeURIComponent(token)}/onboard`,
+      payload,
+    );
   }
 
   getOrganizationMembers(organizationId: string): Observable<any> {
@@ -346,7 +432,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/tenant/teams/${teamId}/members`);
   }
 
-  updateMembershipRole(membershipId: string, role: 'admin' | 'manager' | 'member'): Observable<any> {
+  updateMembershipRole(
+    membershipId: string,
+    role: 'admin' | 'manager' | 'member',
+  ): Observable<any> {
     return this.http.patch(`${this.baseUrl}/tenant/memberships/${membershipId}/role`, { role });
   }
 
@@ -359,9 +448,9 @@ export class ApiService {
   }
 
   triggerIntegrationSync(provider?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {}).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
-    );
+    return this.http
+      .post(`${this.baseUrl}/integrations/sync-now`, provider ? { provider } : {})
+      .pipe(tap(() => this.invalidateDeveloperSignalState()));
   }
 
   runWhatIfSimulation(payload: {
@@ -371,20 +460,39 @@ export class ApiService {
     experienceLevel?: string;
     durationWeeks?: number;
     skills: string[];
-    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+    projects: Array<{
+      name: string;
+      impact: number;
+      complexity: 'low' | 'medium' | 'high';
+      weeks: number;
+    }>;
   }): Observable<any> {
     return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
   }
 
-  private getScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string): any | null {
+  private getScenarioCacheValue(
+    cache: Map<string, { value: any; expiresAt: number }>,
+    key: string,
+  ): any | null {
     const entry = cache.get(key);
     if (!entry) return null;
-    if (entry.expiresAt <= Date.now()) { cache.delete(key); return null; }
-    cache.delete(key); cache.set(key, entry); return entry.value;
+    if (entry.expiresAt <= Date.now()) {
+      cache.delete(key);
+      return null;
+    }
+    cache.delete(key);
+    cache.set(key, entry);
+    return entry.value;
   }
 
-  private setScenarioCacheValue(cache: Map<string, { value: any; expiresAt: number }>, key: string, value: any, ttlMs: number): void {
-    cache.delete(key); cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+  private setScenarioCacheValue(
+    cache: Map<string, { value: any; expiresAt: number }>,
+    key: string,
+    value: any,
+    ttlMs: number,
+  ): void {
+    cache.delete(key);
+    cache.set(key, { value, expiresAt: Date.now() + ttlMs });
     while (cache.size > this.scenarioCacheMaxEntries) {
       const oldestKey = cache.keys().next().value as string | undefined;
       if (!oldestKey) break;
@@ -394,7 +502,9 @@ export class ApiService {
 
   getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
     const key = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
-    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioContextCache, key) : null;
+    const cached = !forceRefresh
+      ? this.getScenarioCacheValue(this.scenarioContextCache, key)
+      : null;
     if (cached) return of({ ...cached, frontendCacheHit: true });
     const inflight = this.scenarioContextInflight.get(key);
     if (inflight) return inflight;
@@ -402,16 +512,31 @@ export class ApiService {
     const request$ = this.http.get(url).pipe(
       tap((response: any) => {
         this.scenarioSignalHash = response?.context?.signalHash || this.scenarioSignalHash;
-        this.setScenarioCacheValue(this.scenarioContextCache, key, response, this.scenarioContextTtlMs);
+        this.setScenarioCacheValue(
+          this.scenarioContextCache,
+          key,
+          response,
+          this.scenarioContextTtlMs,
+        );
         const resolvedKey = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
         if (resolvedKey !== key) {
-          this.setScenarioCacheValue(this.scenarioContextCache, resolvedKey, response, this.scenarioContextTtlMs);
+          this.setScenarioCacheValue(
+            this.scenarioContextCache,
+            resolvedKey,
+            response,
+            this.scenarioContextTtlMs,
+          );
         }
         const normalKey = `context:${profileSignature}:${this.scenarioSignalHash}:false`;
-        this.setScenarioCacheValue(this.scenarioContextCache, normalKey, response, this.scenarioContextTtlMs);
+        this.setScenarioCacheValue(
+          this.scenarioContextCache,
+          normalKey,
+          response,
+          this.scenarioContextTtlMs,
+        );
       }),
       finalize(() => this.scenarioContextInflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
     this.scenarioContextInflight.set(key, request$);
     return request$;
@@ -424,38 +549,63 @@ export class ApiService {
     experienceLevel?: string;
     durationWeeks?: number;
     skills: string[];
-    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+    projects: Array<{
+      name: string;
+      impact: number;
+      complexity: 'low' | 'medium' | 'high';
+      weeks: number;
+    }>;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/save`, payload).pipe(tap(() => {
-      this.invalidateScenarioHistoryCache();
-    }));
+    return this.http.post(`${this.baseUrl}/simulator/save`, payload).pipe(
+      tap(() => {
+        this.invalidateScenarioHistoryCache();
+      }),
+    );
   }
 
-  getScenarioSimulationHistory(limit = 8, forceRefresh = false, profileSignature = ''): Observable<any> {
+  getScenarioSimulationHistory(
+    limit = 8,
+    forceRefresh = false,
+    profileSignature = '',
+  ): Observable<any> {
     const key = `history:${profileSignature}:${limit}:${forceRefresh}`;
-    const cached = !forceRefresh ? this.getScenarioCacheValue(this.scenarioHistoryCache, key) : null;
+    const cached = !forceRefresh
+      ? this.getScenarioCacheValue(this.scenarioHistoryCache, key)
+      : null;
     if (cached) return of({ ...cached, frontendCacheHit: true });
     const inflight = this.scenarioHistoryInflight.get(key);
     if (inflight) return inflight;
     const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
     const request$ = this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(
       tap((response) => {
-        this.setScenarioCacheValue(this.scenarioHistoryCache, key, response, this.scenarioHistoryTtlMs);
+        this.setScenarioCacheValue(
+          this.scenarioHistoryCache,
+          key,
+          response,
+          this.scenarioHistoryTtlMs,
+        );
         const normalKey = `history:${profileSignature}:${limit}:false`;
         if (normalKey !== key) {
-          this.setScenarioCacheValue(this.scenarioHistoryCache, normalKey, response, this.scenarioHistoryTtlMs);
+          this.setScenarioCacheValue(
+            this.scenarioHistoryCache,
+            normalKey,
+            response,
+            this.scenarioHistoryTtlMs,
+          );
         }
       }),
       finalize(() => this.scenarioHistoryInflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
     this.scenarioHistoryInflight.set(key, request$);
     return request$;
   }
   deleteScenarioSimulation(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(tap(() => {
-      this.invalidateScenarioHistoryCache();
-    }));
+    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(
+      tap(() => {
+        this.invalidateScenarioHistoryCache();
+      }),
+    );
   }
 
   clearScenarioCaches(): void {
@@ -486,21 +636,52 @@ export class ApiService {
     experienceLevel?: string;
     durationWeeks?: number;
     skills: string[];
-    projects: Array<{ name: string; impact: number; complexity: 'low' | 'medium' | 'high'; weeks: number }>;
+    projects: Array<{
+      name: string;
+      impact: number;
+      complexity: 'low' | 'medium' | 'high';
+      weeks: number;
+    }>;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/create-sprint`, payload).pipe(
-      tap(() => this.invalidateDeveloperSignalState())
-    );
+    return this.http
+      .post(`${this.baseUrl}/simulator/create-sprint`, payload)
+      .pipe(tap(() => this.invalidateDeveloperSignalState()));
   }
 
   /* ── Public Profiles ── */
-  getPublicProfile(slug: string, preview?: string): Observable<any> {
+  uploadPortfolioImage(body: FormData): Observable<{ imageUrl: string }> {
+    return this.http.post<{ imageUrl: string }>(
+      `${this.baseUrl}/public-profiles/me/project-image`,
+      body,
+    );
+  }
+
+  contactPublicPortfolio(
+    slug: string,
+    body: { message: string; website: string },
+  ): Observable<{ sent: boolean }> {
+    return this.http.post<{ sent: boolean }>(
+      `${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}/contact`,
+      body,
+    );
+  }
+
+  downloadPortfolioResume(slug: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}/resume`, {
+      responseType: 'blob',
+      ...(slug !== 'me' ? { headers: { 'X-Skip-Auth': 'true' } } : {}),
+    });
+  }
+  getPublicProfile(slug: string, preview?: string, authenticated = false): Observable<any> {
     const cacheBust = Date.now();
     let url = `${this.baseUrl}/public-profiles/${encodeURIComponent(slug)}?_=${cacheBust}`;
     if (preview) {
       url += `&preview=${encodeURIComponent(preview)}`;
     }
-    return this.http.get(url);
+    return this.http.get(
+      url,
+      !preview && !authenticated ? { headers: { 'X-Skip-Auth': 'true' } } : {},
+    );
   }
 
   getMyPublicProfile(): Observable<any> {
@@ -508,8 +689,8 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/public-profiles/me?_=${cacheBust}`, {
       headers: {
         'Cache-Control': 'no-cache',
-        Pragma: 'no-cache'
-      }
+        Pragma: 'no-cache',
+      },
     });
   }
 
@@ -522,8 +703,8 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/public-profiles/me/analytics?_=${cacheBust}`, {
       headers: {
         'Cache-Control': 'no-cache',
-        Pragma: 'no-cache'
-      }
+        Pragma: 'no-cache',
+      },
     });
   }
 
@@ -532,14 +713,16 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/recruiter/dashboard`);
   }
 
-  getRecruiterCandidates(params: {
-    search?: string;
-    stack?: string;
-    experience?: number;
-    minScore?: number;
-    skills?: string[];
-    limit?: number;
-  } = {}): Observable<any> {
+  getRecruiterCandidates(
+    params: {
+      search?: string;
+      stack?: string;
+      experience?: number;
+      minScore?: number;
+      skills?: string[];
+      limit?: number;
+    } = {},
+  ): Observable<any> {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
     if (params.stack) query.set('stack', params.stack);
@@ -578,7 +761,12 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/recruiter/match`, payload);
   }
 
-  aiRankCandidates(payload: { jobId?: string; candidateIds?: string[]; candidates?: any[]; job?: any }): Observable<any> {
+  aiRankCandidates(payload: {
+    jobId?: string;
+    candidateIds?: string[];
+    candidates?: any[];
+    job?: any;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/recruiter/ai-rank`, payload);
   }
 
@@ -597,7 +785,11 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/activity?${suffix}` : `${this.baseUrl}/recruiter-hub/activity`);
+    return this.http.get(
+      suffix
+        ? `${this.baseUrl}/recruiter-hub/activity?${suffix}`
+        : `${this.baseUrl}/recruiter-hub/activity`,
+    );
   }
 
   getRecruiterHubCandidates(params: Record<string, string | number> = {}): Observable<any> {
@@ -606,7 +798,11 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/candidates?${suffix}` : `${this.baseUrl}/recruiter-hub/candidates`);
+    return this.http.get(
+      suffix
+        ? `${this.baseUrl}/recruiter-hub/candidates?${suffix}`
+        : `${this.baseUrl}/recruiter-hub/candidates`,
+    );
   }
 
   getRecruiterHubCandidate(id: string): Observable<any> {
@@ -614,7 +810,10 @@ export class ApiService {
   }
 
   analyzeRecruiterHubCandidate(id: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recruiter-hub/candidates/${encodeURIComponent(id)}/analyze`, {});
+    return this.http.post(
+      `${this.baseUrl}/recruiter-hub/candidates/${encodeURIComponent(id)}/analyze`,
+      {},
+    );
   }
 
   getRecruiterHubJobs(): Observable<any> {
@@ -634,7 +833,10 @@ export class ApiService {
   }
 
   archiveRecruiterHubJob(id: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}/archive`, {});
+    return this.http.post(
+      `${this.baseUrl}/recruiter-hub/jobs/${encodeURIComponent(id)}/archive`,
+      {},
+    );
   }
 
   deleteRecruiterHubJob(id: string): Observable<any> {
@@ -647,7 +849,11 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/matches?${suffix}` : `${this.baseUrl}/recruiter-hub/matches`);
+    return this.http.get(
+      suffix
+        ? `${this.baseUrl}/recruiter-hub/matches?${suffix}`
+        : `${this.baseUrl}/recruiter-hub/matches`,
+    );
   }
 
   generateRecruiterHubMatches(payload: Record<string, unknown>): Observable<any> {
@@ -655,7 +861,10 @@ export class ApiService {
   }
 
   updateRecruiterHubMatchStatus(id: string, payload: Record<string, unknown>): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/recruiter-hub/matches/${encodeURIComponent(id)}/status`, payload);
+    return this.http.patch(
+      `${this.baseUrl}/recruiter-hub/matches/${encodeURIComponent(id)}/status`,
+      payload,
+    );
   }
 
   getRecruiterHubShortlists(params: Record<string, string | number> = {}): Observable<any> {
@@ -664,7 +873,11 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/recruiter-hub/shortlists?${suffix}` : `${this.baseUrl}/recruiter-hub/shortlists`);
+    return this.http.get(
+      suffix
+        ? `${this.baseUrl}/recruiter-hub/shortlists?${suffix}`
+        : `${this.baseUrl}/recruiter-hub/shortlists`,
+    );
   }
 
   createRecruiterHubShortlist(payload: Record<string, unknown>): Observable<any> {
@@ -672,7 +885,10 @@ export class ApiService {
   }
 
   updateRecruiterHubShortlist(id: string, payload: Record<string, unknown>): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`, payload);
+    return this.http.patch(
+      `${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`,
+      payload,
+    );
   }
 
   deleteRecruiterHubShortlist(id: string): Observable<any> {
@@ -714,7 +930,9 @@ export class ApiService {
   }
 
   setAdminRecruiterActive(id: string, isActive: boolean): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}/active`, { isActive });
+    return this.http.patch(`${this.baseUrl}/admin/recruiters/${encodeURIComponent(id)}/active`, {
+      isActive,
+    });
   }
 
   revokeAdminRecruiterAccess(id: string): Observable<any> {
@@ -734,11 +952,17 @@ export class ApiService {
   }
 
   revokeAdminInvitation(id: string): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/revoke`, {});
+    return this.http.patch(
+      `${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/revoke`,
+      {},
+    );
   }
 
   expireAdminInvitation(id: string): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/expire`, {});
+    return this.http.patch(
+      `${this.baseUrl}/admin/invitations/${encodeURIComponent(id)}/expire`,
+      {},
+    );
   }
 
   deleteAdminInvitation(id: string): Observable<any> {
@@ -751,7 +975,9 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/admin/developers?${suffix}` : `${this.baseUrl}/admin/developers`);
+    return this.http.get(
+      suffix ? `${this.baseUrl}/admin/developers?${suffix}` : `${this.baseUrl}/admin/developers`,
+    );
   }
 
   getAdminJobs(params: Record<string, string | number> = {}): Observable<any> {
@@ -760,7 +986,9 @@ export class ApiService {
       if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
     });
     const suffix = query.toString();
-    return this.http.get(suffix ? `${this.baseUrl}/admin/jobs?${suffix}` : `${this.baseUrl}/admin/jobs`);
+    return this.http.get(
+      suffix ? `${this.baseUrl}/admin/jobs?${suffix}` : `${this.baseUrl}/admin/jobs`,
+    );
   }
 
   createAdminJob(payload: any): Observable<any> {
@@ -779,13 +1007,20 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/admin/jobs/${encodeURIComponent(id)}`);
   }
 
-  runAdminAiRanking(payload: { jobId: string; candidateIds?: string[]; candidates?: any[] }): Observable<any> {
+  runAdminAiRanking(payload: {
+    jobId: string;
+    candidateIds?: string[];
+    candidates?: any[];
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/ai-rank`, payload);
   }
 
   /* ── Weekly AI Reports ── */
   generateWeeklyReport(forceRefresh = false): Observable<any> {
-    return this.http.post(`${this.baseUrl}/weekly-reports/generate?forceRefresh=${forceRefresh ? 'true' : 'false'}`, {});
+    return this.http.post(
+      `${this.baseUrl}/weekly-reports/generate?forceRefresh=${forceRefresh ? 'true' : 'false'}`,
+      {},
+    );
   }
 
   getWeeklyReportLatest(): Observable<any> {
@@ -793,15 +1028,30 @@ export class ApiService {
   }
 
   getWeeklyReportHistory(limit = 6): Observable<any> {
-    return this.http.get(`${this.baseUrl}/weekly-reports/history?limit=${encodeURIComponent(String(limit))}`);
+    return this.http.get(
+      `${this.baseUrl}/weekly-reports/history?limit=${encodeURIComponent(String(limit))}`,
+    );
   }
 
   /* ── Interview Prep ── */
-  generateInterviewPrep(payload: { skillGaps: string[]; careerStack?: string; experienceLevel?: string }): Observable<any> {
+  generateInterviewPrep(payload: {
+    skillGaps: string[];
+    careerStack?: string;
+    experienceLevel?: string;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/interview-prep`, payload);
   }
 
-  getInterviewPrepQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[]; block?: string; category?: string; source?: string }): Observable<any> {
+  getInterviewPrepQuestions(params: {
+    skill: string;
+    page?: number;
+    limit?: number;
+    difficulty?: string;
+    tags?: string[];
+    block?: string;
+    category?: string;
+    source?: string;
+  }): Observable<any> {
     const query = new URLSearchParams();
     query.set('skill', params.skill);
     query.set('page', String(params.page ?? 1));
@@ -814,7 +1064,15 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/interview-prep/questions?${query.toString()}`);
   }
 
-  searchInterviewPrepQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[]; lookupOnly?: boolean }): Observable<any> {
+  searchInterviewPrepQuestions(params: {
+    q: string;
+    page?: number;
+    limit?: number;
+    skill?: string;
+    difficulty?: string;
+    tags?: string[];
+    lookupOnly?: boolean;
+  }): Observable<any> {
     const query = new URLSearchParams();
     query.set('q', params.q);
     query.set('page', String(params.page ?? 1));
@@ -826,7 +1084,14 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/interview-prep/search?${query.toString()}`);
   }
 
-  generateInterviewPrepQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number; target?: number }): Observable<any> {
+  generateInterviewPrepQuestions(payload: {
+    skill: string;
+    query?: string;
+    difficulty?: string;
+    page?: number;
+    limit?: number;
+    target?: number;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
   }
 
@@ -843,7 +1108,9 @@ export class ApiService {
   }
 
   getInterviewPrepHistory(limit = 5): Observable<any> {
-    return this.http.get(`${this.baseUrl}/interview-prep/history?limit=${encodeURIComponent(String(limit))}`);
+    return this.http.get(
+      `${this.baseUrl}/interview-prep/history?limit=${encodeURIComponent(String(limit))}`,
+    );
   }
 
   /* ── Career Sprint ── */
@@ -852,54 +1119,98 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/career-sprints/current${suffix}`);
   }
 
-  createCareerSprint(payload: { title?: string; weeklyGoal?: number; tasks?: Array<{ title: string; description?: string; points?: number }> }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints`, payload).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+  createCareerSprint(payload: {
+    title?: string;
+    weeklyGoal?: number;
+    tasks?: Array<{ title: string; description?: string; points?: number }>;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints`, payload).pipe(
+      tap(() => {
+        this.invalidateScenarioContextCache();
+      }),
+    );
   }
 
-  addCareerSprintTask(sprintId: string, payload: { title: string; description?: string; points?: number }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/tasks`, payload).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+  addCareerSprintTask(
+    sprintId: string,
+    payload: { title: string; description?: string; points?: number },
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/tasks`, payload).pipe(
+      tap(() => {
+        this.invalidateScenarioContextCache();
+      }),
+    );
   }
 
   updateCareerSprintTask(sprintId: string, taskId: string, isCompleted: boolean): Observable<any> {
-    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, { isCompleted });
+    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/tasks/${taskId}`, {
+      isCompleted,
+    });
   }
 
   getCareerSprintHistory(limit = 6): Observable<any> {
-    return this.http.get(`${this.baseUrl}/career-sprints/history?limit=${encodeURIComponent(String(limit))}`);
+    return this.http.get(
+      `${this.baseUrl}/career-sprints/history?limit=${encodeURIComponent(String(limit))}`,
+    );
   }
 
   restoreCareerStreak(sprintId: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/restore-streak`, {});
   }
 
-  generateAiTasks(payload: { stack?: string; technology?: string; experienceLevel?: string; sprintStartDate?: string; sprintEndDate?: string }): Observable<any> {
+  generateAiTasks(payload: {
+    stack?: string;
+    technology?: string;
+    experienceLevel?: string;
+    sprintStartDate?: string;
+    sprintEndDate?: string;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/career-sprints/generate-plan`, payload);
   }
 
-  generateCareerSprintAiPlan(payload: { stack?: string; technology?: string; experienceLevel?: string; sprintStartDate?: string; sprintEndDate?: string }): Observable<any> {
+  generateCareerSprintAiPlan(payload: {
+    stack?: string;
+    technology?: string;
+    experienceLevel?: string;
+    sprintStartDate?: string;
+    sprintEndDate?: string;
+  }): Observable<any> {
     return this.http.post(`${this.baseUrl}/career-sprints/generate-ai-plan`, payload);
   }
 
   saveCareerSprintAiPlan(sprintId: string, payload: Record<string, unknown>): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/ai-plans`, payload).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/ai-plans`, payload).pipe(
+      tap(() => {
+        this.invalidateScenarioContextCache();
+      }),
+    );
   }
 
   importCareerSprintScenarioPlan(sprintId: string, scenarioId?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/career-sprints/${sprintId}/import-scenario`, scenarioId ? { scenarioId } : {}).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+    return this.http
+      .post(
+        `${this.baseUrl}/career-sprints/${sprintId}/import-scenario`,
+        scenarioId ? { scenarioId } : {},
+      )
+      .pipe(
+        tap(() => {
+          this.invalidateScenarioContextCache();
+        }),
+      );
   }
 
-  updateSprintDates(sprintId: string, sprintStartDate: string, sprintEndDate: string): Observable<any> {
-    return this.http.put(`${this.baseUrl}/career-sprints/${sprintId}/dates`, { sprintStartDate, sprintEndDate }).pipe(tap(() => {
-      this.invalidateScenarioContextCache();
-    }));
+  updateSprintDates(
+    sprintId: string,
+    sprintStartDate: string,
+    sprintEndDate: string,
+  ): Observable<any> {
+    return this.http
+      .put(`${this.baseUrl}/career-sprints/${sprintId}/dates`, { sprintStartDate, sprintEndDate })
+      .pipe(
+        tap(() => {
+          this.invalidateScenarioContextCache();
+        }),
+      );
   }
 
   private withQuery(url: string, params: Record<string, string | undefined>): string {

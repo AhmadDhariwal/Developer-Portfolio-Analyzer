@@ -1,9 +1,9 @@
 const developerContext = require('../services/developerContextService');
-const User     = require('../models/user');
+const User = require('../models/user');
 const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
-const bcrypt   = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -15,33 +15,68 @@ const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 
 const VALID_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-const VALID_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
-const VALID_GOALS = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
+const VALID_LEVELS = [
+  'Student',
+  'Intern',
+  '0-1 years',
+  '1-2 years',
+  '2-3 years',
+  '3-5 years',
+  '5+ years'
+];
+const VALID_GOALS = [
+  'Get first job',
+  'Improve portfolio',
+  'Prepare for interviews',
+  'Switch tech stack',
+  ''
+];
 const VALID_TIMELINES = ['Immediately', '1-3 months', '3-6 months', '6+ months', ''];
-const VALID_LEARNING_PREFERENCES = ['Project-based', 'Reading', 'Video courses', 'Mentorship', 'Mixed', ''];
+const VALID_LEARNING_PREFERENCES = [
+  'Project-based',
+  'Reading',
+  'Video courses',
+  'Mentorship',
+  'Mixed',
+  ''
+];
 const GITHUB_USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 
-const sanitizeText = (value, maxLength = 240) => String(value || '')
-  .replace(/[<>]/g, '')
-  .replace(/\s+/g, ' ')
-  .trim()
-  .slice(0, maxLength);
+const sanitizeText = (value, maxLength = 240) =>
+  String(value || '')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLength);
 
-const profileTimingEnabled = () => String(process.env.PROFILE_TIMING || '') === '1'
-  && String(process.env.NODE_ENV || '').toLowerCase() !== 'production';
+const profileTimingEnabled = () =>
+  String(process.env.PROFILE_TIMING || '') === '1' &&
+  String(process.env.NODE_ENV || '').toLowerCase() !== 'production';
 const elapsedMs = (startedAt) => Math.round((performance.now() - startedAt) * 100) / 100;
 
-const buildProfileHash = (user) => crypto
-  .createHash('sha256')
-  .update(JSON.stringify({
-    activeGithubUsername: sanitizeText(developerContext.resolveGithubUsername(user) || '', 80).toLowerCase(),
-    activeCareerStack: sanitizeText(developerContext.resolveCareerStack(user) || 'Full Stack', 40),
-    activeExperienceLevel: sanitizeText(developerContext.resolveExperienceLevel(user) || 'Student', 40),
-    careerGoal: sanitizeText(user?.careerGoal || '', 80),
-    targetTimeline: sanitizeText(user?.targetTimeline || '', 40),
-    learningPreference: sanitizeText(user?.learningPreference || '', 40)
-  }))
-  .digest('hex');
+const buildProfileHash = (user) =>
+  crypto
+    .createHash('sha256')
+    .update(
+      JSON.stringify({
+        activeGithubUsername: sanitizeText(
+          developerContext.resolveGithubUsername(user) || '',
+          80
+        ).toLowerCase(),
+        activeCareerStack: sanitizeText(
+          developerContext.resolveCareerStack(user) || 'Full Stack',
+          40
+        ),
+        activeExperienceLevel: sanitizeText(
+          developerContext.resolveExperienceLevel(user) || 'Student',
+          40
+        ),
+        careerGoal: sanitizeText(user?.careerGoal || '', 80),
+        targetTimeline: sanitizeText(user?.targetTimeline || '', 40),
+        learningPreference: sanitizeText(user?.learningPreference || '', 40)
+      })
+    )
+    .digest('hex');
 
 const invalidateProfileDependentRuntimeCaches = (userId) => {
   invalidateNewsSignalCache(userId);
@@ -78,8 +113,12 @@ const isRecruiterProfileComplete = (user) => {
 
   const hasName = Boolean(String(user?.name || '').trim());
   const hasPhone = Boolean(String(user?.phoneNumber || '').trim());
-  const hasProfessionalLink = Boolean(String(user?.linkedin || '').trim() || String(user?.githubUsername || '').trim());
-  const hasBasicInfo = Boolean(String(user?.jobTitle || '').trim() || String(user?.bio || '').trim());
+  const hasProfessionalLink = Boolean(
+    String(user?.linkedin || '').trim() || String(user?.githubUsername || '').trim()
+  );
+  const hasBasicInfo = Boolean(
+    String(user?.jobTitle || '').trim() || String(user?.bio || '').trim()
+  );
 
   return hasName && hasPhone && hasProfessionalLink && hasBasicInfo;
 };
@@ -99,8 +138,22 @@ const computeDeveloperProfileCompletion = (user) => {
   return Math.round((completed / fields.length) * 100);
 };
 const VALID_CAREER_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-const VALID_EXPERIENCE_LEVELS = ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
-const VALID_CAREER_GOALS = ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''];
+const VALID_EXPERIENCE_LEVELS = [
+  'Student',
+  'Intern',
+  '0-1 years',
+  '1-2 years',
+  '2-3 years',
+  '3-5 years',
+  '5+ years'
+];
+const VALID_CAREER_GOALS = [
+  'Get first job',
+  'Improve portfolio',
+  'Prepare for interviews',
+  'Switch tech stack',
+  ''
+];
 const GITHUB_USERNAME_PATTERN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
 const sanitizeGithubUsername = (value) => sanitizeText(value).replace(/^@+/, '');
@@ -124,31 +177,46 @@ const getProfile = async (req, res) => {
     const activeGithubUsername = developerContext.resolveGithubUsername(user);
 
     const [defaultResumeFile, activeResumeFile] = await Promise.all([
-      user.defaultResumeFileId ? measure('defaultResumeQuery', ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id })
-        .select('_id fileName uploadDate isAnalyzed')
-        .lean()) : null,
-      measure('activeResumeQuery', developerContext.resolveResumeFile(user._id, user, { ResumeFile }))
+      user.defaultResumeFileId
+        ? measure(
+            'defaultResumeQuery',
+            ResumeFile.findOne({ _id: user.defaultResumeFileId, userId: user._id })
+              .select('_id fileName uploadDate isAnalyzed')
+              .lean()
+          )
+        : null,
+      measure(
+        'activeResumeQuery',
+        developerContext.resolveResumeFile(user._id, user, { ResumeFile })
+      )
     ]);
     const resolvedActiveResumeFile = activeResumeFile;
 
     // Pull stats from latest analyses
     const [analysis, latestResumeAnalysis] = await Promise.all([
-      measure('analysisQuery', Analysis.findOne({ userId: req.user._id })
-        .sort({ updatedAt: -1 })
-        .select('githubScore githubStats.repos languageDistribution')
-        .lean()),
-      measure('resumeAnalysisQuery', developerContext.resolveResumeAnalysis(req.user._id, user, { ResumeFile, ResumeAnalysis }))
+      measure(
+        'analysisQuery',
+        Analysis.findOne({ userId: req.user._id })
+          .sort({ updatedAt: -1 })
+          .select('githubScore githubStats.repos languageDistribution')
+          .lean()
+      ),
+      measure(
+        'resumeAnalysisQuery',
+        developerContext.resolveResumeAnalysis(req.user._id, user, { ResumeFile, ResumeAnalysis })
+      )
     ]);
 
     const scoreAggregationStartedAt = performance.now();
     const githubScore = Number(analysis?.githubScore || 0);
     const resumeScore = latestResumeAnalysis
-      ? Math.round((
-        Number(latestResumeAnalysis.atsScore || 0)
-        + Number(latestResumeAnalysis.keywordDensity || 0)
-        + Number(latestResumeAnalysis.formatScore || 0)
-        + Number(latestResumeAnalysis.contentQuality || 0)
-      ) / 4)
+      ? Math.round(
+          (Number(latestResumeAnalysis.atsScore || 0) +
+            Number(latestResumeAnalysis.keywordDensity || 0) +
+            Number(latestResumeAnalysis.formatScore || 0) +
+            Number(latestResumeAnalysis.contentQuality || 0)) /
+            4
+        )
       : 0;
 
     const scoreInputs = [githubScore, resumeScore].filter((s) => Number.isFinite(s) && s > 0);
@@ -157,78 +225,88 @@ const getProfile = async (req, res) => {
       : 0;
 
     const resumeSkills = latestResumeAnalysis?.skills
-      ? (latestResumeAnalysis.skills instanceof Map
+      ? latestResumeAnalysis.skills instanceof Map
         ? Array.from(latestResumeAnalysis.skills.values()).flat()
-        : Object.values(latestResumeAnalysis.skills).flat())
+        : Object.values(latestResumeAnalysis.skills).flat()
       : [];
 
     const githubSkills = analysis?.languageDistribution
-      ? Object.keys(analysis.languageDistribution instanceof Map
-        ? Object.fromEntries(analysis.languageDistribution)
-        : analysis.languageDistribution)
+      ? Object.keys(
+          analysis.languageDistribution instanceof Map
+            ? Object.fromEntries(analysis.languageDistribution)
+            : analysis.languageDistribution
+        )
       : [];
 
     const skillsDetected = new Set(
       [...resumeSkills, ...githubSkills]
-        .map((s) => String(s || '').trim().toLowerCase())
+        .map((s) =>
+          String(s || '')
+            .trim()
+            .toLowerCase()
+        )
         .filter(Boolean)
     ).size;
 
     const stats = {
       developerScore,
-      reposAnalyzed:   analysis?.githubStats?.repos ?? 0,
+      reposAnalyzed: analysis?.githubStats?.repos ?? 0,
       skillsDetected,
-      memberSince:     formatMemberSince(user.createdAt),
+      memberSince: formatMemberSince(user.createdAt)
     };
     if (profileTimingEnabled()) timings.scoreAggregation = elapsedMs(scoreAggregationStartedAt);
 
     const profileResponse = {
-      _id:               user._id,
-      name:              user.name,
-      email:             user.email,
-      phoneNumber:       user.phoneNumber || '',
-      countryCode:       user.countryCode || '',
-      githubUsername:    user.githubUsername,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber || '',
+      countryCode: user.countryCode || '',
+      githubUsername: user.githubUsername,
       activeGithubUsername,
-      avatar:            resolveAvatarForResponse(req, user.avatar),
-      jobTitle:          user.jobTitle   || '',
-      location:          user.location   || '',
-      bio:               user.bio        || '',
-      website:           user.website    || '',
-      twitter:           user.twitter    || '',
-      linkedin:          user.linkedin   || '',
-      isPublic:          Boolean(user.isPublic),
-      role:              user.role       || 'developer',
-      notifications:     user.notifications || {
+      avatar: resolveAvatarForResponse(req, user.avatar),
+      jobTitle: user.jobTitle || '',
+      location: user.location || '',
+      bio: user.bio || '',
+      website: user.website || '',
+      twitter: user.twitter || '',
+      linkedin: user.linkedin || '',
+      isPublic: Boolean(user.isPublic),
+      role: user.role || 'developer',
+      notifications: user.notifications || {
         weeklyScoreReport: true,
-        skillTrendAlerts:  true,
-        newRecommendations:false,
-        jobMatchAlerts:    true,
+        skillTrendAlerts: true,
+        newRecommendations: false,
+        jobMatchAlerts: true
       },
-      careerStack:        user.careerStack        || 'Full Stack',
-      experienceLevel:    user.experienceLevel    || 'Student',
-      activeCareerStack:  developerContext.resolveCareerStack(user) || 'Full Stack',
+      careerStack: user.careerStack || 'Full Stack',
+      experienceLevel: user.experienceLevel || 'Student',
+      activeCareerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
       activeExperienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
-      careerGoal:         user.careerGoal         || '',
-      targetTimeline:     user.targetTimeline     || '',
+      careerGoal: user.careerGoal || '',
+      targetTimeline: user.targetTimeline || '',
       learningPreference: user.learningPreference || '',
-      profileHash:        buildProfileHash(user),
+      profileHash: buildProfileHash(user),
       careerProfileSetAt: user.careerProfileSetAt || null,
-      isConfigured:       !!user.careerProfileSetAt,
-      profileCompleted:   isRecruiterProfileComplete(user),
-      defaultResume: defaultResumeFile ? {
-        fileId: defaultResumeFile._id,
-        fileName: defaultResumeFile.fileName,
-        uploadDate: defaultResumeFile.uploadDate,
-        isAnalyzed: defaultResumeFile.isAnalyzed
-      } : null,
-      activeResume: resolvedActiveResumeFile ? {
-        fileId: resolvedActiveResumeFile._id,
-        fileName: resolvedActiveResumeFile.fileName,
-        uploadDate: resolvedActiveResumeFile.uploadDate,
-        isAnalyzed: resolvedActiveResumeFile.isAnalyzed
-      } : null,
-      stats,
+      isConfigured: !!user.careerProfileSetAt,
+      profileCompleted: isRecruiterProfileComplete(user),
+      defaultResume: defaultResumeFile
+        ? {
+            fileId: defaultResumeFile._id,
+            fileName: defaultResumeFile.fileName,
+            uploadDate: defaultResumeFile.uploadDate,
+            isAnalyzed: defaultResumeFile.isAnalyzed
+          }
+        : null,
+      activeResume: resolvedActiveResumeFile
+        ? {
+            fileId: resolvedActiveResumeFile._id,
+            fileName: resolvedActiveResumeFile.fileName,
+            uploadDate: resolvedActiveResumeFile.uploadDate,
+            isAnalyzed: resolvedActiveResumeFile.isAnalyzed
+          }
+        : null,
+      stats
     };
 
     if (profileTimingEnabled()) {
@@ -253,17 +331,25 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const {
-      name, githubUsername, defaultResumeFileId,
-      jobTitle, location, bio,
-      website, twitter, linkedin, phoneNumber,
+      name,
+      githubUsername,
+      defaultResumeFileId,
+      jobTitle,
+      location,
+      bio,
+      website,
+      twitter,
+      linkedin,
+      phoneNumber,
       notifications,
       targetTimeline,
-      learningPreference,
+      learningPreference
     } = req.body;
 
     const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (!user.password) return res.status(400).json({ message: 'This account does not have a password yet.' });
+    if (!user.password)
+      return res.status(400).json({ message: 'This account does not have a password yet.' });
     const previousProfileHash = buildProfileHash(user);
     const developerSettings = getDeveloperSettingsSync();
 
@@ -282,7 +368,10 @@ const updateProfile = async (req, res) => {
 
     if (githubUsername !== undefined) {
       const normalizedGithub = sanitizeGithubUsername(githubUsername);
-      if (!normalizedGithub && (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)) {
+      if (
+        !normalizedGithub &&
+        (user.role !== 'recruiter' || developerSettings.githubRequirement !== false)
+      ) {
         return res.status(400).json({ message: 'GitHub username cannot be empty.' });
       }
       if (normalizedGithub && !GITHUB_USERNAME_PATTERN.test(normalizedGithub)) {
@@ -383,15 +472,29 @@ const updateProfile = async (req, res) => {
     }
 
     if (notifications !== undefined) {
-      const notificationKeys = ['weeklyScoreReport', 'skillTrendAlerts', 'newRecommendations', 'jobMatchAlerts'];
-      if (!notifications || typeof notifications !== 'object' || Array.isArray(notifications)
-        || Object.entries(notifications).some(([key, value]) => !notificationKeys.includes(key) || typeof value !== 'boolean')) {
+      const notificationKeys = [
+        'weeklyScoreReport',
+        'skillTrendAlerts',
+        'newRecommendations',
+        'jobMatchAlerts'
+      ];
+      if (
+        !notifications ||
+        typeof notifications !== 'object' ||
+        Array.isArray(notifications) ||
+        Object.entries(notifications).some(
+          ([key, value]) => !notificationKeys.includes(key) || typeof value !== 'boolean'
+        )
+      ) {
         return res.status(400).json({ message: 'Invalid notification preferences.' });
       }
       const nextNotifications = {
-        weeklyScoreReport: notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
-        skillTrendAlerts: notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,
-        newRecommendations: notifications.newRecommendations ?? user.notifications.newRecommendations ?? false,
+        weeklyScoreReport:
+          notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
+        skillTrendAlerts:
+          notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,
+        newRecommendations:
+          notifications.newRecommendations ?? user.notifications.newRecommendations ?? false,
         jobMatchAlerts: notifications.jobMatchAlerts ?? user.notifications.jobMatchAlerts ?? true
       };
 
@@ -433,18 +536,22 @@ const updateProfile = async (req, res) => {
       countryCode: updated.countryCode || '',
       githubUsername: updated.githubUsername,
       activeGithubUsername: developerContext.resolveGithubUsername(updated),
-      defaultResume: defaultResume ? {
-        fileId: defaultResume._id,
-        fileName: defaultResume.fileName,
-        uploadDate: defaultResume.uploadDate,
-        isAnalyzed: defaultResume.isAnalyzed
-      } : null,
-      activeResume: activeResume ? {
-        fileId: activeResume._id,
-        fileName: activeResume.fileName,
-        uploadDate: activeResume.uploadDate,
-        isAnalyzed: activeResume.isAnalyzed
-      } : null,
+      defaultResume: defaultResume
+        ? {
+            fileId: defaultResume._id,
+            fileName: defaultResume.fileName,
+            uploadDate: defaultResume.uploadDate,
+            isAnalyzed: defaultResume.isAnalyzed
+          }
+        : null,
+      activeResume: activeResume
+        ? {
+            fileId: activeResume._id,
+            fileName: activeResume.fileName,
+            uploadDate: activeResume.uploadDate,
+            isAnalyzed: activeResume.isAnalyzed
+          }
+        : null,
       jobTitle: updated.jobTitle,
       location: updated.location,
       bio: updated.bio,
@@ -460,7 +567,7 @@ const updateProfile = async (req, res) => {
       learningPreference: updated.learningPreference || '',
       profileHash: nextProfileHash,
       profileCompleted: isRecruiterProfileComplete(updated),
-      notifications: updated.notifications,
+      notifications: updated.notifications
     });
   } catch (error) {
     console.error('Profile PUT error:', error.message);
@@ -491,9 +598,9 @@ const updatePassword = async (req, res) => {
       return res.status(401).json({ message: 'Current password is incorrect.' });
     }
 
-    const salt           = await bcrypt.genSalt(10);
-    user.password        = await bcrypt.hash(newPassword, salt);
-    user.providers       = Array.from(new Set([...(user.providers || []), 'local']));
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.providers = Array.from(new Set([...(user.providers || []), 'local']));
     await user.save();
 
     await createNotification({
@@ -533,14 +640,24 @@ const updateCareerProfile = async (req, res) => {
   try {
     const normalizedCareerStack = sanitizeText(req.body?.careerStack);
     const normalizedExperienceLevel = sanitizeText(req.body?.experienceLevel);
-    const normalizedCareerGoal = req.body?.careerGoal === undefined ? undefined : sanitizeText(req.body.careerGoal);
-    const normalizedTimeline = req.body?.targetTimeline === undefined ? undefined : sanitizeText(req.body.targetTimeline, 40);
-    const normalizedLearningPreference = req.body?.learningPreference === undefined ? undefined : sanitizeText(req.body.learningPreference, 40);
+    const normalizedCareerGoal =
+      req.body?.careerGoal === undefined ? undefined : sanitizeText(req.body.careerGoal);
+    const normalizedTimeline =
+      req.body?.targetTimeline === undefined
+        ? undefined
+        : sanitizeText(req.body.targetTimeline, 40);
+    const normalizedLearningPreference =
+      req.body?.learningPreference === undefined
+        ? undefined
+        : sanitizeText(req.body.learningPreference, 40);
 
     if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
-    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
+    if (
+      !normalizedExperienceLevel ||
+      !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)
+    ) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
     if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
@@ -549,7 +666,10 @@ const updateCareerProfile = async (req, res) => {
     if (normalizedTimeline !== undefined && !VALID_TIMELINES.includes(normalizedTimeline)) {
       return res.status(400).json({ message: 'Invalid targetTimeline.' });
     }
-    if (normalizedLearningPreference !== undefined && !VALID_LEARNING_PREFERENCES.includes(normalizedLearningPreference)) {
+    if (
+      normalizedLearningPreference !== undefined &&
+      !VALID_LEARNING_PREFERENCES.includes(normalizedLearningPreference)
+    ) {
       return res.status(400).json({ message: 'Invalid learningPreference.' });
     }
 
@@ -563,7 +683,8 @@ const updateCareerProfile = async (req, res) => {
     user.activeExperienceLevel = normalizedExperienceLevel;
     if (normalizedCareerGoal !== undefined) user.careerGoal = normalizedCareerGoal;
     if (normalizedTimeline !== undefined) user.targetTimeline = normalizedTimeline;
-    if (normalizedLearningPreference !== undefined) user.learningPreference = normalizedLearningPreference;
+    if (normalizedLearningPreference !== undefined)
+      user.learningPreference = normalizedLearningPreference;
 
     if (!user.careerProfileSetAt) {
       user.careerProfileSetAt = new Date();
@@ -603,7 +724,10 @@ const updateActiveCareerProfile = async (req, res) => {
     if (!normalizedCareerStack || !VALID_CAREER_STACKS.includes(normalizedCareerStack)) {
       return res.status(400).json({ message: 'Invalid or missing careerStack.' });
     }
-    if (!normalizedExperienceLevel || !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)) {
+    if (
+      !normalizedExperienceLevel ||
+      !VALID_EXPERIENCE_LEVELS.includes(normalizedExperienceLevel)
+    ) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
 
@@ -715,21 +839,38 @@ const updateProfileVisibility = async (req, res) => {
     }
 
     if (isPublic && developerSettings.publicPortfolioVisibility === false) {
-      return res.status(403).json({ message: 'Public portfolio visibility is disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Public portfolio visibility is disabled by Super Admin settings.' });
     }
 
-    if (isPublic && developerSettings.githubRequirement !== false && !String(developerContext.resolveGithubUsername(user) || '').trim()) {
-      return res.status(400).json({ message: 'A GitHub username is required before enabling public visibility.' });
+    if (
+      isPublic &&
+      developerSettings.githubRequirement !== false &&
+      !String(developerContext.resolveGithubUsername(user) || '').trim()
+    ) {
+      return res
+        .status(400)
+        .json({ message: 'A GitHub username is required before enabling public visibility.' });
     }
 
     if (isPublic) {
       const completion = computeDeveloperProfileCompletion(user);
       const requiredCompletion = Number(developerSettings.profileCompletionRequirement || 0);
       if (completion < requiredCompletion) {
-        return res.status(400).json({ message: `Profile must be at least ${requiredCompletion}% complete before enabling public visibility.` });
+        return res.status(400).json({
+          message: `Profile must be at least ${requiredCompletion}% complete before enabling public visibility.`
+        });
       }
     }
 
+    // Account privacy revocation also revokes any published portfolio.
+    // Re-enabling recruiter discovery does not silently publish a portfolio.
+    if (!isPublic)
+      await require('../models/publicProfile').updateMany(
+        { userId: user._id },
+        { $set: { isPublic: false } }
+      );
     user.isPublic = isPublic;
     await user.save();
 
@@ -751,8 +892,14 @@ const updateProfileVisibility = async (req, res) => {
   }
 };
 
-module.exports = { __test: { computeDeveloperProfileCompletion }, getProfile, updateProfile, updatePassword, deleteAccount, updateCareerProfile, updateActiveCareerProfile, uploadAvatar, updateProfileVisibility };
-
-
-
-
+module.exports = {
+  __test: { computeDeveloperProfileCompletion },
+  getProfile,
+  updateProfile,
+  updatePassword,
+  deleteAccount,
+  updateCareerProfile,
+  updateActiveCareerProfile,
+  uploadAvatar,
+  updateProfileVisibility
+};

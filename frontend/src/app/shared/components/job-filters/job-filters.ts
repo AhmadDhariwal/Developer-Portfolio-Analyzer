@@ -6,7 +6,7 @@ import {
   OnChanges,
   OnInit,
   Output,
-  SimpleChanges
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +18,7 @@ import {
   JOB_SKILL_OPTIONS,
   JOB_TYPE_OPTIONS,
   JobFilters,
-  normalizeJobFilters
+  normalizeJobFilters,
 } from '../../models/job.model';
 
 @Component({
@@ -27,7 +27,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: './job-filters.html',
   styleUrl: './job-filters.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JobFiltersComponent implements OnInit, OnChanges {
   @Input() initialFilters: Partial<JobFilters> = {};
@@ -46,6 +46,10 @@ export class JobFiltersComponent implements OnInit, OnChanges {
   readonly locationOptions = JOB_LOCATION_OPTIONS;
   readonly skillOptions = JOB_SKILL_OPTIONS;
 
+  skillSearchQuery = '';
+  showAllSkills = false;
+  readonly initialSkillLimit = 14;
+
   ngOnInit(): void {
     this.syncFilters();
   }
@@ -54,6 +58,27 @@ export class JobFiltersComponent implements OnInit, OnChanges {
     if (changes['initialFilters'] || changes['activeFilters']) {
       this.syncFilters();
     }
+  }
+
+  get filteredSkillOptions(): string[] {
+    const query = this.skillSearchQuery.trim().toLowerCase();
+    if (query) {
+      return this.skillOptions.filter((skill) => skill.toLowerCase().includes(query));
+    }
+    if (this.showAllSkills) {
+      return this.skillOptions;
+    }
+    return this.skillOptions.slice(0, this.initialSkillLimit);
+  }
+
+  get isCustomSkillPending(): boolean {
+    const q = this.skillSearchQuery.trim();
+    if (!q) return false;
+    return !this.skillOptions.some((s) => s.toLowerCase() === q.toLowerCase());
+  }
+
+  toggleShowAllSkills(): void {
+    this.showAllSkills = !this.showAllSkills;
   }
 
   get hasActiveFilters(): boolean {
@@ -78,19 +103,33 @@ export class JobFiltersComponent implements OnInit, OnChanges {
   }
 
   selectSkill(skill: string): void {
+    const trimmed = skill.trim();
+    const isSelected = this.filters.skills.toLowerCase() === trimmed.toLowerCase();
     this.filters = normalizeJobFilters({
       ...this.filters,
-      skills: this.filters.skills === skill ? '' : skill
+      skills: isSelected ? '' : trimmed,
     });
     this.onFilterChange();
   }
 
+  applyCustomSkill(): void {
+    const q = this.skillSearchQuery.trim();
+    if (!q) return;
+    this.selectSkill(q);
+    this.skillSearchQuery = '';
+  }
+
   clearSkill(): void {
-    this.filters.skills = '';
+    this.filters = normalizeJobFilters({
+      ...this.filters,
+      skills: '',
+    });
     this.onFilterChange();
   }
 
   resetFilters(): void {
+    this.skillSearchQuery = '';
+    this.showAllSkills = false;
     this.filters = { ...DEFAULT_JOB_FILTERS };
     this.appliedFilters = { ...DEFAULT_JOB_FILTERS };
     this.filtersReset.emit();
