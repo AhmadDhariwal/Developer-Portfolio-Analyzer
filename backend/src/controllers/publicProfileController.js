@@ -3,7 +3,8 @@ const {
   getPublicProfileForOwner,
   updatePublicProfile,
   getPublicProfileAnalytics,
-  getPublicProfileResumeDownload
+  getPublicProfileResumeDownload,
+  getOwnerResumeDownload
 } = require('../services/publicProfileService');
 const { createNotification } = require('../services/notificationService');
 
@@ -21,11 +22,11 @@ const getPublicProfile = async (req, res) => {
   try {
     const profile = await getPublicProfileBySlug(req.params.slug, req);
     if (!profile) return res.status(404).json({ message: 'Public profile not found.' });
-    res.set('Cache-Control', 'public, max-age=0, must-revalidate, stale-if-error=86400');
+    res.set('Cache-Control', 'private, no-store');
     res.json(profile);
   } catch (error) {
     console.error('Public profile fetch error:', error.message);
-    res.status(500).json({ message: 'Failed to load public profile.' });
+    res.status(error.statusCode || 503).json({ message: 'Failed to load public profile.' });
   }
 };
 
@@ -44,51 +45,49 @@ const getMyPublicProfile = async (req, res) => {
 // PUT /api/public-profiles/me
 const updateMyPublicProfile = async (req, res) => {
   try {
-    console.info('public-profile update request', {
-      userId: String(req.user?._id || ''),
-      fields: Object.keys(req.body || {}),
-      headline: String(req.body?.headline || '')
-    });
-
     const profile = await updatePublicProfile(req.user._id, req.body || {}, req);
 
     invalidatePublicProfileDependentCaches(req.user._id);
-
-    console.info('public-profile updated', {
-      userId: String(req.user?._id || ''),
-      slug: profile?.slug,
-      headline: profile?.headline
-    });
 
     await createNotification({
       userId: req.user._id,
       type: 'profile_update',
       title: 'Public Portfolio Updated',
-      message: profile?.isPublic ? 'Your public portfolio changes are now live.' : 'Your public portfolio settings were updated.',
+      message: profile?.isPublic
+        ? 'Your public portfolio changes are now live.'
+        : 'Your public portfolio settings were updated.',
       dedupeKey: `public_portfolio_update:${profile?.slug || req.user._id}`,
       dedupeWindowHours: 1,
       meta: { slug: profile?.slug || '', isPublic: Boolean(profile?.isPublic) }
-    });
+    }).catch(() => console.warn('Portfolio notification unavailable.'));
 
     res.set('Cache-Control', 'no-store');
     res.json(profile);
   } catch (error) {
     console.error('Public profile update error:', error.message);
-    res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Failed to update public profile.' });
+    res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to update public profile.' });
   }
 };
 
 // GET /api/public-profiles/:slug/resume
 const downloadPublicProfileResume = async (req, res) => {
   try {
-    const resume = await getPublicProfileResumeDownload(req.params.slug);
+    const resume = req.params.slug
+      ? await getPublicProfileResumeDownload(req.params.slug)
+      : await getOwnerResumeDownload(req.user._id);
     if (!resume) {
       return res.status(404).json({ message: 'Resume not available.' });
     }
 
-    res.set('Cache-Control', 'public, max-age=0, must-revalidate, stale-if-error=86400');
+    res.set('Cache-Control', 'private, no-store');
     res.type(resume.mimeType);
-    return res.download(resume.filePath, resume.fileName);
+    res.set('X-Content-Type-Options', 'nosniff');
+    return res.download(resume.filePath, resume.fileName, (error) => {
+      if (error && !res.headersSent)
+        res.status(error.statusCode === 404 ? 404 : 500).json({ message: 'Resume not available.' });
+    });
   } catch (error) {
     console.error('Public profile resume download error:', error.message);
     return res.status(500).json({ message: 'Failed to download resume.' });
@@ -99,6 +98,7 @@ const downloadPublicProfileResume = async (req, res) => {
 const getMyPublicProfileAnalytics = async (req, res) => {
   try {
     const analytics = await getPublicProfileAnalytics(req.user._id);
+    res.set('Cache-Control', 'private, no-store');
     res.json(analytics);
   } catch (error) {
     console.error('Public profile analytics error:', error.message);
@@ -106,7 +106,23 @@ const getMyPublicProfileAnalytics = async (req, res) => {
   }
 };
 
+const contactPublicProfile = async (req, res) => {
+  try {
+    const result = await require('../services/publicPortfolioContactService').deliverContact(
+      req.params.slug,
+      req.user,
+      req.body
+    );
+    res.json(result);
+  } catch (error) {
+    res
+      .status(error.statusCode || 503)
+      .json({ message: error.statusCode ? error.message : 'Contact delivery unavailable.' });
+  }
+};
+
 module.exports = {
+  contactPublicProfile,
   getPublicProfile,
   getMyPublicProfile,
   updateMyPublicProfile,

@@ -10,17 +10,17 @@ import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface NotificationPrefs {
-  weeklyScoreReport:  boolean;
-  skillTrendAlerts:   boolean;
+  weeklyScoreReport: boolean;
+  skillTrendAlerts: boolean;
   newRecommendations: boolean;
-  jobMatchAlerts:     boolean;
+  jobMatchAlerts: boolean;
 }
 
 export interface AccountStats {
   developerScore: number;
-  reposAnalyzed:  number;
+  reposAnalyzed: number;
   skillsDetected: number;
-  memberSince:    string;
+  memberSince: string;
 }
 
 export interface ResumeContextFile {
@@ -31,49 +31,49 @@ export interface ResumeContextFile {
 }
 
 export interface UserProfile {
-  _id:                string;
-  name:               string;
-  email:              string;
-  phoneNumber?:       string;
-  countryCode?:       string;
-  githubUsername:     string;
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  countryCode?: string;
+  githubUsername: string;
   activeGithubUsername?: string;
-  avatar:             string;
-  jobTitle:           string;
-  location:           string;
-  bio:                string;
-  website:            string;
-  twitter:            string;
-  linkedin:           string;
-  notifications:      NotificationPrefs;
-  careerStack:        CareerStack;
-  experienceLevel:    ExperienceLevel;
+  avatar: string;
+  jobTitle: string;
+  location: string;
+  bio: string;
+  website: string;
+  twitter: string;
+  linkedin: string;
+  notifications: NotificationPrefs;
+  careerStack: CareerStack;
+  experienceLevel: ExperienceLevel;
   activeCareerStack?: CareerStack;
   activeExperienceLevel?: ExperienceLevel;
-  careerGoal:         CareerGoal;
-  targetTimeline?:    string;
+  careerGoal: CareerGoal;
+  targetTimeline?: string;
   learningPreference?: string;
-  profileHash?:       string;
-  isConfigured:       boolean;
-  isPublic?:          boolean;
-  role?:              string;
-  profileCompleted?:  boolean;
-  defaultResume?:     ResumeContextFile | null;
-  activeResume?:      ResumeContextFile | null;
-  stats:              AccountStats;
+  profileHash?: string;
+  isConfigured: boolean;
+  isPublic?: boolean;
+  role?: string;
+  profileCompleted?: boolean;
+  defaultResume?: ResumeContextFile | null;
+  activeResume?: ResumeContextFile | null;
+  stats: AccountStats;
 }
 
 export interface UpdateProfilePayload {
-  name?:          string;
+  name?: string;
   githubUsername?: string;
   defaultResumeFileId?: string | null;
-  jobTitle?:      string;
-  location?:      string;
-  bio?:           string;
-  website?:       string;
-  twitter?:       string;
-  linkedin?:      string;
-  phoneNumber?:   string;
+  jobTitle?: string;
+  location?: string;
+  bio?: string;
+  website?: string;
+  twitter?: string;
+  linkedin?: string;
+  phoneNumber?: string;
   notifications?: Partial<NotificationPrefs>;
   targetTimeline?: string;
   learningPreference?: string;
@@ -81,7 +81,7 @@ export interface UpdateProfilePayload {
 
 export interface PasswordPayload {
   currentPassword: string;
-  newPassword:     string;
+  newPassword: string;
 }
 
 export interface AvatarUploadResponse {
@@ -104,7 +104,7 @@ export class ProfileService {
     'skillGap',
     'recommendations',
     'news',
-    'weeklyReports'
+    'weeklyReports',
   ];
   private inflightProfile$: Observable<UserProfile> | null = null;
   private memoryProfile: UserProfile | null = null;
@@ -117,7 +117,7 @@ export class ProfileService {
     private readonly authService: AuthService,
     private readonly careerProfileService: CareerProfileService,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('profile', () => this.clearCache());
   }
@@ -141,9 +141,11 @@ export class ProfileService {
 
     this.inflightProfile$ = this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
       map((profile) => this.normalizeProfile(profile)),
-      tap(profile => this.applyProfile(profile)),
-      finalize(() => { this.inflightProfile$ = null; }),
-      shareReplay({ bufferSize: 1, refCount: false })
+      tap((profile) => this.applyProfile(profile)),
+      finalize(() => {
+        this.inflightProfile$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     return this.inflightProfile$;
@@ -153,13 +155,15 @@ export class ProfileService {
     return this.http.put<Partial<UserProfile>>(`${this.baseUrl}/me`, payload).pipe(
       map((updated) => ({
         ...updated,
-        ...(typeof updated.avatar === 'string' ? { avatar: this.resolveAvatarUrl(updated.avatar) } : {})
+        ...(typeof updated.avatar === 'string'
+          ? { avatar: this.resolveAvatarUrl(updated.avatar) }
+          : {}),
       })),
       tap((updated) => {
         this.authService.updateCurrentUser(updated);
         this.mergeProfileUpdate(updated);
         this.cacheInvalidation.clearPublicPortfolioCaches();
-      })
+      }),
     );
   }
 
@@ -174,13 +178,13 @@ export class ProfileService {
     return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
       map((res) => ({
         ...res,
-        avatar: this.resolveAvatarUrl(res.avatar)
+        avatar: this.resolveAvatarUrl(res.avatar),
       })),
       tap((res) => {
         this.authService.updateCurrentUser({ avatar: res.avatar });
         this.mergeProfileUpdate({ avatar: res.avatar });
         this.cacheInvalidation.clearPublicPortfolioCaches();
-      })
+      }),
     );
   }
 
@@ -190,7 +194,10 @@ export class ProfileService {
 
   updateVisibility(isPublic: boolean): Observable<{ isPublic: boolean }> {
     return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic }).pipe(
-      tap((res) => this.mergeProfileUpdate({ isPublic: res.isPublic }))
+      tap((res) => {
+        this.mergeProfileUpdate({ isPublic: res.isPublic });
+        this.cacheInvalidation.clearPublicPortfolioCaches();
+      }),
     );
   }
 
@@ -209,9 +216,10 @@ export class ProfileService {
 
     if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
 
-    const browserOrigin = typeof window !== 'undefined' && window.location?.origin
-      ? window.location.origin
-      : this.apiOrigin;
+    const browserOrigin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : this.apiOrigin;
 
     if (/^https?:\/\//i.test(raw)) {
       try {
@@ -247,12 +255,13 @@ export class ProfileService {
       activeExperienceLevel: profile.activeExperienceLevel || profile.experienceLevel || 'Student',
       targetTimeline: profile.targetTimeline || '',
       learningPreference: profile.learningPreference || '',
-      profileHash: profile.profileHash || this.stableProfileHash(profile)
+      profileHash: profile.profileHash || this.stableProfileHash(profile),
     };
   }
 
   private applyProfile(profile: UserProfile): void {
-    const previousHash = this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
+    const previousHash =
+      this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
     this.memoryProfile = profile;
     this.writeCachedProfile(profile);
     this.syncStoredUser({
@@ -260,7 +269,7 @@ export class ProfileService {
       name: profile.name,
       githubUsername: profile.githubUsername,
       activeGithubUsername: profile.activeGithubUsername,
-      avatar: profile.avatar
+      avatar: profile.avatar,
     });
 
     this.careerProfileService.hydrateFromServer({
@@ -273,7 +282,7 @@ export class ProfileService {
       targetTimeline: profile.targetTimeline ?? '',
       learningPreference: profile.learningPreference ?? '',
       profileHash: profile.profileHash ?? '',
-      isConfigured: profile.isConfigured ?? false
+      isConfigured: profile.isConfigured ?? false,
     });
 
     if (previousHash && profile.profileHash && previousHash !== profile.profileHash) {
@@ -310,11 +319,14 @@ export class ProfileService {
   }
 
   private writeCachedProfile(profile: UserProfile): void {
-    localStorage.setItem(this.cacheKey, JSON.stringify({
-      cachedAt: Date.now(),
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-      profile
-    }));
+    localStorage.setItem(
+      this.cacheKey,
+      JSON.stringify({
+        cachedAt: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+        profile,
+      }),
+    );
   }
 
   private invalidateDependentCaches(): void {
@@ -324,12 +336,18 @@ export class ProfileService {
 
   private stableProfileHash(profile: Partial<UserProfile>): string {
     const payload = JSON.stringify({
-      activeGithubUsername: String(profile.activeGithubUsername || profile.githubUsername || '').trim().toLowerCase(),
-      activeCareerStack: String(profile.activeCareerStack || profile.careerStack || 'Full Stack').trim(),
-      activeExperienceLevel: String(profile.activeExperienceLevel || profile.experienceLevel || 'Student').trim(),
+      activeGithubUsername: String(profile.activeGithubUsername || profile.githubUsername || '')
+        .trim()
+        .toLowerCase(),
+      activeCareerStack: String(
+        profile.activeCareerStack || profile.careerStack || 'Full Stack',
+      ).trim(),
+      activeExperienceLevel: String(
+        profile.activeExperienceLevel || profile.experienceLevel || 'Student',
+      ).trim(),
       careerGoal: String(profile.careerGoal || '').trim(),
       targetTimeline: String(profile.targetTimeline || '').trim(),
-      learningPreference: String(profile.learningPreference || '').trim()
+      learningPreference: String(profile.learningPreference || '').trim(),
     });
     let hash = 0;
     for (let i = 0; i < payload.length; i += 1) {
@@ -338,11 +356,11 @@ export class ProfileService {
     return `profile-${Math.abs(hash)}`;
   }
 
-  private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>>): void {
+  private syncStoredUser(
+    partial: Partial<
+      Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>
+    >,
+  ): void {
     this.authService.updateCurrentUser(partial);
   }
 }
-
-
-
-
