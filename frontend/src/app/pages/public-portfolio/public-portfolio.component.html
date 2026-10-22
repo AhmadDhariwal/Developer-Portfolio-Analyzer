@@ -10,17 +10,15 @@
     <div class="decor-floating-orb orb-3"></div>
   </div>
 
-  <!-- Edge-to-Edge Sticky Preview Mode Strip (Only shown in preview mode) -->
-  <div class="preview-mode-bar" *ngIf="preview && profile" role="note">
+  <!-- Edge-to-Edge Sticky Preview Mode Strip (Only shown to authenticated owner) -->
+  <div class="preview-mode-bar" *ngIf="preview && profile && isOwner" role="note">
     <div class="preview-mode-container">
       <div class="preview-mode-left">
         <div class="preview-mode-badge">
           <span class="preview-dot"></span>
-          <span>PRIVATE OWNER PREVIEW</span>
+          <span>OWNER PREVIEW</span>
         </div>
-        <span class="preview-mode-desc"
-          >Saved content only · Hidden sections stay hidden · Views are not tracked</span
-        >
+        <span class="preview-mode-desc">Saved content preview · Views not tracked</span>
       </div>
       <div class="preview-mode-actions">
         <button
@@ -32,10 +30,15 @@
           <span class="avatar-toggle-label">Avatar:</span>
           <strong>{{ avatarMode === '3d' ? '3D Character' : 'Profile Photo' }}</strong>
         </button>
-        <a routerLink="/app/portfolio" class="back-to-settings-btn">
-          <span>Back to settings</span>
-          <span aria-hidden="true">↗</span>
-        </a>
+        <button
+          type="button"
+          class="share-link-btn"
+          (click)="copyShareLink()"
+          title="Copy clean public link to share with anyone"
+        >
+          <span *ngIf="!linkCopied">Copy Public Link 📋</span>
+          <span *ngIf="linkCopied" class="copied-highlight">Link Copied! ✓</span>
+        </button>
       </div>
     </div>
   </div>
@@ -355,90 +358,102 @@
             <!-- Constellation Diagram -->
             <div class="tech-constellation-stage" aria-hidden="true">
               <!-- Radial Laser Connector Beams (SVG) -->
-              <svg class="constellation-svg-lines" viewBox="0 0 800 240" preserveAspectRatio="none">
+              <svg
+                class="constellation-svg-lines"
+                viewBox="0 0 1000 280"
+                preserveAspectRatio="none"
+              >
                 <defs>
                   <linearGradient id="laserGradDark" x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" stop-color="#818cf8" stop-opacity="0.95" />
-                    <stop offset="50%" stop-color="#c084fc" stop-opacity="0.75" />
-                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.45" />
+                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.95" />
+                    <stop offset="60%" stop-color="#818cf8" stop-opacity="0.75" />
+                    <stop offset="100%" stop-color="#c084fc" stop-opacity="0.5" />
                   </linearGradient>
                   <linearGradient id="laserGradLight" x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.95" />
-                    <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.8" />
-                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.6" />
+                    <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.95" />
+                    <stop offset="60%" stop-color="#6366f1" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#818cf8" stop-opacity="0.55" />
                   </linearGradient>
                 </defs>
-                <!-- Dynamically routed laser beams from bottom center beacon (400, 220) to orbital nodes -->
+                <!-- Dynamically routed laser beams from bottom center beacon (500, 240) to exact pill centers -->
                 <line
+                  *ngIf="constellationSkills.length >= 1"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="80"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="100"
+                  y2="75"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 2"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="185"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="230"
+                  y2="42"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 3"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="290"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="370"
+                  y2="20"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 4"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="395"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="500"
+                  y2="12"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 5"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="505"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="630"
+                  y2="20"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 6"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="615"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="770"
+                  y2="42"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
                 <line
+                  *ngIf="constellationSkills.length >= 7"
                   class="laser-beam-line"
-                  x1="400"
-                  y1="220"
-                  x2="720"
-                  y2="40"
-                  stroke-width="2"
+                  x1="500"
+                  y1="240"
+                  x2="900"
+                  y2="75"
+                  stroke-width="2.2"
                   stroke-dasharray="5 3"
                 />
               </svg>
 
-              <!-- Orbital Skill Nodes Cluster -->
+              <!-- Orbital Skill Nodes Cluster (Pinned to exact coordinates matching the beams) -->
               <div class="constellation-nodes-row">
                 <div
                   class="constellation-node"
                   *ngFor="let skill of constellationSkills; let idx = index"
+                  [ngStyle]="getConstellationNodeStyle(idx, constellationSkills.length)"
                 >
                   <div class="node-pill">
                     <span class="node-icon-glow"></span>
@@ -448,25 +463,40 @@
                 </div>
               </div>
 
-              <!-- Central Power Beacon -->
+              <!-- Central Power Beacon (Quantum Tech Core) -->
               <div class="constellation-central-core">
-                <div class="beacon-wave-ring wave-1"></div>
-                <div class="beacon-wave-ring wave-2"></div>
-                <div class="beacon-orb">
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polygon points="12 2 2 22 22 22 12 2"></polygon>
-                    <line x1="12" y1="13" x2="12" y2="17"></line>
-                    <circle cx="12" cy="9" r="1"></circle>
-                  </svg>
+                <div class="beacon-sonar-shell">
+                  <div class="beacon-wave-ring wave-1"></div>
+                  <div class="beacon-wave-ring wave-2"></div>
+                  <div class="beacon-wave-ring wave-3"></div>
+                  <div class="beacon-orb" title="Core Technology Engine">
+                    <svg
+                      width="26"
+                      height="26"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="beacon-core-icon"
+                    >
+                      <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+                      <rect x="9" y="9" width="6" height="6" rx="1"></rect>
+                      <line x1="9" y1="1" x2="9" y2="4"></line>
+                      <line x1="15" y1="1" x2="15" y2="4"></line>
+                      <line x1="9" y1="20" x2="9" y2="23"></line>
+                      <line x1="15" y1="20" x2="15" y2="23"></line>
+                      <line x1="20" y1="9" x2="23" y2="9"></line>
+                      <line x1="20" y1="15" x2="23" y2="15"></line>
+                      <line x1="1" y1="9" x2="4" y2="9"></line>
+                      <line x1="1" y1="15" x2="4" y2="15"></line>
+                    </svg>
+                  </div>
+                </div>
+                <div class="beacon-core-pill">
+                  <span class="beacon-pill-dot" aria-hidden="true"></span>
+                  <span>Core Stack</span>
                 </div>
               </div>
             </div>
@@ -485,14 +515,20 @@
                   <div
                     class="toolkit-gauge-fill"
                     [style.width.%]="skill.score > 100 ? 100 : skill.score || 0"
-                  >
-                    <span class="gauge-glow-bead"></span>
-                  </div>
+                  ></div>
                 </div>
                 <div class="toolkit-footer" *ngIf="skill.score">
-                  <span class="toolkit-tier-badge">{{
-                    skill.score >= 70 ? 'Advanced' : skill.score >= 40 ? 'Proficient' : 'Familiar'
-                  }}</span>
+                  <span
+                    class="toolkit-tier-badge"
+                    [ngClass]="{
+                      'tier-advanced': skill.score >= 70,
+                      'tier-proficient': skill.score >= 40 && skill.score < 70,
+                      'tier-familiar': skill.score < 40,
+                    }"
+                    >{{
+                      skill.score >= 70 ? 'Advanced' : skill.score >= 40 ? 'Proficient' : 'Familiar'
+                    }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -911,19 +947,103 @@
         </div>
       </section>
 
-      <!-- Footer -->
-      <footer class="portfolio-footer">
-        <div class="section-container footer-container">
-          <a routerLink="/" class="footer-brand">Built with <strong>DevInsight AI</strong></a>
-          <span class="footer-tagline">Work, in its own words.</span>
-          <button
-            type="button"
-            class="back-to-top-btn"
-            (click)="scrollToTop()"
-            aria-label="Scroll back to top"
-          >
-            Back to top ↑
-          </button>
+      <!-- Comprehensive Production Portfolio Footer -->
+      <footer class="portfolio-footer" role="contentinfo">
+        <div class="footer-container">
+          <div class="footer-grid">
+            <!-- Brand & Identity Column -->
+            <div class="footer-brand-col">
+              <div class="footer-brand-badge">
+                <div class="brand-avatar-mini" aria-hidden="true">
+                  <img
+                    *ngIf="avatarSrc && !avatarFailed"
+                    [src]="avatarSrc"
+                    [alt]="profile.user.name"
+                    class="brand-avatar-img"
+                  />
+                  <span *ngIf="!avatarSrc || avatarFailed">{{ initials }}</span>
+                </div>
+                <div class="brand-info">
+                  <h3 class="brand-name">{{ profile.user.name }}</h3>
+                  <span class="brand-role">{{
+                    profile.user.jobTitle || 'Full-Stack Developer'
+                  }}</span>
+                </div>
+              </div>
+              <p class="footer-bio-summary">
+                {{
+                  profile.headline ||
+                    'Engineering high-impact web architectures, scalable backend systems, and modern interactive experiences.'
+                }}
+              </p>
+              <div class="footer-powered-chip">
+                <span>Built with <strong>DevInsight AI</strong></span>
+              </div>
+            </div>
+
+            <!-- Quick Navigation Column -->
+            <div class="footer-nav-col">
+              <h4 class="footer-heading">Navigation</h4>
+              <ul class="footer-nav-list">
+                <li><a href="#about" (click)="scrollToSection('about', $event)">About</a></li>
+                <li *ngIf="profile.skills.length">
+                  <a href="#skills" (click)="scrollToSection('skills', $event)">Skills</a>
+                </li>
+                <li *ngIf="profile.projects.length">
+                  <a href="#projects" (click)="scrollToSection('projects', $event)">Projects</a>
+                </li>
+                <li *ngIf="profile.workExperiences.length">
+                  <a href="#experience" (click)="scrollToSection('experience', $event)"
+                    >Experience</a
+                  >
+                </li>
+                <li *ngIf="profile.completedCourses?.length">
+                  <a href="#credentials" (click)="scrollToSection('credentials', $event)"
+                    >Courses</a
+                  >
+                </li>
+                <li><a href="#contact" (click)="scrollToSection('contact', $event)">Contact</a></li>
+              </ul>
+            </div>
+
+            <!-- Social / Professional Links Column -->
+            <div class="footer-social-col">
+              <h4 class="footer-heading">Connect</h4>
+              <div class="footer-social-links">
+                <a
+                  *ngFor="let social of socialLinks"
+                  [href]="social.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-social-item"
+                >
+                  <span>{{ social.label }}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+              <p class="footer-status-indicator">
+                <span class="status-pulse-dot" aria-hidden="true"></span>
+                <span>Open for engineering opportunities</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Copyright & Back to Top Row -->
+          <div class="footer-bottom-bar">
+            <span class="footer-copyright-text">
+              © {{ currentYear }} {{ profile.user.name }}. All rights reserved · Work, in its own
+              words.
+            </span>
+            <button
+              type="button"
+              class="back-to-top-btn"
+              (click)="scrollToTop()"
+              aria-label="Scroll back to top"
+            >
+              <span>Back to top</span>
+              <span aria-hidden="true">↑</span>
+            </button>
+          </div>
         </div>
       </footer>
     }

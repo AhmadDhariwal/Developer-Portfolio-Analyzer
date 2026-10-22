@@ -138,7 +138,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
   private isDeleting = false;
   private typewriterTimer: ReturnType<typeof setTimeout> | null = null;
 
-  avatarMode: '3d' | 'custom' = '3d';
+  avatarMode: '3d' | 'custom' = 'custom';
 
   get heroTitleMain(): string {
     const hero = this.profile?.sections.hero;
@@ -362,6 +362,80 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
         this.scrollToTop();
       }
     }
+  }
+
+  get currentYear(): number {
+    return new Date().getFullYear();
+  }
+
+  get isOwner(): boolean {
+    if (!this.auth.isLoggedIn()) return false;
+    const currentUser = this.auth.getCurrentUser();
+    if (!currentUser || !this.profile) return false;
+    const profileUser = this.profile.user as {
+      _id?: string;
+      email?: string;
+      githubUsername?: string;
+    };
+    const currentId = currentUser._id || currentUser['id'];
+    if (currentId && profileUser._id) {
+      return String(currentId) === String(profileUser._id);
+    }
+    if (currentUser.email && profileUser.email) {
+      return currentUser.email.toLowerCase() === profileUser.email.toLowerCase();
+    }
+    if (currentUser.githubUsername && profileUser.githubUsername) {
+      return currentUser.githubUsername.toLowerCase() === profileUser.githubUsername.toLowerCase();
+    }
+    return false;
+  }
+
+  linkCopied = false;
+
+  copyShareLink(): void {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && this.publicUrl) {
+      navigator.clipboard.writeText(this.publicUrl).then(() => {
+        this.linkCopied = true;
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.linkCopied = false;
+          this.cdr.markForCheck();
+        }, 2800);
+      });
+    }
+  }
+
+  getConstellationNodeStyle(index: number, total: number): { [key: string]: string } {
+    const positions7 = [
+      { left: '10%', top: '75px' },
+      { left: '23%', top: '42px' },
+      { left: '37%', top: '20px' },
+      { left: '50%', top: '12px' },
+      { left: '63%', top: '20px' },
+      { left: '77%', top: '42px' },
+      { left: '90%', top: '75px' },
+    ];
+    const positions6 = [
+      { left: '12%', top: '65px' },
+      { left: '27%', top: '38px' },
+      { left: '42%', top: '18px' },
+      { left: '58%', top: '18px' },
+      { left: '73%', top: '38px' },
+      { left: '88%', top: '65px' },
+    ];
+    const positions5 = [
+      { left: '14%', top: '60px' },
+      { left: '32%', top: '28px' },
+      { left: '50%', top: '15px' },
+      { left: '68%', top: '28px' },
+      { left: '86%', top: '60px' },
+    ];
+    const set = total >= 7 ? positions7 : total === 6 ? positions6 : positions5;
+    const pos = set[index] || { left: `${(index + 1) * (100 / (total + 1))}%`, top: '40px' };
+    return {
+      left: pos.left,
+      top: pos.top,
+    };
   }
 
   retry(): void {
