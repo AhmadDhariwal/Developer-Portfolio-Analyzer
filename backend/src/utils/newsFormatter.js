@@ -1,7 +1,6 @@
 const crypto = require('node:crypto');
 
-const DEFAULT_IMAGE =
-  'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80';
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80';
 
 const FALLBACK_IMAGES = {
   Frontend: [
@@ -53,24 +52,29 @@ const CATEGORY_KEYWORDS = {
   Web3: ['web3', 'blockchain', 'solidity', 'ethereum', 'smart contract', 'defi', 'crypto']
 };
 
-const cleanText = (value = '') => String(value || '').replaceAll(/\s+/g, ' ').trim();
+const cleanText = (value = '') =>
+  String(value || '')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
 
-const sanitizeHttpUrl = (value = '') => {
-  const raw = cleanText(value);
-  if (!raw) return '';
-  try {
-    const parsed = new URL(raw);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : '';
-  } catch {
-    return '';
-  }
-};
+const { safeNewsUrl: sanitizeHttpUrl } = require('./newsUrl');
 
 const hashText = (value = '') =>
-  Number.parseInt(crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 8), 16);
+  Number.parseInt(
+    crypto
+      .createHash('sha256')
+      .update(String(value || ''))
+      .digest('hex')
+      .slice(0, 8),
+    16
+  );
 
 const stableId = (...parts) =>
-  crypto.createHash('sha1').update(parts.map((part) => cleanText(part).toLowerCase()).join('|')).digest('hex').slice(0, 16);
+  crypto
+    .createHash('sha1')
+    .update(parts.map((part) => cleanText(part).toLowerCase()).join('|'))
+    .digest('hex')
+    .slice(0, 16);
 
 const pickFallbackImage = (category, title, description, source) => {
   const candidates = FALLBACK_IMAGES[category] || FALLBACK_IMAGES.Default;
@@ -79,8 +83,12 @@ const pickFallbackImage = (category, title, description, source) => {
 };
 
 const normalizeDate = (value) => {
-  const timestamp = value ? new Date(value) : new Date();
-  return Number.isNaN(timestamp.getTime()) ? new Date() : timestamp;
+  if (!value) return null;
+  const date = new Date(value);
+  const timestamp = date.getTime();
+  return Number.isFinite(timestamp) && timestamp <= Date.now() + 300000 && timestamp >= Date.now() - 30 * 86400000
+    ? date
+    : null;
 };
 
 const uniqueStrings = (values = [], limit = 6) => {
@@ -100,18 +108,31 @@ const uniqueStrings = (values = [], limit = 6) => {
 const inferCategory = (headline = '', summary = '') => {
   const text = `${headline} ${summary}`.toLowerCase();
   for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some((keyword) => text.includes(keyword))) return category;
+    if (
+      keywords.some((keyword) =>
+        new RegExp(`(^|[^a-z0-9])${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^a-z0-9])`, 'i').test(text)
+      )
+    )
+      return category;
   }
   return 'Backend';
 };
 
 const normalizeItem = (item = {}) => {
-  const title = cleanText(item.title);
-  const description = cleanText(item.description);
+  const title = cleanText(item.title).slice(0, 220);
+  const description = cleanText(item.description).slice(0, 300);
   const source = cleanText(item.source) || 'Unknown';
   const url = sanitizeHttpUrl(item.url);
-  if (!title || !url) return null;
-  const category = cleanText(item.category) || inferCategory(title, description);
+  const publishedAt = normalizeDate(item.publishedAt);
+  if (
+    title.length < 8 ||
+    !url ||
+    !publishedAt ||
+    !['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'].includes(source) ||
+    title === '[Removed]'
+  )
+    return null;
+  const category = Object.hasOwn(CATEGORY_KEYWORDS, item.category) ? item.category : inferCategory(title, description);
   const tags = uniqueStrings(Array.isArray(item.tags) ? item.tags : [], 6);
 
   return {
@@ -119,11 +140,13 @@ const normalizeItem = (item = {}) => {
     title,
     description,
     source,
+    publisher: cleanText(item.publisher).slice(0, 120),
+    attributionUrl: sanitizeHttpUrl(item.attributionUrl) || url,
     url,
     image: sanitizeHttpUrl(item.image) || pickFallbackImage(category, title, description, source),
-    publishedAt: normalizeDate(item.publishedAt),
+    publishedAt,
     category,
-    popularity: Number(item.popularity || 0),
+    popularity: Number.isFinite(Number(item.popularity)) ? Math.max(0, Math.min(10000000, Number(item.popularity))) : 0,
     relevanceScore: Number(item.relevanceScore || 0),
     rankScore: Number(item.rankScore || 0),
     tags
@@ -131,13 +154,14 @@ const normalizeItem = (item = {}) => {
 };
 
 const fromNewsAPI = (payload) => {
-  const articles = Array.isArray(payload?.articles) ? payload.articles : [];
+  const articles = Array.isArray(payload?.articles) ? payload.articles.slice(0, 100) : [];
   return articles
     .map((article) =>
       normalizeItem({
         title: article.title,
-        description: article.description || article.content,
+        description: article.description,
         source: 'NewsAPI',
+        publisher: article.source?.name,
         url: article.url,
         image: article.urlToImage,
         publishedAt: article.publishedAt,
@@ -148,13 +172,14 @@ const fromNewsAPI = (payload) => {
 };
 
 const fromGNews = (payload) => {
-  const articles = Array.isArray(payload?.articles) ? payload.articles : [];
+  const articles = Array.isArray(payload?.articles) ? payload.articles.slice(0, 100) : [];
   return articles
     .map((article) =>
       normalizeItem({
         title: article.title,
-        description: article.description || article.content,
+        description: article.description,
         source: 'GNews',
+        publisher: article.source?.name,
         url: article.url,
         image: article.image,
         publishedAt: article.publishedAt,
@@ -165,13 +190,14 @@ const fromGNews = (payload) => {
 };
 
 const fromHackerNews = (payload) => {
-  const hits = Array.isArray(payload?.hits) ? payload.hits : [];
+  const hits = Array.isArray(payload?.hits) ? payload.hits.slice(0, 100) : [];
   return hits
     .map((hit) =>
       normalizeItem({
         title: hit.title || hit.story_title,
-        description: hit.story_text || hit.comment_text || '',
+        description: '',
         source: 'Hacker News',
+        attributionUrl: `https://news.ycombinator.com/item?id=${hit.objectID}`,
         url: hit.url || hit.story_url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
         image: '',
         publishedAt: hit.created_at,
@@ -184,13 +210,14 @@ const fromHackerNews = (payload) => {
 };
 
 const fromDevTo = (payload) => {
-  const articles = Array.isArray(payload) ? payload : [];
+  const articles = Array.isArray(payload) ? payload.slice(0, 100) : [];
   return articles
     .map((article) =>
       normalizeItem({
         title: article.title,
         description: article.description,
         source: 'Dev.to',
+        publisher: article.user?.name,
         url: article.url,
         image: article.social_image,
         publishedAt: article.published_at,
@@ -203,14 +230,15 @@ const fromDevTo = (payload) => {
 };
 
 const fromReddit = (payload) => {
-  const posts = Array.isArray(payload?.data?.children) ? payload.data.children : [];
+  const posts = Array.isArray(payload?.data?.children) ? payload.data.children.slice(0, 100) : [];
   return posts
     .map((child) => {
       const data = child?.data || {};
       return normalizeItem({
         title: data.title,
-        description: data.selftext,
+        description: '',
         source: 'Reddit',
+        attributionUrl: data.permalink ? `https://www.reddit.com${data.permalink}` : '',
         url: data.url,
         image: data.thumbnail?.startsWith('http') ? data.thumbnail : '',
         publishedAt: Number(data.created_utc) ? new Date(data.created_utc * 1000).toISOString() : undefined,

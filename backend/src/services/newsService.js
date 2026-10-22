@@ -1,34 +1,30 @@
 const developerContext = require('./developerContextService');
 const axios = require('axios');
-const crypto = require('node:crypto');
-const NewsCache = require('../models/news');
-const NewsProviderCircuit = require('../models/newsProviderCircuit');
+const pool = require('./newsPoolService');
+const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
-const {
-  fromNewsAPI,
-  fromGNews,
-  fromHackerNews,
-  fromDevTo,
-  fromReddit
-} = require('../utils/newsFormatter');
+const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = require('../utils/newsFormatter');
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
-const { isRedisCacheEnabled, getRedisCacheClient } = require('./redisCacheService');
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 30;
-const CACHE_TTL_MS = 1000 * 60 * 20;
-const SIGNAL_CACHE_TTL_MS = 1000 * 60 * 2;
-const SIGNAL_CACHE_MAX_SIZE = 250;
-const MAX_CACHED_ITEMS = 300;
-const PROVIDER_TIMEOUT_MS = Math.min(7000, Math.max(2000, Number(process.env.NEWS_PROVIDER_TIMEOUT_MS) || 7000));
-const PROVIDER_FAILURE_THRESHOLD = 3;
-const PROVIDER_COOLDOWN_MS = Math.max(30000, Number(process.env.NEWS_PROVIDER_COOLDOWN_MS) || 2 * 60 * 1000);
+const PROVIDER_TIMEOUT_MS = 7000;
 const REDDIT_FEEDS = ['programming', 'webdev', 'MachineLearning', 'devops'];
 const SOURCE_NAMES = ['NewsAPI', 'GNews', 'Hacker News', 'Dev.to', 'Reddit'];
 const NEWS_TABS = ['for-you', 'trending', 'latest'];
-const NEWS_CATEGORIES = ['All', 'Frontend', 'Backend', 'Full Stack', 'AI / ML', 'DevOps', 'Mobile', 'Cybersecurity', 'Web3'];
+const NEWS_CATEGORIES = [
+  'All',
+  'Frontend',
+  'Backend',
+  'Full Stack',
+  'AI / ML',
+  'DevOps',
+  'Mobile',
+  'Cybersecurity',
+  'Web3'
+];
 const NEWS_SOURCES = ['All', ...SOURCE_NAMES];
 const NEWS_DATE_FILTERS = ['today', 'week', 'month'];
 const NEWS_POPULARITY_FILTERS = ['all', 'high'];
@@ -37,8 +33,8 @@ const SAFE_PROVIDER_FAILURES = new Set([
   'Provider API key is not configured'
 ]);
 
-const sanitizeProviderDiagnostics = (diagnostics = []) => (Array.isArray(diagnostics) ? diagnostics : [])
-  .map((diagnostic) => ({
+const sanitizeProviderDiagnostics = (diagnostics = []) =>
+  (Array.isArray(diagnostics) ? diagnostics : []).map((diagnostic) => ({
     provider: String(diagnostic?.provider || 'Unknown'),
     enabled: Boolean(diagnostic?.enabled),
     configured: Boolean(diagnostic?.configured),
@@ -46,15 +42,11 @@ const sanitizeProviderDiagnostics = (diagnostics = []) => (Array.isArray(diagnos
     articlesFetched: Math.max(0, Number(diagnostic?.articlesFetched || 0)),
     lastSuccess: diagnostic?.lastSuccess || null,
     lastFailure: diagnostic?.lastFailure
-      ? (SAFE_PROVIDER_FAILURES.has(diagnostic.lastFailure) ? diagnostic.lastFailure : 'Provider request failed.')
+      ? SAFE_PROVIDER_FAILURES.has(diagnostic.lastFailure)
+        ? diagnostic.lastFailure
+        : 'Provider request failed.'
       : null
   }));
-const signalResolutionCache = new Map();
-const signalResolutionInflight = new Map();
-const feedInflight = new Map();
-const localProviderCircuitState = new Map();
-let localCircuitFallbackWarned = false;
-
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const uniqueStrings = (values = [], limit = 8) => {
   const seen = new Set();
@@ -70,20 +62,21 @@ const uniqueStrings = (values = [], limit = 8) => {
   return output;
 };
 
-const normalizeSkillNames = (values = [], limit = 18) => uniqueStrings(
-  (Array.isArray(values) ? values : [])
-    .map((value) => value?.name || value?.skill || value?.title || value)
-    .filter(Boolean),
-  limit
-);
+const normalizeSkillNames = (values = [], limit = 18) =>
+  uniqueStrings(
+    (Array.isArray(values) ? values : [])
+      .map((value) => value?.name || value?.skill || value?.title || value)
+      .filter(Boolean),
+    limit
+  );
 
 const parseDateRange = (dateRange = '') => {
   const now = new Date();
   const lower = String(dateRange || '').toLowerCase();
-  if (lower === 'today') return new Date(now.getTime() - (24 * 60 * 60 * 1000));
-  if (lower === 'week') return new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-  if (lower === 'month') return new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-  return new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000));
+  if (lower === 'today') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  if (lower === 'week') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  if (lower === 'month') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  return new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 };
 
 const normalizeFilters = (filters = {}) => {
@@ -98,271 +91,90 @@ const normalizeFilters = (filters = {}) => {
     category: NEWS_CATEGORIES.includes(category) ? category : 'All',
     source: NEWS_SOURCES.includes(source) ? source : 'All',
     dateRange: NEWS_DATE_FILTERS.includes(dateRange) ? dateRange : 'week',
-    search: String(filters.search || '').trim().replace(/\s+/g, ' ').slice(0, 80),
+    search: String(filters.search || '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 80),
     popularity: NEWS_POPULARITY_FILTERS.includes(popularity) ? popularity : 'all',
     page: Math.max(1, Number.parseInt(filters.page, 10) || 1),
     limit: clamp(Number.parseInt(filters.limit, 10) || DEFAULT_LIMIT, 1, MAX_LIMIT)
   };
 };
 
-const hashKey = (payload) =>
-  crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 32);
-
-const fetchJson = async (url, options = {}) => {
-  const response = await axios.get(url, { timeout: PROVIDER_TIMEOUT_MS, ...options });
-  return response.data;
-};
-
-const withProviderTimeout = (providerName, operation) => Promise.race([
-  Promise.resolve().then(operation),
-  new Promise((_, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error(providerName + ' timed out after ' + PROVIDER_TIMEOUT_MS + 'ms')),
-      PROVIDER_TIMEOUT_MS
-    );
-    timeout.unref?.();
-  })
-]);
-
-const providerCircuitKey = (providerName) => `news:circuit:${String(providerName || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-const toCircuitState = (state = {}) => ({
-  failureCount: Math.max(0, Number(state.failureCount || 0)),
-  circuitOpenUntil: Math.max(0, Number(state.circuitOpenUntil || 0)),
-  lastFailureAt: Math.max(0, Number(state.lastFailureAt || 0))
-});
-
-const warnLocalCircuitFallback = () => {
-  if (localCircuitFallbackWarned) return;
-  localCircuitFallbackWarned = true;
-  logger.warn('news shared provider circuit unavailable; using local fallback');
-};
-
-const getRedisCircuit = async (providerName) => {
-  if (!isRedisCacheEnabled()) return undefined;
-  const client = getRedisCacheClient();
-  if (!client) return undefined;
+const fetchJson = async (source, url, options = {}) => {
+  const reservation = await governance.reserve(source);
+  if (!reservation.allowed) throw new Error('Provider admission denied');
   try {
-    const key = providerCircuitKey(providerName);
-    const fields = await client.hGetAll(key);
-    if (!fields || !Object.keys(fields).length) return null;
-    const state = toCircuitState(fields);
-    if (state.circuitOpenUntil > Date.now()) return state;
-    if (state.circuitOpenUntil && state.circuitOpenUntil <= Date.now()) await client.del(key);
-    return null;
-  } catch {
-    return undefined;
-  }
-};
-
-const recordRedisFailure = async (providerName) => {
-  if (!isRedisCacheEnabled()) return undefined;
-  const client = getRedisCacheClient();
-  if (!client) return undefined;
-  try {
-    const key = providerCircuitKey(providerName);
-    const now = Date.now();
-    const existing = toCircuitState(await client.hGetAll(key));
-    if (existing.circuitOpenUntil > now) return existing;
-    if (existing.circuitOpenUntil && existing.circuitOpenUntil <= now) await client.del(key);
-    const failureCount = Number(await client.hIncrBy(key, 'failureCount', 1));
-    const circuitOpenUntil = failureCount >= PROVIDER_FAILURE_THRESHOLD ? now + PROVIDER_COOLDOWN_MS : 0;
-    const ttlSeconds = Math.max(1, Math.ceil(PROVIDER_COOLDOWN_MS / 1000));
-    await client.hSet(key, {
-      failureCount: String(failureCount),
-      circuitOpenUntil: String(circuitOpenUntil),
-      lastFailureAt: String(now)
+    const response = await axios.get(url, {
+      ...options,
+      timeout: PROVIDER_TIMEOUT_MS,
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      maxRedirects: 0,
+      maxContentLength: 2 * 1024 * 1024,
+      headers: { Accept: 'application/json', ...options.headers }
     });
-    await client.expire(key, ttlSeconds);
-    return { failureCount, circuitOpenUntil, lastFailureAt: now };
-  } catch {
-    return undefined;
-  }
-};
-
-const clearRedisCircuit = async (providerName) => {
-  if (!isRedisCacheEnabled()) return false;
-  const client = getRedisCacheClient();
-  if (!client) return false;
-  try {
-    await client.del(providerCircuitKey(providerName));
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const getMongoCircuit = async (providerName) => {
-  const now = new Date();
-  const document = await NewsProviderCircuit.findOne({ provider: providerName }).lean();
-  if (!document) return null;
-  const state = {
-    failureCount: Math.max(0, Number(document.failureCount || 0)),
-    circuitOpenUntil: document.circuitOpenUntil ? new Date(document.circuitOpenUntil).getTime() : 0,
-    lastFailureAt: document.lastFailureAt ? new Date(document.lastFailureAt).getTime() : 0
-  };
-  if (state.circuitOpenUntil > Date.now()) return state;
-  if (document.expiresAt && new Date(document.expiresAt).getTime() <= Date.now()) {
-    await NewsProviderCircuit.updateOne(
-      { provider: providerName, expiresAt: { $lte: now } },
-      { $set: { failureCount: 0, circuitOpenUntil: null, expiresAt: null } }
-    );
-  }
-  return null;
-};
-
-const recordMongoFailure = async (providerName) => {
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + PROVIDER_COOLDOWN_MS);
-  await NewsProviderCircuit.updateOne(
-    { provider: providerName, expiresAt: { $lte: now } },
-    { $set: { failureCount: 0, circuitOpenUntil: null, expiresAt: null } }
-  );
-  let document;
-  try {
-    document = await NewsProviderCircuit.findOneAndUpdate(
-      { provider: providerName, $or: [{ circuitOpenUntil: null }, { circuitOpenUntil: { $exists: false } }, { circuitOpenUntil: { $lte: now } }] },
-      { $set: { provider: providerName, lastFailureAt: now, expiresAt }, $inc: { failureCount: 1 } },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    ).lean();
+    await governance.finish(reservation, { status: response.status, headers: response.headers });
+    return response.data;
   } catch (error) {
-    if (error?.code !== 11000) throw error;
-    document = await NewsProviderCircuit.findOne({ provider: providerName }).lean();
-  }
-  if (!document) return { failureCount: 0, circuitOpenUntil: 0, lastFailureAt: now.getTime() };
-  const failureCount = Math.max(0, Number(document.failureCount || 0));
-  if (failureCount < PROVIDER_FAILURE_THRESHOLD) {
-    return { failureCount, circuitOpenUntil: 0, lastFailureAt: now.getTime() };
-  }
-  const circuitOpenUntil = new Date(Date.now() + PROVIDER_COOLDOWN_MS);
-  const opened = await NewsProviderCircuit.findOneAndUpdate(
-    { provider: providerName, $or: [{ circuitOpenUntil: null }, { circuitOpenUntil: { $lte: now } }] },
-    { $set: { circuitOpenUntil, expiresAt: circuitOpenUntil, lastFailureAt: now } },
-    { new: true }
-  ).lean();
-  return {
-    failureCount: Math.max(failureCount, Number(opened?.failureCount || 0)),
-    circuitOpenUntil: opened?.circuitOpenUntil ? new Date(opened.circuitOpenUntil).getTime() : circuitOpenUntil.getTime(),
-    lastFailureAt: now.getTime()
-  };
-};
-
-const clearMongoCircuit = async (providerName) => {
-  await NewsProviderCircuit.deleteOne({ provider: providerName });
-};
-
-const getLocalCircuit = (providerName) => {
-  const state = localProviderCircuitState.get(providerName);
-  if (!state) return null;
-  if (!state.circuitOpenUntil) return state;
-  if (state.circuitOpenUntil > Date.now()) return state;
-  localProviderCircuitState.delete(providerName);
-  return null;
-};
-
-const recordLocalFailure = (providerName) => {
-  const previous = getLocalCircuit(providerName) || localProviderCircuitState.get(providerName) || { failureCount: 0 };
-  const failureCount = Number(previous.failureCount || 0) + 1;
-  const state = {
-    failureCount,
-    circuitOpenUntil: failureCount >= PROVIDER_FAILURE_THRESHOLD ? Date.now() + PROVIDER_COOLDOWN_MS : 0,
-    lastFailureAt: Date.now()
-  };
-  localProviderCircuitState.set(providerName, state);
-  return state;
-};
-
-const getSharedCircuit = async (providerName) => {
-  const redisState = await getRedisCircuit(providerName);
-  if (redisState !== undefined) return redisState;
-  try {
-    return await getMongoCircuit(providerName);
-  } catch {
-    warnLocalCircuitFallback();
-    return getLocalCircuit(providerName);
+    await governance.finish(reservation, {
+      failed: true,
+      status: error.response?.status || 0,
+      headers: error.response?.headers || {}
+    });
+    // No immediate retry: scheduled attempts must obtain a new reservation.
+    throw new Error('Provider request failed');
   }
 };
 
-const recordSharedFailure = async (providerName) => {
-  const redisState = await recordRedisFailure(providerName);
-  if (redisState !== undefined) return redisState;
-  try {
-    return await recordMongoFailure(providerName);
-  } catch {
-    warnLocalCircuitFallback();
-    return recordLocalFailure(providerName);
-  }
-};
-
-const clearSharedCircuit = async (providerName) => {
-  if (await clearRedisCircuit(providerName)) return;
-  try {
-    await clearMongoCircuit(providerName);
-  } catch {
-    warnLocalCircuitFallback();
-    localProviderCircuitState.delete(providerName);
-  }
-};
-
-const runProvider = async (provider) => {
-  const state = await getSharedCircuit(provider.name);
-  if (state?.circuitOpenUntil > Date.now()) {
-    const error = new Error('Provider cooldown is active');
-    error.code = 'PROVIDER_COOLDOWN';
-    throw error;
-  }
-
-  try {
-    const value = await withProviderTimeout(provider.name, provider.fetcher);
-    await clearSharedCircuit(provider.name);
-    return value;
-  } catch (error) {
-    await recordSharedFailure(provider.name);
-    throw error;
-  }
-};
 const fetchFromNewsApi = async (sinceDate, token) => {
   const from = sinceDate.toISOString().slice(0, 10);
   const query = encodeURIComponent('(software OR programming OR developer OR javascript OR nodejs)');
-  const url = `https://newsapi.org/v2/everything?q=${query}&from=${from}&language=en&sortBy=publishedAt&pageSize=50&apiKey=${token}`;
-  const payload = await fetchJson(url);
+  const url = `https://newsapi.org/v2/everything?q=${query}&from=${from}&language=en&sortBy=publishedAt&pageSize=50`;
+  const payload = await fetchJson('newsapi', url, { headers: { 'X-Api-Key': token } });
   return fromNewsAPI(payload);
 };
 
 const fetchFromGNews = async (sinceDate, token) => {
   const from = sinceDate.toISOString();
   const query = encodeURIComponent('developer OR programming OR software engineering');
-  const url = `https://gnews.io/api/v4/search?q=${query}&lang=en&from=${encodeURIComponent(from)}&max=30&apikey=${token}`;
-  const payload = await fetchJson(url);
+  const url = `https://gnews.io/api/v4/search?q=${query}&lang=en&from=${encodeURIComponent(from)}&max=10&apikey=${encodeURIComponent(token)}`;
+  const payload = await fetchJson('gnews', url);
   return fromGNews(payload);
 };
 
 const fetchFromHackerNews = async () => {
   const query = encodeURIComponent('developer OR javascript OR node OR ai');
   const url = `https://hn.algolia.com/api/v1/search_by_date?query=${query}&tags=story&hitsPerPage=40`;
-  const payload = await fetchJson(url);
+  const payload = await fetchJson('hackernews', url);
   return fromHackerNews(payload);
 };
 
 const fetchFromDevTo = async () => {
-  const payload = await fetchJson('https://dev.to/api/articles?per_page=30&top=7');
+  const payload = await fetchJson('devto', 'https://dev.to/api/articles?per_page=30&top=7');
   return fromDevTo(payload);
 };
 
 const fetchFromReddit = async () => {
-  const requests = REDDIT_FEEDS.map((feed) =>
-    fetchJson(`https://www.reddit.com/r/${feed}/top.json?t=week&limit=20`, {
-      headers: { 'User-Agent': 'DevInsightAI-NewsHub/1.0' }
-    }).catch(() => null)
+  const payload = await fetchJson(
+    'reddit',
+    `https://oauth.reddit.com/r/${REDDIT_FEEDS[Math.floor(Date.now() / 1200000) % REDDIT_FEEDS.length]}/top?t=week&limit=20`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.NEWS_REDDIT_ACCESS_TOKEN}`,
+        'User-Agent': process.env.NEWS_REDDIT_USER_AGENT
+      }
+    }
   );
-  const payloads = await Promise.all(requests);
-  return payloads.flatMap((payload) => (payload ? fromReddit(payload) : []));
+  return fromReddit(payload);
 };
 
 const uniqueNewsItems = (items = []) => {
   const seen = new Set();
   return items.filter((item) => {
-    const urlKey = String(item?.url || '').trim().toLowerCase();
-    const titleKey = String(item?.title || '').trim().toLowerCase();
+    const urlKey = String(item?.url || '').trim();
+    const titleKey = String(item?.title || '')
+      .trim()
+      .toLowerCase();
     const key = urlKey || titleKey;
     if (!key || seen.has(key)) return false;
     seen.add(key);
@@ -379,7 +191,12 @@ const matchesFilters = (item, filters, sinceTimestamp) => {
     if (!haystack.includes(filters.search.toLowerCase())) return false;
   }
   const publishedAt = new Date(item.publishedAt).getTime();
-  if (Number.isFinite(sinceTimestamp) && publishedAt < sinceTimestamp) return false;
+  if (
+    !Number.isFinite(publishedAt) ||
+    publishedAt > Date.now() + 300000 ||
+    (Number.isFinite(sinceTimestamp) && publishedAt < sinceTimestamp)
+  )
+    return false;
   if (filters.popularity === 'high' && Number(item.popularity || 0) < 200) return false;
   return true;
 };
@@ -388,10 +205,12 @@ const extractTrendingTopics = (items = []) => {
   const counters = new Map();
   items.forEach((item) => {
     const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
-    ['javascript', 'typescript', 'react', 'angular', 'node', 'docker', 'kubernetes', 'ai', 'llm', 'security']
-      .forEach((topic) => {
-        if (text.includes(topic)) counters.set(topic, (counters.get(topic) || 0) + 1);
-      });
+    ['javascript', 'typescript', 'react', 'angular', 'node', 'docker', 'kubernetes', 'ai', 'llm', 'security'].forEach(
+      (topic) => {
+        if (new RegExp(`(^|[^a-z0-9])${topic}(?=$|[^a-z0-9])`, 'i').test(text))
+          counters.set(topic, (counters.get(topic) || 0) + 1);
+      }
+    );
   });
   return [...counters.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -399,38 +218,30 @@ const extractTrendingTopics = (items = []) => {
     .map(([topic]) => topic);
 };
 
-const getCachedDeveloperSignals = async (userId, forceRefresh = false) => {
-  const key = String(userId || 'public');
-  const cached = signalResolutionCache.get(key);
-  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
-    signalResolutionCache.delete(key);
-    signalResolutionCache.set(key, cached);
-    return cached.value;
-  }
-  signalResolutionCache.delete(key);
-  if (!forceRefresh && signalResolutionInflight.has(key)) return signalResolutionInflight.get(key);
-
-  const request = Promise.resolve()
-    .then(async () => {
-      const signals = await getDeveloperSignals(userId || null);
-      const signalHash = userId ? buildSignalHash(signals) : 'no-signals';
-      const value = { signals, signalHash };
-      signalResolutionCache.set(key, { value, expiresAt: Date.now() + SIGNAL_CACHE_TTL_MS });
-      while (signalResolutionCache.size > SIGNAL_CACHE_MAX_SIZE) {
-        signalResolutionCache.delete(signalResolutionCache.keys().next().value);
-      }
-      return value;
-    })
-    .finally(() => signalResolutionInflight.delete(key));
-
-  signalResolutionInflight.set(key, request);
-  return request;
+// Bounded per-account signal resolution only; public article data is shared separately.
+// Cross-worker signal changes converge within 15 seconds. Existing profile and sprint
+// mutation hooks evict locally; refresh always resolves current canonical signals.
+const signalCache = new Map();
+const getCachedDeveloperSignals = async (userId, force = false) => {
+  const key = String(userId);
+  const cached = signalCache.get(key);
+  if (!force && cached && cached.until > Date.now()) return cached.promise;
+  const entry = { until: Date.now() + 15000 };
+  entry.promise = Promise.resolve()
+    .then(() => getDeveloperSignals(userId))
+    .then((signals) => ({ signals, signalHash: buildSignalHash(signals) }))
+    .catch(() => {
+      if (signalCache.get(key) === entry) signalCache.delete(key);
+      logger.warn('news canonical signals unavailable');
+      return { signals: {}, signalHash: 'signals-unavailable' };
+    });
+  signalCache.delete(key);
+  while (signalCache.size >= 250) signalCache.delete(signalCache.keys().next().value);
+  signalCache.set(key, entry);
+  return entry.promise;
 };
-
 const invalidateNewsSignalCache = (userId) => {
-  if (!userId) return;
-  signalResolutionCache.delete(String(userId));
-  signalResolutionInflight.delete(String(userId));
+  signalCache.delete(String(userId));
 };
 
 const buildUserContext = async (user, options = {}) => {
@@ -464,44 +275,51 @@ const buildUserContext = async (user, options = {}) => {
   const jobsDemand = signals.jobsDemandSignal || signals.jobsDemandSignals || {};
   const recommendations = signals.recommendationSignal || signals.recommendationSignals || {};
 
-  const resumeSkills = normalizeSkillNames([
-    ...(resume.skills || []),
-    ...(resume.technicalSkills || []),
-    ...(resume.extractedSkills || []),
-    ...(resume.experienceKeywords || [])
-  ], 24);
-  const githubTechnologies = normalizeSkillNames([
-    ...(github.technologies || []),
-    ...(github.languageDistribution || []).map((entry) => entry?.language),
-    ...(github.repositories || []).flatMap((repo) => [repo?.language, ...(repo?.technologies || [])])
-  ], 18);
-  const skillGaps = normalizeSkillNames([
-    ...(skillGap.missingSkills || []),
-    ...(skillGap.weakSkills || []),
-    ...(skillGap.immediateSkills || []),
-    ...(skillGap.shortTermSkills || []),
-    ...(recommendations.skills?.missingSkills || []),
-    ...(github.weakAreas || []),
-    ...(weekly.repeatedWeakAreas || []),
-    ...(sprint.repeatedIncompleteSkills || [])
-  ], 24);
-  const knownSkills = normalizeSkillNames([
-    ...resumeSkills,
-    ...githubTechnologies,
-    ...(skillGap.knownSkills || []),
-    ...(skillGap.provenSkills || []),
-    ...(integration.detectedSkills || []),
-    ...(portfolio.portfolioSkills || []),
-    ...(sprint.completedSkillSignals || []),
-    ...(recommendations.skills?.recommendedTechnologies || [])
-  ], 36);
+  const resumeSkills = normalizeSkillNames(
+    [...(resume.skills || []), ...(resume.technicalSkills || []), ...(resume.extractedSkills || [])],
+    24
+  );
+  const githubTechnologies = normalizeSkillNames(
+    [
+      ...(github.technologies || []),
+      ...(github.languageDistribution || []).map((entry) => entry?.language),
+      ...(github.repositories || []).flatMap((repo) => [repo?.language, ...(repo?.technologies || [])])
+    ],
+    18
+  );
+  const skillGaps = normalizeSkillNames(
+    [
+      ...(skillGap.missingSkills || []),
+      ...(skillGap.weakSkills || []),
+      ...(skillGap.immediateSkills || []),
+      ...(skillGap.shortTermSkills || []),
+      ...(recommendations.skills?.missingSkills || []),
+      ...(github.weakAreas || []),
+      ...(weekly.repeatedWeakAreas || []),
+      ...(sprint.repeatedIncompleteSkills || [])
+    ],
+    24
+  );
+  const knownSkills = normalizeSkillNames(
+    [
+      ...resumeSkills,
+      ...githubTechnologies,
+      ...(skillGap.knownSkills || []),
+      ...(skillGap.provenSkills || []),
+      ...(integration.detectedSkills || []),
+      ...(portfolio.portfolioSkills || []),
+      ...(sprint.completedSkillSignals || [])
+    ],
+    36
+  );
   const jobDemandSkills = normalizeSkillNames(jobsDemand.topSkills || [], 18);
   const recommendationTechnologies = normalizeSkillNames(recommendations.skills?.recommendedTechnologies || [], 18);
 
   return {
     ...defaults,
     careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
-    experienceLevel: developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || defaults.experienceLevel,
+    experienceLevel:
+      developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || defaults.experienceLevel,
     careerGoal: user.careerGoal || careerProfile.careerGoal || '',
     resumeSkills,
     githubTechnologies,
@@ -521,21 +339,38 @@ const fetchAllSources = async (sinceDate) => {
   const integrations = getIntegrationSecretsSync();
   const sharedNewsToken = String(integrations?.newsApiKey || '').trim();
   const newsApiToken = String(process.env.NEWS_API_KEY || sharedNewsToken).trim();
-  const gnewsToken = String(process.env.GNEWS_API_KEY || sharedNewsToken).trim();
+  const gnewsToken = String(process.env.GNEWS_API_KEY || '').trim();
   const newsEnabled = integrations?.newsEnabled !== false;
   const providers = [
-    { name: 'NewsAPI', enabled: newsEnabled, configured: Boolean(newsApiToken), fetcher: () => fetchFromNewsApi(sinceDate, newsApiToken) },
-    { name: 'GNews', enabled: newsEnabled, configured: Boolean(gnewsToken), fetcher: () => fetchFromGNews(sinceDate, gnewsToken) },
-    { name: 'Hacker News', enabled: true, configured: true, fetcher: () => fetchFromHackerNews() },
-    { name: 'Dev.to', enabled: true, configured: true, fetcher: () => fetchFromDevTo() },
-    { name: 'Reddit', enabled: true, configured: true, fetcher: () => fetchFromReddit() }
+    {
+      name: 'NewsAPI',
+      enabled: newsEnabled,
+      configured: Boolean(newsApiToken),
+      fetcher: () => fetchFromNewsApi(sinceDate, newsApiToken)
+    },
+    {
+      name: 'GNews',
+      enabled: newsEnabled,
+      configured: Boolean(gnewsToken),
+      fetcher: () => fetchFromGNews(sinceDate, gnewsToken)
+    },
+    { name: 'Hacker News', enabled: newsEnabled, configured: true, fetcher: () => fetchFromHackerNews() },
+    { name: 'Dev.to', enabled: newsEnabled, configured: true, fetcher: () => fetchFromDevTo() },
+    {
+      name: 'Reddit',
+      enabled: newsEnabled,
+      configured: Boolean(process.env.NEWS_REDDIT_ACCESS_TOKEN && process.env.NEWS_REDDIT_USER_AGENT),
+      fetcher: () => fetchFromReddit()
+    }
   ];
 
   const nowIso = new Date().toISOString();
-  const settled = await Promise.allSettled(providers.map((provider) => {
-    if (!provider.enabled || !provider.configured) return Promise.resolve([]);
-    return runProvider(provider);
-  }));
+  const settled = await Promise.allSettled(
+    providers.map((provider) => {
+      if (!provider.enabled || !provider.configured) return Promise.resolve([]);
+      return provider.fetcher();
+    })
+  );
   const sourceBuckets = {};
   const providerDiagnostics = [];
   const providerUsed = [];
@@ -616,164 +451,91 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
     fromCache,
     summary: [
       `News is personalized for your ${userContext.careerStack} path.`,
-      userContext.detectedSkills.length ? `Detected skills used: ${userContext.detectedSkills.slice(0, 4).join(', ')}.` : 'General developer relevance was used because skill signals are limited.',
-      userContext.jobDemandSkills.length ? `Market demand considered: ${userContext.jobDemandSkills.slice(0, 3).join(', ')}.` : '',
-      activeFilterParts.length ? `Active filters: ${activeFilterParts.join(', ')}.` : 'No extra filters are active right now.'
-    ].filter(Boolean).join(' ')
+      userContext.detectedSkills.length
+        ? `Detected skills used: ${userContext.detectedSkills.slice(0, 4).join(', ')}.`
+        : 'General developer relevance was used because skill signals are limited.',
+      userContext.jobDemandSkills.length
+        ? `Market demand considered: ${userContext.jobDemandSkills.slice(0, 3).join(', ')}.`
+        : '',
+      activeFilterParts.length
+        ? `Active filters: ${activeFilterParts.join(', ')}.`
+        : 'No extra filters are active right now.'
+    ]
+      .filter(Boolean)
+      .join(' ')
   };
 };
 
-const getNewsFeed = async ({ user, query }) => {
+const getNewsFeed = async ({ user, query = {} }) => {
   const startedAt = Date.now();
   const filters = normalizeFilters(query);
-  const bypassCache = ['1', 'true', 'yes'].includes(String(query?.refresh || query?.bypassCache || '').toLowerCase());
-  const userContext = await buildUserContext(user, { forceRefresh: bypassCache });
-  const cacheLookupKey = hashKey({
-    userId: String(user?._id || 'public'),
-    signalHash: userContext.signalHash,
-    filters: {
-      tab: filters.tab,
-      category: filters.category,
-      source: filters.source,
-      dateRange: filters.dateRange,
-      search: filters.search,
-      popularity: filters.popularity
-    },
-    careerStack: userContext.careerStack,
-    experienceLevel: userContext.experienceLevel
-  });
-
+  const [userContext, snapshot] = await Promise.all([
+    buildUserContext(user, {
+      forceRefresh: ['1', 'true', 'yes'].includes(String(query.refresh || query.bypassCache || '').toLowerCase())
+    }),
+    pool.readPool()
+  ]);
+  const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
+  const ranked = rankNewsItems(
+    uniqueNewsItems(snapshot?.allItems || []).filter((item) => matchesFilters(item, filters, sinceTimestamp)),
+    userContext,
+    filters.tab
+  );
   const start = (filters.page - 1) * filters.limit;
-  const cacheProjection = {
-    allItems: { $slice: [start, filters.limit] },
-    total: 1,
-    sourceSummary: 1,
-    trendingTopics: 1,
-    recommendedBasedOn: 1,
-    providerUsed: 1,
-    providerDiagnostics: 1,
-    providerFailureCount: 1,
-    responseTimeMs: 1,
-    lastUpdated: 1,
-    expiresAt: 1
-  };
-
-  const toCachedPayload = (cached, telemetryOverrides = {}) => ({
-    items: Array.isArray(cached.allItems) ? cached.allItems : [],
-    total: Number(cached.total || 0),
-    sourceSummary: cached.sourceSummary || {},
-    trendingTopics: Array.isArray(cached.trendingTopics) ? cached.trendingTopics : [],
-    recommendedBasedOn: cached.recommendedBasedOn || {},
-    fromCache: true,
+  const sourceSummary = Object.fromEntries(
+    SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
+  );
+  const freshness = pool.freshness(snapshot);
+  return {
+    items: ranked.slice(start, start + filters.limit),
+    total: ranked.length,
+    sourceSummary,
+    trendingTopics: extractTrendingTopics(ranked),
+    fromCache: Boolean(snapshot),
     filters,
+    recommendedBasedOn: buildRecommendedBasedOn({
+      userContext,
+      filters,
+      lastUpdated: snapshot?.lastUpdated || null,
+      sourceStatus:
+        freshness === 'fresh'
+          ? 'Cached source coverage is current.'
+          : freshness === 'stale'
+            ? 'Serving stale cached source coverage.'
+            : 'News ingestion is warming up.',
+      fromCache: Boolean(snapshot)
+    }),
     telemetry: {
-      cacheHit: true,
-      providerFailureCount: Number(cached.providerFailureCount || 0),
-      providerUsed: Array.isArray(cached.providerUsed) ? cached.providerUsed : [],
-      providerDiagnostics: sanitizeProviderDiagnostics(cached.providerDiagnostics),
+      cacheHit: Boolean(snapshot),
+      providerFailureCount: snapshot?.providerFailureCount || 0,
+      providerUsed: snapshot?.providerUsed || [],
+      providerDiagnostics: sanitizeProviderDiagnostics(snapshot?.providerDiagnostics),
       signalHash: userContext.signalHash,
       responseTimeMs: Date.now() - startedAt,
-      ...telemetryOverrides
+      freshness,
+      staleFallback: freshness === 'stale',
+      lastUpdated: snapshot?.lastUpdated || null
     }
-  });
-
-  if (!bypassCache) {
-    const cached = await NewsCache.findOne({
-      cacheKey: cacheLookupKey,
-      expiresAt: { $gt: new Date() }
-    }).select(cacheProjection).lean();
-    if (cached) return toCachedPayload(cached);
-  }
-
-  const inflightKey = `${cacheLookupKey}:${filters.page}:${filters.limit}:${bypassCache ? 'refresh' : 'normal'}`;
-  if (feedInflight.has(inflightKey)) return feedInflight.get(inflightKey);
-
-  const request = Promise.resolve()
-    .then(async () => {
-      const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
-      const { sourceBuckets, providerUsed, providerFailureCount, providerDiagnostics } =
-        await fetchAllSources(new Date(sinceTimestamp));
-      const merged = uniqueNewsItems(Object.values(sourceBuckets).flat());
-
-      if (!providerUsed.length && !merged.length) {
-        const stale = await NewsCache.findOne({ cacheKey: cacheLookupKey })
-          .select(cacheProjection)
-          .lean();
-        if (stale) {
-          return toCachedPayload(stale, {
-            providerFailureCount,
-            providerDiagnostics,
-            staleFallback: true
-          });
-        }
-      }
-
-      const filtered = merged.filter((item) => matchesFilters(item, filters, sinceTimestamp));
-      const ranked = rankNewsItems(filtered, userContext, filters.tab);
-      const sourceSummary = SOURCE_NAMES.reduce((accumulator, sourceName) => {
-        accumulator[sourceName] = ranked.filter((item) => item.source === sourceName).length;
-        return accumulator;
-      }, {});
-      const trendingTopics = extractTrendingTopics(ranked);
-      const total = ranked.length;
-      const items = ranked.slice(start, start + filters.limit);
-      const responseTimeMs = Date.now() - startedAt;
-      const lastUpdated = new Date().toISOString();
-      const sourceStatus = providerUsed.length
-        ? `Active sources: ${providerUsed.join(', ')}`
-        : 'Provider coverage is temporarily unavailable.';
-      const recommendedBasedOn = buildRecommendedBasedOn({
-        userContext,
-        filters,
-        lastUpdated,
-        sourceStatus,
-        fromCache: false
-      });
-
-      await NewsCache.findOneAndUpdate(
-        { cacheKey: cacheLookupKey },
-        {
-          $set: {
-            cacheKey: cacheLookupKey,
-            filters,
-            allItems: ranked.slice(0, MAX_CACHED_ITEMS),
-            total,
-            sourceSummary,
-            trendingTopics,
-            recommendedBasedOn,
-            providerUsed,
-            providerDiagnostics,
-            providerFailureCount,
-            responseTimeMs,
-            lastUpdated: new Date(lastUpdated),
-            expiresAt: new Date(Date.now() + CACHE_TTL_MS)
-          }
-        },
-        { upsert: true }
-      ).catch((error) => logger.warn('news cache write failed', { error: error.message }));
-
-      return {
-        items,
-        total,
-        sourceSummary,
-        trendingTopics,
-        recommendedBasedOn,
-        fromCache: false,
-        filters,
-        telemetry: {
-          cacheHit: false,
-          providerFailureCount,
-          providerUsed,
-          providerDiagnostics,
-          signalHash: userContext.signalHash,
-          responseTimeMs
-        }
-      };
-    })
-    .finally(() => feedInflight.delete(inflightKey));
-
-  feedInflight.set(inflightKey, request);
-  return request;
+  };
 };
-
-module.exports = { getNewsFeed, buildUserContext, invalidateNewsSignalCache };
+const refreshNewsPool = () => pool.refreshPool(() => fetchAllSources(new Date(Date.now() - 30 * 86400000)));
+let scheduler;
+const startNewsIngestionScheduler = () => {
+  if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;
+  const tick = () => refreshNewsPool().catch(() => logger.warn('news ingestion failed'));
+  scheduler = setInterval(tick, 60000);
+  scheduler.unref?.();
+  tick();
+};
+const stopNewsIngestionScheduler = () => {
+  clearInterval(scheduler);
+  scheduler = null;
+};
+module.exports = {
+  getNewsFeed,
+  buildUserContext,
+  invalidateNewsSignalCache,
+  refreshNewsPool,
+  startNewsIngestionScheduler,
+  stopNewsIngestionScheduler
+};

@@ -4,7 +4,9 @@ const { getNewsFeed } = require('../services/newsService');
 const logger = require('../utils/logger');
 
 const normalizeSavedType = (value) => {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (normalized === 'read_later' || normalized === 'read-later' || normalized === 'read later') return 'read_later';
   if (normalized === 'bookmark') return 'bookmark';
   return '';
@@ -16,17 +18,7 @@ const sanitizeString = (value, maxLength, fallback = '') =>
     .replace(/\s+/g, ' ')
     .slice(0, maxLength) || fallback;
 
-const sanitizeUrl = (value) => {
-  const raw = sanitizeString(value, 500);
-  if (!raw) return '';
-  try {
-    const url = new URL(raw);
-    if (!['http:', 'https:'].includes(url.protocol)) return '';
-    return url.toString();
-  } catch {
-    return '';
-  }
-};
+const { safeNewsUrl: sanitizeUrl } = require('../utils/newsUrl');
 
 const normalizePublishedAt = (value) => {
   if (!value) return null;
@@ -93,9 +85,9 @@ const getSavedNews = async (req, res) => {
 
     const rawPage = req.query?.page;
     const rawLimit = req.query?.limit;
-    const page = rawPage === undefined ? 1 : Number.parseInt(rawPage, 10);
-    const limit = rawLimit === undefined ? 50 : Number.parseInt(rawLimit, 10);
-    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+    const page = rawPage === undefined ? 1 : Number(rawPage);
+    const limit = rawLimit === undefined ? 50 : Number(rawLimit);
+    if (!Number.isInteger(page) || page < 1 || page > 10000 || !Number.isInteger(limit) || limit < 1 || limit > 100) {
       return res.status(400).json({ message: 'Saved news pagination is invalid.' });
     }
 
@@ -132,6 +124,10 @@ const getSavedNews = async (req, res) => {
 
 const saveNews = async (req, res) => {
   try {
+    for (const key of ['articleId', 'title', 'url', 'source', 'image', 'category', 'type', 'publishedAt']) {
+      if (req.body?.[key] !== undefined && req.body[key] !== null && typeof req.body[key] !== 'string')
+        return res.status(400).json({ message: 'Saved news fields must be strings.' });
+    }
     const articleId = sanitizeString(req.body?.articleId, 160);
     const title = sanitizeString(req.body?.title, 220);
     const url = sanitizeUrl(req.body?.url);
@@ -141,7 +137,14 @@ const saveNews = async (req, res) => {
     const type = normalizeSavedType(req.body?.type);
     const publishedAt = normalizePublishedAt(req.body?.publishedAt);
 
-    if (!articleId || !title || !url || !type || (req.body?.publishedAt && !publishedAt) || (req.body?.image && !image)) {
+    if (
+      !articleId ||
+      !title ||
+      !url ||
+      !type ||
+      (req.body?.publishedAt && !publishedAt) ||
+      (req.body?.image && !image)
+    ) {
       return res.status(400).json({
         message: 'Valid articleId, title, url, and type are required.'
       });
@@ -189,9 +192,7 @@ const saveNews = async (req, res) => {
     if (error?.code === 11000) {
       const type = normalizeSavedType(req.body?.type);
       const url = sanitizeUrl(req.body?.url);
-      const existing = type && url
-        ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean()
-        : null;
+      const existing = type && url ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean() : null;
       if (existing) {
         return res.status(200).json({
           item: mapSavedItem(existing),
@@ -246,8 +247,8 @@ const markSavedNewsAsRead = async (req, res) => {
 
     const item = await NewsSavedItem.findOneAndUpdate(
       { _id: id, userId: req.user._id, type: 'read_later' },
-      { $set: { readAt: new Date() } },
-      { returnDocument: 'after' }
+      [{ $set: { readAt: { $ifNull: ['$readAt', '$$NOW'] } } }],
+      { returnDocument: 'after', updatePipeline: true }
     ).lean();
 
     if (!item) {
