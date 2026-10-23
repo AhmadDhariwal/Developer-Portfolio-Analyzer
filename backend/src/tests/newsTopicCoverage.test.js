@@ -44,6 +44,7 @@ test('Explore searches independent interests and preserves cached pagination wit
   let queueWrites = 0;
   const discovery = load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': {},
+    './newsGovernanceService': { inspect: async () => ({ allowed: true }) },
     './redisCacheService': {
       getRedisCacheClient: () => ({
         eval: () => {
@@ -103,7 +104,7 @@ test('Explore searches independent interests and preserves cached pagination wit
   assert.equal(queueWrites, 0);
 });
 
-test('unknown interests can search existing articles but never become discovery jobs', async () => {
+test('unknown interests search cached articles without taxonomy rejection when discovery is disabled', async () => {
   const discovery = load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': {},
     './redisCacheService': { getRedisCacheClient: () => ({ eval: () => assert.fail('Unknown topics must not queue') }) }
@@ -120,18 +121,19 @@ test('unknown interests can search existing articles but never become discovery 
     query: { mode: 'explore', search: 'UnknownPrivateTech' }
   });
   assert.equal(response.total, 1);
-  assert.equal(response.coverage.status, 'unsupported_query');
-  assert.equal(response.enrichment.status, 'not_needed');
+  assert.equal(response.coverage.status, 'coverage_gap');
+  assert.equal(response.enrichment.status, 'disabled');
 });
 
-test('pagination never creates discovery jobs and explicit stale-topic revalidation respects shared state', async () => {
+test('pagination never creates discovery jobs and explicit refresh can revalidate fresh topics', async () => {
   let writes = 0;
   const discovery = load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': {},
+    './newsGovernanceService': { inspect: async () => ({ allowed: true }) },
     './newsDiscoveryProviders': { ...providers, enabled: () => true, available: () => ['hackernewssearch'] },
     './redisCacheService': {
       getRedisCacheClient: () => ({
-        get: async () => null,
+        get: async (key) => (key.endsWith(':worker') ? 'recent-heartbeat' : null),
         eval: async (_script, options) => {
           writes++;
           return options.arguments[2];
@@ -150,8 +152,8 @@ test('pagination never creates discovery jobs and explicit stale-topic revalidat
     revalidate: true,
     lastUpdated: new Date()
   });
-  assert.equal(fresh.enrichment.status, 'not_needed');
-  assert.equal(writes, 0);
+  assert.equal(fresh.enrichment.status, 'queued');
+  assert.equal(writes, 1);
   const input = {
     filters: { ...filters, page: 1 },
     total: 6,
@@ -161,7 +163,7 @@ test('pagination never creates discovery jobs and explicit stale-topic revalidat
   };
   assert.equal((await discovery.coverage(input)).enrichment.status, 'queued');
   await discovery.coverage(input);
-  assert.equal(writes, 1);
+  assert.equal(writes, 3);
 });
 
 test('public source activation enforces approval and fixed Dev.to/Kubernetes transports with attributed license metadata', async () => {

@@ -94,6 +94,96 @@ describe('News Hub lifecycle', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
+  it('shows exact query eligibility, blocks repeat checks and keeps quota states out of polling', () => {
+    component.enrichment = {
+      status: 'waiting',
+      reason: 'shared_interval',
+      nextEligibleAt: new Date(component.now + 60000).toISOString(),
+    };
+    expect(component.discoveryPending).toBe(false);
+    expect(component.discoveryTitle).toContain('eligibility');
+    expect(component.discoveryMessage).toContain('shared interval');
+    expect(component.refreshSeconds).toBe(60);
+    const count = api.getNews.mock.calls.length;
+    component.forceRefresh();
+    expect(api.getNews.mock.calls.length).toBe(count);
+    expect(component.items).toHaveLength(1);
+  });
+  it('distinguishes saving, no newer results and query freshness from the general pool', () => {
+    component.enrichment = {
+      status: 'processing',
+      reason: 'saving_articles',
+      nextEligibleAt: null,
+    };
+    expect(component.discoveryPending).toBe(true);
+    expect(component.discoveryTitle).toContain('saving');
+    component.enrichment = {
+      status: 'no_newer',
+      reason: 'no_newer_articles',
+      nextEligibleAt: null,
+      lastSuccessfulCheckAt: '2026-10-23T10:00:00Z',
+    };
+    expect(component.discoveryPending).toBe(false);
+    expect(component.discoveryTitle).toBe('No newer articles found');
+    expect(component.discoveryMessage).toContain('Last successful check:');
+    component.telemetry = {
+      ...feed().telemetry!,
+      freshness: 'warming',
+      generalFreshness: 'fresh',
+      queryFreshness: 'missing',
+    };
+    expect(component.freshnessLabel).toBe('Query not checked');
+    component.telemetry.queryFreshness = 'empty';
+    expect(component.freshnessLabel).toBe('Query checked: no matches');
+  });
+  it('accepts free text and widens the date only after explicit selection', () => {
+    component.selectView('explore');
+    component.onFiltersChange({ ...component.filters, search: 'generative ai' });
+    expect(api.getNews.mock.lastCall[0].search).toBe('generative ai');
+    component.coverage = {
+      status: 'coverage_gap',
+      topic: 'generative ai',
+      minimum: 6,
+      cachedMatches: 0,
+      dateExcludedMatches: 2,
+      suggestedDate: 'month',
+    };
+    expect(component.filters.date).toBe('week');
+    expect(component.discoveryMessage).toContain('outside the selected date range');
+    component.broadenDate();
+    expect(api.getNews.mock.lastCall[0].date).toBe('month');
+    expect(api.getNews.mock.lastCall[0].search).toBe('generative ai');
+    expect(api.getNews.mock.lastCall[3].refresh).toBe(false);
+    component.filters = {
+      ...component.filters,
+      source: 'Dev.to',
+      category: 'Backend',
+      popularity: 'high',
+    };
+    component.broadenFilters();
+    expect(api.getNews.mock.lastCall[0]).toMatchObject({
+      search: 'generative ai',
+      date: 'month',
+      source: 'All',
+      category: 'All',
+      popularity: 'all',
+    });
+  });
+  it('distinguishes worker and source outages without claiming completed empty discovery', () => {
+    vi.useFakeTimers();
+    for (const status of ['worker_unavailable', 'source_unavailable'] as const) {
+      api.getNews.mockReturnValue(
+        of({ ...feed([]), enrichment: { status, reason: status, nextEligibleAt: null } }),
+      );
+      component.retry();
+      expect(component.discoveryTitle).toContain(
+        status === 'worker_unavailable' ? 'offline' : 'unavailable',
+      );
+      const count = api.getNews.mock.calls.length;
+      vi.advanceTimersByTime(120000);
+      expect(api.getNews.mock.calls.length).toBe(count);
+    }
+  });
   it('opens broad independent Explore and preserves search/filters while resetting pagination', () => {
     component.selectView('explore');
     expect(api.getNews.mock.lastCall[0]).toMatchObject({
@@ -186,7 +276,7 @@ describe('News Hub lifecycle', () => {
   });
   it('labels unsupported, restrictive, exhausted, limited and disabled discovery honestly', () => {
     component.coverage = { status: 'unsupported_query', topic: null, cachedMatches: 0, minimum: 6 };
-    expect(component.discoveryMessage).toContain('cached articles only');
+    expect(component.discoveryMessage).toContain('technology phrase');
     component.coverage.status = 'restrictive_filters';
     expect(component.discoveryMessage).toContain('filters have not been changed');
     component.coverage = null;

@@ -136,6 +136,7 @@ test(
           }
         })
       });
+    await one.redis.set('news:v1:{discovery}:worker', String(Date.now()));
     const workerA = create(one, a),
       workerB = create(two, b);
     const queued = await Promise.all(
@@ -151,26 +152,30 @@ test(
     assert.equal(requests, 1);
     assert.equal(JSON.parse(await one.redis.get(workerA.stateKey('react'))).status, 'ready');
     assert.equal((await create(two, b).readTopic('react')).allItems.length, 1);
-    // Successful empty searches get a two-hour negative cache; readers cannot requeue them.
-    await workerA.coverage({ filters: query('angular'), total: 0, broadTotal: 0 });
+    // Successful empty searches get a five-minute negative cache; readers cannot requeue them.
     await one.redis.del('news:v3:{hackernewssearch}:interval');
+    await one.redis.del('news:v3:{hackernews}:shared:interval');
+    await workerA.coverage({ filters: query('angular'), total: 0, broadTotal: 0 });
     empty = true;
     await workerA.processQueue();
     assert.equal(JSON.parse(await one.redis.get(workerA.stateKey('angular'))).status, 'exhausted');
-    assert.ok((await one.redis.pTTL(workerA.stateKey('angular'))) > 7100000);
+    assert.ok((await one.redis.pTTL(workerA.stateKey('angular'))) > 240000);
     assert.equal(
       (await create(two, b).coverage({ filters: query('angular'), total: 0, broadTotal: 0 })).enrichment.status,
       'exhausted'
     );
     // A new topic cannot bypass exhausted provider budgets.
-    await workerA.coverage({ filters: query('python'), total: 0, broadTotal: 0 });
+    const denied = await workerA.coverage({ filters: query('python'), total: 0, broadTotal: 0 });
+    assert.equal(denied.enrichment.status, 'quota_limited');
+    assert.equal(denied.enrichment.reason, 'daily_budget');
     await one.redis.del('news:v3:{hackernewssearch}:interval');
+    await one.redis.del('news:v3:{hackernews}:shared:interval');
     await workerA.processQueue();
-    assert.equal(JSON.parse(await one.redis.get(workerA.stateKey('python'))).status, 'quota_limited');
+    assert.equal(await one.redis.get(workerA.stateKey('python')), null, 'Preflight denial does not create a job');
     assert.equal(requests, 2);
     const broad = await a.reserve('hackernews');
     await a.finish(broad, { failed: true, status: 429, headers: { 'retry-after': '120' } });
-    assert.equal((await b.reserve('hackernewssearch')).reason, 'cooldown');
+    assert.equal((await b.reserve('hackernewssearch')).reason, 'daily_budget');
     // Lost tokens cannot publish or remove another worker's queued job.
     await one.redis.set('owned-lease', 'new-owner');
     assert.equal(
@@ -185,7 +190,14 @@ test(
     const now = Date.now();
     const enqueue = (index, maximum = '48') =>
       one.redis.eval(workerA.ENQUEUE, {
-        keys: ['bounded-queue', `bounded-state-${index}`, 'bounded-day'],
+        keys: [
+          'bounded-queue',
+          `bounded-state-${index}`,
+          'bounded-day',
+          'bounded-user-minute',
+          'bounded-user-day',
+          `bounded-mode-${index}`
+        ],
         arguments: [
           String(now),
           `topic-${index}`,
@@ -193,7 +205,14 @@ test(
           String(now + 600000),
           JSON.stringify({ status: 'full' }),
           maximum,
-          JSON.stringify({ status: 'daily' })
+          JSON.stringify({ status: 'daily' }),
+          'prewarm',
+          '3',
+          '6',
+          '{}',
+          '{}',
+          'automatic',
+          '60000'
         ]
       });
     const bounded = await Promise.all(Array.from({ length: 25 }, (_, index) => enqueue(index)));
@@ -231,7 +250,9 @@ test(
     // Controlled cold-start discovery becomes searchable public news on the next
     // cache read, independent of the user's career stack and without feed HTTP.
     await one.redis.del('news:v3:{hackernewssearch}:cooldown');
+    await one.redis.del('news:v3:{hackernews}:cooldown');
     await one.redis.del('news:v3:{hackernewssearch}:interval');
+    await one.redis.del('news:v3:{hackernews}:shared:interval');
     await one.redis.set(`news:v3:{hackernewssearch}:day:${date}`, '0');
     empty = false;
     assert.equal(

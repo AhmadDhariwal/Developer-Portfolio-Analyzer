@@ -37,13 +37,16 @@ test(
       assert.ok((await one.redis.pTTL(base + suffix)) > 0);
     await a.finish(reservation, { status: 429, headers: { 'retry-after': '120' }, failed: true });
     await one.redis.del(base + ':interval');
-    assert.equal((await b.reserve('devto')).reason, 'cooldown');
+    assert.equal((await b.reserve('devto')).reason, 'upstream_rate_limit');
     await a.finish(reservation, { status: 429, headers: { 'retry-after': '30' } });
     assert.ok((await one.redis.pTTL(base + ':cooldown')) > 100000);
     await one.redis.del(base + ':cooldown');
+    await one.redis.del('news:v3:{devtosearch}:cooldown');
+    await one.redis.del('news:v3:{devto}:shared:interval');
     const active = await b.reserve('devto');
     assert.equal(active.allowed, true);
     await one.redis.del(base + ':interval');
+    await one.redis.del('news:v3:{devto}:shared:interval');
     assert.equal((await a.reserve('devto')).reason, 'concurrency');
     await b.finish(active);
     await one.redis.set(`${base}:day:${new Date().toISOString().slice(0, 10)}`, '72');
@@ -56,8 +59,9 @@ test(
       assert.equal(slot.allowed, true);
       await a.finish(slot, { status: 503, failed: true });
       await one.redis.del(slot.base + ':interval');
+      await one.redis.del('news:v3:{hackernews}:shared:interval');
     }
-    assert.equal((await b.reserve('hackernews')).reason, 'cooldown');
+    assert.equal((await b.reserve('hackernews')).reason, 'circuit_open');
     let calls = 0;
     await Promise.all(
       [a, b].map((governor) =>

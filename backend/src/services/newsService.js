@@ -1,8 +1,9 @@
+const { createHash } = require('node:crypto');
+const { queryFor, matchesQuery } = require('../utils/newsQuery');
 const developerContext = require('./developerContextService');
 const axios = require('axios');
 const pool = require('./newsPoolService');
 const discovery = require('./newsDiscoveryService');
-const discoveryProviders = require('./newsDiscoveryProviders');
 const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
 const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = require('../utils/newsFormatter');
@@ -28,7 +29,8 @@ const SOURCE_NAMES = [
   'GitHub Releases',
   'GitHub Security Advisories',
   'Lobsters',
-  'Kubernetes Blog'
+  'Kubernetes Blog',
+  'Cloudflare Changelog'
 ];
 const NEWS_TABS = ['for-you', 'trending', 'latest'];
 const NEWS_CATEGORIES = [
@@ -206,10 +208,7 @@ const matchesFilters = (item, filters, sinceTimestamp) => {
   if (filters.source !== 'All' && item.source !== filters.source) return false;
   if (filters.category !== 'All' && item.category !== filters.category) return false;
   if (filters.search) {
-    const haystack = `${item.title} ${item.description} ${item.source} ${(item.tags || []).join(' ')}`.toLowerCase();
-    const topic = discoveryProviders.topicFor(filters.search);
-    if (topic ? !discoveryProviders.matchesTopic(item, topic) : !haystack.includes(filters.search.toLowerCase()))
-      return false;
+    if (!matchesQuery(item, filters.search)) return false;
   }
   const publishedAt = new Date(item.publishedAt).getTime();
   if (
@@ -502,7 +501,7 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
 const getNewsFeed = async ({ user, query = {} }) => {
   const startedAt = Date.now();
   const filters = normalizeFilters(query);
-  const topic = discoveryProviders.topicFor(filters.search);
+  const topic = queryFor(filters.search)?.text;
   const [userContext, snapshot, topicSnapshot] = await Promise.all([
     filters.mode === 'explore'
       ? Promise.resolve(null)
@@ -538,31 +537,55 @@ const getNewsFeed = async ({ user, query = {} }) => {
   const coverage = await discovery.coverage({
     filters,
     total: ranked.length,
-    broadTotal: topic ? availableItems.filter((item) => discoveryProviders.matchesTopic(item, topic)).length : 0,
+    broadTotal: topic ? availableItems.filter((item) => matchesQuery(item, topic)).length : 0,
+    dateExcludedMatches: availableItems.filter(
+      (item) =>
+        matchesFilters(item, filters, Date.now() - 30 * 86400000) &&
+        new Date(item.publishedAt).getTime() < sinceTimestamp
+    ).length,
+    filterExcludedMatches: topic
+      ? availableItems.filter((item) => matchesQuery(item, topic)).length - ranked.length
+      : 0,
+    queryAttemptAt: topicSnapshot?.filters?.attemptedAt,
+    admissionKey: createHash('sha256').update(String(user._id)).digest('hex').slice(0, 32),
     revalidate: ['1', 'true', 'yes'].includes(String(query.refresh || '').toLowerCase()),
-    lastUpdated: topicSnapshot?.lastUpdated || snapshot?.lastUpdated || null,
     diagnostics: snapshot?.providerDiagnostics || []
   });
+  if (topicSnapshot?.providerDiagnostics?.length && !coverage.enrichment.sourceHealth) {
+    coverage.enrichment.sourceHealth = topicSnapshot.providerDiagnostics.map((item) => ({
+      provider: item.provider,
+      status: item.status,
+      articlesFound: item.articlesFetched,
+      reason: item.reason || null,
+      nextEligibleAt: item.nextEligibleAt || null
+    }));
+    if (topicSnapshot.filters?.attemptedAt)
+      coverage.enrichment.lastAttemptAt = new Date(topicSnapshot.filters.attemptedAt).toISOString();
+  }
   const start = (filters.page - 1) * filters.limit;
   const sourceSummary = Object.fromEntries(
     SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
   );
-  const contributing = [snapshot, topicSnapshot].filter((value) => value?.allItems?.length);
+  const contributing = (topic ? [topicSnapshot] : [snapshot]).filter((value) => value?.allItems?.length);
   const lastUpdated =
     contributing
       .map((value) => value.lastUpdated)
       .filter(Boolean)
       .sort((a, b) => new Date(a) - new Date(b))[0] || null;
-  const combined = {
-    ...snapshot,
-    allItems: availableItems,
-    lastUpdated,
-    expiresAt: contributing
-      .map((value) => value.expiresAt)
-      .filter(Boolean)
-      .sort((a, b) => new Date(a) - new Date(b))[0]
-  };
-  const freshness = topicSnapshot ? pool.freshness(combined) : pool.freshness(snapshot);
+  const queryFreshness = !topic
+    ? null
+    : !topicSnapshot
+      ? 'missing'
+      : !topicSnapshot.allItems?.length
+        ? 'empty'
+        : Date.now() - Number(new Date(topicSnapshot.lastUpdated).getTime() || 0) < (discovery.FRESH || 1800000)
+          ? 'fresh'
+          : 'stale';
+  const freshness = topic
+    ? ['missing', 'empty'].includes(queryFreshness)
+      ? 'warming'
+      : queryFreshness
+    : pool.freshness(snapshot);
   return {
     ...coverage,
     mode: filters.mode,
@@ -592,12 +615,16 @@ const getNewsFeed = async ({ user, query = {} }) => {
     telemetry: {
       cacheHit: Boolean(snapshot || topicSnapshot),
       providerFailureCount: snapshot?.providerFailureCount || 0,
-      providerUsed: [...new Set([...(snapshot?.providerUsed || []), ...(topicSnapshot?.providerUsed || [])])],
+      providerUsed: [...new Set(ranked.map((item) => item.source))],
       discoveryDiagnostics: topicSnapshot?.providerDiagnostics || [],
       providerDiagnostics: sanitizeProviderDiagnostics(snapshot?.providerDiagnostics),
       signalHash: userContext?.signalHash || 'public-explore',
       responseTimeMs: Date.now() - startedAt,
       freshness,
+      queryFreshness,
+      generalFreshness: pool.freshness(snapshot),
+      cacheVersion: topicSnapshot?.filters?.version || null,
+      lastSuccessfulCheckAt: topicSnapshot?.filters?.lastSuccessfulCheckAt || null,
       staleFallback: freshness === 'stale',
       lastUpdated
     }
@@ -607,18 +634,17 @@ const refreshNewsPool = () => pool.refreshPool(() => fetchAllSources(new Date(Da
 let scheduler;
 const startNewsIngestionScheduler = () => {
   if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;
+  discovery.startWorker?.();
   const tick = () => {
     refreshNewsPool().catch(() => logger.warn('news ingestion failed'));
-    discovery
-      .prewarm()
-      .then(() => discovery.processQueue())
-      .catch(() => logger.warn('news discovery failed'));
+    discovery.prewarm().catch(() => logger.warn('news discovery failed'));
   };
   scheduler = setInterval(tick, 60000);
   scheduler.unref?.();
   tick();
 };
 const stopNewsIngestionScheduler = () => {
+  discovery.stopWorker?.();
   clearInterval(scheduler);
   scheduler = null;
 };

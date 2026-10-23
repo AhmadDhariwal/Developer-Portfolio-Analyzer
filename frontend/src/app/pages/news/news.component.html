@@ -11,13 +11,19 @@
     <button
       class="primary-button refresh-button"
       type="button"
-      [disabled]="offline || isLoading || refreshSeconds > 0"
+      [disabled]="offline || isLoading || discoveryPending || refreshSeconds > 0"
       (click)="forceRefresh()"
       *ngIf="isFeedView"
     >
       <span aria-hidden="true">↻</span>
       {{
-        refreshSeconds ? 'Wait ' + refreshSeconds + 's' : isLoading ? 'Updating…' : 'Refresh feed'
+        refreshSeconds
+          ? 'Wait ' + refreshSeconds + 's'
+          : isLoading
+            ? 'Checking cache…'
+            : discoveryPending
+              ? 'Searching…'
+              : 'Check for New Articles'
       }}
     </button>
   </header>
@@ -107,18 +113,43 @@
       <button
         type="button"
         class="secondary-button"
-        *ngIf="discoveryPending || enrichment?.status === 'unavailable'"
+        *ngIf="
+          discoveryPending ||
+          enrichment?.status === 'unavailable' ||
+          enrichment?.status === 'worker_unavailable'
+        "
         [disabled]="offline || isLoading || retrySeconds > 0"
         (click)="retry()"
       >
         Check cached results
+      </button>
+      <button
+        type="button"
+        class="text-button"
+        *ngIf="coverage?.suggestedDate === 'month'"
+        (click)="broadenDate()"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+      >
+        Show This Month
+      </button>
+      <button
+        type="button"
+        class="text-button"
+        *ngIf="
+          (coverage?.filterExcludedMatches || 0) > (coverage?.dateExcludedMatches || 0) &&
+          (filters.source !== 'All' || filters.category !== 'All' || filters.popularity !== 'all')
+        "
+        (click)="broadenFilters()"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+      >
+        Use all sources, categories and popularity
       </button>
       <small *ngIf="enrichment?.nextEligibleAt"
         >Next eligible background attempt: {{ enrichment?.nextEligibleAt | date: 'MMM d, h:mm a' }}.
         Eligibility does not guarantee a search or new articles.</small
       >
       <details *ngIf="enrichment?.sourceHealth?.length">
-        <summary>Last topic source checks</summary>
+        <summary>Last search source checks</summary>
         <p *ngFor="let source of enrichment?.sourceHealth">
           {{ source.provider }} · {{ source.status }} · {{ source.articlesFound }} articles reported
         </p>

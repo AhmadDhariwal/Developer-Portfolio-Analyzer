@@ -2,30 +2,69 @@ const TopicCache = require('../models/newsTopicCache');
 const cache = require('./redisCacheService');
 const governance = require('./newsGovernanceService');
 const providers = require('./newsDiscoveryProviders');
+const { queryFor, matchesQuery } = require('../utils/newsQuery');
 const { normalizeItem } = require('../utils/newsFormatter');
 
 const BASE = 'news:v1:{discovery}';
 const QUEUE = `${BASE}:queue`;
-const RETENTION = 24 * 3600000;
+const bounded = (name, fallback, min, max) => {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value >= min && value <= max ? value : fallback;
+};
+const RETENTION = bounded('NEWS_QUERY_STALE_TTL_MS', 86400000, 3600000, 86400000);
+const FRESH = bounded('NEWS_QUERY_FRESH_TTL_MS', 1800000, 60000, 3600000);
+const NEGATIVE = bounded('NEWS_QUERY_NEGATIVE_TTL_MS', 300000, 30000, 900000);
+const MAX_ENTRIES = bounded('NEWS_QUERY_MEMORY_ENTRIES', 128, 40, 256);
+const REFRESH_INTERVAL = bounded('NEWS_REFRESH_MIN_INTERVAL_MS', 60000, 60000, 3600000);
+const HEARTBEAT = BASE + ':worker';
+let workerTimer;
+let workerBusy = false;
+let wakePending = false;
+const touch = (map, key) => {
+  const value = map.get(key);
+  if (value) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+};
+const remember = (map, key, value) => {
+  map.delete(key);
+  for (const [name, entry] of map) if (entry.until <= Date.now()) map.delete(name);
+  while (map.size >= MAX_ENTRIES) map.delete(map.keys().next().value);
+  map.set(key, value);
+};
 const MINIMUM = 6;
 const memory = new Map();
 const inFlight = new Map();
-const stateMemory = new Map();
 const stateFlight = new Map();
-const topicKey = (topic) => `${BASE}:topic:${topic}`;
-const stateKey = (topic) => `${BASE}:state:${topic}`;
+const topicKey = (topic) => `${BASE}:topic:${queryFor(topic)?.key || 'invalid'}`;
+const stateKey = (topic) => `${BASE}:state:${queryFor(topic)?.key || 'invalid'}`;
 const usable = (value) =>
   Number.isFinite(new Date(value?.expiresAt).getTime()) && new Date(value.expiresAt).getTime() > Date.now();
 const SEARCHING =
   "if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end; redis.call('SET', KEYS[2], ARGV[2], 'PX', 180000); return 1";
 const ENQUEUE = `
 local old = redis.call('GET', KEYS[2])
-if old then return old end
+if old then
+  local state = cjson.decode(old)
+  local active = state.status == 'queued' or state.status == 'searching' or state.status == 'processing'
+  local successful = state.status == 'ready' or state.status == 'exhausted' or state.status == 'no_newer'
+  if active or (ARGV[13] ~= 'manual' and ARGV[13] ~= 'stale') or not successful then return old end
+  if tonumber(ARGV[1]) < tonumber(state.checkedAtMs or 0) + tonumber(ARGV[14]) then return old end
+end
 if redis.call('ZSCORE', KEYS[1], ARGV[2]) then return ARGV[3] end
 if redis.call('ZCARD', KEYS[1]) >= 16 then return ARGV[5] end
 if tonumber(redis.call('GET', KEYS[3]) or '0') >= tonumber(ARGV[6]) then return ARGV[7] end
+if ARGV[8] ~= 'prewarm' then
+  if tonumber(redis.call('GET', KEYS[4]) or '0') >= tonumber(ARGV[9]) then return ARGV[11] end
+  if tonumber(redis.call('GET', KEYS[5]) or '0') >= tonumber(ARGV[10]) then return ARGV[12] end
+  redis.call('INCR', KEYS[4]); redis.call('PEXPIRE', KEYS[4], 60000)
+  redis.call('INCR', KEYS[5]); redis.call('PEXPIREAT', KEYS[5], ARGV[4])
+end
 redis.call('INCR', KEYS[3]); redis.call('PEXPIREAT', KEYS[3], ARGV[4])
 redis.call('SET', KEYS[2], ARGV[3], 'PX', 180000)
+redis.call('SET', KEYS[6], ARGV[13], 'PX', 3600000)
 redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2]); redis.call('PEXPIRE', KEYS[1], 3600000)
 return ARGV[3]
 `;
@@ -40,7 +79,10 @@ const COMMIT = `
 if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
 redis.call('SET', KEYS[2], ARGV[2], 'PX', ARGV[3])
 redis.call('ZREM', KEYS[3], ARGV[4])
-if ARGV[5] ~= '' then redis.call('SET', KEYS[4], ARGV[5], 'PX', ARGV[6]) end
+if ARGV[5] ~= '' then
+  redis.call('SET', KEYS[4], ARGV[5], 'PX', ARGV[6])
+  redis.call('SET', KEYS[5], ARGV[7], 'PX', ARGV[6])
+end
 return 1
 `;
 const status = (value, reason, delay = 0, extra = {}) => ({
@@ -49,13 +91,13 @@ const status = (value, reason, delay = 0, extra = {}) => ({
   nextEligibleAt: delay ? new Date(Date.now() + delay).toISOString() : null,
   ...extra
 });
-const validTopic = (topic) => Object.hasOwn(providers.TOPICS, topic);
+const validTopic = (topic) => Boolean(queryFor(topic));
 const view = (snapshot, topic) => {
   if (!usable(snapshot)) return null;
   const permitted = new Set(
     providers.available(topic).map((key) => providers.SOURCE_NAMES[providers.KEYS.indexOf(key)])
   );
-  const allItems = (snapshot.allItems || [])
+  const allItems = (Array.isArray(snapshot.allItems) ? snapshot.allItems : [])
     .slice(0, 40)
     .map(normalizeItem)
     .filter(
@@ -67,6 +109,9 @@ const view = (snapshot, topic) => {
   const providerUsed = [...new Set(allItems.map((item) => item.source))];
   return {
     ...snapshot,
+    providerDiagnostics: Array.isArray(snapshot.providerDiagnostics)
+      ? snapshot.providerDiagnostics.filter((item) => providers.KEYS.includes(item?.provider))
+      : [],
     allItems,
     total: allItems.length,
     providerUsed,
@@ -77,9 +122,19 @@ const view = (snapshot, topic) => {
 };
 async function readTopic(topic) {
   if (!validTopic(topic) || !providers.enabled() || !providers.available(topic).length) return null;
-  const previous = memory.get(topic);
-  if (previous && previous.until > Date.now()) return view(previous.value, topic);
+  topic = queryFor(topic).text;
+  const previous = touch(memory, topic);
+  if (previous && previous.until > Date.now()) {
+    try {
+      const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
+      const version = redis && (await redis.get(topicKey(topic) + ':version'));
+      if (!version || version === String(previous.value?.filters?.version)) return view(previous.value, topic);
+    } catch {
+      return view(previous.value, topic);
+    }
+  }
   if (inFlight.has(topic)) return inFlight.get(topic);
+  if (inFlight.size >= 16) return null;
   const read = (async () => {
     let value;
     const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
@@ -110,7 +165,7 @@ async function readTopic(topic) {
         value = previous?.value;
       }
     }
-    memory.set(topic, { value, until: Date.now() + 5000 });
+    remember(memory, topic, { value, until: Date.now() + 5000 });
     return view(value, topic);
   })().finally(() => inFlight.delete(topic));
   inFlight.set(topic, read);
@@ -119,38 +174,75 @@ async function readTopic(topic) {
 function classify(filters, total, broadTotal, diagnostics = []) {
   if (total >= MINIMUM) return 'sufficient';
   if (!filters.search) return 'general_pool';
-  if (!providers.topicFor(filters.search)) return 'unsupported_query';
-  if (filters.source !== 'All') {
+  const query = queryFor(filters.search);
+  if (!query) return 'unsupported_query';
+  if (filters.source !== 'All' && !['Hacker News', 'Dev.to'].includes(filters.source)) {
     const source = diagnostics.find((item) => item.provider === filters.source);
     return source?.reachable && !source.articlesFetched ? 'source_exhausted' : 'restrictive_filters';
   }
-  if (
-    filters.dateRange === 'today' ||
-    filters.popularity === 'high' ||
-    (filters.category !== 'All' &&
-      filters.category !== providers.TOPICS[providers.topicFor(filters.search)].category) ||
-    broadTotal >= MINIMUM
-  )
-    return 'restrictive_filters';
+  if (broadTotal >= MINIMUM) return 'restrictive_filters';
   return 'coverage_gap';
 }
-async function coverage({ filters, total, broadTotal, diagnostics = [], revalidate = false, lastUpdated = null }) {
-  const topic = providers.topicFor(filters.search);
+async function coverage({
+  filters,
+  total,
+  broadTotal,
+  diagnostics = [],
+  revalidate = false,
+  queryAttemptAt = null,
+  admissionKey = 'prewarm',
+  dateExcludedMatches = 0,
+  filterExcludedMatches = 0
+}) {
+  const topic = queryFor(filters.search)?.text || null;
   const classification = classify(filters, total, broadTotal, diagnostics);
-  const result = { status: classification, topic, cachedMatches: total, minimum: MINIMUM };
+  const result = {
+    status: classification,
+    topic,
+    cachedMatches: total,
+    minimum: MINIMUM,
+    broaderMatches: broadTotal,
+    dateExcludedMatches,
+    filterExcludedMatches,
+    suggestedDate: dateExcludedMatches && filters.dateRange !== 'month' ? 'month' : null
+  };
   const refreshEligible =
-    revalidate &&
-    classification === 'sufficient' &&
+    (revalidate || (queryAttemptAt && Date.now() - Number(queryAttemptAt) >= FRESH)) &&
     topic &&
-    lastUpdated &&
-    Date.now() - new Date(lastUpdated).getTime() >= 1800000 &&
     classify(filters, 0, 0) === 'coverage_gap';
+  if (topic && providers.enabled()) {
+    try {
+      const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
+      const current = redis && JSON.parse((await redis.get(stateKey(topic))) || 'null');
+      if (current?.status === 'queued' && !(await redis.get(HEARTBEAT)))
+        return { coverage: result, enrichment: status('worker_unavailable', 'worker_offline', 20000) };
+      const completed = current && ['ready', 'exhausted', 'no_newer'].includes(current.status);
+      if (
+        current &&
+        (['queued', 'searching', 'processing'].includes(current.status) ||
+          (!revalidate && !(refreshEligible && completed)))
+      )
+        return { coverage: result, enrichment: current };
+    } catch {
+      /* Admission below reports unavailable infrastructure for genuine gaps. */
+    }
+  }
   if (classification !== 'coverage_gap' && !refreshEligible)
     return { coverage: result, enrichment: status('not_needed', classification) };
-  if (!providers.enabled() || !providers.available(topic).length)
-    return { coverage: result, enrichment: status('disabled', 'no_approved_sources') };
-  const cached = stateMemory.get(topic);
-  if (cached?.until > Date.now()) return { coverage: result, enrichment: cached.value };
+  if (!providers.enabled()) return { coverage: result, enrichment: status('disabled', 'discovery_disabled') };
+  if (!providers.available(topic).length)
+    return { coverage: result, enrichment: status('source_unavailable', 'no_approved_sources') };
+  if (!refreshEligible && queryAttemptAt && Date.now() - Number(queryAttemptAt) < FRESH && broadTotal > 0)
+    return {
+      coverage: result,
+      enrichment: status('ready', 'articles_cached', FRESH - (Date.now() - Number(queryAttemptAt)))
+    };
+  if (!refreshEligible && queryAttemptAt && !broadTotal && Date.now() - Number(queryAttemptAt) < NEGATIVE)
+    return {
+      coverage: result,
+      enrichment: status('exhausted', 'no_matching_articles', NEGATIVE - (Date.now() - Number(queryAttemptAt)))
+    };
+  // Redis owns job state; a process-local status must not hide another worker's completion.
   if (filters.page > 1) {
     const key = `peek:${topic}`;
     if (!stateFlight.has(key))
@@ -168,14 +260,17 @@ async function coverage({ filters, total, broadTotal, diagnostics = [], revalida
       );
     return { coverage: result, enrichment: await stateFlight.get(key) };
   }
+  if (stateFlight.size >= 16) return { coverage: result, enrichment: status('quota_limited', 'admission_busy', 60000) };
   if (!stateFlight.has(topic))
     stateFlight.set(
       topic,
-      enqueue(topic).finally(() => stateFlight.delete(topic))
+      enqueue(topic, admissionKey, revalidate, Boolean(refreshEligible && !revalidate)).finally(() =>
+        stateFlight.delete(topic)
+      )
     );
   return { coverage: result, enrichment: await stateFlight.get(topic) };
 }
-async function enqueue(topic) {
+async function enqueue(topic, admissionKey, manual = false, stale = false) {
   const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
   let value = status('unavailable', 'quota_store_unavailable', 60000);
   if (redis) {
@@ -184,9 +279,53 @@ async function enqueue(topic) {
     const end = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
     const daily = Math.max(1, Math.min(48, Number.parseInt(process.env.NEWS_DISCOVERY_DAILY_JOBS, 10) || 12));
     try {
+      const existing = JSON.parse((await redis.get(stateKey(topic))) || 'null');
+      if (existing && ['queued', 'searching', 'processing'].includes(existing.status)) return existing;
+      const successful = existing && ['ready', 'exhausted', 'no_newer'].includes(existing.status);
+      const checkedAt = existing?.checkedAtMs || Date.parse(existing?.lastAttemptAt) || now;
+      if (existing && ((!manual && !stale) || !successful || now < checkedAt + (stale ? FRESH : REFRESH_INTERVAL)))
+        return existing;
+      // Read-only admission checks avoid spending job budgets when every source is blocked.
+      if (typeof governance.inspect === 'function') {
+        const checks = await Promise.all(
+          providers.available(topic).map(async (provider) => ({ provider, ...(await governance.inspect(provider)) }))
+        );
+        if (checks.length && checks.every((check) => !check.allowed)) {
+          const timed = checks
+            .filter((check) => check.nextEligibleAt)
+            .sort((a, b) => Date.parse(a.nextEligibleAt) - Date.parse(b.nextEligibleAt));
+          const denial = timed[0] || checks[0];
+          return status(
+            denial.reason === 'quota_store_unavailable'
+              ? 'unavailable'
+              : /interval|concurrency/.test(denial.reason)
+                ? 'waiting'
+                : 'quota_limited',
+            denial.reason,
+            0,
+            {
+              nextEligibleAt: denial.nextEligibleAt || null,
+              sourceHealth: checks.map((check) => ({
+                provider: check.provider,
+                status: 'quota_limited',
+                articlesFound: 0,
+                reason: check.reason,
+                nextEligibleAt: check.nextEligibleAt || null
+              }))
+            }
+          );
+        }
+      }
       value = JSON.parse(
         await redis.eval(ENQUEUE, {
-          keys: [QUEUE, stateKey(topic), `${BASE}:jobs:${date.toISOString().slice(0, 10)}`],
+          keys: [
+            QUEUE,
+            stateKey(topic),
+            `${BASE}:jobs:${date.toISOString().slice(0, 10)}`,
+            `${BASE}:user:${admissionKey}:minute:${Math.floor(now / 60000)}`,
+            `${BASE}:user:${admissionKey}:day:${date.toISOString().slice(0, 10)}`,
+            stateKey(topic) + ':mode'
+          ],
           arguments: [
             String(now),
             topic,
@@ -194,7 +333,14 @@ async function enqueue(topic) {
             String(end),
             JSON.stringify(status('unavailable', 'queue_full', 60000)),
             String(daily),
-            JSON.stringify(status('quota_limited', 'discovery_daily_budget', end - now))
+            JSON.stringify(status('quota_limited', 'discovery_daily_budget', end - now)),
+            admissionKey,
+            String(bounded('NEWS_DISCOVERY_USER_MINUTE_JOBS', 3, 1, 12)),
+            String(bounded('NEWS_DISCOVERY_USER_DAILY_JOBS', 6, 1, 48)),
+            JSON.stringify(status('quota_limited', 'user_discovery_budget', 60000 - (now % 60000))),
+            JSON.stringify(status('quota_limited', 'user_discovery_daily_budget', end - now)),
+            manual ? 'manual' : stale ? 'stale' : 'automatic',
+            String(stale ? FRESH : REFRESH_INTERVAL)
           ]
         })
       );
@@ -202,7 +348,14 @@ async function enqueue(topic) {
       /* No local provider or queue fallback. */
     }
   }
-  stateMemory.set(topic, { value, until: Date.now() + 5000 });
+  if (value.status === 'queued') {
+    wakeWorker();
+    try {
+      if (!(await redis.get(HEARTBEAT))) value = status('worker_unavailable', 'worker_offline', 20000);
+    } catch {
+      value = status('unavailable', 'quota_store_unavailable', 60000);
+    }
+  }
   return value;
 }
 function buildSnapshot(topic, previous, outcomes, attemptedAt) {
@@ -225,7 +378,7 @@ function buildSnapshot(topic, previous, outcomes, attemptedAt) {
     .flat()
     .map(normalizeItem)
     .filter((item) => {
-      if (!item || !providers.matchesTopic(item, topic) || urls.has(item.url) || titles.has(item.title.toLowerCase()))
+      if (!item || !matchesQuery(item, topic) || urls.has(item.url) || titles.has(item.title.toLowerCase()))
         return false;
       urls.add(item.url);
       titles.add(item.title.toLowerCase());
@@ -236,21 +389,31 @@ function buildSnapshot(topic, previous, outcomes, attemptedAt) {
   const providerUsed = [...new Set(allItems.map((item) => item.source))];
   return {
     cacheKey: topicKey(topic),
-    filters: { topic, attemptedAt, sourceTimes },
+    filters: {
+      topic,
+      attemptedAt,
+      sourceTimes,
+      version: String(attemptedAt),
+      lastSuccessfulCheckAt: new Date(attemptedAt).toISOString()
+    },
     allItems,
     total: allItems.length,
     providerUsed,
-    providerDiagnostics: outcomes.map(({ provider, status: value, items }) => ({
+    providerDiagnostics: outcomes.map(({ provider, status: value, items, reason, nextEligibleAt }) => ({
       provider,
       status: value,
       articlesFetched: items.length,
+      reason: reason || null,
+      nextEligibleAt: nextEligibleAt || null,
       checkedAt: new Date(attemptedAt).toISOString()
     })),
     lastUpdated: providerUsed.length
       ? new Date(Math.min(...providerUsed.map((source) => sourceTimes[source])))
       : new Date(attemptedAt),
     expiresAt: new Date(
-      (providerUsed.length ? Math.max(...providerUsed.map((source) => sourceTimes[source])) : attemptedAt) + RETENTION
+      providerUsed.length
+        ? Math.max(...providerUsed.map((source) => sourceTimes[source])) + RETENTION
+        : attemptedAt + NEGATIVE
     )
   };
 }
@@ -272,15 +435,21 @@ async function processQueue() {
     )
       return { skipped: true, reason: 'lease_lost' };
     const previous = await readTopic(topic);
+    const manual = (await redis.get(stateKey(topic) + ':mode')) === 'manual';
     const outcomes = [];
     const collected = new Set();
     // One global worker, sequential attempts, at most four requests, no immediate retries.
-    for (const provider of providers.available(topic).slice(0, 4)) {
+    const selectedProviders = providers.available(topic).slice(0, 4);
+    for (const [index, provider] of selectedProviders.entries()) {
       if ((await redis.get(lease.key)) !== lease.token) return { skipped: true, reason: 'lease_lost' };
       const outcome = await providers.search(provider, topic);
       outcomes.push({ ...outcome, provider });
       outcome.items.forEach((item) => collected.add(item.url));
-      if (collected.size >= MINIMUM) break;
+      if (
+        collected.size >= MINIMUM &&
+        !selectedProviders.slice(index + 1).some((key) => ['hackernewssearch', 'devtosearch'].includes(key))
+      )
+        break;
     }
     let value;
     let snapshot;
@@ -288,13 +457,32 @@ async function processQueue() {
     const limited = outcomes.some((outcome) => outcome.status === 'quota_limited');
     const unavailable = outcomes.some((outcome) => outcome.status === 'unavailable');
     const successful = outcomes.some((outcome) => outcome.status === 'success');
-    const delay = found ? 1800000 : limited ? 3600000 : unavailable ? 300000 : 7200000;
+    const denied = outcomes
+      .filter((outcome) => outcome.nextEligibleAt)
+      .sort((a, b) => Date.parse(a.nextEligibleAt) - Date.parse(b.nextEligibleAt))[0];
+    const delay = found
+      ? FRESH
+      : denied
+        ? Math.max(1, Date.parse(denied.nextEligibleAt) - Date.now())
+        : limited
+          ? 60000
+          : unavailable
+            ? 60000
+            : NEGATIVE;
     value = status(
-      found ? 'ready' : limited ? 'quota_limited' : unavailable ? 'unavailable' : successful ? 'exhausted' : 'disabled',
+      found
+        ? 'ready'
+        : limited
+          ? 'quota_limited'
+          : unavailable
+            ? 'source_unavailable'
+            : successful
+              ? 'exhausted'
+              : 'disabled',
       found
         ? 'articles_cached'
         : limited
-          ? 'provider_admission'
+          ? denied?.reason || 'provider_admission'
           : unavailable
             ? 'source_failure'
             : successful
@@ -303,16 +491,43 @@ async function processQueue() {
       delay,
       {
         lastAttemptAt: new Date(attemptedAt).toISOString(),
-        sourceHealth: outcomes.map(({ provider, status: state, items }) => ({
+        checkedAtMs: attemptedAt,
+        sourceHealth: outcomes.map(({ provider, status: state, items, reason, nextEligibleAt }) => ({
           provider,
           status: state,
-          articlesFound: items.length
+          articlesFound: items.length,
+          reason: reason || null,
+          nextEligibleAt: nextEligibleAt || null
         }))
       }
     );
     if ((await redis.get(lease.key)) !== lease.token) return { skipped: true, reason: 'lease_lost' };
     if (successful) {
+      await redis.eval(SEARCHING, {
+        keys: [lease.key, stateKey(topic)],
+        arguments: [lease.token, JSON.stringify(status('processing', 'saving_articles'))]
+      });
       snapshot = buildSnapshot(topic, previous, outcomes, attemptedAt);
+      const oldUrls = new Set((previous?.allItems || []).map((item) => item.url));
+      const newArticles = snapshot.allItems.filter((item) => !oldUrls.has(item.url)).length;
+      value.lastSuccessfulCheckAt = new Date(attemptedAt).toISOString();
+      value.cacheVersion = snapshot.filters.version;
+      value.newArticles = newArticles;
+      if (manual && !newArticles && !limited && !unavailable) {
+        value.status = 'no_newer';
+        value.reason = 'no_newer_articles';
+      }
+      let nextSourceAt = Date.now();
+      if (typeof governance.inspect === 'function') {
+        const admissions = await Promise.all(
+          providers.available(topic).map((provider) => governance.inspect(provider))
+        );
+        if (admissions.length && admissions.every((admission) => !admission.allowed)) {
+          const times = admissions.map((admission) => Date.parse(admission.nextEligibleAt)).filter(Number.isFinite);
+          if (times.length) nextSourceAt = Math.min(...times);
+        }
+      }
+      value.nextEligibleAt = new Date(Math.max(attemptedAt + REFRESH_INTERVAL, nextSourceAt)).toISOString();
       try {
         await TopicCache.updateOne(
           {
@@ -320,30 +535,73 @@ async function processQueue() {
             $or: [{ 'filters.attemptedAt': { $lte: attemptedAt } }, { 'filters.attemptedAt': { $exists: false } }]
           },
           { $set: snapshot },
-          { upsert: true }
+          { upsert: true, maxTimeMS: 1000, timeoutMS: 2000 }
         );
       } catch {
         snapshot = null;
-        value = status('unavailable', 'cache_persistence_failed', 300000);
+        value = status('unavailable', 'cache_persistence_failed', 60000, {
+          lastAttemptAt: value.lastAttemptAt,
+          sourceHealth: value.sourceHealth
+        });
       }
     }
     const committed = await redis.eval(COMMIT, {
-      keys: [lease.key, stateKey(topic), QUEUE, topicKey(topic)],
+      keys: [lease.key, stateKey(topic), QUEUE, topicKey(topic), topicKey(topic) + ':version'],
       arguments: [
         lease.token,
         JSON.stringify(value),
-        String(Math.max(1, Date.parse(value.nextEligibleAt) - Date.now())),
+        String(Math.max(1, snapshot ? delay : Date.parse(value.nextEligibleAt) - Date.now())),
         topic,
         snapshot ? JSON.stringify(snapshot) : '',
-        String(snapshot ? Math.max(1, snapshot.expiresAt.getTime() - Date.now()) : RETENTION)
+        String(snapshot ? Math.max(1, snapshot.expiresAt.getTime() - Date.now()) : RETENTION),
+        snapshot?.filters.version || ''
       ]
     });
     if (Number(committed) === 1) {
-      stateMemory.set(topic, { value, until: Date.now() + 5000 });
-      if (snapshot) memory.set(topic, { value: snapshot, until: Date.now() + 5000 });
+      if (snapshot) remember(memory, topic, { value: snapshot, until: Date.now() + 5000 });
     }
     return { topic, status: value.status, committed: Number(committed) === 1 };
   });
+}
+
+// Independent short worker tick; feed admission only schedules asynchronous work.
+async function workerTick() {
+  if (!workerTimer || !providers.enabled()) return;
+  try {
+    const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
+    if (!redis) return;
+    await redis.set(HEARTBEAT, String(Date.now()), { PX: 20000 });
+    if (workerBusy) return;
+    workerBusy = true;
+    try {
+      await processQueue();
+    } finally {
+      workerBusy = false;
+    }
+  } catch {
+    /* Redis/provider outages are reflected by admission/status; no local fallback. */
+  }
+}
+
+function wakeWorker() {
+  if (!workerTimer || wakePending) return;
+  wakePending = true;
+  setImmediate(() => {
+    wakePending = false;
+    void workerTick();
+  });
+}
+function startWorker() {
+  if (workerTimer || process.env.NEWS_INGESTION_ENABLED === 'false') return;
+  workerTimer = setInterval(() => {
+    void workerTick();
+  }, 5000);
+  workerTimer.unref?.();
+  wakeWorker();
+}
+function stopWorker() {
+  clearInterval(workerTimer);
+  workerTimer = null;
 }
 
 let prewarmUntil = 0;
@@ -388,6 +646,11 @@ async function prewarm() {
 }
 
 module.exports = {
+  startWorker,
+  stopWorker,
+  HEARTBEAT,
+  FRESH,
+  NEGATIVE,
   readTopic,
   coverage,
   classify,

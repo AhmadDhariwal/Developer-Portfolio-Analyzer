@@ -2,6 +2,7 @@ const axios = require('axios');
 const governance = require('./newsGovernanceService');
 const { normalizeItem, fromHackerNews, fromDevTo } = require('../utils/newsFormatter');
 const { TOPICS, topicFor, matchesTopic } = require('../utils/newsTopics');
+const { queryFor, matchesQuery, relatedTopic } = require('../utils/newsQuery');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 
 // Fixed public upstreams only. Never use account credentials or request-supplied URLs.
@@ -11,30 +12,51 @@ const SOURCE_NAMES = [
   'GitHub Security Advisories',
   'Lobsters',
   'Dev.to',
-  'Kubernetes Blog'
+  'Kubernetes Blog',
+  'Cloudflare Changelog'
 ];
-const KEYS = ['hackernewssearch', 'githubreleases', 'githubadvisories', 'lobsters', 'devtosearch', 'kubernetesblog'];
+const KEYS = [
+  'hackernewssearch',
+  'githubreleases',
+  'githubadvisories',
+  'lobsters',
+  'devtosearch',
+  'kubernetesblog',
+  'cloudflarechangelog'
+];
 function enabled() {
   return process.env.NEWS_DISCOVERY_ENABLED === 'true' && getIntegrationSecretsSync()?.newsEnabled !== false;
 }
 function available(topic) {
-  const config = TOPICS[topic];
-  if (!config || !enabled()) return [];
+  const query = queryFor(topic);
+  if (!query || !enabled()) return [];
+  const config = TOPICS[relatedTopic(topic)] || {};
+  const security = /security|vulnerabilit|advisory|cve|devsecops/.test(query.text);
   return KEYS.filter((key) => {
     const limits = governance.policy(key);
     return (
       limits.daily > 0 &&
       limits.monthly > 0 &&
-      (key !== 'githubreleases' || config.repo) &&
-      (key !== 'githubadvisories' || config.ecosystem || ['security', 'devsecops'].includes(topic)) &&
-      (key !== 'kubernetesblog' ||
-        ['devops', 'kubernetes', 'cloud', 'gitops', 'security', 'observability'].includes(topic))
+      (['hackernewssearch', 'devtosearch'].includes(key) ||
+        (key === 'githubreleases' && query.topic && config.repo) ||
+        (key === 'githubadvisories' && security) ||
+        (key === 'lobsters' && query.topic && config.tag) ||
+        (key === 'kubernetesblog' &&
+          ['devops', 'kubernetes', 'cloud', 'gitops', 'security', 'observability'].includes(query.topic)) ||
+        (key === 'cloudflarechangelog' && /cloudflare|workers|cloud|security/.test(query.text)))
     );
-  }).sort(
-    (a, b) =>
-      (a === 'kubernetesblog' ? 0 : a === 'devtosearch' ? 1 : 2) -
-      (b === 'kubernetesblog' ? 0 : b === 'devtosearch' ? 1 : 2)
-  );
+  }).sort((a, b) => {
+    const order = [
+      'hackernewssearch',
+      'devtosearch',
+      'githubadvisories',
+      'githubreleases',
+      'kubernetesblog',
+      'cloudflarechangelog',
+      'lobsters'
+    ];
+    return order.indexOf(a) - order.indexOf(b);
+  });
 }
 
 const decode = (value) =>
@@ -68,7 +90,7 @@ function fromRss(xml, source = 'Lobsters') {
         attributionUrl: field(item, 'comments'),
         publishedAt: field(item, 'pubDate'),
         source,
-        publisher: source === 'Kubernetes Blog' ? 'Kubernetes Authors (CC BY 4.0)' : 'Lobsters',
+        publisher: source === 'Kubernetes Blog' ? 'Kubernetes Authors (CC BY 4.0)' : source,
         ...(source === 'Kubernetes Blog'
           ? { license: 'CC-BY-4.0', licenseUrl: 'https://creativecommons.org/licenses/by/4.0/' }
           : {}),
@@ -78,12 +100,14 @@ function fromRss(xml, source = 'Lobsters') {
     .filter(Boolean);
 }
 function requestFor(key, topic) {
-  const config = TOPICS[topic];
-  if (!config) throw new Error('Unsupported topic');
+  const query = queryFor(topic);
+  if (!query) throw new Error('Invalid discovery query');
+  const config = TOPICS[relatedTopic(topic)] || {};
+  const size = Math.max(1, Math.min(30, Number.parseInt(process.env.NEWS_DISCOVERY_RESULTS_PER_PROVIDER, 10) || 30));
   const since = Math.floor((Date.now() - 30 * 86400000) / 1000);
   if (key === 'hackernewssearch')
     return {
-      url: `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent({ cicd: 'CI/CD', githubactions: 'GitHub Actions', dotnet: '.NET', gcp: 'Google Cloud' }[topic] || topic)}&tags=story&hitsPerPage=30&numericFilters=created_at_i%3E${since}`
+      url: `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent({ cicd: 'CI/CD', githubactions: 'GitHub Actions', dotnet: '.NET', gcp: 'Google Cloud' }[topic] || query.text)}&tags=story&hitsPerPage=${size}&numericFilters=created_at_i%3E${since}`
     };
   if (key === 'githubreleases' && config.repo)
     return { url: `https://api.github.com/repos/${config.repo}/releases?per_page=20`, github: true };
@@ -95,9 +119,11 @@ function requestFor(key, topic) {
   if (key === 'lobsters') return { url: `https://lobste.rs/t/${config.tag}.rss`, rss: true };
   if (key === 'devtosearch')
     return {
-      url: `https://dev.to/api/articles?tag=${encodeURIComponent({ cicd: 'devops', golang: 'go', postgres: 'postgresql', ml: 'machinelearning' }[topic] || topic)}&per_page=30`
+      url: `https://dev.to/api/articles/search?q=${encodeURIComponent(query.text)}&top=30&per_page=${size}`
     };
   if (key === 'kubernetesblog') return { url: 'https://kubernetes.io/feed.xml', rss: true };
+  if (key === 'cloudflarechangelog')
+    return { url: 'https://developers.cloudflare.com/changelog/rss/index.xml', rss: true };
   throw new Error('Unsupported provider');
 }
 function format(key, payload, topic) {
@@ -107,7 +133,9 @@ function format(key, payload, topic) {
   }
   if (key === 'lobsters') return fromRss(payload);
   if (key === 'kubernetesblog') return fromRss(payload, 'Kubernetes Blog');
+  if (key === 'cloudflarechangelog') return fromRss(payload, 'Cloudflare Changelog');
   if (key === 'devtosearch') {
+    payload = Array.isArray(payload) ? payload : payload?.result;
     if (!Array.isArray(payload)) throw new Error('Invalid provider response');
     return fromDevTo(payload);
   }
@@ -153,6 +181,7 @@ async function search(key, topic) {
     return {
       status: reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
       reason: reservation.reason,
+      nextEligibleAt: reservation.nextEligibleAt || null,
       items: []
     };
   try {
@@ -168,7 +197,9 @@ async function search(key, topic) {
           ? 'application/rss+xml'
           : request.github
             ? 'application/vnd.github+json'
-            : 'application/json',
+            : key === 'devtosearch'
+              ? 'application/vnd.forem.api-v1+json'
+              : 'application/json',
         'User-Agent': 'DevInsight-News/1.0',
         ...(request.github ? { 'X-GitHub-Api-Version': '2026-03-10' } : {})
       }
@@ -176,23 +207,29 @@ async function search(key, topic) {
     const seen = new Set();
     const items = format(key, response.data, topic)
       .filter((item) => {
-        if (!matchesTopic(item, topic) || seen.has(item.url)) return false;
+        if (!matchesQuery(item, topic) || seen.has(item.url)) return false;
         seen.add(item.url);
         return true;
       })
       .map((item) => ({
         ...item,
-        category: item.category === 'Backend' && TOPICS[topic].category === 'DevOps' ? 'DevOps' : item.category
+        category:
+          item.category === 'Backend' && TOPICS[relatedTopic(topic)]?.category === 'DevOps' ? 'DevOps' : item.category
       }));
     await governance.finish(reservation, { status: response.status, headers: response.headers });
     return { status: 'success', items };
   } catch (error) {
-    await governance.finish(reservation, {
+    const denial = await governance.finish(reservation, {
       failed: true,
       status: error.response?.status || 0,
       headers: error.response?.headers || {}
     });
-    return { status: [429, 403].includes(error.response?.status) ? 'quota_limited' : 'unavailable', items: [] };
+    return {
+      status: [429, 401, 403].includes(error.response?.status) ? 'quota_limited' : 'unavailable',
+      reason: denial?.reason || 'source_failure',
+      nextEligibleAt: denial?.nextEligibleAt || null,
+      items: []
+    };
   }
 }
 

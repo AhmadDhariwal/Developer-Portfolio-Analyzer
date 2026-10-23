@@ -21,6 +21,7 @@ export type NewsSource =
   | 'GitHub Releases'
   | 'GitHub Security Advisories'
   | 'Kubernetes Blog'
+  | 'Cloudflare Changelog'
   | 'Lobsters';
 export type NewsDateFilter = 'today' | 'week' | 'month';
 export type NewsPopularityFilter = 'all' | 'high';
@@ -111,6 +112,10 @@ export interface PersonalizedNewsContext {
 }
 
 export interface NewsTelemetry {
+  queryFreshness?: 'missing' | 'empty' | 'fresh' | 'stale' | null;
+  generalFreshness?: 'fresh' | 'stale' | 'warming';
+  cacheVersion?: string | null;
+  lastSuccessfulCheckAt?: string | null;
   freshness?: 'fresh' | 'stale' | 'warming';
   staleFallback?: boolean;
   lastUpdated?: string | null;
@@ -178,6 +183,10 @@ export interface NewsCoverage {
   topic: string | null;
   cachedMatches: number;
   minimum: number;
+  broaderMatches?: number;
+  dateExcludedMatches?: number;
+  filterExcludedMatches?: number;
+  suggestedDate?: NewsDateFilter | null;
 }
 
 export interface NewsEnrichment {
@@ -185,15 +194,29 @@ export interface NewsEnrichment {
     | 'not_needed'
     | 'queued'
     | 'searching'
+    | 'processing'
+    | 'waiting'
+    | 'no_newer'
     | 'ready'
     | 'exhausted'
     | 'quota_limited'
     | 'disabled'
-    | 'unavailable';
+    | 'unavailable'
+    | 'source_unavailable'
+    | 'worker_unavailable';
   reason: string;
   nextEligibleAt: string | null;
   lastAttemptAt?: string;
-  sourceHealth?: { provider: string; status: string; articlesFound: number }[];
+  lastSuccessfulCheckAt?: string;
+  cacheVersion?: string;
+  newArticles?: number;
+  sourceHealth?: {
+    provider: string;
+    status: string;
+    articlesFound: number;
+    reason?: string | null;
+    nextEligibleAt?: string | null;
+  }[];
 }
 
 export interface ActiveNewsFilterChip {
@@ -230,6 +253,7 @@ export const NEWS_SOURCES: NewsSource[] = [
   'GitHub Releases',
   'GitHub Security Advisories',
   'Kubernetes Blog',
+  'Cloudflare Changelog',
   'Lobsters',
 ];
 

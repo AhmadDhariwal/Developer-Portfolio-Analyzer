@@ -151,7 +151,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     return ['for-you', 'explore', 'trending', 'latest'].includes(this.selectedView);
   }
   get discoveryPending(): boolean {
-    return this.enrichment?.status === 'queued' || this.enrichment?.status === 'searching';
+    return ['queued', 'searching', 'processing'].includes(this.enrichment?.status || '');
   }
   get discoveryRecoverable(): boolean {
     return (
@@ -161,34 +161,50 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
   get discoveryTitle(): string {
     switch (this.enrichment?.status) {
+      case 'waiting':
+        return 'Waiting for source eligibility';
+      case 'processing':
+        return 'Processing and saving articles';
+      case 'no_newer':
+        return 'No newer articles found';
       case 'queued':
         return 'Background discovery queued';
       case 'searching':
         return 'Searching additional sources';
       case 'ready':
-        return 'Topic results cached';
+        return 'Search results cached';
       case 'exhausted':
         return 'No usable articles found in the last search';
       case 'quota_limited':
         return 'Discovery budget or cooldown reached';
       case 'disabled':
         return 'Background discovery is disabled';
+      case 'source_unavailable':
+        return 'Search sources are unavailable';
+      case 'worker_unavailable':
+        return 'Background search worker is offline';
       case 'unavailable':
         return 'Background discovery is temporarily unavailable';
       default:
-        return this.total ? 'Cached matches available' : 'Cached search complete';
+        return this.total ? 'Cached matches available' : 'No cached matches';
     }
   }
   get discoveryMessage(): string {
+    if (this.enrichment?.status === 'no_newer')
+      return `Last successful check: ${this.enrichment.lastSuccessfulCheckAt ? new Date(this.enrichment.lastSuccessfulCheckAt).toLocaleString() : 'unavailable'}. Existing articles remain available.`;
+    if (['waiting', 'quota_limited'].includes(this.enrichment?.status || ''))
+      return `Source limit: ${(this.enrichment?.reason || 'unavailable').replace(/_/g, ' ')}.${this.enrichment?.nextEligibleAt ? ' Next check: ' + new Date(this.enrichment.nextEligibleAt).toLocaleString() + '.' : ''}`;
     if (this.discoveryPending)
       return this.discoveryChecks >= 4
         ? 'Automatic checks have finished. Check results later; more articles are not guaranteed.'
         : this.page > 1
           ? 'Discovery continues in the background. Return to page one to check results.'
           : 'Available matches stay visible. We check briefly for cached updates; more articles are not guaranteed.';
+    if (this.coverage?.dateExcludedMatches)
+      return `${this.coverage.dateExcludedMatches} cached matches fall outside the selected date range. Choose This Month to include older articles; your filters stay unchanged until you choose.`;
     switch (this.coverage?.status) {
       case 'unsupported_query':
-        return 'This query searches cached articles only. Background discovery does not support this topic; try a technology such as DevOps, CI/CD or Kubernetes.';
+        return 'Use a short technology phrase without URLs, private identifiers or search operators.';
       case 'restrictive_filters':
         return 'These filters may limit coverage. Try a broader date range, all sources or all popularity levels; filters have not been changed.';
       case 'source_exhausted':
@@ -196,11 +212,15 @@ export class NewsComponent implements OnInit, OnDestroy {
     }
     switch (this.enrichment?.status) {
       case 'ready':
-        return 'The last topic search cached results. Your selected filters still apply.';
+        return 'The last source search cached results. Your selected filters still apply.';
       case 'exhausted':
         return 'The last bounded source search found no matching articles. Broaden your filters or check later.';
       case 'quota_limited':
         return 'Cached results remain available. The backend controls when another search may be admitted.';
+      case 'worker_unavailable':
+        return 'The query is queued, but no recent worker heartbeat is available. Check cached results after the worker recovers.';
+      case 'source_unavailable':
+        return 'Approved sources could not complete the search. Cached matches remain available; this is not a completed empty search.';
       case 'disabled':
         return 'Only available cached articles are searched. No additional sources are being requested.';
       case 'unavailable':
@@ -248,6 +268,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
   get freshnessLabel(): string {
     if (this.offline) return 'Offline';
+    if (this.telemetry?.queryFreshness === 'missing') return 'Query not checked';
+    if (this.telemetry?.queryFreshness === 'empty') return 'Query checked: no matches';
     if (this.telemetry?.freshness === 'warming') return 'Warming up';
     if (this.telemetry?.freshness === 'stale' || this.telemetry?.staleFallback)
       return 'Stale snapshot';
@@ -256,6 +278,10 @@ export class NewsComponent implements OnInit, OnDestroy {
   get sourceMessage(): string {
     if (this.offline)
       return 'You are offline. Previously loaded articles remain available; saved changes need a connection.';
+    if (this.telemetry?.queryFreshness === 'missing')
+      return 'This query has no stored source check. Its search status appears below.';
+    if (this.telemetry?.queryFreshness === 'empty')
+      return 'The last successful check found no matching articles for this query.';
     if (this.telemetry?.freshness === 'warming')
       return 'Sources are warming up. Check again shortly; articles appear after the next background update.';
     if (this.telemetry?.providerFailureCount)
@@ -286,6 +312,10 @@ export class NewsComponent implements OnInit, OnDestroy {
     return Math.max(
       this.retrySeconds,
       Math.max(0, Math.ceil((this.news.retryAt('refresh') - this.now) / 1000)),
+      Math.max(
+        0,
+        Math.ceil((Date.parse(this.enrichment?.nextEligibleAt || '') - this.now) / 1000),
+      ) || 0,
     );
   }
   get mutationBlocked(): boolean {
@@ -343,6 +373,13 @@ export class NewsComponent implements OnInit, OnDestroy {
       mode: this.filters.mode,
     });
   }
+  broadenDate(): void {
+    if (this.coverage?.suggestedDate)
+      this.onFiltersChange({ ...this.filters, date: this.coverage.suggestedDate });
+  }
+  broadenFilters(): void {
+    this.onFiltersChange({ ...this.filters, category: 'All', source: 'All', popularity: 'all' });
+  }
   searchTopic(topic: string): void {
     this.onFiltersChange({ ...this.filters, search: topic });
   }
@@ -361,7 +398,10 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.fetch(page);
   }
   forceRefresh(): void {
-    if (!this.offline && !this.refreshSeconds && !this.isLoading) this.fetch(1, true);
+    if (!this.offline && !this.refreshSeconds && !this.isLoading && !this.discoveryPending) {
+      this.discoveryChecks = 0;
+      this.fetch(1, true);
+    }
   }
   retry(): void {
     if (this.isFeedView) this.fetch(this.attemptedPage);
@@ -465,6 +505,7 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.trendingTopics = response.trendingTopics;
           this.isLoading = false;
           this.lastValidated = Date.now();
+          if (this.enrichment?.nextEligibleAt) this.startClock();
           this.scheduleDiscoveryCheck();
           this.cdr.markForCheck();
         },
@@ -634,6 +675,8 @@ export class NewsComponent implements OnInit, OnDestroy {
     );
   }
   private errorText(status: number): string {
+    if (status === 400)
+      return 'Use a technology phrase of at most 80 characters and six words, without URLs or search operators.';
     if (status === 429) return 'Too many requests. Wait for the retry timer before trying again.';
     if (status === 503)
       return 'News is temporarily unavailable. Your loaded articles are still here.';

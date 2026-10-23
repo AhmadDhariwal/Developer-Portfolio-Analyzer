@@ -137,7 +137,8 @@ const normalizeItem = (item = {}) => {
       'GitHub Releases',
       'GitHub Security Advisories',
       'Lobsters',
-      'Kubernetes Blog'
+      'Kubernetes Blog',
+      'Cloudflare Changelog'
     ].includes(source) ||
     title === '[Removed]'
   )

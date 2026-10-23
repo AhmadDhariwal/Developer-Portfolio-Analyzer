@@ -1,5 +1,6 @@
-// Reviewed, extensible public taxonomy. Requests cannot introduce new upstream
-// terms, repositories or tags. Keep the registry at most 64 topics.
+// Reviewed public taxonomy for aliases, categorization, prewarming and fixed feeds.
+// Free-text searches are validated separately in newsQuery; requests cannot add
+// repositories, feed URLs or taxonomy entries. Keep this registry at most 64 topics.
 const TOPICS = Object.freeze({
   javascript: { repo: 'tc39/ecma262', tag: 'javascript', ecosystem: 'npm', category: 'Frontend' },
   typescript: { repo: 'microsoft/TypeScript', tag: 'javascript', ecosystem: 'npm', category: 'Frontend' },

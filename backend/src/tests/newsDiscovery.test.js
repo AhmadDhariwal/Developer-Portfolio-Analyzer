@@ -26,11 +26,31 @@ const fakeProviders = (extra = {}) => ({
   available: () => ['hackernewssearch'],
   ...extra
 });
+test('expired sufficient query results schedule automatic revalidation without becoming a manual check', async () => {
+  const old = Date.now() - 3600000;
+  let mode;
+  const discovery = create({
+    './redisCacheService': {
+      getRedisCacheClient: () => ({
+        get: async (key) =>
+          key.endsWith(':worker') ? 'heartbeat' : JSON.stringify({ status: 'ready', checkedAtMs: old }),
+        eval: async (_script, options) => {
+          mode = options.arguments[12];
+          return options.arguments[2];
+        }
+      })
+    }
+  });
+  const result = await discovery.coverage({ filters: filters(), total: 6, broadTotal: 6, queryAttemptAt: old });
+  assert.equal(result.enrichment.status, 'queued');
+  assert.equal(mode, 'stale');
+});
 function create(extra = {}) {
   return load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': { findOne: () => ({ lean: async () => null }), updateOne: async () => ({}) },
     './redisCacheService': { getRedisCacheClient: () => null },
     './newsDiscoveryProviders': fakeProviders(),
+    './newsGovernanceService': { inspect: async () => ({ allowed: true }) },
     ...extra
   });
 }
@@ -40,9 +60,13 @@ test('coverage distinguishes genuine gaps, restrictive filters, unsupported topi
   assert.equal(discovery.classify(filters(), 0, 0), 'coverage_gap');
   assert.equal(discovery.classify(filters(), 6, 6), 'sufficient');
   assert.equal(discovery.classify(filters(), 2, 8), 'restrictive_filters');
-  for (const change of [{ category: 'Backend' }, { dateRange: 'today' }, { popularity: 'high' }, { source: 'Dev.to' }])
+  for (const change of [{ source: 'NewsAPI' }])
     assert.equal(discovery.classify(filters(change), 0, 0), 'restrictive_filters');
   assert.equal(discovery.classify(filters({ category: 'Frontend' }), 0, 0), 'coverage_gap');
+  assert.equal(
+    discovery.classify(filters({ category: 'Backend', dateRange: 'today', popularity: 'high' }), 0, 0),
+    'coverage_gap'
+  );
   assert.equal(discovery.classify(filters({ search: '' }), 0, 0), 'general_pool');
   assert.equal(
     discovery.classify(filters({ search: 'react OR secret private repository' }), 0, 0),
@@ -52,7 +76,7 @@ test('coverage distinguishes genuine gaps, restrictive filters, unsupported topi
     discovery.classify(filters({ source: 'Dev.to' }), 0, 0, [
       { provider: 'Dev.to', reachable: true, articlesFetched: 0 }
     ]),
-    'source_exhausted'
+    'coverage_gap'
   );
   assert.equal(
     (await discovery.coverage({ filters: filters(), total: 0, broadTotal: 0 })).enrichment.status,
@@ -119,6 +143,7 @@ test('simultaneous cross-account-shaped requests deduplicate public queue work a
   const discovery = create({
     './redisCacheService': {
       getRedisCacheClient: () => ({
+        get: async (key) => (key.endsWith(':worker') ? 'recent-heartbeat' : null),
         eval: async (_script, options) => {
           calls++;
           assert.ok(!JSON.stringify(options).includes('owner'));
@@ -133,7 +158,7 @@ test('simultaneous cross-account-shaped requests deduplicate public queue work a
   assert.equal(calls, 1);
   assert.ok(outputs.every((output) => output.enrichment.status === 'queued'));
   await discovery.coverage({ filters: filters({ source: 'NewsAPI' }), total: 0, broadTotal: 0 });
-  await discovery.coverage({ filters: filters({ search: 'unbounded topic' }), total: 0, broadTotal: 0 });
+  await discovery.coverage({ filters: filters({ search: 'react OR secret' }), total: 0, broadTotal: 0 });
   assert.equal(calls, 1);
 });
 
@@ -230,7 +255,7 @@ test('provider adapters require approval, protect transport, validate content an
   try {
     assert.equal((await providers.search('hackernewssearch', 'react')).status, 'quota_limited');
     for (const source of ['githubreleases', 'githubadvisories', 'lobsters']) {
-      const output = await providers.search(source, 'react');
+      const output = await providers.search(source, source === 'githubadvisories' ? 'react security' : 'react');
       assert.equal(output.status, 'success');
       assert.equal(output.items.length, 1);
       assert.equal(output.items[0].description, '');
@@ -324,7 +349,7 @@ test('worker fallback, negative caching, lease loss and persistence failures are
       enough: 'ready',
       empty: 'exhausted',
       limited: 'quota_limited',
-      failure: 'unavailable',
+      failure: 'source_unavailable',
       persist: 'unavailable'
     };
     assert.equal(committed.status, expected[scenario]);

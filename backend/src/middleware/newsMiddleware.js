@@ -1,3 +1,4 @@
+const { queryFor } = require('../utils/newsQuery');
 const rateLimit = require('express-rate-limit');
 const cache = require('../services/redisCacheService');
 const { COUNTER } = require('../services/newsGovernanceService');
@@ -58,6 +59,11 @@ function validateFeed(req, res, next) {
     if (!allowed.has(key) || typeof value !== 'string' || value.length > 160)
       return res.status(400).json({ message: 'News filters are invalid.' });
   }
+  if (req.query.search?.trim() && !queryFor(req.query.search))
+    return res.status(400).json({
+      message:
+        'Use a technology phrase of 2–80 characters and at most six words; URLs, identifiers and search operators are not supported.'
+    });
   for (const [key, maximum] of [
     ['page', 10000],
     ['limit', 30]
