@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-23T21:07:16.207Z",
+  "capturedAt": "2026-10-24T19:35:10.236Z",
   "scope": "read-only configured local runtime; entitlement is not established by a key or approval flag",
   "inventory": [
     {
@@ -38,7 +38,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsDiscoveryProviders.js: enabled"],
+      "consumers": [
+        "services/newsDiscoveryProviders.js: enabled"
+      ],
       "purpose": "Allow public query discovery; boolean, platform newsEnabled also applies",
       "activationRequired": true,
       "unused": false
@@ -112,7 +114,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "Minimum time between successful manual query checks; milliseconds 60000..3600000, never bypasses source limits",
       "activationRequired": false,
       "unused": false
@@ -258,7 +262,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsAdaptiveService.js: select/candidates"],
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
       "purpose": "Adaptive strategy; demand-coverage or demand-only, coverage fallback is disabled by demand-only",
       "activationRequired": false,
       "unused": false
@@ -294,7 +300,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsAdaptiveService.js: select/candidates"],
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
       "purpose": "Minimum distinct accounts per topic over seven days; integer 2..100, repeated account searches count once per rolling seven days",
       "activationRequired": false,
       "unused": false
@@ -330,7 +338,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsAdaptiveService.js: select/candidates"],
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
       "purpose": "Recent coverage target per topic; integer articles 1..40, adequate fresh topics are skipped",
       "activationRequired": false,
       "unused": false
@@ -366,7 +376,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsAdaptiveService.js: select/candidates"],
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
       "purpose": "Maximum age of newest topic article; milliseconds 60000..86400000, older coverage is eligible",
       "activationRequired": false,
       "unused": false
@@ -440,7 +452,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsAdaptiveService.js: select/candidates"],
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
       "purpose": "Candidates per evaluation; integer 1..4, also constrained by daily prewarm budget",
       "activationRequired": false,
       "unused": false
@@ -818,7 +832,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "HACKERNEWS combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
       "activationRequired": true,
       "unused": false
@@ -854,7 +870,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "HACKERNEWS combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -890,7 +908,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "HACKERNEWS minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
       "activationRequired": false,
       "unused": false
@@ -926,7 +946,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "DEVTO combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
       "activationRequired": true,
       "unused": false
@@ -962,7 +984,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "DEVTO combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -998,7 +1022,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "DEVTO minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
       "activationRequired": false,
       "unused": false
@@ -1034,7 +1060,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "GITHUB combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
       "activationRequired": true,
       "unused": false
@@ -1070,7 +1098,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "GITHUB combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1106,7 +1136,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: sharedPolicy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
       "purpose": "GITHUB minimum spacing across adapters; milliseconds 0..86400000, hard floor 300000",
       "activationRequired": false,
       "unused": false
@@ -1202,7 +1234,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -1238,7 +1272,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernews requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1274,7 +1310,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -1370,7 +1408,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devto requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -1406,7 +1446,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devto requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1442,7 +1484,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devto request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -1538,7 +1582,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernewssearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -1574,7 +1620,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernewssearch requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1610,7 +1658,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "hackernewssearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -1706,7 +1756,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubreleases requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -1742,7 +1794,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubreleases requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1778,7 +1832,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubreleases request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -1874,7 +1930,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubadvisories requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -1910,7 +1968,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubadvisories requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -1946,7 +2006,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "githubadvisories request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2042,7 +2104,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "lobsters requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2078,7 +2142,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "lobsters requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2114,7 +2180,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "lobsters request spacing; milliseconds 0..86400000, hard floor 600000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2210,7 +2278,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devtosearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2246,7 +2316,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devtosearch requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2282,7 +2354,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "devtosearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2378,7 +2452,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "kubernetesblog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2414,7 +2490,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "kubernetesblog requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2450,7 +2528,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "kubernetesblog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2546,7 +2626,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "cloudflarechangelog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2582,7 +2664,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "cloudflarechangelog requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2618,7 +2702,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "cloudflarechangelog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2636,7 +2722,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["services/newsService.js: credentials and broad adapters"],
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
       "purpose": "Optional NewsAPI server credential from newsapi.org; existing platform newsApiKey is also supported; requires approval and budgets",
       "activationRequired": false,
       "unused": false
@@ -2732,7 +2820,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "newsapi requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2768,7 +2858,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "newsapi requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2804,7 +2896,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "newsapi request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -2822,7 +2916,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["services/newsService.js: credentials and broad adapters"],
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
       "purpose": "Optional GNews server credential from gnews.io; requires commercial/content approval and budgets",
       "activationRequired": false,
       "unused": false
@@ -2918,7 +3014,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "gnews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -2954,7 +3052,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "gnews requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -2990,7 +3090,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "gnews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -3008,7 +3110,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["services/newsService.js: credentials and broad adapters"],
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
       "purpose": "Optional Reddit OAuth access token; obtain through an approved Reddit API application; requires approval and budgets",
       "activationRequired": false,
       "unused": false
@@ -3026,7 +3130,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["services/newsService.js: credentials and broad adapters"],
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
       "purpose": "Optional Reddit application identity; required with its token for enabled Reddit requests",
       "activationRequired": false,
       "unused": false
@@ -3122,7 +3228,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "reddit requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
       "activationRequired": true,
       "unused": false
@@ -3158,7 +3266,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "reddit requests per UTC month; integer 0..30000, zero blocks requests",
       "activationRequired": true,
       "unused": false
@@ -3194,7 +3304,9 @@
         "allowedValues": null,
         "optional": true
       },
-      "consumers": ["services/newsGovernanceService.js: policy/reserve"],
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
       "purpose": "reddit request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
       "activationRequired": false,
       "unused": false
@@ -3212,7 +3324,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["tests/fixtures/newsHubRedisFixture.js"],
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
       "purpose": "Optional disposable integration Redis TCP URL; must differ from application Redis",
       "activationRequired": false,
       "unused": false
@@ -3230,7 +3344,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["tests/fixtures/newsHubRedisFixture.js"],
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
       "purpose": "Explicit acknowledgement for remote disposable Redis tests; boolean, never authorizes application Redis writes",
       "activationRequired": false,
       "unused": false
@@ -3268,7 +3384,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["tests/fixtures/newsHubRedisFixture.js"],
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
       "purpose": "Optional isolated test namespace news-test:<UUID>:; blank generates a unique namespace",
       "activationRequired": false,
       "unused": false
@@ -3286,7 +3404,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["tests/newsFreeText.integration.test.js"],
+      "consumers": [
+        "tests/newsFreeText.integration.test.js"
+      ],
       "purpose": "Opt in to focused Playwright browser verification; boolean",
       "activationRequired": false,
       "unused": false
@@ -3304,7 +3424,9 @@
         "optional": true,
         "type": "optional credential/test string"
       },
-      "consumers": ["tests/newsLiveSearch.integration.test.js"],
+      "consumers": [
+        "tests/newsLiveSearch.integration.test.js"
+      ],
       "purpose": "Opt in to bounded live provider verification; boolean, real quotas still apply",
       "activationRequired": false,
       "unused": false
@@ -3321,7 +3443,9 @@
     "example": {
       "keys": 196,
       "missing": [],
-      "deprecated": ["NEWS_DISCOVERY_PREWARM_TOPICS (ignored)"],
+      "deprecated": [
+        "NEWS_DISCOVERY_PREWARM_TOPICS (ignored)"
+      ],
       "missingComments": [],
       "schemaValid": true
     },
@@ -3336,14 +3460,14 @@
     },
     "jobBudgets": {
       "dailyLimit": 12,
-      "dailyUsed": 12,
+      "dailyUsed": 2,
       "prewarmDailyLimit": 4,
+      "prewarmAdmittedJobs": 0,
       "reservedUserJobs": 6,
       "perAccountMinute": 3,
       "perAccountDay": 6,
       "queuedJobs": 0,
-      "nextUtcDay": "2026-10-24T00:00:00.000Z",
-      "prewarmAttemptCounter": 7
+      "nextUtcDay": "2026-10-25T00:00:00.000Z"
     },
     "requiredConnections": {
       "mongoConnected": true,
@@ -3353,36 +3477,11 @@
       "sharedRedisConfigured": true
     },
     "heartbeatAvailable": true,
-    "heartbeatAgeMs": 1345,
-    "devopsState": {
-      "status": "ready",
-      "reason": "articles_cached",
-      "nextEligibleAt": "2026-10-23T20:56:23.739Z",
-      "lastAttemptAt": "2026-10-23T20:55:21.681Z",
-      "checkedAtMs": 1792788921681,
-      "sourceHealth": [
-        {
-          "provider": "hackernewssearch",
-          "status": "success",
-          "articlesFound": 6,
-          "reason": null,
-          "nextEligibleAt": null
-        },
-        {
-          "provider": "devtosearch",
-          "status": "success",
-          "articlesFound": 27,
-          "reason": null,
-          "nextEligibleAt": null
-        }
-      ],
-      "lastSuccessfulCheckAt": "2026-10-23T20:55:21.681Z",
-      "cacheVersion": "1792788921681",
-      "newArticles": 1
-    },
+    "heartbeatAgeMs": 1435,
+    "devopsState": null,
     "catalog": {
-      "total": 211,
-      "devops": 37,
+      "total": 692,
+      "devops": 98,
       "indexes": [
         {
           "v": 2,
@@ -3465,7 +3564,7 @@
         "Cloudflare Changelog": 840
       }
     },
-    "poolUpdated": "2026-10-23T20:38:53.188Z",
+    "poolUpdated": "2026-10-24T07:43:23.446Z",
     "providers": {
       "newsapi": {
         "contentApproved": false,
@@ -3495,7 +3594,9 @@
           "reachable": false,
           "articlesFetched": 0,
           "lastSuccess": null,
-          "lastFailure": "Provider content approval or budget is missing"
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3527,7 +3628,9 @@
           "reachable": false,
           "articlesFetched": 0,
           "lastSuccess": null,
-          "lastFailure": "Provider content approval or budget is missing"
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3542,13 +3645,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 27,
-        "monthlyUsed": 38,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
           "allowed": false,
           "reason": "interval",
-          "nextEligibleAt": "2026-10-23T21:17:51.159Z"
+          "nextEligibleAt": "2026-10-24T19:42:49.052Z"
         },
         "credentialsNeeded": false,
         "credentialPresent": true,
@@ -3559,8 +3662,13 @@
           "configured": true,
           "reachable": false,
           "articlesFetched": 0,
-          "lastSuccess": "2026-10-23T20:57:55.406Z",
-          "lastFailure": "Provider request failed."
+          "lastSuccess": "2026-10-24T19:22:51.599Z",
+          "lastFailure": "Provider waiting for admission.",
+          "status": "quota_limited",
+          "reason": "interval",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-24T19:42:49.108Z"
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3575,13 +3683,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 27,
-        "monthlyUsed": 38,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
           "allowed": false,
           "reason": "interval",
-          "nextEligibleAt": "2026-10-23T21:17:51.159Z"
+          "nextEligibleAt": "2026-10-24T19:42:49.053Z"
         },
         "credentialsNeeded": false,
         "credentialPresent": true,
@@ -3592,8 +3700,13 @@
           "configured": true,
           "reachable": false,
           "articlesFetched": 0,
-          "lastSuccess": "2026-10-23T20:57:55.406Z",
-          "lastFailure": "Provider request failed."
+          "lastSuccess": "2026-10-24T19:22:51.599Z",
+          "lastFailure": "Provider waiting for admission.",
+          "status": "quota_limited",
+          "reason": "interval",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-24T19:42:49.108Z"
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3625,7 +3738,9 @@
           "reachable": false,
           "articlesFetched": 0,
           "lastSuccess": null,
-          "lastFailure": "Provider content approval or budget is missing"
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3640,8 +3755,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 8,
-        "monthlyUsed": 8,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
         "coolingDown": false,
         "admission": {
           "allowed": true,
@@ -3665,13 +3780,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 5,
-        "monthlyUsed": 5,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": false,
-          "reason": "interval",
-          "nextEligibleAt": "2026-10-23T21:18:51.813Z"
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
         },
         "credentialsNeeded": false,
         "credentialPresent": true,
@@ -3680,10 +3795,15 @@
           "provider": "GitHub Releases",
           "enabled": true,
           "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
           "reachable": false,
           "articlesFetched": 0,
-          "lastSuccess": "2026-10-23T20:38:53.188Z",
-          "lastFailure": "Provider request failed."
+          "lastSuccess": "2026-10-24T07:43:23.446Z",
+          "lastFailure": "Provider waiting for admission."
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3698,13 +3818,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 4,
-        "monthlyUsed": 4,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": false,
-          "reason": "interval",
-          "nextEligibleAt": "2026-10-23T21:07:51.253Z"
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
         },
         "credentialsNeeded": false,
         "credentialPresent": true,
@@ -3713,10 +3833,15 @@
           "provider": "GitHub Security Advisories",
           "enabled": true,
           "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
           "reachable": false,
           "articlesFetched": 0,
-          "lastSuccess": "2026-10-23T20:47:53.100Z",
-          "lastFailure": "Provider request failed."
+          "lastSuccess": "2026-10-24T09:10:28.780Z",
+          "lastFailure": "Provider waiting for admission."
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3755,8 +3880,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 8,
-        "monthlyUsed": 9,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": true,
@@ -3781,12 +3906,12 @@
         },
         "quotaStoreAvailable": true,
         "dailyUsed": 4,
-        "monthlyUsed": 5,
+        "monthlyUsed": 9,
         "coolingDown": false,
         "admission": {
           "allowed": false,
           "reason": "daily_budget",
-          "nextEligibleAt": "2026-10-24T00:00:00.000Z"
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
         },
         "credentialsNeeded": false,
         "credentialPresent": true,
@@ -3795,10 +3920,15 @@
           "provider": "Kubernetes Blog",
           "enabled": true,
           "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
           "reachable": false,
           "articlesFetched": 0,
           "lastSuccess": null,
-          "lastFailure": "Provider request failed."
+          "lastFailure": "Provider waiting for admission."
         },
         "entitlement": "operator documentation/contract not supplied; not certified by configuration"
       },
@@ -3832,25 +3962,23 @@
     {
       "query": "mode=explore&search=devops&date=week&bypassCache=true",
       "http": 200,
-      "serverTime": "2026-10-23T21:07:19.563Z",
-      "total": 31,
+      "serverTime": "2026-10-24T19:35:13.236Z",
+      "total": 72,
       "items": 12,
       "coverage": {
         "status": "sufficient",
         "topic": "devops",
-        "cachedMatches": 31,
+        "cachedMatches": 72,
         "minimum": 6,
-        "broaderMatches": 37,
-        "dateExcludedMatches": 6,
-        "filterExcludedMatches": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 22,
+        "filterExcludedMatches": 22,
         "suggestedDate": "month"
       },
       "enrichment": {
-        "status": "ready",
-        "reason": "articles_cached",
-        "nextEligibleAt": "2026-10-23T20:56:23.739Z",
-        "lastAttemptAt": "2026-10-23T20:55:21.681Z",
-        "checkedAtMs": 1792788921681,
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
         "sourceHealth": [
           {
             "provider": "hackernewssearch",
@@ -3867,35 +3995,31 @@
             "nextEligibleAt": null
           }
         ],
-        "lastSuccessfulCheckAt": "2026-10-23T20:55:21.681Z",
-        "cacheVersion": "1792788921681",
-        "newArticles": 1
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
       },
       "personalizedContext": false,
-      "catalogVersion": 5
+      "catalogVersion": 8
     },
     {
       "query": "mode=explore&search=devops&date=month&page=2&bypassCache=true",
       "http": 200,
-      "serverTime": "2026-10-23T21:07:20.552Z",
-      "total": 37,
+      "serverTime": "2026-10-24T19:35:14.242Z",
+      "total": 94,
       "items": 12,
       "coverage": {
         "status": "sufficient",
         "topic": "devops",
-        "cachedMatches": 37,
+        "cachedMatches": 94,
         "minimum": 6,
-        "broaderMatches": 37,
+        "broaderMatches": 94,
         "dateExcludedMatches": 0,
         "filterExcludedMatches": 0,
         "suggestedDate": null
       },
       "enrichment": {
-        "status": "ready",
-        "reason": "articles_cached",
-        "nextEligibleAt": "2026-10-23T20:56:23.739Z",
-        "lastAttemptAt": "2026-10-23T20:55:21.681Z",
-        "checkedAtMs": 1792788921681,
+        "status": "not_needed",
+        "reason": "pagination_only",
+        "nextEligibleAt": null,
         "sourceHealth": [
           {
             "provider": "hackernewssearch",
@@ -3912,35 +4036,31 @@
             "nextEligibleAt": null
           }
         ],
-        "lastSuccessfulCheckAt": "2026-10-23T20:55:21.681Z",
-        "cacheVersion": "1792788921681",
-        "newArticles": 1
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
       },
       "personalizedContext": false,
-      "catalogVersion": 5
+      "catalogVersion": 8
     },
     {
       "query": "mode=explore&search=devops&source=Dev.to&bypassCache=true",
       "http": 200,
-      "serverTime": "2026-10-23T21:07:22.244Z",
-      "total": 31,
+      "serverTime": "2026-10-24T19:35:15.245Z",
+      "total": 65,
       "items": 12,
       "coverage": {
         "status": "sufficient",
         "topic": "devops",
-        "cachedMatches": 31,
+        "cachedMatches": 65,
         "minimum": 6,
-        "broaderMatches": 37,
+        "broaderMatches": 94,
         "dateExcludedMatches": 0,
-        "filterExcludedMatches": 6,
+        "filterExcludedMatches": 29,
         "suggestedDate": null
       },
       "enrichment": {
-        "status": "ready",
-        "reason": "articles_cached",
-        "nextEligibleAt": "2026-10-23T20:56:23.739Z",
-        "lastAttemptAt": "2026-10-23T20:55:21.681Z",
-        "checkedAtMs": 1792788921681,
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
         "sourceHealth": [
           {
             "provider": "hackernewssearch",
@@ -3957,23 +4077,21 @@
             "nextEligibleAt": null
           }
         ],
-        "lastSuccessfulCheckAt": "2026-10-23T20:55:21.681Z",
-        "cacheVersion": "1792788921681",
-        "newArticles": 1
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
       },
       "personalizedContext": false,
-      "catalogVersion": 5
+      "catalogVersion": 8
     },
     {
       "query": "mode=personalized&tab=for-you&category=DevOps&search=devops&bypassCache=true",
       "http": 200,
-      "serverTime": "2026-10-23T21:07:23.444Z",
-      "total": 196,
+      "serverTime": "2026-10-24T19:35:16.270Z",
+      "total": 651,
       "items": 12,
       "coverage": {
         "status": "sufficient",
         "topic": null,
-        "cachedMatches": 196,
+        "cachedMatches": 651,
         "minimum": 6,
         "broaderMatches": 0,
         "dateExcludedMatches": 0,
@@ -3986,7 +4104,7 @@
         "nextEligibleAt": null
       },
       "personalizedContext": true,
-      "catalogVersion": 17
+      "catalogVersion": 52
     }
   ],
   "providerCountersUnchangedDuringReads": true

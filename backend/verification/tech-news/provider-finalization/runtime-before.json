@@ -1,6 +1,6 @@
 {
   "phase": "before",
-  "checkedAt": "2026-10-24T10:14:24.827Z",
+  "checkedAt": "2026-10-24T19:35:34.434Z",
   "applicationWrites": 0,
   "providerRequests": 0,
   "configuration": {
@@ -11,7 +11,9 @@
     },
     "example": {
       "missing": [],
-      "deprecated": ["NEWS_DISCOVERY_PREWARM_TOPICS (ignored)"],
+      "deprecated": [
+        "NEWS_DISCOVERY_PREWARM_TOPICS (ignored)"
+      ],
       "sha256": "a0b4ce3892926b5099b8be71b03624515a83b3f2b8e5e8c833fab8630d100f73"
     },
     "credentialsPresent": {
@@ -23,15 +25,16 @@
   },
   "flags": {
     "ingestion": "true",
-    "discovery": "true"
+    "discovery": "true",
+    "platformNewsEnabled": true
   },
   "worker": {
     "present": true,
-    "ageMs": 4771
+    "ageMs": 3866
   },
   "jobs": {
     "limit": 12,
-    "used": "1",
+    "used": "2",
     "prewarmUsed": null,
     "nextDay": "2026-10-25T00:00:00.000Z"
   },
@@ -85,13 +88,13 @@
         "interval": 1200000
       },
       "quotaStoreAvailable": true,
-      "dailyUsed": 10,
-      "monthlyUsed": 49,
+      "dailyUsed": 24,
+      "monthlyUsed": 63,
       "coolingDown": false,
       "admission": {
         "allowed": false,
         "reason": "interval",
-        "nextEligibleAt": "2026-10-24T10:26:20.578Z"
+        "nextEligibleAt": "2026-10-24T19:42:49.050Z"
       }
     },
     "devto": {
@@ -105,13 +108,13 @@
         "interval": 1200000
       },
       "quotaStoreAvailable": true,
-      "dailyUsed": 10,
-      "monthlyUsed": 49,
+      "dailyUsed": 24,
+      "monthlyUsed": 63,
       "coolingDown": false,
       "admission": {
         "allowed": false,
         "reason": "interval",
-        "nextEligibleAt": "2026-10-24T10:26:20.579Z"
+        "nextEligibleAt": "2026-10-24T19:42:49.050Z"
       }
     },
     "reddit": {
@@ -144,8 +147,8 @@
         "interval": 60000
       },
       "quotaStoreAvailable": true,
-      "dailyUsed": 1,
-      "monthlyUsed": 9,
+      "dailyUsed": 3,
+      "monthlyUsed": 11,
       "coolingDown": false,
       "admission": {
         "allowed": true,
@@ -223,8 +226,8 @@
         "interval": 60000
       },
       "quotaStoreAvailable": true,
-      "dailyUsed": 1,
-      "monthlyUsed": 10,
+      "dailyUsed": 3,
+      "monthlyUsed": 12,
       "coolingDown": false,
       "admission": {
         "allowed": true,
@@ -301,10 +304,10 @@
   "catalog": {
     "Hacker News": {
       "_id": "Hacker News",
-      "retained": 234,
-      "unexpired": 234,
-      "newest": "2026-10-24T10:02:35.000Z",
-      "eligibleLast30Days": 234,
+      "retained": 480,
+      "unexpired": 480,
+      "newest": "2026-10-24T19:19:43.000Z",
+      "eligibleLast30Days": 480,
       "retentionHours": 840,
       "lastBroadObservation": {
         "provider": "Hacker News",
@@ -312,16 +315,21 @@
         "configured": true,
         "reachable": false,
         "articlesFetched": 0,
-        "lastSuccess": "2026-10-24T10:06:23.841Z",
-        "lastFailure": "Provider request failed."
+        "lastSuccess": "2026-10-24T19:22:51.599Z",
+        "lastFailure": "Provider waiting for admission.",
+        "status": "quota_limited",
+        "reason": "interval",
+        "failureType": null,
+        "httpStatus": null,
+        "nextEligibleAt": "2026-10-24T19:42:49.108Z"
       }
     },
     "Dev.to": {
       "_id": "Dev.to",
-      "retained": 95,
-      "unexpired": 95,
-      "newest": "2026-10-24T08:49:57.000Z",
-      "eligibleLast30Days": 95,
+      "retained": 102,
+      "unexpired": 102,
+      "newest": "2026-10-24T11:30:37.000Z",
+      "eligibleLast30Days": 102,
       "retentionHours": 840,
       "lastBroadObservation": {
         "provider": "Dev.to",
@@ -329,8 +337,13 @@
         "configured": true,
         "reachable": false,
         "articlesFetched": 0,
-        "lastSuccess": "2026-10-24T10:06:23.841Z",
-        "lastFailure": "Provider request failed."
+        "lastSuccess": "2026-10-24T19:22:51.599Z",
+        "lastFailure": "Provider waiting for admission.",
+        "status": "quota_limited",
+        "reason": "interval",
+        "failureType": null,
+        "httpStatus": null,
+        "nextEligibleAt": "2026-10-24T19:42:49.108Z"
       }
     },
     "NewsAPI": {
@@ -345,7 +358,9 @@
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": null,
-        "lastFailure": "Provider content approval or budget is missing"
+        "lastFailure": "Provider content approval or budget is missing",
+        "status": "disabled",
+        "reason": "budget_not_configured"
       }
     },
     "GNews": {
@@ -360,7 +375,9 @@
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": null,
-        "lastFailure": "Provider content approval or budget is missing"
+        "lastFailure": "Provider content approval or budget is missing",
+        "status": "disabled",
+        "reason": "budget_not_configured"
       }
     },
     "Reddit": {
@@ -375,7 +392,9 @@
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": null,
-        "lastFailure": "Provider content approval or budget is missing"
+        "lastFailure": "Provider content approval or budget is missing",
+        "status": "disabled",
+        "reason": "budget_not_configured"
       }
     },
     "GitHub Releases": {
@@ -389,10 +408,15 @@
         "provider": "GitHub Releases",
         "enabled": true,
         "configured": true,
+        "status": "quota_limited",
+        "reason": "daily_budget",
+        "failureType": null,
+        "httpStatus": null,
+        "nextEligibleAt": "2026-10-25T00:00:00.000Z",
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": "2026-10-24T07:43:23.446Z",
-        "lastFailure": "Provider request failed."
+        "lastFailure": "Provider waiting for admission."
       }
     },
     "GitHub Security Advisories": {
@@ -406,10 +430,15 @@
         "provider": "GitHub Security Advisories",
         "enabled": true,
         "configured": true,
+        "status": "quota_limited",
+        "reason": "daily_budget",
+        "failureType": null,
+        "httpStatus": null,
+        "nextEligibleAt": "2026-10-25T00:00:00.000Z",
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": "2026-10-24T09:10:28.780Z",
-        "lastFailure": "Provider request failed."
+        "lastFailure": "Provider waiting for admission."
       }
     },
     "Lobsters": {
@@ -428,10 +457,15 @@
         "provider": "Kubernetes Blog",
         "enabled": true,
         "configured": true,
+        "status": "quota_limited",
+        "reason": "daily_budget",
+        "failureType": null,
+        "httpStatus": null,
+        "nextEligibleAt": "2026-10-25T00:00:00.000Z",
         "reachable": false,
         "articlesFetched": 0,
         "lastSuccess": null,
-        "lastFailure": "Provider request failed."
+        "lastFailure": "Provider waiting for admission."
       }
     },
     "Cloudflare Changelog": {

@@ -60,7 +60,8 @@ function available(topic) {
   });
 }
 
-const rssLimit = (source) => (source === 'Kubernetes Blog' ? 8 * 1048576 : 1048576);
+const rssLimit = (source) =>
+  ['Kubernetes Blog', 'Cloudflare Changelog'].includes(source) ? 8 * 1048576 : 1048576;
 const decode = (value) =>
   value.replace(/&(?:amp|lt|gt|quot|apos|#\d+|#x[\da-f]+);/gi, (match) => {
     const named = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" };
@@ -99,8 +100,13 @@ function fromRss(xml, source = 'Lobsters') {
         attributionUrl: field(item, 'comments'),
         publishedAt: field(item, 'pubDate'),
         source,
-        publisher: source === 'Kubernetes Blog' ? 'Kubernetes Authors (CC BY 4.0)' : source,
-        ...(source === 'Kubernetes Blog'
+        publisher:
+          source === 'Kubernetes Blog'
+            ? 'Kubernetes Authors (CC BY 4.0)'
+            : source === 'Cloudflare Changelog'
+              ? 'Cloudflare (CC BY 4.0)'
+              : source,
+        ...(['Kubernetes Blog', 'Cloudflare Changelog'].includes(source)
           ? { license: 'CC-BY-4.0', licenseUrl: 'https://creativecommons.org/licenses/by/4.0/' }
           : {}),
         description: ''
@@ -136,7 +142,11 @@ function requestFor(key, topic) {
   if (key === 'kubernetesblog')
     return { url: 'https://kubernetes.io/feed.xml', rss: true, maxBytes: rssLimit('Kubernetes Blog') };
   if (key === 'cloudflarechangelog')
-    return { url: 'https://developers.cloudflare.com/changelog/rss/index.xml', rss: true };
+    return {
+      url: 'https://developers.cloudflare.com/changelog/rss/index.xml',
+      rss: true,
+      maxBytes: rssLimit('Cloudflare Changelog')
+    };
   throw new Error('Unsupported provider');
 }
 function format(key, payload, topic) {

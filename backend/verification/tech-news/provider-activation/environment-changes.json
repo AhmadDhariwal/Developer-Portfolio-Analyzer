@@ -1,0 +1,60 @@
+{
+  "scope": "Personal non-commercial local development only",
+  "changes": {
+    "NEWS_NEWSAPI_CONTENT_APPROVED": {
+      "before": "false",
+      "after": "true"
+    },
+    "NEWS_NEWSAPI_DAILY_BUDGET": {
+      "before": "0",
+      "after": "2"
+    },
+    "NEWS_NEWSAPI_MONTHLY_BUDGET": {
+      "before": "0",
+      "after": "60"
+    },
+    "NEWS_NEWSAPI_MIN_INTERVAL_MS": {
+      "before": "1200000",
+      "after": "43200000"
+    },
+    "NEWS_NEWSAPI_RETENTION_HOURS": {
+      "before": "24",
+      "after": "72"
+    },
+    "NEWS_GNEWS_CONTENT_APPROVED": {
+      "before": "false",
+      "after": "true"
+    },
+    "NEWS_GNEWS_DAILY_BUDGET": {
+      "before": "0",
+      "after": "2"
+    },
+    "NEWS_GNEWS_MONTHLY_BUDGET": {
+      "before": "0",
+      "after": "60"
+    },
+    "NEWS_GNEWS_MIN_INTERVAL_MS": {
+      "before": "1200000",
+      "after": "43200000"
+    },
+    "NEWS_CLOUDFLARECHANGELOG_CONTENT_APPROVED": {
+      "before": "false",
+      "after": "true"
+    },
+    "NEWS_CLOUDFLARECHANGELOG_DAILY_BUDGET": {
+      "before": "0",
+      "after": "2"
+    },
+    "NEWS_CLOUDFLARECHANGELOG_MONTHLY_BUDGET": {
+      "before": "0",
+      "after": "60"
+    },
+    "NEWS_CLOUDFLARECHANGELOG_MIN_INTERVAL_MS": {
+      "before": "1200000",
+      "after": "43200000"
+    }
+  },
+  "allOtherParsedValuesPreserved": true,
+  "credentialsPreserved": true,
+  "exampleSha256": "a0b4ce3892926b5099b8be71b03624515a83b3f2b8e5e8c833fab8630d100f73"
+}

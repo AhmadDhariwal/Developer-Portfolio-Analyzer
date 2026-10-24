@@ -15,6 +15,10 @@ const { newsEnvShape, auditNewsConfiguration, validateNewsRelationships } = requ
 const { z } = require('zod');
 const phase = process.argv.includes('--after') ? 'after' : 'before';
 const live = process.argv.includes('--live');
+const outputOption = process.argv.find((argument) => argument.startsWith('--output-dir='));
+const outputDirectory = outputOption
+  ? path.resolve(root, outputOption.slice('--output-dir='.length))
+  : path.join(root, 'verification/tech-news/provider-finalization');
 
 async function main() {
   const raw = fs.readFileSync(path.join(root, '.env'), 'utf8');
@@ -72,6 +76,10 @@ async function main() {
     worker: {
       present: !!heartbeat && heartbeat !== 'unavailable',
       ageMs: heartbeat && heartbeat !== 'unavailable' ? Date.now() - Number(heartbeat) : null
+    },
+    ingestion: {
+      attemptedAt: pool?.filters?.attemptedAt || null,
+      leaseTtlMs: redis ? await redis.pTTL('news:v3:lease:ingestion').catch(() => null) : null
     },
     jobs: {
       limit: Number(env.NEWS_DISCOVERY_DAILY_JOBS),
@@ -141,7 +149,7 @@ async function main() {
       'Only ordinary governed provider reservations/feedback for admitted minimal live checks';
     result.providerRequests = 'At most one per approved eligible public adapter; see live preflight results';
   }
-  const output = path.join(root, 'verification/tech-news/provider-finalization');
+  const output = outputDirectory;
   fs.mkdirSync(output, { recursive: true });
   fs.writeFileSync(
     path.join(output, live ? 'live.json' : `runtime-${phase}.json`),

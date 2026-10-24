@@ -1,7 +1,7 @@
 {
   "phase": "after",
-  "at": "2026-10-24T09:01:53.172Z",
-  "catalog": 397,
+  "at": "2026-10-24T19:36:44.994Z",
+  "catalog": 692,
   "indexes": [
     {
       "v": 2,
@@ -72,7 +72,7 @@
     }
   ],
   "before": {
-    "global": "1",
+    "global": "2",
     "prewarm": null,
     "providers": {
       "newsapi": {
@@ -124,13 +124,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 6,
-        "monthlyUsed": 45,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
-          "allowed": true,
-          "reason": "allowed",
-          "nextEligibleAt": null
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.057Z"
         }
       },
       "devto": {
@@ -144,13 +144,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 6,
-        "monthlyUsed": 45,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
-          "allowed": true,
-          "reason": "allowed",
-          "nextEligibleAt": null
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.058Z"
         }
       },
       "reddit": {
@@ -183,8 +183,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 1,
-        "monthlyUsed": 9,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
         "coolingDown": false,
         "admission": {
           "allowed": true,
@@ -223,13 +223,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 5,
-        "monthlyUsed": 11,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": false,
-          "reason": "interval",
-          "nextEligibleAt": "2026-10-24T09:08:38.058Z"
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
         }
       },
       "lobsters": {
@@ -262,8 +262,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 1,
-        "monthlyUsed": 10,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": true,
@@ -320,7 +320,11 @@
         "text": "kubernets",
         "topic": null,
         "key": "q-27442557223f706b0bd58b135fd8aa38",
-        "groups": [["kubernets"]]
+        "groups": [
+          [
+            "kubernets"
+          ]
+        ]
       },
       "http": 200,
       "total": 0,
@@ -344,7 +348,7 @@
         "reason": "spelling_suggestion",
         "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:01:56.822Z"
+      "serverTime": "2026-10-24T19:36:46.273Z"
     },
     {
       "search": "kubernets",
@@ -353,7 +357,11 @@
         "text": "kubernets",
         "topic": null,
         "key": "q-27442557223f706b0bd58b135fd8aa38",
-        "groups": [["kubernets"]]
+        "groups": [
+          [
+            "kubernets"
+          ]
+        ]
       },
       "http": 200,
       "total": 0,
@@ -377,7 +385,7 @@
         "reason": "spelling_suggestion",
         "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:01:57.701Z"
+      "serverTime": "2026-10-24T19:36:46.692Z"
     },
     {
       "search": "kubernetes",
@@ -389,251 +397,427 @@
         "groups": []
       },
       "http": 200,
-      "total": 1,
+      "total": 17,
       "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
         {
           "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
           "source": "Dev.to",
           "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
-        }
-      ],
-      "coverage": {
-        "status": "coverage_gap",
-        "topic": "kubernetes",
-        "cachedMatches": 1,
-        "minimum": 6,
-        "broaderMatches": 1,
-        "dateExcludedMatches": 0,
-        "filterExcludedMatches": 0,
-        "suggestedDate": null
-      },
-      "enrichment": {
-        "status": "not_needed",
-        "reason": "catalog_only",
-        "nextEligibleAt": null
-      },
-      "serverTime": "2026-10-24T09:01:58.502Z"
-    },
-    {
-      "search": "kubernetes",
-      "date": "month",
-      "query": {
-        "text": "kubernetes",
-        "topic": "kubernetes",
-        "key": "kubernetes",
-        "groups": []
-      },
-      "http": 200,
-      "total": 1,
-      "items": [
-        {
-          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
-          "source": "Dev.to",
-          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
-        }
-      ],
-      "coverage": {
-        "status": "coverage_gap",
-        "topic": "kubernetes",
-        "cachedMatches": 1,
-        "minimum": 6,
-        "broaderMatches": 1,
-        "dateExcludedMatches": 0,
-        "filterExcludedMatches": 0,
-        "suggestedDate": null
-      },
-      "enrichment": {
-        "status": "not_needed",
-        "reason": "catalog_only",
-        "nextEligibleAt": null
-      },
-      "serverTime": "2026-10-24T09:01:59.720Z"
-    },
-    {
-      "search": "k8s",
-      "date": "week",
-      "query": {
-        "text": "kubernetes",
-        "topic": "kubernetes",
-        "key": "kubernetes",
-        "groups": []
-      },
-      "http": 200,
-      "total": 1,
-      "items": [
-        {
-          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
-          "source": "Dev.to",
-          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
-        }
-      ],
-      "coverage": {
-        "status": "coverage_gap",
-        "topic": "kubernetes",
-        "cachedMatches": 1,
-        "minimum": 6,
-        "broaderMatches": 1,
-        "dateExcludedMatches": 0,
-        "filterExcludedMatches": 0,
-        "suggestedDate": null
-      },
-      "enrichment": {
-        "status": "not_needed",
-        "reason": "catalog_only",
-        "nextEligibleAt": null
-      },
-      "serverTime": "2026-10-24T09:02:00.685Z"
-    },
-    {
-      "search": "k8s",
-      "date": "month",
-      "query": {
-        "text": "kubernetes",
-        "topic": "kubernetes",
-        "key": "kubernetes",
-        "groups": []
-      },
-      "http": 200,
-      "total": 1,
-      "items": [
-        {
-          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
-          "source": "Dev.to",
-          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
-        }
-      ],
-      "coverage": {
-        "status": "coverage_gap",
-        "topic": "kubernetes",
-        "cachedMatches": 1,
-        "minimum": 6,
-        "broaderMatches": 1,
-        "dateExcludedMatches": 0,
-        "filterExcludedMatches": 0,
-        "suggestedDate": null
-      },
-      "enrichment": {
-        "status": "not_needed",
-        "reason": "catalog_only",
-        "nextEligibleAt": null
-      },
-      "serverTime": "2026-10-24T09:02:01.999Z"
-    },
-    {
-      "search": "devops",
-      "date": "week",
-      "query": {
-        "text": "devops",
-        "topic": "devops",
-        "key": "devops",
-        "groups": []
-      },
-      "http": 200,
-      "total": 58,
-      "items": [
-        {
-          "title": "PHP2Shell: The Patch Is Out. Is It Running in Your Containers?",
-          "source": "Dev.to",
-          "url": "https://dev.to/kielltampubolon/php2shell-the-patch-is-out-is-it-running-in-your-containers-341j"
         },
         {
-          "title": "The eMudhra CA Keys Were One Byte Long. Does Your Container Still Trust Them?",
-          "source": "Dev.to",
-          "url": "https://dev.to/kielltampubolon/the-emudhra-ca-keys-were-one-byte-long-does-your-container-still-trust-them-1c5"
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
         },
         {
-          "title": "I Built a Lightweight SMTP-to-Mailgun Bridge in Go (In Just Two Days)",
-          "source": "Dev.to",
-          "url": "https://dev.to/devrfc83/i-built-a-lightweight-smtp-to-mailgun-bridge-in-go-in-just-two-days-10n1"
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
         },
         {
-          "title": "What Happens in the 50 ms Before Every Request: A Walkthrough of DNS Resolution",
-          "source": "Dev.to",
-          "url": "https://dev.to/manpage/what-happens-in-50ms-before-every-request-37pb"
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
         },
         {
-          "title": "Are free proxies safe? What a free list actually delivers",
-          "source": "Dev.to",
-          "url": "https://dev.to/proxymint/are-free-proxies-safe-what-a-free-list-actually-delivers-2j18"
-        },
-        {
-          "title": "16 containers on 2 cores: what my ZimaBlade home server actually uses",
-          "source": "Dev.to",
-          "url": "https://dev.to/iam-tech/16-containers-on-2-cores-what-my-zimablade-home-server-actually-uses-1p57"
-        },
-        {
-          "title": "Day 70: A Read-Only User and a Template",
-          "source": "Dev.to",
-          "url": "https://dev.to/ndcodes/day-70-a-read-only-user-and-a-template-1mf8"
-        },
-        {
-          "title": "5 Practical Lessons from Scanning GitHub Actions Workflows Ahead of the ubuntu-latest Migration",
-          "source": "Dev.to",
-          "url": "https://dev.to/alapha888/5-practical-lessons-from-scanning-github-actions-workflows-ahead-of-the-ubuntu-latest-migration-4li6"
-        },
-        {
-          "title": "Una tabla por pregunta: modelar y desplegar sobre Cassandra sin tocar un panel",
-          "source": "Dev.to",
-          "url": "https://dev.to/sebacor13/una-tabla-por-pregunta-modelar-y-desplegar-sobre-cassandra-sin-tocar-un-panel-1dd9"
-        },
-        {
-          "title": "Exit code, stdout, stderr: the three answers a command gives you, and the one it doesn't",
-          "source": "Dev.to",
-          "url": "https://dev.to/netbka/exit-code-stdout-stderr-the-three-answers-a-command-gives-you-and-the-one-it-doesnt-30k1"
-        },
-        {
-          "title": "30 execution controls for algorithmic trading systems, each tied to evidence and a failure mode",
-          "source": "Dev.to",
-          "url": "https://dev.to/victorlaybats/30-execution-controls-for-algorithmic-trading-systems-each-tied-to-evidence-and-a-failure-mode-377f"
-        },
-        {
-          "title": "How long until a missed heartbeat is flagged? A reproducible detection timing table",
-          "source": "Dev.to",
-          "url": "https://dev.to/victorlaybats/how-long-until-a-missed-heartbeat-is-flagged-a-reproducible-detection-timing-table-1c82"
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
         }
       ],
       "coverage": {
         "status": "sufficient",
-        "topic": "devops",
-        "cachedMatches": 58,
+        "topic": "kubernetes",
+        "cachedMatches": 17,
         "minimum": 6,
-        "broaderMatches": 64,
-        "dateExcludedMatches": 6,
-        "filterExcludedMatches": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 16,
+        "filterExcludedMatches": 16,
         "suggestedDate": "month"
       },
       "enrichment": {
-        "status": "ready",
-        "reason": "articles_cached",
-        "nextEligibleAt": "2026-10-24T08:52:44.865Z",
-        "lastAttemptAt": "2026-10-24T08:51:43.274Z",
-        "checkedAtMs": 1792831903274,
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
         "sourceHealth": [
           {
             "provider": "hackernewssearch",
             "status": "success",
-            "articlesFound": 6,
+            "articlesFound": 25,
             "reason": null,
             "nextEligibleAt": null
           },
           {
             "provider": "devtosearch",
             "status": "success",
-            "articlesFound": 27,
+            "articlesFound": 7,
             "reason": null,
             "nextEligibleAt": null
           }
         ],
-        "lastSuccessfulCheckAt": "2026-10-24T08:51:43.274Z",
-        "cacheVersion": "1792831903274",
-        "newArticles": 27,
-        "eligibilityReason": "provider_admission"
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
       },
-      "serverTime": "2026-10-24T09:02:03.252Z"
+      "serverTime": "2026-10-24T19:36:47.159Z"
+    },
+    {
+      "search": "kubernetes",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 33,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 33,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:47.801Z"
+    },
+    {
+      "search": "k8s",
+      "date": "week",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 17,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 17,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 16,
+        "filterExcludedMatches": 16,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:48.442Z"
+    },
+    {
+      "search": "k8s",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 33,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 33,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:48.897Z"
     },
     {
       "search": "devops",
-      "date": "month",
+      "date": "week",
       "query": {
         "text": "devops",
         "topic": "devops",
@@ -641,8 +825,23 @@
         "groups": []
       },
       "http": 200,
-      "total": 64,
+      "total": 72,
       "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
         {
           "title": "PHP2Shell: The Patch Is Out. Is It Running in Your Containers?",
           "source": "Dev.to",
@@ -652,6 +851,11 @@
           "title": "The eMudhra CA Keys Were One Byte Long. Does Your Container Still Trust Them?",
           "source": "Dev.to",
           "url": "https://dev.to/kielltampubolon/the-emudhra-ca-keys-were-one-byte-long-does-your-container-still-trust-them-1c5"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
         },
         {
           "title": "I Built a Lightweight SMTP-to-Mailgun Bridge in Go (In Just Two Days)",
@@ -682,44 +886,22 @@
           "title": "5 Practical Lessons from Scanning GitHub Actions Workflows Ahead of the ubuntu-latest Migration",
           "source": "Dev.to",
           "url": "https://dev.to/alapha888/5-practical-lessons-from-scanning-github-actions-workflows-ahead-of-the-ubuntu-latest-migration-4li6"
-        },
-        {
-          "title": "Una tabla por pregunta: modelar y desplegar sobre Cassandra sin tocar un panel",
-          "source": "Dev.to",
-          "url": "https://dev.to/sebacor13/una-tabla-por-pregunta-modelar-y-desplegar-sobre-cassandra-sin-tocar-un-panel-1dd9"
-        },
-        {
-          "title": "Exit code, stdout, stderr: the three answers a command gives you, and the one it doesn't",
-          "source": "Dev.to",
-          "url": "https://dev.to/netbka/exit-code-stdout-stderr-the-three-answers-a-command-gives-you-and-the-one-it-doesnt-30k1"
-        },
-        {
-          "title": "30 execution controls for algorithmic trading systems, each tied to evidence and a failure mode",
-          "source": "Dev.to",
-          "url": "https://dev.to/victorlaybats/30-execution-controls-for-algorithmic-trading-systems-each-tied-to-evidence-and-a-failure-mode-377f"
-        },
-        {
-          "title": "How long until a missed heartbeat is flagged? A reproducible detection timing table",
-          "source": "Dev.to",
-          "url": "https://dev.to/victorlaybats/how-long-until-a-missed-heartbeat-is-flagged-a-reproducible-detection-timing-table-1c82"
         }
       ],
       "coverage": {
         "status": "sufficient",
         "topic": "devops",
-        "cachedMatches": 64,
+        "cachedMatches": 72,
         "minimum": 6,
-        "broaderMatches": 64,
-        "dateExcludedMatches": 0,
-        "filterExcludedMatches": 0,
-        "suggestedDate": null
+        "broaderMatches": 94,
+        "dateExcludedMatches": 22,
+        "filterExcludedMatches": 22,
+        "suggestedDate": "month"
       },
       "enrichment": {
-        "status": "ready",
-        "reason": "articles_cached",
-        "nextEligibleAt": "2026-10-24T08:52:44.865Z",
-        "lastAttemptAt": "2026-10-24T08:51:43.274Z",
-        "checkedAtMs": 1792831903274,
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
         "sourceHealth": [
           {
             "provider": "hackernewssearch",
@@ -736,12 +918,116 @@
             "nextEligibleAt": null
           }
         ],
-        "lastSuccessfulCheckAt": "2026-10-24T08:51:43.274Z",
-        "cacheVersion": "1792831903274",
-        "newArticles": 27,
-        "eligibilityReason": "provider_admission"
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
       },
-      "serverTime": "2026-10-24T09:02:04.204Z"
+      "serverTime": "2026-10-24T19:36:50.192Z"
+    },
+    {
+      "search": "devops",
+      "date": "month",
+      "query": {
+        "text": "devops",
+        "topic": "devops",
+        "key": "devops",
+        "groups": []
+      },
+      "http": 200,
+      "total": 94,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "PHP2Shell: The Patch Is Out. Is It Running in Your Containers?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/php2shell-the-patch-is-out-is-it-running-in-your-containers-341j"
+        },
+        {
+          "title": "The eMudhra CA Keys Were One Byte Long. Does Your Container Still Trust Them?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/the-emudhra-ca-keys-were-one-byte-long-does-your-container-still-trust-them-1c5"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "I Built a Lightweight SMTP-to-Mailgun Bridge in Go (In Just Two Days)",
+          "source": "Dev.to",
+          "url": "https://dev.to/devrfc83/i-built-a-lightweight-smtp-to-mailgun-bridge-in-go-in-just-two-days-10n1"
+        },
+        {
+          "title": "What Happens in the 50 ms Before Every Request: A Walkthrough of DNS Resolution",
+          "source": "Dev.to",
+          "url": "https://dev.to/manpage/what-happens-in-50ms-before-every-request-37pb"
+        },
+        {
+          "title": "Are free proxies safe? What a free list actually delivers",
+          "source": "Dev.to",
+          "url": "https://dev.to/proxymint/are-free-proxies-safe-what-a-free-list-actually-delivers-2j18"
+        },
+        {
+          "title": "16 containers on 2 cores: what my ZimaBlade home server actually uses",
+          "source": "Dev.to",
+          "url": "https://dev.to/iam-tech/16-containers-on-2-cores-what-my-zimablade-home-server-actually-uses-1p57"
+        },
+        {
+          "title": "Day 70: A Read-Only User and a Template",
+          "source": "Dev.to",
+          "url": "https://dev.to/ndcodes/day-70-a-read-only-user-and-a-template-1mf8"
+        },
+        {
+          "title": "5 Practical Lessons from Scanning GitHub Actions Workflows Ahead of the ubuntu-latest Migration",
+          "source": "Dev.to",
+          "url": "https://dev.to/alapha888/5-practical-lessons-from-scanning-github-actions-workflows-ahead-of-the-ubuntu-latest-migration-4li6"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 94,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "serverTime": "2026-10-24T19:36:50.998Z"
     },
     {
       "search": "EC2",
@@ -750,7 +1036,11 @@
         "text": "ec2",
         "topic": null,
         "key": "q-7cba824311e0d9e258de9bc30596f912",
-        "groups": [["ec2"]]
+        "groups": [
+          [
+            "ec2"
+          ]
+        ]
       },
       "http": 200,
       "total": 0,
@@ -770,7 +1060,7 @@
         "reason": "catalog_only",
         "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:02:05.273Z"
+      "serverTime": "2026-10-24T19:36:51.617Z"
     },
     {
       "search": "EC2",
@@ -779,7 +1069,11 @@
         "text": "ec2",
         "topic": null,
         "key": "q-7cba824311e0d9e258de9bc30596f912",
-        "groups": [["ec2"]]
+        "groups": [
+          [
+            "ec2"
+          ]
+        ]
       },
       "http": 200,
       "total": 0,
@@ -799,7 +1093,7 @@
         "reason": "catalog_only",
         "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:02:06.333Z"
+      "serverTime": "2026-10-24T19:36:52.340Z"
     },
     {
       "search": "generative ai",
@@ -808,7 +1102,15 @@
         "text": "generative ai",
         "topic": null,
         "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
-        "groups": [["generative"], ["ai", "artificial intelligence"]]
+        "groups": [
+          [
+            "generative"
+          ],
+          [
+            "ai",
+            "artificial intelligence"
+          ]
+        ]
       },
       "http": 200,
       "total": 1,
@@ -832,26 +1134,9 @@
       "enrichment": {
         "status": "not_needed",
         "reason": "catalog_only",
-        "nextEligibleAt": null,
-        "sourceHealth": [
-          {
-            "provider": "hackernewssearch",
-            "status": "success",
-            "articlesFound": 8,
-            "reason": null,
-            "nextEligibleAt": null
-          },
-          {
-            "provider": "devtosearch",
-            "status": "success",
-            "articlesFound": 1,
-            "reason": null,
-            "nextEligibleAt": null
-          }
-        ],
-        "lastAttemptAt": "2026-10-23T10:39:09.012Z"
+        "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:02:07.333Z"
+      "serverTime": "2026-10-24T19:36:52.981Z"
     },
     {
       "search": "generative ai",
@@ -860,7 +1145,15 @@
         "text": "generative ai",
         "topic": null,
         "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
-        "groups": [["generative"], ["ai", "artificial intelligence"]]
+        "groups": [
+          [
+            "generative"
+          ],
+          [
+            "ai",
+            "artificial intelligence"
+          ]
+        ]
       },
       "http": 200,
       "total": 1,
@@ -884,26 +1177,9 @@
       "enrichment": {
         "status": "not_needed",
         "reason": "catalog_only",
-        "nextEligibleAt": null,
-        "sourceHealth": [
-          {
-            "provider": "hackernewssearch",
-            "status": "success",
-            "articlesFound": 8,
-            "reason": null,
-            "nextEligibleAt": null
-          },
-          {
-            "provider": "devtosearch",
-            "status": "success",
-            "articlesFound": 1,
-            "reason": null,
-            "nextEligibleAt": null
-          }
-        ],
-        "lastAttemptAt": "2026-10-23T10:39:09.012Z"
+        "nextEligibleAt": null
       },
-      "serverTime": "2026-10-24T09:02:08.360Z"
+      "serverTime": "2026-10-24T19:36:54.079Z"
     }
   ],
   "budgets": {
@@ -916,7 +1192,7 @@
   },
   "workerHeartbeat": {
     "present": true,
-    "ageMs": 971
+    "ageMs": 392
   },
   "searchIndexAudit": [
     {
@@ -928,55 +1204,71 @@
     },
     {
       "search": "kubernetes",
-      "textMatchesAcrossRetainedCatalog": 5,
+      "textMatchesAcrossRetainedCatalog": 37,
       "missingTechnologyTags": 0,
       "missingSearchTerms": 0,
       "examples": [
         {
           "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
           "source": "Dev.to",
-          "technologies": ["kubernetes", "devops"]
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
         },
         {
           "title": "kubernetes/kubernetes: v1.37.1",
           "source": "GitHub Releases",
-          "technologies": ["kubernetes", "devops"]
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
         }
       ]
     },
     {
       "search": "k8s",
-      "textMatchesAcrossRetainedCatalog": 5,
+      "textMatchesAcrossRetainedCatalog": 37,
       "missingTechnologyTags": 0,
       "missingSearchTerms": 0,
       "examples": [
         {
           "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
           "source": "Dev.to",
-          "technologies": ["kubernetes", "devops"]
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
         },
         {
           "title": "kubernetes/kubernetes: v1.37.1",
           "source": "GitHub Releases",
-          "technologies": ["kubernetes", "devops"]
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
         }
       ]
     },
     {
       "search": "devops",
-      "textMatchesAcrossRetainedCatalog": 68,
+      "textMatchesAcrossRetainedCatalog": 98,
       "missingTechnologyTags": 0,
       "missingSearchTerms": 0,
       "examples": [
         {
           "title": "Is the Future of Engineering a Software Factory?/Patrick Debois (Coined DevOps) [video]",
           "source": "Hacker News",
-          "technologies": ["devops"]
+          "technologies": [
+            "devops"
+          ]
         },
         {
           "title": "Neckbeard – A DevOps/platform/SRE plugin for your agent",
           "source": "Hacker News",
-          "technologies": ["devops"]
+          "technologies": [
+            "devops"
+          ]
         }
       ]
     },
@@ -996,13 +1288,15 @@
         {
           "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
           "source": "Dev.to",
-          "technologies": ["ai"]
+          "technologies": [
+            "ai"
+          ]
         }
       ]
     }
   ],
   "after": {
-    "global": "1",
+    "global": "2",
     "prewarm": null,
     "providers": {
       "newsapi": {
@@ -1054,13 +1348,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 6,
-        "monthlyUsed": 45,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
-          "allowed": true,
-          "reason": "allowed",
-          "nextEligibleAt": null
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:48.849Z"
         }
       },
       "devto": {
@@ -1074,13 +1368,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 6,
-        "monthlyUsed": 45,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
         "coolingDown": false,
         "admission": {
-          "allowed": true,
-          "reason": "allowed",
-          "nextEligibleAt": null
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:48.849Z"
         }
       },
       "reddit": {
@@ -1113,8 +1407,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 1,
-        "monthlyUsed": 9,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
         "coolingDown": false,
         "admission": {
           "allowed": true,
@@ -1153,13 +1447,13 @@
           "interval": 1200000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 5,
-        "monthlyUsed": 11,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": false,
-          "reason": "interval",
-          "nextEligibleAt": "2026-10-24T09:08:38.062Z"
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
         }
       },
       "lobsters": {
@@ -1192,8 +1486,8 @@
           "interval": 60000
         },
         "quotaStoreAvailable": true,
-        "dailyUsed": 1,
-        "monthlyUsed": 10,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
         "coolingDown": false,
         "admission": {
           "allowed": true,

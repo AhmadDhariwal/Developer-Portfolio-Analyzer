@@ -20,6 +20,18 @@ test('Kubernetes generator-shaped large RSS is bounded, metadata-only and entity
   assert.throws(() => providers.fromRss('<rss><item></rss>'));
   const cdata = rss(' \n<![CDATA[Kubernetes &#x26; Docker]]>\n ');
   assert.equal(providers.fromRss(cdata)[0].title, 'Kubernetes & Docker');
+  const cloudflare = providers.fromRss(
+    rss('Cloudflare Workers deployment update'),
+    'Cloudflare Changelog'
+  )[0];
+  assert.equal(cloudflare.publisher, 'Cloudflare (CC BY 4.0)');
+  assert.equal(cloudflare.license, 'CC-BY-4.0');
+  assert.equal(cloudflare.licenseUrl, 'https://creativecommons.org/licenses/by/4.0/');
+  assert.equal(cloudflare.description, '');
+  assert.equal(providers.fromRss(xml, 'Cloudflare Changelog').length, 40);
+  assert.throws(() =>
+    providers.fromRss('<rss>' + 'x'.repeat(8 * 1048576) + '</rss>', 'Cloudflare Changelog')
+  );
 });
 
 test('provider adapters separate oversized, malformed, timeout and redirect failures without leaking secrets', async (t) => {
