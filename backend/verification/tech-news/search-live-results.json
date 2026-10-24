@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-10-23T09:54:32.838Z",
+  "applicationRedisWrites": 0,
+  "isolatedWrites": true,
+  "requestsPerProviderMaximum": 1,
+  "providers": [
+    {
+      "key": "hackernewssearch",
+      "query": "generative ai",
+      "approved": true,
+      "configuredDaily": 12,
+      "configuredMonthly": 300,
+      "status": "ready",
+      "preflight": {
+        "dailyUsed": 2,
+        "monthlyUsed": 2,
+        "siblingDailyUsed": 7,
+        "siblingMonthlyUsed": 18,
+        "sourceCooldown": false,
+        "siblingCooldown": false,
+        "sourceInterval": false
+      },
+      "diagnostics": [
+        {
+          "provider": "hackernewssearch",
+          "status": "success",
+          "articlesFetched": 1,
+          "checkedAt": "2026-10-23T09:54:33.674Z"
+        }
+      ],
+      "persistedArticles": 1,
+      "cachedArticles": 1,
+      "sample": {
+        "title": "NLnet Publishes More Stringent Generative AI Policy",
+        "url": "https://nlnet.nl/news/2026/20261020-AI-policy.html",
+        "source": "Hacker News",
+        "publishedAt": "2026-10-21T19:06:10.000Z"
+      },
+      "lastAttempt": {
+        "status": "ready",
+        "reason": "articles_cached",
+        "nextEligibleAt": "2026-10-23T10:24:35.036Z",
+        "lastAttemptAt": "2026-10-23T09:54:33.674Z",
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "devtosearch",
+      "query": "Python async",
+      "approved": true,
+      "configuredDaily": 12,
+      "configuredMonthly": 300,
+      "status": "exhausted",
+      "preflight": {
+        "dailyUsed": 2,
+        "monthlyUsed": 3,
+        "siblingDailyUsed": 7,
+        "siblingMonthlyUsed": 18,
+        "sourceCooldown": false,
+        "siblingCooldown": false,
+        "sourceInterval": false
+      },
+      "diagnostics": [
+        {
+          "provider": "devtosearch",
+          "status": "success",
+          "articlesFetched": 0,
+          "checkedAt": "2026-10-23T09:54:35.241Z"
+        }
+      ],
+      "persistedArticles": 0,
+      "cachedArticles": 0,
+      "sample": null,
+      "lastAttempt": {
+        "status": "exhausted",
+        "reason": "no_matching_articles",
+        "nextEligibleAt": "2026-10-23T09:59:37.623Z",
+        "lastAttemptAt": "2026-10-23T09:54:35.241Z",
+        "sourceHealth": [
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 0
+          }
+        ]
+      }
+    }
+  ],
+  "applicationRedisReadOnly": true,
+  "actualProviderAttempts": 2
+}

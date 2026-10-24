@@ -35,6 +35,10 @@ const weeklyReportroute = require('./src/routes/weeklyReport.routes');
 const interviewPreproute = require('./src/routes/interviewPrep.routes');
 const careerSprintroute = require('./src/routes/careerSprint.routes');
 const newsroute = require('./src/routes/newsRoutes');
+const {
+    startNewsIngestionScheduler,
+    stopNewsIngestionScheduler
+} = require('./src/services/newsService');
 const supportroute = require('./src/routes/support.routes');
 const previewroute = require('./src/routes/preview.routes');
 const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
@@ -235,6 +239,7 @@ const startServer = async () => {
         startEmailRetryWorker();
         startIntegrationSyncWorker();
         startJobSourceSyncWorker();
+        startNewsIngestionScheduler();
         initTracing();
         startWeeklyReportScheduler();
         startInterviewQuestionIngestionScheduler();
@@ -290,6 +295,7 @@ startServer().catch((error) => {
 });
 
 const shutdown = () => {
+    stopNewsIngestionScheduler();
     Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };
 

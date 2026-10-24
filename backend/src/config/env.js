@@ -1,6 +1,8 @@
 const { z } = require('zod');
+const { newsEnvShape, validateNewsRelationships } = require('./newsConfig');
 
 const envSchema = z.object({
+  ...newsEnvShape,
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
   JWT_SECRET: z.string().min(8),
@@ -42,6 +44,15 @@ const validateEnv = () => {
   }
 
   const env = parsed.data;
+  validateNewsRelationships(env);
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const filename = path.resolve(__dirname, '../../.env');
+  const audit = require('./newsConfig').auditNewsConfiguration(
+    process.env,
+    fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : ''
+  );
+  if (audit.missing.length || audit.deprecated.length) console.warn('[news config]', JSON.stringify(audit));
   const weakSecret = String(env.JWT_SECRET || '').length < 24;
   const strictMode = String(env.SECURITY_STRICT_ENV || '').toLowerCase() === 'true';
 
@@ -53,7 +64,9 @@ const validateEnv = () => {
     console.warn('[security] JWT_SECRET appears weak. Use 24+ chars for production hardening.');
   }
 
-  console.log(`[config] env loaded: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, JWT_ISSUER=${env.JWT_ISSUER}, JWT_AUDIENCE=${env.JWT_AUDIENCE}, JWT_SECRET=${mask(env.JWT_SECRET)}`);
+  console.log(
+    `[config] env loaded: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, JWT_ISSUER=${env.JWT_ISSUER}, JWT_AUDIENCE=${env.JWT_AUDIENCE}, JWT_SECRET=${mask(env.JWT_SECRET)}`
+  );
   return env;
 };
 

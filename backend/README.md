@@ -1,5 +1,10 @@
 # Backend
 
+For a new installation, copy [`.env.example`](.env.example) to `.env` and supply your own
+credentials. For an existing installation, merge missing settings without replacing the
+current `.env`. See [Tech News environment configuration](verification/tech-news/ENVIRONMENT.md)
+for the supported providers, quotas, worker requirements and remaining discovery limitations.
+
 ## Interview Prep Question Engine
 
 The Interview Prep module now runs as a self-growing engine with topic buckets, DB-first retrieval, AI/scrape fallback enrichment, and persistence of newly learned Q&A.

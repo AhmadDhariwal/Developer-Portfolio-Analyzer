@@ -5,7 +5,7 @@ import {
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +18,7 @@ import {
   NewsFilters,
   NewsPopularityFilter,
   NewsSource,
-  normalizeNewsFilters
+  normalizeNewsFilters,
 } from '../../models/news.model';
 
 @Component({
@@ -27,7 +27,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: './news-filters.html',
   styleUrl: './news-filters.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewsFiltersComponent implements OnChanges {
   @Input() filters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
@@ -69,12 +69,13 @@ export class NewsFiltersComponent implements OnChanges {
   }
 
   setSearch(search: string): void {
-    this.update({ search });
+    // Preserve spaces while typing; normalize only when submitting the query.
+    this.draftFilters = { ...this.draftFilters, search: search.slice(0, 80) };
   }
 
   resetFilters(): void {
-    this.draftFilters = { ...DEFAULT_NEWS_FILTERS };
-    this.filtersChange.emit({ ...this.draftFilters });
+    this.draftFilters = { ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab, mode: this.filters.mode };
+    this.filtersChange.emit(normalizeNewsFilters(this.draftFilters));
   }
 
   applyFilters(): void {
@@ -83,6 +84,6 @@ export class NewsFiltersComponent implements OnChanges {
   }
 
   private update(partial: Partial<NewsFilters>): void {
-    this.draftFilters = normalizeNewsFilters({ ...this.draftFilters, ...partial });
+    this.draftFilters = { ...this.draftFilters, ...partial };
   }
 }

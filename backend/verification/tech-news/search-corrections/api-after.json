@@ -1,0 +1,1380 @@
+{
+  "phase": "after",
+  "catalog": {
+    "total": 162,
+    "devopsTagged": 35,
+    "devopsTextMatches": 35,
+    "missingDevopsTags": 0,
+    "missingSearchTerms": 0,
+    "sources": ["Hacker News", "Dev.to"],
+    "examples": [
+      {
+        "title": "Is the Future of Engineering a Software Factory?/Patrick Debois (Coined DevOps) [video]",
+        "url": "https://www.youtube.com/watch?v=FnCnv2tGsK0",
+        "technologies": ["devops"]
+      },
+      {
+        "title": "Neckbeard – A DevOps/platform/SRE plugin for your agent",
+        "url": "https://github.com/bealesh/neckbeard",
+        "technologies": ["devops"]
+      },
+      {
+        "title": "A production readiness matrix for n8n and AI workflows: 32 checks",
+        "url": "https://dev.to/victorlaybats/a-production-readiness-matrix-for-n8n-and-ai-workflows-32-checks-8j8",
+        "technologies": ["devops", "ai"]
+      }
+    ],
+    "indexes": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "canonicalId": 1
+        },
+        "name": "canonicalId_1",
+        "unique": true
+      },
+      {
+        "v": 2,
+        "key": {
+          "expiresAt": 1
+        },
+        "name": "expiresAt_1",
+        "expireAfterSeconds": 0
+      },
+      {
+        "v": 2,
+        "key": {
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "name": "publishedAt_-1_canonicalId_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "technologies": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "name": "technologies_1_publishedAt_-1_canonicalId_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "searchTerms": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "name": "searchTerms_1_publishedAt_-1_canonicalId_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "source": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "name": "source_1_publishedAt_-1_canonicalId_1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "category": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "name": "category_1_publishedAt_-1_canonicalId_1"
+      }
+    ],
+    "plan": {
+      "isCached": false,
+      "stage": "FETCH",
+      "filter": {
+        "$and": [
+          {
+            "$or": [
+              {
+                "source": {
+                  "$eq": "Hacker News"
+                }
+              },
+              {
+                "source": {
+                  "$eq": "Dev.to"
+                }
+              },
+              {
+                "source": {
+                  "$eq": "GitHub Releases"
+                }
+              },
+              {
+                "source": {
+                  "$eq": "GitHub Security Advisories"
+                }
+              },
+              {
+                "source": {
+                  "$eq": "Kubernetes Blog"
+                }
+              }
+            ]
+          },
+          {
+            "expiresAt": {
+              "$gt": "2026-10-23T20:30:26.906Z"
+            }
+          }
+        ]
+      },
+      "inputStage": {
+        "stage": "IXSCAN",
+        "keyPattern": {
+          "technologies": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        "indexName": "technologies_1_publishedAt_-1_canonicalId_1",
+        "isMultiKey": true,
+        "multiKeyPaths": {
+          "technologies": ["technologies"],
+          "publishedAt": [],
+          "canonicalId": []
+        },
+        "isUnique": false,
+        "isSparse": false,
+        "isPartial": false,
+        "indexVersion": 2,
+        "direction": "forward",
+        "indexBounds": {
+          "technologies": ["[\"devops\", \"devops\"]"],
+          "publishedAt": ["[new Date(1792787726906), new Date(1792182626906)]"],
+          "canonicalId": ["[MinKey, MaxKey]"]
+        }
+      }
+    }
+  },
+  "worker": {
+    "heartbeatAvailable": true,
+    "heartbeatAgeMs": 1357,
+    "state": {
+      "status": "no_newer",
+      "reason": "no_newer_articles",
+      "nextEligibleAt": "2026-10-23T20:29:58.543Z",
+      "lastAttemptAt": "2026-10-23T20:28:57.564Z",
+      "checkedAtMs": 1792787337564,
+      "sourceHealth": [
+        {
+          "provider": "hackernewssearch",
+          "status": "success",
+          "articlesFound": 6,
+          "reason": null,
+          "nextEligibleAt": null
+        },
+        {
+          "provider": "devtosearch",
+          "status": "success",
+          "articlesFound": 28,
+          "reason": null,
+          "nextEligibleAt": null
+        }
+      ],
+      "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+      "cacheVersion": "1792787337564",
+      "newArticles": 0
+    }
+  },
+  "providersBefore": {
+    "newsapi": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "gnews": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernews": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 25,
+      "monthlyUsed": 36,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:35:47.343Z"
+      }
+    },
+    "devto": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 25,
+      "monthlyUsed": 36,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:35:47.344Z"
+      }
+    },
+    "reddit": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernewssearch": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 6,
+      "monthlyUsed": 6,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "githubreleases": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 3,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:38:46.982Z"
+      }
+    },
+    "githubadvisories": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 3,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:46:47.452Z"
+      }
+    },
+    "lobsters": {
+      "contentApproved": false,
+      "restricted": false,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "devtosearch": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 6,
+      "monthlyUsed": 7,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "kubernetesblog": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 4,
+        "monthly": 100,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 4,
+      "monthlyUsed": 5,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "daily_budget",
+        "nextEligibleAt": "2026-10-24T00:00:00.000Z"
+      }
+    },
+    "cloudflarechangelog": {
+      "contentApproved": false,
+      "restricted": false,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    }
+  },
+  "responses": [
+    {
+      "query": "mode=personalized&tab=for-you&date=week&bypassCache=true",
+      "http": 200,
+      "total": 150,
+      "items": 12,
+      "itemOrderHash": "dbc81a01245a1b3b00a48db5ce22b5bdcdd8e0f720634e8aa269eec251697503",
+      "contextPresent": true,
+      "scoredItems": 12,
+      "evidenceItems": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": null,
+        "cachedMatches": 150,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "telemetry": {
+        "cacheHit": true,
+        "providerFailureCount": 2,
+        "providerUsed": [
+          "Dev.to",
+          "Hacker News",
+          "GitHub Security Advisories",
+          "GitHub Releases"
+        ],
+        "discoveryDiagnostics": [],
+        "providerDiagnostics": [
+          {
+            "provider": "NewsAPI",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GNews",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "Hacker News",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Dev.to",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Reddit",
+            "enabled": false,
+            "configured": false,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GitHub Releases",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T19:58:46.274Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "GitHub Security Advisories",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:26:49.460Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Kubernetes Blog",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider request failed."
+          }
+        ],
+        "signalHash": "f03e419afe17ba0e231e41b2e6e2794eb7bb0a498fa98ecfda21f2ddc94983f1",
+        "responseTimeMs": 877,
+        "freshness": "stale",
+        "queryFreshness": "fresh",
+        "generalFreshness": "stale",
+        "catalogVersion": 11,
+        "rankingLimited": false,
+        "catalogUnavailable": false,
+        "cacheVersion": null,
+        "lastSuccessfulCheckAt": null,
+        "staleFallback": true,
+        "lastUpdated": "2026-10-23T20:29:09.867Z"
+      }
+    },
+    {
+      "query": "mode=personalized&tab=for-you&date=week&category=DevOps&search=devops&bypassCache=true",
+      "http": 200,
+      "total": 150,
+      "items": 12,
+      "itemOrderHash": "dbc81a01245a1b3b00a48db5ce22b5bdcdd8e0f720634e8aa269eec251697503",
+      "contextPresent": true,
+      "scoredItems": 12,
+      "evidenceItems": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": null,
+        "cachedMatches": 150,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "telemetry": {
+        "cacheHit": true,
+        "providerFailureCount": 2,
+        "providerUsed": [
+          "Dev.to",
+          "Hacker News",
+          "GitHub Security Advisories",
+          "GitHub Releases"
+        ],
+        "discoveryDiagnostics": [],
+        "providerDiagnostics": [
+          {
+            "provider": "NewsAPI",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GNews",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "Hacker News",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Dev.to",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Reddit",
+            "enabled": false,
+            "configured": false,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GitHub Releases",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T19:58:46.274Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "GitHub Security Advisories",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:26:49.460Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Kubernetes Blog",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider request failed."
+          }
+        ],
+        "signalHash": "f03e419afe17ba0e231e41b2e6e2794eb7bb0a498fa98ecfda21f2ddc94983f1",
+        "responseTimeMs": 698,
+        "freshness": "stale",
+        "queryFreshness": "fresh",
+        "generalFreshness": "stale",
+        "catalogVersion": 11,
+        "rankingLimited": false,
+        "catalogUnavailable": false,
+        "cacheVersion": null,
+        "lastSuccessfulCheckAt": null,
+        "staleFallback": true,
+        "lastUpdated": "2026-10-23T20:29:09.867Z"
+      }
+    },
+    {
+      "query": "mode=explore&tab=latest&search=devops&date=week&bypassCache=true",
+      "http": 200,
+      "total": 30,
+      "items": 12,
+      "itemOrderHash": "748ebf2e23edd021ee7c141c133f99bf1cb2fe02196d3c2c9d275f69d80c2aaa",
+      "contextPresent": false,
+      "scoredItems": 0,
+      "evidenceItems": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 30,
+        "minimum": 6,
+        "broaderMatches": 35,
+        "dateExcludedMatches": 5,
+        "filterExcludedMatches": 5,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "no_newer",
+        "reason": "no_newer_articles",
+        "nextEligibleAt": "2026-10-23T20:29:58.543Z",
+        "lastAttemptAt": "2026-10-23T20:28:57.564Z",
+        "checkedAtMs": 1792787337564,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 28,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "cacheVersion": "1792787337564",
+        "newArticles": 0
+      },
+      "telemetry": {
+        "cacheHit": true,
+        "providerFailureCount": 2,
+        "providerUsed": ["Dev.to"],
+        "discoveryDiagnostics": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFetched": 6,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFetched": 28,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          }
+        ],
+        "providerDiagnostics": [
+          {
+            "provider": "NewsAPI",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GNews",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "Hacker News",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Dev.to",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Reddit",
+            "enabled": false,
+            "configured": false,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GitHub Releases",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T19:58:46.274Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "GitHub Security Advisories",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:26:49.460Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Kubernetes Blog",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider request failed."
+          }
+        ],
+        "signalHash": "public-explore",
+        "responseTimeMs": 670,
+        "freshness": "fresh",
+        "queryFreshness": "fresh",
+        "generalFreshness": "stale",
+        "catalogVersion": 3,
+        "rankingLimited": false,
+        "catalogUnavailable": false,
+        "cacheVersion": "1792787337564",
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "staleFallback": false,
+        "lastUpdated": "2026-10-23T20:29:09.867Z"
+      }
+    },
+    {
+      "query": "mode=explore&tab=latest&search=devops&date=month&bypassCache=true",
+      "http": 200,
+      "total": 35,
+      "items": 12,
+      "itemOrderHash": "748ebf2e23edd021ee7c141c133f99bf1cb2fe02196d3c2c9d275f69d80c2aaa",
+      "contextPresent": false,
+      "scoredItems": 0,
+      "evidenceItems": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 35,
+        "minimum": 6,
+        "broaderMatches": 35,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "no_newer",
+        "reason": "no_newer_articles",
+        "nextEligibleAt": "2026-10-23T20:29:58.543Z",
+        "lastAttemptAt": "2026-10-23T20:28:57.564Z",
+        "checkedAtMs": 1792787337564,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 28,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "cacheVersion": "1792787337564",
+        "newArticles": 0
+      },
+      "telemetry": {
+        "cacheHit": true,
+        "providerFailureCount": 2,
+        "providerUsed": ["Dev.to"],
+        "discoveryDiagnostics": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFetched": 6,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFetched": 28,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          }
+        ],
+        "providerDiagnostics": [
+          {
+            "provider": "NewsAPI",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GNews",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "Hacker News",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Dev.to",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Reddit",
+            "enabled": false,
+            "configured": false,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GitHub Releases",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T19:58:46.274Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "GitHub Security Advisories",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:26:49.460Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Kubernetes Blog",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider request failed."
+          }
+        ],
+        "signalHash": "public-explore",
+        "responseTimeMs": 572,
+        "freshness": "fresh",
+        "queryFreshness": "fresh",
+        "generalFreshness": "stale",
+        "catalogVersion": 3,
+        "rankingLimited": false,
+        "catalogUnavailable": false,
+        "cacheVersion": "1792787337564",
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "staleFallback": false,
+        "lastUpdated": "2026-10-23T20:29:09.867Z"
+      }
+    },
+    {
+      "query": "mode=explore&tab=latest&search=devops&date=month&category=Frontend&bypassCache=true",
+      "http": 200,
+      "total": 2,
+      "items": 2,
+      "itemOrderHash": "848807c8f12f2f02087b81b737c38d82ff9e59a035e9d804d47ec508297910e6",
+      "contextPresent": false,
+      "scoredItems": 0,
+      "evidenceItems": 2,
+      "coverage": {
+        "status": "restrictive_filters",
+        "topic": "devops",
+        "cachedMatches": 2,
+        "minimum": 6,
+        "broaderMatches": 35,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 33,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "no_newer",
+        "reason": "no_newer_articles",
+        "nextEligibleAt": "2026-10-23T20:29:58.543Z",
+        "lastAttemptAt": "2026-10-23T20:28:57.564Z",
+        "checkedAtMs": 1792787337564,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 28,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "cacheVersion": "1792787337564",
+        "newArticles": 0
+      },
+      "telemetry": {
+        "cacheHit": true,
+        "providerFailureCount": 2,
+        "providerUsed": ["Dev.to", "Hacker News"],
+        "discoveryDiagnostics": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFetched": 6,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFetched": 28,
+            "reason": null,
+            "nextEligibleAt": null,
+            "checkedAt": "2026-10-23T20:28:57.564Z"
+          }
+        ],
+        "providerDiagnostics": [
+          {
+            "provider": "NewsAPI",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GNews",
+            "enabled": false,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "Hacker News",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Dev.to",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:15:50.079Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Reddit",
+            "enabled": false,
+            "configured": false,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider content approval or budget is missing"
+          },
+          {
+            "provider": "GitHub Releases",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T19:58:46.274Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "GitHub Security Advisories",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": "2026-10-23T20:26:49.460Z",
+            "lastFailure": "Provider request failed."
+          },
+          {
+            "provider": "Kubernetes Blog",
+            "enabled": true,
+            "configured": true,
+            "reachable": false,
+            "articlesFetched": 0,
+            "lastSuccess": null,
+            "lastFailure": "Provider request failed."
+          }
+        ],
+        "signalHash": "public-explore",
+        "responseTimeMs": 449,
+        "freshness": "stale",
+        "queryFreshness": "stale",
+        "generalFreshness": "stale",
+        "catalogVersion": 3,
+        "rankingLimited": false,
+        "catalogUnavailable": false,
+        "cacheVersion": "1792787337564",
+        "lastSuccessfulCheckAt": "2026-10-23T20:28:57.564Z",
+        "staleFallback": true,
+        "lastUpdated": "2026-10-23T20:29:09.867Z"
+      }
+    }
+  ],
+  "providersAfter": {
+    "newsapi": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "gnews": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernews": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 25,
+      "monthlyUsed": 36,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:35:47.333Z"
+      }
+    },
+    "devto": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 25,
+      "monthlyUsed": 36,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:35:47.333Z"
+      }
+    },
+    "reddit": {
+      "contentApproved": false,
+      "restricted": true,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernewssearch": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 6,
+      "monthlyUsed": 6,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "githubreleases": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 3,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:38:46.970Z"
+      }
+    },
+    "githubadvisories": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 3,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T20:46:47.440Z"
+      }
+    },
+    "lobsters": {
+      "contentApproved": false,
+      "restricted": false,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "devtosearch": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 6,
+      "monthlyUsed": 7,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "kubernetesblog": {
+      "contentApproved": true,
+      "restricted": false,
+      "enabled": true,
+      "limits": {
+        "daily": 4,
+        "monthly": 100,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 4,
+      "monthlyUsed": 5,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "daily_budget",
+        "nextEligibleAt": "2026-10-24T00:00:00.000Z"
+      }
+    },
+    "cloudflarechangelog": {
+      "contentApproved": false,
+      "restricted": false,
+      "enabled": false,
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    }
+  },
+  "providerCountersUnchanged": true
+}

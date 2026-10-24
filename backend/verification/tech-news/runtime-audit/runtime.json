@@ -1,0 +1,4111 @@
+{
+  "capturedAt": "2026-10-24T19:35:10.236Z",
+  "scope": "read-only configured local runtime; entitlement is not established by a key or approval flag",
+  "inventory": [
+    {
+      "key": "NEWS_INGESTION_ENABLED",
+      "group": "Core",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "true",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsService.js: startNewsIngestionScheduler",
+        "services/newsDiscoveryService.js: startWorker"
+      ],
+      "purpose": "Run scheduled ingestion and the discovery worker; boolean, false stops both",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_ENABLED",
+      "group": "Core",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryProviders.js: enabled"
+      ],
+      "purpose": "Allow public query discovery; boolean, platform newsEnabled also applies",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_RESULTS_PER_PROVIDER",
+      "group": "Search",
+      "configured": true,
+      "nonempty": true,
+      "value": "30",
+      "exampleValue": "30",
+      "templateDefault": "30",
+      "runtimeDefault": "30",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryProviders.js: requestFor (HN/DEV only)"
+      ],
+      "purpose": "HN/DEV search result cap; integer 1..30, metadata only; fixed RSS/GitHub caps are independent",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REFRESH_MIN_INTERVAL_MS",
+      "group": "Search",
+      "configured": true,
+      "nonempty": true,
+      "value": "60000",
+      "exampleValue": "60000",
+      "templateDefault": "60000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "Minimum time between successful manual query checks; milliseconds 60000..3600000, never bypasses source limits",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_PREWARM_ENABLED",
+      "group": "Background Workers",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Enable adaptive prewarm admission; boolean, consumes the shared job budget",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_PREWARM_TOPICS",
+      "group": "Background Workers",
+      "configured": true,
+      "nonempty": false,
+      "value": "",
+      "exampleValue": "devops,kubernetes,security,ai",
+      "templateDefault": "",
+      "runtimeDefault": "",
+      "constraints": {
+        "checks": [
+          {},
+          {
+            "def": {
+              "type": "custom",
+              "check": "custom"
+            },
+            "type": "custom"
+          }
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "config/newsConfig.js: deprecated validation/audit only; no selector consumer"
+      ],
+      "purpose": "Deprecated comma-separated legacy topic hints, max four phrases; ignored by adaptive selection, safe to leave empty",
+      "activationRequired": false,
+      "unused": true
+    },
+    {
+      "key": "NEWS_CATALOG_RETENTION_DAYS",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "35",
+      "exampleValue": "35",
+      "templateDefault": "35",
+      "runtimeDefault": "35",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "Maximum metadata age from publication; integer days 1..35, source limits may be stricter, expiry never renews",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CATALOG_RANKING_LIMIT",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "2000",
+      "exampleValue": "2000",
+      "templateDefault": "2000",
+      "runtimeDefault": "2000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "Maximum recent matching articles ranked per personalized request; integer 100..10000, bounds memory and reported personalized pagination",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_STRATEGY",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "demand-coverage",
+      "exampleValue": "demand-coverage",
+      "templateDefault": "demand-coverage",
+      "runtimeDefault": "demand-coverage",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
+      "purpose": "Adaptive strategy; demand-coverage or demand-only, coverage fallback is disabled by demand-only",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_MIN_DEMAND",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "3",
+      "exampleValue": "3",
+      "templateDefault": "3",
+      "runtimeDefault": "3",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
+      "purpose": "Minimum distinct accounts per topic over seven days; integer 2..100, repeated account searches count once per rolling seven days",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_TARGET_ARTICLES",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "6",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
+      "purpose": "Recent coverage target per topic; integer articles 1..40, adequate fresh topics are skipped",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_FRESHNESS_MS",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "21600000",
+      "exampleValue": "21600000",
+      "templateDefault": "21600000",
+      "runtimeDefault": "21600000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
+      "purpose": "Maximum age of newest topic article; milliseconds 60000..86400000, older coverage is eligible",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_EVALUATION_MS",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "3600000",
+      "exampleValue": "3600000",
+      "templateDefault": "3600000",
+      "runtimeDefault": "3600000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Adaptive evaluation interval; milliseconds 60000..86400000, independent from broad collection",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_MAX_CANDIDATES",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "2",
+      "exampleValue": "2",
+      "templateDefault": "2",
+      "runtimeDefault": "2",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsAdaptiveService.js: select/candidates"
+      ],
+      "purpose": "Candidates per evaluation; integer 1..4, also constrained by daily prewarm budget",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_PREWARM_RESERVED_USER_JOBS",
+      "group": "Catalog and Adaptive Selection",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "6",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Daily global job slots protected from prewarm; integer 1..48, values at or above global daily jobs disable prewarm admission",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_PREWARM_DAILY_JOBS",
+      "group": "Background Workers",
+      "configured": true,
+      "nonempty": true,
+      "value": "4",
+      "exampleValue": "4",
+      "templateDefault": "4",
+      "runtimeDefault": "4",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Prewarm admissions per UTC day; integer 0..4, zero stops prewarming",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_DAILY_JOBS",
+      "group": "User / Global Limits",
+      "configured": true,
+      "nonempty": true,
+      "value": "12",
+      "exampleValue": "12",
+      "templateDefault": "12",
+      "runtimeDefault": "12",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "All query jobs per UTC day across accounts and prewarm; integer 1..48",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_USER_MINUTE_JOBS",
+      "group": "User / Global Limits",
+      "configured": true,
+      "nonempty": true,
+      "value": "3",
+      "exampleValue": "3",
+      "templateDefault": "3",
+      "runtimeDefault": "3",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "New query jobs per account per UTC minute; integer 1..12, existing jobs are reused",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DISCOVERY_USER_DAILY_JOBS",
+      "group": "User / Global Limits",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "6",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "New query jobs per account per UTC day; integer 1..48",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_QUERY_FRESH_TTL_MS",
+      "group": "Cache",
+      "configured": true,
+      "nonempty": true,
+      "value": "1800000",
+      "exampleValue": "1800000",
+      "templateDefault": "1800000",
+      "runtimeDefault": "1800000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Positive query freshness; milliseconds 60000..3600000, ordinary reads do not revalidate fresh results",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_QUERY_STALE_TTL_MS",
+      "group": "Cache",
+      "configured": true,
+      "nonempty": true,
+      "value": "86400000",
+      "exampleValue": "86400000",
+      "templateDefault": "86400000",
+      "runtimeDefault": "86400000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Legacy query snapshot retention; milliseconds 3600000..86400000, at least fresh TTL; reads never extend it",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_QUERY_NEGATIVE_TTL_MS",
+      "group": "Cache",
+      "configured": true,
+      "nonempty": true,
+      "value": "300000",
+      "exampleValue": "300000",
+      "templateDefault": "300000",
+      "runtimeDefault": "300000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Successful empty-query retention; milliseconds 30000..900000, failures are not empty results",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_QUERY_MEMORY_ENTRIES",
+      "group": "Cache",
+      "configured": true,
+      "nonempty": true,
+      "value": "128",
+      "exampleValue": "128",
+      "templateDefault": "128",
+      "runtimeDefault": "128",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsDiscoveryService.js: bounded runtime settings, coverage/enqueue/prewarm"
+      ],
+      "purpose": "Maximum legacy discovery entries per in-process cache; integer 40..256; catalog query cache is independently capped at 128",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_SHARED_DAILY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "84",
+      "exampleValue": "84",
+      "templateDefault": "84",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "HACKERNEWS combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_SHARED_MONTHLY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "2500",
+      "exampleValue": "2500",
+      "templateDefault": "2500",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "HACKERNEWS combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_SHARED_MIN_INTERVAL_MS",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "60000",
+      "exampleValue": "60000",
+      "templateDefault": "60000",
+      "runtimeDefault": "60000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "HACKERNEWS minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_SHARED_DAILY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "84",
+      "exampleValue": "84",
+      "templateDefault": "84",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "DEVTO combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_SHARED_MONTHLY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "2500",
+      "exampleValue": "2500",
+      "templateDefault": "2500",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "DEVTO combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_SHARED_MIN_INTERVAL_MS",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "60000",
+      "exampleValue": "60000",
+      "templateDefault": "60000",
+      "runtimeDefault": "60000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "DEVTO minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUB_SHARED_DAILY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "12",
+      "exampleValue": "12",
+      "templateDefault": "12",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "GITHUB combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUB_SHARED_MONTHLY_BUDGET",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "300",
+      "exampleValue": "300",
+      "templateDefault": "300",
+      "runtimeDefault": "sum of the enabled family adapter budgets",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "GITHUB combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUB_SHARED_MIN_INTERVAL_MS",
+      "group": "Redis Governance",
+      "configured": true,
+      "nonempty": true,
+      "value": "300000",
+      "exampleValue": "300000",
+      "templateDefault": "300000",
+      "runtimeDefault": "300000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: sharedPolicy/reserve"
+      ],
+      "purpose": "GITHUB minimum spacing across adapters; milliseconds 0..86400000, hard floor 300000",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "hackernews approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "true",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "hackernews content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "72",
+      "exampleValue": "72",
+      "templateDefault": "72",
+      "runtimeDefault": "72",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "2200",
+      "exampleValue": "2200",
+      "templateDefault": "2200",
+      "runtimeDefault": "2200",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernews requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWS_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "devto approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "true",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "devto content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "72",
+      "exampleValue": "72",
+      "templateDefault": "72",
+      "runtimeDefault": "72",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devto requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "2200",
+      "exampleValue": "2200",
+      "templateDefault": "2200",
+      "runtimeDefault": "2200",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devto requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTO_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devto request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "hackernewssearch approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "hackernewssearch content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "12",
+      "exampleValue": "12",
+      "templateDefault": "12",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernewssearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "300",
+      "exampleValue": "300",
+      "templateDefault": "300",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernewssearch requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "60000",
+      "exampleValue": "60000",
+      "templateDefault": "60000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "hackernewssearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "githubreleases approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "githubreleases content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubreleases requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "150",
+      "exampleValue": "150",
+      "templateDefault": "150",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubreleases requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubreleases request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "githubadvisories approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "githubadvisories content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubadvisories requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "150",
+      "exampleValue": "150",
+      "templateDefault": "150",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubadvisories requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "githubadvisories request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_LOBSTERS_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "lobsters approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_LOBSTERS_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "lobsters content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_LOBSTERS_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "6",
+      "exampleValue": "6",
+      "templateDefault": "6",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "lobsters requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_LOBSTERS_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "150",
+      "exampleValue": "150",
+      "templateDefault": "150",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "lobsters requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_LOBSTERS_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "lobsters request spacing; milliseconds 0..86400000, hard floor 600000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "devtosearch approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "devtosearch content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "12",
+      "exampleValue": "12",
+      "templateDefault": "12",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devtosearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "300",
+      "exampleValue": "300",
+      "templateDefault": "300",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devtosearch requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "60000",
+      "exampleValue": "60000",
+      "templateDefault": "60000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "devtosearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "kubernetesblog approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "true",
+      "exampleValue": "true",
+      "templateDefault": "true",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "kubernetesblog content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "4",
+      "exampleValue": "4",
+      "templateDefault": "4",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "kubernetesblog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "100",
+      "exampleValue": "100",
+      "templateDefault": "100",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "kubernetesblog requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "kubernetesblog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_RETENTION_HOURS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "840",
+      "exampleValue": "840",
+      "templateDefault": "840",
+      "runtimeDefault": "840",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "cloudflarechangelog approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_CONTENT_APPROVED",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "cloudflarechangelog content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_DAILY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "cloudflarechangelog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_MONTHLY_BUDGET",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "cloudflarechangelog requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_MIN_INTERVAL_MS",
+      "group": "Provider Settings",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "cloudflarechangelog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_API_KEY",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
+      "purpose": "Optional NewsAPI server credential from newsapi.org; existing platform newsApiKey is also supported; requires approval and budgets",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_NEWSAPI_RETENTION_HOURS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "24",
+      "exampleValue": "24",
+      "templateDefault": "24",
+      "runtimeDefault": "24",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "newsapi approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_NEWSAPI_CONTENT_APPROVED",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "newsapi content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_NEWSAPI_DAILY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "newsapi requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_NEWSAPI_MONTHLY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "newsapi requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_NEWSAPI_MIN_INTERVAL_MS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "newsapi request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "GNEWS_API_KEY",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
+      "purpose": "Optional GNews server credential from gnews.io; requires commercial/content approval and budgets",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GNEWS_RETENTION_HOURS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "24",
+      "exampleValue": "24",
+      "templateDefault": "24",
+      "runtimeDefault": "24",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "gnews approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GNEWS_CONTENT_APPROVED",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "gnews content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GNEWS_DAILY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "gnews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GNEWS_MONTHLY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "gnews requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_GNEWS_MIN_INTERVAL_MS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "gnews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_ACCESS_TOKEN",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": false,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
+      "purpose": "Optional Reddit OAuth access token; obtain through an approved Reddit API application; requires approval and budgets",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_USER_AGENT",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": false,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "services/newsService.js: credentials and broad adapters"
+      ],
+      "purpose": "Optional Reddit application identity; required with its token for enabled Reddit requests",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_RETENTION_HOURS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "24",
+      "exampleValue": "24",
+      "templateDefault": "24",
+      "runtimeDefault": "24",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsCatalogService.js: retentionMs/query/predicate"
+      ],
+      "purpose": "reddit approved metadata retention from publication; integer hours 1..840, operator must lower to contract limit before enabling; shorter than global maximum wins",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_CONTENT_APPROVED",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "checks": [],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy",
+        "services/newsCatalogService.js: sourceAllowed"
+      ],
+      "purpose": "reddit content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_DAILY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "reddit requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_MONTHLY_BUDGET",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "0",
+      "exampleValue": "0",
+      "templateDefault": "0",
+      "runtimeDefault": "0",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "reddit requests per UTC month; integer 0..30000, zero blocks requests",
+      "activationRequired": true,
+      "unused": false
+    },
+    {
+      "key": "NEWS_REDDIT_MIN_INTERVAL_MS",
+      "group": "Restricted Sources",
+      "configured": true,
+      "nonempty": true,
+      "value": "1200000",
+      "exampleValue": "1200000",
+      "templateDefault": "1200000",
+      "runtimeDefault": "1200000",
+      "constraints": {
+        "checks": [
+          {
+            "def": {
+              "type": "number",
+              "check": "number_format",
+              "abort": false,
+              "format": "safeint"
+            },
+            "type": "number",
+            "minValue": -9007199254740991,
+            "maxValue": 9007199254740991,
+            "isInt": true,
+            "isFinite": true,
+            "format": "safeint"
+          },
+          {},
+          {}
+        ],
+        "allowedValues": null,
+        "optional": true
+      },
+      "consumers": [
+        "services/newsGovernanceService.js: policy/reserve"
+      ],
+      "purpose": "reddit request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_REDIS_URL",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": false,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
+      "purpose": "Optional disposable integration Redis TCP URL; must differ from application Redis",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_REDIS_DISPOSABLE",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
+      "purpose": "Explicit acknowledgement for remote disposable Redis tests; boolean, never authorizes application Redis writes",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_MONGODB_URI",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": false,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/newsCatalog.integration.test.js and isolated Mongo suites"
+      ],
+      "purpose": "Optional disposable integration Mongo URI; production data is prohibited",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_REDIS_NAMESPACE",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": false,
+      "value": "<redacted>",
+      "exampleValue": "<placeholder>",
+      "templateDefault": "<empty>",
+      "runtimeDefault": "<empty>",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/fixtures/newsHubRedisFixture.js"
+      ],
+      "purpose": "Optional isolated test namespace news-test:<UUID>:; blank generates a unique namespace",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_BROWSER",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/newsFreeText.integration.test.js"
+      ],
+      "purpose": "Opt in to focused Playwright browser verification; boolean",
+      "activationRequired": false,
+      "unused": false
+    },
+    {
+      "key": "NEWS_TEST_LIVE_PROVIDERS",
+      "group": "Verification only",
+      "configured": true,
+      "nonempty": true,
+      "value": "false",
+      "exampleValue": "false",
+      "templateDefault": "false",
+      "runtimeDefault": "false",
+      "constraints": {
+        "optional": true,
+        "type": "optional credential/test string"
+      },
+      "consumers": [
+        "tests/newsLiveSearch.integration.test.js"
+      ],
+      "purpose": "Opt in to bounded live provider verification; boolean, real quotas still apply",
+      "activationRequired": false,
+      "unused": false
+    }
+  ],
+  "files": {
+    "local": {
+      "keys": 196,
+      "missing": [],
+      "deprecated": [],
+      "missingComments": [],
+      "schemaValid": true
+    },
+    "example": {
+      "keys": 196,
+      "missing": [],
+      "deprecated": [
+        "NEWS_DISCOVERY_PREWARM_TOPICS (ignored)"
+      ],
+      "missingComments": [],
+      "schemaValid": true
+    },
+    "matchingAllKeys": true,
+    "assignmentDigest": "67fca5ca12f12610a2b0a79810d076c3e90984fb2e2ed4246923be3bc77b5364"
+  },
+  "runtime": {
+    "flags": {
+      "ingestion": true,
+      "discovery": true,
+      "prewarm": true
+    },
+    "jobBudgets": {
+      "dailyLimit": 12,
+      "dailyUsed": 2,
+      "prewarmDailyLimit": 4,
+      "prewarmAdmittedJobs": 0,
+      "reservedUserJobs": 6,
+      "perAccountMinute": 3,
+      "perAccountDay": 6,
+      "queuedJobs": 0,
+      "nextUtcDay": "2026-10-25T00:00:00.000Z"
+    },
+    "requiredConnections": {
+      "mongoConnected": true,
+      "redisConnected": true,
+      "jwtPresent": true,
+      "mongoUriPresent": true,
+      "sharedRedisConfigured": true
+    },
+    "heartbeatAvailable": true,
+    "heartbeatAgeMs": 1435,
+    "devopsState": null,
+    "catalog": {
+      "total": 692,
+      "devops": 98,
+      "indexes": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "canonicalId": 1
+          },
+          "name": "canonicalId_1",
+          "unique": true
+        },
+        {
+          "v": 2,
+          "key": {
+            "expiresAt": 1
+          },
+          "name": "expiresAt_1",
+          "expireAfterSeconds": 0
+        },
+        {
+          "v": 2,
+          "key": {
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "name": "publishedAt_-1_canonicalId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "technologies": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "name": "technologies_1_publishedAt_-1_canonicalId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "searchTerms": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "name": "searchTerms_1_publishedAt_-1_canonicalId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "source": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "name": "source_1_publishedAt_-1_canonicalId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "category": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "name": "category_1_publishedAt_-1_canonicalId_1"
+        }
+      ],
+      "retentionHours": {
+        "Hacker News": 840,
+        "Dev.to": 840,
+        "NewsAPI": 24,
+        "GNews": 24,
+        "Reddit": 24,
+        "GitHub Releases": 840,
+        "GitHub Security Advisories": 840,
+        "Lobsters": 840,
+        "Kubernetes Blog": 840,
+        "Cloudflare Changelog": 840
+      }
+    },
+    "poolUpdated": "2026-10-24T07:43:23.446Z",
+    "providers": {
+      "newsapi": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        },
+        "credentialsNeeded": true,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "NewsAPI",
+          "enabled": false,
+          "configured": true,
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": null,
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "gnews": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        },
+        "credentialsNeeded": true,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "GNews",
+          "enabled": false,
+          "configured": true,
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": null,
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "hackernews": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.052Z"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "Hacker News",
+          "enabled": true,
+          "configured": true,
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": "2026-10-24T19:22:51.599Z",
+          "lastFailure": "Provider waiting for admission.",
+          "status": "quota_limited",
+          "reason": "interval",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-24T19:42:49.108Z"
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "devto": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.053Z"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "Dev.to",
+          "enabled": true,
+          "configured": true,
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": "2026-10-24T19:22:51.599Z",
+          "lastFailure": "Provider waiting for admission.",
+          "status": "quota_limited",
+          "reason": "interval",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-24T19:42:49.108Z"
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "reddit": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        },
+        "credentialsNeeded": true,
+        "credentialPresent": false,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "Reddit",
+          "enabled": false,
+          "configured": false,
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": null,
+          "lastFailure": "Provider content approval or budget is missing",
+          "status": "disabled",
+          "reason": "budget_not_configured"
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "hackernewssearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": true,
+        "lastBroadObservation": null,
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "githubreleases": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "GitHub Releases",
+          "enabled": true,
+          "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": "2026-10-24T07:43:23.446Z",
+          "lastFailure": "Provider waiting for admission."
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "githubadvisories": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": {
+          "provider": "GitHub Security Advisories",
+          "enabled": true,
+          "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": "2026-10-24T09:10:28.780Z",
+          "lastFailure": "Provider waiting for admission."
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "lobsters": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": null,
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "devtosearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": true,
+        "lastBroadObservation": null,
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "kubernetesblog": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 4,
+          "monthly": 100,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": true,
+        "lastBroadObservation": {
+          "provider": "Kubernetes Blog",
+          "enabled": true,
+          "configured": true,
+          "status": "quota_limited",
+          "reason": "daily_budget",
+          "failureType": null,
+          "httpStatus": null,
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z",
+          "reachable": false,
+          "articlesFetched": 0,
+          "lastSuccess": null,
+          "lastFailure": "Provider waiting for admission."
+        },
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      },
+      "cloudflarechangelog": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        },
+        "credentialsNeeded": false,
+        "credentialPresent": true,
+        "devopsDiscoveryCapable": false,
+        "lastBroadObservation": null,
+        "entitlement": "operator documentation/contract not supplied; not certified by configuration"
+      }
+    }
+  },
+  "requests": [
+    {
+      "query": "mode=explore&search=devops&date=week&bypassCache=true",
+      "http": 200,
+      "serverTime": "2026-10-24T19:35:13.236Z",
+      "total": 72,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 72,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 22,
+        "filterExcludedMatches": 22,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "personalizedContext": false,
+      "catalogVersion": 8
+    },
+    {
+      "query": "mode=explore&search=devops&date=month&page=2&bypassCache=true",
+      "http": 200,
+      "serverTime": "2026-10-24T19:35:14.242Z",
+      "total": 94,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 94,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "pagination_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "personalizedContext": false,
+      "catalogVersion": 8
+    },
+    {
+      "query": "mode=explore&search=devops&source=Dev.to&bypassCache=true",
+      "http": 200,
+      "serverTime": "2026-10-24T19:35:15.245Z",
+      "total": 65,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 65,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 29,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "personalizedContext": false,
+      "catalogVersion": 8
+    },
+    {
+      "query": "mode=personalized&tab=for-you&category=DevOps&search=devops&bypassCache=true",
+      "http": 200,
+      "serverTime": "2026-10-24T19:35:16.270Z",
+      "total": 651,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": null,
+        "cachedMatches": 651,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "personalizedContext": true,
+      "catalogVersion": 52
+    }
+  ],
+  "providerCountersUnchangedDuringReads": true
+}

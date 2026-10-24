@@ -57,16 +57,13 @@ const getRedisUrl = () => {
   return `rediss://default:${encodeURIComponent(token)}@${host}:${port}`;
 };
 
-const runWithCommandTimeout = async (operation) => {
+const runWithCommandTimeout = async (operation, commandTimeoutMs = REDIS_COMMAND_TIMEOUT_MS) => {
   let timeout;
   try {
     return await Promise.race([
       Promise.resolve().then(operation),
       new Promise((_, reject) => {
-        timeout = setTimeout(
-          () => reject(new Error('Redis command timed out.')),
-          REDIS_COMMAND_TIMEOUT_MS
-        );
+        timeout = setTimeout(() => reject(new Error('Redis command timed out.')), commandTimeoutMs);
         timeout.unref?.();
       })
     ]);
@@ -75,7 +72,7 @@ const runWithCommandTimeout = async (operation) => {
   }
 };
 
-const createCommandProxy = (redisClient) =>
+const createCommandProxy = (redisClient, commandTimeoutMs = REDIS_COMMAND_TIMEOUT_MS) =>
   new Proxy(redisClient, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
@@ -87,7 +84,7 @@ const createCommandProxy = (redisClient) =>
             [Symbol.asyncIterator]() {
               return this;
             },
-            next: () => runWithCommandTimeout(() => iterator.next()),
+            next: () => runWithCommandTimeout(() => iterator.next(), commandTimeoutMs),
             return: () =>
               typeof iterator.return === 'function'
                 ? iterator.return()
@@ -95,7 +92,7 @@ const createCommandProxy = (redisClient) =>
           };
         };
       }
-      return (...args) => runWithCommandTimeout(() => value.apply(target, args));
+      return (...args) => runWithCommandTimeout(() => value.apply(target, args), commandTimeoutMs);
     }
   });
 
@@ -231,7 +228,16 @@ const getCacheJsonWithMeta = async (key) => {
 const getCacheJson = async (key) => (await getCacheJsonWithMeta(key)).value;
 
 const isRedisCacheEnabled = () => Boolean(redisEnabled && client?.isReady);
-const getRedisCacheClient = () => (isRedisCacheEnabled() ? clientProxy : null);
+// Existing callers retain the 150 ms deadline. News may opt into a bounded
+// longer deadline for cross-region Upstash RTT without changing locked modules.
+const getRedisCacheClient = ({ commandTimeoutMs } = {}) => {
+  if (!isRedisCacheEnabled()) return null;
+  return Number.isInteger(commandTimeoutMs) &&
+    commandTimeoutMs >= REDIS_COMMAND_TIMEOUT_MS &&
+    commandTimeoutMs <= 1500
+    ? createCommandProxy(client, commandTimeoutMs)
+    : clientProxy;
+};
 
 const pingRedisCache = async () => {
   const redis = getRedisCacheClient();

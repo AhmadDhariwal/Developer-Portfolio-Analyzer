@@ -1,0 +1,582 @@
+{
+  "checkedAt": "2026-10-23T11:44:30.157Z",
+  "preExistingValuesPreserved": 156,
+  "newsKeys": 81,
+  "sharedInfrastructureKeys": [
+    "MONGODB_URI",
+    "REDIS_URL",
+    "UPSTASH_REDIS_HOST",
+    "UPSTASH_REDIS_PORT",
+    "UPSTASH_REDIS_TOKEN"
+  ],
+  "credentialsIncluded": false,
+  "entries": [
+    {
+      "group": "Core",
+      "key": "NEWS_INGESTION_ENABLED",
+      "purpose": "Run scheduled ingestion and the discovery worker; boolean, false stops both",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Core",
+      "key": "NEWS_DISCOVERY_ENABLED",
+      "purpose": "Allow public query discovery; boolean, platform newsEnabled also applies",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Search",
+      "key": "NEWS_DISCOVERY_RESULTS_PER_PROVIDER",
+      "purpose": "Maximum results per source request; integer 1..30, metadata only",
+      "default": "30",
+      "effectiveValue": "30"
+    },
+    {
+      "group": "Search",
+      "key": "NEWS_REFRESH_MIN_INTERVAL_MS",
+      "purpose": "Minimum time between successful manual query checks; milliseconds 60000..3600000, never bypasses source limits",
+      "default": "60000",
+      "effectiveValue": "60000"
+    },
+    {
+      "group": "Background Workers",
+      "key": "NEWS_DISCOVERY_PREWARM_ENABLED",
+      "purpose": "Enable hourly prewarm admission; boolean, consumes the shared job budget",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Background Workers",
+      "key": "NEWS_DISCOVERY_PREWARM_TOPICS",
+      "purpose": "Up to four comma-separated public technology phrases; no URLs or private queries",
+      "default": "devops,kubernetes,security,ai",
+      "effectiveValue": "devops,kubernetes,security,ai"
+    },
+    {
+      "group": "Background Workers",
+      "key": "NEWS_DISCOVERY_PREWARM_DAILY_JOBS",
+      "purpose": "Prewarm admissions per UTC day; integer 0..4, zero stops prewarming",
+      "default": "4",
+      "effectiveValue": "4"
+    },
+    {
+      "group": "User / Global Limits",
+      "key": "NEWS_DISCOVERY_DAILY_JOBS",
+      "purpose": "All query jobs per UTC day across accounts and prewarm; integer 1..48",
+      "default": "12",
+      "effectiveValue": "12"
+    },
+    {
+      "group": "User / Global Limits",
+      "key": "NEWS_DISCOVERY_USER_MINUTE_JOBS",
+      "purpose": "New query jobs per account per UTC minute; integer 1..12, existing jobs are reused",
+      "default": "3",
+      "effectiveValue": "3"
+    },
+    {
+      "group": "User / Global Limits",
+      "key": "NEWS_DISCOVERY_USER_DAILY_JOBS",
+      "purpose": "New query jobs per account per UTC day; integer 1..48",
+      "default": "6",
+      "effectiveValue": "6"
+    },
+    {
+      "group": "Cache",
+      "key": "NEWS_QUERY_FRESH_TTL_MS",
+      "purpose": "Positive query freshness; milliseconds 60000..3600000, ordinary reads do not revalidate fresh results",
+      "default": "1800000",
+      "effectiveValue": "1800000"
+    },
+    {
+      "group": "Cache",
+      "key": "NEWS_QUERY_STALE_TTL_MS",
+      "purpose": "Absolute article retention; milliseconds 3600000..86400000, at least fresh TTL; reads never extend it",
+      "default": "86400000",
+      "effectiveValue": "86400000"
+    },
+    {
+      "group": "Cache",
+      "key": "NEWS_QUERY_NEGATIVE_TTL_MS",
+      "purpose": "Successful empty-query retention; milliseconds 30000..900000, failures are not empty results",
+      "default": "300000",
+      "effectiveValue": "300000"
+    },
+    {
+      "group": "Cache",
+      "key": "NEWS_QUERY_MEMORY_ENTRIES",
+      "purpose": "Maximum query entries per in-process cache; integer 40..256, shared Redis versions invalidate memory",
+      "default": "128",
+      "effectiveValue": "128"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_HACKERNEWS_SHARED_DAILY_BUDGET",
+      "purpose": "HACKERNEWS combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "default": "84",
+      "effectiveValue": "84"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_HACKERNEWS_SHARED_MONTHLY_BUDGET",
+      "purpose": "HACKERNEWS combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "default": "2500",
+      "effectiveValue": "2500"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_HACKERNEWS_SHARED_MIN_INTERVAL_MS",
+      "purpose": "HACKERNEWS minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
+      "default": "60000",
+      "effectiveValue": "60000"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_DEVTO_SHARED_DAILY_BUDGET",
+      "purpose": "DEVTO combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "default": "84",
+      "effectiveValue": "84"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_DEVTO_SHARED_MONTHLY_BUDGET",
+      "purpose": "DEVTO combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "default": "2500",
+      "effectiveValue": "2500"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_DEVTO_SHARED_MIN_INTERVAL_MS",
+      "purpose": "DEVTO minimum spacing across adapters; milliseconds 0..86400000, hard floor 60000",
+      "default": "60000",
+      "effectiveValue": "60000"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_GITHUB_SHARED_DAILY_BUDGET",
+      "purpose": "GITHUB combined adapter requests per UTC day; integer 0..2000, zero blocks requests; broad ingestion reserves search headroom",
+      "default": "12",
+      "effectiveValue": "12"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_GITHUB_SHARED_MONTHLY_BUDGET",
+      "purpose": "GITHUB combined adapter requests per UTC month; integer 0..60000, zero blocks requests",
+      "default": "300",
+      "effectiveValue": "300"
+    },
+    {
+      "group": "Redis Governance",
+      "key": "NEWS_GITHUB_SHARED_MIN_INTERVAL_MS",
+      "purpose": "GITHUB minimum spacing across adapters; milliseconds 0..86400000, hard floor 300000",
+      "default": "300000",
+      "effectiveValue": "300000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWS_CONTENT_APPROVED",
+      "purpose": "hackernews content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWS_DAILY_BUDGET",
+      "purpose": "hackernews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "72",
+      "effectiveValue": "72"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWS_MONTHLY_BUDGET",
+      "purpose": "hackernews requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "2200",
+      "effectiveValue": "2200"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWS_MIN_INTERVAL_MS",
+      "purpose": "hackernews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTO_CONTENT_APPROVED",
+      "purpose": "devto content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTO_DAILY_BUDGET",
+      "purpose": "devto requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "72",
+      "effectiveValue": "72"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTO_MONTHLY_BUDGET",
+      "purpose": "devto requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "2200",
+      "effectiveValue": "2200"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTO_MIN_INTERVAL_MS",
+      "purpose": "devto request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWSSEARCH_CONTENT_APPROVED",
+      "purpose": "hackernewssearch content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWSSEARCH_DAILY_BUDGET",
+      "purpose": "hackernewssearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "12",
+      "effectiveValue": "12"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWSSEARCH_MONTHLY_BUDGET",
+      "purpose": "hackernewssearch requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "300",
+      "effectiveValue": "300"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_HACKERNEWSSEARCH_MIN_INTERVAL_MS",
+      "purpose": "hackernewssearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "60000",
+      "effectiveValue": "60000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBRELEASES_CONTENT_APPROVED",
+      "purpose": "githubreleases content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBRELEASES_DAILY_BUDGET",
+      "purpose": "githubreleases requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "6",
+      "effectiveValue": "6"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBRELEASES_MONTHLY_BUDGET",
+      "purpose": "githubreleases requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "150",
+      "effectiveValue": "150"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBRELEASES_MIN_INTERVAL_MS",
+      "purpose": "githubreleases request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBADVISORIES_CONTENT_APPROVED",
+      "purpose": "githubadvisories content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBADVISORIES_DAILY_BUDGET",
+      "purpose": "githubadvisories requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "6",
+      "effectiveValue": "6"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBADVISORIES_MONTHLY_BUDGET",
+      "purpose": "githubadvisories requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "150",
+      "effectiveValue": "150"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_GITHUBADVISORIES_MIN_INTERVAL_MS",
+      "purpose": "githubadvisories request spacing; milliseconds 0..86400000, hard floor 300000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_LOBSTERS_CONTENT_APPROVED",
+      "purpose": "lobsters content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_LOBSTERS_DAILY_BUDGET",
+      "purpose": "lobsters requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "6",
+      "effectiveValue": "6"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_LOBSTERS_MONTHLY_BUDGET",
+      "purpose": "lobsters requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "150",
+      "effectiveValue": "150"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_LOBSTERS_MIN_INTERVAL_MS",
+      "purpose": "lobsters request spacing; milliseconds 0..86400000, hard floor 600000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTOSEARCH_CONTENT_APPROVED",
+      "purpose": "devtosearch content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTOSEARCH_DAILY_BUDGET",
+      "purpose": "devtosearch requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "12",
+      "effectiveValue": "12"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTOSEARCH_MONTHLY_BUDGET",
+      "purpose": "devtosearch requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "300",
+      "effectiveValue": "300"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_DEVTOSEARCH_MIN_INTERVAL_MS",
+      "purpose": "devtosearch request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "60000",
+      "effectiveValue": "60000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_KUBERNETESBLOG_CONTENT_APPROVED",
+      "purpose": "kubernetesblog content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "true",
+      "effectiveValue": "true"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_KUBERNETESBLOG_DAILY_BUDGET",
+      "purpose": "kubernetesblog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "4",
+      "effectiveValue": "4"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_KUBERNETESBLOG_MONTHLY_BUDGET",
+      "purpose": "kubernetesblog requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "100",
+      "effectiveValue": "100"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_KUBERNETESBLOG_MIN_INTERVAL_MS",
+      "purpose": "kubernetesblog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_CLOUDFLARECHANGELOG_CONTENT_APPROVED",
+      "purpose": "cloudflarechangelog content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_CLOUDFLARECHANGELOG_DAILY_BUDGET",
+      "purpose": "cloudflarechangelog requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_CLOUDFLARECHANGELOG_MONTHLY_BUDGET",
+      "purpose": "cloudflarechangelog requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Provider Settings",
+      "key": "NEWS_CLOUDFLARECHANGELOG_MIN_INTERVAL_MS",
+      "purpose": "cloudflarechangelog request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_API_KEY",
+      "purpose": "Optional NewsAPI server credential from newsapi.org; existing platform newsApiKey is also supported; requires approval and budgets",
+      "default": "",
+      "configured": true
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_NEWSAPI_CONTENT_APPROVED",
+      "purpose": "newsapi content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_NEWSAPI_DAILY_BUDGET",
+      "purpose": "newsapi requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_NEWSAPI_MONTHLY_BUDGET",
+      "purpose": "newsapi requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_NEWSAPI_MIN_INTERVAL_MS",
+      "purpose": "newsapi request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "GNEWS_API_KEY",
+      "purpose": "Optional GNews server credential from gnews.io; requires commercial/content approval and budgets",
+      "default": "",
+      "configured": true
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_GNEWS_CONTENT_APPROVED",
+      "purpose": "gnews content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_GNEWS_DAILY_BUDGET",
+      "purpose": "gnews requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_GNEWS_MONTHLY_BUDGET",
+      "purpose": "gnews requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_GNEWS_MIN_INTERVAL_MS",
+      "purpose": "gnews request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_ACCESS_TOKEN",
+      "purpose": "Optional Reddit OAuth access token; obtain through an approved Reddit API application; requires approval and budgets",
+      "default": "",
+      "configured": false
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_USER_AGENT",
+      "purpose": "Optional Reddit application identity; required with its token for enabled Reddit requests",
+      "default": "",
+      "configured": false
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_CONTENT_APPROVED",
+      "purpose": "reddit content-use approval; boolean, credentials alone never enable a restricted source; false blocks this adapter",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_DAILY_BUDGET",
+      "purpose": "reddit requests per UTC day; integer 0..1000, zero blocks requests, failed transport attempts consume credit",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_MONTHLY_BUDGET",
+      "purpose": "reddit requests per UTC month; integer 0..30000, zero blocks requests",
+      "default": "0",
+      "effectiveValue": "0"
+    },
+    {
+      "group": "Restricted Sources",
+      "key": "NEWS_REDDIT_MIN_INTERVAL_MS",
+      "purpose": "reddit request spacing; milliseconds 0..86400000, hard floor 60000; shared cooldown may wait longer",
+      "default": "1200000",
+      "effectiveValue": "1200000"
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_REDIS_URL",
+      "purpose": "Optional disposable integration Redis TCP URL; must differ from application Redis",
+      "default": "",
+      "configured": false
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_REDIS_DISPOSABLE",
+      "purpose": "Explicit acknowledgement for remote disposable Redis tests; boolean, never authorizes application Redis writes",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_MONGODB_URI",
+      "purpose": "Optional disposable integration Mongo URI; production data is prohibited",
+      "default": "",
+      "configured": false
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_REDIS_NAMESPACE",
+      "purpose": "Optional isolated test namespace news-test:<UUID>:; blank generates a unique namespace",
+      "default": "",
+      "configured": false
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_BROWSER",
+      "purpose": "Opt in to focused Playwright browser verification; boolean",
+      "default": "false",
+      "effectiveValue": "false"
+    },
+    {
+      "group": "Verification only",
+      "key": "NEWS_TEST_LIVE_PROVIDERS",
+      "purpose": "Opt in to bounded live provider verification; boolean, real quotas still apply",
+      "default": "false",
+      "effectiveValue": "false"
+    }
+  ]
+}

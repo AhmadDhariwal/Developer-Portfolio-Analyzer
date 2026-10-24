@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-10-24T20:14:56.931Z",
+  "tests": {
+    "files": [
+      "backend/src/tests/newsProviders.test.js",
+      "backend/src/tests/newsConfiguration.test.js",
+      "backend/src/tests/newsCatalog.test.js",
+      "backend/src/tests/newsHubHardening.test.js"
+    ],
+    "exitCode": 0,
+    "summary": ["ℹ tests 21", "ℹ pass 21", "ℹ fail 0", "ℹ skipped 0"]
+  },
+  "syntax": [
+    {
+      "file": "backend/src/scripts/auditNewsProviders.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "file": "backend/src/scripts/verifyNewsProviderActivation.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "file": "backend/src/services/newsDiscoveryProviders.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "file": "backend/src/tests/newsProviders.test.js",
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "formatting": {
+    "source": {
+      "exitCode": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    "documentationAndEvidence": {
+      "exitCode": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    }
+  },
+  "whitespace": {
+    "working": 0,
+    "staged": 2,
+    "existingStagedIssues": {
+      "file": "backend/verification/tech-news/FINAL-END-TO-END-AUDIT.md",
+      "lines": [3, 4, 5],
+      "reason": "Trailing whitespace in pre-existing staged user work; preserved"
+    }
+  },
+  "exampleUnchanged": true,
+  "cleanup": {
+    "taskGeneratedTemporaryArtifacts": 0,
+    "movedFiles": [],
+    "deletedFiles": [],
+    "preExistingStagedWorkPreserved": true
+  },
+  "runtimeProcesses": {
+    "listener": {
+      "pid": 26112,
+      "port": 5000
+    },
+    "otherIndexProcess": {
+      "pid": 21384,
+      "createdPakistan": "2026-10-25T01:13:54+05:00",
+      "repositoryContextVerified": false,
+      "action": "Left untouched"
+    },
+    "singleWorkerTopologyVerified": false
+  }
+}
