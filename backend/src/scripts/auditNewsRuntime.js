@@ -151,7 +151,7 @@ async function main() {
       dailyLimit: Number(local.NEWS_DISCOVERY_DAILY_JOBS),
       dailyUsed: jobUsage ? Number(jobUsage[0]) : null,
       prewarmDailyLimit: Number(local.NEWS_DISCOVERY_PREWARM_DAILY_JOBS),
-      prewarmAttemptCounter: jobUsage ? Number(jobUsage[1]) : null,
+      prewarmAdmittedJobs: jobUsage ? Number(jobUsage[1]) : null,
       reservedUserJobs: Number(local.NEWS_PREWARM_RESERVED_USER_JOBS),
       perAccountMinute: Number(local.NEWS_DISCOVERY_USER_MINUTE_JOBS),
       perAccountDay: Number(local.NEWS_DISCOVERY_USER_DAILY_JOBS),

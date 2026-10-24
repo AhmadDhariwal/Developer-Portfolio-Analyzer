@@ -203,6 +203,14 @@ export class NewsComponent implements OnInit, OnDestroy {
     }
   }
   get discoveryMessage(): string {
+    if (this.coverage?.suggestion)
+      return `Did you mean ${this.coverage.suggestion.label}? Your original search is unchanged. Choose the suggestion to search; no discovery job was requested for this spelling.`;
+    if (
+      ['waiting', 'quota_limited'].includes(this.enrichment?.status || '') &&
+      this.enrichment?.nextEligibleAt &&
+      Date.parse(this.enrichment.nextEligibleAt) <= this.serverNow
+    )
+      return 'The previous limit has elapsed. Check for New Articles will revalidate eligibility; Refresh Results reads stored articles. No source request has been retried automatically.';
     if (this.enrichment?.status === 'no_newer')
       return `Last successful check: ${this.enrichment.lastSuccessfulCheckAt ? new Date(this.enrichment.lastSuccessfulCheckAt).toLocaleString() : 'unavailable'}. Existing articles remain available.`;
     if (['waiting', 'quota_limited'].includes(this.enrichment?.status || ''))

@@ -258,6 +258,54 @@ test(
     assert.ok(Date.parse(daily.enrichment.nextEligibleAt) > Date.now() + 60000);
     process.env.NEWS_DISCOVERY_USER_DAILY_JOBS = '6';
 
+    if (process.env.NEWS_TEST_BROWSER !== 'true') {
+      // Exhaust only fixture-owned global capacity; cached cards must still be returned.
+      await one.redis.set(`news:v1:{discovery}:jobs:${day}`, '12');
+      await one.redis.del('news:v3:{hackernewssearch}:interval');
+      await one.redis.del('news:v3:{hackernews}:shared:interval');
+      const prior = JSON.parse(await one.redis.get(discovery.stateKey('generative ai')));
+      prior.checkedAtMs = Date.now() - 61000;
+      await one.redis.set(discovery.stateKey('generative ai'), JSON.stringify(prior));
+      const callsBefore = calls;
+      const limited = await (
+        await request('?mode=explore&search=generative%20ai&date=week&refresh=true')
+      ).json();
+      assert.equal(limited.total, 14);
+      assert.equal(limited.items.length, 12);
+      assert.equal(limited.enrichment.reason, 'discovery_daily_budget');
+      const typo = await (await request('?mode=explore&search=kubernets&discover=true')).json();
+      assert.equal(typo.coverage.suggestion.query, 'kubernetes');
+      assert.equal(typo.enrichment.reason, 'spelling_suggestion');
+      await catalog.ingest(
+        Array.from({ length: 6 }, (_, index) => ({
+          title: `Kubernetes operator release ${index}`,
+          url: `https://example.com/kube/${index}`,
+          source: 'Hacker News',
+          publishedAt: new Date()
+        }))
+      );
+      const corrected = await (await request('?mode=explore&search=kubernetes&discover=true')).json();
+      const alias = await (await request('?mode=explore&search=k8s&bypassCache=true')).json();
+      assert.equal(corrected.total, 6);
+      assert.equal(alias.total, 6);
+      assert.equal(corrected.enrichment.status, 'not_needed');
+      assert.equal(
+        calls,
+        callsBefore,
+        'Quota, spelling correction and sufficient catalog never call providers'
+      );
+      assert.equal(await one.redis.get(`news:v1:{discovery}:jobs:${day}`), '12');
+      t.diagnostic(
+        JSON.stringify({
+          quotaExhaustedCatalogTotal: limited.total,
+          typoJobCost: 0,
+          correctedCatalogTotal: corrected.total,
+          aliasCatalogTotal: alias.total,
+          additionalProviderCalls: 0
+        })
+      );
+    }
+
     if (process.env.NEWS_TEST_BROWSER === 'true') {
       const { chromium } = require('playwright');
       const browser = await chromium.launch({ headless: true, channel: 'msedge' });

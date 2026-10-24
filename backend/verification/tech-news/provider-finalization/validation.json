@@ -1,0 +1,63 @@
+{
+  "scope": "Provider implementation, isolated scheduled persistence, permitted governed public checks and operator readiness",
+  "finalAffectedBatch": {
+    "passed": 43,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test --test-concurrency=2 src/tests/newsProviders.test.js src/tests/newsProviders.integration.test.js src/tests/newsConfiguration.test.js src/tests/newsDiscovery.test.js src/tests/newsTopicCoverage.test.js src/tests/newsHubHardening.test.js src/tests/newsCatalog.test.js src/tests/newsHub.integration.test.js src/tests/newsRefresh.integration.test.js"
+  },
+  "controlledScheduledPipeline": {
+    "sourcesAccepted": 10,
+    "uniqueCatalogArticles": 10,
+    "firstCycleInserted": 9,
+    "secondCycleInserted": 1,
+    "duplicatesInsertedOnReplay": 0,
+    "actualUpstreamRequests": 0,
+    "discoveryJobsConsumed": 0,
+    "sourceRetentionAttributionTagsVerified": true,
+    "sharedGitHubPacingVerified": true,
+    "crossWorkerInvalidationVerified": true
+  },
+  "live": {
+    "approvedPublicRequests": 2,
+    "hackernewsSearchNormalizedAccepted": 4,
+    "devtoSearchNormalizedAccepted": 0,
+    "applicationArticlesInsertedByDiagnostic": 0,
+    "paidOrDisabledProviderRequests": 0,
+    "githubAndKubernetesRequests": 0,
+    "githubAndKubernetesBlocker": "Existing daily budgets exhausted; denied preflight honored",
+    "globalJobsBeforeAndAfter": [1, 1],
+    "searchDailyCountersBefore": [1, 1],
+    "searchDailyCountersAfter": [2, 2]
+  },
+  "baselineReproductions": [
+    "Staged Kubernetes RSS reader rejected a generator-shaped 1568574-byte feed with Invalid RSS; corrected reader accepts 40 metadata items",
+    "GitHub exhausted-primary-quota 403 was mislabeled upstream_access_denied; corrected reset regression returns upstream_rate_limit and honors roughly 300 seconds"
+  ],
+  "preserved": {
+    "environmentFilesByteIdentical": true,
+    "newsConfigurationKeysPerFile": 102,
+    "credentialsApprovalsBudgetsAndRetentionAssignmentsChanged": false,
+    "applicationCounterResets": 0,
+    "indexesOrInfrastructureChanged": false,
+    "frontendOrLockedModulesChanged": false,
+    "priorStagedWorkPreserved": true
+  },
+  "finalization": {
+    "formatter": "Installed frontend Prettier, explicit changed paths, write then check",
+    "backendOptions": "--single-quote --trailing-comma none --print-width 110",
+    "markdownAndEvidenceOptions": "--config frontend/.prettierrc",
+    "syntax": "node --check on all nine task-owned JavaScript source/test/script files",
+    "whitespace": "git diff --check and git diff --cached --check",
+    "frontendValidation": "Not applicable: no frontend source changes in this task",
+    "postCleanupTests": "Provider, configuration and existing News hardening unit suites",
+    "postCleanupPassed": 17
+  },
+  "remainingBlockers": [
+    "Kubernetes normally admitted live RSS/catalog acceptance after UTC daily reset",
+    "Documented provider subscriptions and metadata/display permissions",
+    "Reddit approved OAuth renewal/deletion lifecycle",
+    "Production infrastructure, traffic capacity and deployed acceptance"
+  ],
+  "readyForProductionDeployment": false
+}

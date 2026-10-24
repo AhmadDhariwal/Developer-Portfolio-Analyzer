@@ -168,7 +168,8 @@ async function ingest(items) {
 }
 function predicate(filters, { broad = false } = {}) {
   const now = Date.now();
-  const age = broad ? 35 : { today: 1, week: 7, month: 30 }[filters.dateRange] || 7;
+  // Coverage must describe selectable results. Retention remains source-aware, up to 35 days.
+  const age = broad ? 30 : { today: 1, week: 7, month: 30 }[filters.dateRange] || 7;
   const match = {
     expiresAt: { $gt: new Date(now) },
     $or: Object.keys(SOURCE_KEYS)

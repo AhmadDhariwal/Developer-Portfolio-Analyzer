@@ -1,80 +1,105 @@
 <form class="filters-shell" (ngSubmit)="applyFilters()">
   <div class="filters-panel">
-    <div class="search-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
-      <label for="news-search">Search</label>
-      <input
-        id="news-search"
-        name="news-search"
-        maxlength="80"
-        type="text"
-        [ngModel]="draftFilters.search"
-        (ngModelChange)="setSearch($event)"
-        placeholder="Search topics, tools, or technologies"
-      />
+    <div class="filter-controls">
+      <div class="search-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
+        <label for="news-search">Search</label>
+        <div class="control-input-wrap">
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            id="news-search"
+            name="news-search"
+            maxlength="80"
+            type="text"
+            [ngModel]="draftFilters.search"
+            (ngModelChange)="setSearch($event)"
+            placeholder="Search topics, tools, or technologies"
+          />
+        </div>
+      </div>
+
+      <div class="select-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
+        <label for="news-category">Category</label>
+        <div class="control-select-wrap">
+          <select
+            id="news-category"
+            name="news-category"
+            [ngModel]="draftFilters.category"
+            (ngModelChange)="setCategory($event)"
+          >
+            <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="select-control">
+        <label for="news-source">Cached source</label>
+        <div class="control-select-wrap">
+          <select
+            id="news-source"
+            name="news-source"
+            [ngModel]="draftFilters.source"
+            (ngModelChange)="setSource($event)"
+          >
+            <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="select-control">
+        <label for="news-date">Date</label>
+        <div class="control-select-wrap">
+          <select
+            id="news-date"
+            name="news-date"
+            [ngModel]="draftFilters.date"
+            (ngModelChange)="setDate($event)"
+          >
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="select-control">
+        <label for="news-popularity">Popularity</label>
+        <div class="control-select-wrap">
+          <select
+            id="news-popularity"
+            name="news-popularity"
+            [ngModel]="draftFilters.popularity"
+            (ngModelChange)="setPopularity($event)"
+          >
+            <option value="all">All</option>
+            <option value="high">High Only</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="select-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
-      <label for="news-category">Category</label>
-      <select
-        id="news-category"
-        name="news-category"
-        [ngModel]="draftFilters.category"
-        (ngModelChange)="setCategory($event)"
+    <div class="filter-actions">
+      <button
+        type="button"
+        class="reset-button"
+        [disabled]="!hasActiveFilters"
+        (click)="resetFilters()"
       >
-        <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
-      </select>
+        Reset Filters
+      </button>
+
+      <button type="submit" class="apply-button" [disabled]="!hasPendingChanges || isApplying">
+        {{ isApplying ? 'Applying...' : 'Apply Filters' }}
+      </button>
     </div>
-
-    <div class="select-control">
-      <label for="news-source">Cached source</label>
-      <select
-        id="news-source"
-        name="news-source"
-        [ngModel]="draftFilters.source"
-        (ngModelChange)="setSource($event)"
-      >
-        <option *ngFor="let source of sources" [ngValue]="source">{{ source }}</option>
-      </select>
-    </div>
-
-    <div class="select-control">
-      <label for="news-date">Date</label>
-      <select
-        id="news-date"
-        name="news-date"
-        [ngModel]="draftFilters.date"
-        (ngModelChange)="setDate($event)"
-      >
-        <option value="today">Today</option>
-        <option value="week">Last 7 Days</option>
-        <option value="month">Last 30 Days</option>
-      </select>
-    </div>
-
-    <div class="select-control">
-      <label for="news-popularity">Popularity</label>
-      <select
-        id="news-popularity"
-        name="news-popularity"
-        [ngModel]="draftFilters.popularity"
-        (ngModelChange)="setPopularity($event)"
-      >
-        <option value="all">All</option>
-        <option value="high">High Only</option>
-      </select>
-    </div>
-
-    <button
-      type="button"
-      class="reset-button"
-      [disabled]="!hasActiveFilters"
-      (click)="resetFilters()"
-    >
-      Reset Filters
-    </button>
-
-    <button type="submit" class="apply-button" [disabled]="!hasPendingChanges || isApplying">
-      {{ isApplying ? 'Applying...' : 'Apply Filters' }}
-    </button>
   </div>
 </form>

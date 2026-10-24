@@ -173,7 +173,7 @@ async function reserve(source, inspectOnly = false, priority = 'user') {
   }
 }
 
-function retryDelay(headers = {}, now = Date.now()) {
+function retryDelay(headers = {}, now = Date.now(), fallback = 21600000) {
   const retry = headers['retry-after'];
   if (retry !== undefined) {
     const numeric = Number(retry);
@@ -181,7 +181,7 @@ function retryDelay(headers = {}, now = Date.now()) {
     if (Number.isFinite(delay) && delay > 0) return Math.ceil(Math.max(1000, delay));
   }
   // Unknown reset windows must not cause an immediate retry.
-  return 21600000;
+  return fallback;
 }
 
 async function finish(reservation, { status = 200, headers = {}, failed = false } = {}) {
@@ -191,13 +191,16 @@ async function finish(reservation, { status = 200, headers = {}, failed = false 
   const base = reservation.base;
   try {
     const remaining = headers['x-ratelimit-requests-remaining'] ?? headers['x-ratelimit-remaining'];
+    const rateLimited = status === 429 || (remaining !== undefined && Number(remaining) <= 0);
     let delay = 0;
-    if (status === 429 || (remaining !== undefined && Number(remaining) <= 0)) {
-      delay = retryDelay(headers);
+    if (rateLimited) {
+      delay = retryDelay(headers, Date.now(), 0);
       const reset = Number(headers['x-ratelimit-reset']);
       const rapidReset = Number(headers['x-ratelimit-requests-reset']);
-      if (Number.isFinite(reset) && reset > 0) delay = Math.max(delay, reset * 1000 - Date.now());
+      if (Number.isFinite(reset) && reset > 0)
+        delay = Math.max(delay, base === 'news:v3:{reddit}' ? reset * 1000 : reset * 1000 - Date.now());
       if (Number.isFinite(rapidReset) && rapidReset > 0) delay = Math.max(delay, rapidReset * 1000);
+      if (delay <= 0) delay = 21600000;
     } else if (status === 401 || status === 403) {
       delay = 21600000;
     } else if (failed) {
@@ -209,16 +212,15 @@ async function finish(reservation, { status = 200, headers = {}, failed = false 
     } else {
       await redis.del(`${base}:failures`);
     }
-    const reason =
-      status === 429
-        ? 'upstream_rate_limit'
-        : status === 401 || status === 403
-          ? 'upstream_access_denied'
-          : delay
-            ? 'circuit_open'
-            : failed
-              ? 'source_failure'
-              : 'allowed';
+    const reason = rateLimited
+      ? 'upstream_rate_limit'
+      : status === 401 || status === 403
+        ? 'upstream_access_denied'
+        : delay
+          ? 'circuit_open'
+          : failed
+            ? 'source_failure'
+            : 'allowed';
     if (delay)
       await redis.eval(EXTEND, {
         keys: [`${base}:cooldown`],

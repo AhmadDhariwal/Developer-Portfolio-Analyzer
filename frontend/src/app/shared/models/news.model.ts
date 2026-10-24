@@ -188,6 +188,7 @@ export interface NewsCoverage {
   dateExcludedMatches?: number;
   filterExcludedMatches?: number;
   suggestedDate?: NewsDateFilter | null;
+  suggestion?: { query: string; label: string } | null;
 }
 
 export interface NewsEnrichment {

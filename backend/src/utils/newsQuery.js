@@ -15,10 +15,24 @@ const SYNONYMS = {
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const contains = (text, term) => new RegExp(`(^|[^a-z0-9])${escape(term)}(?=$|[^a-z0-9])`, 'i').test(text);
 
+// Reviewed whole-query spellings only: never fuzzy-match arbitrary technical phrases.
+const SPELLINGS = Object.freeze({
+  kubernets: ['kubernetes', 'Kubernetes'],
+  kubernates: ['kubernetes', 'Kubernetes'],
+  dockr: ['docker', 'Docker'],
+  terrafom: ['terraform', 'Terraform']
+});
+function suggestionFor(value) {
+  const query = queryFor(value);
+  const candidate = query && !query.topic && SPELLINGS[query.text];
+  return candidate && topicFor(candidate[0]) ? { query: candidate[0], label: candidate[1] } : null;
+}
+
 function queryFor(value) {
   if (typeof value !== 'string' || value.length > 80 || /[\x00-\x1f\x7f]/.test(value)) return null;
   let text = value.trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!text || !/^[a-z0-9.+# /-]+$/.test(text) || /(?:www\.|localhost\b)|\b(?:or|and|not)\b/i.test(text)) return null;
+  if (!text || !/^[a-z0-9.+# /-]+$/.test(text) || /(?:www\.|localhost\b)|\b(?:or|and|not)\b/i.test(text))
+    return null;
   if (
     /^[-+/#]|(?:[a-z0-9]+\.){2}[a-z]|\.(?:com|org|io|dev)(?: |$)|\d{8}|[a-f0-9]{8}-[a-f0-9-]{20,}|\/[^ ]*\/|\.\.|[-+/#.]{3}/.test(
       text
@@ -30,7 +44,11 @@ function queryFor(value) {
     .replace(/next\s+js/g, 'next.js')
     .replace(/\bgenai\b/g, 'generative ai');
   const tokens = text.split(' ');
-  if (tokens.length > 6 || tokens.some((token) => token.length > 32) || (text.match(/[a-z]/g) || []).length < 2)
+  if (
+    tokens.length > 6 ||
+    tokens.some((token) => token.length > 32) ||
+    (text.match(/[a-z]/g) || []).length < 2
+  )
     return null;
   const topic = topicFor(text);
   if (topic) return { text: topic, topic, key: topic, groups: [] };
@@ -39,7 +57,12 @@ function queryFor(value) {
   );
   if (!significant.length) return null;
   const groups = significant.map((token) => SYNONYMS[token === 'next.js' ? 'nextjs' : token] || [token]);
-  return { text, topic: null, key: `q-${createHash('sha256').update(text).digest('hex').slice(0, 32)}`, groups };
+  return {
+    text,
+    topic: null,
+    key: `q-${createHash('sha256').update(text).digest('hex').slice(0, 32)}`,
+    groups
+  };
 }
 
 function matchesQuery(item, value) {
@@ -56,4 +79,4 @@ function relatedTopic(value) {
   return query.topic || Object.keys(TOPICS).find((topic) => contains(query.text, topic)) || null;
 }
 
-module.exports = { queryFor, matchesQuery, relatedTopic };
+module.exports = { queryFor, matchesQuery, relatedTopic, suggestionFor };

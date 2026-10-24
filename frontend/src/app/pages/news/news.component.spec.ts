@@ -125,6 +125,52 @@ describe('News Hub lifecycle', () => {
     component.enrichment.reason = 'user_discovery_daily_budget';
     expect(component.discoveryMessage).toContain('Account limit');
   });
+  it('offers a spelling correction and submits it through normal explicit search', () => {
+    component.selectView('explore');
+    component.onFiltersChange({ ...component.filters, search: 'kubernets' });
+    component.coverage = {
+      status: 'coverage_gap',
+      topic: 'kubernets',
+      cachedMatches: 0,
+      minimum: 6,
+      suggestion: { query: 'kubernetes', label: 'Kubernetes' },
+    };
+    component.enrichment = {
+      status: 'not_needed',
+      reason: 'spelling_suggestion',
+      nextEligibleAt: null,
+    };
+    expect(component.discoveryMessage).toContain('Did you mean Kubernetes?');
+    expect(component.filters.search).toBe('kubernets');
+    expect(component.discoveryLoading).toBe(false);
+    component.searchTopic(component.coverage.suggestion!.query);
+    expect(api.getNews.mock.calls.at(-1)[0].search).toBe('kubernetes');
+    expect(api.getNews.mock.calls.at(-1)[3].discover).toBe(true);
+  });
+  it('enables an explicit check after the server quota reset without automatic provider retries', () => {
+    vi.useFakeTimers();
+    const serverTime = Date.now();
+    api.getNews.mockReturnValue(
+      of({
+        ...feed(),
+        serverTime: new Date(serverTime).toISOString(),
+        enrichment: {
+          status: 'quota_limited',
+          reason: 'discovery_daily_budget',
+          nextEligibleAt: new Date(serverTime + 2000).toISOString(),
+        },
+      }),
+    );
+    component.refreshResults();
+    const before = api.getNews.mock.calls.length;
+    expect(component.refreshSeconds).toBe(2);
+    vi.advanceTimersByTime(2100);
+    expect(component.refreshSeconds).toBe(0);
+    expect(api.getNews.mock.calls.length).toBe(before);
+    expect(component.discoveryMessage).toContain('previous limit has elapsed');
+    component.forceRefresh();
+    expect(api.getNews.mock.calls.at(-1)[3].refresh).toBe(true);
+  });
   it('keeps available cards visible through pending phases and stops the loader after bounded checks', () => {
     component.selectView('explore');
     component.onFiltersChange({ ...component.filters, search: 'devops' });

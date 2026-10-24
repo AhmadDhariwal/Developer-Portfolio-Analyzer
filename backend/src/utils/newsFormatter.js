@@ -145,7 +145,7 @@ const normalizeItem = (item = {}) => {
       'Kubernetes Blog',
       'Cloudflare Changelog'
     ].includes(source) ||
-    title === '[Removed]'
+    /^\[(removed|deleted)\]$/i.test(title)
   )
     return null;
   const category = Object.hasOwn(CATEGORY_KEYWORDS, item.category)
@@ -178,6 +178,7 @@ const normalizeItem = (item = {}) => {
 const fromNewsAPI = (payload) => {
   const articles = Array.isArray(payload?.articles) ? payload.articles.slice(0, 100) : [];
   return articles
+    .filter((article) => article && typeof article === 'object')
     .map((article) =>
       normalizeItem({
         title: article.title,
@@ -196,6 +197,7 @@ const fromNewsAPI = (payload) => {
 const fromGNews = (payload) => {
   const articles = Array.isArray(payload?.articles) ? payload.articles.slice(0, 100) : [];
   return articles
+    .filter((article) => article && typeof article === 'object')
     .map((article) =>
       normalizeItem({
         title: article.title,
@@ -214,26 +216,31 @@ const fromGNews = (payload) => {
 const fromHackerNews = (payload) => {
   const hits = Array.isArray(payload?.hits) ? payload.hits.slice(0, 100) : [];
   return hits
-    .map((hit) =>
-      normalizeItem({
+    .filter((hit) => hit && typeof hit === 'object')
+    .map((hit) => {
+      const discussionUrl = /^\d+$/.test(String(hit.objectID || ''))
+        ? `https://news.ycombinator.com/item?id=${hit.objectID}`
+        : '';
+      return normalizeItem({
         title: hit.title || hit.story_title,
         description: '',
         source: 'Hacker News',
-        attributionUrl: `https://news.ycombinator.com/item?id=${hit.objectID}`,
-        url: hit.url || hit.story_url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
+        attributionUrl: discussionUrl || hit.url || hit.story_url,
+        url: hit.url || hit.story_url || discussionUrl,
         image: '',
         publishedAt: hit.created_at,
         popularity: Number(hit.points || 0),
         category: inferCategory(hit.title || hit.story_title, hit.story_text),
         tags: ['Hacker News']
-      })
-    )
+      });
+    })
     .filter(Boolean);
 };
 
 const fromDevTo = (payload) => {
   const articles = Array.isArray(payload) ? payload.slice(0, 100) : [];
   return articles
+    .filter((article) => article && typeof article === 'object')
     .map((article) =>
       normalizeItem({
         title: article.title,
@@ -254,6 +261,12 @@ const fromDevTo = (payload) => {
 const fromReddit = (payload) => {
   const posts = Array.isArray(payload?.data?.children) ? payload.data.children.slice(0, 100) : [];
   return posts
+    .filter(
+      (child) =>
+        child?.data &&
+        !child.data.removed_by_category &&
+        !/^\[(removed|deleted)\]$/i.test(String(child.data.selftext || ''))
+    )
     .map((child) => {
       const data = child?.data || {};
       return normalizeItem({

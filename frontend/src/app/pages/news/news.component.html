@@ -1,73 +1,112 @@
 <section class="news-page" aria-labelledby="news-title">
   <header class="page-header">
-    <div>
-      <p class="eyebrow">DEVELOPER INTELLIGENCE</p>
-      <h1 id="news-title">Tech News Hub</h1>
+    <div class="header-main">
+      <span class="eyebrow">DEVELOPER INTELLIGENCE</span>
+      <div class="title-row">
+        <h1 id="news-title">Tech News Hub</h1>
+        <span class="total-pill" *ngIf="total > 0 && isFeedView">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          {{ total }} {{ total === 1 ? 'article' : 'articles' }}
+        </span>
+      </div>
       <p class="page-description">
         Explore technology on your terms, or follow news connected to your developer journey.
       </p>
     </div>
 
-    <button
-      class="secondary-button"
-      type="button"
-      *ngIf="isFeedView"
-      [disabled]="offline || isLoading || retrySeconds > 0"
-      (click)="refreshResults()"
-    >
-      {{ isLoading ? 'Refreshing…' : 'Refresh Results' }}
-    </button>
-    <button
-      class="primary-button refresh-button"
-      type="button"
-      [disabled]="offline || isLoading || discoveryPending || refreshSeconds > 0"
-      (click)="forceRefresh()"
-      aria-describedby="news-check-explanation"
-      [title]="refreshExplanation"
-      *ngIf="isFeedView"
-    >
-      <span aria-hidden="true">↻</span>
-      {{
-        refreshSeconds
-          ? 'Check again in ' + refreshSeconds + 's'
-          : isLoading
-            ? 'Checking cache…'
-            : discoveryPending
-              ? 'Searching…'
-              : 'Check for New Articles'
-      }}
-    </button>
+    <div class="header-actions" *ngIf="isFeedView">
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="offline || isLoading || retrySeconds > 0"
+        (click)="refreshResults()"
+      >
+        <span class="button-icon" [class.spinning]="isLoading" aria-hidden="true">↻</span>
+        <span>{{ isLoading ? 'Refreshing…' : 'Refresh Results' }}</span>
+      </button>
+      <button
+        class="primary-button refresh-button"
+        type="button"
+        [disabled]="offline || isLoading || discoveryPending || refreshSeconds > 0"
+        (click)="forceRefresh()"
+        aria-describedby="news-check-explanation"
+        [title]="refreshExplanation"
+      >
+        <span class="button-icon" [class.spinning]="discoveryPending" aria-hidden="true">⚡</span>
+        <span>
+          {{
+            refreshSeconds
+              ? 'Check again in ' + refreshSeconds + 's'
+              : isLoading
+                ? 'Checking cache…'
+                : discoveryPending
+                  ? 'Searching…'
+                  : 'Check for New Articles'
+          }}
+        </span>
+      </button>
+    </div>
   </header>
   <p id="news-check-explanation" class="refresh-explanation" *ngIf="refreshExplanation">
     {{ refreshExplanation }}
   </p>
 
-  <div class="explore-intro" *ngIf="selectedView === 'explore'">
-    <h2>Explore technology, beyond your profile</h2>
-    <p>
-      Browse available news or search a technology, tool or topic. Your skills do not limit these
-      results.
-    </p>
-    <p class="evidence-note">
-      Try DevOps, AWS, Azure, GCP, CI/CD, Kubernetes, Docker, security or AI. Topic aliases are
-      matched by the server.
-    </p>
-  </div>
-
   <div class="toast" role="status" aria-live="polite" *ngIf="toast">{{ toast }}</div>
 
   <div class="metric-strip" aria-label="Your news library">
-    <div>
-      <strong>{{ total }}</strong
-      ><span>Articles in this feed</span>
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <path
+            d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+          />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ total }}</strong>
+        <span>Articles in this feed</span>
+      </div>
     </div>
-    <div>
-      <strong>{{ savedKnown.has('bookmark') ? savedTotal.bookmark : '—' }}</strong
-      ><span>Bookmarks</span>
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ savedKnown.has('bookmark') ? savedTotal.bookmark : '—' }}</strong>
+        <span>Bookmarks</span>
+      </div>
     </div>
-    <div>
-      <strong>{{ savedKnown.has('read_later') ? savedTotal.read_later : '—' }}</strong
-      ><span>Read Later · including history</span>
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ savedKnown.has('read_later') ? savedTotal.read_later : '—' }}</strong>
+        <span>Read Later · including history</span>
+      </div>
     </div>
   </div>
 
@@ -84,6 +123,21 @@
   </nav>
 
   <ng-container *ngIf="isFeedView; else libraryView">
+    <div class="explore-intro" *ngIf="selectedView === 'explore'">
+      <div class="explore-intro-content">
+        <span class="explore-badge">DISCOVER NEW HORIZONS</span>
+        <h2>Explore technology, beyond your profile</h2>
+        <p>
+          Browse available news or search a technology, tool or topic. Your skills do not limit
+          these results.
+        </p>
+        <p class="evidence-note">
+          Try DevOps, AWS, Azure, GCP, CI/CD, Kubernetes, Docker, security or AI. Topic aliases are
+          matched by the server.
+        </p>
+      </div>
+    </div>
+
     <div
       class="feed-status"
       role="status"
@@ -92,8 +146,8 @@
       "
     >
       <div class="status-copy">
-        <span class="status-label"><i aria-hidden="true"></i>{{ freshnessLabel }}</span
-        ><span>{{ sourceMessage }}</span>
+        <span class="status-label"><i aria-hidden="true"></i>{{ freshnessLabel }}</span>
+        <span>{{ sourceMessage }}</span>
       </div>
       <span class="updated" *ngIf="updatedAt">Updated {{ updatedAt | date: 'MMM d, h:mm a' }}</span>
     </div>
@@ -105,13 +159,25 @@
       aria-controls="news-filter-panel"
       (click)="filtersExpanded = !filtersExpanded"
     >
-      {{
-        filtersExpanded
-          ? 'Hide filters'
-          : selectedView === 'for-you'
-            ? 'Filters'
-            : 'Search & filters'
-      }}
+      <svg
+        class="toggle-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>
+      <span>
+        {{
+          filtersExpanded
+            ? 'Hide filters'
+            : selectedView === 'for-you'
+              ? 'Filters'
+              : 'Search & filters'
+        }}
+      </span>
     </button>
     <div id="news-filter-panel" class="filter-panel" [class.expanded]="filtersExpanded">
       <app-news-filters
@@ -133,6 +199,15 @@
         <strong>{{ discoveryTitle }}</strong>
       </div>
       <p>{{ discoveryMessage }}</p>
+      <button
+        type="button"
+        class="secondary-button"
+        *ngIf="coverage?.suggestion as suggestion"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+        (click)="searchTopic(suggestion.query)"
+      >
+        Search {{ suggestion.label }}
+      </button>
       <button
         type="button"
         class="secondary-button"

@@ -4,6 +4,7 @@ const { normalizeItem, fromHackerNews, fromDevTo } = require('../utils/newsForma
 const { TOPICS, topicFor, matchesTopic } = require('../utils/newsTopics');
 const { queryFor, matchesQuery, relatedTopic } = require('../utils/newsQuery');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
+const { outcome, invalidPayload } = require('../utils/newsProviderErrors');
 
 // Fixed public upstreams only. Never use account credentials or request-supplied URLs.
 const SOURCE_NAMES = [
@@ -59,25 +60,33 @@ function available(topic) {
   });
 }
 
+const rssLimit = (source) => (source === 'Kubernetes Blog' ? 8 * 1048576 : 1048576);
 const decode = (value) =>
-  value.replace(
-    /&(?:amp|lt|gt|quot|apos);/g,
-    (match) => ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" })[match]
-  );
+  value.replace(/&(?:amp|lt|gt|quot|apos|#\d+|#x[\da-f]+);/gi, (match) => {
+    const named = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" };
+    if (named[match.toLowerCase()]) return named[match.toLowerCase()];
+    const hex = /^&#x/i.test(match);
+    const point = Number.parseInt(match.slice(hex ? 3 : 2, -1), hex ? 16 : 10);
+    return point > 0 && point <= 0x10ffff && !(point >= 0xd800 && point <= 0xdfff)
+      ? String.fromCodePoint(point)
+      : '\ufffd';
+  });
 function fromRss(xml, source = 'Lobsters') {
   // Intentionally narrow RSS 2.0 metadata reader: no DTD/entity processing, HTML bodies or recursive XML.
   if (
     typeof xml !== 'string' ||
-    xml.length > 1048576 ||
+    Buffer.byteLength(xml, 'utf8') > rssLimit(source) ||
     /<!DOCTYPE|<!ENTITY/i.test(xml) ||
     !/<rss\b/i.test(xml) ||
     !/<\/rss>\s*$/i.test(xml)
   )
-    throw new Error('Invalid RSS');
+    throw invalidPayload();
   const items = [...xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)];
-  if (items.length !== (xml.match(/<item(?:\s|>)/gi) || []).length) throw new Error('Invalid RSS');
+  if (items.length !== (xml.match(/<item(?:\s|>)/gi) || []).length) throw invalidPayload();
   const field = (item, name) => {
-    const raw = new RegExp(`<${name}>([\\s\\S]*?)<\\/${name}>`, 'i').exec(item)?.[1] || '';
+    const raw = (
+      new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${name}>`, 'i').exec(item)?.[1] || ''
+    ).trim();
     const text = raw.startsWith('<![CDATA[') && raw.endsWith(']]>') ? raw.slice(9, -3) : raw;
     return decode(text.trim());
   };
@@ -124,14 +133,15 @@ function requestFor(key, topic) {
     return {
       url: `https://dev.to/api/articles/search?q=${encodeURIComponent(query.text)}&top=30&per_page=${size}`
     };
-  if (key === 'kubernetesblog') return { url: 'https://kubernetes.io/feed.xml', rss: true };
+  if (key === 'kubernetesblog')
+    return { url: 'https://kubernetes.io/feed.xml', rss: true, maxBytes: rssLimit('Kubernetes Blog') };
   if (key === 'cloudflarechangelog')
     return { url: 'https://developers.cloudflare.com/changelog/rss/index.xml', rss: true };
   throw new Error('Unsupported provider');
 }
 function format(key, payload, topic) {
   if (key === 'hackernewssearch') {
-    if (!Array.isArray(payload?.hits)) throw new Error('Invalid provider response');
+    if (!Array.isArray(payload?.hits)) throw invalidPayload();
     return fromHackerNews(payload);
   }
   if (key === 'lobsters') return fromRss(payload);
@@ -139,10 +149,10 @@ function format(key, payload, topic) {
   if (key === 'cloudflarechangelog') return fromRss(payload, 'Cloudflare Changelog');
   if (key === 'devtosearch') {
     payload = Array.isArray(payload) ? payload : payload?.result;
-    if (!Array.isArray(payload)) throw new Error('Invalid provider response');
+    if (!Array.isArray(payload)) throw invalidPayload();
     return fromDevTo(payload);
   }
-  if (!Array.isArray(payload)) throw new Error('Invalid provider response');
+  if (!Array.isArray(payload)) throw invalidPayload();
   return payload
     .slice(0, 30)
     .filter(
@@ -204,7 +214,7 @@ async function search(key, topic, priority = 'user', broad = false) {
       timeout: 7000,
       signal: AbortSignal.timeout(7000),
       maxRedirects: 0,
-      maxContentLength: 1048576,
+      maxContentLength: request.maxBytes || 1048576,
       responseType: request.rss ? 'text' : 'json',
       headers: {
         Accept: request.rss
@@ -240,12 +250,7 @@ async function search(key, topic, priority = 'user', broad = false) {
       status: error.response?.status || 0,
       headers: error.response?.headers || {}
     });
-    return {
-      status: [429, 401, 403].includes(error.response?.status) ? 'quota_limited' : 'unavailable',
-      reason: denial?.reason || 'source_failure',
-      nextEligibleAt: denial?.nextEligibleAt || null,
-      items: []
-    };
+    return outcome(error, denial);
   }
 }
 

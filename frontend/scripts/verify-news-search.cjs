@@ -13,12 +13,15 @@ require(path.join(backend, 'node_modules/dotenv')).config({
 });
 const before = process.argv.includes('--before');
 const runtimeAudit = process.argv.includes('--runtime-audit');
+const flowAudit = process.argv.includes('--flow-audit');
 const root = path.resolve(__dirname, '../dist/frontend/browser');
 const output = path.resolve(
   __dirname,
-  runtimeAudit
-    ? '../verification/tech-news/runtime-audit'
-    : '../verification/tech-news/search-corrections',
+  flowAudit
+    ? '../verification/tech-news/flow-audit'
+    : runtimeAudit
+      ? '../verification/tech-news/runtime-audit'
+      : '../verification/tech-news/search-corrections',
 );
 const result = {
   phase: runtimeAudit ? 'live' : before ? 'before' : 'after',
@@ -27,6 +30,26 @@ const result = {
   errors: [],
   checks: [],
 };
+const auditCache = flowAudit ? require(path.join(backend, 'src/services/redisCacheService')) : null;
+async function admissionCounters() {
+  const redis = auditCache?.getRedisCacheClient({ commandTimeoutMs: 1500 });
+  if (!redis) return null;
+  const day = new Date().toISOString().slice(0, 10);
+  const keys = [
+    `news:v1:{discovery}:jobs:${day}`,
+    `news:v1:{discovery}:prewarm:${day}`,
+    `news:v3:{hackernewssearch}:day:${day}`,
+    `news:v3:{devtosearch}:day:${day}`,
+  ];
+  return Promise.all(
+    keys.map((key) =>
+      redis
+        .get(key)
+        .then((value) => Number(value || 0))
+        .catch(() => null),
+    ),
+  );
+}
 
 async function main() {
   await mongoose.connect(process.env.MONGODB_URI, {
@@ -41,6 +64,10 @@ async function main() {
     issuer: process.env.JWT_ISSUER || 'devinsight-api',
     audience: process.env.JWT_AUDIENCE || 'devinsight-web',
   });
+  if (flowAudit) {
+    await auditCache.initRedisCache({ probeOnly: true });
+    result.admissionBefore = await admissionCounters();
+  }
   const server = http.createServer((req, res) => {
     if (req.url.startsWith('/api/')) {
       const upstream = http.request(
@@ -124,9 +151,12 @@ async function main() {
         catalogUnavailable: body.telemetry?.catalogUnavailable,
       });
     };
-    const waitFeed = async (action) => {
+    const waitFeed = async (action, matches = () => true) => {
       const [response] = await Promise.all([
-        page.waitForResponse((response) => new URL(response.url()).pathname === '/api/news'),
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return url.pathname === '/api/news' && matches(url.searchParams);
+        }),
         action(),
       ]);
       await capture(response);
@@ -149,10 +179,40 @@ async function main() {
         technologyButtons: 0,
       });
     await waitFeed(() => page.getByRole('button', { name: 'Explore', exact: true }).click());
+    if (flowAudit) {
+      // A fixed-feed source cannot admit keyword discovery. Preserve that explicit filter
+      // while exercising correction through the real API without spending provider quota.
+      await page.locator('#news-source').selectOption('GitHub Releases');
+      await page.locator('#news-search').fill('kubernets');
+      await waitFeed(() =>
+        page.getByRole('button', { name: 'Apply Filters', exact: true }).click(),
+      );
+      await page
+        .locator('.discovery-status')
+        .getByText('Did you mean Kubernetes?', { exact: false })
+        .waitFor();
+      assert.equal(result.requests.at(-1).enrichment.reason, 'spelling_suggestion');
+      fs.mkdirSync(output, { recursive: true });
+      await page.screenshot({ path: path.join(output, 'suggestion.png'), fullPage: true });
+      await waitFeed(
+        () => page.getByRole('button', { name: 'Search Kubernetes', exact: true }).click(),
+        (params) => params.get('search') === 'kubernetes' && params.get('discover') === 'true',
+      );
+      assert.equal(result.requests.at(-1).query.search, 'kubernetes');
+      assert.equal(result.requests.at(-1).query.discover, 'true');
+      assert.equal(result.requests.at(-1).query.source, 'GitHub Releases');
+      assert.equal(result.requests.at(-1).enrichment.status, 'not_needed');
+      result.checks.push(
+        'Reviewed typo suggestion keeps literal query; correction retains source and normal discovery rules',
+      );
+      await page.locator('#news-source').selectOption('All');
+    }
     await page.locator('#news-search').fill('  DevOps  ');
     await waitFeed(() => page.getByRole('button', { name: 'Apply Filters', exact: true }).click());
     await page.locator('app-news-card').first().waitFor();
-    const search = result.requests.find((entry) => entry.query.discover === 'true');
+    const search = result.requests.find(
+      (entry) => entry.query.discover === 'true' && entry.query.search === 'devops',
+    );
     assert(
       search && search.query.mode === 'explore' && search.query.search.toLowerCase() === 'devops',
     );
@@ -178,13 +238,13 @@ async function main() {
     assert.equal(paged.query.page, '2');
     assert(!paged.query.discover && !paged.query.refresh);
     await waitFeed(() =>
-      page.getByRole('button', { name: 'Refresh Results', exact: true }).click(),
+      page.locator('header').getByRole('button', { name: 'Refresh Results', exact: true }).click(),
     );
     const refreshed = result.requests.at(-1);
     assert.equal(refreshed.query.bypassCache, 'true');
     assert(!refreshed.query.discover && !refreshed.query.refresh);
     result.checks.push('Date, pagination and Refresh Results remain catalog-only');
-    if (!before) {
+    if (!before && !flowAudit) {
       fs.mkdirSync(output, { recursive: true });
       await page.locator('app-news').screenshot({
         path: path.join(output, runtimeAudit ? 'live-explore.png' : 'after-explore.png'),
@@ -210,13 +270,29 @@ async function main() {
         'For You controls and request parameters remain corrected after switching views',
       );
     }
+    if (flowAudit) {
+      await page.screenshot({ path: path.join(output, 'explore.png'), fullPage: true });
+      await waitFeed(() => page.getByRole('button', { name: 'For You', exact: true }).click());
+      assert.equal(await page.locator('#news-category, #news-search').count(), 0);
+      result.checks.push('For You remains personalized without hidden search controls');
+    }
     fs.mkdirSync(output, { recursive: true });
-    await page.locator('app-news').screenshot({ path: path.join(output, `${result.phase}.png`) });
+    if (flowAudit)
+      await page.screenshot({ path: path.join(output, `${result.phase}.png`), fullPage: true });
+    else
+      await page.locator('app-news').screenshot({ path: path.join(output, `${result.phase}.png`) });
     assert.deepEqual(result.errors, []);
   } catch (error) {
     result.failure = error.message;
     throw error;
   } finally {
+    if (flowAudit) {
+      result.admissionAfter = await admissionCounters();
+      result.admissionCountersUnchanged = result.admissionBefore?.every(
+        (value, index) => value !== null && value === result.admissionAfter?.[index],
+      );
+      await auditCache.closeRedisCache();
+    }
     await browser.close();
     server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));

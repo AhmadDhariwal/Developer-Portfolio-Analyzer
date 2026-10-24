@@ -8,6 +8,7 @@ const adaptive = require('./newsAdaptiveService');
 const discovery = require('./newsDiscoveryService');
 const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
+const providerErrors = require('../utils/newsProviderErrors');
 const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = require('../utils/newsFormatter');
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
@@ -52,7 +53,8 @@ const NEWS_POPULARITY_FILTERS = ['all', 'high'];
 const SAFE_PROVIDER_FAILURES = new Set([
   'Provider disabled in platform settings',
   'Provider API key is not configured',
-  'Provider content approval or budget is missing'
+  'Provider content approval or budget is missing',
+  'Provider waiting for admission.'
 ]);
 
 const sanitizeProviderDiagnostics = (diagnostics = []) =>
@@ -62,6 +64,7 @@ const sanitizeProviderDiagnostics = (diagnostics = []) =>
     configured: Boolean(diagnostic?.configured),
     reachable: Boolean(diagnostic?.reachable),
     articlesFetched: Math.max(0, Number(diagnostic?.articlesFetched || 0)),
+    ...providerErrors.publicFields(diagnostic),
     lastSuccess: diagnostic?.lastSuccess || null,
     lastFailure: diagnostic?.lastFailure
       ? SAFE_PROVIDER_FAILURES.has(diagnostic.lastFailure)
@@ -124,9 +127,17 @@ const normalizeFilters = (filters = {}) => {
   };
 };
 
-const fetchJson = async (source, url, options = {}) => {
+const fetchJson = async (source, url, options = {}, format = (value) => value) => {
   const reservation = await governance.reserve(source);
-  if (!reservation.allowed) throw new Error('Provider admission denied');
+  if (!reservation.allowed)
+    throw Object.assign(new Error('Provider admission denied'), {
+      newsOutcome: {
+        status: reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
+        reason: reservation.reason,
+        nextEligibleAt: reservation.nextEligibleAt || null,
+        items: []
+      }
+    });
   try {
     const response = await axios.get(url, {
       ...options,
@@ -136,16 +147,33 @@ const fetchJson = async (source, url, options = {}) => {
       maxContentLength: 2 * 1024 * 1024,
       headers: { Accept: 'application/json', ...options.headers }
     });
+    const payload = response.data;
+    const valid =
+      source === 'newsapi'
+        ? payload?.status === 'ok' && Array.isArray(payload.articles)
+        : source === 'gnews'
+          ? Array.isArray(payload?.articles) && !payload.errors
+          : source === 'hackernews'
+            ? Array.isArray(payload?.hits)
+            : source === 'devto'
+              ? Array.isArray(payload)
+              : source === 'reddit'
+                ? Array.isArray(payload?.data?.children)
+                : false;
+    if (!valid) throw providerErrors.invalidPayload();
+    const items = format(payload);
     await governance.finish(reservation, { status: response.status, headers: response.headers });
-    return response.data;
+    return items;
   } catch (error) {
-    await governance.finish(reservation, {
+    const feedback = await governance.finish(reservation, {
       failed: true,
       status: error.response?.status || 0,
       headers: error.response?.headers || {}
     });
     // No immediate retry: scheduled attempts must obtain a new reservation.
-    throw new Error('Provider request failed');
+    throw Object.assign(new Error('Provider request failed'), {
+      newsOutcome: providerErrors.outcome(error, feedback)
+    });
   }
 };
 
@@ -153,31 +181,27 @@ const fetchFromNewsApi = async (sinceDate, token) => {
   const from = sinceDate.toISOString().slice(0, 10);
   const query = encodeURIComponent('(software OR programming OR developer OR javascript OR nodejs)');
   const url = `https://newsapi.org/v2/everything?q=${query}&from=${from}&language=en&sortBy=publishedAt&pageSize=50`;
-  const payload = await fetchJson('newsapi', url, { headers: { 'X-Api-Key': token } });
-  return fromNewsAPI(payload);
+  return fetchJson('newsapi', url, { headers: { 'X-Api-Key': token } }, fromNewsAPI);
 };
 
 const fetchFromGNews = async (sinceDate, token) => {
   const from = sinceDate.toISOString();
   const query = encodeURIComponent('developer OR programming OR software engineering');
   const url = `https://gnews.io/api/v4/search?q=${query}&lang=en&from=${encodeURIComponent(from)}&max=10&apikey=${encodeURIComponent(token)}`;
-  const payload = await fetchJson('gnews', url);
-  return fromGNews(payload);
+  return fetchJson('gnews', url, {}, fromGNews);
 };
 
 const fetchFromHackerNews = async () => {
   const url = 'https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=40';
-  const payload = await fetchJson('hackernews', url);
-  return fromHackerNews(payload);
+  return fetchJson('hackernews', url, {}, fromHackerNews);
 };
 
 const fetchFromDevTo = async () => {
-  const payload = await fetchJson('devto', 'https://dev.to/api/articles?per_page=30&top=7');
-  return fromDevTo(payload);
+  return fetchJson('devto', 'https://dev.to/api/articles?per_page=30&top=7', {}, fromDevTo);
 };
 
 const fetchFromReddit = async () => {
-  const payload = await fetchJson(
+  return fetchJson(
     'reddit',
     `https://oauth.reddit.com/r/${REDDIT_FEEDS[Math.floor(Date.now() / 1200000) % REDDIT_FEEDS.length]}/top?t=week&limit=20`,
     {
@@ -185,9 +209,9 @@ const fetchFromReddit = async () => {
         Authorization: `Bearer ${process.env.NEWS_REDDIT_ACCESS_TOKEN}`,
         'User-Agent': process.env.NEWS_REDDIT_USER_AGENT
       }
-    }
+    },
+    fromReddit
   );
-  return fromReddit(payload);
 };
 
 const uniqueNewsItems = (items = []) => {
@@ -438,6 +462,8 @@ const fetchAllSources = async (sinceDate) => {
 
     if (!provider.enabled) {
       sourceBuckets[providerName] = [];
+      diagnostic.status = 'disabled';
+      diagnostic.reason = provider.disabledReason ? 'budget_not_configured' : 'platform_disabled';
       diagnostic.lastFailure = provider.disabledReason || 'Provider disabled in platform settings';
       providerDiagnostics.push(diagnostic);
       return;
@@ -445,6 +471,8 @@ const fetchAllSources = async (sinceDate) => {
 
     if (!provider.configured) {
       sourceBuckets[providerName] = [];
+      diagnostic.status = 'disabled';
+      diagnostic.reason = 'credentials_missing';
       diagnostic.lastFailure = 'Provider API key is not configured';
       providerDiagnostics.push(diagnostic);
       return;
@@ -455,12 +483,22 @@ const fetchAllSources = async (sinceDate) => {
       diagnostic.reachable = true;
       diagnostic.articlesFetched = sourceBuckets[providerName].length;
       diagnostic.lastSuccess = nowIso;
+      diagnostic.status = 'success';
       if (sourceBuckets[providerName].length) providerUsed.push(providerName);
     } else {
-      providerFailureCount += 1;
+      const outcome = result.reason?.newsOutcome || {
+        status: 'unavailable',
+        reason: 'source_failure',
+        failureType: 'source_failure'
+      };
+      Object.assign(diagnostic, providerErrors.publicFields(outcome));
+      if (outcome.failureType) providerFailureCount += 1;
       sourceBuckets[providerName] = [];
-      diagnostic.lastFailure = 'Provider request failed.';
-      logger.warn('news provider failed', { provider: providerName });
+      diagnostic.lastFailure = outcome.failureType
+        ? 'Provider request failed.'
+        : 'Provider waiting for admission.';
+      if (outcome.failureType)
+        logger.warn('news provider failed', { provider: providerName, reason: diagnostic.reason });
     }
     providerDiagnostics.push(diagnostic);
   });
@@ -483,10 +521,16 @@ const fetchAllSources = async (sinceDate) => {
       provider: name,
       enabled: true,
       configured: true,
+      ...providerErrors.publicFields(outcome),
       reachable: outcome.status === 'success',
       articlesFetched: outcome.items.length,
       lastSuccess: outcome.status === 'success' ? nowIso : null,
-      lastFailure: outcome.status === 'success' ? null : 'Provider request failed.'
+      lastFailure:
+        outcome.status === 'success'
+          ? null
+          : outcome.failureType
+            ? 'Provider request failed.'
+            : 'Provider waiting for admission.'
     });
     if (outcome.items.length) providerUsed.push(name);
     if (outcome.status === 'unavailable') providerFailureCount++;
@@ -590,6 +634,9 @@ const getNewsFeed = async ({ user, query = {} }) => {
               String(a.id).localeCompare(String(b.id))
           )
       : rankNewsItems(matching, userContext, filters.tab);
+  // Publication age controls date filters, not when the shared catalog was checked.
+  const catalogCheckedAt = Date.parse(stored?.lastUpdated) || 0;
+  const queryCheckedAt = Math.max(Number(topicSnapshot?.filters?.attemptedAt) || 0, catalogCheckedAt) || null;
   const coverage = await discovery.coverage({
     filters,
     readOnly:
@@ -617,7 +664,7 @@ const getNewsFeed = async ({ user, query = {} }) => {
             : availableItems.filter((item) => matchesQuery(item, topic)).length - ranked.length
         )
       : 0,
-    queryAttemptAt: topicSnapshot?.filters?.attemptedAt || Date.parse(stored?.newestArticleAt) || null,
+    queryAttemptAt: queryCheckedAt,
     admissionKey: createHash('sha256').update(String(user._id)).digest('hex').slice(0, 32),
     revalidate: ['1', 'true', 'yes'].includes(String(query.refresh || '').toLowerCase()),
     diagnostics: snapshot?.providerDiagnostics || []
@@ -648,7 +695,7 @@ const getNewsFeed = async ({ user, query = {} }) => {
       .sort((a, b) => new Date(a) - new Date(b))[0] ||
     null;
   const queryFreshness = stored?.total
-    ? Date.now() - Date.parse(stored.newestArticleAt) < discovery.FRESH
+    ? Date.now() - Number(queryCheckedAt || 0) < (discovery.FRESH || 1800000)
       ? 'fresh'
       : 'stale'
     : !topic
