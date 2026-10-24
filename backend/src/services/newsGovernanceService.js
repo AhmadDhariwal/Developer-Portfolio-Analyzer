@@ -1,5 +1,6 @@
 const { randomUUID } = require('node:crypto');
 const cache = require('./redisCacheService');
+const telemetry = require('./newsMetricsService');
 
 const { NEWS_PROVIDER_KEYS: SOURCES } = require('../config/newsConfig');
 const positive = (value, fallback, maximum) => {
@@ -100,13 +101,14 @@ redis.call('ZADD', KEYS[1], now + 30000, ARGV[2]); redis.call('PEXPIRE', KEYS[1]
 redis.call('SET', KEYS[5], '1', 'PX', ARGV[8])
 return {1, 'allowed'}
 `;
-const RELEASE = "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end return 0";
+const RELEASE =
+  "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end return 0";
 const EXTEND =
   "local ttl = redis.call('PTTL', KEYS[1]); if ttl < tonumber(ARGV[1]) then redis.call('SET', KEYS[1], ARGV[2], 'PX', ARGV[1]) end return 1";
 const COUNTER =
   "local n = redis.call('INCR', KEYS[1]); if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return n";
 
-async function reserve(source, inspectOnly = false) {
+async function reserve(source, inspectOnly = false, priority = 'user') {
   const limits = policy(source);
   if (!limits.daily || !limits.monthly || !limits.concurrency)
     return { allowed: false, reason: 'budget_not_configured' };
@@ -146,18 +148,20 @@ async function reserve(source, inspectOnly = false) {
         now,
         token,
         limits.concurrency,
-        ownDaily,
-        ownMonthly,
+        priority === 'prewarm' ? Math.floor(ownDaily / 2) : ownDaily,
+        priority === 'prewarm' ? Math.floor(ownMonthly / 2) : ownMonthly,
         dayEnd,
         monthEnd,
         limits.interval,
-        shared.daily,
-        shared.monthly,
+        priority === 'prewarm' ? Math.floor(shared.daily / 2) : shared.daily,
+        priority === 'prewarm' ? Math.floor(shared.monthly / 2) : shared.monthly,
         shared.interval,
         shared.paired ? 1 : 0,
         inspectOnly ? 'inspect' : 'reserve'
       ].map(String)
     });
+    if (!inspectOnly)
+      telemetry.admission.inc({ provider: source, reason: Number(allowed) === 1 ? 'allowed' : reason });
     return {
       allowed: Number(allowed) === 1,
       reason,
@@ -224,7 +228,10 @@ async function finish(reservation, { status = 200, headers = {}, failed = false 
     // be bypassed by switching between its adapters.
     if (
       delay &&
-      (status === 429 || status === 401 || status === 403 || (remaining !== undefined && Number(remaining) <= 0))
+      (status === 429 ||
+        status === 401 ||
+        status === 403 ||
+        (remaining !== undefined && Number(remaining) <= 0))
     ) {
       const families = [
         ['hackernews', 'hackernewssearch'],

@@ -41,12 +41,18 @@ test('expired sufficient query results schedule automatic revalidation without b
       })
     }
   });
-  const result = await discovery.coverage({ filters: filters(), total: 6, broadTotal: 6, queryAttemptAt: old });
+  const result = await discovery.coverage({
+    filters: filters(),
+    total: 6,
+    broadTotal: 6,
+    queryAttemptAt: old
+  });
   assert.equal(result.enrichment.status, 'queued');
   assert.equal(mode, 'stale');
 });
 function create(extra = {}) {
   return load('../services/newsDiscoveryService.js', {
+    './newsCatalogService': { ingest: async (items) => ({ inserted: items.length }) },
     '../models/newsTopicCache': { findOne: () => ({ lean: async () => null }), updateOne: async () => ({}) },
     './redisCacheService': { getRedisCacheClient: () => null },
     './newsDiscoveryProviders': fakeProviders(),
@@ -133,7 +139,9 @@ test('new budgets require content approval and related adapters share upstream c
       { failed: true, status: 429, headers: { 'retry-after': '120' } }
     );
     assert.ok(
-      writes.some((write) => write.keys[0] === `news:v3:{${sibling}}:cooldown` && Number(write.arguments[0]) >= 120000)
+      writes.some(
+        (write) => write.keys[0] === `news:v3:{${sibling}}:cooldown` && Number(write.arguments[0]) >= 120000
+      )
     );
   }
 });
@@ -255,7 +263,10 @@ test('provider adapters require approval, protect transport, validate content an
   try {
     assert.equal((await providers.search('hackernewssearch', 'react')).status, 'quota_limited');
     for (const source of ['githubreleases', 'githubadvisories', 'lobsters']) {
-      const output = await providers.search(source, source === 'githubadvisories' ? 'react security' : 'react');
+      const output = await providers.search(
+        source,
+        source === 'githubadvisories' ? 'react security' : 'react'
+      );
       assert.equal(output.status, 'success');
       assert.equal(output.items.length, 1);
       assert.equal(output.items[0].description, '');
@@ -264,7 +275,9 @@ test('provider adapters require approval, protect transport, validate content an
     }
     assert.equal(calls, 4);
     assert.equal(finishes[0].status, 429);
-    assert.throws(() => providers.fromRss('<!DOCTYPE rss [<!ENTITY private SYSTEM "file:///secret">]><rss></rss>'));
+    assert.throws(() =>
+      providers.fromRss('<!DOCTYPE rss [<!ENTITY private SYSTEM "file:///secret">]><rss></rss>')
+    );
     assert.throws(() => providers.fromRss('<rss><item></rss>'));
   } finally {
     if (original === undefined) delete process.env.NEWS_DISCOVERY_ENABLED;
@@ -303,7 +316,8 @@ test('worker fallback, negative caching, lease loss and persistence failures are
         }
       },
       './newsDiscoveryProviders': fakeProviders({
-        available: () => (scenario === 'enough' ? realProviders.KEYS : ['hackernewssearch', 'githubreleases']),
+        available: () =>
+          scenario === 'enough' ? realProviders.KEYS : ['hackernewssearch', 'githubreleases'],
         search: async (provider) => {
           attempts.push(provider);
           if (scenario === 'lease_lost') values.set('lease', 'new-owner');
@@ -417,7 +431,9 @@ test('discovered articles preserve feed ranking, pagination, skill evidence and 
       })
     },
     './developerSignalService': {
-      getDeveloperSignals: async (id) => ({ resumeSignals: { skills: id === 'owner' ? ['React'] : ['Python'] } }),
+      getDeveloperSignals: async (id) => ({
+        resumeSignals: { skills: id === 'owner' ? ['React'] : ['Python'] }
+      }),
       buildSignalHash: (value) => JSON.stringify(value)
     }
   });
@@ -432,7 +448,8 @@ test('discovered articles preserve feed ranking, pagination, skill evidence and 
   );
   assert.ok(
     feed.items.every(
-      (item, index) => item.rankScore === ranked[index + 3].rankScore && Array.isArray(item.relatedSkillEvidence)
+      (item, index) =>
+        item.rankScore === ranked[index + 3].rankScore && Array.isArray(item.relatedSkillEvidence)
     )
   );
   const other = await service.getNewsFeed({

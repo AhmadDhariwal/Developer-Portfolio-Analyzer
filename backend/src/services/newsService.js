@@ -3,6 +3,8 @@ const { queryFor, matchesQuery } = require('../utils/newsQuery');
 const developerContext = require('./developerContextService');
 const axios = require('axios');
 const pool = require('./newsPoolService');
+const catalog = require('./newsCatalogService');
+const adaptive = require('./newsAdaptiveService');
 const discovery = require('./newsDiscoveryService');
 const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
@@ -164,8 +166,7 @@ const fetchFromGNews = async (sinceDate, token) => {
 };
 
 const fetchFromHackerNews = async () => {
-  const query = encodeURIComponent('developer OR javascript OR node OR ai');
-  const url = `https://hn.algolia.com/api/v1/search_by_date?query=${query}&tags=story&hitsPerPage=40`;
+  const url = 'https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=40';
   const payload = await fetchJson('hackernews', url);
   return fromHackerNews(payload);
 };
@@ -225,12 +226,21 @@ const extractTrendingTopics = (items = []) => {
   const counters = new Map();
   items.forEach((item) => {
     const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
-    ['javascript', 'typescript', 'react', 'angular', 'node', 'docker', 'kubernetes', 'ai', 'llm', 'security'].forEach(
-      (topic) => {
-        if (new RegExp(`(^|[^a-z0-9])${topic}(?=$|[^a-z0-9])`, 'i').test(text))
-          counters.set(topic, (counters.get(topic) || 0) + 1);
-      }
-    );
+    [
+      'javascript',
+      'typescript',
+      'react',
+      'angular',
+      'node',
+      'docker',
+      'kubernetes',
+      'ai',
+      'llm',
+      'security'
+    ].forEach((topic) => {
+      if (new RegExp(`(^|[^a-z0-9])${topic}(?=$|[^a-z0-9])`, 'i').test(text))
+        counters.set(topic, (counters.get(topic) || 0) + 1);
+    });
   });
   return [...counters.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -334,20 +344,27 @@ const buildUserContext = async (user, options = {}) => {
     36
   );
   const jobDemandSkills = normalizeSkillNames(jobsDemand.topSkills || [], 18);
-  const recommendationTechnologies = normalizeSkillNames(recommendations.skills?.recommendedTechnologies || [], 18);
+  const recommendationTechnologies = normalizeSkillNames(
+    recommendations.skills?.recommendedTechnologies || [],
+    18
+  );
 
   const context = {
     ...defaults,
-    careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
+    careerStack:
+      developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
     experienceLevel:
-      developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || defaults.experienceLevel,
+      developerContext.resolveExperienceLevel(user) ||
+      careerProfile.experienceLevel ||
+      defaults.experienceLevel,
     careerGoal: user.careerGoal || careerProfile.careerGoal || '',
     resumeSkills,
     githubTechnologies,
     skillGaps,
     detectedSkills: knownSkills.slice(0, 18),
     knownSkills,
-    targetRole: user.careerGoal || careerProfile.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
+    targetRole:
+      user.careerGoal || careerProfile.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
     jobDemandSkills,
     recommendationTechnologies,
     activeLearningFocus: sprint.activeLearningFocus || '',
@@ -448,6 +465,32 @@ const fetchAllSources = async (sinceDate) => {
     providerDiagnostics.push(diagnostic);
   });
 
+  const adapters = require('./newsDiscoveryProviders');
+  // Fixed feeds and reviewed repository rotation have independent Redis intervals.
+  for (const key of [
+    'githubreleases',
+    'githubadvisories',
+    'lobsters',
+    'kubernetesblog',
+    'cloudflarechangelog'
+  ]) {
+    const name = adapters.SOURCE_NAMES[adapters.KEYS.indexOf(key)];
+    const limits = governance.policy(key);
+    if (!newsEnabled || !limits.daily || !limits.monthly) continue;
+    const outcome = await adapters.feed(key);
+    sourceBuckets[name] = outcome.items;
+    providerDiagnostics.push({
+      provider: name,
+      enabled: true,
+      configured: true,
+      reachable: outcome.status === 'success',
+      articlesFetched: outcome.items.length,
+      lastSuccess: outcome.status === 'success' ? nowIso : null,
+      lastFailure: outcome.status === 'success' ? null : 'Provider request failed.'
+    });
+    if (outcome.items.length) providerUsed.push(name);
+    if (outcome.status === 'unavailable') providerFailureCount++;
+  }
   return { sourceBuckets, providerUsed, providerFailureCount, providerDiagnostics };
 };
 
@@ -501,18 +544,31 @@ const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStat
 const getNewsFeed = async ({ user, query = {} }) => {
   const startedAt = Date.now();
   const filters = normalizeFilters(query);
+  // Older clients may still send controls hidden in For You. Accept the envelope,
+  // but never let those stale values restrict personalized candidates.
+  if (filters.mode === 'personalized' && filters.tab === 'for-you') {
+    filters.search = '';
+    filters.category = 'All';
+  }
   const topic = queryFor(filters.search)?.text;
+  const bypass = ['1', 'true', 'yes'].includes(String(query.bypassCache || '').toLowerCase());
+  const stored = await catalog.query(filters, { bypass }).catch(() => null);
+  if (topic && !bypass && filters.page === 1) await adaptive.record(topic, String(user._id));
   const [userContext, snapshot, topicSnapshot] = await Promise.all([
     filters.mode === 'explore'
       ? Promise.resolve(null)
       : buildUserContext(user, {
-          forceRefresh: ['1', 'true', 'yes'].includes(String(query.refresh || query.bypassCache || '').toLowerCase())
+          forceRefresh: ['1', 'true', 'yes'].includes(
+            String(query.refresh || query.bypassCache || '').toLowerCase()
+          )
         }),
-    pool.readPool(),
+    pool.readPool({ bypass }),
     discovery.readTopic(topic)
   ]);
   const sinceTimestamp = parseDateRange(filters.dateRange).getTime();
-  const availableItems = uniqueNewsItems([...(snapshot?.allItems || []), ...(topicSnapshot?.allItems || [])]);
+  const availableItems = stored
+    ? stored.items
+    : uniqueNewsItems([...(snapshot?.allItems || []), ...(topicSnapshot?.allItems || [])]);
   const matching = availableItems.filter((item) => matchesFilters(item, filters, sinceTimestamp));
   const ranked =
     filters.mode === 'explore'
@@ -536,17 +592,32 @@ const getNewsFeed = async ({ user, query = {} }) => {
       : rankNewsItems(matching, userContext, filters.tab);
   const coverage = await discovery.coverage({
     filters,
-    total: ranked.length,
-    broadTotal: topic ? availableItems.filter((item) => matchesQuery(item, topic)).length : 0,
-    dateExcludedMatches: availableItems.filter(
-      (item) =>
-        matchesFilters(item, filters, Date.now() - 30 * 86400000) &&
-        new Date(item.publishedAt).getTime() < sinceTimestamp
-    ).length,
+    readOnly:
+      bypass ||
+      (!['1', 'true', 'yes'].includes(String(query.discover || '').toLowerCase()) &&
+        !['1', 'true', 'yes'].includes(String(query.refresh || '').toLowerCase())),
+    total: stored?.total ?? ranked.length,
+    broadTotal: stored
+      ? stored.broadTotal
+      : topic
+        ? availableItems.filter((item) => matchesQuery(item, topic)).length
+        : 0,
+    dateExcludedMatches: stored
+      ? Math.max(0, stored.historicalTotal - stored.total)
+      : availableItems.filter(
+          (item) =>
+            matchesFilters(item, filters, Date.now() - 30 * 86400000) &&
+            new Date(item.publishedAt).getTime() < sinceTimestamp
+        ).length,
     filterExcludedMatches: topic
-      ? availableItems.filter((item) => matchesQuery(item, topic)).length - ranked.length
+      ? Math.max(
+          0,
+          stored
+            ? stored.broadTotal - stored.total
+            : availableItems.filter((item) => matchesQuery(item, topic)).length - ranked.length
+        )
       : 0,
-    queryAttemptAt: topicSnapshot?.filters?.attemptedAt,
+    queryAttemptAt: topicSnapshot?.filters?.attemptedAt || Date.parse(stored?.newestArticleAt) || null,
     admissionKey: createHash('sha256').update(String(user._id)).digest('hex').slice(0, 32),
     revalidate: ['1', 'true', 'yes'].includes(String(query.refresh || '').toLowerCase()),
     diagnostics: snapshot?.providerDiagnostics || []
@@ -563,24 +634,33 @@ const getNewsFeed = async ({ user, query = {} }) => {
       coverage.enrichment.lastAttemptAt = new Date(topicSnapshot.filters.attemptedAt).toISOString();
   }
   const start = (filters.page - 1) * filters.limit;
-  const sourceSummary = Object.fromEntries(
-    SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
-  );
+  const sourceSummary =
+    stored?.sourceSummary ||
+    Object.fromEntries(
+      SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
+    );
   const contributing = (topic ? [topicSnapshot] : [snapshot]).filter((value) => value?.allItems?.length);
   const lastUpdated =
+    stored?.lastUpdated ||
     contributing
       .map((value) => value.lastUpdated)
       .filter(Boolean)
-      .sort((a, b) => new Date(a) - new Date(b))[0] || null;
-  const queryFreshness = !topic
-    ? null
-    : !topicSnapshot
-      ? 'missing'
-      : !topicSnapshot.allItems?.length
-        ? 'empty'
-        : Date.now() - Number(new Date(topicSnapshot.lastUpdated).getTime() || 0) < (discovery.FRESH || 1800000)
-          ? 'fresh'
-          : 'stale';
+      .sort((a, b) => new Date(a) - new Date(b))[0] ||
+    null;
+  const queryFreshness = stored?.total
+    ? Date.now() - Date.parse(stored.newestArticleAt) < discovery.FRESH
+      ? 'fresh'
+      : 'stale'
+    : !topic
+      ? null
+      : !topicSnapshot
+        ? 'missing'
+        : !topicSnapshot.allItems?.length
+          ? 'empty'
+          : Date.now() - Number(new Date(topicSnapshot.lastUpdated).getTime() || 0) <
+              (discovery.FRESH || 1800000)
+            ? 'fresh'
+            : 'stale';
   const freshness = topic
     ? ['missing', 'empty'].includes(queryFreshness)
       ? 'warming'
@@ -589,14 +669,16 @@ const getNewsFeed = async ({ user, query = {} }) => {
   return {
     ...coverage,
     mode: filters.mode,
-    items: ranked.slice(start, start + filters.limit).map((item) => ({
-      ...item,
-      relatedSkillEvidence: userContext ? relatedNewsSkillEvidence(item, userContext.skillEvidence) : []
-    })),
-    total: ranked.length,
+    items: (stored && filters.mode === 'explore' ? ranked : ranked.slice(start, start + filters.limit)).map(
+      (item) => ({
+        ...item,
+        relatedSkillEvidence: userContext ? relatedNewsSkillEvidence(item, userContext.skillEvidence) : []
+      })
+    ),
+    total: stored ? (stored.rankingLimited ? ranked.length : stored.total) : ranked.length,
     sourceSummary,
     trendingTopics: extractTrendingTopics(ranked),
-    fromCache: Boolean(snapshot || topicSnapshot),
+    fromCache: Boolean(stored || snapshot || topicSnapshot),
     filters,
     recommendedBasedOn: userContext
       ? buildRecommendedBasedOn({
@@ -609,11 +691,11 @@ const getNewsFeed = async ({ user, query = {} }) => {
               : freshness === 'stale'
                 ? 'Serving stale cached source coverage.'
                 : 'News ingestion is warming up.',
-          fromCache: Boolean(snapshot || topicSnapshot)
+          fromCache: Boolean(stored || snapshot || topicSnapshot)
         })
       : null,
     telemetry: {
-      cacheHit: Boolean(snapshot || topicSnapshot),
+      cacheHit: Boolean(stored || snapshot || topicSnapshot),
       providerFailureCount: snapshot?.providerFailureCount || 0,
       providerUsed: [...new Set(ranked.map((item) => item.source))],
       discoveryDiagnostics: topicSnapshot?.providerDiagnostics || [],
@@ -623,6 +705,9 @@ const getNewsFeed = async ({ user, query = {} }) => {
       freshness,
       queryFreshness,
       generalFreshness: pool.freshness(snapshot),
+      catalogVersion: stored?.version ?? null,
+      rankingLimited: stored?.rankingLimited || false,
+      catalogUnavailable: !stored,
       cacheVersion: topicSnapshot?.filters?.version || null,
       lastSuccessfulCheckAt: topicSnapshot?.filters?.lastSuccessfulCheckAt || null,
       staleFallback: freshness === 'stale',

@@ -1,6 +1,7 @@
 const NewsCache = require('../models/news');
 const cache = require('./redisCacheService');
 const governance = require('./newsGovernanceService');
+const catalog = require('./newsCatalogService');
 const { normalizeItem } = require('../utils/newsFormatter');
 
 const KEY = 'news:v3:public:pool';
@@ -15,7 +16,9 @@ const toView = (value) => {
   if (!usable(value)) return null;
   const times = value.filters?.sourceTimes;
   if (!times) return value;
-  const allItems = (value.allItems || []).filter((item) => Date.now() - Number(times[item.source] || 0) < STALE_MS);
+  const allItems = (value.allItems || []).filter(
+    (item) => Date.now() - Number(times[item.source] || 0) < STALE_MS
+  );
   const providerUsed = [...new Set(allItems.map((item) => item.source))];
   return {
     ...value,
@@ -72,7 +75,7 @@ async function refreshPool(loader) {
   return governance.withLease('ingestion', 120, async (lease) => {
     const previous = await readPool({ bypass: true });
     // A failed or empty run is also paced; no worker hot-loops on cold starts.
-    if (Date.now() - Number(previous?.filters?.attemptedAt || 0) < FRESH_MS) return { skipped: true };
+    if (Date.now() - Number(previous?.filters?.attemptedAt || 0) < 60000) return { skipped: true };
     const attemptedAt = Date.now();
     const result = await loader();
     const sourceTimes = { ...(previous?.filters?.sourceTimes || {}) };
@@ -84,7 +87,11 @@ async function refreshPool(loader) {
       if (incoming.length) {
         buckets[name] = incoming;
         sourceTimes[name] = now;
-      } else if (diagnostic.enabled && diagnostic.configured && now - Number(sourceTimes[name] || 0) < STALE_MS) {
+      } else if (
+        diagnostic.enabled &&
+        diagnostic.configured &&
+        now - Number(sourceTimes[name] || 0) < STALE_MS
+      ) {
         buckets[name] = (previous?.allItems || []).filter((item) => item.source === name);
       }
     }
@@ -150,11 +157,15 @@ async function refreshPool(loader) {
     const publisher = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
     if (!publisher || (await publisher.get(lease.key).catch(() => null)) !== lease.token)
       return { skipped: true, reason: 'lease_lost' };
+    const ingestion = await catalog.ingest(Object.values(result.sourceBuckets).flat());
     try {
       await NewsCache.updateOne(
         {
           cacheKey: KEY,
-          $or: [{ 'filters.attemptedAt': { $lte: attemptedAt } }, { 'filters.attemptedAt': { $exists: false } }]
+          $or: [
+            { 'filters.attemptedAt': { $lte: attemptedAt } },
+            { 'filters.attemptedAt': { $exists: false } }
+          ]
         },
         { $set: snapshot },
         { upsert: true }
@@ -181,7 +192,12 @@ async function refreshPool(loader) {
           }
         )
         .catch(() => {});
-    return { articles: allItems.length };
+    return {
+      articles: allItems.length,
+      ...ingestion,
+      successful: result.providerDiagnostics.some((entry) => entry.reachable),
+      providerFailureCount: result.providerFailureCount
+    };
   });
 }
 

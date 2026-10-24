@@ -41,6 +41,63 @@ describe('NewsService bounded account-scoped requests', () => {
     vi.restoreAllMocks();
   });
   const feed = (request: { url: string }) => request.url.endsWith('/news');
+  it('uses server Date for absolute Retry-After despite client clock skew', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(9000000000000);
+    const serverTime = 1800000000000;
+    service.getNews(DEFAULT_NEWS_FILTERS, 1, 12, { refresh: true }).subscribe({ error() {} });
+    http.expectOne(feed).flush(
+      {},
+      {
+        status: 429,
+        statusText: 'Limited',
+        headers: {
+          Date: new Date(serverTime).toUTCString(),
+          'Retry-After': new Date(serverTime + 16000).toUTCString(),
+        },
+      },
+    );
+    expect(service.retryAt('refresh')).toBe(9000000016000);
+  });
+  it('omits stale hidden For You category/search and normalizes explicit Explore search', () => {
+    service.getNews({ ...DEFAULT_NEWS_FILTERS, category: 'DevOps', search: 'DevOps' }).subscribe();
+    const personal = http.expectOne(feed);
+    expect(personal.request.params.has('category')).toBe(false);
+    expect(personal.request.params.has('search')).toBe(false);
+    personal.flush(response);
+    service
+      .getNews(
+        { ...DEFAULT_NEWS_FILTERS, mode: 'explore', category: 'DevOps', search: '  DevOps  ' },
+        1,
+        12,
+        { discover: true },
+      )
+      .subscribe();
+    const explore = http.expectOne(feed);
+    expect(explore.request.params.get('category')).toBe('DevOps');
+    expect(explore.request.params.get('search')).toBe('devops');
+    expect(explore.request.params.get('mode')).toBe('explore');
+    expect(explore.request.params.get('discover')).toBe('true');
+    explore.flush(response);
+  });
+  it('marks catalog refresh and explicit discovery as distinct transport actions', () => {
+    service
+      .getNews(DEFAULT_NEWS_FILTERS, 1, 12, { catalogOnly: true, revalidate: true })
+      .subscribe();
+    const catalog = http.expectOne(feed);
+    expect(catalog.request.params.get('bypassCache')).toBe('true');
+    expect(catalog.request.params.has('refresh')).toBe(false);
+    expect(catalog.request.params.has('discover')).toBe(false);
+    catalog.flush(response);
+    service
+      .getNews({ ...DEFAULT_NEWS_FILTERS, mode: 'explore', search: 'rust' }, 1, 12, {
+        discover: true,
+      })
+      .subscribe();
+    const discovery = http.expectOne(feed);
+    expect(discovery.request.params.get('discover')).toBe('true');
+    expect(discovery.request.params.has('bypassCache')).toBe(false);
+    discovery.flush(response);
+  });
   it('keeps Explore independent, shares identical reads, and separates personalized cache entries', () => {
     let result: any;
     const filters = { ...DEFAULT_NEWS_FILTERS, mode: 'explore' as const, search: 'CI/CD updates' };
@@ -48,7 +105,7 @@ describe('NewsService bounded account-scoped requests', () => {
     service.getNews(filters).subscribe();
     const request = http.expectOne(feed);
     expect(request.request.params.get('mode')).toBe('explore');
-    expect(request.request.params.get('search')).toBe('CI/CD updates');
+    expect(request.request.params.get('search')).toBe('ci/cd updates');
     expect(request.request.params.has('refresh')).toBe(false);
     request.flush({
       ...response,
@@ -83,7 +140,7 @@ describe('NewsService bounded account-scoped requests', () => {
     for (const search of [...topics, 'CI/CD', 'Amazon Web Services', 'unknown technology']) {
       service.getNews({ ...DEFAULT_NEWS_FILTERS, mode: 'explore', search }, 2).subscribe();
       const request = http.expectOne(feed);
-      expect(request.request.params.get('search')).toBe(search);
+      expect(request.request.params.get('search')).toBe(search.toLowerCase());
       expect(request.request.params.get('page')).toBe('2');
       expect(request.request.params.has('refresh')).toBe(false);
       request.flush({ ...response, page: 2 });

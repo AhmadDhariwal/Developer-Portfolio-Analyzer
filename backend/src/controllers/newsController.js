@@ -7,7 +7,8 @@ const normalizeSavedType = (value) => {
   const normalized = String(value || '')
     .trim()
     .toLowerCase();
-  if (normalized === 'read_later' || normalized === 'read-later' || normalized === 'read later') return 'read_later';
+  if (normalized === 'read_later' || normalized === 'read-later' || normalized === 'read later')
+    return 'read_later';
   if (normalized === 'bookmark') return 'bookmark';
   return '';
 };
@@ -51,6 +52,7 @@ const getNews = async (req, res) => {
     });
     const totalPages = Math.max(1, Math.ceil(payload.total / payload.filters.limit));
     res.json({
+      serverTime: new Date().toISOString(),
       items: payload.items,
       total: payload.total,
       page: payload.filters.page,
@@ -94,7 +96,14 @@ const getSavedNews = async (req, res) => {
     const rawLimit = req.query?.limit;
     const page = rawPage === undefined ? 1 : Number(rawPage);
     const limit = rawLimit === undefined ? 50 : Number(rawLimit);
-    if (!Number.isInteger(page) || page < 1 || page > 10000 || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > 10000 ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 100
+    ) {
       return res.status(400).json({ message: 'Saved news pagination is invalid.' });
     }
 
@@ -201,7 +210,8 @@ const saveNews = async (req, res) => {
     if (error?.code === 11000) {
       const type = normalizeSavedType(req.body?.type);
       const url = sanitizeUrl(req.body?.url);
-      const existing = type && url ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean() : null;
+      const existing =
+        type && url ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean() : null;
       if (existing) {
         return res.status(200).json({
           item: mapSavedItem(existing),
@@ -257,7 +267,9 @@ const markSavedNewsAsRead = async (req, res) => {
       Object.keys(body).some((key) => key !== 'read') ||
       (Object.hasOwn(body, 'read') && typeof body.read !== 'boolean')
     )
-      return res.status(400).json({ message: 'Read status must be a boolean read field or an empty object.' });
+      return res
+        .status(400)
+        .json({ message: 'Read status must be a boolean read field or an empty object.' });
     const read = body.read !== false;
     const id = String(req.params.id || '').trim();
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -271,7 +283,9 @@ const markSavedNewsAsRead = async (req, res) => {
     const history = {
       firstReadAt: { $ifNull: ['$firstReadAt', { $ifNull: [previousRead, previousHistory] }] },
       lastReadAt: previousHistory,
-      readCount: { $max: [{ $ifNull: ['$readCount', 0] }, { $cond: [{ $ne: [previousHistory, null] }, 1, 0] }] }
+      readCount: {
+        $max: [{ $ifNull: ['$readCount', 0] }, { $cond: [{ $ne: [previousHistory, null] }, 1, 0] }]
+      }
     };
     const transition = read
       ? {

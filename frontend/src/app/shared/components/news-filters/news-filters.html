@@ -1,6 +1,6 @@
 <form class="filters-shell" (ngSubmit)="applyFilters()">
   <div class="filters-panel">
-    <div class="search-control">
+    <div class="search-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
       <label for="news-search">Search</label>
       <input
         id="news-search"
@@ -13,7 +13,7 @@
       />
     </div>
 
-    <div class="select-control">
+    <div class="select-control" *ngIf="filters.mode === 'explore' || filters.tab !== 'for-you'">
       <label for="news-category">Category</label>
       <select
         id="news-category"
@@ -46,8 +46,8 @@
         (ngModelChange)="setDate($event)"
       >
         <option value="today">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
+        <option value="week">Last 7 Days</option>
+        <option value="month">Last 30 Days</option>
       </select>
     </div>
 

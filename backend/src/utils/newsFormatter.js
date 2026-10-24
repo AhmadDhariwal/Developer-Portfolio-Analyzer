@@ -1,6 +1,7 @@
 const crypto = require('node:crypto');
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80';
+const DEFAULT_IMAGE =
+  'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1200&q=80';
 
 const FALLBACK_IMAGES = {
   Frontend: [
@@ -86,7 +87,9 @@ const normalizeDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
   const timestamp = date.getTime();
-  return Number.isFinite(timestamp) && timestamp <= Date.now() + 300000 && timestamp >= Date.now() - 30 * 86400000
+  return Number.isFinite(timestamp) &&
+    timestamp <= Date.now() + 300000 &&
+    timestamp >= Date.now() - 35 * 86400000
     ? date
     : null;
 };
@@ -110,7 +113,9 @@ const inferCategory = (headline = '', summary = '') => {
   for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
     if (
       keywords.some((keyword) =>
-        new RegExp(`(^|[^a-z0-9])${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^a-z0-9])`, 'i').test(text)
+        new RegExp(`(^|[^a-z0-9])${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^a-z0-9])`, 'i').test(
+          text
+        )
       )
     )
       return category;
@@ -143,7 +148,9 @@ const normalizeItem = (item = {}) => {
     title === '[Removed]'
   )
     return null;
-  const category = Object.hasOwn(CATEGORY_KEYWORDS, item.category) ? item.category : inferCategory(title, description);
+  const category = Object.hasOwn(CATEGORY_KEYWORDS, item.category)
+    ? item.category
+    : inferCategory(title, description);
   const tags = uniqueStrings(Array.isArray(item.tags) ? item.tags : [], 6);
 
   return {
@@ -159,7 +166,9 @@ const normalizeItem = (item = {}) => {
     image: sanitizeHttpUrl(item.image) || pickFallbackImage(category, title, description, source),
     publishedAt,
     category,
-    popularity: Number.isFinite(Number(item.popularity)) ? Math.max(0, Math.min(10000000, Number(item.popularity))) : 0,
+    popularity: Number.isFinite(Number(item.popularity))
+      ? Math.max(0, Math.min(10000000, Number(item.popularity)))
+      : 0,
     relevanceScore: Number(item.relevanceScore || 0),
     rankScore: Number(item.rankScore || 0),
     tags

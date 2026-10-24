@@ -70,7 +70,10 @@ test('Explore searches independent interests and preserves cached pagination wit
     { _id: 'frontend-person', activeCareerStack: 'Frontend' },
     { _id: 'ai-person', activeCareerStack: 'AI / ML' }
   ]) {
-    const result = await service.getNewsFeed({ user, query: { mode: 'explore', search: 'DevOps', page: 2, limit: 2 } });
+    const result = await service.getNewsFeed({
+      user,
+      query: { mode: 'explore', search: 'DevOps', page: 2, limit: 2 }
+    });
     assert.equal(result.total, 6);
     assert.equal(result.items.length, 2);
     assert.equal(result.filters.page, 2);
@@ -80,7 +83,8 @@ test('Explore searches independent interests and preserves cached pagination wit
     assert.equal(result.enrichment.status, 'not_needed');
     assert.ok(
       result.items.every(
-        (item) => item.rankScore === null && item.relevanceScore === null && item.relatedSkillEvidence.length === 0
+        (item) =>
+          item.rankScore === null && item.relevanceScore === null && item.relatedSkillEvidence.length === 0
       )
     );
     const controller = load('../controllers/newsController.js', {
@@ -107,7 +111,9 @@ test('Explore searches independent interests and preserves cached pagination wit
 test('unknown interests search cached articles without taxonomy rejection when discovery is disabled', async () => {
   const discovery = load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': {},
-    './redisCacheService': { getRedisCacheClient: () => ({ eval: () => assert.fail('Unknown topics must not queue') }) }
+    './redisCacheService': {
+      getRedisCacheClient: () => ({ eval: () => assert.fail('Unknown topics must not queue') })
+    }
   });
   const service = load('../services/newsService.js', {
     './newsPoolService': {
@@ -141,7 +147,14 @@ test('pagination never creates discovery jobs and explicit refresh can revalidat
       })
     }
   });
-  const filters = { search: 'DevOps', category: 'All', source: 'All', dateRange: 'week', popularity: 'all', page: 2 };
+  const filters = {
+    search: 'DevOps',
+    category: 'All',
+    source: 'All',
+    dateRange: 'week',
+    popularity: 'all',
+    page: 2
+  };
   const page = await discovery.coverage({ filters, total: 0, broadTotal: 0 });
   assert.equal(page.enrichment.reason, 'pagination_only');
   assert.equal(writes, 0);
@@ -242,7 +255,11 @@ test('topic cold starts fail quickly without buffering unavailable Mongo or wait
   const create = (model) =>
     load('../services/newsDiscoveryService.js', {
       '../models/newsTopicCache': model,
-      './newsDiscoveryProviders': { ...providers, enabled: () => true, available: () => ['hackernewssearch'] },
+      './newsDiscoveryProviders': {
+        ...providers,
+        enabled: () => true,
+        available: () => ['hackernewssearch']
+      },
       './redisCacheService': { getRedisCacheClient: () => null }
     });
   const disconnected = create({
@@ -290,8 +307,13 @@ test('proactive prewarming shares the daily queue budget and reserves capacity f
   };
   const create = () =>
     load('../services/newsDiscoveryService.js', {
+      './newsAdaptiveService': { candidates: async () => [{ topic: 'aws' }, { topic: 'rust' }] },
       '../models/newsTopicCache': { findOne: () => ({ lean: async () => null }) },
-      './newsDiscoveryProviders': { ...providers, enabled: () => true, available: () => ['hackernewssearch'] },
+      './newsDiscoveryProviders': {
+        ...providers,
+        enabled: () => true,
+        available: () => ['hackernewssearch']
+      },
       './redisCacheService': { getRedisCacheClient: () => redis },
       './newsGovernanceService': { COUNTER: 'controlled-counter', withLease: (_name, _ttl, work) => work() }
     });

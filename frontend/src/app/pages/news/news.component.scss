@@ -862,13 +862,50 @@ details[open] .disclosure-arrow {
 }
 
 .discovery-status {
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
   border-left: 3px solid var(--border-color);
-  padding: 8px 16px;
+  border-radius: 10px;
+  padding: 16px;
   font-size: 14px;
 }
 
 .discovery-status.pending {
   border-left-color: var(--color-primary);
+}
+
+.discovery-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discovery-loader {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: news-discovery-spin 1s linear infinite;
+}
+
+.refresh-explanation {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@keyframes news-discovery-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discovery-loader {
+    animation: none;
+  }
 }
 
 @media (max-width: 1200px) {

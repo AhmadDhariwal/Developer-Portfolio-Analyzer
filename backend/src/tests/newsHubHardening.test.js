@@ -18,7 +18,7 @@ test('article quality rejects missing, invalid, future and expired dates and uns
     undefined,
     'invalid',
     new Date(Date.now() + 86400000),
-    new Date(Date.now() - 31 * 86400000)
+    new Date(Date.now() - 36 * 86400000)
   ])
     assert.equal(normalizeItem(article({ publishedAt })), null);
   for (const url of [
@@ -75,7 +75,10 @@ test('ranking preserves 50/30/20, stable ties and separates recommendations from
       rankNewsItems([item, { ...item, id: 'a' }], context).map((entry) => entry.id),
       ['a', 'b']
     );
-    assert.equal(rankNewsItems([item, { ...item, id: 'popular', popularity: 100 }], {}, 'trending')[0].id, 'popular');
+    assert.equal(
+      rankNewsItems([item, { ...item, id: 'popular', popularity: 100 }], {}, 'trending')[0].id,
+      'popular'
+    );
     assert.equal(
       rankNewsItems([item, { ...item, id: 'new', publishedAt: new Date(Date.now()) }], {}, 'latest')[0].id,
       'new'
@@ -97,7 +100,10 @@ test('provider policies fail closed without Redis or explicit paid/content autho
   });
   assert.equal(called, false);
   assert.equal(governor.retryDelay({ 'retry-after': '120' }), 120000);
-  assert.equal(governor.retryDelay({ 'retry-after': new Date(1800000060000).toUTCString() }, 1800000000000), 60000);
+  assert.equal(
+    governor.retryDelay({ 'retry-after': new Date(1800000060000).toUTCString() }, 1800000000000),
+    60000
+  );
 });
 
 test('feeds share public articles, isolate user signals and never call providers, including refresh', async () => {

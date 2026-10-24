@@ -45,6 +45,14 @@ const validateEnv = () => {
 
   const env = parsed.data;
   validateNewsRelationships(env);
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const filename = path.resolve(__dirname, '../../.env');
+  const audit = require('./newsConfig').auditNewsConfiguration(
+    process.env,
+    fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : ''
+  );
+  if (audit.missing.length || audit.deprecated.length) console.warn('[news config]', JSON.stringify(audit));
   const weakSecret = String(env.JWT_SECRET || '').length < 24;
   const strictMode = String(env.SECURITY_STRICT_ENV || '').toLowerCase() === 'true';
 

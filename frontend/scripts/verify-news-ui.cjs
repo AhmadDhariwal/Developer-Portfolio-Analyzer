@@ -4,9 +4,13 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const catalogOnly = process.argv.includes('--catalog-only');
 const exploreOnly = process.argv.includes('--explore-only');
 const root = path.resolve(__dirname, '../dist/frontend/browser');
-const output = path.resolve(__dirname, '../verification/tech-news');
+const output = path.resolve(
+  __dirname,
+  catalogOnly ? '../verification/tech-news/catalog' : '../verification/tech-news',
+);
 const results = {
   scope:
     'Focused frontend verification using synthetic HTTP fixtures; no provider or backend traffic.',
@@ -269,22 +273,82 @@ async function session(browser, origin, theme, mobile) {
   fs.mkdirSync(output, { recursive: true });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    channel: process.argv.includes('--edge') ? 'msedge' : undefined,
+  });
   try {
-    const cases = exploreOnly
-      ? [
-          ['light', false],
-          ['dark', true],
-        ]
-      : [
-          ['light', false],
-          ['dark', false],
-          ['light', true],
-          ['dark', true],
-        ];
+    const cases =
+      exploreOnly || catalogOnly
+        ? [
+            ['light', false],
+            ['dark', true],
+          ]
+        : [
+            ['light', false],
+            ['dark', false],
+            ['light', true],
+            ['dark', true],
+          ];
     for (const [theme, mobile] of cases) {
       const { page, context, controls } = await session(browser, origin, theme, mobile);
       const label = `${mobile ? 'mobile' : 'desktop'}-${theme}`;
+      if (catalogOnly) {
+        await check(
+          label + ': For You omits technology search and has both refresh actions',
+          async () => {
+            assert.equal(await page.locator('#news-search').count(), 0);
+            await page.getByRole('button', { name: 'Refresh Results', exact: true }).click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).bypassCache, 'true');
+            assert.equal(controls.reads.at(-1).refresh, undefined);
+            await page.getByRole('button', { name: 'Check for New Articles', exact: true }).click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).refresh, 'true');
+          },
+        );
+        await check(
+          label + ': Explore search opts in; date controls and pages remain catalog-only',
+          async () => {
+            await page
+              .locator('.view-tabs')
+              .getByRole('button', { name: 'Explore', exact: true })
+              .click();
+            await ready(page);
+            if (mobile)
+              await page.getByRole('button', { name: 'Search & filters', exact: true }).click();
+            await page.locator('#news-search').fill('React');
+            await page.locator('#news-search').press('Enter');
+            await ready(page);
+            assert.equal(controls.reads.at(-1).discover, 'true');
+            await page.locator('#news-date').selectOption('month');
+            await page.getByRole('button', { name: 'Apply Filters', exact: true }).click();
+            await ready(page);
+            assert.equal(controls.reads.at(-1).bypassCache, 'true');
+            assert.equal(controls.reads.at(-1).discover, undefined);
+            assert.equal(controls.reads.at(-1).refresh, undefined);
+            assert.equal(
+              await page.locator('#news-date option:checked').textContent(),
+              'Last 30 Days',
+            );
+            assert.equal(await page.locator('.context-disclosure').count(), 0);
+            assert.equal(
+              await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+              false,
+            );
+            await page
+              .getByRole('heading', { name: 'Tech News Hub', exact: true })
+              .scrollIntoViewIfNeeded();
+            await page.screenshot({
+              path: path.join(output, label + '.png'),
+              animations: 'disabled',
+            });
+            results.screenshots.push(label + '.png');
+          },
+        );
+        await context.close();
+        continue;
+      }
       if (exploreOnly) {
         await check(
           label + ': broad Explore, independent search and bounded discovery status',

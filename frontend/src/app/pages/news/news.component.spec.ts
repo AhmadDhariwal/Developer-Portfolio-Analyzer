@@ -94,6 +94,78 @@ describe('News Hub lifecycle', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
+  it('derives eligibility from backend time and explains the check cooldown', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(9000000000000);
+    const serverTime = 1800000000000;
+    api.getNews.mockReturnValue(
+      of({
+        ...feed(),
+        serverTime: new Date(serverTime).toISOString(),
+        enrichment: {
+          status: 'no_newer',
+          reason: 'no_newer_articles',
+          eligibilityReason: 'manual_refresh_interval',
+          nextEligibleAt: new Date(serverTime + 16000).toISOString(),
+        },
+      }),
+    );
+    component.refreshResults();
+    expect(component.refreshSeconds).toBe(16);
+    expect(component.refreshExplanation).toContain('Minimum interval');
+    expect(component.refreshExplanation).toContain('not a fetch');
+    component.now += 16000;
+    expect(component.refreshSeconds).toBe(0);
+    component.enrichment = {
+      status: 'quota_limited',
+      reason: 'discovery_daily_budget',
+      nextEligibleAt: new Date(serverTime + 86400000).toISOString(),
+    };
+    expect(component.refreshExplanation).toContain('shared daily discovery-job allowance');
+    expect(component.discoveryMessage).toContain('Discovery job limit');
+    component.enrichment.reason = 'user_discovery_daily_budget';
+    expect(component.discoveryMessage).toContain('Account limit');
+  });
+  it('keeps available cards visible through pending phases and stops the loader after bounded checks', () => {
+    component.selectView('explore');
+    component.onFiltersChange({ ...component.filters, search: 'devops' });
+    for (const status of ['queued', 'searching', 'processing'] as const) {
+      api.getNews.mockReturnValue(
+        of({
+          ...feed(),
+          enrichment: { status, reason: 'background_discovery', nextEligibleAt: null },
+        }),
+      );
+      component.refreshResults();
+      expect(component.items).toEqual([article]);
+      expect(component.discoveryMessage).toContain('Showing 1 available articles');
+      expect(component.discoveryLoading).toBe(true);
+    }
+    component.discoveryChecks = 4;
+    expect(component.discoveryLoading).toBe(false);
+    expect(component.discoveryMessage).toContain('Discovery may still be running');
+    expect(component.discoveryMessage).toContain('Refresh Results');
+  });
+  it('clears hidden For You controls and never discovers when search is cleared', () => {
+    component.selectView('explore');
+    component.onFiltersChange({ ...component.filters, search: 'devops', category: 'DevOps' });
+    component.selectView('for-you');
+    expect(component.filters).toMatchObject({ search: '', category: 'All' });
+    const count = api.getNews.mock.calls.length;
+    component.onFiltersChange({ ...component.filters, search: 'stale', category: 'DevOps' });
+    expect(api.getNews.mock.calls.length).toBe(count);
+    component.selectView('explore');
+    component.onFiltersChange({ ...component.filters, search: 'devops' });
+    component.onFiltersChange({ ...component.filters, search: '' });
+    expect(api.getNews.mock.lastCall[3]).toMatchObject({ discover: false, catalogOnly: true });
+  });
+  it('explains an empty catalog-only search without implying a completed source search', () => {
+    component.selectView('explore');
+    component.total = 0;
+    component.coverage = { status: 'coverage_gap', topic: 'devops', minimum: 6, cachedMatches: 0 };
+    component.enrichment = { status: 'not_needed', reason: 'catalog_only', nextEligibleAt: null };
+    expect(component.discoveryMessage).toContain('did not request sources');
+    expect(component.discoveryMessage).toContain('Check for New Articles');
+  });
   it('shows exact query eligibility, blocks repeat checks and keeps quota states out of polling', () => {
     component.enrichment = {
       status: 'waiting',
@@ -317,7 +389,12 @@ describe('News Hub lifecycle', () => {
     expect(api.getNews.mock.calls.length).toBe(before);
     vi.advanceTimersByTime(1);
     expect(api.getNews.mock.calls.length).toBe(before + 1);
-    expect(api.getNews.mock.lastCall[3]).toEqual({ refresh: false, revalidate: true });
+    expect(api.getNews.mock.lastCall[3]).toEqual({
+      refresh: false,
+      revalidate: true,
+      catalogOnly: true,
+      discover: false,
+    });
     expect(component.items).toEqual([article]);
     expect(component.enrichment?.status).toBe('ready');
   });
@@ -387,15 +464,20 @@ describe('News Hub lifecycle', () => {
     expect(api.getNews).toHaveBeenLastCalledWith(component.filters, 2, 12, {
       refresh: false,
       revalidate: true,
+      catalogOnly: true,
+      discover: false,
     });
     component.selectPage(1);
     expect(component.items.map((item) => item.id)).toEqual(['one']);
     expect(api.getNews).toHaveBeenLastCalledWith(component.filters, 1, 12, {
       refresh: false,
       revalidate: true,
+      catalogOnly: true,
+      discover: false,
     });
   });
   it('blocks invalid boundaries, current pages, offline and duplicate pending navigation', () => {
+    component.selectView('explore');
     api.getNews.mockClear();
     for (const page of [0, -1, 1, 3, 1.5, NaN]) component.selectPage(page);
     expect(api.getNews).not.toHaveBeenCalled();
@@ -414,6 +496,8 @@ describe('News Hub lifecycle', () => {
     expect(api.getNews).toHaveBeenLastCalledWith(component.filters, 1, 12, {
       refresh: false,
       revalidate: true,
+      catalogOnly: false,
+      discover: true,
     });
   });
   it('resets filters and all feed tabs to page one and cancels obsolete page responses', () => {
@@ -431,6 +515,8 @@ describe('News Hub lifecycle', () => {
       expect(api.getNews).toHaveBeenLastCalledWith(expect.objectContaining({ tab }), 1, 12, {
         refresh: false,
         revalidate: true,
+        catalogOnly: true,
+        discover: false,
       });
       expect(component.page).toBe(1);
     }
@@ -448,10 +534,28 @@ describe('News Hub lifecycle', () => {
     expect(api.getNews).toHaveBeenLastCalledWith(component.filters, 1, 6, {
       refresh: false,
       revalidate: true,
+      catalogOnly: true,
+      discover: false,
     });
     component.totalPages = 20;
     component.page = 10;
     expect(component.pageNumbers).toEqual([1, null, 9, 10, 11, null, 20]);
+  });
+  it('separates catalog refresh from governed provider checks', () => {
+    component.refreshResults();
+    expect(api.getNews.mock.lastCall[3]).toEqual({
+      refresh: false,
+      revalidate: true,
+      catalogOnly: true,
+      discover: false,
+    });
+    component.forceRefresh();
+    expect(api.getNews.mock.lastCall[3]).toEqual({
+      refresh: true,
+      revalidate: true,
+      catalogOnly: false,
+      discover: false,
+    });
   });
   it('retains usable articles on a failed refresh', () => {
     api.getNews.mockReturnValue(throwError(() => ({ status: 503 })));
@@ -461,6 +565,7 @@ describe('News Hub lifecycle', () => {
     expect(component.page).toBe(1);
   });
   it('cancels obsolete filters and hides mismatched old articles', () => {
+    component.selectView('explore');
     const old = new Subject<NewsResponse>();
     api.getNews.mockReturnValueOnce(old).mockReturnValueOnce(of(feed([{ ...article, id: 'new' }])));
     component.onFiltersChange({ ...component.filters, search: 'Old' });
@@ -594,6 +699,24 @@ describe('News Hub lifecycle', () => {
 
 // Recovery must never announce success from a local-only rollback.
 describe('News contract templates', () => {
+  it('renders only date/source/popularity controls in For You and restores category/search in Explore', () => {
+    TestBed.configureTestingModule({ imports: [NewsFiltersComponent] });
+    const fixture = TestBed.createComponent(NewsFiltersComponent);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('#news-search')).toBeNull();
+    expect(root.querySelector('#news-category')).toBeNull();
+    expect(root.querySelector('#news-date')).not.toBeNull();
+    expect(root.querySelector('#news-source')).not.toBeNull();
+    fixture.componentRef.setInput('filters', {
+      ...fixture.componentInstance.filters,
+      mode: 'explore',
+    });
+    fixture.detectChanges();
+    expect(root.querySelector('#news-search')).not.toBeNull();
+    expect(root.querySelector('#news-category')).not.toBeNull();
+    fixture.destroy();
+  });
   it('renders numbered pages, boundaries, end-of-cache and recovery from an empty page', () => {
     let shrink = false;
     const api = {
@@ -603,6 +726,7 @@ describe('News contract templates', () => {
       getNews: vi.fn((_filters: unknown, page: number) =>
         of({
           ...feed(shrink ? [] : [{ ...article, id: String(page) }], page),
+          trendingTopics: ['devops'],
           total: shrink ? 0 : 3,
           totalPages: shrink ? 1 : 3,
         }),
@@ -623,6 +747,7 @@ describe('News contract templates', () => {
     const fixture = TestBed.createComponent(NewsComponent);
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('.topic-list button')).toBeNull();
     const nav = () => root.querySelector('nav[aria-label="News pages"]')!;
     const button = (text: string) =>
       [...nav().querySelectorAll('button')].find((item) => item.textContent!.trim() === text)!;
@@ -651,6 +776,48 @@ describe('News contract templates', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.page).toBe(1);
     expect(root.textContent).toContain('No articles found');
+    fixture.destroy();
+  });
+  it('renders real pending and blocked response reasons ahead of warming freshness', () => {
+    const response: NewsResponse = {
+      ...feed([]),
+      total: 0,
+      telemetry: { ...feed().telemetry!, freshness: 'warming' },
+      coverage: { status: 'coverage_gap', topic: 'devops', cachedMatches: 0, minimum: 6 },
+      enrichment: { status: 'queued', reason: 'background_discovery', nextEligibleAt: null },
+    };
+    TestBed.configureTestingModule({
+      imports: [NewsComponent],
+      providers: [
+        {
+          provide: NewsService,
+          useValue: {
+            invalidated$: new Subject(),
+            clearCache() {},
+            retryAt: () => 0,
+            getNews: () => of(response),
+            getSavedNewsByType: () => of({ items: [], total: 0, page: 1, hasMore: false }),
+          },
+        },
+        {
+          provide: CareerProfileService,
+          useValue: { careerProfile$: new BehaviorSubject({ careerStack: 'Frontend' }) },
+        },
+        { provide: AuthService, useValue: { currentUser$: new BehaviorSubject({ _id: 'one' }) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(NewsComponent);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('.empty-state h2')?.textContent).toContain(
+      'Discovery is in progress',
+    );
+    response.enrichment = { status: 'waiting', reason: 'shared_interval', nextEligibleAt: null };
+    fixture.componentInstance.refreshResults();
+    fixture.detectChanges();
+    expect(root.querySelector('.empty-state p')?.textContent).toContain(
+      'Source limit: shared interval',
+    );
     fixture.destroy();
   });
   it('renders five honest evidence labels in context and articles, and acknowledges read/unread controls', () => {

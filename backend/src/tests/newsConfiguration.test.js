@@ -41,11 +41,23 @@ test('news configuration has one ordered, documented block and every runtime set
 });
 
 test('startup rejects inverted retention and invalid prewarm/manual refresh settings', () => {
-  assert.throws(() => validateNewsRelationships({ NEWS_QUERY_STALE_TTL_MS: 60000, NEWS_QUERY_FRESH_TTL_MS: 3600000 }));
+  assert.throws(() =>
+    validateNewsRelationships({ NEWS_QUERY_STALE_TTL_MS: 60000, NEWS_QUERY_FRESH_TTL_MS: 3600000 })
+  );
   for (const config of [
     { NEWS_REFRESH_MIN_INTERVAL_MS: 1 },
     { NEWS_DISCOVERY_PREWARM_TOPICS: 'https://private.invalid' },
     { NEWS_DISCOVERY_PREWARM_TOPICS: 'a,b,c,d,e' }
   ])
     assert.equal(z.object(newsEnvShape).safeParse(config).success, false);
+});
+
+test('operator comments distinguish configured examples from fail-closed missing-value defaults', () => {
+  const entry = (key) => entries.find((item) => item.key === key);
+  assert.equal(entry('NEWS_DISCOVERY_ENABLED').value, 'true');
+  assert.equal(entry('NEWS_DISCOVERY_ENABLED').runtimeDefault, 'false');
+  assert.equal(entry('NEWS_HACKERNEWSSEARCH_CONTENT_APPROVED').runtimeDefault, 'false');
+  assert.equal(entry('NEWS_HACKERNEWSSEARCH_DAILY_BUDGET').runtimeDefault, '0');
+  assert.equal(entry('NEWS_HACKERNEWSSEARCH_MIN_INTERVAL_MS').runtimeDefault, '1200000');
+  assert.match(renderNewsEnv(), /Default: sum of the enabled family adapter budgets/);
 });

@@ -26,6 +26,7 @@ test(
       await connection.dropDatabase();
       await connection.close();
     });
+    const catalog = await require('./fixtures/newsCatalogFixture').create(connection);
     const Topic = connection.model('NewsTopicCache', require('../models/newsTopicCache').schema);
     const Saved = connection.model('NewsSavedItem', require('../models/newsSavedItem').schema);
     const User = connection.model('User', require('../models/user').schema);
@@ -54,22 +55,35 @@ test(
     process.env.NEWS_HACKERNEWSSEARCH_MONTHLY_BUDGET = '300';
     const governor = load('../services/newsGovernanceService.js', { './redisCacheService': one.cache });
     let calls = 0;
+    let releaseSearch;
+    let announceSearch;
+    let searchStarted;
+    let heldSearch;
     const configured = load('../services/newsDiscoveryProviders.js', {
       './newsGovernanceService': governor,
       './platformSettingsService': { getIntegrationSecretsSync: () => ({ newsEnabled: true }) },
       axios: {
         get: async (url) => {
           calls++;
+          if (heldSearch) {
+            announceSearch();
+            await heldSearch;
+          }
           const query = new URL(url).searchParams.get('query');
           return {
             status: 200,
             headers: {},
             data: {
-              hits: Array.from({ length: 15 }, (_, index) => ({
-                title: `${query} engineering ${index}`,
-                url: `https://example.com/${encodeURIComponent(query)}/${index}`,
-                created_at: new Date(Date.now() - (index === 14 ? 10 * 86400000 : index * 60000)).toISOString()
-              }))
+              hits: Array.from(
+                { length: process.env.NEWS_TEST_BROWSER === 'true' && calls >= 2 ? 16 : 15 },
+                (_, index) => ({
+                  title: `${query} engineering ${index}`,
+                  url: `https://example.com/${encodeURIComponent(query)}/${index}`,
+                  created_at: new Date(
+                    Date.now() - (index === 14 ? 10 * 86400000 : index * 60000)
+                  ).toISOString()
+                })
+              )
             }
           };
         }
@@ -79,6 +93,7 @@ test(
     configured.available = (query) => available(query).filter((key) => key === 'hackernewssearch');
     const makeDiscovery = (worker) =>
       load('../services/newsDiscoveryService.js', {
+        './newsCatalogService': catalog,
         '../models/newsTopicCache': Topic,
         './redisCacheService': worker.cache,
         './newsGovernanceService': load('../services/newsGovernanceService.js', {
@@ -94,16 +109,22 @@ test(
     });
     const makeFeed = (worker) =>
       load('../services/newsService.js', {
+        './newsCatalogService': catalog,
         './newsDiscoveryService': worker,
         './newsPoolService': { readPool: async () => null, freshness: () => 'fresh' },
-        './developerSignalService': { getDeveloperSignals: async () => ({}), buildSignalHash: () => 'isolated' }
+        './developerSignalService': {
+          getDeveloperSignals: async () => ({}),
+          buildSignalHash: () => 'isolated'
+        }
       });
     const feed = makeFeed(discovery);
     const controller = load('../controllers/newsController.js', {
       '../services/newsService': feed,
       '../models/newsSavedItem': Saved
     });
-    const middleware = load('../middleware/newsMiddleware.js', { '../services/redisCacheService': one.cache });
+    const middleware = load('../middleware/newsMiddleware.js', {
+      '../services/redisCacheService': one.cache
+    });
     process.env.JWT_SECRET = 'isolated-news-search-test-secret-32-characters';
     const auth = load('../middleware/authmiddleware.js', { '../models/user': User });
     const router = load('../routes/newsRoutes.js', {
@@ -138,9 +159,9 @@ test(
         signal: AbortSignal.timeout(10000)
       });
     assert.equal((await fetch(origin + '/api/news')).status, 401);
-    assert.equal((await request('?search=react%20OR%20private')).status, 400);
+    assert.equal((await request('?mode=explore&search=react%20OR%20private')).status, 400);
     // Admit concurrently across actual authenticated accounts before starting a worker.
-    const suffix = '?mode=explore&search=generative%20ai&date=week';
+    const suffix = '?mode=explore&search=generative%20ai&date=week&discover=true';
     const pending = await Promise.all(
       Array.from({ length: 12 }, async (_, index) => (await request(suffix, index % 2)).json())
     );
@@ -179,8 +200,13 @@ test(
       })
     ).json();
     assert.ok(saved.item?.id, JSON.stringify(saved));
-    assert.equal((await request(`/save/${saved.item.id}/read`, 1, { method: 'PATCH', body: '{}' })).status, 404);
-    const read = await (await request(`/save/${saved.item.id}/read`, 0, { method: 'PATCH', body: '{}' })).json();
+    assert.equal(
+      (await request(`/save/${saved.item.id}/read`, 1, { method: 'PATCH', body: '{}' })).status,
+      404
+    );
+    const read = await (
+      await request(`/save/${saved.item.id}/read`, 0, { method: 'PATCH', body: '{}' })
+    ).json();
     const unread = await (
       await request(`/save/${saved.item.id}/read`, 0, { method: 'PATCH', body: '{"read":false}' })
     ).json();
@@ -234,18 +260,26 @@ test(
 
     if (process.env.NEWS_TEST_BROWSER === 'true') {
       const { chromium } = require('playwright');
-      const browser = await chromium.launch({ headless: true });
+      const browser = await chromium.launch({ headless: true, channel: 'msedge' });
       t.after(() => browser.close());
-      const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, colorScheme: 'light' });
+      const context = await browser.newContext({
+        viewport: { width: 1440, height: 1000 },
+        colorScheme: 'light'
+      });
       await context.addInitScript(
         ({ token, id }) => {
           localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify({ _id: id, name: 'Isolated News Reader', role: 'developer' }));
+          localStorage.setItem(
+            'user',
+            JSON.stringify({ _id: id, name: 'Isolated News Reader', role: 'developer' })
+          );
           localStorage.setItem('devinsight_theme', 'system');
         },
         { token: tokens[0], id: String(users[0]) }
       );
       const page = await context.newPage();
+      const evidence = path.resolve(__dirname, '../../../frontend/verification/tech-news/runtime-audit');
+      fs.mkdirSync(evidence, { recursive: true });
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.route('**/*', async (route) => {
@@ -295,20 +329,44 @@ test(
       await page.locator('#news-search').fill('generative ai');
       await page.locator('#news-search').press('Enter');
       await page.locator('app-news-card').first().waitFor();
+      heldSearch = new Promise((resolve) => {
+        releaseSearch = resolve;
+      });
+      searchStarted = new Promise((resolve) => {
+        announceSearch = resolve;
+      });
       await Promise.all([
         page.waitForResponse((response) => response.url().includes('refresh=true')),
         page.getByRole('button', { name: 'Check for New Articles', exact: true }).click()
       ]);
       assert.equal(await page.locator('app-news-card').count(), 12);
-      assert.equal((await discovery.processQueue()).status, 'no_newer');
-      await page.reload();
-      await page.getByRole('button', { name: 'Explore', exact: true }).click();
-      await page.locator('#news-search').fill('generative ai');
-      await page.locator('#news-search').press('Enter');
-      await page.getByText('No newer articles found', { exact: true }).waitFor();
-      assert.ok(await page.getByRole('button', { name: /^Wait / }).isDisabled());
+      await page.locator('.discovery-loader').waitFor();
+      await page.screenshot({ path: path.join(evidence, 'queued-light.png'), fullPage: true });
+      const work = discovery.processQueue();
+      await searchStarted;
+      await Promise.all([
+        page.waitForResponse((response) => response.url().includes('bypassCache=true')),
+        page.locator('.page-header').getByRole('button', { name: 'Refresh Results', exact: true }).click()
+      ]);
+      await page.getByText('Searching additional sources', { exact: true }).waitFor();
+      assert.equal(await page.locator('app-news-card').count(), 12);
+      await page.screenshot({ path: path.join(evidence, 'searching-light.png'), fullPage: true });
+      const visibleBefore = await page.locator('app-news-card').first().innerText();
+      releaseSearch();
+      heldSearch = null;
+      assert.equal((await work).status, 'ready');
+      // The next existing 20-second catalog-only poll must adopt the new persisted count.
+      await page.getByText('Search results cached', { exact: true }).waitFor({ timeout: 30000 });
+      await page.waitForFunction(() =>
+        document.querySelector('.section-heading')?.textContent.includes('15 matching articles')
+      );
+      assert.equal(await page.locator('app-news-card').count(), 12);
+      assert(await page.locator('app-news-card').first().innerText());
+      assert(visibleBefore.length > 0);
+      assert.equal(await page.locator('.discovery-loader').count(), 0);
+      assert.ok(await page.getByRole('button', { name: /^Check again in / }).isDisabled());
       await page.screenshot({
-        path: path.resolve(__dirname, '../../../frontend/verification/tech-news/refresh-service-e2e.png'),
+        path: path.join(evidence, 'updated-cooldown-light.png'),
         fullPage: true
       });
       await page.setViewportSize({ width: 390, height: 844 });
@@ -320,10 +378,34 @@ test(
       );
       await page.locator('.discovery-status').scrollIntoViewIfNeeded();
       await page.screenshot({
-        path: path.resolve(__dirname, '../../../frontend/verification/tech-news/refresh-service-e2e-mobile-dark.png')
+        path: path.resolve(
+          __dirname,
+          '../../../frontend/verification/tech-news/runtime-audit/updated-cooldown-mobile-dark.png'
+        )
       });
       assert.deepEqual(errors, []);
       assert.equal(calls, 2, 'Only the explicit governed refresh adds one provider attempt');
+      fs.writeFileSync(
+        path.join(evidence, 'isolated-browser.json'),
+        JSON.stringify(
+          {
+            status: 'VERIFIED',
+            authenticatedApi: true,
+            infrastructure: 'disposable local Redis/Mongo',
+            upstreamResponses: 'controlled fixtures, not real publisher articles',
+            states: ['queued', 'searching', 'ready', 'cooldown'],
+            cardsVisibleDuringWork: 12,
+            beforeTotal: 14,
+            afterTotal: 15,
+            automaticCatalogPoll: true,
+            providerCalls: calls,
+            errors,
+            mobileDarkNoOverflow: true
+          },
+          null,
+          2
+        ) + '\n'
+      );
       await context.close();
       t.diagnostic(
         'Angular browser used the actual authenticated news API and isolated Redis/Mongo; upstream articles were controlled fixtures.'

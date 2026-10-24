@@ -94,7 +94,12 @@ export class NewsService {
     filters: NewsFilters,
     page = 1,
     limit = 12,
-    options: { refresh?: boolean; revalidate?: boolean } = {},
+    options: {
+      refresh?: boolean;
+      revalidate?: boolean;
+      catalogOnly?: boolean;
+      discover?: boolean;
+    } = {},
   ): Observable<NewsResponse> {
     const normalized = normalizeNewsFilters(filters);
     let params = new HttpParams()
@@ -104,10 +109,15 @@ export class NewsService {
       .set('popularity', normalized.popularity)
       .set('page', String(page))
       .set('limit', String(limit));
-    if (normalized.category !== 'All') params = params.set('category', normalized.category);
+    const forYou = normalized.mode !== 'explore' && normalized.tab === 'for-you';
+    if (!forYou && normalized.category !== 'All')
+      params = params.set('category', normalized.category);
     if (normalized.source !== 'All') params = params.set('source', normalized.source);
-    if (normalized.search) params = params.set('search', normalized.search);
+    if (!forYou && normalized.search)
+      params = params.set('search', normalized.search.toLowerCase());
     if (options.refresh) params = params.set('refresh', 'true');
+    if (options.discover) params = params.set('discover', 'true');
+    if (options.catalogOnly) params = params.set('bypassCache', 'true');
     return this.request(
       `feed:${params.toString()}`,
       this.http.get<NewsResponse>(this.baseUrl, { params }).pipe(
@@ -270,11 +280,19 @@ export class NewsService {
       }),
       catchError((error: HttpErrorResponse) => {
         if ([429, 503].includes(error.status)) {
-          const until = retryDeadline(
-            error.headers?.get('Retry-After') || null,
-            Date.now(),
-            error.status === 503 ? 30 : 60,
-          );
+          const receivedAt = Date.now();
+          const serverDate = Date.parse(error.headers?.get('Date') || '');
+          const referenceTime = Number.isFinite(serverDate) ? serverDate : receivedAt;
+          const until =
+            receivedAt +
+            Math.max(
+              0,
+              retryDeadline(
+                error.headers?.get('Retry-After') || null,
+                referenceTime,
+                error.status === 503 ? 30 : 60,
+              ) - referenceTime,
+            );
           this.cooldowns.set(
             `${scope}:${kind}`,
             Math.max(until, this.cooldowns.get(`${scope}:${kind}`) || 0),

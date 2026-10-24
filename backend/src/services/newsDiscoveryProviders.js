@@ -103,7 +103,10 @@ function requestFor(key, topic) {
   const query = queryFor(topic);
   if (!query) throw new Error('Invalid discovery query');
   const config = TOPICS[relatedTopic(topic)] || {};
-  const size = Math.max(1, Math.min(30, Number.parseInt(process.env.NEWS_DISCOVERY_RESULTS_PER_PROVIDER, 10) || 30));
+  const size = Math.max(
+    1,
+    Math.min(30, Number.parseInt(process.env.NEWS_DISCOVERY_RESULTS_PER_PROVIDER, 10) || 30)
+  );
   const since = Math.floor((Date.now() - 30 * 86400000) / 1000);
   if (key === 'hackernewssearch')
     return {
@@ -154,7 +157,10 @@ function format(key, payload, topic) {
     )
     .map((item) =>
       normalizeItem({
-        title: key === 'githubreleases' ? `${TOPICS[topic].repo}: ${item.name || item.tag_name || ''}` : item.summary,
+        title:
+          key === 'githubreleases'
+            ? `${TOPICS[topic].repo}: ${item.name || item.tag_name || ''}`
+            : item.summary,
         source: key === 'githubreleases' ? 'GitHub Releases' : 'GitHub Security Advisories',
         publisher: 'GitHub',
         url: item.html_url,
@@ -174,9 +180,17 @@ function format(key, payload, topic) {
     )
     .filter(Boolean);
 }
-async function search(key, topic) {
-  if (!available(topic).includes(key)) return { status: 'disabled', items: [] };
-  const reservation = await governance.reserve(key);
+async function search(key, topic, priority = 'user', broad = false) {
+  if (
+    broad
+      ? !KEYS.includes(key) ||
+        getIntegrationSecretsSync()?.newsEnabled === false ||
+        !governance.policy(key).daily ||
+        !governance.policy(key).monthly
+      : !available(topic).includes(key)
+  )
+    return { status: 'disabled', items: [] };
+  const reservation = await governance.reserve(key, false, priority);
   if (!reservation.allowed)
     return {
       status: reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
@@ -207,14 +221,16 @@ async function search(key, topic) {
     const seen = new Set();
     const items = format(key, response.data, topic)
       .filter((item) => {
-        if (!matchesQuery(item, topic) || seen.has(item.url)) return false;
+        if ((!broad && !matchesQuery(item, topic)) || seen.has(item.url)) return false;
         seen.add(item.url);
         return true;
       })
       .map((item) => ({
         ...item,
         category:
-          item.category === 'Backend' && TOPICS[relatedTopic(topic)]?.category === 'DevOps' ? 'DevOps' : item.category
+          item.category === 'Backend' && TOPICS[relatedTopic(topic)]?.category === 'DevOps'
+            ? 'DevOps'
+            : item.category
       }));
     await governance.finish(reservation, { status: response.status, headers: response.headers });
     return { status: 'success', items };
@@ -242,6 +258,20 @@ module.exports = {
   enabled,
   available,
   search,
+  feed: (key) =>
+    search(
+      key,
+      key === 'githubadvisories'
+        ? 'security'
+        : key === 'githubreleases'
+          ? Object.keys(TOPICS).filter((topic) => TOPICS[topic].repo)[
+              Math.floor(Date.now() / 1200000) %
+                Object.keys(TOPICS).filter((topic) => TOPICS[topic].repo).length
+            ]
+          : 'devops',
+      'scheduled',
+      true
+    ),
   requestFor,
   fromRss
 };

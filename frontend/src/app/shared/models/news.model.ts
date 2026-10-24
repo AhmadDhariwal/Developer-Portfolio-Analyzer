@@ -138,6 +138,7 @@ export interface NewsProviderDiagnostic {
 }
 
 export interface NewsResponse {
+  serverTime?: string;
   mode?: NewsMode;
   coverage?: NewsCoverage | null;
   enrichment?: NewsEnrichment | null;
@@ -190,6 +191,7 @@ export interface NewsCoverage {
 }
 
 export interface NewsEnrichment {
+  eligibilityReason?: string;
   status:
     | 'not_needed'
     | 'queued'

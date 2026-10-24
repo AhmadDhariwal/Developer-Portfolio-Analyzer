@@ -4,7 +4,14 @@ const { randomUUID } = require('node:crypto');
 const { fixture, load } = require('./fixtures/newsHubRedisFixture');
 const { normalizeItem } = require('../utils/newsFormatter');
 const realProviders = require('../services/newsDiscoveryProviders');
-const filters = (search) => ({ search, source: 'All', category: 'All', dateRange: 'week', popularity: 'all', page: 1 });
+const filters = (search) => ({
+  search,
+  source: 'All',
+  category: 'All',
+  dateRange: 'week',
+  popularity: 'all',
+  page: 1
+});
 const enabled = Boolean(process.env.NEWS_TEST_REDIS_URL && process.env.NEWS_TEST_MONGODB_URI);
 
 test(
@@ -24,6 +31,7 @@ test(
       await connection.dropDatabase();
       await connection.close();
     });
+    const catalog = await require('./fixtures/newsCatalogFixture').create(connection);
     const Topic = connection.model('NewsTopicCache', require('../models/newsTopicCache').schema);
     await Topic.init();
     const isolated = await fixture(t);
@@ -82,6 +90,7 @@ test(
     };
     const make = (worker) =>
       load('../services/newsDiscoveryService.js', {
+        './newsCatalogService': catalog,
         '../models/newsTopicCache': Topic,
         './redisCacheService': worker.cache,
         './newsGovernanceService': governor,
@@ -106,9 +115,17 @@ test(
     assert.equal(ec2.enrichment.status, 'waiting');
     assert.ok(ec2.enrichment.sourceHealth.every((source) => /interval/.test(source.reason)));
     assert.ok(Date.parse(ec2.enrichment.nextEligibleAt) > Date.now() + 55000);
-    assert.equal(await one.redis.get(`news:v1:{discovery}:jobs:${day}`), before, 'Blocked sources consume no job');
+    assert.equal(
+      await one.redis.get(`news:v1:{discovery}:jobs:${day}`),
+      before,
+      'Blocked sources consume no job'
+    );
     assert.equal((await governor.inspect('hackernewssearch')).reason, 'interval');
-    assert.equal(await one.redis.get(`news:v3:{hackernewssearch}:day:${day}`), '1', 'Inspection consumes no request');
+    assert.equal(
+      await one.redis.get(`news:v3:{hackernewssearch}:day:${day}`),
+      '1',
+      'Inspection consumes no request'
+    );
     const cached = await second.readTopic('generative ai');
     assert.equal(cached.total, 6);
     const initialVersion = cached.filters.version;
@@ -125,7 +142,8 @@ test(
     state.lastAttemptAt = new Date(Date.now() - 61000).toISOString();
     delete state.checkedAtMs;
     await one.redis.set(first.stateKey('generative ai'), JSON.stringify(state));
-    for (const provider of ['hackernewssearch', 'devtosearch']) await one.redis.del(`news:v3:{${provider}}:interval`);
+    for (const provider of ['hackernewssearch', 'devtosearch'])
+      await one.redis.del(`news:v3:{${provider}}:interval`);
     for (const family of ['hackernews', 'devto']) await one.redis.del(`news:v3:{${family}}:shared:interval`);
     const checks = await Promise.all([
       request(first, 'generative ai', true, 6),
@@ -146,6 +164,9 @@ test(
     );
     const completed = await request(second, 'generative ai', false, 6);
     assert.equal(completed.enrichment.status, 'no_newer');
+    assert.ok(
+      ['manual_refresh_interval', 'provider_admission'].includes(completed.enrichment.eligibilityReason)
+    );
     assert.ok(completed.enrichment.lastSuccessfulCheckAt);
     assert.equal(calls, 4);
     // Longest applicable blocker wins, with exact UTC month/day resets.

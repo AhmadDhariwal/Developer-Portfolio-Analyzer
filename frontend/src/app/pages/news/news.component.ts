@@ -98,6 +98,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   private toastTimer?: ReturnType<typeof setTimeout>;
   private clock?: ReturnType<typeof setInterval>;
   now = Date.now();
+  private serverOffsetMs = 0;
 
   constructor(
     private readonly news: NewsService,
@@ -153,6 +154,18 @@ export class NewsComponent implements OnInit, OnDestroy {
   get discoveryPending(): boolean {
     return ['queued', 'searching', 'processing'].includes(this.enrichment?.status || '');
   }
+  get discoveryPollingStopped(): boolean {
+    return (
+      this.discoveryPending &&
+      (this.discoveryChecks >= 4 ||
+        this.page !== 1 ||
+        this.offline ||
+        document.visibilityState === 'hidden')
+    );
+  }
+  get discoveryLoading(): boolean {
+    return this.discoveryPending && !this.discoveryPollingStopped && !this.errorMessage;
+  }
   get discoveryRecoverable(): boolean {
     return (
       this.enrichment?.status === 'unavailable' &&
@@ -193,13 +206,11 @@ export class NewsComponent implements OnInit, OnDestroy {
     if (this.enrichment?.status === 'no_newer')
       return `Last successful check: ${this.enrichment.lastSuccessfulCheckAt ? new Date(this.enrichment.lastSuccessfulCheckAt).toLocaleString() : 'unavailable'}. Existing articles remain available.`;
     if (['waiting', 'quota_limited'].includes(this.enrichment?.status || ''))
-      return `Source limit: ${(this.enrichment?.reason || 'unavailable').replace(/_/g, ' ')}.${this.enrichment?.nextEligibleAt ? ' Next check: ' + new Date(this.enrichment.nextEligibleAt).toLocaleString() + '.' : ''}`;
+      return `${this.enrichment?.reason?.startsWith('user_') ? 'Account limit' : this.enrichment?.reason === 'discovery_daily_budget' ? 'Discovery job limit' : 'Source limit'}: ${(this.enrichment?.reason || 'unavailable').replace(/_/g, ' ')}.${this.enrichment?.nextEligibleAt ? ' Next check: ' + new Date(this.enrichment.nextEligibleAt).toLocaleString() + '.' : ''}`;
     if (this.discoveryPending)
-      return this.discoveryChecks >= 4
-        ? 'Automatic checks have finished. Check results later; more articles are not guaranteed.'
-        : this.page > 1
-          ? 'Discovery continues in the background. Return to page one to check results.'
-          : 'Available matches stay visible. We check briefly for cached updates; more articles are not guaranteed.';
+      return this.discoveryPollingStopped
+        ? `Showing ${this.items.length} available articles. Automatic checks have finished or paused. Discovery may still be running; use Refresh Results to read the latest stored articles. More articles are not guaranteed.`
+        : `Showing ${this.items.length} available articles. ${this.enrichment?.status === 'queued' ? 'An approved-source search is queued' : this.enrichment?.status === 'processing' ? 'Saving accepted articles' : 'Searching approved sources'}${this.filters.search ? ' for more ' + this.filters.search + ' news' : ''}. Available cards stay visible while we check for stored updates; more articles are not guaranteed.`;
     if (this.coverage?.dateExcludedMatches)
       return `${this.coverage.dateExcludedMatches} cached matches fall outside the selected date range. Choose This Month to include older articles; your filters stay unchanged until you choose.`;
     switch (this.coverage?.status) {
@@ -228,6 +239,8 @@ export class NewsComponent implements OnInit, OnDestroy {
           ? 'Available cached matches are shown. Background search is temporarily unavailable; check cached results again shortly.'
           : 'No cached articles match these filters yet. Background search is temporarily unavailable; check cached results again shortly.';
       default:
+        if (this.coverage?.status === 'coverage_gap' && !this.total)
+          return 'No stored articles match this search yet. This catalog-only read did not request sources. Submit a changed search or use Check for New Articles to request a governed search when eligible.';
         return this.selectedView === 'explore'
           ? 'Search available technology news independently of your skills. Source coverage is bounded.'
           : 'Matching and totals come from the current cached news pool.';
@@ -314,9 +327,42 @@ export class NewsComponent implements OnInit, OnDestroy {
       Math.max(0, Math.ceil((this.news.retryAt('refresh') - this.now) / 1000)),
       Math.max(
         0,
-        Math.ceil((Date.parse(this.enrichment?.nextEligibleAt || '') - this.now) / 1000),
+        Math.ceil((Date.parse(this.enrichment?.nextEligibleAt || '') - this.serverNow) / 1000),
       ) || 0,
     );
+  }
+  private get serverNow(): number {
+    return this.now + this.serverOffsetMs;
+  }
+  get refreshExplanation(): string {
+    if (this.offline) return 'Connect to the internet before requesting a source check.';
+    if (this.discoveryPending)
+      return 'A background discovery job is active. Refresh Results only reads stored articles.';
+    if (this.isLoading)
+      return 'Reading the catalog. This does not indicate an external source request.';
+    if (this.refreshSeconds) {
+      if (Math.max(this.news.retryAt('refresh'), this.news.retryAt('feed')) > this.now)
+        return 'The server requested a pause for news requests (Retry-After). The timer does not promise new articles.';
+      const reason = this.enrichment?.reason || 'source eligibility';
+      const budgetDescription: Record<string, string> = {
+        discovery_daily_budget: 'The shared daily discovery-job allowance has been reached',
+        user_discovery_budget: 'Your account discovery allowance for this minute has been reached',
+        user_discovery_daily_budget: 'Your account daily discovery-job allowance has been reached',
+      };
+      const description =
+        budgetDescription[reason] ||
+        (this.enrichment?.eligibilityReason === 'query_freshness'
+          ? 'Recent query results are within the backend freshness window'
+          : this.enrichment?.eligibilityReason === 'provider_admission'
+            ? 'Approved sources are waiting for their configured quota or interval'
+            : this.enrichment?.eligibilityReason === 'manual_refresh_interval'
+              ? 'Minimum interval after the last successful source check'
+              : ['articles_cached', 'no_newer_articles'].includes(reason)
+                ? 'Backend source-check eligibility after the last result'
+                : reason.replace(/_/g, ' '));
+      return `${description}. The server controls eligibility; the countdown is not a fetch or a promise of new articles. Refresh Results reads the catalog separately.`;
+    }
+    return '';
   }
   get mutationBlocked(): boolean {
     return this.offline || this.news.retryAt('mutation') > this.now;
@@ -340,6 +386,8 @@ export class NewsComponent implements OnInit, OnDestroy {
         ...this.filters,
         mode: view === 'explore' ? 'explore' : 'personalized',
         tab: view === 'explore' ? 'latest' : (view as NewsFilters['tab']),
+        search: view === 'for-you' ? '' : this.filters.search,
+        category: view === 'for-you' ? 'All' : this.filters.category,
       };
       this.items = [];
       this.context = null;
@@ -355,7 +403,12 @@ export class NewsComponent implements OnInit, OnDestroy {
 
   onFiltersChange(filters: NewsFilters): void {
     const normalized = normalizeNewsFilters(filters);
+    if (normalized.mode !== 'explore' && normalized.tab === 'for-you') {
+      normalized.search = '';
+      normalized.category = 'All';
+    }
     if (JSON.stringify(normalized) === JSON.stringify(this.filters)) return;
+    const searchChanged = normalized.search !== this.filters.search;
     this.filters = normalized;
     this.resetDiscovery();
     this.items = [];
@@ -364,7 +417,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.page = 1;
     this.total = 0;
     this.totalPages = 1;
-    this.fetch(1);
+    this.fetch(1, false, searchChanged && !!normalized.search);
   }
   resetFilters(): void {
     this.onFiltersChange({
@@ -396,6 +449,9 @@ export class NewsComponent implements OnInit, OnDestroy {
     )
       return;
     this.fetch(page);
+  }
+  refreshResults(): void {
+    if (!this.offline && !this.isLoading && !this.retrySeconds) this.fetch(this.page);
   }
   forceRefresh(): void {
     if (!this.offline && !this.refreshSeconds && !this.isLoading && !this.discoveryPending) {
@@ -477,7 +533,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
-  private fetch(page: number, refresh = false): void {
+  private fetch(page: number, refresh = false, discover = false): void {
     if (!this.scope || this.offline || (!refresh && this.retrySeconds)) return;
     this.cancelFeed();
     const nonce = this.feedNonce;
@@ -487,7 +543,12 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.activeRequest = this.news
-      .getNews(this.filters, page, this.pageSize, { refresh, revalidate: true })
+      .getNews(this.filters, page, this.pageSize, {
+        refresh,
+        revalidate: true,
+        catalogOnly: !refresh && !discover,
+        discover,
+      })
       .subscribe({
         next: (response) => {
           if (generation !== this.generation || nonce !== this.feedNonce || !this.isFeedView)
@@ -502,6 +563,9 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.telemetry = response.telemetry;
           this.coverage = response.coverage;
           this.enrichment = response.enrichment;
+          const serverTime = Date.parse(response.serverTime || '');
+          this.serverOffsetMs = Number.isFinite(serverTime) ? serverTime - Date.now() : 0;
+          this.now = Date.now();
           this.trendingTopics = response.trendingTopics;
           this.isLoading = false;
           this.lastValidated = Date.now();
@@ -651,7 +715,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     // Source failures and provider quota cooldowns never start this retry loop.
     const delay =
       this.discoveryRecoverable && Number.isFinite(eligibleAt)
-        ? Math.max(20000, eligibleAt - Date.now())
+        ? Math.max(20000, eligibleAt - this.serverNow)
         : 20000;
     if (delay > 120000) return;
     const nonce = this.feedNonce;

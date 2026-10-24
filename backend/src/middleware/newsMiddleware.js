@@ -51,7 +51,8 @@ function validateFeed(req, res, next) {
     'limit',
     'mode',
     'refresh',
-    'bypassCache'
+    'bypassCache',
+    'discover'
   ]);
   if (req.query.mode !== undefined && !['personalized', 'explore'].includes(req.query.mode))
     return res.status(400).json({ message: 'News mode is invalid.' });
@@ -59,7 +60,8 @@ function validateFeed(req, res, next) {
     if (!allowed.has(key) || typeof value !== 'string' || value.length > 160)
       return res.status(400).json({ message: 'News filters are invalid.' });
   }
-  if (req.query.search?.trim() && !queryFor(req.query.search))
+  const forYou = req.query.mode !== 'explore' && (!req.query.tab || req.query.tab === 'for-you');
+  if (!forYou && req.query.search?.trim() && !queryFor(req.query.search))
     return res.status(400).json({
       message:
         'Use a technology phrase of 2–80 characters and at most six words; URLs, identifiers and search operators are not supported.'
@@ -76,7 +78,9 @@ function validateFeed(req, res, next) {
   }
   // Browser/proxy caches must never reuse one account's personalized response.
   res.set('Cache-Control', 'private, no-store');
-  if (['refresh', 'bypassCache'].some((key) => ['1', 'true', 'yes'].includes(String(req.query[key]).toLowerCase())))
+  // Catalog revalidation never requests providers; only explicit provider checks
+  // consume the stricter refresh budget. All reads still pass through feedLimit.
+  if (['1', 'true', 'yes'].includes(String(req.query.refresh).toLowerCase()))
     return refreshLimit(req, res, next);
   return next();
 }

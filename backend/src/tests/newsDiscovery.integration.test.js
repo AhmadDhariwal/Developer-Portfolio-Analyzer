@@ -43,13 +43,16 @@ test(
       await connection.dropDatabase();
       await connection.close();
     });
+    const catalog = await require('./fixtures/newsCatalogFixture').create(connection);
     const Topic = connection.model('NewsTopicCache', require('../models/newsTopicCache').schema);
     const General = connection.model('NewsCache', require('../models/news').schema);
     await Promise.all([Topic.init(), General.init()]);
     assert.notEqual(Topic.collection.name, General.collection.name);
     assert.ok((await Topic.collection.indexes()).some((index) => index.unique && index.key.cacheKey));
     assert.ok(
-      (await Topic.collection.indexes()).some((index) => index.expireAfterSeconds === 0 && index.key.expiresAt)
+      (await Topic.collection.indexes()).some(
+        (index) => index.expireAfterSeconds === 0 && index.key.expiresAt
+      )
     );
     const values = new Map([['lease', 'owned']]);
     const redis = {
@@ -70,8 +73,11 @@ test(
       }
     };
     const dependencies = {
+      './newsCatalogService': catalog,
       '../models/newsTopicCache': Topic,
-      './newsDiscoveryProviders': controlledProviders({ search: async () => ({ status: 'success', items: [item()] }) }),
+      './newsDiscoveryProviders': controlledProviders({
+        search: async () => ({ status: 'success', items: [item()] })
+      }),
       './redisCacheService': { getRedisCacheClient: () => redis },
       './newsGovernanceService': { withLease: (_name, _ttl, work) => work({ key: 'lease', token: 'owned' }) }
     };
@@ -86,7 +92,10 @@ test(
         './redisCacheService': { getRedisCacheClient: () => null }
       });
     assert.equal((await coldWorker().readTopic('react')).allItems.length, 1);
-    await Topic.updateOne({}, { $set: { 'filters.sourceTimes.Hacker News': Date.now() - worker.RETENTION - 1 } });
+    await Topic.updateOne(
+      {},
+      { $set: { 'filters.sourceTimes.Hacker News': Date.now() - worker.RETENTION - 1 } }
+    );
     assert.equal((await coldWorker().readTopic('react')).allItems.length, 0);
     await Topic.updateOne({}, { $set: { expiresAt: new Date(0) } });
     assert.equal(await coldWorker().readTopic('react'), null);
@@ -120,8 +129,10 @@ test(
     let requests = 0;
     let empty = false;
     const model = { findOne: () => ({ lean: async () => null }), updateOne: async () => ({}) };
+    const catalog = { ingest: async (items) => ({ inserted: items.length }) };
     const create = (runtime, governor) =>
       load('../services/newsDiscoveryService.js', {
+        './newsCatalogService': catalog,
         '../models/newsTopicCache': model,
         './redisCacheService': runtime.cache,
         './newsGovernanceService': governor,
@@ -161,7 +172,8 @@ test(
     assert.equal(JSON.parse(await one.redis.get(workerA.stateKey('angular'))).status, 'exhausted');
     assert.ok((await one.redis.pTTL(workerA.stateKey('angular'))) > 240000);
     assert.equal(
-      (await create(two, b).coverage({ filters: query('angular'), total: 0, broadTotal: 0 })).enrichment.status,
+      (await create(two, b).coverage({ filters: query('angular'), total: 0, broadTotal: 0 })).enrichment
+        .status,
       'exhausted'
     );
     // A new topic cannot bypass exhausted provider budgets.
@@ -171,7 +183,11 @@ test(
     await one.redis.del('news:v3:{hackernewssearch}:interval');
     await one.redis.del('news:v3:{hackernews}:shared:interval');
     await workerA.processQueue();
-    assert.equal(await one.redis.get(workerA.stateKey('python')), null, 'Preflight denial does not create a job');
+    assert.equal(
+      await one.redis.get(workerA.stateKey('python')),
+      null,
+      'Preflight denial does not create a job'
+    );
     assert.equal(requests, 2);
     const broad = await a.reserve('hackernews');
     await a.finish(broad, { failed: true, status: 429, headers: { 'retry-after': '120' } });
@@ -206,9 +222,9 @@ test(
           JSON.stringify({ status: 'full' }),
           maximum,
           JSON.stringify({ status: 'daily' }),
-          'prewarm',
-          '3',
-          '6',
+          'test-user',
+          '48',
+          '48',
           '{}',
           '{}',
           'automatic',
@@ -264,7 +280,9 @@ test(
       axios: { get: () => assert.fail('Feed cannot fetch providers') },
       './newsPoolService': { readPool: async () => null, freshness: () => 'fresh' },
       './newsDiscoveryService': workerA,
-      './developerSignalService': { getDeveloperSignals: () => assert.fail('Explore cannot resolve career signals') }
+      './developerSignalService': {
+        getDeveloperSignals: () => assert.fail('Explore cannot resolve career signals')
+      }
     });
     const news = await feedService.getNewsFeed({
       user: { _id: 'frontend-user', activeCareerStack: 'Frontend' },

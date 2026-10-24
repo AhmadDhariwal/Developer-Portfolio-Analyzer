@@ -9,16 +9,27 @@
     </div>
 
     <button
+      class="secondary-button"
+      type="button"
+      *ngIf="isFeedView"
+      [disabled]="offline || isLoading || retrySeconds > 0"
+      (click)="refreshResults()"
+    >
+      {{ isLoading ? 'Refreshing…' : 'Refresh Results' }}
+    </button>
+    <button
       class="primary-button refresh-button"
       type="button"
       [disabled]="offline || isLoading || discoveryPending || refreshSeconds > 0"
       (click)="forceRefresh()"
+      aria-describedby="news-check-explanation"
+      [title]="refreshExplanation"
       *ngIf="isFeedView"
     >
       <span aria-hidden="true">↻</span>
       {{
         refreshSeconds
-          ? 'Wait ' + refreshSeconds + 's'
+          ? 'Check again in ' + refreshSeconds + 's'
           : isLoading
             ? 'Checking cache…'
             : discoveryPending
@@ -27,6 +38,9 @@
       }}
     </button>
   </header>
+  <p id="news-check-explanation" class="refresh-explanation" *ngIf="refreshExplanation">
+    {{ refreshExplanation }}
+  </p>
 
   <div class="explore-intro" *ngIf="selectedView === 'explore'">
     <h2>Explore technology, beyond your profile</h2>
@@ -91,7 +105,13 @@
       aria-controls="news-filter-panel"
       (click)="filtersExpanded = !filtersExpanded"
     >
-      {{ filtersExpanded ? 'Hide filters' : 'Search & filters' }}
+      {{
+        filtersExpanded
+          ? 'Hide filters'
+          : selectedView === 'for-you'
+            ? 'Filters'
+            : 'Search & filters'
+      }}
     </button>
     <div id="news-filter-panel" class="filter-panel" [class.expanded]="filtersExpanded">
       <app-news-filters
@@ -108,7 +128,10 @@
       *ngIf="coverage || enrichment"
       [class.pending]="discoveryPending"
     >
-      <strong>{{ discoveryTitle }}</strong>
+      <div class="discovery-heading">
+        <span class="discovery-loader" *ngIf="discoveryLoading" aria-hidden="true"></span>
+        <strong>{{ discoveryTitle }}</strong>
+      </div>
       <p>{{ discoveryMessage }}</p>
       <button
         type="button"
@@ -119,9 +142,9 @@
           enrichment?.status === 'worker_unavailable'
         "
         [disabled]="offline || isLoading || retrySeconds > 0"
-        (click)="retry()"
+        (click)="refreshResults()"
       >
-        Check cached results
+        Refresh Results
       </button>
       <button
         type="button"
@@ -145,7 +168,7 @@
         Use all sources, categories and popularity
       </button>
       <small *ngIf="enrichment?.nextEligibleAt"
-        >Next eligible background attempt: {{ enrichment?.nextEligibleAt | date: 'MMM d, h:mm a' }}.
+        >Next eligible source check: {{ enrichment?.nextEligibleAt | date: 'MMM d, h:mm a' }}.
         Eligibility does not guarantee a search or new articles.</small
       >
       <details *ngIf="enrichment?.sourceHealth?.length">
@@ -156,8 +179,11 @@
       </details>
     </div>
 
-    <div class="feed-tools" *ngIf="trendingTopics.length || hasFilters">
-      <div class="topic-list">
+    <div
+      class="feed-tools"
+      *ngIf="(selectedView !== 'for-you' && trendingTopics.length) || hasFilters"
+    >
+      <div class="topic-list" *ngIf="selectedView !== 'for-you'">
         <span>In the conversation</span
         ><button type="button" *ngFor="let topic of trendingTopics" (click)="searchTopic(topic)">
           #{{ topic }}
@@ -285,10 +311,10 @@
         {{
           page > totalPages
             ? 'This page is no longer available'
-            : telemetry?.freshness === 'warming'
-              ? 'Your reading desk is warming up'
-              : discoveryPending
-                ? 'Discovery is in progress'
+            : discoveryPending
+              ? 'Discovery is in progress'
+              : enrichment && enrichment.status !== 'not_needed' && enrichment.status !== 'ready'
+                ? discoveryTitle
                 : 'No articles found'
         }}
       </h2>
@@ -296,10 +322,10 @@
         {{
           page > totalPages
             ? 'Cached results have changed. Choose an available page below.'
-            : telemetry?.freshness === 'warming'
-              ? 'There are no cached articles yet. Check again after sources update in the background.'
-              : discoveryPending
-                ? 'A background search is pending. No additional articles are guaranteed.'
+            : coverage || enrichment
+              ? discoveryMessage
+              : selectedView === 'for-you'
+                ? 'Try another source or a longer date range.'
                 : 'Try a broader topic, another source or a longer date range.'
         }}
       </p>

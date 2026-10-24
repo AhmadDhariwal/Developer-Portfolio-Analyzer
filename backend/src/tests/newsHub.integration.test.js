@@ -75,7 +75,9 @@ test(
     await a.withLease('owner', 60, async ({ key }) => one.redis.set(key, 'replacement', { EX: 60 }));
     assert.equal(await two.redis.get('news:v3:lease:owner'), 'replacement');
 
-    const middleware = load('../middleware/newsMiddleware.js', { '../services/redisCacheService': one.cache });
+    const middleware = load('../middleware/newsMiddleware.js', {
+      '../services/redisCacheService': one.cache
+    });
     for (const [kind, maximum, handler] of [
       ['feed', 120, middleware.feedLimit],
       ['mutation', 30, middleware.mutationLimit],
@@ -105,6 +107,7 @@ test(
       assert.equal(rejected, 1);
     }
 
+    const catalog = { ingest: async (items) => ({ inserted: items.length }) };
     let document;
     const model = {
       findOne: () => ({ lean: async () => document }),
@@ -114,6 +117,7 @@ test(
     };
     const makePool = (worker, governor) =>
       load('../services/newsPoolService.js', {
+        './newsCatalogService': catalog,
         '../models/news': model,
         './redisCacheService': worker.cache,
         './newsGovernanceService': governor
@@ -158,6 +162,7 @@ test(
     assert.equal(lost.reason, 'lease_lost');
     assert.equal(await two.redis.get('news:v3:lease:ingestion'), 'replacement');
     const fallback = load('../services/newsPoolService.js', {
+      './newsCatalogService': catalog,
       '../models/news': model,
       './redisCacheService': { getRedisCacheClient: () => null }
     });
@@ -190,6 +195,7 @@ test(
       await connection.dropDatabase();
       await connection.close();
     });
+    const catalog = await require('./fixtures/newsCatalogFixture').create(connection);
     const Saved = connection.model('NewsSavedItem', require('../models/newsSavedItem').schema);
     const News = connection.model('NewsCache', require('../models/news').schema);
     const User = connection.model(
@@ -202,8 +208,11 @@ test(
         (index) => index.unique && index.key.userId && index.key.url && index.key.type
       )
     );
-    assert.ok((await News.collection.indexes()).some((index) => index.key.expiresAt && index.expireAfterSeconds === 0));
+    assert.ok(
+      (await News.collection.indexes()).some((index) => index.key.expiresAt && index.expireAfterSeconds === 0)
+    );
     const pool = load('../services/newsPoolService.js', {
+      './newsCatalogService': catalog,
       '../models/news': News,
       './redisCacheService': { getRedisCacheClient: () => null }
     });
@@ -220,6 +229,7 @@ test(
       const worker = await setup.worker();
       const governor = load('../services/newsGovernanceService.js', { './redisCacheService': worker.cache });
       const actualPool = load('../services/newsPoolService.js', {
+        './newsCatalogService': catalog,
         '../models/news': News,
         './redisCacheService': worker.cache,
         './newsGovernanceService': governor
@@ -233,7 +243,10 @@ test(
       assert.equal(JSON.parse(await worker.redis.get(pool.KEY)).total, 1);
       assert.equal(await News.countDocuments({ cacheKey: pool.KEY }), 1);
       await worker.redis.del(pool.KEY);
-      await News.updateOne({ cacheKey: pool.KEY }, { $set: { 'filters.attemptedAt': Date.now() - 21 * 60000 } });
+      await News.updateOne(
+        { cacheKey: pool.KEY },
+        { $set: { 'filters.attemptedAt': Date.now() - 21 * 60000 } }
+      );
       const protectedFill = await actualPool.refreshPool(async () => {
         await News.updateOne({ cacheKey: pool.KEY }, { $set: { 'filters.attemptedAt': Date.now() + 10000 } });
         return {
@@ -246,7 +259,9 @@ test(
     }
     const controller = load('../controllers/newsController.js', {
       '../models/newsSavedItem': Saved,
-      '../services/newsService': { getNewsFeed: async () => ({ items: [], total: 0, filters: { page: 1, limit: 12 } }) }
+      '../services/newsService': {
+        getNewsFeed: async () => ({ items: [], total: 0, filters: { page: 1, limit: 12 } })
+      }
     });
     const auth = load('../middleware/authmiddleware.js', { '../models/user': User });
     const routes = load('../routes/newsRoutes.js', {
@@ -277,7 +292,10 @@ test(
     const request = (path, user, body, method = 'GET') =>
       fetch(`http://127.0.0.1:${server.address().port}/news${path}`, {
         method,
-        headers: { ...(user ? { Authorization: `Bearer ${token(user)}` } : {}), 'Content-Type': 'application/json' },
+        headers: {
+          ...(user ? { Authorization: `Bearer ${token(user)}` } : {}),
+          'Content-Type': 'application/json'
+        },
         ...(body ? { body: JSON.stringify(body) } : {})
       });
     assert.equal((await request('/', null)).status, 401);
@@ -289,7 +307,9 @@ test(
       type: 'read_later',
       source: 'Dev.to'
     };
-    const responses = await Promise.all(Array.from({ length: 8 }, () => request('/save', owner, body, 'POST')));
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, () => request('/save', owner, body, 'POST'))
+    );
     assert.ok(responses.every((response) => [200, 201].includes(response.status)));
     assert.equal(await Saved.countDocuments({ userId: owner._id }), 1);
     const item = await Saved.findOne({ userId: owner._id }).lean();
@@ -303,6 +323,7 @@ test(
     assert.match((await request('/', owner)).headers.get('cache-control'), /private, no-store/);
     await News.updateOne({ cacheKey: pool.KEY }, { $set: { expiresAt: new Date(0) } });
     const emptyPool = load('../services/newsPoolService.js', {
+      './newsCatalogService': catalog,
       '../models/news': News,
       './redisCacheService': { getRedisCacheClient: () => null }
     });

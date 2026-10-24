@@ -31,6 +31,7 @@ test(
       await connection.dropDatabase();
       await connection.close();
     });
+    const catalog = await require('./fixtures/newsCatalogFixture').create(connection);
     const Topic = connection.model('NewsTopicCache', require('../models/newsTopicCache').schema);
     await Topic.init();
     const setup = await fixture(t);
@@ -131,6 +132,7 @@ test(
         for (let index = 0; index < counters.length; index++)
           if (usage[index] !== null) await worker.redis.set(counters[index], usage[index]);
         const discovery = load('../services/newsDiscoveryService.js', {
+          './newsCatalogService': catalog,
           '../models/newsTopicCache': Topic,
           './redisCacheService': worker.cache,
           './newsGovernanceService': governance,
@@ -141,7 +143,14 @@ test(
         });
         await worker.redis.set(discovery.HEARTBEAT, String(Date.now()));
         const admitted = await discovery.coverage({
-          filters: { search: query, category: 'All', source: 'All', dateRange: 'week', popularity: 'all', page: 1 },
+          filters: {
+            search: query,
+            category: 'All',
+            source: 'All',
+            dateRange: 'week',
+            popularity: 'all',
+            page: 1
+          },
           total: 0,
           broadTotal: 0,
           admissionKey: 'isolated-live-check'
