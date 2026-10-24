@@ -1,162 +1,128 @@
-import { Injectable } from '@angular/core';
-import { Observable, catchError, of, throwError } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { Injectable, OnDestroy } from '@angular/core';
+import {
+  EMPTY,
+  Observable,
+  Subject,
+  defer,
+  distinctUntilChanged,
+  finalize,
+  map,
+  shareReplay,
+  takeUntil,
+  timeout,
+} from 'rxjs';
 import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
+import {
+  InterviewCatalogParams,
+  InterviewQuestion,
+  InterviewQuestionListResponse,
+  InterviewSession,
+} from '../models/interview-prep.model';
 
-export interface InterviewQuestion {
-  _id?: string;
-  skill?: string;
-  topicKey?: string;
-  topicType?: 'stack' | 'technology' | 'language' | 'framework';
-  question: string;
-  answer: string;
-  answerSections?: {
-    shortAnswer?: string;
-    summary?: string;
-    keyPoints?: string[];
-    explanation?: string;
-    bulletPoints?: string[];
-    example?: string;
-    codeExample?: string;
-    realWorldUseCase?: string;
-    realWorldContext?: string;
-    commonMistakes?: string[];
-    interviewTip?: string;
-    [key: string]: string | string[] | undefined;
-  };
-  difficulty: 'easy' | 'medium' | 'hard';
-  category?: 'conceptual' | 'scenario_based' | 'code_output' | 'best_practice' | 'system_design' | 'behavioral';
-  qualityScore?: number;
-  answerFormat?: 'structured' | 'plain';
-  isEnriched?: boolean;
-  tags: string[];
-  source?: 'verified_seed' | 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
-  sourceType?: 'verified_seed' | 'prebuilt' | 'ai' | 'ai_generated' | 'scraped' | 'user_asked' | 'seed' | 'db' | 'scrape' | 'hybrid';
-  sourceLabel?: string;
-  popularity?: number;
-  confidenceScore?: number;
-  relevanceScore?: number;
-  createdAt?: string;
-  stored?: boolean;
-  duplicate?: boolean;
-  fromCache?: boolean;
-}
+export type {
+  InterviewQuestion,
+  InterviewQuestionListResponse,
+  InterviewSession,
+} from '../models/interview-prep.model';
 
-export interface InterviewQuestionListResponse {
-  questions: InterviewQuestion[];
-  total: number;
-  totalAvailable?: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-  source?: string;
-  aiGeneratedCount?: number;
-  scrapedGeneratedCount?: number;
-  enrichedCount?: number;
-  sourceMix?: Record<string, number>;
-  partial?: boolean;
-  fromCache?: boolean;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
-export class InterviewPrepService {
-  /** 
-   * Shared-replay cache. Keys are deterministic (params-based).
-   * refCount: false ensures the replay survives when the component is destroyed
-   * and recreated — no duplicate API calls when navigating back.
-   */
-  private readonly cacheTtlMs = 15 * 60 * 1000;
-  private readonly maxCacheEntries = 50;
-  private readonly cache = new Map<string, { value$: Observable<any>; expiresAt: number }>();
+@Injectable({ providedIn: 'root' })
+export class InterviewPrepService implements OnDestroy {
+  private readonly inflight = new Map<string, Observable<unknown>>();
+  private readonly cancel = new Subject<void>();
+  private epoch = 0;
+  readonly owner$;
+  private readonly ownerSubscription;
 
   constructor(
     private readonly api: ApiService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    auth: AuthService,
+    invalidation: FrontendCacheInvalidationService,
   ) {
-    this.cacheInvalidation.register('interview-prep', () => this.clearCache());
-  }
-
-  /** Build a deterministic cache key from params, stripping undefined values. */
-  private buildKey(prefix: string, params: Record<string, unknown>): string {
-    const sorted = Object.entries(params)
-      .filter(([, value]) => value !== undefined && value !== null && value !== '')
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(',') : String(value)}`)
-      .join('&');
-    return `${prefix}:${sorted}`;
-  }
-
-  /** Returns a cached shared observable, or creates one with refCount: false. */
-  private once<T>(key: string, source$: Observable<T>): Observable<T> {
-    const now = Date.now();
-    this.pruneCache(now);
-    const existing = this.cache.get(key);
-    if (existing?.expiresAt && existing.expiresAt > now) {
-      return existing.value$ as Observable<T>;
-    }
-    if (existing) this.cache.delete(key);
-
-    const shared$ = source$.pipe(
-      catchError((error) => {
-        this.cache.delete(key);
-        return throwError(() => error);
-      }),
-      shareReplay({ bufferSize: 1, refCount: false })
+    this.owner$ = auth.currentUser$.pipe(
+      map((user) => String(user?._id || '')),
+      distinctUntilChanged(),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
-
-    this.cache.set(key, { value$: shared$, expiresAt: now + this.cacheTtlMs });
-    this.pruneCache(now);
-    return shared$;
+    this.ownerSubscription = this.owner$.subscribe(() => this.clearCache());
+    invalidation.register('interview-prep', () => this.clearCache());
   }
 
-  /** Invalidate specific prefixes (called on filter change so stale data is refetched). */
-  invalidate(prefixes: string[] = ['top', 'all']): void {
-    for (const [key] of this.cache) {
-      if (prefixes.some((prefix) => key.startsWith(prefix + ':'))) {
-        this.cache.delete(key);
-      }
-    }
-  }
-
-  /** Clear all cached responses (called on logout / full reset). */
-  reset(): void {
-    this.clearCache();
+  // Share active requests only. Completed reads revalidate through the backend's
+  // revision-aware cache; a browser TTL must not hide a backend revision.
+  private once<T>(kind: string, params: object, load: () => Observable<T>): Observable<T> {
+    const key = JSON.stringify([
+      kind,
+      Object.entries(params).sort(([a], [b]) => a.localeCompare(b)),
+    ]);
+    const existing = this.inflight.get(key);
+    if (existing) return existing as Observable<T>;
+    const epoch = this.epoch;
+    let guarded: Observable<T>;
+    const shared = defer(load).pipe(
+      timeout(kind === 'ask' || kind === 'generate' || kind === 'session' ? 20000 : 12000),
+      takeUntil(this.cancel),
+      finalize(() => {
+        if (this.inflight.get(key) === guarded) this.inflight.delete(key);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+    guarded = defer(() => (epoch === this.epoch ? shared : EMPTY));
+    this.inflight.set(key, guarded);
+    return guarded;
   }
 
   clearCache(): void {
-    this.cache.clear();
+    this.epoch++;
+    this.cancel.next();
+    this.inflight.clear();
+  }
+  ngOnDestroy(): void {
+    this.ownerSubscription.unsubscribe();
+    this.clearCache();
+    this.cancel.complete();
+  }
+  reset(): void {
+    this.clearCache();
+  }
+  invalidate(_prefixes?: string[]): void {
+    this.clearCache();
   }
 
-  private pruneCache(now = Date.now()): void {
-    for (const [key, entry] of this.cache) {
-      if (entry.expiresAt <= now) this.cache.delete(key);
-    }
-    while (this.cache.size > this.maxCacheEntries) {
-      const oldestKey = this.cache.keys().next().value as string | undefined;
-      if (!oldestKey) break;
-      this.cache.delete(oldestKey);
-    }
+  getTopQuestions(params: InterviewCatalogParams): Observable<InterviewQuestionListResponse> {
+    return this.once('top', params, () =>
+      this.api.getInterviewPrepQuestions({ ...params, block: 'top' }),
+    );
   }
-
-  getTopQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[] }): Observable<InterviewQuestionListResponse> {
-    return this.once(this.buildKey('top', params), this.api.getInterviewPrepQuestions({ ...params, block: 'top' }));
+  getAllQuestions(params: InterviewCatalogParams): Observable<InterviewQuestionListResponse> {
+    return this.once('all', params, () =>
+      this.api.getInterviewPrepQuestions({ ...params, block: 'all' }),
+    );
   }
-
-  getAllQuestions(params: { skill: string; page?: number; limit?: number; difficulty?: string; tags?: string[]; category?: string; source?: string }): Observable<InterviewQuestionListResponse> {
-    return this.once(this.buildKey('all', params), this.api.getInterviewPrepQuestions({ ...params, block: 'all' }));
+  searchQuestions(params: {
+    q: string;
+    skill?: string;
+    difficulty?: string;
+    tags?: string[];
+    page?: number;
+    limit?: number;
+    lookupOnly?: boolean;
+  }): Observable<InterviewQuestionListResponse> {
+    return this.once('search', params, () =>
+      this.api.searchInterviewPrepQuestions({ ...params, lookupOnly: true }),
+    );
   }
-
-  searchQuestions(params: { q: string; page?: number; limit?: number; skill?: string; difficulty?: string; tags?: string[]; lookupOnly?: boolean }): Observable<InterviewQuestionListResponse> {
-    return this.once(this.buildKey('search', params), this.api.searchInterviewPrepQuestions(params));
+  generateQuestions(payload: {
+    skill: string;
+    query?: string;
+    difficulty?: string;
+    page?: number;
+    limit?: number;
+    target?: number;
+  }): Observable<InterviewQuestionListResponse> {
+    return this.once('generate', payload, () => this.api.generateInterviewPrepQuestions(payload));
   }
-
-  generateQuestions(payload: { skill: string; query?: string; difficulty?: string; page?: number; limit?: number; target?: number }): Observable<InterviewQuestionListResponse> {
-    return this.once(this.buildKey('generate', payload), this.api.generateInterviewPrepQuestions(payload));
-  }
-
   askQuestion(payload: {
     question: string;
     skill?: string;
@@ -166,46 +132,26 @@ export class InterviewPrepService {
     language?: string;
     framework?: string;
   }): Observable<InterviewQuestion> {
-    return this.once(this.buildKey('ask', payload), this.api.askInterviewPrepQuestion(payload));
+    return this.once('ask', payload, () => this.api.askInterviewPrepQuestion(payload));
   }
-
-  /**
-   * Fetch recent history from backend and normalize the response into InterviewQuestion[].
-   * Returns [] on any error so the component can show a professional empty state.
-   */
-  getHistory(limit = 10): Observable<InterviewQuestion[]> {
-    return this.api.getInterviewPrepHistory(limit).pipe(
-      map((response) => this.normalizeHistoryResponse(response)),
-      catchError(() => of([]))
+  startSession(skill: string): Observable<InterviewQuestionListResponse> {
+    const payload = { skill, skillGaps: [] };
+    return this.once('session', payload, () => this.api.generateInterviewPrep(payload));
+  }
+  getSessions(limit = 10): Observable<InterviewSession[]> {
+    return this.once<{ sessions?: InterviewSession[] }>('history', { limit }, () =>
+      this.api.getInterviewPrepHistory(limit),
+    ).pipe(
+      map((response) =>
+        Array.isArray(response?.sessions)
+          ? response.sessions.filter((session) => Array.isArray(session.questions))
+          : [],
+      ),
     );
   }
-
-  private normalizeHistoryResponse(response: unknown): InterviewQuestion[] {
-    const isValid = (q: unknown): q is InterviewQuestion => {
-      if (!q || typeof q !== 'object') return false;
-      const item = q as Record<string, unknown>;
-      return typeof item['question'] === 'string' && typeof item['answer'] === 'string';
-    };
-
-    const toList = (arr: unknown[]): InterviewQuestion[] =>
-      arr.filter(isValid).slice(0, 20);
-
-    if (!response) return [];
-    if (Array.isArray(response)) return toList(response as unknown[]);
-
-    const resp = response as Record<string, unknown>;
-    // { questions: [...] }
-    if (Array.isArray(resp['questions'])) return toList(resp['questions'] as unknown[]);
-    // { sessions: [{ questions: [...] }] }
-    if (Array.isArray(resp['sessions'])) {
-      const all = (resp['sessions'] as Record<string, unknown>[])
-        .flatMap(s => Array.isArray(s['questions']) ? s['questions'] as unknown[] : []);
-      return toList(all);
-    }
-    // { data: [...] } or { history: [...] }
-    if (Array.isArray(resp['data'])) return toList(resp['data'] as unknown[]);
-    if (Array.isArray(resp['history'])) return toList(resp['history'] as unknown[]);
-
-    return [];
+  getHistory(limit = 10): Observable<InterviewQuestion[]> {
+    return this.getSessions(limit).pipe(
+      map((sessions) => sessions.flatMap((session) => session.questions)),
+    );
   }
 }

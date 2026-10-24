@@ -1,0 +1,127 @@
+{
+  "status": "VERIFIED",
+  "scope": "Local News UX/runtime audit; production prerequisites remain",
+  "flags": {
+    "discoveryUx": true,
+    "fullLocalNewsFlow": true,
+    "envProviderAuditComplete": true,
+    "readyToLockLocal": true,
+    "readyForProduction": false
+  },
+  "unitTests": {
+    "distinctPassed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "finalAffectedAfterCleanup": 17,
+    "commands": [
+      "node --test backend/src/tests/newsConfiguration.test.js backend/src/tests/newsSearchCorrections.test.js backend/src/tests/newsCatalog.test.js backend/src/tests/newsDiscovery.test.js backend/src/tests/newsHubHardening.test.js",
+      "node --test backend/src/tests/newsConfiguration.test.js backend/src/tests/newsSearchCorrections.test.js backend/src/tests/newsDiscovery.test.js"
+    ]
+  },
+  "integrations": {
+    "distinctPassed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "controlledUpstreams": true,
+    "applicationRedisWrites": 0,
+    "finalRefreshBrowserCasesPassed": 3,
+    "commands": [
+      "node --test backend/src/tests/newsCatalog.integration.test.js backend/src/tests/newsRefresh.integration.test.js backend/src/tests/newsHub.integration.test.js backend/src/tests/newsFreeText.integration.test.js",
+      "NEWS_TEST_BROWSER=true node --test backend/src/tests/newsFreeText.integration.test.js backend/src/tests/newsRefresh.integration.test.js",
+      "node --test backend/src/tests/newsAdaptiveRuntime.integration.test.js"
+    ],
+    "testConfiguration": "Disposable Redis on 127.0.0.1:27143 and uniquely named disposable Mongo databases; no application counters reset"
+  },
+  "frontend": {
+    "passed": 55,
+    "failed": 0,
+    "files": 2,
+    "command": "npm test -- --watch=false --include=src/app/pages/news/news.component.spec.ts --include=src/app/shared/services/news.service.spec.ts"
+  },
+  "typescript": "passed --noEmit -p frontend/tsconfig.app.json",
+  "build": {
+    "status": "passed",
+    "warning": "existing unrelated landing-page SCSS 55.89 kB vs 48 kB warning budget"
+  },
+  "browsers": {
+    "real": "frontend/scripts/verify-news-search.cjs --runtime-audit; actual configured local API and stored publisher metadata",
+    "isolated": "NEWS_TEST_BROWSER=true newsFreeText.integration.test.js; actual JWT/API/worker/Redis/Mongo, controlled upstream fixture; 12 cards retained, automatic 14-to-15 weekly total update",
+    "runtimeErrors": 0
+  },
+  "configuration": {
+    "newsKeys": 102,
+    "allKeysPerFile": 196,
+    "matchingInventories": true,
+    "missingNewsKeys": 0,
+    "missingComments": 0,
+    "existingParsedAssignmentsPreserved": true,
+    "credentialValuesPrinted": false
+  },
+  "formatting": "Explicit changed paths written and checked; dotenv parsing and comment checks used because Prettier has no dotenv parser",
+  "syntax": "All changed backend JS and browser helper checked with node --check",
+  "whitespace": "git diff --check and git diff --cached --check",
+  "cleanup": {
+    "disposableRedisStopped": true,
+    "remainingKeysBeforeShutdown": 0,
+    "removedOwnedPaths": [
+      "WSL Ubuntu:/tmp/devinsight-runtime-y9O31m",
+      "WSL Ubuntu:/tmp/devinsight-runtime-F7PQdO",
+      "WSL Ubuntu:/redis.tar.gz"
+    ],
+    "resolvedPathsAndOwnershipVerified": true,
+    "applicationBackendLeftRunning": true,
+    "applicationRedisUnchanged": true
+  },
+  "files": {
+    "modified": [
+      "D:/Developer-Portfolio-Analyzer/TECH-NEWS-CONFIGURATION.md",
+      "D:/Developer-Portfolio-Analyzer/backend/.env.example",
+      "D:/Developer-Portfolio-Analyzer/backend/src/config/newsEnvCatalog.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/controllers/newsController.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/services/newsDiscoveryService.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsConfiguration.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsSearchCorrections.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsCatalog.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsFreeText.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsRefresh.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.html",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.scss",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.spec.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/models/news.model.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/news.service.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/news.service.spec.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/scripts/verify-news-search.cjs"
+    ],
+    "added": [
+      "D:/Developer-Portfolio-Analyzer/backend/src/scripts/auditNewsRuntime.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsAdaptiveRuntime.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/catalog-results.json",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/cleanup.json",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/ENVIRONMENT.md",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/PROVIDERS.md",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/REPORT.md",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/runtime.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/isolated-browser.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/live-check-result.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/live-explore.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/live.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/live.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/queued-light.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/searching-light.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/updated-cooldown-light.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/runtime-audit/updated-cooldown-mobile-dark.png",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/runtime-audit/validation.json"
+    ],
+    "localIgnoredModified": ["D:/Developer-Portfolio-Analyzer/backend/.env"],
+    "moved": [],
+    "deletedRepositoryFiles": []
+  },
+  "productionGates": [
+    "source/account entitlement and retention/deletion obligations",
+    "eligible upstream contracts including Kubernetes feed/parser",
+    "deployed native Redis/index/worker/browser acceptance",
+    "production capacity and pagination/compound-query load review",
+    "supported process management and conditional token/deletion integration"
+  ]
+}

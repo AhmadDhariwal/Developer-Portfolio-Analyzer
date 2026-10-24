@@ -1,0 +1,26 @@
+{
+  "disposableRedis": {
+    "directory": "/tmp/devinsight-flow-IeMOKA",
+    "resolvedPathVerified": true,
+    "port": 27144,
+    "databaseKeysBeforeShutdown": 0,
+    "shutdown": "SHUTDOWN NOSAVE",
+    "stopped": true,
+    "taskOwnedBuildDirectoryRemoved": true
+  },
+  "finalIsolatedBatch": {
+    "removedRedisKeysByFixture": [73, 20, 56, 36, 10],
+    "removedRedisKeysTotal": 195,
+    "remainingOwnedKeys": 0,
+    "temporaryMongoDatabasesDropped": 4
+  },
+  "applicationQuotaResets": 0,
+  "sourceFilesDeleted": [],
+  "historicalEvidenceDeleted": [],
+  "userWorkDeleted": [],
+  "taskEvidenceRename": {
+    "from": "backend/verification/tech-news/flow-audit/api-after.json",
+    "to": "backend/verification/tech-news/flow-audit/api-after-corrections.json",
+    "reason": "Preserve initial date-bound correction evidence before recording final post-ingestion runtime snapshot"
+  }
+}

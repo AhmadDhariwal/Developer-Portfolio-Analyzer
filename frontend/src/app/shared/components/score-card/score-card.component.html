@@ -1,12 +1,24 @@
-<div class="score-card" [ngClass]="colorClass">
+<div class="score-card" [ngClass]="[colorClass, loading ? 'is-loading' : '', stale ? 'is-stale' : '']">
   <div class="score-header">
-    <span class="score-title">{{ title }}</span>
-  </div>
-  <div class="score-number">{{ score }}</div>
-  <div class="progress-container">
-    <div class="progress-bar">
-      <div class="progress-fill" [style.width.%]="percentage"></div>
+    <div class="header-text">
+      <span class="score-title">{{ title }}</span>
+      <span *ngIf="subtitle" class="score-subtitle">{{ subtitle }}</span>
     </div>
-    <p class="progress-label">{{ percentage.toFixed(0) }}% Complete</p>
+  </div>
+
+  <div *ngIf="loading" class="score-skeleton-num" aria-hidden="true"></div>
+  <div *ngIf="!loading" class="score-number">{{ score }}</div>
+
+  <div class="progress-container">
+    <div
+      class="progress-bar"
+      role="progressbar"
+      [attr.aria-valuenow]="score"
+      aria-valuemin="0"
+      [attr.aria-valuemax]="maxScore"
+      [attr.aria-label]="title + ' progress'">
+      <div class="progress-fill" [style.width.%]="loading ? 0 : percentage"></div>
+    </div>
+    <p class="progress-label">{{ loading ? 'Calculating...' : percentage.toFixed(0) + '% Complete' }}</p>
   </div>
 </div>

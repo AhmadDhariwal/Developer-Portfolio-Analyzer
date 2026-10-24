@@ -54,7 +54,10 @@ const newsSavedItemSchema = new mongoose.Schema(
     readAt: {
       type: Date,
       default: null
-    }
+    },
+    firstReadAt: { type: Date, default: null },
+    lastReadAt: { type: Date, default: null },
+    readCount: { type: Number, default: 0, min: 0 }
   },
   {
     timestamps: { createdAt: true, updatedAt: false }

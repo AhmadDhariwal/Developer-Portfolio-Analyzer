@@ -31,46 +31,105 @@ export interface RepositoryActivity {
   commits: number;
 }
 
+export interface ScoreBreakdownItem {
+  id: string;
+  value: number | null;
+  weight: number;
+  contribution: number | null;
+  available: boolean;
+  label?: string;
+  description?: string;
+}
+
+export interface ScoreEvidence {
+  sources?: Array<{ type: string; id: string }>;
+  inputs?: Record<string, number | null>;
+  facts?: {
+    repoCount?: number;
+    originalRepoCount?: number;
+    forkRepoCount?: number;
+    archivedRepoCount?: number;
+    languageCount?: number;
+    totalStars?: number | null;
+    totalForks?: number | null;
+    totalCommits?: number | null;
+    activeRepos?: number;
+  };
+}
+
+export interface ScoringResult {
+  score: number | null;
+  breakdown: Record<string, ScoreBreakdownItem>;
+  warnings: string[];
+  evidence: ScoreEvidence;
+  ruleVersion: string;
+  calculatedAt: string;
+}
+
+export interface DataAvailability {
+  repositories?: 'complete' | 'partial' | 'unavailable' | string;
+  activity?: 'complete' | 'partial' | 'sampled' | 'unavailable' | string;
+  activityScope?: string;
+  activityRepositoryLimit?: number;
+  repositorySignals?: 'complete' | 'sampled' | 'unavailable' | string;
+  signalRepositoryLimit?: number;
+  languageRepositoryLimit?: number;
+  languages?: 'language_bytes' | 'primary_language' | 'missing' | string;
+  stars?: 'complete' | 'partial' | 'unavailable' | string;
+}
+
 export interface Repository {
   name: string;
   description?: string;
   language: string;
-  stars: number;
-  forks: number;
-  commits?: number;
+  stars: number | null;
+  forks: number | null;
+  commits?: number | null;
   activityScore: number;
   qualityScore?: number;
   category?: string;
   technologies?: string[];
-  hasReadme?: boolean;
-  readmeQuality?: number;
+  hasReadme?: boolean | null;
+  readmeQuality?: number | null;
   updatedAt?: string | null;
   pushedAt?: string | null;
+  createdAt?: string | null;
+  archived?: boolean;
+  fork?: boolean;
+  size?: number;
+  topics?: string[];
 }
 
 export interface GitHubAnalysisResult {
   analysisVersion?: string;
+  dataVersion?: string;
+  scoring?: ScoringResult;
+  scores?: Record<string, number | null>;
+  dataAvailability?: DataAvailability;
+  fetchedAt?: string;
   repoCount: number;
-  totalStars: number;
-  totalForks: number;
-  followers?: number;
+  totalStars: number | null;
+  totalForks: number | null;
+  followers?: number | null;
   activityScore: number;
-  githubHealthScore?: number;
+  githubHealthScore?: number | null;
   developerLevel?: string;
   strengths?: string[];
   weakAreas?: string[];
   summary?: string;
   explanation?: string;
   cache?: {
-    source: 'cache' | 'fresh' | 'stale-cache' | string;
+    source: 'cache' | 'fresh' | 'stale-cache' | 'frontend-cache' | string;
     hit: boolean;
     expiresAt?: string | null;
     cachedAt?: string | null;
+    fetchedAt?: string | null;
+    stale?: boolean;
   };
   analysisHistory?: Array<Record<string, unknown>>;
   comparison?: Record<string, number | string | null> | null;
   rawLanguageBytes?: Record<string, number>;
-  languageDistributionSource?: 'language_bytes' | 'primary_language';
+  languageDistributionSource?: 'language_bytes' | 'primary_language' | 'missing' | string;
   languageDistribution: LanguageDistribution[];
   mainLanguageDistribution?: LanguageDistribution[];
   supportLanguageDistribution?: LanguageDistribution[];

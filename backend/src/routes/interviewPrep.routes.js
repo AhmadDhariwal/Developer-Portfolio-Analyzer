@@ -38,11 +38,58 @@ const generateRateLimiter = rateLimit({
   message: { message: 'Too many generation requests. Please try again later.' }
 });
 
-router.get('/questions', protect, getInterviewPrepQuestions);
-router.get('/search', protect, searchRateLimiter, searchInterviewPrepQuestions);
-router.post('/generate', protect, generateRateLimiter, generateInterviewPrepQuestions);
-router.post('/ask-question', protect, customQuestionRateLimiter, askInterviewPrepQuestion);
-router.post('/', protect, generateInterviewPrepSession);
-router.get('/history', protect, getInterviewPrepHistory);
+// Reject structured query/body values before normalization or provider calls.
+router.use(protect, (req, res, next) => {
+  const input = req.method === 'GET' ? req.query : req.body || {};
+  const fields = [
+    'skill',
+    'topic',
+    'stack',
+    'technology',
+    'language',
+    'framework',
+    'difficulty',
+    'category',
+    'source',
+    'block',
+    'top',
+    'lookupOnly',
+    'q',
+    'query',
+    'question',
+    'tags',
+    'careerStack',
+    'experienceLevel'
+  ];
+  for (const field of fields) {
+    if (
+      input[field] !== undefined &&
+      (typeof input[field] !== 'string' ||
+        input[field].length > (['q', 'query', 'question', 'tags'].includes(field) ? 500 : 100))
+    ) {
+      return res.status(400).json({ message: `Invalid ${field}.` });
+    }
+  }
+  for (const field of ['page', 'limit', 'target']) {
+    if (
+      input[field] !== undefined &&
+      (!['string', 'number'].includes(typeof input[field]) ||
+        !Number.isFinite(Number(input[field])) ||
+        Number(input[field]) < 1)
+    ) {
+      return res.status(400).json({ message: `Invalid ${field}.` });
+    }
+  }
+  if (input.difficulty && !['easy', 'medium', 'hard', 'senior'].includes(input.difficulty))
+    return res.status(400).json({ message: 'Invalid difficulty.' });
+  next();
+});
+
+router.get('/questions', getInterviewPrepQuestions);
+router.get('/search', searchRateLimiter, searchInterviewPrepQuestions);
+router.post('/generate', generateRateLimiter, generateInterviewPrepQuestions);
+router.post('/ask-question', customQuestionRateLimiter, askInterviewPrepQuestion);
+router.post('/', generateRateLimiter, generateInterviewPrepSession);
+router.get('/history', getInterviewPrepHistory);
 
 module.exports = router;

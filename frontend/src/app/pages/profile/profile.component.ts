@@ -19,6 +19,7 @@ import {
   ExperienceLevel,
   CareerGoal,
 } from '../../shared/models/career-profile.model';
+import { ThemeService, ThemePreference } from '../../shared/services/theme.service';
 
 @Component({
   selector: 'app-profile',
@@ -28,6 +29,7 @@ import {
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent implements OnInit {
+  readonly themeService = inject(ThemeService);
   readonly careerStacks: CareerStack[] = CAREER_STACKS;
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
   readonly targetTimelines = ['Immediately', '1-3 months', '3-6 months', '6+ months'];

@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-10-23T10:06:40.725Z",
+  "scope": "Read-only configured infrastructure; no application keys, documents or indexes written.",
+  "redis": {
+    "ping": "PONG",
+    "crossKeyReadOnlyLua": [0, 0],
+    "writeVerification": "Not performed; requires an authorized staging target."
+  },
+  "mongo": {
+    "collections": {
+      "newscaches": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          }
+        },
+        {
+          "name": "cacheKey_1",
+          "key": {
+            "cacheKey": 1
+          },
+          "unique": true
+        },
+        {
+          "name": "expiresAt_1",
+          "key": {
+            "expiresAt": 1
+          },
+          "expireAfterSeconds": 0
+        }
+      ],
+      "newstopiccaches": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          }
+        },
+        {
+          "name": "cacheKey_1",
+          "key": {
+            "cacheKey": 1
+          },
+          "unique": true
+        },
+        {
+          "name": "expiresAt_1",
+          "key": {
+            "expiresAt": 1
+          },
+          "expireAfterSeconds": 0
+        }
+      ],
+      "newssaveditems": [
+        {
+          "name": "_id_",
+          "key": {
+            "_id": 1
+          }
+        },
+        {
+          "name": "userId_1",
+          "key": {
+            "userId": 1
+          }
+        },
+        {
+          "name": "userId_1_url_1_type_1",
+          "key": {
+            "userId": 1,
+            "url": 1,
+            "type": 1
+          },
+          "unique": true
+        },
+        {
+          "name": "userId_1_type_1_createdAt_-1",
+          "key": {
+            "userId": 1,
+            "type": 1,
+            "createdAt": -1
+          }
+        }
+      ]
+    }
+  }
+}

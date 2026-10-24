@@ -1,0 +1,30 @@
+{
+  "scope": "Focused frontend verification using synthetic HTTP fixtures; no provider or backend traffic.",
+  "checks": [
+    "desktop-light: Manrope, responsive layout and theme",
+    "pagination keeps server order and appends once",
+    "saved acknowledgements, duplicate protection, Mark Read and server reading history",
+    "all five views and honest article details",
+    "filters, keyboard submission, resets and cancelled outdated search",
+    "stale, partial, warming and empty responses",
+    "429 retains articles, honors Retry-After, then revalidates without quota bypass",
+    "503 and offline retain usable articles",
+    "new-account reload cannot expose old saved records",
+    "System theme follows operating-system preference",
+    "desktop-dark: Manrope, responsive layout and theme",
+    "mobile-light: Manrope, responsive layout and theme",
+    "mobile-dark: Manrope, responsive layout and theme",
+    "mobile search disclosure and accessible controls"
+  ],
+  "screenshots": [
+    "desktop-light.png",
+    "desktop-reading-history.png",
+    "desktop-dark.png",
+    "mobile-light.png",
+    "mobile-dark.png",
+    "mobile-dark-articles.png"
+  ],
+  "errors": [],
+  "resumed": "Only the remaining mobile interaction was rerun after correcting the test wait; the production build is unchanged.",
+  "status": "VERIFIED"
+}

@@ -1,0 +1,147 @@
+{
+  "synthetic": true,
+  "target": "http://127.0.0.1:4220",
+  "checks": [
+    "Public Light/Dark desktop/mobile, System preference, Manrope and no horizontal overflow",
+    "503 and 404 clear prior portfolio content",
+    "Recruiter contact handles 503, 429/Retry-After, 403 and server acknowledgement",
+    "Upload validation, local preview, server failure and accepted image URL",
+    "Saved slug/unpublish acknowledged; another tab clears cached public state",
+    "Authenticated saved preview has no private contacts, public SEO or contact delivery",
+    "Analytics unavailable and true-zero states remain distinct"
+  ],
+  "screenshots": [
+    "public-light-desktop.png",
+    "public-dark-desktop.png",
+    "public-light-mobile.png",
+    "public-dark-mobile.png",
+    "settings-light-desktop.png",
+    "settings-dark-desktop.png",
+    "settings-light-mobile.png",
+    "settings-dark-mobile.png"
+  ],
+  "pageErrors": [],
+  "apiRequests": [
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/maya-chen/contact"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/maya-chen/contact"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/maya-chen/contact"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/maya-chen/contact"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me/analytics"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/me/project-image"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public-profiles/me/project-image"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/public-profiles/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me/analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-renamed"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me/analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me/analytics"
+    }
+  ],
+  "status": "VERIFIED"
+}

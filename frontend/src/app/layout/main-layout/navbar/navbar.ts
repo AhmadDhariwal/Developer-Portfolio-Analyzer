@@ -1,4 +1,16 @@
-import { Component, OnInit, Input, Output, EventEmitter, DestroyRef, inject, HostListener, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  DestroyRef,
+  inject,
+  HostListener,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -7,10 +19,15 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationService, AppNotification, NotificationResponse } from '../../../shared/services/notification.service';
+import {
+  NotificationService,
+  AppNotification,
+  NotificationResponse,
+} from '../../../shared/services/notification.service';
 import { TenantContextService } from '../../../shared/services/tenant-context.service';
 import { ApiService } from '../../../shared/services/api.service';
 import { ProfileService } from '../../../shared/services/profile.service';
+import { ThemeService } from '../../../shared/services/theme.service';
 
 interface SearchSuggestion {
   type: 'page' | 'repo' | 'skill';
@@ -36,6 +53,8 @@ export class Navbar implements OnInit {
   @ViewChild('notificationButton') notificationButton?: ElementRef<HTMLElement>;
   @ViewChild('notificationDropdown') notificationDropdown?: ElementRef<HTMLElement>;
 
+  readonly themeService = inject(ThemeService);
+
   isLoggedIn$: Observable<boolean>;
   userName = 'Developer';
   userHandle = 'developer';
@@ -49,10 +68,15 @@ export class Navbar implements OnInit {
   notifications: AppNotification[] = [];
   totalNotifications = 0;
 
+  activeSuggestion = -1;
   searchQuery = '';
   suggestions: SearchSuggestion[] = [];
   showSuggestions = false;
-  organizations: Array<{ _id: string; name: string; myRole: 'admin' | 'manager' | 'member' | 'recruiter' }> = [];
+  organizations: Array<{
+    _id: string;
+    name: string;
+    myRole: 'admin' | 'manager' | 'member' | 'recruiter';
+  }> = [];
   teams: Array<{ _id: string; name: string }> = [];
   selectedOrganizationId = '';
   selectedTeamId = '';
@@ -66,19 +90,79 @@ export class Navbar implements OnInit {
 
   private readonly navPages: SearchSuggestion[] = [
     { type: 'page', label: 'Dashboard', sublabel: 'Portfolio overview', route: '/app/dashboard' },
-    { type: 'page', label: 'GitHub Analyzer', sublabel: 'Analyze GitHub repositories', route: '/app/github-analyzer' },
-    { type: 'page', label: 'Resume Analyzer', sublabel: 'Analyze your resume', route: '/app/resume-analyzer' },
-    { type: 'page', label: 'Skill Gap Analysis', sublabel: 'Find skills to learn', route: '/app/skill-gap' },
-    { type: 'page', label: 'Recommendations', sublabel: 'Personalized career advice', route: '/app/recommendations' },
-    { type: 'page', label: 'Recruiter Hub', sublabel: 'Candidate matching workspace', route: '/app/recruiter' },
-    { type: 'page', label: 'Integrations', sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle', route: '/app/integrations' },
-    { type: 'page', label: 'Scenario Simulator', sublabel: 'What-if score and job match simulator', route: '/app/scenario-simulator' },
-    { type: 'page', label: 'Admin Console', sublabel: 'Organization hiring control center', route: '/app/admin' },
-    { type: 'page', label: 'Activity Logs', sublabel: 'My logs, team filters, and date filters', route: '/app/admin/activity-logs' },
+    {
+      type: 'page',
+      label: 'GitHub Analyzer',
+      sublabel: 'Analyze GitHub repositories',
+      route: '/app/github-analyzer',
+    },
+    {
+      type: 'page',
+      label: 'Resume Analyzer',
+      sublabel: 'Analyze your resume',
+      route: '/app/resume-analyzer',
+    },
+    {
+      type: 'page',
+      label: 'Skill Gap Analysis',
+      sublabel: 'Find skills to learn',
+      route: '/app/skill-gap',
+    },
+    {
+      type: 'page',
+      label: 'Recommendations',
+      sublabel: 'Personalized career advice',
+      route: '/app/recommendations',
+    },
+    {
+      type: 'page',
+      label: 'Recruiter Hub',
+      sublabel: 'Candidate matching workspace',
+      route: '/app/recruiter',
+    },
+    {
+      type: 'page',
+      label: 'Integrations',
+      sublabel: 'Connect LinkedIn, GitHub, LeetCode, Kaggle',
+      route: '/app/integrations',
+    },
+    {
+      type: 'page',
+      label: 'Scenario Simulator',
+      sublabel: 'What-if score and job match simulator',
+      route: '/app/scenario-simulator',
+    },
+    {
+      type: 'page',
+      label: 'Admin Console',
+      sublabel: 'Organization hiring control center',
+      route: '/app/admin',
+    },
+    {
+      type: 'page',
+      label: 'Activity Logs',
+      sublabel: 'My logs, team filters, and date filters',
+      route: '/app/admin/activity-logs',
+    },
     { type: 'page', label: 'Profile', sublabel: 'Account settings', route: '/app/profile' },
-    { type: 'page', label: 'Settings', sublabel: 'Admin configuration sections', route: '/app/settings' },
-    { type: 'page', label: 'User Management', sublabel: 'Org overview, teams, roles, and invitations', route: '/app/admin/console' },
-    { type: 'page', label: 'AI Versions', sublabel: 'Versioning and rollback controls', route: '/app/settings/ai-versions' },
+    {
+      type: 'page',
+      label: 'Settings',
+      sublabel: 'Admin configuration sections',
+      route: '/app/settings',
+    },
+    {
+      type: 'page',
+      label: 'User Management',
+      sublabel: 'Org overview, teams, roles, and invitations',
+      route: '/app/admin/console',
+    },
+    {
+      type: 'page',
+      label: 'AI Versions',
+      sublabel: 'Versioning and rollback controls',
+      route: '/app/settings/ai-versions',
+    },
   ];
 
   get isSuperAdmin(): boolean {
@@ -119,17 +203,16 @@ export class Navbar implements OnInit {
     private readonly tenantContext: TenantContextService,
     private readonly apiService: ApiService,
     private readonly profileService: ProfileService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     // Hydrate avatar/name before the first template check to avoid NG0100
     // (ExpressionChangedAfterItHasBeenCheckedError) on *ngIf="userAvatar".
     this.syncUserState(this.authService.getCurrentUser());
 
-    this.searchSubject.pipe(
-      debounceTime(250),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(query => this.runSearch(query));
+    this.searchSubject
+      .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
+      .subscribe((query) => this.runSearch(query));
 
     this.destroyRef.onDestroy(() => {
       this.notificationService.disconnectStream();
@@ -137,22 +220,24 @@ export class Navbar implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.currentUser$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((user) => {
-        this.scheduleUi(() => {
-          this.syncUserState(user);
-          if (user && this.authService.isLoggedIn()) {
-            const token = this.authService.getToken();
-            if (token) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
-          } else {
-            this.notificationService.disconnectStream();
-            this.notifications = [];
-            this.unreadNotifications = 0;
-            this.totalNotifications = 0;
-          }
-        });
+    this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
+      this.scheduleUi(() => {
+        this.syncUserState(user);
+        if (user && this.authService.isLoggedIn()) {
+          const token = this.authService.getToken();
+          if (token)
+            this.notificationService.connectStream(
+              String(user._id || user.email || 'current-user'),
+              token,
+            );
+        } else {
+          this.notificationService.disconnectStream();
+          this.notifications = [];
+          this.unreadNotifications = 0;
+          this.totalNotifications = 0;
+        }
       });
+    });
 
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -172,7 +257,11 @@ export class Navbar implements OnInit {
       this.loadNotifications();
       const token = this.authService.getToken();
       const user = this.authService.getCurrentUser();
-      if (token && user) this.notificationService.connectStream(String(user._id || user.email || 'current-user'), token);
+      if (token && user)
+        this.notificationService.connectStream(
+          String(user._id || user.email || 'current-user'),
+          token,
+        );
       this.loadOrganizations();
     }
 
@@ -196,50 +285,58 @@ export class Navbar implements OnInit {
   }
 
   loadOrganizations(): void {
-    this.apiService.getOrganizations().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (res) => {
-        this.scheduleUi(() => {
-          this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
-          if (!this.selectedOrganizationId && this.organizations.length > 0) {
-            const first = this.organizations[0];
-            this.selectedOrganizationId = first._id;
-            this.selectedRole = first.myRole;
-            this.tenantContext.setOrganization({
-              id: first._id,
-              name: first.name,
-              myRole: first.myRole
-            });
-          }
+    this.apiService
+      .getOrganizations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.scheduleUi(() => {
+            this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+            if (!this.selectedOrganizationId && this.organizations.length > 0) {
+              const first = this.organizations[0];
+              this.selectedOrganizationId = first._id;
+              this.selectedRole = first.myRole;
+              this.tenantContext.setOrganization({
+                id: first._id,
+                name: first.name,
+                myRole: first.myRole,
+              });
+            }
 
-          if (this.selectedOrganizationId && !this.organizations.some((org) => org._id === this.selectedOrganizationId)) {
-            this.selectedOrganizationId = '';
-            this.selectedRole = '';
-            this.selectedTeamId = '';
-            this.teams = [];
-            this.tenantContext.clearAll();
-          }
+            if (
+              this.selectedOrganizationId &&
+              !this.organizations.some((org) => org._id === this.selectedOrganizationId)
+            ) {
+              this.selectedOrganizationId = '';
+              this.selectedRole = '';
+              this.selectedTeamId = '';
+              this.teams = [];
+              this.tenantContext.clearAll();
+            }
 
-          const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
-          if (selectedOrg) {
-            this.selectedRole = selectedOrg.myRole;
-            this.tenantContext.syncOrganization({
-              id: selectedOrg._id,
-              name: selectedOrg.name,
-              myRole: selectedOrg.myRole
-            });
-          }
+            const selectedOrg = this.organizations.find(
+              (org) => org._id === this.selectedOrganizationId,
+            );
+            if (selectedOrg) {
+              this.selectedRole = selectedOrg.myRole;
+              this.tenantContext.syncOrganization({
+                id: selectedOrg._id,
+                name: selectedOrg.name,
+                myRole: selectedOrg.myRole,
+              });
+            }
 
-          if (this.selectedOrganizationId) {
-            this.loadTeams(this.selectedOrganizationId);
-          }
-        });
-      },
-      error: () => {
-        this.scheduleUi(() => {
-          this.organizations = [];
-        });
-      }
-    });
+            if (this.selectedOrganizationId) {
+              this.loadTeams(this.selectedOrganizationId);
+            }
+          });
+        },
+        error: () => {
+          this.scheduleUi(() => {
+            this.organizations = [];
+          });
+        },
+      });
   }
 
   loadTeams(organizationId: string): void {
@@ -248,18 +345,21 @@ export class Navbar implements OnInit {
       return;
     }
 
-    this.apiService.getTeams(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (res) => {
-        this.teams = Array.isArray(res?.teams) ? res.teams : [];
-        if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
-          this.selectedTeamId = '';
-          this.tenantContext.clearTeam();
-        }
-      },
-      error: () => {
-        this.teams = [];
-      }
-    });
+    this.apiService
+      .getTeams(organizationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.teams = Array.isArray(res?.teams) ? res.teams : [];
+          if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
+            this.selectedTeamId = '';
+            this.tenantContext.clearTeam();
+          }
+        },
+        error: () => {
+          this.teams = [];
+        },
+      });
   }
 
   onOrganizationSwitch(orgId: string): void {
@@ -276,7 +376,7 @@ export class Navbar implements OnInit {
     this.tenantContext.setOrganization({
       id: selectedOrg._id,
       name: selectedOrg.name,
-      myRole: selectedOrg.myRole
+      myRole: selectedOrg.myRole,
     });
 
     this.loadTeams(orgId);
@@ -296,7 +396,8 @@ export class Navbar implements OnInit {
   loadNotifications(forceRefresh = false): void {
     const user = this.authService.getCurrentUser();
     const signature = String(user?._id || user?.email || 'current-user');
-    this.notificationService.getNotifications({ limit: 5, page: 1 }, signature, forceRefresh)
+    this.notificationService
+      .getNotifications({ limit: 5, page: 1 }, signature, forceRefresh)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: NotificationResponse) => {
@@ -317,7 +418,7 @@ export class Navbar implements OnInit {
             this.unreadNotifications = 0;
             this.totalNotifications = 0;
           });
-        }
+        },
       });
   }
 
@@ -326,23 +427,30 @@ export class Navbar implements OnInit {
     // Skip emails / blank handles — GitHub usernames cannot contain '@'.
     if (!handle || handle.includes('@') || /\s/.test(handle)) return;
 
-    this.http.get<any[]>(
-      `https://api.github.com/users/${encodeURIComponent(handle)}/repos?per_page=100&sort=updated`
-    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: repos => {
-        this.cachedRepos = repos;
-        // Extract unique languages as skill suggestions
-        const langs = new Set<string>();
-        repos.forEach(r => { if (r.language) langs.add(r.language); });
-        this.cachedSkills = Array.from(langs).map(lang => ({
-          type: 'skill' as const,
-          label: lang,
-          sublabel: `Used in ${repos.filter(r => r.language === lang).length} repo(s)`,
-          route: '/app/skill-gap',
-        }));
-      },
-      error: () => { /* ignore rate limit / network errors */ }
-    });
+    this.http
+      .get<any[]>(
+        `https://api.github.com/users/${encodeURIComponent(handle)}/repos?per_page=100&sort=updated`,
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (repos) => {
+          this.cachedRepos = repos;
+          // Extract unique languages as skill suggestions
+          const langs = new Set<string>();
+          repos.forEach((r) => {
+            if (r.language) langs.add(r.language);
+          });
+          this.cachedSkills = Array.from(langs).map((lang) => ({
+            type: 'skill' as const,
+            label: lang,
+            sublabel: `Used in ${repos.filter((r) => r.language === lang).length} repo(s)`,
+            route: '/app/skill-gap',
+          }));
+        },
+        error: () => {
+          /* ignore rate limit / network errors */
+        },
+      });
   }
 
   onSearchInput(event: Event): void {
@@ -352,10 +460,12 @@ export class Navbar implements OnInit {
   }
 
   runSearch(query: string): void {
+    this.activeSuggestion = -1;
     const q = query.trim().toLowerCase();
     if (!q) {
       this.suggestions = [];
       this.showSuggestions = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -363,28 +473,31 @@ export class Navbar implements OnInit {
 
     // Pages
     this.searchablePages
-      .filter(p => p.label.toLowerCase().includes(q) || p.sublabel?.toLowerCase().includes(q))
-      .forEach(p => results.push(p));
+      .filter((p) => p.label.toLowerCase().includes(q) || p.sublabel?.toLowerCase().includes(q))
+      .forEach((p) => results.push(p));
 
     // Repositories
     this.cachedRepos
-      .filter(r => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
+      .filter((r) => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
       .slice(0, 5)
-      .forEach(r => results.push({
-        type: 'repo',
-        label: r.name,
-        sublabel: r.description || r.language || '',
-        url: r.html_url,
-      }));
+      .forEach((r) =>
+        results.push({
+          type: 'repo',
+          label: r.name,
+          sublabel: r.description || r.language || '',
+          url: r.html_url,
+        }),
+      );
 
     // Skills (languages from repos)
     this.cachedSkills
-      .filter(s => s.label.toLowerCase().includes(q))
+      .filter((s) => s.label.toLowerCase().includes(q))
       .slice(0, 4)
-      .forEach(s => results.push(s));
+      .forEach((s) => results.push(s));
 
     this.suggestions = results;
     this.showSuggestions = results.length > 0;
+    this.cdr.markForCheck();
   }
 
   selectSuggestion(suggestion: SearchSuggestion): void {
@@ -398,8 +511,40 @@ export class Navbar implements OnInit {
     this.showSuggestions = false;
   }
 
+  onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.showSuggestions = false;
+      this.activeSuggestion = -1;
+      return;
+    }
+    if (!this.suggestions.length) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.showSuggestions = true;
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      this.activeSuggestion =
+        this.activeSuggestion < 0
+          ? direction > 0
+            ? 0
+            : this.suggestions.length - 1
+          : (this.activeSuggestion + direction + this.suggestions.length) % this.suggestions.length;
+    } else if (event.key === 'Enter' && this.showSuggestions && this.activeSuggestion >= 0) {
+      event.preventDefault();
+      this.selectSuggestion(this.suggestions[this.activeSuggestion]);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeToolbarPopovers(): void {
+    if (this.showUserMenu) document.querySelector<HTMLElement>('.avatar-button')?.focus();
+    if (this.showNotifications) this.notificationButton?.nativeElement.focus();
+    this.showUserMenu = this.showNotifications = this.showSuggestions = false;
+  }
+
   closeSearch(): void {
-    setTimeout(() => { this.showSuggestions = false; }, 150);
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 150);
   }
 
   toggleSidebar() {
@@ -436,14 +581,15 @@ export class Navbar implements OnInit {
     const previousUnread = this.unreadNotifications;
     notification.isRead = true;
     this.unreadNotifications = Math.max(0, previousUnread - 1);
-    this.notificationService.markAsRead(notification._id)
+    this.notificationService
+      .markAsRead(notification._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.loadNotifications(true),
         error: () => {
           notification.isRead = false;
           this.unreadNotifications = previousUnread;
-        }
+        },
       });
     this.closeNotifications();
   }
@@ -453,14 +599,15 @@ export class Navbar implements OnInit {
     const previousUnread = this.unreadNotifications;
     this.notifications = this.notifications.map((item) => ({ ...item, isRead: true }));
     this.unreadNotifications = 0;
-    this.notificationService.markAllAsRead()
+    this.notificationService
+      .markAllAsRead()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.loadNotifications(true),
         error: () => {
           this.notifications = previous;
           this.unreadNotifications = previousUnread;
-        }
+        },
       });
     this.closeNotifications();
   }
@@ -547,7 +694,9 @@ export class Navbar implements OnInit {
     }
 
     const previousAvatar = this.userAvatar;
-    const roleLabel = String(user.role || '').trim().toLowerCase();
+    const roleLabel = String(user.role || '')
+      .trim()
+      .toLowerCase();
     this.userName = user.name || roleLabel || 'User';
     this.userHandle = user.githubUsername || user.email || '';
     this.userInitial = this.profileService.getInitials(this.userName || 'User') || 'U';

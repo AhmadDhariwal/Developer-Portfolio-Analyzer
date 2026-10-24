@@ -1,0 +1,173 @@
+{
+  "finalizedAt": "2026-10-15T12:48:50.238Z",
+  "status": "BLOCKED",
+  "initialWorkingTree": "clean",
+  "sourceFiles": [
+    "backend/src/controllers/careerSprintController.js",
+    "backend/src/models/careerSprint.js",
+    "backend/src/prompts/careerSprintPrompt.js",
+    "backend/src/routes/careerSprint.routes.js",
+    "backend/src/scripts/auditCareerSprintData.js",
+    "backend/src/scripts/ensureCareerSprintIndexes.js",
+    "backend/src/services/aiTaskService.js",
+    "backend/src/services/careerSprintService.js",
+    "backend/src/services/courseHandoffService.js",
+    "backend/src/services/recommendationHandoffService.js",
+    "backend/src/services/scenarioSimulatorService.js",
+    "backend/src/services/streakService.js",
+    "backend/src/tests/careerSprintFinalization.test.js",
+    "backend/src/tests/careerSprintMongo.integration.test.js",
+    "backend/src/tests/careerSprintPerformance.test.js",
+    "backend/src/tests/careerSprintPlanningFinalization.test.js"
+  ],
+  "inventory": [
+    "backend/src/controllers/careerSprintController.js",
+    "backend/src/models/careerSprint.js",
+    "backend/src/prompts/careerSprintPrompt.js",
+    "backend/src/routes/careerSprint.routes.js",
+    "backend/src/scripts/auditCareerSprintData.js",
+    "backend/src/scripts/ensureCareerSprintIndexes.js",
+    "backend/src/services/aiTaskService.js",
+    "backend/src/services/careerSprintService.js",
+    "backend/src/services/courseHandoffService.js",
+    "backend/src/services/recommendationHandoffService.js",
+    "backend/src/services/scenarioSimulatorService.js",
+    "backend/src/services/streakService.js",
+    "backend/src/tests/careerSprintFinalization.test.js",
+    "backend/src/tests/careerSprintMongo.integration.test.js",
+    "backend/src/tests/careerSprintPerformance.test.js",
+    "backend/src/tests/careerSprintPlanningFinalization.test.js",
+    "backend/verification/career-sprint/REPORT.md",
+    "backend/verification/career-sprint/data-audit.json",
+    "backend/verification/career-sprint/focused.txt",
+    "backend/verification/career-sprint/full-backend-final.txt",
+    "backend/verification/career-sprint/performance.json",
+    "backend/verification/career-sprint/validation.json"
+  ],
+  "checks": [
+    {
+      "label": "syntax: backend/src/controllers/careerSprintController.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/models/careerSprint.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/prompts/careerSprintPrompt.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/routes/careerSprint.routes.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/scripts/ensureCareerSprintIndexes.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/aiTaskService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/careerSprintService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/courseHandoffService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/recommendationHandoffService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/scenarioSimulatorService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/services/streakService.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/tests/careerSprintPerformance.test.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/scripts/auditCareerSprintData.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/tests/careerSprintFinalization.test.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/tests/careerSprintMongo.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "label": "syntax: backend/src/tests/careerSprintPlanningFinalization.test.js",
+      "exitCode": 0
+    },
+    {
+      "label": "Prettier --write 120",
+      "exitCode": 0
+    },
+    {
+      "label": "Prettier --check 120",
+      "exitCode": 0
+    },
+    {
+      "label": "Prettier --write 100",
+      "exitCode": 0
+    },
+    {
+      "label": "Prettier --check 100",
+      "exitCode": 0
+    },
+    {
+      "label": "Report Prettier --write",
+      "exitCode": 0
+    },
+    {
+      "label": "Report Prettier --check",
+      "exitCode": 0
+    },
+    {
+      "label": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "label": "git diff --cached --check",
+      "exitCode": 0
+    }
+  ],
+  "tests": {
+    "focused": {
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "includesRealMongoJwt": true
+    },
+    "fullSerial": {
+      "passed": 364,
+      "failed": 0,
+      "skipped": 0
+    },
+    "initialFullParallel": {
+      "passed": 362,
+      "failed": 2,
+      "notes": "Fixed new DST test cwd; unchanged Recommendations latency test exceeded threshold."
+    }
+  },
+  "cleanup": {
+    "moved": [],
+    "deletedTaskOwnedLogs": [
+      "backend/verification/career-sprint/full-backend.txt",
+      "backend/verification/career-sprint/recommendations-performance.txt"
+    ],
+    "unrelatedDeleted": [],
+    "screenshotsOrTracesCreated": 0
+  },
+  "frontendChanged": false
+}

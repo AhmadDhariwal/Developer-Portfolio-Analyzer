@@ -5,6 +5,7 @@ node_modules/
 .env
 .env.*
 *.env
+!.env.example
 
 # Documentation (Internal to team and AI agents)
 docs/

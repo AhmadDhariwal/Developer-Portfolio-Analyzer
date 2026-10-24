@@ -1,0 +1,75 @@
+'use strict';
+
+const CareerSprint = require('../models/careerSprint');
+const legacyPolicy = require('./sprintLegacyPolicy');
+const { getCurrentSprint, invalidateCareerSprintCache } = require('./careerSprintService');
+
+// The current snapshot is resolved server-side. Callers cannot supply task content,
+// ownership, points, source facts, priorities or a different sprint owner.
+const handoff = async ({ userId, recommendation, signalHash, expectedSignalHash }) => {
+  if (!userId) return { status: 401, message: 'Authentication required.' };
+  if (!recommendation) return { status: 404, message: 'Current recommendation not found.' };
+  if (signalHash !== expectedSignalHash)
+    return {
+      status: 409,
+      message: 'Recommendation context changed. Refresh before starting a sprint.',
+    };
+  const sprint = await getCurrentSprint(userId);
+  if (!sprint?._id) return { status: 503, message: 'Career Sprint is unavailable.' };
+  legacyPolicy.assertWritable(sprint);
+  const title = recommendation.title.slice(0, 120);
+  const task = {
+    sourceRecommendationId: recommendation.id,
+    sourceRecommendationHash: signalHash,
+    sourceRule: 'recommendations-evidence-v1',
+    evidenceLimitation: 'Proposed action from recorded evidence; not verified proficiency.',
+    title,
+    description:
+      `${recommendation.actionableNextStep}\nRecommendation: ${recommendation.id}\nContext: ${signalHash}`.slice(
+        0,
+        1000,
+      ),
+    priority: recommendation.priority.toLowerCase(),
+    category:
+      recommendation.category === 'projects'
+        ? 'project'
+        : recommendation.category === 'learning'
+          ? 'learning'
+          : 'practice',
+    taskType: 'manual',
+  };
+  const updated = await CareerSprint.findOneAndUpdate(
+    {
+      _id: sprint._id,
+      userId,
+      reservationPolicy: { $ne: legacyPolicy.EXCEPTION_POLICY },
+      $or: [
+        { calendarPolicy: 'sprint-calendar-48h-v1' },
+        { migrationCalendarTimeZone: { $type: 'string' } },
+      ],
+      'tasks.title': { $ne: title },
+      'tasks.sourceRecommendationId': { $ne: recommendation.id },
+      $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
+    },
+    { $push: { tasks: task }, $inc: { __v: 1 } },
+    { returnDocument: 'after', runValidators: true },
+  ).lean();
+  if (!updated) {
+    const existing = await CareerSprint.findOne({
+      _id: sprint._id,
+      userId,
+      $or: [{ 'tasks.title': title }, { 'tasks.sourceRecommendationId': recommendation.id }],
+    }).lean();
+    if (!existing) return { status: 409, message: 'Sprint changed. Retry the handoff.' };
+  }
+  invalidateCareerSprintCache(userId);
+  return {
+    status: 200,
+    sprintId: String(sprint._id),
+    recommendationId: recommendation.id,
+    alreadyAdded: !updated,
+    route: '/app/career-sprint',
+  };
+};
+
+module.exports = { handoff };

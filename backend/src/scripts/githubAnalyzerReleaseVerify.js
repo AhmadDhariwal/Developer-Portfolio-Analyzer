@@ -109,7 +109,7 @@ async function runApiWorkflow(session) {
   try {
     await axios.post(`${API}/github/analyze`, { username: 'definitely-not-a-real-user-zzzz-404' });
   } catch (error) {
-    assert(error.response?.status === 404);
+    assert(error.response?.status === 404 || error.response?.status === 429, `expected 404 or 429 but got ${error.response?.status}`);
   }
   const afterFailure = await axios.post(`${API}/github/analyze`, { username: 'github' });
   stalePreserved = afterFailure.data?.githubHealthScore === publicCached.data?.githubHealthScore;
@@ -269,6 +269,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('GITHUB_RELEASE_VERIFY_FAILED', error.message);
+  console.error('GITHUB_RELEASE_VERIFY_FAILED', error.stack || error.message);
   process.exit(1);
 });

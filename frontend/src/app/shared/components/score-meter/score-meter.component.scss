@@ -17,13 +17,13 @@
 
     .track {
       fill: none;
-      stroke: rgba(255, 255, 255, 0.06);
-      stroke-width: 10;
+      stroke: var(--border-color, #E2E8F0);
+      stroke-width: 9;
     }
 
     .progress-arc {
       fill: none;
-      stroke-width: 10;
+      stroke-width: 9;
       stroke-linecap: round;
       transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -38,21 +38,23 @@
     text-align: center;
 
     .score-value {
-      font-family: 'Poppins', sans-serif;
-      font-weight: 800;
+      font-family: var(--font-heading, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+      font-weight: 700;
       line-height: 1;
-      font-size: 3.25rem;
+      font-size: 3rem;
+      color: var(--text-primary, #0F172A);
+      letter-spacing: -0.03em;
     }
 
     .score-out {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      font-size: 0.8125rem;
+      color: var(--text-muted, #64748B);
       margin-top: 4px;
       font-weight: 500;
     }
   }
 
-  &.size-sm .score-label .score-value { font-size: 2rem; }
-  &.size-md .score-label .score-value { font-size: 2.6rem; }
-  &.size-lg .score-label .score-value { font-size: 3.25rem; }
+  &.size-sm .score-label .score-value { font-size: 1.875rem; }
+  &.size-md .score-label .score-value { font-size: 2.375rem; }
+  &.size-lg .score-label .score-value { font-size: 3rem; }
 }

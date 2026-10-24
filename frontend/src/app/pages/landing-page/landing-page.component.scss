@@ -1,4 +1,4 @@
-@import '../../shared/styles/public-theme-tokens';
+@use '../../shared/styles/public-theme-tokens' as *;
 
 $max-width: 1200px;
 $section-pad: clamp(80px, 8vw, 120px);

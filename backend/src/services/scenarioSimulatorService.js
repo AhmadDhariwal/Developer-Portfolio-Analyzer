@@ -1,3 +1,5 @@
+const { clampScore: clamp, clamp: clampFloat, round } = require('./scoring/math');
+const developerContext = require('./developerContextService');
 /**
  * Scenario Simulator Service - Career Growth Simulation Engine
  *
@@ -20,17 +22,11 @@ const User = require('../models/user');
 const roleWeights = require('../utils/roleWeights');
 const skillDifficulty = require('../utils/skillDifficulty');
 const marketDemand = require('../utils/marketDemand');
-const {
-  estimateSkillsEffort,
-  estimateProjectsEffort,
-  calcOverloadPenalty
-} = require('../utils/timeEstimator');
-const { createSprint } = require('./careerSprintService');
+const { estimateSkillsEffort, estimateProjectsEffort, calcOverloadPenalty } = require('../utils/timeEstimator');
+const { getCurrentSprint, mergeProposedTasks } = require('./careerSprintService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
 
-const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Math.round(Number(v) || 0)));
-const clampFloat = (v, min = 0, max = 100) => Math.max(min, Math.min(max, Number(v) || 0));
-const round1 = (v) => Math.round(Number(v || 0) * 10) / 10;
+const round1 = (v) => round(v, 1) ?? 0;
 const average = (values = [], fallback = 0) => {
   const valid = values.filter((value) => Number.isFinite(Number(value)) && Number(value) > 0).map(Number);
   if (!valid.length) return fallback;
@@ -75,7 +71,9 @@ const setCachedValue = (cache, key, value, maxSize) => {
 
 const runDeduped = (inflight, key, work) => {
   if (inflight.has(key)) return inflight.get(key);
-  const promise = Promise.resolve().then(work).finally(() => inflight.delete(key));
+  const promise = Promise.resolve()
+    .then(work)
+    .finally(() => inflight.delete(key));
   inflight.set(key, promise);
   return promise;
 };
@@ -93,42 +91,50 @@ const stableValue = (value) => {
   return value;
 };
 
-const hashPayload = (payload = {}) => crypto
-  .createHash('sha256')
-  .update(JSON.stringify(stableValue(payload)))
-  .digest('hex');
+const hashPayload = (payload = {}) =>
+  crypto
+    .createHash('sha256')
+    .update(JSON.stringify(stableValue(payload)))
+    .digest('hex');
 
-const buildScenarioHash = (input = {}) => hashPayload({
-  baselineHiringScore: clamp(input.baselineHiringScore),
-  baselineJobMatch: clamp(input.baselineJobMatch),
-  role: normalizeRole(input.role),
-  experienceLevel: normalizeLevel(input.experienceLevel),
-  durationWeeks: clamp(input.durationWeeks || 6, 1, 24),
-  skills: uniqueStrings(input.skills || [], MAX_SKILLS).map((skill) => skill.toLowerCase()).sort(),
-  projects: (input.projects || [])
-    .map((project) => ({
-      name: String(project?.name || '').trim().toLowerCase(),
-      impact: clamp(project?.impact, 0, 100),
-      complexity: ['low', 'medium', 'high'].includes(project?.complexity) ? project.complexity : 'medium',
-      weeks: clamp(project?.weeks, 1, 24)
-    }))
-    .filter((project) => project.name)
-    .sort((left, right) => left.name.localeCompare(right.name))
-});
+const buildScenarioHash = (input = {}) =>
+  hashPayload({
+    baselineHiringScore: clamp(input.baselineHiringScore),
+    baselineJobMatch: clamp(input.baselineJobMatch),
+    role: normalizeRole(input.role),
+    experienceLevel: normalizeLevel(input.experienceLevel),
+    durationWeeks: clamp(input.durationWeeks || 6, 1, 24),
+    skills: uniqueStrings(input.skills || [], MAX_SKILLS)
+      .map((skill) => skill.toLowerCase())
+      .sort(),
+    projects: (input.projects || [])
+      .map((project) => ({
+        name: String(project?.name || '')
+          .trim()
+          .toLowerCase(),
+        impact: clamp(project?.impact, 0, 100),
+        complexity: ['low', 'medium', 'high'].includes(project?.complexity) ? project.complexity : 'medium',
+        weeks: clamp(project?.weeks, 1, 24)
+      }))
+      .filter((project) => project.name)
+      .sort((left, right) => left.name.localeCompare(right.name))
+  });
 
-const buildContextCacheKey = ({ userId, signalHash, careerProfile }) => hashPayload({
-  version: SCENARIO_CONTEXT_VERSION,
-  userId: String(userId || ''),
-  signalHash,
-  careerProfile: {
-    careerStack: careerProfile?.careerStack || '',
-    experienceLevel: careerProfile?.experienceLevel || '',
-    careerGoal: careerProfile?.careerGoal || '',
-    githubUsername: careerProfile?.activeGithubUsername || careerProfile?.githubUsername || ''
-  }
-});
+const buildContextCacheKey = ({ userId, signalHash, careerProfile }) =>
+  hashPayload({
+    version: SCENARIO_CONTEXT_VERSION,
+    userId: String(userId || ''),
+    signalHash,
+    careerProfile: {
+      careerStack: careerProfile?.careerStack || '',
+      experienceLevel: careerProfile?.experienceLevel || '',
+      careerGoal: careerProfile?.careerGoal || '',
+      githubUsername: developerContext.resolveGithubUsername(careerProfile) || ''
+    }
+  });
 
-const buildHistoryCacheKey = (userId, limit) => `${SCENARIO_HISTORY_VERSION}:${String(userId || '')}:${clamp(limit, 1, 20)}`;
+const buildHistoryCacheKey = (userId, limit) =>
+  `${SCENARIO_HISTORY_VERSION}:${String(userId || '')}:${clamp(limit, 1, 20)}`;
 
 const invalidateHistoryCache = (userId) => {
   const prefix = `${SCENARIO_HISTORY_VERSION}:${String(userId || '')}:`;
@@ -196,7 +202,9 @@ const LEVEL_PROJECT_MULT = { junior: 1.2, mid: 1.0, senior: 0.8 };
 const COMPLEXITY_WEIGHT = { low: 0.8, medium: 1.0, high: 1.3 };
 
 const normalizeRole = (role = '') => {
-  const raw = String(role || '').toLowerCase().trim();
+  const raw = String(role || '')
+    .toLowerCase()
+    .trim();
   if (!raw) return 'full stack';
   if (ROLE_ALIASES[raw]) return ROLE_ALIASES[raw];
   if (raw.includes('front')) return 'frontend';
@@ -208,22 +216,42 @@ const normalizeRole = (role = '') => {
 };
 
 const normalizeLevel = (level = '') => {
-  const raw = String(level || '').toLowerCase().trim();
+  const raw = String(level || '')
+    .toLowerCase()
+    .trim();
   if (!raw) return 'mid';
   if (LEVEL_ALIASES[raw]) return LEVEL_ALIASES[raw];
-  if (raw.includes('junior') || raw.includes('student') || raw.includes('intern') || raw.includes('0-1')) return 'junior';
+  if (raw.includes('junior') || raw.includes('student') || raw.includes('intern') || raw.includes('0-1'))
+    return 'junior';
   if (raw.includes('senior') || raw.includes('lead') || raw.includes('staff') || raw.includes('5+')) return 'senior';
   return 'mid';
 };
 
 const isRecognizedRole = (role) => {
-  const raw = String(role || '').toLowerCase().trim();
-  return !raw || Boolean(ROLE_ALIASES[raw]) || ['frontend developer', 'backend developer', 'full stack developer', 'ai/ml engineer', 'devops engineer', 'devops / cloud engineer'].includes(raw);
+  const raw = String(role || '')
+    .toLowerCase()
+    .trim();
+  return (
+    !raw ||
+    Boolean(ROLE_ALIASES[raw]) ||
+    [
+      'frontend developer',
+      'backend developer',
+      'full stack developer',
+      'ai/ml engineer',
+      'devops engineer',
+      'devops / cloud engineer'
+    ].includes(raw)
+  );
 };
 
 const isRecognizedLevel = (level) => {
-  const raw = String(level || '').toLowerCase().trim();
-  return !raw || Boolean(LEVEL_ALIASES[raw]) || ['junior developer', 'mid-level developer', 'senior developer'].includes(raw);
+  const raw = String(level || '')
+    .toLowerCase()
+    .trim();
+  return (
+    !raw || Boolean(LEVEL_ALIASES[raw]) || ['junior developer', 'mid-level developer', 'senior developer'].includes(raw)
+  );
 };
 
 const hasUnsafeScenarioText = (value) => /[<>\u0000-\u001f\u007f]/.test(String(value || ''));
@@ -279,8 +307,11 @@ const sanitizeProjects = (projects = []) => {
     const name = String(project?.name || '').trim();
     const rawImpact = Number(project?.impact);
     const rawWeeks = Number(project?.weeks);
-    const complexity = String(project?.complexity || 'medium').toLowerCase().trim();
-    const hasProjectInput = name || project?.impact !== undefined || project?.weeks !== undefined || project?.complexity !== undefined;
+    const complexity = String(project?.complexity || 'medium')
+      .toLowerCase()
+      .trim();
+    const hasProjectInput =
+      name || project?.impact !== undefined || project?.weeks !== undefined || project?.complexity !== undefined;
 
     if (!name) {
       if (hasProjectInput) {
@@ -303,7 +334,10 @@ const sanitizeProjects = (projects = []) => {
       errors.push({ field: `projects[${index}].weeks`, message: 'Project estimated weeks must be between 1 and 24.' });
     }
     if (!['low', 'medium', 'high'].includes(complexity)) {
-      errors.push({ field: `projects[${index}].complexity`, message: 'Project complexity must be low, medium, or high.' });
+      errors.push({
+        field: `projects[${index}].complexity`,
+        message: 'Project complexity must be low, medium, or high.'
+      });
     }
 
     clean.push({
@@ -380,7 +414,10 @@ const sanitizeScenarioInput = (payload = {}, options = {}) => {
 
   projects.forEach((project, index) => {
     if (project.name.length > 160 || hasUnsafeScenarioText(project.name)) {
-      errors.push({ field: `projects[${index}].name`, message: 'Project names must be plain text up to 160 characters.' });
+      errors.push({
+        field: `projects[${index}].name`,
+        message: 'Project names must be plain text up to 160 characters.'
+      });
     }
   });
 
@@ -509,17 +546,32 @@ const suggestDurationWeeks = (skillsEffort, projectsEffort, durationWeeks, overl
   return overloaded ? Math.max(durationWeeks + 2, realistic) : Math.max(durationWeeks, realistic);
 };
 
-const buildConfidenceScore = ({ cleanSkills, cleanProjects, duration, overloaded, penalty, perSkillData, resumeConnected, githubConnected }) => {
-  const avgRelevance = average(perSkillData.map((skill) => skill.relevance), cleanProjects.length ? 1.1 : 1);
-  const evidenceScore = average([
-    cleanSkills.length >= 3 ? 90 : cleanSkills.length ? 72 : 52,
-    cleanProjects.length >= 2 ? 88 : cleanProjects.length ? 70 : 48,
-    resumeConnected ? 82 : 62,
-    githubConnected ? 84 : 64
-  ], 62);
+const buildConfidenceScore = ({
+  cleanSkills,
+  cleanProjects,
+  duration,
+  overloaded,
+  penalty,
+  perSkillData,
+  resumeConnected,
+  githubConnected
+}) => {
+  const avgRelevance = average(
+    perSkillData.map((skill) => skill.relevance),
+    cleanProjects.length ? 1.1 : 1
+  );
+  const evidenceScore = average(
+    [
+      cleanSkills.length >= 3 ? 90 : cleanSkills.length ? 72 : 52,
+      cleanProjects.length >= 2 ? 88 : cleanProjects.length ? 70 : 48,
+      resumeConnected ? 82 : 62,
+      githubConnected ? 84 : 64
+    ],
+    62
+  );
   const realismScore = overloaded ? Math.max(35, 74 - penalty * 5) : Math.min(94, 72 + duration * 1.6);
   const relevanceScore = clampFloat(avgRelevance * 58, 35, 95);
-  return clamp((evidenceScore * 0.4) + (realismScore * 0.35) + (relevanceScore * 0.25), 28, 96);
+  return clamp(evidenceScore * 0.4 + realismScore * 0.35 + relevanceScore * 0.25, 28, 96);
 };
 
 const buildUncertaintyRange = ({
@@ -530,7 +582,11 @@ const buildUncertaintyRange = ({
   penalty,
   overloaded
 }) => {
-  const variance = clampFloat((100 - confidenceScore) / 6 + Math.max(0, penalty) * 0.35 + (overloaded ? 2.5 : 0), 2, 18);
+  const variance = clampFloat(
+    (100 - confidenceScore) / 6 + Math.max(0, penalty) * 0.35 + (overloaded ? 2.5 : 0),
+    2,
+    18
+  );
   const hiringVariance = Math.max(2, Math.round(Math.min(variance, totalImprovement || variance)));
   const jobVariance = Math.max(2, Math.round(Math.min(variance * 1.1, Math.max(totalImprovement * 0.9, 2))));
 
@@ -550,7 +606,16 @@ const buildUncertaintyRange = ({
   };
 };
 
-const buildAssumptions = ({ cleanSkills, cleanProjects, duration, normalizedRole, normalizedLevel, confidenceScore, suggestedDurationWeeks, sources }) => ({
+const buildAssumptions = ({
+  cleanSkills,
+  cleanProjects,
+  duration,
+  normalizedRole,
+  normalizedLevel,
+  confidenceScore,
+  suggestedDurationWeeks,
+  sources
+}) => ({
   skillsConsidered: cleanSkills,
   projectsConsidered: cleanProjects.map((project) => ({
     name: project.name,
@@ -571,16 +636,29 @@ const buildAssumptions = ({ cleanSkills, cleanProjects, duration, normalizedRole
   suggestedDurationWeeks
 });
 
-const buildExplainability = ({ breakdown, perSkillData, projectDetails, penalty, confidenceScore, duration, suggestedDurationWeeks }) => {
+const buildExplainability = ({
+  breakdown,
+  perSkillData,
+  projectDetails,
+  penalty,
+  confidenceScore,
+  duration,
+  suggestedDurationWeeks
+}) => {
   const scoreDrivers = [
     ...perSkillData
       .filter((skill) => Number(skill.pts || 0) > 0)
       .slice(0, 4)
-      .map((skill) => `${skill.skill} contributed +${skill.pts} from ${skill.tier} role fit and ${skill.demand}x demand.`),
+      .map(
+        (skill) => `${skill.skill} contributed +${skill.pts} from ${skill.tier} role fit and ${skill.demand}x demand.`
+      ),
     ...projectDetails
       .filter((project) => Number(project.pts || 0) > 0)
       .slice(0, 3)
-      .map((project) => `${project.name} contributed +${project.pts} from ${project.complexity} complexity, ${project.weeks} weeks, and ${project.impact}/100 impact.`)
+      .map(
+        (project) =>
+          `${project.name} contributed +${project.pts} from ${project.complexity} complexity, ${project.weeks} weeks, and ${project.impact}/100 impact.`
+      )
   ];
 
   if (breakdown.synergy > 0) {
@@ -589,7 +667,9 @@ const buildExplainability = ({ breakdown, perSkillData, projectDetails, penalty,
 
   const penalties = [];
   if (penalty > 0) {
-    penalties.push(`Overload reduced the estimate by ${Math.round(penalty)} points because the effort exceeds the selected ${duration}-week window.`);
+    penalties.push(
+      `Overload reduced the estimate by ${Math.round(penalty)} points because the effort exceeds the selected ${duration}-week window.`
+    );
   }
   if (breakdown.total >= MAX_IMPROVEMENT - 2) {
     penalties.push(`The max improvement cap limited the result to a realistic +${MAX_IMPROVEMENT} point ceiling.`);
@@ -598,14 +678,16 @@ const buildExplainability = ({ breakdown, perSkillData, projectDetails, penalty,
   return {
     scoreDrivers,
     penalties,
-    confidenceReason: confidenceScore >= 80
-      ? 'High confidence: role fit, evidence, and timeline are aligned.'
-      : confidenceScore >= 60
-        ? 'Moderate confidence: useful plan, but evidence or timeline realism leaves some uncertainty.'
-        : 'Lower confidence: the plan needs stronger evidence, narrower scope, or more time.',
-    effortVsDuration: duration >= suggestedDurationWeeks
-      ? `The selected ${duration}-week duration is realistic for the estimated effort.`
-      : `The selected ${duration}-week duration is aggressive; ${suggestedDurationWeeks} weeks is more realistic.`
+    confidenceReason:
+      confidenceScore >= 80
+        ? 'High confidence: role fit, evidence, and timeline are aligned.'
+        : confidenceScore >= 60
+          ? 'Moderate confidence: useful plan, but evidence or timeline realism leaves some uncertainty.'
+          : 'Lower confidence: the plan needs stronger evidence, narrower scope, or more time.',
+    effortVsDuration:
+      duration >= suggestedDurationWeeks
+        ? `The selected ${duration}-week duration is realistic for the estimated effort.`
+        : `The selected ${duration}-week duration is aggressive; ${suggestedDurationWeeks} weeks is more realistic.`
   };
 };
 
@@ -648,12 +730,16 @@ const generateInsights = ({
   });
 
   const addedLower = skills.map((skill) => skill.toLowerCase());
-  const missingCore = coreSkills.filter((skill) => !addedLower.some((entry) => entry.includes(skill) || skill.includes(entry)));
+  const missingCore = coreSkills.filter(
+    (skill) => !addedLower.some((entry) => entry.includes(skill) || skill.includes(entry))
+  );
   if (missingCore.length && skills.length) {
     suggestions.push(`To strengthen this ${roleLabel} plan, consider adding ${missingCore.slice(0, 3).join(', ')}.`);
   }
   if (!skills.length) {
-    suggestions.push(`Add role-aligned skills such as ${coreSkills.slice(0, 4).join(', ')} to make the scenario more realistic.`);
+    suggestions.push(
+      `Add role-aligned skills such as ${coreSkills.slice(0, 4).join(', ')} to make the scenario more realistic.`
+    );
   }
 
   if (projects.length) {
@@ -669,7 +755,9 @@ const generateInsights = ({
   }
 
   if (breakdown.synergy >= 5) {
-    insights.push('Strong skill-to-project synergy detected. Your project choices reinforce the skills you want to learn.');
+    insights.push(
+      'Strong skill-to-project synergy detected. Your project choices reinforce the skills you want to learn.'
+    );
   } else if (skills.length && projects.length && breakdown.synergy < 2) {
     suggestions.push('Align project titles and scope more closely with the selected skills to improve synergy.');
   }
@@ -677,21 +765,29 @@ const generateInsights = ({
   if (overloadWarning) warnings.push(overloadWarning);
 
   if (durationWeeks < suggestedDurationWeeks) {
-    warnings.push(`This plan likely needs closer to ${suggestedDurationWeeks} weeks to land consistently without quality drop-offs.`);
+    warnings.push(
+      `This plan likely needs closer to ${suggestedDurationWeeks} weeks to land consistently without quality drop-offs.`
+    );
   }
 
   if (level === 'junior') {
     suggestions.push('As a junior profile, focus on depth in 2 to 3 core skills rather than spreading too wide.');
   } else if (level === 'senior') {
-    suggestions.push('For senior pathways, pair implementation skills with system design, architecture, and leadership examples.');
+    suggestions.push(
+      'For senior pathways, pair implementation skills with system design, architecture, and leadership examples.'
+    );
   }
 
   if (breakdown.total >= 35) {
-    warnings.push('The improvement cap is nearly saturated. Additional items beyond this point will have diminishing returns.');
+    warnings.push(
+      'The improvement cap is nearly saturated. Additional items beyond this point will have diminishing returns.'
+    );
   }
 
   if (confidenceScore < 60) {
-    warnings.push('Confidence is moderate because the simulator has limited evidence or the plan is aggressive for the selected timeline.');
+    warnings.push(
+      'Confidence is moderate because the simulator has limited evidence or the plan is aggressive for the selected timeline.'
+    );
   } else if (confidenceScore >= 80) {
     insights.push('Confidence is strong because the plan fits your role, timeline, and available analysis signals.');
   }
@@ -707,7 +803,11 @@ const simulateHiringOutcome = (payload = {}, signalContext = {}) => {
   const cleanSkills = uniqueStrings(normalizedInput.skills, MAX_SKILLS);
   const cleanProjects = sanitizeProjects(normalizedInput.projects).clean;
 
-  const { total: skillImpact, perSkill: perSkillData } = computeSkillImpact(cleanSkills, normalizedRole, normalizedLevel);
+  const { total: skillImpact, perSkill: perSkillData } = computeSkillImpact(
+    cleanSkills,
+    normalizedRole,
+    normalizedLevel
+  );
   const { total: projectImpact, perProject: projectDetails } = computeProjectImpact(cleanProjects, normalizedLevel);
   const synergy = computeSynergy(cleanSkills, cleanProjects);
 
@@ -826,9 +926,10 @@ const simulateHiringOutcome = (payload = {}, signalContext = {}) => {
 
 const mapResumeSkills = (resumeAnalysis) => {
   if (!resumeAnalysis?.skills) return [];
-  const values = resumeAnalysis.skills instanceof Map
-    ? Array.from(resumeAnalysis.skills.values())
-    : Object.values(resumeAnalysis.skills || {});
+  const values =
+    resumeAnalysis.skills instanceof Map
+      ? Array.from(resumeAnalysis.skills.values())
+      : Object.values(resumeAnalysis.skills || {});
   return uniqueStrings(values.flat(), 12);
 };
 
@@ -837,13 +938,17 @@ const mapCareerStackToRole = (careerStack = '') => normalizeRole(careerStack);
 const deriveProjectFromPublicItem = (item) => {
   const name = String(item?.title || '').trim();
   if (!name) return null;
-  const techCount = Array.isArray(item?.tech) ? item.tech.length : Array.isArray(item?.techStack) ? item.techStack.length : 0;
+  const techCount = Array.isArray(item?.tech)
+    ? item.tech.length
+    : Array.isArray(item?.techStack)
+      ? item.techStack.length
+      : 0;
   const complexity = techCount >= 5 ? 'high' : techCount >= 3 ? 'medium' : 'low';
   const impact = clamp(
     (item?.url ? 20 : 0) +
-    (item?.repoUrl ? 18 : 0) +
-    (String(item?.description || '').length > 120 ? 20 : 8) +
-    (techCount * 8),
+      (item?.repoUrl ? 18 : 0) +
+      (String(item?.description || '').length > 120 ? 20 : 8) +
+      techCount * 8,
     45,
     92
   );
@@ -867,17 +972,32 @@ const buildFallbackContext = (warning, userId) => {
   const signalHash = buildSignalHash({});
   const context = {
     profile: {
-      careerStack: 'Full Stack', experienceLevel: 'Student', githubUsername: '',
-      role: 'full stack', level: 'mid', baselineHiringScore: 55, baselineJobMatch: 48
+      careerStack: 'Full Stack',
+      experienceLevel: 'Student',
+      githubUsername: '',
+      role: 'full stack',
+      level: 'mid',
+      baselineHiringScore: 55,
+      baselineJobMatch: 48
     },
     sources: [],
     signals: {
-      knownSkills: [], missingSkills: [], recommendationSkills: [], sprintFocus: [],
-      connectedProviders: [], portfolioProjects: [], topDemandedSkills: []
+      knownSkills: [],
+      missingSkills: [],
+      recommendationSkills: [],
+      sprintFocus: [],
+      connectedProviders: [],
+      portfolioProjects: [],
+      topDemandedSkills: []
     },
     suggestedInputs: {
-      role: 'full stack', experienceLevel: 'mid', baselineHiringScore: 55,
-      baselineJobMatch: 48, durationWeeks: 6, skills: [], projects: []
+      role: 'full stack',
+      experienceLevel: 'mid',
+      baselineHiringScore: 55,
+      baselineJobMatch: 48,
+      durationWeeks: 6,
+      skills: [],
+      projects: []
     },
     summary: 'Scenario context is temporarily unavailable. Safe defaults are being used.',
     dataTrust: {
@@ -892,6 +1012,9 @@ const buildFallbackContext = (warning, userId) => {
   context.sourceContextSummary = buildSourceContextSummary(context, signalHash);
   return context;
 };
+
+const loadCurrentResumeAnalysis = (userId) =>
+  developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const loadScenarioContext = async (userId, options = {}) => {
   const startedAt = Date.now();
@@ -925,10 +1048,15 @@ const loadScenarioContext = async (userId, options = {}) => {
     integrationConnections
   ] = await Promise.all([
     User.findById(userId)
-      .select('careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle')
+      .select(
+        'careerStack activeCareerStack experienceLevel activeExperienceLevel githubUsername activeGithubUsername defaultResumeFileId score jobTitle activeResumeFileId'
+      )
       .lean(),
-    Analysis.findOne({ userId }).select('languageDistribution missingSkills readinessScore skillScore githubScore createdAt').sort({ createdAt: -1 }).lean(),
-    ResumeAnalysis.findOne({ userId }).select('fileId skills atsScore keywordDensity analyzedAt createdAt').sort({ analyzedAt: -1, createdAt: -1 }).lean(),
+    Analysis.findOne({ userId })
+      .select('languageDistribution missingSkills readinessScore skillScore githubScore createdAt')
+      .sort({ createdAt: -1 })
+      .lean(),
+    loadCurrentResumeAnalysis(userId),
     SkillGraph.findOne({ userId }).select('nodes weeklyRoadmap updatedAt').sort({ updatedAt: -1 }).lean(),
     Recommendation.find({ userId }).select('techStack isNewTech createdAt').sort({ createdAt: -1 }).limit(12).lean(),
     CareerSprint.findOne({
@@ -937,7 +1065,10 @@ const loadScenarioContext = async (userId, options = {}) => {
         { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
         { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
       ]
-    }).select('tasks updatedAt createdAt').sort({ updatedAt: -1 }).lean(),
+    })
+      .select('tasks updatedAt createdAt')
+      .sort({ updatedAt: -1 })
+      .lean(),
     CareerSprint.findOne({ userId }).select('tasks updatedAt createdAt').sort({ updatedAt: -1, createdAt: -1 }).lean(),
     PublicProfile.findOne({ userId }).select('skills projects upcomingProjects updatedAt createdAt').lean(),
     IntegrationInsight.findOne({ userId }).select('mergedSkills providers updatedAt').lean(),
@@ -955,27 +1086,32 @@ const loadScenarioContext = async (userId, options = {}) => {
   const integrationSignal = developerSignals.integrationSignal || developerSignals.integrationSignals || {};
 
   const sprint = currentSprint || latestSprint;
-  const resolvedResumeAnalysis = user?.defaultResumeFileId
-    ? await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1, createdAt: -1 })
-      .lean() || resumeAnalysis
-    : resumeAnalysis;
-  const resumeSkills = uniqueStrings(resumeSignal.skills?.length ? resumeSignal.skills : mapResumeSkills(resolvedResumeAnalysis), 12);
-  const githubSkills = uniqueStrings([
-    ...(githubSignal.languageDistribution || []).map((item) => item.language || item.name || item),
-    ...(githubSignal.technologies || []).map((item) => item.name || item.technology || item),
-    ...Object.keys(analysis?.languageDistribution || {}),
-    ...(analysis?.missingSkills || [])
-  ], 12);
-  const missingSkills = uniqueStrings([
-    ...(skillGapSignal.missingSkills || []),
-    ...(skillGapSignal.weakSkills || []),
-    ...(analysis?.missingSkills || []),
-    ...((skillGraph?.nodes || [])
-      .filter((node) => node.kind === 'missing')
-      .sort((a, b) => Number(b.demandScore || 0) - Number(a.demandScore || 0))
-      .map((node) => node.name))
-  ], 8);
+  const resolvedResumeAnalysis = resumeAnalysis;
+  const resumeSkills = uniqueStrings(
+    resumeSignal.skills?.length ? resumeSignal.skills : mapResumeSkills(resolvedResumeAnalysis),
+    12
+  );
+  const githubSkills = uniqueStrings(
+    [
+      ...(githubSignal.languageDistribution || []).map((item) => item.language || item.name || item),
+      ...(githubSignal.technologies || []).map((item) => item.name || item.technology || item),
+      ...Object.keys(analysis?.languageDistribution || {}),
+      ...(analysis?.missingSkills || [])
+    ],
+    12
+  );
+  const missingSkills = uniqueStrings(
+    [
+      ...(skillGapSignal.missingSkills || []),
+      ...(skillGapSignal.weakSkills || []),
+      ...(analysis?.missingSkills || []),
+      ...(skillGraph?.nodes || [])
+        .filter((node) => node.kind === 'missing')
+        .sort((a, b) => Number(b.demandScore || 0) - Number(a.demandScore || 0))
+        .map((node) => node.name)
+    ],
+    8
+  );
   const recommendationSkills = uniqueStrings(
     [
       ...(recommendationSignal.skills?.recommendedTechnologies || []),
@@ -987,27 +1123,37 @@ const loadScenarioContext = async (userId, options = {}) => {
     ],
     10
   );
-  const sprintFocus = uniqueStrings([
-    sprintSignal.activeLearningFocus,
-    ...(sprintSignal.repeatedIncompleteSkills || []),
-    ...((skillGraph?.weeklyRoadmap || []).flatMap((week) => week.focusSkills || [])),
-    ...((sprint?.tasks || [])
-      .filter((task) => !task.isCompleted)
-      .map((task) => task.title))
-  ], 6);
-  const portfolioProjects = uniqueStrings([
-    ...(publicProfile?.projects || []).map((project) => project.title),
-    ...(publicProfile?.upcomingProjects || []).map((project) => project.title)
-  ], 6);
-  const integrationSkills = uniqueStrings([
-    ...(integrationSignal.detectedSkills || []),
-    ...(integrationInsight?.mergedSkills || []),
-    ...((integrationInsight?.providers || []).flatMap((provider) => provider.inferredSkills || []))
-  ], 10);
-  const connectedProviders = uniqueStrings((integrationConnections || []).map((connection) => connection.provider), 10);
+  const sprintFocus = uniqueStrings(
+    [
+      sprintSignal.activeLearningFocus,
+      ...(sprintSignal.repeatedIncompleteSkills || []),
+      ...(skillGraph?.weeklyRoadmap || []).flatMap((week) => week.focusSkills || []),
+      ...(sprint?.tasks || []).filter((task) => !task.isCompleted).map((task) => task.title)
+    ],
+    6
+  );
+  const portfolioProjects = uniqueStrings(
+    [
+      ...(publicProfile?.projects || []).map((project) => project.title),
+      ...(publicProfile?.upcomingProjects || []).map((project) => project.title)
+    ],
+    6
+  );
+  const integrationSkills = uniqueStrings(
+    [
+      ...(integrationSignal.detectedSkills || []),
+      ...(integrationInsight?.mergedSkills || []),
+      ...(integrationInsight?.providers || []).flatMap((provider) => provider.inferredSkills || [])
+    ],
+    10
+  );
+  const connectedProviders = uniqueStrings(
+    (integrationConnections || []).map((connection) => connection.provider),
+    10
+  );
 
-  const role = mapCareerStackToRole(user?.activeCareerStack || user?.careerStack);
-  const level = normalizeLevel(user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel);
+  const role = mapCareerStackToRole(developerContext.resolveCareerStack(user));
+  const level = normalizeLevel(developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel);
   const hiringBaselineSignals = [
     user?.score,
     analysis?.readinessScore,
@@ -1026,16 +1172,17 @@ const loadScenarioContext = async (userId, options = {}) => {
   ].filter((value) => Number.isFinite(Number(value)) && Number(value) > 0);
   const baselineHiringScore = clamp(average(hiringBaselineSignals, 55));
   const baselineJobMatch = clamp(average(jobMatchBaselineSignals, 48));
-  const suggestedSkills = uniqueStrings([
-    ...missingSkills,
-    ...recommendationSkills,
-    ...sprintFocus,
-    ...integrationSkills
-  ], 6);
+  const suggestedSkills = uniqueStrings(
+    [...missingSkills, ...recommendationSkills, ...sprintFocus, ...integrationSkills],
+    6
+  );
   const suggestedProjects = [...(publicProfile?.projects || []), ...(publicProfile?.upcomingProjects || [])]
     .map((item) => deriveProjectFromPublicItem(item))
     .filter((project) => !!project)
-    .filter((project, index, list) => list.findIndex((candidate) => candidate.name.toLowerCase() === project.name.toLowerCase()) === index)
+    .filter(
+      (project, index, list) =>
+        list.findIndex((candidate) => candidate.name.toLowerCase() === project.name.toLowerCase()) === index
+    )
     .slice(0, 3);
 
   const latestTimestamp = (...values) => {
@@ -1056,7 +1203,8 @@ const loadScenarioContext = async (userId, options = {}) => {
       key: 'resume',
       label: 'Resume Analyzer',
       connected: !!resolvedResumeAnalysis || !!resumeSignal.analyzed,
-      lastUpdatedAt: resumeSignal.lastAnalyzedAt || resolvedResumeAnalysis?.analyzedAt || resolvedResumeAnalysis?.createdAt || null
+      lastUpdatedAt:
+        resumeSignal.lastAnalyzedAt || resolvedResumeAnalysis?.analyzedAt || resolvedResumeAnalysis?.createdAt || null
     },
     {
       key: 'skillGap',
@@ -1101,9 +1249,10 @@ const loadScenarioContext = async (userId, options = {}) => {
 
   const context = {
     profile: {
-      careerStack: user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack',
-      experienceLevel: user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'Student',
-      githubUsername: user?.activeGithubUsername || user?.githubUsername || careerProfile.activeGithubUsername || careerProfile.githubUsername || '',
+      careerStack: developerContext.resolveCareerStack(user) || careerProfile.careerStack || 'Full Stack',
+      experienceLevel: developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || 'Student',
+      githubUsername:
+        developerContext.resolveGithubUsername(user) || developerContext.resolveGithubUsername(careerProfile) || '',
       role,
       level,
       baselineHiringScore,
@@ -1111,18 +1260,23 @@ const loadScenarioContext = async (userId, options = {}) => {
     },
     sources,
     signals: {
-      knownSkills: uniqueStrings([
-        ...resumeSkills,
-        ...githubSkills,
-        ...integrationSkills,
-        ...(publicProfile?.skills || []).map((skill) => skill.name)
-      ], 12),
+      knownSkills: uniqueStrings(
+        [
+          ...resumeSkills,
+          ...githubSkills,
+          ...integrationSkills,
+          ...(publicProfile?.skills || []).map((skill) => skill.name)
+        ],
+        12
+      ),
       missingSkills,
       recommendationSkills,
       sprintFocus,
       connectedProviders,
       portfolioProjects,
-      topDemandedSkills: (jobsDemandSignal.topSkills || []).slice(0, 8).map((skill) => skill.name || skill.skill || skill)
+      topDemandedSkills: (jobsDemandSignal.topSkills || [])
+        .slice(0, 8)
+        .map((skill) => skill.name || skill.skill || skill)
     },
     suggestedInputs: {
       role,
@@ -1133,7 +1287,7 @@ const loadScenarioContext = async (userId, options = {}) => {
       skills: suggestedSkills,
       projects: suggestedProjects
     },
-    summary: `Recommendations are prefetched from your ${user?.activeCareerStack || user?.careerStack || careerProfile.careerStack || 'Full Stack'} profile, ${user?.activeExperienceLevel || user?.experienceLevel || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
+    summary: `Recommendations are prefetched from your ${developerContext.resolveCareerStack(user) || careerProfile.careerStack || 'Full Stack'} profile, ${developerContext.resolveExperienceLevel(user) || careerProfile.experienceLevel || 'current'} experience level, and signals such as ${missingSkills.slice(0, 3).join(', ') || 'recent analysis activity'}.`,
     signalHash,
     dataTrust: {
       baselineHiringScore: {
@@ -1160,14 +1314,16 @@ const loadScenarioContext = async (userId, options = {}) => {
   return context;
 };
 
-const getScenarioContext = (userId, options = {}) => runDeduped(
-  contextInflight,
-  `${String(userId || '')}:${options.forceRefresh ? 'refresh' : 'normal'}`,
-  () => loadScenarioContext(userId, options).catch((error) => {
-    console.warn('[ScenarioSimulator] context fallback:', error.message);
-    return buildFallbackContext('Some context sources could not be loaded. The simulation is using safe defaults.', userId);
-  })
-);
+const getScenarioContext = (userId, options = {}) =>
+  runDeduped(contextInflight, `${String(userId || '')}:${options.forceRefresh ? 'refresh' : 'normal'}`, () =>
+    loadScenarioContext(userId, options).catch((error) => {
+      console.warn('[ScenarioSimulator] context fallback:', error.message);
+      return buildFallbackContext(
+        'Some context sources could not be loaded. The simulation is using safe defaults.',
+        userId
+      );
+    })
+  );
 
 const generateScenarioName = ({ role, durationWeeks, skills, projects }) => {
   const roleLabel = ROLE_LABELS[normalizeRole(role)] || 'Scenario';
@@ -1214,11 +1370,11 @@ const saveScenarioForUser = async (userId, payload = {}) => {
 
   let scenario;
   try {
-    scenario = await ScenarioSimulation.findOneAndUpdate(
-      { userId, scenarioHash },
-      update,
-      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
-    );
+    scenario = await ScenarioSimulation.findOneAndUpdate({ userId, scenarioHash }, update, {
+      returnDocument: 'after',
+      upsert: true,
+      setDefaultsOnInsert: true
+    });
   } catch (error) {
     if (error?.code !== 11000) throw error;
     scenario = await ScenarioSimulation.findOne({ userId, scenarioHash });
@@ -1235,9 +1391,7 @@ const loadScenarioHistoryForUser = async (userId, limit = 8, options = {}) => {
   const startedAt = Date.now();
   const safeLimit = clamp(limit, 1, 20);
   const cacheKey = buildHistoryCacheKey(userId, safeLimit);
-  const cachedHistory = !options.forceRefresh
-    ? getCachedValue(historyCache, cacheKey, HISTORY_CACHE_TTL_MS)
-    : null;
+  const cachedHistory = !options.forceRefresh ? getCachedValue(historyCache, cacheKey, HISTORY_CACHE_TTL_MS) : null;
   if (cachedHistory) {
     logTiming('history total', startedAt, 'cache=hit');
     return {
@@ -1249,7 +1403,9 @@ const loadScenarioHistoryForUser = async (userId, limit = 8, options = {}) => {
   const dbStartedAt = Date.now();
   const history = await ScenarioSimulation.find({ userId })
     .sort({ createdAt: -1 })
-    .select('name baselineHiringScore baselineJobMatch role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash breakdown uncertaintyRange warnings sourceContextSummary result createdAt updatedAt')
+    .select(
+      'name baselineHiringScore baselineJobMatch role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash breakdown uncertaintyRange warnings sourceContextSummary result createdAt updatedAt'
+    )
     .limit(safeLimit)
     .lean();
   logTiming('history DB', dbStartedAt);
@@ -1305,7 +1461,11 @@ const buildSprintTasksFromScenario = (normalizedInput, result, source = {}) => {
     category: 'learning',
     taskType: 'manual',
     ...sourceFields,
-    ...scheduleTaskWindow(index, Math.max(result.skillDetails.length + result.projectDetails.length, 1), normalizedInput.durationWeeks)
+    ...scheduleTaskWindow(
+      index,
+      Math.max(result.skillDetails.length + result.projectDetails.length, 1),
+      normalizedInput.durationWeeks
+    )
   }));
 
   const projectTasks = result.projectDetails.slice(0, 2).map((detail, index) => ({
@@ -1316,7 +1476,11 @@ const buildSprintTasksFromScenario = (normalizedInput, result, source = {}) => {
     category: 'project',
     taskType: 'manual',
     ...sourceFields,
-    ...scheduleTaskWindow(skillTasks.length + index, Math.max(result.skillDetails.length + result.projectDetails.length, 1), normalizedInput.durationWeeks)
+    ...scheduleTaskWindow(
+      skillTasks.length + index,
+      Math.max(result.skillDetails.length + result.projectDetails.length, 1),
+      normalizedInput.durationWeeks
+    )
   }));
 
   const seen = new Set();
@@ -1352,39 +1516,16 @@ const createSprintFromScenario = async (userId, payload = {}) => {
     scenarioId: payload.scenarioId || payload.sourceScenarioId || null,
     scenarioHash
   });
-  const now = new Date();
-  const dbStartedAt = Date.now();
-  let sprint = await CareerSprint.findOne({
-    userId,
-    weekStartDate: { $lte: now },
-    weekEndDate: { $gte: now }
-  });
-
-  if (!sprint) {
-    const createdSprint = await createSprint({
-      userId,
-      title: `Scenario Sprint - ${ROLE_LABELS[result.meta.role] || 'Career Plan'}`,
-      weeklyGoal: Math.max(4, tasks.length),
-      tasks: [],
-      goalStack: context.profile.careerStack,
-      goalExperienceLevel: context.profile.experienceLevel
-    });
-    sprint = await CareerSprint.findById(createdSprint._id);
+  const current = await getCurrentSprint(userId);
+  const merged = await mergeProposedTasks(userId, current._id, tasks);
+  if (!merged) {
+    const error = new Error('Sprint changed. Retry the import.');
+    error.statusCode = 409;
+    throw error;
   }
-  logTiming('sprint DB', dbStartedAt);
-
-  const existingTitles = new Set((sprint.tasks || []).map((task) => String(task.title || '').toLowerCase().trim()));
-  const tasksToAdd = tasks.filter((task) => !existingTitles.has(task.title.toLowerCase().trim()));
+  const sprint = merged.sprint;
+  const tasksToAdd = merged.tasksAdded;
   const skippedTasks = tasks.length - tasksToAdd.length;
-
-  tasksToAdd.forEach((task) => {
-    sprint.tasks.push(task);
-  });
-
-  if (tasksToAdd.length) {
-    sprint.weeklyGoal = Math.max(Number(sprint.weeklyGoal || 5), tasksToAdd.length);
-    await sprint.save();
-  }
 
   const response = {
     sprintId: sprint._id,
@@ -1408,6 +1549,7 @@ const createSprintFromScenario = async (userId, payload = {}) => {
 };
 
 module.exports = {
+  __test: { loadCurrentResumeAnalysis },
   sanitizeScenarioInput,
   simulateHiringOutcome,
   getScenarioContext,

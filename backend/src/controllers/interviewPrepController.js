@@ -1,3 +1,5 @@
+const developerContext = require('../services/developerContextService');
+const { resolveSkillSignals } = require('../services/coursePersonalizationService');
 const {
   DEFAULT_PAGE_LIMIT,
   generateInterviewPrepSessionFromBank,
@@ -20,9 +22,12 @@ const clampInt = (value, min, max, fallback) => {
 };
 
 const mapCareerStackToSkill = (careerStack = '') => {
-  const normalized = String(careerStack || '').trim().toLowerCase();
+  const normalized = String(careerStack || '')
+    .trim()
+    .toLowerCase();
   if (normalized.includes('frontend') || normalized.includes('react')) return 'react';
-  if (normalized.includes('backend') || normalized.includes('node')) return 'javascript';
+  if (normalized.includes('backend') || normalized.includes('node')) return 'nodejs';
+  if (normalized.includes('ai/ml')) return 'python';
   return 'mern';
 };
 
@@ -37,19 +42,27 @@ const readTopicInput = (payload = {}) => ({
 // POST /api/interview-prep
 const generateInterviewPrepSession = async (req, res) => {
   try {
-    const { skill = '', query = '', skillGaps = [], careerStack, experienceLevel } = req.body || {};
-    const inferredSkill = sanitizeSkill(skill)
-      || sanitizeSkill(skillGaps[0])
-      || mapCareerStackToSkill(careerStack || req.user.careerStack || '');
+    const { skill = '', query = '' } = req.body || {};
+    const careerStack = developerContext.resolveCareerStack(req.user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || 'Student';
+    const evidence = await resolveSkillSignals(req.user._id, careerStack, experienceLevel, null, req.user);
     const topicInput = readTopicInput(req.body || {});
+    const explicitTopic =
+      topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack;
+    const inferredSkill =
+      sanitizeSkill(explicitTopic || skill) ||
+      sanitizeSkill(evidence.skillGaps[0]) ||
+      mapCareerStackToSkill(careerStack);
 
     const generated = await generateInterviewPrepSessionFromBank({
       userId: req.user._id,
       skill: inferredSkill,
       query,
       ...topicInput,
-      careerStack: careerStack || req.user.careerStack || 'Full Stack',
-      experienceLevel: experienceLevel || req.user.experienceLevel || 'Student'
+      careerStack,
+      experienceLevel,
+      skillGaps: evidence.skillGaps,
+      personalization: evidence.personalization
     });
 
     res.json(generated);
@@ -74,15 +87,28 @@ const getInterviewPrepQuestions = async (req, res) => {
       source = ''
     } = req.query;
     const topicInput = readTopicInput(req.query || {});
-    const normalizedSkill = sanitizeSkill(skill || topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack);
+    const normalizedSkill = sanitizeSkill(
+      skill ||
+        topicInput.topic ||
+        topicInput.language ||
+        topicInput.framework ||
+        topicInput.technology ||
+        topicInput.stack
+    );
     if (!normalizedSkill && !topicInput.topic) {
       return res.status(400).json({ message: 'Query parameter skill or topic is required.' });
     }
-    const safeDifficulty = String(difficulty || '').trim().toLowerCase();
+    const safeDifficulty = String(difficulty || '')
+      .trim()
+      .toLowerCase();
     if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
-      return res.status(400).json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
+      return res
+        .status(400)
+        .json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
     }
-    const safeSource = String(source || '').trim().toLowerCase();
+    const safeSource = String(source || '')
+      .trim()
+      .toLowerCase();
     if (!VALID_SOURCES.has(safeSource)) {
       return res.status(400).json({ message: `Invalid source filter.` });
     }
@@ -96,7 +122,6 @@ const getInterviewPrepQuestions = async (req, res) => {
       category,
       tags,
       block: String(top).toLowerCase() === 'true' ? 'top' : block,
-      category,
       source: safeSource
     });
 
@@ -110,7 +135,15 @@ const getInterviewPrepQuestions = async (req, res) => {
 // GET /api/interview-prep/search
 const searchInterviewPrepQuestions = async (req, res) => {
   try {
-    const { q = '', skill = '', difficulty = '', category = '', tags = '', page = 1, limit = DEFAULT_PAGE_LIMIT, lookupOnly = '' } = req.query;
+    const {
+      q = '',
+      skill = '',
+      difficulty = '',
+      category = '',
+      tags = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT
+    } = req.query;
     const topicInput = readTopicInput(req.query || {});
     const trimmedQuery = String(q || '').trim();
     if (!trimmedQuery) {
@@ -119,9 +152,13 @@ const searchInterviewPrepQuestions = async (req, res) => {
     if (trimmedQuery.length > MAX_QUERY_LENGTH) {
       return res.status(400).json({ message: `Query must be at most ${MAX_QUERY_LENGTH} characters.` });
     }
-    const safeDifficulty = String(difficulty || '').trim().toLowerCase();
+    const safeDifficulty = String(difficulty || '')
+      .trim()
+      .toLowerCase();
     if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
-      return res.status(400).json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
+      return res
+        .status(400)
+        .json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
     }
 
     const payload = await searchQuestionBank({
@@ -133,7 +170,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
       page: clampInt(page, 1, 1000, 1),
       limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
       ...topicInput,
-      allowEnrichment: String(lookupOnly).toLowerCase() !== 'true'
+      allowEnrichment: false
     });
     return res.json(payload);
   } catch (error) {
@@ -145,9 +182,23 @@ const searchInterviewPrepQuestions = async (req, res) => {
 // POST /api/interview-prep/generate
 const generateInterviewPrepQuestions = async (req, res) => {
   try {
-    const { skill = '', query = '', difficulty = '', page = 1, limit = DEFAULT_PAGE_LIMIT, target = '' } = req.body || {};
+    const {
+      skill = '',
+      query = '',
+      difficulty = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT,
+      target = ''
+    } = req.body || {};
     const topicInput = readTopicInput(req.body || {});
-    const normalizedSkill = sanitizeSkill(skill || topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack);
+    const normalizedSkill = sanitizeSkill(
+      skill ||
+        topicInput.topic ||
+        topicInput.language ||
+        topicInput.framework ||
+        topicInput.technology ||
+        topicInput.stack
+    );
     if (!normalizedSkill && !topicInput.topic) {
       return res.status(400).json({ message: 'Body parameter skill or topic is required.' });
     }
@@ -177,7 +228,9 @@ const askInterviewPrepQuestion = async (req, res) => {
   try {
     const { question = '', skill = '' } = req.body || {};
     const topicInput = readTopicInput(req.body || {});
-    const cleanQuestion = String(question || '').replace(/\s+/g, ' ').trim();
+    const cleanQuestion = String(question || '')
+      .replace(/\s+/g, ' ')
+      .trim();
 
     if (!cleanQuestion) {
       return res.status(400).json({ message: 'Body parameter question is required.' });

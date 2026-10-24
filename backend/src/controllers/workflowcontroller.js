@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const WorkflowRun = require('../models/workflowRun');
 const {
   PIPELINES,
@@ -27,12 +28,12 @@ const startWorkflow = async (req, res) => {
     const input = {
       userId: req.user._id,
       pipeline,
-      username: req.body.username || req.user.githubUsername,
+      username: req.body.username || developerContext.resolveGithubUsername(req.user),
       resumeText: req.body.resumeText || '',
       fileName: req.body.fileName || 'workflow-resume.txt',
       fileSize: req.body.fileSize || 0,
-      careerStack: req.user.careerStack || req.body.careerStack || 'Full Stack',
-      experienceLevel: req.user.experienceLevel || req.body.experienceLevel || 'Student'
+      careerStack: developerContext.resolveCareerStack(req.user) || req.body.careerStack || 'Full Stack',
+      experienceLevel: developerContext.resolveExperienceLevel(req.user) || req.body.experienceLevel || 'Student'
     };
 
     const workflow = await WorkflowRun.create({

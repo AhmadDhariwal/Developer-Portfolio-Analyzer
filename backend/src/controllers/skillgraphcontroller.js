@@ -1,3 +1,4 @@
+const developerContext = require('../services/developerContextService');
 const SkillGraph = require('../models/skillGraph');
 const { buildSkillGraph, generateWeeklyLearningRoadmap } = require('../services/skillGraphService');
 
@@ -6,8 +7,8 @@ const generateSkillGraph = async (req, res) => {
     const {
       currentSkills = [],
       missingSkills = [],
-      careerStack = req.user?.careerStack || 'Full Stack',
-      experienceLevel = req.user?.experienceLevel || 'Student',
+      careerStack = developerContext.resolveCareerStack(req.user) || 'Full Stack',
+      experienceLevel = developerContext.resolveExperienceLevel(req.user) || 'Student',
       weeks = 8
     } = req.body || {};
 

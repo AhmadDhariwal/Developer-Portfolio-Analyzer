@@ -4,6 +4,7 @@ const interviewPrepService = require('../services/interviewPrepService');
 const aiProvider = require('../services/providers/interviewAIProvider');
 const aiService = require('../services/aiservice');
 const repository = require('../repositories/interviewQuestionRepository');
+const Session = require('../models/interviewPrepSession');
 const { clearMemoryCache, getCacheJsonWithMeta, setCacheJson } = require('../services/redisCacheService');
 
 const original = {
@@ -13,10 +14,13 @@ const original = {
   findSearchCandidates: repository.findSearchCandidates,
   findQuestionById: repository.findQuestionById,
   incrementQuestionUsage: repository.incrementQuestionUsage,
-  upsertQuestions: repository.upsertQuestions
+  upsertQuestions: repository.upsertQuestions,
+  findSession: Session.findOne,
+  createSession: Session.create
 };
 
 const isolatePipeline = () => {
+  Session.findOne = () => ({ sort: () => ({ lean: async () => null }) });
   repository.findExactReusableQuestion = async () => null;
   repository.findSearchCandidates = async () => [];
   repository.findQuestionById = async () => null;
@@ -24,6 +28,8 @@ const isolatePipeline = () => {
 };
 
 test.afterEach(() => {
+  Session.findOne = original.findSession;
+  Session.create = original.createSession;
   Object.assign(aiProvider, { answerSearchFallback: original.answerSearchFallback });
   aiService.runAIAnalysis = original.runAIAnalysis;
   Object.assign(repository, {
@@ -55,23 +61,54 @@ test('five identical custom requests share one AI call and one persistence opera
     aiCalls += 1;
     await new Promise((resolve) => setTimeout(resolve, 25));
     const answerSections = {
-      shortAnswer: 'A microtask checkpoint drains queued promise reactions before the browser advances to the next task queue turn.',
-      keyPoints: ['Microtasks drain after the current JavaScript stack', 'Tasks represent separate event-loop turns', 'Unbounded microtasks can delay rendering'],
-      explanation: 'The browser runs one task, then performs a microtask checkpoint that drains promise callbacks and queueMicrotask work. Only after that checkpoint can rendering occur and the event loop select another task. This ordering makes microtasks useful for deterministic follow-up work but also creates starvation risk.',
+      shortAnswer:
+        'A microtask checkpoint drains queued promise reactions before the browser advances to the next task queue turn.',
+      keyPoints: [
+        'Microtasks drain after the current JavaScript stack',
+        'Tasks represent separate event-loop turns',
+        'Unbounded microtasks can delay rendering'
+      ],
+      explanation:
+        'The browser runs one task, then performs a microtask checkpoint that drains promise callbacks and queueMicrotask work. Only after that checkpoint can rendering occur and the event loop select another task. This ordering makes microtasks useful for deterministic follow-up work but also creates starvation risk.',
       example: 'setTimeout(() => console.log("task")); Promise.resolve().then(() => console.log("microtask"));',
-      realWorldUseCase: 'Framework schedulers use this ordering for batched state updates while yielding tasks for rendering and input.',
-      commonMistakes: ['Treating microtasks as another timer queue', 'Recursively queuing microtasks and starving rendering'],
+      realWorldUseCase:
+        'Framework schedulers use this ordering for batched state updates while yielding tasks for rendering and input.',
+      commonMistakes: [
+        'Treating microtasks as another timer queue',
+        'Recursively queuing microtasks and starving rendering'
+      ],
       interviewTip: 'State the stack, microtask checkpoint, render opportunity, and next-task order.'
     };
-    return { question, answer: Object.values(answerSections).flat().join(' '), answerSections, difficulty: 'hard', category: 'conceptual', tags: ['javascript', 'event-loop', 'microtasks'], confidenceScore: 0.94, relevanceScore: 0.94, qualityScore: 94 };
+    return {
+      question,
+      answer: Object.values(answerSections).flat().join(' '),
+      answerSections,
+      difficulty: 'hard',
+      category: 'conceptual',
+      tags: ['javascript', 'event-loop', 'microtasks'],
+      confidenceScore: 0.94,
+      relevanceScore: 0.94,
+      qualityScore: 94
+    };
   };
   repository.upsertQuestions = async () => {
+    assert.fail('Private custom answers must not enter the shared bank');
+  };
+  Session.create = async (record) => {
     persistenceCalls += 1;
-    return { insertedCount: 1, upsertedIds: ['test-id'] };
+    assert.equal(record.userId, 'user-a');
+    assert.equal(record.questions[0].verificationStatus, 'unverified');
+    return { _id: 'test-session' };
   };
 
-  const input = { userId: 'user-a', topic: 'javascript', question: 'How do JavaScript microtask checkpoints differ from separate task queue turns?' };
-  const results = await Promise.all(Array.from({ length: 5 }, () => interviewPrepService.answerCustomInterviewQuestion(input)));
+  const input = {
+    userId: 'user-a',
+    topic: 'javascript',
+    question: 'How do JavaScript microtask checkpoints differ from separate task queue turns?'
+  };
+  const results = await Promise.all(
+    Array.from({ length: 5 }, () => interviewPrepService.answerCustomInterviewQuestion(input))
+  );
   assert.equal(results.length, 5);
   assert.equal(aiCalls, 1);
   assert.equal(persistenceCalls, 1);
@@ -81,29 +118,55 @@ test('five identical custom requests share one AI call and one persistence opera
 
 test('controlled AI faults are rejected without persistence, cache contamination, or provider-detail leakage', async (t) => {
   const scenarios = [
-    ['timeout', async () => { throw new Error('secret-provider timeout token=abc'); }],
-    ['quota', async () => { throw new Error('provider quota account-id=private'); }],
+    [
+      'timeout',
+      async () => {
+        throw new Error('secret-provider timeout token=abc');
+      }
+    ],
+    [
+      'quota',
+      async () => {
+        throw new Error('provider quota account-id=private');
+      }
+    ],
     ['malformed', async () => ({ unexpected: 'not the answer schema' })],
-    ['low-quality', async ({ question }) => ({
-      question,
-      answer: 'Define the concept and explain relevant behavior.',
-      answerSections: { shortAnswer: 'Define the concept.', explanation: 'Explain relevant behavior.' },
-      difficulty: 'medium', category: 'conceptual', tags: ['javascript'], confidenceScore: 0.3, relevanceScore: 0.2, qualityScore: 20
-    })],
-    ['generic-boilerplate', async ({ question }) => ({
-      question,
-      answer: 'Define the concept. Explain the relevant behavior. Provide an example and discuss tradeoffs.',
-      answerSections: {
-        shortAnswer: 'Define the concept and describe what it does.',
-        keyPoints: ['Explain the relevant behavior', 'Provide an example', 'Discuss common tradeoffs'],
-        explanation: 'Give a clear explanation that directly answers the interview question.',
-        example: 'Provide a relevant example.',
-        realWorldUseCase: 'Mention a real-world use case.',
-        commonMistakes: ['Avoid vague answers', 'Do not omit details'],
-        interviewTip: 'Keep the answer concise and specific.'
-      },
-      difficulty: 'medium', category: 'conceptual', tags: ['javascript'], confidenceScore: 0.95, relevanceScore: 0.95, qualityScore: 95
-    })]
+    [
+      'low-quality',
+      async ({ question }) => ({
+        question,
+        answer: 'Define the concept and explain relevant behavior.',
+        answerSections: { shortAnswer: 'Define the concept.', explanation: 'Explain relevant behavior.' },
+        difficulty: 'medium',
+        category: 'conceptual',
+        tags: ['javascript'],
+        confidenceScore: 0.3,
+        relevanceScore: 0.2,
+        qualityScore: 20
+      })
+    ],
+    [
+      'generic-boilerplate',
+      async ({ question }) => ({
+        question,
+        answer: 'Define the concept. Explain the relevant behavior. Provide an example and discuss tradeoffs.',
+        answerSections: {
+          shortAnswer: 'Define the concept and describe what it does.',
+          keyPoints: ['Explain the relevant behavior', 'Provide an example', 'Discuss common tradeoffs'],
+          explanation: 'Give a clear explanation that directly answers the interview question.',
+          example: 'Provide a relevant example.',
+          realWorldUseCase: 'Mention a real-world use case.',
+          commonMistakes: ['Avoid vague answers', 'Do not omit details'],
+          interviewTip: 'Keep the answer concise and specific.'
+        },
+        difficulty: 'medium',
+        category: 'conceptual',
+        tags: ['javascript'],
+        confidenceScore: 0.95,
+        relevanceScore: 0.95,
+        qualityScore: 95
+      })
+    ]
   ];
 
   for (const [name, fault] of scenarios) {
@@ -112,9 +175,19 @@ test('controlled AI faults are rejected without persistence, cache contamination
       isolatePipeline();
       let aiCalls = 0;
       let persistenceCalls = 0;
-      aiProvider.answerSearchFallback = async (args) => { aiCalls += 1; return fault(args); };
-      repository.upsertQuestions = async () => { persistenceCalls += 1; return { insertedCount: 1, upsertedIds: ['invalid'] }; };
-      const input = { userId: 'user-a', topic: 'javascript', question: `How would JavaScript schedule isolated deterministic browser work for ${name} handling?` };
+      aiProvider.answerSearchFallback = async (args) => {
+        aiCalls += 1;
+        return fault(args);
+      };
+      repository.upsertQuestions = async () => {
+        persistenceCalls += 1;
+        return { insertedCount: 1, upsertedIds: ['invalid'] };
+      };
+      const input = {
+        userId: 'user-a',
+        topic: 'javascript',
+        question: `How would JavaScript schedule isolated deterministic browser work for ${name} handling?`
+      };
       for (let attempt = 0; attempt < 2; attempt += 1) {
         const result = await interviewPrepService.answerCustomInterviewQuestion(input);
         assert.equal(result.sourceType, 'no_verified_answer');
@@ -131,38 +204,67 @@ test('controlled AI faults are rejected without persistence, cache contamination
 test('provider accepts a complete structured AI answer and reports typed failures', async () => {
   const complete = {
     shortAnswer: 'An index accelerates data lookup, while a transaction groups operations into one atomic unit.',
-    keyPoints: ['Indexes optimize reads through an auxiliary structure', 'Transactions guarantee atomicity and isolation', 'Indexes affect access paths whereas transactions protect state changes'],
-    explanation: 'A database index stores searchable keys so the engine can avoid scanning every row. A transaction defines a boundary in which writes commit together or roll back together; it also provides isolation from concurrent work. They solve different problems and can be used together.',
+    keyPoints: [
+      'Indexes optimize reads through an auxiliary structure',
+      'Transactions guarantee atomicity and isolation',
+      'Indexes affect access paths whereas transactions protect state changes'
+    ],
+    explanation:
+      'A database index stores searchable keys so the engine can avoid scanning every row. A transaction defines a boundary in which writes commit together or roll back together; it also provides isolation from concurrent work. They solve different problems and can be used together.',
     example: 'CREATE INDEX idx_email ON users(email); BEGIN; UPDATE accounts SET balance = balance - 10; COMMIT;',
     realWorldUseCase: 'Use an index for frequent email lookups and a transaction for a multi-step funds transfer.',
     commonMistakes: ['Assuming an index guarantees atomicity', 'Adding indexes without accounting for write overhead'],
     interviewTip: 'Contrast query access speed with correctness of a unit of work.',
-    difficulty: 'medium', technology: 'mysql', topicKey: 'mysql', tags: ['mysql', 'index', 'transaction'], confidenceScore: 0.94, qualityScore: 94
+    difficulty: 'medium',
+    technology: 'mysql',
+    topicKey: 'mysql',
+    tags: ['mysql', 'index', 'transaction'],
+    confidenceScore: 0.94,
+    qualityScore: 94
   };
   aiService.runAIAnalysis = async () => ({ ok: true, value: complete, provider: 'mock', latencyMs: 10 });
-  const accepted = await aiProvider.answerSearchFallback({ topicKey: 'mysql', question: 'What is the difference between an index and a transaction?' });
+  const accepted = await aiProvider.answerSearchFallback({
+    topicKey: 'mysql',
+    question: 'What is the difference between an index and a transaction?'
+  });
   assert.equal(accepted.answerSections.keyPoints.length, 3);
   assert.match(accepted.answer, /index/i);
   assert.match(accepted.answer, /transaction/i);
 
   aiService.runAIAnalysis = async () => ({ ok: true, value: { shortAnswer: 'incomplete' } });
   await assert.rejects(
-    () => aiProvider.answerSearchFallback({ topicKey: 'mysql', question: 'What is the difference between an index and a transaction?' }),
+    () =>
+      aiProvider.answerSearchFallback({
+        topicKey: 'mysql',
+        question: 'What is the difference between an index and a transaction?'
+      }),
     (error) => error.reasonCode === 'schema_rejected'
   );
   aiService.runAIAnalysis = async () => ({ ok: false, reason: 'invalid_json' });
   await assert.rejects(
-    () => aiProvider.answerSearchFallback({ topicKey: 'mysql', question: 'What is the difference between an index and a transaction?' }),
+    () =>
+      aiProvider.answerSearchFallback({
+        topicKey: 'mysql',
+        question: 'What is the difference between an index and a transaction?'
+      }),
     (error) => error.reasonCode === 'invalid_json'
   );
   aiService.runAIAnalysis = async () => ({ ok: false, reason: 'timeout' });
   await assert.rejects(
-    () => aiProvider.answerSearchFallback({ topicKey: 'mysql', question: 'What is the difference between an index and a transaction?' }),
+    () =>
+      aiProvider.answerSearchFallback({
+        topicKey: 'mysql',
+        question: 'What is the difference between an index and a transaction?'
+      }),
     (error) => error.reasonCode === 'provider_timeout'
   );
   aiService.runAIAnalysis = async () => ({ ok: false, reason: '429' });
   await assert.rejects(
-    () => aiProvider.answerSearchFallback({ topicKey: 'mysql', question: 'What is the difference between an index and a transaction?' }),
+    () =>
+      aiProvider.answerSearchFallback({
+        topicKey: 'mysql',
+        question: 'What is the difference between an index and a transaction?'
+      }),
     (error) => error.reasonCode === 'provider_error'
   );
 });
@@ -182,4 +284,45 @@ test('verified fallback selection reports useful content or an honest missing re
   });
   assert.equal(missing.sourceType, 'no_verified_answer');
   assert.equal(missing.answer, 'No verified answer available.');
+});
+
+test('practice provider rejects failed and malformed structured output', async () => {
+  aiService.runAIAnalysis = async () => ({ ok: false, value: { questions: [{ question: 'Fabricated fallback' }] } });
+  await assert.rejects(
+    () => aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }),
+    /unavailable/
+  );
+  aiService.runAIAnalysis = async () => ({
+    ok: true,
+    value: [{ question: 'What is JavaScript?', answer: 'Placeholder answer' }]
+  });
+  assert.deepEqual(await aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }), []);
+});
+
+test('scraper preserves the healthy source and retains only safe provenance URLs', async (t) => {
+  const axios = require('axios');
+  const { scrapeQuestionsForTopic } = require('../services/providers/interviewScraperProvider');
+  t.mock.method(axios, 'get', async (url) => {
+    if (url === 'https://api.github.com/search/issues') throw new Error('optional source fixture failure');
+    assert.equal(url, 'https://dev.to/api/articles');
+    return {
+      data: [
+        {
+          title: 'How does JavaScript drain queued microtasks?',
+          description:
+            'The event loop drains promise reactions and queueMicrotask callbacks before selecting another timer task.',
+          url: 'https://dev.to/example/microtasks?tracking=removed'
+        },
+        {
+          title: 'How does JavaScript schedule timers?',
+          description: 'Timers schedule callbacks after the current task and its microtask checkpoint complete.',
+          url: 'http://127.0.0.1/private'
+        }
+      ]
+    };
+  });
+  const result = await scrapeQuestionsForTopic({ topicKey: 'javascript', topicType: 'language', count: 10 });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].sourceMeta.url, 'https://dev.to/example/microtasks');
+  assert.equal(result[0].sourceMeta.verificationStatus, 'unverified');
 });
