@@ -7,6 +7,9 @@ const UPSTASH_DEFAULT_HOST = 'light-arachnid-164805.upstash.io';
 const UPSTASH_DEFAULT_PORT = 6379;
 const REDIS_CONNECT_TIMEOUT_MS = 3000;
 const REDIS_COMMAND_TIMEOUT_MS = 150;
+// A timed-out wrapper does not remove an already-sent SDK reply waiter.
+// Bound that backlog while a connected socket stops returning replies.
+const REDIS_COMMAND_QUEUE_MAX_LENGTH = 2000;
 const REDIS_RECONNECT_DELAY_MS = 15000;
 
 let client;
@@ -133,6 +136,7 @@ const initRedisCache = async ({ silent = false, probeOnly = false } = {}) => {
     redisClient = createClient({
       url: redisUrl,
       disableOfflineQueue: true,
+      commandsQueueMaxLength: REDIS_COMMAND_QUEUE_MAX_LENGTH,
       socket: {
         connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
         reconnectStrategy: (retries) => {

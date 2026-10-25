@@ -1080,396 +1080,488 @@
           </article>
         </section>
 
-        <!-- Feasibility Explanation & Drivers -->
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Feasibility Explanation</h3>
-              <span class="block-tag">Hash #{{ result.scenarioHash.slice(0, 8) }}</span>
-            </div>
+        <!-- Dossier Navigation Tabs with Prominent Horizontal Scroller & View Counter -->
+        <div class="dossier-nav-header">
+          <div class="dossier-nav-title-group">
+            <span class="dossier-nav-kicker">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              Analysis Perspectives
+            </span>
+            <span class="dossier-view-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="8 7 3 12 8 17"></polyline>
+                <polyline points="16 7 21 12 16 17"></polyline>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+              </svg>
+              Scrollable Views ({{
+                activeResultTab === 'overview' ? '1' : activeResultTab === 'breakdown' ? '2' : '3'
+              }}
+              of 3)
+            </span>
+          </div>
 
-            <div class="explain-stack">
-              <p class="explain-main">{{ result.explainability?.confidenceReason }}</p>
-              <p class="explain-sub">{{ result.explainability?.effortVsDuration }}</p>
-            </div>
-          </article>
+          <div class="dossier-nav-dots" aria-label="Tab navigation indicators">
+            <button
+              type="button"
+              class="nav-dot"
+              [class.active]="activeResultTab === 'overview'"
+              (click)="selectTab('overview')"
+              title="View 1: Feasibility & Drivers"
+              aria-label="View 1: Feasibility & Drivers"
+            ></button>
+            <button
+              type="button"
+              class="nav-dot"
+              [class.active]="activeResultTab === 'breakdown'"
+              (click)="selectTab('breakdown')"
+              title="View 2: Score Breakdown & Skills"
+              aria-label="View 2: Score Breakdown & Skills"
+            ></button>
+            <button
+              type="button"
+              class="nav-dot"
+              [class.active]="activeResultTab === 'roadmap'"
+              (click)="selectTab('roadmap')"
+              title="View 3: Strategic Roadmap & Signals"
+              aria-label="View 3: Strategic Roadmap & Signals"
+            ></button>
+          </div>
+        </div>
 
-          <article class="card-block tone-info" *ngIf="result.explainability?.scoreDrivers?.length">
-            <div class="block-head">
-              <h3>What Improved the Score</h3>
-              <span class="block-tag drivers-tag">Positive Drivers</span>
-            </div>
+        <div class="dossier-tabs-nav-bar">
+          <button
+            type="button"
+            class="tab-scroll-btn left"
+            (click)="scrollTabs('left')"
+            title="Scroll views left"
+            aria-label="Scroll views left"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
 
-            <ul class="bullet-list checkmark-list">
-              <li *ngFor="let item of result.explainability?.scoreDrivers">
-                <span class="bullet-icon check">&check;</span>
-                <span>{{ item }}</span>
-              </li>
-            </ul>
-          </article>
-        </section>
+          <div class="dossier-nav-tabs" id="dossierNavTabs">
+            <button
+              type="button"
+              id="dossierTab-overview"
+              class="dossier-tab-btn"
+              [class.active]="activeResultTab === 'overview'"
+              (click)="selectTab('overview')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <span>1. Feasibility & Drivers</span>
+            </button>
 
-        <!-- Penalties & Overload (if any) -->
-        <section class="result-split-grid" *ngIf="result.explainability?.penalties?.length">
-          <article class="card-block tone-warning">
-            <div class="block-head">
-              <h3>Overload & Trade-Offs</h3>
-              <span class="block-tag penalty-tag">Realism Flags</span>
-            </div>
+            <button
+              type="button"
+              id="dossierTab-breakdown"
+              class="dossier-tab-btn"
+              [class.active]="activeResultTab === 'breakdown'"
+              (click)="selectTab('breakdown')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>2. Score Breakdown & Skills</span>
+              <span class="tab-badge" *ngIf="result.skillDetails.length">{{
+                result.skillDetails.length
+              }}</span>
+            </button>
 
-            <ul class="bullet-list warning-list">
-              <li *ngFor="let item of result.explainability?.penalties">
-                <span class="bullet-icon alert">&excl;</span>
-                <span>{{ item }}</span>
-              </li>
-            </ul>
-          </article>
-        </section>
+            <button
+              type="button"
+              id="dossierTab-roadmap"
+              class="dossier-tab-btn"
+              [class.active]="activeResultTab === 'roadmap'"
+              (click)="selectTab('roadmap')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span>3. Strategic Roadmap & Signals</span>
+            </button>
+          </div>
 
-        <!-- Heuristic Sensitivity Band & Comparison -->
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Heuristic Sensitivity Band</h3>
-              <span class="block-tag">Range Estimates</span>
-            </div>
+          <button
+            type="button"
+            class="tab-scroll-btn right"
+            (click)="scrollTabs('right')"
+            title="Scroll views right"
+            aria-label="Scroll views right"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
 
-            <div class="range-list">
-              <div class="range-row">
-                <span class="range-title">Planning Score</span>
-                <div class="range-bar-track">
-                  <div
-                    class="range-bar-window"
-                    [style.left.%]="result.uncertaintyRange.low.hiringScore"
-                    [style.width.%]="
-                      rangeWidth(
-                        result.uncertaintyRange.low.hiringScore,
-                        result.uncertaintyRange.high.hiringScore
-                      )
-                    "
-                  ></div>
-                  <div
-                    class="range-bar-expected"
-                    [style.left.%]="result.uncertaintyRange.expected.hiringScore"
-                    title="Expected: {{ result.uncertaintyRange.expected.hiringScore }}"
-                  ></div>
+        <!-- Tab 1: Overview & Feasibility -->
+        <div class="dossier-tab-pane" *ngIf="activeResultTab === 'overview'">
+          <!-- Feasibility Explanation & Drivers -->
+          <section class="result-split-grid">
+            <article class="card-block">
+              <div class="block-head">
+                <h3>Feasibility Explanation</h3>
+                <span class="block-tag">Hash #{{ result.scenarioHash.slice(0, 8) }}</span>
+              </div>
+
+              <div class="explain-stack">
+                <p class="explain-main">{{ result.explainability?.confidenceReason }}</p>
+                <p class="explain-sub">{{ result.explainability?.effortVsDuration }}</p>
+              </div>
+            </article>
+
+            <article
+              class="card-block tone-info"
+              *ngIf="result.explainability?.scoreDrivers?.length"
+            >
+              <div class="block-head">
+                <h3>What Improved the Score</h3>
+                <span class="block-tag drivers-tag">Positive Drivers</span>
+              </div>
+
+              <ul class="bullet-list checkmark-list">
+                <li *ngFor="let item of result.explainability?.scoreDrivers">
+                  <span class="bullet-icon check">&check;</span>
+                  <span>{{ item }}</span>
+                </li>
+              </ul>
+            </article>
+          </section>
+
+          <!-- Overload & Trade-Offs and Heuristic Sensitivity Band Side-by-Side in One Line -->
+          <section class="result-split-grid">
+            <article
+              class="card-block tone-warning"
+              *ngIf="result.explainability?.penalties?.length"
+            >
+              <div class="block-head">
+                <h3>Overload & Trade-Offs</h3>
+                <span class="block-tag penalty-tag">Realism Flags</span>
+              </div>
+
+              <ul class="bullet-list warning-list">
+                <li *ngFor="let item of result.explainability?.penalties">
+                  <span class="bullet-icon alert">&excl;</span>
+                  <span>{{ item }}</span>
+                </li>
+              </ul>
+            </article>
+
+            <article
+              class="card-block"
+              [class.full-width]="!result.explainability?.penalties?.length"
+            >
+              <div class="block-head">
+                <h3>Heuristic Sensitivity Band</h3>
+                <span class="block-tag">Range Estimates</span>
+              </div>
+
+              <div class="range-list">
+                <div class="range-row">
+                  <span class="range-title">Planning Score</span>
+                  <div class="range-bar-track">
+                    <div
+                      class="range-bar-window"
+                      [style.left.%]="result.uncertaintyRange.low.hiringScore"
+                      [style.width.%]="
+                        rangeWidth(
+                          result.uncertaintyRange.low.hiringScore,
+                          result.uncertaintyRange.high.hiringScore
+                        )
+                      "
+                    ></div>
+                    <div
+                      class="range-bar-expected"
+                      [style.left.%]="result.uncertaintyRange.expected.hiringScore"
+                      title="Expected: {{ result.uncertaintyRange.expected.hiringScore }}"
+                    ></div>
+                  </div>
+                  <strong class="range-value">
+                    {{ result.uncertaintyRange.low.hiringScore }} –
+                    {{ result.uncertaintyRange.high.hiringScore }}
+                  </strong>
                 </div>
-                <strong class="range-value">
-                  {{ result.uncertaintyRange.low.hiringScore }} –
-                  {{ result.uncertaintyRange.high.hiringScore }}
-                </strong>
-              </div>
 
-              <div class="range-row">
-                <span class="range-title">Role Match</span>
-                <div class="range-bar-track">
-                  <div
-                    class="range-bar-window blue"
-                    [style.left.%]="result.uncertaintyRange.low.jobMatch"
-                    [style.width.%]="
-                      rangeWidth(
-                        result.uncertaintyRange.low.jobMatch,
-                        result.uncertaintyRange.high.jobMatch
-                      )
-                    "
-                  ></div>
-                  <div
-                    class="range-bar-expected blue"
-                    [style.left.%]="result.uncertaintyRange.expected.jobMatch"
-                    title="Expected: {{ result.uncertaintyRange.expected.jobMatch }}"
-                  ></div>
-                </div>
-                <strong class="range-value">
-                  {{ result.uncertaintyRange.low.jobMatch }} –
-                  {{ result.uncertaintyRange.high.jobMatch }}
-                </strong>
-              </div>
-            </div>
-          </article>
-
-          <!-- Scenario Comparison Card -->
-          <article class="card-block compare-block" *ngIf="compareScenario as scenario">
-            <div class="block-head">
-              <h3>Scenario Comparison</h3>
-              <button type="button" class="ghost-inline-btn" (click)="compareScenario = null">
-                Close Compare
-              </button>
-            </div>
-
-            <p class="compare-desc">
-              Compare assumptions and version rules before acting on deltas.
-            </p>
-
-            <div class="compare-summary">
-              <div class="compare-col">
-                <span class="compare-label">Current Plan</span>
-                <strong>{{ result.predicted.hiringScore }}/100 Hiring</strong>
-                <small>{{ result.predicted.jobMatch }}/100 Role Match</small>
-              </div>
-
-              <div class="compare-col">
-                <span class="compare-label">{{ scenario.name }}</span>
-                <strong>{{ scenario.result.predicted.hiringScore }}/100 Hiring</strong>
-                <small>{{ scenario.result.predicted.jobMatch }}/100 Role Match</small>
-              </div>
-            </div>
-
-            <div class="compare-deltas">
-              <div class="delta-box">
-                <span>Hiring Delta</span>
-                <strong
-                  [class.pos]="
-                    result.predicted.hiringScore >= scenario.result.predicted.hiringScore
-                  "
-                >
-                  {{
-                    deltaLabel(result.predicted.hiringScore - scenario.result.predicted.hiringScore)
-                  }}
-                  pts
-                </strong>
-              </div>
-              <div class="delta-box">
-                <span>Role Match Delta</span>
-                <strong
-                  [class.pos]="result.predicted.jobMatch >= scenario.result.predicted.jobMatch"
-                >
-                  {{ deltaLabel(result.predicted.jobMatch - scenario.result.predicted.jobMatch) }}
-                  pts
-                </strong>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <!-- Before vs After & Impact Breakdown -->
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Before vs After</h3>
-              <span class="block-tag">Estimated vs Projected</span>
-            </div>
-
-            <div class="score-visuals">
-              <div class="score-visual">
-                <div class="score-visual-meta">
-                  <span>Planning Score</span>
-                  <strong
-                    >{{ result.baseline.hiringScore }} &rarr;
-                    {{ result.predicted.hiringScore }}</strong
-                  >
-                </div>
-                <div class="score-track">
-                  <div
-                    class="score-fill before"
-                    [style.width.%]="result.baseline.hiringScore"
-                  ></div>
-                  <div
-                    class="score-fill after"
-                    [style.width.%]="result.predicted.hiringScore"
-                    [style.background]="scoreColor(result.predicted.hiringScore)"
-                  ></div>
+                <div class="range-row">
+                  <span class="range-title">Role Match</span>
+                  <div class="range-bar-track">
+                    <div
+                      class="range-bar-window blue"
+                      [style.left.%]="result.uncertaintyRange.low.jobMatch"
+                      [style.width.%]="
+                        rangeWidth(
+                          result.uncertaintyRange.low.jobMatch,
+                          result.uncertaintyRange.high.jobMatch
+                        )
+                      "
+                    ></div>
+                    <div
+                      class="range-bar-expected blue"
+                      [style.left.%]="result.uncertaintyRange.expected.jobMatch"
+                      title="Expected: {{ result.uncertaintyRange.expected.jobMatch }}"
+                    ></div>
+                  </div>
+                  <strong class="range-value">
+                    {{ result.uncertaintyRange.low.jobMatch }} –
+                    {{ result.uncertaintyRange.high.jobMatch }}
+                  </strong>
                 </div>
               </div>
+            </article>
+          </section>
+        </div>
 
-              <div class="score-visual">
-                <div class="score-visual-meta">
-                  <span>Role Alignment</span>
-                  <strong
-                    >{{ result.baseline.jobMatch }} &rarr; {{ result.predicted.jobMatch }}</strong
-                  >
-                </div>
-                <div class="score-track">
-                  <div class="score-fill before" [style.width.%]="result.baseline.jobMatch"></div>
-                  <div
-                    class="score-fill after blue"
-                    [style.width.%]="result.predicted.jobMatch"
-                  ></div>
-                </div>
+        <!-- Tab 2: Breakdown & Skills -->
+        <div class="dossier-tab-pane" *ngIf="activeResultTab === 'breakdown'">
+          <!-- Before vs After & Impact Breakdown -->
+          <section class="result-split-grid">
+            <article class="card-block">
+              <div class="block-head">
+                <h3>Before vs After</h3>
+                <span class="block-tag">Estimated vs Projected</span>
               </div>
-            </div>
-          </article>
 
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Impact Breakdown</h3>
-              <span class="block-tag warning-tag" *ngIf="result.meta.overloaded"
-                >Overload penalty applied</span
-              >
-            </div>
-
-            <div class="breakdown-rows">
-              <div class="breakdown-row" *ngFor="let row of breakdownRows">
-                <span class="breakdown-label">{{ row.label }}</span>
-                <div class="breakdown-bar-wrap">
-                  <div
-                    class="breakdown-bar"
-                    [class.negative]="row.value < 0"
-                    [style.width.%]="barWidth(row.value)"
-                    [style.background]="row.color"
-                  ></div>
-                </div>
-                <strong [style.color]="row.color">
-                  {{ row.value >= 0 ? '+' : '' }}{{ row.value }}
-                </strong>
-              </div>
-            </div>
-
-            <div class="total-row">
-              <span>Total Improvement</span>
-              <strong>+{{ result.breakdown.total }} pts</strong>
-            </div>
-          </article>
-        </section>
-
-        <!-- Detailed Skill & Project Impact -->
-        <section class="result-split-grid">
-          <article class="card-block" *ngIf="result.skillDetails.length">
-            <div class="block-head">
-              <h3>Skill Impact</h3>
-              <span class="block-tag">{{ result.skillDetails.length }} Skills Evaluated</span>
-            </div>
-
-            <div class="impact-list">
-              <div class="impact-item" *ngFor="let detail of result.skillDetails">
-                <div class="impact-copy">
-                  <div class="impact-title-row">
-                    <strong>{{ detail.skill }}</strong>
-                    <span
-                      class="tier-pill"
-                      [style.borderColor]="tierColor(detail.tier)"
-                      [style.color]="tierColor(detail.tier)"
+              <div class="score-visuals">
+                <div class="score-visual">
+                  <div class="score-visual-meta">
+                    <span>Planning Score</span>
+                    <strong
+                      >{{ result.baseline.hiringScore }} &rarr;
+                      {{ result.predicted.hiringScore }}</strong
                     >
-                      {{ tierLabel(detail.tier) }}
-                    </span>
                   </div>
-                  <span class="impact-sub">Market Demand Multiplier: {{ detail.demand }}x</span>
-                </div>
-                <div class="impact-points">
-                  <strong>+{{ detail.pts }} pts</strong>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card-block" *ngIf="result.projectDetails.length">
-            <div class="block-head">
-              <h3>Project Impact</h3>
-              <span class="block-tag">{{ result.projectDetails.length }} Projects Evaluated</span>
-            </div>
-
-            <div class="impact-list">
-              <div class="impact-item" *ngFor="let detail of result.projectDetails">
-                <div class="impact-copy">
-                  <div class="impact-title-row">
-                    <strong>{{ detail.name }}</strong>
-                    <span class="complexity-pill">{{ detail.complexity | titlecase }}</span>
+                  <div class="score-track">
+                    <div
+                      class="score-fill before"
+                      [style.width.%]="result.baseline.hiringScore"
+                    ></div>
+                    <div
+                      class="score-fill after"
+                      [style.width.%]="result.predicted.hiringScore"
+                      [style.background]="scoreColor(result.predicted.hiringScore)"
+                    ></div>
                   </div>
-                  <span class="impact-sub"
-                    >{{ detail.weeks }} weeks &middot; Delivery Impact {{ detail.impact }}/100</span
-                  >
                 </div>
-                <div class="impact-points">
-                  <strong>+{{ detail.pts }} pts</strong>
+
+                <div class="score-visual">
+                  <div class="score-visual-meta">
+                    <span>Role Alignment</span>
+                    <strong
+                      >{{ result.baseline.jobMatch }} &rarr; {{ result.predicted.jobMatch }}</strong
+                    >
+                  </div>
+                  <div class="score-track">
+                    <div class="score-fill before" [style.width.%]="result.baseline.jobMatch"></div>
+                    <div
+                      class="score-fill after blue"
+                      [style.width.%]="result.predicted.jobMatch"
+                    ></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </article>
-        </section>
+            </article>
 
-        <!-- Warnings & Assumptions -->
-        <section class="result-split-grid">
-          <article class="card-block tone-warning" *ngIf="result.warnings.length">
-            <div class="block-head">
-              <h3>Realism Warnings</h3>
-              <span class="block-tag">Stay Objective</span>
-            </div>
-
-            <ul class="bullet-list warning-list">
-              <li *ngFor="let warning of result.warnings">
-                <span class="bullet-icon alert">&excl;</span>
-                <span>{{ warning }}</span>
-              </li>
-            </ul>
-          </article>
-
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Explicit Assumptions</h3>
-              <span class="block-tag">Explainable</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let note of result.assumptions.notes">
-                <span class="bullet-icon dot">&bull;</span>
-                <span>{{ note }}</span>
-              </li>
-            </ul>
-
-            <div class="meta-row">
-              <span
-                >Role: <strong>{{ formatRole(result.meta.role) }}</strong></span
-              >
-              <span
-                >Level: <strong>{{ result.meta.level | titlecase }}</strong></span
-              >
-              <span
-                >Effort Units:
-                <strong>{{
-                  result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1'
-                }}</strong></span
-              >
-            </div>
-          </article>
-        </section>
-
-        <!-- Mathematical Insights & Recommended Next Moves -->
-        <section class="result-split-grid">
-          <article class="card-block tone-info" *ngIf="result.insights.length">
-            <div class="block-head">
-              <h3>Strategic Insights</h3>
-              <span class="block-tag">Algorithmic Signals</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let insight of result.insights">
-                <span class="bullet-icon dot">&bull;</span>
-                <span>{{ insight }}</span>
-              </li>
-            </ul>
-          </article>
-
-          <article class="card-block tone-success" *ngIf="result.suggestions.length">
-            <div class="block-head">
-              <h3>Recommended Next Steps</h3>
-              <span class="block-tag">Actionable</span>
-            </div>
-
-            <ul class="bullet-list checkmark-list">
-              <li *ngFor="let suggestion of result.suggestions">
-                <span class="bullet-icon check">&check;</span>
-                <span>{{ suggestion }}</span>
-              </li>
-            </ul>
-          </article>
-        </section>
-
-        <!-- Data Sources Section -->
-        <section class="card-block source-card" *ngIf="result.assumptions.sources.length">
-          <div class="block-head">
-            <h3>Connected Signal Sources</h3>
-            <span class="block-tag">Supporting Data</span>
-          </div>
-
-          <div class="source-grid">
-            <div class="source-entry" *ngFor="let source of result.assumptions.sources">
-              <div class="source-info">
-                <strong>{{ source.label }}</strong>
-                <span *ngIf="source.lastUpdatedAt">{{ formatDate(source.lastUpdatedAt) }}</span>
+            <article class="card-block">
+              <div class="block-head">
+                <h3>Impact Breakdown</h3>
+                <span class="block-tag warning-tag" *ngIf="result.meta.overloaded"
+                  >Overload penalty applied</span
+                >
               </div>
-              <span class="source-state">Verified</span>
+
+              <div class="breakdown-rows">
+                <div class="breakdown-row" *ngFor="let row of breakdownRows">
+                  <span class="breakdown-label">{{ row.label }}</span>
+                  <div class="breakdown-bar-wrap">
+                    <div
+                      class="breakdown-bar"
+                      [class.negative]="row.value < 0"
+                      [style.width.%]="barWidth(row.value)"
+                      [style.background]="row.color"
+                    ></div>
+                  </div>
+                  <strong [style.color]="row.color">
+                    {{ row.value >= 0 ? '+' : '' }}{{ row.value }}
+                  </strong>
+                </div>
+              </div>
+
+              <div class="total-row">
+                <span>Total Improvement</span>
+                <strong>+{{ result.breakdown.total }} pts</strong>
+              </div>
+            </article>
+          </section>
+
+          <!-- Detailed Skill & Project Impact -->
+          <section class="result-split-grid">
+            <article
+              class="card-block"
+              [class.full-width]="!result.projectDetails.length"
+              *ngIf="result.skillDetails.length"
+            >
+              <div class="block-head">
+                <h3>Skill Impact</h3>
+                <span class="block-tag">{{ result.skillDetails.length }} Skills Evaluated</span>
+              </div>
+
+              <div class="impact-list skills-grid">
+                <div class="impact-item" *ngFor="let detail of result.skillDetails">
+                  <div class="impact-copy">
+                    <div class="impact-title-row">
+                      <strong>{{ detail.skill }}</strong>
+                      <span
+                        class="tier-pill"
+                        [style.borderColor]="tierColor(detail.tier)"
+                        [style.color]="tierColor(detail.tier)"
+                      >
+                        {{ tierLabel(detail.tier) }}
+                      </span>
+                    </div>
+                    <span class="impact-sub">{{ detail.demand }}x market demand</span>
+                  </div>
+                  <div class="impact-points">
+                    <strong>+{{ detail.pts }} pts</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card-block" *ngIf="result.projectDetails.length">
+              <div class="block-head">
+                <h3>Project Impact</h3>
+                <span class="block-tag">{{ result.projectDetails.length }} Projects Evaluated</span>
+              </div>
+
+              <div class="impact-list">
+                <div class="impact-item" *ngFor="let detail of result.projectDetails">
+                  <div class="impact-copy">
+                    <div class="impact-title-row">
+                      <strong>{{ detail.name }}</strong>
+                      <span class="complexity-pill">{{ detail.complexity | titlecase }}</span>
+                    </div>
+                    <span class="impact-sub"
+                      >{{ detail.weeks }} weeks &middot; Delivery Impact
+                      {{ detail.impact }}/100</span
+                    >
+                  </div>
+                  <div class="impact-points">
+                    <strong>+{{ detail.pts }} pts</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <!-- Tab 3: Strategic Roadmap & Signals -->
+        <div class="dossier-tab-pane" *ngIf="activeResultTab === 'roadmap'">
+          <!-- Warnings & Assumptions -->
+          <section class="result-split-grid">
+            <article class="card-block tone-warning" *ngIf="result.warnings.length">
+              <div class="block-head">
+                <h3>Realism Warnings</h3>
+                <span class="block-tag">Stay Objective</span>
+              </div>
+
+              <ul class="bullet-list warning-list">
+                <li *ngFor="let warning of result.warnings">
+                  <span class="bullet-icon alert">&excl;</span>
+                  <span>{{ warning }}</span>
+                </li>
+              </ul>
+            </article>
+
+            <article class="card-block">
+              <div class="block-head">
+                <h3>Explicit Assumptions</h3>
+                <span class="block-tag">Explainable</span>
+              </div>
+
+              <ul class="bullet-list">
+                <li *ngFor="let note of result.assumptions.notes">
+                  <span class="bullet-icon dot">&bull;</span>
+                  <span>{{ note }}</span>
+                </li>
+              </ul>
+
+              <div class="meta-row">
+                <span
+                  >Role: <strong>{{ formatRole(result.meta.role) }}</strong></span
+                >
+                <span
+                  >Level: <strong>{{ result.meta.level | titlecase }}</strong></span
+                >
+                <span
+                  >Effort Units:
+                  <strong>{{
+                    result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1'
+                  }}</strong></span
+                >
+              </div>
+            </article>
+          </section>
+
+          <!-- Mathematical Insights & Recommended Next Moves -->
+          <section class="result-split-grid">
+            <article class="card-block tone-info" *ngIf="result.insights.length">
+              <div class="block-head">
+                <h3>Strategic Insights</h3>
+                <span class="block-tag">Algorithmic Signals</span>
+              </div>
+
+              <ul class="bullet-list">
+                <li *ngFor="let insight of result.insights">
+                  <span class="bullet-icon dot">&bull;</span>
+                  <span>{{ insight }}</span>
+                </li>
+              </ul>
+            </article>
+
+            <article class="card-block tone-success" *ngIf="result.suggestions.length">
+              <div class="block-head">
+                <h3>Recommended Next Steps</h3>
+                <span class="block-tag">Actionable</span>
+              </div>
+
+              <ul class="bullet-list checkmark-list">
+                <li *ngFor="let suggestion of result.suggestions">
+                  <span class="bullet-icon check">&check;</span>
+                  <span>{{ suggestion }}</span>
+                </li>
+              </ul>
+            </article>
+          </section>
+
+          <!-- Data Sources Section -->
+          <section class="card-block source-card" *ngIf="result.assumptions.sources.length">
+            <div class="block-head">
+              <h3>Connected Signal Sources</h3>
+              <span class="block-tag">Supporting Data</span>
             </div>
-          </div>
-        </section>
+
+            <div class="source-grid">
+              <div class="source-entry" *ngFor="let source of result.assumptions.sources">
+                <div class="source-info">
+                  <strong>{{ source.label }}</strong>
+                  <span *ngIf="source.lastUpdatedAt">{{ formatDate(source.lastUpdatedAt) }}</span>
+                </div>
+                <span class="source-state">Verified</span>
+              </div>
+            </div>
+          </section>
+        </div>
 
         <!-- Bottom Result CTA Strip -->
         <section class="result-actions">
@@ -1525,6 +1617,321 @@
   </div>
 
   <!-- Saved Scenarios History Panel -->
+  <!-- Scenario Comparison Matrix Section -->
+  <section
+    class="scenario-comparison-section"
+    id="scenario-comparison-section"
+    *ngIf="isCompareOpen && comparisonData as comp"
+  >
+    <div class="comparison-card">
+      <div class="comparison-header">
+        <div class="comparison-header-left">
+          <div class="comparison-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="3" x2="12" y2="21"></line>
+            </svg>
+            Head-to-Head Comparison Matrix
+          </div>
+          <h3>Scenario Comparison Matrix</h3>
+          <p class="comparison-sub">
+            Comparing <strong>{{ comp.current.name }}</strong> (reference) against saved benchmark
+            <strong>{{ comp.saved.name }}</strong
+            >.
+          </p>
+        </div>
+        <div class="comparison-header-actions">
+          <button
+            type="button"
+            class="ghost-btn compact"
+            (click)="loadScenario(compareScenario!)"
+            title="Load this saved scenario into the planner"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Load Saved Plan</span>
+          </button>
+          <button
+            type="button"
+            class="close-compare-btn"
+            (click)="closeCompare()"
+            aria-label="Close comparison"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Benchmark Selector Toolbar -->
+      <div class="compare-benchmark-toolbar">
+        <div class="compare-party-pill left">
+          <span class="party-role">Reference (Left Column)</span>
+          <strong class="party-name">{{ comp.current.name }}</strong>
+          <span class="party-origin-tag">{{
+            comp.current.isSimulated ? 'Active Simulation in Editor' : 'Live Profile Baseline'
+          }}</span>
+        </div>
+        <div class="compare-vs-badge">VS</div>
+        <div class="compare-party-pill right">
+          <span class="party-role">Benchmark (Right Column)</span>
+          <div class="benchmark-select-wrap">
+            <select
+              class="benchmark-select"
+              [value]="compareScenario?._id"
+              (change)="onBenchmarkChange($event)"
+              aria-label="Select benchmark scenario to compare against"
+            >
+              <option *ngFor="let s of scenarioHistory" [value]="s._id">
+                {{ s.name }} (Score: {{ s.predicted.hiringScore }}/100 &middot;
+                {{ s.durationWeeks }}w)
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explainer Banner: How it works & how to compare any two -->
+      <div class="compare-explainer-banner">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="explainer-icon"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div class="explainer-content">
+          <div class="explainer-title">How Comparison Works</div>
+          <p class="explainer-desc">
+            The <strong>Reference (left)</strong> is your current editor draft/simulation, and the
+            <strong>Benchmark (right)</strong> is the saved scenario selected in the dropdown.
+          </p>
+          <span class="explainer-tip">
+            💡 <strong>To compare two saved scenarios (A vs B):</strong> Click
+            <strong>Load Plan</strong> on Scenario A to load it into the editor, then select
+            Scenario B from the benchmark dropdown above.
+          </span>
+        </div>
+      </div>
+
+      <!-- Comparative Score Delta Cards -->
+      <div class="compare-kpi-grid">
+        <div class="compare-kpi-card">
+          <span class="compare-kpi-title">Planning Score</span>
+          <div class="compare-kpi-values">
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Current Plan</span>
+              <span class="kpi-val ref">{{ comp.current.hiringScore }}</span>
+            </div>
+            <span class="kpi-vs">vs</span>
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Saved Scenario</span>
+              <span class="kpi-val target">{{ comp.saved.hiringScore }}</span>
+            </div>
+          </div>
+          <div
+            class="compare-delta-badge"
+            [class.positive]="comp.deltas.hiring >= 0"
+            [class.negative]="comp.deltas.hiring < 0"
+          >
+            {{ comp.deltas.hiring >= 0 ? '+' : '' }}{{ comp.deltas.hiring }} pts
+            <small>{{ comp.deltas.hiring >= 0 ? '(Current ahead)' : '(Saved ahead)' }}</small>
+          </div>
+        </div>
+
+        <div class="compare-kpi-card">
+          <span class="compare-kpi-title">Role Alignment</span>
+          <div class="compare-kpi-values">
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Current Plan</span>
+              <span class="kpi-val ref">{{ comp.current.jobMatch }}%</span>
+            </div>
+            <span class="kpi-vs">vs</span>
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Saved Scenario</span>
+              <span class="kpi-val target">{{ comp.saved.jobMatch }}%</span>
+            </div>
+          </div>
+          <div
+            class="compare-delta-badge"
+            [class.positive]="comp.deltas.jobMatch >= 0"
+            [class.negative]="comp.deltas.jobMatch < 0"
+          >
+            {{ comp.deltas.jobMatch >= 0 ? '+' : '' }}{{ comp.deltas.jobMatch }}%
+            <small>{{ comp.deltas.jobMatch >= 0 ? '(Current ahead)' : '(Saved ahead)' }}</small>
+          </div>
+        </div>
+
+        <div class="compare-kpi-card">
+          <span class="compare-kpi-title">Feasibility Heuristic</span>
+          <div class="compare-kpi-values">
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Current Plan</span>
+              <span class="kpi-val ref">{{ comp.current.feasibility }}</span>
+            </div>
+            <span class="kpi-vs">vs</span>
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Saved Scenario</span>
+              <span class="kpi-val target">{{ comp.saved.feasibility }}</span>
+            </div>
+          </div>
+          <div
+            class="compare-delta-badge"
+            [class.positive]="comp.deltas.feasibility >= 0"
+            [class.negative]="comp.deltas.feasibility < 0"
+          >
+            {{ comp.deltas.feasibility >= 0 ? '+' : '' }}{{ comp.deltas.feasibility }} pts
+            <small>{{
+              comp.deltas.feasibility >= 0 ? '(Higher confidence)' : '(Lower confidence)'
+            }}</small>
+          </div>
+        </div>
+
+        <div class="compare-kpi-card">
+          <span class="compare-kpi-title">Execution Horizon</span>
+          <div class="compare-kpi-values">
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Current Plan</span>
+              <span class="kpi-val ref">{{ comp.current.duration }}w</span>
+            </div>
+            <span class="kpi-vs">vs</span>
+            <div class="kpi-score-col">
+              <span class="kpi-sublabel">Saved Scenario</span>
+              <span class="kpi-val target">{{ comp.saved.duration }}w</span>
+            </div>
+          </div>
+          <div class="compare-delta-badge neutral">
+            {{ comp.deltas.duration >= 0 ? '+' : '' }}{{ comp.deltas.duration }} weeks
+            <small>{{
+              comp.deltas.duration === 0
+                ? '(Same timeline)'
+                : comp.deltas.duration < 0
+                  ? '(Faster pace)'
+                  : '(Extended pace)'
+            }}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparative Deep Dives: Skills & Projects -->
+      <div class="compare-details-grid">
+        <!-- Skills Venn / Delta Card -->
+        <div class="compare-subcard">
+          <div class="compare-subcard-head">
+            <h4>Skills Overlap & Differentiation</h4>
+            <span class="compare-tag">{{ comp.skills.shared.length }} shared</span>
+          </div>
+
+          <div class="skills-diff-groups">
+            <!-- Shared Skills -->
+            <div class="diff-group" *ngIf="comp.skills.shared.length">
+              <span class="diff-group-label shared">
+                <span class="diff-dot green"></span>
+                In Both Scenarios ({{ comp.skills.shared.length }})
+              </span>
+              <div class="diff-chips">
+                <span class="diff-chip shared" *ngFor="let s of comp.skills.shared">{{ s }}</span>
+              </div>
+            </div>
+
+            <!-- Current Only Skills -->
+            <div class="diff-group" *ngIf="comp.skills.currentOnly.length">
+              <span class="diff-group-label current">
+                <span class="diff-dot indigo"></span>
+                Only in Current Plan ({{ comp.skills.currentOnly.length }})
+              </span>
+              <div class="diff-chips">
+                <span class="diff-chip current" *ngFor="let s of comp.skills.currentOnly">{{
+                  s
+                }}</span>
+              </div>
+            </div>
+
+            <!-- Saved Only Skills -->
+            <div class="diff-group" *ngIf="comp.skills.savedOnly.length">
+              <span class="diff-group-label saved">
+                <span class="diff-dot amber"></span>
+                Only in {{ comp.saved.name }} ({{ comp.skills.savedOnly.length }})
+              </span>
+              <div class="diff-chips">
+                <span class="diff-chip saved" *ngFor="let s of comp.skills.savedOnly">{{ s }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projects & Scope Card -->
+        <div class="compare-subcard">
+          <div class="compare-subcard-head">
+            <h4>Projects & Scope Distribution</h4>
+            <span class="compare-tag"
+              >{{ comp.projects.current.length }} vs {{ comp.projects.saved.length }} projects</span
+            >
+          </div>
+
+          <div class="projects-compare-lists">
+            <div class="proj-col">
+              <span class="proj-col-title">Current Plan Projects</span>
+              <div class="proj-items" *ngIf="comp.projects.current.length; else noCurrentProj">
+                <div class="proj-mini-item" *ngFor="let p of comp.projects.current">
+                  <strong>{{ p.name || 'Untitled Milestone' }}</strong>
+                  <small
+                    >{{ p.complexity | titlecase }} &middot; {{ p.weeks }}w &middot;
+                    {{ p.impact }}/100 Impact</small
+                  >
+                </div>
+              </div>
+              <ng-template #noCurrentProj>
+                <span class="no-proj-text">No planned projects in current draft</span>
+              </ng-template>
+            </div>
+
+            <div class="proj-col">
+              <span class="proj-col-title">Saved Scenario Projects</span>
+              <div class="proj-items" *ngIf="comp.projects.saved.length; else noSavedProj">
+                <div class="proj-mini-item saved" *ngFor="let p of comp.projects.saved">
+                  <strong>{{ p.name || 'Untitled Milestone' }}</strong>
+                  <small
+                    >{{ p.complexity | titlecase }} &middot; {{ p.weeks }}w &middot;
+                    {{ p.impact }}/100 Impact</small
+                  >
+                </div>
+              </div>
+              <ng-template #noSavedProj>
+                <span class="no-proj-text">No planned projects in saved scenario</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Footer Actions -->
+      <div class="comparison-footer">
+        <span class="comp-footer-hint">
+          Reviewing deterministic deltas against your historical checkpoint. You can load this plan
+          into the editor anytime.
+        </span>
+        <div class="comp-footer-btns">
+          <button type="button" class="ghost-btn" (click)="closeCompare()">Close Comparison</button>
+          <button type="button" class="run-btn" (click)="loadScenario(compareScenario!)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Load This Saved Scenario</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="panel history-panel">
     <!-- Section 6: Saved Scenarios & History -->
     <section class="panel-section history-section" [class.mobile-collapsed]="!showMobileHistory">
@@ -1553,7 +1960,7 @@
         <article
           class="history-card"
           *ngFor="let scenario of scenarioHistory; trackBy: trackByHistory"
-          [class.is-compare]="compareScenario?._id === scenario._id"
+          [class.is-compare]="compareScenario?._id === scenario._id && isCompareOpen"
         >
           <div class="history-main">
             <div class="history-title-group">
@@ -1584,10 +1991,12 @@
             <button
               type="button"
               class="action-btn-compare"
-              [class.active-compare]="compareScenario?._id === scenario._id"
+              [class.active-compare]="compareScenario?._id === scenario._id && isCompareOpen"
               (click)="compareWithScenario(scenario)"
             >
-              {{ compareScenario?._id === scenario._id ? 'Close Compare' : 'Compare' }}
+              {{
+                compareScenario?._id === scenario._id && isCompareOpen ? 'Close Compare' : 'Compare'
+              }}
             </button>
             <button
               type="button"

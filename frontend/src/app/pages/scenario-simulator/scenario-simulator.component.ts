@@ -73,6 +73,8 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
   context: ScenarioContext | null = null;
   scenarioHistory: SavedScenario[] = [];
   compareScenario: SavedScenario | null = null;
+  isCompareOpen = false;
+  activeResultTab: 'overview' | 'breakdown' | 'roadmap' = 'overview';
   deletingScenarioId = '';
   contextCacheHit = false;
   historyCacheHit = false;
@@ -638,7 +640,148 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   compareWithScenario(scenario: SavedScenario): void {
-    this.compareScenario = this.compareScenario?._id === scenario._id ? null : scenario;
+    if (this.compareScenario?._id === scenario._id && this.isCompareOpen) {
+      this.isCompareOpen = false;
+      this.compareScenario = null;
+    } else {
+      this.compareScenario = scenario;
+      this.isCompareOpen = true;
+      setTimeout(() => {
+        const el = document.getElementById('scenario-comparison-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeCompare(): void {
+    this.isCompareOpen = false;
+    this.compareScenario = null;
+    this.cdr.markForCheck();
+  }
+
+  scrollTabs(direction: 'left' | 'right'): void {
+    const el = document.getElementById('dossierNavTabs');
+    if (el) {
+      el.scrollBy({ left: direction === 'left' ? -180 : 180, behavior: 'smooth' });
+    }
+  }
+
+  selectTab(tab: 'overview' | 'breakdown' | 'roadmap'): void {
+    this.activeResultTab = tab;
+    setTimeout(() => {
+      const el = document.getElementById(`dossierTab-${tab}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 10);
+    this.cdr.markForCheck();
+  }
+
+  selectBenchmarkById(id: string): void {
+    const found = this.scenarioHistory.find((s) => s._id === id);
+    if (found) {
+      this.compareScenario = found;
+      this.isCompareOpen = true;
+      this.cdr.markForCheck();
+    }
+  }
+
+  onBenchmarkChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    if (select && select.value) {
+      this.selectBenchmarkById(select.value);
+    }
+  }
+
+  get comparisonData() {
+    if (!this.compareScenario) return null;
+    const currentScore = this.result?.predicted?.hiringScore ?? this.baselineHiringScore;
+    const currentMatch = this.result?.predicted?.jobMatch ?? this.baselineJobMatch;
+    const currentFeasibility = this.result?.confidenceScore ?? (this.baselineConfirmed ? 80 : 60);
+    const currentDuration = this.result?.meta?.durationWeeks ?? this.durationWeeks;
+    const currentName =
+      this.scenarioName?.trim() ||
+      (this.result ? 'Current Simulated Plan' : 'Current Baseline Profile');
+
+    const savedScore =
+      this.compareScenario.result?.predicted?.hiringScore ??
+      this.compareScenario.predicted?.hiringScore ??
+      0;
+    const savedMatch =
+      this.compareScenario.result?.predicted?.jobMatch ??
+      this.compareScenario.predicted?.jobMatch ??
+      0;
+    const savedFeasibility = this.compareScenario.confidenceScore ?? 0;
+    const savedDuration = this.compareScenario.durationWeeks ?? 0;
+    const savedName = this.compareScenario.name;
+
+    const currentSkills = new Set((this.skills || []).map((s) => s.toLowerCase().trim()));
+    const savedSkills = new Set(
+      (this.compareScenario.skills || []).map((s) => s.toLowerCase().trim()),
+    );
+
+    const sharedSkills: string[] = [];
+    const currentOnlySkills: string[] = [];
+    const savedOnlySkills: string[] = [];
+
+    (this.skills || []).forEach((s) => {
+      if (savedSkills.has(s.toLowerCase().trim())) {
+        sharedSkills.push(s);
+      } else {
+        currentOnlySkills.push(s);
+      }
+    });
+
+    (this.compareScenario.skills || []).forEach((s) => {
+      if (!currentSkills.has(s.toLowerCase().trim())) {
+        savedOnlySkills.push(s);
+      }
+    });
+
+    return {
+      current: {
+        name: currentName,
+        hiringScore: currentScore,
+        jobMatch: currentMatch,
+        feasibility: currentFeasibility,
+        duration: currentDuration,
+        skillsCount: this.skills?.length || 0,
+        projectsCount: this.projects?.length || 0,
+        isSimulated: !!this.result,
+        role: this.role,
+        level: this.experienceLevel,
+      },
+      saved: {
+        name: savedName,
+        hiringScore: savedScore,
+        jobMatch: savedMatch,
+        feasibility: savedFeasibility,
+        duration: savedDuration,
+        skillsCount: this.compareScenario.skills?.length || 0,
+        projectsCount: this.compareScenario.projects?.length || 0,
+        role: this.compareScenario.role,
+        level: this.compareScenario.experienceLevel,
+        createdAt: this.compareScenario.createdAt,
+      },
+      deltas: {
+        hiring: currentScore - savedScore,
+        jobMatch: currentMatch - savedMatch,
+        feasibility: currentFeasibility - savedFeasibility,
+        duration: currentDuration - savedDuration,
+      },
+      skills: {
+        shared: sharedSkills,
+        currentOnly: currentOnlySkills,
+        savedOnly: savedOnlySkills,
+      },
+      projects: {
+        current: this.projects || [],
+        saved: this.compareScenario.projects || [],
+      },
+    };
   }
 
   deleteScenario(id: string): void {
