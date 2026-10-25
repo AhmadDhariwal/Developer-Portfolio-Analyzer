@@ -1,6 +1,7 @@
+import { ScenarioInput } from '../models/scenario-simulator.model';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
+import { finalize, Observable, of, shareReplay, tap, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
@@ -10,14 +11,10 @@ import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.
 })
 export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly scenarioContextTtlMs = 15 * 60 * 1000;
-  private readonly scenarioHistoryTtlMs = 5 * 60 * 1000;
-  private readonly scenarioCacheMaxEntries = 50;
-  private readonly scenarioContextCache = new Map<string, { value: any; expiresAt: number }>();
-  private readonly scenarioHistoryCache = new Map<string, { value: any; expiresAt: number }>();
   private readonly scenarioContextInflight = new Map<string, Observable<any>>();
   private readonly scenarioHistoryInflight = new Map<string, Observable<any>>();
-  private scenarioSignalHash = '';
+  private readonly scenarioInvalidated$ = new Subject<void>();
+  private scenarioGeneration = 0;
 
   constructor(
     private readonly http: HttpClient,
@@ -453,198 +450,83 @@ export class ApiService {
       .pipe(tap(() => this.invalidateDeveloperSignalState()));
   }
 
-  runWhatIfSimulation(payload: {
-    baselineHiringScore: number;
-    baselineJobMatch: number;
-    role?: string;
-    experienceLevel?: string;
-    durationWeeks?: number;
-    skills: string[];
-    projects: Array<{
-      name: string;
-      impact: number;
-      complexity: 'low' | 'medium' | 'high';
-      weeks: number;
-    }>;
-  }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/what-if`, payload);
+  runWhatIfSimulation(payload: ScenarioInput): Observable<any> {
+    return this.http.post(this.baseUrl + '/simulator/what-if', payload);
   }
-
-  private getScenarioCacheValue(
-    cache: Map<string, { value: any; expiresAt: number }>,
+  private scenarioRead(
+    map: Map<string, Observable<any>>,
     key: string,
-  ): any | null {
-    const entry = cache.get(key);
-    if (!entry) return null;
-    if (entry.expiresAt <= Date.now()) {
-      cache.delete(key);
-      return null;
+    url: string,
+  ): Observable<any> {
+    let account = '';
+    try {
+      account = String(JSON.parse(localStorage.getItem('user') || '{}')._id || '');
+    } catch {
+      /* Invalid session storage has no account identity. */
     }
-    cache.delete(key);
-    cache.set(key, entry);
-    return entry.value;
-  }
-
-  private setScenarioCacheValue(
-    cache: Map<string, { value: any; expiresAt: number }>,
-    key: string,
-    value: any,
-    ttlMs: number,
-  ): void {
-    cache.delete(key);
-    cache.set(key, { value, expiresAt: Date.now() + ttlMs });
-    while (cache.size > this.scenarioCacheMaxEntries) {
-      const oldestKey = cache.keys().next().value as string | undefined;
-      if (!oldestKey) break;
-      cache.delete(oldestKey);
-    }
-  }
-
-  getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
-    const key = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
-    const cached = !forceRefresh
-      ? this.getScenarioCacheValue(this.scenarioContextCache, key)
-      : null;
-    if (cached) return of({ ...cached, frontendCacheHit: true });
-    const inflight = this.scenarioContextInflight.get(key);
-    if (inflight) return inflight;
-    const url = `${this.baseUrl}/simulator/context${forceRefresh ? '?forceRefresh=true' : ''}`;
+    const requestKey = account + ':' + this.scenarioGeneration + ':' + key;
+    const pending = map.get(requestKey);
+    if (pending) return pending;
     const request$ = this.http.get(url).pipe(
-      tap((response: any) => {
-        this.scenarioSignalHash = response?.context?.signalHash || this.scenarioSignalHash;
-        this.setScenarioCacheValue(
-          this.scenarioContextCache,
-          key,
-          response,
-          this.scenarioContextTtlMs,
-        );
-        const resolvedKey = `context:${profileSignature}:${this.scenarioSignalHash}:${forceRefresh}`;
-        if (resolvedKey !== key) {
-          this.setScenarioCacheValue(
-            this.scenarioContextCache,
-            resolvedKey,
-            response,
-            this.scenarioContextTtlMs,
-          );
-        }
-        const normalKey = `context:${profileSignature}:${this.scenarioSignalHash}:false`;
-        this.setScenarioCacheValue(
-          this.scenarioContextCache,
-          normalKey,
-          response,
-          this.scenarioContextTtlMs,
-        );
+      takeUntil(this.scenarioInvalidated$),
+      finalize(() => {
+        if (map.get(requestKey) === request$) map.delete(requestKey);
       }),
-      finalize(() => this.scenarioContextInflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false }),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
-    this.scenarioContextInflight.set(key, request$);
+    map.set(requestKey, request$);
     return request$;
   }
-  saveScenarioSimulation(payload: {
-    name?: string;
-    baselineHiringScore: number;
-    baselineJobMatch: number;
-    role?: string;
-    experienceLevel?: string;
-    durationWeeks?: number;
-    skills: string[];
-    projects: Array<{
-      name: string;
-      impact: number;
-      complexity: 'low' | 'medium' | 'high';
-      weeks: number;
-    }>;
-  }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/simulator/save`, payload).pipe(
-      tap(() => {
-        this.invalidateScenarioHistoryCache();
-      }),
+  getScenarioSimulatorContext(forceRefresh = false, profileSignature = ''): Observable<any> {
+    return this.scenarioRead(
+      this.scenarioContextInflight,
+      profileSignature,
+      this.baseUrl + '/simulator/context' + (forceRefresh ? '?forceRefresh=true' : ''),
     );
   }
-
+  saveScenarioSimulation(payload: ScenarioInput): Observable<any> {
+    return this.http
+      .post(this.baseUrl + '/simulator/save', payload)
+      .pipe(tap(() => this.invalidateScenarioHistoryCache()));
+  }
   getScenarioSimulationHistory(
     limit = 8,
     forceRefresh = false,
     profileSignature = '',
+    cursor = '',
   ): Observable<any> {
-    const key = `history:${profileSignature}:${limit}:${forceRefresh}`;
-    const cached = !forceRefresh
-      ? this.getScenarioCacheValue(this.scenarioHistoryCache, key)
-      : null;
-    if (cached) return of({ ...cached, frontendCacheHit: true });
-    const inflight = this.scenarioHistoryInflight.get(key);
-    if (inflight) return inflight;
-    const params = `limit=${encodeURIComponent(String(limit))}${forceRefresh ? '&forceRefresh=true' : ''}`;
-    const request$ = this.http.get(`${this.baseUrl}/simulator/history?${params}`).pipe(
-      tap((response) => {
-        this.setScenarioCacheValue(
-          this.scenarioHistoryCache,
-          key,
-          response,
-          this.scenarioHistoryTtlMs,
-        );
-        const normalKey = `history:${profileSignature}:${limit}:false`;
-        if (normalKey !== key) {
-          this.setScenarioCacheValue(
-            this.scenarioHistoryCache,
-            normalKey,
-            response,
-            this.scenarioHistoryTtlMs,
-          );
-        }
-      }),
-      finalize(() => this.scenarioHistoryInflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false }),
+    return this.scenarioRead(
+      this.scenarioHistoryInflight,
+      profileSignature + ':' + limit + ':' + cursor,
+      this.baseUrl +
+        '/simulator/history?limit=' +
+        encodeURIComponent(limit) +
+        (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
     );
-    this.scenarioHistoryInflight.set(key, request$);
-    return request$;
   }
   deleteScenarioSimulation(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/simulator/${encodeURIComponent(id)}`).pipe(
-      tap(() => {
-        this.invalidateScenarioHistoryCache();
-      }),
-    );
+    return this.http
+      .delete(this.baseUrl + '/simulator/' + encodeURIComponent(id))
+      .pipe(tap(() => this.invalidateScenarioHistoryCache()));
   }
-
   clearScenarioCaches(): void {
-    this.invalidateScenarioContextCache();
-    this.invalidateScenarioHistoryCache();
-    this.scenarioSignalHash = '';
-  }
-
-  invalidateScenarioHistoryCache(): void {
-    this.scenarioHistoryCache.clear();
+    this.scenarioGeneration++;
+    this.scenarioInvalidated$.next();
+    this.scenarioContextInflight.clear();
     this.scenarioHistoryInflight.clear();
   }
-
-  invalidateScenarioContextCache(): void {
-    this.scenarioContextCache.clear();
-    this.scenarioContextInflight.clear();
-    this.scenarioSignalHash = '';
+  invalidateScenarioHistoryCache(): void {
+    this.clearScenarioCaches();
   }
-
+  invalidateScenarioContextCache(): void {
+    this.clearScenarioCaches();
+  }
   private invalidateDeveloperSignalState(): void {
     this.cacheInvalidation.clearDeveloperSignalCaches();
   }
-
-  createSprintFromScenario(payload: {
-    baselineHiringScore: number;
-    baselineJobMatch: number;
-    role?: string;
-    experienceLevel?: string;
-    durationWeeks?: number;
-    skills: string[];
-    projects: Array<{
-      name: string;
-      impact: number;
-      complexity: 'low' | 'medium' | 'high';
-      weeks: number;
-    }>;
-  }): Observable<any> {
+  createSprintFromScenario(payload: ScenarioInput): Observable<any> {
     return this.http
-      .post(`${this.baseUrl}/simulator/create-sprint`, payload)
+      .post(this.baseUrl + '/simulator/create-sprint', payload)
       .pipe(tap(() => this.invalidateDeveloperSignalState()));
   }
 

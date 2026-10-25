@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-25",
+  "timezone": "Asia/Karachi",
+  "productionDataModified": false,
+  "architectureImplemented": true,
+  "readyToLockLocally": false,
+  "readyForProduction": false,
+  "backendMatrix": {
+    "command": "node --test --test-concurrency=1 backend/src/tests/scenarioLegacyParity.test.js backend/src/tests/scenarioPlanningScore.test.js backend/src/tests/scenarioSimulatorCharacterization.test.js backend/src/tests/scenarioSimulatorContext.test.js backend/src/tests/scenarioSimulatorMongo.integration.test.js backend/src/tests/scenarioSimulatorReliability.test.js backend/src/tests/scenarioSimulatorService.test.js backend/src/tests/scenarioSimulatorWorkers.integration.test.js backend/src/tests/scenarioSprintExport.test.js backend/src/tests/developerContextService.test.js backend/src/tests/careerSprintService.test.js backend/src/tests/careerSprintHardening.test.js backend/src/tests/careerSprintFinalization.test.js backend/src/tests/careerSprintPlanningFinalization.test.js backend/src/tests/scoringFoundation.test.js backend/src/tests/skillGapEvidence.test.js backend/src/tests/recommendationEngine.test.js backend/src/tests/recommendationGeneration.test.js backend/src/tests/newsContract.test.js backend/src/tests/newsHubHardening.test.js",
+    "passed": 136,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "backend-tests.txt"
+  },
+  "finalChecks": [
+    {
+      "passed": 6,
+      "evidence": "final-persistence-tests.txt"
+    },
+    {
+      "passed": 4,
+      "evidence": "final-context-tests.txt"
+    },
+    {
+      "passed": 1,
+      "evidence": "final-context-mongo-tests.txt"
+    },
+    {
+      "passed": 2,
+      "evidence": "final-export-tests.txt"
+    }
+  ],
+  "frontend": {
+    "full": {
+      "command": "npm test -- --watch=false",
+      "passed": 383,
+      "failed": 0,
+      "scope": "Before final scoped copy/theme refinements; final focused/build/browser checks follow."
+    },
+    "focused": {
+      "passed": 4,
+      "failed": 0,
+      "evidence": "frontend-focused.txt"
+    },
+    "typecheck": {
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "passed": true
+    },
+    "build": {
+      "command": "npm run build",
+      "passed": true,
+      "evidence": "frontend-build.txt",
+      "warning": "Existing Landing Page stylesheet 55.89 KB exceeds 48 KB warning budget."
+    }
+  },
+  "browserAndLoad": {
+    "evidence": "integrated-results.json",
+    "screenshotsVisuallyInspected": true,
+    "previousFailureRetained": "burst-capacity-failure.json",
+    "previousExportLatencyRetained": "export-latency-before-target-lookup.json"
+  },
+  "indexExperiment": "history-index-experiment.json",
+  "formatting": {
+    "executable": "frontend/node_modules/prettier/bin/prettier.cjs",
+    "backendOptions": ["--single-quote", "--print-width", "110"],
+    "frontendConfig": "frontend/.prettierrc",
+    "writeAndCheck": true
+  },
+  "syntax": true,
+  "gitWhitespace": true,
+  "preservedExistingUntracked": ["SCENARIO-SIMULATOR-ARCHITECTURE-REVIEW.md"],
+  "moved": [],
+  "deleted": [],
+  "remainingGates": [
+    "Deployment-equivalent long-duration two-instance capacity/soak",
+    "Live isolated shared Redis quota and recovery verification",
+    "Actual production topology, indexes, proxy and pool configuration",
+    "Real network/pool-exhaustion cancellation tests",
+    "Previously blocked broader Career Sprint release gates"
+  ]
+}

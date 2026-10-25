@@ -1,0 +1,146 @@
+{
+  "database": "disposable loopback MongoDB",
+  "productionDataModified": false,
+  "checks": [
+    "JWT protection, foreign delete isolation, stale evaluation rejection and real eight-source context",
+    "Goal-only/incomplete Sprint and saved simulations do not establish completed skills",
+    "Authenticated production-bundle browser: evaluate, dirty guard, save, draft export, desktop/mobile screenshots and no runtime errors"
+  ],
+  "latency": {
+    "steady": {
+      "seconds": 60,
+      "rps": 20,
+      "requests": 1200,
+      "statuses": {
+        "200": 1104,
+        "201": 96
+      },
+      "elapsedMs": 60002.1777,
+      "latency": {
+        "context": {
+          "count": 480,
+          "p95": 38.36409999999887,
+          "p99": 88.89449999999852
+        },
+        "evaluate": {
+          "count": 420,
+          "p95": 23.033699999999953,
+          "p99": 35.547300000002
+        },
+        "history": {
+          "count": 180,
+          "p95": 27.686299999997573,
+          "p99": 30.587900000002264
+        },
+        "save": {
+          "count": 96,
+          "p95": 35.060999999997875,
+          "p99": 64.50070000000414
+        },
+        "export": {
+          "count": 24,
+          "p95": 173.29839999999967,
+          "p99": 282.51260000000184
+        }
+      }
+    },
+    "burst": {
+      "seconds": 10,
+      "rps": 100,
+      "requests": 1000,
+      "statuses": {
+        "200": 845,
+        "201": 80,
+        "503": 75
+      },
+      "elapsedMs": 10025.428199999995,
+      "latency": {
+        "context": {
+          "count": 400,
+          "p95": 2051.2752000000037,
+          "p99": 2253.209400000007
+        },
+        "evaluate": {
+          "count": 350,
+          "p95": 1156.7734999999957,
+          "p99": 1197.4012000000075
+        },
+        "history": {
+          "count": 150,
+          "p95": 1632.704899999997,
+          "p99": 1690.5383000000002
+        },
+        "save": {
+          "count": 80,
+          "p95": 1601.0294999999896,
+          "p99": 1704.2812999999878
+        },
+        "export": {
+          "count": 20,
+          "p95": 4159.450200000007,
+          "p99": 4159.450200000007
+        }
+      }
+    }
+  },
+  "screenshots": ["browser-light-1440.png", "browser-dark-375.png"],
+  "runtime": {
+    "node": "v24.19.0"
+  },
+  "limitations": [
+    "Short local mixed load; production 15-minute capacity and 60-minute soak targets remain unverified.",
+    "Live distributed Redis quota verification requires an isolated Redis test service."
+  ],
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "status": "FAIL",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(!Object.keys(measured.statuses).some((status) => Number(status) >= 500))\n\n    at main (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioSimulator.js:274:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

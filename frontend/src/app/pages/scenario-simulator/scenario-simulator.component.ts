@@ -1,146 +1,26 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { catchError, forkJoin, of, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { ApiService } from '../../shared/services/api.service';
+import { ScenarioSimulatorService } from '../../shared/services/scenario-simulator.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { buildCareerProfileSignature } from '../../shared/models/career-profile.model';
 
-interface ProjectInput {
-  name: string;
-  impact: number;
-  complexity: 'low' | 'medium' | 'high';
-  weeks: number;
-}
-
-interface SkillDetail {
-  skill: string;
-  pts: number;
-  relevance: number;
-  tier: 'core' | 'valuable' | 'transferable' | 'low';
-  demand: number;
-  difficulty: number;
-}
-
-interface ProjectDetail {
-  name: string;
-  complexity: 'low' | 'medium' | 'high';
-  weeks: number;
-  impact: number;
-  pts: number;
-}
-
-interface ScenarioRange {
-  hiringScore: number;
-  jobMatch: number;
-}
-
-interface SimResult {
-  scenarioHash: string;
-  baseline: { hiringScore: number; jobMatch: number };
-  predicted: { hiringScore: number; jobMatch: number };
-  improvements: { hiringScore: number; jobMatch: number };
-  confidenceScore: number;
-  uncertaintyRange: {
-    low: ScenarioRange;
-    expected: ScenarioRange;
-    high: ScenarioRange;
-  };
-  breakdown: { skills: number; projects: number; synergy: number; penalty: number; total: number };
-  skillDetails: SkillDetail[];
-  projectDetails: ProjectDetail[];
-  insights: string[];
-  warnings: string[];
-  suggestions: string[];
-  explainability?: {
-    scoreDrivers: string[];
-    penalties: string[];
-    confidenceReason: string;
-    effortVsDuration: string;
-  };
-  assumptions: {
-    skillsConsidered: string[];
-    projectsConsidered: ProjectInput[];
-    notes: string[];
-    sources: Array<{ label: string; connected: boolean; lastUpdatedAt: string | null }>;
-    suggestedDurationWeeks: number;
-  };
-  meta: {
-    role: string;
-    level: string;
-    durationWeeks: number;
-    suggestedDurationWeeks: number;
-    overloaded: boolean;
-    skillsEffort: number;
-    projectsEffort: number;
-  };
-}
-
-interface ScenarioSource {
-  key: string;
-  label: string;
-  connected: boolean;
-  lastUpdatedAt: string | null;
-}
-
-interface ScenarioContext {
-  profile: {
-    careerStack: string;
-    experienceLevel: string;
-    githubUsername: string;
-    role: string;
-    level: string;
-    baselineHiringScore: number;
-    baselineJobMatch: number;
-  };
-  sources: ScenarioSource[];
-  signals: {
-    knownSkills: string[];
-    missingSkills: string[];
-    recommendationSkills: string[];
-    sprintFocus: string[];
-    connectedProviders: string[];
-    portfolioProjects: string[];
-    topDemandedSkills?: string[];
-  };
-  suggestedInputs: {
-    role: string;
-    experienceLevel: string;
-    baselineHiringScore: number;
-    baselineJobMatch: number;
-    durationWeeks: number;
-    skills: string[];
-    projects: ProjectInput[];
-  };
-  summary: string;
-  signalHash?: string;
-  sourceContextSummary?: Record<string, unknown>;
-  cache?: { hit: boolean; key: string; version: string };
-}
-
-interface SavedScenario {
-  _id: string;
-  name: string;
-  baselineHiringScore: number;
-  baselineJobMatch: number;
-  role: string;
-  experienceLevel: string;
-  durationWeeks: number;
-  skills: string[];
-  projects: ProjectInput[];
-  confidenceScore: number;
-  predicted: { hiringScore: number; jobMatch: number };
-  improvements: { hiringScore: number; jobMatch: number };
-  result: SimResult;
-  scenarioHash?: string;
-  sourceContextSummary?: Record<string, unknown>;
-  warnings?: string[];
-  uncertaintyRange?: SimResult['uncertaintyRange'];
-  breakdown?: SimResult['breakdown'];
-  createdAt: string;
-}
-
+import {
+  ProjectInput,
+  SimResult,
+  ScenarioContext,
+  SavedScenario,
+  ScenarioSource,
+  ScenarioInput,
+} from '../../shared/models/scenario-simulator.model';
 interface TemplateOption {
   key: 'focused' | 'portfolio' | 'balanced';
   label: string;
@@ -153,9 +33,16 @@ interface TemplateOption {
   imports: [CommonModule, FormsModule],
   templateUrl: './scenario-simulator.component.html',
   styleUrl: './scenario-simulator.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
+  baselineConfirmed = false;
+  private evaluatedPayload: ScenarioInput | null = null;
+  private evaluatedDraftKey = '';
+  private requestGeneration = 0;
+  private contextGeneration = 0;
+  private readonly destroyed$ = new Subject<void>();
+  nextHistoryCursor: string | null = null;
   baselineHiringScore = 55;
   baselineJobMatch = 48;
   role = 'full stack';
@@ -173,6 +60,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   isLoadingHistory = true;
   errorMessage = '';
   contextError = '';
+  historyError = '';
   actionMessage = '';
   actionTone: 'success' | 'error' | 'info' = 'info';
   result: SimResult | null = null;
@@ -188,20 +76,19 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   historyCacheHit = false;
   private readonly subscriptions = new Subscription();
   private lastProfileSignature = '';
-  private isRefreshingProfileContext = false;
 
   readonly roleOptions = [
     { value: 'frontend', label: 'Frontend Developer' },
     { value: 'backend', label: 'Backend Developer' },
     { value: 'full stack', label: 'Full Stack Developer' },
     { value: 'ai/ml', label: 'AI / ML Engineer' },
-    { value: 'devops', label: 'DevOps / Cloud Engineer' }
+    { value: 'devops', label: 'DevOps / Cloud Engineer' },
   ];
 
   readonly levelOptions = [
     { value: 'junior', label: 'Junior (0-2 years)' },
     { value: 'mid', label: 'Mid-level (2-5 years)' },
-    { value: 'senior', label: 'Senior (5+ years)' }
+    { value: 'senior', label: 'Senior (5+ years)' },
   ];
 
   readonly durationOptions = [2, 4, 6, 8, 12, 16];
@@ -210,42 +97,73 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     {
       key: 'focused',
       label: 'Focused Upskill',
-      description: 'Lean into top missing skills with a compact, realistic plan.'
+      description: 'Lean into top missing skills with a compact, realistic plan.',
     },
     {
       key: 'portfolio',
       label: 'Portfolio Push',
-      description: 'Turn your strongest project signals into a showcase-oriented scenario.'
+      description: 'Turn your strongest project signals into a showcase-oriented scenario.',
     },
     {
       key: 'balanced',
       label: 'Balanced Plan',
-      description: 'Mix skills and one strong project for a practical hiring lift.'
-    }
+      description: 'Mix skills and one strong project for a practical hiring lift.',
+    },
   ];
 
   constructor(
-    private readonly apiService: ApiService,
+    private readonly apiService: ScenarioSimulatorService,
     private readonly careerProfileService: CareerProfileService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
+    this.subscriptions.add(
+      this.apiService.sessionChanged$.subscribe(() => {
+        this.requestGeneration++;
+        this.contextGeneration++;
+        this.isRunning = false;
+        this.isSavingScenario = false;
+        this.isCreatingSprint = false;
+        this.isLoadingContext = false;
+        this.isLoadingHistory = false;
+        this.context = null;
+        this.nextHistoryCursor = null;
+        this.skills = [];
+        this.projects = [this.createEmptyProject()];
+        this.scenarioName = '';
+        this.baselineHiringScore = 55;
+        this.baselineJobMatch = 48;
+        this.result = null;
+        this.evaluatedPayload = null;
+        this.scenarioHistory = [];
+        this.compareScenario = null;
+        this.baselineConfirmed = false;
+        this.cdr.markForCheck();
+      }),
+    );
     this.lastProfileSignature = buildCareerProfileSignature(this.careerProfileService.snapshot);
     this.subscriptions.add(
-      this.careerProfileService.careerProfile$.pipe(
-        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
-      ).subscribe((profile) => {
-        const nextSignature = buildCareerProfileSignature(profile);
-        if (nextSignature === this.lastProfileSignature) return;
-        this.lastProfileSignature = nextSignature;
-        this.reloadContextForProfileChange();
-      })
+      this.careerProfileService.careerProfile$
+        .pipe(
+          distinctUntilChanged(
+            (a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b),
+          ),
+        )
+        .subscribe((profile) => {
+          const nextSignature = buildCareerProfileSignature(profile);
+          if (nextSignature === this.lastProfileSignature) return;
+          this.lastProfileSignature = nextSignature;
+          this.reloadContextForProfileChange();
+        }),
     );
     this.loadBootstrapData();
   }
 
   ngOnDestroy(): void {
+    this.requestGeneration++;
+    this.destroyed$.next();
+    this.destroyed$.complete();
     this.subscriptions.unsubscribe();
   }
 
@@ -256,14 +174,23 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   private cloneProject(project: Partial<ProjectInput>): ProjectInput {
     return {
       name: String(project.name || '').trim(),
-      impact: Math.max(0, Math.min(100, Number(project.impact) || 70)),
-      complexity: project.complexity === 'low' || project.complexity === 'high' ? project.complexity : 'medium',
-      weeks: Math.max(1, Math.min(24, Number(project.weeks) || 3))
+      impact: Math.max(
+        0,
+        Math.min(100, Number.isFinite(Number(project.impact)) ? Number(project.impact) : 70),
+      ),
+      complexity:
+        project.complexity === 'low' || project.complexity === 'high'
+          ? project.complexity
+          : 'medium',
+      weeks: Math.max(1, Math.min(24, Number(project.weeks) || 3)),
     };
   }
 
-  private buildScenarioPayload() {
+  private buildScenarioPayload(): ScenarioInput {
     return {
+      ruleVersion: 'scenario-planning-v2',
+      baselineAuthority: 'user-assumption',
+      baselineConfirmed: this.baselineConfirmed,
       name: this.scenarioName.trim(),
       baselineHiringScore: this.baselineHiringScore,
       baselineJobMatch: this.baselineJobMatch,
@@ -271,14 +198,31 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       experienceLevel: this.experienceLevel,
       durationWeeks: this.durationWeeks,
       skills: this.skills,
-      projects: this.validProjects
+      projects: this.validProjects,
     };
   }
 
+  private draftKey(payload: ScenarioInput = this.buildScenarioPayload()): string {
+    const { name, evaluation, scenarioId, mode, ...input } = payload;
+    return JSON.stringify(input);
+  }
+  get isResultCurrent(): boolean {
+    return (
+      this.result?.ruleVersion === 'scenario-planning-v2' &&
+      !!this.result.evaluation &&
+      this.evaluatedDraftKey === this.draftKey()
+    );
+  }
   private applyContext(context: ScenarioContext, resetPlan = false): void {
     this.context = context;
 
-    if (!resetPlan && (this.skills.length || this.validProjects.length || this.hasSimulated)) {
+    if (
+      !resetPlan &&
+      (this.baselineConfirmed ||
+        this.skills.length ||
+        this.validProjects.length ||
+        this.hasSimulated)
+    ) {
       return;
     }
 
@@ -295,7 +239,8 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   }
 
   private generateScenarioName(): string {
-    const roleLabel = this.roleOptions.find((option) => option.value === this.role)?.label || 'Career Scenario';
+    const roleLabel =
+      this.roleOptions.find((option) => option.value === this.role)?.label || 'Career Scenario';
     const primarySkills = this.skills.slice(0, 2).join(' + ');
     if (primarySkills) return `${roleLabel}: ${primarySkills}`;
     return `${roleLabel} - ${this.durationWeeks} week plan`;
@@ -312,78 +257,128 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     this.isLoadingContext = true;
     this.isLoadingHistory = true;
     this.contextError = '';
+    this.historyError = '';
     if (forceRefresh) {
       this.actionTone = 'info';
       this.actionMessage = 'Refreshing simulator signals and saved scenarios...';
     }
 
+    const generation = ++this.contextGeneration;
     forkJoin({
-      context: this.apiService.getScenarioSimulatorContext(forceRefresh, this.lastProfileSignature).pipe(catchError(() => of(null))),
-      history: this.apiService.getScenarioSimulationHistory(8, forceRefresh, this.lastProfileSignature).pipe(catchError(() => of({ history: [] })))
-    }).subscribe({
-      next: ({ context, history }) => {
-        if (context?.context) {
-          this.applyContext(context.context, true);
-          this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
-        } else {
-          this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
-          this.contextCacheHit = false;
-        }
+      context: this.apiService
+        .getScenarioSimulatorContext(forceRefresh, this.lastProfileSignature)
+        .pipe(catchError(() => of(null))),
+      history: this.apiService
+        .getScenarioSimulationHistory(8, forceRefresh, this.lastProfileSignature)
+        .pipe(
+          catchError(() => {
+            this.historyError =
+              'History could not be refreshed. Showing the last loaded evaluations.';
+            return of({
+              history: this.scenarioHistory,
+              nextCursor: this.nextHistoryCursor,
+              frontendCacheHit: false,
+              cache: { hit: false },
+            });
+          }),
+        ),
+    })
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: ({ context, history }) => {
+          if (generation !== this.contextGeneration) return;
+          if (context?.context) {
+            this.applyContext(context.context, false);
+            this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
+          } else {
+            this.contextError =
+              'Live scenario signals are unavailable right now. You can still simulate manually.';
+            this.contextCacheHit = false;
+          }
 
-        this.scenarioHistory = Array.isArray(history?.history) ? history.history : [];
-        this.historyCacheHit = !!history?.frontendCacheHit || !!history?.cache?.hit;
-        if (forceRefresh && !this.contextError) {
-          this.actionMessage = 'Simulator signals refreshed.';
-          this.actionTone = 'success';
-        }
-        this.isLoadingContext = false;
-        this.isLoadingHistory = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.contextError = 'Failed to load scenario workspace data.';
-        this.isLoadingContext = false;
-        this.isLoadingHistory = false;
-        this.cdr.markForCheck();
-      }
-    });
+          this.scenarioHistory = Array.isArray(history?.history) ? history.history : [];
+          this.nextHistoryCursor = history?.nextCursor || null;
+          this.historyCacheHit = !!history?.frontendCacheHit || !!history?.cache?.hit;
+          if (forceRefresh && !this.contextError && !this.historyError) {
+            this.actionMessage = 'Simulator signals refreshed.';
+            this.actionTone = 'success';
+          }
+          this.isLoadingContext = false;
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.contextError = 'Failed to load scenario workspace data.';
+          this.isLoadingContext = false;
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private reloadContextForProfileChange(): void {
-    if (this.isRefreshingProfileContext) return;
-    this.isRefreshingProfileContext = true;
-    this.isLoadingContext = true;
-    this.contextError = '';
+    this.requestGeneration++;
+    this.isRunning = false;
+    this.result = null;
+    this.evaluatedPayload = null;
     this.apiService.invalidateScenarioContextCache();
-    this.apiService.getScenarioSimulatorContext(true, this.lastProfileSignature).pipe(
-      catchError(() => of(null))
-    ).subscribe((context) => {
-      if (context?.context) {
-        this.applyContext(context.context, true);
-        this.contextCacheHit = !!context.frontendCacheHit || !!context.context.cache?.hit;
-      } else {
-        this.contextError = 'Live scenario signals are unavailable right now. You can still simulate manually.';
-        this.contextCacheHit = false;
-      }
-      this.isLoadingContext = false;
-      this.isRefreshingProfileContext = false;
-      this.cdr.markForCheck();
-    });
+    this.loadBootstrapData(true);
+  }
+  loadMoreHistory(): void {
+    if (!this.nextHistoryCursor || this.isLoadingHistory) return;
+    this.isLoadingHistory = true;
+    this.apiService
+      .getScenarioSimulationHistory(8, true, this.lastProfileSignature, this.nextHistoryCursor)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (response) => {
+          this.scenarioHistory = [...this.scenarioHistory, ...response.history];
+          this.nextHistoryCursor = response.nextCursor || null;
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   get validProjects(): ProjectInput[] {
     return this.projects
-      .map((project) => this.cloneProject(project))
+      .map((project) => ({ ...project, name: String(project.name || '').trim() }))
       .filter((project) => project.name.trim());
   }
 
   get validationError(): string | null {
-    if (this.baselineHiringScore < 0 || this.baselineHiringScore > 100) return 'Hiring score must be between 0 and 100.';
-    if (this.baselineJobMatch < 0 || this.baselineJobMatch > 100) return 'Job match must be between 0 and 100.';
-    if (this.durationWeeks < 1 || this.durationWeeks > 24) return 'Duration must be between 1 and 24 weeks.';
-    if (!this.skills.length && !this.validProjects.length) return 'Add at least one skill or project.';
+    if (!this.baselineConfirmed) return 'Confirm your planning baseline assumptions.';
+    if (!Number.isFinite(this.baselineHiringScore) || !Number.isFinite(this.baselineJobMatch))
+      return 'Baseline assumptions must be numbers.';
+    if (this.baselineHiringScore < 0 || this.baselineHiringScore > 100)
+      return 'Hiring score must be between 0 and 100.';
+    if (this.baselineJobMatch < 0 || this.baselineJobMatch > 100)
+      return 'Job match must be between 0 and 100.';
+    if (!Number.isInteger(this.durationWeeks) || this.durationWeeks < 1 || this.durationWeeks > 24)
+      return 'Duration must be between 1 and 24 weeks.';
+    if (!this.skills.length && !this.validProjects.length)
+      return 'Add at least one skill or project.';
+    if (this.skills.length > 10 || this.validProjects.length > 5)
+      return 'Use up to ten skills and five projects.';
+    if (
+      this.validProjects.some(
+        (project) =>
+          !Number.isFinite(project.impact) ||
+          project.impact < 0 ||
+          project.impact > 100 ||
+          !Number.isInteger(project.weeks) ||
+          project.weeks < 1 ||
+          project.weeks > 24,
+      )
+    )
+      return 'Project impact must be 0–100 and weeks must be an integer from 1–24.';
     const projectNames = this.validProjects.map((project) => project.name.trim().toLowerCase());
-    if (new Set(projectNames).size !== projectNames.length) return 'Remove duplicate project names before running the simulation.';
+    if (new Set(projectNames).size !== projectNames.length)
+      return 'Remove duplicate project names before running the simulation.';
     return null;
   }
 
@@ -409,10 +404,10 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     if (!this.result) return [];
     const breakdown = this.result.breakdown;
     return [
-      { label: 'Skills', value: breakdown.skills, color: '#7c3aed' },
-      { label: 'Projects', value: breakdown.projects, color: '#10b981' },
-      { label: 'Synergy', value: breakdown.synergy, color: '#f59e0b' },
-      { label: 'Penalty', value: breakdown.penalty, color: '#ef4444' }
+      { label: 'Skills', value: breakdown.skills, color: 'var(--color-primary-text)' },
+      { label: 'Projects', value: breakdown.projects, color: 'var(--sim-success-text)' },
+      { label: 'Synergy', value: breakdown.synergy, color: 'var(--color-warning-text)' },
+      { label: 'Penalty', value: breakdown.penalty, color: 'var(--color-danger-text)' },
     ];
   }
 
@@ -443,7 +438,12 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   }
 
   addSuggestedProject(project: ProjectInput): void {
-    if (this.projects.some((item) => item.name.trim().toLowerCase() === project.name.trim().toLowerCase())) return;
+    if (
+      this.projects.some(
+        (item) => item.name.trim().toLowerCase() === project.name.trim().toLowerCase(),
+      )
+    )
+      return;
     this.projects = [...this.projects, this.cloneProject(project)];
   }
 
@@ -491,51 +491,72 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     this.actionMessage = '';
     this.result = null;
 
-    this.apiService.runWhatIfSimulation(this.buildScenarioPayload()).subscribe({
-      next: (response) => {
-        this.result = response?.result || null;
-        this.hasSimulated = !!this.result;
-        this.isRunning = false;
-        if (!this.scenarioName.trim()) this.scenarioName = this.generateScenarioName();
-        if (this.result?.warnings?.length) {
-          this.actionTone = 'info';
-          this.actionMessage = 'Simulation completed with realism warnings. Review the warning panel before committing this plan.';
-        }
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.errorMessage = this.normalizeError(error, 'Simulation failed. Please try again.');
-        this.isRunning = false;
-        this.cdr.markForCheck();
-      }
-    });
+    const payload = structuredClone(this.buildScenarioPayload());
+    const generation = ++this.requestGeneration;
+    this.apiService
+      .runWhatIfSimulation(payload)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (response) => {
+          if (generation !== this.requestGeneration) return;
+          this.evaluatedPayload = payload;
+          this.evaluatedDraftKey = this.draftKey(payload);
+          this.result = response?.result || null;
+          this.hasSimulated = !!this.result;
+          this.isRunning = false;
+          if (!this.scenarioName.trim()) this.scenarioName = this.generateScenarioName();
+          if (this.result?.warnings?.length) {
+            this.actionTone = 'info';
+            this.actionMessage =
+              'Simulation completed with realism warnings. Review the warning panel before committing this plan.';
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (generation !== this.requestGeneration) return;
+          this.errorMessage = this.normalizeError(error, 'Simulation failed. Please try again.');
+          this.isRunning = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   saveScenario(): void {
-    if (!this.result || this.isSavingScenario || this.validationError) return;
+    if (!this.result || !this.isResultCurrent || this.isSavingScenario || this.validationError)
+      return;
 
     this.isSavingScenario = true;
     this.actionMessage = '';
 
-    this.apiService.saveScenarioSimulation(this.buildScenarioPayload()).subscribe({
-      next: (response) => {
-        const scenario = response?.scenario as SavedScenario | undefined;
-        if (scenario) {
-          this.scenarioHistory = [scenario, ...this.scenarioHistory.filter((item) => item._id !== scenario._id)].slice(0, 8);
-          this.historyCacheHit = false;
-        }
-        this.actionTone = 'success';
-        this.actionMessage = 'Scenario saved to your personal history.';
-        this.isSavingScenario = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.actionTone = 'error';
-        this.actionMessage = this.normalizeError(error, 'Failed to save scenario.');
-        this.isSavingScenario = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.apiService
+      .saveScenarioSimulation({
+        ...this.evaluatedPayload!,
+        name: this.scenarioName,
+        evaluation: this.result.evaluation,
+      })
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (response) => {
+          const scenario = response?.scenario as SavedScenario | undefined;
+          if (scenario) {
+            this.scenarioHistory = [
+              scenario,
+              ...this.scenarioHistory.filter((item) => item._id !== scenario._id),
+            ].slice(0, 8);
+            this.historyCacheHit = false;
+          }
+          this.actionTone = 'success';
+          this.actionMessage = 'Scenario saved to your personal history.';
+          this.isSavingScenario = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.actionTone = 'error';
+          this.actionMessage = this.normalizeError(error, 'Failed to save scenario.');
+          this.isSavingScenario = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   loadScenario(scenario: SavedScenario): void {
@@ -550,6 +571,12 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       ? scenario.projects.map((project) => this.cloneProject(project))
       : [this.createEmptyProject()];
     this.result = scenario.result;
+    this.baselineConfirmed = scenario.result?.ruleVersion === 'scenario-planning-v2';
+    this.evaluatedPayload =
+      this.baselineConfirmed && scenario.result?.evaluation
+        ? { ...scenario.result.evaluation.normalizedInput, ruleVersion: 'scenario-planning-v2' }
+        : null;
+    this.evaluatedDraftKey = this.evaluatedPayload ? this.draftKey() : '';
     this.hasSimulated = true;
     this.errorMessage = '';
     this.actionTone = 'info';
@@ -565,46 +592,72 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     if (!id || this.deletingScenarioId) return;
 
     this.deletingScenarioId = id;
-    this.apiService.deleteScenarioSimulation(id).subscribe({
-      next: () => {
-        this.scenarioHistory = this.scenarioHistory.filter((scenario) => scenario._id !== id);
-        this.historyCacheHit = false;
-        if (this.compareScenario?._id === id) this.compareScenario = null;
-        this.deletingScenarioId = '';
-        this.actionTone = 'success';
-        this.actionMessage = 'Scenario removed from history.';
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.deletingScenarioId = '';
-        this.actionTone = 'error';
-        this.actionMessage = this.normalizeError(error, 'Failed to delete scenario.');
-        this.cdr.markForCheck();
-      }
-    });
+    this.apiService
+      .deleteScenarioSimulation(id)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: () => {
+          this.scenarioHistory = this.scenarioHistory.filter((scenario) => scenario._id !== id);
+          this.historyCacheHit = false;
+          if (this.compareScenario?._id === id) this.compareScenario = null;
+          this.deletingScenarioId = '';
+          this.actionTone = 'success';
+          this.actionMessage = 'Scenario removed from history.';
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.deletingScenarioId = '';
+          this.actionTone = 'error';
+          this.actionMessage = this.normalizeError(error, 'Failed to delete scenario.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   createSprintDraft(): void {
-    if (!this.result || this.isCreatingSprint || this.validationError) return;
+    if (!this.result || !this.isResultCurrent || this.isCreatingSprint || this.validationError)
+      return;
 
     this.isCreatingSprint = true;
     this.actionMessage = '';
 
-    this.apiService.createSprintFromScenario(this.buildScenarioPayload()).subscribe({
-      next: (response) => {
-        this.isCreatingSprint = false;
-        this.actionTone = 'success';
-        const sprint = response?.sprint || {};
-        this.actionMessage = response?.message || `Scenario sprint updated: ${sprint.tasksCreated || 0} created, ${sprint.tasksMerged || 0} merged, ${sprint.tasksSkipped || 0} skipped.`;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.isCreatingSprint = false;
-        this.actionTone = 'error';
-        this.actionMessage = this.normalizeError(error, 'Failed to create a sprint from this scenario.');
-        this.cdr.markForCheck();
-      }
-    });
+    const payload = {
+      ...this.evaluatedPayload!,
+      name: this.scenarioName,
+      evaluation: this.result.evaluation,
+    };
+    this.apiService
+      .saveScenarioSimulation(payload)
+      .pipe(
+        switchMap((response) =>
+          this.apiService.createSprintFromScenario({
+            ...payload,
+            scenarioId: response.scenario._id,
+            mode: 'draft',
+          }),
+        ),
+        takeUntil(this.destroyed$),
+      )
+      .subscribe({
+        next: (response) => {
+          this.isCreatingSprint = false;
+          this.actionTone = 'success';
+          const sprint = response?.sprint || {};
+          this.actionMessage =
+            response?.message ||
+            `Scenario sprint updated: ${sprint.tasksCreated || 0} created, ${sprint.tasksMerged || 0} merged, ${sprint.tasksSkipped || 0} skipped.`;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isCreatingSprint = false;
+          this.actionTone = 'error';
+          this.actionMessage = this.normalizeError(
+            error,
+            'Failed to create a sprint from this scenario.',
+          );
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   barWidth(value: number): number {
@@ -616,17 +669,28 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   }
 
   tierColor(tier: string): string {
-    return { core: '#22c55e', valuable: '#60a5fa', transferable: '#f59e0b', low: '#ef4444' }[tier] || '#64748b';
+    return (
+      {
+        core: 'var(--sim-success-text)',
+        valuable: 'var(--color-info-text)',
+        transferable: 'var(--color-warning-text)',
+        low: 'var(--color-danger-text)',
+      }[tier] || 'var(--text-muted)'
+    );
   }
 
   tierLabel(tier: string): string {
-    return { core: 'Core', valuable: 'Valuable', transferable: 'Transferable', low: 'Low Relevance' }[tier] || tier;
+    return (
+      { core: 'Core', valuable: 'Valuable', transferable: 'Transferable', low: 'Low Relevance' }[
+        tier
+      ] || tier
+    );
   }
 
   scoreColor(score: number): string {
-    if (score >= 80) return '#22c55e';
-    if (score >= 60) return '#f59e0b';
-    return '#ef4444';
+    if (score >= 80) return 'var(--sim-success-text)';
+    if (score >= 60) return 'var(--color-warning-text)';
+    return 'var(--color-danger-text)';
   }
 
   deltaLabel(value: number): string {
@@ -634,9 +698,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   }
 
   formatRole(value: string): string {
-    return value === 'ai/ml'
-      ? 'AI / ML'
-      : value.replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return value === 'ai/ml' ? 'AI / ML' : value.replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
   formatDate(value: string | null | undefined): string {
@@ -644,7 +706,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     return new Date(value).toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 

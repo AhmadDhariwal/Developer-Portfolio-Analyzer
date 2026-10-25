@@ -1,0 +1,284 @@
+{
+  "date": "2026-10-25",
+  "scope": "Git-visible task-owned source, tests, documentation and essential verification artifacts",
+  "modified": [
+    {
+      "path": "backend/src/controllers/scenarioSimulatorController.js",
+      "bytes": 2546,
+      "sha256": "87a3e835b12027d691ae9d2d4534c553b9b7b4b085230d730f28164f9fcb0bbd"
+    },
+    {
+      "path": "backend/src/models/careerSprint.js",
+      "bytes": 7688,
+      "sha256": "ab08dc9d4d7dfb13b7475ac37e7477e490dcb1dbeba8ace030a760c1b67698d8"
+    },
+    {
+      "path": "backend/src/models/scenarioSimulation.js",
+      "bytes": 2727,
+      "sha256": "30f046515904bb1a159681e70937ded98cb801b4f5d759b0e76bacc583f24b3e"
+    },
+    {
+      "path": "backend/src/routes/scenarioSimulator.routes.js",
+      "bytes": 953,
+      "sha256": "074759956e7268ab38ef96ae7c4a82dc8a03a20d662caa05611af42abb05adca"
+    },
+    {
+      "path": "backend/src/services/careerSprintService.js",
+      "bytes": 42507,
+      "sha256": "28ddb50566888357829312106f2e0b87c1e191cc04c9a6b463276efdb1df0456"
+    },
+    {
+      "path": "backend/src/services/developerSignalService.js",
+      "bytes": 42795,
+      "sha256": "495a2a57e6f049481943041c128fdeb3161c7310bec24d01311a4ac1825bead5"
+    },
+    {
+      "path": "backend/src/services/scenarioSimulatorService.js",
+      "bytes": 8337,
+      "sha256": "c6c3c07b73df13e592ff650ffd86c294b7c25d5dae1ed720d8660592b6fb285c"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.html",
+      "bytes": 37119,
+      "sha256": "4ed7216120bacf33a320703d3e4276e2428252f891cad5a5c5e360df47d8e663"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.scss",
+      "bytes": 26385,
+      "sha256": "8c711d88397da22494e83b8d13717ed1b63b72ee50afe99fdfc82afe981460c6"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+      "bytes": 25155,
+      "sha256": "0537bda7394a5f89efe039d653b71953a8165d18f7f9211b2d882a031648bce6"
+    },
+    {
+      "path": "frontend/src/app/shared/services/api.service.ts",
+      "bytes": 36264,
+      "sha256": "6cff5253a02a3e255e6301615031b0c64336e95c84665f81ddc42eda75abe3f5"
+    }
+  ],
+  "added": [
+    {
+      "path": "DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md",
+      "bytes": 6031,
+      "sha256": "a12daab8b25db65e38e96d328e55d08bf271b2fceb0444c494883da884bc232d"
+    },
+    {
+      "path": "backend/src/middleware/scenarioSimulatorMiddleware.js",
+      "bytes": 2213,
+      "sha256": "4911d9872b7c7749d96772b53c311d000e3cb9d34a00aeba5c02a7a6134fb655"
+    },
+    {
+      "path": "backend/src/scripts/auditScenarioSimulationSnapshots.js",
+      "bytes": 1247,
+      "sha256": "847401ccfdeb2d5921035d4ff447418fd5cd8bdf326fddf1403bd9e5cb4d1e16"
+    },
+    {
+      "path": "backend/src/scripts/verifyScenarioSimulator.js",
+      "bytes": 13102,
+      "sha256": "151913fbfb8472bbd9d351d6e0099e61d956f819b1a31bed2d9e2498260c6cd1"
+    },
+    {
+      "path": "backend/src/services/scenarioContextService.js",
+      "bytes": 17194,
+      "sha256": "cb41ea185e1b12a5e436f23de73739dbe9a990e78da22da8d88081ad6f38ad27"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintAdapter.js",
+      "bytes": 2337,
+      "sha256": "dc921379ca10d17f1c8e5ff38064ae67f98efbbf996d210a2287bed3b4c00b96"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintExportService.js",
+      "bytes": 5581,
+      "sha256": "e304071ceee047c8262dff687ccebcd96af16fc360815721c77a457c384f18e3"
+    },
+    {
+      "path": "backend/src/services/scenarioTelemetryService.js",
+      "bytes": 763,
+      "sha256": "524df6bde5d357cebd2568d95b2549c92fc95b75f6de5c8d0b7c33ecacc88c5c"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningLegacy.js",
+      "bytes": 29773,
+      "sha256": "66ea92640197fea246c3b9beb41edeb6e10a0983317bd42def06f5b7335bf696"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningRules.js",
+      "bytes": 6239,
+      "sha256": "d1521c0ac7ee9a2501bb3a93505fbb6673a855f07647cf770cc5e8e67e734f28"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningScore.js",
+      "bytes": 8885,
+      "sha256": "e1b03b6d91596afd26df938d48143fb4182d13c70361893ffc9be457e1e6a154"
+    },
+    {
+      "path": "backend/src/tests/fixtures/scenario-legacy-golden.json",
+      "bytes": 88598,
+      "sha256": "8fba941c176bc1a1693c48c973045cf7f77ba52362712a1c85e4ae07a754d181"
+    },
+    {
+      "path": "backend/src/tests/fixtures/scenarioMongo.js",
+      "bytes": 2495,
+      "sha256": "71bde32753c78e73651ab9d2f409199e475053af2ec3b60f1b269f522570a051"
+    },
+    {
+      "path": "backend/src/tests/fixtures/scenarioWorker.js",
+      "bytes": 1513,
+      "sha256": "b4f700c428904d2030b5d861c7eb60afd5347aea330b0075214bc72d07c53ac6"
+    },
+    {
+      "path": "backend/src/tests/scenarioLegacyParity.test.js",
+      "bytes": 880,
+      "sha256": "ad4873dcfa30fd7d40c582ec7f8f5ed8da898d69d6ca3d8288340b985cf4cb42"
+    },
+    {
+      "path": "backend/src/tests/scenarioPlanningScore.test.js",
+      "bytes": 3141,
+      "sha256": "6bfd2ad59b2f23e1afa4d11db480827c551899f52bf70e701e3a0f0fcb714e29"
+    },
+    {
+      "path": "backend/src/tests/scenarioSimulatorCharacterization.test.js",
+      "bytes": 2006,
+      "sha256": "d3cb1cfc5f091ea29fd10ab648a11d3eac2a920a45f5d8f54412de50406a5cbd"
+    },
+    {
+      "path": "backend/src/tests/scenarioSimulatorContext.test.js",
+      "bytes": 3262,
+      "sha256": "01d517a61132997cc8e52c0addf44da79467673fd6dc1925e4d433f4fde044dc"
+    },
+    {
+      "path": "backend/src/tests/scenarioSimulatorMongo.integration.test.js",
+      "bytes": 4963,
+      "sha256": "ed481384df0f85f66b432122584a8fe51af99a0c462fbd499d3015826ca9cb31"
+    },
+    {
+      "path": "backend/src/tests/scenarioSimulatorReliability.test.js",
+      "bytes": 2929,
+      "sha256": "7ebcaa38c8cef30d7c6b0ddc0bf9c145003418b23d3c3cde7b4d5677d670fb0c"
+    },
+    {
+      "path": "backend/src/tests/scenarioSimulatorWorkers.integration.test.js",
+      "bytes": 4020,
+      "sha256": "a30ec5e004486e4c4fa22ef1dadd2333b2e2fef3e24c80c5361ebbd30b269620"
+    },
+    {
+      "path": "backend/src/tests/scenarioSprintExport.test.js",
+      "bytes": 4049,
+      "sha256": "d8fb48f81eb64a798c7e5b3a3e3737c85f75d155cf1baa2b8e35af3e4f292a45"
+    },
+    {
+      "path": "backend/src/utils/scenarioIdentity.js",
+      "bytes": 612,
+      "sha256": "8246fb212394404252ca26fb545ab5e88b58228102e3f0565a3ce7ccccaecb74"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/REPORT.md",
+      "bytes": 21838,
+      "sha256": "22b1660023ed2d18beaaf1c5a9e4eb3a101423cef293bafa7291b2b7aacdd276"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/backend-tests.txt",
+      "bytes": 19044,
+      "sha256": "08ea4fa68ecfa0b768d287c151c668fa24ad195871b98523069b2a891d809e29"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/browser-dark-375.png",
+      "bytes": 67696,
+      "sha256": "ece6e10c9e9fe64ea99706db973769269b725fba88faf77e2b4d3fa064e4a0f0"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/browser-light-1440.png",
+      "bytes": 178666,
+      "sha256": "4c14d040c5eb7fc2e3b6cc5402696340a6a9afb12081b1f7d94a0104ea658c49"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/burst-capacity-failure.json",
+      "bytes": 3687,
+      "sha256": "b03e01a0403f26f0594adbcbc19dfe78a28246b514359616c10759669da87d4e"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/export-latency-before-target-lookup.json",
+      "bytes": 3354,
+      "sha256": "1506de67877027bab7905309ef237483241b098dfbacb6cd840973183f8b60b3"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/final-context-mongo-tests.txt",
+      "bytes": 227,
+      "sha256": "c0867ace4d787fde5003b95cf0a0d0aca92568a38fd2f807973d5805274974a5"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/final-context-tests.txt",
+      "bytes": 485,
+      "sha256": "c7dca75e6874ff7d42dbb6a35466abef48bd6b06d474d28ad678040adffbcc7d"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/final-export-tests.txt",
+      "bytes": 1343,
+      "sha256": "712e11e1b9b9145d542f504f99c91e60ded85fe913eb0a0cdb1564fdc7636adf"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/final-persistence-tests.txt",
+      "bytes": 1724,
+      "sha256": "b95499ddd49c8851f59d57a10c32f2bd2349817547e2b10aa4a0726a4b1c7c81"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/frontend-build.txt",
+      "bytes": 1524,
+      "sha256": "3f89c645740b05a691c72c5eb417acd2c311cf907e41c79747954f9823959d57"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/frontend-focused.txt",
+      "bytes": 2049,
+      "sha256": "6f8bb4a48aa71774a89500751b78d986b4462c27f92471605ca1ed4608b56a23"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/history-index-experiment.json",
+      "bytes": 316,
+      "sha256": "73d423f6a5c646fc23b8ad0412651959c1c15047e45d20ccf16b342c8fbe9963"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/integrated-results.json",
+      "bytes": 3376,
+      "sha256": "caac08e6ae20be58eddbd7ef58b8f612276dfe73d02fe80f89240c48db962877"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/validation.json",
+      "bytes": 3435,
+      "sha256": "231e21f04ebeb190cc4c5cf5c92cd2a6d03c2612f5b2d662da62737476520284"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.spec.ts",
+      "bytes": 2545,
+      "sha256": "bb1891b5981c2cce7a8443b65610b2fb655ee218ae28753f2296f6af9314cf9d"
+    },
+    {
+      "path": "frontend/src/app/shared/models/scenario-simulator.model.ts",
+      "bytes": 4253,
+      "sha256": "b31fe09cf06e07784877cd3adaf4900ccc317542d81b31e4cfd3999eed113fa6"
+    },
+    {
+      "path": "frontend/src/app/shared/services/scenario-simulator.service.spec.ts",
+      "bytes": 2318,
+      "sha256": "9cab6df3cb282b6ac1751bb714656fe8fcedec0becb01acb9cb1e355d345e4b4"
+    },
+    {
+      "path": "frontend/src/app/shared/services/scenario-simulator.service.ts",
+      "bytes": 2332,
+      "sha256": "ec146a5c0ea45c466a3b1a7718eb9e74c9b3fd12db90038d90a3ba5f36afa277"
+    }
+  ],
+  "manifest": "backend/verification/scenario-simulator/file-inventory.json",
+  "preservedExistingUntracked": [
+    {
+      "path": "SCENARIO-SIMULATOR-ARCHITECTURE-REVIEW.md",
+      "sha256": "6bd026aa024e92b7368981cfba399c100fc0ecf12dc468fa49c981e1a9a1b5c2"
+    }
+  ],
+  "moved": [],
+  "deleted": [],
+  "retainedIgnoredBuildOutput": "frontend/dist/frontend",
+  "temporaryFixtureCleanup": "Owned mongod processes stopped and containment-checked temporary database directories removed by fixture teardown."
+}

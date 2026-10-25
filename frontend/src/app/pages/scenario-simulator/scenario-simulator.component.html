@@ -5,8 +5,8 @@
       <h1>Scenario Simulator</h1>
       <p>
         Model realistic what-if plans before you commit time. The deterministic engine estimates
-        hiring score lift, job match change, confidence, and overload risk without touching your
-        real profile.
+        hypothetical planning changes, heuristic feasibility, and overload risk without touching
+        your real profile.
       </p>
     </div>
 
@@ -14,7 +14,12 @@
       <button class="ghost-btn" type="button" (click)="showInfoPanel = !showInfoPanel">
         {{ showInfoPanel ? 'Hide Assumptions Guide' : 'How the Simulator Works' }}
       </button>
-      <button class="ghost-btn" type="button" (click)="loadBootstrapData(true)" [disabled]="isLoadingContext || isLoadingHistory">
+      <button
+        class="ghost-btn"
+        type="button"
+        (click)="loadBootstrapData(true)"
+        [disabled]="isLoadingContext || isLoadingHistory"
+      >
         {{ isLoadingContext || isLoadingHistory ? 'Refreshing...' : 'Force Refresh' }}
       </button>
     </div>
@@ -25,7 +30,7 @@
       <article class="info-card">
         <h3>What this sandbox does</h3>
         <p>
-          It predicts how planned skills and projects can move your hiring score and job match,
+          It compares hypothetical skill and project plans using explicit baseline assumptions,
           while keeping the math explainable and constrained by time, complexity, and role fit.
         </p>
       </article>
@@ -33,10 +38,12 @@
       <article class="info-card">
         <h3>How the scoring works</h3>
         <ul>
-          <li>Skills are weighted by role relevance, difficulty, demand, and your experience level.</li>
+          <li>
+            Skills are weighted by role relevance, difficulty, demand, and your experience level.
+          </li>
           <li>Projects gain credit from complexity, duration, and delivery impact.</li>
           <li>Aligned skills and projects earn a synergy bonus.</li>
-          <li>Overloaded plans are penalized so predictions stay realistic.</li>
+          <li>Overloaded plans receive heuristic penalties; outcomes are not guaranteed.</li>
         </ul>
       </article>
 
@@ -44,8 +51,8 @@
         <h3>How prefills are used</h3>
         <p>
           Signals from GitHub, Resume Analyzer, Skill Gap, Recommendations, Career Sprint,
-          Portfolio, and Integrations are used only for suggestions. They never overwrite your
-          real scores or profile.
+          Portfolio, and Integrations are used only for suggestions. They never overwrite your real
+          scores or profile.
         </p>
       </article>
 
@@ -54,17 +61,29 @@
         <ul>
           <li>Keep scenarios focused to 2-4 important skills.</li>
           <li>Pair one strong project with the skills you want employers to notice.</li>
-          <li>Use the confidence and uncertainty range before committing to an aggressive plan.</li>
+          <li>
+            Review the uncalibrated feasibility and sensitivity band before committing to an
+            aggressive plan.
+          </li>
         </ul>
       </article>
     </div>
   </section>
 
-  <section class="message-strip" *ngIf="contextError || actionMessage">
+  <p class="message-card warning" *ngIf="historyError">{{ historyError }}</p>
+  <p class="message-card warning" *ngIf="context?.degraded">
+    Some sources are unavailable. Available observations are retained.
+  </p>
+  <section class="message-strip" *ngIf="contextError || historyError || actionMessage">
     <div class="message-card warning" *ngIf="contextError">
       {{ contextError }}
     </div>
-    <div class="message-card" [class.success]="actionTone === 'success'" [class.error]="actionTone === 'error'" *ngIf="actionMessage">
+    <div
+      class="message-card"
+      [class.success]="actionTone === 'success'"
+      [class.error]="actionTone === 'error'"
+      *ngIf="actionMessage"
+    >
       {{ actionMessage }}
     </div>
   </section>
@@ -77,7 +96,16 @@
             <span class="section-kicker">Signals</span>
             <h2>Scenario Prefill Context</h2>
           </div>
-          <div class="section-status"><span class="loading-chip">{{ contextCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileContext = !showMobileContext">{{ showMobileContext ? 'Collapse' : 'Expand' }}</button></div>
+          <div class="section-status">
+            <span class="loading-chip">{{ contextCacheLabel }}</span
+            ><button
+              class="mobile-toggle"
+              type="button"
+              (click)="showMobileContext = !showMobileContext"
+            >
+              {{ showMobileContext ? 'Collapse' : 'Expand' }}
+            </button>
+          </div>
         </div>
 
         <div class="context-summary" *ngIf="context as ctx; else contextSkeleton">
@@ -92,7 +120,7 @@
               <strong>{{ ctx.profile.experienceLevel }}</strong>
             </div>
             <div class="mini-stat">
-              <span class="mini-label">Known Skills</span>
+              <span class="mini-label">Recorded skill terms</span>
               <strong>{{ ctx.signals.knownSkills.length }}</strong>
             </div>
             <div class="mini-stat">
@@ -113,7 +141,12 @@
         <div class="signal-group" *ngIf="context?.signals?.missingSkills?.length">
           <span class="signal-label">Top missing skills</span>
           <div class="signal-chips">
-            <button type="button" class="signal-chip" *ngFor="let skill of context?.signals?.missingSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
+            <button
+              type="button"
+              class="signal-chip"
+              *ngFor="let skill of context?.signals?.missingSkills; trackBy: trackBySkill"
+              (click)="addSuggestedSkill(skill)"
+            >
               {{ skill }}
             </button>
           </div>
@@ -122,7 +155,12 @@
         <div class="signal-group" *ngIf="context?.signals?.topDemandedSkills?.length">
           <span class="signal-label">Top demanded skills</span>
           <div class="signal-chips">
-            <button type="button" class="signal-chip market" *ngFor="let skill of context?.signals?.topDemandedSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
+            <button
+              type="button"
+              class="signal-chip market"
+              *ngFor="let skill of context?.signals?.topDemandedSkills; trackBy: trackBySkill"
+              (click)="addSuggestedSkill(skill)"
+            >
               {{ skill }}
             </button>
           </div>
@@ -131,16 +169,26 @@
         <div class="signal-group" *ngIf="context?.suggestedInputs?.projects?.length">
           <span class="signal-label">Suggested projects</span>
           <div class="signal-chips">
-            <button type="button" class="signal-chip accent" *ngFor="let project of context?.suggestedInputs?.projects; trackBy: trackByProject" (click)="addSuggestedProject(project)">
+            <button
+              type="button"
+              class="signal-chip accent"
+              *ngFor="let project of context?.suggestedInputs?.projects; trackBy: trackByProject"
+              (click)="addSuggestedProject(project)"
+            >
               {{ project.name }}
             </button>
           </div>
         </div>
 
         <div class="source-strip" *ngIf="context?.sources?.length">
-          <div class="source-pill" *ngFor="let source of context?.sources; trackBy: trackBySource" [class.connected]="source.connected">
+          <div
+            class="source-pill"
+            *ngFor="let source of context?.sources; trackBy: trackBySource"
+            [class.connected]="source.connected"
+          >
             <span class="dot"></span>
-            <span>{{ source.label }}</span><small>{{ source.connected ? 'Connected' : 'Disconnected' }}</small>
+            <span>{{ source.label }}</span
+            ><small>{{ source.status || (source.connected ? 'Available' : 'Missing') }}</small>
           </div>
         </div>
       </section>
@@ -154,7 +202,12 @@
         </div>
 
         <div class="template-grid">
-          <button class="template-card" type="button" *ngFor="let template of templates" (click)="applyTemplate(template)">
+          <button
+            class="template-card"
+            type="button"
+            *ngFor="let template of templates"
+            (click)="applyTemplate(template)"
+          >
             <strong>{{ template.label }}</strong>
             <span>{{ template.description }}</span>
           </button>
@@ -171,47 +224,83 @@
 
         <div class="field-group full">
           <label for="scenarioName">Scenario Name <span>optional</span></label>
-          <input id="scenarioName" type="text" [(ngModel)]="scenarioName" placeholder="e.g. Backend ramp-up before interviews" />
+          <input
+            id="scenarioName"
+            type="text"
+            [(ngModel)]="scenarioName"
+            placeholder="e.g. Backend ramp-up before interviews"
+          />
         </div>
 
         <div class="two-col">
           <div class="field-group">
             <label for="targetRole">Target Role</label>
             <select id="targetRole" [(ngModel)]="role">
-              <option *ngFor="let item of roleOptions" [value]="item.value">{{ item.label }}</option>
+              <option *ngFor="let item of roleOptions" [value]="item.value">
+                {{ item.label }}
+              </option>
             </select>
           </div>
 
           <div class="field-group">
             <label for="experienceLevel">Experience Level</label>
             <select id="experienceLevel" [(ngModel)]="experienceLevel">
-              <option *ngFor="let item of levelOptions" [value]="item.value">{{ item.label }}</option>
+              <option *ngFor="let item of levelOptions" [value]="item.value">
+                {{ item.label }}
+              </option>
             </select>
           </div>
         </div>
 
         <div class="two-col">
           <div class="field-group">
-            <label for="baselineHiring">Current Hiring Score</label>
+            <label for="baselineHiring">Planning baseline assumption</label>
             <div class="score-input-wrap">
-              <input id="baselineHiring" type="number" min="0" max="100" [(ngModel)]="baselineHiringScore" />
+              <input
+                id="baselineHiring"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="baselineHiringScore"
+              />
               <span class="score-suffix">/100</span>
             </div>
           </div>
 
           <div class="field-group">
-            <label for="baselineMatch">Current Job Match</label>
+            <label for="baselineMatch">Role baseline assumption</label>
             <div class="score-input-wrap">
-              <input id="baselineMatch" type="number" min="0" max="100" [(ngModel)]="baselineJobMatch" />
+              <input
+                id="baselineMatch"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="baselineJobMatch"
+              />
               <span class="score-suffix">/100</span>
             </div>
           </div>
         </div>
 
         <div class="field-group full">
+          <label
+            ><input type="checkbox" [(ngModel)]="baselineConfirmed" /> I confirm these values are
+            planning assumptions, not measured hiring probabilities.</label
+          >
+          <p>
+            Source observations inform suggestions. Learning and saved plans do not demonstrate
+            proficiency.
+          </p>
+        </div>
+        <div class="field-group full">
           <label>Plan Duration</label>
           <div class="duration-pills">
-            <button type="button" *ngFor="let weeks of durationOptions" [class.active]="durationWeeks === weeks" (click)="durationWeeks = weeks">
+            <button
+              type="button"
+              *ngFor="let weeks of durationOptions"
+              [class.active]="durationWeeks === weeks"
+              (click)="durationWeeks = weeks"
+            >
               {{ weeks }} weeks
             </button>
           </div>
@@ -234,9 +323,15 @@
           </p>
           <div class="planner-examples">
             <span>Examples:</span>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('React')">React</button>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('Docker')">Docker</button>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('System Design')">System Design</button>
+            <button type="button" class="mini-example" (click)="addSuggestedSkill('React')">
+              React
+            </button>
+            <button type="button" class="mini-example" (click)="addSuggestedSkill('Docker')">
+              Docker
+            </button>
+            <button type="button" class="mini-example" (click)="addSuggestedSkill('System Design')">
+              System Design
+            </button>
           </div>
         </div>
 
@@ -258,7 +353,9 @@
         </div>
 
         <ng-template #skillHint>
-          <p class="hint">Start with 2 to 4 skills that directly support the target role you selected above.</p>
+          <p class="hint">
+            Start with 2 to 4 skills that directly support the target role you selected above.
+          </p>
         </ng-template>
       </section>
 
@@ -287,7 +384,10 @@
         </div>
 
         <div class="project-cards">
-          <article class="project-card" *ngFor="let project of projects; let index = index; trackBy: trackByProjectInput">
+          <article
+            class="project-card"
+            *ngFor="let project of projects; let index = index; trackBy: trackByProjectInput"
+          >
             <div class="project-card-title">
               <strong>Project {{ index + 1 }}</strong>
               <span>Describe one project that would genuinely strengthen this scenario.</span>
@@ -298,9 +398,19 @@
                 type="text"
                 class="project-name"
                 [(ngModel)]="project.name"
-                [placeholder]="'Project ' + (index + 1) + ' title, e.g. Multi-tenant Admin Dashboard'"
+                [placeholder]="
+                  'Project ' + (index + 1) + ' title, e.g. Multi-tenant Admin Dashboard'
+                "
               />
-              <button type="button" class="remove-btn" (click)="removeProject(index)" aria-label="Remove project" *ngIf="projects.length > 1">×</button>
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeProject(index)"
+                aria-label="Remove project"
+                *ngIf="projects.length > 1"
+              >
+                ×
+              </button>
             </div>
 
             <div class="project-fields">
@@ -315,23 +425,42 @@
 
               <div class="field-group">
                 <label>Weeks</label>
-                <input type="number" min="1" max="24" [(ngModel)]="project.weeks" placeholder="e.g. 4" />
+                <input
+                  type="number"
+                  min="1"
+                  max="24"
+                  [(ngModel)]="project.weeks"
+                  placeholder="e.g. 4"
+                />
               </div>
 
               <div class="field-group">
                 <label>Impact</label>
-                <input type="number" min="0" max="100" [(ngModel)]="project.impact" placeholder="e.g. 80" />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  [(ngModel)]="project.impact"
+                  placeholder="e.g. 80"
+                />
               </div>
             </div>
 
             <div class="project-field-help">
               <span><strong>Complexity:</strong> how technically deep the build is</span>
               <span><strong>Weeks:</strong> realistic time you can spend on it</span>
-              <span><strong>Impact:</strong> how impressive it would be to a recruiter or hiring manager</span>
+              <span
+                ><strong>Impact:</strong> how impressive it would be to a recruiter or hiring
+                manager</span
+              >
             </div>
 
             <div class="impact-bar-wrap">
-              <div class="impact-bar" [style.width.%]="project.impact" [style.background]="scoreColor(project.impact)"></div>
+              <div
+                class="impact-bar"
+                [style.width.%]="project.impact"
+                [style.background]="scoreColor(project.impact)"
+              ></div>
             </div>
           </article>
         </div>
@@ -343,11 +472,24 @@
             <span class="section-kicker">History</span>
             <h2>Saved Scenarios</h2>
           </div>
-          <div class="section-status"><span class="loading-chip">{{ historyCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileHistory = !showMobileHistory">{{ showMobileHistory ? 'Collapse' : 'Expand' }}</button></div>
+          <div class="section-status">
+            <span class="loading-chip">{{ historyCacheLabel }}</span
+            ><button
+              class="mobile-toggle"
+              type="button"
+              (click)="showMobileHistory = !showMobileHistory"
+            >
+              {{ showMobileHistory ? 'Collapse' : 'Expand' }}
+            </button>
+          </div>
         </div>
 
         <div class="history-list" *ngIf="scenarioHistory.length; else historyEmpty">
-          <article class="history-card" *ngFor="let scenario of scenarioHistory; trackBy: trackByHistory" [class.is-compare]="compareScenario?._id === scenario._id">
+          <article
+            class="history-card"
+            *ngFor="let scenario of scenarioHistory; trackBy: trackByHistory"
+            [class.is-compare]="compareScenario?._id === scenario._id"
+          >
             <div class="history-main">
               <div>
                 <strong>{{ scenario.name }}</strong>
@@ -355,15 +497,17 @@
               </div>
               <div class="history-scores">
                 <span>{{ scenario.predicted.hiringScore }}/100</span>
-                <small>Hiring</small>
+                <small>Planning</small>
               </div>
             </div>
 
             <div class="history-meta">
               <span>{{ formatRole(scenario.role) }}</span>
               <span>{{ scenario.durationWeeks }}w</span>
-              <span>{{ scenario.confidenceScore || scenario.result.confidenceScore }}% confidence</span>
-              <span *ngIf="scenario.scenarioHash">Hash {{ scenario.scenarioHash.slice(0, 8) }}</span>
+              <span>{{ scenario.confidenceScore }} / 100 heuristic</span>
+              <span *ngIf="scenario.scenarioHash"
+                >Hash {{ scenario.scenarioHash.slice(0, 8) }}</span
+              >
             </div>
 
             <div class="history-actions">
@@ -371,13 +515,26 @@
               <button type="button" (click)="compareWithScenario(scenario)">
                 {{ compareScenario?._id === scenario._id ? 'Close Compare' : 'Compare' }}
               </button>
-              <button type="button" class="danger" (click)="deleteScenario(scenario._id)" [disabled]="deletingScenarioId === scenario._id">
+              <button
+                type="button"
+                class="danger"
+                (click)="deleteScenario(scenario._id)"
+                [disabled]="deletingScenarioId === scenario._id"
+              >
                 {{ deletingScenarioId === scenario._id ? 'Deleting...' : 'Delete' }}
               </button>
             </div>
           </article>
         </div>
 
+        <button
+          *ngIf="nextHistoryCursor"
+          type="button"
+          (click)="loadMoreHistory()"
+          [disabled]="isLoadingHistory"
+        >
+          Load older evaluations
+        </button>
         <ng-template #historyEmpty>
           <div class="history-empty">
             <p>No saved scenarios yet. Run a simulation and save the best plan to compare later.</p>
@@ -390,12 +547,26 @@
           {{ errorMessage }}
         </div>
 
+        <p *ngIf="result && !isResultCurrent">
+          This draft differs from the displayed evaluation, or uses legacy rules. Run it again
+          before saving or exporting.
+        </p>
         <div class="action-row">
-          <button class="secondary-btn" type="button" (click)="saveScenario()" [disabled]="!result || isSavingScenario || !!validationError">
+          <button
+            class="secondary-btn"
+            type="button"
+            (click)="saveScenario()"
+            [disabled]="!isResultCurrent || isSavingScenario || !!validationError"
+          >
             {{ isSavingScenario ? 'Saving...' : 'Save Scenario' }}
           </button>
 
-          <button class="run-btn" type="button" (click)="simulate()" [disabled]="isRunning || !!validationError">
+          <button
+            class="run-btn"
+            type="button"
+            (click)="simulate()"
+            [disabled]="isRunning || !!validationError"
+          >
             {{ isRunning ? 'Running Simulation...' : 'Run Simulation' }}
           </button>
         </div>
@@ -405,10 +576,11 @@
     <div class="panel result-panel">
       <div class="result-empty" *ngIf="!hasSimulated && !isRunning">
         <div class="empty-badge">What-if sandbox</div>
-        <h2>Build a scenario to see how your plan changes hiring outcomes</h2>
+        <h2>Build a scenario to compare hypothetical planning changes</h2>
         <p>
-          Use the left panel to combine role-aware skills, projects, and a realistic timeline.
-          You will get a deterministic prediction with confidence and uncertainty.
+          Use the left panel to combine role-aware skills, projects, and a realistic timeline. You
+          will get a hypothetical planning estimate. Sensitivity bands are heuristics, not
+          statistical predictions.
         </p>
       </div>
 
@@ -423,32 +595,42 @@
       <ng-container *ngIf="result && !isRunning">
         <section class="result-top-grid">
           <article class="metric-card gradient-violet">
-            <span class="metric-label">Estimated Hiring Score</span>
+            <span class="metric-label">Hypothetical planning score</span>
             <div class="metric-values">
               <span class="metric-before">{{ result.baseline.hiringScore }}</span>
               <span class="metric-arrow" aria-hidden="true">&rarr;</span>
-              <strong [style.color]="scoreColor(result.predicted.hiringScore)">{{ result.predicted.hiringScore }}</strong>
+              <strong [style.color]="scoreColor(result.predicted.hiringScore)">{{
+                result.predicted.hiringScore
+              }}</strong>
             </div>
             <span class="metric-delta">{{ deltaLabel(result.improvements.hiringScore) }} pts</span>
           </article>
 
           <article class="metric-card gradient-blue">
-            <span class="metric-label">Estimated Job Match</span>
+            <span class="metric-label">Hypothetical role index</span>
             <div class="metric-values">
-              <span class="metric-before">{{ result.baseline.jobMatch }}%</span>
+              <span class="metric-before">{{ result.baseline.jobMatch }} / 100</span>
               <span class="metric-arrow" aria-hidden="true">&rarr;</span>
-              <strong [style.color]="scoreColor(result.predicted.jobMatch)">{{ result.predicted.jobMatch }}%</strong>
+              <strong [style.color]="scoreColor(result.predicted.jobMatch)"
+                >{{ result.predicted.jobMatch }} / 100</strong
+              >
             </div>
-            <span class="metric-delta">{{ deltaLabel(result.improvements.jobMatch) }}%</span>
+            <span class="metric-delta">{{ deltaLabel(result.improvements.jobMatch) }} pts</span>
           </article>
 
           <article class="metric-card gradient-green">
-            <span class="metric-label">Confidence</span>
+            <span class="metric-label">Feasibility heuristic</span>
             <div class="metric-values single">
-              <strong>{{ result.confidenceScore }}%</strong>
+              <strong>{{ result.confidenceScore }} / 100</strong>
             </div>
             <span class="metric-delta">
-              {{ result.confidenceScore >= 80 ? 'High confidence' : result.confidenceScore >= 60 ? 'Moderate confidence' : 'Lower confidence' }}
+              {{
+                result.confidenceScore >= 80
+                  ? 'Higher feasibility'
+                  : result.confidenceScore >= 60
+                    ? 'Moderate feasibility'
+                    : 'Lower feasibility'
+              }}
             </span>
           </article>
 
@@ -464,7 +646,7 @@
         <section class="result-split-grid">
           <article class="card-block">
             <div class="block-head">
-              <h3>Confidence Reason</h3>
+              <h3>Feasibility explanation</h3>
               <span class="block-tag">Scenario {{ result.scenarioHash.slice(0, 8) }}</span>
             </div>
 
@@ -502,27 +684,57 @@
         <section class="result-split-grid">
           <article class="card-block">
             <div class="block-head">
-              <h3>Uncertainty Range</h3>
+              <h3>Heuristic sensitivity band</h3>
               <span class="block-tag">Expected vs possible range</span>
             </div>
 
             <div class="range-list">
               <div class="range-row">
-                <span>Hiring Score</span>
+                <span>Planning score</span>
                 <div class="range-bar-track">
-                  <div class="range-bar-window" [style.left.%]="result.uncertaintyRange.low.hiringScore" [style.width.%]="rangeWidth(result.uncertaintyRange.low.hiringScore, result.uncertaintyRange.high.hiringScore)"></div>
-                  <div class="range-bar-expected" [style.left.%]="result.uncertaintyRange.expected.hiringScore"></div>
+                  <div
+                    class="range-bar-window"
+                    [style.left.%]="result.uncertaintyRange.low.hiringScore"
+                    [style.width.%]="
+                      rangeWidth(
+                        result.uncertaintyRange.low.hiringScore,
+                        result.uncertaintyRange.high.hiringScore
+                      )
+                    "
+                  ></div>
+                  <div
+                    class="range-bar-expected"
+                    [style.left.%]="result.uncertaintyRange.expected.hiringScore"
+                  ></div>
                 </div>
-                <strong>{{ result.uncertaintyRange.low.hiringScore }} - {{ result.uncertaintyRange.high.hiringScore }}</strong>
+                <strong
+                  >{{ result.uncertaintyRange.low.hiringScore }} -
+                  {{ result.uncertaintyRange.high.hiringScore }}</strong
+                >
               </div>
 
               <div class="range-row">
-                <span>Job Match</span>
+                <span>Role index</span>
                 <div class="range-bar-track">
-                  <div class="range-bar-window blue" [style.left.%]="result.uncertaintyRange.low.jobMatch" [style.width.%]="rangeWidth(result.uncertaintyRange.low.jobMatch, result.uncertaintyRange.high.jobMatch)"></div>
-                  <div class="range-bar-expected blue" [style.left.%]="result.uncertaintyRange.expected.jobMatch"></div>
+                  <div
+                    class="range-bar-window blue"
+                    [style.left.%]="result.uncertaintyRange.low.jobMatch"
+                    [style.width.%]="
+                      rangeWidth(
+                        result.uncertaintyRange.low.jobMatch,
+                        result.uncertaintyRange.high.jobMatch
+                      )
+                    "
+                  ></div>
+                  <div
+                    class="range-bar-expected blue"
+                    [style.left.%]="result.uncertaintyRange.expected.jobMatch"
+                  ></div>
                 </div>
-                <strong>{{ result.uncertaintyRange.low.jobMatch }} - {{ result.uncertaintyRange.high.jobMatch }}%</strong>
+                <strong
+                  >{{ result.uncertaintyRange.low.jobMatch }} -
+                  {{ result.uncertaintyRange.high.jobMatch }} / 100</strong
+                >
               </div>
             </div>
           </article>
@@ -530,31 +742,41 @@
           <article class="card-block compare-block" *ngIf="compareScenario as scenario">
             <div class="block-head">
               <h3>Scenario Comparison</h3>
-              <button type="button" class="ghost-inline-btn" (click)="compareScenario = null">Close</button>
+              <button type="button" class="ghost-inline-btn" (click)="compareScenario = null">
+                Close
+              </button>
             </div>
 
+            <p>
+              Compare assumptions and rule versions before interpreting differences. Historical
+              results are preserved.
+            </p>
             <div class="compare-summary">
               <div>
                 <span class="compare-label">Current scenario</span>
                 <strong>{{ result.predicted.hiringScore }}/100 hiring</strong>
-                <small>{{ result.predicted.jobMatch }}% job match</small>
+                <small>{{ result.predicted.jobMatch }} / 100 job match</small>
               </div>
 
               <div>
                 <span class="compare-label">{{ scenario.name }}</span>
                 <strong>{{ scenario.result.predicted.hiringScore }}/100 hiring</strong>
-                <small>{{ scenario.result.predicted.jobMatch }}% job match</small>
+                <small>{{ scenario.result.predicted.jobMatch }} / 100 job match</small>
               </div>
             </div>
 
             <div class="compare-deltas">
               <div>
-                <span>Hiring difference</span>
-                <strong>{{ deltaLabel(result.predicted.hiringScore - scenario.result.predicted.hiringScore) }}</strong>
+                <span>Planning difference</span>
+                <strong>{{
+                  deltaLabel(result.predicted.hiringScore - scenario.result.predicted.hiringScore)
+                }}</strong>
               </div>
               <div>
                 <span>Job match difference</span>
-                <strong>{{ deltaLabel(result.predicted.jobMatch - scenario.result.predicted.jobMatch) }}</strong>
+                <strong>{{
+                  deltaLabel(result.predicted.jobMatch - scenario.result.predicted.jobMatch)
+                }}</strong>
               </div>
             </div>
           </article>
@@ -570,23 +792,38 @@
             <div class="score-visuals">
               <div class="score-visual">
                 <div class="score-visual-meta">
-                  <span>Hiring Score</span>
-                  <strong>{{ result.baseline.hiringScore }} → {{ result.predicted.hiringScore }}</strong>
+                  <span>Planning score</span>
+                  <strong
+                    >{{ result.baseline.hiringScore }} → {{ result.predicted.hiringScore }}</strong
+                  >
                 </div>
                 <div class="score-track">
-                  <div class="score-fill before" [style.width.%]="result.baseline.hiringScore"></div>
-                  <div class="score-fill after" [style.width.%]="result.predicted.hiringScore" [style.background]="scoreColor(result.predicted.hiringScore)"></div>
+                  <div
+                    class="score-fill before"
+                    [style.width.%]="result.baseline.hiringScore"
+                  ></div>
+                  <div
+                    class="score-fill after"
+                    [style.width.%]="result.predicted.hiringScore"
+                    [style.background]="scoreColor(result.predicted.hiringScore)"
+                  ></div>
                 </div>
               </div>
 
               <div class="score-visual">
                 <div class="score-visual-meta">
-                  <span>Job Match</span>
-                  <strong>{{ result.baseline.jobMatch }}% → {{ result.predicted.jobMatch }}%</strong>
+                  <span>Role index</span>
+                  <strong
+                    >{{ result.baseline.jobMatch }} / 100 → {{ result.predicted.jobMatch }} /
+                    100</strong
+                  >
                 </div>
                 <div class="score-track">
                   <div class="score-fill before" [style.width.%]="result.baseline.jobMatch"></div>
-                  <div class="score-fill after blue" [style.width.%]="result.predicted.jobMatch"></div>
+                  <div
+                    class="score-fill after blue"
+                    [style.width.%]="result.predicted.jobMatch"
+                  ></div>
                 </div>
               </div>
             </div>
@@ -602,9 +839,16 @@
               <div class="breakdown-row" *ngFor="let row of breakdownRows">
                 <span class="breakdown-label">{{ row.label }}</span>
                 <div class="breakdown-bar-wrap">
-                  <div class="breakdown-bar" [class.negative]="row.value < 0" [style.width.%]="barWidth(row.value)" [style.background]="row.color"></div>
+                  <div
+                    class="breakdown-bar"
+                    [class.negative]="row.value < 0"
+                    [style.width.%]="barWidth(row.value)"
+                    [style.background]="row.color"
+                  ></div>
                 </div>
-                <strong [style.color]="row.color">{{ row.value >= 0 ? '+' : '' }}{{ row.value }}</strong>
+                <strong [style.color]="row.color"
+                  >{{ row.value >= 0 ? '+' : '' }}{{ row.value }}</strong
+                >
               </div>
             </div>
 
@@ -626,14 +870,15 @@
               <div class="impact-item" *ngFor="let detail of result.skillDetails">
                 <div class="impact-copy">
                   <strong>{{ detail.skill }}</strong>
-                  <span [style.color]="tierColor(detail.tier)">{{ tierLabel(detail.tier) }} · Demand {{ detail.demand }}x</span>
+                  <span [style.color]="tierColor(detail.tier)"
+                    >{{ tierLabel(detail.tier) }} · Demand {{ detail.demand }}x</span
+                  >
                 </div>
                 <div class="impact-points">
                   <strong>+{{ detail.pts }}</strong>
                 </div>
               </div>
             </div>
-
           </article>
 
           <article class="card-block" *ngIf="result.projectDetails.length">
@@ -646,14 +891,16 @@
               <div class="impact-item" *ngFor="let detail of result.projectDetails">
                 <div class="impact-copy">
                   <strong>{{ detail.name }}</strong>
-                  <span>{{ detail.complexity | titlecase }} complexity · {{ detail.weeks }} weeks · impact {{ detail.impact }}/100</span>
+                  <span
+                    >{{ detail.complexity | titlecase }} complexity · {{ detail.weeks }} weeks ·
+                    impact {{ detail.impact }}/100</span
+                  >
                 </div>
                 <div class="impact-points">
                   <strong>+{{ detail.pts }}</strong>
                 </div>
               </div>
             </div>
-
           </article>
         </section>
 
@@ -680,9 +927,18 @@
             </ul>
 
             <div class="meta-row">
-              <span>Role <strong>{{ formatRole(result.meta.role) }}</strong></span>
-              <span>Level <strong>{{ result.meta.level | titlecase }}</strong></span>
-              <span>Effort <strong>{{ result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1' }}</strong></span>
+              <span
+                >Role <strong>{{ formatRole(result.meta.role) }}</strong></span
+              >
+              <span
+                >Level <strong>{{ result.meta.level | titlecase }}</strong></span
+              >
+              <span
+                >Effort
+                <strong>{{
+                  result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1'
+                }}</strong></span
+              >
             </div>
           </article>
         </section>
@@ -729,11 +985,24 @@
         </section>
 
         <section class="result-actions">
-          <button class="secondary-btn" type="button" (click)="saveScenario()" [disabled]="isSavingScenario">
+          <p>
+            This creates a reviewable draft. It does not complete tasks or demonstrate proficiency.
+          </p>
+          <button
+            class="secondary-btn"
+            type="button"
+            (click)="saveScenario()"
+            [disabled]="!isResultCurrent || isSavingScenario"
+          >
             {{ isSavingScenario ? 'Saving...' : 'Save This Scenario' }}
           </button>
-          <button class="run-btn" type="button" (click)="createSprintDraft()" [disabled]="isCreatingSprint">
-            {{ isCreatingSprint ? 'Sending to Career Sprint...' : 'Create Sprint From Scenario' }}
+          <button
+            class="run-btn"
+            type="button"
+            (click)="createSprintDraft()"
+            [disabled]="!isResultCurrent || isCreatingSprint"
+          >
+            {{ isCreatingSprint ? 'Sending to Career Sprint...' : 'Create Sprint Draft' }}
           </button>
         </section>
       </ng-container>
