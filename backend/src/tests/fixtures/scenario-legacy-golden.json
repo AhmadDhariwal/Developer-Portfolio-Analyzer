@@ -1,0 +1,3968 @@
+[
+  {
+    "payload": {
+      "baselineHiringScore": 2.040268573909998,
+      "baselineJobMatch": 1.6547848237678409,
+      "role": "frontend",
+      "experienceLevel": "junior",
+      "durationWeeks": 14,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 11,
+          "complexity": "low",
+          "weeks": 12
+        },
+        {
+          "name": "Project 1",
+          "impact": 55,
+          "complexity": "medium",
+          "weeks": 15
+        },
+        {
+          "name": "Project 2",
+          "impact": 79,
+          "complexity": "high",
+          "weeks": 1
+        },
+        {
+          "name": "Project 3",
+          "impact": 75,
+          "complexity": "low",
+          "weeks": 24
+        },
+        {
+          "name": "Project 4",
+          "impact": 7,
+          "complexity": "medium",
+          "weeks": 17
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "92750c39c95b84625462e2f925bf624abbaae7206a465f40da25789db59dc6fc",
+      "baseline": {
+        "hiringScore": 2,
+        "jobMatch": 2
+      },
+      "predicted": {
+        "hiringScore": 32,
+        "jobMatch": 24
+      },
+      "improvements": {
+        "hiringScore": 30,
+        "jobMatch": 22
+      },
+      "confidenceScore": 63,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 16,
+          "jobMatch": 7
+        },
+        "expected": {
+          "hiringScore": 32,
+          "jobMatch": 24
+        },
+        "high": {
+          "hiringScore": 48,
+          "jobMatch": 41
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 22,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 30
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 11,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 4.2,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 4.3,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 6.6,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 2.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 11,
+          "pts": 1.6
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 55,
+          "pts": 8.2
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 1,
+          "impact": 79,
+          "pts": 6.7
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 75,
+          "pts": 6.7
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 7,
+          "pts": 0.8
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "junior",
+        "durationWeeks": 14,
+        "suggestedDurationWeeks": 16,
+        "skillsEffort": 5.5,
+        "projectsEffort": 69,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 46.02941742632538,
+      "baselineJobMatch": 39.64835153892636,
+      "role": "backend",
+      "experienceLevel": "mid",
+      "durationWeeks": 24,
+      "skills": ["React", "Docker", "Python"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 100,
+          "complexity": "low",
+          "weeks": 16
+        },
+        {
+          "name": "Project 1",
+          "impact": 42,
+          "complexity": "medium",
+          "weeks": 12
+        },
+        {
+          "name": "Project 2",
+          "impact": 29,
+          "complexity": "high",
+          "weeks": 11
+        },
+        {
+          "name": "Project 3",
+          "impact": 68,
+          "complexity": "low",
+          "weeks": 4
+        },
+        {
+          "name": "Project 4",
+          "impact": 8,
+          "complexity": "medium",
+          "weeks": 21
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "3853e19b5de6fe11c698fd66034d21a5d470b16e842be8d6f8bf34a36ba14431",
+      "baseline": {
+        "hiringScore": 46,
+        "jobMatch": 40
+      },
+      "predicted": {
+        "hiringScore": 70,
+        "jobMatch": 57
+      },
+      "improvements": {
+        "hiringScore": 24,
+        "jobMatch": 17
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 54,
+          "jobMatch": 39
+        },
+        "expected": {
+          "hiringScore": 70,
+          "jobMatch": 57
+        },
+        "high": {
+          "hiringScore": 86,
+          "jobMatch": 75
+        }
+      },
+      "breakdown": {
+        "skills": 16,
+        "projects": 22,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 24
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.7,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 7.1,
+          "relevance": 1.5,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 100,
+          "pts": 12.5
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 42,
+          "pts": 5.2
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 11,
+          "impact": 29,
+          "pts": 3.4
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 4,
+          "impact": 68,
+          "pts": 3.5
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 8,
+          "pts": 0.7
+        }
+      ],
+      "meta": {
+        "role": "backend",
+        "level": "mid",
+        "durationWeeks": 24,
+        "suggestedDurationWeeks": 26,
+        "skillsEffort": 4,
+        "projectsEffort": 64,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 31.15626205690205,
+      "baselineJobMatch": 0.7070621708407998,
+      "role": "full stack",
+      "experienceLevel": "senior",
+      "durationWeeks": 12,
+      "skills": ["React", "Docker"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 97,
+          "complexity": "low",
+          "weeks": 1
+        },
+        {
+          "name": "Project 1",
+          "impact": 78,
+          "complexity": "medium",
+          "weeks": 8
+        },
+        {
+          "name": "Project 2",
+          "impact": 32,
+          "complexity": "high",
+          "weeks": 23
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "bc4349075f8eef166159687cbc91824395b71296d8a1cfc110c60f1f7f6b6a31",
+      "baseline": {
+        "hiringScore": 31,
+        "jobMatch": 1
+      },
+      "predicted": {
+        "hiringScore": 39,
+        "jobMatch": 7
+      },
+      "improvements": {
+        "hiringScore": 8,
+        "jobMatch": 6
+      },
+      "confidenceScore": 62,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 31,
+          "jobMatch": 0
+        },
+        "expected": {
+          "hiringScore": 39,
+          "jobMatch": 7
+        },
+        "high": {
+          "hiringScore": 47,
+          "jobMatch": 14
+        }
+      },
+      "breakdown": {
+        "skills": 10,
+        "projects": 15,
+        "synergy": 3,
+        "penalty": -20,
+        "total": 8
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 5.5,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 4.1,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 1,
+          "impact": 97,
+          "pts": 5.6
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 8,
+          "impact": 78,
+          "pts": 6.6
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 32,
+          "pts": 3.1
+        }
+      ],
+      "meta": {
+        "role": "full stack",
+        "level": "senior",
+        "durationWeeks": 12,
+        "suggestedDurationWeeks": 14,
+        "skillsEffort": 2.5,
+        "projectsEffort": 32,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 54.68277323525399,
+      "baselineJobMatch": 66.72620843164623,
+      "role": "ai/ml",
+      "experienceLevel": "junior",
+      "durationWeeks": 16,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML"],
+      "projects": []
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "51454c50f790bb3221b49c6d02d96ad758006e4b1b9dc0d5e7ca13aa7fdd0d38",
+      "baseline": {
+        "hiringScore": 55,
+        "jobMatch": 67
+      },
+      "predicted": {
+        "hiringScore": 77,
+        "jobMatch": 83
+      },
+      "improvements": {
+        "hiringScore": 22,
+        "jobMatch": 16
+      },
+      "confidenceScore": 73,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 72,
+          "jobMatch": 78
+        },
+        "expected": {
+          "hiringScore": 77,
+          "jobMatch": 83
+        },
+        "high": {
+          "hiringScore": 82,
+          "jobMatch": 88
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 22
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 3.6,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 10.4,
+          "relevance": 1.7,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 2.8,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.3,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [],
+      "meta": {
+        "role": "ai/ml",
+        "level": "junior",
+        "durationWeeks": 16,
+        "suggestedDurationWeeks": 16,
+        "skillsEffort": 5.5,
+        "projectsEffort": 0,
+        "overloaded": false
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 92.90641662664711,
+      "baselineJobMatch": 76.7422670731321,
+      "role": "devops",
+      "experienceLevel": "mid",
+      "durationWeeks": 11,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 71,
+          "complexity": "low",
+          "weeks": 14
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "6ae45f21569cc5391e70f922330e9d0f10f736a439238e63a760ea3bda7180dd",
+      "baseline": {
+        "hiringScore": 93,
+        "jobMatch": 77
+      },
+      "predicted": {
+        "hiringScore": 100,
+        "jobMatch": 89
+      },
+      "improvements": {
+        "hiringScore": 7,
+        "jobMatch": 12
+      },
+      "confidenceScore": 58,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 84,
+          "jobMatch": 74
+        },
+        "expected": {
+          "hiringScore": 100,
+          "jobMatch": 89
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 100
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 9,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 16
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.7,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 7.3,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 5.2,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 2.5,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.1,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 6,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 71,
+          "pts": 8.9
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "mid",
+        "durationWeeks": 11,
+        "suggestedDurationWeeks": 13,
+        "skillsEffort": 8,
+        "projectsEffort": 14,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 76.14221514668316,
+      "baselineJobMatch": 44.27383006550372,
+      "role": "frontend",
+      "experienceLevel": "senior",
+      "durationWeeks": 5,
+      "skills": ["React", "Docker", "Python", "TypeScript"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 52,
+          "complexity": "low",
+          "weeks": 21
+        },
+        {
+          "name": "Project 1",
+          "impact": 39,
+          "complexity": "medium",
+          "weeks": 23
+        },
+        {
+          "name": "Project 2",
+          "impact": 74,
+          "complexity": "high",
+          "weeks": 4
+        },
+        {
+          "name": "Project 3",
+          "impact": 69,
+          "complexity": "low",
+          "weeks": 9
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "84a372d1658056a676ce6b7eb487571973495827ad52204670eb4bdf24022215",
+      "baseline": {
+        "hiringScore": 76,
+        "jobMatch": 44
+      },
+      "predicted": {
+        "hiringScore": 94,
+        "jobMatch": 57
+      },
+      "improvements": {
+        "hiringScore": 18,
+        "jobMatch": 13
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 78,
+          "jobMatch": 41
+        },
+        "expected": {
+          "hiringScore": 94,
+          "jobMatch": 57
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 73
+        }
+      },
+      "breakdown": {
+        "skills": 15,
+        "projects": 18,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 18
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 6.3,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.4,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 2.5,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 3.8,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 52,
+          "pts": 5.2
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 39,
+          "pts": 3.9
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 4,
+          "impact": 74,
+          "pts": 5
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 9,
+          "impact": 69,
+          "pts": 3.7
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "senior",
+        "durationWeeks": 5,
+        "suggestedDurationWeeks": 10,
+        "skillsEffort": 5,
+        "projectsEffort": 57,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 35.8226855751127,
+      "baselineJobMatch": 79.31371175218374,
+      "role": "backend",
+      "experienceLevel": "junior",
+      "durationWeeks": 20,
+      "skills": ["React"],
+      "projects": []
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "eedeaa8c5ae5311b1eab7e21025bd1f7fab3f1e79c9e31e73efde462654dfaa1",
+      "baseline": {
+        "hiringScore": 36,
+        "jobMatch": 79
+      },
+      "predicted": {
+        "hiringScore": 41,
+        "jobMatch": 82
+      },
+      "improvements": {
+        "hiringScore": 5,
+        "jobMatch": 3
+      },
+      "confidenceScore": 72,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 36,
+          "jobMatch": 78
+        },
+        "expected": {
+          "hiringScore": 41,
+          "jobMatch": 82
+        },
+        "high": {
+          "hiringScore": 46,
+          "jobMatch": 86
+        }
+      },
+      "breakdown": {
+        "skills": 5,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 5
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [],
+      "meta": {
+        "role": "backend",
+        "level": "junior",
+        "durationWeeks": 20,
+        "suggestedDurationWeeks": 20,
+        "skillsEffort": 1.5,
+        "projectsEffort": 0,
+        "overloaded": false
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 40.40652068797499,
+      "baselineJobMatch": 87.45494885370135,
+      "role": "full stack",
+      "experienceLevel": "mid",
+      "durationWeeks": 18,
+      "skills": ["React", "Docker", "Python", "TypeScript"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 39,
+          "complexity": "low",
+          "weeks": 21
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "627096831383cd87b399fba87327d801af9ca2f59bc78db62cdafde5028e0d88",
+      "baseline": {
+        "hiringScore": 40,
+        "jobMatch": 87
+      },
+      "predicted": {
+        "hiringScore": 55,
+        "jobMatch": 98
+      },
+      "improvements": {
+        "hiringScore": 15,
+        "jobMatch": 11
+      },
+      "confidenceScore": 58,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 40,
+          "jobMatch": 84
+        },
+        "expected": {
+          "hiringScore": 55,
+          "jobMatch": 98
+        },
+        "high": {
+          "hiringScore": 70,
+          "jobMatch": 100
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 5,
+        "synergy": 4,
+        "penalty": -15,
+        "total": 15
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 7.4,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.8,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 5.1,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 39,
+          "pts": 4.9
+        }
+      ],
+      "meta": {
+        "role": "full stack",
+        "level": "mid",
+        "durationWeeks": 18,
+        "suggestedDurationWeeks": 20,
+        "skillsEffort": 5,
+        "projectsEffort": 21,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 81.33342158980668,
+      "baselineJobMatch": 37.17857024166733,
+      "role": "ai/ml",
+      "experienceLevel": "senior",
+      "durationWeeks": 20,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 90,
+          "complexity": "low",
+          "weeks": 16
+        },
+        {
+          "name": "Project 1",
+          "impact": 92,
+          "complexity": "medium",
+          "weeks": 10
+        },
+        {
+          "name": "Project 2",
+          "impact": 79,
+          "complexity": "high",
+          "weeks": 20
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "1ffc116b47314a5bf2557f8b13cac1c91fe0cb3520b6e0435fa48db76c00cc21",
+      "baseline": {
+        "hiringScore": 81,
+        "jobMatch": 37
+      },
+      "predicted": {
+        "hiringScore": 100,
+        "jobMatch": 53
+      },
+      "improvements": {
+        "hiringScore": 19,
+        "jobMatch": 16
+      },
+      "confidenceScore": 56,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 83,
+          "jobMatch": 34
+        },
+        "expected": {
+          "hiringScore": 100,
+          "jobMatch": 53
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 72
+        }
+      },
+      "breakdown": {
+        "skills": 14,
+        "projects": 22,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 22
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 2.4,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 6,
+          "relevance": 1.7,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 1.6,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 0.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 1.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 90,
+          "pts": 9
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 10,
+          "impact": 92,
+          "pts": 8.5
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 79,
+          "pts": 7.7
+        }
+      ],
+      "meta": {
+        "role": "ai/ml",
+        "level": "senior",
+        "durationWeeks": 20,
+        "suggestedDurationWeeks": 22,
+        "skillsEffort": 8,
+        "projectsEffort": 46,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 9.645176935009658,
+      "baselineJobMatch": 61.74454423598945,
+      "role": "devops",
+      "experienceLevel": "junior",
+      "durationWeeks": 15,
+      "skills": ["React"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 89,
+          "complexity": "low",
+          "weeks": 3
+        },
+        {
+          "name": "Project 1",
+          "impact": 27,
+          "complexity": "medium",
+          "weeks": 19
+        },
+        {
+          "name": "Project 2",
+          "impact": 73,
+          "complexity": "high",
+          "weeks": 10
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "1b71722c7eed4b1cc1c188b504860bb49ccc8d1b4f48124fbaaaa34bb25346da",
+      "baseline": {
+        "hiringScore": 10,
+        "jobMatch": 62
+      },
+      "predicted": {
+        "hiringScore": 19,
+        "jobMatch": 69
+      },
+      "improvements": {
+        "hiringScore": 9,
+        "jobMatch": 7
+      },
+      "confidenceScore": 53,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 10,
+          "jobMatch": 61
+        },
+        "expected": {
+          "hiringScore": 19,
+          "jobMatch": 69
+        },
+        "high": {
+          "hiringScore": 28,
+          "jobMatch": 77
+        }
+      },
+      "breakdown": {
+        "skills": 5,
+        "projects": 22,
+        "synergy": 3,
+        "penalty": -20,
+        "total": 9
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 3,
+          "impact": 89,
+          "pts": 8.7
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 27,
+          "pts": 4
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 10,
+          "impact": 73,
+          "pts": 9.8
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "junior",
+        "durationWeeks": 15,
+        "suggestedDurationWeeks": 17,
+        "skillsEffort": 1.5,
+        "projectsEffort": 32,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 17.985794506967068,
+      "baselineJobMatch": 28.208506642840803,
+      "role": "frontend",
+      "experienceLevel": "mid",
+      "durationWeeks": 22,
+      "skills": ["React", "Docker", "Python"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 72,
+          "complexity": "low",
+          "weeks": 3
+        },
+        {
+          "name": "Project 1",
+          "impact": 74,
+          "complexity": "medium",
+          "weeks": 21
+        },
+        {
+          "name": "Project 2",
+          "impact": 56,
+          "complexity": "high",
+          "weeks": 6
+        },
+        {
+          "name": "Project 3",
+          "impact": 91,
+          "complexity": "low",
+          "weeks": 10
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "cb0dbe4633bb02f51dfba02c27a8af31de5c161861c79af12abcc436babb99e0",
+      "baseline": {
+        "hiringScore": 18,
+        "jobMatch": 28
+      },
+      "predicted": {
+        "hiringScore": 40,
+        "jobMatch": 44
+      },
+      "improvements": {
+        "hiringScore": 22,
+        "jobMatch": 16
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 24,
+          "jobMatch": 26
+        },
+        "expected": {
+          "hiringScore": 40,
+          "jobMatch": 44
+        },
+        "high": {
+          "hiringScore": 56,
+          "jobMatch": 62
+        }
+      },
+      "breakdown": {
+        "skills": 15,
+        "projects": 22,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 22
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 8.4,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 3.2,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.3,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 3,
+          "impact": 72,
+          "pts": 5.9
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 74,
+          "pts": 9.2
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 6,
+          "impact": 56,
+          "pts": 5.2
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 10,
+          "impact": 91,
+          "pts": 6.3
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "mid",
+        "durationWeeks": 22,
+        "suggestedDurationWeeks": 24,
+        "skillsEffort": 4,
+        "projectsEffort": 40,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 20.50515569280833,
+      "baselineJobMatch": 67.8863690700382,
+      "role": "backend",
+      "experienceLevel": "senior",
+      "durationWeeks": 20,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS", "git"],
+      "projects": []
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "d9f5b9150d5b799c6a8f410276d54d72a43e4602bc4b7c49da89fb137af4b3e2",
+      "baseline": {
+        "hiringScore": 21,
+        "jobMatch": 68
+      },
+      "predicted": {
+        "hiringScore": 43,
+        "jobMatch": 84
+      },
+      "improvements": {
+        "hiringScore": 22,
+        "jobMatch": 16
+      },
+      "confidenceScore": 74,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 39,
+          "jobMatch": 79
+        },
+        "expected": {
+          "hiringScore": 43,
+          "jobMatch": 84
+        },
+        "high": {
+          "hiringScore": 47,
+          "jobMatch": 89
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 22
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 2.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 4.1,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 5.3,
+          "relevance": 1.5,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 3.3,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 0.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 3.1,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 2,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "git",
+          "pts": 0.5,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [],
+      "meta": {
+        "role": "backend",
+        "level": "senior",
+        "durationWeeks": 20,
+        "suggestedDurationWeeks": 20,
+        "skillsEffort": 10.5,
+        "projectsEffort": 0,
+        "overloaded": false
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 65.81353754736483,
+      "baselineJobMatch": 2.192824729718268,
+      "role": "full stack",
+      "experienceLevel": "junior",
+      "durationWeeks": 9,
+      "skills": [],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 92,
+          "complexity": "low",
+          "weeks": 24
+        },
+        {
+          "name": "Project 1",
+          "impact": 30,
+          "complexity": "medium",
+          "weeks": 9
+        },
+        {
+          "name": "Project 2",
+          "impact": 93,
+          "complexity": "high",
+          "weeks": 22
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "741889b6419adeb30fc1b57a57d06abef216315af9f4067e1fef2c04a695f7d4",
+      "baseline": {
+        "hiringScore": 66,
+        "jobMatch": 2
+      },
+      "predicted": {
+        "hiringScore": 68,
+        "jobMatch": 3
+      },
+      "improvements": {
+        "hiringScore": 2,
+        "jobMatch": 1
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 66,
+          "jobMatch": 1
+        },
+        "expected": {
+          "hiringScore": 68,
+          "jobMatch": 3
+        },
+        "high": {
+          "hiringScore": 70,
+          "jobMatch": 5
+        }
+      },
+      "breakdown": {
+        "skills": 0,
+        "projects": 22,
+        "synergy": 0,
+        "penalty": -20,
+        "total": 2
+      },
+      "skillDetails": [],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 92,
+          "pts": 13.8
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 9,
+          "impact": 30,
+          "pts": 4
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 93,
+          "pts": 13.6
+        }
+      ],
+      "meta": {
+        "role": "full stack",
+        "level": "junior",
+        "durationWeeks": 9,
+        "suggestedDurationWeeks": 11,
+        "skillsEffort": 0,
+        "projectsEffort": 55,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 18.48842694889754,
+      "baselineJobMatch": 72.47391096316278,
+      "role": "ai/ml",
+      "experienceLevel": "mid",
+      "durationWeeks": 15,
+      "skills": ["React", "Docker", "Python"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 98,
+          "complexity": "low",
+          "weeks": 19
+        },
+        {
+          "name": "Project 1",
+          "impact": 66,
+          "complexity": "medium",
+          "weeks": 11
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "6d44b0b2fa90447db5923025dd0fcf165dee0dbce4074f78714124c631d5db3e",
+      "baseline": {
+        "hiringScore": 18,
+        "jobMatch": 72
+      },
+      "predicted": {
+        "hiringScore": 36,
+        "jobMatch": 85
+      },
+      "improvements": {
+        "hiringScore": 18,
+        "jobMatch": 13
+      },
+      "confidenceScore": 57,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 19,
+          "jobMatch": 69
+        },
+        "expected": {
+          "hiringScore": 36,
+          "jobMatch": 85
+        },
+        "high": {
+          "hiringScore": 53,
+          "jobMatch": 100
+        }
+      },
+      "breakdown": {
+        "skills": 14,
+        "projects": 20,
+        "synergy": 4,
+        "penalty": -20,
+        "total": 18
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.2,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 8,
+          "relevance": 1.7,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 98,
+          "pts": 12.2
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 11,
+          "impact": 66,
+          "pts": 7.9
+        }
+      ],
+      "meta": {
+        "role": "ai/ml",
+        "level": "mid",
+        "durationWeeks": 15,
+        "suggestedDurationWeeks": 17,
+        "skillsEffort": 4,
+        "projectsEffort": 30,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 47.93693418614566,
+      "baselineJobMatch": 48.98299139458686,
+      "role": "devops",
+      "experienceLevel": "senior",
+      "durationWeeks": 9,
+      "skills": ["React", "Docker", "Python"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 38,
+          "complexity": "low",
+          "weeks": 3
+        },
+        {
+          "name": "Project 1",
+          "impact": 63,
+          "complexity": "medium",
+          "weeks": 17
+        },
+        {
+          "name": "Project 2",
+          "impact": 45,
+          "complexity": "high",
+          "weeks": 21
+        },
+        {
+          "name": "Project 3",
+          "impact": 14,
+          "complexity": "low",
+          "weeks": 4
+        },
+        {
+          "name": "Project 4",
+          "impact": 60,
+          "complexity": "medium",
+          "weeks": 14
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "4182edc3b3ea7c871746c06bb842b2ff9897ca50dcbbd6f7d15864134845ed07",
+      "baseline": {
+        "hiringScore": 48,
+        "jobMatch": 49
+      },
+      "predicted": {
+        "hiringScore": 64,
+        "jobMatch": 60
+      },
+      "improvements": {
+        "hiringScore": 16,
+        "jobMatch": 11
+      },
+      "confidenceScore": 61,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 48,
+          "jobMatch": 46
+        },
+        "expected": {
+          "hiringScore": 64,
+          "jobMatch": 60
+        },
+        "high": {
+          "hiringScore": 80,
+          "jobMatch": 74
+        }
+      },
+      "breakdown": {
+        "skills": 12,
+        "projects": 18,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 16
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 2.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.9,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 3,
+          "impact": 38,
+          "pts": 2.5
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 63,
+          "pts": 6.3
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 45,
+          "pts": 4.4
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 4,
+          "impact": 14,
+          "pts": 0.6
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 60,
+          "pts": 4.5
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "senior",
+        "durationWeeks": 9,
+        "suggestedDurationWeeks": 11,
+        "skillsEffort": 4,
+        "projectsEffort": 59,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 63.825729000382125,
+      "baselineJobMatch": 45.1711583416909,
+      "role": "frontend",
+      "experienceLevel": "junior",
+      "durationWeeks": 12,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 64,
+          "complexity": "low",
+          "weeks": 3
+        },
+        {
+          "name": "Project 1",
+          "impact": 31,
+          "complexity": "medium",
+          "weeks": 5
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "efa224c07f3c860089d5b9a5a8952259517a6b12c11438b9537fe765a3f61e09",
+      "baseline": {
+        "hiringScore": 64,
+        "jobMatch": 45
+      },
+      "predicted": {
+        "hiringScore": 95,
+        "jobMatch": 67
+      },
+      "improvements": {
+        "hiringScore": 31,
+        "jobMatch": 22
+      },
+      "confidenceScore": 64,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 84,
+          "jobMatch": 55
+        },
+        "expected": {
+          "hiringScore": 95,
+          "jobMatch": 67
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 79
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 10,
+        "synergy": 5,
+        "penalty": -6,
+        "total": 31
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 11,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 4.2,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 4.3,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 6.6,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 2.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 3,
+          "impact": 64,
+          "pts": 6.3
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 5,
+          "impact": 31,
+          "pts": 3.4
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "junior",
+        "durationWeeks": 12,
+        "suggestedDurationWeeks": 14,
+        "skillsEffort": 5.5,
+        "projectsEffort": 8,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 57.87139064632356,
+      "baselineJobMatch": 0.12236901093274355,
+      "role": "backend",
+      "experienceLevel": "mid",
+      "durationWeeks": 3,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 92,
+          "complexity": "low",
+          "weeks": 3
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "76ebd72629110134f51302a6bf9ae719d0d511ee173e4eef5acf3949e80bef78",
+      "baseline": {
+        "hiringScore": 58,
+        "jobMatch": 0
+      },
+      "predicted": {
+        "hiringScore": 74,
+        "jobMatch": 11
+      },
+      "improvements": {
+        "hiringScore": 16,
+        "jobMatch": 11
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 58,
+          "jobMatch": 0
+        },
+        "expected": {
+          "hiringScore": 74,
+          "jobMatch": 11
+        },
+        "high": {
+          "hiringScore": 90,
+          "jobMatch": 25
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 8,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 16
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.7,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 7.1,
+          "relevance": 1.5,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 4.3,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.1,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 4.1,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 2.7,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 3,
+          "impact": 92,
+          "pts": 7.5
+        }
+      ],
+      "meta": {
+        "role": "backend",
+        "level": "mid",
+        "durationWeeks": 3,
+        "suggestedDurationWeeks": 5,
+        "skillsEffort": 10,
+        "projectsEffort": 3,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 35.53514170926064,
+      "baselineJobMatch": 55.360404355451465,
+      "role": "full stack",
+      "experienceLevel": "senior",
+      "durationWeeks": 1,
+      "skills": ["React"],
+      "projects": []
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "40ccf8e4c106b99b668cda0bfc3c2769c3ae8b212406dd054fac67458bce24c3",
+      "baseline": {
+        "hiringScore": 36,
+        "jobMatch": 55
+      },
+      "predicted": {
+        "hiringScore": 36,
+        "jobMatch": 55
+      },
+      "improvements": {
+        "hiringScore": 0,
+        "jobMatch": 0
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 24,
+          "jobMatch": 53
+        },
+        "expected": {
+          "hiringScore": 36,
+          "jobMatch": 55
+        },
+        "high": {
+          "hiringScore": 48,
+          "jobMatch": 57
+        }
+      },
+      "breakdown": {
+        "skills": 6,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": -7,
+        "total": 0
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 5.5,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [],
+      "meta": {
+        "role": "full stack",
+        "level": "senior",
+        "durationWeeks": 1,
+        "suggestedDurationWeeks": 3,
+        "skillsEffort": 1.5,
+        "projectsEffort": 0,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 77.02653822489083,
+      "baselineJobMatch": 22.14558369014412,
+      "role": "ai/ml",
+      "experienceLevel": "junior",
+      "durationWeeks": 1,
+      "skills": ["React", "Docker"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 38,
+          "complexity": "low",
+          "weeks": 17
+        },
+        {
+          "name": "Project 1",
+          "impact": 73,
+          "complexity": "medium",
+          "weeks": 3
+        },
+        {
+          "name": "Project 2",
+          "impact": 9,
+          "complexity": "high",
+          "weeks": 15
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "0ea5bb59a7af584bd3c1728b227b5db95305680245d6d0f3d60e92adebc346a0",
+      "baseline": {
+        "hiringScore": 77,
+        "jobMatch": 22
+      },
+      "predicted": {
+        "hiringScore": 82,
+        "jobMatch": 26
+      },
+      "improvements": {
+        "hiringScore": 5,
+        "jobMatch": 4
+      },
+      "confidenceScore": 54,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 77,
+          "jobMatch": 21
+        },
+        "expected": {
+          "hiringScore": 82,
+          "jobMatch": 26
+        },
+        "high": {
+          "hiringScore": 87,
+          "jobMatch": 31
+        }
+      },
+      "breakdown": {
+        "skills": 8,
+        "projects": 14,
+        "synergy": 3,
+        "penalty": -20,
+        "total": 5
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 3.6,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 38,
+          "pts": 5.7
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 3,
+          "impact": 73,
+          "pts": 7.1
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 9,
+          "pts": 1.3
+        }
+      ],
+      "meta": {
+        "role": "ai/ml",
+        "level": "junior",
+        "durationWeeks": 1,
+        "suggestedDurationWeeks": 6,
+        "skillsEffort": 2.5,
+        "projectsEffort": 35,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 12.68128480296582,
+      "baselineJobMatch": 39.19345396570861,
+      "role": "devops",
+      "experienceLevel": "mid",
+      "durationWeeks": 2,
+      "skills": ["React", "Docker"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 27,
+          "complexity": "low",
+          "weeks": 13
+        },
+        {
+          "name": "Project 1",
+          "impact": 32,
+          "complexity": "medium",
+          "weeks": 10
+        },
+        {
+          "name": "Project 2",
+          "impact": 74,
+          "complexity": "high",
+          "weeks": 18
+        },
+        {
+          "name": "Project 3",
+          "impact": 12,
+          "complexity": "low",
+          "weeks": 16
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "8dd5bce962de6395f0ace4884d757cb01ef962c893008d5101ffd4ea4099ba0d",
+      "baseline": {
+        "hiringScore": 13,
+        "jobMatch": 39
+      },
+      "predicted": {
+        "hiringScore": 25,
+        "jobMatch": 48
+      },
+      "improvements": {
+        "hiringScore": 12,
+        "jobMatch": 9
+      },
+      "confidenceScore": 58,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 13,
+          "jobMatch": 37
+        },
+        "expected": {
+          "hiringScore": 25,
+          "jobMatch": 48
+        },
+        "high": {
+          "hiringScore": 37,
+          "jobMatch": 59
+        }
+      },
+      "breakdown": {
+        "skills": 11,
+        "projects": 17,
+        "synergy": 4,
+        "penalty": -20,
+        "total": 12
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.7,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 7.3,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 27,
+          "pts": 3.4
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 10,
+          "impact": 32,
+          "pts": 3.7
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 74,
+          "pts": 9
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 12,
+          "pts": 0.9
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "mid",
+        "durationWeeks": 2,
+        "suggestedDurationWeeks": 10,
+        "skillsEffort": 2.5,
+        "projectsEffort": 57,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 99.01250251568854,
+      "baselineJobMatch": 9.35672374907881,
+      "role": "frontend",
+      "experienceLevel": "senior",
+      "durationWeeks": 6,
+      "skills": ["React", "Docker", "Python"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 94,
+          "complexity": "low",
+          "weeks": 10
+        },
+        {
+          "name": "Project 1",
+          "impact": 59,
+          "complexity": "medium",
+          "weeks": 10
+        },
+        {
+          "name": "Project 2",
+          "impact": 22,
+          "complexity": "high",
+          "weeks": 5
+        },
+        {
+          "name": "Project 3",
+          "impact": 72,
+          "complexity": "low",
+          "weeks": 18
+        },
+        {
+          "name": "Project 4",
+          "impact": 86,
+          "complexity": "medium",
+          "weeks": 8
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "4b4d3b9e02937bb5a13c6ddf1c30acb37bb86d4cbebb9a15a50d118cb05fc972",
+      "baseline": {
+        "hiringScore": 99,
+        "jobMatch": 9
+      },
+      "predicted": {
+        "hiringScore": 100,
+        "jobMatch": 22
+      },
+      "improvements": {
+        "hiringScore": 1,
+        "jobMatch": 13
+      },
+      "confidenceScore": 59,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 84,
+          "jobMatch": 5
+        },
+        "expected": {
+          "hiringScore": 100,
+          "jobMatch": 22
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 39
+        }
+      },
+      "breakdown": {
+        "skills": 11,
+        "projects": 22,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 19
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 6.3,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.4,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 2.5,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 10,
+          "impact": 94,
+          "pts": 8.7
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 10,
+          "impact": 59,
+          "pts": 5.4
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 5,
+          "impact": 22,
+          "pts": 1.6
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 72,
+          "pts": 4.3
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 8,
+          "impact": 86,
+          "pts": 5.4
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "senior",
+        "durationWeeks": 6,
+        "suggestedDurationWeeks": 9,
+        "skillsEffort": 4,
+        "projectsEffort": 51,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 41.96153001394123,
+      "baselineJobMatch": 39.35325280763209,
+      "role": "backend",
+      "experienceLevel": "junior",
+      "durationWeeks": 24,
+      "skills": ["React"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 99,
+          "complexity": "low",
+          "weeks": 18
+        },
+        {
+          "name": "Project 1",
+          "impact": 29,
+          "complexity": "medium",
+          "weeks": 8
+        },
+        {
+          "name": "Project 2",
+          "impact": 69,
+          "complexity": "high",
+          "weeks": 10
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "657fd3a9ec3d7c07baf22592f448be44049ac2d4ed9e76655836a9c7dc60a1e9",
+      "baseline": {
+        "hiringScore": 42,
+        "jobMatch": 39
+      },
+      "predicted": {
+        "hiringScore": 54,
+        "jobMatch": 48
+      },
+      "improvements": {
+        "hiringScore": 12,
+        "jobMatch": 9
+      },
+      "confidenceScore": 53,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 42,
+          "jobMatch": 37
+        },
+        "expected": {
+          "hiringScore": 54,
+          "jobMatch": 48
+        },
+        "high": {
+          "hiringScore": 66,
+          "jobMatch": 59
+        }
+      },
+      "breakdown": {
+        "skills": 5,
+        "projects": 22,
+        "synergy": 3,
+        "penalty": -17,
+        "total": 12
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 99,
+          "pts": 14.8
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 8,
+          "impact": 29,
+          "pts": 3.7
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 10,
+          "impact": 69,
+          "pts": 9.3
+        }
+      ],
+      "meta": {
+        "role": "backend",
+        "level": "junior",
+        "durationWeeks": 24,
+        "suggestedDurationWeeks": 26,
+        "skillsEffort": 1.5,
+        "projectsEffort": 36,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 83.3364644087851,
+      "baselineJobMatch": 52.02683031093329,
+      "role": "full stack",
+      "experienceLevel": "mid",
+      "durationWeeks": 20,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 71,
+          "complexity": "low",
+          "weeks": 23
+        },
+        {
+          "name": "Project 1",
+          "impact": 46,
+          "complexity": "medium",
+          "weeks": 21
+        },
+        {
+          "name": "Project 2",
+          "impact": 0,
+          "complexity": "high",
+          "weeks": 17
+        },
+        {
+          "name": "Project 3",
+          "impact": 5,
+          "complexity": "low",
+          "weeks": 21
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "e9e275f4449c020f2d3a5cbe422fd7b51ec1cd2742a65ebc922c517fcd0bcce8",
+      "baseline": {
+        "hiringScore": 83,
+        "jobMatch": 52
+      },
+      "predicted": {
+        "hiringScore": 100,
+        "jobMatch": 74
+      },
+      "improvements": {
+        "hiringScore": 17,
+        "jobMatch": 22
+      },
+      "confidenceScore": 61,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 84,
+          "jobMatch": 56
+        },
+        "expected": {
+          "hiringScore": 100,
+          "jobMatch": 74
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 92
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 22,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 30
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 7.4,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.8,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 5.1,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.3,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 71,
+          "pts": 8.9
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 46,
+          "pts": 5.7
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 0,
+          "pts": 7.9
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 5,
+          "pts": 0.4
+        }
+      ],
+      "meta": {
+        "role": "full stack",
+        "level": "mid",
+        "durationWeeks": 20,
+        "suggestedDurationWeeks": 22,
+        "skillsEffort": 5.5,
+        "projectsEffort": 82,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 11.060411459766328,
+      "baselineJobMatch": 54.991864832118154,
+      "role": "ai/ml",
+      "experienceLevel": "senior",
+      "durationWeeks": 14,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 60,
+          "complexity": "low",
+          "weeks": 19
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "732b81442cf36715610ee14f03031b68b8995babe026d71f9d874792e54e758e",
+      "baseline": {
+        "hiringScore": 11,
+        "jobMatch": 55
+      },
+      "predicted": {
+        "hiringScore": 18,
+        "jobMatch": 60
+      },
+      "improvements": {
+        "hiringScore": 7,
+        "jobMatch": 5
+      },
+      "confidenceScore": 52,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 11,
+          "jobMatch": 53
+        },
+        "expected": {
+          "hiringScore": 18,
+          "jobMatch": 60
+        },
+        "high": {
+          "hiringScore": 25,
+          "jobMatch": 67
+        }
+      },
+      "breakdown": {
+        "skills": 15,
+        "projects": 6,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 7
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 2.4,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 6,
+          "relevance": 1.7,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 1.6,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 0.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 1.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 60,
+          "pts": 6
+        }
+      ],
+      "meta": {
+        "role": "ai/ml",
+        "level": "senior",
+        "durationWeeks": 14,
+        "suggestedDurationWeeks": 16,
+        "skillsEffort": 10,
+        "projectsEffort": 19,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 90.1257062330842,
+      "baselineJobMatch": 14.774421765469015,
+      "role": "devops",
+      "experienceLevel": "junior",
+      "durationWeeks": 5,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 33,
+          "complexity": "low",
+          "weeks": 15
+        },
+        {
+          "name": "Project 1",
+          "impact": 51,
+          "complexity": "medium",
+          "weeks": 17
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "f380efee7908f6b1ffc71d118b4dc7bc9fbe887008eeb631ada601fb1da3be7a",
+      "baseline": {
+        "hiringScore": 90,
+        "jobMatch": 15
+      },
+      "predicted": {
+        "hiringScore": 100,
+        "jobMatch": 29
+      },
+      "improvements": {
+        "hiringScore": 10,
+        "jobMatch": 14
+      },
+      "confidenceScore": 61,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 84,
+          "jobMatch": 11
+        },
+        "expected": {
+          "hiringScore": 100,
+          "jobMatch": 29
+        },
+        "high": {
+          "hiringScore": 100,
+          "jobMatch": 47
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 13,
+        "synergy": 5,
+        "penalty": -20,
+        "total": 20
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 4.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 9.5,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 6.8,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 3.3,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.5,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 33,
+          "pts": 4.9
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 51,
+          "pts": 7.6
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "junior",
+        "durationWeeks": 5,
+        "suggestedDurationWeeks": 7,
+        "skillsEffort": 5.5,
+        "projectsEffort": 32,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 57.56381263490766,
+      "baselineJobMatch": 28.832916961982846,
+      "role": "frontend",
+      "experienceLevel": "mid",
+      "durationWeeks": 9,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 73,
+          "complexity": "low",
+          "weeks": 4
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "b4556c7dec69c73dc544523096f719a49feda5edd3c57009bc85602479157ab3",
+      "baseline": {
+        "hiringScore": 58,
+        "jobMatch": 29
+      },
+      "predicted": {
+        "hiringScore": 75,
+        "jobMatch": 41
+      },
+      "improvements": {
+        "hiringScore": 17,
+        "jobMatch": 12
+      },
+      "confidenceScore": 55,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 59,
+          "jobMatch": 25
+        },
+        "expected": {
+          "hiringScore": 75,
+          "jobMatch": 41
+        },
+        "high": {
+          "hiringScore": 91,
+          "jobMatch": 57
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 6,
+        "synergy": 6,
+        "penalty": -17,
+        "total": 17
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 8.4,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 3.2,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.3,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 5.1,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.9,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 2.6,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 1.6,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 4,
+          "impact": 73,
+          "pts": 6.3
+        }
+      ],
+      "meta": {
+        "role": "frontend",
+        "level": "mid",
+        "durationWeeks": 9,
+        "suggestedDurationWeeks": 11,
+        "skillsEffort": 10,
+        "projectsEffort": 4,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 52.00685691088438,
+      "baselineJobMatch": 37.106387107633054,
+      "role": "backend",
+      "experienceLevel": "senior",
+      "durationWeeks": 8,
+      "skills": [],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 20,
+          "complexity": "low",
+          "weeks": 23
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "c88ff3aed44eb4a56dd6a5ce4a0b4718378a0dccefc27248ed7c36575cdd1147",
+      "baseline": {
+        "hiringScore": 52,
+        "jobMatch": 37
+      },
+      "predicted": {
+        "hiringScore": 52,
+        "jobMatch": 37
+      },
+      "improvements": {
+        "hiringScore": 0,
+        "jobMatch": 0
+      },
+      "confidenceScore": 55,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 35,
+          "jobMatch": 35
+        },
+        "expected": {
+          "hiringScore": 52,
+          "jobMatch": 37
+        },
+        "high": {
+          "hiringScore": 69,
+          "jobMatch": 39
+        }
+      },
+      "breakdown": {
+        "skills": 0,
+        "projects": 2,
+        "synergy": 0,
+        "penalty": -20,
+        "total": 0
+      },
+      "skillDetails": [],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 20,
+          "pts": 2
+        }
+      ],
+      "meta": {
+        "role": "backend",
+        "level": "senior",
+        "durationWeeks": 8,
+        "suggestedDurationWeeks": 10,
+        "skillsEffort": 0,
+        "projectsEffort": 23,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 28.628890332765877,
+      "baselineJobMatch": 27.28794440627098,
+      "role": "full stack",
+      "experienceLevel": "junior",
+      "durationWeeks": 22,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 30,
+          "complexity": "low",
+          "weeks": 4
+        },
+        {
+          "name": "Project 1",
+          "impact": 88,
+          "complexity": "medium",
+          "weeks": 15
+        },
+        {
+          "name": "Project 2",
+          "impact": 93,
+          "complexity": "high",
+          "weeks": 3
+        },
+        {
+          "name": "Project 3",
+          "impact": 15,
+          "complexity": "low",
+          "weeks": 4
+        },
+        {
+          "name": "Project 4",
+          "impact": 41,
+          "complexity": "medium",
+          "weeks": 13
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": true,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "4fc5000c2372a76c817c57af66c2c7dc75ccf346354baaacaba1214cebbad341",
+      "baseline": {
+        "hiringScore": 29,
+        "jobMatch": 27
+      },
+      "predicted": {
+        "hiringScore": 59,
+        "jobMatch": 49
+      },
+      "improvements": {
+        "hiringScore": 30,
+        "jobMatch": 22
+      },
+      "confidenceScore": 60,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 43,
+          "jobMatch": 31
+        },
+        "expected": {
+          "hiringScore": 59,
+          "jobMatch": 49
+        },
+        "high": {
+          "hiringScore": 75,
+          "jobMatch": 67
+        }
+      },
+      "breakdown": {
+        "skills": 22,
+        "projects": 22,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 30
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 9.6,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 7.1,
+          "relevance": 1.2,
+          "tier": "valuable",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 4.9,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 6.6,
+          "relevance": 1.4,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1.7,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 3.9,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 2.3,
+          "relevance": 0.8,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 4,
+          "impact": 30,
+          "pts": 3.1
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 88,
+          "pts": 13.2
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 3,
+          "impact": 93,
+          "pts": 8.9
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 4,
+          "impact": 15,
+          "pts": 0.9
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 41,
+          "pts": 4.6
+        }
+      ],
+      "meta": {
+        "role": "full stack",
+        "level": "junior",
+        "durationWeeks": 22,
+        "suggestedDurationWeeks": 24,
+        "skillsEffort": 10,
+        "projectsEffort": 39,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 28.49434199742973,
+      "baselineJobMatch": 68.22006900329143,
+      "role": "ai/ml",
+      "experienceLevel": "mid",
+      "durationWeeks": 9,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes", "AWS"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 43,
+          "complexity": "low",
+          "weeks": 9
+        },
+        {
+          "name": "Project 1",
+          "impact": 5,
+          "complexity": "medium",
+          "weeks": 12
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": true,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "d027bdd19c0a10141b7850602da6a6a25b835bad9650afe2989eb300cb996547",
+      "baseline": {
+        "hiringScore": 28,
+        "jobMatch": 68
+      },
+      "predicted": {
+        "hiringScore": 40,
+        "jobMatch": 77
+      },
+      "improvements": {
+        "hiringScore": 12,
+        "jobMatch": 9
+      },
+      "confidenceScore": 56,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 28,
+          "jobMatch": 66
+        },
+        "expected": {
+          "hiringScore": 40,
+          "jobMatch": 77
+        },
+        "high": {
+          "hiringScore": 52,
+          "jobMatch": 88
+        }
+      },
+      "breakdown": {
+        "skills": 21,
+        "projects": 5,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 12
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 3.2,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 2.7,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 8,
+          "relevance": 1.7,
+          "tier": "core",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 2.2,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 1,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 2.3,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.3,
+          "difficulty": 0.9
+        },
+        {
+          "skill": "AWS",
+          "pts": 1.3,
+          "relevance": 0.6,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 9,
+          "impact": 43,
+          "pts": 4.7
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 5,
+          "pts": 0.6
+        }
+      ],
+      "meta": {
+        "role": "ai/ml",
+        "level": "mid",
+        "durationWeeks": 9,
+        "suggestedDurationWeeks": 11,
+        "skillsEffort": 10,
+        "projectsEffort": 21,
+        "overloaded": true
+      }
+    }
+  },
+  {
+    "payload": {
+      "baselineHiringScore": 35.37844785023481,
+      "baselineJobMatch": 34.5147093757987,
+      "role": "devops",
+      "experienceLevel": "senior",
+      "durationWeeks": 5,
+      "skills": ["React", "Docker", "Python", "TypeScript", "HTML", "Kubernetes"],
+      "projects": [
+        {
+          "name": "Project 0",
+          "impact": 18,
+          "complexity": "low",
+          "weeks": 12
+        },
+        {
+          "name": "Project 1",
+          "impact": 34,
+          "complexity": "medium",
+          "weeks": 17
+        },
+        {
+          "name": "Project 2",
+          "impact": 18,
+          "complexity": "high",
+          "weeks": 22
+        },
+        {
+          "name": "Project 3",
+          "impact": 76,
+          "complexity": "low",
+          "weeks": 2
+        },
+        {
+          "name": "Project 4",
+          "impact": 83,
+          "complexity": "medium",
+          "weeks": 3
+        }
+      ]
+    },
+    "context": {
+      "resumeConnected": false,
+      "githubConnected": false,
+      "sources": []
+    },
+    "expected": {
+      "scenarioHash": "7f2765437614e541a3f08b8141957939c8891ac52aa83473e7da044afad4dbf0",
+      "baseline": {
+        "hiringScore": 35,
+        "jobMatch": 35
+      },
+      "predicted": {
+        "hiringScore": 54,
+        "jobMatch": 49
+      },
+      "improvements": {
+        "hiringScore": 19,
+        "jobMatch": 14
+      },
+      "confidenceScore": 58,
+      "uncertaintyRange": {
+        "low": {
+          "hiringScore": 37,
+          "jobMatch": 32
+        },
+        "expected": {
+          "hiringScore": 54,
+          "jobMatch": 49
+        },
+        "high": {
+          "hiringScore": 71,
+          "jobMatch": 66
+        }
+      },
+      "breakdown": {
+        "skills": 19,
+        "projects": 14,
+        "synergy": 6,
+        "penalty": -20,
+        "total": 19
+      },
+      "skillDetails": [
+        {
+          "skill": "React",
+          "pts": 2.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.5,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Docker",
+          "pts": 5.5,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "Python",
+          "pts": 3.9,
+          "relevance": 1.1,
+          "tier": "valuable",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "TypeScript",
+          "pts": 1.9,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 1.4,
+          "difficulty": 0.8
+        },
+        {
+          "skill": "HTML",
+          "pts": 0.8,
+          "relevance": 0.7,
+          "tier": "low",
+          "demand": 0.9,
+          "difficulty": 0.6
+        },
+        {
+          "skill": "Kubernetes",
+          "pts": 4.5,
+          "relevance": 1.6,
+          "tier": "core",
+          "demand": 1.3,
+          "difficulty": 0.9
+        }
+      ],
+      "projectDetails": [
+        {
+          "name": "Project 0",
+          "complexity": "low",
+          "weeks": 12,
+          "impact": 18,
+          "pts": 1.8
+        },
+        {
+          "name": "Project 1",
+          "complexity": "medium",
+          "weeks": 12,
+          "impact": 34,
+          "pts": 3.4
+        },
+        {
+          "name": "Project 2",
+          "complexity": "high",
+          "weeks": 12,
+          "impact": 18,
+          "pts": 1.8
+        },
+        {
+          "name": "Project 3",
+          "complexity": "low",
+          "weeks": 2,
+          "impact": 76,
+          "pts": 2.8
+        },
+        {
+          "name": "Project 4",
+          "complexity": "medium",
+          "weeks": 3,
+          "impact": 83,
+          "pts": 4.1
+        }
+      ],
+      "meta": {
+        "role": "devops",
+        "level": "senior",
+        "durationWeeks": 5,
+        "suggestedDurationWeeks": 10,
+        "skillsEffort": 8,
+        "projectsEffort": 56,
+        "overloaded": true
+      }
+    }
+  }
+]

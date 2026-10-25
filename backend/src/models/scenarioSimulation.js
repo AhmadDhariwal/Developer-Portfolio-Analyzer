@@ -7,19 +7,19 @@ const scenarioProjectSchema = new mongoose.Schema(
     complexity: {
       type: String,
       enum: ['low', 'medium', 'high'],
-      default: 'medium'
+      default: 'medium',
     },
-    weeks: { type: Number, default: 3, min: 1, max: 24 }
+    weeks: { type: Number, default: 3, min: 1, max: 24 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const scorePairSchema = new mongoose.Schema(
   {
     hiringScore: { type: Number, default: 0 },
-    jobMatch: { type: Number, default: 0 }
+    jobMatch: { type: Number, default: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const scenarioSimulationSchema = new mongoose.Schema(
@@ -28,41 +28,41 @@ const scenarioSimulationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     name: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 120
+      maxlength: 120,
     },
     baselineHiringScore: {
       type: Number,
       required: true,
       min: 0,
-      max: 100
+      max: 100,
     },
     baselineJobMatch: {
       type: Number,
       required: true,
       min: 0,
-      max: 100
+      max: 100,
     },
     role: {
       type: String,
       default: 'full stack',
-      trim: true
+      trim: true,
     },
     experienceLevel: {
       type: String,
       default: 'mid',
-      trim: true
+      trim: true,
     },
     durationWeeks: {
       type: Number,
       default: 6,
       min: 1,
-      max: 24
+      max: 24,
     },
     skills: [{ type: String, trim: true }],
     projects: [scenarioProjectSchema],
@@ -72,37 +72,42 @@ const scenarioSimulationSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
-      max: 100
+      max: 100,
     },
     scenarioHash: {
       type: String,
       default: '',
-      index: true
+      index: true,
     },
     breakdown: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
+      default: {},
     },
     uncertaintyRange: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
+      default: {},
     },
     warnings: [{ type: String }],
     sourceContextSummary: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
+      default: {},
     },
+    recordSchemaVersion: { type: String },
+    ruleVersion: { type: String },
+    tableVersion: { type: String },
+    evaluation: { type: mongoose.Schema.Types.Mixed },
     result: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
-    }
+      default: {},
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+    autoIndex: process.env.NODE_ENV !== 'production',
+  },
 );
 
-scenarioSimulationSchema.index({ userId: 1, createdAt: -1 });
+scenarioSimulationSchema.index({ userId: 1, createdAt: -1, _id: -1 }, { name: 'scenario_history_cursor' });
 
 scenarioSimulationSchema.index({ userId: 1, scenarioHash: 1 }, { unique: true });
 scenarioSimulationSchema.index({ userId: 1, role: 1, experienceLevel: 1 });

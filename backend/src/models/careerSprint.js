@@ -4,7 +4,7 @@ const recommendationProvenance = {
   sourceRecommendationSnapshotId: { type: String },
   sourceRecommendationHash: { type: String },
   sourceRule: { type: String },
-  evidenceLimitation: { type: String }
+  evidenceLimitation: { type: String },
 };
 
 const sprintTaskSchema = new mongoose.Schema(
@@ -17,7 +17,7 @@ const sprintTaskSchema = new mongoose.Schema(
       max: 10,
       default: function () {
         return { learning: 3, project: 5, practice: 4 }[this.category] || 3;
-      }
+      },
     },
     priority: { type: String, enum: ['high', 'medium', 'low'], default: 'medium' },
     category: { type: String, enum: ['learning', 'project', 'practice'], default: 'learning' },
@@ -32,11 +32,12 @@ const sprintTaskSchema = new mongoose.Schema(
     deadline: { type: Date, default: null },
     sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
     sourceScenarioHash: { type: String, default: '' },
+    sourceScenarioItemKey: { type: String },
     sourceCourseId: { type: String, default: null },
     sourceCourseSkill: { type: String, default: null },
-    ...recommendationProvenance
+    ...recommendationProvenance,
   },
-  { _id: true }
+  { _id: true },
 );
 
 const aiPlanTaskSchema = new mongoose.Schema(
@@ -49,7 +50,7 @@ const aiPlanTaskSchema = new mongoose.Schema(
       max: 10,
       default: function () {
         return { learning: 3, project: 5, practice: 4 }[this.category] || 3;
-      }
+      },
     },
     priority: { type: String, enum: ['high', 'medium', 'low'], default: 'medium' },
     category: { type: String, enum: ['learning', 'project', 'practice'], default: 'learning' },
@@ -58,11 +59,12 @@ const aiPlanTaskSchema = new mongoose.Schema(
     endDate: { type: Date, default: null },
     sourceScenarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'ScenarioSimulation', default: null },
     sourceScenarioHash: { type: String, default: '' },
+    sourceScenarioItemKey: { type: String },
     sourceCourseId: { type: String, default: null },
     sourceCourseSkill: { type: String, default: null },
-    ...recommendationProvenance
+    ...recommendationProvenance,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const aiPlanSchema = new mongoose.Schema(
@@ -80,9 +82,9 @@ const aiPlanSchema = new mongoose.Schema(
     consistencyScore: { type: Number, default: 0 },
     signalsUsed: [{ type: String }],
     tasks: [aiPlanTaskSchema],
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
   },
-  { _id: true }
+  { _id: true },
 );
 
 const careerSprintSchema = new mongoose.Schema(
@@ -91,7 +93,7 @@ const careerSprintSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     title: { type: String, default: 'Career Sprint' },
     // New windows are retry-safe without rewriting or deleting legacy records.
@@ -108,7 +110,7 @@ const careerSprintSchema = new mongoose.Schema(
       start: String,
       end: String,
       reason: String,
-      evidence: String
+      evidence: String,
     },
 
     // ── Sprint date range (user-selectable) ───────────────────────────────
@@ -146,10 +148,21 @@ const careerSprintSchema = new mongoose.Schema(
     goalTitle: { type: String, default: '' },
     goalExperienceLevel: { type: String, default: '' },
 
+    scenarioIngestedItems: { type: [String], default: [] },
+    scenarioReceipts: [
+      {
+        key: String,
+        scenarioHash: String,
+        mode: { type: String, enum: ['draft', 'active-tasks'] },
+        itemKeys: [String],
+        workIds: [mongoose.Schema.Types.ObjectId],
+        createdAt: Date,
+      },
+    ],
     tasks: [sprintTaskSchema],
-    aiPlans: [aiPlanSchema]
+    aiPlans: [aiPlanSchema],
   },
-  { timestamps: true, optimisticConcurrency: true, read: 'primary' }
+  { timestamps: true, optimisticConcurrency: true, read: 'primary' },
 );
 
 careerSprintSchema.index({ userId: 1, updatedAt: -1 });
@@ -157,15 +170,15 @@ careerSprintSchema.index(
   { userId: 1, creationKey: 1 },
   {
     unique: true,
-    partialFilterExpression: { creationKey: { $type: 'string' } }
-  }
+    partialFilterExpression: { creationKey: { $type: 'string' } },
+  },
 );
 careerSprintSchema.index(
   { userId: 1, occupiedDays: 1 },
   {
     unique: true,
-    partialFilterExpression: { 'occupiedDays.0': { $exists: true } }
-  }
+    partialFilterExpression: { 'occupiedDays.0': { $exists: true } },
+  },
 );
 careerSprintSchema.index({ userId: 1, sprintStartDate: 1, sprintEndDate: 1 });
 careerSprintSchema.index({ userId: 1, 'tasks.isCompleted': 1, 'tasks.endDate': 1 });

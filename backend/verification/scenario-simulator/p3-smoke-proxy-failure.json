@@ -1,0 +1,5565 @@
+{
+  "runId": "674b0595-a73b-4850-8733-fed94cf3e9a6",
+  "mode": "SMOKE_NOT_EXTENDED_ACCEPTANCE",
+  "startedAt": "2026-10-25T12:52:25.743Z",
+  "status": "FAIL",
+  "productionDataModified": false,
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Pure deterministic engine at 100 evaluations/sec/instance meets p95/p99 thresholds",
+      "passed": false,
+      "details": [
+        {
+          "count": 100,
+          "elapsedMs": 1015.6594999999998,
+          "p95": 6.312999999998283,
+          "p99": 23.121100000000297
+        },
+        {
+          "count": 100,
+          "elapsedMs": 1008.4278000000004,
+          "p95": 7.652499999999236,
+          "p99": 18.18199999999888
+        }
+      ]
+    },
+    {
+      "label": "Two real instances share evaluate quota 60/minute",
+      "passed": true,
+      "details": {
+        "accepted": 60,
+        "denied": 5,
+        "statuses": [
+          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 200, 200, 200, 200, 429, 200, 200, 200, 200, 200, 200,
+          200, 429, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 429, 200, 429, 200, 429, 200
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share context quota 30/minute",
+      "passed": true,
+      "details": {
+        "accepted": 30,
+        "denied": 5,
+        "statuses": [
+          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 429, 429, 429, 429, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 200, 200, 429, 200
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share refresh quota 6/minute",
+      "passed": true,
+      "details": {
+        "accepted": 6,
+        "denied": 5,
+        "statuses": [200, 200, 200, 200, 200, 429, 200, 429, 429, 429, 429]
+      }
+    },
+    {
+      "label": "Two real instances share history quota 60/minute",
+      "passed": false,
+      "details": {
+        "accepted": 52,
+        "denied": 5,
+        "statuses": [
+          200, 503, 200, 503, 200, 503, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          503, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 429, 503, 200,
+          503, 429, 429, 200, 503, 429, 200, 429, 503
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share save quota 20/minute",
+      "passed": true,
+      "details": {
+        "accepted": 20,
+        "denied": 5,
+        "statuses": [
+          201, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201,
+          201, 201, 429, 201, 429, 201, 429, 201, 429, 201, 429
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share export quota 10/minute",
+      "passed": true,
+      "details": {
+        "accepted": 10,
+        "denied": 5,
+        "statuses": [
+          200, 200, 200, 200, 200, 200, 429, 200, 429, 200, 429, 200, 429, 200,
+          429
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share delete quota 20/minute",
+      "passed": true,
+      "details": {
+        "accepted": 20,
+        "denied": 5,
+        "statuses": [
+          404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404,
+          404, 429, 404, 429, 404, 429, 404, 429, 404, 429, 404
+        ]
+      }
+    },
+    {
+      "label": "Quota survives application restart and remains account isolated",
+      "passed": true
+    },
+    {
+      "label": "Real Redis quota keys have bounded TTL",
+      "passed": true
+    },
+    {
+      "label": "Redis TCP blackhole fails closed on both instances within bounded time",
+      "passed": true,
+      "details": [
+        {
+          "status": 503,
+          "elapsedMs": 180.22439999999915
+        },
+        {
+          "status": 503,
+          "elapsedMs": 170.40439999999944
+        }
+      ]
+    },
+    {
+      "label": "Real Redis disconnect/reconnect restores both instances without local quota fallback",
+      "passed": true,
+      "details": {
+        "recoveryMs": 576.7344000000012
+      }
+    },
+    {
+      "label": "Real Mongo wire stall affects only one source; healthy evidence survives within 2.2 sec",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsedMs": 932.2011999999959,
+        "sources": [
+          {
+            "key": "github",
+            "status": "missing"
+          },
+          {
+            "key": "resume",
+            "status": "missing"
+          },
+          {
+            "key": "skillGap",
+            "status": "missing"
+          },
+          {
+            "key": "recommendations",
+            "status": "missing"
+          },
+          {
+            "key": "careerSprint",
+            "status": "available"
+          },
+          {
+            "key": "portfolio",
+            "status": "timeout"
+          },
+          {
+            "key": "integrations",
+            "status": "available"
+          },
+          {
+            "key": "jobsDemand",
+            "status": "missing"
+          }
+        ],
+        "delayedFrames": 1
+      }
+    },
+    {
+      "label": "Real Mongo aborted-source connections recover after the stall",
+      "passed": true
+    },
+    {
+      "label": "Real Mongo delay flood enforces context admission bounds and drains pending work",
+      "passed": true,
+      "details": {
+        "rejected": 340,
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 144982016,
+            "heapTotal": 104529920,
+            "heapUsed": 45234080,
+            "external": 21425954,
+            "arrayBuffers": 18562864
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 145727488,
+            "heapTotal": 100073472,
+            "heapUsed": 29092744,
+            "external": 21425994,
+            "arrayBuffers": 18523049
+          },
+          "cpu": {
+            "user": 4046000,
+            "system": 3078000
+          },
+          "eventLoopP99Ms": 128.450559,
+          "pool": {
+            "connections": 1,
+            "peakConnections": 7,
+            "checkedOut": 0,
+            "peakCheckedOut": 6,
+            "waiting": 26,
+            "peakWaiting": 26,
+            "checkOutFailures": 0,
+            "commands": 36,
+            "commandsInFlight": 0,
+            "peakCommands": 6,
+            "waitP95Ms": 133
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 64,
+            "pending": 32
+          },
+          "redisReady": true
+        }
+      }
+    },
+    {
+      "label": "Hot-account singleflight caps joiners at 256 and drains after real driver abort",
+      "passed": true,
+      "details": {
+        "statuses": {
+          "503": 400
+        },
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 145809408,
+            "heapTotal": 100073472,
+            "heapUsed": 32497472,
+            "external": 21412218,
+            "arrayBuffers": 18549088
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 145911808,
+            "heapTotal": 33488896,
+            "heapUsed": 29074160,
+            "external": 21412218,
+            "arrayBuffers": 18523049
+          },
+          "cpu": {
+            "user": 4250000,
+            "system": 3109000
+          },
+          "eventLoopP99Ms": 114.425855,
+          "pool": {
+            "connections": 0,
+            "peakConnections": 7,
+            "checkedOut": 0,
+            "peakCheckedOut": 6,
+            "waiting": 26,
+            "peakWaiting": 27,
+            "checkOutFailures": 0,
+            "commands": 37,
+            "commandsInFlight": 0,
+            "peakCommands": 6,
+            "waitP95Ms": 133
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        }
+      }
+    },
+    {
+      "label": "Real Mongo pool pressure queues and drains without lost queries",
+      "passed": false,
+      "details": {
+        "pressure": {
+          "completed": 160,
+          "failed": 0
+        },
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 146923520,
+            "heapTotal": 51838976,
+            "heapUsed": 37969920,
+            "external": 21877099,
+            "arrayBuffers": 19013969
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 147140608,
+            "heapTotal": 51838976,
+            "heapUsed": 30348904,
+            "external": 21877099,
+            "arrayBuffers": 18721161
+          },
+          "cpu": {
+            "user": 5531000,
+            "system": 3343000
+          },
+          "eventLoopP99Ms": 61.997055,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 197,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 2436
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        }
+      }
+    },
+    {
+      "label": "Real history query uses bounded index access",
+      "passed": true,
+      "details": {
+        "plan": {
+          "isCached": true,
+          "stage": "LIMIT",
+          "limitAmount": 20,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "createdAt": -1,
+                "_id": -1
+              },
+              "indexName": "scenario_history_cursor",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "createdAt": [],
+                "_id": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6addfb9264f83daf6a850e57'), ObjectId('6addfb9264f83daf6a850e57')]"
+                ],
+                "createdAt": ["[MaxKey, MinKey]"],
+                "_id": ["[MaxKey, MinKey]"]
+              }
+            }
+          }
+        },
+        "returned": 20,
+        "keysExamined": 20,
+        "docsExamined": 20
+      }
+    },
+    {
+      "label": "Real unique query uses bounded index access",
+      "passed": true,
+      "details": {
+        "plan": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "scenarioHash": 1
+              },
+              "indexName": "userId_1_scenarioHash_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "scenarioHash": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6addfb9264f83daf6a850e57'), ObjectId('6addfb9264f83daf6a850e57')]"
+                ],
+                "scenarioHash": ["[\"p3-heavy-500\", \"p3-heavy-500\"]"]
+              }
+            }
+          }
+        },
+        "returned": 1,
+        "keysExamined": 1,
+        "docsExamined": 1
+      }
+    },
+    {
+      "label": "warmup: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "warmup",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "peakPending": 3,
+        "startedAt": "2026-10-25T12:53:26.381Z",
+        "elapsedMs": 5836.356999999989,
+        "finishedAt": "2026-10-25T12:53:32.219Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 81,
+            "p99Ms": 99,
+            "maxMs": 98.73270000000775,
+            "meanMs": 52.75364750000117
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 49,
+            "p99Ms": 53,
+            "maxMs": 52.79389999998966,
+            "meanMs": 33.06956000000147
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 53,
+            "p99Ms": 53,
+            "maxMs": 52.75990000000456,
+            "meanMs": 37.83623333333623
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 120,
+            "p99Ms": 120,
+            "maxMs": 119.98569999999017,
+            "meanMs": 53.76690000000235
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 935,
+            "p99Ms": 935,
+            "maxMs": 934.9389999999985,
+            "meanMs": 500.32914999999775
+          }
+        }
+      }
+    },
+    {
+      "label": "warmup: unchanged normal HTTP latency targets",
+      "passed": false,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 81,
+          "p99Ms": 99,
+          "maxMs": 98.73270000000775,
+          "meanMs": 52.75364750000117
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 49,
+          "p99Ms": 53,
+          "maxMs": 52.79389999998966,
+          "meanMs": 33.06956000000147
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 53,
+          "p99Ms": 53,
+          "maxMs": 52.75990000000456,
+          "meanMs": 37.83623333333623
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 120,
+          "p99Ms": 120,
+          "maxMs": 119.98569999999017,
+          "meanMs": 53.76690000000235
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 935,
+          "p99Ms": 935,
+          "maxMs": 934.9389999999985,
+          "meanMs": 500.32914999999775
+        }
+      }
+    },
+    {
+      "label": "steady-15min: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "steady-15min",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "peakPending": 2,
+        "startedAt": "2026-10-25T12:53:32.321Z",
+        "elapsedMs": 5044.203699999998,
+        "finishedAt": "2026-10-25T12:53:37.367Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 90,
+            "p99Ms": 125,
+            "maxMs": 124.61439999999129,
+            "meanMs": 61.11510500000004
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 54,
+            "p99Ms": 56,
+            "maxMs": 55.28489999999874,
+            "meanMs": 35.00337142857232
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 54,
+            "p99Ms": 54,
+            "maxMs": 53.992800000007264,
+            "meanMs": 35.192066666668204
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 65,
+            "p99Ms": 65,
+            "maxMs": 64.0619000000006,
+            "meanMs": 51.72660000000178
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 94,
+            "p99Ms": 94,
+            "maxMs": 93.15909999998985,
+            "meanMs": 84.68544999998994
+          }
+        }
+      }
+    },
+    {
+      "label": "steady-15min: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 90,
+          "p99Ms": 125,
+          "maxMs": 124.61439999999129,
+          "meanMs": 61.11510500000004
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 54,
+          "p99Ms": 56,
+          "maxMs": 55.28489999999874,
+          "meanMs": 35.00337142857232
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 54,
+          "p99Ms": 54,
+          "maxMs": 53.992800000007264,
+          "meanMs": 35.192066666668204
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 65,
+          "p99Ms": 65,
+          "maxMs": 64.0619000000006,
+          "meanMs": 51.72660000000178
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 94,
+          "p99Ms": 94,
+          "maxMs": 93.15909999998985,
+          "meanMs": 84.68544999998994
+        }
+      }
+    },
+    {
+      "label": "burst-60sec: no unexpected network/5xx failure",
+      "passed": false,
+      "details": {
+        "label": "burst-60sec",
+        "seconds": 5,
+        "rps": 100,
+        "scheduled": 500,
+        "completed": 500,
+        "statuses": {
+          "200": 308,
+          "201": 40,
+          "503": 152
+        },
+        "errors": [
+          "context:HTTP 503",
+          "context:HTTP 503",
+          "context:HTTP 503",
+          "context:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503",
+          "history:HTTP 503",
+          "evaluate:HTTP 503",
+          "evaluate:HTTP 503"
+        ],
+        "peakPending": 75,
+        "startedAt": "2026-10-25T12:53:37.422Z",
+        "elapsedMs": 5149.301600000006,
+        "finishedAt": "2026-10-25T12:53:42.573Z",
+        "latency": {
+          "context": {
+            "count": 200,
+            "p95Ms": 850,
+            "p99Ms": 955,
+            "maxMs": 1052.0191999999952,
+            "meanMs": 573.1878135000006
+          },
+          "evaluate": {
+            "count": 175,
+            "p95Ms": 649,
+            "p99Ms": 687,
+            "maxMs": 688.0397000000085,
+            "meanMs": 454.16730628571423
+          },
+          "history": {
+            "count": 75,
+            "p95Ms": 683,
+            "p99Ms": 753,
+            "maxMs": 752.494399999996,
+            "meanMs": 417.1881986666655
+          },
+          "save": {
+            "count": 40,
+            "p95Ms": 619,
+            "p99Ms": 667,
+            "maxMs": 666.5674999999901,
+            "meanMs": 420.7101849999999
+          },
+          "export": {
+            "count": 10,
+            "p95Ms": 841,
+            "p99Ms": 841,
+            "maxMs": 840.1050999999861,
+            "meanMs": 567.8873099999953
+          }
+        }
+      }
+    },
+    {
+      "label": "burst-60sec: unchanged normal HTTP latency targets",
+      "passed": false,
+      "details": {
+        "context": {
+          "count": 200,
+          "p95Ms": 850,
+          "p99Ms": 955,
+          "maxMs": 1052.0191999999952,
+          "meanMs": 573.1878135000006
+        },
+        "evaluate": {
+          "count": 175,
+          "p95Ms": 649,
+          "p99Ms": 687,
+          "maxMs": 688.0397000000085,
+          "meanMs": 454.16730628571423
+        },
+        "history": {
+          "count": 75,
+          "p95Ms": 683,
+          "p99Ms": 753,
+          "maxMs": 752.494399999996,
+          "meanMs": 417.1881986666655
+        },
+        "save": {
+          "count": 40,
+          "p95Ms": 619,
+          "p99Ms": 667,
+          "maxMs": 666.5674999999901,
+          "meanMs": 420.7101849999999
+        },
+        "export": {
+          "count": 10,
+          "p95Ms": 841,
+          "p99Ms": 841,
+          "maxMs": 840.1050999999861,
+          "meanMs": 567.8873099999953
+        }
+      }
+    },
+    {
+      "label": "soak-60min: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "soak-60min",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "peakPending": 2,
+        "startedAt": "2026-10-25T12:53:42.646Z",
+        "elapsedMs": 5015.839099999997,
+        "finishedAt": "2026-10-25T12:53:47.664Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 78,
+            "p99Ms": 88,
+            "maxMs": 87.83249999998952,
+            "meanMs": 55.20886999999821
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 55,
+            "p99Ms": 55,
+            "maxMs": 54.38169999999809,
+            "meanMs": 32.509237142858076
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 75,
+            "p99Ms": 75,
+            "maxMs": 74.19550000000163,
+            "meanMs": 38.33356666666611
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 73,
+            "p99Ms": 73,
+            "maxMs": 72.52419999999984,
+            "meanMs": 54.50222500000018
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 71,
+            "p99Ms": 71,
+            "maxMs": 70.62400000001071,
+            "meanMs": 68.04130000000441
+          }
+        }
+      }
+    },
+    {
+      "label": "soak-60min: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 78,
+          "p99Ms": 88,
+          "maxMs": 87.83249999998952,
+          "meanMs": 55.20886999999821
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 55,
+          "p99Ms": 55,
+          "maxMs": 54.38169999999809,
+          "meanMs": 32.509237142858076
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 75,
+          "p99Ms": 75,
+          "maxMs": 74.19550000000163,
+          "meanMs": 38.33356666666611
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 73,
+          "p99Ms": 73,
+          "maxMs": 72.52419999999984,
+          "meanMs": 54.50222500000018
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 71,
+          "p99Ms": 71,
+          "maxMs": 70.62400000001071,
+          "meanMs": 68.04130000000441
+        }
+      }
+    },
+    {
+      "label": "Post-warmup heap <256 MB, soak growth <10%, context and Mongo pool queues drain",
+      "passed": false,
+      "details": [
+        {
+          "instance": 0,
+          "heapBaseline": 36531816,
+          "heapFinal": 37942888,
+          "heapGrowth": 0.038625837817643664,
+          "peakSampledHeap": 46089168,
+          "cpuPercentOfOneCore": 43.07613109878167,
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 1547,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 858
+          }
+        },
+        {
+          "instance": 1,
+          "heapBaseline": 36206104,
+          "heapFinal": 36025560,
+          "heapGrowth": -0.004986562486811616,
+          "peakSampledHeap": 43627664,
+          "cpuPercentOfOneCore": 39.04936223760224,
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "pool": {
+            "connections": 35,
+            "peakConnections": 35,
+            "checkedOut": 0,
+            "peakCheckedOut": 34,
+            "waiting": 0,
+            "peakWaiting": 33,
+            "checkOutFailures": 0,
+            "commands": 1616,
+            "commandsInFlight": 0,
+            "peakCommands": 34,
+            "waitP95Ms": 108
+          }
+        }
+      ]
+    },
+    {
+      "label": "Existing immutable snapshot remains byte-equivalent after full workload",
+      "passed": true
+    },
+    {
+      "label": "No duplicate owned evaluation snapshots after workload",
+      "passed": true
+    },
+    {
+      "label": "Export replay creates one receipt/task with no fabricated completion or XP",
+      "passed": true
+    },
+    {
+      "label": "Authoritative history remains account isolated",
+      "passed": true
+    }
+  ],
+  "phases": [
+    {
+      "label": "warmup",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "peakPending": 3,
+      "startedAt": "2026-10-25T12:53:26.381Z",
+      "elapsedMs": 5836.356999999989,
+      "finishedAt": "2026-10-25T12:53:32.219Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 81,
+          "p99Ms": 99,
+          "maxMs": 98.73270000000775,
+          "meanMs": 52.75364750000117
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 49,
+          "p99Ms": 53,
+          "maxMs": 52.79389999998966,
+          "meanMs": 33.06956000000147
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 53,
+          "p99Ms": 53,
+          "maxMs": 52.75990000000456,
+          "meanMs": 37.83623333333623
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 120,
+          "p99Ms": 120,
+          "maxMs": 119.98569999999017,
+          "meanMs": 53.76690000000235
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 935,
+          "p99Ms": 935,
+          "maxMs": 934.9389999999985,
+          "meanMs": 500.32914999999775
+        }
+      }
+    },
+    {
+      "label": "steady-15min",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "peakPending": 2,
+      "startedAt": "2026-10-25T12:53:32.321Z",
+      "elapsedMs": 5044.203699999998,
+      "finishedAt": "2026-10-25T12:53:37.367Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 90,
+          "p99Ms": 125,
+          "maxMs": 124.61439999999129,
+          "meanMs": 61.11510500000004
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 54,
+          "p99Ms": 56,
+          "maxMs": 55.28489999999874,
+          "meanMs": 35.00337142857232
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 54,
+          "p99Ms": 54,
+          "maxMs": 53.992800000007264,
+          "meanMs": 35.192066666668204
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 65,
+          "p99Ms": 65,
+          "maxMs": 64.0619000000006,
+          "meanMs": 51.72660000000178
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 94,
+          "p99Ms": 94,
+          "maxMs": 93.15909999998985,
+          "meanMs": 84.68544999998994
+        }
+      }
+    },
+    {
+      "label": "burst-60sec",
+      "seconds": 5,
+      "rps": 100,
+      "scheduled": 500,
+      "completed": 500,
+      "statuses": {
+        "200": 308,
+        "201": 40,
+        "503": 152
+      },
+      "errors": [
+        "context:HTTP 503",
+        "context:HTTP 503",
+        "context:HTTP 503",
+        "context:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503",
+        "history:HTTP 503",
+        "evaluate:HTTP 503",
+        "evaluate:HTTP 503"
+      ],
+      "peakPending": 75,
+      "startedAt": "2026-10-25T12:53:37.422Z",
+      "elapsedMs": 5149.301600000006,
+      "finishedAt": "2026-10-25T12:53:42.573Z",
+      "latency": {
+        "context": {
+          "count": 200,
+          "p95Ms": 850,
+          "p99Ms": 955,
+          "maxMs": 1052.0191999999952,
+          "meanMs": 573.1878135000006
+        },
+        "evaluate": {
+          "count": 175,
+          "p95Ms": 649,
+          "p99Ms": 687,
+          "maxMs": 688.0397000000085,
+          "meanMs": 454.16730628571423
+        },
+        "history": {
+          "count": 75,
+          "p95Ms": 683,
+          "p99Ms": 753,
+          "maxMs": 752.494399999996,
+          "meanMs": 417.1881986666655
+        },
+        "save": {
+          "count": 40,
+          "p95Ms": 619,
+          "p99Ms": 667,
+          "maxMs": 666.5674999999901,
+          "meanMs": 420.7101849999999
+        },
+        "export": {
+          "count": 10,
+          "p95Ms": 841,
+          "p99Ms": 841,
+          "maxMs": 840.1050999999861,
+          "meanMs": 567.8873099999953
+        }
+      }
+    },
+    {
+      "label": "soak-60min",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "peakPending": 2,
+      "startedAt": "2026-10-25T12:53:42.646Z",
+      "elapsedMs": 5015.839099999997,
+      "finishedAt": "2026-10-25T12:53:47.664Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 78,
+          "p99Ms": 88,
+          "maxMs": 87.83249999998952,
+          "meanMs": 55.20886999999821
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 55,
+          "p99Ms": 55,
+          "maxMs": 54.38169999999809,
+          "meanMs": 32.509237142858076
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 75,
+          "p99Ms": 75,
+          "maxMs": 74.19550000000163,
+          "meanMs": 38.33356666666611
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 73,
+          "p99Ms": 73,
+          "maxMs": 72.52419999999984,
+          "meanMs": 54.50222500000018
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 71,
+          "p99Ms": 71,
+          "maxMs": 70.62400000001071,
+          "meanMs": 68.04130000000441
+        }
+      }
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-10-25T12:53:32.269Z",
+      "label": "warmup",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 152518656,
+            "heapTotal": 55402496,
+            "heapUsed": 40042016,
+            "external": 23228936,
+            "arrayBuffers": 19182288
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 152776704,
+            "heapTotal": 58286080,
+            "heapUsed": 36613320,
+            "external": 23228936,
+            "arrayBuffers": 18787383
+          },
+          "cpu": {
+            "user": 7640000,
+            "system": 3609000
+          },
+          "eventLoopP99Ms": 62.095359,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 413,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 2218
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 118415360,
+            "heapTotal": 44130304,
+            "heapUsed": 38691424,
+            "external": 23489253,
+            "arrayBuffers": 19442645
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 117436416,
+            "heapTotal": 41246720,
+            "heapUsed": 36274296,
+            "external": 23489293,
+            "arrayBuffers": 19113733
+          },
+          "cpu": {
+            "user": 6890000,
+            "system": 3625000
+          },
+          "eventLoopP99Ms": 85.590015,
+          "pool": {
+            "connections": 17,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 30,
+            "checkOutFailures": 0,
+            "commands": 420,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 261
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 1,
+            "joiners": 13,
+            "pending": 1
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1256224",
+        "used_memory_rss:4280320",
+        "used_memory_peak:1268688"
+      ]
+    },
+    {
+      "at": "2026-10-25T12:53:32.315Z",
+      "label": "post-warmup-baseline",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 152842240,
+            "heapTotal": 58286080,
+            "heapUsed": 36644280,
+            "external": 22834070,
+            "arrayBuffers": 18787422
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 152842240,
+            "heapTotal": 58023936,
+            "heapUsed": 36531816,
+            "external": 22834070,
+            "arrayBuffers": 18787383
+          },
+          "cpu": {
+            "user": 7703000,
+            "system": 3609000
+          },
+          "eventLoopP99Ms": 62.095359,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 413,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 2218
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 117444608,
+            "heapTotal": 41246720,
+            "heapUsed": 36310896,
+            "external": 23160418,
+            "arrayBuffers": 19113770
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 117780480,
+            "heapTotal": 41508864,
+            "heapUsed": 36206104,
+            "external": 23160418,
+            "arrayBuffers": 19113733
+          },
+          "cpu": {
+            "user": 7031000,
+            "system": 3625000
+          },
+          "eventLoopP99Ms": 85.590015,
+          "pool": {
+            "connections": 17,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 30,
+            "checkOutFailures": 0,
+            "commands": 420,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 261
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 1,
+            "joiners": 13,
+            "pending": 1
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1256224",
+        "used_memory_rss:4280320",
+        "used_memory_peak:1272488"
+      ]
+    },
+    {
+      "at": "2026-10-25T12:53:37.415Z",
+      "label": "steady-15min",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 161021952,
+            "heapTotal": 75063296,
+            "heapUsed": 46089168,
+            "external": 23429508,
+            "arrayBuffers": 19382860
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 160079872,
+            "heapTotal": 75325440,
+            "heapUsed": 36991480,
+            "external": 23429508,
+            "arrayBuffers": 18787383
+          },
+          "cpu": {
+            "user": 9031000,
+            "system": 3703000
+          },
+          "eventLoopP99Ms": 61.734911,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 617,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 2127
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 119152640,
+            "heapTotal": 44654592,
+            "heapUsed": 39720200,
+            "external": 23692078,
+            "arrayBuffers": 19645430
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 118243328,
+            "heapTotal": 44916736,
+            "heapUsed": 36619448,
+            "external": 23692078,
+            "arrayBuffers": 19113733
+          },
+          "cpu": {
+            "user": 8421000,
+            "system": 3765000
+          },
+          "eventLoopP99Ms": 79.888383,
+          "pool": {
+            "connections": 17,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 30,
+            "checkOutFailures": 0,
+            "commands": 625,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 202
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 1,
+            "joiners": 13,
+            "pending": 1
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1273728",
+        "used_memory_rss:4317184",
+        "used_memory_peak:1273728"
+      ]
+    },
+    {
+      "at": "2026-10-25T12:53:42.623Z",
+      "label": "burst-60sec",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 169054208,
+            "heapTotal": 112549888,
+            "heapUsed": 42584520,
+            "external": 23134377,
+            "arrayBuffers": 19087729
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 169148416,
+            "heapTotal": 111501312,
+            "heapUsed": 38493856,
+            "external": 23134377,
+            "arrayBuffers": 18852919
+          },
+          "cpu": {
+            "user": 13000000,
+            "system": 4078000
+          },
+          "eventLoopP99Ms": 160.825343,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 1343,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 964
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 153362432,
+            "heapTotal": 78209024,
+            "heapUsed": 43627664,
+            "external": 24953775,
+            "arrayBuffers": 20907127
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 152023040,
+            "heapTotal": 78209024,
+            "heapUsed": 36427296,
+            "external": 24949899,
+            "arrayBuffers": 19769365
+          },
+          "cpu": {
+            "user": 11906000,
+            "system": 4140000
+          },
+          "eventLoopP99Ms": 141.819903,
+          "pool": {
+            "connections": 35,
+            "peakConnections": 35,
+            "checkedOut": 0,
+            "peakCheckedOut": 34,
+            "waiting": 0,
+            "peakWaiting": 33,
+            "checkOutFailures": 0,
+            "commands": 1411,
+            "commandsInFlight": 0,
+            "peakCommands": 34,
+            "waitP95Ms": 116
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 11,
+            "joiners": 13,
+            "pending": 11
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1303984",
+        "used_memory_rss:4345856",
+        "used_memory_peak:1303984"
+      ]
+    },
+    {
+      "at": "2026-10-25T12:53:47.721Z",
+      "label": "soak-60min",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 171200512,
+            "heapTotal": 111501312,
+            "heapUsed": 45572560,
+            "external": 23470912,
+            "arrayBuffers": 19424264
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 170020864,
+            "heapTotal": 110977024,
+            "heapUsed": 37973176,
+            "external": 23470912,
+            "arrayBuffers": 18852919
+          },
+          "cpu": {
+            "user": 14328000,
+            "system": 4265000
+          },
+          "eventLoopP99Ms": 152.567807,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 1547,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 858
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 153051136,
+            "heapTotal": 78209024,
+            "heapUsed": 42887328,
+            "external": 24376144,
+            "arrayBuffers": 20333372
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 151814144,
+            "heapTotal": 76111872,
+            "heapUsed": 36053744,
+            "external": 24376144,
+            "arrayBuffers": 19769365
+          },
+          "cpu": {
+            "user": 13000000,
+            "system": 4312000
+          },
+          "eventLoopP99Ms": 138.412031,
+          "pool": {
+            "connections": 35,
+            "peakConnections": 35,
+            "checkedOut": 0,
+            "peakCheckedOut": 34,
+            "waiting": 0,
+            "peakWaiting": 33,
+            "checkOutFailures": 0,
+            "commands": 1616,
+            "commandsInFlight": 0,
+            "peakCommands": 34,
+            "waitP95Ms": 108
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 11,
+            "joiners": 13,
+            "pending": 11
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1305520",
+        "used_memory_rss:4366336",
+        "used_memory_peak:1320248"
+      ]
+    },
+    {
+      "at": "2026-10-25T12:53:49.798Z",
+      "label": "drained-final",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 170053632,
+            "heapTotal": 110977024,
+            "heapUsed": 38169648,
+            "external": 22899606,
+            "arrayBuffers": 18852958
+          },
+          "pid": 23616,
+          "memory": {
+            "rss": 170205184,
+            "heapTotal": 44654592,
+            "heapUsed": 37942888,
+            "external": 22899606,
+            "arrayBuffers": 18852919
+          },
+          "cpu": {
+            "user": 14562000,
+            "system": 4281000
+          },
+          "eventLoopP99Ms": 144.965631,
+          "pool": {
+            "connections": 99,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 26,
+            "peakWaiting": 186,
+            "checkOutFailures": 0,
+            "commands": 1547,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 858
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 152141824,
+            "heapTotal": 76111872,
+            "heapUsed": 36208264,
+            "external": 23812174,
+            "arrayBuffers": 19769402
+          },
+          "pid": 6432,
+          "memory": {
+            "rss": 152227840,
+            "heapTotal": 42295296,
+            "heapUsed": 36025560,
+            "external": 23812174,
+            "arrayBuffers": 19769365
+          },
+          "cpu": {
+            "user": 13171000,
+            "system": 4312000
+          },
+          "eventLoopP99Ms": 138.412031,
+          "pool": {
+            "connections": 35,
+            "peakConnections": 35,
+            "checkedOut": 0,
+            "peakCheckedOut": 34,
+            "waiting": 0,
+            "peakWaiting": 33,
+            "checkOutFailures": 0,
+            "commands": 1616,
+            "commandsInFlight": 0,
+            "peakCommands": 34,
+            "waitP95Ms": 108
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 11,
+            "joiners": 13,
+            "pending": 11
+          },
+          "redisReady": true
+        }
+      ],
+      "redisMemory": [
+        "used_memory:1305536",
+        "used_memory_rss:4374528",
+        "used_memory_peak:1321784"
+      ]
+    }
+  ],
+  "failures": [
+    "Pure deterministic engine at 100 evaluations/sec/instance meets p95/p99 thresholds",
+    "Two real instances share history quota 60/minute",
+    "Real Mongo pool pressure queues and drains without lost queries",
+    "warmup: unchanged normal HTTP latency targets",
+    "burst-60sec: no unexpected network/5xx failure",
+    "burst-60sec: unchanged normal HTTP latency targets",
+    "Post-warmup heap <256 MB, soak growth <10%, context and Mongo pool queues drain"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.2.11",
+      "redis_mode:standalone",
+      "os:Linux 4.4.0-26100-Microsoft x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [10900, 6432],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "engine": [
+    {
+      "count": 100,
+      "elapsedMs": 1015.6594999999998,
+      "p95": 6.312999999998283,
+      "p99": 23.121100000000297
+    },
+    {
+      "count": 100,
+      "elapsedMs": 1008.4278000000004,
+      "p95": 7.652499999999236,
+      "p99": 18.18199999999888
+    }
+  ],
+  "quotaKeys": {
+    "count": 9,
+    "ttls": [51080, 50218, 52212, 50017, 59938, 50004, 49168, 50707, 49600]
+  },
+  "faults": {
+    "redisStall": [
+      {
+        "status": 503,
+        "elapsedMs": 180.22439999999915
+      },
+      {
+        "status": 503,
+        "elapsedMs": 170.40439999999944
+      }
+    ],
+    "afterFault": {
+      "memoryBeforeGc": {
+        "rss": 144982016,
+        "heapTotal": 104529920,
+        "heapUsed": 45234080,
+        "external": 21425954,
+        "arrayBuffers": 18562864
+      },
+      "pid": 23616,
+      "memory": {
+        "rss": 145727488,
+        "heapTotal": 100073472,
+        "heapUsed": 29092744,
+        "external": 21425994,
+        "arrayBuffers": 18523049
+      },
+      "cpu": {
+        "user": 4046000,
+        "system": 3078000
+      },
+      "eventLoopP99Ms": 128.450559,
+      "pool": {
+        "connections": 1,
+        "peakConnections": 7,
+        "checkedOut": 0,
+        "peakCheckedOut": 6,
+        "waiting": 26,
+        "peakWaiting": 26,
+        "checkOutFailures": 0,
+        "commands": 36,
+        "commandsInFlight": 0,
+        "peakCommands": 6,
+        "waitP95Ms": 133
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 64,
+        "pending": 32
+      },
+      "redisReady": true
+    },
+    "hotSample": {
+      "memoryBeforeGc": {
+        "rss": 145809408,
+        "heapTotal": 100073472,
+        "heapUsed": 32497472,
+        "external": 21412218,
+        "arrayBuffers": 18549088
+      },
+      "pid": 23616,
+      "memory": {
+        "rss": 145911808,
+        "heapTotal": 33488896,
+        "heapUsed": 29074160,
+        "external": 21412218,
+        "arrayBuffers": 18523049
+      },
+      "cpu": {
+        "user": 4250000,
+        "system": 3109000
+      },
+      "eventLoopP99Ms": 114.425855,
+      "pool": {
+        "connections": 0,
+        "peakConnections": 7,
+        "checkedOut": 0,
+        "peakCheckedOut": 6,
+        "waiting": 26,
+        "peakWaiting": 27,
+        "checkOutFailures": 0,
+        "commands": 37,
+        "commandsInFlight": 0,
+        "peakCommands": 6,
+        "waitP95Ms": 133
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 256,
+        "pending": 32
+      },
+      "redisReady": true
+    },
+    "poolSample": {
+      "memoryBeforeGc": {
+        "rss": 146923520,
+        "heapTotal": 51838976,
+        "heapUsed": 37969920,
+        "external": 21877099,
+        "arrayBuffers": 19013969
+      },
+      "pid": 23616,
+      "memory": {
+        "rss": 147140608,
+        "heapTotal": 51838976,
+        "heapUsed": 30348904,
+        "external": 21877099,
+        "arrayBuffers": 18721161
+      },
+      "cpu": {
+        "user": 5531000,
+        "system": 3343000
+      },
+      "eventLoopP99Ms": 61.997055,
+      "pool": {
+        "connections": 99,
+        "peakConnections": 99,
+        "checkedOut": 0,
+        "peakCheckedOut": 100,
+        "waiting": 26,
+        "peakWaiting": 186,
+        "checkOutFailures": 0,
+        "commands": 197,
+        "commandsInFlight": 0,
+        "peakCommands": 100,
+        "waitP95Ms": 2436
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 256,
+        "pending": 32
+      },
+      "redisReady": true
+    }
+  },
+  "explain": {
+    "history": {
+      "plan": {
+        "isCached": true,
+        "stage": "LIMIT",
+        "limitAmount": 20,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "userId": 1,
+              "createdAt": -1,
+              "_id": -1
+            },
+            "indexName": "scenario_history_cursor",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "createdAt": [],
+              "_id": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6addfb9264f83daf6a850e57'), ObjectId('6addfb9264f83daf6a850e57')]"
+              ],
+              "createdAt": ["[MaxKey, MinKey]"],
+              "_id": ["[MaxKey, MinKey]"]
+            }
+          }
+        }
+      },
+      "returned": 20,
+      "keysExamined": 20,
+      "docsExamined": 20
+    },
+    "unique": {
+      "plan": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 1,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "userId": 1,
+              "scenarioHash": 1
+            },
+            "indexName": "userId_1_scenarioHash_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "scenarioHash": []
+            },
+            "isUnique": true,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6addfb9264f83daf6a850e57'), ObjectId('6addfb9264f83daf6a850e57')]"
+              ],
+              "scenarioHash": ["[\"p3-heavy-500\", \"p3-heavy-500\"]"]
+            }
+          }
+        }
+      },
+      "returned": 1,
+      "keysExamined": 1,
+      "docsExamined": 1
+    }
+  },
+  "resourceChecks": [
+    {
+      "instance": 0,
+      "heapBaseline": 36531816,
+      "heapFinal": 37942888,
+      "heapGrowth": 0.038625837817643664,
+      "peakSampledHeap": 46089168,
+      "cpuPercentOfOneCore": 43.07613109878167,
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "pool": {
+        "connections": 99,
+        "peakConnections": 99,
+        "checkedOut": 0,
+        "peakCheckedOut": 100,
+        "waiting": 26,
+        "peakWaiting": 186,
+        "checkOutFailures": 0,
+        "commands": 1547,
+        "commandsInFlight": 0,
+        "peakCommands": 100,
+        "waitP95Ms": 858
+      }
+    },
+    {
+      "instance": 1,
+      "heapBaseline": 36206104,
+      "heapFinal": 36025560,
+      "heapGrowth": -0.004986562486811616,
+      "peakSampledHeap": 43627664,
+      "cpuPercentOfOneCore": 39.04936223760224,
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "pool": {
+        "connections": 35,
+        "peakConnections": 35,
+        "checkedOut": 0,
+        "peakCheckedOut": 34,
+        "waiting": 0,
+        "peakWaiting": 33,
+        "checkOutFailures": 0,
+        "commands": 1616,
+        "commandsInFlight": 0,
+        "peakCommands": 34,
+        "waitP95Ms": 108
+      }
+    }
+  ],
+  "metrics": [
+    [
+      {
+        "help": "Total user CPU time spent in seconds.",
+        "name": "dpa_process_cpu_user_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 11.875,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total system CPU time spent in seconds.",
+        "name": "dpa_process_cpu_system_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 1.781,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total user and system CPU time spent in seconds.",
+        "name": "dpa_process_cpu_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 13.656,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Start time of the process since unix epoch in seconds.",
+        "name": "dpa_process_start_time_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1792932784,
+            "labels": {}
+          }
+        ],
+        "aggregator": "omit"
+      },
+      {
+        "help": "Resident memory size in bytes.",
+        "name": "dpa_process_resident_memory_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 170389504,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Lag of event loop in seconds.",
+        "name": "dpa_nodejs_eventloop_lag_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The minimum recorded event loop delay.",
+        "name": "dpa_nodejs_eventloop_lag_min_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.001476608,
+            "labels": {}
+          }
+        ],
+        "aggregator": "min"
+      },
+      {
+        "help": "The maximum recorded event loop delay.",
+        "name": "dpa_nodejs_eventloop_lag_max_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.746586111,
+            "labels": {}
+          }
+        ],
+        "aggregator": "max"
+      },
+      {
+        "help": "The mean of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_mean_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.018699820933586336,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The standard deviation of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_stddev_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.026731849283604663,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 50th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p50_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.015491071,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 90th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p90_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.020725759,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 99th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p99_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.120455167,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "Number of active resources that are currently keeping the event loop alive, grouped by async resource type.",
+        "name": "dpa_nodejs_active_resources",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 3,
+            "labels": {
+              "type": "PipeWrap"
+            }
+          },
+          {
+            "value": 104,
+            "labels": {
+              "type": "TCPSocketWrap"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "TCPServerWrap"
+            }
+          },
+          {
+            "value": 2,
+            "labels": {
+              "type": "Timeout"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "Immediate"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active resources.",
+        "name": "dpa_nodejs_active_resources_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 111,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Number of active libuv handles grouped by handle type. Every handle type is C++ class name.",
+        "name": "dpa_nodejs_active_handles",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1,
+            "labels": {
+              "type": "Pipe"
+            }
+          },
+          {
+            "value": 106,
+            "labels": {
+              "type": "Socket"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "Server"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active handles.",
+        "name": "dpa_nodejs_active_handles_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 108,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Number of active libuv requests grouped by request type. Every request type is C++ class name.",
+        "name": "dpa_nodejs_active_requests",
+        "type": "gauge",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active requests.",
+        "name": "dpa_nodejs_active_requests_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap size from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_size_total_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 44654592,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap size used from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_size_used_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 38693024,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Node.js external memory size in bytes.",
+        "name": "dpa_nodejs_external_memory_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 22905629,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size total from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_total_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 1048576,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 29761536,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 4718592,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 5877760,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 3248128,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size used from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_used_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 655264,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 25886312,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 3842368,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 5108024,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 3207072,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size available from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_available_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 393248,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 105616,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 875648,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 768512,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 1048576,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Node.js version info.",
+        "name": "dpa_nodejs_version_info",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1,
+            "labels": {
+              "version": "v24.19.0",
+              "major": 24,
+              "minor": 19,
+              "patch": 0
+            }
+          }
+        ],
+        "aggregator": "first"
+      },
+      {
+        "name": "dpa_nodejs_gc_duration_seconds",
+        "help": "Garbage collection duration by kind, one of major, minor, incremental or weakcb.",
+        "type": "histogram",
+        "values": [
+          {
+            "value": 2,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 0.0043368999958038335,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 2,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "major"
+            }
+          },
+          {
+            "value": 0.36211179999262094,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "major"
+            }
+          },
+          {
+            "value": 12,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "major"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 22,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 0.15624980000033978,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 25,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "minor"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "name": "dpa_http_request_duration_ms",
+        "help": "HTTP request duration in ms",
+        "type": "histogram",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total HTTP requests",
+        "name": "dpa_http_requests_total",
+        "type": "counter",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total HTTP error responses",
+        "name": "dpa_http_errors_total",
+        "type": "counter",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Bounded Scenario operation outcomes",
+        "name": "dpa_scenario_events_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 96,
+            "labels": {
+              "operation": "evaluate",
+              "status": "success",
+              "version": "scenario-planning-v2"
+            }
+          },
+          {
+            "value": 97,
+            "labels": {
+              "operation": "quota",
+              "status": "shared-unavailable",
+              "version": "none"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "operation": "context",
+              "status": "degraded",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 120,
+            "labels": {
+              "operation": "context",
+              "status": "complete",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 244,
+            "labels": {
+              "operation": "context",
+              "status": "rejected",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 320,
+            "labels": {
+              "operation": "context",
+              "status": "joined",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 32,
+            "labels": {
+              "operation": "save",
+              "status": "success",
+              "version": "scenario-planning-v2"
+            }
+          },
+          {
+            "value": 7,
+            "labels": {
+              "operation": "export",
+              "status": "committed",
+              "version": "scenario-sprint-proposal-v1"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "name": "dpa_scenario_source_duration_ms",
+        "help": "Scenario source read latency",
+        "type": "histogram",
+        "values": [
+          {
+            "value": 94,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 639,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 8,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 63,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 67,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 119,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 10350,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 34,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 120,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 9688,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 20,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 67,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 112,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 12633,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 63,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 67,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 108,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 13676,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 38,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 73,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 113,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 10511,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 46,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 65,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 75,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 9640,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 121,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 1,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 1,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 764,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 1,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "portfolio",
+              "status": "timeout"
+            }
+          },
+          {
+            "value": 24,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 65,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 71,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 110,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 120,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 120,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 120,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 11040,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 120,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "portfolio",
+              "status": "available"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      }
+    ],
+    [
+      {
+        "help": "Total user CPU time spent in seconds.",
+        "name": "dpa_process_cpu_user_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 10.781,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total system CPU time spent in seconds.",
+        "name": "dpa_process_cpu_system_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 1.578,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total user and system CPU time spent in seconds.",
+        "name": "dpa_process_cpu_seconds_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 12.359,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Start time of the process since unix epoch in seconds.",
+        "name": "dpa_process_start_time_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1792932769,
+            "labels": {}
+          }
+        ],
+        "aggregator": "omit"
+      },
+      {
+        "help": "Resident memory size in bytes.",
+        "name": "dpa_process_resident_memory_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 152248320,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Lag of event loop in seconds.",
+        "name": "dpa_nodejs_eventloop_lag_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The minimum recorded event loop delay.",
+        "name": "dpa_nodejs_eventloop_lag_min_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.000077312,
+            "labels": {}
+          }
+        ],
+        "aggregator": "min"
+      },
+      {
+        "help": "The maximum recorded event loop delay.",
+        "name": "dpa_nodejs_eventloop_lag_max_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.827326463,
+            "labels": {}
+          }
+        ],
+        "aggregator": "max"
+      },
+      {
+        "help": "The mean of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_mean_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.0186360018616179,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The standard deviation of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_stddev_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.025122297457280326,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 50th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p50_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.015581183,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 90th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p90_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.021561343,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "The 99th percentile of the recorded event loop delays.",
+        "name": "dpa_nodejs_eventloop_lag_p99_seconds",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0.099090431,
+            "labels": {}
+          }
+        ],
+        "aggregator": "average"
+      },
+      {
+        "help": "Number of active resources that are currently keeping the event loop alive, grouped by async resource type.",
+        "name": "dpa_nodejs_active_resources",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 3,
+            "labels": {
+              "type": "PipeWrap"
+            }
+          },
+          {
+            "value": 40,
+            "labels": {
+              "type": "TCPSocketWrap"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "TCPServerWrap"
+            }
+          },
+          {
+            "value": 2,
+            "labels": {
+              "type": "Timeout"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "Immediate"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active resources.",
+        "name": "dpa_nodejs_active_resources_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 47,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Number of active libuv handles grouped by handle type. Every handle type is C++ class name.",
+        "name": "dpa_nodejs_active_handles",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1,
+            "labels": {
+              "type": "Pipe"
+            }
+          },
+          {
+            "value": 42,
+            "labels": {
+              "type": "Socket"
+            }
+          },
+          {
+            "value": 1,
+            "labels": {
+              "type": "Server"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active handles.",
+        "name": "dpa_nodejs_active_handles_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 44,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Number of active libuv requests grouped by request type. Every request type is C++ class name.",
+        "name": "dpa_nodejs_active_requests",
+        "type": "gauge",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total number of active requests.",
+        "name": "dpa_nodejs_active_requests_total",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap size from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_size_total_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 42295296,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap size used from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_size_used_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 36122568,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Node.js external memory size in bytes.",
+        "name": "dpa_nodejs_external_memory_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 23812165,
+            "labels": {}
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size total from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_total_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 1048576,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 27402240,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 4718592,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 5877760,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 3248128,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size used from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_used_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 93408,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 24644576,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 3904640,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 4278888,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 3207072,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Process heap space size available from Node.js in bytes.",
+        "name": "dpa_nodejs_heap_space_size_available_bytes",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 0,
+            "labels": {
+              "space": "read_only"
+            }
+          },
+          {
+            "value": 955104,
+            "labels": {
+              "space": "new"
+            }
+          },
+          {
+            "value": 213200,
+            "labels": {
+              "space": "old"
+            }
+          },
+          {
+            "value": 751488,
+            "labels": {
+              "space": "code"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared"
+            }
+          },
+          {
+            "value": 581288,
+            "labels": {
+              "space": "trusted"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted"
+            }
+          },
+          {
+            "value": 1048576,
+            "labels": {
+              "space": "new_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "code_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "shared_trusted_large_object"
+            }
+          },
+          {
+            "value": 0,
+            "labels": {
+              "space": "trusted_large_object"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Node.js version info.",
+        "name": "dpa_nodejs_version_info",
+        "type": "gauge",
+        "values": [
+          {
+            "value": 1,
+            "labels": {
+              "version": "v24.19.0",
+              "major": 24,
+              "minor": 19,
+              "patch": 0
+            }
+          }
+        ],
+        "aggregator": "first"
+      },
+      {
+        "name": "dpa_nodejs_gc_duration_seconds",
+        "help": "Garbage collection duration by kind, one of major, minor, incremental or weakcb.",
+        "type": "histogram",
+        "values": [
+          {
+            "value": 0,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 0.006825800001621246,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 4,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "incremental"
+            }
+          },
+          {
+            "value": 20,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 65,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 0.20091310000047086,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 69,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "minor"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.001,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 1,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.01,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 0.1,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 1,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 5,
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "kind": "major"
+            }
+          },
+          {
+            "value": 0.32669270000234246,
+            "metricName": "dpa_nodejs_gc_duration_seconds_sum",
+            "labels": {
+              "kind": "major"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_nodejs_gc_duration_seconds_count",
+            "labels": {
+              "kind": "major"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "name": "dpa_http_request_duration_ms",
+        "help": "HTTP request duration in ms",
+        "type": "histogram",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total HTTP requests",
+        "name": "dpa_http_requests_total",
+        "type": "counter",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Total HTTP error responses",
+        "name": "dpa_http_errors_total",
+        "type": "counter",
+        "values": [],
+        "aggregator": "sum"
+      },
+      {
+        "help": "Bounded Scenario operation outcomes",
+        "name": "dpa_scenario_events_total",
+        "type": "counter",
+        "values": [
+          {
+            "value": 147,
+            "labels": {
+              "operation": "evaluate",
+              "status": "success",
+              "version": "scenario-planning-v2"
+            }
+          },
+          {
+            "value": 14,
+            "labels": {
+              "operation": "context",
+              "status": "joined",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 129,
+            "labels": {
+              "operation": "context",
+              "status": "complete",
+              "version": "scenario-context-v3"
+            }
+          },
+          {
+            "value": 60,
+            "labels": {
+              "operation": "quota",
+              "status": "shared-unavailable",
+              "version": "none"
+            }
+          },
+          {
+            "value": 44,
+            "labels": {
+              "operation": "save",
+              "status": "success",
+              "version": "scenario-planning-v2"
+            }
+          },
+          {
+            "value": 7,
+            "labels": {
+              "operation": "export",
+              "status": "committed",
+              "version": "scenario-sprint-proposal-v1"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      },
+      {
+        "name": "dpa_scenario_source_duration_ms",
+        "help": "Scenario source read latency",
+        "type": "histogram",
+        "values": [
+          {
+            "value": 106,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 591,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "github",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 22,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 67,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 86,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 127,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 10339,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "resume",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 65,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 83,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 128,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 11004,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "skillGap",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 9,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 76,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 116,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 13163,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "recommendations",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 0,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 73,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 109,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 14812,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "careerSprint",
+              "status": "available"
+            }
+          },
+          {
+            "value": 31,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 66,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 84,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 127,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 9964,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "integrations",
+              "status": "available"
+            }
+          },
+          {
+            "value": 17,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 64,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 77,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 128,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 10322,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "portfolio",
+              "status": "available"
+            }
+          },
+          {
+            "value": 40,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 10,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 66,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 50,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 85,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 100,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 128,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 250,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 750,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": 2000,
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_bucket",
+            "exemplar": null,
+            "labels": {
+              "le": "+Inf",
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 9381,
+            "metricName": "dpa_scenario_source_duration_ms_sum",
+            "labels": {
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          },
+          {
+            "value": 129,
+            "metricName": "dpa_scenario_source_duration_ms_count",
+            "labels": {
+              "source": "jobsDemand",
+              "status": "missing"
+            }
+          }
+        ],
+        "aggregator": "sum"
+      }
+    ]
+  ],
+  "removedTemporaryFiles": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-053d03a8-0d43-4aff-a4f5-6fcd9045ea12.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-08807a52-e541-477a-a53c-f3ab9751686d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-0b9d0052-c550-4bee-9646-823994184e07.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-1e0701cd-57fb-4d01-a483-3a1b296a2b84.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-1ec8124e-c8f9-4bd2-8578-f701c9d1e050.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-1feb5da2-4924-4be9-ba01-42e07fb26143.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-354b2b5d-f145-4442-96b1-e98bf73c95e9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-4aa1a49f-e8f0-4896-92ba-fd1089d20a10.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-511b61d5-9cd2-4138-8aa4-3cca1871155f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-5c7568f3-d328-4c94-9ab2-9d7e7a0ff4d7.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-6bddf159-3c04-426f-aee1-b4a9d93e34fb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-74e5869d-f4ce-4d46-90e9-1a3b940741ce.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-821bad93-0cad-4464-abb8-df5fbbd0262b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-9698816d-1cca-4aae-85da-3921474e45e4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-96f76cc8-bd51-4f34-b40c-23221df8663f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-982437d3-de3a-4cdd-ab28-61c9287599c7.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-b3ada228-ca79-4c51-8a8d-ac483af4a1a4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-c57a0134-8507-4c06-9b00-a09341bfd467.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-d1cb3a70-2731-4b56-a063-563f435c5b86.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-d32a18b5-b785-4a86-b5a1-6730ba05bf39.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-df56d4e1-2d2c-4afd-bd2f-a5bf8777d09a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-e346fd96-d22f-4e3d-a908-5e11a64750ad.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-e4af0a78-6364-4796-a086-1e0d7b6a1373.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\collection-ebd57a99-a6b8-4f7c-aeef-f2268b68f689.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-0171f621-1139-4b3c-ab85-441b0604e800.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-0181145e-49bb-44a9-aa56-dbf1ca8c7766.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-01cc8c88-dc54-4116-9ba0-22d9a5533c7a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-097d1c33-43ad-4121-8277-098c7683b8d0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-0c39c05d-1f86-47e4-8f24-6cf1d2124fd2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-1ba4df61-396e-4743-b82d-91aa832335de.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-26fa422f-1e6b-4789-a717-5a3d77711d36.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-2d8acb79-1c0f-49fb-9269-248144843b35.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-2e55f9b6-fbb7-46a7-85d1-01f2f463f3c2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-2f75ffb5-7504-48ca-b5d1-bf70025b1b44.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-38a0c9b7-044f-4263-b348-65fa6a026f6f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-3a6ed5f6-4d20-4ba5-ba38-5a9cdfd23c99.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-3db6257f-464b-4a3d-a078-bc2f987efb69.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-4974c46e-c5e6-432a-abc9-92c2b83537cd.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-49e14ab7-96c0-49f7-94b9-e6374939fee1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-4ac5c86a-9b0c-4103-bd2b-8c437a455206.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-4dc4ab65-aee2-4fca-b8a1-6ae31f3411f1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-55159518-ad7d-4a0e-8d48-b3773ebebd7a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-56aa74ea-f613-4fe6-8789-e43fc118b508.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-62ea37ae-9e78-4859-a7d8-499168427ebb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-631137f9-6d72-4731-bc10-3bd17fc437be.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-65630448-1201-4a89-b0d0-131c2c687c4d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-660db30e-ac6b-4c23-bec5-34d8a7eed860.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-69bfe3dc-7769-4b92-b543-bb6b1233cd03.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-6e7763f6-24d0-4216-948a-cfb7b85f27cd.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-6fe44e32-755d-469e-b378-b72f6f3fcad0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-7080f47e-5616-406b-9078-79615cfbc2ff.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-70951560-9985-43b5-96ea-5604b7443c1d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-72a65cff-89c1-47ed-a27c-53b2872219d5.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-792ee17f-8673-4d91-8421-fc19dea18b52.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-799f09a4-aa5f-40ee-94ec-5694d302b956.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-7c32e111-6123-4ebc-bcca-70be71fb01c2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-7c7843f5-972f-4af6-8de6-209dbb99997a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-89994bbd-9f4e-469d-862a-8c1f9d712a95.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-8faff974-08ee-4b53-8fda-b144aba82e0a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-9299c009-f8dc-4225-b380-5f77f1ebcd2b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-952c374b-51a7-4eb6-8cc7-f1a1785f46f8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-958bc61f-2142-4d2d-a4f5-df31447dfd5c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-973caf8a-fca8-4279-885f-d1e3c80a0814.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-97671cd4-9994-4e4f-a446-2d75fad20ef6.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-a8e36fa4-747c-4a0d-9ab5-8f38ae9b6df2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-aa60c8b7-59a2-4aa1-8531-a8847b862214.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-c3716854-96cf-41f1-888a-9bef41d3156e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-c407ddfe-7b3a-48de-a410-cbd7a3bed4ed.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-c5f81030-a6d0-4f90-9416-b5712435408b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-c7aaadba-dccc-44b1-b57c-9997d3d94b9f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-d2fc1912-6770-4fbc-ae2b-baba752f5a41.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-d760fabd-4962-45a4-be41-1b1a00416db4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-da58cd93-0d0c-4156-aeaf-f8d71a9f0ecd.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-e2b6d925-cc0a-4455-b47c-33d2684c729e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-e9570369-0401-4a3a-b66e-0a53b9e1e0d8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-eee25f51-0cb3-47f8-814d-7e1fa414f748.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\index-feb1fcb0-1d9e-41e6-ad6a-90a5999ef8f4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\mongod.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\sizeStorer.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\storage.bson",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\WiredTiger",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\WiredTiger.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\WiredTiger.turtle",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\WiredTiger.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\WiredTigerHS.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\_mdb_catalog.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\diagnostic.data\\metrics.2026-10-25T12-52-30Z-00000",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL\\diagnostic.data\\metrics.interim"
+  ],
+  "finishedAt": "2026-10-25T12:53:52.772Z",
+  "runtimeDirectory": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-3BURzL",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}
