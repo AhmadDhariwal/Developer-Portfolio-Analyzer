@@ -28,7 +28,8 @@ const strings = (values, limit = 12) =>
     ),
   ].slice(0, limit);
 const read = (query, signal) => {
-  if (query.model && query.model.db.readyState !== 1) throw httpError(503, 'Source database is unavailable.');
+  if (query.model && query.model.db.readyState !== 1)
+    throw httpError(503, 'Source database is unavailable.');
   return query.maxTimeMS(650).setOptions({ signal }).lean();
 };
 
@@ -41,7 +42,9 @@ const deadline = async (work, milliseconds, parentSignal) => {
       new Promise((_, reject) => {
         abort = () => {
           reject(
-            Object.assign(httpError(503, 'Source deadline exceeded.'), { code: 'SCENARIO_SOURCE_TIMEOUT' }),
+            Object.assign(httpError(503, 'Source deadline exceeded.'), {
+              code: 'SCENARIO_SOURCE_TIMEOUT',
+            }),
           );
           controller.abort();
         };
@@ -148,8 +151,9 @@ const adaptersFor = (userId, user, now) => {
       read(
         model('publicProfile')
           .findOne({ userId })
-          .select('skills upcomingProjects updatedAt')
-          .slice('upcomingProjects', 3)
+          .select(
+            'skills upcomingProjects.title upcomingProjects.techStack upcomingProjects.status projects.title projects.status projects.tech updatedAt',
+          )
           .slice('skills', 12),
         signal,
       ),
@@ -173,7 +177,10 @@ const adaptersFor = (userId, user, now) => {
   };
 };
 
-const collect = async (adapters, { now = new Date(), parentSignal, sourceTimeoutMs = 750 } = {}) => {
+const collect = async (
+  adapters,
+  { now = new Date(), parentSignal, sourceTimeoutMs = 750 } = {},
+) => {
   const entries = Object.entries(labels);
   const sources = new Array(entries.length);
   let next = 0;
@@ -184,7 +191,11 @@ const collect = async (adapters, { now = new Date(), parentSignal, sourceTimeout
         const [key, label] = entries[index];
         const started = Date.now();
         try {
-          const data = await deadline((signal) => adapters[key](signal), sourceTimeoutMs, parentSignal);
+          const data = await deadline(
+            (signal) => adapters[key](signal),
+            sourceTimeoutMs,
+            parentSignal,
+          );
           const first = Array.isArray(data) ? data[0] : data;
           const timestamp =
             first?.analyzedAt || first?.lastSynced || first?.updatedAt || first?.createdAt || null;
@@ -216,7 +227,9 @@ const collect = async (adapters, { now = new Date(), parentSignal, sourceTimeout
             contentFingerprint: digest(data),
             connected: status === 'available',
             lastUpdatedAt: timestamp,
-            freshUntil: timestamp ? new Date(+new Date(timestamp) + days * 86400000).toISOString() : null,
+            freshUntil: timestamp
+              ? new Date(+new Date(timestamp) + days * 86400000).toISOString()
+              : null,
             evidenceClass: {
               github: 'recorded-observation',
               resume: 'self-claim',
@@ -246,7 +259,9 @@ const collect = async (adapters, { now = new Date(), parentSignal, sourceTimeout
             key,
             label,
             status:
-              parentSignal?.aborted || error.code === 'SCENARIO_SOURCE_TIMEOUT' || error.name === 'AbortError'
+              parentSignal?.aborted ||
+              error.code === 'SCENARIO_SOURCE_TIMEOUT' ||
+              error.name === 'AbortError'
                 ? 'timeout'
                 : 'error',
             connected: false,
@@ -255,7 +270,11 @@ const collect = async (adapters, { now = new Date(), parentSignal, sourceTimeout
             warnings: ['source_unavailable'],
           };
         }
-        require('./scenarioTelemetryService').source(key, sources[index].status, Date.now() - started);
+        require('./scenarioTelemetryService').source(
+          key,
+          sources[index].status,
+          Date.now() - started,
+        );
       }
     }),
   );
@@ -327,7 +346,9 @@ const load = async (userId, options = {}) => {
       }
     }
     const usable = Object.fromEntries(
-      sources.filter((source) => source.status === 'available').map((source) => [source.key, source.data]),
+      sources
+        .filter((source) => source.status === 'available')
+        .map((source) => [source.key, source.data]),
     );
     const role = normalizeRole(identity.resolveCareerStack(user));
     const level = normalizeLevel(identity.resolveExperienceLevel(user));
@@ -336,7 +357,9 @@ const load = async (userId, options = {}) => {
     );
     const missingSkills = strings(
       (usable.skillGap?.analysisData?.skills || [])
-        .filter((item) => ['PARTIAL', 'CLAIMED_ONLY', 'NOT_EVIDENCED', 'UNKNOWN'].includes(item.status))
+        .filter((item) =>
+          ['PARTIAL', 'CLAIMED_ONLY', 'NOT_EVIDENCED', 'UNKNOWN'].includes(item.status),
+        )
         .map((item) => item.name),
     );
     const resumeSkills = strings(Object.values(usable.resume?.skills || {}).flat());
@@ -349,7 +372,46 @@ const load = async (userId, options = {}) => {
         typeof item === 'string' ? item : item.name || item.technology,
       ),
     ]);
-    const portfolioProjects = strings((usable.portfolio?.upcomingProjects || []).map((item) => item.title));
+    const portfolioProjects = strings(
+      (usable.portfolio?.upcomingProjects || []).map((item) => item.title),
+    );
+    const completedPortfolioProjects = strings(
+      (usable.portfolio?.projects || [])
+        .filter((item) => !item.status || item.status === 'completed')
+        .map((item) => item.title),
+      500,
+    );
+    // Exclude against the full owned portfolio before bounding the response projection.
+    const completedNames = new Set(
+      (usable.portfolio?.projects || [])
+        .filter((item) => !item.status || item.status === 'completed')
+        .map((item) =>
+          String(item.title || '')
+            .trim()
+            .toLowerCase(),
+        ),
+    );
+    const portfolioCandidates = [
+      ...(usable.portfolio?.upcomingProjects || []).map((item) => ({
+        name: item.title,
+        skills: strings(item.techStack),
+        status: item.status,
+      })),
+      ...(usable.portfolio?.projects || []).map((item) => ({
+        name: item.title,
+        skills: strings(item.tech),
+        status: item.status,
+      })),
+    ]
+      .filter(
+        (item) =>
+          ['planned', 'upcoming'].includes(item.status) &&
+          typeof item.name === 'string' &&
+          item.name.trim() &&
+          !completedNames.has(item.name.trim().toLowerCase()),
+      )
+      .slice(0, 12)
+      .map(({ name, skills }) => ({ name: name.trim(), skills }));
     const demandCounts = new Map();
     for (const job of usable.jobsDemand || [])
       for (const skill of strings(job.skills, 20)) {
@@ -398,6 +460,8 @@ const load = async (userId, options = {}) => {
         sprintFocus: strings([usable.careerSprint?.goalTechnology]),
         connectedProviders: [],
         portfolioProjects,
+        portfolioCandidates,
+        completedPortfolioProjects,
         topDemandedSkills,
       },
       suggestedInputs: {

@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
+  DoCheck,
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,21 +22,22 @@ import {
   ScenarioSource,
   ScenarioInput,
 } from '../../shared/models/scenario-simulator.model';
-interface TemplateOption {
-  key: 'focused' | 'portfolio' | 'balanced';
-  label: string;
-  description: string;
-}
+import {
+  SCENARIO_TEMPLATES,
+  ScenarioTemplateDefinition,
+  ScenarioTemplateDraft,
+} from '../../shared/models/scenario-template.model';
+import { ScenarioTemplateConfiguratorComponent } from './scenario-template-configurator/scenario-template-configurator.component';
 
 @Component({
   selector: 'app-scenario-simulator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ScenarioTemplateConfiguratorComponent],
   templateUrl: './scenario-simulator.component.html',
   styleUrl: './scenario-simulator.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
+export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
   baselineConfirmed = false;
   private evaluatedPayload: ScenarioInput | null = null;
   private evaluatedDraftKey = '';
@@ -93,29 +95,54 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
 
   readonly durationOptions = [2, 4, 6, 8, 12, 16];
 
-  readonly templates: TemplateOption[] = [
-    {
-      key: 'focused',
-      label: 'Focused Upskill',
-      description: 'Lean into top missing skills with a compact, realistic plan.',
-    },
-    {
-      key: 'portfolio',
-      label: 'Portfolio Push',
-      description: 'Turn your strongest project signals into a showcase-oriented scenario.',
-    },
-    {
-      key: 'balanced',
-      label: 'Balanced Plan',
-      description: 'Mix skills and one strong project for a practical hiring lift.',
-    },
-  ];
+  readonly templates = SCENARIO_TEMPLATES;
+  activeTemplate: ScenarioTemplateDefinition | null = null;
+  private pristineDraftKey = '';
+
+  private fullDraftKey(): string {
+    return JSON.stringify({
+      ...this.buildScenarioPayload(),
+      projects: this.projects,
+      skillInput: this.skillInput,
+    });
+  }
+  get hasUnsavedDraft(): boolean {
+    return this.fullDraftKey() !== this.pristineDraftKey;
+  }
+  get templateContext(): ScenarioContext | null {
+    if (!this.context) return null;
+    if (
+      this.context.profile.role === this.role &&
+      this.context.profile.level === this.experienceLevel
+    )
+      return this.context;
+    return {
+      ...this.context,
+      signals: { ...this.context.signals, missingSkills: [], portfolioCandidates: [] },
+    };
+  }
+
+  ngDoCheck(): void {
+    if (this.result?.ruleVersion === 'scenario-planning-v2' && !this.isResultCurrent)
+      this.invalidateEvaluation();
+  }
+
+  private invalidateEvaluation(): void {
+    this.requestGeneration++;
+    this.isRunning = false;
+    this.result = null;
+    this.hasSimulated = false;
+    this.evaluatedPayload = null;
+    this.evaluatedDraftKey = '';
+  }
 
   constructor(
     private readonly apiService: ScenarioSimulatorService,
     private readonly careerProfileService: CareerProfileService,
     private readonly cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    this.pristineDraftKey = this.fullDraftKey();
+  }
 
   ngOnInit(): void {
     this.subscriptions.add(
@@ -128,17 +155,26 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
         this.isLoadingContext = false;
         this.isLoadingHistory = false;
         this.context = null;
+        this.activeTemplate = null;
+        this.skillInput = '';
+        this.errorMessage = '';
+        this.actionMessage = '';
+        this.hasSimulated = false;
         this.nextHistoryCursor = null;
         this.skills = [];
         this.projects = [this.createEmptyProject()];
         this.scenarioName = '';
         this.baselineHiringScore = 55;
         this.baselineJobMatch = 48;
+        this.role = 'full stack';
+        this.experienceLevel = 'mid';
+        this.durationWeeks = 6;
         this.result = null;
         this.evaluatedPayload = null;
         this.scenarioHistory = [];
         this.compareScenario = null;
         this.baselineConfirmed = false;
+        this.pristineDraftKey = this.fullDraftKey();
         this.cdr.markForCheck();
       }),
     );
@@ -218,7 +254,8 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
 
     if (
       !resetPlan &&
-      (this.baselineConfirmed ||
+      (this.hasUnsavedDraft ||
+        this.baselineConfirmed ||
         this.skills.length ||
         this.validProjects.length ||
         this.hasSimulated)
@@ -236,6 +273,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       ? context.suggestedInputs.projects.map((project) => this.cloneProject(project))
       : [this.createEmptyProject()];
     this.scenarioName = this.generateScenarioName();
+    this.pristineDraftKey = this.fullDraftKey();
   }
 
   private generateScenarioName(): string {
@@ -317,10 +355,9 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
   }
 
   private reloadContextForProfileChange(): void {
-    this.requestGeneration++;
-    this.isRunning = false;
-    this.result = null;
-    this.evaluatedPayload = null;
+    this.activeTemplate = null;
+    this.context = null;
+    this.invalidateEvaluation();
     this.apiService.invalidateScenarioContextCache();
     this.loadBootstrapData(true);
   }
@@ -360,6 +397,14 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       return 'Job match must be between 0 and 100.';
     if (!Number.isInteger(this.durationWeeks) || this.durationWeeks < 1 || this.durationWeeks > 24)
       return 'Duration must be between 1 and 24 weeks.';
+    if (
+      this.validProjects.some((project) =>
+        (this.context?.signals.completedPortfolioProjects || []).some(
+          (name) => name.trim().toLowerCase() === project.name.toLowerCase(),
+        ),
+      )
+    )
+      return 'Choose new work; completed portfolio projects cannot be planned again.';
     if (!this.skills.length && !this.validProjects.length)
       return 'Add at least one skill or project.';
     if (this.skills.length > 10 || this.validProjects.length > 5)
@@ -452,31 +497,31 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
     if (!this.projects.length) this.projects = [this.createEmptyProject()];
   }
 
-  applyTemplate(template: TemplateOption): void {
-    const suggested = this.context?.suggestedInputs;
-    if (!suggested) return;
+  applyTemplate(template: ScenarioTemplateDefinition): void {
+    this.activeTemplate = template;
+  }
 
-    if (template.key === 'focused') {
-      this.skills = [...(suggested.skills || []).slice(0, 3)];
-      this.projects = [this.createEmptyProject()];
-      this.durationWeeks = Math.max(4, suggested.durationWeeks - 2);
-    } else if (template.key === 'portfolio') {
-      this.skills = [...(suggested.skills || []).slice(0, 2)];
-      this.projects = suggested.projects?.length
-        ? suggested.projects.slice(0, 2).map((project) => this.cloneProject(project))
-        : [this.createEmptyProject()];
-      this.durationWeeks = Math.max(6, suggested.durationWeeks);
-    } else {
-      this.skills = [...(suggested.skills || []).slice(0, 4)];
-      this.projects = suggested.projects?.length
-        ? [this.cloneProject(suggested.projects[0])]
-        : [this.createEmptyProject()];
-      this.durationWeeks = Math.max(6, suggested.durationWeeks);
-    }
-
-    this.scenarioName = `${template.label} - ${this.generateScenarioName()}`;
+  commitTemplate(event: {
+    draft: ScenarioTemplateDraft;
+    evaluate: boolean;
+    baselineConfirmed: boolean;
+  }): void {
+    if (!this.activeTemplate) return;
+    const label = this.activeTemplate.label;
+    this.invalidateEvaluation();
+    this.skills = [...event.draft.skills];
+    this.projects = event.draft.projects.map((project) => ({ ...project }));
+    this.durationWeeks = event.draft.durationWeeks;
+    this.baselineConfirmed = event.baselineConfirmed;
+    this.skillInput = '';
+    this.scenarioName = `${label} - ${this.generateScenarioName()}`;
+    this.activeTemplate = null;
     this.compareScenario = null;
     this.errorMessage = '';
+    this.actionTone = 'info';
+    this.actionMessage =
+      'Template applied to your editable draft. Save or export only after evaluation.';
+    if (event.evaluate) this.simulate();
   }
 
   simulate(): void {
@@ -499,6 +544,11 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (generation !== this.requestGeneration) return;
+          if (this.draftKey(payload) !== this.draftKey()) {
+            this.invalidateEvaluation();
+            this.cdr.markForCheck();
+            return;
+          }
           this.evaluatedPayload = payload;
           this.evaluatedDraftKey = this.draftKey(payload);
           this.result = response?.result || null;
@@ -527,6 +577,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
 
     this.isSavingScenario = true;
     this.actionMessage = '';
+    const savingDraftKey = this.fullDraftKey();
 
     this.apiService
       .saveScenarioSimulation({
@@ -539,6 +590,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
         next: (response) => {
           const scenario = response?.scenario as SavedScenario | undefined;
           if (scenario) {
+            if (this.fullDraftKey() === savingDraftKey) this.pristineDraftKey = savingDraftKey;
             this.scenarioHistory = [
               scenario,
               ...this.scenarioHistory.filter((item) => item._id !== scenario._id),
@@ -577,6 +629,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy {
         ? { ...scenario.result.evaluation.normalizedInput, ruleVersion: 'scenario-planning-v2' }
         : null;
     this.evaluatedDraftKey = this.evaluatedPayload ? this.draftKey() : '';
+    this.pristineDraftKey = this.fullDraftKey();
     this.hasSimulated = true;
     this.errorMessage = '';
     this.actionTone = 'info';

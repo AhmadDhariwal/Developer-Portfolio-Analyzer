@@ -3,9 +3,83 @@ import { of, Subject } from 'rxjs';
 import { ScenarioSimulatorComponent } from './scenario-simulator.component';
 import { ScenarioSimulatorService } from '../../shared/services/scenario-simulator.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
-import { ScenarioInput, SimResult } from '../../shared/models/scenario-simulator.model';
+import {
+  ScenarioContext,
+  ScenarioInput,
+  SimResult,
+} from '../../shared/models/scenario-simulator.model';
+import { SCENARIO_TEMPLATES } from '../../shared/models/scenario-template.model';
 
 describe('Scenario immutable evaluated state', () => {
+  it('does not suggest profile evidence for a different scenario target', () => {
+    const component = new ScenarioSimulatorComponent(
+      {} as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      {} as ChangeDetectorRef,
+    );
+    component.context = {
+      profile: { role: 'frontend', level: 'junior' },
+      signals: {
+        missingSkills: ['React'],
+        portfolioCandidates: [{ name: 'React showcase', skills: ['React'] }],
+        completedPortfolioProjects: ['Shipped'],
+      },
+    } as unknown as ScenarioContext;
+    component.role = 'backend';
+    expect(component.templateContext?.signals.missingSkills).toEqual([]);
+    expect(component.templateContext?.signals.portfolioCandidates).toEqual([]);
+    expect(component.templateContext?.signals.completedPortfolioProjects).toEqual(['Shipped']);
+    component.role = 'frontend';
+    component.experienceLevel = 'junior';
+    expect(component.templateContext).toBe(component.context);
+    component.ngOnDestroy();
+  });
+  it('opens each template without changing the draft and applies without persisting', () => {
+    const api = {
+      runWhatIfSimulation: vi.fn(),
+      saveScenarioSimulation: vi.fn(),
+      createSprintFromScenario: vi.fn(),
+    };
+    const component = new ScenarioSimulatorComponent(
+      api as unknown as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    component.skills = ['Existing'];
+    for (const template of SCENARIO_TEMPLATES) {
+      component.applyTemplate(template);
+      expect(component.skills).toEqual(['Existing']);
+      component.activeTemplate = null;
+    }
+    component.applyTemplate(SCENARIO_TEMPLATES[0]);
+    component.commitTemplate({
+      draft: { skills: ['Docker', 'TypeScript'], projects: [], durationWeeks: 4 },
+      baselineConfirmed: false,
+      evaluate: false,
+    });
+    expect(component.skills).toEqual(['Docker', 'TypeScript']);
+    expect(component.hasUnsavedDraft).toBe(true);
+    expect(api.runWhatIfSimulation).not.toHaveBeenCalled();
+    expect(api.saveScenarioSimulation).not.toHaveBeenCalled();
+    expect(api.createSprintFromScenario).not.toHaveBeenCalled();
+    component.ngOnDestroy();
+  });
+  it('rejects a late evaluation when its draft changed during the request', () => {
+    const response = new Subject<{ result: SimResult }>();
+    const component = new ScenarioSimulatorComponent(
+      { runWhatIfSimulation: () => response } as unknown as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    component.skills = ['Docker'];
+    component.baselineConfirmed = true;
+    component.simulate();
+    component.durationWeeks = 12;
+    response.next({ result: {} as SimResult });
+    expect(component.result).toBeNull();
+    expect(component.isRunning).toBe(false);
+    component.ngOnDestroy();
+  });
   it('does not save/export an edited draft under an old displayed result', () => {
     const api = {
       sessionChanged$: new Subject<void>(),

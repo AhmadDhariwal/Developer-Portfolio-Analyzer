@@ -12,6 +12,35 @@ const keys = [
   'integrations',
   'jobsDemand',
 ];
+test('portfolio suggestions use planned gaps, exclude completed work and stay account scoped', async () => {
+  const now = new Date();
+  const user = { careerStack: 'Frontend', experienceLevel: 'Student' };
+  const adapters = Object.fromEntries(keys.map((key) => [key, () => null]));
+  adapters.portfolio = () => ({
+    updatedAt: now,
+    projects: [
+      { title: 'Already shipped', status: 'completed' },
+      { title: 'In progress', status: 'in-progress' },
+    ],
+    upcomingProjects: [
+      { title: 'Already shipped', status: 'planned', techStack: ['Docker'] },
+      { title: 'New showcase', status: 'planned', techStack: ['Docker'] },
+    ],
+  });
+  const [owner, other] = await Promise.all([
+    getScenarioContext('portfolio-owner', { user, adapters, now }),
+    getScenarioContext('portfolio-other', {
+      user,
+      adapters: Object.fromEntries(keys.map((key) => [key, () => null])),
+      now,
+    }),
+  ]);
+  assert.deepEqual(owner.signals.portfolioCandidates, [
+    { name: 'New showcase', skills: ['Docker'] },
+  ]);
+  assert.deepEqual(owner.signals.completedPortfolioProjects, ['Already shipped']);
+  assert.deepEqual(other.signals.portfolioCandidates, []);
+});
 test('selected-context mismatch excludes stale Skill Gap suggestions without discarding other sources', async () => {
   const now = new Date();
   const adapters = Object.fromEntries(keys.map((key) => [key, () => null]));

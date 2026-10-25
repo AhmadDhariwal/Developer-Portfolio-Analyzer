@@ -100,6 +100,8 @@ export interface ScenarioContext {
     sprintFocus: string[];
     connectedProviders: string[];
     portfolioProjects: string[];
+    portfolioCandidates?: Array<{ name: string; skills: string[] }>;
+    completedPortfolioProjects?: string[];
     topDemandedSkills?: string[];
   };
   suggestedInputs: {
