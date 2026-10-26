@@ -173,6 +173,37 @@ describe('IntegrationsMarketplaceComponent', () => {
     expect(serviceMock.disconnect).toHaveBeenCalledWith('github');
   });
 
+  it('disables unavailable providers while retaining disconnect and independent Dev.to input', () => {
+    const items: IntegrationMarketplaceItem[] = [
+      { ...mockIntegrations[1], provider: 'kaggle', name: 'Kaggle' },
+      { ...mockIntegrations[0], provider: 'hackerrank', name: 'HackerRank', authMode: 'manual' },
+      { ...mockIntegrations[1], provider: 'devblogs', name: 'Dev.to' },
+    ];
+    serviceMock.getMarketplace.mockReturnValue(of({ integrations: items }));
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('#input-kaggle')).toBeNull();
+    expect(root.querySelector('#input-devblogs')?.getAttribute('placeholder')).toBe(
+      'devto@your-handle',
+    );
+    expect(root.textContent).not.toContain('Dev.to or Hashnode');
+    expect(root.querySelector<HTMLButtonElement>('.connect-btn')?.disabled).toBe(true);
+    expect(root.querySelector<HTMLButtonElement>('.sync-btn')?.disabled).toBe(true);
+    expect(root.querySelector<HTMLButtonElement>('.disconnect-btn')?.disabled).toBe(false);
+    expect(root.textContent?.match(/Unavailable/g)?.length).toBe(2);
+    comp.connect(items[0]);
+    comp.manualConnect(items[0]);
+    comp.runIngestion('hackerrank');
+    expect(serviceMock.manualConnect).not.toHaveBeenCalled();
+    expect(serviceMock.syncNow).not.toHaveBeenCalled();
+    comp.manualUsername.devblogs = 'devto@swyx';
+    comp.manualConnect(items[2]);
+    expect(serviceMock.manualConnect).toHaveBeenCalledWith('devblogs', 'devto@swyx', '');
+    comp.disconnect(items[1]);
+    expect(serviceMock.disconnect).toHaveBeenCalledWith('hackerrank');
+  });
+
   it('toggles terminal drawer and maintains logs', () => {
     const fixture = mount();
     const comp = fixture.componentInstance;

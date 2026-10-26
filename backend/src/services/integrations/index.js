@@ -91,9 +91,9 @@ const marketplace = [
   },
   {
     provider: 'devblogs',
-    name: 'Dev Blogs',
+    name: 'Dev.to',
     description:
-      'Observe up to 30 public Dev.to articles with devto@username. Hashnode requires approved Pro API access.',
+      'Observe up to 30 public Dev.to articles with devto@username. Hashnode is unavailable pending authorized Pro API access.',
     category: 'Content & Branding',
     authMode: 'manual'
   }

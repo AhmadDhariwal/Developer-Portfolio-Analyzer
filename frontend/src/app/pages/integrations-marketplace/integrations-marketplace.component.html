@@ -417,15 +417,20 @@
 
         <div class="card-top__status">
           <span class="status-pill" [ngClass]="item.status">
-            <span *ngIf="item.status === 'connected'" class="status-dot-pulse"></span>
+            <span
+              *ngIf="item.status === 'connected' && !isProviderUnavailable(item.provider)"
+              class="status-dot-pulse"
+            ></span>
             {{
-              item.status === 'connected'
-                ? 'Connected'
-                : item.status === 'error'
-                  ? 'Error'
-                  : item.status === 'pending' || item.status === 'connecting'
-                    ? 'Pending'
-                    : 'Available'
+              isProviderUnavailable(item.provider)
+                ? 'Unavailable'
+                : item.status === 'connected'
+                  ? 'Connected'
+                  : item.status === 'error'
+                    ? 'Error'
+                    : item.status === 'pending' || item.status === 'connecting'
+                      ? 'Pending'
+                      : 'Available'
             }}
           </span>
         </div>
@@ -477,7 +482,7 @@
               >Synced {{ item.lastSyncedAt | date: 'MMM d, HH:mm' }}</span
             >
           </div>
-          <div class="meta-live-badge">
+          <div class="meta-live-badge" *ngIf="!isProviderUnavailable(item.provider)">
             <span class="live-dot"></span>
             <span>Real-time Ingestion Hook Active</span>
           </div>
@@ -509,7 +514,11 @@
         <!-- Disconnected Manual Inputs -->
         <div
           class="manual-fields"
-          *ngIf="item.status !== 'connected' && item.authMode === 'manual'"
+          *ngIf="
+            item.status !== 'connected' &&
+            item.authMode === 'manual' &&
+            !isProviderUnavailable(item.provider)
+          "
         >
           <div class="field-wrap">
             <label [for]="'input-' + item.provider">{{ getInputLabel(item.provider) }}</label>
@@ -537,7 +546,7 @@
             type="button"
             class="btn btn-secondary sync-btn"
             (click)="runIngestion(item.provider)"
-            [disabled]="busyProvider === item.provider"
+            [disabled]="busyProvider === item.provider || isProviderUnavailable(item.provider)"
           >
             <svg
               [class.spinning]="busyProvider === item.provider && busyAction === 'sync'"
@@ -581,7 +590,7 @@
             type="button"
             class="btn btn-primary connect-btn"
             (click)="connect(item)"
-            [disabled]="busyProvider === item.provider"
+            [disabled]="busyProvider === item.provider || isProviderUnavailable(item.provider)"
           >
             <svg
               *ngIf="busyProvider !== item.provider && item.authMode === 'oauth2'"

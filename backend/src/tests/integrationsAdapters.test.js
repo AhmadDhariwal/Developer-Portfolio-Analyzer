@@ -2,6 +2,35 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { getAdapter, marketplace } = require('../services/integrations');
 
+test('configuration offers only the official optional Kaggle token and Dev.to marketplace source', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const dotenv = require('dotenv');
+  const config = dotenv.parse(fs.readFileSync(path.join(__dirname, '../../.env.example')));
+  assert.equal(config.KAGGLE_API_TOKEN, '');
+  assert.equal(config.KAGGLE_CLIENT_SECRET, undefined);
+  assert.equal(config.HACKERRANK_API_KEY, undefined);
+  const blogs = marketplace.find((item) => item.provider === 'devblogs');
+  assert.equal(blogs.name, 'Dev.to');
+  assert.match(blogs.description, /devto@username/);
+  assert.match(blogs.description, /Hashnode is unavailable/);
+  assert.equal(
+    marketplace.some((item) => item.provider === 'hashnode'),
+    false
+  );
+});
+
+test('retained Hashnode adapter fails closed without outbound requests', async (t) => {
+  const adapter = getAdapter('devblogs');
+  t.mock.method(adapter, 'get', () => assert.fail('Unexpected HTTP GET'));
+  t.mock.method(adapter, 'post', () => assert.fail('Unexpected HTTP POST'));
+  assert.deepEqual(await adapter.fetchHashnode('unavailable'), {
+    articles: [],
+    failed: true,
+    unavailable: true
+  });
+});
+
 test('marketplace exposes expected providers', () => {
   const providers = marketplace.map((item) => item.provider).sort();
   assert.deepEqual(providers, [
