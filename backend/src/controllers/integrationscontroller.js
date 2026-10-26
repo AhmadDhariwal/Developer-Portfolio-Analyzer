@@ -1,629 +1,420 @@
-const developerContext = require('../services/developerContextService');
+'use strict';
 const crypto = require('node:crypto');
-const IntegrationConnection = require('../models/integrationConnection');
-const IntegrationSyncLog = require('../models/integrationSyncLog');
+const Connection = require('../models/integrationConnection');
+const Log = require('../models/integrationSyncLog');
 const { getAdapter, marketplace } = require('../services/integrations');
-const { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore, removeProviderInsight } = require('../services/integrationInsightService');
+const insights = require('../services/integrationInsightService');
 const { normalizeIngestion } = require('../services/integrationNormalizationService');
-const { syncConnectedProvidersForUser, syncProviderForUser } = require('../services/integrationSyncService');
+const sync = require('../services/integrationSyncService');
+const persistence = require('../services/integrationPersistenceService');
+const governance = require('../services/integrationGovernanceService');
+const tokens = require('../services/integrationTokenService');
 const { getGithubIntegrationOAuthConfig } = require('../config/githubOauth');
-
-const trimValue = (value) => String(value || '').trim();
-const USERNAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.@\- ]{0,99}$/;
-
-const validateManualIdentifier = (provider, value) => {
-  const identifier = trimValue(value);
-  if (!identifier) return 'externalUsername is required for manual connection.';
-  if (identifier.length > (provider === 'certifications' ? 1000 : 300)) return 'Manual connection value is too long.';
-  if (provider !== 'portfolio' && provider !== 'certifications' && !USERNAME_PATTERN.test(identifier)) {
-    return `Invalid ${provider} username.`;
-  }
-  return '';
-};
-
-const invalidateIntegrationDependents = (userId) => {
+const trim = (value) => (typeof value === 'string' ? value.trim() : '');
+const frontend = () =>
+  trim(process.env.FRONTEND_URL || process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
+function redirectUri(provider) {
+  const value =
+    provider === 'github'
+      ? getGithubIntegrationOAuthConfig().callbackUrl
+      : trim(process.env.LINKEDIN_OAUTH_REDIRECT_URI) || `${frontend()}/app/integrations`;
+  const parsed = new URL(value);
+  if (
+    parsed.username ||
+    parsed.password ||
+    parsed.hash ||
+    (parsed.protocol !== 'https:' &&
+      !(
+        process.env.NODE_ENV !== 'production' &&
+        parsed.protocol === 'http:' &&
+        ['localhost', '127.0.0.1'].includes(parsed.hostname)
+      ))
+  )
+    throw Error('Invalid callback configuration.');
+  return value;
+}
+function errorResponse(res, error, message) {
+  if (error.retryAfter) res.set('Retry-After', String(error.retryAfter));
+  return res.status(error.status || 500).json({ message: error.status ? error.message : message });
+}
+async function getMarketplace(req, res) {
   try {
-    require('./dashboardcontroller').invalidateDashboardSummaryCache(userId);
-    require('../services/scenarioSimulatorService').invalidateContextCache(userId);
-    require('../services/careerSprintService').invalidateCareerSprintCache(userId);
-  } catch (error) {
-    console.error('Integration cache invalidation error:', error.message);
-  }
-};
-
-const getFrontendBaseUrl = () => {
-  const fromEnv = trimValue(process.env.FRONTEND_URL || process.env.FRONTEND_BASE_URL).replace(/\/+$/, '');
-  return fromEnv;
-};
-
-const resolveProviderRedirectUri = (provider, requestedRedirectUri) => {
-  const providerOverrides = {
-    linkedin: trimValue(process.env.LINKEDIN_OAUTH_REDIRECT_URI)
-  };
-
-  if (provider === 'github') return getGithubIntegrationOAuthConfig().callbackUrl;
-
-  if (providerOverrides[provider]) return providerOverrides[provider];
-
-  const requested = trimValue(requestedRedirectUri);
-  if (requested) return requested;
-
-  return `${getFrontendBaseUrl()}/app/integrations`;
-};
-
-const withStatuses = async (userId) => {
-  const connections = await IntegrationConnection.find({ userId }).lean();
-  const byProvider = new Map(connections.map((c) => [c.provider, c]));
-
-  return marketplace.map((item) => {
-    const found = byProvider.get(item.provider);
-    return {
-      ...item,
-      status: found?.status || 'disconnected',
-      externalUsername: found?.externalUsername || '',
-        lastSyncedAt: found?.lastSyncedAt || null,
+    const rows = await Connection.find({ userId: req.user._id })
+      .select('provider status externalUsername lastSyncedAt')
+      .lean();
+    const byProvider = new Map(rows.map((row) => [row.provider, row]));
+    return res.json({
+      integrations: marketplace.map((item) => ({
+        ...item,
+        status: byProvider.get(item.provider)?.status || 'disconnected',
+        externalUsername: byProvider.get(item.provider)?.externalUsername || '',
+        lastSyncedAt: byProvider.get(item.provider)?.lastSyncedAt || null,
         authMode: item.authMode || 'oauth2'
-    };
-  });
-};
-
-const getMarketplace = async (req, res) => {
-  try {
-    const items = await withStatuses(req.user._id);
-    return res.json({ integrations: items });
-  } catch (error) {
-    console.error('Get marketplace error:', error.message);
+      }))
+    });
+  } catch {
     return res.status(500).json({ message: 'Failed to load integrations marketplace.' });
   }
-};
-
-const startOAuth = async (req, res) => {
+}
+async function startOAuth(req, res) {
   try {
-    const { provider, redirectUri } = req.body || {};
+    const provider = req.body?.provider;
     const adapter = getAdapter(provider);
-
-    if (!adapter) {
-      return res.status(400).json({ message: 'Unsupported provider.' });
-    }
-
-    if (adapter.getAuthMode() !== 'oauth2') {
+    if (!adapter) return res.status(400).json({ message: 'Unsupported provider.' });
+    if (adapter.getAuthMode() !== 'oauth2')
       return res.status(400).json({
         message: `${provider} uses manual connection instead of OAuth.`,
         authMode: 'manual',
-        hints: adapter.getManualAuthHints ? adapter.getManualAuthHints() : null
+        hints: adapter.getManualAuthHints?.()
       });
-    }
-
-    const configValidation = adapter.validateConfig();
-    if (!configValidation.ok) {
+    const validation = adapter.validateConfig();
+    if (!validation.ok)
       return res.status(400).json({
         message: `Missing OAuth config for ${provider}.`,
-        missingConfig: configValidation.missing
+        missingConfig: validation.missing
       });
-    }
-
-    let resolvedRedirectUri = resolveProviderRedirectUri(provider, redirectUri);
-    if (provider === 'github') {
-      const config = getGithubIntegrationOAuthConfig();
-      resolvedRedirectUri = config.callbackUrl;
-    }
-    const state = `${provider}:${crypto.randomUUID()}`;
-    const authorizationUrl = adapter.getAuthorizationUrl({ state, redirectUri: resolvedRedirectUri });
-
-    const updateObj = {
-      oauthState: state,
-      oauthStateExpiresAt: new Date(Date.now() + (10 * 60 * 1000)),
-      oauthRedirectUri: resolvedRedirectUri
-    };
-    if (provider === 'github') {
-      updateObj.status = 'pending';
-    }
-
-    await IntegrationConnection.findOneAndUpdate(
-      { userId: req.user._id, provider },
-      { $set: updateObj },
-      { upsert: true }
-    );
-
-    return res.json({ provider, state, authorizationUrl, redirectUri: resolvedRedirectUri });
+    tokens.keyring();
+    const redirect = redirectUri(provider);
+    const state = crypto.randomBytes(32).toString('hex');
+    const authorizationUrl = adapter.getAuthorizationUrl({ state, redirectUri: redirect });
+    await persistence.start(req.user._id, provider, state, redirect);
+    return res.json({ provider, state, authorizationUrl, redirectUri: redirect });
   } catch (error) {
-    console.error('Start oauth error:', error.message);
-    return res.status(500).json({ message: 'Failed to start OAuth flow.' });
+    return errorResponse(res, error, 'Failed to start OAuth flow.');
   }
-};
-
-const oauthCallback = async (req, res) => {
-  try {
-    const { provider, code, state, username, redirectUri } = req.body || {};
-    const adapter = getAdapter(provider);
-
-    if (!adapter) {
-      return res.status(400).json({ message: 'Unsupported provider.' });
-    }
-    if (!code) {
-      return res.status(400).json({ message: 'OAuth code is required.' });
-    }
-
-    if (adapter.getAuthMode() !== 'oauth2') {
-      return res.status(400).json({ message: `${provider} does not support OAuth callback.` });
-    }
-
-    const connectionDoc = await IntegrationConnection.findOne({ userId: req.user._id, provider }).lean();
-    if (!connectionDoc?.oauthState || !state || connectionDoc.oauthState !== state) {
-      return res.status(400).json({ message: 'Invalid OAuth state.' });
-    }
-    if (connectionDoc.oauthStateExpiresAt && new Date(connectionDoc.oauthStateExpiresAt).getTime() < Date.now()) {
-      return res.status(400).json({ message: 'OAuth state expired. Start connection again.' });
-    }
-
-    const resolvedRedirectUri = connectionDoc.oauthRedirectUri || resolveProviderRedirectUri(provider, redirectUri);
-    const token = await adapter.exchangeCodeForToken({ code, redirectUri: resolvedRedirectUri });
-    const identity = adapter.getExternalIdentity
-      ? await adapter.getExternalIdentity(token.accessToken)
-      : { username: '' };
-
-    const expiresAt = token.expiresIn
-      ? new Date(Date.now() + (Number(token.expiresIn || 0) * 1000))
-      : null;
-
-    const connection = await IntegrationConnection.findOneAndUpdate(
-      { userId: req.user._id, provider },
+}
+async function finishOAuth(provider, code, state, owner) {
+  const connection = await persistence.consumeState(provider, state, owner);
+  if (!connection) throw Object.assign(Error('Invalid OAuth state.'), { status: 400 });
+  const adapter = getAdapter(provider);
+  return governance.run(connection.userId, async () => {
+    const token = await adapter.exchangeCodeForToken({
+      code,
+      redirectUri: connection.oauthRedirectUri
+    });
+    const identity = await adapter.getExternalIdentity(token.accessToken);
+    if (!trim(String(identity?.id || '')) || !trim(identity?.username) || !token.accessToken)
+      throw Error('Provider identity unavailable.');
+    if (
+      token.expiresIn != null &&
+      (!Number.isFinite(Number(token.expiresIn)) ||
+        Number(token.expiresIn) <= 0 ||
+        Number(token.expiresIn) > 31536000)
+    )
+      throw Error('Invalid token expiry.');
+    governance.assertActive();
+    return persistence.connect(
+      connection.userId,
+      provider,
       {
-        $set: {
-          status: 'connected',
-          externalUsername: String(username || identity.username || developerContext.resolveGithubUsername(req.user) || '').trim(),
-          accessToken: token.accessToken || '',
-          refreshToken: token.refreshToken || '',
-          tokenType: token.tokenType || 'Bearer',
-          tokenExpiresAt: expiresAt,
-          scopes: String(token.scope || '').split(/[\s,]+/).filter(Boolean),
-          nextSyncAt: new Date(),
-          lastSyncError: '',
-          oauthState: '',
-          oauthStateExpiresAt: null,
-          oauthRedirectUri: resolvedRedirectUri
-        }
+        status: 'connected',
+        externalUsername: identity.username,
+        externalAccountId: String(identity.id),
+        ownershipVerified: true,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken || '',
+        tokenType: token.tokenType || 'Bearer',
+        tokenExpiresAt: token.expiresIn
+          ? new Date(Date.now() + Number(token.expiresIn) * 1000)
+          : null,
+        scopes: String(token.scope || '')
+          .split(/[\s,]+/)
+          .filter(Boolean),
+        metadata: {},
+        lastSyncedAt: null
       },
-      { upsert: true, returnDocument: 'after' }
-    ).lean();
-
-    invalidateIntegrationDependents(req.user._id);
-
+      null,
+      connection.oauthAttempt
+    );
+  });
+}
+async function oauthCallback(req, res) {
+  try {
+    const { provider, code, state } = req.body || {};
+    const adapter = getAdapter(provider);
+    if (!adapter || adapter.getAuthMode() !== 'oauth2')
+      return res.status(400).json({ message: 'Unsupported provider.' });
+    if (!trim(code) || code.length > 2048)
+      return res.status(400).json({ message: 'OAuth code is required.' });
+    const connection = await finishOAuth(provider, code, state, req.user._id);
     return res.json({
       message: `${provider} connected successfully.`,
       connection: {
-        provider: connection.provider,
+        provider,
         status: connection.status,
         externalUsername: connection.externalUsername,
         lastSyncedAt: connection.lastSyncedAt
       }
     });
   } catch (error) {
-    console.error('OAuth callback error:', error.message);
-    return res.status(500).json({ message: 'Failed to complete OAuth callback.' });
+    return errorResponse(res, error, 'Failed to complete OAuth callback.');
   }
-};
-
-const githubOauthCallback = async (req, res) => {
-  const frontendUrl = getFrontendBaseUrl();
+}
+async function githubOauthCallback(req, res) {
   try {
-    const { code, state } = req.query || {};
-
-    // 1. state exists
-    if (!state) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[OAuth Callback Warning] State parameter is missing.');
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_state`);
-    }
-
-    // 2. matching IntegrationConnection exists
-    const connectionDoc = await IntegrationConnection.findOne({ oauthState: state });
-    if (!connectionDoc) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[OAuth Callback Warning] No matching IntegrationConnection found for state.');
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=invalid_state`);
-    }
-
-    // 3. state not expired
-    if (connectionDoc.oauthStateExpiresAt && new Date(connectionDoc.oauthStateExpiresAt).getTime() < Date.now()) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[OAuth Callback Warning] OAuth state has expired.');
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=state_expired`);
-    }
-
-    // 4. provider is github
-    if (connectionDoc.provider !== 'github') {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[OAuth Callback Warning] Provider mismatch. Expected github, got ${connectionDoc.provider}`);
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=provider_mismatch`);
-    }
-
-    // 5. connection status is pending/connecting
-    if (connectionDoc.status !== 'pending' && connectionDoc.status !== 'connecting') {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[OAuth Callback Warning] Connection status invalid: ${connectionDoc.status}. Expected pending or connecting.`);
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=invalid_status`);
-    }
-
-    // 6. connection contains the userId created during connect step
-    if (!connectionDoc.userId) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[OAuth Callback Warning] Connection is missing userId.');
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_user`);
-    }
-
-    if (!code) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[OAuth Callback Warning] Code parameter is missing.');
-      }
-      return res.redirect(302, `${frontendUrl}/app/integrations?error=missing_code`);
-    }
-
-    const adapter = getAdapter('github');
-    const config = getGithubIntegrationOAuthConfig();
-
-    // 7. Do not log secrets, code, state, tokens, or JWTs.
-    // Development logs may show only sanitized redirect_uri and whether IDs/secrets are present.
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[OAuth Integration Callback Debug] Exchanging code with redirect_uri: ${config.callbackUrl}`);
-    }
-
-    const token = await adapter.exchangeCodeForToken({ code, redirectUri: config.callbackUrl });
-    const identity = adapter.getExternalIdentity
-      ? await adapter.getExternalIdentity(token.accessToken)
-      : { username: '' };
-
-    const expiresAt = token.expiresIn
-      ? new Date(Date.now() + (Number(token.expiresIn || 0) * 1000))
-      : null;
-
-    await IntegrationConnection.findOneAndUpdate(
-      { userId: connectionDoc.userId, provider: 'github' },
-      {
-        $set: {
-          status: 'connected',
-          externalUsername: String(identity.username || '').trim(),
-          accessToken: token.accessToken || '',
-          refreshToken: token.refreshToken || '',
-          tokenType: token.tokenType || 'Bearer',
-          tokenExpiresAt: expiresAt,
-          scopes: String(token.scope || '').split(/[\s,]+/).filter(Boolean),
-          nextSyncAt: new Date(),
-          lastSyncError: '',
-          oauthState: '',
-          oauthStateExpiresAt: null,
-          oauthRedirectUri: config.callbackUrl
-        }
-      }
-    );
-
-    invalidateIntegrationDependents(connectionDoc.userId);
-
-    // Redirect to frontend integrations page with success
-    return res.redirect(302, `${frontendUrl}/app/integrations?success=github`);
-  } catch (error) {
-    console.error('GitHub integration callback error:', error.message);
-    return res.redirect(302, `${frontendUrl}/app/integrations?error=callback_failed`);
+    if (!trim(req.query?.code) || req.query.code.length > 2048) throw Error();
+    await finishOAuth('github', req.query.code, req.query.state);
+    return res.redirect(302, `${frontend()}/app/integrations?success=github`);
+  } catch {
+    return res.redirect(302, `${frontend()}/app/integrations?error=callback_failed`);
   }
-};
-
-const manualConnectProvider = async (req, res) => {
+}
+async function manualConnectProvider(req, res) {
   try {
-    const { provider, externalUsername, apiKey = '' } = req.body || {};
+    const { provider, externalUsername, apiKey } = req.body || {};
     const adapter = getAdapter(provider);
-
-    if (!adapter) {
-      return res.status(400).json({ message: 'Unsupported provider.' });
-    }
-    if (adapter.getAuthMode() !== 'manual') {
+    if (!adapter) return res.status(400).json({ message: 'Unsupported provider.' });
+    if (adapter.getAuthMode() !== 'manual')
       return res.status(400).json({ message: `${provider} requires OAuth connection.` });
-    }
-    const validationError = validateManualIdentifier(provider, externalUsername);
-    if (validationError) return res.status(400).json({ message: validationError });
-
-    const candidateConnection = {
+    const identifier = trim(externalUsername);
+    if (!identifier || identifier.length > (provider === 'certifications' ? 1000 : 300))
+      return res.status(400).json({ message: 'Invalid manual connection value.' });
+    if (
+      !['portfolio', 'certifications'].includes(provider) &&
+      !/^[a-zA-Z0-9][a-zA-Z0-9_.@\- ]{0,99}$/.test(identifier)
+    )
+      return res.status(400).json({ message: `Invalid ${provider} username.` });
+    if (apiKey && (typeof apiKey !== 'string' || apiKey.length > 4096))
+      return res.status(400).json({ message: 'Invalid credential.' });
+    if (apiKey) tokens.keyring();
+    const candidate = {
       provider,
-      externalUsername: String(externalUsername).trim(),
-      accessToken: String(apiKey || '').trim(),
+      externalUsername: identifier,
+      accessToken: trim(apiKey),
+      refreshToken: '',
       status: 'connected'
     };
-
-    // Validate the manual username by fetching provider data before persisting.
-    // This avoids "connected" state with invalid handles.
+    const operation = await persistence.beginManual(req.user._id, provider);
     let ingested;
     try {
-      ingested = await adapter.ingestData(candidateConnection);
-    } catch {
-      return res.status(400).json({ message: `Unable to validate the ${provider} connection.` });
+      ingested = await governance.run(req.user._id, async () => {
+        const data = await adapter.ingestData(candidate);
+        governance.assertActive();
+        return data;
+      });
+    } catch (error) {
+      return errorResponse(res, error, `Unable to validate the ${provider} connection.`);
     }
-
-    const providerInsight = normalizeIngestion(provider, ingested);
-    await upsertProviderInsight({
-      userId: req.user._id,
-      providerInsight
-    });
-
-    const connection = await IntegrationConnection.findOneAndUpdate(
-      { userId: req.user._id, provider },
+    const providerInsight = {
+      ...normalizeIngestion(provider, ingested),
+      ownershipVerified: false,
+      evidenceKind: provider === 'certifications' ? 'self-reported' : 'provider-observed'
+    };
+    const connection = await persistence.connect(
+      req.user._id,
+      provider,
       {
-        $set: {
-          status: 'connected',
-          externalUsername: candidateConnection.externalUsername,
-          accessToken: candidateConnection.accessToken,
-          refreshToken: '',
-          scopes: ['public_profile'],
-          nextSyncAt: new Date(),
-          metadata: {
-            lastIngestion: ingested,
-            totalSkillsDetected: providerInsight.inferredSkills.length,
-            profileScore: providerInsight.profileScore,
-            activityScore: providerInsight.activityScore
-          },
-          lastSyncError: '',
-          lastSyncedAt: new Date(),
-          oauthState: '',
-          oauthStateExpiresAt: null
-        }
+        ...candidate,
+        externalAccountId: '',
+        ownershipVerified: false,
+        tokenExpiresAt: null,
+        tokenType: 'Bearer',
+        scopes: ['public_profile'],
+        metadata: {
+          profileScore: providerInsight.profileScore,
+          activityScore: providerInsight.activityScore,
+          totalSkillsDetected: providerInsight.inferredSkills.length
+        },
+        lastSyncedAt: new Date()
       },
-      { upsert: true, returnDocument: 'after' }
-    ).lean();
-
-    invalidateIntegrationDependents(req.user._id);
-
+      providerInsight,
+      operation.oauthAttempt
+    );
     return res.json({
       message: `${provider} connected with manual credentials.`,
       connection: {
-        provider: connection.provider,
+        provider,
         status: connection.status,
         externalUsername: connection.externalUsername
       }
     });
   } catch (error) {
-    console.error('Manual connect provider error:', error.message);
-    return res.status(500).json({ message: 'Failed to connect provider manually.' });
+    return errorResponse(res, error, 'Failed to connect provider manually.');
   }
-};
-
-const ingestProviderData = async (req, res) => {
+}
+async function ingestProviderData(req, res) {
   try {
-    const { provider } = req.body || {};
-    const adapter = getAdapter(provider);
-
-    if (!adapter) {
-      return res.status(400).json({ message: 'Unsupported provider.' });
-    }
-
-    const connection = await IntegrationConnection.findOne({ userId: req.user._id, provider }).lean();
-    if (!connection || connection.status !== 'connected') {
-      return res.status(400).json({ message: `${provider} is not connected yet.` });
-    }
-
-    const ingested = await adapter.ingestData(connection);
-    const providerInsight = normalizeIngestion(provider, ingested);
-    const insight = await upsertProviderInsight({
-      userId: req.user._id,
-      providerInsight
-    });
-
-    await IntegrationConnection.findOneAndUpdate(
-      { userId: req.user._id, provider },
-      {
-        $set: {
-          status: 'connected',
-          metadata: {
-            lastIngestion: ingested,
-            totalSkillsDetected: providerInsight.inferredSkills.length,
-            profileScore: providerInsight.profileScore,
-            activityScore: providerInsight.activityScore
-          },
-          nextSyncAt: new Date(Date.now() + (Math.max(1, Number.parseInt(process.env.INTEGRATION_DEFAULT_SYNC_INTERVAL_MIN || '30', 10)) * 60 * 1000)),
-          lastSyncError: '',
-          lastSyncedAt: new Date()
-        }
-      }
-    );
-
-    invalidateIntegrationDependents(req.user._id);
-
+    const provider = req.body?.provider;
+    if (!getAdapter(provider)) return res.status(400).json({ message: 'Unsupported provider.' });
+    const result = await sync.syncProviderForUser(req.user._id, provider, 'ingest');
+    if (!result.ok)
+      return errorResponse(
+        res,
+        { status: result.status || 400, message: result.error, retryAfter: result.retryAfter },
+        'Sync failed.'
+      );
     return res.json({
       provider,
-      ingested,
-      insight: {
-        integrationScore: insight.integrationScore,
-        mergedSkills: insight.mergedSkills
-      },
-      syncedAt: new Date().toISOString()
+      ingested: result.ingested,
+      insight: result.insight,
+      syncedAt: result.providerInsight.syncedAt
     });
-  } catch (error) {
-    console.error('Ingest provider data error:', error.message);
+  } catch {
     return res.status(500).json({ message: 'Failed to ingest provider data.' });
   }
-};
-
-const syncNow = async (req, res) => {
+}
+async function syncNow(req, res) {
   try {
-    const { provider } = req.body || {};
+    const provider = req.body?.provider;
     if (provider) {
-      const result = await syncProviderForUser(req.user._id, provider, 'manual_sync');
-      if (!result.ok) {
-        return res.status(400).json({ message: result.error || 'Sync failed.' });
-      }
-      return res.json({ message: `${provider} synced successfully.`, result });
+      const result = await sync.syncProviderForUser(req.user._id, provider, 'manual_sync');
+      if (!result.ok)
+        return errorResponse(
+          res,
+          { status: result.status || 400, message: result.error, retryAfter: result.retryAfter },
+          'Sync failed.'
+        );
+      return res.json({
+        message: `${provider} synced successfully.`,
+        result: { ok: true, provider, providerInsight: result.providerInsight }
+      });
     }
-
-    const results = await syncConnectedProvidersForUser(req.user._id, 'manual_sync_all');
-    return res.json({ message: 'Connected providers synced.', results });
-  } catch (error) {
-    console.error('Sync now error:', error.message);
+    const results = await sync.syncConnectedProvidersForUser(req.user._id, 'manual_sync_all');
+    return res.json({
+      message: 'Connected providers synced.',
+      results: results.map(({ ingested, insight, ...result }) => result)
+    });
+  } catch {
     return res.status(500).json({ message: 'Failed to run sync now.' });
   }
-};
-
-const getSyncTrends = async (req, res) => {
+}
+async function getSyncTrends(req, res) {
   try {
-    const days = Math.max(1, Math.min(30, Number.parseInt(String(req.query.days || '7'), 10)));
-    const since = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
-
-    const logs = await IntegrationSyncLog.find({
+    const input = Number(req.query.days || 7);
+    const days = Number.isInteger(input) ? Math.max(1, Math.min(30, input)) : 7;
+    const logs = await Log.find({
       userId: req.user._id,
-      createdAt: { $gte: since }
+      createdAt: { $gte: new Date(Date.now() - days * 86400000) }
     })
       .sort({ createdAt: -1 })
+      .limit(5000)
       .lean();
-
-    const byProvider = {};
-    logs.forEach((log) => {
-      if (!byProvider[log.provider]) byProvider[log.provider] = [];
-      byProvider[log.provider].push(log);
-    });
-
-    const trends = Object.entries(byProvider).map(([provider, providerLogs]) => {
-      const latest = providerLogs[0];
-      const previous = providerLogs[1] || null;
-      const delta = previous ? Number(latest.activityScore || 0) - Number(previous.activityScore || 0) : 0;
-
-      return {
-        provider,
-        latestProfileScore: Number(latest.profileScore || 0),
-        latestActivityScore: Number(latest.activityScore || 0),
-        latestConfidence: Number(latest.confidence || 0),
-        trendDelta: Number(delta.toFixed(2)),
-        syncCount: providerLogs.length,
-        successRate: Number(((providerLogs.filter((l) => l.status === 'success').length / providerLogs.length) * 100).toFixed(1)),
-        lastSyncedAt: latest.createdAt
-      };
-    });
-
+    const groups = new Map();
+    for (const log of logs) {
+      if (!groups.has(log.provider)) groups.set(log.provider, []);
+      groups.get(log.provider).push(log);
+    }
+    const trends = [...groups].map(([provider, rows]) => ({
+      provider,
+      latestProfileScore: Number(rows[0].profileScore || 0),
+      latestActivityScore: Number(rows[0].activityScore || 0),
+      latestConfidence: Number(rows[0].confidence || 0),
+      trendDelta: Number(
+        (rows[1]
+          ? Number(rows[0].activityScore || 0) - Number(rows[1].activityScore || 0)
+          : 0
+        ).toFixed(2)
+      ),
+      syncCount: rows.length,
+      successRate: Number(
+        ((rows.filter((row) => row.status === 'success').length / rows.length) * 100).toFixed(1)
+      ),
+      lastSyncedAt: rows[0].createdAt
+    }));
     return res.json({ days, trends });
-  } catch (error) {
-    console.error('Get sync trends error:', error.message);
+  } catch {
     return res.status(500).json({ message: 'Failed to load integration sync trends.' });
   }
-};
-
-const githubWebhook = async (req, res) => {
+}
+async function githubWebhook(req, res) {
   try {
-    const secret = String(process.env.INTEGRATION_WEBHOOK_SECRET || '').trim();
-    const provided = String(req.headers['x-integration-webhook-secret'] || '').trim();
-    if (!secret || provided !== secret) {
-      return res.status(401).json({ message: 'Invalid webhook secret.' });
+    const secret = trim(process.env.INTEGRATION_WEBHOOK_SECRET);
+    const signature = req.headers['x-hub-signature-256'];
+    if (
+      !secret ||
+      !Buffer.isBuffer(req.rawBody) ||
+      typeof signature !== 'string' ||
+      !/^sha256=[a-f0-9]{64}$/.test(signature)
+    )
+      return res.status(401).json({ message: 'Invalid webhook signature.' });
+    const digest = crypto.createHmac('sha256', secret).update(req.rawBody).digest();
+    if (!crypto.timingSafeEqual(digest, Buffer.from(signature.slice(7), 'hex')))
+      return res.status(401).json({ message: 'Invalid webhook signature.' });
+    const delivery = req.headers['x-github-delivery'];
+    if (typeof delivery !== 'string' || !/^[a-zA-Z0-9-]{1,100}$/.test(delivery))
+      return res.status(400).json({ message: 'Invalid delivery ID.' });
+    const event = req.headers['x-github-event'];
+    if (!['push', 'repository', 'ping'].includes(event))
+      return res.status(202).json({ message: 'Event ignored.' });
+    const account = req.body?.repository?.owner?.id;
+    if (event !== 'ping' && (!Number.isSafeInteger(account) || account <= 0))
+      return res.status(400).json({ message: 'Invalid repository owner.' });
+    let matched = 0;
+    try {
+      await persistence.transaction(async (session) => {
+        // Payload hash also rejects replay with an attacker-modified unsigned delivery ID.
+        await Connection.db.collection('integrationWebhookReceipts').insertMany(
+          [
+            { _id: `delivery:${governance.hash(delivery)}`, createdAt: new Date() },
+            { _id: `body:${governance.hash(req.rawBody)}`, createdAt: new Date() }
+          ],
+          { session }
+        );
+        if (event !== 'ping') {
+          const changed = await Connection.updateMany(
+            {
+              provider: 'github',
+              status: { $in: ['connected', 'error'] },
+              ownershipVerified: true,
+              externalAccountId: String(account)
+            },
+            { $set: { nextSyncAt: new Date() } },
+            { session }
+          );
+          matched = changed.matchedCount;
+        }
+      });
+    } catch (error) {
+      if (error.code === 11000)
+        return res.json({ message: 'Webhook already processed.', matchedConnections: 0 });
+      throw error;
     }
-
-    const githubUsername = String(req.body?.githubUsername || '').trim();
-    if (!githubUsername) {
-      return res.status(400).json({ message: 'githubUsername is required.' });
-    }
-
-    const connections = await IntegrationConnection.find({
-      provider: 'github',
-      status: 'connected',
-      externalUsername: githubUsername
-    }).lean();
-
-    for (const connection of connections) {
-      await syncProviderForUser(connection.userId, 'github', 'webhook');
-    }
-
-    return res.json({ message: 'Webhook processed.', matchedConnections: connections.length });
-  } catch (error) {
-    console.error('GitHub webhook error:', error.message);
-    return res.status(500).json({ message: 'Webhook processing failed.' });
+    return res.json({ message: 'Webhook processed.', matchedConnections: matched });
+  } catch {
+    return res.status(503).json({ message: 'Webhook processing failed.' });
   }
-};
-
-const getIntegrationInsights = async (req, res) => {
+}
+async function getIntegrationInsights(req, res) {
   try {
-    const insight = await getIntegrationInsight(req.user._id);
-
-    // If no persisted insight exists yet, derive a fallback from connected metadata
-    // so the dashboard and integrations page can still surface usable data.
-    if (!Array.isArray(insight.providers) || insight.providers.length === 0) {
-      const connections = await IntegrationConnection.find({ userId: req.user._id, status: 'connected' }).lean();
-      const providers = connections
-        .map((connection) => ({
-          provider: connection.provider,
-          profileScore: Number(connection?.metadata?.profileScore || 0),
-          activityScore: Number(connection?.metadata?.activityScore || 0),
-          confidence: Number(connection?.metadata?.totalSkillsDetected ? 65 : 45),
-          inferredSkills: [],
-          syncedAt: connection.lastSyncedAt || connection.updatedAt || connection.createdAt || null
-        }))
-        .filter((item) => item.profileScore > 0 || item.activityScore > 0);
-
-      if (providers.length > 0) {
-        return res.json({
-          providers,
-          mergedSkills: [],
-          integrationScore: computeIntegrationScore(providers),
-          updatedAt: new Date().toISOString()
-        });
-      }
-    }
-
-    return res.json(insight);
-  } catch (error) {
-    console.error('Get integration insights error:', error.message);
+    return res.json(await insights.getIntegrationInsight(req.user._id));
+  } catch {
     return res.status(500).json({ message: 'Failed to load integration insights.' });
   }
-};
-
-const getConnections = async (req, res) => {
+}
+async function getConnections(req, res) {
   try {
-    const connections = await IntegrationConnection.find({ userId: req.user._id })
-      .select('provider status externalUsername lastSyncedAt nextSyncAt lastSyncError createdAt updatedAt')
+    const connections = await Connection.find({ userId: req.user._id })
+      .select(
+        'provider status externalUsername lastSyncedAt nextSyncAt lastSyncError createdAt updatedAt'
+      )
       .lean();
     return res.json({ connections });
-  } catch (error) {
-    console.error('Get connections error:', error.message);
+  } catch {
     return res.status(500).json({ message: 'Failed to load provider connections.' });
   }
-};
-
-const disconnectProvider = async (req, res) => {
+}
+async function disconnectProvider(req, res) {
   try {
-    const provider = String(req.params.provider || '').toLowerCase();
-    if (!getAdapter(provider)) {
-      return res.status(400).json({ message: 'Unsupported provider.' });
+    const provider = trim(req.params.provider).toLowerCase();
+    const adapter = getAdapter(provider);
+    if (!adapter) return res.status(400).json({ message: 'Unsupported provider.' });
+    const previous = await persistence.disconnect(req.user._id, provider);
+    let revocation = 'not_supported';
+    if (previous?.accessToken && typeof adapter.revokeToken === 'function') {
+      try {
+        await governance.run(req.user._id, () =>
+          adapter.revokeToken(tokens.open(previous).accessToken)
+        );
+        revocation = 'revoked';
+      } catch {
+        revocation = 'manual_revocation_required';
+      }
     }
-
-    await IntegrationConnection.findOneAndUpdate(
-      { userId: req.user._id, provider },
-      {
-        $set: {
-          status: 'disconnected',
-          accessToken: '',
-          refreshToken: '',
-          tokenType: 'Bearer',
-          tokenExpiresAt: null,
-          scopes: [],
-          metadata: {},
-          lastSyncedAt: null,
-          nextSyncAt: null,
-          lastSyncError: '',
-          oauthState: '',
-          oauthStateExpiresAt: null,
-          oauthRedirectUri: ''
-        }
-      },
-      { upsert: false }
-    );
-
-    await removeProviderInsight({ userId: req.user._id, provider });
-    invalidateIntegrationDependents(req.user._id);
-
-    return res.json({ message: `${provider} disconnected.` });
+    return res.json({ message: `${provider} disconnected.`, revocation });
   } catch (error) {
-    console.error('Disconnect provider error:', error.message);
-    return res.status(500).json({ message: 'Failed to disconnect provider.' });
+    return errorResponse(res, error, 'Failed to disconnect provider.');
   }
-};
-
+}
 module.exports = {
   getMarketplace,
   startOAuth,

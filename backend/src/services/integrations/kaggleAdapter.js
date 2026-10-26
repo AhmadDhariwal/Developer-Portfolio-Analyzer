@@ -1,5 +1,4 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
-const axios = require('axios');
 
 class KaggleAdapter extends BaseIntegrationAdapter {
   constructor() {
@@ -13,7 +12,8 @@ class KaggleAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Provide your Kaggle username to fetch public profile, medals, and competition activity.'
+      helpText:
+        'Provide your Kaggle username to fetch public profile, medals, and competition activity.'
     };
   }
 
@@ -59,14 +59,14 @@ class KaggleAdapter extends BaseIntegrationAdapter {
         null
       );
     } catch {
-      const html = await axios.get(`https://www.kaggle.com/${encodeURIComponent(username)}`, {
+      const html = await this.get(`https://www.kaggle.com/${encodeURIComponent(username)}`, null, {
         timeout: 15000,
         headers: {
           Accept: 'text/html,application/xhtml+xml'
         }
       });
 
-      const body = String(html?.data || '');
+      const body = String(html || '');
       if (!body || body.toLowerCase().includes('not found')) {
         throw new Error('Kaggle user not found or profile unavailable.');
       }

@@ -1,0 +1,2963 @@
+{
+  "callbackBefore": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationconnections",
+      "parsedQuery": {
+        "$and": [
+          {
+            "oauthState": {
+              "$eq": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728"
+            }
+          },
+          {
+            "provider": {
+              "$eq": "leetcode"
+            }
+          },
+          {
+            "oauthStateExpiresAt": {
+              "$gt": "2026-10-25T18:34:39.254Z"
+            }
+          }
+        ]
+      },
+      "indexFilterSet": false,
+      "queryHash": "13730262",
+      "planCacheShapeHash": "13730262",
+      "planCacheKey": "AB26445A",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "oauthState": {
+                "$eq": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728"
+              }
+            },
+            {
+              "provider": {
+                "$eq": "leetcode"
+              }
+            },
+            {
+              "oauthStateExpiresAt": {
+                "$gt": "2026-10-25T18:34:39.254Z"
+              }
+            }
+          ]
+        },
+        "direction": "forward"
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 1,
+      "executionTimeMillis": 21,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 1204,
+      "executionStages": {
+        "isCached": false,
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "oauthState": {
+                "$eq": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728"
+              }
+            },
+            {
+              "provider": {
+                "$eq": "leetcode"
+              }
+            },
+            {
+              "oauthStateExpiresAt": {
+                "$gt": "2026-10-25T18:34:39.254Z"
+              }
+            }
+          ]
+        },
+        "nReturned": 1,
+        "executionTimeMillisEstimate": 0,
+        "works": 1205,
+        "advanced": 1,
+        "needTime": 1203,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "direction": "forward",
+        "docsExamined": 1204
+      },
+      "allPlansExecution": []
+    },
+    "queryShapeHash": "C9AB7AD823D12F06169F785426FF300407D577565C08462793DDE8D1EB56E8EE",
+    "command": {
+      "find": "integrationconnections",
+      "filter": {
+        "provider": "leetcode",
+        "oauthState": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728",
+        "oauthStateExpiresAt": {
+          "$gt": "2026-10-25T18:34:39.254Z"
+        }
+      },
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675696560963592"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675696560963592"
+    }
+  },
+  "webhookBefore": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationconnections",
+      "parsedQuery": {
+        "$and": [
+          {
+            "externalAccountId": {
+              "$eq": "42"
+            }
+          },
+          {
+            "ownershipVerified": {
+              "$eq": true
+            }
+          },
+          {
+            "provider": {
+              "$eq": "github"
+            }
+          },
+          {
+            "status": {
+              "$in": ["connected", "error"]
+            }
+          }
+        ]
+      },
+      "indexFilterSet": false,
+      "queryHash": "CB7E35C4",
+      "planCacheShapeHash": "CB7E35C4",
+      "planCacheKey": "B6D42EB1",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "externalAccountId": {
+                "$eq": "42"
+              }
+            },
+            {
+              "ownershipVerified": {
+                "$eq": true
+              }
+            },
+            {
+              "provider": {
+                "$eq": "github"
+              }
+            },
+            {
+              "status": {
+                "$in": ["connected", "error"]
+              }
+            }
+          ]
+        },
+        "direction": "forward"
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 0,
+      "executionTimeMillis": 13,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 1204,
+      "executionStages": {
+        "isCached": false,
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "externalAccountId": {
+                "$eq": "42"
+              }
+            },
+            {
+              "ownershipVerified": {
+                "$eq": true
+              }
+            },
+            {
+              "provider": {
+                "$eq": "github"
+              }
+            },
+            {
+              "status": {
+                "$in": ["connected", "error"]
+              }
+            }
+          ]
+        },
+        "nReturned": 0,
+        "executionTimeMillisEstimate": 0,
+        "works": 1205,
+        "advanced": 0,
+        "needTime": 1204,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "direction": "forward",
+        "docsExamined": 1204
+      },
+      "allPlansExecution": []
+    },
+    "queryShapeHash": "4A14A6B5BEF1542B11F5FA1D114C9D8087ECD5D4E8C4A488E4C6F862C224BFA3",
+    "command": {
+      "find": "integrationconnections",
+      "filter": {
+        "provider": "github",
+        "ownershipVerified": true,
+        "externalAccountId": "42",
+        "status": {
+          "$in": ["connected", "error"]
+        }
+      },
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675696560963592"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675696560963592"
+    }
+  },
+  "before": {
+    "polling": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationconnections",
+        "parsedQuery": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "leaseUntil": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "nextSyncAt": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "nextSyncAt": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "status": {
+                "$in": ["connected", "error"]
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "C88D2353",
+        "planCacheShapeHash": "C88D2353",
+        "planCacheKey": "41534C6E",
+        "optimizationTimeMillis": 0,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "SORT",
+          "sortPattern": {
+            "nextSyncAt": 1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 10,
+          "type": "simple",
+          "inputStage": {
+            "stage": "COLLSCAN",
+            "filter": {
+              "$and": [
+                {
+                  "$or": [
+                    {
+                      "leaseUntil": {
+                        "$eq": null
+                      }
+                    },
+                    {
+                      "leaseUntil": {
+                        "$lte": "2026-10-25T18:44:39.244Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "$or": [
+                    {
+                      "nextSyncAt": {
+                        "$eq": null
+                      }
+                    },
+                    {
+                      "nextSyncAt": {
+                        "$lte": "2026-10-25T18:44:39.244Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "status": {
+                    "$in": ["connected", "error"]
+                  }
+                }
+              ]
+            },
+            "direction": "forward"
+          }
+        },
+        "rejectedPlans": []
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 7,
+        "executionTimeMillis": 6,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 1204,
+        "executionStages": {
+          "isCached": false,
+          "stage": "SORT",
+          "nReturned": 7,
+          "executionTimeMillisEstimate": 0,
+          "works": 1213,
+          "advanced": 7,
+          "needTime": 1205,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "sortPattern": {
+            "nextSyncAt": 1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 10,
+          "type": "simple",
+          "totalDataSizeSorted": 1849,
+          "usedDisk": false,
+          "spills": 0,
+          "spilledRecords": 0,
+          "spilledBytes": 0,
+          "spilledDataStorageSize": 0,
+          "inputStage": {
+            "stage": "COLLSCAN",
+            "filter": {
+              "$and": [
+                {
+                  "$or": [
+                    {
+                      "leaseUntil": {
+                        "$eq": null
+                      }
+                    },
+                    {
+                      "leaseUntil": {
+                        "$lte": "2026-10-25T18:44:39.244Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "$or": [
+                    {
+                      "nextSyncAt": {
+                        "$eq": null
+                      }
+                    },
+                    {
+                      "nextSyncAt": {
+                        "$lte": "2026-10-25T18:44:39.244Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "status": {
+                    "$in": ["connected", "error"]
+                  }
+                }
+              ]
+            },
+            "nReturned": 7,
+            "executionTimeMillisEstimate": 0,
+            "works": 1205,
+            "advanced": 7,
+            "needTime": 1197,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "direction": "forward",
+            "docsExamined": 1204
+          }
+        },
+        "allPlansExecution": []
+      },
+      "queryShapeHash": "8E47A9DD378D69C6D700046F0E1C8A36E85F3EBA033E01B6E0038767322EB3A2",
+      "command": {
+        "find": "integrationconnections",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "nextSyncAt": null
+                },
+                {
+                  "nextSyncAt": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "leaseUntil": null
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            }
+          ],
+          "status": {
+            "$in": ["connected", "error"]
+          }
+        },
+        "sort": {
+          "nextSyncAt": 1
+        },
+        "limit": 10,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675696560963592"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675696560963592"
+      }
+    },
+    "history": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationsynclogs",
+        "parsedQuery": {
+          "$and": [
+            {
+              "userId": {
+                "$eq": "6ade4bb367df09490d223588"
+              }
+            },
+            {
+              "createdAt": {
+                "$gte": "2026-10-24T18:34:39.321Z"
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "1E574341",
+        "planCacheShapeHash": "1E574341",
+        "planCacheKey": "B8C72CA6",
+        "optimizationTimeMillis": 0,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "SORT",
+          "sortPattern": {
+            "createdAt": -1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 5000,
+          "type": "simple",
+          "inputStage": {
+            "stage": "COLLSCAN",
+            "filter": {
+              "$and": [
+                {
+                  "userId": {
+                    "$eq": "6ade4bb367df09490d223588"
+                  }
+                },
+                {
+                  "createdAt": {
+                    "$gte": "2026-10-24T18:34:39.321Z"
+                  }
+                }
+              ]
+            },
+            "direction": "forward"
+          }
+        },
+        "rejectedPlans": []
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 106,
+        "executionTimeMillis": 7,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 1206,
+        "executionStages": {
+          "isCached": false,
+          "stage": "SORT",
+          "nReturned": 106,
+          "executionTimeMillisEstimate": 0,
+          "works": 1314,
+          "advanced": 106,
+          "needTime": 1207,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "sortPattern": {
+            "createdAt": -1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 5000,
+          "type": "simple",
+          "totalDataSizeSorted": 15123,
+          "usedDisk": false,
+          "spills": 0,
+          "spilledRecords": 0,
+          "spilledBytes": 0,
+          "spilledDataStorageSize": 0,
+          "inputStage": {
+            "stage": "COLLSCAN",
+            "filter": {
+              "$and": [
+                {
+                  "userId": {
+                    "$eq": "6ade4bb367df09490d223588"
+                  }
+                },
+                {
+                  "createdAt": {
+                    "$gte": "2026-10-24T18:34:39.321Z"
+                  }
+                }
+              ]
+            },
+            "nReturned": 106,
+            "executionTimeMillisEstimate": 0,
+            "works": 1207,
+            "advanced": 106,
+            "needTime": 1100,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "direction": "forward",
+            "docsExamined": 1206
+          }
+        },
+        "allPlansExecution": []
+      },
+      "queryShapeHash": "66C56A97DF1C50CA99926DAF1C16E153849FB46E32DFFF1E5F4158B359AADAC3",
+      "command": {
+        "find": "integrationsynclogs",
+        "filter": {
+          "userId": "6ade4bb367df09490d223588",
+          "createdAt": {
+            "$gte": "2026-10-24T18:34:39.321Z"
+          }
+        },
+        "sort": {
+          "createdAt": -1
+        },
+        "limit": 5000,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675696560963592"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675696560963592"
+      }
+    },
+    "ownership": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationconnections",
+        "parsedQuery": {
+          "$and": [
+            {
+              "provider": {
+                "$eq": "leetcode"
+              }
+            },
+            {
+              "userId": {
+                "$eq": "6ade4bb367df09490d223588"
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "6431F9C9",
+        "planCacheShapeHash": "6431F9C9",
+        "planCacheKey": "D0F166C8",
+        "optimizationTimeMillis": 0,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "provider": 1
+              },
+              "indexName": "userId_1_provider_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "provider": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "provider": ["[\"leetcode\", \"leetcode\"]"]
+              }
+            }
+          }
+        },
+        "rejectedPlans": []
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 1,
+        "executionTimeMillis": 0,
+        "totalKeysExamined": 1,
+        "totalDocsExamined": 1,
+        "executionStages": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 0,
+          "works": 2,
+          "advanced": 1,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 1,
+            "executionTimeMillisEstimate": 0,
+            "works": 1,
+            "advanced": 1,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 0,
+            "docsExamined": 1,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 1,
+              "executionTimeMillisEstimate": 0,
+              "works": 1,
+              "advanced": 1,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 0,
+              "keyPattern": {
+                "userId": 1,
+                "provider": 1
+              },
+              "indexName": "userId_1_provider_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "provider": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "provider": ["[\"leetcode\", \"leetcode\"]"]
+              },
+              "keysExamined": 1,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        }
+      },
+      "queryShapeHash": "355683C30C3D4057E3366EE344042D48A553120B618CBF7D65803919DD0C7E50",
+      "command": {
+        "find": "integrationconnections",
+        "filter": {
+          "userId": "6ade4bb367df09490d223588",
+          "provider": "leetcode"
+        },
+        "limit": 1,
+        "singleBatch": true,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675696560963592"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675696560963592"
+      }
+    }
+  },
+  "retentionBefore": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationsynclogs",
+      "parsedQuery": {
+        "expiresAt": {
+          "$lte": "2026-10-25T18:34:39.343Z"
+        }
+      },
+      "indexFilterSet": false,
+      "queryHash": "6E72291C",
+      "planCacheShapeHash": "6E72291C",
+      "planCacheKey": "F1273D69",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 100,
+        "inputStage": {
+          "stage": "COLLSCAN",
+          "filter": {
+            "expiresAt": {
+              "$lte": "2026-10-25T18:34:39.343Z"
+            }
+          },
+          "direction": "forward"
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 0,
+      "executionTimeMillis": 5,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 1206,
+      "executionStages": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "nReturned": 0,
+        "executionTimeMillisEstimate": 0,
+        "works": 1207,
+        "advanced": 0,
+        "needTime": 1206,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "limitAmount": 100,
+        "inputStage": {
+          "stage": "COLLSCAN",
+          "filter": {
+            "expiresAt": {
+              "$lte": "2026-10-25T18:34:39.343Z"
+            }
+          },
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "works": 1207,
+          "advanced": 0,
+          "needTime": 1206,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "direction": "forward",
+          "docsExamined": 1206
+        }
+      }
+    },
+    "queryShapeHash": "2C9FABD3974091F3FF9D20DC45B63A142CA09A3411439D41B024792B21DE3B8A",
+    "command": {
+      "find": "integrationsynclogs",
+      "filter": {
+        "expiresAt": {
+          "$lte": "2026-10-25T18:34:39.343Z"
+        }
+      },
+      "limit": 100,
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675696560963592"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675696560963592"
+    }
+  },
+  "callbackAfter": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationconnections",
+      "parsedQuery": {
+        "$and": [
+          {
+            "oauthState": {
+              "$eq": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728"
+            }
+          },
+          {
+            "provider": {
+              "$eq": "leetcode"
+            }
+          },
+          {
+            "oauthStateExpiresAt": {
+              "$gt": "2026-10-25T18:34:40.629Z"
+            }
+          }
+        ]
+      },
+      "indexFilterSet": false,
+      "queryHash": "13730262",
+      "planCacheShapeHash": "13730262",
+      "planCacheKey": "1F365191",
+      "optimizationTimeMillis": 3,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "oauthStateExpiresAt": {
+            "$gt": "2026-10-25T18:34:40.629Z"
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "provider": 1,
+            "oauthState": 1
+          },
+          "indexName": "integration_oauth_state_v1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "provider": [],
+            "oauthState": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": true,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "provider": ["[\"leetcode\", \"leetcode\"]"],
+            "oauthState": [
+              "[\"72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728\", \"72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728\"]"
+            ]
+          }
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 1,
+      "executionTimeMillis": 9,
+      "totalKeysExamined": 1,
+      "totalDocsExamined": 1,
+      "executionStages": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "oauthStateExpiresAt": {
+            "$gt": "2026-10-25T18:34:40.629Z"
+          }
+        },
+        "nReturned": 1,
+        "executionTimeMillisEstimate": 0,
+        "works": 2,
+        "advanced": 1,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "docsExamined": 1,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 0,
+          "works": 2,
+          "advanced": 1,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "keyPattern": {
+            "provider": 1,
+            "oauthState": 1
+          },
+          "indexName": "integration_oauth_state_v1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "provider": [],
+            "oauthState": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": true,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "provider": ["[\"leetcode\", \"leetcode\"]"],
+            "oauthState": [
+              "[\"72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728\", \"72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728\"]"
+            ]
+          },
+          "keysExamined": 1,
+          "seeks": 1,
+          "dupsTested": 0,
+          "dupsDropped": 0
+        }
+      },
+      "allPlansExecution": []
+    },
+    "queryShapeHash": "C9AB7AD823D12F06169F785426FF300407D577565C08462793DDE8D1EB56E8EE",
+    "command": {
+      "find": "integrationconnections",
+      "filter": {
+        "provider": "leetcode",
+        "oauthState": "72613533d99019eff1f5ae7a0bf31254abf05f96569bfe38b3b1ee082a117728",
+        "oauthStateExpiresAt": {
+          "$gt": "2026-10-25T18:34:40.629Z"
+        }
+      },
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675700855930893"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675700855930893"
+    }
+  },
+  "webhookAfter": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationconnections",
+      "parsedQuery": {
+        "$and": [
+          {
+            "externalAccountId": {
+              "$eq": "42"
+            }
+          },
+          {
+            "ownershipVerified": {
+              "$eq": true
+            }
+          },
+          {
+            "provider": {
+              "$eq": "github"
+            }
+          },
+          {
+            "status": {
+              "$in": ["connected", "error"]
+            }
+          }
+        ]
+      },
+      "indexFilterSet": false,
+      "queryHash": "CB7E35C4",
+      "planCacheShapeHash": "CB7E35C4",
+      "planCacheKey": "CACEEF08",
+      "optimizationTimeMillis": 10,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "status": {
+            "$in": ["connected", "error"]
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "provider": 1,
+            "externalAccountId": 1
+          },
+          "indexName": "integration_webhook_identity_v1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "provider": [],
+            "externalAccountId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": true,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "provider": ["[\"github\", \"github\"]"],
+            "externalAccountId": ["[\"42\", \"42\"]"]
+          }
+        }
+      },
+      "rejectedPlans": [
+        {
+          "isCached": false,
+          "stage": "FETCH",
+          "filter": {
+            "$and": [
+              {
+                "externalAccountId": {
+                  "$eq": "42"
+                }
+              },
+              {
+                "ownershipVerified": {
+                  "$eq": true
+                }
+              },
+              {
+                "provider": {
+                  "$eq": "github"
+                }
+              }
+            ]
+          },
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "status": 1,
+              "nextSyncAt": 1
+            },
+            "indexName": "integration_due_v1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "status": [],
+              "nextSyncAt": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+              "nextSyncAt": ["[MinKey, MaxKey]"]
+            }
+          }
+        }
+      ]
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 0,
+      "executionTimeMillis": 10,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 0,
+      "executionStages": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "status": {
+            "$in": ["connected", "error"]
+          }
+        },
+        "nReturned": 0,
+        "executionTimeMillisEstimate": 4,
+        "works": 2,
+        "advanced": 0,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "docsExamined": 0,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 4,
+          "works": 1,
+          "advanced": 0,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "keyPattern": {
+            "provider": 1,
+            "externalAccountId": 1
+          },
+          "indexName": "integration_webhook_identity_v1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "provider": [],
+            "externalAccountId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": true,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "provider": ["[\"github\", \"github\"]"],
+            "externalAccountId": ["[\"42\", \"42\"]"]
+          },
+          "keysExamined": 0,
+          "seeks": 1,
+          "dupsTested": 0,
+          "dupsDropped": 0
+        }
+      },
+      "allPlansExecution": [
+        {
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 4,
+          "totalKeysExamined": 0,
+          "totalDocsExamined": 0,
+          "score": 2.0002,
+          "executionStages": {
+            "isCached": false,
+            "stage": "FETCH",
+            "filter": {
+              "status": {
+                "$in": ["connected", "error"]
+              }
+            },
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 4,
+            "works": 1,
+            "advanced": 0,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "docsExamined": 0,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 0,
+              "executionTimeMillisEstimate": 4,
+              "works": 1,
+              "advanced": 0,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "keyPattern": {
+                "provider": 1,
+                "externalAccountId": 1
+              },
+              "indexName": "integration_webhook_identity_v1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "provider": [],
+                "externalAccountId": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": true,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "provider": ["[\"github\", \"github\"]"],
+                "externalAccountId": ["[\"42\", \"42\"]"]
+              },
+              "keysExamined": 0,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        },
+        {
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "totalKeysExamined": 1,
+          "totalDocsExamined": 1,
+          "score": 1.0002,
+          "executionStages": {
+            "isCached": false,
+            "stage": "FETCH",
+            "filter": {
+              "$and": [
+                {
+                  "externalAccountId": {
+                    "$eq": "42"
+                  }
+                },
+                {
+                  "ownershipVerified": {
+                    "$eq": true
+                  }
+                },
+                {
+                  "provider": {
+                    "$eq": "github"
+                  }
+                }
+              ]
+            },
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 0,
+            "works": 1,
+            "advanced": 0,
+            "needTime": 1,
+            "needYield": 0,
+            "saveState": 1,
+            "restoreState": 0,
+            "isEOF": 0,
+            "docsExamined": 1,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 1,
+              "executionTimeMillisEstimate": 0,
+              "works": 1,
+              "advanced": 1,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 1,
+              "restoreState": 0,
+              "isEOF": 0,
+              "keyPattern": {
+                "status": 1,
+                "nextSyncAt": 1
+              },
+              "indexName": "integration_due_v1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "status": [],
+                "nextSyncAt": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                "nextSyncAt": ["[MinKey, MaxKey]"]
+              },
+              "keysExamined": 1,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        }
+      ]
+    },
+    "queryShapeHash": "4A14A6B5BEF1542B11F5FA1D114C9D8087ECD5D4E8C4A488E4C6F862C224BFA3",
+    "command": {
+      "find": "integrationconnections",
+      "filter": {
+        "provider": "github",
+        "ownershipVerified": true,
+        "externalAccountId": "42",
+        "status": {
+          "$in": ["connected", "error"]
+        }
+      },
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675700855930893"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675700855930893"
+    }
+  },
+  "after": {
+    "polling": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationconnections",
+        "parsedQuery": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "leaseUntil": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "nextSyncAt": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "nextSyncAt": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "status": {
+                "$in": ["connected", "error"]
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "C88D2353",
+        "planCacheShapeHash": "C88D2353",
+        "planCacheKey": "FAB395AB",
+        "optimizationTimeMillis": 6,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "SORT",
+          "sortPattern": {
+            "nextSyncAt": 1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 10,
+          "type": "simple",
+          "inputStage": {
+            "stage": "FETCH",
+            "filter": {
+              "$or": [
+                {
+                  "leaseUntil": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            "inputStage": {
+              "stage": "OR",
+              "inputStages": [
+                {
+                  "stage": "FETCH",
+                  "filter": {
+                    "nextSyncAt": {
+                      "$eq": null
+                    }
+                  },
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "status": 1,
+                      "nextSyncAt": 1
+                    },
+                    "indexName": "integration_due_v1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "status": [],
+                      "nextSyncAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                      "nextSyncAt": ["[null, null]"]
+                    }
+                  }
+                },
+                {
+                  "stage": "IXSCAN",
+                  "keyPattern": {
+                    "status": 1,
+                    "nextSyncAt": 1
+                  },
+                  "indexName": "integration_due_v1",
+                  "isMultiKey": false,
+                  "multiKeyPaths": {
+                    "status": [],
+                    "nextSyncAt": []
+                  },
+                  "isUnique": false,
+                  "isSparse": false,
+                  "isPartial": false,
+                  "indexVersion": 2,
+                  "direction": "forward",
+                  "indexBounds": {
+                    "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                    "nextSyncAt": ["[new Date(-9223372036854775808), new Date(1792953879244)]"]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "rejectedPlans": [
+          {
+            "isCached": false,
+            "stage": "LIMIT",
+            "limitAmount": 10,
+            "inputStage": {
+              "stage": "FETCH",
+              "filter": {
+                "$and": [
+                  {
+                    "$or": [
+                      {
+                        "leaseUntil": {
+                          "$eq": null
+                        }
+                      },
+                      {
+                        "leaseUntil": {
+                          "$lte": "2026-10-25T18:44:39.244Z"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "$or": [
+                      {
+                        "nextSyncAt": {
+                          "$eq": null
+                        }
+                      },
+                      {
+                        "nextSyncAt": {
+                          "$lte": "2026-10-25T18:44:39.244Z"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "inputStage": {
+                "stage": "SORT_MERGE",
+                "sortPattern": {
+                  "nextSyncAt": 1
+                },
+                "inputStages": [
+                  {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "status": 1,
+                      "nextSyncAt": 1
+                    },
+                    "indexName": "integration_due_v1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "status": [],
+                      "nextSyncAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "status": ["[\"connected\", \"connected\"]"],
+                      "nextSyncAt": ["[MinKey, MaxKey]"]
+                    }
+                  },
+                  {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "status": 1,
+                      "nextSyncAt": 1
+                    },
+                    "indexName": "integration_due_v1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "status": [],
+                      "nextSyncAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "status": ["[\"error\", \"error\"]"],
+                      "nextSyncAt": ["[MinKey, MaxKey]"]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 7,
+        "executionTimeMillis": 6,
+        "totalKeysExamined": 11,
+        "totalDocsExamined": 7,
+        "executionStages": {
+          "isCached": false,
+          "stage": "SORT",
+          "nReturned": 7,
+          "executionTimeMillisEstimate": 0,
+          "works": 22,
+          "advanced": 7,
+          "needTime": 13,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "sortPattern": {
+            "nextSyncAt": 1
+          },
+          "memLimit": 104857600,
+          "limitAmount": 10,
+          "type": "simple",
+          "totalDataSizeSorted": 1849,
+          "usedDisk": false,
+          "spills": 0,
+          "spilledRecords": 0,
+          "spilledBytes": 0,
+          "spilledDataStorageSize": 0,
+          "inputStage": {
+            "stage": "FETCH",
+            "filter": {
+              "$or": [
+                {
+                  "leaseUntil": {
+                    "$eq": null
+                  }
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            "nReturned": 7,
+            "executionTimeMillisEstimate": 0,
+            "works": 13,
+            "advanced": 7,
+            "needTime": 5,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "docsExamined": 7,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "OR",
+              "nReturned": 7,
+              "executionTimeMillisEstimate": 0,
+              "works": 13,
+              "advanced": 7,
+              "needTime": 5,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "dupsTested": 7,
+              "dupsDropped": 0,
+              "inputStages": [
+                {
+                  "stage": "FETCH",
+                  "filter": {
+                    "nextSyncAt": {
+                      "$eq": null
+                    }
+                  },
+                  "nReturned": 0,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 3,
+                  "advanced": 0,
+                  "needTime": 2,
+                  "needYield": 0,
+                  "saveState": 0,
+                  "restoreState": 0,
+                  "isEOF": 1,
+                  "docsExamined": 0,
+                  "alreadyHasObj": 0,
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "nReturned": 0,
+                    "executionTimeMillisEstimate": 0,
+                    "works": 3,
+                    "advanced": 0,
+                    "needTime": 2,
+                    "needYield": 0,
+                    "saveState": 0,
+                    "restoreState": 0,
+                    "isEOF": 1,
+                    "keyPattern": {
+                      "status": 1,
+                      "nextSyncAt": 1
+                    },
+                    "indexName": "integration_due_v1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "status": [],
+                      "nextSyncAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                      "nextSyncAt": ["[null, null]"]
+                    },
+                    "keysExamined": 2,
+                    "seeks": 3,
+                    "dupsTested": 0,
+                    "dupsDropped": 0
+                  }
+                },
+                {
+                  "stage": "IXSCAN",
+                  "nReturned": 7,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 10,
+                  "advanced": 7,
+                  "needTime": 2,
+                  "needYield": 0,
+                  "saveState": 0,
+                  "restoreState": 0,
+                  "isEOF": 1,
+                  "keyPattern": {
+                    "status": 1,
+                    "nextSyncAt": 1
+                  },
+                  "indexName": "integration_due_v1",
+                  "isMultiKey": false,
+                  "multiKeyPaths": {
+                    "status": [],
+                    "nextSyncAt": []
+                  },
+                  "isUnique": false,
+                  "isSparse": false,
+                  "isPartial": false,
+                  "indexVersion": 2,
+                  "direction": "forward",
+                  "indexBounds": {
+                    "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                    "nextSyncAt": ["[new Date(-9223372036854775808), new Date(1792953879244)]"]
+                  },
+                  "keysExamined": 9,
+                  "seeks": 3,
+                  "dupsTested": 0,
+                  "dupsDropped": 0
+                }
+              ]
+            }
+          }
+        },
+        "allPlansExecution": [
+          {
+            "nReturned": 7,
+            "executionTimeMillisEstimate": 0,
+            "totalKeysExamined": 11,
+            "totalDocsExamined": 7,
+            "score": 2.3334333333333332,
+            "executionStages": {
+              "isCached": false,
+              "stage": "SORT",
+              "nReturned": 7,
+              "executionTimeMillisEstimate": 0,
+              "works": 21,
+              "advanced": 7,
+              "needTime": 13,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "sortPattern": {
+                "nextSyncAt": 1
+              },
+              "memLimit": 104857600,
+              "limitAmount": 10,
+              "type": "simple",
+              "totalDataSizeSorted": 1849,
+              "usedDisk": false,
+              "spills": 0,
+              "spilledRecords": 0,
+              "spilledBytes": 0,
+              "spilledDataStorageSize": 0,
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$or": [
+                    {
+                      "leaseUntil": {
+                        "$eq": null
+                      }
+                    },
+                    {
+                      "leaseUntil": {
+                        "$lte": "2026-10-25T18:44:39.244Z"
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 7,
+                "executionTimeMillisEstimate": 0,
+                "works": 13,
+                "advanced": 7,
+                "needTime": 5,
+                "needYield": 0,
+                "saveState": 0,
+                "restoreState": 0,
+                "isEOF": 1,
+                "docsExamined": 7,
+                "alreadyHasObj": 0,
+                "inputStage": {
+                  "stage": "OR",
+                  "nReturned": 7,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 13,
+                  "advanced": 7,
+                  "needTime": 5,
+                  "needYield": 0,
+                  "saveState": 0,
+                  "restoreState": 0,
+                  "isEOF": 1,
+                  "dupsTested": 7,
+                  "dupsDropped": 0,
+                  "inputStages": [
+                    {
+                      "stage": "FETCH",
+                      "filter": {
+                        "nextSyncAt": {
+                          "$eq": null
+                        }
+                      },
+                      "nReturned": 0,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 3,
+                      "advanced": 0,
+                      "needTime": 2,
+                      "needYield": 0,
+                      "saveState": 0,
+                      "restoreState": 0,
+                      "isEOF": 1,
+                      "docsExamined": 0,
+                      "alreadyHasObj": 0,
+                      "inputStage": {
+                        "stage": "IXSCAN",
+                        "nReturned": 0,
+                        "executionTimeMillisEstimate": 0,
+                        "works": 3,
+                        "advanced": 0,
+                        "needTime": 2,
+                        "needYield": 0,
+                        "saveState": 0,
+                        "restoreState": 0,
+                        "isEOF": 1,
+                        "keyPattern": {
+                          "status": 1,
+                          "nextSyncAt": 1
+                        },
+                        "indexName": "integration_due_v1",
+                        "isMultiKey": false,
+                        "multiKeyPaths": {
+                          "status": [],
+                          "nextSyncAt": []
+                        },
+                        "isUnique": false,
+                        "isSparse": false,
+                        "isPartial": false,
+                        "indexVersion": 2,
+                        "direction": "forward",
+                        "indexBounds": {
+                          "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                          "nextSyncAt": ["[null, null]"]
+                        },
+                        "keysExamined": 2,
+                        "seeks": 3,
+                        "dupsTested": 0,
+                        "dupsDropped": 0
+                      }
+                    },
+                    {
+                      "stage": "IXSCAN",
+                      "nReturned": 7,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 10,
+                      "advanced": 7,
+                      "needTime": 2,
+                      "needYield": 0,
+                      "saveState": 0,
+                      "restoreState": 0,
+                      "isEOF": 1,
+                      "keyPattern": {
+                        "status": 1,
+                        "nextSyncAt": 1
+                      },
+                      "indexName": "integration_due_v1",
+                      "isMultiKey": false,
+                      "multiKeyPaths": {
+                        "status": [],
+                        "nextSyncAt": []
+                      },
+                      "isUnique": false,
+                      "isSparse": false,
+                      "isPartial": false,
+                      "indexVersion": 2,
+                      "direction": "forward",
+                      "indexBounds": {
+                        "status": ["[\"connected\", \"connected\"]", "[\"error\", \"error\"]"],
+                        "nextSyncAt": ["[new Date(-9223372036854775808), new Date(1792953879244)]"]
+                      },
+                      "keysExamined": 9,
+                      "seeks": 3,
+                      "dupsTested": 0,
+                      "dupsDropped": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "nReturned": 7,
+            "executionTimeMillisEstimate": 0,
+            "totalKeysExamined": 10,
+            "totalDocsExamined": 10,
+            "score": 1.3335333333333332,
+            "executionStages": {
+              "isCached": false,
+              "stage": "LIMIT",
+              "nReturned": 7,
+              "executionTimeMillisEstimate": 0,
+              "works": 21,
+              "advanced": 7,
+              "needTime": 14,
+              "needYield": 0,
+              "saveState": 1,
+              "restoreState": 0,
+              "isEOF": 0,
+              "limitAmount": 10,
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$and": [
+                    {
+                      "$or": [
+                        {
+                          "leaseUntil": {
+                            "$eq": null
+                          }
+                        },
+                        {
+                          "leaseUntil": {
+                            "$lte": "2026-10-25T18:44:39.244Z"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "$or": [
+                        {
+                          "nextSyncAt": {
+                            "$eq": null
+                          }
+                        },
+                        {
+                          "nextSyncAt": {
+                            "$lte": "2026-10-25T18:44:39.244Z"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "nReturned": 7,
+                "executionTimeMillisEstimate": 0,
+                "works": 21,
+                "advanced": 7,
+                "needTime": 14,
+                "needYield": 0,
+                "saveState": 1,
+                "restoreState": 0,
+                "isEOF": 0,
+                "docsExamined": 10,
+                "alreadyHasObj": 0,
+                "inputStage": {
+                  "stage": "SORT_MERGE",
+                  "nReturned": 10,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 21,
+                  "advanced": 10,
+                  "needTime": 11,
+                  "needYield": 0,
+                  "saveState": 1,
+                  "restoreState": 0,
+                  "isEOF": 0,
+                  "sortPattern": {
+                    "nextSyncAt": 1
+                  },
+                  "dupsTested": 0,
+                  "dupsDropped": 0,
+                  "inputStages": [
+                    {
+                      "stage": "IXSCAN",
+                      "nReturned": 10,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 10,
+                      "advanced": 10,
+                      "needTime": 0,
+                      "needYield": 0,
+                      "saveState": 1,
+                      "restoreState": 0,
+                      "isEOF": 0,
+                      "keyPattern": {
+                        "status": 1,
+                        "nextSyncAt": 1
+                      },
+                      "indexName": "integration_due_v1",
+                      "isMultiKey": false,
+                      "multiKeyPaths": {
+                        "status": [],
+                        "nextSyncAt": []
+                      },
+                      "isUnique": false,
+                      "isSparse": false,
+                      "isPartial": false,
+                      "indexVersion": 2,
+                      "direction": "forward",
+                      "indexBounds": {
+                        "status": ["[\"connected\", \"connected\"]"],
+                        "nextSyncAt": ["[MinKey, MaxKey]"]
+                      },
+                      "keysExamined": 10,
+                      "seeks": 1,
+                      "dupsTested": 0,
+                      "dupsDropped": 0
+                    },
+                    {
+                      "stage": "IXSCAN",
+                      "nReturned": 0,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 1,
+                      "advanced": 0,
+                      "needTime": 0,
+                      "needYield": 0,
+                      "saveState": 1,
+                      "restoreState": 0,
+                      "isEOF": 1,
+                      "keyPattern": {
+                        "status": 1,
+                        "nextSyncAt": 1
+                      },
+                      "indexName": "integration_due_v1",
+                      "isMultiKey": false,
+                      "multiKeyPaths": {
+                        "status": [],
+                        "nextSyncAt": []
+                      },
+                      "isUnique": false,
+                      "isSparse": false,
+                      "isPartial": false,
+                      "indexVersion": 2,
+                      "direction": "forward",
+                      "indexBounds": {
+                        "status": ["[\"error\", \"error\"]"],
+                        "nextSyncAt": ["[MinKey, MaxKey]"]
+                      },
+                      "keysExamined": 0,
+                      "seeks": 1,
+                      "dupsTested": 0,
+                      "dupsDropped": 0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "queryShapeHash": "8E47A9DD378D69C6D700046F0E1C8A36E85F3EBA033E01B6E0038767322EB3A2",
+      "command": {
+        "find": "integrationconnections",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "nextSyncAt": null
+                },
+                {
+                  "nextSyncAt": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            },
+            {
+              "$or": [
+                {
+                  "leaseUntil": null
+                },
+                {
+                  "leaseUntil": {
+                    "$lte": "2026-10-25T18:44:39.244Z"
+                  }
+                }
+              ]
+            }
+          ],
+          "status": {
+            "$in": ["connected", "error"]
+          }
+        },
+        "sort": {
+          "nextSyncAt": 1
+        },
+        "limit": 10,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675700855930893"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675700855930893"
+      }
+    },
+    "history": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationsynclogs",
+        "parsedQuery": {
+          "$and": [
+            {
+              "userId": {
+                "$eq": "6ade4bb367df09490d223588"
+              }
+            },
+            {
+              "createdAt": {
+                "$gte": "2026-10-24T18:34:40.705Z"
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "1E574341",
+        "planCacheShapeHash": "1E574341",
+        "planCacheKey": "5A9D3F8E",
+        "optimizationTimeMillis": 0,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "limitAmount": 5000,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "createdAt": -1
+              },
+              "indexName": "integration_history_v1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "createdAt": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "createdAt": ["[new Date(9223372036854775807), new Date(1792866880705)]"]
+              }
+            }
+          }
+        },
+        "rejectedPlans": []
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 106,
+        "executionTimeMillis": 3,
+        "totalKeysExamined": 106,
+        "totalDocsExamined": 106,
+        "executionStages": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "nReturned": 106,
+          "executionTimeMillisEstimate": 1,
+          "works": 107,
+          "advanced": 106,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "limitAmount": 5000,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 106,
+            "executionTimeMillisEstimate": 1,
+            "works": 107,
+            "advanced": 106,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "docsExamined": 106,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 106,
+              "executionTimeMillisEstimate": 1,
+              "works": 107,
+              "advanced": 106,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "keyPattern": {
+                "userId": 1,
+                "createdAt": -1
+              },
+              "indexName": "integration_history_v1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "createdAt": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "createdAt": ["[new Date(9223372036854775807), new Date(1792866880705)]"]
+              },
+              "keysExamined": 106,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        },
+        "allPlansExecution": []
+      },
+      "queryShapeHash": "66C56A97DF1C50CA99926DAF1C16E153849FB46E32DFFF1E5F4158B359AADAC3",
+      "command": {
+        "find": "integrationsynclogs",
+        "filter": {
+          "userId": "6ade4bb367df09490d223588",
+          "createdAt": {
+            "$gte": "2026-10-24T18:34:40.705Z"
+          }
+        },
+        "sort": {
+          "createdAt": -1
+        },
+        "limit": 5000,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675700855930893"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675700855930893"
+      }
+    },
+    "ownership": {
+      "explainVersion": "1",
+      "queryPlanner": {
+        "namespace": "integration_acceptance.integrationconnections",
+        "parsedQuery": {
+          "$and": [
+            {
+              "provider": {
+                "$eq": "leetcode"
+              }
+            },
+            {
+              "userId": {
+                "$eq": "6ade4bb367df09490d223588"
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "6431F9C9",
+        "planCacheShapeHash": "6431F9C9",
+        "planCacheKey": "314D6633",
+        "optimizationTimeMillis": 0,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "provider": 1
+              },
+              "indexName": "userId_1_provider_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "provider": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "provider": ["[\"leetcode\", \"leetcode\"]"]
+              }
+            }
+          }
+        },
+        "rejectedPlans": []
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 1,
+        "executionTimeMillis": 0,
+        "totalKeysExamined": 1,
+        "totalDocsExamined": 1,
+        "executionStages": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 0,
+          "works": 2,
+          "advanced": 1,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "nReturned": 1,
+            "executionTimeMillisEstimate": 0,
+            "works": 1,
+            "advanced": 1,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 0,
+            "docsExamined": 1,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 1,
+              "executionTimeMillisEstimate": 0,
+              "works": 1,
+              "advanced": 1,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 0,
+              "keyPattern": {
+                "userId": 1,
+                "provider": 1
+              },
+              "indexName": "userId_1_provider_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "provider": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6ade4bb367df09490d223588'), ObjectId('6ade4bb367df09490d223588')]"
+                ],
+                "provider": ["[\"leetcode\", \"leetcode\"]"]
+              },
+              "keysExamined": 1,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        }
+      },
+      "queryShapeHash": "355683C30C3D4057E3366EE344042D48A553120B618CBF7D65803919DD0C7E50",
+      "command": {
+        "find": "integrationconnections",
+        "filter": {
+          "userId": "6ade4bb367df09490d223588",
+          "provider": "leetcode"
+        },
+        "limit": 1,
+        "singleBatch": true,
+        "$db": "integration_acceptance"
+      },
+      "serverInfo": {
+        "host": "DESKTOP-3COFRHD",
+        "port": 56666,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7700675700855930893"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7700675700855930893"
+      }
+    }
+  },
+  "retentionAfter": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_acceptance.integrationsynclogs",
+      "parsedQuery": {
+        "expiresAt": {
+          "$lte": "2026-10-25T18:34:40.724Z"
+        }
+      },
+      "indexFilterSet": false,
+      "queryHash": "6E72291C",
+      "planCacheShapeHash": "6E72291C",
+      "planCacheKey": "F53933E0",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 100,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "expiresAt": 1
+            },
+            "indexName": "integration_retention_v1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "expiresAt": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "expiresAt": ["[new Date(-9223372036854775808), new Date(1792953280724)]"]
+            }
+          }
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 0,
+      "executionTimeMillis": 3,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 0,
+      "executionStages": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "nReturned": 0,
+        "executionTimeMillisEstimate": 0,
+        "works": 1,
+        "advanced": 0,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "limitAmount": 100,
+        "inputStage": {
+          "stage": "FETCH",
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "works": 1,
+          "advanced": 0,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "docsExamined": 0,
+          "alreadyHasObj": 0,
+          "inputStage": {
+            "stage": "IXSCAN",
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 0,
+            "works": 1,
+            "advanced": 0,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "keyPattern": {
+              "expiresAt": 1
+            },
+            "indexName": "integration_retention_v1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "expiresAt": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "expiresAt": ["[new Date(-9223372036854775808), new Date(1792953280724)]"]
+            },
+            "keysExamined": 0,
+            "seeks": 1,
+            "dupsTested": 0,
+            "dupsDropped": 0
+          }
+        }
+      }
+    },
+    "queryShapeHash": "2C9FABD3974091F3FF9D20DC45B63A142CA09A3411439D41B024792B21DE3B8A",
+    "command": {
+      "find": "integrationsynclogs",
+      "filter": {
+        "expiresAt": {
+          "$lte": "2026-10-25T18:34:40.724Z"
+        }
+      },
+      "limit": 100,
+      "$db": "integration_acceptance"
+    },
+    "serverInfo": {
+      "host": "DESKTOP-3COFRHD",
+      "port": 56666,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7700675700855930893"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7700675700855930893"
+    }
+  },
+  "indexes": {
+    "connections": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "provider": 1
+        },
+        "name": "userId_1_provider_1",
+        "unique": true
+      },
+      {
+        "v": 2,
+        "key": {
+          "status": 1,
+          "nextSyncAt": 1
+        },
+        "name": "integration_due_v1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "provider": 1,
+          "oauthState": 1
+        },
+        "name": "integration_oauth_state_v1",
+        "partialFilterExpression": {
+          "oauthState": {
+            "$gt": ""
+          }
+        }
+      },
+      {
+        "v": 2,
+        "key": {
+          "provider": 1,
+          "externalAccountId": 1
+        },
+        "name": "integration_webhook_identity_v1",
+        "partialFilterExpression": {
+          "ownershipVerified": true
+        }
+      }
+    ],
+    "insights": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1
+        },
+        "name": "userId_1",
+        "unique": true
+      }
+    ],
+    "history": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "userId": 1,
+          "createdAt": -1
+        },
+        "name": "integration_history_v1"
+      },
+      {
+        "v": 2,
+        "key": {
+          "expiresAt": 1
+        },
+        "name": "integration_retention_v1",
+        "expireAfterSeconds": 0
+      }
+    ]
+  }
+}

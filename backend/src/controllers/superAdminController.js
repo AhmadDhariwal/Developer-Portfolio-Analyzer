@@ -19,7 +19,10 @@ const parsePage = (q) => ({
   page: Math.max(1, parseInt(q.page, 10) || 1),
   limit: Math.min(100, parseInt(q.limit, 10) || 30)
 });
-const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const normalizeEmail = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
 const isTruthy = (value) => String(value || '').toLowerCase() === 'true';
 const isFalsy = (value) => String(value || '').toLowerCase() === 'false';
 const intersectIdSets = (currentIds = null, nextIds = []) => {
@@ -34,16 +37,22 @@ const getMonthlyRange = () => {
   const months = [];
   for (let i = 11; i >= 0; i--) {
     const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const end   = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-    months.push({ start, end, label: start.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) });
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    months.push({
+      start,
+      end,
+      label: start.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+    });
   }
   return months;
 };
 
 const countMonthly = async (Model, filter = {}, months) =>
-  Promise.all(months.map(m =>
-    Model.countDocuments({ ...filter, createdAt: { $gte: m.start, $lt: m.end } }).catch(() => 0)
-  ));
+  Promise.all(
+    months.map((m) =>
+      Model.countDocuments({ ...filter, createdAt: { $gte: m.start, $lt: m.end } }).catch(() => 0)
+    )
+  );
 
 const toObjectId = (value) => {
   try {
@@ -64,7 +73,10 @@ const buildAnalyticsWindow = (query = {}) => {
   const start = parseDate(query.dateFrom, null);
   const defaultStart = new Date(end.getTime() - 29 * 24 * 60 * 60 * 1000);
   const effectiveStart = start || defaultStart;
-  const spanDays = Math.max(1, Math.ceil((end.getTime() - effectiveStart.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+  const spanDays = Math.max(
+    1,
+    Math.ceil((end.getTime() - effectiveStart.getTime()) / (24 * 60 * 60 * 1000)) + 1
+  );
   const granularity = spanDays <= 62 ? 'day' : 'month';
   const compareEnd = new Date(effectiveStart.getTime() - 24 * 60 * 60 * 1000);
   const compareStart = new Date(compareEnd.getTime() - (spanDays - 1) * 24 * 60 * 60 * 1000);
@@ -145,7 +157,12 @@ const buildUserMatchExpr = (filters = {}) => {
 const buildTimeSeries = async (Model, match, buckets, field = 'createdAt') => {
   if (!buckets.length) return [];
   const result = await Model.aggregate([
-    { $match: { ...match, [field]: { $gte: buckets[0].start, $lte: buckets[buckets.length - 1].end } } },
+    {
+      $match: {
+        ...match,
+        [field]: { $gte: buckets[0].start, $lte: buckets[buckets.length - 1].end }
+      }
+    },
     {
       $group: {
         _id: {
@@ -167,7 +184,25 @@ const collectUserIds = async (filters = {}) => {
   const match = buildUserScopeMatch(filters);
   const users = await User.aggregate([
     { $match: match },
-    { $project: { _id: 1, name: 1, email: 1, role: 1, careerStack: 1, score: 1, isActive: 1, organizationId: 1, createdAt: 1, bio: 1, githubUsername: 1, linkedin: 1, website: 1, location: 1, jobTitle: 1 } }
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        role: 1,
+        careerStack: 1,
+        score: 1,
+        isActive: 1,
+        organizationId: 1,
+        createdAt: 1,
+        bio: 1,
+        githubUsername: 1,
+        linkedin: 1,
+        website: 1,
+        location: 1,
+        jobTitle: 1
+      }
+    }
   ]).catch(() => []);
 
   return { users, userIds: users.map((user) => user._id) };
@@ -203,21 +238,34 @@ const getMetricRegistrySnapshot = async () => {
   const errors = metricMap.get('dpa_http_errors_total');
   const duration = metricMap.get('dpa_http_request_duration_ms');
 
-  const totalRequests = (requests?.values || []).reduce((sum, row) => sum + Number(row.value || 0), 0);
-  const failedRequests = (errors?.values || []).reduce((sum, row) => sum + Number(row.value || 0), 0);
+  const totalRequests = (requests?.values || []).reduce(
+    (sum, row) => sum + Number(row.value || 0),
+    0
+  );
+  const failedRequests = (errors?.values || []).reduce(
+    (sum, row) => sum + Number(row.value || 0),
+    0
+  );
   const avgResponseTime = (() => {
-    const sum = (duration?.values || []).find((row) => row.metricName?.endsWith('_sum'))?.value || 0;
-    const count = (duration?.values || []).find((row) => row.metricName?.endsWith('_count'))?.value || 0;
+    const sum =
+      (duration?.values || []).find((row) => row.metricName?.endsWith('_sum'))?.value || 0;
+    const count =
+      (duration?.values || []).find((row) => row.metricName?.endsWith('_count'))?.value || 0;
     return count > 0 ? Math.round((Number(sum) / Number(count)) * 100) / 100 : 0;
   })();
   const responseBuckets = (duration?.values || []).filter((row) => row.labels?.le);
   const percentile95 = (() => {
     if (!responseBuckets.length) return 0;
     const sorted = responseBuckets
-      .map((row) => ({ upper: row.labels.le === '+Inf' ? Number.POSITIVE_INFINITY : Number(row.labels.le), value: Number(row.value || 0) }))
+      .map((row) => ({
+        upper: row.labels.le === '+Inf' ? Number.POSITIVE_INFINITY : Number(row.labels.le),
+        value: Number(row.value || 0)
+      }))
       .sort((a, b) => a.upper - b.upper);
     const threshold = totalRequests * 0.95;
-    const match = sorted.find((bucket) => bucket.value >= threshold && Number.isFinite(bucket.upper));
+    const match = sorted.find(
+      (bucket) => bucket.value >= threshold && Number.isFinite(bucket.upper)
+    );
     return match ? Math.round(match.upper) : 0;
   })();
 
@@ -271,7 +319,16 @@ const getPlatformMetrics = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const [totalOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers] = await Promise.all([
+    const [
+      totalOrgs,
+      totalAdmins,
+      totalRecruiters,
+      totalDevelopers,
+      totalTeams,
+      totalAnalyses,
+      recentOrgs,
+      recentUsers
+    ] = await Promise.all([
       Organization.countDocuments(),
       User.countDocuments({ role: 'admin' }),
       User.countDocuments({ role: 'recruiter' }),
@@ -284,11 +341,24 @@ const getPlatformMetrics = async (req, res) => {
 
     const [latestOrgs, topDevelopers, activeAdmins] = await Promise.all([
       Organization.find().sort({ createdAt: -1 }).limit(5).populate('ownerId', 'name email').lean(),
-      User.find({ role: 'developer' }).sort({ score: -1 }).limit(5).select('name email githubUsername score careerStack').lean(),
-      User.find({ role: 'admin', isActive: true }).sort({ createdAt: -1 }).limit(5).select('name email organizationId createdAt').lean()
+      User.find({ role: 'developer' })
+        .sort({ score: -1 })
+        .limit(5)
+        .select('name email githubUsername score careerStack')
+        .lean(),
+      User.find({ role: 'admin', isActive: true })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('name email organizationId createdAt')
+        .lean()
     ]);
 
-    const [recentOrganizations, recentRecruiterInvites, recentDeveloperRegistrations, recentAiAnalyses] = await Promise.all([
+    const [
+      recentOrganizations,
+      recentRecruiterInvites,
+      recentDeveloperRegistrations,
+      recentAiAnalyses
+    ] = await Promise.all([
       Organization.find().sort({ createdAt: -1 }).limit(4).populate('ownerId', 'name email').lean(),
       Invitation.find({ role: 'recruiter' })
         .sort({ createdAt: -1 })
@@ -312,7 +382,16 @@ const getPlatformMetrics = async (req, res) => {
     ]);
 
     res.json({
-      metrics: { totalOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers },
+      metrics: {
+        totalOrgs,
+        totalAdmins,
+        totalRecruiters,
+        totalDevelopers,
+        totalTeams,
+        totalAnalyses,
+        recentOrgs,
+        recentUsers
+      },
       latestOrgs,
       topDevelopers,
       activeAdmins,
@@ -333,13 +412,23 @@ const getDashboard = async (req, res) => {
   try {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo  = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
     const months = getMonthlyRange();
 
     const [
-      totalOrgs, activeOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses,
-      recentOrgs, priorOrgs, recentUsers,
-      latestOrgs, topDevelopers, activeAdmins
+      totalOrgs,
+      activeOrgs,
+      totalAdmins,
+      totalRecruiters,
+      totalDevelopers,
+      totalTeams,
+      totalAnalyses,
+      recentOrgs,
+      priorOrgs,
+      recentUsers,
+      latestOrgs,
+      topDevelopers,
+      activeAdmins
     ] = await Promise.all([
       Organization.countDocuments(),
       Organization.countDocuments({ isSuspended: { $ne: true } }),
@@ -352,23 +441,33 @@ const getDashboard = async (req, res) => {
       Organization.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
       Organization.find().sort({ createdAt: -1 }).limit(5).populate('ownerId', 'name email').lean(),
-      User.find({ role: 'developer' }).sort({ score: -1 }).limit(5).select('name email githubUsername score careerStack experienceLevel').lean(),
-      User.find({ role: 'admin', isActive: true }).sort({ createdAt: -1 }).limit(5).select('name email organizationId createdAt').lean()
+      User.find({ role: 'developer' })
+        .sort({ score: -1 })
+        .limit(5)
+        .select('name email githubUsername score careerStack experienceLevel')
+        .lean(),
+      User.find({ role: 'admin', isActive: true })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('name email organizationId createdAt')
+        .lean()
     ]);
 
-    const platformGrowth = priorOrgs > 0 ? Math.round(((recentOrgs - priorOrgs) / priorOrgs) * 100) : 0;
+    const platformGrowth =
+      priorOrgs > 0 ? Math.round(((recentOrgs - priorOrgs) / priorOrgs) * 100) : 0;
 
-    const [orgMonthly, adminMonthly, recruiterMonthly, developerMonthly, analysisMonthly] = await Promise.all([
-      countMonthly(Organization, {}, months),
-      countMonthly(User, { role: 'admin' }, months),
-      countMonthly(User, { role: 'recruiter' }, months),
-      countMonthly(User, { role: 'developer' }, months),
-      countMonthly(Analysis, {}, months)
-    ]);
+    const [orgMonthly, adminMonthly, recruiterMonthly, developerMonthly, analysisMonthly] =
+      await Promise.all([
+        countMonthly(Organization, {}, months),
+        countMonthly(User, { role: 'admin' }, months),
+        countMonthly(User, { role: 'recruiter' }, months),
+        countMonthly(User, { role: 'developer' }, months),
+        countMonthly(Analysis, {}, months)
+      ]);
 
     // Role distribution for pie chart
     const roleDistribution = [
-      { role: 'Admins',     count: totalAdmins },
+      { role: 'Admins', count: totalAdmins },
       { role: 'Recruiters', count: totalRecruiters },
       { role: 'Developers', count: totalDevelopers }
     ];
@@ -392,16 +491,32 @@ const getDashboard = async (req, res) => {
     ]).catch(() => []);
 
     res.json({
-      metrics: { totalOrgs, activeOrgs, totalAdmins, totalRecruiters, totalDevelopers, totalTeams, totalAnalyses, recentOrgs, recentUsers, platformGrowth },
+      metrics: {
+        totalOrgs,
+        activeOrgs,
+        totalAdmins,
+        totalRecruiters,
+        totalDevelopers,
+        totalTeams,
+        totalAnalyses,
+        recentOrgs,
+        recentUsers,
+        platformGrowth
+      },
       latestOrgs,
       topDevelopers,
       activeAdmins,
       charts: {
-        monthLabels: months.map(m => m.label),
-        userGrowth: { organizations: orgMonthly, admins: adminMonthly, recruiters: recruiterMonthly, developers: developerMonthly },
+        monthLabels: months.map((m) => m.label),
+        userGrowth: {
+          organizations: orgMonthly,
+          admins: adminMonthly,
+          recruiters: recruiterMonthly,
+          developers: developerMonthly
+        },
         analysisGrowth: analysisMonthly,
         roleDistribution,
-        stackDistribution: stackDist.map(s => ({ stack: s._id, count: s.count })),
+        stackDistribution: stackDist.map((s) => ({ stack: s._id, count: s.count })),
         topOrgs
       }
     });
@@ -422,7 +537,11 @@ const getAnalytics = async (req, res) => {
     };
 
     const analyticsWindow = buildAnalyticsWindow(req.query);
-    const currentBuckets = buildBuckets(analyticsWindow.start, analyticsWindow.end, analyticsWindow.granularity);
+    const currentBuckets = buildBuckets(
+      analyticsWindow.start,
+      analyticsWindow.end,
+      analyticsWindow.granularity
+    );
     const monthlyBuckets = buildBuckets(
       new Date(analyticsWindow.end.getFullYear(), analyticsWindow.end.getMonth() - 11, 1),
       analyticsWindow.end,
@@ -442,7 +561,13 @@ const getAnalytics = async (req, res) => {
     const developerIdFilter = developerIds.length ? { $in: developerIds } : { $in: [] };
     const healthSnapshot = await getMetricRegistrySnapshot();
 
-    const [analysisAllTimeCount, resumeAllTimeCount, recommendationAllTimeCount, candidateAllTimeCount, jobAllTimeCount] = await Promise.all([
+    const [
+      analysisAllTimeCount,
+      resumeAllTimeCount,
+      recommendationAllTimeCount,
+      candidateAllTimeCount,
+      jobAllTimeCount
+    ] = await Promise.all([
       Analysis.countDocuments({ userId: userIdFilter }),
       ResumeAnalysis.countDocuments({ userId: userIdFilter }),
       Analysis.aggregate([
@@ -457,7 +582,9 @@ const getAnalytics = async (req, res) => {
           }
         },
         { $group: { _id: null, total: { $sum: '$recommendationCount' } } }
-      ]).then((rows) => rows[0]?.total || 0).catch(() => 0),
+      ])
+        .then((rows) => rows[0]?.total || 0)
+        .catch(() => 0),
       Candidate.countDocuments({}),
       Job.countDocuments({})
     ]);
@@ -470,16 +597,49 @@ const getAnalytics = async (req, res) => {
       ...(selectedOrgId ? { _id: selectedOrgId } : {}),
       createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
     });
-    const platformGrowthPct = buildMetricTrend(currentPeriodOrganizationCount, previousPeriodOrganizationCount);
+    const platformGrowthPct = buildMetricTrend(
+      currentPeriodOrganizationCount,
+      previousPeriodOrganizationCount
+    );
 
-    const [totalOrganizations, orgTotalsByWindow, topOrganizations, teamSummary, topStacks, mostActiveDevelopers, dailyGitHubTrend, monthlyGitHubTrend, dailyResumeTrend, monthlyResumeTrend, dailyRecommendationTrend, monthlyRecommendationTrend, analysisCurrentCount, analysisPreviousCount, resumeCurrentCount, resumePreviousCount, recommendationCurrentCount, recommendationPreviousCount, candidateCurrentCount, candidatePreviousCount, jobCurrentCount, jobPreviousCount, activeRecruiterCount, organizationTotalMembers, jobByOrganization] = await Promise.all([
-      selectedOrgId ? Organization.countDocuments({ _id: selectedOrgId }) : Organization.countDocuments({}),
+    const [
+      totalOrganizations,
+      orgTotalsByWindow,
+      topOrganizations,
+      teamSummary,
+      topStacks,
+      mostActiveDevelopers,
+      dailyGitHubTrend,
+      monthlyGitHubTrend,
+      dailyResumeTrend,
+      monthlyResumeTrend,
+      dailyRecommendationTrend,
+      monthlyRecommendationTrend,
+      analysisCurrentCount,
+      analysisPreviousCount,
+      resumeCurrentCount,
+      resumePreviousCount,
+      recommendationCurrentCount,
+      recommendationPreviousCount,
+      candidateCurrentCount,
+      candidatePreviousCount,
+      jobCurrentCount,
+      jobPreviousCount,
+      activeRecruiterCount,
+      organizationTotalMembers,
+      jobByOrganization
+    ] = await Promise.all([
+      selectedOrgId
+        ? Organization.countDocuments({ _id: selectedOrgId })
+        : Organization.countDocuments({}),
       Organization.countDocuments({
         ...(selectedOrgId ? { _id: selectedOrgId } : {}),
         createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
       }),
       Membership.aggregate([
-        { $match: { status: 'active', ...(selectedOrgId ? { organizationId: selectedOrgId } : {}) } },
+        {
+          $match: { status: 'active', ...(selectedOrgId ? { organizationId: selectedOrgId } : {}) }
+        },
         {
           $group: {
             _id: '$organizationId',
@@ -536,7 +696,13 @@ const getAnalytics = async (req, res) => {
           }
         },
         { $unwind: '$user' },
-        { $match: { ...(selectedOrgId ? { 'user.organizationId': selectedOrgId } : {}), ...(filters.role ? { 'user.role': filters.role } : {}), ...(filters.stack ? { 'user.careerStack': filters.stack } : {}) } },
+        {
+          $match: {
+            ...(selectedOrgId ? { 'user.organizationId': selectedOrgId } : {}),
+            ...(filters.role ? { 'user.role': filters.role } : {}),
+            ...(filters.stack ? { 'user.careerStack': filters.stack } : {})
+          }
+        },
         { $sort: { githubScore: -1, readinessScore: -1, createdAt: -1 } },
         { $limit: 5 },
         {
@@ -558,19 +724,51 @@ const getAnalytics = async (req, res) => {
       buildTimeSeries(ResumeAnalysis, { userId: userIdFilter }, monthlyBuckets),
       buildTimeSeries(Recommendation, { userId: userIdFilter }, currentBuckets),
       buildTimeSeries(Recommendation, { userId: userIdFilter }, monthlyBuckets),
-      Analysis.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end } }),
-      Analysis.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd } }),
-      ResumeAnalysis.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end } }),
-      ResumeAnalysis.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd } }),
-      Recommendation.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end } }),
-      Recommendation.countDocuments({ userId: userIdFilter, createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd } }),
-      Candidate.countDocuments({ createdBy: recruiterIdFilter, createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end } }),
-      Candidate.countDocuments({ createdBy: recruiterIdFilter, createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd } }),
-      Job.countDocuments({ recruiterId: recruiterIdFilter, createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end } }),
-      Job.countDocuments({ recruiterId: recruiterIdFilter, createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd } }),
+      Analysis.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+      }),
+      Analysis.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+      }),
+      ResumeAnalysis.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+      }),
+      ResumeAnalysis.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+      }),
+      Recommendation.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+      }),
+      Recommendation.countDocuments({
+        userId: userIdFilter,
+        createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+      }),
+      Candidate.countDocuments({
+        createdBy: recruiterIdFilter,
+        createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+      }),
+      Candidate.countDocuments({
+        createdBy: recruiterIdFilter,
+        createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+      }),
+      Job.countDocuments({
+        recruiterId: recruiterIdFilter,
+        createdAt: { $gte: analyticsWindow.start, $lte: analyticsWindow.end }
+      }),
+      Job.countDocuments({
+        recruiterId: recruiterIdFilter,
+        createdAt: { $gte: analyticsWindow.compareStart, $lte: analyticsWindow.compareEnd }
+      }),
       User.countDocuments({ ...userMatch, role: 'recruiter', isActive: true }),
       Membership.aggregate([
-        { $match: { status: 'active', ...(selectedOrgId ? { organizationId: selectedOrgId } : {}) } },
+        {
+          $match: { status: 'active', ...(selectedOrgId ? { organizationId: selectedOrgId } : {}) }
+        },
         { $group: { _id: '$organizationId', memberCount: { $sum: 1 } } }
       ]).catch(() => []),
       Job.aggregate([
@@ -598,28 +796,50 @@ const getAnalytics = async (req, res) => {
     const stackLabels = topStacks.map((entry) => entry._id || 'Unspecified');
     const stackCounts = topStacks.map((entry) => entry.count || 0);
     const profileCompletionAvg = developerUsers.length
-      ? Math.round(developerUsers.reduce((sum, user) => sum + getProfileCompletion(user), 0) / developerUsers.length)
+      ? Math.round(
+          developerUsers.reduce((sum, user) => sum + getProfileCompletion(user), 0) /
+            developerUsers.length
+        )
       : 0;
-    const recruiterSuccessJobs = jobByOrganization.reduce((sum, entry) => sum + Number(entry.closedJobs || 0), 0);
-    const recruiterTotalJobs = jobByOrganization.reduce((sum, entry) => sum + Number(entry.totalJobs || 0), 0);
-    const hiringSuccessPct = recruiterTotalJobs > 0 ? Math.round((recruiterSuccessJobs / recruiterTotalJobs) * 100) : 0;
+    const recruiterSuccessJobs = jobByOrganization.reduce(
+      (sum, entry) => sum + Number(entry.closedJobs || 0),
+      0
+    );
+    const recruiterTotalJobs = jobByOrganization.reduce(
+      (sum, entry) => sum + Number(entry.totalJobs || 0),
+      0
+    );
+    const hiringSuccessPct =
+      recruiterTotalJobs > 0 ? Math.round((recruiterSuccessJobs / recruiterTotalJobs) * 100) : 0;
     const recruiterProductivity = topOrganizations.map((organization) => {
       const jobRow = jobByOrganization.find((row) => String(row._id) === String(organization._id));
       const jobs = Number(jobRow?.totalJobs || 0);
       const openJobs = Number(jobRow?.openJobs || 0);
       return {
         ...organization,
-        productivityScore: Math.max(0, Math.round((Number(organization.memberCount || 0) + jobs) / Math.max(Number(organization.adminCount || 1), 1))),
+        productivityScore: Math.max(
+          0,
+          Math.round(
+            (Number(organization.memberCount || 0) + jobs) /
+              Math.max(Number(organization.adminCount || 1), 1)
+          )
+        ),
         jobs,
         openJobs
       };
     });
 
-    const organizationGrowthPct = buildMetricTrend(orgTotalsByWindow, previousPeriodOrganizationCount);
+    const organizationGrowthPct = buildMetricTrend(
+      orgTotalsByWindow,
+      previousPeriodOrganizationCount
+    );
     const activeRecruiterGrowth = buildMetricTrend(activeRecruiterCount, 0);
     const developerActivityGrowth = buildMetricTrend(analysisCurrentCount, analysisPreviousCount);
     const resumeGrowthPct = buildMetricTrend(resumeCurrentCount, resumePreviousCount);
-    const recommendationGrowthPct = buildMetricTrend(recommendationCurrentCount, recommendationPreviousCount);
+    const recommendationGrowthPct = buildMetricTrend(
+      recommendationCurrentCount,
+      recommendationPreviousCount
+    );
     const candidateGrowthPct = buildMetricTrend(candidateCurrentCount, candidatePreviousCount);
 
     res.json({
@@ -645,7 +865,11 @@ const getAnalytics = async (req, res) => {
         recruiterPerformance: {
           activeRecruiters: activeRecruiterCount,
           candidatesAnalyzed: candidateAllTimeCount,
-          matchesGenerated: Math.max(candidateAllTimeCount, recommendationAllTimeCount, jobAllTimeCount),
+          matchesGenerated: Math.max(
+            candidateAllTimeCount,
+            recommendationAllTimeCount,
+            jobAllTimeCount
+          ),
           hiringSuccessPct,
           trendPct: candidateGrowthPct
         },
@@ -656,7 +880,10 @@ const getAnalytics = async (req, res) => {
           organizationGrowthPct
         },
         developerInsights: {
-          topStacks: stackLabels.map((label, index) => ({ stack: label, count: stackCounts[index] })),
+          topStacks: stackLabels.map((label, index) => ({
+            stack: label,
+            count: stackCounts[index]
+          })),
           mostActiveDevelopers: topDevelopers,
           profileCompletionPct: profileCompletionAvg,
           githubActivityTrendPct: developerActivityGrowth
@@ -707,10 +934,22 @@ const getAnalytics = async (req, res) => {
       charts: {
         platformGrowth: {
           labels: currentBuckets.map((bucket) => bucket.label),
-          organizations: await buildTimeSeries(Organization, selectedOrgId ? { _id: selectedOrgId } : {}, currentBuckets),
+          organizations: await buildTimeSeries(
+            Organization,
+            selectedOrgId ? { _id: selectedOrgId } : {},
+            currentBuckets
+          ),
           admins: await buildTimeSeries(User, { ...userMatch, role: 'admin' }, currentBuckets),
-          recruiters: await buildTimeSeries(User, { ...userMatch, role: 'recruiter' }, currentBuckets),
-          developers: await buildTimeSeries(User, { ...userMatch, role: 'developer' }, currentBuckets)
+          recruiters: await buildTimeSeries(
+            User,
+            { ...userMatch, role: 'recruiter' },
+            currentBuckets
+          ),
+          developers: await buildTimeSeries(
+            User,
+            { ...userMatch, role: 'developer' },
+            currentBuckets
+          )
         },
         aiUsageDaily: {
           labels: currentBuckets.map((bucket) => bucket.label),
@@ -726,7 +965,11 @@ const getAnalytics = async (req, res) => {
         },
         recruiterPerformance: {
           labels: ['Active recruiters', 'Candidates analyzed', 'Matches generated'],
-          values: [activeRecruiterCount, candidateCurrentCount, Math.max(candidateCurrentCount, recommendationCurrentCount)]
+          values: [
+            activeRecruiterCount,
+            candidateCurrentCount,
+            Math.max(candidateCurrentCount, recommendationCurrentCount)
+          ]
         },
         organizationPerformance: {
           labels: recruiterProductivity.map((org) => org.name),
@@ -765,7 +1008,12 @@ const getAllOrganizations = async (req, res) => {
     if (req.query.suspended === 'false') filter.isSuspended = false;
 
     const [organizations, total] = await Promise.all([
-      Organization.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('ownerId', 'name email').lean(),
+      Organization.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate('ownerId', 'name email')
+        .lean(),
       Organization.countDocuments(filter)
     ]);
     res.json({ organizations, total, page, totalPages: Math.ceil(total / limit) || 1 });
@@ -776,7 +1024,11 @@ const getAllOrganizations = async (req, res) => {
 
 const suspendOrganization = async (req, res) => {
   try {
-    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: true }, { returnDocument: 'after' }).lean();
+    const org = await Organization.findByIdAndUpdate(
+      req.params.id,
+      { isSuspended: true },
+      { returnDocument: 'after' }
+    ).lean();
     if (!org) return res.status(404).json({ message: 'Organization not found.' });
     res.json({ organization: org });
   } catch (err) {
@@ -786,7 +1038,11 @@ const suspendOrganization = async (req, res) => {
 
 const activateOrganization = async (req, res) => {
   try {
-    const org = await Organization.findByIdAndUpdate(req.params.id, { isSuspended: false }, { returnDocument: 'after' }).lean();
+    const org = await Organization.findByIdAndUpdate(
+      req.params.id,
+      { isSuspended: false },
+      { returnDocument: 'after' }
+    ).lean();
     if (!org) return res.status(404).json({ message: 'Organization not found.' });
     res.json({ organization: org });
   } catch (err) {
@@ -799,17 +1055,30 @@ const getAllAdmins = async (req, res) => {
   try {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'admin' };
-    if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
+    if (req.query.search)
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } }
+      ];
     if (req.query.organizationId) filter.organizationId = req.query.organizationId;
     if (isTruthy(req.query.active)) filter.isActive = true;
     if (isFalsy(req.query.active)) filter.isActive = false;
     if (req.query.teamId) {
-      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      const teamMemberIds = await Membership.find({
+        teamId: req.query.teamId,
+        status: 'active'
+      }).distinct('userId');
       filter._id = { $in: teamMemberIds };
     }
 
     const [admins, total] = await Promise.all([
-      User.find(filter).select('-password').populate('organizationId', 'name').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      User.find(filter)
+        .select('-password')
+        .populate('organizationId', 'name')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
       User.countDocuments(filter)
     ]);
     res.json({ admins, total, page, totalPages: Math.ceil(total / limit) || 1 });
@@ -825,17 +1094,27 @@ const getAllRecruiters = async (req, res) => {
     const filter = { role: 'recruiter' };
     let scopedIds = null;
     // basic text search
-    if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
+    if (req.query.search)
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } }
+      ];
     if (isTruthy(req.query.active)) filter.isActive = true;
     if (isFalsy(req.query.active)) filter.isActive = false;
     // organization scope
     if (req.query.organizationId) {
-      const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
+      const ids = await Membership.find({
+        organizationId: req.query.organizationId,
+        status: 'active'
+      }).distinct('userId');
       scopedIds = intersectIdSets(scopedIds, ids);
     }
     // team scope
     if (req.query.teamId) {
-      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      const teamMemberIds = await Membership.find({
+        teamId: req.query.teamId,
+        status: 'active'
+      }).distinct('userId');
       scopedIds = intersectIdSets(scopedIds, teamMemberIds);
     }
     // stack/experience filter
@@ -848,50 +1127,70 @@ const getAllRecruiters = async (req, res) => {
     }
     // sorting
     const sortField = req.query.sort || 'createdAt';
-    const sortOrder = (req.query.sortOrder === 'asc') ? 1 : -1;
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     if (scopedIds) filter._id = { $in: scopedIds };
 
     const [recruiters, total] = await Promise.all([
-      User.find(filter).select('-password').populate('organizationId', 'name').sort({ [sortField]: sortOrder }).skip((page - 1) * limit).limit(limit).lean(),
+      User.find(filter)
+        .select('-password')
+        .populate('organizationId', 'name')
+        .sort({ [sortField]: sortOrder })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
       User.countDocuments(filter)
     ]);
 
     // enrich each recruiter with analytics-like data
-    const enriched = await Promise.all(recruiters.map(async (rec) => {
-      const recruiterId = rec._id;
-      // assigned teams
-        const memberships = await Membership.find({ userId: recruiterId, status: 'active' }).populate('teamId', 'name _id').lean();
+    const enriched = await Promise.all(
+      recruiters.map(async (rec) => {
+        const recruiterId = rec._id;
+        // assigned teams
+        const memberships = await Membership.find({ userId: recruiterId, status: 'active' })
+          .populate('teamId', 'name _id')
+          .lean();
         const assignedTeams = memberships
           .map((m) => (m.teamId ? { _id: m.teamId._id, name: m.teamId.name } : null))
           .filter(Boolean);
 
-      // analytics-like metrics
-      const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
-      const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
-      const matchesGenerated = await Recommendation.countDocuments({ userId: { $in: candidateIds } });
-      const totalJobs = await Job.countDocuments({ recruiterId });
-      const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
-      const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
-      // activity score based on last activity (candidate or job) vs now
-      const lastCandidate = await Candidate.find({ createdBy: recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
-      const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
-      const lastActiveDate = [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, rec.createdAt].filter(Boolean).sort((a,b)=> b - a)[0] || rec.createdAt;
-      const daysSince = Math.floor((Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24));
-      const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
+        // analytics-like metrics
+        const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
+        const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
+        const matchesGenerated = await Recommendation.countDocuments({
+          userId: { $in: candidateIds }
+        });
+        const totalJobs = await Job.countDocuments({ recruiterId });
+        const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
+        const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
+        // activity score based on last activity (candidate or job) vs now
+        const lastCandidate = await Candidate.find({ createdBy: recruiterId })
+          .sort({ createdAt: -1 })
+          .limit(1)
+          .lean();
+        const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+        const lastActiveDate =
+          [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, rec.createdAt]
+            .filter(Boolean)
+            .sort((a, b) => b - a)[0] || rec.createdAt;
+        const daysSince = Math.floor(
+          (Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
 
-      return {
-        ...rec,
-        organizationName: rec?.organizationId?.name,
-        assignedTeams,
-        totalCandidatesAnalyzed,
-        matchesGenerated,
-        hiringRate,
-        activityScore,
-        lastActive: lastActiveDate,
-        status: rec.isActive ? 'Active' : 'Inactive',
-applicationRoute: '/super-admin/users/' + rec._id
-      };
-    }));
+        return {
+          ...rec,
+          organizationName: rec?.organizationId?.name,
+          assignedTeams,
+          totalCandidatesAnalyzed,
+          matchesGenerated,
+          hiringRate,
+          activityScore,
+          lastActive: lastActiveDate,
+          status: rec.isActive ? 'Active' : 'Inactive',
+          applicationRoute: '/super-admin/users/' + rec._id
+        };
+      })
+    );
 
     res.json({ recruiters: enriched, total, page, totalPages: Math.ceil(total / limit) || 1 });
   } catch (err) {
@@ -913,19 +1212,30 @@ const getRecruiterAnalytics = async (req, res) => {
     const totalJobs = await Job.countDocuments({ recruiterId });
     const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
     const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
-    const lastCandidate = await Candidate.find({ createdBy: recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
+    const lastCandidate = await Candidate.find({ createdBy: recruiterId })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
     const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
-    const lastActiveDate = [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, recruiter.createdAt].filter(Boolean).sort((a,b)=> b - a)[0] || recruiter.createdAt;
-    const daysSince = Math.floor((Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24));
+    const lastActiveDate =
+      [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, recruiter.createdAt]
+        .filter(Boolean)
+        .sort((a, b) => b - a)[0] || recruiter.createdAt;
+    const daysSince = Math.floor(
+      (Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24)
+    );
     const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
 
-    res.json({ recruiter, analytics: {
-      totalCandidatesAnalyzed,
-      matchesGenerated,
-      hiringRate,
-      activityScore,
-      lastActive: lastActiveDate
-    }});
+    res.json({
+      recruiter,
+      analytics: {
+        totalCandidatesAnalyzed,
+        matchesGenerated,
+        hiringRate,
+        activityScore,
+        lastActive: lastActiveDate
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch recruiter analytics', error: err?.message });
   }
@@ -942,9 +1252,19 @@ const assignTeamToRecruiter = async (req, res) => {
 
     // upsert membership for recruiter to team
     const MembershipModel = Membership;
-    const exist = await MembershipModel.findOne({ userId: recruiterId, teamId, status: 'active' }).lean();
+    const exist = await MembershipModel.findOne({
+      userId: recruiterId,
+      teamId,
+      status: 'active'
+    }).lean();
     if (exist) return res.json({ message: 'Already assigned', membership: exist });
-    const membership = await MembershipModel.create({ organizationId: team.organizationId, teamId, userId: recruiterId, role: 'member', status: 'active' });
+    const membership = await MembershipModel.create({
+      organizationId: team.organizationId,
+      teamId,
+      userId: recruiterId,
+      role: 'member',
+      status: 'active'
+    });
     res.status(201).json({ membership });
   } catch (err) {
     res.status(500).json({ message: 'Failed to assign team to recruiter', error: err?.message });
@@ -969,10 +1289,16 @@ const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot delete super admin.' });
+    if (user.role === 'super_admin')
+      return res.status(403).json({ message: 'Cannot delete super admin.' });
 
+    await require('../services/integrationPersistenceService').deleteAccount(
+      user._id,
+      async (session) => {
+        await User.deleteOne({ _id: user._id }, { session });
+      }
+    );
     await Promise.all([
-      User.deleteOne({ _id: user._id }),
       Membership.deleteMany({ userId: user._id }),
       Invitation.updateMany(
         { email: user.email, role: 'recruiter', status: 'pending' },
@@ -992,23 +1318,38 @@ const getAllDevelopers = async (req, res) => {
     const { page, limit } = parsePage(req.query);
     const filter = { role: 'developer' };
     let scopedIds = null;
-    if (req.query.search) filter.$or = [{ name: { $regex: req.query.search, $options: 'i' } }, { email: { $regex: req.query.search, $options: 'i' } }];
+    if (req.query.search)
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } }
+      ];
     if (req.query.careerStack) filter.careerStack = req.query.careerStack;
     if (req.query.experienceLevel) filter.experienceLevel = req.query.experienceLevel;
     if (isTruthy(req.query.active)) filter.isActive = true;
     if (isFalsy(req.query.active)) filter.isActive = false;
     if (req.query.organizationId) {
-      const ids = await Membership.find({ organizationId: req.query.organizationId, status: 'active' }).distinct('userId');
+      const ids = await Membership.find({
+        organizationId: req.query.organizationId,
+        status: 'active'
+      }).distinct('userId');
       scopedIds = intersectIdSets(scopedIds, ids);
     }
     if (req.query.teamId) {
-      const teamMemberIds = await Membership.find({ teamId: req.query.teamId, status: 'active' }).distinct('userId');
+      const teamMemberIds = await Membership.find({
+        teamId: req.query.teamId,
+        status: 'active'
+      }).distinct('userId');
       scopedIds = intersectIdSets(scopedIds, teamMemberIds);
     }
     if (scopedIds) filter._id = { $in: scopedIds };
 
     const [developers, total] = await Promise.all([
-      User.find(filter).select('-password').sort({ score: -1, createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      User.find(filter)
+        .select('-password')
+        .sort({ score: -1, createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
       User.countDocuments(filter)
     ]);
     res.json({ developers, total, page, totalPages: Math.ceil(total / limit) || 1 });
@@ -1026,7 +1367,12 @@ const getAllTeams = async (req, res) => {
     if (req.query.search) filter.name = { $regex: req.query.search, $options: 'i' };
 
     const [teams, total] = await Promise.all([
-      Team.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('organizationId', 'name').lean(),
+      Team.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate('organizationId', 'name')
+        .lean(),
       Team.countDocuments(filter)
     ]);
     res.json({ teams, total, page, totalPages: Math.ceil(total / limit) || 1 });
@@ -1040,8 +1386,15 @@ const toggleUserActive = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot deactivate super admin.' });
-    const updated = await User.findByIdAndUpdate(req.params.id, { isActive: !user.isActive }, { returnDocument: 'after' }).select('-password').lean();
+    if (user.role === 'super_admin')
+      return res.status(403).json({ message: 'Cannot deactivate super admin.' });
+    const updated = await User.findByIdAndUpdate(
+      req.params.id,
+      { isActive: !user.isActive },
+      { returnDocument: 'after' }
+    )
+      .select('-password')
+      .lean();
     res.json({ user: updated });
   } catch (err) {
     res.status(500).json({ message: 'Failed to toggle user status', error: err?.message });
@@ -1110,12 +1463,24 @@ const createUser = async (req, res) => {
       const membershipRole = role === 'admin' ? 'admin' : 'member';
       await Membership.updateOne(
         { organizationId, userId: user._id, teamId: null },
-        { $setOnInsert: { organizationId, userId: user._id, teamId: null, role: membershipRole, status: 'active', invitedBy: req.user?._id || null } },
+        {
+          $setOnInsert: {
+            organizationId,
+            userId: user._id,
+            teamId: null,
+            role: membershipRole,
+            status: 'active',
+            invitedBy: req.user?._id || null
+          }
+        },
         { upsert: true }
       );
     }
 
-    const created = await User.findById(user._id).select('-password').populate('organizationId', 'name').lean();
+    const created = await User.findById(user._id)
+      .select('-password')
+      .populate('organizationId', 'name')
+      .lean();
     return res.status(201).json({ user: created });
   } catch (err) {
     return res.status(500).json({ message: 'Failed to create user', error: err?.message });
@@ -1127,7 +1492,8 @@ const updateUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password').lean();
     if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (user.role === 'super_admin') return res.status(403).json({ message: 'Cannot modify super admin.' });
+    if (user.role === 'super_admin')
+      return res.status(403).json({ message: 'Cannot modify super admin.' });
 
     const update = {};
 
@@ -1135,7 +1501,8 @@ const updateUser = async (req, res) => {
     if (req.body.email !== undefined) update.email = normalizeEmail(req.body.email);
     if (req.body.phoneNumber !== undefined) update.phoneNumber = String(req.body.phoneNumber || '');
     if (req.body.countryCode !== undefined) update.countryCode = String(req.body.countryCode || '');
-    if (req.body.githubUsername !== undefined) update.githubUsername = String(req.body.githubUsername || '');
+    if (req.body.githubUsername !== undefined)
+      update.githubUsername = String(req.body.githubUsername || '');
     if (req.body.linkedin !== undefined) update.linkedin = String(req.body.linkedin || '');
     if (req.body.website !== undefined) update.website = String(req.body.website || '');
     if (req.body.bio !== undefined) update.bio = String(req.body.bio || '');
@@ -1153,7 +1520,8 @@ const updateUser = async (req, res) => {
       update.role = nextRole;
     }
 
-    const nextOrgId = req.body.organizationId === undefined ? user.organizationId : (req.body.organizationId || null);
+    const nextOrgId =
+      req.body.organizationId === undefined ? user.organizationId : req.body.organizationId || null;
     update.organizationId = nextOrgId;
 
     if (req.body.password) {
@@ -1180,7 +1548,16 @@ const updateUser = async (req, res) => {
       const membershipRole = effectiveRole === 'admin' ? 'admin' : 'member';
       await Membership.updateOne(
         { organizationId: nextOrgId, userId: updated._id, teamId: null },
-        { $setOnInsert: { organizationId: nextOrgId, userId: updated._id, teamId: null, role: membershipRole, status: 'active', invitedBy: req.user?._id || null } },
+        {
+          $setOnInsert: {
+            organizationId: nextOrgId,
+            userId: updated._id,
+            teamId: null,
+            role: membershipRole,
+            status: 'active',
+            invitedBy: req.user?._id || null
+          }
+        },
         { upsert: true }
       );
     }
@@ -1192,9 +1569,22 @@ const updateUser = async (req, res) => {
 };
 
 module.exports = {
-  getPlatformMetrics, getDashboard, getAnalytics,
-  getAllOrganizations, suspendOrganization, activateOrganization,
-  getAllAdmins, getAllRecruiters, getAllDevelopers, getAllTeams,
-    toggleUserActive, getUserDetails, createUser, updateUser, deleteUser
-    , getRecruiterAnalytics, assignTeamToRecruiter, removeRecruiterTeam
-  };
+  getPlatformMetrics,
+  getDashboard,
+  getAnalytics,
+  getAllOrganizations,
+  suspendOrganization,
+  activateOrganization,
+  getAllAdmins,
+  getAllRecruiters,
+  getAllDevelopers,
+  getAllTeams,
+  toggleUserActive,
+  getUserDetails,
+  createUser,
+  updateUser,
+  deleteUser,
+  getRecruiterAnalytics,
+  assignTeamToRecruiter,
+  removeRecruiterTeam
+};

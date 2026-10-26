@@ -66,6 +66,7 @@ graph TB
 ## Tier Breakdown
 
 ### Presentation Tier (Frontend)
+
 - **Technology**: Angular 21, TypeScript 5.9, SCSS, RxJS
 - **Location**: `frontend/src/`
 - **Entry**: `frontend/src/main.ts` → `app/app.ts`
@@ -73,6 +74,7 @@ graph TB
 - **Key Modules**: Standalone components, lazy-loaded Admin/Recruiter/SuperAdmin modules
 
 ### Application Tier (Backend)
+
 - **Technology**: Node.js, Express 5, CommonJS modules
 - **Location**: `backend/`
 - **Entry**: `backend/index.js`
@@ -80,11 +82,13 @@ graph TB
 - **Architecture Pattern**: Layered (Routes → Controllers → Services → Models)
 
 ### Data Tier
+
 - **Primary DB**: MongoDB (via Mongoose 9 ODM)
 - **Cache**: Redis 4 (via `redis` npm package)
 - **File Storage**: Local disk at `backend/uploads/`
 
 ### AI Tier
+
 - **Providers**: Groq, OpenAI, Google Gemini, Anthropic, and OpenRouter are configured separately.
 - **Provider Manager**: `backend/src/services/aiProviderManager.js` owns registration, provider priority, provider health, failover, retry policy, cooldown, and provider/model validation.
 - **Model Routing**: Provider-specific model env vars (`GROQ_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`, `ANTHROPIC_MODEL`, `OPENROUTER_MODEL`) are validated before use.
@@ -196,3 +200,7 @@ Every domain follows: **Route → Controller → Service → Model** with `aiser
 8. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
 
 9. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().
+
+## Integrations production boundaries
+
+Integrations use the existing Express/Mongo/Redis module boundaries, authenticated token envelopes, expiring connection leases and fenced Mongo transactions. Redis is required for outbound provider admission; Mongo transaction support is required for mutations. See [Integrations](features/integrations.md).

@@ -1,3 +1,8 @@
+import { ScenarioPresentation, buildScenarioComparison } from './utils/scenario-presentation';
+import { ScenarioContextPanelComponent } from './components/scenario-context/scenario-context.component';
+import { ScenarioInputsComponent } from './components/scenario-inputs/scenario-inputs.component';
+import { ScenarioResultsComponent } from './components/scenario-results/scenario-results.component';
+import { ScenarioHistoryComponent } from './components/scenario-history/scenario-history.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -7,7 +12,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+
 import { catchError, forkJoin, of, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ScenarioSimulatorService } from '../../shared/services/scenario-simulator.service';
@@ -19,7 +24,6 @@ import {
   SimResult,
   ScenarioContext,
   SavedScenario,
-  ScenarioSource,
   ScenarioInput,
 } from '../../shared/models/scenario-simulator.model';
 import {
@@ -32,12 +36,22 @@ import { ScenarioTemplateConfiguratorComponent } from './scenario-template-confi
 @Component({
   selector: 'app-scenario-simulator',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScenarioTemplateConfiguratorComponent],
+  imports: [
+    CommonModule,
+    ScenarioTemplateConfiguratorComponent,
+    ScenarioContextPanelComponent,
+    ScenarioInputsComponent,
+    ScenarioResultsComponent,
+    ScenarioHistoryComponent,
+  ],
   templateUrl: './scenario-simulator.component.html',
   styleUrl: './scenario-simulator.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
+export class ScenarioSimulatorComponent
+  extends ScenarioPresentation
+  implements OnInit, OnDestroy, DoCheck
+{
   baselineConfirmed = false;
   private evaluatedPayload: ScenarioInput | null = null;
   private evaluatedDraftKey = '';
@@ -143,6 +157,7 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
     private readonly careerProfileService: CareerProfileService,
     private readonly cdr: ChangeDetectorRef,
   ) {
+    super();
     this.pristineDraftKey = this.fullDraftKey();
   }
 
@@ -439,25 +454,6 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
     return this.historyCacheHit ? 'Cached history' : 'Fresh history';
   }
 
-  get hiringDelta(): number {
-    return this.result?.improvements.hiringScore ?? 0;
-  }
-
-  get jobMatchDelta(): number {
-    return this.result?.improvements.jobMatch ?? 0;
-  }
-
-  get breakdownRows(): Array<{ label: string; value: number; color: string }> {
-    if (!this.result) return [];
-    const breakdown = this.result.breakdown;
-    return [
-      { label: 'Skills', value: breakdown.skills, color: 'var(--color-primary-text)' },
-      { label: 'Projects', value: breakdown.projects, color: 'var(--sim-success-text)' },
-      { label: 'Synergy', value: breakdown.synergy, color: 'var(--color-warning-text)' },
-      { label: 'Penalty', value: breakdown.penalty, color: 'var(--color-danger-text)' },
-    ];
-  }
-
   addSkill(): void {
     const value = this.skillInput.trim();
     if (!value) return;
@@ -662,24 +658,6 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
     this.cdr.markForCheck();
   }
 
-  scrollTabs(direction: 'left' | 'right'): void {
-    const el = document.getElementById('dossierNavTabs');
-    if (el) {
-      el.scrollBy({ left: direction === 'left' ? -180 : 180, behavior: 'smooth' });
-    }
-  }
-
-  selectTab(tab: 'overview' | 'breakdown' | 'roadmap'): void {
-    this.activeResultTab = tab;
-    setTimeout(() => {
-      const el = document.getElementById(`dossierTab-${tab}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }, 10);
-    this.cdr.markForCheck();
-  }
-
   selectBenchmarkById(id: string): void {
     const found = this.scenarioHistory.find((s) => s._id === id);
     if (found) {
@@ -689,99 +667,8 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
     }
   }
 
-  onBenchmarkChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    if (select && select.value) {
-      this.selectBenchmarkById(select.value);
-    }
-  }
-
   get comparisonData() {
-    if (!this.compareScenario) return null;
-    const currentScore = this.result?.predicted?.hiringScore ?? this.baselineHiringScore;
-    const currentMatch = this.result?.predicted?.jobMatch ?? this.baselineJobMatch;
-    const currentFeasibility = this.result?.confidenceScore ?? (this.baselineConfirmed ? 80 : 60);
-    const currentDuration = this.result?.meta?.durationWeeks ?? this.durationWeeks;
-    const currentName =
-      this.scenarioName?.trim() ||
-      (this.result ? 'Current Simulated Plan' : 'Current Baseline Profile');
-
-    const savedScore =
-      this.compareScenario.result?.predicted?.hiringScore ??
-      this.compareScenario.predicted?.hiringScore ??
-      0;
-    const savedMatch =
-      this.compareScenario.result?.predicted?.jobMatch ??
-      this.compareScenario.predicted?.jobMatch ??
-      0;
-    const savedFeasibility = this.compareScenario.confidenceScore ?? 0;
-    const savedDuration = this.compareScenario.durationWeeks ?? 0;
-    const savedName = this.compareScenario.name;
-
-    const currentSkills = new Set((this.skills || []).map((s) => s.toLowerCase().trim()));
-    const savedSkills = new Set(
-      (this.compareScenario.skills || []).map((s) => s.toLowerCase().trim()),
-    );
-
-    const sharedSkills: string[] = [];
-    const currentOnlySkills: string[] = [];
-    const savedOnlySkills: string[] = [];
-
-    (this.skills || []).forEach((s) => {
-      if (savedSkills.has(s.toLowerCase().trim())) {
-        sharedSkills.push(s);
-      } else {
-        currentOnlySkills.push(s);
-      }
-    });
-
-    (this.compareScenario.skills || []).forEach((s) => {
-      if (!currentSkills.has(s.toLowerCase().trim())) {
-        savedOnlySkills.push(s);
-      }
-    });
-
-    return {
-      current: {
-        name: currentName,
-        hiringScore: currentScore,
-        jobMatch: currentMatch,
-        feasibility: currentFeasibility,
-        duration: currentDuration,
-        skillsCount: this.skills?.length || 0,
-        projectsCount: this.projects?.length || 0,
-        isSimulated: !!this.result,
-        role: this.role,
-        level: this.experienceLevel,
-      },
-      saved: {
-        name: savedName,
-        hiringScore: savedScore,
-        jobMatch: savedMatch,
-        feasibility: savedFeasibility,
-        duration: savedDuration,
-        skillsCount: this.compareScenario.skills?.length || 0,
-        projectsCount: this.compareScenario.projects?.length || 0,
-        role: this.compareScenario.role,
-        level: this.compareScenario.experienceLevel,
-        createdAt: this.compareScenario.createdAt,
-      },
-      deltas: {
-        hiring: currentScore - savedScore,
-        jobMatch: currentMatch - savedMatch,
-        feasibility: currentFeasibility - savedFeasibility,
-        duration: currentDuration - savedDuration,
-      },
-      skills: {
-        shared: sharedSkills,
-        currentOnly: currentOnlySkills,
-        savedOnly: savedOnlySkills,
-      },
-      projects: {
-        current: this.projects || [],
-        saved: this.compareScenario.projects || [],
-      },
-    };
+    return buildScenarioComparison(this);
   }
 
   deleteScenario(id: string): void {
@@ -854,75 +741,5 @@ export class ScenarioSimulatorComponent implements OnInit, OnDestroy, DoCheck {
           this.cdr.markForCheck();
         },
       });
-  }
-
-  barWidth(value: number): number {
-    return Math.min(100, Math.abs(value) * 2.5);
-  }
-
-  rangeWidth(start: number, end: number): number {
-    return Math.max(2, end - start);
-  }
-
-  tierColor(tier: string): string {
-    return (
-      {
-        core: 'var(--sim-success-text)',
-        valuable: 'var(--color-info-text)',
-        transferable: 'var(--color-warning-text)',
-        low: 'var(--color-danger-text)',
-      }[tier] || 'var(--text-muted)'
-    );
-  }
-
-  tierLabel(tier: string): string {
-    return (
-      { core: 'Core', valuable: 'Valuable', transferable: 'Transferable', low: 'Low Relevance' }[
-        tier
-      ] || tier
-    );
-  }
-
-  scoreColor(score: number): string {
-    if (score >= 80) return 'var(--sim-success-text)';
-    if (score >= 60) return 'var(--color-warning-text)';
-    return 'var(--color-danger-text)';
-  }
-
-  deltaLabel(value: number): string {
-    return value >= 0 ? `+${value}` : `${value}`;
-  }
-
-  formatRole(value: string): string {
-    return value === 'ai/ml' ? 'AI / ML' : value.replace(/\b\w/g, (letter) => letter.toUpperCase());
-  }
-
-  formatDate(value: string | null | undefined): string {
-    if (!value) return 'Not available';
-    return new Date(value).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  }
-
-  trackBySkill(_: number, skill: string): string {
-    return skill;
-  }
-
-  trackByProject(_: number, project: ProjectInput): string {
-    return `${project.name}-${project.weeks}-${project.impact}`;
-  }
-
-  trackByProjectInput(index: number): number {
-    return index;
-  }
-
-  trackByHistory(_: number, scenario: SavedScenario): string {
-    return scenario._id;
-  }
-
-  trackBySource(_: number, source: ScenarioSource): string {
-    return source.key;
   }
 }

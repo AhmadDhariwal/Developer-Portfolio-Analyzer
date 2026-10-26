@@ -16,7 +16,8 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Enter your Dev.to username (e.g. "johndoe") to fetch your public articles, reactions, and top tags. Medium and Hashnode usernames are also supported.'
+      helpText:
+        'Enter your Dev.to username (e.g. "johndoe") to fetch your public articles, reactions, and top tags. Medium and Hashnode usernames are also supported.'
     };
   }
 
@@ -32,11 +33,9 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
       this.fetchHashnode(username)
     ]);
 
-    const articles = [
-      ...(devtoResult.articles || []),
-      ...(hashnodeResult.articles || [])
-    ];
+    const articles = [...(devtoResult.articles || []), ...(hashnodeResult.articles || [])];
 
+    if (devtoResult.failed || hashnodeResult.failed) throw Error('Blog provider data unavailable.');
     const totalArticles = articles.length;
     const totalReactions = articles.reduce((sum, a) => sum + Number(a.reactions || 0), 0);
     const totalViews = articles.reduce((sum, a) => sum + Number(a.views || 0), 0);
@@ -44,7 +43,9 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
     const allTags = articles.flatMap((a) => a.tags || []);
     const tagFreq = {};
     allTags.forEach((tag) => {
-      const t = String(tag || '').trim().toLowerCase();
+      const t = String(tag || '')
+        .trim()
+        .toLowerCase();
       if (t) tagFreq[t] = (tagFreq[t] || 0) + 1;
     });
     const topTags = Object.entries(tagFreq)
@@ -54,10 +55,9 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
 
     const inferredSkills = topTags.map((t) => this.tagToSkill(t)).filter(Boolean);
 
-    const brandingScore = Math.min(100,
-      (totalArticles * 5) +
-      (Math.min(totalReactions, 500) * 0.1) +
-      (Math.min(totalViews, 10000) * 0.002)
+    const brandingScore = Math.min(
+      100,
+      totalArticles * 5 + Math.min(totalReactions, 500) * 0.1 + Math.min(totalViews, 10000) * 0.002
     );
 
     return {
@@ -101,12 +101,17 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
           title: String(a.title || ''),
           reactions: Number(a.positive_reactions_count || a.public_reactions_count || 0),
           views: Number(a.page_views_count || 0),
-          tags: Array.isArray(a.tag_list) ? a.tag_list : String(a.tags || '').split(',').map((t) => t.trim()).filter(Boolean),
+          tags: Array.isArray(a.tag_list)
+            ? a.tag_list
+            : String(a.tags || '')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean),
           platform: 'Dev.to'
         }))
       };
     } catch {
-      return { articles: [] };
+      return { articles: [], failed: true };
     }
   }
 
@@ -152,22 +157,44 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
         }))
       };
     } catch {
-      return { articles: [] };
+      return { articles: [], failed: true };
     }
   }
 
   tagToSkill(tag) {
     const map = {
-      javascript: 'JavaScript', typescript: 'TypeScript', python: 'Python',
-      react: 'React', angular: 'Angular', vue: 'Vue.js', node: 'Node.js',
-      nodejs: 'Node.js', css: 'CSS', html: 'HTML', java: 'Java',
-      go: 'Go', rust: 'Rust', kotlin: 'Kotlin', swift: 'Swift',
-      docker: 'Docker', kubernetes: 'Kubernetes', aws: 'AWS',
-      devops: 'DevOps', 'machine-learning': 'Machine Learning',
-      ai: 'AI/ML', 'data-science': 'Data Science', sql: 'SQL',
-      mongodb: 'MongoDB', graphql: 'GraphQL', nextjs: 'Next.js',
-      webdev: 'Web Development', backend: 'Backend', frontend: 'Frontend',
-      fullstack: 'Full Stack', security: 'Security', blockchain: 'Blockchain'
+      javascript: 'JavaScript',
+      typescript: 'TypeScript',
+      python: 'Python',
+      react: 'React',
+      angular: 'Angular',
+      vue: 'Vue.js',
+      node: 'Node.js',
+      nodejs: 'Node.js',
+      css: 'CSS',
+      html: 'HTML',
+      java: 'Java',
+      go: 'Go',
+      rust: 'Rust',
+      kotlin: 'Kotlin',
+      swift: 'Swift',
+      docker: 'Docker',
+      kubernetes: 'Kubernetes',
+      aws: 'AWS',
+      devops: 'DevOps',
+      'machine-learning': 'Machine Learning',
+      ai: 'AI/ML',
+      'data-science': 'Data Science',
+      sql: 'SQL',
+      mongodb: 'MongoDB',
+      graphql: 'GraphQL',
+      nextjs: 'Next.js',
+      webdev: 'Web Development',
+      backend: 'Backend',
+      frontend: 'Frontend',
+      fullstack: 'Full Stack',
+      security: 'Security',
+      blockchain: 'Blockchain'
     };
     return map[tag.toLowerCase()] || null;
   }

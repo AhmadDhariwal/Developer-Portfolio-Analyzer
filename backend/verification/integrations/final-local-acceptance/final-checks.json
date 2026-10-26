@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-26",
+  "branch": "task/integrations",
+  "target": "not applicable",
+  "productionBuild": {
+    "status": "PASS",
+    "seconds": 78.698,
+    "main": "main-2BLWOK3K.js",
+    "initial": "3.37 MB",
+    "estimatedTransfer": "526.99 kB",
+    "hardBudgetsUnchanged": true,
+    "stableSource": {
+      "build": "PASS",
+      "sourceFilesChecked": 647,
+      "changedDuringBuild": [],
+      "stable": true
+    },
+    "warning": "Landing 56.67 kB exceeds 48 kB warning, below 64 kB hard limit"
+  },
+  "backend": {
+    "tests": 33,
+    "passed": 33,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 47175.4457
+  },
+  "frontend": {
+    "specFiles": 8,
+    "tests": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "api": {
+    "authenticatedRequests": 32,
+    "insightScore": [64, 27, null],
+    "cacheHitTransitions": [true, false, true],
+    "accountIsolation": "PASS",
+    "cleanup": {
+      "mongoStopped": true,
+      "redisStopped": true,
+      "filesRemoved": 118,
+      "applicationDatabasesUsed": false,
+      "quotaResets": 0,
+      "recursiveDeletion": false
+    }
+  },
+  "typeScript": "PASS",
+  "syntax": "PASS",
+  "documentation": "PASS (37 Markdown files / 17 feature documents)",
+  "formatting": "PASS",
+  "workingWhitespace": "PASS",
+  "stagedWhitespace": "PASS",
+  "full127TestSuiteRerun": false,
+  "expensiveLoadRun": false,
+  "newMultiWorkerRun": false,
+  "deployment": false,
+  "credentialMigration": false,
+  "productionSourceChangedByTask": false
+}

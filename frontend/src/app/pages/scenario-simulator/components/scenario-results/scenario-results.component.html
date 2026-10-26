@@ -1,0 +1,717 @@
+<!-- Empty State: Studio Guide & Sandbox Overview -->
+<div class="result-empty" *ngIf="!hasSimulated && !isRunning">
+  <div class="studio-guide-hero">
+    <div class="studio-badge-row">
+      <span class="studio-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon
+            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+          ></polygon>
+        </svg>
+        Career Sandbox Studio
+      </span>
+      <span class="studio-subbadge">Deterministic • Non-Destructive</span>
+    </div>
+    <h2>Ready to Model Your Next Career Move</h2>
+    <p>
+      Configure your target role, planned skills, and projects on the left. The engine will
+      calculate your predicted hiring lift, feasibility heuristic, and synergy gains without
+      modifying your live profile.
+    </p>
+  </div>
+
+  <!-- Simulation Outputs Preview -->
+  <div class="studio-section">
+    <div class="studio-section-header">
+      <div>
+        <span class="section-kicker">Simulation Intelligence</span>
+        <h3>Outputs You Will Receive</h3>
+      </div>
+      <span class="section-hint">Computed upon clicking "Run Simulation"</span>
+    </div>
+
+    <div class="studio-outputs-grid">
+      <div class="studio-output-card">
+        <div class="output-top">
+          <span class="output-badge violet">Planning Score</span>
+          <span class="output-sub">0–100 Pts</span>
+        </div>
+        <h4>Hypothetical Score Lift</h4>
+        <p>
+          Deterministic before-and-after planning estimate using your selected role and confirmed
+          baseline assumptions.
+        </p>
+      </div>
+
+      <div class="studio-output-card">
+        <div class="output-top">
+          <span class="output-badge cyan">Job Match</span>
+          <span class="output-sub">Coverage %</span>
+        </div>
+        <h4>Target Role Alignment</h4>
+        <p>
+          Hypothetical role alignment from the versioned planning rules; not measured job coverage
+          or a hiring probability.
+        </p>
+      </div>
+
+      <div class="studio-output-card">
+        <div class="output-top">
+          <span class="output-badge amber">Feasibility</span>
+          <span class="output-sub">Capacity Check</span>
+        </div>
+        <h4>Heuristic Sensitivity</h4>
+        <p>
+          Heuristic sensitivity bounds from the planning rules; not statistical confidence
+          intervals.
+        </p>
+      </div>
+
+      <div class="studio-output-card">
+        <div class="output-top">
+          <span class="output-badge rose">Realism Guard</span>
+          <span class="output-sub">Safety Penalty</span>
+        </div>
+        <h4>Overload & Trade-Offs</h4>
+        <p>
+          Identifies cognitive overload, skill dilution, and quality drop-offs before you start.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Engine Mechanics Step Flow -->
+  <div class="studio-section">
+    <div class="studio-section-header">
+      <div>
+        <span class="section-kicker">Transparency</span>
+        <h3>How the Deterministic Engine Works</h3>
+      </div>
+    </div>
+
+    <div class="studio-steps-grid">
+      <div class="studio-step-item">
+        <div class="step-num">01</div>
+        <h5>Signal Grounding</h5>
+        <p>
+          Uses compatible evidence for suggestions. You confirm the numerical planning baselines.
+        </p>
+      </div>
+      <div class="studio-step-item">
+        <div class="step-num">02</div>
+        <h5>Demand Multipliers</h5>
+        <p>Applies the existing versioned skill demand and role relevance tables.</p>
+      </div>
+      <div class="studio-step-item">
+        <div class="step-num">03</div>
+        <h5>Synergy Bonuses</h5>
+        <p>Rewards complementary stack combinations (e.g., Node.js + System Design).</p>
+      </div>
+      <div class="studio-step-item">
+        <div class="step-num">04</div>
+        <h5>Realism Bounds</h5>
+        <p>Subtracts points if excessive effort is crammed into unrealistic duration.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State: Concentric Animation -->
+<div class="result-loading" *ngIf="isRunning">
+  <div class="loading-visual">
+    <div class="loading-ring-outer"></div>
+    <div class="loading-ring-inner"></div>
+    <div class="loading-center-spark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon
+          points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        ></polygon>
+      </svg>
+    </div>
+  </div>
+  <div class="loading-copy">
+    <strong>Synthesizing Deterministic Scenario</strong>
+    <span
+      >Calculating role relevance, project credit, synergy bonuses, and overload trade-offs…</span
+    >
+  </div>
+</div>
+
+<!-- Simulated Results View -->
+<ng-container *ngIf="result && !isRunning">
+  <!-- Top 4 KPI Metrics -->
+  <section class="result-top-grid">
+    <article class="metric-card gradient-violet">
+      <span class="metric-label">Hypothetical Planning Score</span>
+      <div class="metric-values">
+        <span class="metric-before">{{ result.baseline.hiringScore }}</span>
+        <span class="metric-arrow" aria-hidden="true">&rarr;</span>
+        <strong [style.color]="scoreColor(result.predicted.hiringScore)">
+          {{ result.predicted.hiringScore }}
+        </strong>
+      </div>
+      <div class="metric-delta-pill positive">
+        {{ deltaLabel(result.improvements.hiringScore) }} pts lift
+      </div>
+    </article>
+
+    <article class="metric-card gradient-blue">
+      <span class="metric-label">Role Alignment Index</span>
+      <div class="metric-values">
+        <span class="metric-before">{{ result.baseline.jobMatch }}</span>
+        <span class="metric-arrow" aria-hidden="true">&rarr;</span>
+        <strong [style.color]="scoreColor(result.predicted.jobMatch)">
+          {{ result.predicted.jobMatch }} <small>/100</small>
+        </strong>
+      </div>
+      <div class="metric-delta-pill blue">
+        {{ deltaLabel(result.improvements.jobMatch) }} pts lift
+      </div>
+    </article>
+
+    <article class="metric-card gradient-green">
+      <span class="metric-label">Feasibility Heuristic</span>
+      <div class="metric-values single">
+        <strong>{{ result.confidenceScore }} <small>/100</small></strong>
+      </div>
+      <div
+        class="metric-delta-pill"
+        [class.positive]="result.confidenceScore >= 75"
+        [class.warning]="result.confidenceScore < 75 && result.confidenceScore >= 50"
+        [class.danger]="result.confidenceScore < 50"
+      >
+        {{
+          result.confidenceScore >= 80
+            ? 'High Feasibility'
+            : result.confidenceScore >= 60
+              ? 'Moderate Feasibility'
+              : 'Aggressive / High Overload'
+        }}
+      </div>
+    </article>
+
+    <article class="metric-card gradient-amber">
+      <span class="metric-label">Suggested Duration</span>
+      <div class="metric-values single">
+        <strong>{{ result.meta.suggestedDurationWeeks }}w</strong>
+      </div>
+      <div class="metric-delta-pill neutral">
+        Planned: {{ result.meta.durationWeeks }}w timeline
+      </div>
+    </article>
+  </section>
+
+  <!-- Dossier Navigation Tabs with Prominent Horizontal Scroller & View Counter -->
+  <div class="dossier-nav-header">
+    <div class="dossier-nav-title-group">
+      <span class="dossier-nav-kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        Analysis Perspectives
+      </span>
+      <span class="dossier-view-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="8 7 3 12 8 17"></polyline>
+          <polyline points="16 7 21 12 16 17"></polyline>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+        </svg>
+        Scrollable Views ({{
+          activeResultTab === 'overview' ? '1' : activeResultTab === 'breakdown' ? '2' : '3'
+        }}
+        of 3)
+      </span>
+    </div>
+
+    <div class="dossier-nav-dots" aria-label="Tab navigation indicators">
+      <button
+        type="button"
+        class="nav-dot"
+        [class.active]="activeResultTab === 'overview'"
+        (click)="selectTab('overview')"
+        title="View 1: Feasibility & Drivers"
+        aria-label="View 1: Feasibility & Drivers"
+      ></button>
+      <button
+        type="button"
+        class="nav-dot"
+        [class.active]="activeResultTab === 'breakdown'"
+        (click)="selectTab('breakdown')"
+        title="View 2: Score Breakdown & Skills"
+        aria-label="View 2: Score Breakdown & Skills"
+      ></button>
+      <button
+        type="button"
+        class="nav-dot"
+        [class.active]="activeResultTab === 'roadmap'"
+        (click)="selectTab('roadmap')"
+        title="View 3: Strategic Roadmap & Signals"
+        aria-label="View 3: Strategic Roadmap & Signals"
+      ></button>
+    </div>
+  </div>
+
+  <div class="dossier-tabs-nav-bar">
+    <button
+      type="button"
+      class="tab-scroll-btn left"
+      (click)="scrollTabs('left')"
+      title="Scroll views left"
+      aria-label="Scroll views left"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div class="dossier-nav-tabs" id="dossierNavTabs">
+      <button
+        type="button"
+        id="dossierTab-overview"
+        class="dossier-tab-btn"
+        [class.active]="activeResultTab === 'overview'"
+        (click)="selectTab('overview')"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+        <span>1. Feasibility & Drivers</span>
+      </button>
+
+      <button
+        type="button"
+        id="dossierTab-breakdown"
+        class="dossier-tab-btn"
+        [class.active]="activeResultTab === 'breakdown'"
+        (click)="selectTab('breakdown')"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>2. Score Breakdown & Skills</span>
+        <span class="tab-badge" *ngIf="result.skillDetails.length">{{
+          result.skillDetails.length
+        }}</span>
+      </button>
+
+      <button
+        type="button"
+        id="dossierTab-roadmap"
+        class="dossier-tab-btn"
+        [class.active]="activeResultTab === 'roadmap'"
+        (click)="selectTab('roadmap')"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <span>3. Strategic Roadmap & Signals</span>
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="tab-scroll-btn right"
+      (click)="scrollTabs('right')"
+      title="Scroll views right"
+      aria-label="Scroll views right"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Tab 1: Overview & Feasibility -->
+  <div class="dossier-tab-pane" *ngIf="activeResultTab === 'overview'">
+    <!-- Feasibility Explanation & Drivers -->
+    <section class="result-split-grid">
+      <article class="card-block">
+        <div class="block-head">
+          <h3>Feasibility Explanation</h3>
+          <span class="block-tag">Hash #{{ result.scenarioHash.slice(0, 8) }}</span>
+        </div>
+
+        <div class="explain-stack">
+          <p class="explain-main">{{ result.explainability?.confidenceReason }}</p>
+          <p class="explain-sub">{{ result.explainability?.effortVsDuration }}</p>
+        </div>
+      </article>
+
+      <article class="card-block tone-info" *ngIf="result.explainability?.scoreDrivers?.length">
+        <div class="block-head">
+          <h3>What Improved the Score</h3>
+          <span class="block-tag drivers-tag">Positive Drivers</span>
+        </div>
+
+        <ul class="bullet-list checkmark-list">
+          <li *ngFor="let item of result.explainability?.scoreDrivers">
+            <span class="bullet-icon check">&check;</span>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- Overload & Trade-Offs and Heuristic Sensitivity Band Side-by-Side in One Line -->
+    <section class="result-split-grid">
+      <article class="card-block tone-warning" *ngIf="result.explainability?.penalties?.length">
+        <div class="block-head">
+          <h3>Overload & Trade-Offs</h3>
+          <span class="block-tag penalty-tag">Realism Flags</span>
+        </div>
+
+        <ul class="bullet-list warning-list">
+          <li *ngFor="let item of result.explainability?.penalties">
+            <span class="bullet-icon alert">&excl;</span>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </article>
+
+      <article class="card-block" [class.full-width]="!result.explainability?.penalties?.length">
+        <div class="block-head">
+          <h3>Heuristic Sensitivity Band</h3>
+          <span class="block-tag">Range Estimates</span>
+        </div>
+
+        <div class="range-list">
+          <div class="range-row">
+            <span class="range-title">Planning Score</span>
+            <div class="range-bar-track">
+              <div
+                class="range-bar-window"
+                [style.left.%]="result.uncertaintyRange.low.hiringScore"
+                [style.width.%]="
+                  rangeWidth(
+                    result.uncertaintyRange.low.hiringScore,
+                    result.uncertaintyRange.high.hiringScore
+                  )
+                "
+              ></div>
+              <div
+                class="range-bar-expected"
+                [style.left.%]="result.uncertaintyRange.expected.hiringScore"
+                title="Expected: {{ result.uncertaintyRange.expected.hiringScore }}"
+              ></div>
+            </div>
+            <strong class="range-value">
+              {{ result.uncertaintyRange.low.hiringScore }} –
+              {{ result.uncertaintyRange.high.hiringScore }}
+            </strong>
+          </div>
+
+          <div class="range-row">
+            <span class="range-title">Role Match</span>
+            <div class="range-bar-track">
+              <div
+                class="range-bar-window blue"
+                [style.left.%]="result.uncertaintyRange.low.jobMatch"
+                [style.width.%]="
+                  rangeWidth(
+                    result.uncertaintyRange.low.jobMatch,
+                    result.uncertaintyRange.high.jobMatch
+                  )
+                "
+              ></div>
+              <div
+                class="range-bar-expected blue"
+                [style.left.%]="result.uncertaintyRange.expected.jobMatch"
+                title="Expected: {{ result.uncertaintyRange.expected.jobMatch }}"
+              ></div>
+            </div>
+            <strong class="range-value">
+              {{ result.uncertaintyRange.low.jobMatch }} –
+              {{ result.uncertaintyRange.high.jobMatch }}
+            </strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <!-- Tab 2: Breakdown & Skills -->
+  <div class="dossier-tab-pane" *ngIf="activeResultTab === 'breakdown'">
+    <!-- Before vs After & Impact Breakdown -->
+    <section class="result-split-grid">
+      <article class="card-block">
+        <div class="block-head">
+          <h3>Before vs After</h3>
+          <span class="block-tag">Estimated vs Projected</span>
+        </div>
+
+        <div class="score-visuals">
+          <div class="score-visual">
+            <div class="score-visual-meta">
+              <span>Planning Score</span>
+              <strong
+                >{{ result.baseline.hiringScore }} &rarr; {{ result.predicted.hiringScore }}</strong
+              >
+            </div>
+            <div class="score-track">
+              <div class="score-fill before" [style.width.%]="result.baseline.hiringScore"></div>
+              <div
+                class="score-fill after"
+                [style.width.%]="result.predicted.hiringScore"
+                [style.background]="scoreColor(result.predicted.hiringScore)"
+              ></div>
+            </div>
+          </div>
+
+          <div class="score-visual">
+            <div class="score-visual-meta">
+              <span>Role Alignment</span>
+              <strong>{{ result.baseline.jobMatch }} &rarr; {{ result.predicted.jobMatch }}</strong>
+            </div>
+            <div class="score-track">
+              <div class="score-fill before" [style.width.%]="result.baseline.jobMatch"></div>
+              <div class="score-fill after blue" [style.width.%]="result.predicted.jobMatch"></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card-block">
+        <div class="block-head">
+          <h3>Impact Breakdown</h3>
+          <span class="block-tag warning-tag" *ngIf="result.meta.overloaded"
+            >Overload penalty applied</span
+          >
+        </div>
+
+        <div class="breakdown-rows">
+          <div class="breakdown-row" *ngFor="let row of breakdownRows">
+            <span class="breakdown-label">{{ row.label }}</span>
+            <div class="breakdown-bar-wrap">
+              <div
+                class="breakdown-bar"
+                [class.negative]="row.value < 0"
+                [style.width.%]="barWidth(row.value)"
+                [style.background]="row.color"
+              ></div>
+            </div>
+            <strong [style.color]="row.color">
+              {{ row.value >= 0 ? '+' : '' }}{{ row.value }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <span>Total Improvement</span>
+          <strong>+{{ result.breakdown.total }} pts</strong>
+        </div>
+      </article>
+    </section>
+
+    <!-- Detailed Skill & Project Impact -->
+    <section class="result-split-grid">
+      <article
+        class="card-block"
+        [class.full-width]="!result.projectDetails.length"
+        *ngIf="result.skillDetails.length"
+      >
+        <div class="block-head">
+          <h3>Skill Impact</h3>
+          <span class="block-tag">{{ result.skillDetails.length }} Skills Evaluated</span>
+        </div>
+
+        <div class="impact-list skills-grid">
+          <div class="impact-item" *ngFor="let detail of result.skillDetails">
+            <div class="impact-copy">
+              <div class="impact-title-row">
+                <strong>{{ detail.skill }}</strong>
+                <span
+                  class="tier-pill"
+                  [style.borderColor]="tierColor(detail.tier)"
+                  [style.color]="tierColor(detail.tier)"
+                >
+                  {{ tierLabel(detail.tier) }}
+                </span>
+              </div>
+              <span class="impact-sub">{{ detail.demand }}x market demand</span>
+            </div>
+            <div class="impact-points">
+              <strong>+{{ detail.pts }} pts</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card-block" *ngIf="result.projectDetails.length">
+        <div class="block-head">
+          <h3>Project Impact</h3>
+          <span class="block-tag">{{ result.projectDetails.length }} Projects Evaluated</span>
+        </div>
+
+        <div class="impact-list">
+          <div class="impact-item" *ngFor="let detail of result.projectDetails">
+            <div class="impact-copy">
+              <div class="impact-title-row">
+                <strong>{{ detail.name }}</strong>
+                <span class="complexity-pill">{{ detail.complexity | titlecase }}</span>
+              </div>
+              <span class="impact-sub"
+                >{{ detail.weeks }} weeks &middot; Delivery Impact {{ detail.impact }}/100</span
+              >
+            </div>
+            <div class="impact-points">
+              <strong>+{{ detail.pts }} pts</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <!-- Tab 3: Strategic Roadmap & Signals -->
+  <div class="dossier-tab-pane" *ngIf="activeResultTab === 'roadmap'">
+    <!-- Warnings & Assumptions -->
+    <section class="result-split-grid">
+      <article class="card-block tone-warning" *ngIf="result.warnings.length">
+        <div class="block-head">
+          <h3>Realism Warnings</h3>
+          <span class="block-tag">Stay Objective</span>
+        </div>
+
+        <ul class="bullet-list warning-list">
+          <li *ngFor="let warning of result.warnings">
+            <span class="bullet-icon alert">&excl;</span>
+            <span>{{ warning }}</span>
+          </li>
+        </ul>
+      </article>
+
+      <article class="card-block">
+        <div class="block-head">
+          <h3>Explicit Assumptions</h3>
+          <span class="block-tag">Explainable</span>
+        </div>
+
+        <ul class="bullet-list">
+          <li *ngFor="let note of result.assumptions.notes">
+            <span class="bullet-icon dot">&bull;</span>
+            <span>{{ note }}</span>
+          </li>
+        </ul>
+
+        <div class="meta-row">
+          <span
+            >Role: <strong>{{ formatRole(result.meta.role) }}</strong></span
+          >
+          <span
+            >Level: <strong>{{ result.meta.level | titlecase }}</strong></span
+          >
+          <span
+            >Effort Units:
+            <strong>{{
+              result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1'
+            }}</strong></span
+          >
+        </div>
+      </article>
+    </section>
+
+    <!-- Mathematical Insights & Recommended Next Moves -->
+    <section class="result-split-grid">
+      <article class="card-block tone-info" *ngIf="result.insights.length">
+        <div class="block-head">
+          <h3>Strategic Insights</h3>
+          <span class="block-tag">Algorithmic Signals</span>
+        </div>
+
+        <ul class="bullet-list">
+          <li *ngFor="let insight of result.insights">
+            <span class="bullet-icon dot">&bull;</span>
+            <span>{{ insight }}</span>
+          </li>
+        </ul>
+      </article>
+
+      <article class="card-block tone-success" *ngIf="result.suggestions.length">
+        <div class="block-head">
+          <h3>Recommended Next Steps</h3>
+          <span class="block-tag">Actionable</span>
+        </div>
+
+        <ul class="bullet-list checkmark-list">
+          <li *ngFor="let suggestion of result.suggestions">
+            <span class="bullet-icon check">&check;</span>
+            <span>{{ suggestion }}</span>
+          </li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- Data Sources Section -->
+    <section class="card-block source-card" *ngIf="result.assumptions.sources.length">
+      <div class="block-head">
+        <h3>Connected Signal Sources</h3>
+        <span class="block-tag">Supporting Data</span>
+      </div>
+
+      <div class="source-grid">
+        <div class="source-entry" *ngFor="let source of result.assumptions.sources">
+          <div class="source-info">
+            <strong>{{ source.label }}</strong>
+            <span *ngIf="source.lastUpdatedAt">{{ formatDate(source.lastUpdatedAt) }}</span>
+          </div>
+          <span class="source-state">Verified</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom Result CTA Strip -->
+  <section class="result-actions">
+    <p class="disclaimer">
+      This scenario creates an actionable draft in your Career Sprint. It models planned progress
+      and does not guarantee outcome without execution.
+    </p>
+    <div class="btn-wrap">
+      <button
+        class="secondary-btn"
+        type="button"
+        (click)="saveScenarioRequested.emit()"
+        [disabled]="!isResultCurrent || isSavingScenario"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        </svg>
+        <span>{{ isSavingScenario ? 'Saving…' : 'Save Scenario' }}</span>
+      </button>
+
+      <button
+        class="run-btn sprint-btn"
+        type="button"
+        (click)="createSprintDraftRequested.emit()"
+        [disabled]="!isResultCurrent || isCreatingSprint"
+      >
+        <svg
+          *ngIf="!isCreatingSprint"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span class="spinner" *ngIf="isCreatingSprint"></span>
+        <span>{{
+          isCreatingSprint ? 'Transferring to Career Sprint…' : 'Create Sprint Draft'
+        }}</span>
+      </button>
+    </div>
+  </section>
+</ng-container>

@@ -20,7 +20,11 @@ const ADAPTERS = {
   devblogs: new DevBlogsAdapter()
 };
 
-const getAdapter = (provider) => ADAPTERS[String(provider || '').toLowerCase()] || null;
+const getAdapter = (provider) => {
+  if (typeof provider !== 'string') return null;
+  const key = provider.toLowerCase();
+  return Object.hasOwn(ADAPTERS, key) ? ADAPTERS[key] : null;
+};
 
 const marketplace = [
   // ── Existing integrations ──────────────────────────────────────────────
@@ -56,14 +60,16 @@ const marketplace = [
   {
     provider: 'stackoverflow',
     name: 'Stack Overflow',
-    description: 'Fetch reputation, badges, and top tags to validate backend and problem-solving credibility.',
+    description:
+      'Fetch reputation, badges, and top tags to validate backend and problem-solving credibility.',
     category: 'Developer Community',
     authMode: 'manual'
   },
   {
     provider: 'hackerrank',
     name: 'HackerRank',
-    description: 'Import certifications, coding badges, and skill scores to boost verified skills.',
+    description:
+      'Observe public certifications, coding badges, and skill scores; handle ownership remains unverified.',
     category: 'Practice Platform',
     authMode: 'manual'
   },
@@ -77,7 +83,8 @@ const marketplace = [
   {
     provider: 'certifications',
     name: 'Certifications',
-    description: 'Add AWS, Google Cloud, Coursera, Udemy, or any certifications to improve your verified skills score.',
+    description:
+      'Record self-reported certification names; adding a name does not verify a credential.',
     category: 'Learning & Credentials',
     authMode: 'manual'
   },
