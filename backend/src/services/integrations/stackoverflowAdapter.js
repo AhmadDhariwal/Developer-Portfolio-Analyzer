@@ -1,5 +1,7 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
 
+const USER_RESPONSE_FILTER = '!0Z-LvgkLYnfxC9thLf37WiBP(';
+
 class StackOverflowAdapter extends BaseIntegrationAdapter {
   constructor() {
     super('stackoverflow');
@@ -29,13 +31,11 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
       throw new Error(`Stack Overflow user "${username}" not found.`);
     }
 
-    const [userInfo, badges, topTags] = await Promise.all([
-      this.fetchUser(userId),
-      this.fetchBadges(userId),
-      this.fetchTopTags(userId)
-    ]);
-
+    // A profile requires three requests; shared provider admission defaults to two concurrent.
+    const userInfo = await this.fetchUser(userId);
     if (!userInfo) throw Error('Stack Overflow profile unavailable.');
+    const badges = await this.fetchBadges(userId);
+    const topTags = await this.fetchTopTags(userId);
     const reputation = Number(userInfo?.reputation || 0);
     const goldBadges = Number(userInfo?.badge_counts?.gold || 0);
     const silverBadges = Number(userInfo?.badge_counts?.silver || 0);
@@ -107,7 +107,7 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
   async fetchUser(userId) {
     try {
       const data = await this.get(
-        `https://api.stackexchange.com/2.3/users/${userId}?site=stackoverflow`,
+        `https://api.stackexchange.com/2.3/users/${userId}?site=stackoverflow&filter=${encodeURIComponent(USER_RESPONSE_FILTER)}`,
         null
       );
       return data?.items?.[0] || null;

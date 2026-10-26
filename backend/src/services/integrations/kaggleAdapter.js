@@ -13,7 +13,7 @@ class KaggleAdapter extends BaseIntegrationAdapter {
     return {
       requiredFields: ['externalUsername'],
       helpText:
-        'Provide your Kaggle username to fetch public profile, medals, and competition activity.'
+        'Kaggle profile ingestion is unavailable until a documented profile API and authorized access are configured.'
     };
   }
 
@@ -47,57 +47,15 @@ class KaggleAdapter extends BaseIntegrationAdapter {
         },
         datasetsPublished: Number(stats?.datasets || profile?.datasets || 0)
       },
-      inferredSkills: ['Python', 'Machine Learning', 'Data Analysis'],
+      inferredSkills: [],
       raw: payload
     };
   }
 
-  async fetchProfilePayload(username) {
-    try {
-      return await this.get(
-        `https://www.kaggle.com/api/i/users.UsersService/GetProfile?username=${encodeURIComponent(username)}`,
-        null
-      );
-    } catch {
-      const html = await this.get(`https://www.kaggle.com/${encodeURIComponent(username)}`, null, {
-        timeout: 15000,
-        headers: {
-          Accept: 'text/html,application/xhtml+xml'
-        }
-      });
-
-      const body = String(html || '');
-      if (!body || body.toLowerCase().includes('not found')) {
-        throw new Error('Kaggle user not found or profile unavailable.');
-      }
-
-      const extractNumber = (pattern) => {
-        const match = pattern.exec(body);
-        return match ? Number(match[1] || 0) : 0;
-      };
-
-      const gold = extractNumber(/"goldMedals"\s*:\s*(\d+)/i);
-      const silver = extractNumber(/"silverMedals"\s*:\s*(\d+)/i);
-      const bronze = extractNumber(/"bronzeMedals"\s*:\s*(\d+)/i);
-      const competitions = extractNumber(/"competitions"\s*:\s*(\d+)/i);
-      const notebooks = extractNumber(/"notebooks"\s*:\s*(\d+)/i);
-
-      return {
-        profile: {
-          username,
-          competitions,
-          scripts: notebooks
-        },
-        stats: {
-          competitions,
-          notebooks,
-          goldMedals: gold,
-          silverMedals: silver,
-          bronzeMedals: bronze
-        },
-        source: 'html_fallback'
-      };
-    }
+  async fetchProfilePayload() {
+    throw new Error(
+      'Kaggle profile ingestion is unavailable until a documented profile API and authorized access are configured.'
+    );
   }
 }
 
