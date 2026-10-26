@@ -1,0 +1,1055 @@
+{
+  "startedAt": "2026-10-26T12:00:42.081Z",
+  "infrastructure": {
+    "redisPing": "PONG",
+    "mongo": {
+      "version": "8.2",
+      "replicaSet": "integration-live",
+      "transactionCommitted": true,
+      "isolation": "ephemeral port and task-owned temporary directory",
+      "originalKeyringConfigured": false,
+      "temporaryKeyring": "process-only; disposable test database only"
+    }
+  },
+  "providers": [
+    {
+      "provider": "leetcode",
+      "publicInput": "lee215",
+      "requests": [
+        {
+          "url": "https://leetcode.com/graphql",
+          "status": 200,
+          "sample": {
+            "username": "lee215",
+            "profile": {
+              "ranking": 102721,
+              "reputation": 231289,
+              "starRating": 3
+            },
+            "submitStats": {
+              "acSubmissionNum": [
+                {
+                  "difficulty": "All",
+                  "count": 692
+                },
+                {
+                  "difficulty": "Easy",
+                  "count": 127
+                },
+                {
+                  "difficulty": "Medium",
+                  "count": 414
+                },
+                {
+                  "difficulty": "Hard",
+                  "count": 151
+                }
+              ]
+            }
+          }
+        },
+        {
+          "url": "https://leetcode.com/graphql",
+          "status": 200,
+          "sample": {
+            "username": "lee215",
+            "profile": {
+              "ranking": 102721,
+              "reputation": 231289,
+              "starRating": 3
+            },
+            "submitStats": {
+              "acSubmissionNum": [
+                {
+                  "difficulty": "All",
+                  "count": 692
+                },
+                {
+                  "difficulty": "Easy",
+                  "count": 127
+                },
+                {
+                  "difficulty": "Medium",
+                  "count": 414
+                },
+                {
+                  "difficulty": "Hard",
+                  "count": 151
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "status": "FAIL",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS"
+      },
+      "persisted": {
+        "provider": "leetcode",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 81,
+        "inferredSkills": ["Data Structures", "Algorithms", "Problem Solving"],
+        "normalized": {
+          "profile": {
+            "username": "lee215",
+            "ranking": 102721,
+            "reputation": 231289,
+            "solvedProblems": 692
+          },
+          "activity": {
+            "easy": 127,
+            "medium": 414,
+            "hard": 151
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:52.739Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": false,
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": ["Data Structures", "Algorithms", "Problem Solving"],
+        "portfolioBefore": null,
+        "portfolioAfter": 96,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:52.755Z",
+        "revisionAfterSync": "2026-10-26T12:00:53.464Z"
+      },
+      "failure": "All downstream consumers must expose source provenance",
+      "downstreamStoppedAtFailedPrerequisite": false
+    },
+    {
+      "provider": "stackoverflow",
+      "publicInput": "22656",
+      "requests": [
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656?site=stackoverflow&filter=!0Z-LvgkLYnfxC9thLf37WiBP(",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "user_id": 22656,
+                "reputation": 1530323,
+                "answer_count": 35806,
+                "question_count": 56,
+                "badge_counts": {
+                  "bronze": 9364,
+                  "silver": 9325,
+                  "gold": 895
+                }
+              }
+            ],
+            "quotaRemaining": 277
+          }
+        },
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656/badges?site=stackoverflow&pagesize=20&order=desc&sort=rank",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "name": "parallel-processing"
+              },
+              {
+                "name": "datetimeoffset"
+              },
+              {
+                "name": "Nice Answer"
+              },
+              {
+                "name": "new-operator"
+              },
+              {
+                "name": "linq-to-xml"
+              },
+              {
+                "name": "scala"
+              },
+              {
+                "name": "hash"
+              },
+              {
+                "name": "constraints"
+              },
+              {
+                "name": "mono"
+              },
+              {
+                "name": "datetime-format"
+              },
+              {
+                "name": "xml-namespaces"
+              },
+              {
+                "name": "dependency-injection"
+              },
+              {
+                "name": "dispatcher"
+              },
+              {
+                "name": "security"
+              },
+              {
+                "name": "tcpclient"
+              },
+              {
+                "name": "substring"
+              },
+              {
+                "name": "character"
+              },
+              {
+                "name": "bigdecimal"
+              },
+              {
+                "name": "windows-phone-7"
+              },
+              {
+                "name": "sockets"
+              }
+            ],
+            "quotaRemaining": 277
+          }
+        },
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656/top-tags?site=stackoverflow&pagesize=10",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "user_id": 22656,
+                "answer_count": 19992,
+                "question_count": 23,
+                "tag_name": "c#"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 10585,
+                "question_count": 1,
+                "tag_name": "java"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 5638,
+                "question_count": 8,
+                "tag_name": ".net"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 3000,
+                "question_count": 0,
+                "tag_name": "linq"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1008,
+                "question_count": 2,
+                "tag_name": "string"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1296,
+                "question_count": 1,
+                "tag_name": "generics"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 478,
+                "question_count": 0,
+                "tag_name": "date"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 349,
+                "question_count": 1,
+                "tag_name": "timezone"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1078,
+                "question_count": 0,
+                "tag_name": "multithreading"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 717,
+                "question_count": 1,
+                "tag_name": "reflection"
+              }
+            ],
+            "quotaRemaining": 275
+          }
+        },
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656?site=stackoverflow&filter=!0Z-LvgkLYnfxC9thLf37WiBP(",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "user_id": 22656,
+                "reputation": 1530323,
+                "answer_count": 35806,
+                "question_count": 56,
+                "badge_counts": {
+                  "bronze": 9364,
+                  "silver": 9325,
+                  "gold": 895
+                }
+              }
+            ],
+            "quotaRemaining": 274
+          }
+        },
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656/badges?site=stackoverflow&pagesize=20&order=desc&sort=rank",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "name": "parallel-processing"
+              },
+              {
+                "name": "datetimeoffset"
+              },
+              {
+                "name": "Nice Answer"
+              },
+              {
+                "name": "new-operator"
+              },
+              {
+                "name": "linq-to-xml"
+              },
+              {
+                "name": "scala"
+              },
+              {
+                "name": "hash"
+              },
+              {
+                "name": "constraints"
+              },
+              {
+                "name": "mono"
+              },
+              {
+                "name": "datetime-format"
+              },
+              {
+                "name": "xml-namespaces"
+              },
+              {
+                "name": "dependency-injection"
+              },
+              {
+                "name": "dispatcher"
+              },
+              {
+                "name": "security"
+              },
+              {
+                "name": "tcpclient"
+              },
+              {
+                "name": "substring"
+              },
+              {
+                "name": "character"
+              },
+              {
+                "name": "bigdecimal"
+              },
+              {
+                "name": "windows-phone-7"
+              },
+              {
+                "name": "sockets"
+              }
+            ],
+            "quotaRemaining": 274
+          }
+        },
+        {
+          "url": "https://api.stackexchange.com/2.3/users/22656/top-tags?site=stackoverflow&pagesize=10",
+          "status": 200,
+          "sample": {
+            "items": [
+              {
+                "user_id": 22656,
+                "answer_count": 19992,
+                "question_count": 23,
+                "tag_name": "c#"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 10585,
+                "question_count": 1,
+                "tag_name": "java"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 5638,
+                "question_count": 8,
+                "tag_name": ".net"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 3000,
+                "question_count": 0,
+                "tag_name": "linq"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1008,
+                "question_count": 2,
+                "tag_name": "string"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1296,
+                "question_count": 1,
+                "tag_name": "generics"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 478,
+                "question_count": 0,
+                "tag_name": "date"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 349,
+                "question_count": 1,
+                "tag_name": "timezone"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 1078,
+                "question_count": 0,
+                "tag_name": "multithreading"
+              },
+              {
+                "user_id": 22656,
+                "answer_count": 717,
+                "question_count": 1,
+                "tag_name": "reflection"
+              }
+            ],
+            "quotaRemaining": 274
+          }
+        }
+      ],
+      "status": "FAIL",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS"
+      },
+      "persisted": {
+        "provider": "stackoverflow",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 93,
+        "inferredSkills": ["c#", "java", ".net", "linq", "string", "generics", "date", "timezone"],
+        "normalized": {
+          "profile": {
+            "username": "Jon Skeet",
+            "userId": "22656",
+            "reputation": 1530323,
+            "goldBadges": 895,
+            "silverBadges": 9325,
+            "bronzeBadges": 9364,
+            "totalBadges": 19584,
+            "answerCount": 35806,
+            "questionCount": 56
+          },
+          "activity": {
+            "topTags": ["c#", "java", ".net", "linq", "string", "generics", "date", "timezone"],
+            "namedBadges": [
+              "parallel-processing",
+              "datetimeoffset",
+              "Nice Answer",
+              "new-operator",
+              "linq-to-xml",
+              "scala",
+              "hash",
+              "constraints",
+              "mono",
+              "datetime-format"
+            ],
+            "acceptRate": 86
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:55.943Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": false,
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": ["c#", "java", ".net", "linq", "string", "generics", "date", "timezone"],
+        "portfolioBefore": null,
+        "portfolioAfter": 99,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:55.951Z",
+        "revisionAfterSync": "2026-10-26T12:00:57.789Z"
+      },
+      "failure": "All downstream consumers must expose source provenance",
+      "downstreamStoppedAtFailedPrerequisite": false
+    },
+    {
+      "provider": "certifications",
+      "publicInput": "AWS Certified Solutions Architect",
+      "requests": [],
+      "status": "FAIL",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "backgroundSync": "PASS"
+      },
+      "persisted": {
+        "provider": "certifications",
+        "ownershipVerified": false,
+        "evidenceKind": "self-reported",
+        "profileScore": 12,
+        "activityScore": 10,
+        "confidence": 78,
+        "inferredSkills": ["AWS"],
+        "normalized": {
+          "profile": {
+            "username": "AWS Certified Solutions Architect",
+            "totalCertifications": 1,
+            "certScore": 12
+          },
+          "activity": {
+            "certifications": ["AWS Certified Solutions Architect"],
+            "platforms": ["AWS"]
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:58.936Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": false,
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": ["AWS"],
+        "portfolioBefore": null,
+        "portfolioAfter": 24,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:58.945Z",
+        "revisionAfterSync": "2026-10-26T12:00:59.159Z"
+      },
+      "failure": "All downstream consumers must expose source provenance",
+      "downstreamStoppedAtFailedPrerequisite": false
+    },
+    {
+      "provider": "devblogs",
+      "publicInput": "devto@swyx",
+      "requests": [
+        {
+          "url": "https://dev.to/api/articles?username=swyx&per_page=30",
+          "status": 200,
+          "sample": {
+            "articles": [
+              {
+                "id": 4819715,
+                "reactions": 18,
+                "publishedAt": "2026-10-11T19:41:56Z",
+                "tags": ["ai", "aie", "fintech"]
+              },
+              {
+                "id": 4000790,
+                "reactions": 66,
+                "publishedAt": "2026-06-29T16:04:30Z",
+                "tags": ["aie", "ai", "techtalks", "softwareengineering"]
+              },
+              {
+                "id": 1097859,
+                "reactions": 41,
+                "publishedAt": "2022-05-27T19:51:36Z",
+                "tags": ["docker"]
+              },
+              {
+                "id": 937703,
+                "reactions": 369,
+                "publishedAt": "2021-12-27T16:08:03Z",
+                "tags": ["devtools", "summaries", "javascript"]
+              },
+              {
+                "id": 937038,
+                "reactions": 29,
+                "publishedAt": "2021-12-26T20:52:14Z",
+                "tags": ["datasette", "tech", "data", "python"]
+              },
+              {
+                "id": 916214,
+                "reactions": 6,
+                "publishedAt": "2021-12-03T07:58:15Z",
+                "tags": ["tips", "javascript", "css"]
+              },
+              {
+                "id": 915110,
+                "reactions": 18,
+                "publishedAt": "2021-12-02T07:25:13Z",
+                "tags": ["reflections", "podcast"]
+              },
+              {
+                "id": 891466,
+                "reactions": 17,
+                "publishedAt": "2021-11-08T01:32:56Z",
+                "tags": ["reflections", "community", "devrel"]
+              },
+              {
+                "id": 866129,
+                "reactions": 324,
+                "publishedAt": "2021-10-16T21:05:53Z",
+                "tags": ["css"]
+              },
+              {
+                "id": 850393,
+                "reactions": 28,
+                "publishedAt": "2021-10-04T02:23:15Z",
+                "tags": ["cloud", "aws", "strategy"]
+              },
+              {
+                "id": 832847,
+                "reactions": 305,
+                "publishedAt": "2021-09-20T14:46:38Z",
+                "tags": ["react", "graphql", "rest", "supabase"]
+              },
+              {
+                "id": 821090,
+                "reactions": 7,
+                "publishedAt": "2021-09-11T22:26:53Z",
+                "tags": ["reflections"]
+              },
+              {
+                "id": 812936,
+                "reactions": 21,
+                "publishedAt": "2021-09-03T20:59:46Z",
+                "tags": ["creators"]
+              },
+              {
+                "id": 808457,
+                "reactions": 127,
+                "publishedAt": "2021-08-30T22:29:07Z",
+                "tags": ["git", "tips"]
+              },
+              {
+                "id": 807412,
+                "reactions": 24,
+                "publishedAt": "2021-08-30T01:02:48Z",
+                "tags": ["dx", "ideas"]
+              },
+              {
+                "id": 800482,
+                "reactions": 8,
+                "publishedAt": "2021-08-23T08:28:32Z",
+                "tags": ["reflections", "pricing"]
+              },
+              {
+                "id": 793073,
+                "reactions": 77,
+                "publishedAt": "2021-08-16T01:06:41Z",
+                "tags": ["dx", "devrel", "content"]
+              },
+              {
+                "id": 784929,
+                "reactions": 32,
+                "publishedAt": "2021-08-08T06:26:46Z",
+                "tags": ["reflections", "money", "vc"]
+              },
+              {
+                "id": 768162,
+                "reactions": 8,
+                "publishedAt": "2021-07-22T02:11:17Z",
+                "tags": ["apple", "naming", "tech"]
+              },
+              {
+                "id": 763166,
+                "reactions": 20,
+                "publishedAt": "2021-07-19T07:46:12Z",
+                "tags": ["temporal", "work", "reflections"]
+              },
+              {
+                "id": 748774,
+                "reactions": 139,
+                "publishedAt": "2021-07-05T21:57:11Z",
+                "tags": ["mac", "tech"]
+              },
+              {
+                "id": 739365,
+                "reactions": 15,
+                "publishedAt": "2021-06-25T20:29:35Z",
+                "tags": ["learning", "epistemology", "reflections"]
+              },
+              {
+                "id": 736103,
+                "reactions": 14,
+                "publishedAt": "2021-06-22T20:57:31Z",
+                "tags": ["temporal", "architecture", "go"]
+              },
+              {
+                "id": 733268,
+                "reactions": 13,
+                "publishedAt": "2021-06-19T21:47:04Z",
+                "tags": ["reflections"]
+              },
+              {
+                "id": 727242,
+                "reactions": 9,
+                "publishedAt": "2021-06-13T18:34:19Z",
+                "tags": ["cloud", "aws", "azure"]
+              },
+              {
+                "id": 719758,
+                "reactions": 32,
+                "publishedAt": "2021-06-06T16:42:16Z",
+                "tags": ["reflections", "learninpublic", "react"]
+              },
+              {
+                "id": 710759,
+                "reactions": 27,
+                "publishedAt": "2021-05-28T02:09:23Z",
+                "tags": ["creators", "podcast", "reflections"]
+              },
+              {
+                "id": 708708,
+                "reactions": 20,
+                "publishedAt": "2021-05-26T02:17:37Z",
+                "tags": ["tech", "stripe", "creators"]
+              },
+              {
+                "id": 708645,
+                "reactions": 266,
+                "publishedAt": "2021-05-25T22:32:58Z",
+                "tags": ["react", "javascript", "webdev"]
+              },
+              {
+                "id": 705987,
+                "reactions": 11,
+                "publishedAt": "2021-05-22T21:56:06Z",
+                "tags": ["creators", "reflections"]
+              }
+            ]
+          }
+        },
+        {
+          "url": "https://dev.to/api/articles?username=swyx&per_page=30",
+          "status": 200,
+          "sample": {
+            "articles": [
+              {
+                "id": 4819715,
+                "reactions": 18,
+                "publishedAt": "2026-10-11T19:41:56Z",
+                "tags": ["ai", "aie", "fintech"]
+              },
+              {
+                "id": 4000790,
+                "reactions": 66,
+                "publishedAt": "2026-06-29T16:04:30Z",
+                "tags": ["aie", "ai", "techtalks", "softwareengineering"]
+              },
+              {
+                "id": 1097859,
+                "reactions": 41,
+                "publishedAt": "2022-05-27T19:51:36Z",
+                "tags": ["docker"]
+              },
+              {
+                "id": 937703,
+                "reactions": 369,
+                "publishedAt": "2021-12-27T16:08:03Z",
+                "tags": ["devtools", "summaries", "javascript"]
+              },
+              {
+                "id": 937038,
+                "reactions": 29,
+                "publishedAt": "2021-12-26T20:52:14Z",
+                "tags": ["datasette", "tech", "data", "python"]
+              },
+              {
+                "id": 916214,
+                "reactions": 6,
+                "publishedAt": "2021-12-03T07:58:15Z",
+                "tags": ["tips", "javascript", "css"]
+              },
+              {
+                "id": 915110,
+                "reactions": 18,
+                "publishedAt": "2021-12-02T07:25:13Z",
+                "tags": ["reflections", "podcast"]
+              },
+              {
+                "id": 891466,
+                "reactions": 17,
+                "publishedAt": "2021-11-08T01:32:56Z",
+                "tags": ["reflections", "community", "devrel"]
+              },
+              {
+                "id": 866129,
+                "reactions": 324,
+                "publishedAt": "2021-10-16T21:05:53Z",
+                "tags": ["css"]
+              },
+              {
+                "id": 850393,
+                "reactions": 28,
+                "publishedAt": "2021-10-04T02:23:15Z",
+                "tags": ["cloud", "aws", "strategy"]
+              },
+              {
+                "id": 832847,
+                "reactions": 305,
+                "publishedAt": "2021-09-20T14:46:38Z",
+                "tags": ["react", "graphql", "rest", "supabase"]
+              },
+              {
+                "id": 821090,
+                "reactions": 7,
+                "publishedAt": "2021-09-11T22:26:53Z",
+                "tags": ["reflections"]
+              },
+              {
+                "id": 812936,
+                "reactions": 21,
+                "publishedAt": "2021-09-03T20:59:46Z",
+                "tags": ["creators"]
+              },
+              {
+                "id": 808457,
+                "reactions": 127,
+                "publishedAt": "2021-08-30T22:29:07Z",
+                "tags": ["git", "tips"]
+              },
+              {
+                "id": 807412,
+                "reactions": 24,
+                "publishedAt": "2021-08-30T01:02:48Z",
+                "tags": ["dx", "ideas"]
+              },
+              {
+                "id": 800482,
+                "reactions": 8,
+                "publishedAt": "2021-08-23T08:28:32Z",
+                "tags": ["reflections", "pricing"]
+              },
+              {
+                "id": 793073,
+                "reactions": 77,
+                "publishedAt": "2021-08-16T01:06:41Z",
+                "tags": ["dx", "devrel", "content"]
+              },
+              {
+                "id": 784929,
+                "reactions": 32,
+                "publishedAt": "2021-08-08T06:26:46Z",
+                "tags": ["reflections", "money", "vc"]
+              },
+              {
+                "id": 768162,
+                "reactions": 8,
+                "publishedAt": "2021-07-22T02:11:17Z",
+                "tags": ["apple", "naming", "tech"]
+              },
+              {
+                "id": 763166,
+                "reactions": 20,
+                "publishedAt": "2021-07-19T07:46:12Z",
+                "tags": ["temporal", "work", "reflections"]
+              },
+              {
+                "id": 748774,
+                "reactions": 139,
+                "publishedAt": "2021-07-05T21:57:11Z",
+                "tags": ["mac", "tech"]
+              },
+              {
+                "id": 739365,
+                "reactions": 15,
+                "publishedAt": "2021-06-25T20:29:35Z",
+                "tags": ["learning", "epistemology", "reflections"]
+              },
+              {
+                "id": 736103,
+                "reactions": 14,
+                "publishedAt": "2021-06-22T20:57:31Z",
+                "tags": ["temporal", "architecture", "go"]
+              },
+              {
+                "id": 733268,
+                "reactions": 13,
+                "publishedAt": "2021-06-19T21:47:04Z",
+                "tags": ["reflections"]
+              },
+              {
+                "id": 727242,
+                "reactions": 9,
+                "publishedAt": "2021-06-13T18:34:19Z",
+                "tags": ["cloud", "aws", "azure"]
+              },
+              {
+                "id": 719758,
+                "reactions": 32,
+                "publishedAt": "2021-06-06T16:42:16Z",
+                "tags": ["reflections", "learninpublic", "react"]
+              },
+              {
+                "id": 710759,
+                "reactions": 27,
+                "publishedAt": "2021-05-28T02:09:23Z",
+                "tags": ["creators", "podcast", "reflections"]
+              },
+              {
+                "id": 708708,
+                "reactions": 20,
+                "publishedAt": "2021-05-26T02:17:37Z",
+                "tags": ["tech", "stripe", "creators"]
+              },
+              {
+                "id": 708645,
+                "reactions": 266,
+                "publishedAt": "2021-05-25T22:32:58Z",
+                "tags": ["react", "javascript", "webdev"]
+              },
+              {
+                "id": 705987,
+                "reactions": 11,
+                "publishedAt": "2021-05-22T21:56:06Z",
+                "tags": ["creators", "reflections"]
+              }
+            ]
+          }
+        }
+      ],
+      "status": "FAIL",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS"
+      },
+      "persisted": {
+        "provider": "devblogs",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 71,
+        "inferredSkills": ["JavaScript", "React", "AI/ML"],
+        "normalized": {
+          "profile": {
+            "username": "swyx",
+            "totalArticles": 30,
+            "totalReactions": 2091,
+            "totalViews": null,
+            "brandingScore": 100
+          },
+          "activity": {
+            "topTags": [
+              "reflections",
+              "tech",
+              "creators",
+              "javascript",
+              "react",
+              "ai",
+              "aie",
+              "tips"
+            ],
+            "platforms": ["Dev.to"],
+            "recentArticles": [
+              {
+                "title": "Welcome to AI Engineer New York",
+                "reactions": 18,
+                "publishedAt": "2026-10-11T19:41:56Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Welcome to AI Engineer World’s Fair 2026",
+                "reactions": 66,
+                "publishedAt": "2026-06-29T16:04:30Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Running Docker without Docker Desktop",
+                "reactions": 41,
+                "publishedAt": "2022-05-27T19:51:36Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Why TurboRepo Will Be The First Big Trend of 2022",
+                "reactions": 369,
+                "publishedAt": "2021-12-27T16:08:03Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Using Datasette for an ELT Personal Twitter Data Warehouse",
+                "reactions": 29,
+                "publishedAt": "2021-12-26T20:52:14Z",
+                "platform": "Dev.to"
+              }
+            ]
+          }
+        },
+        "syncedAt": "2026-10-26T12:01:00.630Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": false,
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": ["JavaScript", "React", "AI/ML"],
+        "portfolioBefore": null,
+        "portfolioAfter": 94,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:01:00.639Z",
+        "revisionAfterSync": "2026-10-26T12:01:00.996Z"
+      },
+      "failure": "All downstream consumers must expose source provenance",
+      "downstreamStoppedAtFailedPrerequisite": false
+    }
+  ],
+  "oauthConfiguration": {
+    "github": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    },
+    "linkedin": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 120,
+    "productionDataUsed": false
+  },
+  "finishedAt": "2026-10-26T12:01:01.779Z"
+}

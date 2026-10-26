@@ -4,6 +4,9 @@ const { createHash, randomUUID } = require('node:crypto');
 const cache = require('./redisCacheService');
 const { COUNTER } = require('./jobGovernanceService');
 const context = new AsyncLocalStorage();
+// The configured Upstash path measured 156 ms RTT; keep integration controls bounded
+// without inheriting the unrelated cache helper's 150 ms command deadline.
+const controlClient = () => cache.getRedisCacheClient({ commandTimeoutMs: 500 });
 const integer = (name, fallback, min, max) => {
   const value = Number(process.env[name]);
   return Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -29,7 +32,7 @@ for i=1,2 do redis.call('ZADD',KEYS[i],now+tonumber(ARGV[3]),ARGV[2]); redis.cal
 return 1`;
 const COOLDOWN = `local ttl=redis.call('PTTL',KEYS[1]); if ttl<tonumber(ARGV[1]) then redis.call('SET',KEYS[1],'1','PX',ARGV[1]) end return 1`;
 async function reserve(provider, owner, duration) {
-  const redis = cache.getRedisCacheClient();
+  const redis = controlClient();
   if (!redis) throw unavailable();
   const base = 'integrations:v1:{controls}';
   const token = randomUUID();
@@ -159,7 +162,7 @@ function assertActive() {
 }
 const JOB_ADMIT = `local now=tonumber(ARGV[1]); for i=1,2 do redis.call('ZREMRANGEBYSCORE',KEYS[i],'-inf',now) end if redis.call('ZCARD',KEYS[1])>=tonumber(ARGV[4]) or redis.call('ZCARD',KEYS[2])>=tonumber(ARGV[5]) then return 0 end for i=1,2 do redis.call('ZADD',KEYS[i],now+tonumber(ARGV[3]),ARGV[2]); redis.call('PEXPIRE',KEYS[i],tonumber(ARGV[3])+1000) end return 1`;
 async function withJob(provider, operation) {
-  const redis = cache.getRedisCacheClient();
+  const redis = controlClient();
   if (!redis) throw unavailable();
   const keys = ['integrations:v1:{controls}:jobs', 'integrations:v1:{controls}:jobs:' + provider];
   const token = randomUUID();
@@ -209,7 +212,7 @@ async function run(owner, operation) {
 }
 function actionLimit(name, authenticated = true) {
   return async (req, res, next) => {
-    const redis = cache.getRedisCacheClient();
+    const redis = controlClient();
     if (!redis)
       return res.status(503).json({ message: 'Integration controls temporarily unavailable.' });
     const key = `integrations:v1:{controls}:action:${name}:${hash(authenticated ? req.user?._id : req.ip)}`;

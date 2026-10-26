@@ -52,7 +52,8 @@ const marketplace = [
   {
     provider: 'kaggle',
     name: 'Kaggle',
-    description: 'Ingest ML competitions, notebooks, and dataset contributions.',
+    description:
+      'Profile ingestion is unavailable until a documented Kaggle profile API and authorized access are configured.',
     category: 'Data Science',
     authMode: 'manual'
   },
@@ -69,7 +70,7 @@ const marketplace = [
     provider: 'hackerrank',
     name: 'HackerRank',
     description:
-      'Observe public certifications, coding badges, and skill scores; handle ownership remains unverified.',
+      'Public developer profile ingestion is unavailable because no supported HackerRank profile API is configured.',
     category: 'Practice Platform',
     authMode: 'manual'
   },
@@ -91,7 +92,8 @@ const marketplace = [
   {
     provider: 'devblogs',
     name: 'Dev Blogs',
-    description: 'Connect Dev.to or Hashnode to showcase technical writing and developer branding.',
+    description:
+      'Observe up to 30 public Dev.to articles with devto@username. Hashnode requires approved Pro API access.',
     category: 'Content & Branding',
     authMode: 'manual'
   }

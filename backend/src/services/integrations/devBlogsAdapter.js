@@ -1,8 +1,8 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
 
 /**
- * Dev Blogs Adapter — supports Dev.to, Medium, and Hashnode
- * Fetches public article count, reactions, and tags to measure developer branding.
+ * Dev Blogs Adapter — bounded public Dev.to article observations.
+ * Hashnode requires an approved paid API contract; Medium is not implemented.
  */
 class DevBlogsAdapter extends BaseIntegrationAdapter {
   constructor() {
@@ -17,28 +17,33 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
     return {
       requiredFields: ['externalUsername'],
       helpText:
-        'Enter your Dev.to username (e.g. "johndoe") to fetch your public articles, reactions, and top tags. Medium and Hashnode usernames are also supported.'
+        'Use devto@username to fetch up to 30 public Dev.to articles, reactions, and tags. Hashnode requires approved Pro API access and is currently unavailable. Medium is not supported.'
     };
   }
 
   async ingestData(connection = {}) {
-    const username = String(connection.externalUsername || '').trim();
-    if (!username) {
+    const identifier = String(connection.externalUsername || '').trim();
+    if (!identifier) {
       throw new Error('Blog username is required.');
     }
-
-    // Try Dev.to first (most reliable public API), then Hashnode
-    const [devtoResult, hashnodeResult] = await Promise.all([
-      this.fetchDevTo(username),
-      this.fetchHashnode(username)
-    ]);
-
-    const articles = [...(devtoResult.articles || []), ...(hashnodeResult.articles || [])];
-
-    if (devtoResult.failed || hashnodeResult.failed) throw Error('Blog provider data unavailable.');
+    // Explicit selection avoids merging unrelated people who share a handle across platforms.
+    // Legacy bare handles remain blocked rather than replacing a combined snapshot partially.
+    const selection = /^devto@([a-zA-Z0-9_.-]+)$/.exec(identifier);
+    if (!selection) {
+      throw new Error(
+        'Hashnode API access requires an approved Pro publication. Use devto@username for Dev.to only.'
+      );
+    }
+    const username = selection[1];
+    const devtoResult = await this.fetchDevTo(username);
+    if (devtoResult.failed) throw Error('Blog provider data unavailable.');
+    const articles = devtoResult.articles || [];
+    if (!articles.length) throw Error('No public Dev.to articles found.');
     const totalArticles = articles.length;
     const totalReactions = articles.reduce((sum, a) => sum + Number(a.reactions || 0), 0);
-    const totalViews = articles.reduce((sum, a) => sum + Number(a.views || 0), 0);
+    const totalViews = articles.every((article) => Number.isFinite(article.views))
+      ? articles.reduce((sum, article) => sum + article.views, 0)
+      : null;
 
     const allTags = articles.flatMap((a) => a.tags || []);
     const tagFreq = {};
@@ -71,18 +76,16 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
       },
       activity: {
         topTags,
-        platforms: [
-          ...(devtoResult.articles?.length ? ['Dev.to'] : []),
-          ...(hashnodeResult.articles?.length ? ['Hashnode'] : [])
-        ],
+        platforms: [...(devtoResult.articles?.length ? ['Dev.to'] : [])],
         recentArticles: articles.slice(0, 5).map((a) => ({
           title: a.title,
           reactions: a.reactions,
+          publishedAt: a.publishedAt,
           platform: a.platform
         }))
       },
       inferredSkills: [...new Set(inferredSkills)].slice(0, 10),
-      raw: { devto: devtoResult, hashnode: hashnodeResult }
+      raw: { devto: devtoResult }
     };
   }
 
@@ -94,13 +97,14 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
         { headers: { Accept: 'application/json' } }
       );
 
-      if (!Array.isArray(articles)) return { articles: [] };
+      if (!Array.isArray(articles)) return { articles: [], failed: true };
 
       return {
         articles: articles.map((a) => ({
           title: String(a.title || ''),
           reactions: Number(a.positive_reactions_count || a.public_reactions_count || 0),
-          views: Number(a.page_views_count || 0),
+          views: Number.isFinite(a.page_views_count) ? a.page_views_count : null,
+          publishedAt: a.published_at || a.published_timestamp || null,
           tags: Array.isArray(a.tag_list)
             ? a.tag_list
             : String(a.tags || '')
@@ -115,50 +119,10 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
     }
   }
 
-  async fetchHashnode(username) {
-    try {
-      const query = `
-        query GetUserArticles($username: String!) {
-          user(username: $username) {
-            publications(first: 1) {
-              edges {
-                node {
-                  posts(first: 20) {
-                    edges {
-                      node {
-                        title
-                        reactionCount
-                        views
-                        tags { name }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const data = await this.post(
-        'https://gql.hashnode.com',
-        { query, variables: { username } },
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      const posts = data?.data?.user?.publications?.edges?.[0]?.node?.posts?.edges || [];
-      return {
-        articles: posts.map(({ node: p }) => ({
-          title: String(p.title || ''),
-          reactions: Number(p.reactionCount || 0),
-          views: Number(p.views || 0),
-          tags: Array.isArray(p.tags) ? p.tags.map((t) => t.name) : [],
-          platform: 'Hashnode'
-        }))
-      };
-    } catch {
-      return { articles: [], failed: true };
-    }
+  async fetchHashnode() {
+    // Free GraphQL reads were retired on 13 May 2026. Never follow its marketing redirect
+    // or switch to another endpoint to evade the paid publication requirement.
+    return { articles: [], failed: true, unavailable: true };
   }
 
   tagToSkill(tag) {

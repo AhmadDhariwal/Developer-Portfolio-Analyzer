@@ -1,0 +1,23 @@
+{
+  "startedAt": "2026-10-26T12:10:03.537Z",
+  "infrastructure": {
+    "redisPing": null
+  },
+  "providers": [],
+  "oauthConfiguration": {
+    "github": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    },
+    "linkedin": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    }
+  },
+  "fatal": "Expected values to be strictly equal:\n\nnull !== 'PONG'\n",
+  "finishedAt": "2026-10-26T12:10:08.052Z"
+}
