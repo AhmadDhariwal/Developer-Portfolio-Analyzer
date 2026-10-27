@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-10-27T10:53:55.195Z",
+  "scope": "isolated linked-profile persistence; not resource ingestion",
+  "status": "PASS",
+  "kaggleApiRequests": 0,
+  "applicationDatabaseUsed": false,
+  "transactionAndPersistence": "PASS",
+  "ownerIsolation": "PASS",
+  "duplicatePrevention": "PASS",
+  "controllerReadAdoption": "PASS",
+  "removeLink": "PASS",
+  "historicalSnapshotUnchanged": true,
+  "noConnectionOrScoredSyncCreated": true,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 64,
+    "productionDataUsed": false
+  }
+}

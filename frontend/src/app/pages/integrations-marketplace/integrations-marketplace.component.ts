@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { finalize } from 'rxjs/operators';
+import { HackerRankLinkedProfileComponent } from './components/hackerrank-linked-profile.component';
+import { KaggleLinkedProfileComponent } from './components/kaggle-linked-profile.component';
 import {
   IntegrationsService,
   IntegrationMarketplaceItem,
@@ -56,8 +58,8 @@ const PROVIDER_META: Record<
     categoryGroup: 'knowledge',
     inputLabel: 'Kaggle Username',
     inputPlaceholder: 'your-kaggle-username',
-    inputHint: 'Unavailable pending a documented, authorized profile API contract',
-    impact: ['Profile ingestion unavailable'],
+    inputHint: 'Public resource samples only. Ownership unverified; no scoring impact.',
+    impact: ['Public resource observations', 'No scoring impact'],
   },
   stackoverflow: {
     icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.986 21.865v-6.404h2.134V24H1.844v-8.539h2.13v6.404h15.012zM6.111 19.731H16.85v-2.137H6.111v2.137zm.259-4.852 10.48 2.189.451-2.07-10.478-2.187-.453 2.068zm1.359-5.056 9.705 4.53.903-1.95-9.706-4.53-.902 1.95zm2.715-4.785 8.217 6.855 1.359-1.62-8.216-6.853-1.36 1.618zM15.751 0l-1.746 1.294 6.405 8.604 1.746-1.294L15.751 0z"/></svg>`,
@@ -99,9 +101,9 @@ const PROVIDER_META: Record<
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
     color: '#fb7185',
     categoryGroup: 'knowledge',
-    inputLabel: 'Dev.to Username',
+    inputLabel: 'Blog Source and Username',
     inputPlaceholder: 'devto@your-handle',
-    inputHint: 'Use devto@username to observe up to 30 public articles and reactions',
+    inputHint: 'Use devto@username. Up to 30 public Dev.to posts per read.',
     impact: ['Technical thought leadership', 'System design writing', 'Community presence'],
   },
 };
@@ -115,7 +117,12 @@ export interface IngestionLogEntry {
 @Component({
   selector: 'app-integrations-marketplace',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HackerRankLinkedProfileComponent,
+    KaggleLinkedProfileComponent,
+  ],
   templateUrl: './integrations-marketplace.component.html',
   styleUrl: './integrations-marketplace.component.scss',
 })
@@ -249,8 +256,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     const state = query.get('state');
     if (!code || !state) return;
 
-    const providerFromState = state.split(':')[0] as ProviderName;
-    if (!providerFromState) return;
+    // GitHub returns through the backend callback. LinkedIn uses this frontend redirect;
+    // state is opaque and is validated against the owned server-side attempt.
+    const providerFromState: ProviderName = 'linkedin';
 
     this.busyProvider = providerFromState;
     this.addTerminalLog('info', `Processing OAuth callback for ${providerFromState}…`);
@@ -548,7 +556,11 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   // ── UI helpers ────────────────────────────────────────────────────────
 
   isProviderUnavailable(provider: string): boolean {
-    return provider === 'kaggle' || provider === 'hackerrank';
+    return (
+      provider === 'hackerrank' ||
+      (provider === 'kaggle' &&
+        this.integrations.find((item) => item.provider === provider)?.available !== true)
+    );
   }
 
   getInputLabel(provider: string): string {

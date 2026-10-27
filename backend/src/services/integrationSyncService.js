@@ -5,6 +5,7 @@ const { getAdapter } = require('./integrations');
 const { normalizeIngestion } = require('./integrationNormalizationService');
 const persistence = require('./integrationPersistenceService');
 const tokens = require('./integrationTokenService');
+const publicResources = require('./kaggleResourceObservationService');
 const governance = require('./integrationGovernanceService');
 let timer;
 let running = false;
@@ -75,17 +76,30 @@ async function syncProviderForUser(userId, provider, reason = 'manual') {
         }
         const ingested = await adapter.ingestData(hydrated);
         governance.assertActive();
-        const providerInsight = normalizeIngestion(provider, ingested);
-        providerInsight.ownershipVerified = connection.ownershipVerified === true;
-        providerInsight.evidenceKind =
-          provider === 'certifications' ? 'self-reported' : 'provider-observed';
-        const metadata = {
-          reason,
-          profileScore: providerInsight.profileScore,
-          activityScore: providerInsight.activityScore,
-          totalSkillsDetected: providerInsight.inferredSkills.length
-        };
-        const insight = await persistence.commit(connection, providerInsight, metadata, refreshed);
+        const resourceOnly = provider === 'kaggle' && ingested.resourceOnly === true;
+        const providerInsight = resourceOnly
+          ? { provider, syncedAt: new Date(), inferredSkills: [] }
+          : normalizeIngestion(provider, ingested);
+        providerInsight.ownershipVerified = !resourceOnly && connection.ownershipVerified === true;
+        providerInsight.evidenceKind = resourceOnly
+          ? 'public-resources'
+          : provider === 'certifications'
+            ? 'self-reported'
+            : 'provider-observed';
+        const metadata = resourceOnly
+          ? { reason, resourceObservation: publicResources.normalize(ingested) }
+          : {
+              reason,
+              profileScore: providerInsight.profileScore,
+              activityScore: providerInsight.activityScore,
+              totalSkillsDetected: providerInsight.inferredSkills.length
+            };
+        const insight = await persistence.commit(
+          connection,
+          resourceOnly ? null : providerInsight,
+          metadata,
+          refreshed
+        );
         return {
           ok: true,
           provider,

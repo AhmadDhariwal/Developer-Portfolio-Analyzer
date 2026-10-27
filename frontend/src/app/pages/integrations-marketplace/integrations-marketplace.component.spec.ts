@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { IntegrationsMarketplaceComponent } from './integrations-marketplace.component';
 import {
@@ -60,10 +60,14 @@ describe('IntegrationsMarketplaceComponent', () => {
     ingest: vi.fn(),
     syncNow: vi.fn(),
     disconnect: vi.fn(),
+    getHackerRankLinkedProfile: vi.fn(),
+    getKaggleLinkedProfile: vi.fn(),
   };
 
   beforeEach(() => {
     vi.resetAllMocks();
+    serviceMock.getHackerRankLinkedProfile.mockReturnValue(of({ linkedProfile: null }));
+    serviceMock.getKaggleLinkedProfile.mockReturnValue(of({ linkedProfile: null }));
     serviceMock.getMarketplace.mockReturnValue(of({ integrations: mockIntegrations }));
     serviceMock.getInsights.mockReturnValue(
       of({
@@ -204,6 +208,43 @@ describe('IntegrationsMarketplaceComponent', () => {
     expect(serviceMock.disconnect).toHaveBeenCalledWith('hackerrank');
   });
 
+  it('offers Dev.to without active Hashnode configuration', () => {
+    const item: IntegrationMarketplaceItem = {
+      ...mockIntegrations[1],
+      provider: 'devblogs',
+      name: 'Dev.to',
+      description: 'Observe up to 30 public Dev.to articles with devto@username.',
+    };
+    serviceMock.getMarketplace.mockReturnValue(of({ integrations: [item] }));
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.textContent).not.toContain('HASHNODE_PUBLICATION_HOST');
+    expect(root.textContent).not.toContain('hashnode@username');
+    comp.manualUsername.devblogs = 'devto@writer';
+    comp.manualConnect(item);
+    expect(serviceMock.manualConnect).toHaveBeenCalledWith('devblogs', 'devto@writer', '');
+  });
+
+  it('routes opaque OAuth state to LinkedIn instead of treating it as a provider', () => {
+    serviceMock.oauthCallback.mockReturnValue(
+      throwError(() => ({ error: { message: 'Acceptance fixture' } })),
+    );
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: {
+        snapshot: {
+          queryParamMap: convertToParamMap({ code: 'fixture-code', state: 'opaque-random-state' }),
+        },
+      },
+    });
+    mount();
+    expect(serviceMock.oauthCallback).toHaveBeenCalledWith(
+      'linkedin',
+      'fixture-code',
+      'opaque-random-state',
+    );
+  });
+
   it('toggles terminal drawer and maintains logs', () => {
     const fixture = mount();
     const comp = fixture.componentInstance;
@@ -212,5 +253,25 @@ describe('IntegrationsMarketplaceComponent', () => {
     comp.toggleTerminal();
     expect(comp.isTerminalOpen).toBe(true);
     expect(comp.terminalLogs.length).toBeGreaterThan(0);
+  });
+
+  it('enables accepted Kaggle resources while clearly labeling unverified sample counts', () => {
+    const item: IntegrationMarketplaceItem = {
+      ...mockIntegrations[1],
+      provider: 'kaggle',
+      name: 'Kaggle Resources',
+      available: true,
+      status: 'connected',
+      resourceSummary: { notebooks: 20, datasets: 19, ownershipVerified: false },
+    };
+    serviceMock.getMarketplace.mockReturnValue(of({ integrations: [item] }));
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+    expect(comp.isProviderUnavailable('kaggle')).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Public sample: 20 notebooks');
+    expect(fixture.nativeElement.textContent).toContain('19 datasets');
+    expect(fixture.nativeElement.querySelector('.sync-btn').disabled).toBe(false);
+    comp.runIngestion('kaggle');
+    expect(serviceMock.syncNow).toHaveBeenCalledWith('kaggle');
   });
 });

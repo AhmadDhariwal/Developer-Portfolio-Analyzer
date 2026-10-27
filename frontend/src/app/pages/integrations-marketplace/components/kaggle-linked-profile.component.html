@@ -1,0 +1,38 @@
+<section class="linked-profile" aria-labelledby="kaggle-linked-title" [attr.aria-busy]="busy">
+  <h2 id="kaggle-linked-title">Kaggle Linked Profile</h2>
+  <span class="ownership-label">Ownership unverified</span>
+  <p>
+    A user-entered reference, separate from account connections. Saving this link has no scoring
+    impact. Statistics syncing is unavailable.
+  </p>
+  <p *ngIf="profile" class="saved-profile">
+    <a [href]="profile.profileUrl" target="_blank" rel="noopener noreferrer"
+      >Open {{ profile.username }} on Kaggle</a
+    >
+    <span>Profile existence and ownership have not been checked.</span>
+  </p>
+  <form (ngSubmit)="save()">
+    <label for="kaggle-linked-input">Kaggle username or profile URL</label>
+    <input
+      id="kaggle-linked-input"
+      name="kaggleLinkedProfile"
+      [(ngModel)]="input"
+      maxlength="300"
+      placeholder="username or https://www.kaggle.com/username"
+      [disabled]="busy"
+      aria-describedby="kaggle-linked-note"
+    />
+    <p id="kaggle-linked-note">
+      No credentials required. No statistics, badges or verified skills are imported.
+    </p>
+    <div class="linked-actions">
+      <button type="submit" [disabled]="busy">
+        {{ profile ? 'Update profile link' : 'Save profile link' }}
+      </button>
+      <button type="button" *ngIf="profile" (click)="remove()" [disabled]="busy">
+        Remove profile link
+      </button>
+    </div>
+  </form>
+  <p *ngIf="error" role="alert">{{ error }}</p>
+</section>

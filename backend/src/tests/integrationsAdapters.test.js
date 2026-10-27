@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { getAdapter, marketplace } = require('../services/integrations');
 
-test('configuration offers only the official optional Kaggle token and Dev.to marketplace source', () => {
+test('configuration documents legitimate tokens without enabling unsupported profile APIs', () => {
   const fs = require('node:fs');
   const path = require('node:path');
   const dotenv = require('dotenv');
@@ -10,24 +10,28 @@ test('configuration offers only the official optional Kaggle token and Dev.to ma
   assert.equal(config.KAGGLE_API_TOKEN, '');
   assert.equal(config.KAGGLE_CLIENT_SECRET, undefined);
   assert.equal(config.HACKERRANK_API_KEY, undefined);
+  assert.equal(config.HACKERRANK_WORK_API_TOKEN, '');
+  assert.equal(config.HASHNODE_PAT, '');
+  assert.equal(config.HASHNODE_PUBLICATION_HOST, '');
   const blogs = marketplace.find((item) => item.provider === 'devblogs');
   assert.equal(blogs.name, 'Dev.to');
   assert.match(blogs.description, /devto@username/);
-  assert.match(blogs.description, /Hashnode is unavailable/);
+  assert.doesNotMatch(blogs.description, /Hashnode/);
   assert.equal(
     marketplace.some((item) => item.provider === 'hashnode'),
     false
   );
 });
 
-test('retained Hashnode adapter fails closed without outbound requests', async (t) => {
+test('retired Hashnode connections fail before network access and retain historical input', async (t) => {
   const adapter = getAdapter('devblogs');
   t.mock.method(adapter, 'get', () => assert.fail('Unexpected HTTP GET'));
   t.mock.method(adapter, 'post', () => assert.fail('Unexpected HTTP POST'));
-  assert.deepEqual(await adapter.fetchHashnode('unavailable'), {
-    articles: [],
-    failed: true,
-    unavailable: true
+  const connection = { externalUsername: 'hashnode@writer', metadata: { historical: true } };
+  await assert.rejects(adapter.ingestData(connection), /Hashnode support has been retired/);
+  assert.deepEqual(connection, {
+    externalUsername: 'hashnode@writer',
+    metadata: { historical: true }
   });
 });
 
@@ -160,7 +164,7 @@ test('explicit Dev.to observations do not depend on Hashnode or invent unavailab
   assert.deepEqual(result.activity.platforms, ['Dev.to']);
 });
 
-test('legacy combined and Hashnode blog handles fail closed before unsupported API calls', async (t) => {
+test('legacy combined blog handles fail closed before API calls', async (t) => {
   const adapter = getAdapter('devblogs');
   const originalGet = adapter.get;
   adapter.get = async () => {
@@ -169,37 +173,38 @@ test('legacy combined and Hashnode blog handles fail closed before unsupported A
   t.after(() => {
     adapter.get = originalGet;
   });
-  for (const externalUsername of ['swyx', 'hashnode@unclebigbay'])
+  for (const externalUsername of ['swyx', 'medium@swyx'])
     await assert.rejects(adapter.ingestData({ externalUsername }), /approved Pro publication/);
-  assert.deepEqual(await adapter.fetchHashnode('unclebigbay'), {
-    articles: [],
-    failed: true,
-    unavailable: true
-  });
 });
 
 test('Kaggle does not invent skills absent from the provider response', async (t) => {
   const adapter = getAdapter('kaggle');
-  const originalFetch = adapter.fetchProfilePayload;
-  adapter.fetchProfilePayload = async () => ({
-    profile: { username: 'public-sample', competitions: 2 },
-    stats: { competitions: 2, notebooks: 1 }
-  });
-  t.after(() => {
-    adapter.fetchProfilePayload = originalFetch;
-  });
+  const resources = require('../services/integrations/kaggleResources');
+  t.mock.method(resources, 'list', async (kind) => ({
+    resources: [{ ref: `public-sample/${kind}`, title: 'Returned resource' }],
+    pageSize: 20,
+    ownershipVerified: false
+  }));
 
   const result = await adapter.ingestData({
     externalUsername: 'public-sample'
   });
 
   assert.deepEqual(result.inferredSkills, []);
-  assert.equal(result.profile.competitions, 2);
-  assert.equal(result.profile.notebooks, 1);
+  assert.equal(result.resourceOnly, true);
+  assert.equal(result.profile.competitions, undefined);
+  assert.equal(result.activity.medals, undefined);
+  assert.equal(result.activity.notebooks.resources.length, 1);
 });
 
-test('Kaggle fails closed instead of calling undocumented profile endpoints or scraping HTML', async (t) => {
+test('Kaggle fails closed without token configuration and never calls undocumented profile endpoints', async (t) => {
   const adapter = getAdapter('kaggle');
+  const originalToken = process.env.KAGGLE_API_TOKEN;
+  delete process.env.KAGGLE_API_TOKEN;
+  t.after(() => {
+    if (originalToken === undefined) delete process.env.KAGGLE_API_TOKEN;
+    else process.env.KAGGLE_API_TOKEN = originalToken;
+  });
   let requestCount = 0;
   const originalGet = adapter.get;
   adapter.get = async () => {
@@ -210,10 +215,7 @@ test('Kaggle fails closed instead of calling undocumented profile endpoints or s
     adapter.get = originalGet;
   });
 
-  await assert.rejects(
-    adapter.ingestData({ externalUsername: 'cdeotte' }),
-    /documented profile API and authorized access/
-  );
+  await assert.rejects(adapter.ingestData({ externalUsername: 'cdeotte' }), /KAGGLE_API_TOKEN/);
   assert.equal(requestCount, 0);
 });
 

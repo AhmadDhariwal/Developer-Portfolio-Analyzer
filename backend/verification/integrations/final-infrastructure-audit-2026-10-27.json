@@ -1,0 +1,122 @@
+{
+  "at": "2026-10-27T12:59:08.270Z",
+  "mode": "read-only infrastructure audit; optional local key initialization",
+  "config": {
+    "MONGODB_URI": true,
+    "REDIS_URL": false,
+    "UPSTASH_REDIS_TOKEN": true,
+    "GITHUB_INTEGRATION_CLIENT_ID": true,
+    "GITHUB_INTEGRATION_CLIENT_SECRET": true,
+    "GITHUB_INTEGRATION_CALLBACK_URL": true,
+    "LINKEDIN_CLIENT_ID": true,
+    "LINKEDIN_CLIENT_SECRET": true,
+    "LINKEDIN_OAUTH_REDIRECT_URI": true
+  },
+  "encryption": {
+    "valid": true,
+    "durableFileConfig": true,
+    "credentials": 0,
+    "encrypted": 0,
+    "decryptable": 0,
+    "plaintext": 0,
+    "initialization": "PASS: local ignored env initialized; no stored credential values changed",
+    "freshProcessReadback": true
+  },
+  "mongo": {
+    "connected": true,
+    "transactionsSupported": true,
+    "indexes": [
+      {
+        "collection": "integrationconnections",
+        "key": {
+          "userId": 1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationconnections",
+        "key": {
+          "userId": 1,
+          "provider": 1
+        },
+        "unique": true,
+        "present": true
+      },
+      {
+        "collection": "integrationinsights",
+        "key": {
+          "userId": 1
+        },
+        "unique": true,
+        "present": true
+      },
+      {
+        "collection": "integrationinsights",
+        "key": {
+          "updatedAt": -1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationsynclogs",
+        "key": {
+          "userId": 1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationsynclogs",
+        "key": {
+          "provider": 1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationsynclogs",
+        "key": {
+          "createdAt": 1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationsynclogs",
+        "key": {
+          "userId": 1,
+          "provider": 1,
+          "createdAt": -1
+        },
+        "unique": false,
+        "present": true
+      },
+      {
+        "collection": "integrationlinkedprofiles",
+        "key": {
+          "userId": 1,
+          "provider": 1
+        },
+        "unique": true,
+        "present": true
+      }
+    ]
+  },
+  "redis": {
+    "ping": true
+  },
+  "oauthRedirects": {
+    "GITHUB_INTEGRATION_CALLBACK_URL": {
+      "validHttpUrl": true,
+      "expectedPath": true,
+      "hasEmbeddedCredentials": false
+    },
+    "LINKEDIN_OAUTH_REDIRECT_URI": {
+      "validHttpUrl": true,
+      "expectedPath": true,
+      "hasEmbeddedCredentials": false
+    }
+  }
+}

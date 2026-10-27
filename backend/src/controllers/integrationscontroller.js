@@ -9,6 +9,7 @@ const sync = require('../services/integrationSyncService');
 const persistence = require('../services/integrationPersistenceService');
 const governance = require('../services/integrationGovernanceService');
 const tokens = require('../services/integrationTokenService');
+const publicResources = require('../services/kaggleResourceObservationService');
 const { getGithubIntegrationOAuthConfig } = require('../config/githubOauth');
 const trim = (value) => (typeof value === 'string' ? value.trim() : '');
 const frontend = () =>
@@ -40,7 +41,7 @@ function errorResponse(res, error, message) {
 async function getMarketplace(req, res) {
   try {
     const rows = await Connection.find({ userId: req.user._id })
-      .select('provider status externalUsername lastSyncedAt')
+      .select('provider status externalUsername lastSyncedAt metadata.resourceObservation')
       .lean();
     const byProvider = new Map(rows.map((row) => [row.provider, row]));
     return res.json({
@@ -49,7 +50,20 @@ async function getMarketplace(req, res) {
         status: byProvider.get(item.provider)?.status || 'disconnected',
         externalUsername: byProvider.get(item.provider)?.externalUsername || '',
         lastSyncedAt: byProvider.get(item.provider)?.lastSyncedAt || null,
-        authMode: item.authMode || 'oauth2'
+        authMode: item.authMode || 'oauth2',
+        ...(item.provider === 'kaggle' &&
+        byProvider.get(item.provider)?.status === 'connected' &&
+        byProvider.get(item.provider)?.metadata?.resourceObservation
+          ? {
+              resourceSummary: {
+                notebooks: byProvider.get(item.provider).metadata.resourceObservation.activity
+                  .notebooks.resources.length,
+                datasets: byProvider.get(item.provider).metadata.resourceObservation.activity
+                  .datasets.resources.length,
+                ownershipVerified: false
+              }
+            }
+          : {})
       }))
     });
   } catch {
@@ -195,11 +209,17 @@ async function manualConnectProvider(req, res) {
     } catch (error) {
       return errorResponse(res, error, `Unable to validate the ${provider} connection.`);
     }
-    const providerInsight = {
-      ...normalizeIngestion(provider, ingested),
-      ownershipVerified: false,
-      evidenceKind: provider === 'certifications' ? 'self-reported' : 'provider-observed'
-    };
+    const resourceObservation =
+      provider === 'kaggle' && ingested.resourceOnly === true
+        ? publicResources.normalize(ingested)
+        : null;
+    const providerInsight = resourceObservation
+      ? null
+      : {
+          ...normalizeIngestion(provider, ingested),
+          ownershipVerified: false,
+          evidenceKind: provider === 'certifications' ? 'self-reported' : 'provider-observed'
+        };
     const connection = await persistence.connect(
       req.user._id,
       provider,
@@ -209,11 +229,15 @@ async function manualConnectProvider(req, res) {
         ownershipVerified: false,
         tokenExpiresAt: null,
         tokenType: 'Bearer',
-        scopes: ['public_profile'],
+        scopes: [resourceObservation ? 'public_resources' : 'public_profile'],
         metadata: {
-          profileScore: providerInsight.profileScore,
-          activityScore: providerInsight.activityScore,
-          totalSkillsDetected: providerInsight.inferredSkills.length
+          ...(resourceObservation
+            ? { resourceObservation }
+            : {
+                profileScore: providerInsight.profileScore,
+                activityScore: providerInsight.activityScore,
+                totalSkillsDetected: providerInsight.inferredSkills.length
+              })
         },
         lastSyncedAt: new Date()
       },
@@ -376,7 +400,10 @@ async function githubWebhook(req, res) {
 }
 async function getIntegrationInsights(req, res) {
   try {
-    return res.json(await insights.getIntegrationInsight(req.user._id));
+    return res.json({
+      ...(await insights.getIntegrationInsight(req.user._id)),
+      publicResources: await publicResources.getForUser(req.user._id)
+    });
   } catch {
     return res.status(500).json({ message: 'Failed to load integration insights.' });
   }

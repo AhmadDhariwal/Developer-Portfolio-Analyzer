@@ -4,6 +4,7 @@ const { randomUUID } = require('node:crypto');
 const Connection = require('../models/integrationConnection');
 const Insight = require('../models/integrationInsight');
 const Log = require('../models/integrationSyncLog');
+const LinkedProfile = require('../models/integrationLinkedProfile');
 const User = require('../models/user');
 const tokens = require('./integrationTokenService');
 const { integer } = require('./integrationGovernanceService');
@@ -67,7 +68,10 @@ function invalidate(owner) {
     }
   }
 }
+const isResourceSnapshot = (provider, metadata) =>
+  provider === 'kaggle' && metadata?.resourceObservation?.version === 'kaggle-resources-v1';
 async function commit(connection, providerInsight, metadata, refreshed = null) {
+  const resourceOnly = isResourceSnapshot(connection.provider, metadata);
   const result = await transaction(async (session) => {
     await ownerFence(connection.userId, session);
     const changed = await Connection.updateOne(
@@ -75,7 +79,12 @@ async function commit(connection, providerInsight, metadata, refreshed = null) {
       {
         $set: {
           status: 'connected',
-          metadata,
+          ...(resourceOnly
+            ? {
+                'metadata.resourceObservation': metadata.resourceObservation,
+                'metadata.resourceReason': metadata.reason
+              }
+            : { metadata }),
           lastSyncedAt: new Date(),
           nextSyncAt: new Date(
             Date.now() + integer('INTEGRATION_DEFAULT_SYNC_INTERVAL_MIN', 30, 1, 1440) * 60000
@@ -89,6 +98,8 @@ async function commit(connection, providerInsight, metadata, refreshed = null) {
       { session }
     );
     if (!changed.matchedCount) throw stale();
+    // Resource snapshots do not enter scored insights or scored sync-trend events.
+    if (resourceOnly) return null;
     const insight = await insights.upsertProviderInsight({
       userId: connection.userId,
       providerInsight,
@@ -111,7 +122,7 @@ async function commit(connection, providerInsight, metadata, refreshed = null) {
     return insight;
   });
   invalidate(connection.userId);
-  return result;
+  return resourceOnly ? insights.getIntegrationInsight(connection.userId) : result;
 }
 async function fail(connection, message, reason) {
   return transaction(async (session) => {
@@ -128,6 +139,8 @@ async function fail(connection, message, reason) {
       { session }
     );
     if (!result.matchedCount) return;
+    // Resource failures remain on the connection; never manufacture zero-score trend rows.
+    if (isResourceSnapshot(connection.provider, connection.metadata)) return;
     await Log.create(
       [
         {
@@ -195,6 +208,8 @@ async function consumeState(provider, state, owner) {
   ).lean();
 }
 async function connect(owner, provider, values, providerInsight = null, attempt = null) {
+  const resourceOnly = isResourceSnapshot(provider, values.metadata);
+  const { metadata, ...remaining } = values;
   const result = await transaction(async (session) => {
     await ownerFence(owner, session);
     const filter = { userId: owner, provider, ...(attempt ? { oauthAttempt: attempt } : {}) };
@@ -202,7 +217,9 @@ async function connect(owner, provider, values, providerInsight = null, attempt 
       filter,
       {
         $set: {
-          ...values,
+          ...(resourceOnly
+            ? { ...remaining, 'metadata.resourceObservation': metadata.resourceObservation }
+            : values),
           ...tokens.seal({ ...values, userId: owner, provider }),
           oauthState: '',
           oauthStateExpiresAt: null,
@@ -219,7 +236,8 @@ async function connect(owner, provider, values, providerInsight = null, attempt 
     // Reconnect must not display the previous account's insight while new ingestion is pending.
     if (providerInsight)
       await insights.upsertProviderInsight({ userId: owner, providerInsight, session });
-    else await insights.removeProviderInsight({ userId: owner, provider, session });
+    else if (!resourceOnly)
+      await insights.removeProviderInsight({ userId: owner, provider, session });
     return connection;
   });
   invalidate(owner);
@@ -256,7 +274,8 @@ async function disconnect(owner, provider) {
       },
       { session, returnDocument: 'before' }
     ).lean();
-    await insights.removeProviderInsight({ userId: owner, provider, session });
+    if (!isResourceSnapshot(provider, previous?.metadata))
+      await insights.removeProviderInsight({ userId: owner, provider, session });
   });
   invalidate(owner);
   return previous;
@@ -267,12 +286,14 @@ async function deleteAccount(owner, remove) {
     await Connection.deleteMany({ userId: owner }, { session });
     await Insight.deleteMany({ userId: owner }, { session });
     await Log.deleteMany({ userId: owner }, { session });
+    await LinkedProfile.deleteMany({ userId: owner }, { session });
     await remove(session);
   });
   invalidate(owner);
 }
 module.exports = {
   transaction,
+  ownerFence,
   claim,
   leaseFilter,
   commit,

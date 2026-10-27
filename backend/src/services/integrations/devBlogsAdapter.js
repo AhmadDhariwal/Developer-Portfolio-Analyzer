@@ -1,8 +1,7 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
 
 /**
- * Dev Blogs Adapter — bounded public Dev.to article observations.
- * Hashnode requires an approved paid API contract; Medium is not implemented.
+ * Bounded article observations from one explicitly selected source.
  */
 class DevBlogsAdapter extends BaseIntegrationAdapter {
   constructor() {
@@ -16,8 +15,7 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText:
-        'Use devto@username to fetch up to 30 public Dev.to articles, reactions, and tags. Hashnode requires approved Pro API access and is currently unavailable. Medium is not supported.'
+      helpText: 'Use devto@username for Dev.to. Each read observes at most 30 public posts.'
     };
   }
 
@@ -26,19 +24,22 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
     if (!identifier) {
       throw new Error('Blog username is required.');
     }
+    if (/^hashnode@/i.test(identifier)) {
+      throw new Error('Hashnode support has been retired. Historical data is preserved.');
+    }
     // Explicit selection avoids merging unrelated people who share a handle across platforms.
     // Legacy bare handles remain blocked rather than replacing a combined snapshot partially.
-    const selection = /^devto@([a-zA-Z0-9_.-]+)$/.exec(identifier);
+    const selection = /^(devto)@([a-zA-Z0-9_.-]+)$/.exec(identifier);
     if (!selection) {
-      throw new Error(
-        'Hashnode API access requires an approved Pro publication. Use devto@username for Dev.to only.'
-      );
+      throw new Error('Select devto@username. Legacy combined handles are unavailable.');
     }
-    const username = selection[1];
-    const devtoResult = await this.fetchDevTo(username);
-    if (devtoResult.failed) throw Error('Blog provider data unavailable.');
-    const articles = devtoResult.articles || [];
-    if (!articles.length) throw Error('No public Dev.to articles found.');
+    const source = selection[1];
+    const username = selection[2];
+    const result = await this.fetchDevTo(username);
+    if (result.failed) throw Error('Blog provider data unavailable.');
+    const articles = result.articles || [];
+    if (!articles.length)
+      throw Error('No public Dev.to articles found for this author in the observed sample.');
     const totalArticles = articles.length;
     const totalReactions = articles.reduce((sum, a) => sum + Number(a.reactions || 0), 0);
     const totalViews = articles.every((article) => Number.isFinite(article.views))
@@ -76,7 +77,7 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
       },
       activity: {
         topTags,
-        platforms: [...(devtoResult.articles?.length ? ['Dev.to'] : [])],
+        platforms: ['Dev.to'],
         recentArticles: articles.slice(0, 5).map((a) => ({
           title: a.title,
           reactions: a.reactions,
@@ -85,7 +86,7 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
         }))
       },
       inferredSkills: [...new Set(inferredSkills)].slice(0, 10),
-      raw: { devto: devtoResult }
+      raw: { [source]: result }
     };
   }
 
@@ -117,12 +118,6 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
     } catch {
       return { articles: [], failed: true };
     }
-  }
-
-  async fetchHashnode() {
-    // Free GraphQL reads were retired on 13 May 2026. Never follow its marketing redirect
-    // or switch to another endpoint to evade the paid publication requirement.
-    return { articles: [], failed: true, unavailable: true };
   }
 
   tagToSkill(tag) {

@@ -15,6 +15,7 @@ const User = require('../models/user');
 const JobCache = require('../models/jobCache');
 const { buildPublicProfilePayload } = require('./publicProfileService');
 const { getIntegrationInsight } = require('./integrationInsightService');
+const publicResources = require('./kaggleResourceObservationService');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const TOPIC_STOP_WORDS = new Set([
@@ -632,6 +633,7 @@ const summarizeIntegrationSignal = async (userId) => {
   return {
     present: providers.length > 0,
     usedProviders,
+    publicResources: await publicResources.getForUser(userId),
     integrationScore: clamp(insight.integrationScore || 0),
     strongestProof,
     weakProof,
@@ -1175,6 +1177,7 @@ const buildSignalsUsedSummary = ({
       liveLinkCount: Number(portfolioSignal.liveLinks || 0)
     },
     integrations: {
+      publicResources: integrationSignal.publicResources || [],
       providers: safeStrings(integrationSignal.usedProviders || [], 10),
       score: Number(integrationSignal.integrationScore || 0),
       strongestProof: safeStrings(integrationSignal.strongestProof || [], 4)

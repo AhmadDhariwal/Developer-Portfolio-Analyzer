@@ -319,6 +319,9 @@
     </div>
   </section>
 
+  <app-hackerrank-linked-profile />
+  <app-kaggle-linked-profile />
+
   <!-- ── Category Filter Tabs ──────────────────────────────────────────────── -->
   <nav class="filter-bar" aria-label="Integration categories">
     <div class="category-tabs" role="tablist">
@@ -482,7 +485,14 @@
               >Synced {{ item.lastSyncedAt | date: 'MMM d, HH:mm' }}</span
             >
           </div>
-          <div class="meta-live-badge" *ngIf="!isProviderUnavailable(item.provider)">
+          <p class="field-hint" *ngIf="item.resourceSummary">
+            Public sample: {{ item.resourceSummary.notebooks }} notebooks,
+            {{ item.resourceSummary.datasets }} datasets. Ownership unverified; scoring unchanged.
+          </p>
+          <div
+            class="meta-live-badge"
+            *ngIf="!isProviderUnavailable(item.provider) && item.provider !== 'kaggle'"
+          >
             <span class="live-dot"></span>
             <span>Real-time Ingestion Hook Active</span>
           </div>

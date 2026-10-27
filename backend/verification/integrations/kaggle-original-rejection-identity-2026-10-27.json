@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-10-27T11:50:11.166Z",
+  "publicAccount": "kaggle",
+  "config": {
+    "ok": true,
+    "missing": []
+  },
+  "requests": [
+    {
+      "endpoint": "https://api.kaggle.com/v1/datasets.DatasetApiService/ListDatasets",
+      "status": 200,
+      "contentType": "application/json",
+      "keys": ["datasets"],
+      "rowCount": 20,
+      "identitySamples": [
+        {
+          "id": 12284543,
+          "ref": "dmitriigluzdov/casmi26-pubchem-popularity-prior",
+          "title": "CASMI26 PubChem Popularity Prior",
+          "ownerRef": "dmitriigluzdov",
+          "ownerName": "Dmitrii Gluzdov",
+          "creatorName": "Dmitrii Gluzdov",
+          "creatorUrl": "dmitriigluzdov"
+        },
+        {
+          "id": 12631102,
+          "ref": "seyitkaangunes/ntl-extra-api-passages",
+          "title": "Name That LLM: Extra API Passages",
+          "ownerRef": "seyitkaangunes",
+          "ownerName": "Seyit kaan Gunes",
+          "creatorName": "Seyit kaan Gunes",
+          "creatorUrl": "seyitkaangunes"
+        },
+        {
+          "id": 12658362,
+          "ref": "prvsiyan/prvsiyans-extended-name-that-llm-dataset",
+          "title": "prvsiyan's Extended Name That LLM Dataset",
+          "ownerRef": "prvsiyan",
+          "ownerName": "prvsiyan",
+          "creatorName": "prvsiyan",
+          "creatorUrl": "prvsiyan"
+        },
+        {
+          "id": 12357722,
+          "ref": "heliosli/rsna-orthofoundation-fold0-epoch7-20261004",
+          "title": "RSNA OrthoFoundation Fold0 Epoch7 Private Weights",
+          "ownerRef": "heliosli",
+          "ownerName": "Heliosli",
+          "creatorName": "Heliosli",
+          "creatorUrl": "heliosli"
+        },
+        {
+          "id": 12294307,
+          "ref": "dmitriigluzdov/casmi26-fold-safe-fpnet",
+          "title": "CASMI26 Fold-Safe FPNet: Training and Checkpoints",
+          "ownerRef": "dmitriigluzdov",
+          "ownerName": "Dmitrii Gluzdov",
+          "creatorName": "Dmitrii Gluzdov",
+          "creatorUrl": "dmitriigluzdov"
+        }
+      ],
+      "returnedFieldNames": [
+        "id",
+        "ref",
+        "subtitle",
+        "creatorName",
+        "creatorUrl",
+        "totalBytes",
+        "url",
+        "lastUpdated",
+        "downloadCount",
+        "licenseName",
+        "ownerName",
+        "ownerRef",
+        "kernelCount",
+        "title",
+        "viewCount",
+        "voteCount",
+        "currentVersionNumber",
+        "usabilityRating",
+        "tags",
+        "thumbnailImageUrl"
+      ]
+    }
+  ],
+  "status": "BLOCKED",
+  "datasets": {
+    "status": "BLOCKED",
+    "classifiedStatus": 502,
+    "reason": "Kaggle resource attribution is unavailable."
+  }
+}

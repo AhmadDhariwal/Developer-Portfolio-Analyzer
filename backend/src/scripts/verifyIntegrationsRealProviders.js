@@ -607,13 +607,15 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    results.fatal = String(error.message).slice(0, 500);
-    process.exitCode = 1;
-  })
-  .finally(() => {
-    results.finishedAt = new Date().toISOString();
-    fs.writeFileSync(output, JSON.stringify(results, null, 2) + '\n');
-    console.log('Sanitized evidence: ' + output);
-  });
+if (require.main === module)
+  main()
+    .catch((error) => {
+      results.fatal = String(error.message).slice(0, 500);
+      process.exitCode = 1;
+    })
+    .finally(() => {
+      results.finishedAt = new Date().toISOString();
+      fs.writeFileSync(output, JSON.stringify(results, null, 2) + '\n');
+      console.log('Sanitized evidence: ' + output);
+    });
+module.exports = { startMongo };

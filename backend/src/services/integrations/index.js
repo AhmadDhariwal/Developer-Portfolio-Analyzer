@@ -7,6 +7,7 @@ const HackerRankAdapter = require('./hackerrankAdapter');
 const PortfolioScannerAdapter = require('./portfolioScannerAdapter');
 const CertificationsAdapter = require('./certificationsAdapter');
 const DevBlogsAdapter = require('./devBlogsAdapter');
+const kaggleResources = require('./kaggleResources');
 
 const ADAPTERS = {
   github: new GitHubAdapter(),
@@ -31,7 +32,8 @@ const marketplace = [
   {
     provider: 'linkedin',
     name: 'LinkedIn',
-    description: 'Import headline, endorsements, and networking signals.',
+    description:
+      'Connect LinkedIn OpenID basic profile and optional email claims. Endorsements and network analytics are unavailable.',
     category: 'Professional Network',
     authMode: 'oauth2'
   },
@@ -51,9 +53,15 @@ const marketplace = [
   },
   {
     provider: 'kaggle',
-    name: 'Kaggle',
-    description:
-      'Profile ingestion is unavailable until a documented Kaggle profile API and authorized access are configured.',
+    name: 'Kaggle Resources',
+    get available() {
+      return kaggleResources.validateConfig().ok;
+    },
+    get description() {
+      return this.available
+        ? 'Observe up to 20 public notebooks and 20 datasets per sync. Ownership unverified; no scoring impact. Counts describe a sample.'
+        : 'Configure KAGGLE_API_TOKEN to observe public resources. The separate Kaggle Linked Profile remains available.';
+    },
     category: 'Data Science',
     authMode: 'manual'
   },
@@ -70,7 +78,7 @@ const marketplace = [
     provider: 'hackerrank',
     name: 'HackerRank',
     description:
-      'Public developer profile ingestion is unavailable because no supported HackerRank profile API is configured.',
+      'Statistics ingestion is unavailable. Use the separate HackerRank Linked Profile form to save an unverified reference with no scoring impact.',
     category: 'Practice Platform',
     authMode: 'manual'
   },
@@ -92,8 +100,7 @@ const marketplace = [
   {
     provider: 'devblogs',
     name: 'Dev.to',
-    description:
-      'Observe up to 30 public Dev.to articles with devto@username. Hashnode is unavailable pending authorized Pro API access.',
+    description: 'Observe up to 30 public Dev.to articles with devto@username.',
     category: 'Content & Branding',
     authMode: 'manual'
   }
