@@ -845,13 +845,14 @@
 // ── Responsive Market Grid ────────────────────────────────────────────────
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
   width: 100%;
 }
 
 // ── Integration Card (Zero Fluctuation, Light/Dark adaptive) ──────────────
 .integration-card {
+  min-width: 0;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 16px;
@@ -1198,7 +1199,8 @@
 
 // ── Secondary Action Zone (Kaggle Fallback) ──────────────────────────────
 .card-secondary-zone {
-  margin-top: 0.25rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.5rem;
   width: 100%;
 }
 
@@ -1757,7 +1759,7 @@
   }
 
   .market-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

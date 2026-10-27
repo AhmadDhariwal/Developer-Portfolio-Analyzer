@@ -184,6 +184,12 @@ async function manualConnectProvider(req, res) {
     if (!identifier || identifier.length > (provider === 'certifications' ? 1000 : 300))
       return res.status(400).json({ message: 'Invalid manual connection value.' });
     if (
+      provider === 'portfolio' &&
+      /^[a-z][a-z0-9+.-]*:\/\//i.test(identifier) &&
+      !/^https?:\/\//i.test(identifier)
+    )
+      return res.status(400).json({ message: 'Portfolio URL must use http or https.' });
+    if (
       !['portfolio', 'certifications'].includes(provider) &&
       !/^[a-zA-Z0-9][a-zA-Z0-9_.@\- ]{0,99}$/.test(identifier)
     )

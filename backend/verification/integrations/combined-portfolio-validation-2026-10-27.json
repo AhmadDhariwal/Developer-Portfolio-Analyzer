@@ -1,0 +1,25 @@
+{
+  "startedAt": "2026-10-27T16:36:21.954Z",
+  "applicationDatabaseUsed": false,
+  "api": [
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/manual/connect",
+      "status": 400
+    }
+  ],
+  "externalRequests": [],
+  "snapshots": [],
+  "unsupportedPortfolioUrl": {
+    "status": 400,
+    "connectionRows": 0,
+    "message": "Portfolio URL must use http or https."
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 395,
+    "productionDataUsed": false
+  },
+  "finishedAt": "2026-10-27T16:37:26.600Z"
+}

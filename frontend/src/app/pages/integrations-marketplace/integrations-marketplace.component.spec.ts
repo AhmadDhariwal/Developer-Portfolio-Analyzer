@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { IntegrationsMarketplaceComponent } from './integrations-marketplace.component';
 import {
   IntegrationsService,
@@ -91,6 +91,46 @@ describe('IntegrationsMarketplaceComponent', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('does not advertise unmeasured score lifts, latency, TLS status or verified LinkedIn names', () => {
+    const fixture = mount();
+    const text = fixture.nativeElement.textContent;
+    for (const unsupported of [
+      '+15%',
+      '+18%',
+      '+320',
+      '12ms',
+      'TLS 1.3',
+      'Verified name & email',
+      'Zero credential storage',
+    ]) {
+      expect(text).not.toContain(unsupported);
+    }
+    expect(text).toContain('Not measured');
+    expect(text).toContain('Name and optional email claims');
+    expect(
+      fixture.componentInstance.terminalLogs.some((row) =>
+        row.message.includes('Monitoring supported platform connector interfaces'),
+      ),
+    ).toBe(false);
+  });
+
+  it('shows real pending sync state and restores controls after a backend error', () => {
+    const pending = new Subject<any>();
+    serviceMock.syncNow.mockReturnValue(pending);
+    const fixture = mount();
+    fixture.nativeElement.querySelector('.sync-all-btn').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Syncing All…');
+    expect(fixture.nativeElement.querySelector('.sync-all-btn').disabled).toBe(true);
+    pending.error({ error: { message: 'Integration controls temporarily unavailable.' } });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Integration controls temporarily unavailable.',
+    );
+    expect(fixture.componentInstance.syncAllLoading).toBe(false);
+    expect(fixture.nativeElement.querySelector('.sync-all-btn').disabled).toBe(false);
+  });
 
   it('creates the component and loads initial telemetry and marketplace items', () => {
     const fixture = mount();

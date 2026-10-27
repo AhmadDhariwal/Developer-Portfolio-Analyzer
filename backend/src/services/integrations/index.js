@@ -77,7 +77,8 @@ const marketplace = [
   {
     provider: 'portfolio',
     name: 'Portfolio Website',
-    description: 'Scan your portfolio URL for technologies, SEO signals, and performance metrics.',
+    description:
+      'Observe public HTML, technology hints, SEO metadata and request timing. Scores are heuristic, not a browser performance audit.',
     category: 'Personal Branding',
     authMode: 'manual'
   },

@@ -62,7 +62,8 @@ test('missing OAuth state cannot reach token exchange', async () => {
 test('manual validation rejects unsupported providers and malformed handles', async () => {
   for (const [provider, externalUsername] of [
     ['unknown', 'fixture'],
-    ['leetcode', '<script>']
+    ['leetcode', '<script>'],
+    ['portfolio', 'ftp://example.com']
   ]) {
     const res = response();
     await controller.manualConnectProvider(

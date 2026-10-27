@@ -52,6 +52,18 @@ test('marketplace exposes expected providers', () => {
   });
 });
 
+test('Marketplace capability descriptions distinguish LinkedIn claims and Portfolio heuristics', () => {
+  const linkedin = marketplace.find((item) => item.provider === 'linkedin');
+  const portfolio = marketplace.find((item) => item.provider === 'portfolio');
+  assert.match(linkedin.description, /OpenID basic profile/);
+  assert.match(linkedin.description, /Endorsements and network analytics are unavailable/);
+  assert.match(portfolio.description, /Scores are heuristic, not a browser performance audit/);
+  assert.match(
+    getAdapter('portfolio').getManualAuthHints().helpText,
+    /not a browser responsiveness or performance audit/
+  );
+});
+
 test('oauth providers expose oauth2 auth mode', () => {
   const github = getAdapter('github');
   const linkedin = getAdapter('linkedin');

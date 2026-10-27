@@ -43,7 +43,7 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     return {
       requiredFields: ['externalUsername'],
       helpText:
-        'Enter your portfolio website URL (e.g. https://yourname.dev) to scan technologies, responsiveness, and SEO signals.'
+        'Enter a public portfolio URL to observe HTML technology hints, SEO metadata and request timing. This is not a browser responsiveness or performance audit.'
     };
   }
 
