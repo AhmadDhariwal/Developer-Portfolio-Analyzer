@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { finalize } from 'rxjs/operators';
-import { HackerRankLinkedProfileComponent } from './components/hackerrank-linked-profile.component';
 import { KaggleLinkedProfileComponent } from './components/kaggle-linked-profile.component';
 import {
   IntegrationsService,
@@ -40,8 +39,8 @@ const PROVIDER_META: Record<
     categoryGroup: 'community',
     inputLabel: '',
     inputPlaceholder: '',
-    inputHint: 'Secure OAuth2 access for tenure and endorsements',
-    impact: ['Career tenure verification', 'Network authority', 'Recruiter visibility'],
+    inputHint: 'Secure OAuth2 OpenID Connect for verified basic profile identity',
+    impact: ['OpenID profile identity', 'Basic profile claims', 'Verified name & email'],
   },
   leetcode: {
     icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>`,
@@ -50,16 +49,16 @@ const PROVIDER_META: Record<
     inputLabel: 'LeetCode Username',
     inputPlaceholder: 'your-leetcode-username',
     inputHint: 'Extracts contest percentile, difficulty split and streaks',
-    impact: ['DSA & Algo score', 'Contest percentile', 'Interview readiness'],
+    impact: ['DSA & Algo problem counts', 'Difficulty distribution', 'Contest ranking'],
   },
   kaggle: {
     icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.825 23.859c-.022.092-.117.141-.281.141h-3.139c-.187 0-.351-.082-.492-.248l-5.178-6.589-1.448 1.374v5.111c0 .235-.117.352-.351.352H5.505c-.236 0-.354-.117-.354-.352V.353c0-.233.118-.353.354-.353h2.431c.234 0 .351.12.351.353v14.343l6.203-6.272c.165-.165.33-.246.495-.246h3.239c.144 0 .236.06.285.18.046.149.034.255-.036.315l-6.555 6.344 6.836 8.507c.095.104.117.208.07.336z"/></svg>`,
     color: '#20beff',
-    categoryGroup: 'knowledge',
+    categoryGroup: 'algo',
     inputLabel: 'Kaggle Username',
     inputPlaceholder: 'your-kaggle-username',
     inputHint: 'Public resource samples only. Ownership unverified; no scoring impact.',
-    impact: ['Public resource observations', 'No scoring impact'],
+    impact: ['Public resource observations', 'Notebook & dataset samples'],
   },
   stackoverflow: {
     icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.986 21.865v-6.404h2.134V24H1.844v-8.539h2.13v6.404h15.012zM6.111 19.731H16.85v-2.137H6.111v2.137zm.259-4.852 10.48 2.189.451-2.07-10.478-2.187-.453 2.068zm1.359-5.056 9.705 4.53.903-1.95-9.706-4.53-.902 1.95zm2.715-4.785 8.217 6.855 1.359-1.62-8.216-6.853-1.36 1.618zM15.751 0l-1.746 1.294 6.405 8.604 1.746-1.294L15.751 0z"/></svg>`,
@@ -68,16 +67,7 @@ const PROVIDER_META: Record<
     inputLabel: 'Stack Overflow User ID',
     inputPlaceholder: 'numeric user ID (e.g. 123456)',
     inputHint: 'Found in your profile URL (stackoverflow.com/users/ID/name)',
-    impact: ['Backend authority', 'Accepted answers score', 'Community credibility'],
-  },
-  hackerrank: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c1.285 0 9.75 4.886 10.392 6 .645 1.115.645 10.885 0 12S13.287 24 12 24C10.715 24 2.25 19.114 1.608 18 .963 16.886.963 7.116 1.608 6 2.25 4.886 10.715 0 12 0zm-1.24 7.666c-.2.022-.43.088-.61.22-.18.13-.28.31-.28.51v.67c0 .2.1.38.28.51.18.13.41.2.61.22h.48v1.33h-1.33c-.2 0-.38.1-.51.28-.13.18-.2.41-.22.61v.48c.02.2.09.43.22.61.13.18.31.28.51.28h1.33v1.33h-.48c-.2.02-.43.09-.61.22-.18.13-.28.31-.28.51v.67c0 .2.1.38.28.51.18.13.41.2.61.22h3.33c.2-.02.43-.09.61-.22.18-.13.28-.31.28-.51v-.67c0-.2-.1-.38-.28-.51-.18-.13-.41-.2-.61-.22h-.48v-4.67h.48c.2-.02.43-.09.61-.22.18-.13.28-.31.28-.51v-.67c0-.2-.1-.38-.28-.51-.18-.13-.41-.2-.61-.22h-3.33z"/></svg>`,
-    color: '#2ec866',
-    categoryGroup: 'algo',
-    inputLabel: 'HackerRank Username',
-    inputPlaceholder: 'your-hackerrank-username',
-    inputHint: 'Unavailable: no supported public developer-profile API',
-    impact: ['Profile ingestion unavailable'],
+    impact: ['Reputation & badge metrics', 'Top discussion tags', 'Answers & questions'],
   },
   portfolio: {
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
@@ -85,8 +75,8 @@ const PROVIDER_META: Record<
     categoryGroup: 'code',
     inputLabel: 'Portfolio Site URL',
     inputPlaceholder: 'https://yourportfolio.dev',
-    inputHint: 'Live DOM, Lighthouse, and tech stack detection',
-    impact: ['Lighthouse performance', 'Frontend architecture', 'SEO verification'],
+    inputHint: 'HTML scan, response latency, and tech stack detection',
+    impact: ['Tech stack detection', 'Response latency check', 'SEO metadata signals'],
   },
   certifications: {
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
@@ -94,17 +84,17 @@ const PROVIDER_META: Record<
     categoryGroup: 'knowledge',
     inputLabel: 'Certifications (comma-separated)',
     inputPlaceholder: 'AWS Solutions Architect, Google Cloud Professional',
-    inputHint: 'Separate multiple certifications with commas',
-    impact: ['Cloud credibility', 'Architecture mastery', 'Role readiness'],
+    inputHint: 'Self-reported certification names (comma-separated). Unverified.',
+    impact: ['Self-reported credentials', 'Inferred domain skills', 'Certification catalog'],
   },
   devblogs: {
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
     color: '#fb7185',
     categoryGroup: 'knowledge',
-    inputLabel: 'Blog Source and Username',
+    inputLabel: 'Dev.to Username',
     inputPlaceholder: 'devto@your-handle',
     inputHint: 'Use devto@username. Up to 30 public Dev.to posts per read.',
-    impact: ['Technical thought leadership', 'System design writing', 'Community presence'],
+    impact: ['Technical thought leadership', 'Article publication history', 'Reaction signals'],
   },
 };
 
@@ -117,12 +107,7 @@ export interface IngestionLogEntry {
 @Component({
   selector: 'app-integrations-marketplace',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    HackerRankLinkedProfileComponent,
-    KaggleLinkedProfileComponent,
-  ],
+  imports: [CommonModule, FormsModule, KaggleLinkedProfileComponent],
   templateUrl: './integrations-marketplace.component.html',
   styleUrl: './integrations-marketplace.component.scss',
 })
@@ -142,7 +127,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     {
       time: '12:00:01',
       level: 'info',
-      message: 'Ingestion daemon initialized. Monitoring 9 platform connector interfaces.',
+      message: 'Ingestion daemon initialized. Monitoring supported platform connector interfaces.',
     },
     {
       time: '12:00:04',
@@ -299,7 +284,29 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
-          this.integrations = Array.isArray(res?.integrations) ? res.integrations : [];
+          const raw = Array.isArray(res?.integrations) ? res.integrations : [];
+          // Retire HackerRank (no supported stats ingestion) and ensure clean Dev.to / LinkedIn metadata
+          this.integrations = raw
+            .filter((item) => item.provider !== 'hackerrank')
+            .map((item) => {
+              if (item.provider === 'devblogs') {
+                return {
+                  ...item,
+                  name: 'Dev.to',
+                  description:
+                    item.description?.replace(/Hashnode/gi, 'Dev.to') || item.description,
+                };
+              }
+              if (item.provider === 'linkedin') {
+                return {
+                  ...item,
+                  description:
+                    'Connect LinkedIn OpenID basic profile and optional email claims. Endorsements and network analytics are unavailable.',
+                };
+              }
+              return item;
+            });
+
           this.integrations.forEach((item) => {
             if (!this.manualUsername[item.provider]) {
               this.manualUsername[item.provider] = item.externalUsername || '';
@@ -553,13 +560,17 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     return Math.round((connected / list.length) * 100);
   }
 
+  getCategoryTotal(group: 'code' | 'algo' | 'community' | 'knowledge'): number {
+    return this.integrations.filter((item) => PROVIDER_META[item.provider]?.categoryGroup === group)
+      .length;
+  }
+
   // ── UI helpers ────────────────────────────────────────────────────────
 
   isProviderUnavailable(provider: string): boolean {
     return (
-      provider === 'hackerrank' ||
-      (provider === 'kaggle' &&
-        this.integrations.find((item) => item.provider === provider)?.available !== true)
+      provider === 'kaggle' &&
+      this.integrations.find((item) => item.provider === provider)?.available !== true
     );
   }
 

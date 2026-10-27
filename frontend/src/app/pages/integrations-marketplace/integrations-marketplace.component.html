@@ -204,6 +204,19 @@
             ></div>
           </div>
         </div>
+
+        <div class="mix-row">
+          <div class="mix-info">
+            <span>Certs & Writing</span>
+            <span class="mix-val text-amber">{{ getCategoryStats('knowledge') }}</span>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill progress-fill--amber"
+              [style.width.%]="getCategoryPercent('knowledge')"
+            ></div>
+          </div>
+        </div>
       </div>
 
       <div class="card-foot">
@@ -238,11 +251,11 @@
       <div class="impact-bullets">
         <div class="impact-bullet">
           <span class="bullet-dot bullet-dot--cyan"></span>
-          <span>Feeds AI recommendations & verified skill graph</span>
+          <span>Feeds AI recommendations & developer signal graph</span>
         </div>
         <div class="impact-bullet">
           <span class="bullet-dot bullet-dot--mint"></span>
-          <span>Recruiter radar visibility amplified per verified node</span>
+          <span>Recruiter radar visibility amplified per connected node</span>
         </div>
       </div>
     </article>
@@ -319,9 +332,6 @@
     </div>
   </section>
 
-  <app-hackerrank-linked-profile />
-  <app-kaggle-linked-profile />
-
   <!-- ── Category Filter Tabs ──────────────────────────────────────────────── -->
   <nav class="filter-bar" aria-label="Integration categories">
     <div class="category-tabs" role="tablist">
@@ -350,7 +360,7 @@
         [class.active]="activeCategory === 'code'"
         (click)="activeCategory = 'code'"
       >
-        Code & Repos
+        Code & Repos ({{ getCategoryTotal('code') }})
       </button>
 
       <button
@@ -359,7 +369,7 @@
         [class.active]="activeCategory === 'algo'"
         (click)="activeCategory = 'algo'"
       >
-        Competitive & Algo
+        Competitive & Algo ({{ getCategoryTotal('algo') }})
       </button>
 
       <button
@@ -368,7 +378,7 @@
         [class.active]="activeCategory === 'community'"
         (click)="activeCategory = 'community'"
       >
-        Community & Authority
+        Community & Authority ({{ getCategoryTotal('community') }})
       </button>
 
       <button
@@ -377,7 +387,7 @@
         [class.active]="activeCategory === 'knowledge'"
         (click)="activeCategory = 'knowledge'"
       >
-        Certs & Writing
+        Certs & Writing ({{ getCategoryTotal('knowledge') }})
       </button>
     </div>
 
@@ -494,7 +504,11 @@
             *ngIf="!isProviderUnavailable(item.provider) && item.provider !== 'kaggle'"
           >
             <span class="live-dot"></span>
-            <span>Real-time Ingestion Hook Active</span>
+            <span>{{
+              item.provider === 'github'
+                ? 'Webhook & Live Ingestion Active'
+                : 'On-Demand Ingestion Synced'
+            }}</span>
           </div>
         </div>
 
@@ -546,6 +560,11 @@
             }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Secondary Action for Kaggle: Linked Profile Fallback inside card -->
+      <div class="card-secondary-zone" *ngIf="item.provider === 'kaggle'">
+        <app-kaggle-linked-profile />
       </div>
 
       <!-- Action Footer (Anchored to Bottom) -->

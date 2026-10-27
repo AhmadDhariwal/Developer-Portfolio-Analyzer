@@ -1,0 +1,166 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.card-fallback-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface-container-low, rgba(15, 23, 42, 0.45));
+  border: 1px dashed var(--border-color, rgba(148, 163, 184, 0.25));
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #94a3b8);
+  box-sizing: border-box;
+
+  .fallback-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .fallback-title-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      color: var(--text-primary, #e2e8f0);
+
+      .fallback-icon {
+        color: var(--secondary, #53ddfc);
+      }
+    }
+
+    .ownership-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted, #94a3b8);
+      background: var(--surface-container-highest, rgba(255, 255, 255, 0.06));
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  .fallback-note {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 0.72rem;
+    color: var(--text-muted, #64748b);
+  }
+
+  .saved-profile {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .profile-link {
+      color: var(--primary, #38bdf8);
+      text-decoration: none;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .unverified-note {
+      font-size: 0.68rem;
+      color: var(--text-muted, #64748b);
+    }
+  }
+
+  .fallback-form {
+    margin: 0;
+  }
+
+  .fallback-input-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+
+    input {
+      flex: 1 1 140px;
+      min-width: 0;
+      background: var(--surface-container-lowest, rgba(0, 0, 0, 0.3));
+      border: 1px solid var(--border-color, rgba(148, 163, 184, 0.25));
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: var(--text-primary, #e2e8f0);
+      font-size: 0.74rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: var(--secondary, #53ddfc);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: var(--text-muted, #64748b);
+      }
+    }
+
+    .fallback-btn-group {
+      display: inline-flex;
+      gap: 0.35rem;
+    }
+
+    button {
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+    }
+
+    .btn-fallback-save {
+      background: var(--surface-container-highest, rgba(255, 255, 255, 0.1));
+      color: var(--text-primary, #e2e8f0);
+      border-color: var(--border-color, rgba(148, 163, 184, 0.25));
+
+      &:hover:not(:disabled) {
+        background: var(--color-primary-soft, rgba(79, 70, 229, 0.2));
+        border-color: var(--primary, #818cf8);
+        color: #ffffff;
+      }
+    }
+
+    .btn-fallback-remove {
+      background: transparent;
+      color: var(--color-danger, #f87171);
+      border-color: rgba(248, 113, 113, 0.3);
+
+      &:hover:not(:disabled) {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+    }
+  }
+
+  .fallback-error {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--color-danger, #ef4444);
+  }
+}

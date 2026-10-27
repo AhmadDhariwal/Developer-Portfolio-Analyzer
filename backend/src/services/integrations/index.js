@@ -75,14 +75,6 @@ const marketplace = [
     authMode: 'manual'
   },
   {
-    provider: 'hackerrank',
-    name: 'HackerRank',
-    description:
-      'Statistics ingestion is unavailable. Use the separate HackerRank Linked Profile form to save an unverified reference with no scoring impact.',
-    category: 'Practice Platform',
-    authMode: 'manual'
-  },
-  {
     provider: 'portfolio',
     name: 'Portfolio Website',
     description: 'Scan your portfolio URL for technologies, SEO signals, and performance metrics.',

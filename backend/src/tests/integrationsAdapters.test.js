@@ -41,7 +41,6 @@ test('marketplace exposes expected providers', () => {
     'certifications',
     'devblogs',
     'github',
-    'hackerrank',
     'kaggle',
     'leetcode',
     'linkedin',
@@ -174,7 +173,10 @@ test('legacy combined blog handles fail closed before API calls', async (t) => {
     adapter.get = originalGet;
   });
   for (const externalUsername of ['swyx', 'medium@swyx'])
-    await assert.rejects(adapter.ingestData({ externalUsername }), /approved Pro publication/);
+    await assert.rejects(
+      adapter.ingestData({ externalUsername }),
+      /Legacy combined handles are unavailable/
+    );
 });
 
 test('Kaggle does not invent skills absent from the provider response', async (t) => {

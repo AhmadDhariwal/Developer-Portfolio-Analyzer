@@ -12,7 +12,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './kaggle-linked-profile.component.html',
-  styleUrl: './hackerrank-linked-profile.component.scss',
+  styleUrl: './kaggle-linked-profile.component.scss',
 })
 export class KaggleLinkedProfileComponent implements OnInit {
   profile: KaggleLinkedProfile | null = null;

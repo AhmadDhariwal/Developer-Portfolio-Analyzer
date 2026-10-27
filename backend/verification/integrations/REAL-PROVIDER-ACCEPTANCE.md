@@ -1,5 +1,11 @@
 # Real Provider Acceptance — Integrations
 
+## Latest functional acceptance — 27 October 2026
+
+**PASS for the six supported local workflows using retained real-source evidence plus bounded gap checks; GitHub/LinkedIn OAuth remain BLOCKED; production not certified.** Two new requests ran (one Dev.to article page and one Stack Exchange user metadata read). All other successful provider reads were reused. Current isolated API/downstream/Marketplace, Mongo owner/concurrency/disconnect, background sync and real Upstash admission/cache checks passed. Fixed only Dashboard's invented scored analytics for a resource-only Kaggle connection, preserving genuine historical scored cards and every scoring formula.
+
+[Full provider matrix, live/replay/mocked boundaries, source limitations, operator actions and exact inventory](FUNCTIONAL-ACCEPTANCE-2026-10-27.md). Standard application-cache operations sometimes exceeded the existing 150ms timeout and used fallback, so shared-cache production performance remains uncertified. No frontend source, credentials, existing accounts or production data were changed. Historical reports below remain retained in their original scope.
+
 ## Latest final completion review — 27 October 2026
 
 Local infrastructure and fixes PASS; full OAuth/production acceptance BLOCKED. Durable local token keyring initialized only after the actual application database audit found zero stored credentials; fresh-process readback passed. Mongo transactions, all nine declared integration indexes and Redis PING passed without data/index mutations. Hashnode active support is retired per the product decision; Dev.to/history and six accepted workflows remain preserved, including non-scoring Kaggle resources. LinkedIn opaque-state callback dispatch and Marketplace claims were corrected. No live provider acceptance was repeated.

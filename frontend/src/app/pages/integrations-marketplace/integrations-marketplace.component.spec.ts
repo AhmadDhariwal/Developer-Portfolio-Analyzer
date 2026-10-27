@@ -177,7 +177,7 @@ describe('IntegrationsMarketplaceComponent', () => {
     expect(serviceMock.disconnect).toHaveBeenCalledWith('github');
   });
 
-  it('disables unavailable providers while retaining disconnect and independent Dev.to input', () => {
+  it('retires HackerRank active card while retaining disconnect, and supports independent Dev.to input', () => {
     const items: IntegrationMarketplaceItem[] = [
       { ...mockIntegrations[1], provider: 'kaggle', name: 'Kaggle' },
       { ...mockIntegrations[0], provider: 'hackerrank', name: 'HackerRank', authMode: 'manual' },
@@ -187,25 +187,57 @@ describe('IntegrationsMarketplaceComponent', () => {
     const fixture = mount();
     const comp = fixture.componentInstance;
     const root: HTMLElement = fixture.nativeElement;
+
+    // HackerRank is retired from active marketplace cards and prominent form
+    expect(comp.integrations.some((i) => i.provider === 'hackerrank')).toBe(false);
+    expect(root.querySelector('app-hackerrank-linked-profile')).toBeNull();
+    expect(root.querySelector('#input-hackerrank')).toBeNull();
+
+    // Kaggle includes its fallback inside the card
     expect(root.querySelector('#input-kaggle')).toBeNull();
+    expect(root.querySelector('app-kaggle-linked-profile')).not.toBeNull();
+    expect(root.querySelector<HTMLButtonElement>('.connect-btn')?.disabled).toBe(true);
+
+    // Dev.to input
     expect(root.querySelector('#input-devblogs')?.getAttribute('placeholder')).toBe(
       'devto@your-handle',
     );
     expect(root.textContent).not.toContain('Dev.to or Hashnode');
-    expect(root.querySelector<HTMLButtonElement>('.connect-btn')?.disabled).toBe(true);
-    expect(root.querySelector<HTMLButtonElement>('.sync-btn')?.disabled).toBe(true);
-    expect(root.querySelector<HTMLButtonElement>('.disconnect-btn')?.disabled).toBe(false);
-    expect(root.textContent?.match(/Unavailable/g)?.length).toBe(2);
+    expect(root.textContent?.match(/Unavailable/g)?.length).toBe(1);
+
     comp.connect(items[0]);
     comp.manualConnect(items[0]);
-    comp.runIngestion('hackerrank');
     expect(serviceMock.manualConnect).not.toHaveBeenCalled();
-    expect(serviceMock.syncNow).not.toHaveBeenCalled();
+
     comp.manualUsername.devblogs = 'devto@swyx';
     comp.manualConnect(items[2]);
     expect(serviceMock.manualConnect).toHaveBeenCalledWith('devblogs', 'devto@swyx', '');
+
+    // Disconnecting a historical connection is safely supported
     comp.disconnect(items[1]);
     expect(serviceMock.disconnect).toHaveBeenCalledWith('hackerrank');
+  });
+
+  it('corrects LinkedIn descriptions to state OpenID claims without misleading endorsements', () => {
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+    const linkedinItem = comp.integrations.find((item) => item.provider === 'linkedin')!;
+    expect(linkedinItem.description).toContain('OpenID basic profile');
+    expect(linkedinItem.description).toContain(
+      'Endorsements and network analytics are unavailable',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('tenure and endorsements');
+  });
+
+  it('calculates category totals and platform counts dynamically', () => {
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+    expect(comp.getCategoryTotal('code')).toBe(1);
+    expect(comp.getCategoryTotal('algo')).toBe(1);
+    expect(comp.getCategoryTotal('community')).toBe(2);
+    expect(comp.getCategoryTotal('knowledge')).toBe(0);
+    expect(comp.integrations.length).toBe(4);
+    expect(comp.connectedCount).toBe(1);
   });
 
   it('offers Dev.to without active Hashnode configuration', () => {
