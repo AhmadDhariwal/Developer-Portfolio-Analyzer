@@ -208,7 +208,10 @@ async function manualConnectProvider(req, res) {
     let ingested;
     try {
       ingested = await governance.run(req.user._id, async () => {
-        const data = await adapter.ingestData(candidate);
+        const data = await require('../services/integrationPublicSnapshotService').ingest(
+          adapter,
+          candidate
+        );
         governance.assertActive();
         return data;
       });

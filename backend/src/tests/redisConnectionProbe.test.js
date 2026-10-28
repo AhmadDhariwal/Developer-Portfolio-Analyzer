@@ -5,6 +5,50 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 
+test('cache shutdown tolerates a socket closing during QUIT and awaits disconnect failures', async () => {
+  const filename = path.resolve(__dirname, '../services/redisCacheService.js');
+  const previous = process.env.REDIS_URL;
+  process.env.REDIS_URL = 'redis://fixture.invalid';
+  let instance;
+  let disconnects = 0;
+  class Client extends EventEmitter {
+    isOpen = true;
+    isReady = true;
+    async connect() {
+      this.emit('ready');
+    }
+    async quit() {
+      this.isOpen = false;
+      throw Error('Socket closed during QUIT');
+    }
+    async disconnect() {
+      disconnects++;
+      this.isOpen = false;
+      throw Error('Client already closed');
+    }
+  }
+  const unit = new Module(filename, module);
+  unit.filename = filename;
+  unit.paths = Module._nodeModulePaths(path.dirname(filename));
+  const original = unit.require.bind(unit);
+  unit.require = (name) =>
+    name === 'redis' ? { createClient: () => (instance = new Client()) } : original(name);
+  unit._compile(fs.readFileSync(filename, 'utf8'), filename);
+  try {
+    await unit.exports.initRedisCache({ silent: true, probeOnly: true });
+    await assert.doesNotReject(unit.exports.closeRedisCache());
+    assert.equal(disconnects, 0);
+    await unit.exports.initRedisCache({ silent: true, probeOnly: true });
+    instance.isReady = false;
+    await assert.doesNotReject(unit.exports.closeRedisCache());
+    assert.equal(disconnects, 1);
+  } finally {
+    await unit.exports.closeRedisCache();
+    if (previous === undefined) delete process.env.REDIS_URL;
+    else process.env.REDIS_URL = previous;
+  }
+});
+
 test('read-only probes skip revision writes; ordinary startup still initializes revisions', async () => {
   const filename = path.resolve(__dirname, '../services/redisCacheService.js');
   const previous = process.env.REDIS_URL;

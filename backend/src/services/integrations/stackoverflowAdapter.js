@@ -99,7 +99,8 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         (u) => String(u.display_name || '').toLowerCase() === username.toLowerCase()
       );
       return String((exact || items[0]).user_id);
-    } catch {
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
       throw Error('Stack Overflow request failed.');
     }
   }
@@ -111,7 +112,8 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         null
       );
       return data?.items?.[0] || null;
-    } catch {
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
       throw Error('Stack Overflow request failed.');
     }
   }
@@ -123,7 +125,8 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         null
       );
       return data?.items || [];
-    } catch {
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
       throw Error('Stack Overflow request failed.');
     }
   }
@@ -135,7 +138,8 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         null
       );
       return data?.items || [];
-    } catch {
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
       throw Error('Stack Overflow request failed.');
     }
   }

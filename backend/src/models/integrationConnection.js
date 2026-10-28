@@ -87,5 +87,6 @@ const integrationConnectionSchema = new mongoose.Schema(
 );
 
 integrationConnectionSchema.index({ userId: 1, provider: 1 }, { unique: true });
+integrationConnectionSchema.index({ status: 1, nextSyncAt: 1 }, { name: 'integration_due_poll' });
 
 module.exports = mongoose.model('IntegrationConnection', integrationConnectionSchema);
