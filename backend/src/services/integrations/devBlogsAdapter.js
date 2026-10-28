@@ -115,7 +115,8 @@ class DevBlogsAdapter extends BaseIntegrationAdapter {
           platform: 'Dev.to'
         }))
       };
-    } catch {
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
       return { articles: [], failed: true };
     }
   }

@@ -204,11 +204,20 @@ async function manualConnectProvider(req, res) {
       refreshToken: '',
       status: 'connected'
     };
+    const reused = await persistence.reuseFreshManual(req.user._id, provider, candidate);
+    if (reused)
+      return res.json({
+        message: `${provider} is already connected to this fresh public profile.`,
+        connection: { provider, status: reused.status, externalUsername: reused.externalUsername }
+      });
     const operation = await persistence.beginManual(req.user._id, provider);
     let ingested;
     try {
       ingested = await governance.run(req.user._id, async () => {
-        const data = await adapter.ingestData(candidate);
+        const data = await require('../services/integrationPublicSnapshotService').ingest(
+          adapter,
+          candidate
+        );
         governance.assertActive();
         return data;
       });

@@ -176,22 +176,84 @@ async function start(owner, provider, state, redirect) {
   });
 }
 async function beginManual(owner, provider) {
-  return transaction(async (session) => {
-    await ownerFence(owner, session);
-    return Connection.findOneAndUpdate(
-      { userId: owner, provider },
-      {
-        $set: {
-          oauthState: '',
-          oauthStateExpiresAt: null,
-          oauthAttempt: randomUUID(),
-          leaseId: '',
-          leaseUntil: null
+  try {
+    return await transaction(async (session) => {
+      await ownerFence(owner, session);
+      return Connection.findOneAndUpdate(
+        {
+          userId: owner,
+          provider,
+          $or: [{ leaseUntil: null }, { leaseUntil: { $lte: new Date() } }]
         },
-        $setOnInsert: { status: 'pending' }
+        {
+          $set: {
+            oauthState: '',
+            oauthStateExpiresAt: null,
+            oauthAttempt: randomUUID(),
+            leaseId: '',
+            leaseUntil: null
+          },
+          $setOnInsert: { status: 'pending' }
+        },
+        { session, upsert: true, returnDocument: 'after' }
+      ).lean();
+    });
+  } catch (error) {
+    if (error.code === 11000) throw stale();
+    throw error;
+  }
+}
+
+async function reuseFreshManual(owner, provider, candidate) {
+  const snapshots = require('./integrationPublicSnapshotService');
+  const canonical = snapshots.identity(provider, candidate);
+  if (!canonical) return null;
+  return transaction(async (session) => {
+    const now = new Date();
+    const userId = new mongoose.Types.ObjectId(String(owner));
+    const user = await User.collection.findOne(
+      { _id: userId, isActive: { $ne: false } },
+      { session, projection: { _id: 1 } }
+    );
+    if (!user) throw Object.assign(Error('Account is unavailable.'), { status: 404 });
+    const connection = await Connection.collection.findOne(
+      {
+        userId,
+        provider,
+        status: 'connected',
+        externalUsername: candidate.externalUsername,
+        accessToken: { $in: ['', null] },
+        refreshToken: { $in: ['', null] },
+        ownershipVerified: false,
+        oauthAttempt: { $in: ['', null] },
+        lastSyncError: '',
+        lastSyncedAt: { $gt: new Date(now.getTime() - snapshots.FRESH_MS) }
       },
-      { session, upsert: true, returnDocument: 'after' }
-    ).lean();
+      { session, projection: { provider: 1, status: 1, externalUsername: 1, leaseUntil: 1 } }
+    );
+    if (!connection) return null;
+    if (connection.leaseUntil > now) throw stale();
+    const snapshot = await require('../models/integrationPublicSnapshot').collection.findOne(
+      { _id: snapshots.keyFor(provider, canonical), freshUntil: { $gt: now } },
+      { session }
+    );
+    if (!snapshot?.observation) return null;
+    const insight = await Insight.collection.findOne(
+      { userId },
+      { session, projection: { providers: { $elemMatch: { provider } } } }
+    );
+    const prior = insight?.providers?.[0];
+    if (!prior || prior.ownershipVerified !== false) return null;
+    const observed = snapshot.observation;
+    if (
+      JSON.stringify([
+        prior.normalized?.profile,
+        prior.normalized?.activity,
+        prior.inferredSkills
+      ]) !== JSON.stringify([observed.profile, observed.activity, observed.inferredSkills])
+    )
+      return null;
+    return connection;
   });
 }
 async function consumeState(provider, state, owner) {
@@ -212,7 +274,16 @@ async function connect(owner, provider, values, providerInsight = null, attempt 
   const { metadata, ...remaining } = values;
   const result = await transaction(async (session) => {
     await ownerFence(owner, session);
-    const filter = { userId: owner, provider, ...(attempt ? { oauthAttempt: attempt } : {}) };
+    const filter = {
+      userId: owner,
+      provider,
+      ...(attempt
+        ? {
+            oauthAttempt: attempt,
+            $or: [{ leaseUntil: null }, { leaseUntil: { $lte: new Date() } }]
+          }
+        : {})
+    };
     const connection = await Connection.findOneAndUpdate(
       filter,
       {
@@ -301,6 +372,7 @@ module.exports = {
   start,
   consumeState,
   beginManual,
+  reuseFreshManual,
   connect,
   disconnect,
   deleteAccount,

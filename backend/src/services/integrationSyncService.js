@@ -7,6 +7,7 @@ const persistence = require('./integrationPersistenceService');
 const tokens = require('./integrationTokenService');
 const publicResources = require('./kaggleResourceObservationService');
 const governance = require('./integrationGovernanceService');
+const publicSnapshots = require('./integrationPublicSnapshotService');
 let timer;
 let running = false;
 const safeError = (error) =>
@@ -74,7 +75,7 @@ async function syncProviderForUser(userId, provider, reason = 'manual') {
           if (!changed.matchedCount)
             throw Object.assign(Error('Connection changed.'), { status: 409 });
         }
-        const ingested = await adapter.ingestData(hydrated);
+        const ingested = await publicSnapshots.ingest(adapter, hydrated);
         governance.assertActive();
         const resourceOnly = provider === 'kaggle' && ingested.resourceOnly === true;
         const providerInsight = resourceOnly

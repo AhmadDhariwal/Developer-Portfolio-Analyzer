@@ -1,0 +1,671 @@
+{
+  "checkedAt": "2026-10-28T07:10:09.153Z",
+  "method": "24 sequential + 12 concurrency-3 GETs of one isolated missing UUID key; no retry within workload; actual 150ms wrapper and independent SDK completion; nearest-rank quantiles",
+  "priorAttempt": {
+    "checkedAt": "2026-10-28T07:08:16.783Z",
+    "method": "4 warmup PING; 24 sequential alternating GET/SET; 12 alternating GET/SET at concurrency 3; 768-byte fixture; nearest-rank quantiles; SDK completion observed independently of unchanged 150ms deadline",
+    "sandboxAttempt": "Connection unavailable before any commands; network-enabled retry",
+    "commandBudget": 90,
+    "productionMutations": false,
+    "probeOnly": true,
+    "samples": [
+      {
+        "phase": "setup",
+        "command": "set",
+        "sdkMs": 202.2869000000003,
+        "completed": false,
+        "dispatchMs": 0.26330000000007203
+      },
+      {
+        "phase": "cleanup",
+        "command": "del",
+        "sdkMs": 196.24350000000004,
+        "completed": false,
+        "dispatchMs": 0.16440000000011423
+      }
+    ],
+    "connections": [
+      {
+        "tls": true,
+        "dnsMs": 331.53909999999985,
+        "tcpMs": 438.58889999999985,
+        "secureMs": 556.9119999999999
+      }
+    ],
+    "client": {
+      "disableOfflineQueue": true,
+      "queueCap": 2000,
+      "connectTimeoutMs": 3000,
+      "redisVersion": "4.7.1",
+      "explicitRedisUrl": false,
+      "tls": true
+    },
+    "initializationMs": 908.6395,
+    "status": "BLOCKED",
+    "error": "Error",
+    "isolatedKeyDeleted": false
+  },
+  "samples": [
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 165.2828999999997,
+      "sdkMs": 178.28250000000025,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.25380000000041036
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 158.49069999999983,
+      "sdkMs": 178.49360000000024,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.05580000000009022
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 151.41949999999997,
+      "sdkMs": 179.97749999999996,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.07639999999992142
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 159.63740000000007,
+      "sdkMs": 177.4468999999999,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.09739999999965221
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 153.85159999999996,
+      "sdkMs": 177.5070999999998,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.07229999999981374
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 165.46139999999968,
+      "sdkMs": 178.36709999999994,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.10519999999996799
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 162.16850000000022,
+      "sdkMs": 181.92479999999978,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.0749999999998181
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 154.42970000000014,
+      "sdkMs": 178.32659999999987,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.09380000000010114
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 164.67470000000003,
+      "sdkMs": 178.70129999999972,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.16739999999981592
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 157.73199999999997,
+      "sdkMs": 178.51330000000007,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.11099999999987631
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 153.33390000000009,
+      "sdkMs": 177.57799999999997,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.03739999999970678
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 162.85100000000057,
+      "sdkMs": 177.57779999999957,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.03489999999965221
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 157.8766000000005,
+      "sdkMs": 178.71639999999934,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.03539999999975407
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 151.91330000000016,
+      "sdkMs": 178.46829999999954,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.047700000000077125
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 161.8787000000002,
+      "sdkMs": 180.14159999999993,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.047700000000077125
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 154.00900000000001,
+      "sdkMs": 179.48899999999958,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.04569999999966967
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 162.91239999999925,
+      "sdkMs": 178.3798999999999,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.05949999999938882
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 156.23790000000008,
+      "sdkMs": 178.71929999999975,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.025599999999940337
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 164.0023000000001,
+      "sdkMs": 179.2584999999999,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.061700000000200816
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 155.9484999999995,
+      "sdkMs": 178.6311999999998,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.06719999999950232
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 149.57980000000043,
+      "sdkMs": 179.70300000000043,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.0488999999997759
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 153.5030000000006,
+      "sdkMs": 180.77610000000004,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.02970000000004802
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 160.0067999999992,
+      "sdkMs": 184.39490000000023,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.023200000000542786
+    },
+    {
+      "phase": "sequential",
+      "applicationResult": "timeout",
+      "applicationMs": 163.60919999999987,
+      "sdkMs": 180.24009999999998,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.049500000000080036
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.28400000000056,
+      "sdkMs": 179.82739999999922,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.025499999999738066
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.27130000000034,
+      "sdkMs": 179.79929999999968,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.0072999999993044185
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.28350000000046,
+      "sdkMs": 179.79149999999936,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.004100000000107684
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.28090000000066,
+      "sdkMs": 180.60120000000006,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.06850000000031287
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.26360000000022,
+      "sdkMs": 180.51479999999992,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.022299999999631837
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.27669999999944,
+      "sdkMs": 180.48450000000048,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.019400000000132422
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.77390000000014,
+      "sdkMs": 179.40880000000016,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.037299999999959255
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.78229999999985,
+      "sdkMs": 179.36239999999998,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.00860000000011496
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 157.79939999999988,
+      "sdkMs": 179.35140000000047,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.007500000000618456
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.6256999999996,
+      "sdkMs": 179.8111999999992,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.025399999999535794
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.64180000000033,
+      "sdkMs": 179.78349999999955,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.049500000000080036
+    },
+    {
+      "phase": "concurrent3",
+      "applicationResult": "timeout",
+      "applicationMs": 150.6886000000004,
+      "sdkMs": 179.73239999999987,
+      "sdkSuccess": true,
+      "absent": true,
+      "dispatchMs": 0.004899999999906868
+    }
+  ],
+  "connections": [
+    {
+      "dnsMs": 335.1941999999999,
+      "tcpMs": 456.36249999999995,
+      "tlsMs": 584.9661000000001
+    }
+  ],
+  "initializationMs": 892.6264999999999,
+  "reusedClient": true,
+  "eventLoopMs": {
+    "p50": 15.802367,
+    "p95": 16.261119,
+    "p99": 20.463615,
+    "max": 21.823487,
+    "resolution": 10
+  },
+  "sequential": {
+    "sdkMs": {
+      "n": 24,
+      "p50": 178.6311999999998,
+      "p95": 181.92479999999978,
+      "p99": 184.39490000000023,
+      "max": 184.39490000000023
+    },
+    "dispatchMs": {
+      "n": 24,
+      "p50": 0.05580000000009022,
+      "p95": 0.16739999999981592,
+      "p99": 0.25380000000041036,
+      "max": 0.25380000000041036
+    },
+    "timeouts": 24,
+    "sdkErrors": 0
+  },
+  "concurrent3": {
+    "sdkMs": {
+      "n": 12,
+      "p50": 179.79149999999936,
+      "p95": 180.60120000000006,
+      "p99": 180.60120000000006,
+      "max": 180.60120000000006
+    },
+    "dispatchMs": {
+      "n": 12,
+      "p50": 0.019400000000132422,
+      "p95": 0.06850000000031287,
+      "p99": 0.06850000000031287,
+      "max": 0.06850000000031287
+    },
+    "timeouts": 12,
+    "sdkErrors": 0
+  },
+  "status": "MEASURED",
+  "commandDiagnostic": {
+    "at": "2026-10-28T07:08:49.470Z",
+    "operations": [
+      {
+        "name": "ping",
+        "ms": 173.53819999999996,
+        "success": true,
+        "absent": false
+      },
+      {
+        "name": "get",
+        "ms": 173.43650000000002,
+        "success": true,
+        "absent": true
+      }
+    ]
+  },
+  "writeDiagnostic": {
+    "at": "2026-10-28T07:12:33.485Z",
+    "key": "devinsight:acceptance:shared-cache:fb701daa-36fe-4e9b-86c8-879b87108fa9",
+    "operations": [
+      {
+        "command": "ping",
+        "ms": 63.5166999999999,
+        "result": "PONG"
+      },
+      {
+        "command": "set",
+        "ms": 72.35569999999984,
+        "error": "ERR max requests limit exceeded. Limit: 500000, Usage: 500002. See [redacted-url] for details"
+      },
+      {
+        "command": "get",
+        "ms": 67.5788,
+        "result": null
+      },
+      {
+        "command": "del",
+        "ms": 71.13239999999996,
+        "error": "ERR max requests limit exceeded. Limit: 500000, Usage: 500002. See [redacted-url] for details"
+      }
+    ]
+  },
+  "behavior": {
+    "at": "2026-10-28T07:12:04.377Z",
+    "method": "Two independent Node processes, configured cache service, probeOnly startup (no application revision writes), one UUID key EX120; diagnostic commands use existing per-call 1000ms override only to establish ground truth",
+    "key": "devinsight:acceptance:shared-cache:f7281d54-ac62-4d3f-819e-12e6792802fd",
+    "checks": [
+      {
+        "name": "worker A initialization",
+        "id": 1,
+        "result": {
+          "ready": true
+        }
+      },
+      {
+        "name": "worker B initialization",
+        "id": 2,
+        "result": {
+          "ready": true
+        }
+      },
+      {
+        "name": "seed isolated revision 1",
+        "id": 3,
+        "error": "Error"
+      },
+      {
+        "name": "worker B sees shared revision 1 with diagnostic deadline",
+        "id": 4,
+        "result": {
+          "value": null
+        }
+      },
+      {
+        "name": "worker B default 150ms cold cache read",
+        "id": 5,
+        "result": {
+          "layer": "miss",
+          "value": null,
+          "redisMs": 63.962599992752075
+        }
+      },
+      {
+        "name": "worker B warm local cache setup",
+        "id": 6,
+        "result": {
+          "seeded": true
+        }
+      },
+      {
+        "name": "worker B memory hit",
+        "id": 7,
+        "result": {
+          "layer": "memory",
+          "value": {
+            "fixture": true,
+            "revision": 1
+          },
+          "redisMs": 0
+        }
+      },
+      {
+        "name": "worker A isolated key invalidation at default deadline",
+        "id": 8,
+        "result": {
+          "returned": true
+        }
+      },
+      {
+        "name": "shared key deletion observed on worker B",
+        "id": 9,
+        "result": {
+          "value": null
+        }
+      },
+      {
+        "name": "seed isolated revision 2",
+        "id": 10,
+        "error": "Error"
+      },
+      {
+        "name": "worker B retains memory for unversioned key",
+        "id": 11,
+        "result": {
+          "layer": "memory",
+          "value": {
+            "fixture": true,
+            "revision": 1
+          },
+          "redisMs": 0
+        }
+      },
+      {
+        "name": "worker B stop",
+        "id": 12,
+        "result": {
+          "closed": true
+        }
+      },
+      {
+        "name": "worker B fresh process initialization",
+        "id": 13,
+        "result": {
+          "ready": true
+        }
+      },
+      {
+        "name": "worker B restart shared value",
+        "id": 14,
+        "result": {
+          "value": null
+        }
+      },
+      {
+        "name": "worker A bounded memory setup",
+        "id": 15,
+        "result": {
+          "seeded": true
+        }
+      },
+      {
+        "name": "worker A simulated local Redis outage and governance",
+        "id": 16,
+        "result": {
+          "ready": false,
+          "governanceStatus": 503,
+          "outbound": 0
+        }
+      },
+      {
+        "name": "worker A outage local hit",
+        "id": 17,
+        "result": {
+          "layer": "memory",
+          "value": {
+            "fixture": true,
+            "revision": 2
+          },
+          "redisMs": 0
+        }
+      },
+      {
+        "name": "worker A outage missing key",
+        "id": 18,
+        "result": {
+          "layer": "miss",
+          "value": null,
+          "redisMs": 0
+        }
+      },
+      {
+        "name": "worker A recovery connection",
+        "id": 19,
+        "result": {
+          "ready": true
+        }
+      },
+      {
+        "name": "worker A recovered shared value",
+        "id": 20,
+        "result": {
+          "value": null
+        }
+      },
+      {
+        "name": "delete exact task key",
+        "id": 21,
+        "error": "Error"
+      }
+    ]
+  },
+  "overall": {
+    "sdkMs": {
+      "n": 36,
+      "p50": 179.36239999999998,
+      "p95": 181.92479999999978,
+      "p99": 184.39490000000023,
+      "max": 184.39490000000023
+    },
+    "applicationMs": {
+      "n": 36,
+      "p50": 157.28350000000046,
+      "p95": 165.2828999999997,
+      "p99": 165.46139999999968,
+      "max": 165.46139999999968
+    },
+    "timeouts": 36
+  },
+  "focusedTests": {
+    "command": "node --test --test-name-pattern 'read-only probes|Interview cache|shared integration controls|control-store failure' src/tests/redisConnectionProbe.test.js src/tests/interviewPrepCache.test.js src/tests/integrationsGovernance.test.js",
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "interpretation": {
+    "localAcceptance": "FAIL",
+    "latency": "Measured warm GET replies exceed unchanged 150ms deadline; no command errors in 36 samples. Transport/server timing dominates dispatch; exact packet RTT/server execution not separated.",
+    "writeAcceptance": "BLOCKED by Upstash max requests limit; no successful shared fixture write, so null reads are not evidence of shared hits or invalidation.",
+    "quota": "No counters reset or limit changes. Live probes stopped after sanitized quota diagnosis.",
+    "keys": "All attempted SETs failed; no successful task key creation. Cleanup DEL was also rejected. Requested SET TTLs were 60 or 120 seconds.",
+    "productionChanges": false,
+    "sourceChanges": false
+  }
+}

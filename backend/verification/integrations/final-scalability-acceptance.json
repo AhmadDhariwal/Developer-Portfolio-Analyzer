@@ -1,0 +1,138 @@
+{
+  "checkedAt": "2026-10-28T11:24:23.635Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "strict public fields; no raw/token/ownership/user score; private providers bypass; detached account copies",
+    "fresh-only expiry; revision invalidation; stale leader fenced; expired dead-worker lease recovered",
+    "LeetCode, Stack Overflow and Dev.to preserve typed admission 429",
+    "cache hits spend account request budget; quota 429 and authoritative admission 503",
+    "measured due-poll index candidate without modifying existing indexes",
+    "1000 virtual users at concurrency eight; shared 500 fetched once; default quota/backpressure preserved; warm snapshot survives worker restart"
+  ],
+  "failures": [
+    "Initial checkpoint accidentally counted four distinct users in the 500-shared cohort; corrected the batch boundary.",
+    "Next completed cohort exposed 441 quota denials masked as 502 by adapter catches; preserved typed 429/503/cancellation and provider HTTP 429 Retry-After.",
+    "Controlled stale-reader regression verified that a late lock claim cannot replace an already refreshed snapshot."
+  ],
+  "polling": {
+    "before": 1000,
+    "after": 10,
+    "returned": 10
+  },
+  "baseline": {
+    "calls": 5,
+    "redisCommands": 0,
+    "conflicts": 0,
+    "commands": 41,
+    "durations": [
+      73, 3, 43, 75, 2, 42, 5, 4, 5, 74, 3, 3, 7, 3, 4, 19, 15, 3, 2, 9, 2, 3, 5, 15, 3, 3, 10, 3,
+      3, 5, 14, 3, 3, 10, 3, 4, 20, 14, 3, 2, 10
+    ],
+    "memory": {
+      "rss": 129990656,
+      "heapTotal": 106524672,
+      "heapUsed": 43000920,
+      "external": 22569463,
+      "arrayBuffers": 18571902
+    }
+  },
+  "shared500": {
+    "served": 500,
+    "providerCalls": 1
+  },
+  "simulation": {
+    "users": 1000,
+    "sameUsername": 500,
+    "concurrency": 8,
+    "workers": 2,
+    "elapsedMs": 7901.326199999996,
+    "throughputPerSecond": 126.56103224797889,
+    "statusCounts": {
+      "200": 559,
+      "429": 441
+    },
+    "providerCalls": 60,
+    "observationsReused": 499,
+    "successfulHitRate": 0.8926654740608229,
+    "latencyMs": {
+      "n": 1000,
+      "p50": 31.15769999999975,
+      "p95": 123.76809999999932,
+      "p99": 226.90939999999955,
+      "max": 299.3047999999999
+    },
+    "mongoCommandMs": {
+      "n": 4668,
+      "p50": 6,
+      "p95": 18,
+      "p99": 20,
+      "max": 76
+    },
+    "transactionConflicts": 229,
+    "redisCommands": 0,
+    "mongoCommands": 5126,
+    "memory": [
+      {
+        "rss": 159404032,
+        "heapTotal": 106000384,
+        "heapUsed": 35502376,
+        "external": 24974149,
+        "arrayBuffers": 20976548
+      },
+      {
+        "rss": 156647424,
+        "heapTotal": 106000384,
+        "heapUsed": 43948720,
+        "external": 25014415,
+        "arrayBuffers": 21016814
+      }
+    ],
+    "snapshotStorage": {
+      "count": 502,
+      "logicalBytes": 94048,
+      "indexBytes": 8192
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 82,
+    "productionDataUsed": false
+  },
+  "validation": {
+    "totalDistinctChecks": 36,
+    "postBatching": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test --test-concurrency=1 src/tests/integrationPublicSnapshot.test.js src/tests/integrationMongoGovernance.test.js"
+    },
+    "reusedAffectedRegression": {
+      "passed": 16,
+      "failed": 0,
+      "files": [
+        "src/tests/integrationsGovernance.test.js",
+        "src/tests/integrationsLifecycle.test.js",
+        "src/tests/integrationsRecordedData.test.js"
+      ],
+      "explanation": "These passed in the preceding affected-only run; batching changed store internals exercised by the 20 final checks, not these mocked wiring/persistence/recorded-data boundaries."
+    }
+  },
+  "comparison": {
+    "before": "scalability-before-batching.json",
+    "after": "final-scalability-acceptance.json",
+    "mongoCommandsReductionPercent": 42.623684799641815,
+    "conflictReductionPercent": 36.03351955307262,
+    "scope": "One successful pre-batching and one necessary post-batching 1000-user simulation; neither is a production throughput/SLO test."
+  },
+  "verdict": {
+    "publicProfileReuse": "PASS",
+    "redisOptionality": "PASS",
+    "mongoGovernance": "PASS",
+    "crossWorkerSafety": "PASS",
+    "syncReliability": "PASS",
+    "security": "PASS",
+    "scalability": "PASS (bounded synthetic scope, including expected 429)",
+    "localReadiness": "PASS (tested working tree)"
+  },
+  "productionConfigurationChanged": false
+}
