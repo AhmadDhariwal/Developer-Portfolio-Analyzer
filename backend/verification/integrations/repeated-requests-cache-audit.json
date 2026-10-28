@@ -1,0 +1,115 @@
+{
+  "checkedAt": "2026-10-28T14:33:02.920Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "three identical fresh Connect clicks preserve connection/insight; two explicit Syncs still normalize and append history; one source fetch across accounts",
+    "active lease returns 409 without reset; commit fence preserves a newly claimed Sync; stale/credential-bearing connections do not shortcut",
+    "warm read-through measured at two payload sizes; generation mismatch falls back to Mongo; expired metadata bypasses Redis; quota/timeout/unavailable/recovered return authoritative data"
+  ],
+  "baselineConnect": {
+    "commands": 48,
+    "documentWrites": 21,
+    "ms": 352.70570000000043,
+    "providerCalls": 0,
+    "normalizations": 3
+  },
+  "improvedConnect": {
+    "commands": 27,
+    "documentWrites": 3,
+    "ms": 224.2650999999987,
+    "providerCalls": 0,
+    "normalizations": 0
+  },
+  "manualSync": {
+    "commands": 42,
+    "documentWrites": 22,
+    "ms": 333.9426000000003,
+    "providerCalls": 0,
+    "normalizations": 2
+  },
+  "readThrough": [
+    {
+      "payloadBytes": 615,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.650900000000547,
+        "p95": 5.513100000000122,
+        "p99": 5.513100000000122
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 4.635000000000218,
+        "p95": 6.978500000001077,
+        "p99": 6.978500000001077
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    },
+    {
+      "payloadBytes": 30103,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 3.7166999999990367,
+        "p95": 4.411399999999048,
+        "p99": 4.411399999999048
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 4.974899999999252,
+        "p95": 6.112300000000687,
+        "p99": 6.112300000000687
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    }
+  ],
+  "prototypeCommands": {
+    "mongoReads": 53,
+    "redisGets": 25,
+    "redisSets": 3
+  },
+  "prototypeFailureModes": [
+    {
+      "mode": "quota",
+      "ms": 6.9495999999999185,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "timeout",
+      "ms": 166.9935999999998,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "unavailable",
+      "ms": 2.842800000000352,
+      "mongoReads": 1,
+      "redisGets": 0,
+      "redisSets": 0
+    },
+    {
+      "mode": "recovered",
+      "ms": 5.522399999999834,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 118,
+    "productionDataUsed": false
+  },
+  "validation": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test --test-concurrency=1 src/tests/integrationRepeatedRequests.test.js src/tests/integrationsLifecycle.test.js"
+  },
+  "decision": "Retain Mongo-only public snapshots; the benchmark-only Redis candidate saved no Mongo reads and increased latency at both payload sizes.",
+  "initialDiagnostic": "Prototype teardown initially raced QUIT behind a timed-out SDK reply; harness waits for socket-unready before cleanup. Write-count instrumentation then corrected to include findAndModify. Final focused rerun passed. Production cache shutdown unchanged.",
+  "productionConfigurationChanged": false
+}

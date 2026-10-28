@@ -74,6 +74,7 @@ test('manual validation rejects unsupported providers and malformed handles', as
   }
 });
 test('manual connection persists observed provenance and hides API credentials', async (t) => {
+  t.mock.method(persistence, 'reuseFreshManual', async () => null);
   t.mock.method(
     require('../services/integrationPublicSnapshotService'),
     'ingest',
