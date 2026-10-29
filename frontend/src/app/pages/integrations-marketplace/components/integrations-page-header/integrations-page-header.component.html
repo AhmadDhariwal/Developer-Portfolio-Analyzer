@@ -1,0 +1,72 @@
+<div class="page-head__info">
+  <div class="page-head__eyebrow">
+    <span class="eyebrow-dot"></span>
+    <span class="eyebrow-text">Developer Intelligence · Autonomous Ingestion</span>
+    <span class="eyebrow-tag">AUTHENTICATED ACCESS</span>
+  </div>
+  <h1 class="page-head__title">Integrations Marketplace</h1>
+  <p class="page-head__description">
+    Connect supported platforms to enrich existing developer workflows with public observations and
+    authorized account data.
+  </p>
+</div>
+
+<div class="page-head__actions">
+  <!-- Search Input -->
+  <div class="search-wrap">
+    <svg
+      class="search-icon"
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Filter platforms, skills or tags…"
+      [ngModel]="searchQuery"
+      (ngModelChange)="searchQueryChange.emit($event)"
+      aria-label="Filter integrations"
+    />
+    <button
+      *ngIf="searchQuery"
+      type="button"
+      class="search-clear"
+      (click)="searchQueryChange.emit('')"
+      aria-label="Clear search"
+    >
+      ×
+    </button>
+  </div>
+
+  <!-- Sync All Streams CTA -->
+  <button
+    type="button"
+    class="btn btn-secondary sync-all-btn"
+    (click)="syncAll.emit()"
+    [disabled]="syncAllLoading || busyProvider !== '' || connectedCount === 0"
+    title="Trigger background sync for all active integrations"
+  >
+    <svg
+      [class.spinning]="syncAllLoading"
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+    >
+      <polyline points="23 4 23 10 17 10" />
+      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+    </svg>
+    <span>{{ syncAllLoading ? 'Syncing All…' : 'Sync All Streams' }}</span>
+  </button>
+</div>

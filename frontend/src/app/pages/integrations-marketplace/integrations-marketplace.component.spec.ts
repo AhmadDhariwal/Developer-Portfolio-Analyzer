@@ -92,6 +92,96 @@ describe('IntegrationsMarketplaceComponent', () => {
     return fixture;
   }
 
+  it('keeps the same rendered nodes and request counts during ordinary change detection', () => {
+    const fixture = mount();
+    const cards = [...fixture.nativeElement.querySelectorAll('.integration-card')];
+    for (let i = 0; i < 5; i++) fixture.detectChanges();
+    expect([...fixture.nativeElement.querySelectorAll('.integration-card')]).toEqual(cards);
+    expect(serviceMock.getMarketplace).toHaveBeenCalledTimes(1);
+    expect(serviceMock.getInsights).toHaveBeenCalledTimes(1);
+    expect(serviceMock.syncNow).not.toHaveBeenCalled();
+    expect(serviceMock.manualConnect).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('header.page-head')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('nav.filter-bar')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.market-grid > article').length).toBe(4);
+  });
+
+  it('routes header search, clear, categories and terminal controls through parent state', async () => {
+    const fixture = mount();
+    const root: HTMLElement = fixture.nativeElement;
+    const search = root.querySelector<HTMLInputElement>('.search-input')!;
+    search.value = 'leetcode';
+    search.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.searchQuery).toBe('leetcode');
+    expect(root.querySelectorAll('.integration-card').length).toBe(1);
+    root.querySelector<HTMLButtonElement>('.search-clear')!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.searchQuery).toBe('');
+    const connected = [...root.querySelectorAll<HTMLButtonElement>('.tab-btn')].find((el) =>
+      el.textContent?.includes('Connected'),
+    )!;
+    connected.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.activeCategory).toBe('connected');
+    expect(root.querySelectorAll('.integration-card').length).toBe(1);
+    root.querySelector<HTMLButtonElement>('.btn-ghost-terminal')!.click();
+    fixture.detectChanges();
+    expect(root.querySelector('section.terminal-drawer')).not.toBeNull();
+    fixture.componentInstance.loadMarketplace();
+    fixture.detectChanges();
+    expect(root.querySelectorAll('.log-line').length).toBe(2);
+    root.querySelector<HTMLButtonElement>('.terminal-close')!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.isTerminalOpen).toBe(false);
+  });
+
+  it('retains manual input ownership and emits one Connect and Sync request from a card', async () => {
+    const pending = new Subject<any>();
+    serviceMock.manualConnect.mockReturnValue(pending);
+    const fixture = mount();
+    const root: HTMLElement = fixture.nativeElement;
+    const input = root.querySelector<HTMLInputElement>('#input-leetcode')!;
+    input.value = '  fixture-handle  ';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.manualUsername.leetcode).toBe('  fixture-handle  ');
+    const card = input.closest('article')!;
+    card.querySelector<HTMLButtonElement>('.connect-btn')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(serviceMock.manualConnect).toHaveBeenCalledExactlyOnceWith(
+      'leetcode',
+      'fixture-handle',
+      '',
+    );
+    expect(input.disabled).toBe(true);
+    expect(card.textContent).toContain('Connecting + Syncing…');
+    pending.next({ success: true });
+    pending.complete();
+    fixture.detectChanges();
+    expect(serviceMock.syncNow).toHaveBeenCalledExactlyOnceWith('leetcode');
+    expect(serviceMock.getMarketplace).toHaveBeenCalledTimes(2);
+    expect(serviceMock.getInsights).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.manualUsername.leetcode).toBe('  fixture-handle  ');
+  });
+
+  it('routes provider Sync and Disconnect buttons without duplicated calls', () => {
+    const fixture = mount();
+    const root: HTMLElement = fixture.nativeElement;
+    root.querySelector<HTMLButtonElement>('.sync-btn')!.click();
+    fixture.detectChanges();
+    expect(serviceMock.syncNow).toHaveBeenCalledExactlyOnceWith('github');
+    root.querySelector<HTMLButtonElement>('.disconnect-btn')!.click();
+    fixture.detectChanges();
+    expect(serviceMock.disconnect).toHaveBeenCalledExactlyOnceWith('github');
+    expect(serviceMock.getMarketplace).toHaveBeenCalledTimes(3);
+    expect(serviceMock.getInsights).toHaveBeenCalledTimes(3);
+  });
+
   it('does not advertise unmeasured score lifts, latency, TLS status or verified LinkedIn names', () => {
     const fixture = mount();
     const text = fixture.nativeElement.textContent;
@@ -345,5 +435,74 @@ describe('IntegrationsMarketplaceComponent', () => {
     expect(fixture.nativeElement.querySelector('.sync-btn').disabled).toBe(false);
     comp.runIngestion('kaggle');
     expect(serviceMock.syncNow).toHaveBeenCalledWith('kaggle');
+  });
+
+  it('resets connecting state and reloads data when page is restored from bfcache on pageshow', () => {
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+
+    comp.busyProvider = 'linkedin';
+    comp.busyAction = 'connect';
+    expect(comp.busyProvider).toBe('linkedin');
+
+    comp.onPageShow({ persisted: true } as PageTransitionEvent);
+    expect(comp.busyProvider).toBe('');
+    expect(comp.busyAction).toBe('');
+    expect(serviceMock.getMarketplace).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears connecting state on pagehide, window focus, and document visibility change', () => {
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+
+    comp.busyProvider = 'linkedin';
+    comp.busyAction = 'connect';
+    comp.onPageHide();
+    expect(comp.busyProvider).toBe('');
+    expect(comp.busyAction).toBe('');
+
+    comp.busyProvider = 'linkedin';
+    comp.busyAction = 'connect';
+    comp.onWindowFocusOrVisibility();
+    expect(comp.busyProvider).toBe('');
+    expect(comp.busyAction).toBe('');
+  });
+
+  it('handles OAuth error and cancellation query parameters, clearing busy state and URL parameters', () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: {
+        snapshot: {
+          queryParamMap: convertToParamMap({
+            error: 'user_cancelled_authorize',
+            error_description: 'The user cancelled authorization.',
+          }),
+        },
+      },
+    });
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+
+    expect(comp.busyProvider).toBe('');
+    expect(comp.busyAction).toBe('');
+    expect(comp.errorMessage).toBe('The user cancelled authorization.');
+    expect(
+      comp.terminalLogs.some((l) => l.message.includes('The user cancelled authorization.')),
+    ).toBe(true);
+  });
+
+  it('handles backend callback failure query parameter', () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: {
+        snapshot: {
+          queryParamMap: convertToParamMap({ error: 'callback_failed' }),
+        },
+      },
+    });
+    const fixture = mount();
+    const comp = fixture.componentInstance;
+
+    expect(comp.busyProvider).toBe('');
+    expect(comp.busyAction).toBe('');
+    expect(comp.errorMessage).toBe('OAuth authentication failed.');
   });
 });

@@ -1,0 +1,150 @@
+{
+  "comparison": [
+    {
+      "label": "1440-light-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 1946,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "1440-light-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 2050,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "1440-light-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 938,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "1440-dark-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 1946,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "1440-dark-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 2050,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "1440-dark-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 1132,
+      "height": 938,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-light-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 2843,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-light-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 2947,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-light-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 1263,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-dark-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 2843,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-dark-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 2947,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "900-dark-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 592,
+      "height": 1263,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-light-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 4774,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-light-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 4911,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-light-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 1747,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-dark-catalog",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 4774,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-dark-terminal",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 4911,
+      "dimensionsMatch": true
+    },
+    {
+      "label": "390-dark-empty",
+      "computedParity": true,
+      "changedPixels": 0,
+      "width": 362,
+      "height": 1747,
+      "dimensionsMatch": true
+    }
+  ],
+  "requestsMatch": true,
+  "arrivalOrderMatch": false
+}

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { HackerRankLinkedProfileComponent } from './hackerrank-linked-profile.component';
-import { IntegrationsService } from '../../../shared/services/integrations.service';
+import { IntegrationsService } from '../../../../shared/services/integrations.service';
 
 describe('HackerRankLinkedProfileComponent', () => {
   const profile = {

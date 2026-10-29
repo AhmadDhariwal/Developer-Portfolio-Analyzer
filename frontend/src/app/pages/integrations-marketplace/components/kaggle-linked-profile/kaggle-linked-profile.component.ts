@@ -5,7 +5,7 @@ import { finalize } from 'rxjs/operators';
 import {
   KaggleLinkedProfile,
   IntegrationsService,
-} from '../../../shared/services/integrations.service';
+} from '../../../../shared/services/integrations.service';
 
 @Component({
   selector: 'app-kaggle-linked-profile',

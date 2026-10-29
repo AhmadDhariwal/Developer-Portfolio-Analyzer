@@ -1,78 +1,15 @@
 <div class="integrations-page">
   <!-- ── Cockpit Header ─────────────────────────────────────────────────────── -->
-  <header class="page-head">
-    <div class="page-head__info">
-      <div class="page-head__eyebrow">
-        <span class="eyebrow-dot"></span>
-        <span class="eyebrow-text">Developer Intelligence · Autonomous Ingestion</span>
-        <span class="eyebrow-tag">AUTHENTICATED ACCESS</span>
-      </div>
-      <h1 class="page-head__title">Integrations Marketplace</h1>
-      <p class="page-head__description">
-        Connect supported platforms to enrich existing developer workflows with public observations
-        and authorized account data.
-      </p>
-    </div>
-
-    <div class="page-head__actions">
-      <!-- Search Input -->
-      <div class="search-wrap">
-        <svg
-          class="search-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Filter platforms, skills or tags…"
-          [(ngModel)]="searchQuery"
-          aria-label="Filter integrations"
-        />
-        <button
-          *ngIf="searchQuery"
-          type="button"
-          class="search-clear"
-          (click)="searchQuery = ''"
-          aria-label="Clear search"
-        >
-          ×
-        </button>
-      </div>
-
-      <!-- Sync All Streams CTA -->
-      <button
-        type="button"
-        class="btn btn-secondary sync-all-btn"
-        (click)="syncAll()"
-        [disabled]="syncAllLoading || busyProvider !== '' || connectedCount === 0"
-        title="Trigger background sync for all active integrations"
-      >
-        <svg
-          [class.spinning]="syncAllLoading"
-          xmlns="http://www.w3.org/2000/svg"
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <polyline points="23 4 23 10 17 10" />
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-        </svg>
-        <span>{{ syncAllLoading ? 'Syncing All…' : 'Sync All Streams' }}</span>
-      </button>
-    </div>
-  </header>
+  <header
+    appIntegrationsPageHeader
+    class="page-head"
+    [searchQuery]="searchQuery"
+    (searchQueryChange)="searchQuery = $event"
+    [syncAllLoading]="syncAllLoading"
+    [busyProvider]="busyProvider"
+    [connectedCount]="connectedCount"
+    (syncAll)="syncAll()"
+  ></header>
 
   <!-- ── Error banner ─────────────────────────────────────────────────────── -->
   <div class="error-banner" *ngIf="errorMessage">
@@ -103,302 +40,40 @@
   </div>
 
   <!-- ── Telemetry Overview Strip (4 responsive cards) ───────────────────────── -->
-  <section class="telemetry-strip" aria-label="System Telemetry Overview">
-    <!-- Card 1: Overall Health Gauge -->
-    <article class="telemetry-card health-card" [class]="getScoreHealthClass(integrationScore)">
-      <div class="card-head">
-        <span class="telemetry-label">System Health</span>
-        <span class="health-pill" [class]="getScoreHealthClass(integrationScore)">
-          {{ getScoreHealthLabel(integrationScore) }}
-        </span>
-      </div>
-
-      <div class="gauge-content">
-        <div class="gauge-ring-wrap">
-          <svg class="gauge-ring" viewBox="0 0 80 80">
-            <circle class="ring-bg" cx="40" cy="40" r="32" stroke-width="6" fill="none" />
-            <circle
-              class="ring-progress"
-              cx="40"
-              cy="40"
-              r="32"
-              stroke-width="6"
-              fill="none"
-              [style.stroke-dasharray]="'201.06'"
-              [style.stroke-dashoffset]="201.06 - (integrationScore / 100) * 201.06"
-            />
-          </svg>
-          <span class="gauge-value">{{ integrationScore }}%</span>
-        </div>
-
-        <div class="gauge-meta">
-          <span class="metric-highlight"
-            >{{ connectedCount }} of {{ integrations.length }} Active</span
-          >
-          <span class="metric-sub">{{
-            disconnectedCount === 0
-              ? 'All nodes optimal'
-              : disconnectedCount + ' stream' + (disconnectedCount > 1 ? 's' : '') + ' available'
-          }}</span>
-          <span class="metric-trend">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-            </svg>
-            Active readiness
-          </span>
-        </div>
-      </div>
-    </article>
-
-    <!-- Card 2: Connection Mix -->
-    <article class="telemetry-card mix-card">
-      <div class="card-head">
-        <span class="telemetry-label">Connection Mix</span>
-        <span class="card-chip card-chip--cyan">{{ connectedCount }} Synced</span>
-      </div>
-
-      <div class="mix-bars">
-        <div class="mix-row">
-          <div class="mix-info">
-            <span>Code & Repos</span>
-            <span class="mix-val text-cyan">{{ getCategoryStats('code') }}</span>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill progress-fill--cyan"
-              [style.width.%]="getCategoryPercent('code')"
-            ></div>
-          </div>
-        </div>
-
-        <div class="mix-row">
-          <div class="mix-info">
-            <span>Competitive & Algo</span>
-            <span class="mix-val text-indigo">{{ getCategoryStats('algo') }}</span>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill progress-fill--indigo"
-              [style.width.%]="getCategoryPercent('algo')"
-            ></div>
-          </div>
-        </div>
-
-        <div class="mix-row">
-          <div class="mix-info">
-            <span>Authority & Social</span>
-            <span class="mix-val text-mint">{{ getCategoryStats('community') }}</span>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill progress-fill--mint"
-              [style.width.%]="getCategoryPercent('community')"
-            ></div>
-          </div>
-        </div>
-
-        <div class="mix-row">
-          <div class="mix-info">
-            <span>Certs & Writing</span>
-            <span class="mix-val text-amber">{{ getCategoryStats('knowledge') }}</span>
-          </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill progress-fill--amber"
-              [style.width.%]="getCategoryPercent('knowledge')"
-            ></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-foot">
-        <span
-          >OAuth: <strong>{{ oauthCount }}</strong></span
-        >
-        <span class="divider-dot">·</span>
-        <span
-          >Manual: <strong>{{ manualCount }}</strong></span
-        >
-      </div>
-    </article>
-
-    <!-- Card 3: Portfolio Impact Lift -->
-    <article class="telemetry-card impact-card">
-      <div class="card-head">
-        <span class="telemetry-label">Portfolio Impact</span>
-        <span class="card-chip card-chip--mint">NO FIXED LIFT</span>
-      </div>
-
-      <div class="impact-metrics">
-        <div class="impact-metric">
-          <div class="impact-metric__num">Policy</div>
-          <div class="impact-metric__label">Existing scoring rules</div>
-        </div>
-        <div class="impact-metric">
-          <div class="impact-metric__num text-mint">Public</div>
-          <div class="impact-metric__label">Unverified observations</div>
-        </div>
-      </div>
-
-      <div class="impact-bullets">
-        <div class="impact-bullet">
-          <span class="bullet-dot bullet-dot--cyan"></span>
-          <span>Feeds AI recommendations & developer signal graph</span>
-        </div>
-        <div class="impact-bullet">
-          <span class="bullet-dot bullet-dot--mint"></span>
-          <span>Public observations do not verify skills</span>
-        </div>
-      </div>
-    </article>
-
-    <!-- Card 4: Daemon Sync Stream -->
-    <article class="telemetry-card daemon-card">
-      <div class="card-head">
-        <span class="telemetry-label">Ingestion Pipeline</span>
-        <span class="card-chip card-chip--live">
-          <span class="live-beacon"></span>
-          SCHEDULED SYNC
-        </span>
-      </div>
-
-      <div class="daemon-stats">
-        <div class="daemon-stat-item">
-          <span class="daemon-stat-label">Cache Latency</span>
-          <span class="daemon-stat-val text-cyan">Not measured</span>
-        </div>
-        <div class="daemon-stat-item">
-          <span class="daemon-stat-label">Active Nodes</span>
-          <span class="daemon-stat-val">{{ connectedCount }}/{{ integrations.length }} Active</span>
-        </div>
-        <div class="daemon-stat-item">
-          <span class="daemon-stat-label">Security</span>
-          <span class="daemon-stat-val text-indigo">Encrypted OAuth tokens</span>
-        </div>
-      </div>
-
-      <div class="daemon-foot">
-        <button type="button" class="btn btn-ghost-terminal" (click)="toggleTerminal()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <polyline points="4 17 10 11 4 5" />
-            <line x1="12" y1="19" x2="20" y2="19" />
-          </svg>
-          <span>{{ isTerminalOpen ? 'Hide Ingestion Feed' : 'View Ingestion Feed' }}</span>
-        </button>
-      </div>
-    </article>
-  </section>
+  <section
+    appIntegrationTelemetry
+    class="telemetry-strip"
+    aria-label="System Telemetry Overview"
+    [integrations]="integrations"
+    [integrationScore]="integrationScore"
+    [connectedCount]="connectedCount"
+    [disconnectedCount]="disconnectedCount"
+    [oauthCount]="oauthCount"
+    [manualCount]="manualCount"
+    [isTerminalOpen]="isTerminalOpen"
+    (toggleTerminal)="toggleTerminal()"
+  ></section>
 
   <!-- ── Collapsible Terminal Feed Drawer ─────────────────────────────────── -->
-  <section class="terminal-drawer" *ngIf="isTerminalOpen">
-    <div class="terminal-head">
-      <div class="terminal-dots">
-        <span class="term-dot term-dot--red"></span>
-        <span class="term-dot term-dot--yellow"></span>
-        <span class="term-dot term-dot--green"></span>
-      </div>
-      <span class="terminal-title">DAEMON_LOG // INGESTION_STREAM_MONITOR</span>
-      <button
-        type="button"
-        class="terminal-close"
-        (click)="isTerminalOpen = false"
-        aria-label="Close terminal"
-      >
-        ×
-      </button>
-    </div>
-    <div class="terminal-body font-mono">
-      <div *ngFor="let log of terminalLogs" class="log-line">
-        <span class="log-timestamp">[{{ log.time }}]</span>
-        <span class="log-level" [class]="log.level">{{ log.level.toUpperCase() }}</span>
-        <span class="log-msg">{{ log.message }}</span>
-      </div>
-    </div>
-  </section>
+  <section
+    appIngestionActivityTerminal
+    class="terminal-drawer"
+    *ngIf="isTerminalOpen"
+    [terminalLogs]="terminalLogs"
+    (closeTerminal)="isTerminalOpen = false"
+  ></section>
 
   <!-- ── Category Filter Tabs ──────────────────────────────────────────────── -->
-  <nav class="filter-bar" aria-label="Integration categories">
-    <div class="category-tabs" role="tablist">
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'all'"
-        (click)="activeCategory = 'all'"
-      >
-        All ({{ integrations.length }})
-      </button>
-
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'connected'"
-        (click)="activeCategory = 'connected'"
-      >
-        <span class="tab-dot tab-dot--green"></span>
-        Connected ({{ connectedCount }})
-      </button>
-
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'code'"
-        (click)="activeCategory = 'code'"
-      >
-        Code & Repos ({{ getCategoryTotal('code') }})
-      </button>
-
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'algo'"
-        (click)="activeCategory = 'algo'"
-      >
-        Competitive & Algo ({{ getCategoryTotal('algo') }})
-      </button>
-
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'community'"
-        (click)="activeCategory = 'community'"
-      >
-        Community & Authority ({{ getCategoryTotal('community') }})
-      </button>
-
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeCategory === 'knowledge'"
-        (click)="activeCategory = 'knowledge'"
-      >
-        Certs & Writing ({{ getCategoryTotal('knowledge') }})
-      </button>
-    </div>
-
-    <div class="filter-count font-mono">
-      <span
-        >{{ displayedIntegrations.length }} platform{{
-          displayedIntegrations.length === 1 ? '' : 's'
-        }}</span
-      >
-    </div>
-  </nav>
+  <nav
+    appIntegrationCategoryFilters
+    class="filter-bar"
+    aria-label="Integration categories"
+    [integrations]="integrations"
+    [activeCategory]="activeCategory"
+    [connectedCount]="connectedCount"
+    [displayedCount]="displayedIntegrations.length"
+    (activeCategoryChange)="activeCategory = $event"
+  ></nav>
 
   <!-- ── Loading Placeholder ──────────────────────────────────────────────── -->
   <div class="loading-state" *ngIf="isLoading && integrations.length === 0">
@@ -409,259 +84,23 @@
   <!-- ── Main Responsive Integrations Grid ─────────────────────────────────── -->
   <div class="market-grid" *ngIf="displayedIntegrations.length > 0">
     <article
+      appIntegrationProviderCard
       class="integration-card"
       *ngFor="let item of displayedIntegrations"
       [class.integration-card--connected]="item.status === 'connected'"
       [class.integration-card--busy]="busyProvider === item.provider"
-    >
-      <!-- Card Top / Header -->
-      <div class="card-top">
-        <div class="card-top__left">
-          <div
-            class="provider-icon"
-            [style.color]="providerColor[item.provider] || '#94a3b8'"
-            [innerHTML]="providerIconHtml[item.provider]"
-          ></div>
-          <div class="provider-heading">
-            <h3 class="provider-name">{{ item.name }}</h3>
-            <span class="category-pill">{{ item.category }}</span>
-          </div>
-        </div>
-
-        <div class="card-top__status">
-          <span class="status-pill" [ngClass]="item.status">
-            <span
-              *ngIf="item.status === 'connected' && !isProviderUnavailable(item.provider)"
-              class="status-dot-pulse"
-            ></span>
-            {{
-              isProviderUnavailable(item.provider)
-                ? 'Unavailable'
-                : item.status === 'connected'
-                  ? 'Connected'
-                  : item.status === 'error'
-                    ? 'Error'
-                    : item.status === 'pending' || item.status === 'connecting'
-                      ? 'Pending'
-                      : 'Available'
-            }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Description (Stable Height) -->
-      <p class="description">{{ item.description }}</p>
-
-      <!-- Impact Tags (Stable Height) -->
-      <div class="impact-tags">
-        <span class="impact-tag" *ngFor="let impact of getImpactItems(item.provider)">{{
-          impact
-        }}</span>
-      </div>
-
-      <!-- Credentials & Connection Metadata Zone (Zero Fluctuation Height) -->
-      <div class="credentials-zone">
-        <!-- Connected State Meta -->
-        <div class="meta-connected" *ngIf="item.status === 'connected'">
-          <div class="meta-row" *ngIf="item.externalUsername">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span class="meta-user font-mono">{{ item.externalUsername }}</span>
-          </div>
-          <div class="meta-row" *ngIf="item.lastSyncedAt">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span class="meta-sync font-mono"
-              >Synced {{ item.lastSyncedAt | date: 'MMM d, HH:mm' }}</span
-            >
-          </div>
-          <p class="field-hint" *ngIf="item.resourceSummary">
-            Public sample: {{ item.resourceSummary.notebooks }} notebooks,
-            {{ item.resourceSummary.datasets }} datasets. Ownership unverified; scoring unchanged.
-          </p>
-          <div
-            class="meta-live-badge"
-            *ngIf="!isProviderUnavailable(item.provider) && item.provider !== 'kaggle'"
-          >
-            <span class="live-dot"></span>
-            <span>{{
-              item.provider === 'github'
-                ? 'Webhook & Live Ingestion Active'
-                : 'On-Demand Ingestion Synced'
-            }}</span>
-          </div>
-        </div>
-
-        <!-- Disconnected OAuth2 Mode Badge -->
-        <div class="meta-oauth" *ngIf="item.status !== 'connected' && item.authMode === 'oauth2'">
-          <div class="oauth-badge">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <span>OAuth2 Secure Authentication</span>
-          </div>
-          <p class="oauth-desc">
-            OAuth tokens are encrypted server-side. This page does not collect provider passwords.
-          </p>
-        </div>
-
-        <!-- Disconnected Manual Inputs -->
-        <div
-          class="manual-fields"
-          *ngIf="
-            item.status !== 'connected' &&
-            item.authMode === 'manual' &&
-            !isProviderUnavailable(item.provider)
-          "
-        >
-          <div class="field-wrap">
-            <label [for]="'input-' + item.provider">{{ getInputLabel(item.provider) }}</label>
-            <div class="input-shell">
-              <input
-                [id]="'input-' + item.provider"
-                type="text"
-                [placeholder]="getInputPlaceholder(item.provider)"
-                [(ngModel)]="manualUsername[item.provider]"
-                [disabled]="busyProvider === item.provider"
-              />
-            </div>
-            <span class="field-hint" *ngIf="getInputHint(item.provider)">{{
-              getInputHint(item.provider)
-            }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Secondary Action for Kaggle: Linked Profile Fallback inside card -->
-      <div class="card-secondary-zone" *ngIf="item.provider === 'kaggle'">
-        <app-kaggle-linked-profile />
-      </div>
-
-      <!-- Action Footer (Anchored to Bottom) -->
-      <div class="actions">
-        <!-- Connected State Buttons -->
-        <ng-container *ngIf="item.status === 'connected'">
-          <button
-            type="button"
-            class="btn btn-secondary sync-btn"
-            (click)="runIngestion(item.provider)"
-            [disabled]="busyProvider === item.provider || isProviderUnavailable(item.provider)"
-          >
-            <svg
-              [class.spinning]="busyProvider === item.provider && busyAction === 'sync'"
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-            <span>{{
-              busyProvider === item.provider && busyAction === 'sync' ? 'Syncing…' : 'Sync Now'
-            }}</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-danger disconnect-btn"
-            (click)="disconnect(item)"
-            [disabled]="busyProvider === item.provider"
-          >
-            <span
-              *ngIf="busyProvider === item.provider && busyAction === 'disconnect'"
-              class="btn-spinner"
-            ></span>
-            <span>{{
-              busyProvider === item.provider && busyAction === 'disconnect'
-                ? 'Disconnecting…'
-                : 'Disconnect'
-            }}</span>
-          </button>
-        </ng-container>
-
-        <!-- Disconnected State Connect Button -->
-        <ng-container *ngIf="item.status !== 'connected'">
-          <button
-            type="button"
-            class="btn btn-primary connect-btn"
-            (click)="connect(item)"
-            [disabled]="busyProvider === item.provider || isProviderUnavailable(item.provider)"
-          >
-            <svg
-              *ngIf="busyProvider !== item.provider && item.authMode === 'oauth2'"
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <svg
-              *ngIf="busyProvider !== item.provider && item.authMode === 'manual'"
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-            <span *ngIf="busyProvider === item.provider" class="btn-spinner"></span>
-            <span>
-              {{
-                busyProvider === item.provider
-                  ? item.authMode === 'oauth2'
-                    ? 'Connecting…'
-                    : 'Connecting + Syncing…'
-                  : item.authMode === 'oauth2'
-                    ? 'Connect with OAuth'
-                    : 'Connect + Sync'
-              }}
-            </span>
-          </button>
-        </ng-container>
-      </div>
-    </article>
+      [item]="item"
+      [busyProvider]="busyProvider"
+      [busyAction]="busyAction"
+      [unavailable]="isProviderUnavailable(item.provider)"
+      [icon]="providerIconHtml[item.provider]"
+      [color]="providerColor[item.provider]"
+      [username]="manualUsername[item.provider]"
+      (usernameChange)="manualUsername[item.provider] = $event"
+      (connect)="connect($event)"
+      (sync)="runIngestion($event)"
+      (disconnect)="disconnect($event)"
+    ></article>
   </div>
 
   <!-- ── Empty Search / Filter State ───────────────────────────────────────── -->

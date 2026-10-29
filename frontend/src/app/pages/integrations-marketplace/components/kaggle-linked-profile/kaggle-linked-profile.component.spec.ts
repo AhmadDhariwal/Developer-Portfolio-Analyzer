@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { KaggleLinkedProfileComponent } from './kaggle-linked-profile.component';
-import { IntegrationsService } from '../../../shared/services/integrations.service';
+import { IntegrationsService } from '../../../../shared/services/integrations.service';
 
 describe('KaggleLinkedProfileComponent', () => {
   it('keeps Kaggle links unverified and separate from connect, sync and scoring', () => {

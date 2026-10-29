@@ -1,113 +1,39 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { finalize } from 'rxjs/operators';
-import { KaggleLinkedProfileComponent } from './components/kaggle-linked-profile.component';
+import { IntegrationsPageHeaderComponent } from './components/integrations-page-header/integrations-page-header.component';
+import { IntegrationTelemetryComponent } from './components/integration-telemetry/integration-telemetry.component';
+import { IntegrationCategoryFiltersComponent } from './components/integration-category-filters/integration-category-filters.component';
+import { IngestionActivityTerminalComponent } from './components/ingestion-activity-terminal/ingestion-activity-terminal.component';
+import { IntegrationProviderCardComponent } from './components/integration-provider-card/integration-provider-card.component';
+import { PROVIDER_META } from './config/provider-metadata';
+import {
+  IngestionLogEntry,
+  MarketplaceCategory,
+  CategoryGroup,
+  BusyAction,
+} from './config/marketplace.models';
+import * as presentation from './utils/marketplace-presentation';
+export type { IngestionLogEntry } from './config/marketplace.models';
 import {
   IntegrationsService,
   IntegrationMarketplaceItem,
   ProviderName,
 } from '../../shared/services/integrations.service';
 
-// ── Provider metadata for richer UI ──────────────────────────────────────
-const PROVIDER_META: Record<
-  string,
-  {
-    icon: string;
-    color: string;
-    categoryGroup: 'code' | 'algo' | 'community' | 'knowledge';
-    inputLabel: string;
-    inputPlaceholder: string;
-    inputHint: string;
-    impact: string[];
-  }
-> = {
-  github: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>`,
-    color: '#a3a6ff',
-    categoryGroup: 'code',
-    inputLabel: 'GitHub Username',
-    inputPlaceholder: 'your-github-handle',
-    inputHint: 'Syncs commit history, repositories, and pull requests',
-    impact: ['Repo AST Analysis', 'Language proficiencies', 'PR velocity'],
-  },
-  linkedin: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
-    color: '#53ddfc',
-    categoryGroup: 'community',
-    inputLabel: '',
-    inputPlaceholder: '',
-    inputHint: 'Secure OAuth2 OpenID Connect for verified basic profile identity',
-    impact: ['OpenID profile identity', 'Basic profile claims', 'Name and optional email claims'],
-  },
-  leetcode: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>`,
-    color: '#f59e0b',
-    categoryGroup: 'algo',
-    inputLabel: 'LeetCode Username',
-    inputPlaceholder: 'your-leetcode-username',
-    inputHint: 'Extracts contest percentile, difficulty split and streaks',
-    impact: ['DSA & Algo problem counts', 'Difficulty distribution', 'Contest ranking'],
-  },
-  kaggle: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.825 23.859c-.022.092-.117.141-.281.141h-3.139c-.187 0-.351-.082-.492-.248l-5.178-6.589-1.448 1.374v5.111c0 .235-.117.352-.351.352H5.505c-.236 0-.354-.117-.354-.352V.353c0-.233.118-.353.354-.353h2.431c.234 0 .351.12.351.353v14.343l6.203-6.272c.165-.165.33-.246.495-.246h3.239c.144 0 .236.06.285.18.046.149.034.255-.036.315l-6.555 6.344 6.836 8.507c.095.104.117.208.07.336z"/></svg>`,
-    color: '#20beff',
-    categoryGroup: 'algo',
-    inputLabel: 'Kaggle Username',
-    inputPlaceholder: 'your-kaggle-username',
-    inputHint: 'Public resource samples only. Ownership unverified; no scoring impact.',
-    impact: ['Public resource observations', 'Notebook & dataset samples'],
-  },
-  stackoverflow: {
-    icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.986 21.865v-6.404h2.134V24H1.844v-8.539h2.13v6.404h15.012zM6.111 19.731H16.85v-2.137H6.111v2.137zm.259-4.852 10.48 2.189.451-2.07-10.478-2.187-.453 2.068zm1.359-5.056 9.705 4.53.903-1.95-9.706-4.53-.902 1.95zm2.715-4.785 8.217 6.855 1.359-1.62-8.216-6.853-1.36 1.618zM15.751 0l-1.746 1.294 6.405 8.604 1.746-1.294L15.751 0z"/></svg>`,
-    color: '#f48024',
-    categoryGroup: 'community',
-    inputLabel: 'Stack Overflow User ID',
-    inputPlaceholder: 'numeric user ID (e.g. 123456)',
-    inputHint: 'Found in your profile URL (stackoverflow.com/users/ID/name)',
-    impact: ['Reputation & badge metrics', 'Top discussion tags', 'Answers & questions'],
-  },
-  portfolio: {
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-    color: '#a78bfa',
-    categoryGroup: 'code',
-    inputLabel: 'Portfolio Site URL',
-    inputPlaceholder: 'https://yourportfolio.dev',
-    inputHint: 'HTML scan, response latency, and tech stack detection',
-    impact: ['Tech stack detection', 'Response latency check', 'SEO metadata signals'],
-  },
-  certifications: {
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
-    color: '#34d399',
-    categoryGroup: 'knowledge',
-    inputLabel: 'Certifications (comma-separated)',
-    inputPlaceholder: 'AWS Solutions Architect, Google Cloud Professional',
-    inputHint: 'Self-reported certification names (comma-separated). Unverified.',
-    impact: ['Self-reported credentials', 'Inferred domain skills', 'Certification catalog'],
-  },
-  devblogs: {
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
-    color: '#fb7185',
-    categoryGroup: 'knowledge',
-    inputLabel: 'Dev.to Username',
-    inputPlaceholder: 'devto@your-handle',
-    inputHint: 'Use devto@username. Up to 30 public Dev.to posts per read.',
-    impact: ['Technical thought leadership', 'Article publication history', 'Reaction signals'],
-  },
-};
-
-export interface IngestionLogEntry {
-  time: string;
-  level: 'info' | 'success' | 'warn' | 'error';
-  message: string;
-}
-
 @Component({
   selector: 'app-integrations-marketplace',
   standalone: true,
-  imports: [CommonModule, FormsModule, KaggleLinkedProfileComponent],
+  imports: [
+    CommonModule,
+    IntegrationsPageHeaderComponent,
+    IntegrationTelemetryComponent,
+    IntegrationCategoryFiltersComponent,
+    IngestionActivityTerminalComponent,
+    IntegrationProviderCardComponent,
+  ],
   templateUrl: './integrations-marketplace.component.html',
   styleUrl: './integrations-marketplace.component.scss',
 })
@@ -117,9 +43,10 @@ export class IntegrationsMarketplaceComponent implements OnInit {
   syncAllLoading = false;
   errorMessage = '';
   busyProvider: ProviderName | '' = '';
-  busyAction: 'connect' | 'sync' | 'disconnect' | '' = '';
+  busyAction: BusyAction = '';
+  isProcessingOAuthCallback = false;
 
-  activeCategory: 'all' | 'connected' | 'code' | 'algo' | 'community' | 'knowledge' = 'all';
+  activeCategory: MarketplaceCategory = 'all';
   searchQuery = '';
   isTerminalOpen = false;
 
@@ -207,12 +134,73 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     this.handleOAuthCallback();
   }
 
+  @HostListener('window:pageshow', ['$event'])
+  onPageShow(event?: PageTransitionEvent): void {
+    if (this.busyAction === 'connect' && !this.isProcessingOAuthCallback) {
+      this.busyProvider = '';
+      this.busyAction = '';
+      this.cdr.detectChanges();
+    }
+    if (event?.persisted) {
+      this.loadMarketplace();
+      this.loadInsights();
+    }
+  }
+
+  @HostListener('window:pagehide')
+  onPageHide(): void {
+    if (this.busyAction === 'connect' && !this.isProcessingOAuthCallback) {
+      this.busyProvider = '';
+      this.busyAction = '';
+    }
+  }
+
+  @HostListener('window:focus')
+  @HostListener('document:visibilitychange')
+  onWindowFocusOrVisibility(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      if (this.busyAction === 'connect' && !this.isProcessingOAuthCallback) {
+        this.busyProvider = '';
+        this.busyAction = '';
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
   handleOAuthCallback(): void {
     const query = this.route.snapshot.queryParamMap;
 
+    const error = query.get('error');
+    if (error) {
+      this.busyProvider = '';
+      this.busyAction = '';
+      this.isProcessingOAuthCallback = false;
+      const errorDescription = query.get('error_description');
+      const friendlyMessage =
+        errorDescription ||
+        (error === 'user_cancelled_authorize' || error === 'access_denied'
+          ? 'OAuth authorization was cancelled or denied.'
+          : error === 'callback_failed'
+            ? 'OAuth authentication failed.'
+            : `OAuth authorization error: ${error}`);
+      this.errorMessage = friendlyMessage;
+      this.addTerminalLog('warn', friendlyMessage);
+      this.router.navigate([], {
+        queryParams: { error: null, error_description: null, state: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+      this.cdr.detectChanges();
+      return;
+    }
+
     const success = query.get('success');
     if (success === 'github') {
-      this.router.navigate([], { queryParams: { success: null }, queryParamsHandling: 'merge' });
+      this.router.navigate([], {
+        queryParams: { success: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
       this.addTerminalLog(
         'success',
         'GitHub OAuth callback accepted. Triggering automated AST ingestion…',
@@ -229,7 +217,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     // state is opaque and is validated against the owned server-side attempt.
     const providerFromState: ProviderName = 'linkedin';
 
+    this.isProcessingOAuthCallback = true;
     this.busyProvider = providerFromState;
+    this.busyAction = 'connect';
     this.addTerminalLog('info', `Processing OAuth callback for ${providerFromState}…`);
 
     this.integrationsService.oauthCallback(providerFromState, code, state).subscribe({
@@ -241,7 +231,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
         this.executeIngestion(providerFromState, true);
       },
       error: (err) => {
+        this.isProcessingOAuthCallback = false;
         this.busyProvider = '';
+        this.busyAction = '';
         this.errorMessage =
           err?.error?.message || `OAuth callback failed for ${providerFromState}.`;
         this.addTerminalLog(
@@ -249,6 +241,11 @@ export class IntegrationsMarketplaceComponent implements OnInit {
           `OAuth callback failure for ${providerFromState}: ${this.errorMessage}`,
         );
         this.isLoading = false;
+        this.router.navigate([], {
+          queryParams: { code: null, state: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
         this.cdr.detectChanges();
       },
     });
@@ -326,6 +323,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       next: (oauth) => {
         if (!oauth?.authorizationUrl) {
           this.busyProvider = '';
+          this.busyAction = '';
           this.errorMessage = oauth?.message || `Could not start OAuth for ${item.name}.`;
           this.addTerminalLog(
             'error',
@@ -339,6 +337,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       },
       error: (err) => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.errorMessage = err?.error?.message || `Could not start OAuth for ${item.name}.`;
         this.addTerminalLog('error', `OAuth initiation error: ${this.errorMessage}`);
         this.cdr.detectChanges();
@@ -372,6 +371,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       },
       error: (err) => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.errorMessage = err?.error?.message || `Could not connect ${item.name}.`;
         this.addTerminalLog('error', `Connection rejected for ${item.name}: ${this.errorMessage}`);
         this.cdr.detectChanges();
@@ -425,7 +425,9 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+          this.isProcessingOAuthCallback = false;
           this.busyProvider = '';
+          this.busyAction = '';
           this.addTerminalLog(
             'success',
             `Ingestion completed for ${provider}. Insights recalculated.`,
@@ -433,19 +435,29 @@ export class IntegrationsMarketplaceComponent implements OnInit {
           this.loadMarketplace();
           this.loadInsights();
           if (clearQueryAfter) {
-            this.router.navigate([], { queryParams: {}, replaceUrl: true });
+            this.router.navigate([], {
+              queryParams: { code: null, state: null, success: null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true,
+            });
           }
           this.cdr.detectChanges();
         },
         error: (err) => {
+          this.isProcessingOAuthCallback = false;
           this.busyProvider = '';
+          this.busyAction = '';
           this.errorMessage = err?.error?.message || `Ingestion failed for ${provider}.`;
           this.addTerminalLog(
             'error',
             `Ingestion pipeline error for ${provider}: ${this.errorMessage}`,
           );
           if (clearQueryAfter) {
-            this.router.navigate([], { queryParams: {}, replaceUrl: true });
+            this.router.navigate([], {
+              queryParams: { code: null, state: null, success: null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true,
+            });
           }
           this.cdr.detectChanges();
         },
@@ -454,12 +466,14 @@ export class IntegrationsMarketplaceComponent implements OnInit {
 
   private executeSyncNow(provider: ProviderName): void {
     if (this.isProviderUnavailable(provider)) return;
+    this.busyProvider = provider;
     this.busyAction = 'sync';
     this.addTerminalLog('info', `Triggering live synchronization for adapter: ${provider}…`);
 
     this.integrationsService.syncNow(provider).subscribe({
       next: () => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.addTerminalLog('success', `Sync finished for ${provider}. New data parsed.`);
         this.loadMarketplace();
         this.loadInsights();
@@ -467,6 +481,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       },
       error: (err) => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.errorMessage = err?.error?.message || `Sync failed for ${provider}.`;
         this.addTerminalLog('error', `Sync failure for ${provider}: ${this.errorMessage}`);
         this.cdr.detectChanges();
@@ -483,6 +498,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     this.integrationsService.disconnect(item.provider).subscribe({
       next: () => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.addTerminalLog('info', `Disconnected ${item.name}. Ingestion pipeline purged.`);
         this.loadMarketplace();
         this.loadInsights();
@@ -490,6 +506,7 @@ export class IntegrationsMarketplaceComponent implements OnInit {
       },
       error: () => {
         this.busyProvider = '';
+        this.busyAction = '';
         this.errorMessage = `Failed to disconnect ${item.name}.`;
         this.addTerminalLog('error', `Disconnect command failed for ${item.name}.`);
         this.cdr.detectChanges();
@@ -525,66 +542,23 @@ export class IntegrationsMarketplaceComponent implements OnInit {
     }
   }
 
-  // ── Telemetry & category helpers ──────────────────────────────────────
-
-  getCategoryStats(group: 'code' | 'algo' | 'community' | 'knowledge'): string {
-    const list = this.integrations.filter(
-      (item) => PROVIDER_META[item.provider]?.categoryGroup === group,
-    );
-    const connected = list.filter((item) => item.status === 'connected').length;
-    return `${connected}/${list.length}`;
+  // Pure presentation helpers are also available to existing page callers.
+  getCategoryStats(group: CategoryGroup): string {
+    return presentation.getCategoryStats(this.integrations, group);
   }
-
-  getCategoryPercent(group: 'code' | 'algo' | 'community' | 'knowledge'): number {
-    const list = this.integrations.filter(
-      (item) => PROVIDER_META[item.provider]?.categoryGroup === group,
-    );
-    if (!list.length) return 0;
-    const connected = list.filter((item) => item.status === 'connected').length;
-    return Math.round((connected / list.length) * 100);
+  getCategoryPercent(group: CategoryGroup): number {
+    return presentation.getCategoryPercent(this.integrations, group);
   }
-
-  getCategoryTotal(group: 'code' | 'algo' | 'community' | 'knowledge'): number {
-    return this.integrations.filter((item) => PROVIDER_META[item.provider]?.categoryGroup === group)
-      .length;
+  getCategoryTotal(group: CategoryGroup): number {
+    return presentation.getCategoryTotal(this.integrations, group);
   }
-
-  // ── UI helpers ────────────────────────────────────────────────────────
-
-  isProviderUnavailable(provider: string): boolean {
-    return (
-      provider === 'kaggle' &&
-      this.integrations.find((item) => item.provider === provider)?.available !== true
-    );
+  isProviderUnavailable(provider: ProviderName): boolean {
+    return presentation.isProviderUnavailable(this.integrations, provider);
   }
-
-  getInputLabel(provider: string): string {
-    return PROVIDER_META[provider]?.inputLabel || 'Username';
-  }
-
-  getInputPlaceholder(provider: string): string {
-    return PROVIDER_META[provider]?.inputPlaceholder || 'Enter username';
-  }
-
-  getInputHint(provider: string): string {
-    return PROVIDER_META[provider]?.inputHint || '';
-  }
-
-  getImpactItems(provider: string): string[] {
-    return PROVIDER_META[provider]?.impact || [];
-  }
-
-  getScoreHealthLabel(score: number): string {
-    if (score >= 75) return 'Optimal';
-    if (score >= 50) return 'Healthy';
-    if (score >= 25) return 'Developing';
-    return 'Initializing';
-  }
-
-  getScoreHealthClass(score: number): string {
-    if (score >= 75) return 'health--excellent';
-    if (score >= 50) return 'health--good';
-    if (score >= 25) return 'health--fair';
-    return 'health--low';
-  }
+  readonly getInputLabel = presentation.getInputLabel;
+  readonly getInputPlaceholder = presentation.getInputPlaceholder;
+  readonly getInputHint = presentation.getInputHint;
+  readonly getImpactItems = presentation.getImpactItems;
+  readonly getScoreHealthLabel = presentation.getScoreHealthLabel;
+  readonly getScoreHealthClass = presentation.getScoreHealthClass;
 }
