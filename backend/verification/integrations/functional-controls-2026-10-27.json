@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-27T14:02:44.634Z",
+  "applicationDatabaseUsed": false,
+  "providerRequests": 0,
+  "checks": {
+    "retiredIngestion": "PASS: no HTTP; sanitized failure and scheduled retry; prior insight preserved",
+    "sharedAdmission": "PASS: real Upstash Lua/counters deny the second per-account request; unique synthetic provider, no quota resets",
+    "upstashCacheRoundTrip": "PASS at bounded 1000ms; unique task key expires after 30 seconds",
+    "safeDisconnect": "PASS: owned Mongo transaction independent of Redis controls"
+  },
+  "oauth": {
+    "github": {
+      "configurationPresent": true,
+      "callbackPathMatches": true,
+      "noEmbeddedCredentials": true,
+      "authenticatedAcceptance": "BLOCKED: user interactive authorization and consent not provided"
+    },
+    "linkedin": {
+      "configurationPresent": true,
+      "callbackPathMatches": true,
+      "noEmbeddedCredentials": true,
+      "authenticatedAcceptance": "BLOCKED: user interactive authorization and consent not provided"
+    }
+  },
+  "status": "PASS",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 112,
+    "productionDataUsed": false
+  }
+}

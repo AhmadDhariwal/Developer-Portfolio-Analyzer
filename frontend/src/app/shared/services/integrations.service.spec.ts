@@ -4,7 +4,11 @@ import { IntegrationsService } from './integrations.service';
 
 describe('IntegrationsService', () => {
   let service: IntegrationsService;
-  let http: { post: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> };
+  let http: {
+    post: ReturnType<typeof vi.fn>;
+    delete: ReturnType<typeof vi.fn>;
+    get: ReturnType<typeof vi.fn>;
+  };
   let invalidation: { clearDeveloperSignalCaches: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
@@ -27,6 +31,19 @@ describe('IntegrationsService', () => {
     http.post.mockReturnValueOnce(throwError(() => new Error('failed')));
     service.syncNow('github').subscribe({ error: () => undefined });
 
+    expect(invalidation.clearDeveloperSignalCaches).not.toHaveBeenCalled();
+  });
+
+  it('uses separate linked-profile endpoints without invalidating developer-signal scores', () => {
+    service.getHackerRankLinkedProfile().subscribe();
+    service.saveHackerRankLinkedProfile('coder').subscribe();
+    service.removeHackerRankLinkedProfile().subscribe();
+    expect(http.get.mock.calls[0][0]).toMatch(/\/linked-profiles\/hackerrank$/);
+    expect(http.post).toHaveBeenCalledWith(
+      expect.stringMatching(/\/linked-profiles\/hackerrank$/),
+      { profile: 'coder' },
+    );
+    expect(http.delete.mock.calls[0][0]).toMatch(/\/linked-profiles\/hackerrank$/);
     expect(invalidation.clearDeveloperSignalCaches).not.toHaveBeenCalled();
   });
 });

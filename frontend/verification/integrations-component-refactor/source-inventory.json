@@ -1,0 +1,129 @@
+{
+  "before": {
+    "branch": "task/integrations",
+    "target": "not applicable",
+    "parent": {
+      "ts": {
+        "lines": 681,
+        "bytes": 27104,
+        "sha256": "7bcc397e43dfce022d4a6b583bd4a28150c3c4d86240cca90e57c46063791443"
+      },
+      "html": {
+        "lines": 694,
+        "bytes": 24503,
+        "sha256": "e704eeecfc551b10eb65eaca4f85b9c614b8bbb0a3b7beeb718c898b77094a31"
+      },
+      "scss": {
+        "lines": 1798,
+        "bytes": 39949,
+        "sha256": "433a89bbc77e94f54962f10f79a5b421f8f41d1a8ccb28aaaba69055f932144c"
+      }
+    },
+    "orchestrationHash": "3ad9edd3234f7e9c38297fed6f4ab214e4afe2efc7bfc063137c6b7ec6361352",
+    "concurrentWork": "OAuth recovery/HostListener changes in parent and its spec appeared during baseline; preserved from working tree.",
+    "compiledCssBytes": 38329
+  },
+  "after": {
+    "parent": {
+      "ts": {
+        "lines": 564,
+        "bytes": 19693,
+        "sha256": "e1ec9e448ac1ee92e267b6f56c90d577acfcb833ce9f86e5dd26e807bf4ebf1a"
+      },
+      "html": {
+        "lines": 133,
+        "bytes": 5137,
+        "sha256": "9e2c9a20b196fc548a3173ab7030ef44cab04d80d8df1d92279d1112f0800760"
+      },
+      "scss": {
+        "lines": 165,
+        "bytes": 3335,
+        "sha256": "9b6a1acb50aa5da7e7c42d538dd5b7854f3aeb014ff602cd21c828048851cbdb"
+      },
+      "compiledCssBytes": 3722
+    },
+    "components": [
+      {
+        "name": "header",
+        "ts": {
+          "lines": 19,
+          "bytes": 762
+        },
+        "html": {
+          "lines": 72,
+          "bytes": 2056
+        },
+        "scss": {
+          "lines": 201,
+          "bytes": 4319
+        },
+        "compiledCssBytes": 4697
+      },
+      {
+        "name": "telemetry",
+        "ts": {
+          "lines": 35,
+          "bytes": 1313
+        },
+        "html": {
+          "lines": 197,
+          "bytes": 6174
+        },
+        "scss": {
+          "lines": 604,
+          "bytes": 13032
+        },
+        "compiledCssBytes": 14943
+      },
+      {
+        "name": "terminal",
+        "ts": {
+          "lines": 14,
+          "bytes": 544
+        },
+        "html": {
+          "lines": 23,
+          "bytes": 752
+        },
+        "scss": {
+          "lines": 122,
+          "bytes": 2073
+        },
+        "compiledCssBytes": 1820
+      },
+      {
+        "name": "filters",
+        "ts": {
+          "lines": 22,
+          "bytes": 980
+        },
+        "html": {
+          "lines": 60,
+          "bytes": 1514
+        },
+        "scss": {
+          "lines": 91,
+          "bytes": 2038
+        },
+        "compiledCssBytes": 1774
+      },
+      {
+        "name": "provider-card",
+        "ts": {
+          "lines": 40,
+          "bytes": 1683
+        },
+        "html": {
+          "lines": 230,
+          "bytes": 7339
+        },
+        "scss": {
+          "lines": 554,
+          "bytes": 11895
+        },
+        "compiledCssBytes": 12533
+      }
+    ],
+    "compiledCssBytes": 39489
+  }
+}

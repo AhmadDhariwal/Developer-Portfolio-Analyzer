@@ -1,0 +1,348 @@
+{
+  "startedAt": "2026-10-27T16:22:11.371Z",
+  "applicationDatabaseUsed": false,
+  "api": [
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/login",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/manual/connect",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/sync-now",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/sync-now",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "POST",
+      "path": "/manual/connect",
+      "status": 500
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "DELETE",
+      "path": "/connections/certifications",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "DELETE",
+      "path": "/connections/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "DELETE",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/marketplace",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/insights",
+      "status": 200
+    },
+    {
+      "kind": "api",
+      "method": "GET",
+      "path": "/linked-profiles/kaggle",
+      "status": 200
+    }
+  ],
+  "externalRequests": [],
+  "snapshots": [
+    {
+      "at": "2026-10-27T16:22:50.390Z",
+      "connections": [],
+      "integrationScore": null,
+      "scoredProviders": [],
+      "verifiedSkills": []
+    },
+    {
+      "at": "2026-10-27T16:26:14.050Z",
+      "connections": [
+        {
+          "provider": "certifications",
+          "status": "connected",
+          "ownershipVerified": false,
+          "lastSynced": true,
+          "lastError": ""
+        }
+      ],
+      "integrationScore": 24,
+      "scoredProviders": ["certifications"],
+      "verifiedSkills": []
+    },
+    {
+      "at": "2026-10-27T16:26:14.071Z",
+      "connections": [
+        {
+          "provider": "certifications",
+          "status": "connected",
+          "ownershipVerified": false,
+          "lastSynced": true,
+          "lastError": ""
+        },
+        {
+          "provider": "kaggle",
+          "status": "connected",
+          "ownershipVerified": false,
+          "lastSynced": true,
+          "lastError": "",
+          "resources": {
+            "notebooks": 20,
+            "datasets": 19
+          }
+        }
+      ],
+      "integrationScore": 24,
+      "scoredProviders": ["certifications"],
+      "verifiedSkills": []
+    },
+    {
+      "at": "2026-10-27T16:31:58.138Z",
+      "connections": [
+        {
+          "provider": "certifications",
+          "status": "disconnected",
+          "ownershipVerified": false,
+          "lastSynced": false,
+          "lastError": ""
+        },
+        {
+          "provider": "kaggle",
+          "status": "connected",
+          "ownershipVerified": false,
+          "lastSynced": true,
+          "lastError": "",
+          "resources": {
+            "notebooks": 20,
+            "datasets": 19
+          }
+        },
+        {
+          "provider": "portfolio",
+          "status": "pending",
+          "ownershipVerified": false,
+          "lastSynced": false,
+          "lastError": ""
+        }
+      ],
+      "integrationScore": 0,
+      "scoredProviders": [],
+      "verifiedSkills": []
+    },
+    {
+      "at": "2026-10-27T16:34:08.059Z",
+      "connections": [
+        {
+          "provider": "certifications",
+          "status": "disconnected",
+          "ownershipVerified": false,
+          "lastSynced": false,
+          "lastError": ""
+        },
+        {
+          "provider": "kaggle",
+          "status": "disconnected",
+          "ownershipVerified": false,
+          "lastSynced": false,
+          "lastError": ""
+        },
+        {
+          "provider": "portfolio",
+          "status": "pending",
+          "ownershipVerified": false,
+          "lastSynced": false,
+          "lastError": ""
+        }
+      ],
+      "integrationScore": 0,
+      "scoredProviders": [],
+      "verifiedSkills": []
+    }
+  ],
+  "kaggleSeed": "Retained real-data fixture only; no fetch; scored document byte-identical",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 398,
+    "productionDataUsed": false
+  },
+  "finishedAt": "2026-10-27T16:34:08.621Z"
+}

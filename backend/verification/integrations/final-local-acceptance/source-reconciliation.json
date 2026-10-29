@@ -1,0 +1,77 @@
+{
+  "changedSincePreflight": [
+    {
+      "file": "backend/src/tests/integrationsLocalAcceptance.test.js",
+      "before": "493b0a65546ee9e60ea1e1fc1539e9e27e86be7b338f247d29dd32e778076c44",
+      "after": "a03212cbb851fe734316292a1b6fd698cb446d5fc8e1b3c42141e2ac21cebc74"
+    },
+    {
+      "file": "frontend/src/app/auth/login/login.scss",
+      "before": "a340014f1d3bb3cf7c1fc71d4c2a23cadb938a55f5079b40cab11c3479269846",
+      "after": "a0fb2d0f52f52999d6e3cb283a13e671fb5e826db269aa1073d0ff6a5bfb2266"
+    },
+    {
+      "file": "frontend/src/app/auth/signup/signup.scss",
+      "before": "64ccd0a072f3bf5ce7f58dcdfa195a700905367f05e220aa438e80c8c30a940a",
+      "after": "03214fa652bcea812f3bbff0bf1ace8a297c2bb2d51c5401d67ad7ddf4ad9c58"
+    },
+    {
+      "file": "frontend/src/app/features/auth/pages/forgot-password/forgot-password.component.scss",
+      "before": "baee7c27e8e9c8b9bb507d099112de22642434b8492cd02c0e4479d0b20aa4e0",
+      "after": "e452692c970112b7e99add62ea22392921f21b3417f02e39abe13fc5f2714726"
+    },
+    {
+      "file": "frontend/src/app/features/auth/pages/otp-verification/otp-verification.component.scss",
+      "before": "0fff03c2867b6187787780b4091959f868419cd7c6c4cbc1904bb762d1d4d95e",
+      "after": "200a3db789b93bd9751ff3320805b76e2b5c1bd177b24414c8cd251edb57685c"
+    },
+    {
+      "file": "frontend/src/app/features/auth/pages/reset-password/reset-password.component.scss",
+      "before": "f9009d6d119d82c884d346d432a3b79f3a4ee32bf7b1d396dbb2733210c7ff95",
+      "after": "7aa3258b52dfd2a1fc4f4c44b55d5bb2bbd73dd1677c8b92b276c7c0be4af355"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.scss",
+      "before": "8ac20e36188695bd240b1ba4948b0ab50e83edd0e05083e15164717ecf136ca8",
+      "after": "25d0b67926ae738cdac97226de3a1d52f7b13c5e1f50cc9ed07423d0d5d2a610"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+      "before": "e9bb4411dbe05110b6fb64e4e4aae55ff95a1443d2d9eb511d27d273eb1a6457",
+      "after": "228f3cb1599b67b119a3f3a47625b24cb6cec9158c4322cce4fc3088b3e190d4"
+    },
+    {
+      "file": "frontend/src/app/pages/landing-page/landing-page.component.scss",
+      "before": "ab5025f4b537342742811654ab4e661633a80d72ec36d19b75b1b4dcfcb71057",
+      "after": "e9afc39308eca51d923aa53ae42138341d8ec7dca315dd54066adb02e2eededf"
+    },
+    {
+      "file": "frontend/src/app/shared/services/landing-theme.service.ts",
+      "before": "3c8d1b3915b2eff1a6355c32407e136a78c9ba7501c8b9c46b531fba6bd1483e",
+      "after": "b098027496ff1fa35ce643c3fc5a9e095a8026b8c7996f683ce2dd24df8ba2fa"
+    },
+    {
+      "file": "frontend/src/app/shared/styles/_auth-theme.scss",
+      "before": "dcff7b7008048036e4d1f8e1bccecb66e14a58ff7b507ef7ac05a6f6dd087d87",
+      "after": "6346ee489899073c03ca8b3ee282d86314ae117731cbb82dfdde72b43cc93d8e"
+    }
+  ],
+  "frontendDriftSinceAcceptedBuildSnapshot": [],
+  "taskOwnedSourceChanges": [
+    "backend/src/tests/integrationsLocalAcceptance.test.js"
+  ],
+  "concurrentPreservedChanges": [
+    "frontend/src/app/auth/login/login.scss",
+    "frontend/src/app/auth/signup/signup.scss",
+    "frontend/src/app/features/auth/pages/forgot-password/forgot-password.component.scss",
+    "frontend/src/app/features/auth/pages/otp-verification/otp-verification.component.scss",
+    "frontend/src/app/features/auth/pages/reset-password/reset-password.component.scss",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.scss",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+    "frontend/src/app/pages/landing-page/landing-page.component.scss",
+    "frontend/src/app/shared/services/landing-theme.service.ts",
+    "frontend/src/app/shared/styles/_auth-theme.scss"
+  ],
+  "productionSourceChangesByTask": 0,
+  "angularBudgetsUnchanged": true
+}

@@ -1,5 +1,7 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
 
+const USER_RESPONSE_FILTER = '!0Z-LvgkLYnfxC9thLf37WiBP(';
+
 class StackOverflowAdapter extends BaseIntegrationAdapter {
   constructor() {
     super('stackoverflow');
@@ -12,7 +14,8 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Enter your Stack Overflow user ID (numeric) or username to fetch public reputation, badges, and top tags.'
+      helpText:
+        'Enter your Stack Overflow user ID (numeric) or username to fetch public reputation, badges, and top tags.'
     };
   }
 
@@ -28,12 +31,11 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
       throw new Error(`Stack Overflow user "${username}" not found.`);
     }
 
-    const [userInfo, badges, topTags] = await Promise.all([
-      this.fetchUser(userId),
-      this.fetchBadges(userId),
-      this.fetchTopTags(userId)
-    ]);
-
+    // A profile requires three requests; shared provider admission defaults to two concurrent.
+    const userInfo = await this.fetchUser(userId);
+    if (!userInfo) throw Error('Stack Overflow profile unavailable.');
+    const badges = await this.fetchBadges(userId);
+    const topTags = await this.fetchTopTags(userId);
     const reputation = Number(userInfo?.reputation || 0);
     const goldBadges = Number(userInfo?.badge_counts?.gold || 0);
     const silverBadges = Number(userInfo?.badge_counts?.silver || 0);
@@ -43,11 +45,17 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
     const questionCount = Number(userInfo?.question_count || 0);
 
     const topTagNames = Array.isArray(topTags)
-      ? topTags.slice(0, 8).map((t) => String(t.tag_name || '').trim()).filter(Boolean)
+      ? topTags
+          .slice(0, 8)
+          .map((t) => String(t.tag_name || '').trim())
+          .filter(Boolean)
       : [];
 
     const namedBadges = Array.isArray(badges)
-      ? badges.slice(0, 10).map((b) => String(b.name || '').trim()).filter(Boolean)
+      ? badges
+          .slice(0, 10)
+          .map((b) => String(b.name || '').trim())
+          .filter(Boolean)
       : [];
 
     const inferredSkills = [...new Set([...topTagNames])];
@@ -91,20 +99,22 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         (u) => String(u.display_name || '').toLowerCase() === username.toLowerCase()
       );
       return String((exact || items[0]).user_id);
-    } catch {
-      return null;
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
+      throw Error('Stack Overflow request failed.');
     }
   }
 
   async fetchUser(userId) {
     try {
       const data = await this.get(
-        `https://api.stackexchange.com/2.3/users/${userId}?site=stackoverflow`,
+        `https://api.stackexchange.com/2.3/users/${userId}?site=stackoverflow&filter=${encodeURIComponent(USER_RESPONSE_FILTER)}`,
         null
       );
       return data?.items?.[0] || null;
-    } catch {
-      return null;
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
+      throw Error('Stack Overflow request failed.');
     }
   }
 
@@ -115,8 +125,9 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         null
       );
       return data?.items || [];
-    } catch {
-      return [];
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
+      throw Error('Stack Overflow request failed.');
     }
   }
 
@@ -127,8 +138,9 @@ class StackOverflowAdapter extends BaseIntegrationAdapter {
         null
       );
       return data?.items || [];
-    } catch {
-      return [];
+    } catch (error) {
+      if (error.status || error.code === 'ERR_CANCELED') throw error;
+      throw Error('Stack Overflow request failed.');
     }
   }
 }

@@ -177,3 +177,7 @@ Large role-scoped route families are documented in:
 - [features/admin.md](features/admin.md)
 - [features/recruiter.md](features/recruiter.md)
 - [BACKEND_FLOW.md](BACKEND_FLOW.md)
+
+## Integrations security compatibility
+
+Existing route names and success envelopes remain. GitHub browser success still redirects to /app/integrations?success=github. OAuth identity is server-derived; state is one-time and expiring. Mutation admission can return 429 with Retry-After or 503; busy/stale sync returns 409. Disconnect adds a revocation status. Webhooks now require X-Hub-Signature-256 over raw JSON plus X-GitHub-Delivery; the former custom-secret header is rejected. Ingest retains normalized profile/activity/skills and omits raw provider payloads from responses. See [Integrations](features/integrations.md).

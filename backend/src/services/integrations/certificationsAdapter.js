@@ -18,7 +18,8 @@ class CertificationsAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Enter your certifications as a comma-separated list (e.g. "AWS Solutions Architect, Google Cloud Professional, Meta React Developer"). These will be used to boost your hiring score and recommendations.'
+      helpText:
+        'Enter your certifications as a comma-separated list (e.g. "AWS Solutions Architect, Google Cloud Professional, Meta React Developer"). These are self-reported claims; submitting names does not verify certification ownership.'
     };
   }
 
@@ -35,18 +36,20 @@ class CertificationsAdapter extends BaseIntegrationAdapter {
       .slice(0, 20);
 
     if (!certList.length) {
-      throw new Error('No valid certification names found. Separate multiple certifications with commas.');
+      throw new Error(
+        'No valid certification names found. Separate multiple certifications with commas.'
+      );
     }
 
     const inferredSkills = this.extractSkillsFromCerts(certList);
-    const verifiedCount = certList.length;
-    const certScore = Math.min(100, verifiedCount * 12);
+    const reportedCount = certList.length;
+    const certScore = Math.min(100, reportedCount * 12);
 
     return {
       provider: this.provider,
       profile: {
         username: raw.slice(0, 80),
-        totalCertifications: verifiedCount,
+        totalCertifications: reportedCount,
         certScore
       },
       activity: {

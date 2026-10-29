@@ -1,0 +1,38 @@
+{
+  "time": "2026-10-26T11:46:39.166Z",
+  "configuration": {
+    "source": "UPSTASH_REDIS_*",
+    "host": "unified-humpback-223804.upstash.io",
+    "port": 6379,
+    "protocol": "rediss:",
+    "passwordPresent": true,
+    "nodeVersion": "v24.19.0",
+    "credentialsChanged": false
+  },
+  "dns": {
+    "ok": true,
+    "ipv4Addresses": ["13.205.216.95", "13.204.54.36", "13.202.8.139", "16.4.93.191"]
+  },
+  "tcp": { "ok": true },
+  "tls": { "ok": true, "authorized": true, "protocol": "TLSv1.3" },
+  "nativeAuthentication": { "ok": true },
+  "nativePing": "PONG",
+  "applicationClientPingOutsideSandbox": "PONG",
+  "applicationClientControlInsideSandbox": "Redis: unavailable",
+  "commandDeadlineFinding": {
+    "applicationClientReady": true,
+    "defaultProbe": { "timeoutMs": 150, "error": "COMMAND_TIMEOUT", "elapsedMs": 155 },
+    "boundedProbe": { "timeoutMs": 500, "result": "PONG", "elapsedMs": 156 },
+    "fix": "Integration governance and the connection diagnostic use the existing 500 ms client proxy; other modules retain their own deadlines. Quota values and fail-closed behavior are unchanged."
+  },
+  "redisFinding": "Existing token is valid for native TLS Redis. The reproduced failure is specific to the restricted execution context; no endpoint, protocol, trust or credential replacement was required.",
+  "mongo": {
+    "binary": "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe",
+    "binaryVersion": "8.2.6",
+    "previousLaunchFailure": "mongod was absent from PATH, not absent from the machine",
+    "applicationDatabaseUsed": false,
+    "acceptance": "Four disposable replica-set runs committed transactions; each stopped and removed its own temporary files. See per-run evidence."
+  },
+  "quotaResets": 0,
+  "productionDataModified": false
+}

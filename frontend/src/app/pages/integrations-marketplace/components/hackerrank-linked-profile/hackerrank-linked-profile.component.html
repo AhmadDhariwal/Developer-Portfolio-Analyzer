@@ -1,0 +1,38 @@
+<section class="linked-profile" aria-labelledby="hackerrank-linked-title" [attr.aria-busy]="busy">
+  <h2 id="hackerrank-linked-title">HackerRank Linked Profile</h2>
+  <span class="ownership-label">Ownership unverified</span>
+  <p>
+    A user-entered reference, separate from account connections. Saving this link has no scoring
+    impact. Statistics syncing is unavailable.
+  </p>
+  <p *ngIf="profile" class="saved-profile">
+    <a [href]="profile.profileUrl" target="_blank" rel="noopener noreferrer"
+      >Open {{ profile.username }} on HackerRank</a
+    >
+    <span>Profile existence and ownership have not been checked.</span>
+  </p>
+  <form (ngSubmit)="save()">
+    <label for="hackerrank-linked-input">HackerRank username or profile URL</label>
+    <input
+      id="hackerrank-linked-input"
+      name="hackerrankLinkedProfile"
+      [(ngModel)]="input"
+      maxlength="300"
+      placeholder="username or https://www.hackerrank.com/profile/username"
+      [disabled]="busy"
+      aria-describedby="hackerrank-linked-note"
+    />
+    <p id="hackerrank-linked-note">
+      No credentials required. No statistics, badges or verified skills are imported.
+    </p>
+    <div class="linked-actions">
+      <button type="submit" [disabled]="busy">
+        {{ profile ? 'Update profile link' : 'Save profile link' }}
+      </button>
+      <button type="button" *ngIf="profile" (click)="remove()" [disabled]="busy">
+        Remove profile link
+      </button>
+    </div>
+  </form>
+  <p *ngIf="error" role="alert">{{ error }}</p>
+</section>

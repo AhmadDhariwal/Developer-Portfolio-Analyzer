@@ -985,7 +985,17 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
     const providerSet = new Set([
       ...Array.from(logMap.keys()),
       ...Array.from(insightByProvider.keys()),
-      ...connections.map((connection) => connection.provider)
+      // Public Kaggle resources have no scores. Historical scored insight/log rows
+      // remain represented by the other sets without inventing connection defaults.
+      ...connections
+        .filter(
+          (connection) =>
+            !(
+              connection.provider === 'kaggle' &&
+              connection.metadata?.resourceObservation?.version === 'kaggle-resources-v1'
+            )
+        )
+        .map((connection) => connection.provider)
     ]);
 
     const cards = Array.from(providerSet.values()).map((provider) => {

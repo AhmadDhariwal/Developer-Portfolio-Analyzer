@@ -624,8 +624,13 @@ const updatePassword = async (req, res) => {
 // @access Private
 const deleteAccount = async (req, res) => {
   try {
-    await Analysis.deleteMany({ userId: req.user._id });
-    await User.findByIdAndDelete(req.user._id);
+    await require('../services/integrationPersistenceService').deleteAccount(
+      req.user._id,
+      async (session) => {
+        await Analysis.deleteMany({ userId: req.user._id }, { session });
+        await User.findByIdAndDelete(req.user._id, { session });
+      }
+    );
     res.json({ message: 'Account deleted successfully.' });
   } catch (error) {
     console.error('Delete account error:', error.message);

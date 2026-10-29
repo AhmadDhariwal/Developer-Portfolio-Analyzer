@@ -3,7 +3,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 
 const {
   initRedisCache,
-  pingRedisCache,
+  getRedisCacheClient,
   closeRedisCache
 } = require('../services/redisCacheService');
 
@@ -21,7 +21,7 @@ const main = async () => {
       console.log('Redis: unavailable');
       return;
     }
-    const result = await pingRedisCache();
+    const result = await getRedisCacheClient({ commandTimeoutMs: 500 }).ping();
     console.log(result === 'PONG' ? 'Redis: PONG' : 'Redis: unavailable');
   } catch {
     console.log('Redis: unavailable');

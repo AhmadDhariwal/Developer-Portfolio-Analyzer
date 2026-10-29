@@ -36,8 +36,8 @@ const interviewPreproute = require('./src/routes/interviewPrep.routes');
 const careerSprintroute = require('./src/routes/careerSprint.routes');
 const newsroute = require('./src/routes/newsRoutes');
 const {
-    startNewsIngestionScheduler,
-    stopNewsIngestionScheduler
+  startNewsIngestionScheduler,
+  stopNewsIngestionScheduler
 } = require('./src/services/newsService');
 const supportroute = require('./src/routes/support.routes');
 const previewroute = require('./src/routes/preview.routes');
@@ -53,115 +53,116 @@ const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncServic
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
 const { initRedisCache, closeRedisCache } = require('./src/services/redisCacheService');
 const {
-    startInterviewQuestionIngestionScheduler
+  startInterviewQuestionIngestionScheduler
 } = require('./src/services/interviewQuestionIngestionService');
 const {
-    startInterviewQuestionMaintenanceScheduler
+  startInterviewQuestionMaintenanceScheduler
 } = require('./src/services/interviewQuestionMaintenanceService');
 const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
 const parseCsv = (value = '') =>
-    String(value || '')
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean);
+  String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
 const configuredFrontendOrigins = parseCsv(process.env.FRONTEND_BASE_URL);
 const configuredApiOrigins = parseCsv(process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN);
 const localDevOrigins = isProduction ? [] : ['http://localhost:*', 'http://127.0.0.1:*'];
 const cspConnectSources = [
-    "'self'",
-    ...configuredFrontendOrigins,
-    ...configuredApiOrigins,
-    ...parseCsv(process.env.CSP_CONNECT_SRC),
-    ...localDevOrigins
+  "'self'",
+  ...configuredFrontendOrigins,
+  ...configuredApiOrigins,
+  ...parseCsv(process.env.CSP_CONNECT_SRC),
+  ...localDevOrigins
 ];
 const cspImageSources = [
-    "'self'",
-    'data:',
-    'https:',
-    ...configuredFrontendOrigins,
-    ...configuredApiOrigins,
-    ...parseCsv(process.env.CSP_IMG_SRC),
-    ...localDevOrigins
+  "'self'",
+  'data:',
+  'https:',
+  ...configuredFrontendOrigins,
+  ...configuredApiOrigins,
+  ...parseCsv(process.env.CSP_IMG_SRC),
+  ...localDevOrigins
 ];
 
 // Middleware
 app.use((req, _res, next) => {
-    if (
-        req.method === 'POST' &&
-        String(req.originalUrl || req.url || '').startsWith('/api/skillgap/skill-gap')
-    ) {
-        req.skillGapHttpStartedAt = Date.now();
-    }
-    next();
+  if (
+    req.method === 'POST' &&
+    String(req.originalUrl || req.url || '').startsWith('/api/skillgap/skill-gap')
+  ) {
+    req.skillGapHttpStartedAt = Date.now();
+  }
+  next();
 });
 app.use(
-    helmet({
-        contentSecurityPolicy: {
-            useDefaults: true,
-            directives: {
-                defaultSrc: ["'self'"],
-                connectSrc: [...new Set(cspConnectSources)],
-                imgSrc: [...new Set(cspImageSources)],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                frameAncestors: ["'none'"]
-            }
-        },
-        crossOriginEmbedderPolicy: false
-    })
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: [...new Set(cspConnectSources)],
+        imgSrc: [...new Set(cspImageSources)],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        frameAncestors: ["'none'"]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
 );
 app.use(cors());
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
-app.use(express.json({ limit: '100kb' }));
+app.use(
+  express.json({ limit: '100kb', verify: require('./src/middleware/integrationWebhookBody') })
+);
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Global maintenance mode (controlled by Super Admin settings).
 // Keep auth + super-admin routes accessible so admins can turn it off.
 app.use((req, res, next) => {
-    try {
-        const maintenance = Boolean(getSettingsSnapshotSync()?.general?.maintenanceMode);
-        if (!maintenance) return next();
+  try {
+    const maintenance = Boolean(getSettingsSnapshotSync()?.general?.maintenanceMode);
+    if (!maintenance) return next();
 
-        const path = String(req.path || req.originalUrl || '');
-        if (path.startsWith('/api/super-admin')) return next();
-        if (path.startsWith('/api/auth')) return next();
-        if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads'))
-            return next();
+    const path = String(req.path || req.originalUrl || '');
+    if (path.startsWith('/api/super-admin')) return next();
+    if (path.startsWith('/api/auth')) return next();
+    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
 
-        return res
-            .status(503)
-            .json({ message: 'Platform is under maintenance. Please try again later.' });
-    } catch {
-        return next();
-    }
+    return res
+      .status(503)
+      .json({ message: 'Platform is under maintenance. Please try again later.' });
+  } catch {
+    return next();
+  }
 });
 // Serve uploads with cache control to prevent stale avatar issues
 app.use(
-    '/uploads',
-    require('./src/middleware/publicUploadAccess'),
-    express.static(path.join(__dirname, 'uploads'))
+  '/uploads',
+  require('./src/middleware/publicUploadAccess'),
+  express.static(path.join(__dirname, 'uploads'))
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
-    app.use((req, _res, next) => {
-        logger.info('request', {
-            requestId: req.requestId,
-            method: req.method,
-            path: req.originalUrl
-        });
-        next();
+  app.use((req, _res, next) => {
+    logger.info('request', {
+      requestId: req.requestId,
+      method: req.method,
+      path: req.originalUrl
     });
+    next();
+  });
 }
 app.use(auditLogMiddleware);
 
 // Basic route
 app.get('/', (req, res) => {
-    res.send('DevInsight AI API is running...');
+  res.send('DevInsight AI API is running...');
 });
 
 app.use('/api/auth', authroute);
@@ -197,106 +198,100 @@ app.use('/api/preview', previewroute);
 app.get('/metrics', metricsHandler);
 
 app.use((error, _req, res, next) => {
-    if (error?.type === 'entity.too.large' || error?.status === 413) {
-        return res.status(413).json({
-            message: 'Request too large. Please upload a smaller resume or use file upload.'
-        });
-    }
-    return next(error);
+  if (error?.type === 'entity.too.large' || error?.status === 413) {
+    return res.status(413).json({
+      message: 'Request too large. Please upload a smaller resume or use file upload.'
+    });
+  }
+  return next(error);
 });
 
 const PORT = env.PORT || process.env.PORT || 5000;
 const REDIS_STARTUP_TIMEOUT_MS = 4000;
 
 const initializeRedisAtStartup = async () => {
-    let timer;
-    try {
-        const redis = await Promise.race([
-            initRedisCache({ silent: true }),
-            new Promise((resolve) => {
-                timer = setTimeout(() => resolve(null), REDIS_STARTUP_TIMEOUT_MS);
-                timer.unref?.();
-            })
-        ]);
-        if (redis) {
-            console.log('[redis] connected');
-        } else {
-            console.warn('[redis] connection unavailable; using application fallbacks.');
-        }
-    } catch (error) {
-        console.warn('[redis] initialization error; using application fallbacks:', error?.message);
-    } finally {
-        if (timer) clearTimeout(timer);
+  let timer;
+  try {
+    const redis = await Promise.race([
+      initRedisCache({ silent: true }),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(null), REDIS_STARTUP_TIMEOUT_MS);
+        timer.unref?.();
+      })
+    ]);
+    if (redis) {
+      console.log('[redis] connected');
+    } else {
+      console.warn('[redis] connection unavailable; using application fallbacks.');
     }
+  } catch (error) {
+    console.warn('[redis] initialization error; using application fallbacks:', error?.message);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 };
 
 const startServer = async () => {
-    await connectDB();
-    await initializeRedisAtStartup();
+  await connectDB();
+  await initializeRedisAtStartup();
 
-    app.listen(PORT, () => {
-        logger.info('server started', { port: PORT });
-        startEmailRetryWorker();
-        startIntegrationSyncWorker();
-        startJobSourceSyncWorker();
-        startNewsIngestionScheduler();
-        initTracing();
-        startWeeklyReportScheduler();
-        startInterviewQuestionIngestionScheduler();
-        startInterviewQuestionMaintenanceScheduler();
-        getSettings().catch((err) =>
-            logger.warn('settings warmup failed', { error: err?.message })
+  app.listen(PORT, () => {
+    logger.info('server started', { port: PORT });
+    startEmailRetryWorker();
+    startIntegrationSyncWorker();
+    startJobSourceSyncWorker();
+    startNewsIngestionScheduler();
+    initTracing();
+    startWeeklyReportScheduler();
+    startInterviewQuestionIngestionScheduler();
+    startInterviewQuestionMaintenanceScheduler();
+    getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
+
+    // Warn if GitHub token is missing (will hit rate limits very quickly)
+    const ghToken = process.env.GITHUB_TOKEN;
+    if (!ghToken || ghToken === 'your_github_personal_access_token') {
+      logger.warn('GITHUB_TOKEN is not configured; authenticated quota unavailable.');
+    } else {
+      logger.info('GitHub token detected; using authenticated API quota.');
+    }
+    // Jobs Hub source startup validation
+    const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
+    const integrations = getIntegrationSecretsSync();
+    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
+
+    const jsearchConfigured =
+      integrations?.jobsEnabled !== false &&
+      Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
+    const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
+    const adzunaConfigured = Boolean(
+      String(process.env.ADZUNA_APP_ID || '').trim() &&
+      String(process.env.ADZUNA_APP_KEY || '').trim()
+    );
+    // Jobs Hub cache health startup check
+    const { getCacheHealth } = require('./src/services/jobService');
+    getCacheHealth()
+      .then((health) => {
+        console.log(
+          `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`
         );
-
-        // Warn if GitHub token is missing (will hit rate limits very quickly)
-        const ghToken = process.env.GITHUB_TOKEN;
-        if (!ghToken || ghToken === 'your_github_personal_access_token') {
-            logger.warn('GITHUB_TOKEN is not configured; authenticated quota unavailable.');
-        } else {
-            logger.info('GitHub token detected; using authenticated API quota.');
+        if (health.cacheStatus === 'LOW') {
+          console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
         }
-        // Jobs Hub source startup validation
-        const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
-        const integrations = getIntegrationSecretsSync();
-        const rapidApiKey = String(
-            process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || ''
-        ).trim();
-
-        const jsearchConfigured =
-            integrations?.jobsEnabled !== false &&
-            Boolean(rapidApiKey && rapidApiKey !== 'your_rapidapi_key');
-        const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
-        const adzunaConfigured = Boolean(
-            String(process.env.ADZUNA_APP_ID || '').trim() &&
-            String(process.env.ADZUNA_APP_KEY || '').trim()
-        );
-        // Jobs Hub cache health startup check
-        const { getCacheHealth } = require('./src/services/jobService');
-        getCacheHealth()
-            .then((health) => {
-                console.log(
-                    `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`
-                );
-                if (health.cacheStatus === 'LOW') {
-                    console.warn(
-                        '[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).'
-                    );
-                }
-            })
-            .catch((err) => {
-                console.warn('[JobsHub] Cache health check skipped:', err.message);
-            });
-    });
+      })
+      .catch((err) => {
+        console.warn('[JobsHub] Cache health check skipped:', err.message);
+      });
+  });
 };
 
 startServer().catch((error) => {
-    logger.error('server startup failed', { error: error?.message || 'Unknown startup error' });
-    process.exitCode = 1;
+  logger.error('server startup failed', { error: error?.message || 'Unknown startup error' });
+  process.exitCode = 1;
 });
 
 const shutdown = () => {
-    stopNewsIngestionScheduler();
-    Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  stopNewsIngestionScheduler();
+  Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };
 
 process.on('SIGTERM', shutdown);

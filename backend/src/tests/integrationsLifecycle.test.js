@@ -1,209 +1,133 @@
+'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const IntegrationConnection = require('../models/integrationConnection');
-const IntegrationInsight = require('../models/integrationInsight');
+const Connection = require('../models/integrationConnection');
+const persistence = require('../services/integrationPersistenceService');
 const { getAdapter } = require('../services/integrations');
 const controller = require('../controllers/integrationscontroller');
-const integrationsRouter = require('../routes/integrations.routes');
-
-const createResponse = () => ({
+const router = require('../routes/integrations.routes');
+const response = () => ({
   statusCode: 200,
-  body: undefined,
-  status(code) { this.statusCode = code; return this; },
-  json(payload) { this.body = payload; return this; },
-  redirect(code, location) { this.statusCode = code; this.location = location; return this; }
-});
-
-test('required Integrations API routes use JWT protection', () => {
-  const required = new Set([
-    'GET /marketplace',
-    'GET /connections',
-    'GET /insights',
-    'POST /manual/connect',
-    'POST /sync-now',
-    'DELETE /connections/:provider'
-  ]);
-
-  for (const layer of integrationsRouter.stack) {
-    if (!layer.route) continue;
-    const method = Object.keys(layer.route.methods)[0].toUpperCase();
-    const key = `${method} ${layer.route.path}`;
-    if (!required.has(key)) continue;
-    assert.equal(layer.route.stack[0].handle.name, 'protect', `${key} must run protect first`);
-    required.delete(key);
+  status(code) {
+    this.statusCode = code;
+    return this;
+  },
+  json(body) {
+    this.body = body;
+    return this;
   }
-  assert.deepEqual([...required], []);
 });
-
-test('connections query is owner scoped and projects out every token/state field', async (t) => {
-  const originalFind = IntegrationConnection.find;
-  t.after(() => { IntegrationConnection.find = originalFind; });
-  let filter;
-  let projection;
-  IntegrationConnection.find = (value) => {
+test('private integrations endpoints retain JWT protection and external boundaries have admission controls', () => {
+  for (const layer of router.stack) {
+    if (!layer.route) continue;
+    const route = layer.route;
+    const handlers = route.stack.map((item) => item.handle);
+    if (['/github/callback', '/webhooks/github'].includes(route.path)) {
+      assert.equal(handlers.length, 2);
+      continue;
+    }
+    assert.equal(handlers[0].name, 'protect');
+    if (Object.keys(route.methods)[0] === 'post') assert.equal(handlers.length, 3);
+  }
+});
+test('connections read is owner scoped and never selects tokens or raw metadata', async (t) => {
+  const original = Connection.find;
+  t.after(() => (Connection.find = original));
+  let filter, projection;
+  Connection.find = (value) => {
     filter = value;
     return {
-      select(valueToSelect) {
-        projection = valueToSelect;
-        return { lean: async () => [{ provider: 'github', status: 'connected', externalUsername: 'safe-user' }] };
+      select: (value) => {
+        projection = value;
+        return { lean: async () => [] };
       }
     };
   };
-
-  const res = createResponse();
+  const res = response();
   await controller.getConnections({ user: { _id: 'owner-a' } }, res);
-
   assert.deepEqual(filter, { userId: 'owner-a' });
-  for (const sensitive of ['accessToken', 'refreshToken', 'oauthState', 'oauthRedirectUri', 'metadata', 'scopes']) {
-    assert.equal(projection.includes(sensitive), false, `${sensitive} must not be selected`);
-    assert.equal(JSON.stringify(res.body).includes(sensitive), false, `${sensitive} must not be serialized`);
+  for (const field of ['accessToken', 'refreshToken', 'oauthState', 'metadata'])
+    assert.ok(!projection.includes(field));
+  assert.deepEqual(res.body, { connections: [] });
+});
+test('missing OAuth state cannot reach token exchange', async () => {
+  const res = response();
+  await controller.oauthCallback(
+    { user: { _id: 'owner-a' }, body: { provider: 'github', code: 'fixture' } },
+    res
+  );
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.body.message, 'Invalid OAuth state.');
+});
+test('manual validation rejects unsupported providers and malformed handles', async () => {
+  for (const [provider, externalUsername] of [
+    ['unknown', 'fixture'],
+    ['leetcode', '<script>'],
+    ['portfolio', 'ftp://example.com']
+  ]) {
+    const res = response();
+    await controller.manualConnectProvider(
+      { user: { _id: 'owner-a' }, body: { provider, externalUsername } },
+      res
+    );
+    assert.equal(res.statusCode, 400);
   }
 });
-
-test('OAuth callback rejects missing state before token exchange', async (t) => {
-  const originalFindOne = IntegrationConnection.findOne;
-  t.after(() => { IntegrationConnection.findOne = originalFindOne; });
-  IntegrationConnection.findOne = () => ({ lean: async () => ({ oauthState: 'expected-state' }) });
-
-  const res = createResponse();
-  await controller.oauthCallback({
-    user: { _id: 'owner-a' },
-    body: { provider: 'github', code: 'mock-code' }
-  }, res);
-
-  assert.equal(res.statusCode, 400);
-  assert.deepEqual(res.body, { message: 'Invalid OAuth state.' });
-});
-
-test('manual duplicate connect upserts by owner/provider and never returns API keys', async (t) => {
+test('manual connection persists observed provenance and hides API credentials', async (t) => {
+  t.mock.method(persistence, 'reuseFreshManual', async () => null);
+  t.mock.method(
+    require('../services/integrationPublicSnapshotService'),
+    'ingest',
+    (adapter, connection) => adapter.ingestData(connection)
+  );
   const adapter = getAdapter('leetcode');
-  const originals = {
-    ingestData: adapter.ingestData,
-    findOneAndUpdate: IntegrationConnection.findOneAndUpdate,
-    insightFindOne: IntegrationInsight.findOne,
-    insightCreate: IntegrationInsight.create
+  const original = {
+    ingest: adapter.ingestData,
+    begin: persistence.beginManual,
+    connect: persistence.connect
   };
   t.after(() => {
-    adapter.ingestData = originals.ingestData;
-    IntegrationConnection.findOneAndUpdate = originals.findOneAndUpdate;
-    IntegrationInsight.findOne = originals.insightFindOne;
-    IntegrationInsight.create = originals.insightCreate;
+    adapter.ingestData = original.ingest;
+    persistence.beginManual = original.begin;
+    persistence.connect = original.connect;
   });
-
   adapter.ingestData = async () => ({
-    provider: 'leetcode',
-    profile: { solvedProblems: 80 },
-    activity: { easy: 30, medium: 20, hard: 5 },
+    profile: { solvedProblems: 10 },
+    activity: {},
     inferredSkills: ['Algorithms']
   });
-  IntegrationInsight.findOne = async () => null;
-  IntegrationInsight.create = async (payload) => payload;
-  const calls = [];
-  IntegrationConnection.findOneAndUpdate = (filter, update, options) => {
-    calls.push({ filter, update, options });
-    return { lean: async () => ({ provider: 'leetcode', status: 'connected', externalUsername: update.$set.externalUsername }) };
+  persistence.beginManual = async () => ({ oauthAttempt: 'nonce' });
+  let captured;
+  persistence.connect = async (owner, provider, values, insight, attempt) => {
+    captured = { owner, provider, values, insight, attempt };
+    return values;
   };
-
-  for (const username of ['first-user', 'updated-user']) {
-    const res = createResponse();
-    await controller.manualConnectProvider({
-      user: { _id: 'owner-a' },
-      body: { provider: 'leetcode', externalUsername: username, apiKey: 'secret-api-key' }
-    }, res);
-    assert.equal(res.statusCode, 200);
-    assert.equal(JSON.stringify(res.body).includes('secret-api-key'), false);
-  }
-
-  assert.equal(calls.length, 2);
-  calls.forEach((call) => {
-    assert.deepEqual(call.filter, { userId: 'owner-a', provider: 'leetcode' });
-    assert.equal(call.options.upsert, true);
-  });
-  assert.equal(calls[1].update.$set.externalUsername, 'updated-user');
+  const res = response();
+  await controller.manualConnectProvider(
+    { user: { _id: 'owner-a' }, body: { provider: 'leetcode', externalUsername: 'fixture' } },
+    res
+  );
+  assert.equal(res.statusCode, 200);
+  assert.equal(captured.owner, 'owner-a');
+  assert.equal(captured.attempt, 'nonce');
+  assert.equal(captured.insight.ownershipVerified, false);
+  assert.equal(captured.insight.evidenceKind, 'provider-observed');
+  assert.ok(!JSON.stringify(res.body).includes('accessToken'));
 });
-
-test('manual provider validation rejects unsupported and malformed identifiers', async () => {
-  const unsupported = createResponse();
-  await controller.manualConnectProvider({
-    user: { _id: 'owner-a' },
-    body: { provider: 'not-a-provider', externalUsername: 'mock-user' }
-  }, unsupported);
-  assert.equal(unsupported.statusCode, 400);
-  assert.deepEqual(unsupported.body, { message: 'Unsupported provider.' });
-
-  const malformed = createResponse();
-  await controller.manualConnectProvider({
-    user: { _id: 'owner-a' },
-    body: { provider: 'leetcode', externalUsername: '<script>alert(1)</script>' }
-  }, malformed);
-  assert.equal(malformed.statusCode, 400);
-  assert.deepEqual(malformed.body, { message: 'Invalid leetcode username.' });
-});
-
-test('Stack Overflow and Dev Blogs manual connections accept validated mocked provider data', async (t) => {
-  const stackoverflow = getAdapter('stackoverflow');
-  const devblogs = getAdapter('devblogs');
-  const originals = {
-    stackoverflowIngest: stackoverflow.ingestData,
-    devblogsIngest: devblogs.ingestData,
-    findOneAndUpdate: IntegrationConnection.findOneAndUpdate,
-    insightFindOne: IntegrationInsight.findOne,
-    insightCreate: IntegrationInsight.create
+test('disconnect calls the owned transactional boundary and reports local success without provider credentials', async (t) => {
+  const original = persistence.disconnect;
+  t.after(() => (persistence.disconnect = original));
+  let args;
+  persistence.disconnect = async (...value) => {
+    args = value;
+    return null;
   };
-  t.after(() => {
-    stackoverflow.ingestData = originals.stackoverflowIngest;
-    devblogs.ingestData = originals.devblogsIngest;
-    IntegrationConnection.findOneAndUpdate = originals.findOneAndUpdate;
-    IntegrationInsight.findOne = originals.insightFindOne;
-    IntegrationInsight.create = originals.insightCreate;
-  });
-  IntegrationInsight.findOne = async () => null;
-  IntegrationInsight.create = async (payload) => payload;
-  IntegrationConnection.findOneAndUpdate = (filter, update) => ({
-    lean: async () => ({ provider: filter.provider, status: 'connected', externalUsername: update.$set.externalUsername })
-  });
-  stackoverflow.ingestData = async () => ({ profile: { reputation: 1200, answerCount: 12, totalBadges: 4 }, activity: {}, inferredSkills: ['Node.js'] });
-  devblogs.ingestData = async () => ({ profile: { brandingScore: 70, totalArticles: 4, totalReactions: 18 }, activity: {}, inferredSkills: ['TypeScript'] });
-
-  for (const [provider, externalUsername] of [['stackoverflow', '123456'], ['devblogs', 'mock-blog']]) {
-    const res = createResponse();
-    await controller.manualConnectProvider({ user: { _id: 'owner-a' }, body: { provider, externalUsername } }, res);
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.connection.provider, provider);
-  }
-});
-
-test('disconnect is owner scoped and clears all sensitive connection state', async (t) => {
-  const originals = {
-    findOneAndUpdate: IntegrationConnection.findOneAndUpdate,
-    insightFindOne: IntegrationInsight.findOne
-  };
-  t.after(() => {
-    IntegrationConnection.findOneAndUpdate = originals.findOneAndUpdate;
-    IntegrationInsight.findOne = originals.insightFindOne;
-  });
-  let call;
-  IntegrationConnection.findOneAndUpdate = async (filter, update, options) => { call = { filter, update, options }; };
-  IntegrationInsight.findOne = async () => null;
-
-  const res = createResponse();
-  await controller.disconnectProvider({ user: { _id: 'owner-a' }, params: { provider: 'github' } }, res);
-
-  assert.deepEqual(call.filter, { userId: 'owner-a', provider: 'github' });
-  assert.equal(call.options.upsert, false);
-  assert.deepEqual(call.update.$set, {
-    status: 'disconnected',
-    accessToken: '',
-    refreshToken: '',
-    tokenType: 'Bearer',
-    tokenExpiresAt: null,
-    scopes: [],
-    metadata: {},
-    lastSyncedAt: null,
-    nextSyncAt: null,
-    lastSyncError: '',
-    oauthState: '',
-    oauthStateExpiresAt: null,
-    oauthRedirectUri: ''
-  });
+  const res = response();
+  await controller.disconnectProvider(
+    { user: { _id: 'owner-a' }, params: { provider: 'github' } },
+    res
+  );
+  assert.deepEqual(args, ['owner-a', 'github']);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.message, 'github disconnected.');
 });

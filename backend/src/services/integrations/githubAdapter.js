@@ -72,6 +72,21 @@ class GitHubAdapter extends BaseIntegrationAdapter {
     };
   }
 
+  async revokeToken(token) {
+    const config = getGithubIntegrationOAuthConfig();
+    await require('../integrationGovernanceService').request(this.provider, (controls) =>
+      require('axios').delete(
+        'https://api.github.com/applications/' + encodeURIComponent(config.clientId) + '/token',
+        {
+          ...controls,
+          auth: { username: config.clientId, password: config.clientSecret },
+          data: { access_token: token },
+          headers: { Accept: 'application/vnd.github+json' }
+        }
+      )
+    );
+  }
+
   async getExternalIdentity(token) {
     const user = await this.get('https://api.github.com/user', token, {
       headers: { 'User-Agent': 'Developer-Portfolio-Analyzer' }
@@ -88,9 +103,15 @@ class GitHubAdapter extends BaseIntegrationAdapter {
     const profile = await this.get('https://api.github.com/user', token, {
       headers: { 'User-Agent': 'Developer-Portfolio-Analyzer' }
     });
-    const repos = await this.get('https://api.github.com/user/repos?per_page=100&sort=updated', token, {
-      headers: { 'User-Agent': 'Developer-Portfolio-Analyzer' }
-    });
+    if (connection.externalAccountId && String(profile?.id) !== connection.externalAccountId)
+      throw Error('GitHub identity changed.');
+    const repos = await this.get(
+      'https://api.github.com/user/repos?per_page=100&sort=updated',
+      token,
+      {
+        headers: { 'User-Agent': 'Developer-Portfolio-Analyzer' }
+      }
+    );
 
     const username = profile?.login || connection.externalUsername || '';
     const totalStars = Array.isArray(repos)

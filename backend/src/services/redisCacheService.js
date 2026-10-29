@@ -385,13 +385,15 @@ const closeRedisCache = async () => {
   redisEnabled = false;
   if (!redisClient?.isOpen) return;
   if (!redisClient.isReady) {
-    redisClient.disconnect();
+    await redisClient.disconnect().catch(() => {});
     return;
   }
   try {
     await redisClient.quit();
   } catch {
-    redisClient.disconnect();
+    // QUIT can race a socket close. Consume asynchronous disconnect failures,
+    // and never disconnect an SDK client which QUIT has already closed.
+    if (redisClient.isOpen) await redisClient.disconnect().catch(() => {});
   }
 };
 
