@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "frontend": "production build",
+  "backend": "explicit fixture HTTP responses",
+  "viewports": ["1440x1000", "390x844"],
+  "checks": [
+    "base versus active career display",
+    "unchanged save sends no write",
+    "500-character biography save",
+    "refresh persistence",
+    "password failure feedback/loading reset",
+    "deletion conflict feedback/loading reset",
+    "desktop/mobile overflow",
+    "no browser exceptions"
+  ],
+  "externalRequests": "blocked",
+  "writes": 1,
+  "errors": []
+}

@@ -1,0 +1,45 @@
+{
+  "branch": "task/profile",
+  "baselineHead": "96179a7f4372887f06952723e3302c9b566d652e",
+  "initialCheckout": "clean",
+  "backend": {
+    "pass": 87,
+    "fail": 0,
+    "skip": 0
+  },
+  "frontendFocused": {
+    "pass": 19,
+    "files": 4
+  },
+  "build": "PASS; existing landing-page style warning",
+  "browser": "PASS; fresh production build, fixture APIs; desktop/mobile; external requests blocked",
+  "liveB2": {
+    "status": "PASS",
+    "fixtureObjects": 6,
+    "versions": 7,
+    "allVersionsRemoved": true,
+    "liveHttpThroughConfiguredRedis": "BLOCKED"
+  },
+  "configuredMongo": "read-only topology/index metadata PASS; transaction topology present; cleanup collection absent",
+  "configuredRedis": "FAIL: Lua provider quota restriction; strict upload 503; fixture counters removed or verified absent",
+  "secretsAndEnvChanged": false,
+  "productCodeChanged": false,
+  "moduleFreeze": "WITHHELD",
+  "productionAcceptance": "FAIL/BLOCKED",
+  "fixtures": "local databases dropped; task-owned Mongo stopped; no existing files/production records modified",
+  "commitMergeDeploy": false,
+  "changedSource": [
+    "backend/src/scripts/verifyProfileB2Live.js",
+    "backend/src/scripts/verifyProfileB2Operations.js",
+    "backend/src/scripts/verifyProfileSettingsBrowser.js"
+  ],
+  "formatting": "PASS: explicit changed scripts, report and JSON write/check",
+  "syntax": "PASS: node --check on three scripts",
+  "gitWhitespace": "PASS: working tree and index",
+  "headUnchanged": true,
+  "sourceSha256": {
+    "backend/src/scripts/verifyProfileB2Live.js": "86a6a34eb4e916bb2da1f07a31b25d10194bfa1423bd35949e9bfc1c5ae93e7b",
+    "backend/src/scripts/verifyProfileB2Operations.js": "6ef76a99ce5570c777e006f29f964810cb829cf9ae1301a9066830f36abe16ea",
+    "backend/src/scripts/verifyProfileSettingsBrowser.js": "cd459af2fabe8a11996dc25af2627ba3b95db76957b431697bfb7d971a554913"
+  }
+}

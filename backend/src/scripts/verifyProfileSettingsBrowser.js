@@ -6,7 +6,9 @@ const jwt = require('jsonwebtoken');
 
 async function main() {
   const { chromium } = require(process.env.PROFILE_ACCEPTANCE_PLAYWRIGHT || 'playwright');
-  const output = path.resolve(__dirname, '../../verification/profile');
+  const output = process.env.PROFILE_ACCEPTANCE_OUTPUT
+    ? path.resolve(process.env.PROFILE_ACCEPTANCE_OUTPUT)
+    : path.resolve(__dirname, '../../verification/profile');
   await fs.mkdir(output, { recursive: true });
   const user = {
     _id: '0123456789abcdef01234567',
@@ -37,7 +39,12 @@ async function main() {
       newRecommendations: false,
       jobMatchAlerts: true
     },
-    stats: { developerScore: 50, reposAnalyzed: 2, skillsDetected: 3, memberSince: 'Oct 2026' },
+    stats: {
+      developerScore: 50,
+      reposAnalyzed: 2,
+      skillsDetected: 3,
+      memberSince: 'Oct 2026'
+    },
     profileHash: 'fixture-a'
   };
   const token = jwt.sign({ id: user._id }, 'fixture-browser-key', {
@@ -75,9 +82,9 @@ async function main() {
         message: 'Current password is incorrect.'
       });
     if (req.path === '/profile/me' && req.method === 'DELETE')
-      return res
-        .status(409)
-        .json({ message: 'Transfer organization ownership before deleting this account.' });
+      return res.status(409).json({
+        message: 'Transfer organization ownership before deleting this account.'
+      });
     if (req.path.includes('stream')) return res.status(204).end();
     return res.json({
       notifications: [],
@@ -102,7 +109,9 @@ async function main() {
         process.env.PROFILE_ACCEPTANCE_CHROME ||
         'C:/Program Files/Google/Chrome/Application/chrome.exe'
     });
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 1000 }
+    });
     await context.route('**/*', (route) =>
       route.request().url().startsWith(base) ? route.continue() : route.abort()
     );
@@ -150,14 +159,13 @@ async function main() {
     );
     await page.getByRole('button', { name: 'Delete Account', exact: true }).click();
     await page.getByRole('button', { name: 'Yes, Delete Account', exact: true }).click();
-    await page
-      .getByText('Transfer organization ownership before deleting this account.')
-      .waitFor();
+    await page.getByText('Transfer organization ownership before deleting this account.').waitFor();
     await page.evaluate(() => scrollTo(0, 0));
-    assert.ok(
-      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)
-    );
-    await page.screenshot({ path: path.join(output, 'profile-desktop.png'), fullPage: true });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    await page.screenshot({
+      path: path.join(output, 'profile-desktop.png'),
+      fullPage: true
+    });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForFunction(
       () => document.querySelector('.shell-body')?.getBoundingClientRect().left < 1
@@ -173,7 +181,10 @@ async function main() {
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2),
       'mobile has no horizontal overflow'
     );
-    await page.screenshot({ path: path.join(output, 'profile-mobile.png'), fullPage: true });
+    await page.screenshot({
+      path: path.join(output, 'profile-mobile.png'),
+      fullPage: true
+    });
     assert.deepEqual(errors, []);
     await fs.writeFile(
       path.join(output, 'browser-results.json'),

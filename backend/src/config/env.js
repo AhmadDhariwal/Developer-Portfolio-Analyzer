@@ -30,12 +30,6 @@ const envSchema = z.object({
   MONGO_URI: z.string().optional()
 });
 
-const mask = (value) => {
-  if (!value) return '';
-  if (value.length <= 6) return '***';
-  return `${value.slice(0, 2)}***${value.slice(-2)}`;
-};
-
 const validateEnv = () => {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
@@ -43,6 +37,7 @@ const validateEnv = () => {
     throw new Error(`Environment validation failed: ${issues.join('; ')}`);
   }
 
+  require('../services/b2ObjectStorageService').configuration(process.env);
   const env = parsed.data;
   validateNewsRelationships(env);
   const fs = require('node:fs');
@@ -52,7 +47,8 @@ const validateEnv = () => {
     process.env,
     fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : ''
   );
-  if (audit.missing.length || audit.deprecated.length) console.warn('[news config]', JSON.stringify(audit));
+  if (audit.missing.length || audit.deprecated.length)
+    console.warn('[news config]', JSON.stringify(audit));
   const weakSecret = String(env.JWT_SECRET || '').length < 24;
   const strictMode = String(env.SECURITY_STRICT_ENV || '').toLowerCase() === 'true';
 
@@ -65,7 +61,7 @@ const validateEnv = () => {
   }
 
   console.log(
-    `[config] env loaded: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, JWT_ISSUER=${env.JWT_ISSUER}, JWT_AUDIENCE=${env.JWT_AUDIENCE}, JWT_SECRET=${mask(env.JWT_SECRET)}`
+    `[config] env loaded: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, JWT_ISSUER=${env.JWT_ISSUER}, JWT_AUDIENCE=${env.JWT_AUDIENCE}, JWT_SECRET=configured`
   );
   return env;
 };
