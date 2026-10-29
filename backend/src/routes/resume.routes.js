@@ -14,7 +14,16 @@ const { protect } = require('../middleware/authmiddleware');
 const upload = require('../middleware/uploadmiddleware');
 
 // Upload resume file
-router.post('/upload', protect, upload.resumePdf, uploadResume);
+router.post(
+  '/upload',
+  protect,
+  (req, res, next) =>
+    process.env.STORAGE_DRIVER === 'b2'
+      ? require('../middleware/publicPortfolioRateLimit').uploadLimit(req, res, next)
+      : next(),
+  upload.resumePdf,
+  uploadResume
+);
 
 // Analyze resume
 router.post('/analyze', protect, analyzeResumeFile);

@@ -58,7 +58,10 @@ const {
 const {
   startInterviewQuestionMaintenanceScheduler
 } = require('./src/services/interviewQuestionMaintenanceService');
-const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
+const {
+  getSettingsSnapshotSync,
+  getSettings
+} = require('./src/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -69,7 +72,9 @@ const parseCsv = (value = '') =>
     .filter(Boolean);
 const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
 const configuredFrontendOrigins = parseCsv(process.env.FRONTEND_BASE_URL);
-const configuredApiOrigins = parseCsv(process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN);
+const configuredApiOrigins = parseCsv(
+  process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN
+);
 const localDevOrigins = isProduction ? [] : ['http://localhost:*', 'http://127.0.0.1:*'];
 const cspConnectSources = [
   "'self'",
@@ -132,7 +137,8 @@ app.use((req, res, next) => {
     const path = String(req.path || req.originalUrl || '');
     if (path.startsWith('/api/super-admin')) return next();
     if (path.startsWith('/api/auth')) return next();
-    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
+    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads'))
+      return next();
 
     return res
       .status(503)
@@ -141,11 +147,13 @@ app.use((req, res, next) => {
     return next();
   }
 });
+require('./src/services/b2ObjectStorageService').configuration();
 // Serve uploads with cache control to prevent stale avatar issues
 app.use(
   '/uploads',
+  require('./src/middleware/storedImageMiddleware').storedImage,
   require('./src/middleware/publicUploadAccess'),
-  express.static(path.join(__dirname, 'uploads'))
+  express.static(require('./src/services/publicImageStorageService').root())
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
@@ -245,7 +253,9 @@ const startServer = async () => {
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
     startInterviewQuestionMaintenanceScheduler();
-    getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
+    getSettings().catch((err) =>
+      logger.warn('settings warmup failed', { error: err?.message })
+    );
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;
@@ -257,7 +267,9 @@ const startServer = async () => {
     // Jobs Hub source startup validation
     const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
     const integrations = getIntegrationSecretsSync();
-    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
+    const rapidApiKey = String(
+      process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || ''
+    ).trim();
 
     const jsearchConfigured =
       integrations?.jobsEnabled !== false &&
@@ -275,7 +287,9 @@ const startServer = async () => {
           `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`
         );
         if (health.cacheStatus === 'LOW') {
-          console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
+          console.warn(
+            '[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).'
+          );
         }
       })
       .catch((err) => {

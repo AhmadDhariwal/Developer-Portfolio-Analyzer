@@ -1,3 +1,4 @@
+const { mediaSession } = require('../middleware/storedImageMiddleware');
 const express = require('express');
 const router = express.Router();
 const { protect, attachOptionalUser } = require('../middleware/authmiddleware');
@@ -29,12 +30,19 @@ router.param('slug', (req, res, next, slug) => {
     return res.status(400).json({ message: 'Invalid slug.' });
   next();
 });
-router.get('/me', protect, analyticsLimit, getMyPublicProfile);
-router.put('/me', protect, mutationLimit, updateMyPublicProfile);
-router.post('/me/project-image', protect, uploadLimit, uploadPortfolioImage);
-router.get('/me/resume', protect, resumeLimit, downloadPublicProfileResume);
-router.get('/me/analytics', protect, analyticsLimit, getMyPublicProfileAnalytics);
-router.post('/:slug/contact', protect, contactLimit, contactRecipientLimit, contactPublicProfile);
+router.get('/me', protect, mediaSession, analyticsLimit, getMyPublicProfile);
+router.put('/me', protect, mediaSession, mutationLimit, updateMyPublicProfile);
+router.post('/me/project-image', protect, mediaSession, uploadLimit, uploadPortfolioImage);
+router.get('/me/resume', protect, mediaSession, resumeLimit, downloadPublicProfileResume);
+router.get('/me/analytics', protect, mediaSession, analyticsLimit, getMyPublicProfileAnalytics);
+router.post(
+  '/:slug/contact',
+  protect,
+  mediaSession,
+  contactLimit,
+  contactRecipientLimit,
+  contactPublicProfile
+);
 router.get('/:slug/resume', resumeLimit, downloadPublicProfileResume);
 router.get('/:slug', publicViewLimit, attachOptionalUser, getPublicProfile);
 

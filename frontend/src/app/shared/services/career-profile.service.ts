@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, filter, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { AuthService } from './auth.service';
@@ -10,41 +10,37 @@ import {
   CareerStack,
   ExperienceLevel,
   CareerGoal,
-  DEFAULT_CAREER_PROFILE
+  DEFAULT_CAREER_PROFILE,
 } from '../models/career-profile.model';
 
 const STORAGE_KEY = 'devinsight_career_profile';
 
 @Injectable({ providedIn: 'root' })
-export class CareerProfileService {
+export class CareerProfileService implements OnDestroy {
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly dependentCacheModules = [
-    'dashboardSummary',
-    'dashboardContributions',
-    'dashboardLanguages',
-    'dashboardSkills',
-    'dashboardRecommendations',
-    'dashboardIntegrationAnalytics',
-    'skillGap',
-    'recommendations',
-    'news',
-    'weeklyReports'
-  ];
+  private readonly profileSubject = new BehaviorSubject<CareerProfile>(this.loadFromStorage());
 
-  private readonly profileSubject = new BehaviorSubject<CareerProfile>(
-    this.loadFromStorage()
-  );
+  readonly careerProfile$: Observable<CareerProfile> = this.profileSubject.asObservable();
 
-  readonly careerProfile$: Observable<CareerProfile> =
-    this.profileSubject.asObservable();
+  private readonly onStorage = (event: StorageEvent): void => {
+    if (event.key === STORAGE_KEY) {
+      this.profileSubject.next(this.loadFromStorage());
+      this.cacheInvalidation.clearDeveloperSignalCaches();
+    }
+  };
 
   constructor(
     private readonly http: HttpClient,
     private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly authService: AuthService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('career-profile', () => this.clearUserCache());
+    globalThis.addEventListener?.('storage', this.onStorage);
+  }
+
+  ngOnDestroy(): void {
+    globalThis.removeEventListener?.('storage', this.onStorage);
   }
 
   clearUserCache(): void {
@@ -73,29 +69,41 @@ export class CareerProfileService {
     experienceLevel: ExperienceLevel,
     careerGoal: CareerGoal = '',
     targetTimeline = '',
-    learningPreference = ''
+    learningPreference = '',
   ): Observable<CareerProfile> {
+    const token = this.authService.getToken?.();
     return this.http
       .put<CareerProfile>(`${this.baseUrl}/profile/career`, {
         careerStack,
         experienceLevel,
         careerGoal,
         targetTimeline,
-        learningPreference
+        learningPreference,
       })
-      .pipe(tap((response) => this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: true })));
+      .pipe(
+        filter(() => token === this.authService.getToken?.()),
+        tap((response) =>
+          this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: true }),
+        ),
+      );
   }
 
   setActiveCareerProfile(
     careerStack: CareerStack,
-    experienceLevel: ExperienceLevel
+    experienceLevel: ExperienceLevel,
   ): Observable<CareerProfile> {
+    const token = this.authService.getToken?.();
     return this.http
       .put<CareerProfile>(`${this.baseUrl}/profile/career/active`, {
         careerStack,
-        experienceLevel
+        experienceLevel,
       })
-      .pipe(tap((response) => this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: false })));
+      .pipe(
+        filter(() => token === this.authService.getToken?.()),
+        tap((response) =>
+          this.applyAndPersist(response, { invalidateCaches: true, syncBaseFields: false }),
+        ),
+      );
   }
 
   hydrateFromServer(serverProfile: {
@@ -127,13 +135,13 @@ export class CareerProfileService {
       experienceLevel: DEFAULT_CAREER_PROFILE.experienceLevel,
       activeCareerStack: DEFAULT_CAREER_PROFILE.careerStack,
       activeExperienceLevel: DEFAULT_CAREER_PROFILE.experienceLevel,
-      careerGoal: DEFAULT_CAREER_PROFILE.careerGoal
+      careerGoal: DEFAULT_CAREER_PROFILE.careerGoal,
     });
   }
 
   private applyAndPersist(
     data: Partial<CareerProfile>,
-    options: { invalidateCaches?: boolean; syncBaseFields?: boolean } = {}
+    options: { invalidateCaches?: boolean; syncBaseFields?: boolean } = {},
   ): void {
     const incoming = data as Partial<CareerProfile> & {
       activeGithubUsername?: string;
@@ -143,15 +151,30 @@ export class CareerProfileService {
     const current = this.profileSubject.value;
     const next: CareerProfile = {
       careerStack: incoming.activeCareerStack ?? data.careerStack ?? current.careerStack,
-      experienceLevel: incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
-      careerGoal:      data.careerGoal      ?? current.careerGoal,
-      activeGithubUsername: incoming.activeGithubUsername ?? data.activeGithubUsername ?? current.activeGithubUsername ?? '',
-      activeCareerStack: incoming.activeCareerStack ?? data.activeCareerStack ?? data.careerStack ?? current.activeCareerStack ?? current.careerStack,
-      activeExperienceLevel: incoming.activeExperienceLevel ?? data.activeExperienceLevel ?? data.experienceLevel ?? current.activeExperienceLevel ?? current.experienceLevel,
-      targetTimeline:  data.targetTimeline  ?? current.targetTimeline ?? '',
+      experienceLevel:
+        incoming.activeExperienceLevel ?? data.experienceLevel ?? current.experienceLevel,
+      careerGoal: data.careerGoal ?? current.careerGoal,
+      activeGithubUsername:
+        incoming.activeGithubUsername ??
+        data.activeGithubUsername ??
+        current.activeGithubUsername ??
+        '',
+      activeCareerStack:
+        incoming.activeCareerStack ??
+        data.activeCareerStack ??
+        data.careerStack ??
+        current.activeCareerStack ??
+        current.careerStack,
+      activeExperienceLevel:
+        incoming.activeExperienceLevel ??
+        data.activeExperienceLevel ??
+        data.experienceLevel ??
+        current.activeExperienceLevel ??
+        current.experienceLevel,
+      targetTimeline: data.targetTimeline ?? current.targetTimeline ?? '',
       learningPreference: data.learningPreference ?? current.learningPreference ?? '',
-      profileHash:     data.profileHash     ?? current.profileHash ?? '',
-      isConfigured:    data.isConfigured    ?? current.isConfigured
+      profileHash: data.profileHash ?? current.profileHash ?? '',
+      isConfigured: data.isConfigured ?? current.isConfigured,
     };
     const personalizationChanged =
       next.activeGithubUsername !== current.activeGithubUsername ||
@@ -165,29 +188,41 @@ export class CareerProfileService {
       Boolean(next.profileHash && current.profileHash && next.profileHash !== current.profileHash);
     this.profileSubject.next(next);
     this.persistToStorage(next);
-    if (personalizationChanged && options.invalidateCaches !== false) this.invalidateDependentCaches();
+    if (personalizationChanged && options.invalidateCaches !== false)
+      this.invalidateDependentCaches();
   }
 
   private persistToStorage(profile: CareerProfile): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...profile, ownerId: this.storedOwnerId() }),
+    );
+  }
+
+  private storedOwnerId(): string {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')?._id || '';
+    } catch {
+      return '';
+    }
   }
 
   private loadFromStorage(): CareerProfile {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return { ...DEFAULT_CAREER_PROFILE };
-      return { ...DEFAULT_CAREER_PROFILE, ...JSON.parse(raw) };
+      const parsed = JSON.parse(raw);
+      if (!parsed.ownerId || parsed.ownerId !== this.storedOwnerId())
+        return { ...DEFAULT_CAREER_PROFILE };
+      return { ...DEFAULT_CAREER_PROFILE, ...parsed };
     } catch {
       return { ...DEFAULT_CAREER_PROFILE };
     }
   }
 
   private invalidateDependentCaches(): void {
+    this.cacheInvalidation.clearProfileCache();
     this.cacheInvalidation.clearDeveloperSignalCaches();
     globalThis.dispatchEvent?.(new CustomEvent('devinsight:profile-personalization-changed'));
   }
 }
-
-
-
-

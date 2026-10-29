@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { finalize, map, shareReplay, tap } from 'rxjs/operators';
+import { filter, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { CareerProfileService } from './career-profile.service';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
@@ -90,28 +90,25 @@ export interface AvatarUploadResponse {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProfileService {
+export class ProfileService implements OnDestroy {
   private readonly baseUrl = `${environment.apiBaseUrl}/profile`;
   private readonly apiOrigin = environment.apiOrigin;
   private readonly cacheKey = 'devinsight_profile_cache';
-  private readonly dependentCacheModules = [
-    'dashboardSummary',
-    'dashboardContributions',
-    'dashboardLanguages',
-    'dashboardSkills',
-    'dashboardRecommendations',
-    'dashboardIntegrationAnalytics',
-    'skillGap',
-    'recommendations',
-    'news',
-    'weeklyReports',
-  ];
   private inflightProfile$: Observable<UserProfile> | null = null;
   private memoryProfile: UserProfile | null = null;
   private readonly profileCacheTtlMs = 5 * 60 * 1000;
-  private readonly inflight = new Map<string, Observable<UserProfile>>();
-  private cachedProfile: UserProfile | null = null;
-  private cachedAt = 0;
+  private cacheExpiresAt = 0;
+  private generation = 0;
+  private readonly onStorage = (event: StorageEvent): void => {
+    if (event.key === this.cacheKey) {
+      this.memoryProfile = null;
+      this.cacheExpiresAt = 0;
+      this.generation += 1;
+      this.inflightProfile$ = null;
+      this.invalidateDependentCaches();
+    }
+  };
+
   constructor(
     private readonly http: HttpClient,
     private readonly authService: AuthService,
@@ -120,30 +117,40 @@ export class ProfileService {
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('profile', () => this.clearCache());
+    globalThis.addEventListener?.('storage', this.onStorage);
+  }
+
+  ngOnDestroy(): void {
+    globalThis.removeEventListener?.('storage', this.onStorage);
   }
 
   clearCache(): void {
     this.inflightProfile$ = null;
-    this.inflight.clear();
     this.memoryProfile = null;
-    this.cachedProfile = null;
-    this.cachedAt = 0;
+    this.cacheExpiresAt = 0;
+    this.generation += 1;
     localStorage.removeItem(this.cacheKey);
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Fetch profile + stats from backend ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
   getProfile(forceRefresh = false): Observable<UserProfile> {
     if (!forceRefresh) {
-      const cached = this.memoryProfile || this.readCachedProfile();
+      const owner = this.authService.getCurrentUser()?._id;
+      const cached =
+        this.memoryProfile?._id === owner && this.cacheExpiresAt > Date.now()
+          ? this.memoryProfile
+          : this.readCachedProfile();
       if (cached) return of(cached);
       if (this.inflightProfile$) return this.inflightProfile$;
     }
 
+    const token = this.authService.getToken();
+    const generation = ++this.generation;
     this.inflightProfile$ = this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
+      filter(() => generation === this.generation && token === this.authService.getToken()),
       map((profile) => this.normalizeProfile(profile)),
       tap((profile) => this.applyProfile(profile)),
       finalize(() => {
-        this.inflightProfile$ = null;
+        if (generation === this.generation) this.inflightProfile$ = null;
       }),
       shareReplay({ bufferSize: 1, refCount: false }),
     );
@@ -152,7 +159,9 @@ export class ProfileService {
   }
 
   updateProfile(payload: UpdateProfilePayload): Observable<Partial<UserProfile>> {
+    const token = this.authService.getToken();
     return this.http.put<Partial<UserProfile>>(`${this.baseUrl}/me`, payload).pipe(
+      filter(() => token === this.authService.getToken()),
       map((updated) => ({
         ...updated,
         ...(typeof updated.avatar === 'string'
@@ -160,6 +169,8 @@ export class ProfileService {
           : {}),
       })),
       tap((updated) => {
+        this.generation += 1;
+        this.inflightProfile$ = null;
         this.authService.updateCurrentUser(updated);
         this.mergeProfileUpdate(updated);
         this.cacheInvalidation.clearPublicPortfolioCaches();
@@ -167,20 +178,32 @@ export class ProfileService {
     );
   }
 
-  updatePassword(payload: PasswordPayload): Observable<{ message: string }> {
-    return this.http.put<{ message: string }>(`${this.baseUrl}/password`, payload);
+  updatePassword(payload: PasswordPayload): Observable<{ message: string; token?: string }> {
+    const token = this.authService.getToken();
+    return this.http
+      .put<{ message: string; token?: string }>(`${this.baseUrl}/password`, payload)
+      .pipe(
+        filter(() => token === this.authService.getToken()),
+        tap((response) => {
+          if (response.token) this.authService.rotateSessionToken(response.token);
+        }),
+      );
   }
 
   uploadAvatar(file: File): Observable<AvatarUploadResponse> {
     const form = new FormData();
     form.append('avatar', file);
 
+    const token = this.authService.getToken();
     return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
+      filter(() => token === this.authService.getToken()),
       map((res) => ({
         ...res,
         avatar: this.resolveAvatarUrl(res.avatar),
       })),
       tap((res) => {
+        this.generation += 1;
+        this.inflightProfile$ = null;
         this.authService.updateCurrentUser({ avatar: res.avatar });
         this.mergeProfileUpdate({ avatar: res.avatar });
         this.cacheInvalidation.clearPublicPortfolioCaches();
@@ -193,8 +216,12 @@ export class ProfileService {
   }
 
   updateVisibility(isPublic: boolean): Observable<{ isPublic: boolean }> {
+    const token = this.authService.getToken();
     return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic }).pipe(
+      filter(() => token === this.authService.getToken()),
       tap((res) => {
+        this.generation += 1;
+        this.inflightProfile$ = null;
         this.mergeProfileUpdate({ isPublic: res.isPublic });
         this.cacheInvalidation.clearPublicPortfolioCaches();
       }),
@@ -263,6 +290,7 @@ export class ProfileService {
     const previousHash =
       this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
     this.memoryProfile = profile;
+    this.cacheExpiresAt = Date.now() + this.profileCacheTtlMs;
     this.writeCachedProfile(profile);
     this.syncStoredUser({
       _id: profile._id,
@@ -305,12 +333,17 @@ export class ProfileService {
       const raw = localStorage.getItem(this.cacheKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (Number(parsed?.expiresAt || 0) <= Date.now() || !parsed?.profile) {
+      if (
+        Number(parsed?.expiresAt || 0) <= Date.now() ||
+        !parsed?.profile ||
+        parsed.profile._id !== this.authService.getCurrentUser()?._id
+      ) {
         localStorage.removeItem(this.cacheKey);
         return null;
       }
       const profile = this.normalizeProfile(parsed.profile);
       this.memoryProfile = profile;
+      this.cacheExpiresAt = Number(parsed.expiresAt);
       return profile;
     } catch {
       localStorage.removeItem(this.cacheKey);
@@ -323,7 +356,7 @@ export class ProfileService {
       this.cacheKey,
       JSON.stringify({
         cachedAt: Date.now(),
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiresAt: Date.now() + this.profileCacheTtlMs,
         profile,
       }),
     );
@@ -348,6 +381,7 @@ export class ProfileService {
       careerGoal: String(profile.careerGoal || '').trim(),
       targetTimeline: String(profile.targetTimeline || '').trim(),
       learningPreference: String(profile.learningPreference || '').trim(),
+      resumeFileId: profile.activeResume?.fileId || profile.defaultResume?.fileId || '',
     });
     let hash = 0;
     for (let i = 0; i < payload.length; i += 1) {

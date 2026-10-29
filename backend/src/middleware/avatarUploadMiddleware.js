@@ -1,35 +1,32 @@
 const multer = require('multer');
-const path = require('node:path');
-const fs = require('node:fs');
-
-const AVATAR_UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads', 'avatars');
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (!fs.existsSync(AVATAR_UPLOAD_DIR)) {
-      fs.mkdirSync(AVATAR_UPLOAD_DIR, { recursive: true });
-    }
-    cb(null, AVATAR_UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    cb(null, `${req.user._id}-${Date.now()}${ext}`);
-  }
-});
-
-const avatarUpload = multer({
-  storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024
-  },
-  fileFilter: (req, file, cb) => {
-    const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
-    if (allowed.has(file.mimetype)) {
-      cb(null, true);
-      return;
-    }
-    cb(new Error('Only JPG, PNG, and WEBP files are allowed.'), false);
-  }
-});
-
-module.exports = avatarUpload;
+const { imageType } = require('../utils/imageType');
+const images = require('../services/publicImageStorageService');
+const parse = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 0 }
+}).single('avatar');
+module.exports = {
+  single: () => (req, res, next) =>
+    parse(req, res, async (error) => {
+      if (error)
+        return res
+          .status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400)
+          .json({ message: 'One avatar up to 2 MiB is required.' });
+      const type = req.file && imageType(req.file.buffer);
+      if (!type || req.file.mimetype !== type[1])
+        return res
+          .status(400)
+          .json({ message: 'A valid PNG, JPG or WebP avatar is required.' });
+      try {
+        req.file.publicPath = await images.put(
+          'avatars',
+          req.user._id,
+          req.file.buffer,
+          type[0]
+        );
+        next();
+      } catch {
+        res.status(503).json({ message: 'Avatar storage unavailable.' });
+      }
+    })
+};

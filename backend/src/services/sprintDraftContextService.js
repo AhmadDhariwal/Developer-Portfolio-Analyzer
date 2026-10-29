@@ -4,12 +4,13 @@ const crypto = require('node:crypto');
 const User = require('../models/user');
 const developerContext = require('./developerContextService');
 const VERSION = 'sprint-draft-context-v1';
-const digest = (value) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const digest = (value) =>
+  crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 const currentContext = async (userId) => {
   const user = await User.findById(userId)
     .select(
-      'activeCareerStack careerStack activeExperienceLevel experienceLevel activeGithubUsername githubUsername activeResumeFileId defaultResumeFileId updatedAt'
+      'activeCareerStack careerStack activeExperienceLevel experienceLevel activeGithubUsername githubUsername activeResumeFileId defaultResumeFileId careerGoal targetTimeline learningPreference updatedAt'
     )
     .lean();
   if (!user) {
@@ -27,6 +28,7 @@ const currentContext = async (userId) => {
     user
   );
   const identity = {
+    profileHash: developerContext.buildProfileHash(user),
     careerStack,
     experienceLevel,
     githubUsername: developerContext.resolveGithubUsername(user) || '',
@@ -39,12 +41,17 @@ const currentContext = async (userId) => {
     ...identity,
     fingerprint: digest(identity),
     sourceRule: evidence.personalization?.ruleVersion || null,
-    limitation: evidence.personalization?.limitation || 'General career guidance; not verified proficiency.'
+    limitation:
+      evidence.personalization?.limitation ||
+      'General career guidance; not verified proficiency.'
   };
 };
 const compatibility = (plan, context) => {
   const recorded = plan.context;
-  const complete = recorded?.version === VERSION && recorded.ownerId === context.ownerId && recorded.fingerprint;
+  const complete =
+    recorded?.version === VERSION &&
+    recorded.ownerId === context.ownerId &&
+    recorded.fingerprint;
   const stale = !complete || recorded.fingerprint !== context.fingerprint;
   return {
     status: !complete ? 'legacy-context-unknown' : stale ? 'different-context' : 'current',

@@ -32,7 +32,7 @@ const RESUME_ANALYSIS_CACHE_PREFIX = 'resume_analysis_cache:';
 const RESUME_ANALYSIS_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ResumeService {
   private readonly http = inject(HttpClient);
@@ -64,19 +64,22 @@ export class ResumeService {
 
   refresh(): void {
     this.loadingSubject.next(true);
-    
+
     // Fetch profile and resumes in parallel or sequence
-    this.profileService.getProfile().pipe(
-      tap(profile => this.profileSubject.next(profile)),
-      switchMap(() => this.apiService.getResumeFiles()),
-      map(res => Array.isArray(res?.files) ? res.files : []),
-      tap(resumes => {
-        this.resumesSubject.next(resumes);
-        this.loadingSubject.next(false);
-      })
-    ).subscribe({
-      error: () => this.loadingSubject.next(false)
-    });
+    this.profileService
+      .getProfile()
+      .pipe(
+        tap((profile) => this.profileSubject.next(profile)),
+        switchMap(() => this.apiService.getResumeFiles()),
+        map((res) => (Array.isArray(res?.files) ? res.files : [])),
+        tap((resumes) => {
+          this.resumesSubject.next(resumes);
+          this.loadingSubject.next(false);
+        }),
+      )
+      .subscribe({
+        error: () => this.loadingSubject.next(false),
+      });
   }
 
   profileSubjectValue(): UserProfile | null {
@@ -110,7 +113,9 @@ export class ResumeService {
     }
   }
 
-  buildAnalysisCacheKey(file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>): string {
+  buildAnalysisCacheKey(
+    file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>,
+  ): string {
     const userId = this.getCurrentUserId() || 'anonymous';
     const fileId = String(file?.fileId || '').trim();
     const hash = String(file?.resumeHash || 'no-hash').trim();
@@ -118,13 +123,18 @@ export class ResumeService {
     return `${RESUME_ANALYSIS_CACHE_PREFIX}${userId}:${fileId}:${hash}:${version}`;
   }
 
-  getCachedAnalysis<T = any>(file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>): T | null {
+  getCachedAnalysis<T = any>(
+    file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>,
+  ): T | null {
     if (!file?.fileId || !file?.resumeHash) return null;
     try {
       const raw = localStorage.getItem(this.buildAnalysisCacheKey(file));
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (!parsed?.cachedAt || Date.now() - Number(parsed.cachedAt) > RESUME_ANALYSIS_CACHE_TTL_MS) {
+      if (
+        !parsed?.cachedAt ||
+        Date.now() - Number(parsed.cachedAt) > RESUME_ANALYSIS_CACHE_TTL_MS
+      ) {
         localStorage.removeItem(this.buildAnalysisCacheKey(file));
         return null;
       }
@@ -134,7 +144,10 @@ export class ResumeService {
     }
   }
 
-  cacheAnalysis(file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>, analysis: any): void {
+  cacheAnalysis(
+    file: Pick<ResumeFile, 'fileId' | 'resumeHash' | 'analysisVersion'>,
+    analysis: any,
+  ): void {
     const resumeHash = String(analysis?.resumeHash || file?.resumeHash || '').trim();
     if (!file?.fileId || !resumeHash) return;
     this.currentAnalysisSubject.next(analysis || null);
@@ -143,7 +156,7 @@ export class ResumeService {
     const key = this.buildAnalysisCacheKey({
       fileId: file.fileId,
       resumeHash,
-      analysisVersion: analysis?.analysisVersion || file?.analysisVersion || 'resume-intel-v2'
+      analysisVersion: analysis?.analysisVersion || file?.analysisVersion || 'resume-intel-v2',
     });
     try {
       Object.keys(localStorage)
@@ -165,7 +178,12 @@ export class ResumeService {
   // Update a single resume to default
   setDefaultResume(fileId: string): Observable<any> {
     return this.apiService.setActiveResume(fileId, true).pipe(
-      tap(() => this.refresh())
+      tap(() => {
+        this.cacheInvalidation.clearProfileCache();
+        this.cacheInvalidation.clearDeveloperSignalCaches();
+        this.clearResumeAnalysisCache();
+        this.refresh();
+      }),
     );
   }
 
@@ -175,13 +193,15 @@ export class ResumeService {
       tap(() => {
         this.clearResumeAnalysisCache();
         this.refresh();
-      })
+      }),
     );
   }
 
   parsePreviewResumeText(file: File): Observable<PreviewResumeReference> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.apiService.parsePreviewResumeText(formData) as unknown as Observable<PreviewResumeReference>;
+    return this.apiService.parsePreviewResumeText(
+      formData,
+    ) as unknown as Observable<PreviewResumeReference>;
   }
 }

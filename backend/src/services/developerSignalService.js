@@ -78,28 +78,12 @@ const uniqLower = (values = []) => {
 
 const safeStrings = (values = [], limit = 6) =>
   uniqLower(
-    (Array.isArray(values) ? values : []).map((value) => String(value || '').trim()).filter(Boolean)
+    (Array.isArray(values) ? values : [])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
   ).slice(0, limit);
 
-const buildProfileHash = (user = {}) =>
-  crypto
-    .createHash('sha256')
-    .update(
-      JSON.stringify({
-        activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '')
-          .trim()
-          .toLowerCase(),
-        activeCareerStack: String(developerContext.resolveCareerStack(user) || 'Full Stack').trim(),
-        activeExperienceLevel: String(
-          developerContext.resolveExperienceLevel(user) || 'Student'
-        ).trim(),
-        resumeFileId: String(developerContext.resolveSelectedResumeFileId(user) || ''),
-        careerGoal: String(user.careerGoal || '').trim(),
-        targetTimeline: String(user.targetTimeline || '').trim(),
-        learningPreference: String(user.learningPreference || '').trim()
-      })
-    )
-    .digest('hex');
+const buildProfileHash = developerContext.buildProfileHash;
 
 const flattenResumeSkills = (skillsMap = {}) => {
   if (!skillsMap) return [];
@@ -134,9 +118,12 @@ const deriveResumeWeaknesses = (analysis = {}) => {
   const safeAnalysis = analysis || {};
   const weaknesses = [];
 
-  if (Number(safeAnalysis.atsScore || 0) < 70) weaknesses.push('ATS structure needs improvement');
-  if (Number(safeAnalysis.keywordDensity || 0) < 65) weaknesses.push('Keyword coverage is thin');
-  if (Number(safeAnalysis.formatScore || 0) < 65) weaknesses.push('Formatting could be clearer');
+  if (Number(safeAnalysis.atsScore || 0) < 70)
+    weaknesses.push('ATS structure needs improvement');
+  if (Number(safeAnalysis.keywordDensity || 0) < 65)
+    weaknesses.push('Keyword coverage is thin');
+  if (Number(safeAnalysis.formatScore || 0) < 65)
+    weaknesses.push('Formatting could be clearer');
   if (Number(safeAnalysis.contentQuality || 0) < 65)
     weaknesses.push('Content lacks strong impact language');
 
@@ -161,7 +148,10 @@ const deriveMissingResumeSections = (analysis = {}) => {
     { label: 'Skills', patterns: ['skills section', 'skill section'] },
     { label: 'Experience', patterns: ['experience section', 'work experience', 'experience'] },
     { label: 'Education', patterns: ['education section', 'education'] },
-    { label: 'Contact Info', patterns: ['contact information', 'contact info', 'email', 'phone'] },
+    {
+      label: 'Contact Info',
+      patterns: ['contact information', 'contact info', 'email', 'phone']
+    },
     {
       label: 'Achievements',
       patterns: ['achievement', 'quantified', 'metrics', 'measurable results']
@@ -219,7 +209,10 @@ const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
           0
       ),
       formatScore: Number(
-        analysis?.formatScore || stored.scores?.formatScore || stored.scores?.formattingScore || 0
+        analysis?.formatScore ||
+          stored.scores?.formatScore ||
+          stored.scores?.formattingScore ||
+          0
       ),
       contentQuality: Number(analysis?.contentQuality || stored.scores?.contentQuality || 0),
       skills: safeStrings(stored.skills || [], 25),
@@ -566,7 +559,9 @@ const summarizePortfolioSignal = async (userId) => {
     .lean();
   const payload = await buildPublicProfilePayload(profile, user);
   const projects = Array.isArray(payload?.projects) ? payload.projects : [];
-  const liveLinks = projects.filter((project) => Boolean(String(project?.url || '').trim())).length;
+  const liveLinks = projects.filter((project) =>
+    Boolean(String(project?.url || '').trim())
+  ).length;
   const githubLinks = projects.filter((project) =>
     Boolean(String(project?.repoUrl || '').trim())
   ).length;
@@ -937,7 +932,9 @@ const summarizeSkillGapSignal = async (userId) => {
 
   const data = cache.analysisData;
   const storedSignals =
-    data.skillGapSignals && typeof data.skillGapSignals === 'object' ? data.skillGapSignals : {};
+    data.skillGapSignals && typeof data.skillGapSignals === 'object'
+      ? data.skillGapSignals
+      : {};
 
   return {
     present: true,
@@ -950,11 +947,13 @@ const summarizeSkillGapSignal = async (userId) => {
         ? data.highDemandSkills.slice(0, 12)
         : [],
     immediateSkills: safeStrings(
-      storedSignals.immediateSkills || data.immediateSkills?.map((skill) => skill?.name || skill),
+      storedSignals.immediateSkills ||
+        data.immediateSkills?.map((skill) => skill?.name || skill),
       8
     ),
     shortTermSkills: safeStrings(
-      storedSignals.shortTermSkills || data.shortTermSkills?.map((skill) => skill?.name || skill),
+      storedSignals.shortTermSkills ||
+        data.shortTermSkills?.map((skill) => skill?.name || skill),
       8
     ),
     coverage: clamp(storedSignals.coverage || data.coverage || 0),
@@ -978,7 +977,10 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
   const careerProfileSignalOverride =
     overrides.careerProfileSignal || overrides.careerProfile || null;
   const githubSourceOverride = overrides.githubSource || {};
-  const resumeAnalysisOverride = Object.prototype.hasOwnProperty.call(overrides, 'resumeAnalysis')
+  const resumeAnalysisOverride = Object.prototype.hasOwnProperty.call(
+    overrides,
+    'resumeAnalysis'
+  )
     ? overrides.resumeAnalysis
     : undefined;
 
@@ -996,8 +998,12 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
       recommendationSignal,
       scenarioSimulatorSignal
     ] = await Promise.all([
-      githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(null),
-      resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(null),
+      githubSignalOverride
+        ? Promise.resolve(githubSignalOverride)
+        : summarizeGithubSignal(null),
+      resumeSignalOverride
+        ? Promise.resolve(resumeSignalOverride)
+        : summarizeResumeSignal(null),
       summarizeSkillGapSignal(null),
       summarizeCareerSprintSignal(null),
       summarizeWeeklyReportSignal(null),
@@ -1120,7 +1126,8 @@ const buildSignalsUsedSummary = ({
   const integrationSignal = signals.integrationSignal || {};
   const careerProfileSignal = signals.careerProfileSignal || {};
   const jobsDemandSignal = signals.jobsDemandSignal || {};
-  const recommendationSignal = signals.recommendationSignal || signals.recommendationSignals || {};
+  const recommendationSignal =
+    signals.recommendationSignal || signals.recommendationSignals || {};
   const scenarioSimulatorSignal =
     signals.scenarioSimulatorSignal || signals.scenarioSimulatorSignals || {};
 
