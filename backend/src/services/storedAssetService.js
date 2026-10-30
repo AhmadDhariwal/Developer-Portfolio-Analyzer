@@ -7,6 +7,7 @@ const persistence = require('./integrationPersistenceService');
 const b2 = require('./b2ObjectStorageService');
 const IMAGE =
   /^\/uploads\/(avatars|portfolio-images)\/([a-f0-9]{24})-b2-([a-f0-9-]{36})\.(png|jpg|webp)$/;
+const OPAQUE_AVATAR = /^\/uploads\/avatars\/[a-f0-9]{64}\.(png|jpg|webp)$/;
 const PDF = /^b2:\/\/resumes\/([a-f0-9]{24})\/([a-f0-9-]{36})\.pdf$/;
 function canonical(value) {
   const raw = String(value || '');
@@ -23,6 +24,7 @@ function parse(value) {
   const reference = canonical(value);
   const image = IMAGE.exec(reference);
   const pdf = PDF.exec(reference);
+  if (OPAQUE_AVATAR.test(reference)) return { reference, ownerId: null, kind: 'avatars' };
   return image
     ? { reference, ownerId: image[2], kind: image[1] }
     : pdf
@@ -55,7 +57,9 @@ async function put(kind, owner, buffer, extension) {
   const reference =
     kind === 'resumes'
       ? `b2://resumes/${owner}/${id}.pdf`
-      : `/uploads/${kind}/${owner}-b2-${id}.${extension}`;
+      : kind === 'avatars'
+        ? '/uploads/avatars/' + crypto.randomBytes(32).toString('hex') + '.' + extension
+        : '/uploads/' + kind + '/' + owner + '-b2-' + id + '.' + extension;
   const data = {
     reference,
     ownerId: owner,
@@ -104,15 +108,27 @@ async function put(kind, owner, buffer, extension) {
 }
 async function get(value, owner) {
   const ref = parse(value);
-  if (!ref || String(ref.ownerId) !== String(owner))
+  if (!ref || !owner || (ref.ownerId && String(ref.ownerId) !== String(owner)))
     throw Object.assign(Error('Asset not found.'), { status: 404 });
   const asset = await Asset.findOne({
     reference: ref.reference,
     ownerId: owner,
     state: { $in: ['staged', 'ready'] }
   }).lean();
-  if (!asset || !asset.versionId)
+  if (!asset || !asset.versionId) throw Object.assign(Error('Asset not found.'), { status: 404 });
+  return asset;
+}
+// Internal lookup; current-account and visibility checks must precede delivery.
+async function resolveImage(value) {
+  const ref = parse(value);
+  if (!ref || ref.kind === 'resumes')
     throw Object.assign(Error('Asset not found.'), { status: 404 });
+  const asset = await Asset.findOne({
+    reference: ref.reference,
+    kind: ref.kind,
+    state: { $in: ['staged', 'ready'] }
+  }).lean();
+  if (!asset || !asset.versionId) throw Object.assign(Error('Asset not found.'), { status: 404 });
   return asset;
 }
 async function read(value, owner) {
@@ -121,15 +137,14 @@ async function read(value, owner) {
 async function activate(values, owner, session) {
   for (const value of values) {
     const ref = parse(value);
-    if (!ref || String(ref.ownerId) !== String(owner))
+    if (!ref || !owner || (ref.ownerId && String(ref.ownerId) !== String(owner)))
       throw Object.assign(Error('Invalid owned asset.'), { status: 400 });
     const result = await Asset.updateOne(
       { reference: ref.reference, ownerId: owner, state: { $in: ['staged', 'ready'] } },
       { $set: { state: 'ready' } },
       { session }
     );
-    if (!result.matchedCount)
-      throw Object.assign(Error('Invalid owned asset.'), { status: 400 });
+    if (!result.matchedCount) throw Object.assign(Error('Invalid owned asset.'), { status: 400 });
   }
 }
 async function commitAvatar(owner, next) {
@@ -190,10 +205,7 @@ async function isReferenced(asset, session) {
     return true;
   if (await Resume.exists({ userId: asset.ownerId, fileUrl: asset.reference }).session(session))
     return true;
-  const profiles = await Profile.find({ userId: asset.ownerId })
-    .limit(101)
-    .session(session)
-    .lean();
+  const profiles = await Profile.find({ userId: asset.ownerId }).limit(101).session(session).lean();
   if (profiles.length > 100) throw b2.unavailable();
   return profiles.some((profile) => references(profile).has(asset.reference));
 }
@@ -228,7 +240,10 @@ async function cleanup(asset) {
 async function remove(value) {
   const ref = parse(value);
   if (!ref) return;
-  const asset = await Asset.findOne({ reference: ref.reference, ownerId: ref.ownerId }).lean();
+  const asset = await Asset.findOne({
+    reference: ref.reference,
+    ...(ref.ownerId ? { ownerId: ref.ownerId } : {})
+  }).lean();
   if (!asset) return;
   await Asset.updateOne({ _id: asset._id }, { $set: { state: 'deleting' } });
   await cleanup({ ...asset, state: 'deleting' });
@@ -271,6 +286,7 @@ module.exports = {
   references,
   put,
   get,
+  resolveImage,
   read,
   activate,
   commitAvatar,

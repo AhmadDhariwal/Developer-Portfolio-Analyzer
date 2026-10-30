@@ -60,9 +60,7 @@ function isOwner(req, owner) {
 function visibleReference(profile, reference) {
   const visibility = profile.sections?.visibility || {};
   const values = [
-    ...(visibility.projects !== false
-      ? (profile.projects || []).map((item) => item.imageUrl)
-      : []),
+    ...(visibility.projects !== false ? (profile.projects || []).map((item) => item.imageUrl) : []),
     ...(visibility.upcoming !== false
       ? (profile.upcomingProjects || []).map((item) => item.imageUrl)
       : []),
@@ -81,7 +79,7 @@ async function storedImage(req, res, next) {
   res.set('X-Content-Type-Options', 'nosniff');
   if (!['GET', 'HEAD'].includes(req.method)) return res.sendStatus(405);
   try {
-    const asset = await assets.get(reference, parsed.ownerId);
+    const asset = await assets.resolveImage(reference);
     const owner = await User.findById(asset.ownerId)
       .select('avatar sessionRevision isActive')
       .lean();

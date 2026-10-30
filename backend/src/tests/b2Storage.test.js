@@ -306,11 +306,62 @@ test(
       body: form('avatar', png, 'not-trusted.html', 'image/png')
     });
     assert.equal(first.status, 200);
-    const avatar = (await first.json()).avatar;
+    const firstBody = await first.json();
+    assert.deepEqual(Object.keys(firstBody).sort(), ['avatar', 'message']);
+    const avatar = firstBody.avatar;
+    assert.match(new URL(avatar, base).pathname, /^\/uploads\/avatars\/[a-f0-9]{64}\.webp$/);
+    assert.ok(!avatar.includes(String(user._id)));
+    assert.ok(!avatar.includes('-b2-'));
+    const descriptor = await Asset.findOne({ reference: new URL(avatar, base).pathname }).lean();
+    assert.ok(descriptor.versionId);
+    for (const internal of [descriptor.key, descriptor.bucket, descriptor.versionId])
+      assert.ok(
+        !JSON.stringify(firstBody).includes(internal),
+        'internal storage metadata stays private'
+      );
+    const head = await request(avatar, { method: 'HEAD', anonymous: true });
+    assert.equal(head.status, 200);
+    assert.equal(head.headers.get('content-type'), 'image/webp');
+    assert.equal(head.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(head.headers.get('cache-control'), 'private, no-store');
+    assert.ok(head.headers.get('vary').includes('Cookie'));
+    assert.equal((await head.arrayBuffer()).byteLength, 0);
+    await assert.rejects(assets.get(avatar, other._id), { status: 404 });
+    await assert.rejects(assets.get(avatar, undefined), { status: 404 });
+    assert.equal(
+      (await request('/uploads/avatars/' + '0'.repeat(64) + '.webp', { anonymous: true })).status,
+      404
+    );
+    assert.equal((await request(avatar, { method: 'POST', anonymous: true })).status, 405);
+    const stagedAvatar = await assets.put('avatars', user._id, processedImage, 'webp');
+    const avatarCookie = first.headers.get('set-cookie').split(';')[0];
+    assert.equal((await request(stagedAvatar, { anonymous: true })).status, 404);
+    assert.equal(
+      (await request(stagedAvatar, { anonymous: true, cookie: avatarCookie })).status,
+      200
+    );
+    await assets.remove(stagedAvatar);
+    await assert.rejects(assets.commitAvatar(other._id, avatar), { status: 400 });
+    await User.updateOne({ _id: user._id }, { $set: { isActive: false } });
+    assert.equal((await request(avatar, { anonymous: true })).status, 404);
+    await User.updateOne({ _id: user._id }, { $set: { isActive: true } });
     assert.deepEqual(
       Buffer.from(await (await request(avatar, { anonymous: true })).arrayBuffer()),
       processedImage
     );
+    const legacyReference = '/uploads/avatars/' + user._id + '-b2-' + crypto.randomUUID() + '.webp';
+    const legacyDescriptor = { ...descriptor, reference: legacyReference };
+    delete legacyDescriptor._id;
+    await Asset.create(legacyDescriptor);
+    await User.updateOne({ _id: user._id }, { $set: { avatar: legacyReference } });
+    assert.equal((await request(legacyReference, { anonymous: true })).status, 200);
+    assert.equal(
+      (await request(avatar, { anonymous: true })).status,
+      404,
+      'displaced avatar revokes immediately'
+    );
+    await User.updateOne({ _id: user._id }, { $set: { avatar: avatar } });
+    await Asset.deleteOne({ reference: legacyReference });
     fake.fail('DeleteObjectCommand');
     const second = await request('/api/profile/avatar', {
       method: 'POST',
