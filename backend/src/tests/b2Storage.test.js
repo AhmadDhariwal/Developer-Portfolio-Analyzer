@@ -288,10 +288,14 @@ test(
         body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined
       });
     }
-    const png = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=',
-      'base64'
-    );
+    const png = await require('sharp')({
+      create: { width: 8, height: 8, channels: 3, background: '#336699' }
+    })
+      .png()
+      .toBuffer();
+    const processedImage = (
+      await require('../services/imageOptimizationService').optimize(png, 'avatars')
+    ).buffer;
     const form = (field, bytes, filename, type) => {
       const data = new FormData();
       data.append(field, new Blob([bytes], { type }), filename);
@@ -305,7 +309,7 @@ test(
     const avatar = (await first.json()).avatar;
     assert.deepEqual(
       Buffer.from(await (await request(avatar, { anonymous: true })).arrayBuffer()),
-      png
+      processedImage
     );
     fake.fail('DeleteObjectCommand');
     const second = await request('/api/profile/avatar', {

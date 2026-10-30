@@ -536,6 +536,23 @@ a,
   background: var(--surface-base, #060e20);
 }
 
+.avatar-preview-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.avatar-preview-button:disabled {
+  cursor: default;
+}
+
 .avatar-initials {
   font-size: 32px;
   font-weight: 800;
@@ -573,6 +590,77 @@ a,
 
 :host-context([data-theme='dark']) .avatar-cam {
   border-color: var(--surface-card, #131b2e);
+}
+
+.avatar-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 7, 18, 0.84);
+}
+
+.avatar-preview-dialog {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(88vw, 820px);
+  height: min(88vh, 820px);
+}
+
+.avatar-preview-dialog img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+}
+
+.avatar-preview-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: #172033;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.avatar-pending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+.avatar-pending button {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--primary, #4f46e5);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.avatar-pending button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .avatar-meta {

@@ -28,9 +28,22 @@
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 95,
+    "temporaryFilesRemoved": 96,
     "productionDataUsed": false
   },
-  "admissionMs": [6.98, 7.29, 14.08, 14.53, 15.33, 15.4, 15.56, 15.62, 15.64, 16.1, 16.48, 16.59],
+  "admissionMs": [
+    7.52,
+    14.9,
+    15.08,
+    15.12,
+    15.21,
+    15.21,
+    15.38,
+    15.39,
+    15.85,
+    15.92,
+    16,
+    24.49
+  ],
   "completed": 7
 }

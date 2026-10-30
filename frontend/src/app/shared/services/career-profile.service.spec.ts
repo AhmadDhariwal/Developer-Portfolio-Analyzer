@@ -27,7 +27,11 @@ describe('CareerProfileService', () => {
     service = new CareerProfileService(http as any, {} as any, {} as any, invalidation as any);
   });
 
-  afterEach(() => service.ngOnDestroy());
+  afterEach(() => {
+    service.ngOnDestroy();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it('does not invalidate while hydrating a profile response', () => {
     service.hydrateFromServer({

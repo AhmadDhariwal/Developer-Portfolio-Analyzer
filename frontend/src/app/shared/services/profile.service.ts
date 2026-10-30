@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { filter, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
@@ -190,25 +190,43 @@ export class ProfileService implements OnDestroy {
       );
   }
 
-  uploadAvatar(file: File): Observable<AvatarUploadResponse> {
+  uploadAvatar(
+    file: File,
+    onProgress?: (percent: number) => void,
+  ): Observable<AvatarUploadResponse> {
     const form = new FormData();
     form.append('avatar', file);
 
     const token = this.authService.getToken();
-    return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
-      filter(() => token === this.authService.getToken()),
-      map((res) => ({
-        ...res,
-        avatar: this.resolveAvatarUrl(res.avatar),
-      })),
-      tap((res) => {
-        this.generation += 1;
-        this.inflightProfile$ = null;
-        this.authService.updateCurrentUser({ avatar: res.avatar });
-        this.mergeProfileUpdate({ avatar: res.avatar });
-        this.cacheInvalidation.clearPublicPortfolioCaches();
-      }),
-    );
+    return this.http
+      .post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form, {
+        observe: 'events',
+        reportProgress: true,
+      })
+      .pipe(
+        tap((event) => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            onProgress?.(Math.round((event.loaded / event.total) * 100));
+          }
+        }),
+        filter(
+          (event): event is HttpResponse<AvatarUploadResponse> =>
+            event.type === HttpEventType.Response,
+        ),
+        map((event) => event.body!),
+        filter(() => token === this.authService.getToken()),
+        map((res) => ({
+          ...res,
+          avatar: this.resolveAvatarUrl(res.avatar),
+        })),
+        tap((res) => {
+          this.generation += 1;
+          this.inflightProfile$ = null;
+          this.authService.updateCurrentUser({ avatar: res.avatar });
+          this.mergeProfileUpdate({ avatar: res.avatar });
+          this.cacheInvalidation.clearPublicPortfolioCaches();
+        }),
+      );
   }
 
   deleteAccount(): Observable<{ message: string }> {

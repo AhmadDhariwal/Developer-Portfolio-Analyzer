@@ -15,19 +15,25 @@ function uploadPortfolioImage(req, res) {
     if (!type || req.file.mimetype !== type[1])
       return res.status(400).json({ message: 'A valid PNG, JPG or WebP image is required.' });
     try {
+      const processed = await require('../services/imageOptimizationService').optimize(
+        req.file.buffer,
+        'portfolio-images'
+      );
       const imageUrl = await require('../services/publicImageStorageService').put(
         'portfolio-images',
         req.user._id,
-        req.file.buffer,
-        type[0]
+        processed.buffer,
+        processed.extension
       );
       res.status(201).json({
         imageUrl: imageUrl,
-        mimeType: type[1],
-        size: req.file.size
+        mimeType: processed.mimeType,
+        size: processed.size
       });
-    } catch {
-      res.status(503).json({ message: 'Image storage unavailable.' });
+    } catch (error) {
+      res
+        .status(error.status || 503)
+        .json({ message: error.status ? error.message : 'Image storage unavailable.' });
     }
   });
 }

@@ -2,6 +2,10 @@ const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 const { validateEnv } = require('./src/config/env');
 const env = validateEnv();
+const localApiOnly = process.argv.includes('--api-only');
+if (localApiOnly && env.NODE_ENV !== 'development') {
+  throw Error('--api-only is available only in development.');
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -58,10 +62,7 @@ const {
 const {
   startInterviewQuestionMaintenanceScheduler
 } = require('./src/services/interviewQuestionMaintenanceService');
-const {
-  getSettingsSnapshotSync,
-  getSettings
-} = require('./src/services/platformSettingsService');
+const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -72,9 +73,7 @@ const parseCsv = (value = '') =>
     .filter(Boolean);
 const isProduction = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
 const configuredFrontendOrigins = parseCsv(process.env.FRONTEND_BASE_URL);
-const configuredApiOrigins = parseCsv(
-  process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN
-);
+const configuredApiOrigins = parseCsv(process.env.API_BASE_URL || process.env.PUBLIC_API_ORIGIN);
 const localDevOrigins = isProduction ? [] : ['http://localhost:*', 'http://127.0.0.1:*'];
 const cspConnectSources = [
   "'self'",
@@ -137,8 +136,7 @@ app.use((req, res, next) => {
     const path = String(req.path || req.originalUrl || '');
     if (path.startsWith('/api/super-admin')) return next();
     if (path.startsWith('/api/auth')) return next();
-    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads'))
-      return next();
+    if (path === '/' || path.startsWith('/metrics') || path.startsWith('/uploads')) return next();
 
     return res
       .status(503)
@@ -243,8 +241,12 @@ const startServer = async () => {
   await connectDB();
   await initializeRedisAtStartup();
 
-  app.listen(PORT, () => {
+  app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
     logger.info('server started', { port: PORT });
+    if (localApiOnly) {
+      logger.info('development API-only mode: loopback listener; background workers disabled.');
+      return;
+    }
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();
@@ -253,9 +255,7 @@ const startServer = async () => {
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
     startInterviewQuestionMaintenanceScheduler();
-    getSettings().catch((err) =>
-      logger.warn('settings warmup failed', { error: err?.message })
-    );
+    getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
     const ghToken = process.env.GITHUB_TOKEN;
@@ -267,9 +267,7 @@ const startServer = async () => {
     // Jobs Hub source startup validation
     const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
     const integrations = getIntegrationSecretsSync();
-    const rapidApiKey = String(
-      process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || ''
-    ).trim();
+    const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
 
     const jsearchConfigured =
       integrations?.jobsEnabled !== false &&
@@ -287,9 +285,7 @@ const startServer = async () => {
           `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`
         );
         if (health.cacheStatus === 'LOW') {
-          console.warn(
-            '[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).'
-          );
+          console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
         }
       })
       .catch((err) => {

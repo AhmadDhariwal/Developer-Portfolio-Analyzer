@@ -292,10 +292,11 @@ test(
       const handle = app.listen(0, "127.0.0.1", () => resolve(handle));
     });
     const base = `http://127.0.0.1:${server.address().port}`;
-    const png = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=",
-      "base64",
-    );
+    const png = await require("sharp")({
+      create: { width: 8, height: 8, channels: 3, background: "#336699" },
+    })
+      .png()
+      .toBuffer();
     const form = (field, bytes, filename, type) => {
       const data = new FormData();
       data.append(field, new Blob([bytes], { type }), filename);

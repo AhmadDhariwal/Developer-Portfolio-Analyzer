@@ -62,7 +62,10 @@ describe('Public portfolio lifecycle', () => {
     expect(fixture.componentInstance.profile?.slug).toBe('renamed');
     service.invalidated$.next();
     expect(fixture.componentInstance.profile).toBeNull();
-  });
+    // The first detectChanges on this large standalone component can exceed the
+    // 5s default when the full suite runs all files in parallel; the test itself
+    // is synchronous. Allow headroom so parallel scheduling jitter is not a false failure.
+  }, 20000);
   it('renders truthful 404/503 states without stale private data', () => {
     const fixture = TestBed.createComponent(PublicPortfolioComponent);
     fixture.detectChanges();

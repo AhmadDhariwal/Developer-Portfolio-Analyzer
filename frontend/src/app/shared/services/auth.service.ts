@@ -60,6 +60,8 @@ export class AuthService implements OnDestroy {
   currentUser$ = this.currentUserSubject.asObservable();
   private readonly avatarVersionSubject = new BehaviorSubject<number>(Date.now());
   avatarVersion$ = this.avatarVersionSubject.asObservable();
+  private readonly avatarPreviewSubject = new BehaviorSubject<string | null>(null);
+  avatarPreview$ = this.avatarPreviewSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
   private isLoggingOut = false;
   // Kept for cleanup in ngOnDestroy so we avoid memory leaks
@@ -474,6 +476,7 @@ export class AuthService implements OnDestroy {
 
   logout(redirect: boolean = true, customReturnUrl?: string): void {
     if (this.isLoggingOut) return;
+    this.clearAvatarPreview();
     this.isLoggingOut = true;
 
     try {
@@ -529,6 +532,14 @@ export class AuthService implements OnDestroy {
     }
 
     this.persistCurrentUser(updated);
+  }
+
+  setAvatarPreview(avatar: string | null): void {
+    this.avatarPreviewSubject.next(avatar);
+  }
+
+  clearAvatarPreview(): void {
+    this.avatarPreviewSubject.next(null);
   }
 
   getAvatarVersion(): number {

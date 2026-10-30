@@ -1,74 +1,13 @@
-<div class="prof-page" [attr.aria-busy]="isLoading">
+<div class="prof-page" [attr.aria-busy]="isLoading || isSaving">
   <!-- ════════════════════════════════════════════════════════════
        A. Page Header — Aligned with Platform Module Standard
   ════════════════════════════════════════════════════════════ -->
-  <header class="page-header">
-    <div class="header-main">
-      <span class="eyebrow">Developer Cockpit // Account Configuration</span>
-      <h1>Profile Settings</h1>
-      <p class="description">
-        Manage your developer identity, target career stack, connected accounts, and platform
-        preferences.
-      </p>
-    </div>
-    <div class="header-actions">
-      <a routerLink="/app/skill-gap" class="text-button" title="View Skill Gap Analysis">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
-        <span>Skill Gap</span>
-      </a>
-      <a routerLink="/app/career-sprint" class="text-button" title="View Career Sprint Roadmap">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-        <span>Career Sprint</span>
-      </a>
-      <button
-        class="prof-refresh-btn"
-        type="button"
-        (click)="refreshProfile()"
-        [disabled]="isLoading"
-        aria-label="Refresh profile settings"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          [class.spinning]="isLoading"
-          aria-hidden="true"
-        >
-          <path d="M23 4v6h-6" />
-          <path d="M1 20v-6h6" />
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-        </svg>
-        <span>{{ isLoading ? 'Refreshing…' : 'Refresh State' }}</span>
-      </button>
-    </div>
-  </header>
+  <header
+    class="page-header"
+    appProfilePageHeader
+    [isLoading]="isLoading"
+    (refreshProfileIntent)="refreshProfile()"
+  ></header>
 
   <!-- ════════════════════════════════════════════════════════════
        B. Context Bar: Target, Experience & Freshness
@@ -166,239 +105,29 @@
     ────────────────────────────────────────────────────────── -->
     <aside class="prof-sidebar">
       <!-- 1. Identity & Avatar Panel -->
-      <div class="prof-card avatar-card">
-        <div class="avatar-wrap">
-          <div class="avatar-ring">
-            <div class="avatar-circle">
-              <img
-                *ngIf="profile.avatar"
-                [src]="getAvatarSrc()"
-                [alt]="profile.name || 'User'"
-                title="Profile image"
-                (error)="onAvatarError($event)"
-              />
-              <span *ngIf="!profile.avatar" class="avatar-initials">{{ getInitials() }}</span>
-            </div>
-          </div>
-          <input
-            #avatarInput
-            id="profile-avatar-input"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            (change)="onAvatarFileSelected($event)"
-            hidden
-          />
-          <button
-            class="avatar-cam"
-            type="button"
-            title="Upload custom avatar (JPG, PNG, WebP ≤ 2MB)"
-            aria-label="Change profile photo"
-            [disabled]="isUploadingAvatar"
-            (click)="avatarInput.click()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path
-                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-              />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="avatar-meta">
-          <h2 class="avatar-name">{{ profile.name || 'Your Name' }}</h2>
-          <p class="avatar-title">{{ profile.jobTitle || 'Software Engineer' }}</p>
-        </div>
-
-        <p class="avatar-handle" *ngIf="profile.githubUsername">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path
-              d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
-                     c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
-                     5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0
-                     C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77
-                     a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7
-                     A3.37 3.37 0 0 0 9 18.13V22"
-            />
-          </svg>
-          <span>&#64;{{ profile.githubUsername }}</span>
-        </p>
-
-        <div class="avatar-bio-quote" *ngIf="profile.bio">
-          <p>{{ profile.bio }}</p>
-        </div>
-
-        <div class="github-connected" *ngIf="profile.githubUsername">
-          <span class="live-dot" aria-hidden="true"></span>
-          <span class="live-text">GitHub Connected</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            class="connected-check"
-            aria-hidden="true"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-      </div>
+      <div
+        class="prof-card avatar-card"
+        appProfileAvatarUploader
+        [profile]="profile"
+        [isSaving]="isSaving"
+        [isUploadingAvatar]="isUploadingAvatar"
+        [uploadProgress]="avatarUploadProgress"
+        [isAvatarChangePending]="isAvatarChangePending"
+        [avatarSrc]="getAvatarSrc()"
+        [initials]="getInitials()"
+        (onAvatarFileSelectedIntent)="onAvatarFileSelected($event)"
+        (onAvatarErrorIntent)="onAvatarError($event)"
+        (discardAvatarChangeIntent)="discardAvatarChange()"
+        (openAvatarPreviewIntent)="openAvatarPreview()"
+      ></div>
 
       <!-- 2. Account Telemetry Panel -->
-      <div class="prof-card stats-card">
-        <div class="stats-head">
-          <h3 class="stats-head__title">ACCOUNT TELEMETRY</h3>
-          <span class="stats-badge">AST_VERIFIED</span>
-        </div>
-
-        <!-- Circular gauge score -->
-        <div class="score-display">
-          <div class="score-gauge-wrap">
-            <svg class="score-gauge-svg" viewBox="-4 -4 44 44" aria-hidden="true">
-              <path
-                class="gauge-bg"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke-width="3.2"
-              />
-              <path
-                class="gauge-fill"
-                [ngClass]="getScoreClass(profile.stats.developerScore)"
-                [attr.stroke-dasharray]="profile.stats.developerScore + ', 100'"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke-dashoffset="0"
-                stroke-linecap="round"
-                stroke-width="3.2"
-              />
-            </svg>
-            <div class="score-gauge-center">
-              <span class="score-val">{{ profile.stats.developerScore }}</span>
-              <span class="score-max">/100</span>
-            </div>
-          </div>
-          <div class="score-meta">
-            <span class="score-label">Developer Impact</span>
-            <span class="score-pill" [ngClass]="getScoreClass(profile.stats.developerScore)">
-              {{
-                profile.stats.developerScore >= 75
-                  ? 'Optimal Standing'
-                  : profile.stats.developerScore >= 50
-                    ? 'Steady Progress'
-                    : 'Initial Calibration'
-              }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Telemetry items -->
-        <div class="telemetry-items">
-          <div class="stat-row">
-            <span class="stat-label">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
-                <path d="M6 6h10" />
-                <path d="M6 10h10" />
-              </svg>
-              Repos Analyzed
-            </span>
-            <span class="stat-value">{{ profile.stats.reposAnalyzed }}</span>
-          </div>
-
-          <div class="stat-row">
-            <span class="stat-label">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                />
-              </svg>
-              Skills Detected
-            </span>
-            <span class="stat-value stat-value--skills"
-              >{{ profile.stats.skillsDetected }} verified</span
-            >
-          </div>
-
-          <div class="stat-row">
-            <span class="stat-label">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              Member Since
-            </span>
-            <span class="stat-value">{{ profile.stats.memberSince }}</span>
-          </div>
-        </div>
-
-        <!-- Telemetry Cadence bar -->
-        <div class="cadence-block">
-          <div class="cadence-header">
-            <span>PIPELINE CADENCE</span>
-            <span class="cadence-status">OPTIMAL</span>
-          </div>
-          <div class="cadence-ticks" aria-hidden="true">
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick active"></span>
-            <span class="cadence-tick"></span>
-          </div>
-        </div>
-      </div>
+      <div
+        class="prof-card stats-card"
+        appProfileAccountTelemetry
+        [profile]="profile"
+        [scoreClass]="getScoreClass(profile.stats.developerScore)"
+      ></div>
     </aside>
 
     <!-- ──────────────────────────────────────────────────────────
@@ -406,1149 +135,79 @@
     ────────────────────────────────────────────────────────── -->
     <main class="prof-main">
       <!-- Section 1: Personal Information ─────────────────────── -->
-      <section class="prof-card section-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--purple">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Personal Information</h2>
-            <p>Update your developer profile identity and contact information</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="profile-full-name">Full Name <span class="required-star">*</span></label>
-            <div class="input-wrap">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="field-icon"
-                aria-hidden="true"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <input
-                id="profile-full-name"
-                type="text"
-                [(ngModel)]="profile.name"
-                placeholder="Alex Johnson"
-                title="Full name"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="form-field">
-            <div class="field-header-row">
-              <label for="profile-email">Email Address</label>
-              <span class="field-badge field-badge--verified">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Verified Account
-              </span>
-            </div>
-            <div class="input-wrap input-wrap--readonly">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="field-icon"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              <input
-                id="profile-email"
-                type="email"
-                [(ngModel)]="profile.email"
-                placeholder="alex@example.com"
-                readonly
-                title="Primary email (read-only)"
-              />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="readonly-lock"
-                aria-hidden="true"
-                title="Managed by auth provider"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-job-title">Job Title</label>
-            <div class="input-wrap">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="field-icon"
-                aria-hidden="true"
-              >
-                <rect x="2" y="7" width="20" height="14" rx="2" />
-                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-              </svg>
-              <input
-                id="profile-job-title"
-                type="text"
-                [(ngModel)]="profile.jobTitle"
-                placeholder="Full Stack Engineer"
-                title="Job title"
-              />
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-location">Location</label>
-            <div class="input-wrap">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="field-icon"
-                aria-hidden="true"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <input
-                id="profile-location"
-                type="text"
-                [(ngModel)]="profile.location"
-                placeholder="San Francisco, CA"
-                title="Location"
-              />
-            </div>
-          </div>
-
-          <div class="form-field form-field--span-2">
-            <label for="profile-mobile">Direct Contact Mobile</label>
-            <div class="input-wrap">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="field-icon"
-                aria-hidden="true"
-              >
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12" y2="18" />
-              </svg>
-              <input
-                id="profile-mobile"
-                type="text"
-                [(ngModel)]="profile.phoneNumber"
-                placeholder="+1 555 000 0000"
-                title="Mobile number"
-              />
-            </div>
-            <p class="field-hint">
-              Adding your mobile number increases your visibility to verified recruiters in the
-              talent pool.
-            </p>
-          </div>
-
-          <div class="form-field form-field--span-2">
-            <div class="field-header-row">
-              <label for="profile-bio">Bio &amp; Technical Summary</label>
-              <span class="char-count" [class.char-count--warn]="(profile.bio.length || 0) > 550">
-                {{ profile.bio.length || 0 }} / 600 characters
-              </span>
-            </div>
-            <textarea
-              id="profile-bio"
-              [(ngModel)]="profile.bio"
-              placeholder="Passionate full-stack developer specializing in distributed systems, high-velocity frontend architecture, and cloud platforms…"
-              title="Bio"
-              rows="3"
-              maxlength="600"
-            ></textarea>
-          </div>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        appProfilePersonalInformation
+        [profile]="profile"
+      ></section>
 
       <!-- Section 2: Connected Accounts ───────────────────────── -->
-      <section class="prof-card section-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--blue">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Connected Accounts</h2>
-            <p>Link your developer repositories and professional profiles for deep code analysis</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <!-- GitHub Username with Prefix -->
-          <div class="form-field form-field--span-2">
-            <label for="profile-github-username"
-              >GitHub Profile <span class="required-star">*</span></label
-            >
-            <div class="input-prefix">
-              <span class="prefix-addon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
-                           c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
-                           5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0
-                           C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77
-                           a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7
-                           A3.37 3.37 0 0 0 9 18.13V22"
-                  />
-                </svg>
-                <span class="prefix-text">github.com/</span>
-              </span>
-              <input
-                id="profile-github-username"
-                type="text"
-                [(ngModel)]="profile.githubUsername"
-                placeholder="alexdev"
-                title="GitHub username"
-              />
-            </div>
-            <div
-              class="active-context-tag"
-              *ngIf="profile.activeGithubUsername || profile.githubUsername"
-            >
-              <span class="tag-label">Active Context:</span>
-              <span class="tag-val"
-                >&#64;{{ profile.activeGithubUsername || profile.githubUsername }}</span
-              >
-            </div>
-          </div>
-
-          <!-- Active Resume Banner -->
-          <div class="form-field form-field--span-2" *ngIf="profile.activeResume">
-            <div class="resume-context-banner">
-              <div class="resume-context-info">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
-                <div class="resume-context-texts">
-                  <span class="resume-context-title">Active Resume Evidence:</span>
-                  <span class="resume-context-file">{{ profile.activeResume.fileName }}</span>
-                </div>
-              </div>
-              <a
-                routerLink="/app/resume-analyzer"
-                class="resume-analyzer-link"
-                title="Open Resume Analyzer"
-              >
-                <span>Manage in Analyzer</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          <!-- Personal Website -->
-          <div class="form-field">
-            <label for="profile-website">Personal Website</label>
-            <div class="input-prefix">
-              <span class="prefix-addon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path
-                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                  />
-                </svg>
-                <span class="prefix-text">https://</span>
-              </span>
-              <input
-                id="profile-website"
-                type="text"
-                [(ngModel)]="profile.website"
-                placeholder="alexjohnson.dev"
-                title="Personal website URL"
-              />
-            </div>
-          </div>
-
-          <!-- Twitter / X -->
-          <div class="form-field">
-            <label for="profile-twitter">Twitter / X</label>
-            <div class="input-prefix">
-              <span class="prefix-addon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"
-                  />
-                </svg>
-                <span class="prefix-text">&#64;</span>
-              </span>
-              <input
-                id="profile-twitter"
-                type="text"
-                [(ngModel)]="profile.twitter"
-                placeholder="alexdevjs"
-                title="Twitter handle"
-              />
-            </div>
-          </div>
-
-          <!-- LinkedIn -->
-          <div class="form-field form-field--span-2">
-            <label for="profile-linkedin">LinkedIn Profile</label>
-            <div class="input-prefix">
-              <span class="prefix-addon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
-                  />
-                  <rect x="2" y="9" width="4" height="12" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-                <span class="prefix-text">linkedin.com/</span>
-              </span>
-              <input
-                id="profile-linkedin"
-                type="text"
-                [(ngModel)]="profile.linkedin"
-                placeholder="in/alexjohnson"
-                title="LinkedIn username or path"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        appProfileConnectedAccounts
+        [profile]="profile"
+      ></section>
 
       <!-- Section 3: Career Profile & Target Vector ───────────── -->
-      <section class="prof-card section-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--purple">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-              <polyline points="17 6 23 6 23 12" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Career Profile</h2>
-            <p>
-              Tailor AI skill gap analyses, project roadmaps, and career sprints to your target role
-            </p>
-          </div>
-        </div>
-
-        <div class="career-success" *ngIf="careerSuccess" role="status">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>{{ careerSuccess }}</span>
-        </div>
-
-        <div class="form-grid">
-          <!-- Target Career Stack Selector with Quick Chips -->
-          <div class="form-field form-field--span-2">
-            <label for="profile-career-stack"
-              >Target Career Stack <span class="required-star">*</span></label
-            >
-            <div class="stack-chips-row">
-              <button
-                *ngFor="let s of careerStacks"
-                type="button"
-                class="stack-chip"
-                [class.active]="profile.careerStack === s"
-                [class.stack-chip--active]="profile.careerStack === s"
-                (click)="profile.careerStack = s"
-              >
-                <span class="chip-indicator" *ngIf="profile.careerStack === s"></span>
-                <span>{{ s }}</span>
-              </button>
-            </div>
-            <!-- Native select bound to id for programmatic tests and accessibility -->
-            <select
-              id="profile-career-stack"
-              [(ngModel)]="profile.careerStack"
-              title="Career stack"
-              class="styled-select"
-            >
-              <option *ngFor="let s of careerStacks" [value]="s">{{ s }}</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="profile-experience-level"
-              >Experience Level <span class="required-star">*</span></label
-            >
-            <select
-              id="profile-experience-level"
-              [(ngModel)]="profile.experienceLevel"
-              title="Experience level"
-              class="styled-select"
-            >
-              <option *ngFor="let l of experienceLevels" [value]="l">{{ l }}</option>
-            </select>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-career-goal">Primary Career Goal</label>
-            <select
-              id="profile-career-goal"
-              [(ngModel)]="profile.careerGoal"
-              title="Career goal"
-              class="styled-select"
-            >
-              <option value="">-- Select a career goal --</option>
-              <option value="Get first job">Get first job</option>
-              <option value="Improve portfolio">Improve portfolio</option>
-              <option value="Prepare for interviews">Prepare for interviews</option>
-              <option value="Switch tech stack">Switch tech stack</option>
-            </select>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-target-timeline">Target Timeline</label>
-            <select
-              id="profile-target-timeline"
-              [(ngModel)]="profile.targetTimeline"
-              title="Target timeline"
-              class="styled-select"
-            >
-              <option value="">-- Select timeline window --</option>
-              <option *ngFor="let timeline of targetTimelines" [value]="timeline">
-                {{ timeline }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-learning-preference">Learning Preference</label>
-            <select
-              id="profile-learning-preference"
-              [(ngModel)]="profile.learningPreference"
-              title="Learning preference"
-              class="styled-select"
-            >
-              <option value="">-- Select upskilling preference --</option>
-              <option *ngFor="let preference of learningPreferences" [value]="preference">
-                {{ preference }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="career-actions">
-          <button
-            class="btn-save-career"
-            type="button"
-            (click)="saveCareerProfile()"
-            [disabled]="isSavingCareer"
-          >
-            <svg
-              *ngIf="!isSavingCareer"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            <span *ngIf="isSavingCareer" class="spinner-sm" aria-hidden="true"></span>
-            <span>{{ isSavingCareer ? 'Saving…' : 'Save Career Profile' }}</span>
-          </button>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        appProfileCareerPreferences
+        [profile]="profile"
+        [careerStacks]="careerStacks"
+        [experienceLevels]="experienceLevels"
+        [targetTimelines]="targetTimelines"
+        [learningPreferences]="learningPreferences"
+        [isSavingCareer]="isSavingCareer"
+        [careerSuccess]="careerSuccess"
+        (saveCareerProfileIntent)="saveCareerProfile()"
+      ></section>
 
       <!-- Section 4: Notification Preferences ─────────────────── -->
-      <section class="prof-card section-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--green">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Notification Preferences</h2>
-            <p>Choose automated progress telemetry, skill alerts, and radar notifications</p>
-          </div>
-        </div>
-
-        <div class="notif-list">
-          <div class="notif-row">
-            <div class="notif-info">
-              <span class="notif-title">Weekly Score Report</span>
-              <span class="notif-desc"
-                >Receive an automated weekly digest of your portfolio metrics and code score
-                changes</span
-              >
-            </div>
-            <button
-              class="toggle-btn"
-              type="button"
-              [class.active]="profile.notifications.weeklyScoreReport"
-              [class.toggle-btn--on]="profile.notifications.weeklyScoreReport"
-              title="Toggle weekly score report"
-              [attr.aria-label]="'Toggle weekly score report'"
-              (click)="toggleNotification('weeklyScoreReport')"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </div>
-
-          <div class="notif-row">
-            <div class="notif-info">
-              <span class="notif-title">Skill Trend Alerts</span>
-              <span class="notif-desc"
-                >Get notified when high-growth skills align with identified gaps in your target
-                career stack</span
-              >
-            </div>
-            <button
-              class="toggle-btn"
-              type="button"
-              [class.active]="profile.notifications.skillTrendAlerts"
-              [class.toggle-btn--on]="profile.notifications.skillTrendAlerts"
-              title="Toggle skill trend alerts"
-              [attr.aria-label]="'Toggle skill trend alerts'"
-              (click)="toggleNotification('skillTrendAlerts')"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </div>
-
-          <div class="notif-row">
-            <div class="notif-info">
-              <span class="notif-title">New Recommendations</span>
-              <span class="notif-desc"
-                >Receive algorithmic project suggestions, whitepapers, and resume bullet
-                improvements</span
-              >
-            </div>
-            <button
-              class="toggle-btn"
-              type="button"
-              [class.active]="profile.notifications.newRecommendations"
-              [class.toggle-btn--on]="profile.notifications.newRecommendations"
-              title="Toggle new recommendations"
-              [attr.aria-label]="'Toggle new recommendations'"
-              (click)="toggleNotification('newRecommendations')"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </div>
-
-          <div class="notif-row">
-            <div class="notif-info">
-              <span class="notif-title">Job Match Alerts</span>
-              <span class="notif-desc"
-                >Instant alerts when positions with 90%+ AST compatibility are indexed on the
-                platform</span
-              >
-            </div>
-            <button
-              class="toggle-btn"
-              type="button"
-              [class.active]="profile.notifications.jobMatchAlerts"
-              [class.toggle-btn--on]="profile.notifications.jobMatchAlerts"
-              title="Toggle job match alerts"
-              [attr.aria-label]="'Toggle job match alerts'"
-              (click)="toggleNotification('jobMatchAlerts')"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </div>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        appProfileNotificationSettings
+        [profile]="profile"
+        (toggleNotificationIntent)="toggleNotification($event)"
+      ></section>
 
       <!-- Section 5: Appearance & Theme ───────────────────────── -->
-      <section class="prof-card section-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--purple">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Appearance &amp; Theme</h2>
-            <p>Select your interface theme for high-contrast coding or day-to-day readability</p>
-          </div>
-        </div>
-
-        <div class="theme-picker-grid">
-          <button
-            type="button"
-            class="theme-card-option"
-            [class.active]="themeService.preference() === 'light'"
-            [class.theme-card-option--active]="themeService.preference() === 'light'"
-            (click)="themeService.setTheme('light')"
-            title="Select Light Theme"
-            aria-label="Light Theme (Default)"
-          >
-            <div class="theme-preview theme-preview--light">
-              <div class="theme-preview__sidebar"></div>
-              <div class="theme-preview__content">
-                <div class="theme-preview__bar"></div>
-                <div class="theme-preview__box"></div>
-              </div>
-            </div>
-            <div class="theme-card-meta">
-              <span class="theme-card-title">Light (Default)</span>
-              <span class="theme-card-desc"
-                >Hybrid SaaS with dark sidebar and crisp light surfaces</span
-              >
-            </div>
-            <div class="theme-card-check" *ngIf="themeService.preference() === 'light'">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            class="theme-card-option"
-            [class.active]="themeService.preference() === 'dark'"
-            [class.theme-card-option--active]="themeService.preference() === 'dark'"
-            (click)="themeService.setTheme('dark')"
-            title="Select Dark Theme"
-            aria-label="Dark Theme"
-          >
-            <div class="theme-preview theme-preview--dark">
-              <div class="theme-preview__sidebar"></div>
-              <div class="theme-preview__content">
-                <div class="theme-preview__bar"></div>
-                <div class="theme-preview__box"></div>
-              </div>
-            </div>
-            <div class="theme-card-meta">
-              <span class="theme-card-title">Dark (Kinetic Terminal)</span>
-              <span class="theme-card-desc"
-                >Deep slate theme with high contrast and relaxed eye strain</span
-              >
-            </div>
-            <div class="theme-card-check" *ngIf="themeService.preference() === 'dark'">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            class="theme-card-option"
-            [class.active]="themeService.preference() === 'system'"
-            [class.theme-card-option--active]="themeService.preference() === 'system'"
-            (click)="themeService.setTheme('system')"
-            title="Select System Theme"
-            aria-label="System Theme"
-          >
-            <div class="theme-preview theme-preview--system">
-              <div class="theme-preview__half theme-preview__half--light"></div>
-              <div class="theme-preview__half theme-preview__half--dark"></div>
-            </div>
-            <div class="theme-card-meta">
-              <span class="theme-card-title">System Synced</span>
-              <span class="theme-card-desc"
-                >Automatically match your operating system theme preference</span
-              >
-            </div>
-            <div class="theme-card-check" *ngIf="themeService.preference() === 'system'">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-          </button>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        appProfileAppearanceSettings
+        [themeService]="themeService"
+      ></section>
 
       <!-- Section 6: Talent Pool Visibility ───────────────────── -->
-      <section class="prof-card section-card" *ngIf="!isAdmin">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--green">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Talent Pool Visibility</h2>
-            <p>
-              Control whether technical recruiters and hiring managers can discover your developer
-              profile
-            </p>
-          </div>
-        </div>
-
-        <div class="visibility-success" *ngIf="visibilityMessage" role="status">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>{{ visibilityMessage }}</span>
-        </div>
-
-        <div class="notif-row">
-          <div class="notif-info">
-            <span class="notif-title">Visible to Recruiters</span>
-            <span class="notif-desc">
-              When enabled, your verified skills, experience, and GitHub scores appear in the
-              recruiter search index. Your private contact details remain protected until you accept
-              an outreach request.
-            </span>
-          </div>
-          <button
-            class="toggle-btn"
-            type="button"
-            [class.active]="profile.isPublic"
-            [class.toggle-btn--on]="profile.isPublic"
-            [disabled]="isTogglingVisibility"
-            title="Toggle talent pool visibility"
-            [attr.aria-label]="'Toggle talent pool visibility'"
-            (click)="toggleVisibility()"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="visibility-status-pill" [class.visibility-status-pill--on]="profile.isPublic">
-          <span class="status-pulse" *ngIf="profile.isPublic"></span>
-          <svg
-            *ngIf="!profile.isPublic"
-            xmlns="http://www.w3.org/2000/svg"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-          <span>
-            {{
-              profile.isPublic
-                ? 'Your profile is currently visible to recruiters in the talent pool'
-                : 'Your profile is currently hidden from recruiters in the talent pool'
-            }}
-          </span>
-        </div>
-      </section>
+      <section
+        class="prof-card section-card"
+        *ngIf="!isAdmin"
+        appProfileVisibilitySettings
+        [profile]="profile"
+        [isTogglingVisibility]="isTogglingVisibility"
+        [visibilityMessage]="visibilityMessage"
+        (toggleVisibilityIntent)="toggleVisibility()"
+      ></section>
 
       <!-- Section 7: Security Settings ─────────────────────────── -->
-      <section class="prof-card section-card security-card">
-        <div class="section-head">
-          <div class="section-head__icon section-head__icon--red">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <div class="section-head__text">
-            <h2>Security Settings</h2>
-            <p>Manage authentication credentials, password policy, and account lifecycle</p>
-          </div>
-        </div>
-
-        <!-- Change password expandable row -->
-        <button
-          type="button"
-          class="security-row"
-          (click)="toggleChangePassword()"
-          title="Change password"
-          [attr.aria-expanded]="isChangingPwd"
-        >
-          <div class="security-row__left">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <span class="security-row__label">Change Password</span>
-          </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="security-chevron"
-            [class.security-chevron--open]="isChangingPwd"
-            aria-hidden="true"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-
-        <!-- Password form (expandable) -->
-        <div class="pwd-success" *ngIf="pwdSuccess" role="status">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>{{ pwdSuccess }}</span>
-        </div>
-
-        <div class="pwd-form" *ngIf="isChangingPwd">
-          <div class="pwd-error" role="alert" *ngIf="pwdError">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span>{{ pwdError }}</span>
-          </div>
-
-          <div class="form-field">
-            <label for="profile-current-password"
-              >Current Password <span class="required-star">*</span></label
-            >
-            <input
-              id="profile-current-password"
-              type="password"
-              [(ngModel)]="passwordForm.currentPassword"
-              placeholder="••••••••"
-              title="Current password"
-              autocomplete="current-password"
-            />
-          </div>
-
-          <div class="form-grid">
-            <div class="form-field">
-              <label for="profile-new-password"
-                >New Password <span class="required-star">*</span></label
-              >
-              <input
-                id="profile-new-password"
-                type="password"
-                [(ngModel)]="passwordForm.newPassword"
-                placeholder="••••••••"
-                title="New password (minimum 6 characters)"
-                autocomplete="new-password"
-              />
-            </div>
-            <div class="form-field">
-              <label for="profile-confirm-password"
-                >Confirm New Password <span class="required-star">*</span></label
-              >
-              <input
-                id="profile-confirm-password"
-                type="password"
-                [(ngModel)]="passwordForm.confirmPassword"
-                placeholder="••••••••"
-                title="Confirm new password"
-                autocomplete="new-password"
-              />
-            </div>
-          </div>
-
-          <div class="pwd-actions">
-            <button
-              class="btn-save"
-              type="button"
-              (click)="submitPasswordChange()"
-              [disabled]="isSavingPassword"
-            >
-              <span *ngIf="isSavingPassword" class="spinner-sm" aria-hidden="true"></span>
-              <span>{{ isSavingPassword ? 'Updating…' : 'Update Password' }}</span>
-            </button>
-            <button class="btn-cancel" type="button" (click)="toggleChangePassword()">
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        <!-- Delete account trigger row -->
-        <button
-          type="button"
-          class="security-row security-row--danger"
-          (click)="openDeleteConfirm()"
-          title="Permanently delete account"
-        >
-          <div class="security-row__left">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <polyline points="3 6 5 6 21 6" />
-              <path
-                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
-              />
-            </svg>
-            <span class="security-row__label">Delete Account</span>
-          </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="security-chevron"
-            aria-hidden="true"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-      </section>
+      <section
+        class="prof-card section-card security-card"
+        appProfileSecuritySettings
+        [isChangingPwd]="isChangingPwd"
+        [passwordForm]="passwordForm"
+        [pwdError]="pwdError"
+        [pwdSuccess]="pwdSuccess"
+        [isSavingPassword]="isSavingPassword"
+        (toggleChangePasswordIntent)="toggleChangePassword()"
+        (submitPasswordChangeIntent)="submitPasswordChange()"
+        (openDeleteConfirmIntent)="openDeleteConfirm()"
+      ></section>
 
       <!-- ════════════════════════════════════════════════════════════
            D. Save Changes Action Bar (Aligned in Form Flow)
       ════════════════════════════════════════════════════════════ -->
       <footer class="prof-card save-bar">
         <div class="save-bar__content">
-          <div class="save-bar__info">
+          <div class="save-bar__info" [attr.aria-busy]="isSaving">
             <span class="save-bar__dot"></span>
             <div class="save-bar__texts">
               <span class="save-bar__title">Save Profile Changes</span>
@@ -1558,7 +217,12 @@
               >
             </div>
           </div>
-          <button class="btn-save-main" type="button" (click)="saveChanges()" [disabled]="isSaving">
+          <button
+            class="btn-save-main"
+            type="button"
+            (click)="saveChanges()"
+            [disabled]="isSaving || isUploadingAvatar"
+          >
             <svg
               *ngIf="!isSaving"
               xmlns="http://www.w3.org/2000/svg"
@@ -1642,4 +306,28 @@
       </button>
     </div>
   </dialog>
+  <div
+    class="avatar-preview-backdrop"
+    *ngIf="isAvatarPreviewOpen"
+    role="presentation"
+    (click)="closeAvatarPreview()"
+  >
+    <section
+      class="avatar-preview-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Profile photo preview"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        class="avatar-preview-close"
+        type="button"
+        aria-label="Close photo preview"
+        (click)="closeAvatarPreview()"
+      >
+        ×
+      </button>
+      <img [src]="getAvatarSrc()" [alt]="profile.name || 'Profile photo'" />
+    </section>
+  </div>
 </div>

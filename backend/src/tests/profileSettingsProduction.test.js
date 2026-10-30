@@ -39,10 +39,7 @@ test('profile hash retains the signal contract and includes selected resume and 
     .digest('hex');
   assert.equal(context.buildProfileHash(user), expected);
   assert.equal(controller().__test.buildProfileHash(user), expected);
-  assert.notEqual(
-    context.buildProfileHash({ ...user, activeResumeFileId: 'resume-b' }),
-    expected
-  );
+  assert.notEqual(context.buildProfileHash({ ...user, activeResumeFileId: 'resume-b' }), expected);
   assert.equal(context.buildProfileHash({ ...user, name: 'Renamed', avatar: 'new' }), expected);
 });
 test('OAuth profile edits work; long biography survives; notification writes stay independent', async () => {
@@ -339,10 +336,11 @@ test(
     const forged = new FormData();
     forged.append('avatar', new Blob(['<svg/>'], { type: 'image/png' }), 'avatar.png');
     assert.equal((await call('/avatar', 'POST', forged)).status, 400);
-    const png = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=',
-      'base64'
-    );
+    const png = await require('sharp')({
+      create: { width: 8, height: 8, channels: 3, background: '#336699' }
+    })
+      .png()
+      .toBuffer();
     const uploads = await Promise.all(
       [1, 2].map(async () => {
         const form = new FormData();
@@ -384,11 +382,7 @@ test(
       'password change revokes old sessions immediately'
     );
     token = rotated.payload.token;
-    assert.equal(
-      (await call('/me')).status,
-      200,
-      'replacement token keeps this session usable'
-    );
+    assert.equal((await call('/me')).status, 200, 'replacement token keeps this session usable');
     const children = [];
     const ask = (child, message) =>
       new Promise((resolve, reject) => {

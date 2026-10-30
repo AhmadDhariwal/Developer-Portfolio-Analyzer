@@ -1,0 +1,88 @@
+<div class="section-head">
+  <div class="section-head__icon section-head__icon--green">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  </div>
+  <div class="section-head__text">
+    <h2>Talent Pool Visibility</h2>
+    <p>
+      Control whether technical recruiters and hiring managers can discover your developer profile
+    </p>
+  </div>
+</div>
+
+<div class="visibility-success" *ngIf="visibilityMessage" role="status">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+  <span>{{ visibilityMessage }}</span>
+</div>
+
+<div class="notif-row">
+  <div class="notif-info">
+    <span class="notif-title">Visible to Recruiters</span>
+    <span class="notif-desc">
+      When enabled, your verified skills, experience, and GitHub scores appear in the recruiter
+      search index. Your private contact details remain protected until you accept an outreach
+      request.
+    </span>
+  </div>
+  <button
+    class="toggle-btn"
+    type="button"
+    [class.active]="profile.isPublic"
+    [class.toggle-btn--on]="profile.isPublic"
+    [disabled]="isTogglingVisibility"
+    title="Toggle talent pool visibility"
+    [attr.aria-label]="'Toggle talent pool visibility'"
+    (click)="toggleVisibility()"
+  >
+    <span class="toggle-knob"></span>
+  </button>
+</div>
+
+<div class="visibility-status-pill" [class.visibility-status-pill--on]="profile.isPublic">
+  <span class="status-pulse" *ngIf="profile.isPublic"></span>
+  <svg
+    *ngIf="!profile.isPublic"
+    xmlns="http://www.w3.org/2000/svg"
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+  <span>
+    {{
+      profile.isPublic
+        ? 'Your profile is currently visible to recruiters in the talent pool'
+        : 'Your profile is currently hidden from recruiters in the talent pool'
+    }}
+  </span>
+</div>

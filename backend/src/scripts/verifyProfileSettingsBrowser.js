@@ -53,9 +53,26 @@ async function main() {
     expiresIn: '1h'
   });
   let writes = 0;
+  let avatarWrites = 0;
+  const fixturePhoto = await require('sharp')({
+    create: { width: 64, height: 64, channels: 3, background: '#336699' }
+  })
+    .png()
+    .toBuffer();
   const app = express();
   app.use(express.json());
   app.use('/api', (req, res) => {
+    if (req.path === '/profile/avatar' && req.method === 'POST') {
+      req.resume();
+      avatarWrites++;
+      if (avatarWrites === 1)
+        return setTimeout(
+          () => res.status(503).json({ message: 'Fixture storage unavailable.' }),
+          200
+        );
+      user.avatar = 'data:image/png;base64,' + fixturePhoto.toString('base64');
+      return setTimeout(() => res.json({ avatar: user.avatar }), 200);
+    }
     if (req.path === '/profile/me' && req.method === 'GET') return res.json(user);
     if (req.path === '/profile/me' && req.method === 'PUT') {
       writes++;
@@ -138,10 +155,41 @@ async function main() {
     await page.locator('.btn-save-main').click();
     await page.getByText('No changes detected to save.').waitFor();
     assert.equal(writes, 0);
+    const choosePhoto = () =>
+      page
+        .locator('#profile-avatar-input')
+        .setInputFiles({ name: 'fixture.png', mimeType: 'image/png', buffer: fixturePhoto });
+    await choosePhoto();
+    await page.locator('app-navbar img[src^="blob:"]').waitFor();
+    await page.locator('app-sidebar img[src^="blob:"]').waitFor();
+    assert.equal(avatarWrites, 0, 'selection never uploads');
+    await page.getByRole('button', { name: 'Discard', exact: true }).click();
+    await page.waitForFunction(() => document.querySelectorAll('img[src^="blob:"]').length === 0);
+    await choosePhoto();
+    await page.locator('.btn-save-main').click();
+    await page.getByText('Fixture storage unavailable.', { exact: true }).waitFor();
+    assert.equal(await page.locator('.profile-saving-overlay').count(), 0);
+    assert.equal(await page.locator('.avatar-pending').count(), 1);
+    await page.locator('.btn-save-main').click();
+    await page.getByText('Profile changes saved successfully.').waitFor();
+    assert.equal(avatarWrites, 2);
+    assert.equal(await page.locator('.avatar-pending').count(), 0);
+    await page.locator('.avatar-preview-button').click();
+    await page.getByRole('dialog', { name: 'Profile photo preview' }).waitFor();
+    await page.keyboard.press('Escape');
+    await page.locator('.avatar-preview-dialog').waitFor({ state: 'detached' });
+
     await page.locator('#profile-full-name').fill('Edited Fixture');
+    await page.getByRole('button', { name: 'Save Career Profile', exact: true }).click();
+    await page.getByText('Career profile saved!', { exact: true }).waitFor();
+    assert.equal(
+      await page.locator('#profile-full-name').inputValue(),
+      'Edited Fixture',
+      'career save preserves personal draft'
+    );
     await page.locator('#profile-bio').fill('b'.repeat(500));
     await page.locator('.btn-save-main').click();
-    await page.getByText('Profile saved successfully!').waitFor();
+    await page.getByText('Profile changes saved successfully.').waitFor();
     assert.equal(user.bio.length, 500);
     assert.equal(writes, 1);
     await page.reload();
@@ -195,6 +243,7 @@ async function main() {
           backend: 'explicit fixture HTTP responses',
           viewports: ['1440x1000', '390x844'],
           checks: [
+            'shared avatar draft preview, discard, failed upload retry, no blocking overlay, saved image preview',
             'base versus active career display',
             'unchanged save sends no write',
             '500-character biography save',
@@ -221,6 +270,6 @@ async function main() {
   }
 }
 main().catch((error) => {
-  console.error(error.message);
+  console.error(error.stack);
   process.exitCode = 1;
 });
