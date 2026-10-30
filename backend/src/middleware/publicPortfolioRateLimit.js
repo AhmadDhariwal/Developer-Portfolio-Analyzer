@@ -1,44 +1,39 @@
 const { createHash } = require('node:crypto');
-const cache = require('../services/redisCacheService');
-const COUNTER =
-  "local n = redis.call('INCR', KEYS[1]); if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end; return n";
+const admission = require('../services/integrationMongoGovernanceService');
+const telemetry = require('../services/requestAdmissionMetrics');
 
-function limiter(name, limit, windowMs, strict = false) {
-  const local = new Map();
+// Keep the existing factory signature for callers. All Portfolio limits now use
+// one shared authority; strict=false no longer enables process-local allowances.
+function limiter(name, limit, windowMs, _strict = false) {
   return async (req, res, next) => {
-    const now = Date.now();
-    const until = (Math.floor(now / windowMs) + 1) * windowMs;
-    // req.ip respects Express trust-proxy policy; never trust raw forwarded headers.
+    // Preserve account/IP/recipient-slug identities. Express owns proxy trust.
     const subject =
       name === 'contact-recipient' ? req.params.slug : req.user?._id || req.ip || 'unknown';
     const identity = createHash('sha256').update(String(subject)).digest('hex');
-    const key = `public-portfolio:v3:rate:${name}:${identity}:${Math.floor(now / windowMs)}`;
-    let count;
+    let result;
+    const startedAt = process.hrtime.bigint();
     try {
-      const redis = cache.getRedisCacheClient();
-      if (!redis) throw new Error('unavailable');
-      count = Number(await redis.eval(COUNTER, { keys: [key], arguments: [String(until - now)] }));
+      result = await admission.requestWindow(
+        `public-portfolio:v3:rate:${name}:${identity}`,
+        limit,
+        windowMs
+      );
     } catch {
-      if (strict) {
-        res.set('Retry-After', '30');
-        return res
-          .status(503)
-          .json({ message: 'Portfolio action controls temporarily unavailable.' });
-      }
-      for (const [id, entry] of local) if (entry.until <= now) local.delete(id);
-      if (!local.has(key) && local.size >= 2000)
-        return res.status(503).json({ message: 'Portfolio service is busy.' });
-      const entry = local.get(key) || { count: 0, until };
-      count = ++entry.count;
-      local.set(key, entry);
+      telemetry.record(name, 'unavailable', startedAt);
+      res.set('Retry-After', '30');
+      return res
+        .status(503)
+        .json({ message: 'Portfolio action controls temporarily unavailable.' });
     }
     res.set('RateLimit-Limit', String(limit));
-    res.set('RateLimit-Remaining', String(Math.max(0, limit - count)));
-    if (count > limit) {
-      res.set('Retry-After', String(Math.max(1, Math.ceil((until - now) / 1000))));
+    res.set('RateLimit-Remaining', String(Math.max(0, limit - result.count)));
+    if (result.count > limit) {
+      telemetry.record(name, 'limited', startedAt);
+      res.set('Retry-After', String(Math.max(1, Math.ceil((result.until - Date.now()) / 1000))));
       return res.status(429).json({ message: 'Too many portfolio requests. Please retry later.' });
     }
-    next();
+    telemetry.record(name, 'allowed', startedAt);
+    return next();
   };
 }
 module.exports = {

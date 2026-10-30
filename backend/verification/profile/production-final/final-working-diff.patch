@@ -1,0 +1,1158 @@
+diff --git a/backend/deployment/storage/STORAGE-OPERATIONS.md b/backend/deployment/storage/STORAGE-OPERATIONS.md
+index b7dd9f6d51bacbd9dbeee031bfd30228d9c6a198..acc67cf80195449e11d5a32d362e6eceb51f6a2f 100644
+--- a/backend/deployment/storage/STORAGE-OPERATIONS.md
++++ b/backend/deployment/storage/STORAGE-OPERATIONS.md
+@@ -25,7 +25,7 @@ Omit `shareFiles`, `listAllBucketNames`, all key-management capabilities, all bu
+ 1. Confirm both existing buckets remain private, defaults are SSE-B2/AES256, and endpoint/region match. Record lifecycle/Object Lock/default retention outside the application; retained versions may legitimately prevent deletion. Never grant governance bypass to make cleanup pass.
+ 2. Create the two replacement keys after approval. Store each one-time secret directly in the approved secret manager. Do not paste it into CLI arguments, reports, chat, screenshots, Git or shell history.
+ 3. Update the four backend secret slots `B2_IMAGES_KEY_ID`, `B2_IMAGES_APPLICATION_KEY`, `B2_RESUMES_KEY_ID`, `B2_RESUMES_APPLICATION_KEY` through the approved change. Leave bucket names/endpoints/regions unchanged. Roll all API and cleanup workers together so stale processes do not retain old keys.
+-4. Validate both authorized scopes via Native authorization. Run bounded staging fixture PUT/GET/HEAD/ListObjectVersions/DELETE and cross-bucket denial only after approval; when Redis is still blocked, label direct storage checks separately from HTTP acceptance. Preserve every existing key/object. The previous live verifier requires metadata privileges during its preflight; use the separate operator audit or an approved split preflight for minimal runtime keys rather than broadening them.
++4. Validate both authorized scopes via Native authorization. Run bounded staging fixture PUT/GET/HEAD/ListObjectVersions/DELETE and cross-bucket denial only after approval. Profile/Portfolio admission now uses MongoDB and does not require Redis; direct adapter and authenticated HTTP evidence remain separate. Preserve every existing key/object. The prior direct verifier requires metadata privileges during preflight; use the separate operator audit or approved split preflight for minimal runtime keys rather than broadening them.
+ 5. Verify older managed objects remain readable with replacement credentials, including version-pinned reads, using approved non-sensitive fixtures. Keep the old secret rollback version available only to the authorized operator during the rollout window. Revoke old keys only after all processes have changed and verification passes. Revocation/secret changes were not performed by this task.
+ 
+ Provider documentation: [capabilities and S3 operations](https://www.backblaze.com/docs/cloud-storage-s3-compatible-app-keys), [v4 key creation](https://www.backblaze.com/apidocs/b2-create-key), [authorization scopes](https://www.backblaze.com/apidocs/b2-authorize-account), [bucket retention/encryption metadata](https://www.backblaze.com/apidocs/b2-list-buckets).
+@@ -38,7 +38,7 @@ Provider documentation: [capabilities and S3 operations](https://www.backblaze.c
+ - Configure a strong shared `JWT_SECRET`, issuer/audience and `NODE_ENV=production`. Use the existing `SECURITY_STRICT_ENV=true` gate. Synchronize all workers, including cleanup. This task does not rotate the existing JWT secret or change session lifetimes.
+ - Keep `PUBLIC_IMAGE_STORAGE_ROOT` pointing to the original persistent legacy image root. Mount the original résumé paths on every required worker. Validate ownership, permissions and backups before any path change. No historical file should be moved/deleted as part of activation.
+ - Keep all B2 reader variables during a write rollback to `filesystem`. Existing B2 references still need the ledger and credentials. Existing filesystem references remain authoritative until a separate copy/hash/CAS migration is verified.
+-- Do not switch the live driver until Redis strict admission is healthy, indexes are provisioned, the proxy/cookie deployment is verified and cleanup scheduling is approved. No production `.env` was changed here.
++- Do not switch the live driver until Mongo admission/storage indexes are provisioned, all old Redis-authoritative Profile workers are drained, proxy/cookie deployment is verified and cleanup scheduling is approved. Redis remains required by unchanged modules that use it. No production `.env` was changed here.
+ 
+ ## Explicit additive Mongo provisioning
+ 
+@@ -74,7 +74,7 @@ Each run performs at most 50 provider receipt attempts total, then at most 50 du
+ 
+ Cleanup deletes only generated managed keys referenced by durable receipts or files belonging to an existing explicit account-deletion receipt. **Do not run cleanup against production as an acceptance test.** Deploying the worker later executes already authorized account deletion work; operator approval of the deployment/environment is required. The test suite uses fixture adapters and task-owned files only.
+ 
+-Use the supplied Linux systemd service/timer templates after reviewing actual paths, identity and secret environment. Install only one timer/one designated maintenance worker for the shared ledger; do not schedule the alias separately. A oneshot service cannot overlap itself. A single designated worker avoids simultaneous duplicate provider requests; transactional owner fences and concrete version deletion retain correctness/retryability if processes overlap or die. Do not claim a distributed scheduler lease exists.
++Review `backend/deployment/storage/devinsight-storage-cleanup.service.example`, `devinsight-storage-cleanup.timer.example` and `nginx-storage.conf.example` against actual Linux paths, identity, proxy hop, TLS virtual host and protected secrets. Validate with `systemd-analyze verify` and `nginx -t` on the intended staging host; these local templates have not been installed or host-validated. Install only one timer/one designated maintenance worker for the shared ledger; do not schedule the alias separately. A oneshot service cannot overlap itself. A single designated worker avoids simultaneous duplicate provider requests; transactional owner fences and concrete version deletion retain correctness/retryability if processes overlap or die. Do not claim a distributed scheduler lease exists.
+ 
+ The timer runs once per minute after the preceding invocation finishes. Timeout interruption can leave an operation uncertain; its receipt survives for retry. Unknown-version empty listings require operator reconciliation; never discard them just because a key currently lists empty. Exact-version deletion may be blocked by retention/holds; retain the receipt and alert rather than changing policy or bypassing governance.
+ 
+@@ -90,7 +90,15 @@ The existing Express CORS policy allows wildcard noncredentialed API CORS. It do
+ 
+ Keep protected managed responses `private,no-store`, `Vary: Cookie`, nosniff and authorization/publication checks before bytes. Proxy `/uploads` through Node; never alias B2 or a disk root publicly to bypass authorization. Disable CDN/proxy caches for protected routes and preserve Set-Cookie. Static legacy images keep their historical public-by-URL semantics; private PDFs are denied on the static route. Revocation cannot retract downloaded copies. Real deployed HTTPS/HSTS/cookie/no-store behavior remains a deployment gate.
+ 
+-## Redis recovery — BLOCKED until healthy
++## Profile admission rollout and recovery
++
++Profile and Portfolio upload/contact quotas use MongoDB `integrationgovernancestates` as their single authority. Redis is optional for these paths and remains in use only by unchanged modules. Never serve one Profile quota from both old Redis and new Mongo workers: split counters permit extra allowances.
++
++Before enabling the candidate, provision and inspect Mongo indexes using the explicit maintenance target procedure above. Stop and drain every old Profile worker before any Mongo-admission worker accepts traffic. Retain the old build and Redis counters for rollback; deploy all API workers and the cleanup worker with the same Mongo generation. Verify transaction topology, majority writes, 429/Retry-After, and 503 on Mongo admission failure. Do not reset either store. For rollback, drain all Mongo workers before returning traffic to the old Redis build, and account for consumed Mongo quota until the longest affected window expires. Keep traffic on one authority throughout handover.
++
++Mongo/index/capacity failure is fail-closed (503); genuine quota denial remains 429. Redis outage alone must not stop migrated Profile uploads/contact. Unchanged Redis-governed modules retain their own Redis requirements. Use bounded staging requests and generated identities only; do not send contact mail or alter production quotas for testing.
++
++Local evidence confirms Mongo authority under Redis-unavailable fixtures, independent processes, shared quotas, restarts and concurrent boundaries. It does not certify the configured production Mongo target, fleet drain, Atlas durability/capacity/monitoring, IP proxy topology or rollback execution. Those remain operator gates.
+ 
+ Do not retry the exhausted service repeatedly, raise quotas, remove limits or introduce memory/Mongo fallback. Wait for the existing quota window to recover or have the authorized service owner resolve the provider condition through an approved operational change. No such change was performed here.
+ 
+diff --git a/backend/src/scripts/verifyRequestFlowGovernance.js b/backend/src/scripts/verifyRequestFlowGovernance.js
+index 29b6534aad3614f173b4ec8e1fce208beff9bbc1..25e780a90d18709752e1453c2bd0e8cc3e1d81f8 100644
+--- a/backend/src/scripts/verifyRequestFlowGovernance.js
++++ b/backend/src/scripts/verifyRequestFlowGovernance.js
+@@ -1,10 +1,10 @@
+-'use strict';
++"use strict";
+ // Fixture-only runner. Never load application .env or start the application workers.
+-const fs = require('node:fs');
+-const path = require('node:path');
+-const net = require('node:net');
+-const { spawn } = require('node:child_process');
+-const { startMongo } = require('../tests/fixtures/disposableRequestMongo');
++const fs = require("node:fs");
++const path = require("node:path");
++const net = require("node:net");
++const { spawn } = require("node:child_process");
++const { startMongo } = require("../tests/fixtures/disposableRequestMongo");
+ 
+ async function main() {
+   const runtime = await startMongo();
+@@ -15,11 +15,11 @@ async function main() {
+     // Existing baseline suites intentionally allow only these loopback fixture ports.
+     for (const fixturePort of [27139, 27140]) {
+       const proxy = net.createServer((incoming) => {
+-        const upstream = net.connect(port, '127.0.0.1');
++        const upstream = net.connect(port, "127.0.0.1");
+         for (const socket of [incoming, upstream]) {
+           sockets.add(socket);
+-          socket.on('close', () => sockets.delete(socket));
+-          socket.on('error', () => {
++          socket.on("close", () => sockets.delete(socket));
++          socket.on("error", () => {
+             incoming.destroy();
+             upstream.destroy();
+           });
+@@ -28,81 +28,94 @@ async function main() {
+       });
+       proxies.push(proxy);
+       await new Promise((resolve, reject) => {
+-        proxy.once('error', reject);
+-        proxy.listen(fixturePort, '127.0.0.1', resolve);
++        proxy.once("error", reject);
++        proxy.listen(fixturePort, "127.0.0.1", resolve);
+       });
+     }
+-    const directory = path.resolve(__dirname, '../../verification/architecture');
++    const directory = path.resolve(
++      process.env.REQUEST_FLOW_VERIFICATION_OUTPUT ||
++        path.resolve(__dirname, "../../verification/architecture"),
++    );
+     fs.mkdirSync(directory, { recursive: true });
+     // Allow only operating-system settings and explicit disposable fixture settings.
+     // Blacklisting credential names can accidentally retain deployment policy flags.
+     const childEnv = Object.fromEntries(
+       [
+-        'SystemRoot',
+-        'WINDIR',
+-        'PATH',
+-        'Path',
+-        'TEMP',
+-        'TMP',
+-        'APPDATA',
+-        'LOCALAPPDATA',
+-        'USERPROFILE'
++        "SystemRoot",
++        "WINDIR",
++        "PATH",
++        "Path",
++        "TEMP",
++        "TMP",
++        "APPDATA",
++        "LOCALAPPDATA",
++        "USERPROFILE",
+       ]
+         .filter((key) => process.env[key] !== undefined)
+-        .map((key) => [key, process.env[key]])
++        .map((key) => [key, process.env[key]]),
+     );
+     Object.assign(childEnv, {
+-      NODE_ENV: 'test',
++      NODE_ENV: "test",
++      REQUEST_FLOW_VERIFICATION_OUTPUT: directory,
+       INTEGRATION_GOVERNANCE_EVIDENCE_FILE: path.join(
+         directory,
+-        'integration-governance-regression.json'
++        "integration-governance-regression.json",
+       ),
+-      PROFILE_ACCEPTANCE_MONGO: 'mongodb://127.0.0.1:27139/?replicaSet=integration-live',
+-      B2_ACCEPTANCE_MONGO: 'mongodb://127.0.0.1:27140/?replicaSet=integration-live'
++      PROFILE_ACCEPTANCE_MONGO:
++        "mongodb://127.0.0.1:27139/?replicaSet=integration-live",
++      B2_ACCEPTANCE_MONGO:
++        "mongodb://127.0.0.1:27140/?replicaSet=integration-live",
+     });
+     if (process.env.INTEGRATION_TEST_MONGOD)
+       childEnv.INTEGRATION_TEST_MONGOD = process.env.INTEGRATION_TEST_MONGOD;
+     const suites = [
+-      'requestFlowGovernance',
+-      'publicPortfolioHardening',
+-      'profileAccountSecurity',
+-      'profileSettingsProduction',
+-      'b2Storage',
+-      'resumePipelineFinalization',
+-      'developerContextService',
+-      'careerSprintPlanningFinalization',
+-      'newsHubHardening',
+-      'newsFlow',
+-      'integrationsGovernance',
+-      'integrationsLifecycle',
+-      'integrationMongoGovernance'
++      "requestFlowGovernance",
++      "publicPortfolioHardening",
++      "profileAccountSecurity",
++      "profileSettingsProduction",
++      "b2Storage",
++      "resumePipelineFinalization",
++      "developerContextService",
++      "careerSprintPlanningFinalization",
++      "newsHubHardening",
++      "newsFlow",
++      "integrationsGovernance",
++      "integrationsLifecycle",
++      "integrationMongoGovernance",
+     ];
+     const child = spawn(
+       process.execPath,
+       [
+-        '--test',
+-        '--test-concurrency=1',
+-        '--test-reporter=spec',
+-        '--test-reporter-destination=stdout',
+-        '--test-reporter=tap',
+-        `--test-reporter-destination=${path.join(directory, 'request-flow-tests.tap')}`,
+-        ...suites.map((name) => path.resolve(__dirname, `../tests/${name}.test.js`))
++        "--test",
++        "--test-concurrency=1",
++        "--test-reporter=spec",
++        "--test-reporter-destination=stdout",
++        "--test-reporter=tap",
++        `--test-reporter-destination=${path.join(directory, "request-flow-tests.tap")}`,
++        ...suites.map((name) =>
++          path.resolve(__dirname, `../tests/${name}.test.js`),
++        ),
+       ],
+-      { env: childEnv, windowsHide: true, stdio: 'inherit' }
++      { env: childEnv, windowsHide: true, stdio: "inherit" },
+     );
+     process.exitCode = await new Promise((resolve, reject) => {
+-      child.once('error', reject);
+-      child.once('exit', (code) => resolve(code ?? 1));
++      child.once("error", reject);
++      child.once("exit", (code) => resolve(code ?? 1));
+     });
+   } finally {
+     for (const socket of sockets) socket.destroy();
+     for (const proxy of proxies)
+       if (proxy.listening) await new Promise((resolve) => proxy.close(resolve));
+-    console.log('Request-flow fixture cleanup:', JSON.stringify(await runtime.stop()));
++    console.log(
++      "Request-flow fixture cleanup:",
++      JSON.stringify(await runtime.stop()),
++    );
+   }
+ }
+ 
+ main().catch(() => {
+-  console.error('Request-flow fixture verification failed; inspect the retained TAP evidence.');
++  console.error(
++    "Request-flow fixture verification failed; inspect the retained TAP evidence.",
++  );
+   process.exitCode = 1;
+ });
+diff --git a/backend/src/tests/fixtures/disposableRequestMongo.js b/backend/src/tests/fixtures/disposableRequestMongo.js
+index bc0586ac7caa8efff272ae626d7c8f3fe83382fd..b7bcbf635849a0f2c9235275cd513fc3135e11e5 100644
+--- a/backend/src/tests/fixtures/disposableRequestMongo.js
++++ b/backend/src/tests/fixtures/disposableRequestMongo.js
+@@ -1,63 +1,73 @@
+-'use strict';
++"use strict";
+ // Disposable loopback fixture only. Do not import the live-provider verifier or .env.
+-const fs = require('node:fs');
+-const os = require('node:os');
+-const path = require('node:path');
+-const net = require('node:net');
+-const assert = require('node:assert/strict');
+-const { spawn } = require('node:child_process');
+-const { MongoClient } = require('mongodb');
++const fs = require("node:fs");
++const os = require("node:os");
++const path = require("node:path");
++const net = require("node:net");
++const assert = require("node:assert/strict");
++const { spawn } = require("node:child_process");
++const { MongoClient } = require("mongodb");
+ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+ 
+-async function startMongo() {
++async function startMongo({ replicaSet = "integration-live" } = {}) {
++  assert.match(replicaSet, /^[a-zA-Z0-9_-]{1,64}$/);
+   const binary =
+     process.env.INTEGRATION_TEST_MONGOD ||
+-    'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe';
+-  assert.ok(fs.existsSync(binary), 'Installed MongoDB server binary is required');
+-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'devinsight-real-integrations-'));
++    "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe";
++  assert.ok(
++    fs.existsSync(binary),
++    "Installed MongoDB server binary is required",
++  );
++  const directory = fs.mkdtempSync(
++    path.join(os.tmpdir(), "devinsight-real-integrations-"),
++  );
+   const root = fs.realpathSync(directory);
+   const listener = net.createServer();
+-  await new Promise((resolve) => listener.listen(0, '127.0.0.1', resolve));
++  await new Promise((resolve) => listener.listen(0, "127.0.0.1", resolve));
+   const port = listener.address().port;
+   await new Promise((resolve) => listener.close(resolve));
+   const child = spawn(
+     binary,
+     [
+-      '--dbpath',
++      "--dbpath",
+       root,
+-      '--bind_ip',
+-      '127.0.0.1',
+-      '--port',
++      "--bind_ip",
++      "127.0.0.1",
++      "--port",
+       String(port),
+-      '--replSet',
+-      'integration-live',
+-      '--wiredTigerCacheSizeGB',
+-      '0.25',
+-      '--quiet'
++      "--replSet",
++      replicaSet,
++      "--wiredTigerCacheSizeGB",
++      "0.25",
++      "--quiet",
+     ],
+-    { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore'] }
++    { windowsHide: true, stdio: ["ignore", "ignore", "ignore"] },
+   );
+   let launchError;
+-  child.on('error', (error) => {
++  child.on("error", (error) => {
+     launchError = error;
+   });
+   let direct;
+   async function stop() {
+     await direct?.close();
+     if (child.pid && child.exitCode === null && child.signalCode === null) {
+-      const stopped = new Promise((resolve) => child.once('exit', resolve));
++      const stopped = new Promise((resolve) => child.once("exit", resolve));
+       child.kill();
+       await Promise.race([stopped, delay(5000)]);
+     }
+     assert.ok(
+       child.exitCode !== null || child.signalCode !== null || launchError,
+-      'Disposable Mongo process must stop before cleanup'
++      "Disposable Mongo process must stop before cleanup",
+     );
+     const removed = [];
+     function clean(directoryPath) {
+-      for (const entry of fs.readdirSync(directoryPath, { withFileTypes: true })) {
++      for (const entry of fs.readdirSync(directoryPath, {
++        withFileTypes: true,
++      })) {
+         const target = path.resolve(directoryPath, entry.name);
+-        assert.ok(target.startsWith(root + path.sep) && !entry.isSymbolicLink());
++        assert.ok(
++          target.startsWith(root + path.sep) && !entry.isSymbolicLink(),
++        );
+         if (entry.isDirectory()) clean(target);
+         else {
+           fs.unlinkSync(target);
+@@ -67,15 +77,23 @@ async function startMongo() {
+       fs.rmdirSync(directoryPath); // Exact, verified empty task-owned directory; never recursive removal.
+     }
+     clean(root);
+-    return { mongoStopped: true, temporaryFilesRemoved: removed.length, productionDataUsed: false };
++    return {
++      mongoStopped: true,
++      temporaryFilesRemoved: removed.length,
++      productionDataUsed: false,
++    };
+   }
+   try {
+     for (let attempt = 0; attempt < 50; attempt++) {
+       if (launchError) throw launchError;
+-      if (child.exitCode !== null) throw Error('Disposable Mongo exited before readiness');
+-      direct = new MongoClient(`mongodb://127.0.0.1:${port}/?directConnection=true`, {
+-        serverSelectionTimeoutMS: 300
+-      });
++      if (child.exitCode !== null)
++        throw Error("Disposable Mongo exited before readiness");
++      direct = new MongoClient(
++        `mongodb://127.0.0.1:${port}/?directConnection=true`,
++        {
++          serverSelectionTimeoutMS: 300,
++        },
++      );
+       try {
+         await direct.connect();
+         break;
+@@ -85,23 +103,24 @@ async function startMongo() {
+         await delay(150);
+       }
+     }
+-    assert.ok(direct, 'Disposable Mongo readiness deadline');
+-    await direct.db('admin').command({
++    assert.ok(direct, "Disposable Mongo readiness deadline");
++    await direct.db("admin").command({
+       replSetInitiate: {
+-        _id: 'integration-live',
+-        members: [{ _id: 0, host: `127.0.0.1:${port}` }]
+-      }
++        _id: replicaSet,
++        members: [{ _id: 0, host: `127.0.0.1:${port}` }],
++      },
+     });
+     let primary = false;
+     for (let attempt = 0; attempt < 80; attempt++) {
+-      primary = (await direct.db('admin').command({ hello: 1 })).isWritablePrimary;
++      primary = (await direct.db("admin").command({ hello: 1 }))
++        .isWritablePrimary;
+       if (primary) break;
+       await delay(150);
+     }
+-    assert.ok(primary, 'Replica primary election deadline');
++    assert.ok(primary, "Replica primary election deadline");
+     return {
+-      uri: `mongodb://127.0.0.1:${port}/integration_live_acceptance?replicaSet=integration-live`,
+-      stop
++      uri: `mongodb://127.0.0.1:${port}/integration_live_acceptance?replicaSet=${replicaSet}`,
++      stop,
+     };
+   } catch (error) {
+     await stop();
+diff --git a/backend/src/tests/requestFlowGovernance.test.js b/backend/src/tests/requestFlowGovernance.test.js
+index a103da3db134ba4bd281766256a7a58dc8c27aff..a1fef74755a5b06978c131de0c250bafd86ec757 100644
+--- a/backend/src/tests/requestFlowGovernance.test.js
++++ b/backend/src/tests/requestFlowGovernance.test.js
+@@ -1,37 +1,40 @@
+-'use strict';
+-const test = require('node:test');
+-const assert = require('node:assert/strict');
+-const crypto = require('node:crypto');
+-const path = require('node:path');
+-const fs = require('node:fs');
+-const { fork } = require('node:child_process');
+-const mongoose = require('mongoose');
+-const express = require('express');
+-const jwt = require('jsonwebtoken');
+-const { load, response } = require('./fixtures/publicPortfolioFixture');
+-const { env, fixture, textPDF } = require('./fixtures/b2Fixture');
++"use strict";
++const test = require("node:test");
++const assert = require("node:assert/strict");
++const crypto = require("node:crypto");
++const path = require("node:path");
++const fs = require("node:fs");
++const { fork } = require("node:child_process");
++const mongoose = require("mongoose");
++const express = require("express");
++const jwt = require("jsonwebtoken");
++const { load, response } = require("./fixtures/publicPortfolioFixture");
++const { env, fixture, textPDF } = require("./fixtures/b2Fixture");
+ 
+ test(
+-  'shared request authority: failures, windows, workers and authenticated upload flows',
++  "shared request authority: failures, windows, workers and authenticated upload flows",
+   { timeout: 90000 },
+   async (t) => {
+-    const { startMongo } = require('./fixtures/disposableRequestMongo');
++    const { startMongo } = require("./fixtures/disposableRequestMongo");
+     const runtime = await startMongo();
+     const originalEnv = { ...process.env };
+     Object.assign(process.env, {
+-      NODE_ENV: 'test',
+-      STORAGE_DRIVER: 'b2',
+-      JWT_SECRET: crypto.randomBytes(32).toString('hex')
++      NODE_ENV: "test",
++      STORAGE_DRIVER: "b2",
++      JWT_SECRET: crypto.randomBytes(32).toString("hex"),
+     });
+     const workers = [];
+     let server;
+     const timings = [];
+-    const evidence = { baseline: 'c612ae80c466f47ab7def651da6537d8cf330b0a', checks: [] };
++    const evidence = {
++      baseline: "c612ae80c466f47ab7def651da6537d8cf330b0a",
++      checks: [],
++    };
+     t.after(async () => {
+       if (server) await new Promise((resolve) => server.close(resolve));
+       for (const child of workers)
+         if (child.exitCode === null && child.signalCode === null) {
+-          const stopped = new Promise((resolve) => child.once('exit', resolve));
++          const stopped = new Promise((resolve) => child.once("exit", resolve));
+           child.kill();
+           await stopped;
+         }
+@@ -41,82 +44,109 @@ test(
+       evidence.completed = evidence.checks.length;
+       const report = path.resolve(
+         __dirname,
+-        '../../verification/architecture/request-flow-governance-results.json'
++        process.env.REQUEST_FLOW_VERIFICATION_OUTPUT
++          ? path.join(
++              process.env.REQUEST_FLOW_VERIFICATION_OUTPUT,
++              "request-flow-governance-results.json",
++            )
++          : "../../verification/architecture/request-flow-governance-results.json",
+       );
+       fs.mkdirSync(path.dirname(report), { recursive: true });
+-      fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + '\n');
++      fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + "\n");
+       for (const key of Object.keys(process.env))
+         if (!(key in originalEnv)) delete process.env[key];
+       Object.assign(process.env, originalEnv);
+     });
+-    await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
+-    const store = require('../services/integrationMongoGovernanceService');
+-    const State = require('../models/integrationGovernanceState');
++    await mongoose.connect(runtime.uri, {
++      autoIndex: false,
++      serverSelectionTimeoutMS: 500,
++    });
++    const store = require("../services/integrationMongoGovernanceService");
++    const State = require("../models/integrationGovernanceState");
+     await store.initialize();
+     evidence.indexes = await State.collection.indexes();
+-    assert.ok(evidence.indexes.some((index) => index.name === '_id_' && index.key._id === 1));
+     assert.ok(
+-      evidence.indexes.some((index) => index.expireAfterSeconds === 0 && index.key.expiresAt === 1)
++      evidence.indexes.some(
++        (index) => index.name === "_id_" && index.key._id === 1,
++      ),
++    );
++    assert.ok(
++      evidence.indexes.some(
++        (index) => index.expireAfterSeconds === 0 && index.key.expiresAt === 1,
++      ),
+     );
+     const prefix = (kind, subject) =>
+-      `public-portfolio:v3:rate:${kind}:${crypto.createHash('sha256').update(String(subject)).digest('hex')}`;
+-    const limit = require('../middleware/publicPortfolioRateLimit');
+-    const cache = require('../services/redisCacheService');
++      `public-portfolio:v3:rate:${kind}:${crypto.createHash("sha256").update(String(subject)).digest("hex")}`;
++    const limit = require("../middleware/publicPortfolioRateLimit");
++    const cache = require("../services/redisCacheService");
+     let redisCalls = 0;
+-    const redisMock = t.mock.method(cache, 'getRedisCacheClient', () => {
++    const redisMock = t.mock.method(cache, "getRedisCacheClient", () => {
+       redisCalls++;
+-      throw Error('Redis unavailable');
++      throw Error("Redis unavailable");
+     });
+ 
+     await t.test(
+-      'Redis state never resets quota; boundaries and logical expiry are independent of TTL sweep',
++      "Redis state never resets quota; boundaries and logical expiry are independent of TTL sweep",
+       async () => {
+         let index = 0;
+         for (const healthy of [true, false, true]) {
+           redisMock.mock.mockImplementation(() => {
+             redisCalls++;
+-            if (!healthy) throw Error('Redis down');
+-            return { eval: () => assert.fail('Redis must not own admission') };
++            if (!healthy) throw Error("Redis down");
++            return { eval: () => assert.fail("Redis must not own admission") };
+           });
+           const res = response();
+           let allowed = false;
+-          await limit.limiter('test', 2, 3600000)({ user: { _id: 'stable' } }, res, () => {
+-            allowed = true;
+-          });
++          await limit.limiter("test", 2, 3600000)(
++            { user: { _id: "stable" } },
++            res,
++            () => {
++              allowed = true;
++            },
++          );
+           assert.equal(res.statusCode, index < 2 ? 200 : 429);
+           assert.equal(allowed, index < 2);
+           index++;
+         }
+         const res = response();
+-        await limit.limiter('test', 2, 3600000)({ user: { _id: 'stable' } }, res, () =>
+-          assert.fail()
++        await limit.limiter("test", 2, 3600000)(
++          { user: { _id: "stable" } },
++          res,
++          () => assert.fail(),
+         );
+         assert.equal(res.statusCode, 429);
+-        assert.ok(Number(res.headers['Retry-After']) > 0);
+-        const key = prefix('expiry', 'fixture');
++        assert.ok(Number(res.headers["Retry-After"]) > 0);
++        const key = prefix("expiry", "fixture");
+         const bucket = Math.floor(Date.now() / 3600000);
+         await State.collection.insertOne({
+           _id: `${key}:${bucket}`,
+           count: 99,
+-          expiresAt: new Date(0)
++          expiresAt: new Date(0),
+         });
+         assert.equal((await store.requestWindow(key, 1, 3600000)).count, 1);
+         assert.equal(redisCalls, 0);
+-        evidence.checks.push('redis-toggle-and-logical-expiry');
+-      }
++        evidence.checks.push("redis-toggle-and-logical-expiry");
++      },
+     );
+ 
+     let requestId = 0;
+     async function worker() {
+-      const child = fork(path.resolve(__dirname, 'fixtures/requestAdmissionWorker.js'), [], {
+-        windowsHide: true,
+-        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+-        env: { ...process.env, REQUEST_ADMISSION_TEST_URI: runtime.uri }
+-      });
++      const child = fork(
++        path.resolve(__dirname, "fixtures/requestAdmissionWorker.js"),
++        [],
++        {
++          windowsHide: true,
++          stdio: ["ignore", "ignore", "ignore", "ipc"],
++          env: { ...process.env, REQUEST_ADMISSION_TEST_URI: runtime.uri },
++        },
++      );
+       workers.push(child);
+       await new Promise((resolve, reject) => {
+-        const timer = setTimeout(() => reject(Error('Worker readiness deadline')), 6000);
+-        child.once('message', (message) => {
++        const timer = setTimeout(
++          () => reject(Error("Worker readiness deadline")),
++          6000,
++        );
++        child.once("message", (message) => {
+           clearTimeout(timer);
+           assert.equal(message.ready, true);
+           resolve();
+@@ -128,111 +158,143 @@ test(
+           new Promise((resolve, reject) => {
+             const id = ++requestId;
+             const timer = setTimeout(() => {
+-              child.off('message', receive);
+-              reject(Error('Worker command deadline'));
++              child.off("message", receive);
++              reject(Error("Worker command deadline"));
+             }, 6000);
+             function receive(message) {
+               if (message.id !== id) return;
+               clearTimeout(timer);
+-              child.off('message', receive);
+-              if (message.error) reject(Object.assign(Error('Admission failed'), message.error));
++              child.off("message", receive);
++              if (message.error)
++                reject(Object.assign(Error("Admission failed"), message.error));
+               else resolve(message.value);
+             }
+-            child.on('message', receive);
++            child.on("message", receive);
+             child.send({ id, ...data });
+-          })
++          }),
+       };
+     }
+     await t.test(
+-      'two independent workers race at the quota boundary and a restarted worker retains exhaustion',
++      "two independent workers race at the quota boundary and a restarted worker retains exhaustion",
+       async () => {
+         const a = await worker();
+         const b = await worker();
+-        const data = { prefix: prefix('race', 'worker-fixture'), maximum: 5, windowMs: 86400000 };
++        const data = {
++          prefix: prefix("race", "worker-fixture"),
++          maximum: 5,
++          windowMs: 86400000,
++        };
+         const results = await Promise.all(
+-          Array.from({ length: 12 }, (_, index) => (index % 2 ? a : b).request(data))
++          Array.from({ length: 12 }, (_, index) =>
++            (index % 2 ? a : b).request(data),
++          ),
+         );
+         assert.equal(results.filter((result) => result.count <= 5).length, 5);
+-        const stopped = new Promise((resolve) => a.child.once('exit', resolve));
++        const stopped = new Promise((resolve) => a.child.once("exit", resolve));
+         a.child.kill();
+         await stopped;
+         const restarted = await worker();
+         assert.equal((await restarted.request(data)).count, 6);
+-        evidence.checks.push('two-process-concurrency-and-restart');
+-      }
++        evidence.checks.push("two-process-concurrency-and-restart");
++      },
+     );
+ 
+-    const User = require('../models/user');
+-    const Asset = require('../models/storedAsset');
+-    const Resume = require('../models/resumeFile');
+-    const Profile = require('../models/publicProfile');
+-    for (const model of [User, Asset, Resume, Profile]) await model.createCollection();
++    const User = require("../models/user");
++    const Asset = require("../models/storedAsset");
++    const Resume = require("../models/resumeFile");
++    const Profile = require("../models/publicProfile");
++    for (const model of [User, Asset, Resume, Profile])
++      await model.createCollection();
+     await Asset.createIndexes();
+     const owner = await User.create({
+-      name: 'Request Fixture',
+-      email: 'request-fixture@example.test',
+-      providers: ['google']
++      name: "Request Fixture",
++      email: "request-fixture@example.test",
++      providers: ["google"],
+     });
+     const recruiter = await User.create({
+-      name: 'Recruiter Fixture',
+-      email: 'recruiter-fixture@example.test',
+-      role: 'recruiter',
++      name: "Recruiter Fixture",
++      email: "recruiter-fixture@example.test",
++      role: "recruiter",
+       isVerified: true,
+-      providers: ['google']
++      providers: ["google"],
+     });
+-    await Profile.create({ userId: owner._id, slug: 'request-fixture', isPublic: true });
+-    const fake = fixture();
+-    const adapter = require('../services/b2ObjectStorageService').createAdapter({
+-      env,
+-      clientFactory: fake.clientFactory
++    await Profile.create({
++      userId: owner._id,
++      slug: "request-fixture",
++      isPublic: true,
+     });
+-    t.mock.method(require('../services/b2ObjectStorageService'), 'getAdapter', () => adapter);
++    const fake = fixture();
++    const adapter = require("../services/b2ObjectStorageService").createAdapter(
++      {
++        env,
++        clientFactory: fake.clientFactory,
++      },
++    );
++    t.mock.method(
++      require("../services/b2ObjectStorageService"),
++      "getAdapter",
++      () => adapter,
++    );
+     let sent = 0;
+-    t.mock.method(require('../services/emailService'), 'sendConfiguredEmail', async () => {
+-      sent++;
+-      return { accepted: ['request-fixture@example.test'] };
+-    });
+     t.mock.method(
+-      require('../services/publicPortfolioVisibilityService'),
+-      'isPortfolioEnabled',
+-      async () => true
++      require("../services/emailService"),
++      "sendConfiguredEmail",
++      async () => {
++        sent++;
++        return { accepted: ["request-fixture@example.test"] };
++      },
++    );
++    t.mock.method(
++      require("../services/publicPortfolioVisibilityService"),
++      "isPortfolioEnabled",
++      async () => true,
+     );
+     const notifications = { createNotification: async () => null };
+-    const profileController = load('controllers/profilecontroller.js', {
+-      '../services/notificationService': notifications,
+-      '../services/newsService': { invalidateNewsSignalCache: () => {} },
+-      './dashboardcontroller': { invalidateDashboardSummaryCache: () => {} },
+-      '../services/platformSettingsService': { getDeveloperSettingsSync: () => ({}) }
++    const profileController = load("controllers/profilecontroller.js", {
++      "../services/notificationService": notifications,
++      "../services/newsService": { invalidateNewsSignalCache: () => {} },
++      "./dashboardcontroller": { invalidateDashboardSummaryCache: () => {} },
++      "../services/platformSettingsService": {
++        getDeveloperSettingsSync: () => ({}),
++      },
+     });
+-    const resumeController = load('controllers/resumecontoller.js', {
+-      '../services/notificationService': notifications,
+-      './dashboardcontroller': { invalidateDashboardSummaryCache: () => {} }
++    const resumeController = load("controllers/resumecontoller.js", {
++      "../services/notificationService": notifications,
++      "./dashboardcontroller": { invalidateDashboardSummaryCache: () => {} },
+     });
+     const app = express();
+-    app.use(express.json({ limit: '100kb' }));
+-    app.post('/ip-fixture', limit.limiter('ip-fixture', 1, 60000), (_req, res) =>
+-      res.json({ admitted: true })
++    app.use(express.json({ limit: "100kb" }));
++    app.post(
++      "/ip-fixture",
++      limit.limiter("ip-fixture", 1, 60000),
++      (_req, res) => res.json({ admitted: true }),
+     );
+     app.use(
+-      '/api/profile',
+-      load('routes/profile.routes.js', { '../controllers/profilecontroller': profileController })
++      "/api/profile",
++      load("routes/profile.routes.js", {
++        "../controllers/profilecontroller": profileController,
++      }),
+     );
+     app.use(
+-      '/api/resume',
+-      load('routes/resume.routes.js', { '../controllers/resumecontoller': resumeController })
++      "/api/resume",
++      load("routes/resume.routes.js", {
++        "../controllers/resumecontoller": resumeController,
++      }),
+     );
+-    app.use('/api/public-profiles', require('../routes/publicProfile.routes'));
++    app.use("/api/public-profiles", require("../routes/publicProfile.routes"));
+     app.use(
+-      '/api/preview',
+-      load('routes/preview.routes.js', { '../controllers/resumecontoller': resumeController })
++      "/api/preview",
++      load("routes/preview.routes.js", {
++        "../controllers/resumecontoller": resumeController,
++      }),
+     );
+     server = await new Promise((resolve) => {
+-      const handle = app.listen(0, '127.0.0.1', () => resolve(handle));
++      const handle = app.listen(0, "127.0.0.1", () => resolve(handle));
+     });
+     const base = `http://127.0.0.1:${server.address().port}`;
+     const png = Buffer.from(
+-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=',
+-      'base64'
++      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=",
++      "base64",
+     );
+     const form = (field, bytes, filename, type) => {
+       const data = new FormData();
+@@ -241,206 +303,255 @@ test(
+     };
+     const request = (route, body, user = owner) =>
+       fetch(base + route, {
+-        method: 'POST',
++        method: "POST",
+         headers: {
+           ...(user
+             ? {
+                 Authorization:
+-                  'Bearer ' +
++                  "Bearer " +
+                   jwt.sign({ id: String(user._id) }, process.env.JWT_SECRET, {
+-                    issuer: 'devinsight-api',
+-                    audience: 'devinsight-web',
+-                    expiresIn: '10m'
+-                  })
++                    issuer: "devinsight-api",
++                    audience: "devinsight-web",
++                    expiresIn: "10m",
++                  }),
+               }
+             : {}),
+-          ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' })
++          ...(body instanceof FormData
++            ? {}
++            : { "Content-Type": "application/json" }),
+         },
+-        body: body instanceof FormData ? body : JSON.stringify(body)
++        body: body instanceof FormData ? body : JSON.stringify(body),
+       });
+     const uploads = [
+-      ['/api/profile/avatar', () => form('avatar', png, 'fixture.png', 'image/png'), 200],
+       [
+-        '/api/public-profiles/me/project-image',
+-        () => form('image', png, 'fixture.png', 'image/png'),
+-        201
++        "/api/profile/avatar",
++        () => form("avatar", png, "fixture.png", "image/png"),
++        200,
+       ],
+       [
+-        '/api/resume/upload',
++        "/api/public-profiles/me/project-image",
++        () => form("image", png, "fixture.png", "image/png"),
++        201,
++      ],
++      [
++        "/api/resume/upload",
+         () =>
+           form(
+-            'file',
++            "file",
+             textPDF(
+-              'Alex Developer. Software engineer building accessible web applications with JavaScript TypeScript Node MongoDB and React. Experience delivering production applications, collaborating with teams and improving performance. Education Bachelor of Computer Science. Skills JavaScript TypeScript React SQL MongoDB Docker Git. Projects include a tested full stack application with documented APIs.'
++              "Alex Developer. Software engineer building accessible web applications with JavaScript TypeScript Node MongoDB and React. Experience delivering production applications, collaborating with teams and improving performance. Education Bachelor of Computer Science. Skills JavaScript TypeScript React SQL MongoDB Docker Git. Projects include a tested full stack application with documented APIs.",
+             ),
+-            'fixture.pdf',
+-            'application/pdf'
++            "fixture.pdf",
++            "application/pdf",
+           ),
+-        200
+-      ]
++        200,
++      ],
+     ];
+     await t.test(
+-      'untrusted forwarded headers cannot rotate anonymous admission identities',
++      "untrusted forwarded headers cannot rotate anonymous admission identities",
+       async () => {
+-        const one = await fetch(base + '/ip-fixture', {
+-          method: 'POST',
+-          headers: { 'X-Forwarded-For': '192.0.2.1' }
++        const one = await fetch(base + "/ip-fixture", {
++          method: "POST",
++          headers: { "X-Forwarded-For": "192.0.2.1" },
+         });
+-        const two = await fetch(base + '/ip-fixture', {
+-          method: 'POST',
+-          headers: { 'X-Forwarded-For': '192.0.2.2' }
++        const two = await fetch(base + "/ip-fixture", {
++          method: "POST",
++          headers: { "X-Forwarded-For": "192.0.2.2" },
+         });
+         assert.equal(one.status, 200);
+         assert.equal(two.status, 429);
+-        evidence.checks.push('forwarded-header-spoofing-rejected');
+-      }
++        evidence.checks.push("forwarded-header-spoofing-rejected");
++      },
+     );
+     await t.test(
+-      'actual JWT, Mongo admission, multipart parsing, fixture B2 and ledger transactions succeed without Redis',
++      "actual JWT, Mongo admission, multipart parsing, fixture B2 and ledger transactions succeed without Redis",
+       async () => {
+         for (const [route, body, status] of uploads) {
+           const result = await request(route, body());
+-          assert.equal(result.status, status, `${route}: ${await result.text()}`);
++          assert.equal(
++            result.status,
++            status,
++            `${route}: ${await result.text()}`,
++          );
+         }
+-        assert.equal(fake.calls.filter((call) => call.op === 'PutObjectCommand').length, 3);
++        assert.equal(
++          fake.calls.filter((call) => call.op === "PutObjectCommand").length,
++          3,
++        );
+         assert.equal(await Asset.countDocuments({ ownerId: owner._id }), 3);
+-        assert.equal(await Asset.countDocuments({ ownerId: owner._id, state: 'ready' }), 2);
++        assert.equal(
++          await Asset.countDocuments({ ownerId: owner._id, state: "ready" }),
++          2,
++        );
+         const row = await State.collection.findOne({
+-          _id: `${prefix('upload', owner._id)}:${Math.floor(Date.now() / 3600000)}`
++          _id: `${prefix("upload", owner._id)}:${Math.floor(Date.now() / 3600000)}`,
+         });
+         assert.equal(row.count, 3);
+         assert.equal(redisCalls, 0);
+-        evidence.checks.push('authenticated-avatar-portfolio-resume-real-admission');
+-      }
++        evidence.checks.push(
++          "authenticated-avatar-portfolio-resume-real-admission",
++        );
++      },
+     );
+     await t.test(
+-      'Mongo admission failure blocks every parser/storage/delivery path; validation runs first',
++      "Mongo admission failure blocks every parser/storage/delivery path; validation runs first",
+       async () => {
+         const puts = fake.calls.length;
+-        const failure = t.mock.method(store, 'requestWindow', async () => {
+-          throw Error('Fixture admission outage');
++        const failure = t.mock.method(store, "requestWindow", async () => {
++          throw Error("Fixture admission outage");
+         });
+         for (const [route] of uploads) {
+-          const result = await request(route, form('unexpected', png, 'bad.png', 'image/png'));
++          const result = await request(
++            route,
++            form("unexpected", png, "bad.png", "image/png"),
++          );
+           assert.equal(result.status, 503);
+-          assert.equal(result.headers.get('retry-after'), '30');
++          assert.equal(result.headers.get("retry-after"), "30");
+           assert.equal(
+-            (await request(route, form('unexpected', png, 'bad.png', 'image/png'), null)).status,
+-            401
++            (
++              await request(
++                route,
++                form("unexpected", png, "bad.png", "image/png"),
++                null,
++              )
++            ).status,
++            401,
+           );
+         }
+         assert.equal(
+           (
+             await request(
+-              '/api/preview/resume/parse-text',
+-              form('unexpected', png, 'bad.png', 'image/png'),
+-              null
++              "/api/preview/resume/parse-text",
++              form("unexpected", png, "bad.png", "image/png"),
++              null,
+             )
+           ).status,
+-          503
++          503,
+         );
+         assert.equal(
+           (
+             await request(
+-              '/api/public-profiles/request-fixture/contact',
+-              { message: 'Interested in discussing your work.' },
+-              recruiter
++              "/api/public-profiles/request-fixture/contact",
++              { message: "Interested in discussing your work." },
++              recruiter,
+             )
+           ).status,
+-          503
++          503,
+         );
+         assert.equal(
+           (
+             await request(
+-              '/api/public-profiles/request-fixture/contact',
+-              { message: 'invalid' },
+-              recruiter
++              "/api/public-profiles/request-fixture/contact",
++              { message: "invalid" },
++              recruiter,
+             )
+           ).status,
+-          400
++          400,
+         );
+         assert.equal(fake.calls.length, puts);
+         assert.equal(sent, 0);
+         failure.mock.restore();
+-        evidence.checks.push('mongo-failure-before-parsing-storage-mail');
+-      }
++        evidence.checks.push("mongo-failure-before-parsing-storage-mail");
++      },
+     );
+     await t.test(
+-      'shared upload cap prevents B2 and filesystem bypasses; contact caps prevent delivery',
++      "shared upload cap prevents B2 and filesystem bypasses; contact caps prevent delivery",
+       async () => {
+-        const key = `${prefix('upload', owner._id)}:${Math.floor(Date.now() / 3600000)}`;
++        const key = `${prefix("upload", owner._id)}:${Math.floor(Date.now() / 3600000)}`;
+         await State.collection.updateOne({ _id: key }, { $set: { count: 10 } });
+         const puts = fake.calls.length;
+         for (const [route, body] of uploads)
+           assert.equal((await request(route, body())).status, 429);
+-        process.env.STORAGE_DRIVER = 'filesystem';
+-        assert.equal((await request('/api/resume/upload', uploads[2][1]())).status, 429);
+-        process.env.STORAGE_DRIVER = 'b2';
++        process.env.STORAGE_DRIVER = "filesystem";
++        assert.equal(
++          (await request("/api/resume/upload", uploads[2][1]())).status,
++          429,
++        );
++        process.env.STORAGE_DRIVER = "b2";
+         assert.equal(fake.calls.length, puts);
+         for (let index = 0; index < 3; index++)
+           assert.equal(
+             (
+               await request(
+-                '/api/public-profiles/request-fixture/contact',
+-                { message: 'Interested in discussing your work.' },
+-                recruiter
++                "/api/public-profiles/request-fixture/contact",
++                { message: "Interested in discussing your work." },
++                recruiter,
+               )
+             ).status,
+-            200
++            200,
+           );
+         assert.equal(
+           (
+             await request(
+-              '/api/public-profiles/request-fixture/contact',
+-              { message: 'Interested in discussing your work.' },
+-              recruiter
++              "/api/public-profiles/request-fixture/contact",
++              { message: "Interested in discussing your work." },
++              recruiter,
+             )
+           ).status,
+-          429
++          429,
+         );
+         assert.equal(sent, 3);
+-        const recipientKey = `${prefix('contact-recipient', 'request-fixture')}:${Math.floor(Date.now() / 86400000)}`;
+-        await State.collection.updateOne({ _id: recipientKey }, { $set: { count: 20 } });
++        const recipientKey = `${prefix("contact-recipient", "request-fixture")}:${Math.floor(Date.now() / 86400000)}`;
++        await State.collection.updateOne(
++          { _id: recipientKey },
++          { $set: { count: 20 } },
++        );
+         const another = await User.create({
+-          name: 'Second Recruiter',
+-          email: 'second-fixture@example.test',
+-          role: 'recruiter',
++          name: "Second Recruiter",
++          email: "second-fixture@example.test",
++          role: "recruiter",
+           isVerified: true,
+-          providers: ['google']
++          providers: ["google"],
+         });
+         assert.equal(
+           (
+             await request(
+-              '/api/public-profiles/request-fixture/contact',
+-              { message: 'Interested in discussing your work.' },
+-              another
++              "/api/public-profiles/request-fixture/contact",
++              { message: "Interested in discussing your work." },
++              another,
+             )
+           ).status,
+-          429
++          429,
+         );
+         assert.equal(sent, 3);
+-        evidence.checks.push('upload-and-contact-no-bypass');
+-      }
++        evidence.checks.push("upload-and-contact-no-bypass");
++      },
+     );
+     await t.test(
+-      'disconnected shared store fails closed and recovery retains committed budgets',
++      "disconnected shared store fails closed and recovery retains committed budgets",
+       async () => {
+         for (let index = 0; index < 12; index++) {
+           const started = performance.now();
+-          await store.requestWindow(prefix('measure', 'fixture'), 100, 86400000);
++          await store.requestWindow(
++            prefix("measure", "fixture"),
++            100,
++            86400000,
++          );
+           timings.push(Number((performance.now() - started).toFixed(2)));
+         }
+         await mongoose.disconnect();
+-        await assert.rejects(store.requestWindow(prefix('measure', 'fixture'), 100, 86400000), {
+-          status: 503
++        await assert.rejects(
++          store.requestWindow(prefix("measure", "fixture"), 100, 86400000),
++          {
++            status: 503,
++          },
++        );
++        await mongoose.connect(runtime.uri, {
++          autoIndex: false,
++          serverSelectionTimeoutMS: 500,
+         });
+-        await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
+         assert.equal(
+-          (await store.requestWindow(prefix('measure', 'fixture'), 100, 86400000)).count,
+-          13
++          (
++            await store.requestWindow(
++              prefix("measure", "fixture"),
++              100,
++              86400000,
++            )
++          ).count,
++          13,
+         );
+-        evidence.checks.push('disconnect-recovery-retains-budget');
+-      }
++        evidence.checks.push("disconnect-recovery-retains-budget");
++      },
+     );
+-  }
++  },
+ );
+diff --git a/backend/verification/profile/OPERATIONS.md b/backend/verification/profile/OPERATIONS.md
+index d050ebc266ced9d30002cb02e25b0cb232e6065f..ee67fb4e458dbf549a942452d111712a94e8715c 100644
+--- a/backend/verification/profile/OPERATIONS.md
++++ b/backend/verification/profile/OPERATIONS.md
+@@ -41,7 +41,7 @@ Changing the image-root configuration while receipts remain pending requires cop
+ 
+ Ordinary portfolio rendering caches remain optional: bounded process memory and Mongo fallback preserve availability after current Mongo authorization. Old cache revisions become unreachable after content changes. No Redis scan/flush or broad key deletion was introduced.
+ 
+-Avatar and portfolio-image uploads use the existing strict shared upload limiter (10/account/hour). Public contact retains strict sender and recipient limits. These operations return 503 when the shared limiter is unavailable. Do not substitute process-local production fallbacks. Configure the existing Redis client, TLS and credentials through the approved deployment mechanism and validate its connectivity separately. Trust-proxy configuration must match the actual proxy topology.
++Avatar and portfolio-image uploads retain the strict shared upload limit (10/account/hour), now stored in MongoDB `integrationgovernancestates`; public contact retains shared sender and recipient windows in that authority. These Profile/Portfolio admissions do not call Redis and return 503 when Mongo admission is unavailable. No process-local fallback is allowed. Redis remains independently configured for unchanged modules. Drain old Redis-backed Profile workers completely before enabling Mongo-backed Profile workers; never serve a quota from both authorities. Preserve old counters for rollback and wait through the longest affected window before reverse handover. Trust-proxy configuration must match the deployed topology.
+ 
+ Existing general authentication throttles are process-local. Multi-worker production still needs an approved shared/gateway authentication abuse policy; this task does not silently provision one.
+ 

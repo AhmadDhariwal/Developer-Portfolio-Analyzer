@@ -16,7 +16,13 @@ mongoose.connect(process.env.INTEGRATION_TEST_URI, { autoIndex: false }).then(
   () => process.send({ ready: true }),
   () => process.send({ ready: false })
 );
+const heldJobs = new Map();
 process.on('message', async (message) => {
+  if (message.action === 'releaseJob') {
+    heldJobs.get(message.provider)?.();
+    heldJobs.delete(message.provider);
+    return;
+  }
   try {
     let value;
     switch (message.action) {
@@ -33,7 +39,12 @@ process.on('message', async (message) => {
         break;
       case 'job':
         value = await governance.withJob(message.provider, async () => {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          if (message.hold) {
+            await new Promise((resolve) => {
+              heldJobs.set(message.provider, resolve);
+              process.send({ event: 'jobHeld', provider: message.provider });
+            });
+          } else await new Promise((resolve) => setTimeout(resolve, 100));
           return true;
         });
         break;

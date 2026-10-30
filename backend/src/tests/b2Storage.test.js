@@ -75,9 +75,7 @@ test('S3 operations isolate credentials/buckets and retain versions, integrity a
       )
   );
   assert.ok(
-    fake.calls
-      .filter((call) => call.op === 'DeleteObjectCommand')
-      .every((call) => call.VersionId)
+    fake.calls.filter((call) => call.op === 'DeleteObjectCommand').every((call) => call.VersionId)
   );
 });
 test('reads reject corrupt/oversized bytes and configuration drift without leaking provider failures', async () => {
@@ -335,10 +333,7 @@ test(
     const unknown = await Asset.findOne({ state: 'deleting', versionId: '' }).lean();
     assert.ok(unknown);
     await assert.rejects(assets.retryCleanup(), { status: 503 });
-    assert.ok(
-      await Asset.exists({ _id: unknown._id }),
-      'uncertain empty listing retains receipt'
-    );
+    assert.ok(await Asset.exists({ _id: unknown._id }), 'uncertain empty listing retains receipt');
     // Simulate a delayed provider commit after the caller/process already failed.
     fake.objects.set(unknown.bucket + '/' + unknown.key, [
       { VersionId: 'late-version', body: png }
@@ -435,10 +430,7 @@ test(
     );
     const resume = await Resume.findById(uploadedBody.fileId);
     assert.match(resume.fileUrl, /^b2:\/\/resumes\//);
-    assert.equal(
-      String((await User.findById(user._id)).activeResumeFileId),
-      String(resume._id)
-    );
+    assert.equal(String((await User.findById(user._id)).activeResumeFileId), String(resume._id));
     assert.deepEqual(
       await require('../services/resumeStorageService').read(resume.fileUrl, user._id),
       pdf
@@ -470,8 +462,7 @@ test(
     );
     await User.updateOne({ _id: user._id }, { $set: { defaultResumeFileId: resume._id } });
     assert.equal(
-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
-        .status,
+      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
       404
     );
     fake.fail('GetObjectCommand');
@@ -482,14 +473,12 @@ test(
     assert.deepEqual(Buffer.from(await ownPDF.arrayBuffer()), pdf);
     await publicService.updatePublicProfile(user._id, { isPublic: true });
     assert.equal(
-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
-        .status,
+      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
       200
     );
     await publicService.updatePublicProfile(user._id, { isPublic: false });
     assert.equal(
-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
-        .status,
+      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
       404
     );
     // Restart adapter and HTTP listener: Mongo references and provider data remain authoritative.
@@ -518,18 +507,12 @@ test(
       fileUrl: legacy,
       fileSize: pdf.length
     });
-    assert.deepEqual(
-      await require('../services/resumeStorageService').read(legacy, user._id),
-      pdf
-    );
+    assert.deepEqual(await require('../services/resumeStorageService').read(legacy, user._id), pdf);
     await assert.rejects(require('../services/resumeStorageService').read(legacy, other._id), {
       status: 404
     });
     await assert.rejects(
-      require('../services/resumeStorageService').read(
-        path.join(local, 'outside.pdf'),
-        user._id
-      ),
+      require('../services/resumeStorageService').read(path.join(local, 'outside.pdf'), user._id),
       { status: 404 }
     );
     const legacyImage = `/uploads/avatars/${user._id}-legacy.png`;
@@ -567,6 +550,13 @@ test(
     });
     app.use('/strict-resume', strictRouter);
     const beforeAdmission = fake.calls.length;
+    const admissionOutage = t.mock.method(
+      require('../services/integrationMongoGovernanceService'),
+      'requestWindow',
+      async () => {
+        throw Error('Disposable authoritative admission outage');
+      }
+    );
     assert.equal(
       (
         await request('/strict-resume/upload', {
@@ -579,8 +569,9 @@ test(
     assert.equal(
       fake.calls.length,
       beforeAdmission,
-      'missing shared limiter rejects before B2'
+      'unavailable Mongo admission rejects before B2'
     );
+    admissionOutage.mock.restore();
     const worker = require('node:child_process').fork(
       path.join(__dirname, 'fixtures/b2StorageWorker.js'),
       [],
@@ -663,9 +654,7 @@ test(
     await Promise.allSettled([assets.remove(image), deletion.deleteAccount(user._id)]);
     assert.equal(await User.exists({ _id: user._id }), null);
     assert.ok(
-      (await Asset.find({ ownerId: user._id }).lean()).every(
-        (asset) => asset.state === 'deleting'
-      )
+      (await Asset.find({ ownerId: user._id }).lean()).every((asset) => asset.state === 'deleting')
     );
     assert.ok(await require('../models/accountDeletionCleanup').exists({ _id: user._id }));
     assert.equal((await request(rollbackAvatar, { anonymous: true })).status, 404);
@@ -674,10 +663,7 @@ test(
     await Asset.updateMany({}, { $set: { retryAfter: new Date(0) } });
     await deletion.processCleanup(user._id);
     assert.equal(await Asset.countDocuments({ ownerId: user._id }), 0);
-    assert.equal(
-      await require('../models/accountDeletionCleanup').exists({ _id: user._id }),
-      null
-    );
+    assert.equal(await require('../models/accountDeletionCleanup').exists({ _id: user._id }), null);
     assert.ok(await User.exists({ _id: other._id }));
   }
 );

@@ -12,7 +12,7 @@ test(
   { timeout: 90000 },
   async (t) => {
     const originalEnv = { ...process.env };
-    const { startMongo } = require('../scripts/verifyIntegrationsRealProviders');
+    const { startMongo } = require('./fixtures/disposableRequestMongo');
     const runtime = await startMongo();
     Object.assign(process.env, {
       NODE_ENV: 'test',
@@ -106,10 +106,11 @@ test(
         if (!(name in originalEnv)) delete process.env[name];
       Object.assign(process.env, originalEnv);
       fs.writeFileSync(
-        path.resolve(
-          __dirname,
-          '../../verification/integrations/scalability-governance-regression.json'
-        ),
+        process.env.INTEGRATION_GOVERNANCE_EVIDENCE_FILE ||
+          path.resolve(
+            __dirname,
+            '../../verification/integrations/scalability-governance-regression.json'
+          ),
         JSON.stringify(evidence, null, 2) + '\n'
       );
     });
@@ -205,12 +206,24 @@ test(
         await assert.rejects(reserve('global-full'), { status: 429 });
         await governance.finish(first);
         await governance.finish(second);
-        const jobs = await Promise.allSettled([
-          a.request('job', { provider: 'job-race' }),
-          b.request('job', { provider: 'job-race' })
-        ]);
-        assert.equal(jobs.filter((row) => row.status === 'fulfilled').length, 1);
-        assert.equal(jobs.find((row) => row.status === 'rejected').reason.status, 429);
+        const held = new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(Error('Job barrier deadline')), 6000);
+          const receive = (message) => {
+            if (message.event !== 'jobHeld') return;
+            clearTimeout(timer);
+            a.child.off('message', receive);
+            resolve();
+          };
+          a.child.on('message', receive);
+        });
+        const running = a.request('job', { provider: 'job-race', hold: true });
+        try {
+          await held;
+          await assert.rejects(b.request('job', { provider: 'job-race' }), { status: 429 });
+        } finally {
+          a.child.send({ action: 'releaseJob', provider: 'job-race' });
+          await running;
+        }
         evidence.checks.push(
           'two worker processes: one provider winner; global cap; job cap; release'
         );

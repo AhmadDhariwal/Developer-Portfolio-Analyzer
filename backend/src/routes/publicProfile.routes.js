@@ -39,6 +39,7 @@ router.post(
   '/:slug/contact',
   protect,
   mediaSession,
+  require('../services/publicPortfolioContactService').validateContactRequest,
   contactLimit,
   contactRecipientLimit,
   contactPublicProfile

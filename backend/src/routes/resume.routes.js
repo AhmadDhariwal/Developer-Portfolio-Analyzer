@@ -17,10 +17,7 @@ const upload = require('../middleware/uploadmiddleware');
 router.post(
   '/upload',
   protect,
-  (req, res, next) =>
-    process.env.STORAGE_DRIVER === 'b2'
-      ? require('../middleware/publicPortfolioRateLimit').uploadLimit(req, res, next)
-      : next(),
+  require('../middleware/publicPortfolioRateLimit').uploadLimit,
   upload.resumePdf,
   uploadResume
 );

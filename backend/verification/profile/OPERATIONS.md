@@ -41,7 +41,7 @@ Changing the image-root configuration while receipts remain pending requires cop
 
 Ordinary portfolio rendering caches remain optional: bounded process memory and Mongo fallback preserve availability after current Mongo authorization. Old cache revisions become unreachable after content changes. No Redis scan/flush or broad key deletion was introduced.
 
-Avatar and portfolio-image uploads use the existing strict shared upload limiter (10/account/hour). Public contact retains strict sender and recipient limits. These operations return 503 when the shared limiter is unavailable. Do not substitute process-local production fallbacks. Configure the existing Redis client, TLS and credentials through the approved deployment mechanism and validate its connectivity separately. Trust-proxy configuration must match the actual proxy topology.
+Avatar and portfolio-image uploads retain the strict shared upload limit (10/account/hour), now stored in MongoDB `integrationgovernancestates`; public contact retains shared sender and recipient windows in that authority. These Profile/Portfolio admissions do not call Redis and return 503 when Mongo admission is unavailable. No process-local fallback is allowed. Redis remains independently configured for unchanged modules. Drain old Redis-backed Profile workers completely before enabling Mongo-backed Profile workers; never serve a quota from both authorities. Preserve old counters for rollback and wait through the longest affected window before reverse handover. Trust-proxy configuration must match the deployed topology.
 
 Existing general authentication throttles are process-local. Multi-worker production still needs an approved shared/gateway authentication abuse policy; this task does not silently provision one.
 

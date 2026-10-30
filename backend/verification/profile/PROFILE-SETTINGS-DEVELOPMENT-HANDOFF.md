@@ -1,5 +1,7 @@
 # Profile & Settings — development handoff
 
+**30 October 2026 governance update:** The Redis admission contract and Redis recovery gate below describe the retained baseline and are superseded for the changed Profile/Portfolio routes by [REQUEST-FLOW-GOVERNANCE-FINAL.md](../architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md). MongoDB is the only request admission authority; unavailable Redis no longer blocks those uploads/contact requests. Mongo admission failure remains 503, exhaustion 429. Coordinated handover, production topology/index/latency and all existing B2/security gates remain pending. This does not freeze or deploy the module.
+
 **DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**
 
 Recorded 29 October 2026. Branch: `task/profile`. Reference implementation: commit **`77a7e18877b8f9a35d651251768081eab04cba4f`**. Integration/PR target: not applicable. Working tree/index were clean before this documentation-only handoff. All eight security-hardening source hashes match the retained verification manifest.
