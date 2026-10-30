@@ -1,314 +1,630 @@
-<section class="news-page">
-  <div class="news-toast" *ngIf="toast.visible" [class.news-toast--error]="toast.type === 'error'">
-    {{ toast.message }}
-  </div>
+<section class="news-page" aria-labelledby="news-title">
+  <header class="page-header">
+    <div class="header-main">
+      <span class="eyebrow">DEVELOPER INTELLIGENCE</span>
+      <div class="title-row">
+        <h1 id="news-title">Tech News Hub</h1>
+        <span class="total-pill" *ngIf="total > 0 && isFeedView">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          {{ total }} {{ total === 1 ? 'article' : 'articles' }}
+        </span>
+      </div>
+      <p class="page-description">
+        Explore technology on your terms, or follow news connected to your developer journey.
+      </p>
+    </div>
 
-  <header class="news-header">
-    <div class="header-copy">
-      <span class="eyebrow">Developer feed</span>
-      <h1>Tech News Hub</h1>
-      <p>Personalized developer news, saved articles, and read-later tracking in one clean workspace.</p>
-      <button class="refresh-feed-button" type="button" *ngIf="isFeedView" [disabled]="isLoading || isLoadingMore" (click)="forceRefresh()">
-        {{ isLoading ? 'Refreshing...' : 'Refresh feed' }}
+    <div class="header-actions" *ngIf="isFeedView">
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="offline || isLoading || retrySeconds > 0"
+        (click)="refreshResults()"
+      >
+        <span class="button-icon" [class.spinning]="isLoading" aria-hidden="true">↻</span>
+        <span>{{ isLoading ? 'Refreshing…' : 'Refresh Results' }}</span>
+      </button>
+      <button
+        class="primary-button refresh-button"
+        type="button"
+        [disabled]="offline || isLoading || discoveryPending || refreshSeconds > 0"
+        (click)="forceRefresh()"
+        aria-describedby="news-check-explanation"
+        [title]="refreshExplanation"
+      >
+        <span class="button-icon" [class.spinning]="discoveryPending" aria-hidden="true">⚡</span>
+        <span>
+          {{
+            refreshSeconds
+              ? 'Check again in ' + refreshSeconds + 's'
+              : isLoading
+                ? 'Checking cache…'
+                : discoveryPending
+                  ? 'Searching…'
+                  : 'Check for New Articles'
+          }}
+        </span>
       </button>
     </div>
-
-    <div class="header-stats">
-      <article class="stat-card">
-        <span class="stat-label">Showing</span>
-        <strong>{{ displayedCount }}</strong>
-        <small>{{ displayedTotalLabel }}</small>
-      </article>
-      <article class="stat-card">
-        <span class="stat-label">Bookmarks</span>
-        <strong>{{ bookmarks.size }}</strong>
-        <small>saved across devices</small>
-      </article>
-      <article class="stat-card">
-        <span class="stat-label">Read Later</span>
-        <strong>{{ readLater.size }}</strong>
-        <small>queued to review</small>
-      </article>
-    </div>
   </header>
+  <p id="news-check-explanation" class="refresh-explanation" *ngIf="refreshExplanation">
+    {{ refreshExplanation }}
+  </p>
 
-  <section class="view-tabs" role="tablist" aria-label="Tech News views">
+  <div class="toast" role="status" aria-live="polite" *ngIf="toast">{{ toast }}</div>
+
+  <div class="metric-strip" aria-label="Your news library">
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <path
+            d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+          />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ total }}</strong>
+        <span>Articles in this feed</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ savedKnown.has('bookmark') ? savedTotal.bookmark : '—' }}</strong>
+        <span>Bookmarks</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon-wrap" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="metric-icon"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <div class="metric-data">
+        <strong>{{ savedKnown.has('read_later') ? savedTotal.read_later : '—' }}</strong>
+        <span>Read Later · including history</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="view-tabs" aria-label="News views">
     <button
-      *ngFor="let tab of viewTabs; trackBy: trackByLabel"
+      *ngFor="let tab of viewTabs"
       type="button"
-      class="view-tab"
       [class.active]="selectedView === tab.value"
+      [attr.aria-pressed]="selectedView === tab.value"
       (click)="selectView(tab.value)"
     >
       {{ tab.label }}
     </button>
-  </section>
+  </nav>
 
-  <ng-container *ngIf="isFeedView; else savedView">
-    <section class="insight-grid" *ngIf="recommendedBasedOn || sourceBannerMessage || sourceDiagnostics.length">
-      <article class="context-card" *ngIf="recommendedBasedOn">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Personalized Based On</span>
-            <h2>Your current developer context</h2>
-          </div>
-          <span class="context-status" [class.context-status--cached]="recommendedBasedOn.fromCache">
-            {{ recommendedBasedOn.fromCache ? 'Cached feed' : 'Live context' }}
-          </span>
-        </div>
-
-        <p class="context-summary">
-          {{ recommendedBasedOn.summary }}
+  <ng-container *ngIf="isFeedView; else libraryView">
+    <div class="explore-intro" *ngIf="selectedView === 'explore'">
+      <div class="explore-intro-content">
+        <span class="explore-badge">DISCOVER NEW HORIZONS</span>
+        <h2>Explore technology, beyond your profile</h2>
+        <p>
+          Browse available news or search a technology, tool or topic. Your skills do not limit
+          these results.
         </p>
-
-        <div class="context-pills">
-          <span *ngIf="recommendedBasedOn.careerStack">
-            <strong>Career stack</strong>
-            {{ recommendedBasedOn.careerStack }}
-          </span>
-          <span *ngIf="recommendedBasedOn.targetRole">
-            <strong>Goal</strong>
-            {{ recommendedBasedOn.targetRole }}
-          </span>
-          <span>
-            <strong>Active tab</strong>
-            {{ selectedViewLabel }}
-          </span>
-          <span *ngIf="lastUpdatedLabel">
-            <strong>Last updated</strong>
-            {{ lastUpdatedLabel }}
-          </span>
-        </div>
-
-        <div class="signal-groups">
-          <div class="signal-group" *ngIf="recommendedBasedOn.detectedSkills.length">
-            <h3>Detected skills</h3>
-            <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.detectedSkills; trackBy: trackByValue">{{ skill }}</span>
-            </div>
-          </div>
-
-          <div class="signal-group" *ngIf="recommendedBasedOn.skillGaps.length">
-            <h3>Skill gaps</h3>
-            <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.skillGaps; trackBy: trackByValue">{{ skill }}</span>
-            </div>
-          </div>
-
-          <div class="signal-group" *ngIf="recommendedBasedOn.jobDemandSkills?.length">
-            <h3>Market demand</h3>
-            <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.jobDemandSkills || []; trackBy: trackByValue">{{ skill }}</span>
-            </div>
-          </div>
-
-          <div class="signal-group" *ngIf="recommendedBasedOn.recommendationTechnologies?.length">
-            <h3>Recommendations</h3>
-            <div class="chip-row">
-              <span *ngFor="let skill of recommendedBasedOn.recommendationTechnologies; trackBy: trackByValue">{{ skill }}</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="status-card source-health-panel" [class.mobile-expanded]="sourceHealthExpanded">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Source Status</span>
-            <h2>Feed health</h2>
-          </div>
-          <span class="status-pill" [ngClass]="sourceStatusClass">{{ telemetry.cacheHit ? 'Cache hit' : 'Fresh fetch' }}</span>
-        </div>
-
-        <button class="mobile-disclosure" type="button" (click)="sourceHealthExpanded = !sourceHealthExpanded">{{ sourceHealthExpanded ? 'Hide source health' : 'Show source health' }}</button>
-        <div class="source-health-content">
-        <p class="status-message" *ngIf="sourceBannerMessage">{{ sourceBannerMessage }}</p>
-
-        <div class="status-metrics">
-          <span>
-            <strong>{{ telemetry.providerUsed.length }}</strong>
-            Providers used
-          </span>
-          <span>
-            <strong>{{ telemetry.providerFailureCount }}</strong>
-            Provider failures
-          </span>
-          <span>
-            <strong>{{ telemetry.responseTimeMs }}</strong>
-            ms response
-          </span>
-        </div>
-
-        <div class="provider-health" *ngIf="sourceDiagnostics.length">
-          <div
-            class="provider-health__item"
-            *ngFor="let source of sourceDiagnostics; trackBy: trackByProvider"
-            [class.provider-health__item--warning]="!source.reachable || !source.enabled || !source.configured"
-          >
-            <strong>{{ source.provider }}</strong>
-            <span>{{ source.enabled ? source.configured ? source.reachable ? 'Reachable' : 'Unavailable' : 'Missing key' : 'Disabled' }}</span>
-            <small>{{ source.articlesFetched }} articles</small>
-          </div>
-        </div>
-        </div>
-      </article>
-    </section>
-
-    <button class="mobile-disclosure filter-disclosure" type="button" (click)="filtersExpanded = !filtersExpanded">{{ filtersExpanded ? 'Hide filters' : 'Show filters' }}</button>
-    <div class="filters-panel" [class.mobile-expanded]="filtersExpanded">
-    <app-news-filters [filters]="filters" [isApplying]="isLoading" (filtersChange)="onFiltersChange($event)"></app-news-filters>
+        <p class="evidence-note">
+          Try DevOps, AWS, Azure, GCP, CI/CD, Kubernetes, Docker, security or AI. Topic aliases are
+          matched by the server.
+        </p>
+      </div>
     </div>
 
-    <section class="active-filters" *ngIf="hasActiveFilters">
-      <div class="active-filter-head">
-        <h3>Active filters</h3>
-        <button type="button" (click)="resetFilters()">Reset all</button>
+    <div
+      class="feed-status"
+      role="status"
+      [class.warning]="
+        offline || telemetry?.freshness === 'stale' || !!telemetry?.providerFailureCount
+      "
+    >
+      <div class="status-copy">
+        <span class="status-label"><i aria-hidden="true"></i>{{ freshnessLabel }}</span>
+        <span>{{ sourceMessage }}</span>
       </div>
+      <span class="updated" *ngIf="updatedAt">Updated {{ updatedAt | date: 'MMM d, h:mm a' }}</span>
+    </div>
 
-      <div class="filter-chip-row">
-        <button type="button" class="filter-chip" *ngFor="let chip of activeFilterChips; trackBy: trackByLabel" (click)="clearFilter(chip.key)">
-          <span>{{ chip.label }}:</span>
-          {{ chip.value }}
-          <strong>x</strong>
+    <button
+      type="button"
+      class="secondary-button mobile-filter-toggle"
+      [attr.aria-expanded]="filtersExpanded"
+      aria-controls="news-filter-panel"
+      (click)="filtersExpanded = !filtersExpanded"
+    >
+      <svg
+        class="toggle-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>
+      <span>
+        {{
+          filtersExpanded
+            ? 'Hide filters'
+            : selectedView === 'for-you'
+              ? 'Filters'
+              : 'Search & filters'
+        }}
+      </span>
+    </button>
+    <div id="news-filter-panel" class="filter-panel" [class.expanded]="filtersExpanded">
+      <app-news-filters
+        [filters]="filters"
+        [isApplying]="false"
+        (filtersChange)="onFiltersChange($event)"
+      />
+    </div>
+
+    <div
+      class="discovery-status"
+      role="status"
+      aria-live="polite"
+      *ngIf="coverage || enrichment"
+      [class.pending]="discoveryPending"
+    >
+      <div class="discovery-heading">
+        <span class="discovery-loader" *ngIf="discoveryLoading" aria-hidden="true"></span>
+        <strong>{{ discoveryTitle }}</strong>
+      </div>
+      <p>{{ discoveryMessage }}</p>
+      <button
+        type="button"
+        class="secondary-button"
+        *ngIf="coverage?.suggestion as suggestion"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+        (click)="searchTopic(suggestion.query)"
+      >
+        Search {{ suggestion.label }}
+      </button>
+      <button
+        type="button"
+        class="secondary-button"
+        *ngIf="
+          discoveryPending ||
+          enrichment?.status === 'unavailable' ||
+          enrichment?.status === 'worker_unavailable'
+        "
+        [disabled]="offline || isLoading || retrySeconds > 0"
+        (click)="refreshResults()"
+      >
+        Refresh Results
+      </button>
+      <button
+        type="button"
+        class="text-button"
+        *ngIf="coverage?.suggestedDate === 'month'"
+        (click)="broadenDate()"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+      >
+        Show This Month
+      </button>
+      <button
+        type="button"
+        class="text-button"
+        *ngIf="
+          (coverage?.filterExcludedMatches || 0) > (coverage?.dateExcludedMatches || 0) &&
+          (filters.source !== 'All' || filters.category !== 'All' || filters.popularity !== 'all')
+        "
+        (click)="broadenFilters()"
+        [disabled]="isLoading || offline || retrySeconds > 0"
+      >
+        Use all sources, categories and popularity
+      </button>
+      <small *ngIf="enrichment?.nextEligibleAt"
+        >Next eligible source check: {{ enrichment?.nextEligibleAt | date: 'MMM d, h:mm a' }}.
+        Eligibility does not guarantee a search or new articles.</small
+      >
+      <details *ngIf="enrichment?.sourceHealth?.length">
+        <summary>Last search source checks</summary>
+        <p *ngFor="let source of enrichment?.sourceHealth">
+          {{ source.provider }} · {{ source.status }} · {{ source.articlesFound }} articles reported
+        </p>
+      </details>
+    </div>
+
+    <div
+      class="feed-tools"
+      *ngIf="(selectedView !== 'for-you' && trendingTopics.length) || hasFilters"
+    >
+      <div class="topic-list" *ngIf="selectedView !== 'for-you'">
+        <span>In the conversation</span
+        ><button type="button" *ngFor="let topic of trendingTopics" (click)="searchTopic(topic)">
+          #{{ topic }}
         </button>
       </div>
-    </section>
+      <button type="button" class="text-button" *ngIf="hasFilters" (click)="resetFilters()">
+        Clear filters
+      </button>
+    </div>
 
-    <section class="topic-strip" *ngIf="trendingTopics.length > 0">
-      <div class="strip-head">
-        <h3>Trending topics</h3>
-        <small>Picked from the current ranked feed</small>
+    <details class="context-disclosure" *ngIf="context && selectedView !== 'explore'">
+      <summary>
+        <span class="context-icon" aria-hidden="true">✦</span
+        ><span
+          >Personalized for <strong>{{ context.targetRole || context.careerStack }}</strong
+          ><small
+            >{{ context.detectedSkills.length }} detected skill signals · explore your news
+            context</small
+          ></span
+        ><span class="disclosure-arrow" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="context-body">
+        <p>{{ context.summary }}</p>
+        <div class="signal-groups">
+          <div *ngIf="context.skillEvidence?.length">
+            <h3>Skill evidence</h3>
+            <span class="chip" *ngFor="let skill of context.skillEvidence"
+              >{{ skill.name }} · {{ evidenceLabels[skill.status] }}</span
+            >
+          </div>
+          <div *ngIf="context.detectedSkills.length">
+            <h3>Detected signals · see evidence classifications</h3>
+            <span class="chip" *ngFor="let skill of context.detectedSkills">{{ skill }}</span>
+          </div>
+          <div *ngIf="context.skillGaps.length">
+            <h3>Growth gaps</h3>
+            <span class="chip" *ngFor="let skill of context.skillGaps">{{ skill }}</span>
+          </div>
+          <div *ngIf="context.recommendationTechnologies?.length">
+            <h3>Recommended learning</h3>
+            <span class="chip" *ngFor="let skill of context.recommendationTechnologies">{{
+              skill
+            }}</span>
+          </div>
+          <div *ngIf="context.jobDemandSkills?.length">
+            <h3>Market demand</h3>
+            <span class="chip" *ngFor="let skill of context.jobDemandSkills">{{ skill }}</span>
+          </div>
+        </div>
+        <p class="evidence-note">
+          Classifications come from analyzed sources. Partial metadata and claims do not verify
+          proficiency. Missing classifications are unknown. Growth gaps, market demand and
+          recommended learning do not establish existing skills.
+        </p>
       </div>
-      <div class="chips">
-        <span *ngFor="let topic of trendingTopics; trackBy: trackByValue">#{{ topic }}</span>
-      </div>
-    </section>
+    </details>
 
-    <section class="source-strip" *ngIf="sourceBreakdown.length > 0">
-      <span *ngFor="let source of sourceBreakdown; trackBy: trackByLabel">
-        <strong>{{ source.label }}</strong>
-        {{ source.count }}
-      </span>
-    </section>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">YOUR READING DESK</p>
+        <h2>
+          {{
+            selectedView === 'explore'
+              ? filters.search
+                ? 'Results for “' + filters.search + '”'
+                : 'Explore technology news'
+              : selectedView === 'for-you'
+                ? 'Selected for your journey'
+                : selectedView === 'trending'
+                  ? 'Trending in developer news'
+                  : 'The latest updates'
+          }}
+        </h2>
+      </div>
+      <span role="status" aria-live="polite"
+        >Page {{ page }} · {{ items.length }} of {{ total }} matching articles</span
+      >
+    </div>
+
+    <div class="state-message error-message" role="alert" *ngIf="errorMessage">
+      <div>
+        <strong>Unable to update the feed</strong>
+        <p>{{ errorMessage }}</p>
+        <small *ngIf="items.length">Previously loaded results are still shown.</small>
+      </div>
+      <button
+        type="button"
+        class="secondary-button"
+        [disabled]="offline || retrySeconds > 0"
+        (click)="retry()"
+      >
+        {{ retrySeconds ? 'Retry in ' + retrySeconds + 's' : 'Try again' }}
+      </button>
+    </div>
+    <div class="state-message" role="status" *ngIf="isLoading && items.length">
+      Updating your reading desk…
+    </div>
+    <div
+      class="news-grid skeleton-grid"
+      *ngIf="isLoading && !items.length"
+      aria-label="Loading news"
+      aria-busy="true"
+    >
+      <div class="skeleton" *ngFor="let number of skeletonCards">
+        <div></div>
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="news-grid" [attr.aria-busy]="isLoading" *ngIf="items.length">
+      <app-news-card
+        *ngFor="let item of items; trackBy: trackId"
+        [news]="item"
+        [personalized]="selectedView !== 'explore'"
+        [bookmarked]="isSaved(item, 'bookmark')"
+        [readLater]="isSaved(item, 'read_later')"
+        [bookmarkLoading]="articlePending(item, 'bookmark')"
+        [readLaterLoading]="articlePending(item, 'read_later')"
+        (bookmarkToggle)="toggleSave($event, 'bookmark')"
+        (readLaterToggle)="toggleSave($event, 'read_later')"
+      />
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && !errorMessage && !items.length">
+      <span class="empty-icon" aria-hidden="true">◎</span>
+      <h2>
+        {{
+          page > totalPages
+            ? 'This page is no longer available'
+            : discoveryPending
+              ? 'Discovery is in progress'
+              : enrichment && enrichment.status !== 'not_needed' && enrichment.status !== 'ready'
+                ? discoveryTitle
+                : 'No articles found'
+        }}
+      </h2>
+      <p>
+        {{
+          page > totalPages
+            ? 'Cached results have changed. Choose an available page below.'
+            : coverage || enrichment
+              ? discoveryMessage
+              : selectedView === 'for-you'
+                ? 'Try another source or a longer date range.'
+                : 'Try a broader topic, another source or a longer date range.'
+        }}
+      </p>
+      <button type="button" class="secondary-button" *ngIf="hasFilters" (click)="resetFilters()">
+        Clear filters
+      </button>
+    </div>
+    <nav class="pagination feed-pagination" aria-label="News pages" *ngIf="total > 0 || page > 1">
+      <span
+        >Page {{ page }} of {{ totalPages }} · {{ total }} matching articles · {{ pageSize }} per
+        page</span
+      >
+      <div class="page-buttons">
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="page <= 1 || isLoading || offline || retrySeconds > 0"
+          (click)="selectPage(page > totalPages ? totalPages : page - 1)"
+        >
+          Previous
+        </button>
+        <ng-container *ngFor="let number of pageNumbers">
+          <button
+            *ngIf="number !== null; else pageGap"
+            type="button"
+            class="secondary-button"
+            [attr.aria-label]="'Go to page ' + number"
+            [attr.aria-current]="number === page ? 'page' : null"
+            [disabled]="number === page || isLoading || offline || retrySeconds > 0"
+            (click)="selectPage(number)"
+          >
+            {{ number }}
+          </button>
+          <ng-template #pageGap><span aria-hidden="true">…</span></ng-template>
+        </ng-container>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="page >= totalPages || isLoading || offline || retrySeconds > 0"
+          (click)="selectPage(page + 1)"
+        >
+          Next
+        </button>
+      </div>
+    </nav>
+    <p
+      class="evidence-note end-of-results"
+      role="status"
+      *ngIf="!isLoading && !errorMessage && items.length && page === totalPages"
+    >
+      End of cached results for these filters. Broaden your filters or check again after the next
+      background update.
+    </p>
+
+    <details class="source-disclosure" *ngIf="sourceDiagnostics.length">
+      <summary>
+        About these sources <span>{{ telemetry?.providerUsed?.length || 0 }} contributing</span>
+      </summary>
+      <div class="source-list">
+        <div *ngFor="let source of sourceDiagnostics">
+          <strong>{{ source.provider }}</strong
+          ><span>{{
+            !source.enabled
+              ? 'Disabled'
+              : !source.configured
+                ? 'Not configured'
+                : source.reachable
+                  ? 'Last check succeeded'
+                  : 'Temporarily unavailable'
+          }}</span
+          ><small *ngIf="source.lastSuccess"
+            >Last success {{ source.lastSuccess | date: 'MMM d, h:mm a' }}</small
+          >
+        </div>
+      </div>
+      <p>
+        Source status describes the last ingestion check. Cached articles may remain available
+        during outages. Source filters include cached publishers; they do not imply that every
+        source is enabled. Coverage is bounded by approvals, quotas and retention.
+      </p>
+    </details>
   </ng-container>
 
-  <ng-template #savedView>
-    <section class="saved-overview">
-      <article class="saved-summary-card">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Saved News</span>
-            <h2>{{ selectedView === 'bookmarks' ? 'Bookmarks' : 'Read Later' }}</h2>
-          </div>
-          <span class="status-pill status-saved">{{ displayedCount }} items</span>
+  <ng-template #libraryView>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">YOUR LIBRARY</p>
+        <h2>
+          {{
+            selectedView === 'bookmarks' ? 'Worth coming back to' : 'Your reading queue & history'
+          }}
+        </h2>
+      </div>
+      <button
+        type="button"
+        class="secondary-button"
+        [disabled]="offline || savedLoading.has(savedType) || retrySeconds > 0"
+        (click)="retry()"
+      >
+        Sync library
+      </button>
+    </div>
+    <p class="library-description">
+      {{
+        selectedView === 'bookmarks'
+          ? 'Your server-saved bookmarks follow your account across devices.'
+          : 'Mark an article read when you finish. Completed entries stay in your reading history.'
+      }}
+    </p>
+    <div class="history-filters" *ngIf="selectedView === 'read_later'" aria-label="Reading status">
+      <button
+        type="button"
+        [attr.aria-pressed]="historyFilter === 'all'"
+        (click)="historyFilter = 'all'"
+      >
+        All loaded</button
+      ><button
+        type="button"
+        [attr.aria-pressed]="historyFilter === 'unread'"
+        (click)="historyFilter = 'unread'"
+      >
+        Unread</button
+      ><button
+        type="button"
+        [attr.aria-pressed]="historyFilter === 'read'"
+        (click)="historyFilter = 'read'"
+      >
+        Reading history
+      </button>
+    </div>
+    <p class="evidence-note" *ngIf="selectedView === 'read_later'">
+      Mark articles read or unread. First and latest completion dates and the completion count
+      remain in reading history, even when currently unread.
+    </p>
+    <div class="state-message error-message" role="alert" *ngIf="savedError">
+      <p>{{ savedError }}</p>
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="offline || retrySeconds > 0"
+        (click)="retry()"
+      >
+        {{ retrySeconds ? 'Retry in ' + retrySeconds + 's' : 'Try again' }}
+      </button>
+    </div>
+    <p role="status" *ngIf="savedLoading.has(savedType)">Syncing your saved articles…</p>
+    <div class="saved-grid" [attr.aria-busy]="savedLoading.has(savedType)">
+      <article class="saved-card" *ngFor="let item of savedItems; trackBy: trackId">
+        <div class="saved-topline">
+          <span>{{ item.source }} · {{ item.category }}</span
+          ><span class="read-status" *ngIf="item.type === 'read_later'">{{
+            item.readAt ? 'Read' : 'Unread'
+          }}</span>
         </div>
-
-        <p class="context-summary" *ngIf="selectedView === 'bookmarks'">
-          Your bookmarked articles stay synced per account so you can return to the most useful reads from any device.
+        <h3>
+          <a [href]="item.url" target="_blank" rel="noopener noreferrer"
+            >{{ item.title }} <span aria-hidden="true">↗</span></a
+          >
+        </h3>
+        <p class="saved-dates">
+          <span *ngIf="item.createdAt">Saved {{ item.createdAt | date: 'mediumDate' }}</span
+          ><span *ngIf="item.firstReadAt">First read {{ item.firstReadAt | date: 'medium' }}</span>
+          <span *ngIf="item.lastReadAt">Last read {{ item.lastReadAt | date: 'medium' }}</span>
+          <span *ngIf="item.readAt && !item.lastReadAt"
+            >Read {{ item.readAt | date: 'medium' }}</span
+          >
+          <span *ngIf="item.readCount !== null && item.readCount !== undefined"
+            >Completed reads: {{ item.readCount }}</span
+          >
         </p>
-        <p class="context-summary" *ngIf="selectedView === 'read_later'">
-          Keep a lighter reading queue here, mark items as read when finished, or move the best ones into bookmarks.
-        </p>
+        <div class="saved-actions">
+          <a [href]="item.url" target="_blank" rel="noopener noreferrer">Read article ↗</a
+          ><button
+            type="button"
+            *ngIf="item.type === 'read_later'"
+            [disabled]="itemPending(item)"
+            (click)="markSavedItemAsRead(item, !item.readAt)"
+          >
+            {{
+              itemPending(item) ? 'Updating…' : item.readAt ? 'Mark unread' : 'Mark read'
+            }}</button
+          ><button
+            type="button"
+            *ngIf="item.type === 'read_later'"
+            [disabled]="itemPending(item) || pending.has('bookmark:' + item.url)"
+            (click)="bookmarkSaved(item)"
+          >
+            Bookmark</button
+          ><button type="button" [disabled]="itemPending(item)" (click)="removeSavedItem(item)">
+            {{ pending.has(item.type + ':' + item.url) ? 'Updating…' : 'Remove' }}
+          </button>
+        </div>
       </article>
-    </section>
+    </div>
+    <div
+      class="empty-state"
+      *ngIf="!savedLoading.has(savedType) && !savedError && !savedItems.length"
+    >
+      <span class="empty-icon" aria-hidden="true">▤</span>
+      <h2>
+        {{
+          historyFilter === 'read'
+            ? 'No completed reads loaded'
+            : 'A little space for your next discovery'
+        }}
+      </h2>
+      <p>
+        Save articles from the feed to build your library. Reading-status filters apply to loaded
+        entries.
+      </p>
+      <button class="secondary-button" type="button" (click)="selectView('for-you')">
+        Explore your feed
+      </button>
+    </div>
+    <div class="pagination" *ngIf="savedHasMore[savedType]">
+      <span>{{ library[savedType].size }} of {{ savedTotal[savedType] }} loaded</span
+      ><button
+        type="button"
+        class="secondary-button"
+        [disabled]="savedLoading.has(savedType) || offline || retrySeconds > 0"
+        (click)="loadMoreSaved()"
+      >
+        Load more saved articles
+      </button>
+    </div>
   </ng-template>
-
-  <section class="state-card error-state" *ngIf="!isLoading && errorMessage">
-    <div>
-      <h3>Unable to refresh {{ isFeedView ? 'the feed' : selectedView === 'bookmarks' ? 'bookmarks' : 'read later items' }}</h3>
-      <p>{{ errorMessage }}</p>
-    </div>
-    <button type="button" (click)="retry()">Retry</button>
-  </section>
-
-  <section class="state-card empty-state" *ngIf="!isLoading && !errorMessage && displayedCount === 0">
-    <div>
-      <h3>{{ emptyTitle }}</h3>
-      <p>{{ emptyMessage }}</p>
-    </div>
-    <button type="button" *ngIf="isFeedView" (click)="resetFilters()">Reset Filters</button>
-  </section>
-
-  <div class="news-grid skeleton-grid" *ngIf="isLoading">
-    <article class="skeleton-card" *ngFor="let skeleton of skeletonCards; trackBy: trackByValue">
-      <div class="skeleton-image"></div>
-      <div class="skeleton-body">
-        <span class="skeleton-line short"></span>
-        <span class="skeleton-line"></span>
-        <span class="skeleton-line"></span>
-        <span class="skeleton-line medium"></span>
-      </div>
-    </article>
-  </div>
-
-  <div class="news-grid" *ngIf="isFeedView && !isLoading && !errorMessage && items.length > 0">
-    <app-news-card
-      *ngFor="let item of items; trackBy: trackById"
-      [news]="item"
-      [bookmarked]="isBookmarked(item.id)"
-      [readLater]="isReadLater(item.id)"
-      [bookmarkLoading]="isBookmarkPending(item.id)"
-      [readLaterLoading]="isReadLaterPending(item.id)"
-      (bookmarkToggle)="onBookmarkToggle($event)"
-      (readLaterToggle)="onReadLaterToggle($event)"
-    ></app-news-card>
-  </div>
-
-  <div class="saved-grid" *ngIf="!isFeedView && !isLoading && !errorMessage && savedItemsView.length > 0">
-    <article class="saved-card" [class.saved-card--read]="!!item.readAt" *ngFor="let item of savedItemsView; trackBy: trackBySavedId">
-      <div class="saved-card__image-wrap" *ngIf="item.image">
-        <img class="saved-card__image" [src]="item.image" [alt]="item.title" />
-        <div class="saved-card__badges">
-          <span class="saved-badge" *ngIf="item.source">{{ item.source }}</span>
-          <span class="saved-badge saved-badge--alt" *ngIf="item.category">{{ item.category }}</span>
-        </div>
-      </div>
-
-      <div class="saved-card__body">
-        <h3>{{ item.title }}</h3>
-        <div class="saved-card__meta">
-          <span *ngIf="item.createdAt">Saved {{ formatSavedDate(item.createdAt) }}</span>
-          <span *ngIf="item.publishedAt">Published {{ item.publishedAt | date:'mediumDate' }}</span>
-          <span *ngIf="selectedView === 'read_later' && item.readAt">Read {{ formatSavedDate(item.readAt) }}</span>
-        </div>
-
-        <div class="saved-card__actions">
-          <a class="saved-action saved-action--primary" [href]="item.url" target="_blank" rel="noopener noreferrer">Open Article</a>
-          <button
-            *ngIf="selectedView === 'read_later'"
-            type="button"
-            class="saved-action"
-            [disabled]="!!item.readAt || isSavedActionPending(item.id, 'read')"
-            (click)="markSavedItemAsRead(item)"
-          >
-            {{ item.readAt ? 'Read' : isSavedActionPending(item.id, 'read') ? 'Updating...' : 'Mark as Read' }}
-          </button>
-          <button
-            *ngIf="selectedView === 'read_later'"
-            type="button"
-            class="saved-action"
-            [disabled]="isSavedActionPending(item.id, 'move')"
-            (click)="moveReadLaterToBookmark(item)"
-          >
-            {{ isSavedActionPending(item.id, 'move') ? 'Moving...' : 'Move to Bookmark' }}
-          </button>
-          <button
-            type="button"
-            class="saved-action saved-action--danger"
-            [disabled]="isSavedActionPending(item.id, 'remove')"
-            (click)="removeSavedItem(item)"
-          >
-            {{ isSavedActionPending(item.id, 'remove') ? 'Removing...' : 'Remove' }}
-          </button>
-        </div>
-      </div>
-    </article>
-  </div>
-
-  <div class="load-more-wrap" *ngIf="isFeedView && !isLoading && !errorMessage && page < totalPages">
-    <div class="page-state">Page {{ page }} of {{ totalPages }}</div>
-    <button type="button" [disabled]="isLoadingMore" (click)="loadMore()">
-      {{ isLoadingMore ? 'Loading more...' : 'Load More News' }}
-    </button>
-  </div>
 </section>

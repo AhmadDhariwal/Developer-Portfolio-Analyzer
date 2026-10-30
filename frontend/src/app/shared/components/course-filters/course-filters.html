@@ -1,134 +1,88 @@
-<aside class="filters-panel" [class.collapsed]="isCollapsed">
-  <div class="filters-header">
-    <div class="header-left">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-      <div>
-        <span class="header-title">Refine Results</span>
-        <p class="header-subtitle">Stage filters first, then apply them together</p>
-      </div>
-      <span class="active-dot" *ngIf="hasActiveFilters"></span>
-    </div>
-
-    <div class="header-actions">
-      <span class="status-pill" *ngIf="isApplying">Applying...</span>
-      <button class="btn-reset" *ngIf="hasDraftFilters" (click)="resetFilters()">Reset</button>
-      <button
-         title="toggle"
-        class="btn-collapse"
-        (click)="toggleCollapse()"
-        [title]="isCollapsed ? 'Expand filters' : 'Collapse filters'"
+<form class="filter-toolbar" (ngSubmit)="applyFilters()">
+  <label class="search-field"
+    >Search topic or skill
+    <div class="search-control">
+      <input
+        name="topic"
+        aria-label="Search topic or skill"
+        type="search"
+        [(ngModel)]="filters.topic"
+        (ngModelChange)="onFilterChange()"
+        placeholder="e.g. Angular or SQL"
+        maxlength="60"
+      /><button
+        type="button"
+        *ngIf="filters.topic"
+        aria-label="Clear search"
+        (click)="clearTopic()"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="isCollapsed">
-          <polyline points="18 15 12 9 6 15" />
-        </svg>
+        Clear
       </button>
-    </div>
+    </div></label
+  >
+  <label
+    >Platform<select
+      name="platform"
+      aria-label="Platform"
+      [(ngModel)]="filters.platform"
+      (ngModelChange)="onFilterChange()"
+    >
+      <option *ngFor="let option of platformOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select></label
+  >
+  <label
+    >Level<select
+      name="level"
+      aria-label="Level"
+      [(ngModel)]="filters.level"
+      (ngModelChange)="onFilterChange()"
+    >
+      <option *ngFor="let option of levelOptions" [value]="option.value">{{ option.label }}</option>
+    </select></label
+  >
+  <label
+    >Duration<select
+      name="duration"
+      aria-label="Duration"
+      [(ngModel)]="filters.duration"
+      (ngModelChange)="onFilterChange()"
+    >
+      <option *ngFor="let option of durationOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select></label
+  >
+  <label
+    >Provider review rating<select
+      name="rating"
+      aria-label="Provider review rating"
+      [(ngModel)]="filters.rating"
+      (ngModelChange)="onFilterChange()"
+    >
+      <option *ngFor="let option of ratingOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select></label
+  >
+  <div class="filter-actions">
+    <button class="primary" type="submit" [disabled]="isApplying">
+      {{ isApplying ? 'Applying…' : 'Apply Filters' }}</button
+    ><button
+      type="button"
+      [disabled]="isApplying || (!hasDraftFilters && !hasActiveFilters)"
+      (click)="resetFilters()"
+    >
+      Reset
+    </button>
   </div>
-
-  <div class="filters-body" *ngIf="!isCollapsed">
-    <div class="filter-group">
-      <label class="filter-label" for="course-topic-filter">Topic Search</label>
-      <div class="topic-input-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
-          id="course-topic-filter"
-          type="text"
-          name="course-topic-filter"
-          [(ngModel)]="filters.topic"
-          (ngModelChange)="onFilterChange()"
-          placeholder="Search Docker, React, Testing..."
-        />
-        <button class="clear-topic" type="button" *ngIf="filters.topic" (click)="clearTopic()">Clear</button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Platform</label>
-      <div class="filter-options filter-grid">
-        <button
-          *ngFor="let opt of platformOptions"
-          class="filter-opt-btn"
-          [class.active]="filters.platform === opt.value"
-          (click)="filters.platform = opt.value; onFilterChange()"
-        >
-          {{ opt.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Minimum Rating</label>
-      <div class="filter-options">
-        <button
-          *ngFor="let opt of ratingOptions"
-          class="filter-opt-btn"
-          [class.active]="filters.rating === opt.value"
-          (click)="filters.rating = opt.value; onFilterChange()"
-        >
-          <span *ngIf="opt.value">★ </span>{{ opt.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Level</label>
-      <div class="filter-options">
-        <button
-          *ngFor="let opt of levelOptions"
-          class="filter-opt-btn"
-          [class.active]="filters.level === opt.value"
-          (click)="filters.level = opt.value; onFilterChange()"
-        >
-          {{ opt.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Duration</label>
-      <div class="filter-options">
-        <button
-          *ngFor="let opt of durationOptions"
-          class="filter-opt-btn"
-          [class.active]="filters.duration === opt.value"
-          (click)="filters.duration = opt.value; onFilterChange()"
-        >
-          {{ opt.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filters-footer">
-      <div class="draft-note" [class.pending]="hasPendingChanges">
-        <span *ngIf="hasPendingChanges">You have unapplied filter changes.</span>
-        <span *ngIf="!hasPendingChanges && hasDraftFilters">Filters are applied to your recommendations.</span>
-        <span *ngIf="!hasPendingChanges && !hasDraftFilters">Showing your default learning recommendations.</span>
-      </div>
-
-      <div class="footer-actions">
-        <button
-          class="footer-reset"
-          type="button"
-          (click)="resetFilters()"
-          [disabled]="!hasDraftFilters && !hasPendingChanges"
-        >
-          Reset Filters
-        </button>
-        <button
-          class="footer-apply"
-          type="button"
-          (click)="applyFilters()"
-          [disabled]="!hasPendingChanges || isApplying"
-        >
-          <span *ngIf="!isApplying">Apply Filters</span>
-          <span *ngIf="isApplying">Applying...</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</aside>
+  <p class="filter-note">
+    {{
+      hasPendingChanges
+        ? 'Unapplied changes. Apply Filters to update results.'
+        : 'Filters apply together.'
+    }}
+    Ratings filter only courses with genuine provider reviews; unknown values remain unknown.
+  </p>
+</form>

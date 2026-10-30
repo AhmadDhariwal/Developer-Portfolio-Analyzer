@@ -1,0 +1,15 @@
+{
+  "ownedTemporaryDirectory": "/tmp/devinsight-provider-JuKFvL",
+  "resolvedAbsolutePathVerified": true,
+  "disposableRedisPort": 27145,
+  "databaseKeysBeforeShutdown": 0,
+  "disposableRedisStopped": true,
+  "ownedBuildDirectoryRemoved": true,
+  "finalBatchRemovedRedisKeysByFixture": [53, 2, 84, 36, 10],
+  "finalBatchRemovedRedisKeysTotal": 185,
+  "remainingOwnedRedisKeys": 0,
+  "finalBatchTemporaryMongoDatabasesDropped": 3,
+  "applicationCountersReset": 0,
+  "sourceFilesMovedOrDeleted": [],
+  "historicalEvidenceOrUserFilesDeleted": []
+}

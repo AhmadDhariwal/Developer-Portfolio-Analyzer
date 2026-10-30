@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
     },
     select: false
   },
+  sessionRevision: { type: Number, default: 0 },
   authProvider: {
     type: String,
     enum: ['local', 'google', 'github'],
@@ -113,9 +114,9 @@ const userSchema = new mongoose.Schema({
   },
   notifications: {
     weeklyScoreReport: { type: Boolean, default: true },
-    skillTrendAlerts:  { type: Boolean, default: true },
-    newRecommendations:{ type: Boolean, default: false },
-    jobMatchAlerts:    { type: Boolean, default: true }
+    skillTrendAlerts: { type: Boolean, default: true },
+    newRecommendations: { type: Boolean, default: false },
+    jobMatchAlerts: { type: Boolean, default: true }
   },
   recruiterPreferences: {
     preferredStacks: [{ type: String }],
@@ -159,7 +160,13 @@ const userSchema = new mongoose.Schema({
   },
   careerGoal: {
     type: String,
-    enum: ['Get first job', 'Improve portfolio', 'Prepare for interviews', 'Switch tech stack', ''],
+    enum: [
+      'Get first job',
+      'Improve portfolio',
+      'Prepare for interviews',
+      'Switch tech stack',
+      ''
+    ],
     default: ''
   },
   targetTimeline: {

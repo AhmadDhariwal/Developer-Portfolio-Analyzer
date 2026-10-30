@@ -1,0 +1,26 @@
+{
+  "branch": "task/profile",
+  "headUnchanged": true,
+  "commitPushMergeDeploy": false,
+  "backend": {
+    "passed": 77,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontendFull": {
+    "passed": 434,
+    "files": 76
+  },
+  "frontendFocused": {
+    "passed": 32,
+    "files": 5
+  },
+  "typecheck": "passed",
+  "build": "passed with existing landing-page style budget warning",
+  "formatting": "passed explicit paths",
+  "changedJavaScriptSyntax": "passed",
+  "gitWhitespace": "passed working tree and index",
+  "browser": "passed production build with fixture APIs; desktop/mobile screenshots visually inspected",
+  "disposableMongo": "stopped; test databases dropped; task scratch files retained outside repository",
+  "productionGates": "open; see final report"
+}

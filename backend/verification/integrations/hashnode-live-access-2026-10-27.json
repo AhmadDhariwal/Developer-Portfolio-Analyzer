@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-27T08:49:33.270Z",
+  "endpoint": "https://gql-beta.hashnode.com",
+  "config": {
+    "HASHNODE_PAT": true,
+    "HASHNODE_PUBLICATION_HOST": true,
+    "validation": {
+      "ok": true,
+      "missing": [],
+      "invalid": []
+    }
+  },
+  "outboundArticleQueries": 1,
+  "status": "BLOCKED",
+  "stages": {
+    "fetch": "BLOCKED",
+    "normalize": "BLOCKED",
+    "mongo": "BLOCKED",
+    "sync": "BLOCKED",
+    "downstream": "BLOCKED",
+    "disconnect": "NOT_RUN"
+  },
+  "databaseMutations": 0,
+  "redisReady": true,
+  "reason": "HASHNODE_PRO_REQUIRED",
+  "classifiedStatus": 403,
+  "upstreamHttpStatus": null,
+  "requiresPro": true
+}

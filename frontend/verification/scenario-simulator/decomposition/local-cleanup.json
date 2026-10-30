@@ -1,0 +1,57 @@
+{
+  "Removed": [
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\decompose.cjs",
+      "Length": 15801,
+      "Sha256": "69ae3a27ed2ab8e26f265bfddf30c7590e85397e7b7b302abad501dfdecb472c"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\refine-decomposition.cjs",
+      "Length": 3332,
+      "Sha256": "2bfda6698c9c49b7cd236e2d2bd750e4187e58a9c026567df6c633439b7c7deb"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\repartition.cjs",
+      "Length": 5635,
+      "Sha256": "c04c2bf6b480c0e1a59fde17acc85979d052a201b6fbdcd013651c222fd5749a"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\scenario-visual.cjs",
+      "Length": 6033,
+      "Sha256": "9b5be326f16cfe5bf0b8c37fec00a77de21b51ed1f49e26631b165f2bc6d329c"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\scenario-original\\scenario-simulator.component.html",
+      "Length": 79228,
+      "Sha256": "962d3dbd84a06408ffaa682dcd4c48ed27687ed6838026cbc5aa1b8b56d332bc"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\scenario-original\\scenario-simulator.component.scss",
+      "Length": 100808,
+      "Sha256": "4fcb16062772a169f88a511c52cbea35e54afcad3cd82a727ce0c3445e391945"
+    },
+    {
+      "Path": "C:\\Users\\Ahmad\\Documents\\Codex\\2026-10-25\\devinsight-ai-integrations-module-production-finalization\\work\\scenario-original\\scenario-simulator.component.ts",
+      "Length": 32528,
+      "Sha256": "db9d3b238e5d6ab0a9449feb82c9b8d93ceed7160f5afdf8cec726484cd66d6e"
+    }
+  ],
+  "Scope": "Seven exact files created by the visible decomposition/visual tool calls; original snapshots match captured source hashes.",
+  "RecursiveDeletion": false,
+  "BroaderCleanupReview": "Rejected; replaced with exact file and snapshot-hash verification.",
+  "FinalAngularBuildCacheFiles": [
+    {
+      "Path": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\decomposition\\runtime-temp\\vHqyDp1nh849SEWQbhezi\\client\\7f19fa1d13498fb632bd5aef893848e9a952c4aa",
+      "Length": 18755,
+      "CreatedUtc": "2026-10-25T20:08:59.346048Z",
+      "Sha256": "8F1CF74DC1E09182B897F03F3F29F19AFD0068D3F69D89C6A11DDD0B3B320E3D"
+    },
+    {
+      "Path": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\decomposition\\runtime-temp\\vHqyDp1nh849SEWQbhezi\\client\\dda3fbec1db28e87f9023c67c8e36bb7d7b03b62",
+      "Length": 581445,
+      "CreatedUtc": "2026-10-25T20:08:59.894563Z",
+      "Sha256": "641915119A3AD3A49443AD27013B28293A2FFD8AD182BE0471645DF5CB67D7A7"
+    }
+  ],
+  "TaskRuntimeFilesRemaining": 0
+}

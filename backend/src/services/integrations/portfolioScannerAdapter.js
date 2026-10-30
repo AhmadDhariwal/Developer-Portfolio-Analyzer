@@ -1,16 +1,33 @@
 const BaseIntegrationAdapter = require('./baseAdapter');
-const axios = require('axios');
+const governance = require('../integrationGovernanceService');
 const dns = require('node:dns').promises;
 const net = require('node:net');
 
 const isPrivateIp = (address) => {
   if (!address) return true;
   const normalized = String(address).toLowerCase();
-  if (normalized === '::1' || normalized === '::' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:')) return true;
-  if (net.isIP(normalized) !== 4) return false;
+  if (
+    normalized === '::1' ||
+    normalized === '::' ||
+    normalized.startsWith('fc') ||
+    normalized.startsWith('fd') ||
+    normalized.startsWith('fe80:')
+  )
+    return true;
+  if (net.isIP(normalized) === 6) return true; // Reject IPv6 and mapped forms until an audited public-range classifier exists.
+  if (net.isIP(normalized) !== 4) return true;
   const [a, b] = normalized.split('.').map(Number);
-  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) ||
-    (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || a >= 224;
+  return (
+    a === 10 ||
+    a === 127 ||
+    a === 0 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && (b === 168 || b === 0)) ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 198 && (b === 18 || b === 19)) ||
+    a >= 224
+  );
 };
 
 class PortfolioScannerAdapter extends BaseIntegrationAdapter {
@@ -25,7 +42,8 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Enter your portfolio website URL (e.g. https://yourname.dev) to scan technologies, responsiveness, and SEO signals.'
+      helpText:
+        'Enter a public portfolio URL to observe HTML technology hints, SEO metadata and request timing. This is not a browser responsiveness or performance audit.'
     };
   }
 
@@ -84,12 +102,18 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     }
 
     const hostname = parsed.hostname.toLowerCase().replace(/\.$/, '');
-    if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local')) {
+    if (
+      !hostname ||
+      hostname === 'localhost' ||
+      hostname.endsWith('.localhost') ||
+      hostname.endsWith('.local')
+    ) {
       throw new Error('Portfolio URL must use a public host.');
     }
 
     if (net.isIP(hostname)) {
-      if (isPrivateIp(hostname)) throw new Error('Portfolio URL must not use a private or local IP address.');
+      if (isPrivateIp(hostname))
+        throw new Error('Portfolio URL must not use a private or local IP address.');
       return parsed.toString();
     }
 
@@ -113,34 +137,39 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     let hasSSL = url.startsWith('https://');
 
     try {
-      const response = await axios.get(url, {
-        timeout: 12000,
-        // Do not follow unvalidated redirects; a public URL can otherwise redirect
-        // the scanner to a private network target after the initial DNS validation.
-        maxRedirects: 0,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; DevInsightBot/1.0; +https://devinsight.ai)',
-          Accept: 'text/html,application/xhtml+xml'
-        },
-        validateStatus: (status) => status < 600
-      });
+      const response = await governance.request(this.provider, (controls) =>
+        require('axios').get(url, {
+          ...controls,
+          lookup: (hostname, options, callback) => {
+            dns.lookup(hostname, { all: true, verbatim: true }).then(
+              (addresses) => {
+                if (!addresses.length || addresses.some(({ address }) => isPrivateIp(address)))
+                  return callback(Error('Unsafe portfolio address.'));
+                callback(
+                  null,
+                  options?.all ? addresses : addresses[0].address,
+                  addresses[0].family
+                );
+              },
+              () => callback(Error('Portfolio DNS failed.'))
+            );
+          },
+
+          // Do not follow unvalidated redirects; a public URL can otherwise redirect
+          // the scanner to a private network target after the initial DNS validation.
+          maxRedirects: 0,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; DevInsightBot/1.0; +https://devinsight.ai)',
+            Accept: 'text/html,application/xhtml+xml'
+          },
+          validateStatus: (status) => status >= 200 && status < 300
+        })
+      );
       statusCode = response.status;
       isReachable = statusCode >= 200 && statusCode < 400;
       html = String(response.data || '');
     } catch {
-      return {
-        isReachable: false,
-        statusCode: 0,
-        responseTimeMs: Date.now() - start,
-        technologies: [],
-        hasSSL,
-        hasMeta: false,
-        hasViewport: false,
-        hasOgTags: false,
-        wordCount: 0,
-        seoScore: 0,
-        performanceScore: 0
-      };
+      throw new Error('Portfolio request failed.');
     }
 
     const responseTimeMs = Date.now() - start;
@@ -157,7 +186,7 @@ class PortfolioScannerAdapter extends BaseIntegrationAdapter {
     const seoScore = Math.round((seoChecks.filter(Boolean).length / seoChecks.length) * 100);
 
     // Performance proxy: penalize slow response times
-    const performanceScore = Math.max(0, Math.min(100, Math.round(100 - (responseTimeMs / 100))));
+    const performanceScore = Math.max(0, Math.min(100, Math.round(100 - responseTimeMs / 100)));
 
     return {
       isReachable,

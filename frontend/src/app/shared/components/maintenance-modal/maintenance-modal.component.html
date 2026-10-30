@@ -1,8 +1,17 @@
-<div class="maintenance-backdrop" role="dialog" aria-modal="true" aria-labelledby="maintenance-title">
-  <div class="maintenance-modal">
-    <div class="maintenance-badge">Maintenance Mode</div>
-    <h2 id="maintenance-title">Application is under maintenance</h2>
-    <p>{{ message }}</p>
-    <button type="button" (click)="close.emit()">Go back to sign in</button>
+<app-ui-modal
+  [isOpen]="true"
+  title="Application is under maintenance"
+  size="sm"
+  [closeOnBackdrop]="false"
+  [closeOnEscape]="false"
+  [showCloseButton]="false">
+  <div class="maintenance-body">
+    <app-ui-badge variant="warning" size="sm">Maintenance Mode</app-ui-badge>
+    <p class="maintenance-text">{{ message }}</p>
   </div>
-</div>
+  <div modal-footer>
+    <app-ui-button variant="primary" size="md" [fullWidth]="true" (clicked)="close.emit()">
+      Go back to sign in
+    </app-ui-button>
+  </div>
+</app-ui-modal>

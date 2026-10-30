@@ -1,0 +1,197 @@
+<!-- Card 1: Overall Health Gauge -->
+<article class="telemetry-card health-card" [class]="getScoreHealthClass(integrationScore)">
+  <div class="card-head">
+    <span class="telemetry-label">System Health</span>
+    <span class="health-pill" [class]="getScoreHealthClass(integrationScore)">
+      {{ getScoreHealthLabel(integrationScore) }}
+    </span>
+  </div>
+
+  <div class="gauge-content">
+    <div class="gauge-ring-wrap">
+      <svg class="gauge-ring" viewBox="0 0 80 80">
+        <circle class="ring-bg" cx="40" cy="40" r="32" stroke-width="6" fill="none" />
+        <circle
+          class="ring-progress"
+          cx="40"
+          cy="40"
+          r="32"
+          stroke-width="6"
+          fill="none"
+          [style.stroke-dasharray]="'201.06'"
+          [style.stroke-dashoffset]="201.06 - (integrationScore / 100) * 201.06"
+        />
+      </svg>
+      <span class="gauge-value">{{ integrationScore }}%</span>
+    </div>
+
+    <div class="gauge-meta">
+      <span class="metric-highlight">{{ connectedCount }} of {{ integrations.length }} Active</span>
+      <span class="metric-sub">{{
+        disconnectedCount === 0
+          ? 'All nodes optimal'
+          : disconnectedCount + ' stream' + (disconnectedCount > 1 ? 's' : '') + ' available'
+      }}</span>
+      <span class="metric-trend">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        </svg>
+        Active readiness
+      </span>
+    </div>
+  </div>
+</article>
+
+<!-- Card 2: Connection Mix -->
+<article class="telemetry-card mix-card">
+  <div class="card-head">
+    <span class="telemetry-label">Connection Mix</span>
+    <span class="card-chip card-chip--cyan">{{ connectedCount }} Synced</span>
+  </div>
+
+  <div class="mix-bars">
+    <div class="mix-row">
+      <div class="mix-info">
+        <span>Code & Repos</span>
+        <span class="mix-val text-cyan">{{ getCategoryStats('code') }}</span>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill progress-fill--cyan"
+          [style.width.%]="getCategoryPercent('code')"
+        ></div>
+      </div>
+    </div>
+
+    <div class="mix-row">
+      <div class="mix-info">
+        <span>Competitive & Algo</span>
+        <span class="mix-val text-indigo">{{ getCategoryStats('algo') }}</span>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill progress-fill--indigo"
+          [style.width.%]="getCategoryPercent('algo')"
+        ></div>
+      </div>
+    </div>
+
+    <div class="mix-row">
+      <div class="mix-info">
+        <span>Authority & Social</span>
+        <span class="mix-val text-mint">{{ getCategoryStats('community') }}</span>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill progress-fill--mint"
+          [style.width.%]="getCategoryPercent('community')"
+        ></div>
+      </div>
+    </div>
+
+    <div class="mix-row">
+      <div class="mix-info">
+        <span>Certs & Writing</span>
+        <span class="mix-val text-amber">{{ getCategoryStats('knowledge') }}</span>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill progress-fill--amber"
+          [style.width.%]="getCategoryPercent('knowledge')"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-foot">
+    <span
+      >OAuth: <strong>{{ oauthCount }}</strong></span
+    >
+    <span class="divider-dot">·</span>
+    <span
+      >Manual: <strong>{{ manualCount }}</strong></span
+    >
+  </div>
+</article>
+
+<!-- Card 3: Portfolio Impact Lift -->
+<article class="telemetry-card impact-card">
+  <div class="card-head">
+    <span class="telemetry-label">Portfolio Impact</span>
+    <span class="card-chip card-chip--mint">NO FIXED LIFT</span>
+  </div>
+
+  <div class="impact-metrics">
+    <div class="impact-metric">
+      <div class="impact-metric__num">Policy</div>
+      <div class="impact-metric__label">Existing scoring rules</div>
+    </div>
+    <div class="impact-metric">
+      <div class="impact-metric__num text-mint">Public</div>
+      <div class="impact-metric__label">Unverified observations</div>
+    </div>
+  </div>
+
+  <div class="impact-bullets">
+    <div class="impact-bullet">
+      <span class="bullet-dot bullet-dot--cyan"></span>
+      <span>Feeds AI recommendations & developer signal graph</span>
+    </div>
+    <div class="impact-bullet">
+      <span class="bullet-dot bullet-dot--mint"></span>
+      <span>Public observations do not verify skills</span>
+    </div>
+  </div>
+</article>
+
+<!-- Card 4: Daemon Sync Stream -->
+<article class="telemetry-card daemon-card">
+  <div class="card-head">
+    <span class="telemetry-label">Ingestion Pipeline</span>
+    <span class="card-chip card-chip--live">
+      <span class="live-beacon"></span>
+      SCHEDULED SYNC
+    </span>
+  </div>
+
+  <div class="daemon-stats">
+    <div class="daemon-stat-item">
+      <span class="daemon-stat-label">Cache Latency</span>
+      <span class="daemon-stat-val text-cyan">Not measured</span>
+    </div>
+    <div class="daemon-stat-item">
+      <span class="daemon-stat-label">Active Nodes</span>
+      <span class="daemon-stat-val">{{ connectedCount }}/{{ integrations.length }} Active</span>
+    </div>
+    <div class="daemon-stat-item">
+      <span class="daemon-stat-label">Security</span>
+      <span class="daemon-stat-val text-indigo">Encrypted OAuth tokens</span>
+    </div>
+  </div>
+
+  <div class="daemon-foot">
+    <button type="button" class="btn btn-ghost-terminal" (click)="toggleTerminal.emit()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <polyline points="4 17 10 11 4 5" />
+        <line x1="12" y1="19" x2="20" y2="19" />
+      </svg>
+      <span>{{ isTerminalOpen ? 'Hide Ingestion Feed' : 'View Ingestion Feed' }}</span>
+    </button>
+  </div>
+</article>

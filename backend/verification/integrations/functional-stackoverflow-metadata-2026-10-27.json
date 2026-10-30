@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-27T14:09:40.357Z",
+  "requests": 1,
+  "userId": 22656,
+  "returnedFields": [
+    "badge_counts",
+    "answer_count",
+    "question_count",
+    "reputation",
+    "user_id",
+    "accept_rate",
+    "display_name"
+  ],
+  "acceptRateReturned": true,
+  "acceptRate": 86,
+  "reputation": 1530353,
+  "answers": 35806,
+  "questions": 56,
+  "badges": {
+    "bronze": 9364,
+    "silver": 9325,
+    "gold": 895
+  }
+}

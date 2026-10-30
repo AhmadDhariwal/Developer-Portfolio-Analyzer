@@ -1,0 +1,296 @@
+{
+  "status": "VERIFIED",
+  "infrastructure": "disposable localhost MongoDB 8.2 and Redis 7.2.7",
+  "controlledProviderCalls": 5,
+  "catalogRecords": 3,
+  "indexes": [
+    "_id_",
+    "canonicalId_1",
+    "expiresAt_1",
+    "publishedAt_-1_canonicalId_1",
+    "technologies_1_publishedAt_-1_canonicalId_1",
+    "searchTerms_1_publishedAt_-1_canonicalId_1",
+    "source_1_publishedAt_-1_canonicalId_1",
+    "category_1_publishedAt_-1_canonicalId_1"
+  ],
+  "plans": [
+    {
+      "search": "rust",
+      "extra": {},
+      "examined": 1,
+      "plan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "source": {
+                    "$eq": "Hacker News"
+                  }
+                },
+                {
+                  "source": {
+                    "$eq": "Dev.to"
+                  }
+                }
+              ]
+            },
+            {
+              "expiresAt": {
+                "$gt": "2026-10-23T19:06:01.800Z"
+              }
+            }
+          ]
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "technologies": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "indexName": "technologies_1_publishedAt_-1_canonicalId_1",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "technologies": ["technologies"],
+            "publishedAt": [],
+            "canonicalId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "technologies": ["[\"rust\", \"rust\"]"],
+            "publishedAt": [
+              "[new Date(1792782661800), new Date(1790190361800)]"
+            ],
+            "canonicalId": ["[MinKey, MaxKey]"]
+          }
+        }
+      }
+    },
+    {
+      "search": "compiler update",
+      "extra": {},
+      "examined": 1,
+      "plan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "source": {
+                    "$eq": "Hacker News"
+                  }
+                },
+                {
+                  "source": {
+                    "$eq": "Dev.to"
+                  }
+                }
+              ]
+            },
+            {
+              "expiresAt": {
+                "$gt": "2026-10-23T19:06:01.807Z"
+              }
+            }
+          ]
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "searchTerms": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "indexName": "searchTerms_1_publishedAt_-1_canonicalId_1",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "searchTerms": ["searchTerms"],
+            "publishedAt": [],
+            "canonicalId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "searchTerms": ["[\"compiler\", \"compiler\"]"],
+            "publishedAt": [
+              "[new Date(1792782661807), new Date(1790190361807)]"
+            ],
+            "canonicalId": ["[MinKey, MaxKey]"]
+          }
+        }
+      }
+    },
+    {
+      "search": "",
+      "extra": {
+        "source": "Hacker News"
+      },
+      "examined": 3,
+      "plan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "expiresAt": {
+            "$gt": "2026-10-23T19:06:01.812Z"
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "source": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "indexName": "source_1_publishedAt_-1_canonicalId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "source": [],
+            "publishedAt": [],
+            "canonicalId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "source": ["[\"Hacker News\", \"Hacker News\"]"],
+            "publishedAt": [
+              "[new Date(1792782661812), new Date(1790190361812)]"
+            ],
+            "canonicalId": ["[MinKey, MaxKey]"]
+          }
+        }
+      }
+    },
+    {
+      "search": "",
+      "extra": {
+        "category": "Frontend"
+      },
+      "examined": 0,
+      "plan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "source": {
+                    "$eq": "Hacker News"
+                  }
+                },
+                {
+                  "source": {
+                    "$eq": "Dev.to"
+                  }
+                }
+              ]
+            },
+            {
+              "expiresAt": {
+                "$gt": "2026-10-23T19:06:01.816Z"
+              }
+            }
+          ]
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "category": 1,
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "indexName": "category_1_publishedAt_-1_canonicalId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "category": [],
+            "publishedAt": [],
+            "canonicalId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "category": ["[\"Frontend\", \"Frontend\"]"],
+            "publishedAt": [
+              "[new Date(1792782661816), new Date(1790190361816)]"
+            ],
+            "canonicalId": ["[MinKey, MaxKey]"]
+          }
+        }
+      }
+    },
+    {
+      "search": "",
+      "extra": {},
+      "examined": 3,
+      "plan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "$and": [
+            {
+              "$or": [
+                {
+                  "source": {
+                    "$eq": "Hacker News"
+                  }
+                },
+                {
+                  "source": {
+                    "$eq": "Dev.to"
+                  }
+                }
+              ]
+            },
+            {
+              "expiresAt": {
+                "$gt": "2026-10-23T19:06:01.821Z"
+              }
+            }
+          ]
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "publishedAt": -1,
+            "canonicalId": 1
+          },
+          "indexName": "publishedAt_-1_canonicalId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "publishedAt": [],
+            "canonicalId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "publishedAt": [
+              "[new Date(1792782661821), new Date(1790190361821)]"
+            ],
+            "canonicalId": ["[MinKey, MaxKey]"]
+          }
+        }
+      }
+    }
+  ]
+}

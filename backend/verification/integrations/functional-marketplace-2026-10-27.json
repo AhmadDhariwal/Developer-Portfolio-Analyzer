@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-27T14:07:22.160Z",
+  "applicationDatabaseUsed": false,
+  "providerRequests": 0,
+  "checks": {},
+  "marketplace": [
+    {
+      "provider": "leetcode",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    },
+    {
+      "provider": "stackoverflow",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    },
+    {
+      "provider": "portfolio",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    },
+    {
+      "provider": "certifications",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    },
+    {
+      "provider": "devblogs",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    },
+    {
+      "provider": "kaggle",
+      "connected": true,
+      "ownerIsolated": true,
+      "disconnected": true
+    }
+  ],
+  "status": "FAIL",
+  "failure": {
+    "type": "AssertionError",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- false\n"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 112,
+    "productionDataUsed": false
+  }
+}

@@ -7,6 +7,7 @@ const HackerRankAdapter = require('./hackerrankAdapter');
 const PortfolioScannerAdapter = require('./portfolioScannerAdapter');
 const CertificationsAdapter = require('./certificationsAdapter');
 const DevBlogsAdapter = require('./devBlogsAdapter');
+const kaggleResources = require('./kaggleResources');
 
 const ADAPTERS = {
   github: new GitHubAdapter(),
@@ -20,14 +21,19 @@ const ADAPTERS = {
   devblogs: new DevBlogsAdapter()
 };
 
-const getAdapter = (provider) => ADAPTERS[String(provider || '').toLowerCase()] || null;
+const getAdapter = (provider) => {
+  if (typeof provider !== 'string') return null;
+  const key = provider.toLowerCase();
+  return Object.hasOwn(ADAPTERS, key) ? ADAPTERS[key] : null;
+};
 
 const marketplace = [
   // ── Existing integrations ──────────────────────────────────────────────
   {
     provider: 'linkedin',
     name: 'LinkedIn',
-    description: 'Import headline, endorsements, and networking signals.',
+    description:
+      'Connect LinkedIn OpenID basic profile and optional email claims. Endorsements and network analytics are unavailable.',
     category: 'Professional Network',
     authMode: 'oauth2'
   },
@@ -47,8 +53,15 @@ const marketplace = [
   },
   {
     provider: 'kaggle',
-    name: 'Kaggle',
-    description: 'Ingest ML competitions, notebooks, and dataset contributions.',
+    name: 'Kaggle Resources',
+    get available() {
+      return kaggleResources.validateConfig().ok;
+    },
+    get description() {
+      return this.available
+        ? 'Observe up to 20 public notebooks and 20 datasets per sync. Ownership unverified; no scoring impact. Counts describe a sample.'
+        : 'Configure KAGGLE_API_TOKEN to observe public resources. The separate Kaggle Linked Profile remains available.';
+    },
     category: 'Data Science',
     authMode: 'manual'
   },
@@ -56,35 +69,31 @@ const marketplace = [
   {
     provider: 'stackoverflow',
     name: 'Stack Overflow',
-    description: 'Fetch reputation, badges, and top tags to validate backend and problem-solving credibility.',
+    description:
+      'Fetch reputation, badges, and top tags to validate backend and problem-solving credibility.',
     category: 'Developer Community',
-    authMode: 'manual'
-  },
-  {
-    provider: 'hackerrank',
-    name: 'HackerRank',
-    description: 'Import certifications, coding badges, and skill scores to boost verified skills.',
-    category: 'Practice Platform',
     authMode: 'manual'
   },
   {
     provider: 'portfolio',
     name: 'Portfolio Website',
-    description: 'Scan your portfolio URL for technologies, SEO signals, and performance metrics.',
+    description:
+      'Observe public HTML, technology hints, SEO metadata and request timing. Scores are heuristic, not a browser performance audit.',
     category: 'Personal Branding',
     authMode: 'manual'
   },
   {
     provider: 'certifications',
     name: 'Certifications',
-    description: 'Add AWS, Google Cloud, Coursera, Udemy, or any certifications to improve your verified skills score.',
+    description:
+      'Record self-reported certification names; adding a name does not verify a credential.',
     category: 'Learning & Credentials',
     authMode: 'manual'
   },
   {
     provider: 'devblogs',
-    name: 'Dev Blogs',
-    description: 'Connect Dev.to or Hashnode to showcase technical writing and developer branding.',
+    name: 'Dev.to',
+    description: 'Observe up to 30 public Dev.to articles with devto@username.',
     category: 'Content & Branding',
     authMode: 'manual'
   }

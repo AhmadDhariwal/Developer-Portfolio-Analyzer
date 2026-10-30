@@ -1,4 +1,8 @@
-<output class="shared-loader" *ngIf="loading" [attr.aria-label]="label">
-  <span class="ring"></span>
-  <span>{{ label }}</span>
+<output
+  *ngIf="loading"
+  class="shared-loader"
+  [class]="'size-' + size + (fullscreen ? ' is-fullscreen' : '')"
+  [attr.aria-label]="label">
+  <span class="ring" aria-hidden="true"></span>
+  <span class="loader-text">{{ label }}</span>
 </output>

@@ -4,50 +4,61 @@ const recommendationSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   title: {
     type: String,
-    required: true
+    required: true,
   },
   priority: {
     type: String,
     enum: ['High', 'Medium', 'Low'],
-    default: 'Medium'
+    default: 'Medium',
   },
   priorityType: {
     type: String,
     enum: ['high', 'medium', 'low'],
-    default: 'medium'
+    default: 'medium',
   },
   category: {
     type: String,
-    default: 'Technology'
+    default: 'Technology',
   },
   icon: {
     type: String,
-    default: 'technology'
+    default: 'technology',
   },
   careerStack: {
     type: String,
     enum: ['Frontend', 'Backend', 'Full Stack', 'AI/ML'],
-    default: 'Full Stack'
+    default: 'Full Stack',
   },
   experienceLevel: {
     type: String,
     enum: ['Student', 'Intern', '0-1 years', '1-2 years', '2-3 years', '3-5 years', '5+ years'],
-    default: 'Student'
+    default: 'Student',
   },
-  techStack:       { type: [String], default: [] },
-  isNewTech:       { type: [String], default: [] },
+  techStack: { type: [String], default: [] },
+  isNewTech: { type: [String], default: [] },
   difficultyScore: { type: Number, min: 1, max: 10, default: 5 },
+  snapshotVersion: { type: String },
+  contextHash: { type: String },
+  result: { type: mongoose.Schema.Types.Mixed },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 recommendationSchema.index({ userId: 1, createdAt: -1 });
 recommendationSchema.index({ userId: 1, careerStack: 1, experienceLevel: 1, createdAt: -1 });
+recommendationSchema.index(
+  { userId: 1, snapshotVersion: 1, contextHash: 1 },
+  {
+    name: 'recommendation_evidence_snapshot',
+    unique: true,
+    partialFilterExpression: { snapshotVersion: 'recommendations-evidence-v1' },
+  },
+);
 
 module.exports = mongoose.model('Recommendation', recommendationSchema);

@@ -1,0 +1,104 @@
+<div class="section-head">
+  <div class="section-head__icon section-head__icon--green">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  </div>
+  <div class="section-head__text">
+    <h2>Notification Preferences</h2>
+    <p>Choose automated progress telemetry, skill alerts, and radar notifications</p>
+  </div>
+</div>
+
+<div class="notif-list">
+  <div class="notif-row">
+    <div class="notif-info">
+      <span class="notif-title">Weekly Score Report</span>
+      <span class="notif-desc"
+        >Receive an automated weekly digest of your portfolio metrics and code score changes</span
+      >
+    </div>
+    <button
+      class="toggle-btn"
+      type="button"
+      [class.active]="profile.notifications.weeklyScoreReport"
+      [class.toggle-btn--on]="profile.notifications.weeklyScoreReport"
+      title="Toggle weekly score report"
+      [attr.aria-label]="'Toggle weekly score report'"
+      (click)="toggleNotification('weeklyScoreReport')"
+    >
+      <span class="toggle-knob"></span>
+    </button>
+  </div>
+
+  <div class="notif-row">
+    <div class="notif-info">
+      <span class="notif-title">Skill Trend Alerts</span>
+      <span class="notif-desc"
+        >Get notified when high-growth skills align with identified gaps in your target career
+        stack</span
+      >
+    </div>
+    <button
+      class="toggle-btn"
+      type="button"
+      [class.active]="profile.notifications.skillTrendAlerts"
+      [class.toggle-btn--on]="profile.notifications.skillTrendAlerts"
+      title="Toggle skill trend alerts"
+      [attr.aria-label]="'Toggle skill trend alerts'"
+      (click)="toggleNotification('skillTrendAlerts')"
+    >
+      <span class="toggle-knob"></span>
+    </button>
+  </div>
+
+  <div class="notif-row">
+    <div class="notif-info">
+      <span class="notif-title">New Recommendations</span>
+      <span class="notif-desc"
+        >Receive algorithmic project suggestions, whitepapers, and resume bullet improvements</span
+      >
+    </div>
+    <button
+      class="toggle-btn"
+      type="button"
+      [class.active]="profile.notifications.newRecommendations"
+      [class.toggle-btn--on]="profile.notifications.newRecommendations"
+      title="Toggle new recommendations"
+      [attr.aria-label]="'Toggle new recommendations'"
+      (click)="toggleNotification('newRecommendations')"
+    >
+      <span class="toggle-knob"></span>
+    </button>
+  </div>
+
+  <div class="notif-row">
+    <div class="notif-info">
+      <span class="notif-title">Job Match Alerts</span>
+      <span class="notif-desc"
+        >Instant alerts when positions with 90%+ AST compatibility are indexed on the platform</span
+      >
+    </div>
+    <button
+      class="toggle-btn"
+      type="button"
+      [class.active]="profile.notifications.jobMatchAlerts"
+      [class.toggle-btn--on]="profile.notifications.jobMatchAlerts"
+      title="Toggle job match alerts"
+      [attr.aria-label]="'Toggle job match alerts'"
+      (click)="toggleNotification('jobMatchAlerts')"
+    >
+      <span class="toggle-knob"></span>
+    </button>
+  </div>
+</div>

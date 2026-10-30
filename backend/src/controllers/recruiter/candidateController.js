@@ -25,7 +25,9 @@ const getRecruiterCandidates = async (req, res) => {
 
 const getRecruiterCandidateById = async (req, res) => {
   try {
-    const candidate = await getCandidateById(req.params.id);
+    const candidate = await getCandidateById(req.params.id, {
+      organizationId: String(req.organizationId || '').trim()
+    });
 
     if (!candidate) {
       return res.status(404).json({ message: 'Candidate not found.' });

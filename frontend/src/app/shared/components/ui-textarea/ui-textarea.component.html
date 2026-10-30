@@ -1,0 +1,40 @@
+<div class="ui-textarea-group" [class]="'status-' + computedStatus + (disabled ? ' is-disabled' : '')">
+  <div class="ui-textarea-header" *ngIf="label || (showCharCount && maxLength)">
+    <label *ngIf="label" [for]="id" class="ui-textarea-label">
+      {{ label }}
+      <span *ngIf="required" class="required-indicator" aria-hidden="true">*</span>
+    </label>
+    <span *ngIf="showCharCount && maxLength" class="char-count" aria-live="polite">
+      {{ currentLength }} / {{ maxLength }}
+    </span>
+  </div>
+
+  <div class="ui-textarea-wrapper">
+    <textarea
+      [id]="id"
+      [name]="name || id"
+      [rows]="rows"
+      [attr.maxlength]="maxLength || null"
+      [value]="value"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [readOnly]="readonly"
+      [required]="required"
+      [style.resize]="resize"
+      [attr.aria-invalid]="computedStatus === 'error'"
+      [attr.aria-describedby]="describedById"
+      (input)="handleInput($event)"
+      (focus)="handleFocus($event)"
+      (blur)="handleBlur($event)"
+      class="ui-native-textarea"
+    ></textarea>
+  </div>
+
+  <div *ngIf="errorMessage" [id]="id + '-error'" class="ui-textarea-feedback error-text" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!errorMessage && hint" [id]="id + '-hint'" class="ui-textarea-feedback hint-text">
+    {{ hint }}
+  </div>
+</div>

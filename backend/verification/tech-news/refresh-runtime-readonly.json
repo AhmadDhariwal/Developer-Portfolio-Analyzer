@@ -1,0 +1,220 @@
+{
+  "checkedAt": "2026-10-23T11:12:03.382Z",
+  "applicationWrites": 0,
+  "ingestionEnabled": true,
+  "discoveryEnabled": true,
+  "redisAvailable": true,
+  "workerHeartbeatAt": "1792753918368",
+  "cache": {
+    "freshMs": 1800000,
+    "negativeMs": 300000,
+    "retentionMs": 86400000
+  },
+  "providers": {
+    "newsapi": {
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "gnews": {
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernews": {
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 11,
+      "monthlyUsed": 22,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T11:15:35.133Z"
+      }
+    },
+    "devto": {
+      "limits": {
+        "daily": 72,
+        "monthly": 2200,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 11,
+      "monthlyUsed": 22,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "interval",
+        "nextEligibleAt": "2026-10-23T11:15:35.139Z"
+      }
+    },
+    "reddit": {
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "hackernewssearch": {
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 3,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "githubreleases": {
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "githubadvisories": {
+      "limits": {
+        "daily": 6,
+        "monthly": 150,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "lobsters": {
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    },
+    "devtosearch": {
+      "limits": {
+        "daily": 12,
+        "monthly": 300,
+        "concurrency": 1,
+        "interval": 60000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 3,
+      "monthlyUsed": 4,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "kubernetesblog": {
+      "limits": {
+        "daily": 4,
+        "monthly": 100,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 1,
+      "monthlyUsed": 2,
+      "coolingDown": false,
+      "admission": {
+        "allowed": true,
+        "reason": "allowed",
+        "nextEligibleAt": null
+      }
+    },
+    "cloudflarechangelog": {
+      "limits": {
+        "daily": 0,
+        "monthly": 0,
+        "concurrency": 1,
+        "interval": 1200000
+      },
+      "quotaStoreAvailable": true,
+      "dailyUsed": 0,
+      "monthlyUsed": 0,
+      "coolingDown": false,
+      "admission": {
+        "allowed": false,
+        "reason": "budget_not_configured"
+      }
+    }
+  },
+  "query": {
+    "state": null,
+    "cacheVersion": null,
+    "lastSuccessfulCheckAt": null,
+    "matches": null
+  }
+}

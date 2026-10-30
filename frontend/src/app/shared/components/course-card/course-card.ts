@@ -1,73 +1,108 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Course, PLATFORM_COLOR_MAP } from '../../models/course.model';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import {
+  Course,
+  CourseActionState,
+  CourseProgressUpdate,
+  LearningStatus,
+  UserCourseProgress,
+  safeCourseUrl,
+} from '../../models/course.model';
 
 @Component({
   selector: 'app-course-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './course-card.html',
-  styleUrl: './course-card.scss'
+  styleUrl: './course-card.scss',
 })
-export class CourseCardComponent {
+export class CourseCardComponent implements OnChanges {
   @Input({ required: true }) course!: Course;
-
+  @Input() progress: UserCourseProgress | null = null;
+  @Input() action: CourseActionState = {};
+  @Input() learningReady = false;
+  @Output() progressChange = new EventEmitter<CourseProgressUpdate>();
+  @Output() remove = new EventEmitter<void>();
+  @Output() sprint = new EventEmitter<void>();
+  @Output() topicClick = new EventEmitter<string>();
   thumbnailError = false;
+  notes = '';
+  percent: number | null = null;
 
-  get platformColors() {
-    return PLATFORM_COLOR_MAP[this.course.platform] ?? PLATFORM_COLOR_MAP['Udemy'];
-  }
-
-  get starsArray(): number[] {
-    return Array.from({ length: 5 });
-  }
-
-  get levelClass(): string {
-    switch (this.course.level) {
-      case 'Beginner':
-        return 'level-beginner';
-      case 'Intermediate':
-        return 'level-intermediate';
-      case 'Advanced':
-        return 'level-advanced';
-      default:
-        return 'level-all';
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['course']?.previousValue?.id !== this.course.id) this.thumbnailError = false;
+    const previous = changes['progress']?.previousValue as UserCourseProgress | null;
+    if (
+      changes['progress'] &&
+      (!previous ||
+        previous.notes !== this.progress?.notes ||
+        previous.progressPercent !== this.progress?.progressPercent)
+    ) {
+      this.notes = this.progress?.notes || '';
+      this.percent = this.progress?.progressPercent ?? null;
     }
   }
-
-  get platformClass(): string {
-    return `platform-${(this.course.platform || 'other').toLowerCase().replace(/\s+/g, '')}`;
+  get externalUrl(): string | null {
+    return safeCourseUrl(this.course.url, this.course.platform);
   }
-
-  get relevanceLabel(): string {
-    const score = Number(this.course.relevanceScore || 0);
-    if (score >= 80) return 'Strong Match';
-    if (score >= 60) return 'Good Match';
-    return 'Relevant';
-  }
-
-  onThumbnailError(): void {
-    this.thumbnailError = true;
-  }
-
-  openCourse(): void {
-    if (!this.course.url || this.course.url === '#') {
-      return;
+  get thumbnail(): string | null {
+    try {
+      const url = new URL(this.course.thumbnail || '');
+      return url.protocol === 'https:' &&
+        ['i.ytimg.com', 'img.youtube.com'].includes(url.hostname) &&
+        !url.username &&
+        !url.password &&
+        !url.port
+        ? url.href
+        : null;
+    } catch {
+      return null;
     }
-
-    window.open(this.course.url, '_blank', 'noopener,noreferrer');
   }
-
-  formatReviews(count: number): string {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}m`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
-    return String(count);
+  get providerRating(): boolean {
+    return (
+      this.course.provenance?.ratingSource === 'provider-reviews' &&
+      this.course.rating != null &&
+      this.course.rating > 0
+    );
   }
-
-  getStarClass(index: number): string {
-    const rating = Number(this.course.rating || 0);
-    if (index < Math.floor(rating)) return 'star-full';
-    if (index < rating && rating % 1 >= 0.25) return 'star-half';
-    return 'star-empty';
+  get busy(): boolean {
+    return !this.learningReady || Boolean(this.action.pending);
+  }
+  get validProgress(): boolean {
+    return (
+      this.notes.length <= 2000 &&
+      (this.percent == null ||
+        (Number.isFinite(this.percent) && this.percent >= 0 && this.percent <= 100))
+    );
+  }
+  changeStatus(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const status = select.value as LearningStatus;
+    // Keep the visible status server-confirmed if the request fails.
+    select.value = this.progress?.status || 'saved';
+    this.progressChange.emit({ status });
+  }
+  saveDetails(): void {
+    if (!this.progress || !this.validProgress || this.busy) return;
+    this.progressChange.emit({
+      status: this.progress.status,
+      notes: this.notes,
+      progressPercent: this.percent,
+    });
+  }
+  onTopicClicked(topic: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.topicClick.emit(topic);
+  }
+  get levelBadgeClass(): string {
+    const lvl = (this.course.level || '').toLowerCase();
+    if (lvl.includes('begin')) return 'badge-level-beginner';
+    if (lvl.includes('inter')) return 'badge-level-intermediate';
+    if (lvl.includes('adv')) return 'badge-level-advanced';
+    return 'badge-level-general';
   }
 }

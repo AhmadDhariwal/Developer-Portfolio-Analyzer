@@ -1,0 +1,12 @@
+{
+  "scope": "Focused frontend verification using synthetic HTTP fixtures; no provider or backend traffic.",
+  "checks": [
+    "desktop-light: For You omits technology search and has both refresh actions",
+    "desktop-light: Explore search opts in; date controls and pages remain catalog-only",
+    "mobile-dark: For You omits technology search and has both refresh actions",
+    "mobile-dark: Explore search opts in; date controls and pages remain catalog-only"
+  ],
+  "screenshots": ["desktop-light.png", "mobile-dark.png"],
+  "errors": [],
+  "status": "VERIFIED"
+}

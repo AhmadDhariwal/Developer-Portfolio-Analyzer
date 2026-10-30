@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-14T12:18:27.564Z",
+  "configured": true,
+  "realNetwork": true,
+  "status": "available",
+  "reason": "",
+  "milliseconds": 1409,
+  "courses": [
+    {
+      "id": "yt_hlGoQC332VM",
+      "title": "SQL - Complete Course in 3 Hours | SQL One Shot using MySQL",
+      "url": "https://www.youtube.com/watch?v=hlGoQC332VM",
+      "rating": null,
+      "engagementScore": 4.5,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-10-14T12:18:27.527Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_HXV3zeQKqGY",
+      "title": "SQL Tutorial - Full Database Course for Beginners",
+      "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+      "rating": null,
+      "engagementScore": 4.6,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-10-14T12:18:27.536Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_yE6tIle64tU",
+      "title": "SQL Tutorial for Beginners (Complete Course using MySQL)",
+      "url": "https://www.youtube.com/watch?v=yE6tIle64tU",
+      "rating": null,
+      "engagementScore": 4.5,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-10-14T12:18:27.537Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    }
+  ],
+  "limitation": "Live YouTube read verified for the configured credential; course enrollment and provider uptime are not certified."
+}

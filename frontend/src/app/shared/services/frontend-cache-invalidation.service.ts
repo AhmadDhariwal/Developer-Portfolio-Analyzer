@@ -2,9 +2,23 @@ import { Injectable } from '@angular/core';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 type CacheOwner =
-  | 'github' | 'resume' | 'skill-gap' | 'recommendations' | 'scenario'
-  | 'news' | 'jobs' | 'courses' | 'public-portfolio' | 'career-sprint'
-  | 'weekly-reports' | 'profile' | 'career-profile' | 'interview-prep' | 'notifications' | 'support' | 'saved-previews';
+  | 'github'
+  | 'resume'
+  | 'skill-gap'
+  | 'recommendations'
+  | 'scenario'
+  | 'news'
+  | 'jobs'
+  | 'courses'
+  | 'public-portfolio'
+  | 'career-sprint'
+  | 'weekly-reports'
+  | 'profile'
+  | 'career-profile'
+  | 'interview-prep'
+  | 'notifications'
+  | 'support'
+  | 'saved-previews';
 
 @Injectable({ providedIn: 'root' })
 export class FrontendCacheInvalidationService {
@@ -17,14 +31,18 @@ export class FrontendCacheInvalidationService {
   }
 
   clearAllUserCaches(): void {
-    ['devinsight_profile_cache', 'devinsight_career_profile', 'devinsight_news_signal_hash',
-      'devinsight_news_bookmarks', 'devinsight_news_read_later']
-      .forEach((key) => localStorage.removeItem(key));
+    [
+      'devinsight_profile_cache',
+      'devinsight_career_profile',
+      'devinsight_news_signal_hash',
+      'devinsight_news_bookmarks',
+      'devinsight_news_read_later',
+    ].forEach((key) => localStorage.removeItem(key));
     this.removeStoragePrefixes([
       'resume_analysis_cache:',
       'skill_gap_cache:',
       'skill_gap_cache_index:',
-      'devinsight_public_jobs_state:'
+      // Account-scoped Jobs activity must survive logout until explicit migration.
     ]);
     this.clearGithubCaches();
     this.clearResumeCaches();
@@ -40,6 +58,10 @@ export class FrontendCacheInvalidationService {
     this.run('saved-previews');
   }
 
+  clearProfileCache(): void {
+    this.run('profile');
+  }
+
   clearDeveloperSignalCaches(): void {
     this.frontendCache.clearCurrentSignalHash();
     this.frontendCache.clearModule('developer-signals');
@@ -52,15 +74,24 @@ export class FrontendCacheInvalidationService {
     this.clearDashboardCaches();
     this.clearWeeklyReportCaches();
     this.clearCareerSprintCaches();
+    this.run('interview-prep');
   }
 
-  clearGithubCaches(): void { this.run('github'); }
-  clearResumeCaches(): void { this.run('resume'); }
+  clearGithubCaches(): void {
+    this.run('github');
+  }
+  clearResumeCaches(): void {
+    this.run('resume');
+  }
 
   clearDashboardCaches(): void {
     [
-      'dashboardSummary', 'dashboardContributions', 'dashboardLanguages',
-      'dashboardSkills', 'dashboardRecommendations', 'dashboardIntegrationAnalytics'
+      'dashboardSummary',
+      'dashboardContributions',
+      'dashboardLanguages',
+      'dashboardSkills',
+      'dashboardRecommendations',
+      'dashboardIntegrationAnalytics',
     ].forEach((module) => this.frontendCache.clearModule(module));
   }
 
@@ -75,22 +106,35 @@ export class FrontendCacheInvalidationService {
     this.run('recommendations');
   }
 
-  clearScenarioCaches(): void { this.run('scenario'); }
+  clearScenarioCaches(): void {
+    this.run('scenario');
+  }
 
   clearNewsCaches(): void {
     ['news', 'news-feed', 'news-saved'].forEach((module) => this.frontendCache.clearModule(module));
     this.run('news');
   }
 
-  clearJobsCaches(): void { this.run('jobs'); }
-  clearCoursesCaches(): void { this.run('courses'); }
-  clearPublicPortfolioCaches(): void { this.run('public-portfolio'); }
-  clearCareerSprintCaches(): void { this.run('career-sprint'); }
-  clearSupportCaches(): void { this.run('support'); }
+  clearJobsCaches(): void {
+    this.run('jobs');
+  }
+  clearCoursesCaches(): void {
+    this.run('courses');
+  }
+  clearPublicPortfolioCaches(): void {
+    this.run('public-portfolio');
+  }
+  clearCareerSprintCaches(): void {
+    this.run('career-sprint');
+  }
+  clearSupportCaches(): void {
+    this.run('support');
+  }
 
   clearWeeklyReportCaches(): void {
-    ['weeklyReports', 'weeklyReports:latest', 'weeklyReports:history']
-      .forEach((module) => this.frontendCache.clearModule(module));
+    ['weeklyReports', 'weeklyReports:latest', 'weeklyReports:history'].forEach((module) =>
+      this.frontendCache.clearModule(module),
+    );
     this.run('weekly-reports');
   }
 

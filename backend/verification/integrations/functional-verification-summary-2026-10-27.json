@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-27",
+  "branch": "task/integrations",
+  "target": "not applicable",
+  "realProviderRequestsThisTask": 2,
+  "freshRequests": [
+    "Dev.to articles for swyx, one bounded page of 30",
+    "Stack Exchange user 22656, one optional-metadata read"
+  ],
+  "applicationDatabaseUsed": false,
+  "liveOAuth": "BLOCKED: no interactive consent authorization supplied",
+  "focusedBackendTests": {
+    "pass": 22,
+    "fail": 0
+  },
+  "freshBrowserSession": false,
+  "frontendBuild": "Prior baseline build retained; final concurrent UI edits not validated by this task",
+  "evidence": [
+    {
+      "file": "functional-downstream-2026-10-27.json",
+      "status": "PASS per-provider",
+      "providers": [
+        {
+          "provider": "leetcode",
+          "status": "PASS",
+          "stages": {
+            "connect": "PASS",
+            "extractionPersistence": "PASS",
+            "syncDuplicatePrevention": "PASS",
+            "downstream": "PASS",
+            "disconnect": "PASS"
+          }
+        },
+        {
+          "provider": "stackoverflow",
+          "status": "PASS",
+          "stages": {
+            "connect": "PASS",
+            "extractionPersistence": "PASS",
+            "syncDuplicatePrevention": "PASS",
+            "downstream": "PASS",
+            "disconnect": "PASS"
+          }
+        },
+        {
+          "provider": "portfolio",
+          "status": "PASS",
+          "stages": {
+            "connect": "PASS",
+            "extractionPersistence": "PASS",
+            "syncDuplicatePrevention": "PASS",
+            "downstream": "PASS",
+            "disconnect": "PASS"
+          }
+        },
+        {
+          "provider": "certifications",
+          "status": "PASS",
+          "stages": {
+            "connect": "PASS",
+            "extractionPersistence": "PASS",
+            "syncDuplicatePrevention": "PASS",
+            "backgroundSync": "PASS",
+            "downstream": "PASS",
+            "disconnect": "PASS"
+          }
+        },
+        {
+          "provider": "devblogs",
+          "status": "PASS",
+          "stages": {
+            "connect": "PASS",
+            "extractionPersistence": "PASS",
+            "syncDuplicatePrevention": "PASS",
+            "downstream": "PASS",
+            "disconnect": "PASS"
+          }
+        }
+      ]
+    },
+    {
+      "file": "functional-gaps-final-2026-10-27.json",
+      "status": "PASS",
+      "checks": {
+        "upstashPing": "PASS",
+        "devtoAuthorMetadata": "PASS: replay of retained one-request author metadata",
+        "dashboardResourceMetrics": "PASS: no fabricated scored analytics for resource-only connection",
+        "ownerIsolation": "PASS: other user reads/disconnect do not reveal or mutate owner observations",
+        "backgroundSync": "PASS: real scheduler, Mongo lease/commit and retained response replay",
+        "concurrentSyncDisconnect": "PASS: one lease; disconnected observation cannot be resurrected; scored history unchanged",
+        "controlOutage": "PASS: injected Redis unavailability blocks mutation; disconnect remains available",
+        "retiredIngestion": "PASS: Hashnode sync and HackerRank extraction rejected without HTTP",
+        "sharedAdmission": "PASS: real Upstash admission rejects second per-account request; synthetic keys expire normally",
+        "sharedCache": "PASS: real Upstash round-trip; task key expires after 30 seconds"
+      }
+    },
+    {
+      "file": "functional-controls-2026-10-27.json",
+      "status": "PASS",
+      "checks": {
+        "retiredIngestion": "PASS: no HTTP; sanitized failure and scheduled retry; prior insight preserved",
+        "sharedAdmission": "PASS: real Upstash Lua/counters deny the second per-account request; unique synthetic provider, no quota resets",
+        "upstashCacheRoundTrip": "PASS at bounded 1000ms; unique task key expires after 30 seconds",
+        "safeDisconnect": "PASS: owned Mongo transaction independent of Redis controls"
+      }
+    },
+    {
+      "file": "functional-marketplace-final-2026-10-27.json",
+      "status": "PASS",
+      "checks": {
+        "marketplaceStates": "PASS: authenticated isolated-user HTTP APIs for all six providers; no-store responses, owner isolation, retired-provider availability and disconnect"
+      }
+    }
+  ],
+  "taskOwnedFiles": [
+    "backend/src/controllers/dashboardcontroller.js",
+    "backend/src/scripts/verifyIntegrationsFunctionalGaps.js",
+    "backend/src/scripts/verifyIntegrationsControlGaps.js",
+    "backend/src/tests/integrationResourceAnalytics.test.js",
+    "backend/src/tests/integrationsRecordedData.test.js",
+    "backend/verification/integrations/REAL-PROVIDER-ACCEPTANCE.md",
+    "backend/verification/integrations/functional-controls-2026-10-27.json",
+    "backend/verification/integrations/functional-downstream-2026-10-27.json",
+    "backend/verification/integrations/functional-gaps-2026-10-27.json",
+    "backend/verification/integrations/functional-gaps-verified-2026-10-27.json",
+    "backend/verification/integrations/functional-gaps-final-2026-10-27.json",
+    "backend/verification/integrations/functional-marketplace-2026-10-27.json",
+    "backend/verification/integrations/functional-marketplace-final-2026-10-27.json",
+    "backend/verification/integrations/functional-stackoverflow-metadata-2026-10-27.json",
+    "backend/verification/integrations/functional-verification-summary-2026-10-27.json",
+    "backend/verification/integrations/FUNCTIONAL-ACCEPTANCE-2026-10-27.md"
+  ],
+  "concurrentChangePreserved": "backend/src/services/integrations/index.js: HackerRank card removal; not edited/formatted/staged by this task",
+  "sourceHashes": {
+    "backend/src/controllers/dashboardcontroller.js": "ed98af5aa1b290c8a6cfe4e687714be36698769def9d004086a2f4d6149c82d6",
+    "backend/src/scripts/verifyIntegrationsFunctionalGaps.js": "8f06f9b6b31e236f17f53fb006b5f671e35247d2242cc25d62e47568d9feca24",
+    "backend/src/scripts/verifyIntegrationsControlGaps.js": "c3f9978106cd5cbc8d3f23bb637a6b519c317c1b3f0bb22f2beaf9641e2c06b4",
+    "backend/src/tests/integrationResourceAnalytics.test.js": "7f3eaa89b09bcff15764b83a08366725ff87628aa06ee68d05e0bffe2a65af54",
+    "backend/src/tests/integrationsRecordedData.test.js": "eac817bf0dc69e6a69efa25af301902d031b39c54059add1950c3a1cc1d8d58c",
+    "backend/src/services/integrations/index.js": "c366b049d00b80e5b1574182207081e3bd4e02c1c343cec85f5309245f63719b"
+  },
+  "concurrentChangesPreserved": [
+    "backend/src/services/integrations/index.js",
+    "backend/src/tests/integrationsAdapters.test.js",
+    "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.html",
+    "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.ts",
+    "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.scss"
+  ]
+}

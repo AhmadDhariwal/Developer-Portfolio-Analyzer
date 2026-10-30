@@ -1,0 +1,14 @@
+{
+  "source": {
+    "format": "png",
+    "bytes": 53970,
+    "width": 2400,
+    "height": 1600
+  },
+  "processed": {
+    "format": "webp",
+    "bytes": 400,
+    "width": 512,
+    "height": 341
+  }
+}

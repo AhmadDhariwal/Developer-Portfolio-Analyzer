@@ -1,0 +1,17 @@
+{
+  "/api": {
+    "target": "http://127.0.0.1:5017",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/uploads": {
+    "target": "http://127.0.0.1:5017",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/metrics": {
+    "target": "http://127.0.0.1:5017",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

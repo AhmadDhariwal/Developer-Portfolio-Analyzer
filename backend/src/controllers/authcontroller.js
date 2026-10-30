@@ -1,3 +1,5 @@
+const resetChallenge = require('../utils/passwordResetChallenge');
+const developerContext = require('../services/developerContextService');
 const User = require('../models/user');
 const PendingRegistration = require('../models/pendingRegistration');
 const Invitation = require('../models/invitation');
@@ -22,25 +24,29 @@ const {
   cookieOptions
 } = require('../services/oauthAuthService');
 
+const dummyPasswordHash = bcrypt.hashSync(
+  require('node:crypto').randomBytes(32).toString('hex'),
+  10
+);
+
 const getSecurityConfig = () => getSettingsSnapshotSync()?.security || {};
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: getSecurityConfig().jwtExpiresIn || process.env.JWT_EXPIRES_IN || '20h',
-    algorithm: 'HS256',
-    issuer:    process.env.JWT_ISSUER    || 'devinsight-api',
-    audience:  process.env.JWT_AUDIENCE  || 'devinsight-web'
-  });
+const generateToken = require('../utils/authSessionToken').sign;
 
-const normalizeEmail       = (v) => String(v || '').trim().toLowerCase();
-const normalizePhone       = (v) => String(v || '').trim();
+const normalizeEmail = (v) =>
+  String(v || '')
+    .trim()
+    .toLowerCase();
+const normalizePhone = (v) => String(v || '').trim();
 const normalizeCountryCode = (v) => String(v || '').trim();
-const normalizeOtpType     = (v) => (String(v || '').toLowerCase() === 'phone' ? 'phone' : 'email');
-const normalizePurpose     = (v) => (String(v || '').toLowerCase() === 'forgot-password' ? 'forgot-password' : 'signup');
-const toPublicRole         = (v) => (String(v || '').toLowerCase() === 'user' ? 'developer' : String(v || 'developer'));
-const normalizeLinkedIn    = (v) => String(v || '').trim();
+const normalizeOtpType = (v) => (String(v || '').toLowerCase() === 'phone' ? 'phone' : 'email');
+const normalizePurpose = (v) =>
+  String(v || '').toLowerCase() === 'forgot-password' ? 'forgot-password' : 'signup';
+const toPublicRole = (v) =>
+  String(v || '').toLowerCase() === 'user' ? 'developer' : String(v || 'developer');
+const normalizeLinkedIn = (v) => String(v || '').trim();
 
 const frontendOrigin = () => {
   try {
@@ -55,7 +61,8 @@ const frontendOrigin = () => {
 const buildAuthPayload = async (user) => {
   let organizationName = '';
   if (user.organizationId) {
-    organizationName = (await Organization.findById(user.organizationId).select('name').lean())?.name || '';
+    organizationName =
+      (await Organization.findById(user.organizationId).select('name').lean())?.name || '';
   }
   return {
     _id: user.id,
@@ -70,13 +77,13 @@ const buildAuthPayload = async (user) => {
     linkedin: user.linkedin || '',
     profileCompleted: isRecruiterProfileComplete(user),
     githubUsername: user.githubUsername || '',
-    activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+    activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
     avatar: user.avatar || user.avatarUrl || '',
     careerStack: user.careerStack,
     experienceLevel: user.experienceLevel,
-    activeCareerStack: user.activeCareerStack || user.careerStack,
-    activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
-    token: generateToken(user._id)
+    activeCareerStack: developerContext.resolveCareerStack(user),
+    activeExperienceLevel: developerContext.resolveExperienceLevel(user),
+    token: generateToken(user)
   };
 };
 
@@ -86,9 +93,12 @@ const completeOAuthLogin = async (identity) => {
     $or: [{ email: identity.email }, { [providerField]: identity.providerId }]
   });
 
-  if (user?.isActive === false) throw Object.assign(new Error('Account access is disabled.'), { statusCode: 403 });
+  if (user?.isActive === false)
+    throw Object.assign(new Error('Account access is disabled.'), { statusCode: 403 });
   if (user?.[providerField] && user[providerField] !== identity.providerId) {
-    throw Object.assign(new Error('Provider account is already linked differently.'), { statusCode: 409 });
+    throw Object.assign(new Error('Provider account is already linked differently.'), {
+      statusCode: 409
+    });
   }
 
   if (!user) {
@@ -138,7 +148,9 @@ const startOAuth = (provider) => (req, res) => {
     res.cookie(authorization.cookieName, authorization.state, authorization.cookieOptions);
     return res.redirect(302, authorization.authorizationUrl);
   } catch (error) {
-    return res.status(error.statusCode || 500).json({ message: 'OAuth sign-in is unavailable.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: 'OAuth sign-in is unavailable.' });
   }
 };
 
@@ -147,13 +159,20 @@ const oauthCallback = (provider) => async (req, res) => {
   try {
     const code = String(req.query.code || '');
     const state = String(req.query.state || '');
-    if (!code) throw Object.assign(new Error('Authorization code is missing.'), { statusCode: 400 });
+    if (!code)
+      throw Object.assign(new Error('Authorization code is missing.'), { statusCode: 400 });
     validateState(provider, state, req.headers.cookie || '');
     res.clearCookie(stateCookieName(provider), clearOptions);
-    const identity = provider === 'google' ? await exchangeGoogleIdentity(code) : await exchangeGitHubIdentity(code);
+    const identity =
+      provider === 'google'
+        ? await exchangeGoogleIdentity(code)
+        : await exchangeGitHubIdentity(code);
     const payload = await completeOAuthLogin(identity);
     const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    return res.redirect(302, `${frontendOrigin()}/auth/login#oauth=${encodeURIComponent(encoded)}`);
+    return res.redirect(
+      302,
+      `${frontendOrigin()}/auth/login#oauth=${encodeURIComponent(encoded)}`
+    );
   } catch (error) {
     res.clearCookie(stateCookieName(provider), clearOptions);
     const reason = error.statusCode === 403 ? 'account_unavailable' : 'oauth_failed';
@@ -173,8 +192,12 @@ const isRecruiterProfileComplete = (user) => {
 
   const hasName = Boolean(String(user.name || '').trim());
   const hasPhone = Boolean(normalizePhone(user.phoneNumber));
-  const hasProfessionalLink = Boolean(normalizeLinkedIn(user.linkedin) || String(user.githubUsername || '').trim());
-  const hasBasicProfile = Boolean(String(user.jobTitle || '').trim() || String(user.bio || '').trim());
+  const hasProfessionalLink = Boolean(
+    normalizeLinkedIn(user.linkedin) || String(user.githubUsername || '').trim()
+  );
+  const hasBasicProfile = Boolean(
+    String(user.jobTitle || '').trim() || String(user.bio || '').trim()
+  );
 
   return hasName && hasPhone && hasProfessionalLink && hasBasicProfile;
 };
@@ -206,7 +229,7 @@ const getUserByIdentifier = async ({ email, countryCode, phoneNumber }) => {
   const normalizedEmail = normalizeEmail(email);
   if (normalizedEmail) return User.findOne({ email: normalizedEmail });
   const phone = normalizePhone(phoneNumber);
-  const code  = normalizeCountryCode(countryCode);
+  const code = normalizeCountryCode(countryCode);
   if (!phone || !code) return null;
   return User.findOne({ phoneNumber: phone, countryCode: code });
 };
@@ -221,16 +244,45 @@ const sendOtpToUser = async ({ user, type, purpose }) => {
   return expiresAt;
 };
 
+// Keep account recovery handles opaque while retaining the existing string field.
+// Delivery failures must not turn the response into an account-existence oracle.
+const beginPasswordRecovery = async (user, type) => {
+  const expiresAt = new Date(
+    Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 5) * 60000
+  );
+  const response = {
+    message: 'If the account is eligible, a password reset code has been sent.',
+    userId: resetChallenge.create(user?._id, expiresAt),
+    expiresAt
+  };
+  const publicDeadline = new Promise((resolve) => setTimeout(resolve, 750));
+  if (
+    user &&
+    user.isActive !== false &&
+    (type !== 'phone' || (user.phoneNumber && user.countryCode))
+  ) {
+    const delivery = sendOtpToUser({ user, type, purpose: 'forgot-password' }).catch(() => {
+      console.warn('Password recovery delivery unavailable.');
+    });
+    // Neither existence nor SMTP latency controls public response timing.
+    // Delivery may finish after the fixed public deadline; OTP state remains in Mongo.
+    await Promise.race([delivery, publicDeadline]);
+  }
+  await publicDeadline;
+  return response;
+};
+
 // ── Register ──────────────────────────────────────────────────────────────
 // @desc  Start registration — store pending record, send OTP. NO user created yet.
 // @route POST /api/auth/register
 // @access Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, githubUsername, phoneNumber, countryCode, isPublic } = req.body;
+    const { name, email, password, githubUsername, phoneNumber, countryCode, isPublic } =
+      req.body;
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phoneNumber);
-    const normalizedCode  = normalizeCountryCode(countryCode);
+    const normalizedCode = normalizeCountryCode(countryCode);
 
     if (!name || !normalizedEmail || !password || !githubUsername) {
       return res.status(400).json({ message: 'Please add all fields' });
@@ -240,7 +292,9 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: passwordPolicy.message });
     }
     if ((normalizedPhone && !normalizedCode) || (!normalizedPhone && normalizedCode)) {
-      return res.status(400).json({ message: 'Country code and phone number must be provided together.' });
+      return res
+        .status(400)
+        .json({ message: 'Country code and phone number must be provided together.' });
     }
 
     // Block if a verified user already exists with this email
@@ -250,12 +304,14 @@ const registerUser = async (req, res) => {
     }
 
     // Hash password
-    const salt           = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Generate OTP
-    const otp       = generateOtp();
-    const expiresAt = new Date(Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000);
+    const otp = generateOtp();
+    const expiresAt = new Date(
+      Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000
+    );
 
     // Upsert pending registration (replace if they're retrying)
     const pending = await PendingRegistration.findOneAndUpdate(
@@ -286,8 +342,8 @@ const registerUser = async (req, res) => {
 
     return res.status(201).json({
       pendingId: pending._id,
-      email:     normalizedEmail,
-      otpType:   pending.otpType,
+      email: normalizedEmail,
+      otpType: pending.otpType,
       expiresAt,
       requiresOtp: true
     });
@@ -305,14 +361,18 @@ const loginUser = async (req, res) => {
     const normalizedEmail = normalizeEmail(email);
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
-    if (user?.isActive === false) {
-      return res.status(403).json({ message: 'Your access has been revoked by Super Admin. Please contact support.' });
-    }
-
-    if (user?.password && (await bcrypt.compare(password, user.password))) {
-      user.activeGithubUsername  = user.githubUsername;
-      user.activeResumeFileId    = user.defaultResumeFileId || null;
-      user.activeCareerStack     = user.careerStack     || 'Full Stack';
+    const validPassword = await bcrypt.compare(
+      typeof password === 'string' ? password : '',
+      user?.password || dummyPasswordHash
+    );
+    if (user?.password && validPassword) {
+      if (user.isActive === false)
+        return res.status(403).json({
+          message: 'Your access has been revoked by Super Admin. Please contact support.'
+        });
+      user.activeGithubUsername = user.githubUsername;
+      user.activeResumeFileId = user.defaultResumeFileId || null;
+      user.activeCareerStack = user.careerStack || 'Full Stack';
       user.activeExperienceLevel = user.experienceLevel || 'Student';
       await user.save();
       clearAuthFailures(req);
@@ -325,25 +385,25 @@ const loginUser = async (req, res) => {
       }
 
       return res.json({
-        _id:                  user.id,
-        name:                 user.name,
-        email:                user.email,
-        role:                 toPublicRole(user.role),
-        organizationId:       user.organizationId || null,
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: toPublicRole(user.role),
+        organizationId: user.organizationId || null,
         organizationName,
-        isActive:             user.isActive !== false,
-        isPublic:             Boolean(user.isPublic),
-        phoneNumber:          user.phoneNumber || '',
-        linkedin:             user.linkedin || '',
-        profileCompleted:     isRecruiterProfileComplete(user),
-        githubUsername:       user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
-        avatar:               user.avatar || '',
-        careerStack:          user.careerStack,
-        experienceLevel:      user.experienceLevel,
-        activeCareerStack:    user.activeCareerStack    || user.careerStack,
-        activeExperienceLevel:user.activeExperienceLevel|| user.experienceLevel,
-        token:                generateToken(user._id)
+        isActive: user.isActive !== false,
+        isPublic: Boolean(user.isPublic),
+        phoneNumber: user.phoneNumber || '',
+        linkedin: user.linkedin || '',
+        profileCompleted: isRecruiterProfileComplete(user),
+        githubUsername: user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user),
+        avatar: user.avatar || '',
+        careerStack: user.careerStack,
+        experienceLevel: user.experienceLevel,
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
+        token: generateToken(user)
       });
     }
 
@@ -360,7 +420,7 @@ const loginUser = async (req, res) => {
 const sendOtp = async (req, res) => {
   try {
     const { userId, pendingId, email, phoneNumber, countryCode, type, purpose } = req.body;
-    const otpType   = normalizeOtpType(type);
+    const otpType = normalizeOtpType(type);
     const otpPurpose = normalizePurpose(purpose);
 
     // ── Resend for pending signup ──────────────────────────────────────────
@@ -373,14 +433,18 @@ const sendOtp = async (req, res) => {
         pending = await PendingRegistration.findOne({ email: normalizeEmail(email) });
       }
       if (!pending) {
-        return res.status(404).json({ message: 'Pending registration not found. Please sign up again.' });
+        return res
+          .status(404)
+          .json({ message: 'Pending registration not found. Please sign up again.' });
       }
 
-      const otp       = generateOtp();
-      const expiresAt = new Date(Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000);
-      pending.otp         = hashValue(otp);
+      const otp = generateOtp();
+      const expiresAt = new Date(
+        Date.now() + Number(getSecurityConfig().otpExpiryMinutes || 10) * 60 * 1000
+      );
+      pending.otp = hashValue(otp);
       pending.otpAttempts = 0;
-      pending.expiresAt   = expiresAt;
+      pending.expiresAt = expiresAt;
       await pending.save();
 
       if (pending.otpType === 'phone' && pending.phoneNumber) {
@@ -390,24 +454,16 @@ const sendOtp = async (req, res) => {
       }
 
       return res.json({
-        message:   `OTP resent via ${pending.otpType}.`,
+        message: `OTP resent via ${pending.otpType}.`,
         pendingId: pending._id,
         expiresAt
       });
     }
 
-    // ── Forgot-password / other purposes — use real User ──────────────────
-    let user = null;
-    if (userId) user = await User.findById(userId);
-    if (!user)  user = await getUserByIdentifier({ email, phoneNumber, countryCode });
-    if (!user)  return res.status(404).json({ message: 'User not found.' });
-
-    if (otpType === 'phone' && (!user.phoneNumber || !user.countryCode)) {
-      return res.status(400).json({ message: 'Phone OTP is unavailable for this account.' });
-    }
-
-    const expiresAt = await sendOtpToUser({ user, type: otpType, purpose: otpPurpose });
-    return res.json({ message: `OTP sent via ${otpType}.`, userId: user._id, expiresAt });
+    const resolvedId = resetChallenge.resolve(userId);
+    let user = resolvedId ? await User.findById(resolvedId) : null;
+    if (!user) user = await getUserByIdentifier({ email, phoneNumber, countryCode });
+    return res.json(await beginPasswordRecovery(user, otpType));
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Failed to send OTP.' });
   }
@@ -419,7 +475,7 @@ const sendOtp = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { userId, pendingId, otp, type, purpose } = req.body;
-    const otpType    = normalizeOtpType(type);
+    const otpType = normalizeOtpType(type);
     const otpPurpose = normalizePurpose(purpose);
 
     if (!otp) {
@@ -435,7 +491,9 @@ const verifyOtp = async (req, res) => {
         pending = await PendingRegistration.findById(userId).catch(() => null);
       }
       if (!pending) {
-        return res.status(404).json({ message: 'Registration session not found or expired. Please sign up again.' });
+        return res.status(404).json({
+          message: 'Registration session not found or expired. Please sign up again.'
+        });
       }
 
       // Check expiry
@@ -448,7 +506,9 @@ const verifyOtp = async (req, res) => {
       const maxOtpAttempts = Number(getSecurityConfig().otpMaxAttempts || 3);
       if (pending.otpAttempts >= maxOtpAttempts) {
         await PendingRegistration.deleteOne({ _id: pending._id });
-        return res.status(400).json({ message: 'Maximum OTP attempts reached. Please sign up again.' });
+        return res
+          .status(400)
+          .json({ message: 'Maximum OTP attempts reached. Please sign up again.' });
       }
 
       // Verify OTP
@@ -457,46 +517,47 @@ const verifyOtp = async (req, res) => {
         await pending.save();
         const remaining = maxOtpAttempts - pending.otpAttempts;
         return res.status(400).json({
-          message: remaining > 0
-            ? `Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
-            : 'Invalid OTP. No attempts remaining.'
+          message:
+            remaining > 0
+              ? `Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+              : 'Invalid OTP. No attempts remaining.'
         });
       }
 
       // OTP correct — create the real user now
       const user = await User.create({
-        name:                 pending.name,
-        email:                pending.email,
-        password:             pending.hashedPassword,
-        githubUsername:       pending.githubUsername,
-        phoneNumber:          pending.phoneNumber,
-        countryCode:          pending.countryCode,
+        name: pending.name,
+        email: pending.email,
+        password: pending.hashedPassword,
+        githubUsername: pending.githubUsername,
+        phoneNumber: pending.phoneNumber,
+        countryCode: pending.countryCode,
         activeGithubUsername: pending.githubUsername,
-        activeCareerStack:    'Full Stack',
-        activeExperienceLevel:'Student',
-        isPublic:             Boolean(pending.isPublic),
-        isVerified:           true
+        activeCareerStack: 'Full Stack',
+        activeExperienceLevel: 'Student',
+        isPublic: Boolean(pending.isPublic),
+        isVerified: true
       });
 
       // Clean up pending record
       await PendingRegistration.deleteOne({ _id: pending._id });
 
       return res.json({
-        message:              'Account verified successfully.',
-        _id:                  user.id,
-        name:                 user.name,
-        email:                user.email,
-        role:                 toPublicRole(user.role),
-        organizationId:       user.organizationId || null,
-        isPublic:             Boolean(user.isPublic),
-        githubUsername:       user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
-        avatar:               user.avatar || '',
-        careerStack:          user.careerStack,
-        experienceLevel:      user.experienceLevel,
-        activeCareerStack:    user.activeCareerStack    || user.careerStack,
-        activeExperienceLevel:user.activeExperienceLevel|| user.experienceLevel,
-        token:                generateToken(user._id)
+        message: 'Account verified successfully.',
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: toPublicRole(user.role),
+        organizationId: user.organizationId || null,
+        isPublic: Boolean(user.isPublic),
+        githubUsername: user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user),
+        avatar: user.avatar || '',
+        careerStack: user.careerStack,
+        experienceLevel: user.experienceLevel,
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
+        token: generateToken(user)
       });
     }
 
@@ -505,13 +566,17 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'userId is required.' });
     }
 
-    const user = await User.findById(userId).select('+password');
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-
-    const result = await validateOtp({ userId: user._id, otp, type: otpType, purpose: otpPurpose });
-    if (!result.isValid) {
-      return res.status(400).json({ message: result.message });
-    }
+    const resolvedId = resetChallenge.resolve(userId);
+    const user = resolvedId ? await User.findById(resolvedId).select('+password') : null;
+    if (!user || user.isActive === false)
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    const result = await validateOtp({
+      userId: user._id,
+      otp,
+      type: otpType,
+      purpose: otpPurpose
+    });
+    if (!result.isValid) return res.status(400).json({ message: 'Invalid or expired OTP.' });
 
     const resetToken = jwt.sign(
       { id: user._id, purpose: 'reset-password' },
@@ -531,17 +596,10 @@ const forgotPassword = async (req, res) => {
   try {
     const { email, phoneNumber, countryCode, type } = req.body;
     const otpType = normalizeOtpType(type);
-    const user    = await getUserByIdentifier({ email, phoneNumber, countryCode });
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-
-    if (otpType === 'phone' && (!user.phoneNumber || !user.countryCode)) {
-      return res.status(400).json({ message: 'Phone OTP is unavailable for this account.' });
-    }
-
-    const expiresAt = await sendOtpToUser({ user, type: otpType, purpose: 'forgot-password' });
-    return res.json({ message: 'OTP sent for password reset.', userId: user._id, expiresAt });
+    const user = await getUserByIdentifier({ email, phoneNumber, countryCode });
+    return res.json(await beginPasswordRecovery(user, otpType));
   } catch (error) {
-    return res.status(500).json({ message: error.message || 'Failed to start password reset.' });
+    return res.status(500).json({ message: 'Password recovery is temporarily unavailable.' });
   }
 };
 
@@ -560,11 +618,13 @@ const resetPassword = async (req, res) => {
     }
 
     const decoded = jwt.decode(resetToken);
-    const userId  = decoded?.id;
-    if (!userId) return res.status(400).json({ message: 'Invalid reset token.' });
+    const userId = decoded?.id;
+    if (!/^[a-f0-9]{24}$/i.test(String(userId || '')))
+      return res.status(400).json({ message: 'Invalid reset token.' });
 
     const user = await User.findById(userId).select('+password');
-    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (!user || user.isActive === false)
+      return res.status(400).json({ message: 'Reset token expired or invalid.' });
 
     try {
       jwt.verify(resetToken, `${process.env.JWT_SECRET}${user.password}`);
@@ -572,14 +632,18 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Reset token expired or invalid.' });
     }
 
-    const salt   = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    user.providers = Array.from(new Set([...(user.providers || []), 'local']));
-    await user.save();
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash(newPassword, salt);
+    const changed = await User.updateOne(
+      { _id: user._id, password: user.password || null },
+      { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } }
+    );
+    if (!changed.matchedCount)
+      return res.status(400).json({ message: 'Reset token expired or invalid.' });
 
     return res.json({ message: 'Password reset successful.' });
   } catch (error) {
-    return res.status(500).json({ message: error.message || 'Failed to reset password.' });
+    return res.status(500).json({ message: 'Password reset is temporarily unavailable.' });
   }
 };
 
@@ -614,7 +678,9 @@ const getInviteDetails = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message || 'Failed to load invitation details.' });
+    return res
+      .status(500)
+      .json({ message: error.message || 'Failed to load invitation details.' });
   }
 };
 
@@ -639,12 +705,22 @@ const acceptInvite = async (req, res) => {
 
     const existingUser = await User.findOne({ email: invitation.email });
 
-    if (existingUser?.organizationId && String(existingUser.organizationId) !== String(invitation.organizationId)) {
-      return res.status(403).json({ message: 'This invitation cannot be accepted outside the assigned organization.' });
+    if (
+      existingUser?.organizationId &&
+      String(existingUser.organizationId) !== String(invitation.organizationId)
+    ) {
+      return res.status(403).json({
+        message: 'This invitation cannot be accepted outside the assigned organization.'
+      });
     }
 
-    if (existingUser?.role && !['recruiter', 'user', 'developer'].includes(String(existingUser.role).toLowerCase())) {
-      return res.status(409).json({ message: 'This email is already linked to a restricted account role.' });
+    if (
+      existingUser?.role &&
+      !['recruiter', 'user', 'developer'].includes(String(existingUser.role).toLowerCase())
+    ) {
+      return res
+        .status(409)
+        .json({ message: 'This email is already linked to a restricted account role.' });
     }
 
     let user = existingUser;
@@ -687,7 +763,11 @@ const acceptInvite = async (req, res) => {
 
       await user.save();
     } else {
-      const fallbackName = requestedName || invitation.name || String(invitation.email).split('@')[0] || 'Recruiter';
+      const fallbackName =
+        requestedName ||
+        invitation.name ||
+        String(invitation.email).split('@')[0] ||
+        'Recruiter';
       const fallbackGithub = requestedGithub;
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(requestedPassword, salt);
@@ -736,7 +816,8 @@ const acceptInvite = async (req, res) => {
     );
 
     user.activeCareerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
-    user.activeExperienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
+    user.activeExperienceLevel =
+      user.activeExperienceLevel || user.experienceLevel || 'Student';
     user.onboardingCompleted = true;
     await user.save();
 
@@ -745,7 +826,9 @@ const acceptInvite = async (req, res) => {
     return res.json({
       message: 'Invitation accepted successfully.',
       requiresProfileCompletion: !profileCompleted,
-      redirectTo: profileCompleted ? '/app/recruiter/dashboard' : '/app/profile?onboarding=recruiter',
+      redirectTo: profileCompleted
+        ? '/app/recruiter/dashboard'
+        : '/app/profile?onboarding=recruiter',
       user: {
         _id: user.id,
         name: user.name,
@@ -753,21 +836,22 @@ const acceptInvite = async (req, res) => {
         role: toPublicRole(user.role),
         organizationId: user.organizationId || null,
         organizationName: invitation.organizationId
-          ? (await Organization.findById(invitation.organizationId).select('name').lean())?.name || ''
+          ? (await Organization.findById(invitation.organizationId).select('name').lean())
+              ?.name || ''
           : '',
         isActive: user.isActive !== false,
         isPublic: Boolean(user.isPublic),
         githubUsername: user.githubUsername || '',
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername || '',
+        activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
         phoneNumber: user.phoneNumber || '',
         linkedin: user.linkedin || '',
         avatar: user.avatar || '',
         careerStack: user.careerStack,
         experienceLevel: user.experienceLevel,
-        activeCareerStack: user.activeCareerStack || user.careerStack,
-        activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
         profileCompleted,
-        token: generateToken(user._id)
+        token: generateToken(user)
       }
     });
   } catch (error) {

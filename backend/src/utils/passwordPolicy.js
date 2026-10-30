@@ -11,6 +11,8 @@ const buildPasswordPolicyMessage = (security = getSecurityPolicy()) => {
 };
 
 const validatePasswordAgainstPolicy = (password) => {
+  if (typeof password !== 'string' || Buffer.byteLength(password) > 72)
+    return { valid: false, message: 'Password must be a string of at most 72 UTF-8 bytes.' };
   const security = getSecurityPolicy();
   const minLength = Number(security.passwordMinLength || 6);
   const normalizedPassword = String(password || '');

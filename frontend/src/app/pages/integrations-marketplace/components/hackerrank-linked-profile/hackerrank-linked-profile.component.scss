@@ -1,0 +1,62 @@
+:host {
+  display: block;
+}
+
+.linked-profile {
+  padding: 1.25rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 1rem;
+  background: var(--surface-card, transparent);
+  color: var(--text-primary, inherit);
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+  p {
+    line-height: 1.5;
+  }
+  a {
+    color: var(--primary-color, #2563eb);
+    overflow-wrap: anywhere;
+  }
+  label,
+  .saved-profile span {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 42rem;
+    padding: 0.75rem;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--border-color, #94a3b8);
+    border-radius: 0.5rem;
+  }
+  button {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color, #94a3b8);
+    border-radius: 0.5rem;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
+  [role='alert'] {
+    color: var(--danger-color, #dc2626);
+  }
+}
+
+.ownership-label {
+  font-weight: 600;
+}
+.linked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

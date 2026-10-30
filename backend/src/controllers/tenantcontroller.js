@@ -3,6 +3,7 @@ const { body, param, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const developerContext = require('../services/developerContextService');
 const Organization = require('../models/organization');
 const Team = require('../models/team');
 const Membership = require('../models/membership');
@@ -13,7 +14,11 @@ const AnalysisCache = require('../models/analysisCache');
 const Job = require('../models/Job');
 const RecruiterMatch = require('../models/RecruiterMatch');
 const RecruiterShortlist = require('../models/RecruiterShortlist');
-const { sendInvitationEmail, buildInvitationPayload, getEmailProviderStatus } = require('../services/invitationEmailService');
+const {
+  sendInvitationEmail,
+  buildInvitationPayload,
+  getEmailProviderStatus
+} = require('../services/invitationEmailService');
 const { enqueueInvitationRetry } = require('../services/emailRetryQueueService');
 const { logEmailDeliveryAudit } = require('../services/emailAuditService');
 const {
@@ -21,9 +26,7 @@ const {
   canManageRole,
   resolveOrganizationRole
 } = require('../services/tenantService');
-const {
-  getOrganizationSettingsSync
-} = require('../services/platformSettingsService');
+const { getOrganizationSettingsSync } = require('../services/platformSettingsService');
 const { validatePasswordAgainstPolicy, getSecurityPolicy } = require('../utils/passwordPolicy');
 
 const ORGANIZATION_ROLES = ['admin', 'manager', 'member'];
@@ -40,16 +43,8 @@ const validate = (req, res) => {
 
 const roleRank = { member: 1, manager: 2, admin: 3 };
 const higherRole = (a, b) => (roleRank[a] >= roleRank[b] ? a : b);
-const generateAuthToken = (id) => jwt.sign(
-  { id },
-  process.env.JWT_SECRET,
-  {
-    expiresIn: getTokenTtl(),
-    algorithm: 'HS256',
-    issuer: process.env.JWT_ISSUER || 'devinsight-api',
-    audience: process.env.JWT_AUDIENCE || 'devinsight-web'
-  }
-);
+const generateAuthToken = (user) =>
+  require('../utils/authSessionToken').sign(user, getTokenTtl());
 
 const loadValidPendingInvitationByToken = async (token) => {
   const invitation = await Invitation.findOne({ token }).lean();
@@ -70,8 +65,16 @@ const loadValidPendingInvitationByToken = async (token) => {
 };
 
 const createOrganizationValidators = [
-  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
-  body('description').optional().isString().isLength({ max: 500 }).withMessage('description can be up to 500 characters.')
+  body('name')
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .withMessage('name must be 2-80 characters long.'),
+  body('description')
+    .optional()
+    .isString()
+    .isLength({ max: 500 })
+    .withMessage('description can be up to 500 characters.')
 ];
 
 const createOrganization = async (req, res) => {
@@ -80,18 +83,24 @@ const createOrganization = async (req, res) => {
   try {
     const organizationSettings = getOrganizationSettingsSync();
     if (organizationSettings.allowOrgCreation === false) {
-      return res.status(403).json({ message: 'Organization creation is disabled by Super Admin settings.' });
+      return res
+        .status(403)
+        .json({ message: 'Organization creation is disabled by Super Admin settings.' });
     }
 
     const name = req.body.name.trim();
     const slug = normalizeSlug(req.body.slug || name);
     if (!slug) {
-      return res.status(400).json({ message: 'Unable to generate organization slug from name.' });
+      return res
+        .status(400)
+        .json({ message: 'Unable to generate organization slug from name.' });
     }
 
     const existing = await Organization.findOne({ slug }).lean();
     if (existing) {
-      return res.status(409).json({ message: 'Organization slug already exists. Try another name.' });
+      return res
+        .status(409)
+        .json({ message: 'Organization slug already exists. Try another name.' });
     }
 
     const organization = await Organization.create({
@@ -163,8 +172,16 @@ const listOrganizations = async (req, res) => {
 
 const createTeamValidators = [
   param('organizationId').isMongoId().withMessage('organizationId is invalid.'),
-  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
-  body('description').optional().isString().isLength({ max: 500 }).withMessage('description can be up to 500 characters.')
+  body('name')
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .withMessage('name must be 2-80 characters long.'),
+  body('description')
+    .optional()
+    .isString()
+    .isLength({ max: 500 })
+    .withMessage('description can be up to 500 characters.')
 ];
 
 const createTeam = async (req, res) => {
@@ -183,12 +200,16 @@ const createTeam = async (req, res) => {
 
     const existing = await Team.findOne({ organizationId, slug }).lean();
     if (existing) {
-      return res.status(409).json({ message: 'Team slug already exists in this organization.' });
+      return res
+        .status(409)
+        .json({ message: 'Team slug already exists in this organization.' });
     }
 
     const teamCount = await Team.countDocuments({ organizationId });
     if (teamCount >= Number(organizationSettings.maxTeamsPerOrganization || 10)) {
-      return res.status(400).json({ message: `Maximum team limit (${organizationSettings.maxTeamsPerOrganization}) reached for this organization.` });
+      return res.status(400).json({
+        message: `Maximum team limit (${organizationSettings.maxTeamsPerOrganization}) reached for this organization.`
+      });
     }
 
     const team = await Team.create({
@@ -255,7 +276,9 @@ const inviteUser = async (req, res) => {
   try {
     const organizationSettings = getOrganizationSettingsSync();
     const organizationId = req.params.organizationId;
-    const email = String(req.body.email || '').trim().toLowerCase();
+    const email = String(req.body.email || '')
+      .trim()
+      .toLowerCase();
     const role = String(req.body.role || 'member');
     const teamId = req.body.teamId || null;
 
@@ -269,7 +292,10 @@ const inviteUser = async (req, res) => {
     }
 
     if (role === 'admin' && organizationSettings.adminInvitesRequireApproval) {
-      return res.status(403).json({ message: 'Admin invitations currently require Super Admin approval and cannot be sent from organization management.' });
+      return res.status(403).json({
+        message:
+          'Admin invitations currently require Super Admin approval and cannot be sent from organization management.'
+      });
     }
 
     const organization = await Organization.findById(organizationId).select('name').lean();
@@ -311,11 +337,13 @@ const inviteUser = async (req, res) => {
     }).lean();
 
     if (existingPending) {
-      return res.status(409).json({ message: 'An active invitation already exists for this user.' });
+      return res
+        .status(409)
+        .json({ message: 'An active invitation already exists for this user.' });
     }
 
     const token = crypto.randomBytes(24).toString('hex');
-    const expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const invitation = await Invitation.create({
       organizationId,
@@ -341,12 +369,15 @@ const inviteUser = async (req, res) => {
     });
 
     const frontendBaseUrl = String(process.env.FRONTEND_BASE_URL || '').replace(/\/+$/, '');
-    const invitationLink = frontendBaseUrl ? `${frontendBaseUrl}/invitations/accept/${token}` : `/invitations/accept/${token}`;
+    const invitationLink = frontendBaseUrl
+      ? `${frontendBaseUrl}/invitations/accept/${token}`
+      : `/invitations/accept/${token}`;
 
     // If no email provider, return success with the invitation link for manual sharing
     if (!emailProviderStatus.configured) {
       return res.status(201).json({
-        message: 'Invitation created. No email provider configured — share the link below manually.',
+        message:
+          'Invitation created. No email provider configured — share the link below manually.',
         invitation: { ...invitation, token },
         invitationLink,
         emailDelivery: {
@@ -388,7 +419,8 @@ const inviteUser = async (req, res) => {
 
     if (!emailResult.sent) {
       return res.status(502).json({
-        message: 'Invitation created but email delivery failed. Configure SENDGRID or SMTP environment variables and retry.',
+        message:
+          'Invitation created but email delivery failed. Configure SENDGRID or SMTP environment variables and retry.',
         invitation,
         emailDelivery: {
           sent: false,
@@ -420,18 +452,42 @@ const acceptInvitationValidators = [
 ];
 
 const acceptInvitationTokenValidators = [
-  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.')
+  param('token')
+    .isString()
+    .trim()
+    .isLength({ min: 24, max: 128 })
+    .withMessage('Invitation token is invalid.')
 ];
 
 const invitationDetailsValidators = [
-  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.')
+  param('token')
+    .isString()
+    .trim()
+    .isLength({ min: 24, max: 128 })
+    .withMessage('Invitation token is invalid.')
 ];
 
 const acceptInvitationOnboardValidators = [
-  param('token').isString().trim().isLength({ min: 24, max: 128 }).withMessage('Invitation token is invalid.'),
-  body('name').isString().trim().isLength({ min: 2, max: 80 }).withMessage('name must be 2-80 characters long.'),
-  body('password').isString().isLength({ min: 1, max: 128 }).withMessage('password is required.'),
-  body('githubUsername').optional().isString().trim().isLength({ min: 2, max: 60 }).withMessage('githubUsername must be 2-60 characters long.')
+  param('token')
+    .isString()
+    .trim()
+    .isLength({ min: 24, max: 128 })
+    .withMessage('Invitation token is invalid.'),
+  body('name')
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .withMessage('name must be 2-80 characters long.'),
+  body('password')
+    .isString()
+    .isLength({ min: 1, max: 128 })
+    .withMessage('password is required.'),
+  body('githubUsername')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 60 })
+    .withMessage('githubUsername must be 2-60 characters long.')
 ];
 
 const activateInvitationForUser = async ({ invitation, userId }) => {
@@ -484,7 +540,9 @@ const acceptInvitation = async (req, res) => {
 
     const me = await User.findById(req.user._id).select('email').lean();
     if (!me || String(me.email || '').toLowerCase() !== invitation.email) {
-      return res.status(403).json({ message: 'Invitation email does not match the authenticated user.' });
+      return res
+        .status(403)
+        .json({ message: 'Invitation email does not match the authenticated user.' });
     }
 
     const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
@@ -517,7 +575,9 @@ const acceptInvitationByToken = async (req, res) => {
 
     const me = await User.findById(req.user._id).select('email').lean();
     if (!me || String(me.email || '').toLowerCase() !== invitation.email) {
-      return res.status(403).json({ message: 'Invitation email does not match the authenticated user.' });
+      return res
+        .status(403)
+        .json({ message: 'Invitation email does not match the authenticated user.' });
     }
 
     const membership = await activateInvitationForUser({ invitation, userId: req.user._id });
@@ -637,12 +697,12 @@ const acceptInvitationOnboard = async (req, res) => {
         name: user.name,
         email: user.email,
         githubUsername: user.githubUsername,
-        activeGithubUsername: user.activeGithubUsername || user.githubUsername,
+        activeGithubUsername: developerContext.resolveGithubUsername(user) || '',
         careerStack: user.careerStack,
         experienceLevel: user.experienceLevel,
-        activeCareerStack: user.activeCareerStack || user.careerStack,
-        activeExperienceLevel: user.activeExperienceLevel || user.experienceLevel,
-        token: generateAuthToken(user._id)
+        activeCareerStack: developerContext.resolveCareerStack(user),
+        activeExperienceLevel: developerContext.resolveExperienceLevel(user),
+        token: generateAuthToken(user)
       }
     });
   } catch (error) {
@@ -750,11 +810,15 @@ const updateMembershipRole = async (req, res) => {
 
     const targetRole = String(req.body.role);
     if (!canManageRole(actorRole, targetRole)) {
-      return res.status(403).json({ message: `Role ${actorRole} cannot assign ${targetRole}.` });
+      return res
+        .status(403)
+        .json({ message: `Role ${actorRole} cannot assign ${targetRole}.` });
     }
 
     if (!canManageRole(actorRole, membership.role) && actorRole !== 'admin') {
-      return res.status(403).json({ message: `Role ${actorRole} cannot modify ${membership.role}.` });
+      return res
+        .status(403)
+        .json({ message: `Role ${actorRole} cannot modify ${membership.role}.` });
     }
 
     if (!membership.teamId && membership.role === 'admin' && targetRole !== 'admin') {
@@ -830,7 +894,9 @@ const revokeInvitation = async (req, res) => {
     }
 
     if (!canManageRole(actorRole, invitation.role)) {
-      return res.status(403).json({ message: `Role ${actorRole} cannot revoke ${invitation.role} invitation.` });
+      return res
+        .status(403)
+        .json({ message: `Role ${actorRole} cannot revoke ${invitation.role} invitation.` });
     }
 
     const revoked = await Invitation.findByIdAndDelete(invitation._id).lean();
@@ -898,11 +964,18 @@ const getTeamSharedDashboard = async (req, res) => {
         },
         role: membership.role,
         githubScore: Number(analysis?.githubScore || 0),
-        readinessScore: Number(scoreMap.get(String(user._id)) || analysis?.readinessScore || analysis?.githubScore || 0),
+        readinessScore: Number(
+          scoreMap.get(String(user._id)) ||
+            analysis?.readinessScore ||
+            analysis?.githubScore ||
+            0
+        ),
         repositories: Number(analysis?.githubStats?.repos || 0),
         stars: Number(analysis?.githubStats?.stars || 0),
         forks: Number(analysis?.githubStats?.forks || 0),
-        missingSkills: Array.isArray(analysis?.missingSkills) ? analysis.missingSkills.slice(0, 6) : []
+        missingSkills: Array.isArray(analysis?.missingSkills)
+          ? analysis.missingSkills.slice(0, 6)
+          : []
       };
     });
 
@@ -968,7 +1041,9 @@ const getTeamAnalytics = async (req, res) => {
         readinessSum += readiness;
       }
 
-      const missingSkills = Array.isArray(analysis?.missingSkills) ? analysis.missingSkills : [];
+      const missingSkills = Array.isArray(analysis?.missingSkills)
+        ? analysis.missingSkills
+        : [];
       missingSkills.forEach((skill) => {
         const key = String(skill || '').trim();
         if (!key) return;
@@ -981,10 +1056,25 @@ const getTeamAnalytics = async (req, res) => {
       .slice(0, 8)
       .map(([skill, count]) => ({ skill, count }));
 
-    const averageReadinessScore = readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
-    const teamActivity = Math.round(Math.min(100, ((analyses.length / Math.max(memberships.length, 1)) * 55) + Math.min(totalRepos, 45)));
-    const recruiterEngagement = Math.round(Math.min(100, (recruiterMatches.length * 4) + (shortlists.length * 6)));
-    const hiringPerformance = Math.round(Math.min(100, (openJobs.length * 12) + (shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length * 10)));
+    const averageReadinessScore =
+      readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
+    const teamActivity = Math.round(
+      Math.min(
+        100,
+        (analyses.length / Math.max(memberships.length, 1)) * 55 + Math.min(totalRepos, 45)
+      )
+    );
+    const recruiterEngagement = Math.round(
+      Math.min(100, recruiterMatches.length * 4 + shortlists.length * 6)
+    );
+    const hiringPerformance = Math.round(
+      Math.min(
+        100,
+        openJobs.length * 12 +
+          shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length *
+            10
+      )
+    );
 
     return res.json({
       teamId: team._id,
@@ -992,7 +1082,12 @@ const getTeamAnalytics = async (req, res) => {
       totalMembers: memberships.length,
       roleDistribution,
       averageReadinessScore,
-      teamScore: Math.round((averageReadinessScore * 0.55) + (teamActivity * 0.2) + (recruiterEngagement * 0.15) + (hiringPerformance * 0.1)),
+      teamScore: Math.round(
+        averageReadinessScore * 0.55 +
+          teamActivity * 0.2 +
+          recruiterEngagement * 0.15 +
+          hiringPerformance * 0.1
+      ),
       teamActivity,
       recruiterEngagement,
       hiringPerformance,

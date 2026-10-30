@@ -1,73 +1,92 @@
 const mongoose = require('mongoose');
 
-const integrationConnectionSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
+const integrationConnectionSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
+    provider: {
+      type: String,
+      enum: [
+        'linkedin',
+        'github',
+        'leetcode',
+        'kaggle',
+        'stackoverflow',
+        'hackerrank',
+        'portfolio',
+        'certifications',
+        'devblogs'
+      ],
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['disconnected', 'connected', 'error', 'pending', 'connecting'],
+      default: 'disconnected'
+    },
+    externalUsername: {
+      type: String,
+      default: ''
+    },
+    externalAccountId: { type: String, default: '' },
+    ownershipVerified: { type: Boolean, default: false },
+    oauthAttempt: { type: String, default: '' },
+    leaseId: { type: String, default: '' },
+    leaseUntil: { type: Date, default: null },
+    accessToken: {
+      type: String,
+      default: ''
+    },
+    tokenType: {
+      type: String,
+      default: 'Bearer'
+    },
+    tokenExpiresAt: {
+      type: Date,
+      default: null
+    },
+    refreshToken: {
+      type: String,
+      default: ''
+    },
+    oauthState: {
+      type: String,
+      default: ''
+    },
+    oauthStateExpiresAt: {
+      type: Date,
+      default: null
+    },
+    oauthRedirectUri: {
+      type: String,
+      default: ''
+    },
+    scopes: [{ type: String }],
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    nextSyncAt: {
+      type: Date,
+      default: null
+    },
+    lastSyncError: {
+      type: String,
+      default: ''
+    },
+    lastSyncedAt: {
+      type: Date,
+      default: null
+    }
   },
-  provider: {
-    type: String,
-    enum: ['linkedin', 'github', 'leetcode', 'kaggle', 'stackoverflow', 'hackerrank', 'portfolio', 'certifications', 'devblogs'],
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['disconnected', 'connected', 'error', 'pending', 'connecting'],
-    default: 'disconnected'
-  },
-  externalUsername: {
-    type: String,
-    default: ''
-  },
-  accessToken: {
-    type: String,
-    default: ''
-  },
-  tokenType: {
-    type: String,
-    default: 'Bearer'
-  },
-  tokenExpiresAt: {
-    type: Date,
-    default: null
-  },
-  refreshToken: {
-    type: String,
-    default: ''
-  },
-  oauthState: {
-    type: String,
-    default: ''
-  },
-  oauthStateExpiresAt: {
-    type: Date,
-    default: null
-  },
-  oauthRedirectUri: {
-    type: String,
-    default: ''
-  },
-  scopes: [{ type: String }],
-  metadata: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
-  },
-  nextSyncAt: {
-    type: Date,
-    default: null
-  },
-  lastSyncError: {
-    type: String,
-    default: ''
-  },
-  lastSyncedAt: {
-    type: Date,
-    default: null
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 integrationConnectionSchema.index({ userId: 1, provider: 1 }, { unique: true });
+integrationConnectionSchema.index({ status: 1, nextSyncAt: 1 }, { name: 'integration_due_poll' });
 
 module.exports = mongoose.model('IntegrationConnection', integrationConnectionSchema);

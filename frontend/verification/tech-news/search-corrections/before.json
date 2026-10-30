@@ -1,0 +1,126 @@
+{
+  "phase": "before",
+  "realApi": true,
+  "requests": [
+    {
+      "query": {
+        "mode": "personalized",
+        "tab": "for-you",
+        "date": "week",
+        "popularity": "all",
+        "page": "1",
+        "limit": "12",
+        "bypassCache": "true"
+      },
+      "http": 200,
+      "total": 149,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": null,
+        "cachedMatches": 149,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "catalogUnavailable": false
+    },
+    {
+      "query": {
+        "mode": "explore",
+        "tab": "latest",
+        "date": "week",
+        "popularity": "all",
+        "page": "1",
+        "limit": "12",
+        "bypassCache": "true"
+      },
+      "http": 200,
+      "total": 149,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": null,
+        "cachedMatches": 149,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "catalogUnavailable": false
+    },
+    {
+      "query": {
+        "mode": "explore",
+        "tab": "latest",
+        "date": "week",
+        "popularity": "all",
+        "page": "1",
+        "limit": "12",
+        "search": "DevOps",
+        "discover": "true"
+      },
+      "http": 200,
+      "total": 29,
+      "items": 12,
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 29,
+        "minimum": 6,
+        "broaderMatches": 34,
+        "dateExcludedMatches": 5,
+        "filterExcludedMatches": 0,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "ready",
+        "reason": "articles_cached",
+        "nextEligibleAt": "2026-10-23T20:14:47.588Z",
+        "lastAttemptAt": "2026-10-23T20:13:46.892Z",
+        "checkedAtMs": 1792786426892,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 28,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T20:13:46.892Z",
+        "cacheVersion": "1792786426892",
+        "newArticles": 34
+      },
+      "catalogUnavailable": false
+    }
+  ],
+  "errors": [],
+  "checks": ["Real authenticated Explore submission returns stored DevOps articles"],
+  "forYou": {
+    "categoryControls": 1,
+    "searchControls": 0,
+    "sourceControls": 1,
+    "dateControls": 1
+  }
+}

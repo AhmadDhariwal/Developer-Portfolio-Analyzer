@@ -1,0 +1,431 @@
+<!-- Saved Scenarios History Panel -->
+<!-- Scenario Comparison Matrix Section -->
+<section
+  class="scenario-comparison-section"
+  id="scenario-comparison-section"
+  *ngIf="isCompareOpen && comparisonData as comp"
+>
+  <div class="comparison-card">
+    <div class="comparison-header">
+      <div class="comparison-header-left">
+        <div class="comparison-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+          </svg>
+          Head-to-Head Comparison Matrix
+        </div>
+        <h3>Scenario Comparison Matrix</h3>
+        <p class="comparison-sub">
+          Comparing <strong>{{ comp.current.name }}</strong> (reference) against saved benchmark
+          <strong>{{ comp.saved.name }}</strong
+          >.
+        </p>
+      </div>
+      <div class="comparison-header-actions">
+        <button
+          type="button"
+          class="ghost-btn compact"
+          (click)="loadScenarioRequested.emit(compareScenario!)"
+          title="Load this saved scenario into the planner"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Load Saved Plan</span>
+        </button>
+        <button
+          type="button"
+          class="close-compare-btn"
+          (click)="closeCompareRequested.emit()"
+          aria-label="Close comparison"
+        >
+          &times;
+        </button>
+      </div>
+    </div>
+
+    <!-- Benchmark Selector Toolbar -->
+    <div class="compare-benchmark-toolbar">
+      <div class="compare-party-pill left">
+        <span class="party-role">Reference (Left Column)</span>
+        <strong class="party-name">{{ comp.current.name }}</strong>
+        <span class="party-origin-tag">{{
+          comp.current.isSimulated ? 'Active Simulation in Editor' : 'Live Profile Baseline'
+        }}</span>
+      </div>
+      <div class="compare-vs-badge">VS</div>
+      <div class="compare-party-pill right">
+        <span class="party-role">Benchmark (Right Column)</span>
+        <div class="benchmark-select-wrap">
+          <select
+            class="benchmark-select"
+            [value]="compareScenario?._id"
+            (change)="onBenchmarkChange($event)"
+            aria-label="Select benchmark scenario to compare against"
+          >
+            <option *ngFor="let s of scenarioHistory" [value]="s._id">
+              {{ s.name }} (Score: {{ s.predicted.hiringScore }}/100 &middot;
+              {{ s.durationWeeks }}w)
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explainer Banner: How it works & how to compare any two -->
+    <div class="compare-explainer-banner">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="explainer-icon"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <div class="explainer-content">
+        <div class="explainer-title">How Comparison Works</div>
+        <p class="explainer-desc">
+          The <strong>Reference (left)</strong> is your current editor draft/simulation, and the
+          <strong>Benchmark (right)</strong> is the saved scenario selected in the dropdown.
+        </p>
+        <span class="explainer-tip">
+          💡 <strong>To compare two saved scenarios (A vs B):</strong> Click
+          <strong>Load Plan</strong> on Scenario A to load it into the editor, then select Scenario
+          B from the benchmark dropdown above.
+        </span>
+      </div>
+    </div>
+
+    <!-- Comparative Score Delta Cards -->
+    <div class="compare-kpi-grid">
+      <div class="compare-kpi-card">
+        <span class="compare-kpi-title">Planning Score</span>
+        <div class="compare-kpi-values">
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Current Plan</span>
+            <span class="kpi-val ref">{{ comp.current.hiringScore }}</span>
+          </div>
+          <span class="kpi-vs">vs</span>
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Saved Scenario</span>
+            <span class="kpi-val target">{{ comp.saved.hiringScore }}</span>
+          </div>
+        </div>
+        <div
+          class="compare-delta-badge"
+          [class.positive]="comp.deltas.hiring >= 0"
+          [class.negative]="comp.deltas.hiring < 0"
+        >
+          {{ comp.deltas.hiring >= 0 ? '+' : '' }}{{ comp.deltas.hiring }} pts
+          <small>{{ comp.deltas.hiring >= 0 ? '(Current ahead)' : '(Saved ahead)' }}</small>
+        </div>
+      </div>
+
+      <div class="compare-kpi-card">
+        <span class="compare-kpi-title">Role Alignment</span>
+        <div class="compare-kpi-values">
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Current Plan</span>
+            <span class="kpi-val ref">{{ comp.current.jobMatch }}%</span>
+          </div>
+          <span class="kpi-vs">vs</span>
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Saved Scenario</span>
+            <span class="kpi-val target">{{ comp.saved.jobMatch }}%</span>
+          </div>
+        </div>
+        <div
+          class="compare-delta-badge"
+          [class.positive]="comp.deltas.jobMatch >= 0"
+          [class.negative]="comp.deltas.jobMatch < 0"
+        >
+          {{ comp.deltas.jobMatch >= 0 ? '+' : '' }}{{ comp.deltas.jobMatch }}%
+          <small>{{ comp.deltas.jobMatch >= 0 ? '(Current ahead)' : '(Saved ahead)' }}</small>
+        </div>
+      </div>
+
+      <div class="compare-kpi-card">
+        <span class="compare-kpi-title">Feasibility Heuristic</span>
+        <div class="compare-kpi-values">
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Current Plan</span>
+            <span class="kpi-val ref">{{ comp.current.feasibility }}</span>
+          </div>
+          <span class="kpi-vs">vs</span>
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Saved Scenario</span>
+            <span class="kpi-val target">{{ comp.saved.feasibility }}</span>
+          </div>
+        </div>
+        <div
+          class="compare-delta-badge"
+          [class.positive]="comp.deltas.feasibility >= 0"
+          [class.negative]="comp.deltas.feasibility < 0"
+        >
+          {{ comp.deltas.feasibility >= 0 ? '+' : '' }}{{ comp.deltas.feasibility }} pts
+          <small>{{
+            comp.deltas.feasibility >= 0 ? '(Higher confidence)' : '(Lower confidence)'
+          }}</small>
+        </div>
+      </div>
+
+      <div class="compare-kpi-card">
+        <span class="compare-kpi-title">Execution Horizon</span>
+        <div class="compare-kpi-values">
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Current Plan</span>
+            <span class="kpi-val ref">{{ comp.current.duration }}w</span>
+          </div>
+          <span class="kpi-vs">vs</span>
+          <div class="kpi-score-col">
+            <span class="kpi-sublabel">Saved Scenario</span>
+            <span class="kpi-val target">{{ comp.saved.duration }}w</span>
+          </div>
+        </div>
+        <div class="compare-delta-badge neutral">
+          {{ comp.deltas.duration >= 0 ? '+' : '' }}{{ comp.deltas.duration }} weeks
+          <small>{{
+            comp.deltas.duration === 0
+              ? '(Same timeline)'
+              : comp.deltas.duration < 0
+                ? '(Faster pace)'
+                : '(Extended pace)'
+          }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparative Deep Dives: Skills & Projects -->
+    <div class="compare-details-grid">
+      <!-- Skills Venn / Delta Card -->
+      <div class="compare-subcard">
+        <div class="compare-subcard-head">
+          <h4>Skills Overlap & Differentiation</h4>
+          <span class="compare-tag">{{ comp.skills.shared.length }} shared</span>
+        </div>
+
+        <div class="skills-diff-groups">
+          <!-- Shared Skills -->
+          <div class="diff-group" *ngIf="comp.skills.shared.length">
+            <span class="diff-group-label shared">
+              <span class="diff-dot green"></span>
+              In Both Scenarios ({{ comp.skills.shared.length }})
+            </span>
+            <div class="diff-chips">
+              <span class="diff-chip shared" *ngFor="let s of comp.skills.shared">{{ s }}</span>
+            </div>
+          </div>
+
+          <!-- Current Only Skills -->
+          <div class="diff-group" *ngIf="comp.skills.currentOnly.length">
+            <span class="diff-group-label current">
+              <span class="diff-dot indigo"></span>
+              Only in Current Plan ({{ comp.skills.currentOnly.length }})
+            </span>
+            <div class="diff-chips">
+              <span class="diff-chip current" *ngFor="let s of comp.skills.currentOnly">{{
+                s
+              }}</span>
+            </div>
+          </div>
+
+          <!-- Saved Only Skills -->
+          <div class="diff-group" *ngIf="comp.skills.savedOnly.length">
+            <span class="diff-group-label saved">
+              <span class="diff-dot amber"></span>
+              Only in {{ comp.saved.name }} ({{ comp.skills.savedOnly.length }})
+            </span>
+            <div class="diff-chips">
+              <span class="diff-chip saved" *ngFor="let s of comp.skills.savedOnly">{{ s }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects & Scope Card -->
+      <div class="compare-subcard">
+        <div class="compare-subcard-head">
+          <h4>Projects & Scope Distribution</h4>
+          <span class="compare-tag"
+            >{{ comp.projects.current.length }} vs {{ comp.projects.saved.length }} projects</span
+          >
+        </div>
+
+        <div class="projects-compare-lists">
+          <div class="proj-col">
+            <span class="proj-col-title">Current Plan Projects</span>
+            <div class="proj-items" *ngIf="comp.projects.current.length; else noCurrentProj">
+              <div class="proj-mini-item" *ngFor="let p of comp.projects.current">
+                <strong>{{ p.name || 'Untitled Milestone' }}</strong>
+                <small
+                  >{{ p.complexity | titlecase }} &middot; {{ p.weeks }}w &middot;
+                  {{ p.impact }}/100 Impact</small
+                >
+              </div>
+            </div>
+            <ng-template #noCurrentProj>
+              <span class="no-proj-text">No planned projects in current draft</span>
+            </ng-template>
+          </div>
+
+          <div class="proj-col">
+            <span class="proj-col-title">Saved Scenario Projects</span>
+            <div class="proj-items" *ngIf="comp.projects.saved.length; else noSavedProj">
+              <div class="proj-mini-item saved" *ngFor="let p of comp.projects.saved">
+                <strong>{{ p.name || 'Untitled Milestone' }}</strong>
+                <small
+                  >{{ p.complexity | titlecase }} &middot; {{ p.weeks }}w &middot;
+                  {{ p.impact }}/100 Impact</small
+                >
+              </div>
+            </div>
+            <ng-template #noSavedProj>
+              <span class="no-proj-text">No planned projects in saved scenario</span>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Footer Actions -->
+    <div class="comparison-footer">
+      <span class="comp-footer-hint">
+        Reviewing deterministic deltas against your historical checkpoint. You can load this plan
+        into the editor anytime.
+      </span>
+      <div class="comp-footer-btns">
+        <button type="button" class="ghost-btn" (click)="closeCompareRequested.emit()">
+          Close Comparison
+        </button>
+        <button
+          type="button"
+          class="run-btn"
+          (click)="loadScenarioRequested.emit(compareScenario!)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Load This Saved Scenario</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="panel history-panel">
+  <!-- Section 6: Saved Scenarios & History -->
+  <section class="panel-section history-section" [class.mobile-collapsed]="!showMobileHistory">
+    <div class="section-head compact">
+      <div>
+        <span class="section-kicker">History</span>
+        <h2>Saved Scenarios</h2>
+      </div>
+      <div class="section-status">
+        <span class="loading-chip" [class.cached]="historyCacheHit">
+          <span class="pulse-dot"></span>
+          {{ historyCacheLabel }}
+        </span>
+        <button
+          class="mobile-toggle"
+          type="button"
+          (click)="showMobileHistoryChange.emit(!showMobileHistory)"
+          aria-label="Toggle history panel"
+        >
+          {{ showMobileHistory ? 'Collapse' : 'Expand' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="history-list" *ngIf="scenarioHistory.length; else historyEmpty">
+      <article
+        class="history-card"
+        *ngFor="let scenario of scenarioHistory; trackBy: trackByHistory"
+        [class.is-compare]="compareScenario?._id === scenario._id && isCompareOpen"
+      >
+        <div class="history-main">
+          <div class="history-title-group">
+            <strong>{{ scenario.name }}</strong>
+            <span class="history-date">{{ formatDate(scenario.createdAt) }}</span>
+          </div>
+          <div class="history-scores">
+            <span class="score-val">{{ scenario.predicted.hiringScore }} <small>/100</small></span>
+            <span class="score-lbl">Planning Lift</span>
+          </div>
+        </div>
+
+        <div class="history-meta">
+          <span class="meta-tag">{{ formatRole(scenario.role) }}</span>
+          <span class="meta-tag">{{ scenario.durationWeeks }}w duration</span>
+          <span class="meta-tag">{{ scenario.confidenceScore }}/100 Feasibility</span>
+          <span class="meta-tag hash-tag" *ngIf="scenario.scenarioHash"
+            >#{{ scenario.scenarioHash.slice(0, 8) }}</span
+          >
+        </div>
+
+        <div class="history-actions">
+          <button
+            type="button"
+            class="action-btn-load"
+            (click)="loadScenarioRequested.emit(scenario)"
+          >
+            Load Plan
+          </button>
+          <button
+            type="button"
+            class="action-btn-compare"
+            [class.active-compare]="compareScenario?._id === scenario._id && isCompareOpen"
+            (click)="compareWithScenarioRequested.emit(scenario)"
+          >
+            {{
+              compareScenario?._id === scenario._id && isCompareOpen ? 'Close Compare' : 'Compare'
+            }}
+          </button>
+          <button
+            type="button"
+            class="action-btn-delete"
+            (click)="deleteScenarioRequested.emit(scenario._id)"
+            [disabled]="deletingScenarioId === scenario._id"
+          >
+            {{ deletingScenarioId === scenario._id ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <button
+      class="load-more-btn"
+      *ngIf="nextHistoryCursor"
+      type="button"
+      (click)="loadMoreHistoryRequested.emit()"
+      [disabled]="isLoadingHistory"
+    >
+      {{ isLoadingHistory ? 'Loading Older Evaluations…' : 'Load Older Evaluations' }}
+    </button>
+
+    <ng-template #historyEmpty>
+      <div class="history-empty">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <p>
+          No saved scenarios yet. Run a simulation and save your plan to compare iterations later.
+        </p>
+      </div>
+    </ng-template>
+  </section>
+</div>

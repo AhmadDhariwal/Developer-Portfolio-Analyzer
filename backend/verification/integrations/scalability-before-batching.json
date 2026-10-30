@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-10-28T11:19:14.357Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "strict public fields; no raw/token/ownership/user score; private providers bypass; detached account copies",
+    "fresh-only expiry; revision invalidation; stale leader fenced; expired dead-worker lease recovered",
+    "LeetCode, Stack Overflow and Dev.to preserve typed admission 429",
+    "cache hits spend account request budget; quota 429 and authoritative admission 503",
+    "measured due-poll index candidate without modifying existing indexes",
+    "1000 virtual users at concurrency eight; shared 500 fetched once; default quota/backpressure preserved; warm snapshot survives worker restart"
+  ],
+  "failures": [],
+  "polling": {
+    "before": 1000,
+    "after": 10,
+    "returned": 10
+  },
+  "baseline": {
+    "calls": 5,
+    "redisCommands": 0,
+    "conflicts": 0,
+    "commands": 86,
+    "durations": [
+      82, 4, 41, 77, 2, 40, 4, 3, 2, 3, 2, 3, 3, 3, 3, 17, 74, 2, 2, 3, 2, 19, 3, 2, 2, 2, 2, 2, 3,
+      3, 2, 13, 14, 3, 3, 2, 3, 19, 2, 2, 2, 2, 2, 3, 2, 2, 2, 16, 13, 2, 3, 2, 2, 4, 2, 1, 2, 2, 2,
+      3, 3, 2, 2, 20, 15, 2, 2, 2, 2, 5, 3, 2, 2, 2, 2, 3, 1, 2, 2, 19, 14, 2, 2, 2, 2, 5
+    ],
+    "memory": {
+      "rss": 131829760,
+      "heapTotal": 104165376,
+      "heapUsed": 44933352,
+      "external": 22646894,
+      "arrayBuffers": 18649333
+    }
+  },
+  "shared500": {
+    "served": 500,
+    "providerCalls": 1
+  },
+  "simulation": {
+    "users": 1000,
+    "sameUsername": 500,
+    "concurrency": 8,
+    "workers": 2,
+    "elapsedMs": 10191.166199999996,
+    "throughputPerSecond": 98.1241970128993,
+    "statusCounts": {
+      "200": 559,
+      "429": 441
+    },
+    "providerCalls": 60,
+    "observationsReused": 499,
+    "successfulHitRate": 0.8926654740608229,
+    "latencyMs": {
+      "n": 1000,
+      "p50": 40.847600000000966,
+      "p95": 195.76890000000094,
+      "p99": 281.27949999999964,
+      "max": 638.0744999999988
+    },
+    "mongoCommandMs": {
+      "n": 8218,
+      "p50": 4,
+      "p95": 16,
+      "p99": 19,
+      "max": 75
+    },
+    "transactionConflicts": 358,
+    "redisCommands": 0,
+    "mongoCommands": 8934,
+    "memory": [
+      {
+        "rss": 162172928,
+        "heapTotal": 173109248,
+        "heapUsed": 41262296,
+        "external": 26468763,
+        "arrayBuffers": 22471162
+      },
+      {
+        "rss": 158322688,
+        "heapTotal": 106524672,
+        "heapUsed": 43497408,
+        "external": 26801949,
+        "arrayBuffers": 22804348
+      }
+    ],
+    "snapshotStorage": {
+      "count": 502,
+      "logicalBytes": 94048,
+      "indexBytes": 8192
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 82,
+    "productionDataUsed": false
+  }
+}

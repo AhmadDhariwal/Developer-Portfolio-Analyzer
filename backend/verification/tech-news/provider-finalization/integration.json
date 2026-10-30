@@ -1,0 +1,36 @@
+{
+  "controlledFixturesOnly": true,
+  "actualExternalRequests": 0,
+  "controlledTransportCalls": [
+    "newsapi",
+    "gnews",
+    "hackernews",
+    "devto",
+    "reddit",
+    "githubreleases",
+    "lobsters",
+    "kubernetesblog",
+    "cloudflarechangelog",
+    "githubadvisories"
+  ],
+  "acceptedBySource": {
+    "NewsAPI": 1,
+    "GNews": 1,
+    "Hacker News": 1,
+    "Dev.to": 1,
+    "Reddit": 1,
+    "GitHub Releases": 1,
+    "Lobsters": 1,
+    "Kubernetes Blog": 1,
+    "Cloudflare Changelog": 1,
+    "GitHub Security Advisories": 1
+  },
+  "scheduledFirstInserted": 9,
+  "scheduledSecondInserted": 1,
+  "duplicatesInserted": 0,
+  "sharedGitHubPacingVerified": true,
+  "discoveryJobsConsumed": 0,
+  "crossWorkerInvalidationVerified": true,
+  "applicationRedisWrites": 0,
+  "temporaryDatabaseDroppedByTeardown": true
+}

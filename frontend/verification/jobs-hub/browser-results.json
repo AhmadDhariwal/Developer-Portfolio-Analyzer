@@ -1,0 +1,31 @@
+{
+  "scope": "Focused production-build browser checks with synthetic intercepted APIs; no backend or provider requests.",
+  "checks": [
+    "desktop-light: responsive cards, Manrope and theme",
+    "desktop-light: Save, track, Hide and Unhide",
+    "details: source, salary, evidence, learning and safe external apply without mutation",
+    "account reload picks up remote activity and preserves expired history",
+    "search, source filter, explicit page sorting and pagination",
+    "503 revalidation retains jobs; offline preserves usable data",
+    "desktop-dark: responsive cards, Manrope and theme",
+    "desktop-dark: Save, track, Hide and Unhide",
+    "mobile-light: responsive cards, Manrope and theme",
+    "mobile-light: Save, track, Hide and Unhide",
+    "mobile-dark: responsive cards, Manrope and theme",
+    "mobile-dark: Save, track, Hide and Unhide",
+    "System follows OS preference; stale/provider-limited notice",
+    "empty state",
+    "loading state",
+    "429 state",
+    "failed mutations never claim saved state; 429 disables further writes"
+  ],
+  "screenshots": [
+    "desktop-light.png",
+    "desktop-light-details.png",
+    "desktop-dark.png",
+    "desktop-dark-tracker.png",
+    "mobile-light.png",
+    "mobile-dark.png"
+  ],
+  "passed": 17
+}

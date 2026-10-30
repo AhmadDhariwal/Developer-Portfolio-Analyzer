@@ -1,742 +1,360 @@
-<div class="sim-page">
+<app-scenario-template-configurator
+  *ngIf="activeTemplate as template"
+  [template]="template"
+  [context]="templateContext"
+  [dirty]="hasUnsavedDraft"
+  [baselineConfirmed]="baselineConfirmed"
+  [baselineHiringScore]="baselineHiringScore"
+  [baselineJobMatch]="baselineJobMatch"
+  (cancelled)="activeTemplate = null"
+  (committed)="commitTemplate($event)"
+/>
+<div class="sim-page dev-page">
+  <!-- Page Header -->
   <header class="sim-header">
     <div class="header-copy">
-      <span class="eyebrow">Career Sandbox</span>
+      <div class="eyebrow-wrap">
+        <span class="eyebrow">
+          <svg
+            class="eyebrow-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            ></polygon>
+          </svg>
+          Career Sandbox · What-If Simulator
+        </span>
+      </div>
       <h1>Scenario Simulator</h1>
       <p>
-        Model realistic what-if plans before you commit time. The deterministic engine estimates
-        hiring score lift, job match change, confidence, and overload risk without touching your
-        real profile.
+        Model realistic career moves before committing time. Our deterministic engine estimates
+        hypothetical planning score lift, role alignment, heuristic feasibility, and overload risk
+        without modifying your actual profile.
       </p>
+
+      <div class="context-pill-row" *ngIf="context as ctx">
+        <span class="context-pill">
+          <span class="status-dot"></span>
+          <span
+            >Target: <strong>{{ formatRole(role) }}</strong></span
+          >
+        </span>
+        <span class="context-pill">
+          <span
+            >Level: <strong>{{ experienceLevel | titlecase }}</strong></span
+          >
+        </span>
+        <span class="context-pill">
+          <span class="status-dot" [class.warning]="!contextCacheHit"></span>
+          <span>{{ contextCacheLabel }}</span>
+        </span>
+      </div>
     </div>
 
     <div class="header-actions">
-      <button class="ghost-btn" type="button" (click)="showInfoPanel = !showInfoPanel">
-        {{ showInfoPanel ? 'Hide Assumptions Guide' : 'How the Simulator Works' }}
+      <button
+        class="ghost-btn"
+        type="button"
+        (click)="showInfoPanel = !showInfoPanel"
+        [class.active]="showInfoPanel"
+        aria-label="Toggle assumptions guide"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>{{ showInfoPanel ? 'Hide Guide' : 'How It Works' }}</span>
       </button>
-      <button class="ghost-btn" type="button" (click)="loadBootstrapData(true)" [disabled]="isLoadingContext || isLoadingHistory">
-        {{ isLoadingContext || isLoadingHistory ? 'Refreshing...' : 'Force Refresh' }}
+
+      <button
+        class="ghost-btn"
+        type="button"
+        (click)="loadBootstrapData(true)"
+        [disabled]="isLoadingContext || isLoadingHistory"
+        aria-label="Refresh simulator data"
+      >
+        <svg
+          [class.spinning]="isLoadingContext || isLoadingHistory"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"></path>
+        </svg>
+        <span>{{ isLoadingContext || isLoadingHistory ? 'Refreshing…' : 'Force Refresh' }}</span>
       </button>
     </div>
   </header>
 
+  <!-- Educational Assumptions Guide Panel -->
   <section class="info-panel" *ngIf="showInfoPanel">
+    <div class="info-panel-header">
+      <div class="info-panel-title">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        <h3>Simulator Mechanics & Planning Principles</h3>
+      </div>
+      <button
+        type="button"
+        class="close-info-btn"
+        (click)="showInfoPanel = false"
+        aria-label="Close guide"
+      >
+        &times;
+      </button>
+    </div>
+
     <div class="info-grid">
       <article class="info-card">
-        <h3>What this sandbox does</h3>
+        <div class="info-card-badge">01</div>
+        <h4>What this sandbox does</h4>
         <p>
-          It predicts how planned skills and projects can move your hiring score and job match,
-          while keeping the math explainable and constrained by time, complexity, and role fit.
+          Simulates hypothetical skill and project combinations using explicit baseline assumptions.
+          All calculations are deterministic, explainable, and bound by realistic time and scope
+          constraints.
         </p>
       </article>
 
       <article class="info-card">
-        <h3>How the scoring works</h3>
+        <div class="info-card-badge">02</div>
+        <h4>How scoring works</h4>
         <ul>
-          <li>Skills are weighted by role relevance, difficulty, demand, and your experience level.</li>
-          <li>Projects gain credit from complexity, duration, and delivery impact.</li>
-          <li>Aligned skills and projects earn a synergy bonus.</li>
-          <li>Overloaded plans are penalized so predictions stay realistic.</li>
+          <li>Skills are weighted by role relevance, demand multiplier, and experience level.</li>
+          <li>Projects gain credit from technical complexity, timeline, and delivery impact.</li>
+          <li>Aligned skills and projects unlock synergy bonuses.</li>
+          <li>Overloaded scenarios trigger diminishing returns and heuristic penalties.</li>
         </ul>
       </article>
 
       <article class="info-card">
-        <h3>How prefills are used</h3>
+        <div class="info-card-badge">03</div>
+        <h4>How prefills are used</h4>
         <p>
-          Signals from GitHub, Resume Analyzer, Skill Gap, Recommendations, Career Sprint,
-          Portfolio, and Integrations are used only for suggestions. They never overwrite your
-          real scores or profile.
+          Observations from Resume Analyzer, GitHub, Skill Gap, Recommendations, and Sprints provide
+          helpful initial suggestions. They never overwrite your active scores or profile.
         </p>
       </article>
 
       <article class="info-card">
-        <h3>Good simulator habits</h3>
+        <div class="info-card-badge">04</div>
+        <h4>Best simulator habits</h4>
         <ul>
-          <li>Keep scenarios focused to 2-4 important skills.</li>
-          <li>Pair one strong project with the skills you want employers to notice.</li>
-          <li>Use the confidence and uncertainty range before committing to an aggressive plan.</li>
+          <li>Focus on 2 to 4 high-relevance skills rather than a broad list.</li>
+          <li>Pair 1 flagship project directly with the skills you want employers to notice.</li>
+          <li>Check the sensitivity band and feasibility rating before committing your effort.</li>
         </ul>
       </article>
     </div>
   </section>
 
-  <section class="message-strip" *ngIf="contextError || actionMessage">
+  <!-- Notification & Status Messages -->
+  <div
+    class="message-strip"
+    *ngIf="contextError || historyError || actionMessage || context?.degraded"
+  >
+    <div class="message-card warning" *ngIf="context?.degraded">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+        ></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <span
+        >Some background signal sources are currently unavailable. Available observations have been
+        retained.</span
+      >
+    </div>
+
     <div class="message-card warning" *ngIf="contextError">
-      {{ contextError }}
-    </div>
-    <div class="message-card" [class.success]="actionTone === 'success'" [class.error]="actionTone === 'error'" *ngIf="actionMessage">
-      {{ actionMessage }}
-    </div>
-  </section>
-
-  <div class="sim-grid">
-    <div class="panel input-panel">
-      <section class="panel-section context-section" [class.mobile-collapsed]="!showMobileContext">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Signals</span>
-            <h2>Scenario Prefill Context</h2>
-          </div>
-          <div class="section-status"><span class="loading-chip">{{ contextCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileContext = !showMobileContext">{{ showMobileContext ? 'Collapse' : 'Expand' }}</button></div>
-        </div>
-
-        <div class="context-summary" *ngIf="context as ctx; else contextSkeleton">
-          <p>{{ ctx.summary }}</p>
-          <div class="context-metrics">
-            <div class="mini-stat">
-              <span class="mini-label">Career Stack</span>
-              <strong>{{ ctx.profile.careerStack }}</strong>
-            </div>
-            <div class="mini-stat">
-              <span class="mini-label">Experience</span>
-              <strong>{{ ctx.profile.experienceLevel }}</strong>
-            </div>
-            <div class="mini-stat">
-              <span class="mini-label">Known Skills</span>
-              <strong>{{ ctx.signals.knownSkills.length }}</strong>
-            </div>
-            <div class="mini-stat">
-              <span class="mini-label">Missing Skills</span>
-              <strong>{{ ctx.signals.missingSkills.length }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #contextSkeleton>
-          <div class="context-skeleton" *ngIf="isLoadingContext">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </ng-template>
-
-        <div class="signal-group" *ngIf="context?.signals?.missingSkills?.length">
-          <span class="signal-label">Top missing skills</span>
-          <div class="signal-chips">
-            <button type="button" class="signal-chip" *ngFor="let skill of context?.signals?.missingSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
-              {{ skill }}
-            </button>
-          </div>
-        </div>
-
-        <div class="signal-group" *ngIf="context?.signals?.topDemandedSkills?.length">
-          <span class="signal-label">Top demanded skills</span>
-          <div class="signal-chips">
-            <button type="button" class="signal-chip market" *ngFor="let skill of context?.signals?.topDemandedSkills; trackBy: trackBySkill" (click)="addSuggestedSkill(skill)">
-              {{ skill }}
-            </button>
-          </div>
-        </div>
-
-        <div class="signal-group" *ngIf="context?.suggestedInputs?.projects?.length">
-          <span class="signal-label">Suggested projects</span>
-          <div class="signal-chips">
-            <button type="button" class="signal-chip accent" *ngFor="let project of context?.suggestedInputs?.projects; trackBy: trackByProject" (click)="addSuggestedProject(project)">
-              {{ project.name }}
-            </button>
-          </div>
-        </div>
-
-        <div class="source-strip" *ngIf="context?.sources?.length">
-          <div class="source-pill" *ngFor="let source of context?.sources; trackBy: trackBySource" [class.connected]="source.connected">
-            <span class="dot"></span>
-            <span>{{ source.label }}</span><small>{{ source.connected ? 'Connected' : 'Disconnected' }}</small>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel-section">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Templates</span>
-            <h2>Quick Scenario Templates</h2>
-          </div>
-        </div>
-
-        <div class="template-grid">
-          <button class="template-card" type="button" *ngFor="let template of templates" (click)="applyTemplate(template)">
-            <strong>{{ template.label }}</strong>
-            <span>{{ template.description }}</span>
-          </button>
-        </div>
-      </section>
-
-      <section class="panel-section">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Scenario</span>
-            <h2>Plan Inputs</h2>
-          </div>
-        </div>
-
-        <div class="field-group full">
-          <label for="scenarioName">Scenario Name <span>optional</span></label>
-          <input id="scenarioName" type="text" [(ngModel)]="scenarioName" placeholder="e.g. Backend ramp-up before interviews" />
-        </div>
-
-        <div class="two-col">
-          <div class="field-group">
-            <label for="targetRole">Target Role</label>
-            <select id="targetRole" [(ngModel)]="role">
-              <option *ngFor="let item of roleOptions" [value]="item.value">{{ item.label }}</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label for="experienceLevel">Experience Level</label>
-            <select id="experienceLevel" [(ngModel)]="experienceLevel">
-              <option *ngFor="let item of levelOptions" [value]="item.value">{{ item.label }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="two-col">
-          <div class="field-group">
-            <label for="baselineHiring">Current Hiring Score</label>
-            <div class="score-input-wrap">
-              <input id="baselineHiring" type="number" min="0" max="100" [(ngModel)]="baselineHiringScore" />
-              <span class="score-suffix">/100</span>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label for="baselineMatch">Current Job Match</label>
-            <div class="score-input-wrap">
-              <input id="baselineMatch" type="number" min="0" max="100" [(ngModel)]="baselineJobMatch" />
-              <span class="score-suffix">/100</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="field-group full">
-          <label>Plan Duration</label>
-          <div class="duration-pills">
-            <button type="button" *ngFor="let weeks of durationOptions" [class.active]="durationWeeks === weeks" (click)="durationWeeks = weeks">
-              {{ weeks }} weeks
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel-section">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Skills</span>
-            <h2>Planned Skills</h2>
-          </div>
-        </div>
-
-        <div class="planner-note">
-          <p>
-            Add the skills you realistically plan to learn during this scenario. Role-aligned skills
-            like React for Frontend or Docker for DevOps produce stronger match lift than generic or
-            low-relevance skills.
-          </p>
-          <div class="planner-examples">
-            <span>Examples:</span>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('React')">React</button>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('Docker')">Docker</button>
-            <button type="button" class="mini-example" (click)="addSuggestedSkill('System Design')">System Design</button>
-          </div>
-        </div>
-
-        <div class="skill-entry">
-          <input
-            type="text"
-            placeholder="Add a skill, framework, tool, or concept, e.g. TypeScript"
-            [(ngModel)]="skillInput"
-            (keyup.enter)="addSkill()"
-          />
-          <button class="add-btn" type="button" (click)="addSkill()">Add Skill</button>
-        </div>
-
-        <div class="skill-tags" *ngIf="skills.length; else skillHint">
-          <span class="skill-tag" *ngFor="let skill of skills; trackBy: trackBySkill">
-            {{ skill }}
-            <button type="button" (click)="removeSkill(skill)" aria-label="Remove skill">×</button>
-          </span>
-        </div>
-
-        <ng-template #skillHint>
-          <p class="hint">Start with 2 to 4 skills that directly support the target role you selected above.</p>
-        </ng-template>
-      </section>
-
-      <section class="panel-section">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">Projects</span>
-            <h2>Planned Projects</h2>
-          </div>
-
-          <button type="button" class="ghost-inline-btn" (click)="addProject()">Add Project</button>
-        </div>
-
-        <div class="planner-note">
-          <p>
-            Add projects you could realistically build in this timeline. Stronger projects usually
-            combine meaningful scope, relevant skills, and enough time to finish with polish.
-          </p>
-          <div class="planner-checklist">
-            <span>Good project signals:</span>
-            <span>real-world use case</span>
-            <span>relevant stack</span>
-            <span>clear deliverable</span>
-            <span>deployed or production-style scope</span>
-          </div>
-        </div>
-
-        <div class="project-cards">
-          <article class="project-card" *ngFor="let project of projects; let index = index; trackBy: trackByProjectInput">
-            <div class="project-card-title">
-              <strong>Project {{ index + 1 }}</strong>
-              <span>Describe one project that would genuinely strengthen this scenario.</span>
-            </div>
-
-            <div class="project-card-header">
-              <input
-                type="text"
-                class="project-name"
-                [(ngModel)]="project.name"
-                [placeholder]="'Project ' + (index + 1) + ' title, e.g. Multi-tenant Admin Dashboard'"
-              />
-              <button type="button" class="remove-btn" (click)="removeProject(index)" aria-label="Remove project" *ngIf="projects.length > 1">×</button>
-            </div>
-
-            <div class="project-fields">
-              <div class="field-group">
-                <label>Complexity</label>
-                <select [(ngModel)]="project.complexity">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              <div class="field-group">
-                <label>Weeks</label>
-                <input type="number" min="1" max="24" [(ngModel)]="project.weeks" placeholder="e.g. 4" />
-              </div>
-
-              <div class="field-group">
-                <label>Impact</label>
-                <input type="number" min="0" max="100" [(ngModel)]="project.impact" placeholder="e.g. 80" />
-              </div>
-            </div>
-
-            <div class="project-field-help">
-              <span><strong>Complexity:</strong> how technically deep the build is</span>
-              <span><strong>Weeks:</strong> realistic time you can spend on it</span>
-              <span><strong>Impact:</strong> how impressive it would be to a recruiter or hiring manager</span>
-            </div>
-
-            <div class="impact-bar-wrap">
-              <div class="impact-bar" [style.width.%]="project.impact" [style.background]="scoreColor(project.impact)"></div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel-section history-section" [class.mobile-collapsed]="!showMobileHistory">
-        <div class="section-head compact">
-          <div>
-            <span class="section-kicker">History</span>
-            <h2>Saved Scenarios</h2>
-          </div>
-          <div class="section-status"><span class="loading-chip">{{ historyCacheLabel }}</span><button class="mobile-toggle" type="button" (click)="showMobileHistory = !showMobileHistory">{{ showMobileHistory ? 'Collapse' : 'Expand' }}</button></div>
-        </div>
-
-        <div class="history-list" *ngIf="scenarioHistory.length; else historyEmpty">
-          <article class="history-card" *ngFor="let scenario of scenarioHistory; trackBy: trackByHistory" [class.is-compare]="compareScenario?._id === scenario._id">
-            <div class="history-main">
-              <div>
-                <strong>{{ scenario.name }}</strong>
-                <span>{{ formatDate(scenario.createdAt) }}</span>
-              </div>
-              <div class="history-scores">
-                <span>{{ scenario.predicted.hiringScore }}/100</span>
-                <small>Hiring</small>
-              </div>
-            </div>
-
-            <div class="history-meta">
-              <span>{{ formatRole(scenario.role) }}</span>
-              <span>{{ scenario.durationWeeks }}w</span>
-              <span>{{ scenario.confidenceScore || scenario.result.confidenceScore }}% confidence</span>
-              <span *ngIf="scenario.scenarioHash">Hash {{ scenario.scenarioHash.slice(0, 8) }}</span>
-            </div>
-
-            <div class="history-actions">
-              <button type="button" (click)="loadScenario(scenario)">Load</button>
-              <button type="button" (click)="compareWithScenario(scenario)">
-                {{ compareScenario?._id === scenario._id ? 'Close Compare' : 'Compare' }}
-              </button>
-              <button type="button" class="danger" (click)="deleteScenario(scenario._id)" [disabled]="deletingScenarioId === scenario._id">
-                {{ deletingScenarioId === scenario._id ? 'Deleting...' : 'Delete' }}
-              </button>
-            </div>
-          </article>
-        </div>
-
-        <ng-template #historyEmpty>
-          <div class="history-empty">
-            <p>No saved scenarios yet. Run a simulation and save the best plan to compare later.</p>
-          </div>
-        </ng-template>
-      </section>
-
-      <section class="panel-section action-section">
-        <div class="error-msg" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </div>
-
-        <div class="action-row">
-          <button class="secondary-btn" type="button" (click)="saveScenario()" [disabled]="!result || isSavingScenario || !!validationError">
-            {{ isSavingScenario ? 'Saving...' : 'Save Scenario' }}
-          </button>
-
-          <button class="run-btn" type="button" (click)="simulate()" [disabled]="isRunning || !!validationError">
-            {{ isRunning ? 'Running Simulation...' : 'Run Simulation' }}
-          </button>
-        </div>
-      </section>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ contextError }}</span>
     </div>
 
-    <div class="panel result-panel">
-      <div class="result-empty" *ngIf="!hasSimulated && !isRunning">
-        <div class="empty-badge">What-if sandbox</div>
-        <h2>Build a scenario to see how your plan changes hiring outcomes</h2>
-        <p>
-          Use the left panel to combine role-aware skills, projects, and a realistic timeline.
-          You will get a deterministic prediction with confidence and uncertainty.
-        </p>
-      </div>
+    <div class="message-card warning" *ngIf="historyError">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ historyError }}</span>
+    </div>
 
-      <div class="result-loading" *ngIf="isRunning">
-        <div class="loading-ring"></div>
-        <div class="loading-copy">
-          <strong>Evaluating your scenario</strong>
-          <span>Calculating skill impact, project strength, synergy, and overload trade-offs.</span>
-        </div>
-      </div>
-
-      <ng-container *ngIf="result && !isRunning">
-        <section class="result-top-grid">
-          <article class="metric-card gradient-violet">
-            <span class="metric-label">Estimated Hiring Score</span>
-            <div class="metric-values">
-              <span class="metric-before">{{ result.baseline.hiringScore }}</span>
-              <span class="metric-arrow" aria-hidden="true">&rarr;</span>
-              <strong [style.color]="scoreColor(result.predicted.hiringScore)">{{ result.predicted.hiringScore }}</strong>
-            </div>
-            <span class="metric-delta">{{ deltaLabel(result.improvements.hiringScore) }} pts</span>
-          </article>
-
-          <article class="metric-card gradient-blue">
-            <span class="metric-label">Estimated Job Match</span>
-            <div class="metric-values">
-              <span class="metric-before">{{ result.baseline.jobMatch }}%</span>
-              <span class="metric-arrow" aria-hidden="true">&rarr;</span>
-              <strong [style.color]="scoreColor(result.predicted.jobMatch)">{{ result.predicted.jobMatch }}%</strong>
-            </div>
-            <span class="metric-delta">{{ deltaLabel(result.improvements.jobMatch) }}%</span>
-          </article>
-
-          <article class="metric-card gradient-green">
-            <span class="metric-label">Confidence</span>
-            <div class="metric-values single">
-              <strong>{{ result.confidenceScore }}%</strong>
-            </div>
-            <span class="metric-delta">
-              {{ result.confidenceScore >= 80 ? 'High confidence' : result.confidenceScore >= 60 ? 'Moderate confidence' : 'Lower confidence' }}
-            </span>
-          </article>
-
-          <article class="metric-card gradient-amber">
-            <span class="metric-label">Suggested Duration</span>
-            <div class="metric-values single">
-              <strong>{{ result.meta.suggestedDurationWeeks }}w</strong>
-            </div>
-            <span class="metric-delta">Current plan: {{ result.meta.durationWeeks }}w</span>
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Confidence Reason</h3>
-              <span class="block-tag">Scenario {{ result.scenarioHash.slice(0, 8) }}</span>
-            </div>
-
-            <div class="explain-stack">
-              <p>{{ result.explainability?.confidenceReason }}</p>
-              <p>{{ result.explainability?.effortVsDuration }}</p>
-            </div>
-          </article>
-
-          <article class="card-block tone-info" *ngIf="result.explainability?.scoreDrivers?.length">
-            <div class="block-head">
-              <h3>What Improved the Score</h3>
-              <span class="block-tag">Drivers</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let item of result.explainability?.scoreDrivers">{{ item }}</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="result-split-grid" *ngIf="result.explainability?.penalties?.length">
-          <article class="card-block tone-warning">
-            <div class="block-head">
-              <h3>What Caused Penalties</h3>
-              <span class="block-tag">Trade-offs</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let item of result.explainability?.penalties">{{ item }}</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Uncertainty Range</h3>
-              <span class="block-tag">Expected vs possible range</span>
-            </div>
-
-            <div class="range-list">
-              <div class="range-row">
-                <span>Hiring Score</span>
-                <div class="range-bar-track">
-                  <div class="range-bar-window" [style.left.%]="result.uncertaintyRange.low.hiringScore" [style.width.%]="rangeWidth(result.uncertaintyRange.low.hiringScore, result.uncertaintyRange.high.hiringScore)"></div>
-                  <div class="range-bar-expected" [style.left.%]="result.uncertaintyRange.expected.hiringScore"></div>
-                </div>
-                <strong>{{ result.uncertaintyRange.low.hiringScore }} - {{ result.uncertaintyRange.high.hiringScore }}</strong>
-              </div>
-
-              <div class="range-row">
-                <span>Job Match</span>
-                <div class="range-bar-track">
-                  <div class="range-bar-window blue" [style.left.%]="result.uncertaintyRange.low.jobMatch" [style.width.%]="rangeWidth(result.uncertaintyRange.low.jobMatch, result.uncertaintyRange.high.jobMatch)"></div>
-                  <div class="range-bar-expected blue" [style.left.%]="result.uncertaintyRange.expected.jobMatch"></div>
-                </div>
-                <strong>{{ result.uncertaintyRange.low.jobMatch }} - {{ result.uncertaintyRange.high.jobMatch }}%</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="card-block compare-block" *ngIf="compareScenario as scenario">
-            <div class="block-head">
-              <h3>Scenario Comparison</h3>
-              <button type="button" class="ghost-inline-btn" (click)="compareScenario = null">Close</button>
-            </div>
-
-            <div class="compare-summary">
-              <div>
-                <span class="compare-label">Current scenario</span>
-                <strong>{{ result.predicted.hiringScore }}/100 hiring</strong>
-                <small>{{ result.predicted.jobMatch }}% job match</small>
-              </div>
-
-              <div>
-                <span class="compare-label">{{ scenario.name }}</span>
-                <strong>{{ scenario.result.predicted.hiringScore }}/100 hiring</strong>
-                <small>{{ scenario.result.predicted.jobMatch }}% job match</small>
-              </div>
-            </div>
-
-            <div class="compare-deltas">
-              <div>
-                <span>Hiring difference</span>
-                <strong>{{ deltaLabel(result.predicted.hiringScore - scenario.result.predicted.hiringScore) }}</strong>
-              </div>
-              <div>
-                <span>Job match difference</span>
-                <strong>{{ deltaLabel(result.predicted.jobMatch - scenario.result.predicted.jobMatch) }}</strong>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Before vs After</h3>
-              <span class="block-tag">Estimated to predicted</span>
-            </div>
-
-            <div class="score-visuals">
-              <div class="score-visual">
-                <div class="score-visual-meta">
-                  <span>Hiring Score</span>
-                  <strong>{{ result.baseline.hiringScore }} → {{ result.predicted.hiringScore }}</strong>
-                </div>
-                <div class="score-track">
-                  <div class="score-fill before" [style.width.%]="result.baseline.hiringScore"></div>
-                  <div class="score-fill after" [style.width.%]="result.predicted.hiringScore" [style.background]="scoreColor(result.predicted.hiringScore)"></div>
-                </div>
-              </div>
-
-              <div class="score-visual">
-                <div class="score-visual-meta">
-                  <span>Job Match</span>
-                  <strong>{{ result.baseline.jobMatch }}% → {{ result.predicted.jobMatch }}%</strong>
-                </div>
-                <div class="score-track">
-                  <div class="score-fill before" [style.width.%]="result.baseline.jobMatch"></div>
-                  <div class="score-fill after blue" [style.width.%]="result.predicted.jobMatch"></div>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Impact Breakdown</h3>
-              <span class="block-tag" *ngIf="result.meta.overloaded">Overload penalty applied</span>
-            </div>
-
-            <div class="breakdown-rows">
-              <div class="breakdown-row" *ngFor="let row of breakdownRows">
-                <span class="breakdown-label">{{ row.label }}</span>
-                <div class="breakdown-bar-wrap">
-                  <div class="breakdown-bar" [class.negative]="row.value < 0" [style.width.%]="barWidth(row.value)" [style.background]="row.color"></div>
-                </div>
-                <strong [style.color]="row.color">{{ row.value >= 0 ? '+' : '' }}{{ row.value }}</strong>
-              </div>
-            </div>
-
-            <div class="total-row">
-              <span>Total improvement</span>
-              <strong>+{{ result.breakdown.total }} pts</strong>
-            </div>
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block" *ngIf="result.skillDetails.length">
-            <div class="block-head">
-              <h3>Skill Impact</h3>
-              <span class="block-tag">{{ result.skillDetails.length }} skills</span>
-            </div>
-
-            <div class="impact-list">
-              <div class="impact-item" *ngFor="let detail of result.skillDetails">
-                <div class="impact-copy">
-                  <strong>{{ detail.skill }}</strong>
-                  <span [style.color]="tierColor(detail.tier)">{{ tierLabel(detail.tier) }} · Demand {{ detail.demand }}x</span>
-                </div>
-                <div class="impact-points">
-                  <strong>+{{ detail.pts }}</strong>
-                </div>
-              </div>
-            </div>
-
-          </article>
-
-          <article class="card-block" *ngIf="result.projectDetails.length">
-            <div class="block-head">
-              <h3>Project Impact</h3>
-              <span class="block-tag">{{ result.projectDetails.length }} projects</span>
-            </div>
-
-            <div class="impact-list">
-              <div class="impact-item" *ngFor="let detail of result.projectDetails">
-                <div class="impact-copy">
-                  <strong>{{ detail.name }}</strong>
-                  <span>{{ detail.complexity | titlecase }} complexity · {{ detail.weeks }} weeks · impact {{ detail.impact }}/100</span>
-                </div>
-                <div class="impact-points">
-                  <strong>+{{ detail.pts }}</strong>
-                </div>
-              </div>
-            </div>
-
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block tone-warning" *ngIf="result.warnings.length">
-            <div class="block-head">
-              <h3>Warnings</h3>
-              <span class="block-tag">Stay realistic</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let warning of result.warnings">{{ warning }}</li>
-            </ul>
-          </article>
-
-          <article class="card-block">
-            <div class="block-head">
-              <h3>Assumptions</h3>
-              <span class="block-tag">Explainable inputs</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let note of result.assumptions.notes">{{ note }}</li>
-            </ul>
-
-            <div class="meta-row">
-              <span>Role <strong>{{ formatRole(result.meta.role) }}</strong></span>
-              <span>Level <strong>{{ result.meta.level | titlecase }}</strong></span>
-              <span>Effort <strong>{{ result.meta.skillsEffort + result.meta.projectsEffort | number: '1.0-1' }}</strong></span>
-            </div>
-          </article>
-        </section>
-
-        <section class="result-split-grid">
-          <article class="card-block tone-info" *ngIf="result.insights.length">
-            <div class="block-head">
-              <h3>Insights</h3>
-              <span class="block-tag">What the math says</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let insight of result.insights">{{ insight }}</li>
-            </ul>
-          </article>
-
-          <article class="card-block tone-success" *ngIf="result.suggestions.length">
-            <div class="block-head">
-              <h3>Recommended Next Moves</h3>
-              <span class="block-tag">Best follow-up actions</span>
-            </div>
-
-            <ul class="bullet-list">
-              <li *ngFor="let suggestion of result.suggestions">{{ suggestion }}</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="card-block source-card" *ngIf="result.assumptions.sources.length">
-          <div class="block-head">
-            <h3>Data Sources Used</h3>
-            <span class="block-tag">Read-only supporting signals</span>
-          </div>
-
-          <div class="source-grid">
-            <div class="source-entry" *ngFor="let source of result.assumptions.sources">
-              <div>
-                <strong>{{ source.label }}</strong>
-                <span *ngIf="source.lastUpdatedAt">{{ formatDate(source.lastUpdatedAt) }}</span>
-              </div>
-              <span class="source-state">Connected</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="result-actions">
-          <button class="secondary-btn" type="button" (click)="saveScenario()" [disabled]="isSavingScenario">
-            {{ isSavingScenario ? 'Saving...' : 'Save This Scenario' }}
-          </button>
-          <button class="run-btn" type="button" (click)="createSprintDraft()" [disabled]="isCreatingSprint">
-            {{ isCreatingSprint ? 'Sending to Career Sprint...' : 'Create Sprint From Scenario' }}
-          </button>
-        </section>
-      </ng-container>
+    <div
+      class="message-card"
+      [class.success]="actionTone === 'success'"
+      [class.error]="actionTone === 'error'"
+      *ngIf="actionMessage"
+    >
+      <svg
+        *ngIf="actionTone === 'success'"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <svg
+        *ngIf="actionTone === 'error'"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+      <span>{{ actionMessage }}</span>
     </div>
   </div>
+
+  <!-- Top Horizontal Pre-Planner Bar (Signal Grounding & Quick Templates) -->
+  <app-scenario-context
+    class="studio-top-bar"
+    [experienceLevel]="experienceLevel"
+    [durationWeeks]="durationWeeks"
+    [projects]="projects"
+    [isLoadingContext]="isLoadingContext"
+    [showMobileContext]="showMobileContext"
+    [context]="context"
+    [contextCacheHit]="contextCacheHit"
+    [templates]="templates"
+    [contextCacheLabel]="contextCacheLabel"
+    (showMobileContextChange)="showMobileContext = $event"
+    (addSuggestedSkillRequested)="addSuggestedSkill($event)"
+    (addSuggestedProjectRequested)="addSuggestedProject($event)"
+    (applyTemplateRequested)="applyTemplate($event)"
+  ></app-scenario-context>
+
+  <div class="sim-grid">
+    <app-scenario-inputs
+      class="panel input-panel"
+      [baselineConfirmed]="baselineConfirmed"
+      [baselineHiringScore]="baselineHiringScore"
+      [baselineJobMatch]="baselineJobMatch"
+      [role]="role"
+      [experienceLevel]="experienceLevel"
+      [durationWeeks]="durationWeeks"
+      [skillInput]="skillInput"
+      [scenarioName]="scenarioName"
+      [skills]="skills"
+      [projects]="projects"
+      [isRunning]="isRunning"
+      [isSavingScenario]="isSavingScenario"
+      [errorMessage]="errorMessage"
+      [result]="result"
+      [roleOptions]="roleOptions"
+      [levelOptions]="levelOptions"
+      [durationOptions]="durationOptions"
+      [isResultCurrent]="isResultCurrent"
+      [validationError]="validationError"
+      (scenarioNameChange)="scenarioName = $event"
+      (roleChange)="role = $event"
+      (experienceLevelChange)="experienceLevel = $event"
+      (baselineHiringScoreChange)="baselineHiringScore = $event"
+      (baselineJobMatchChange)="baselineJobMatch = $event"
+      (baselineConfirmedChange)="baselineConfirmed = $event"
+      (skillInputChange)="skillInput = $event"
+      (projectsChange)="projects = $event"
+      (durationWeeksChange)="durationWeeks = $event"
+      (addSuggestedSkillRequested)="addSuggestedSkill($event)"
+      (addSkillRequested)="addSkill()"
+      (removeSkillRequested)="removeSkill($event)"
+      (addProjectRequested)="addProject()"
+      (removeProjectRequested)="removeProject($event)"
+      (saveScenarioRequested)="saveScenario()"
+      (simulateRequested)="simulate()"
+    ></app-scenario-inputs>
+    <app-scenario-results
+      class="panel result-panel"
+      [role]="role"
+      [durationWeeks]="durationWeeks"
+      [isRunning]="isRunning"
+      [isSavingScenario]="isSavingScenario"
+      [isCreatingSprint]="isCreatingSprint"
+      [result]="result"
+      [hasSimulated]="hasSimulated"
+      [activeResultTab]="activeResultTab"
+      [isResultCurrent]="isResultCurrent"
+      (activeResultTabChange)="activeResultTab = $event"
+      (saveScenarioRequested)="saveScenario()"
+      (createSprintDraftRequested)="createSprintDraft()"
+    ></app-scenario-results>
+  </div>
+  <app-scenario-history
+    [nextHistoryCursor]="nextHistoryCursor"
+    [role]="role"
+    [durationWeeks]="durationWeeks"
+    [skills]="skills"
+    [projects]="projects"
+    [isLoadingHistory]="isLoadingHistory"
+    [showMobileHistory]="showMobileHistory"
+    [scenarioHistory]="scenarioHistory"
+    [compareScenario]="compareScenario"
+    [isCompareOpen]="isCompareOpen"
+    [deletingScenarioId]="deletingScenarioId"
+    [historyCacheHit]="historyCacheHit"
+    [historyCacheLabel]="historyCacheLabel"
+    [result]="result"
+    [baselineHiringScore]="baselineHiringScore"
+    [baselineJobMatch]="baselineJobMatch"
+    [baselineConfirmed]="baselineConfirmed"
+    [scenarioName]="scenarioName"
+    [experienceLevel]="experienceLevel"
+    (showMobileHistoryChange)="showMobileHistory = $event"
+    (loadScenarioRequested)="loadScenario($event)"
+    (compareWithScenarioRequested)="compareWithScenario($event)"
+    (closeCompareRequested)="closeCompare()"
+    (deleteScenarioRequested)="deleteScenario($event)"
+    (loadMoreHistoryRequested)="loadMoreHistory()"
+    (benchmarkSelected)="selectBenchmarkById($event)"
+  ></app-scenario-history>
 </div>

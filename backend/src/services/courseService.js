@@ -1,3 +1,11 @@
+'use strict';
+const {
+  safeCourseUrl,
+  canonicalCourseKey,
+  digest,
+  skills: canonicalSkills,
+  skillAliases,
+} = require('../utils/courseIdentity');
 const axios = require('axios');
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
@@ -7,17 +15,18 @@ const YOUTUBE_CIRCUIT_TTL_MS = 30 * 60 * 1000;
 const YOUTUBE_CACHE_MAX_ENTRIES = 40;
 const YOUTUBE_FAILURE_THRESHOLD = 3;
 const youtubeCache = new Map();
+const youtubeInflight = new Map();
 let youtubeFailureCount = 0;
 let youtubeCircuitOpenUntil = 0;
 const COURSE_POOL_SIZE = {
   All: 30,
-  YouTube: 40
+  YouTube: 40,
 };
 const COURSE_LIMITS = {
   minPage: 1,
   defaultPage: 1,
   defaultLimit: 10,
-  maxLimit: 20
+  maxLimit: 20,
 };
 
 const VALID_PLATFORMS = ['All', 'Udemy', 'Coursera', 'YouTube', 'Other'];
@@ -30,7 +39,7 @@ const DURATION_ALIASES = {
   '10+': '10+',
   long: '10+',
   all: 'All',
-  '': 'All'
+  '': 'All',
 };
 
 const PLATFORM_COLORS = {
@@ -38,15 +47,51 @@ const PLATFORM_COLORS = {
   Coursera: { bg: '#0056d2', text: '#ffffff' },
   edX: { bg: '#02262b', text: '#ffffff' },
   freeCodeCamp: { bg: '#006400', text: '#ffffff' },
-  YouTube: { bg: '#ff0000', text: '#ffffff' }
+  YouTube: { bg: '#ff0000', text: '#ffffff' },
 };
 
 const KNOWN_TOPICS = [
-  'JavaScript', 'TypeScript', 'Python', 'React', 'Angular', 'Vue', 'Node.js', 'Express',
-  'MongoDB', 'SQL', 'PostgreSQL', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git',
-  'HTML', 'CSS', 'Redux', 'GraphQL', 'REST', 'API', 'Testing', 'CI/CD', 'Linux',
-  'System Design', 'Data Structures', 'Algorithms', 'Machine Learning', 'AI', 'Java',
-  'C#', '.NET', 'PHP', 'Django', 'FastAPI', 'Spring', 'Next.js', 'Tailwind', 'Flutter'
+  'JavaScript',
+  'TypeScript',
+  'Python',
+  'React',
+  'Angular',
+  'Vue',
+  'Node.js',
+  'Express',
+  'MongoDB',
+  'SQL',
+  'PostgreSQL',
+  'Docker',
+  'Kubernetes',
+  'AWS',
+  'GCP',
+  'Azure',
+  'Git',
+  'HTML',
+  'CSS',
+  'Redux',
+  'GraphQL',
+  'REST',
+  'API',
+  'Testing',
+  'CI/CD',
+  'Linux',
+  'System Design',
+  'Data Structures',
+  'Algorithms',
+  'Machine Learning',
+  'AI',
+  'Java',
+  'C#',
+  '.NET',
+  'PHP',
+  'Django',
+  'FastAPI',
+  'Spring',
+  'Next.js',
+  'Tailwind',
+  'Flutter',
 ];
 
 const EXPERIENCE_LEVEL_MAP = {
@@ -56,7 +101,7 @@ const EXPERIENCE_LEVEL_MAP = {
   '1-2 years': 'Intermediate',
   '2-3 years': 'Intermediate',
   '3-5 years': 'Advanced',
-  '5+ years': 'Advanced'
+  '5+ years': 'Advanced',
 };
 
 function clamp(value, min, max) {
@@ -73,7 +118,12 @@ function normalisePlatform(raw) {
   if (value.includes('udemy')) return 'Udemy';
   if (value.includes('coursera')) return 'Coursera';
   if (value.includes('youtube')) return 'YouTube';
-  if (value.includes('edx') || value.includes('freecodecamp') || value.includes('free code') || value === 'other') {
+  if (
+    value.includes('edx') ||
+    value.includes('freecodecamp') ||
+    value.includes('free code') ||
+    value === 'other'
+  ) {
     return 'Other';
   }
   return 'All';
@@ -111,7 +161,7 @@ function normaliseLimit(raw) {
   return clamp(
     Number.parseInt(raw, 10) || COURSE_LIMITS.defaultLimit,
     COURSE_LIMITS.minPage,
-    COURSE_LIMITS.maxLimit
+    COURSE_LIMITS.maxLimit,
   );
 }
 
@@ -119,7 +169,7 @@ function normaliseCourseFilters(query = {}) {
   const platform = normalisePlatform(query.platform);
   const rating = normaliseRating(query.rating);
   const level = normaliseLevel(query.level);
-  const topic = normaliseTopic(query.topic);
+  const topic = normaliseTopic(query.topic || query.skill || query.search);
   const duration = normaliseDuration(query.duration);
 
   return {
@@ -129,7 +179,7 @@ function normaliseCourseFilters(query = {}) {
     topic,
     duration,
     page: normalisePage(query.page),
-    limit: normaliseLimit(query.limit)
+    limit: normaliseLimit(query.limit),
   };
 }
 
@@ -146,11 +196,12 @@ function parseDuration(iso) {
   return {
     hours,
     minutes,
-    totalHours: hours + (minutes / 60) + (seconds / 3600)
+    totalHours: hours + minutes / 60 + seconds / 3600,
   };
 }
 
-function calcYouTubeRating(views, likes) {
+// Derived engagement indicator only; never a provider review rating.
+function calcYouTubeEngagementScore(views, likes) {
   const safeViews = Number.parseInt(views, 10);
   if (!Number.isFinite(safeViews) || safeViews <= 0) return null;
   const safeLikes = Math.max(0, Number.parseInt(likes, 10) || 0);
@@ -161,12 +212,10 @@ function calcYouTubeRating(views, likes) {
 }
 
 function extractTopics(title, description = '') {
-  const haystack = `${title} ${description}`.toLowerCase();
-  return KNOWN_TOPICS.filter((topic) => haystack.includes(topic.toLowerCase())).slice(0, 5);
+  return getMatchedSkills({ title, description, topics: [] }, KNOWN_TOPICS).slice(0, 5);
 }
-
 function hasValidCourseUrl(url) {
-  return /^https?:\/\/[^\s]+$/i.test(toTrimmedString(url));
+  return Boolean(safeCourseUrl(url));
 }
 
 function ensureTopics(topics = [], title = '', description = '') {
@@ -182,61 +231,79 @@ function ensureTopics(topics = [], title = '', description = '') {
   return extractTopics(title, description);
 }
 
-function normaliseCourse(course = {}, index = 0) {
-  const title = toTrimmedString(course.title).slice(0, 200);
-  if (!title) return null;
-
-  const description = toTrimmedString(course.description).slice(0, 600);
-  const normalizedPlatform = normalisePlatform(course.platform);
-  const platform = course.platform === 'edX' || course.platform === 'freeCodeCamp'
-    ? course.platform
-    : normalizedPlatform === 'Other'
-      ? 'edX'
-      : normalizedPlatform;
-  const safePlatform = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(platform)
-    ? platform
+const optionalNumber = (value, min = 0, max = Number.MAX_SAFE_INTEGER) =>
+  typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max
+    ? value
     : null;
-  if (!safePlatform) return null;
-
-  const rawUrl = toTrimmedString(course.url);
-  if (!hasValidCourseUrl(rawUrl)) return null;
-
-  const parsedRating = Number.parseFloat(course.rating);
-  const rating = Number.isFinite(parsedRating) && parsedRating > 0
-    ? Number(clamp(parsedRating, 0, 5).toFixed(1))
-    : undefined;
-  const parsedReviews = Number.parseInt(course.reviewCount, 10);
-  const reviewCount = Number.isFinite(parsedReviews) && parsedReviews > 0 ? parsedReviews : 0;
-  const durationHours = Math.max(0, Number(course.durationHours) || 0);
-  const duration = toTrimmedString(course.duration)
-    || (durationHours ? `${durationHours.toFixed(durationHours >= 10 ? 0 : 1)}h` : '');
-  const level = ['Beginner', 'Intermediate', 'Advanced'].includes(course.level)
-    ? course.level
-    : 'All Levels';
-  const topics = ensureTopics(course.topics, title, description);
-  const popularity = clamp(Number(course.popularity) || 0, 0, 100);
-
+function normaliseCourse(course = {}) {
+  if (!course || typeof course !== 'object') return null;
+  const title = toTrimmedString(course.title).slice(0, 200);
+  const platform = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform)
+    ? course.platform
+    : null;
+  const url = platform && safeCourseUrl(course.url, platform);
+  if (!title || !platform || !url) return null;
+  const key = canonicalCourseKey({ platform, url });
+  if (!key) return null;
+  const source = ['curated-catalog', 'youtube-api', 'provider'].includes(
+    course.metadataSource || course.provenance?.source,
+  )
+    ? course.metadataSource || course.provenance.source
+    : 'provider';
+  const rating =
+    source === 'youtube-api' || source === 'curated-catalog'
+      ? null
+      : optionalNumber(course.rating, 0.1, 5);
+  const durationHours = optionalNumber(course.durationHours, 0.001, 10000);
   return {
-    id: toTrimmedString(course.id).slice(0, 120) || `course_${safePlatform.toLowerCase()}_${index + 1}`,
+    id: toTrimmedString(course.id).slice(0, 120) || 'course_' + digest(key).slice(0, 24),
     title,
-    description,
-    platform: safePlatform,
-    instructor: toTrimmedString(course.instructor).slice(0, 120) || safePlatform,
+    description: toTrimmedString(course.description).slice(0, 600),
+    platform,
+    url,
+    instructor: toTrimmedString(course.instructor).slice(0, 120) || null,
     rating,
-    reviewCount,
-    duration,
-    durationHours: Number(durationHours.toFixed(2)),
-    level,
-    thumbnail: toTrimmedString(course.thumbnail).slice(0, 500),
-    url: rawUrl,
-    topics,
-    popularity
+    reviewCount: rating === null ? null : optionalNumber(course.reviewCount),
+    duration: durationHours === null ? null : toTrimmedString(course.duration).slice(0, 50) || null,
+    durationHours,
+    level: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'].includes(course.level)
+      ? course.level
+      : null,
+    thumbnail: /^https:\/\/(?:i\.ytimg\.com|img\.youtube\.com)\//.test(course.thumbnail || '')
+      ? course.thumbnail.slice(0, 500)
+      : '',
+    topics: canonicalSkills(ensureTopics(course.topics, title, course.description), 5),
+    popularity: optionalNumber(course.popularity, 0, 100),
+    engagementScore: optionalNumber(course.engagementScore, 0, 5),
+    viewCount: optionalNumber(course.viewCount),
+    likeCount: optionalNumber(course.likeCount),
+    provenance: {
+      source,
+      ratingSource: rating === null ? 'unavailable' : 'provider-reviews',
+      popularitySource:
+        optionalNumber(course.popularity, 0, 100) === null
+          ? 'unavailable'
+          : source === 'youtube-api'
+            ? 'derived-view-count'
+            : 'provider',
+      engagementSource:
+        optionalNumber(course.engagementScore, 0, 5) === null
+          ? 'unavailable'
+          : 'derived-views-likes',
+      metadataVerifiedAt:
+        source === 'youtube-api'
+          ? course.provenance?.metadataVerifiedAt || new Date().toISOString()
+          : null,
+      availability: source === 'youtube-api' ? 'observed' : 'unverified',
+      durationSource: durationHours === null ? 'unavailable' : source,
+    },
   };
 }
 
 function matchesDuration(course, durationFilter) {
   if (!durationFilter || durationFilter === 'All') return true;
-  const hours = Number(course.durationHours || 0);
+  const hours = optionalNumber(course.durationHours, 0.001);
+  if (hours === null) return false;
   if (durationFilter === '0-2') return hours <= 2;
   if (durationFilter === '2-10') return hours > 2 && hours <= 10;
   if (durationFilter === '10+') return hours > 10;
@@ -253,9 +320,7 @@ function matchesPlatform(course, platformFilter) {
 
 function matchesTopic(course, topicFilter) {
   if (!topicFilter) return true;
-  const topic = topicFilter.toLowerCase();
-  return [course.title, course.description, ...(course.topics || [])]
-    .some((value) => String(value || '').toLowerCase().includes(topic));
+  return getMatchedSkills(course, canonicalSkills([topicFilter], 1)).length > 0;
 }
 
 function matchesLevel(course, levelFilter) {
@@ -280,17 +345,72 @@ function applyCourseFilters(courses = [], filters = {}) {
 }
 
 function getMatchedSkills(course, skills = []) {
-  const haystack = `${course.title} ${course.description} ${(course.topics || []).join(' ')}`.toLowerCase();
+  const haystack =
+    `${course.title} ${course.description} ${(course.topics || []).join(' ')}`.toLowerCase();
   return skills
-    .map((skill) => toTrimmedString(skill))
+    .map((skill) => toTrimmedString(canonicalSkills([skill], 1)[0] || skill))
     .filter(Boolean)
     .filter((skill) => {
-      const escapedSkill = skill.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(?:^|[^a-z0-9_])${escapedSkill}(?:[^a-z0-9_]|$)`, 'i');
-      return regex.test(haystack);
+      return skillAliases(skill).some((alias) => {
+        const escapedSkill = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const prefix = alias.length <= 2 ? '[^a-z0-9_+#.]' : '[^a-z0-9_+#]';
+        return new RegExp(`(?:^|${prefix})${escapedSkill}(?:[^a-z0-9_+#]|$)`, 'i').test(haystack);
+      });
     })
     .slice(0, 3);
 }
+
+const STACK_TOPICS = {
+  Frontend: [
+    'JavaScript',
+    'TypeScript',
+    'React',
+    'Angular',
+    'Vue',
+    'HTML',
+    'CSS',
+    'Accessibility',
+    'Next.js',
+  ],
+  Backend: [
+    'Node.js',
+    'Express',
+    'SQL',
+    'PostgreSQL',
+    'MongoDB',
+    'Java',
+    'Python',
+    'C#',
+    '.NET',
+    'PHP',
+    'APIs',
+    'GraphQL',
+  ],
+  'Full Stack': [
+    'JavaScript',
+    'TypeScript',
+    'React',
+    'Angular',
+    'Vue',
+    'HTML',
+    'CSS',
+    'Node.js',
+    'Express',
+    'SQL',
+    'MongoDB',
+    'APIs',
+  ],
+  'AI/ML': ['Python', 'Machine Learning', 'AI', 'Data Science', 'Statistics', 'SQL'],
+};
+const matchedCareerSkills = (course, context) =>
+  getMatchedSkills(course, [
+    ...(STACK_TOPICS[context.careerStack] || []),
+    'Git',
+    'Testing',
+    'Docker',
+    'CI/CD',
+    'Linux',
+  ]);
 
 function computeRelevance(course, context = {}) {
   const missingSkills = Array.isArray(context.skillGaps) ? context.skillGaps : [];
@@ -298,7 +418,8 @@ function computeRelevance(course, context = {}) {
   const stack = toTrimmedString(context.careerStack).toLowerCase();
   const requestedTopic = toTrimmedString(context.topic).toLowerCase();
   const inferredLevel = normaliseExperienceLevel(context.experienceLevel);
-  const courseText = `${course.title} ${course.description} ${(course.topics || []).join(' ')}`.toLowerCase();
+  const courseText =
+    `${course.title} ${course.description} ${(course.topics || []).join(' ')}`.toLowerCase();
 
   let score = 25;
   const matchedGaps = getMatchedSkills(course, missingSkills);
@@ -307,13 +428,15 @@ function computeRelevance(course, context = {}) {
   score += matchedGaps.length * 18;
   score += matchedKnown.length * 4;
 
-  if (stack && courseText.includes(stack)) score += 10;
-  if (requestedTopic && courseText.includes(requestedTopic)) score += 14;
+  if (stack && (courseText.includes(stack) || matchedCareerSkills(course, context).length))
+    score += 10;
+  if (requestedTopic && matchesTopic(course, requestedTopic)) score += 14;
 
   if (course.level === inferredLevel) score += 12;
   else if (course.level === 'All Levels') score += 6;
 
-  if (course.durationHours > 0 && course.durationHours <= 10 && inferredLevel === 'Beginner') score += 6;
+  if (course.durationHours > 0 && course.durationHours <= 10 && inferredLevel === 'Beginner')
+    score += 6;
   if (course.durationHours > 10 && inferredLevel === 'Advanced') score += 4;
 
   return clamp(Math.round(score), 0, 100);
@@ -325,7 +448,7 @@ function buildWhyRecommended(course, context = {}) {
   const reasons = [];
 
   if (matchedGaps.length) {
-    reasons.push(`Targets ${matchedGaps.join(', ')}`);
+    reasons.push(`Learning/evidence review targets: ${matchedGaps.join(', ')}`);
   }
 
   if (requestedTopic && matchesTopic(course, requestedTopic)) {
@@ -336,12 +459,12 @@ function buildWhyRecommended(course, context = {}) {
     reasons.push(`Fits your ${context.experienceLevel} learning stage`);
   }
 
-  if (toTrimmedString(context.careerStack) && `${course.title} ${(course.topics || []).join(' ')}`.toLowerCase().includes(toTrimmedString(context.careerStack).toLowerCase())) {
-    reasons.push(`Aligned with your ${context.careerStack} track`);
-  }
+  const careerSkills = matchedCareerSkills(course, context);
+  if (careerSkills.length)
+    reasons.push(`Covers ${careerSkills.join(', ')} for your ${context.careerStack} track`);
 
   if (!reasons.length) {
-    reasons.push('Supports your current career path with practical skill coverage');
+    reasons.push('Catalog option for your selected career context');
   }
 
   return reasons.slice(0, 2).join(' • ');
@@ -355,90 +478,41 @@ function scoreAndRank(courses = [], context = {}) {
       const popularity = Number(course.popularity || 0);
       const finalScore = hasRating
         ? Math.round(
-          ((Number(course.rating) / 5) * 100 * 0.38)
-          + (popularity * 0.28)
-          + (relevanceScore * 0.34)
-        )
-        : Math.round((popularity * 0.45) + (relevanceScore * 0.55));
+            (Number(course.rating) / 5) * 100 * 0.38 + popularity * 0.28 + relevanceScore * 0.34,
+          )
+        : Math.round(popularity * 0.45 + relevanceScore * 0.55);
 
       return {
         ...course,
         relevanceScore,
         finalScore,
-        whyRecommended: buildWhyRecommended(course, context)
+        matchedCareerSkills: matchedCareerSkills(course, context),
+        matchedRequiredTargets: getMatchedSkills(
+          course,
+          (context.targets || [])
+            .filter((item) => item.requirement === 'REQUIRED' && item.status !== 'DEMONSTRATED')
+            .map((item) => item.name),
+        ),
+        matchedTargets: getMatchedSkills(course, context.skillGaps || []),
+        whyRecommended: buildWhyRecommended(course, context),
       };
     })
-    .sort((left, right) => Number(right.finalScore || 0) - Number(left.finalScore || 0));
+    .sort(
+      (left, right) =>
+        right.matchedRequiredTargets.length - left.matchedRequiredTargets.length ||
+        right.matchedTargets.length - left.matchedTargets.length ||
+        Number(right.matchedCareerSkills.length > 0) -
+          Number(left.matchedCareerSkills.length > 0) ||
+        right.finalScore - left.finalScore ||
+        left.id.localeCompare(right.id, 'en'),
+    );
 }
 
-function toMixBucket(course) {
-  if (course.platform === 'Udemy') return 'Udemy';
-  if (course.platform === 'YouTube') return 'YouTube';
-  if (course.platform === 'Coursera') return 'Coursera';
-  return 'Other';
-}
-
-function blendDefaultPlatformPages(courses = []) {
-  const quotas = { Udemy: 3, YouTube: 3, Coursera: 2, Other: 2 };
-  const buckets = { Udemy: [], YouTube: [], Coursera: [], Other: [] };
-
-  for (const course of courses) {
-    buckets[toMixBucket(course)].push(course);
-  }
-
-  const takeFromBucket = (bucketName, count) => {
-    const output = [];
-    while (output.length < count && buckets[bucketName].length) {
-      output.push(buckets[bucketName].shift());
-    }
-    return output;
-  };
-
-  const takeBestRemaining = () => {
-    const bucketNames = ['Udemy', 'YouTube', 'Coursera', 'Other'];
-    let bestBucket = null;
-    let bestScore = -1;
-
-    for (const bucketName of bucketNames) {
-      const candidate = buckets[bucketName][0];
-      if (!candidate) continue;
-      const score = Number(candidate.finalScore || 0);
-      if (score > bestScore) {
-        bestScore = score;
-        bestBucket = bucketName;
-      }
-    }
-
-    return bestBucket ? buckets[bestBucket].shift() : null;
-  };
-
-  const mixed = [];
-  while (mixed.length < courses.length) {
-    const page = [
-      ...takeFromBucket('Udemy', quotas.Udemy),
-      ...takeFromBucket('YouTube', quotas.YouTube),
-      ...takeFromBucket('Coursera', quotas.Coursera),
-      ...takeFromBucket('Other', quotas.Other)
-    ];
-
-    while (page.length < 10) {
-      const extra = takeBestRemaining();
-      if (!extra) break;
-      page.push(extra);
-    }
-
-    if (!page.length) break;
-    mixed.push(...page);
-  }
-
-  return mixed;
-}
-
-async function fetchYouTubeCourses(query, maxResults = 20) {
-  const cacheKey = `${toTrimmedString(query).toLowerCase()}|${Math.min(50, Math.max(1, maxResults))}`;
+async function requestYouTubeCourses(query, maxResults = 20, options = {}) {
+  const cacheKey = `${digest(process.env.YOUTUBE_API_KEY || '')}:${toTrimmedString(query).toLowerCase()}|${Math.min(50, Math.max(1, maxResults))}`;
   const now = Date.now();
   const cached = youtubeCache.get(cacheKey);
-  if (cached && cached.expiresAt > now) {
+  if (!options.forceRefresh && cached && cached.expiresAt > now) {
     youtubeCache.delete(cacheKey);
     youtubeCache.set(cacheKey, cached);
     return { ...cached.result, fromCache: true };
@@ -448,11 +522,21 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey || apiKey === 'your_youtube_api_key') {
     console.warn('[CourseService] YOUTUBE_API_KEY not set. Skipping YouTube source.');
-    return { courses: [], status: 'unavailable', reason: 'YouTube is not configured. Showing ranked provider alternatives.', fromCache: false };
+    return {
+      courses: [],
+      status: 'unavailable',
+      reason: 'YouTube is not configured. Showing ranked provider alternatives.',
+      fromCache: false,
+    };
   }
 
   if (youtubeCircuitOpenUntil > now) {
-    return { courses: [], status: 'circuit-open', reason: 'YouTube is temporarily unavailable. Showing ranked provider alternatives.', fromCache: false };
+    return {
+      courses: [],
+      status: 'circuit-open',
+      reason: 'YouTube is temporarily unavailable. Showing ranked provider alternatives.',
+      fromCache: false,
+    };
   }
 
   try {
@@ -465,9 +549,9 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
           maxResults: Math.min(50, maxResults + 20),
           relevanceLanguage: 'en',
           videoDuration: 'long',
-          key: apiKey
+          key: apiKey,
         },
-        timeout: 10000
+        timeout: 10000,
       }),
       axios.get(`${YOUTUBE_API_BASE}/search`, {
         params: {
@@ -477,10 +561,10 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
           maxResults: Math.min(50, maxResults + 15),
           relevanceLanguage: 'en',
           videoDuration: 'medium',
-          key: apiKey
+          key: apiKey,
         },
-        timeout: 10000
-      })
+        timeout: 10000,
+      }),
     ]);
 
     const seenIds = new Set();
@@ -499,7 +583,16 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
     }
 
     if (!videoIds.length) {
-      const emptyResult = { courses: [], status: 'unavailable', reason: 'YouTube returned no matching courses.', fromCache: false };
+      if ([longResponse, mediumResponse].some((result) => result.status === 'rejected'))
+        throw new Error('YouTube search failed');
+      youtubeFailureCount = 0;
+      youtubeCircuitOpenUntil = 0;
+      const emptyResult = {
+        courses: [],
+        status: 'available',
+        reason: 'YouTube returned no matching courses.',
+        fromCache: false,
+      };
       setYouTubeCache(cacheKey, emptyResult, YOUTUBE_FAILURE_TTL_MS);
       return emptyResult;
     }
@@ -508,9 +601,9 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
       params: {
         part: 'snippet,contentDetails,statistics',
         id: videoIds.slice(0, 50).join(','),
-        key: apiKey
+        key: apiKey,
       },
-      timeout: 10000
+      timeout: 10000,
     });
 
     const courses = (detailsResponse.data.items || [])
@@ -523,26 +616,40 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
 
         const views = Number.parseInt(statistics.viewCount || '0', 10);
         const likes = Number.parseInt(statistics.likeCount || '0', 10);
-        const duration = durationMeta.hours > 0
-          ? `${durationMeta.hours}h ${String(durationMeta.minutes).padStart(2, '0')}m`
-          : `${durationMeta.minutes}m`;
+        const duration =
+          durationMeta.hours > 0
+            ? `${durationMeta.hours}h ${String(durationMeta.minutes).padStart(2, '0')}m`
+            : `${durationMeta.minutes}m`;
 
-        return normaliseCourse({
-          id: `yt_${item.id}`,
-          title: snippet.title,
-          description: (snippet.description || '').slice(0, 240),
-          platform: 'YouTube',
-          instructor: snippet.channelTitle || 'YouTube',
-          rating: calcYouTubeRating(views, likes),
-          reviewCount: likes > 0 ? likes : undefined,
-          duration,
-          durationHours: Number(durationMeta.totalHours.toFixed(2)),
-          level: 'All Levels',
-          thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url || '',
-          url: `https://www.youtube.com/watch?v=${item.id}`,
-          topics: extractTopics(snippet.title, snippet.description),
-          popularity: views > 0 ? Math.min(100, Math.max(10, Math.round((views / 200000) * 100))) : 0
-        }, index);
+        return normaliseCourse(
+          {
+            id: `yt_${item.id}`,
+            title: snippet.title,
+            description: (snippet.description || '').slice(0, 240),
+            platform: 'YouTube',
+            instructor: snippet.channelTitle || null,
+            rating: null,
+            reviewCount: null,
+            engagementScore: calcYouTubeEngagementScore(views, likes),
+            viewCount: optionalNumber(Number.parseInt(statistics.viewCount, 10)),
+            likeCount: optionalNumber(Number.parseInt(statistics.likeCount, 10)),
+            metadataSource: 'youtube-api',
+            duration,
+            durationHours: Number(durationMeta.totalHours.toFixed(2)),
+            level: null,
+            thumbnail:
+              snippet.thumbnails?.medium?.url ||
+              snippet.thumbnails?.high?.url ||
+              snippet.thumbnails?.default?.url ||
+              '',
+            url: `https://www.youtube.com/watch?v=${item.id}`,
+            topics: extractTopics(snippet.title, snippet.description),
+            popularity: Number.isFinite(Number.parseInt(statistics.viewCount, 10))
+              ? Math.min(100, Math.max(0, Math.round((views / 200000) * 100)))
+              : null,
+          },
+          index,
+        );
       })
       .filter(Boolean)
       .slice(0, maxResults);
@@ -553,7 +660,7 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
     setYouTubeCache(cacheKey, result, YOUTUBE_CACHE_TTL_MS);
     return result;
   } catch (error) {
-    console.error('[CourseService] YouTube API error:', error.response?.data?.error?.message || error.message);
+    console.warn('[CourseService] YouTube request failed; using source fallback.');
     youtubeFailureCount += 1;
     if (youtubeFailureCount >= YOUTUBE_FAILURE_THRESHOLD) {
       youtubeCircuitOpenUntil = Date.now() + YOUTUBE_CIRCUIT_TTL_MS;
@@ -563,7 +670,7 @@ async function fetchYouTubeCourses(query, maxResults = 20) {
       courses: [],
       status: youtubeCircuitOpenUntil > Date.now() ? 'circuit-open' : 'unavailable',
       reason: 'YouTube could not be reached. Showing ranked provider alternatives.',
-      fromCache: false
+      fromCache: false,
     };
     setYouTubeCache(cacheKey, result, YOUTUBE_FAILURE_TTL_MS);
     return result;
@@ -579,41 +686,24 @@ function setYouTubeCache(key, result, ttlMs) {
 }
 
 function buildFallbackPool(platform = 'All', count = 20) {
-  const allCourses = [
-    { id: 'fb_u1', title: 'The Complete JavaScript Course 2024: From Zero to Expert!', platform: 'Udemy', instructor: 'Jonas Schmedtmann', rating: 4.7, reviewCount: 180000, duration: '68h 30m', durationHours: 68.5, level: 'Beginner', url: 'https://www.udemy.com/course/the-complete-javascript-course/', topics: ['JavaScript', 'ES6', 'OOP'], popularity: 95, description: 'Master modern JavaScript with ES6+, OOP, closures, async and project-based practice.', thumbnail: '' },
-    { id: 'fb_u2', title: 'Node.js, Express, MongoDB & More: The Complete Bootcamp', platform: 'Udemy', instructor: 'Jonas Schmedtmann', rating: 4.8, reviewCount: 95000, duration: '42h 15m', durationHours: 42.25, level: 'Intermediate', url: 'https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/', topics: ['Node.js', 'Express', 'MongoDB'], popularity: 90, description: 'Complete Node.js backend development course covering REST APIs, authentication, security, and deployment.', thumbnail: '' },
-    { id: 'fb_u3', title: 'Docker & Kubernetes: The Practical Guide', platform: 'Udemy', instructor: 'Maximilian Schwarzmuller', rating: 4.7, reviewCount: 52000, duration: '24h 00m', durationHours: 24, level: 'Intermediate', url: 'https://www.udemy.com/course/docker-kubernetes-the-practical-guide/', topics: ['Docker', 'Kubernetes', 'DevOps'], popularity: 85, description: 'Learn Docker and Kubernetes with hands-on examples including deployments and production workflows.', thumbnail: '' },
-    { id: 'fb_u4', title: 'Angular - The Complete Guide (2024 Edition)', platform: 'Udemy', instructor: 'Maximilian Schwarzmuller', rating: 4.6, reviewCount: 130000, duration: '35h 00m', durationHours: 35, level: 'Beginner', url: 'https://www.udemy.com/course/the-complete-guide-to-angular-2/', topics: ['Angular', 'TypeScript', 'RxJS'], popularity: 88, description: 'Build production-ready Angular apps with components, routing, state management, and reactive forms.', thumbnail: '' },
-    { id: 'fb_u5', title: 'React - The Complete Guide', platform: 'Udemy', instructor: 'Maximilian Schwarzmuller', rating: 4.7, reviewCount: 190000, duration: '49h 00m', durationHours: 49, level: 'Beginner', url: 'https://www.udemy.com/course/react-the-complete-guide-incl-redux/', topics: ['React', 'Redux', 'Hooks'], popularity: 96, description: 'Master React, hooks, modern routing, and production patterns with multiple real-world projects.', thumbnail: '' },
-    { id: 'fb_u6', title: 'Python Bootcamp: Go from Zero to Hero in Python 3', platform: 'Udemy', instructor: 'Jose Portilla', rating: 4.6, reviewCount: 480000, duration: '22h 00m', durationHours: 22, level: 'Beginner', url: 'https://www.udemy.com/course/complete-python-bootcamp/', topics: ['Python', 'OOP', 'Scripting'], popularity: 92, description: 'Comprehensive Python course covering fundamentals, object-oriented programming, and automation projects.', thumbnail: '' },
-    { id: 'fb_u7', title: 'GraphQL with React: The Complete Developers Guide', platform: 'Udemy', instructor: 'Stephen Grider', rating: 4.5, reviewCount: 31000, duration: '13h 00m', durationHours: 13, level: 'Intermediate', url: 'https://www.udemy.com/course/graphql-with-react-course/', topics: ['GraphQL', 'React', 'APIs'], popularity: 78, description: 'Build full-stack GraphQL apps with React, Apollo, schema design, and data modeling.', thumbnail: '' },
-    { id: 'fb_c1', title: 'Google IT Automation with Python Professional Certificate', platform: 'Coursera', instructor: 'Google', rating: 4.8, reviewCount: 120000, duration: '32h 00m', durationHours: 32, level: 'Beginner', url: 'https://www.coursera.org/professional-certificates/google-it-automation', topics: ['Python', 'Automation', 'Git'], popularity: 88, description: 'Professional certificate covering Python scripting, version control, automation, and problem solving.', thumbnail: '' },
-    { id: 'fb_c2', title: 'IBM Full Stack Software Developer Professional Certificate', platform: 'Coursera', instructor: 'IBM', rating: 4.6, reviewCount: 75000, duration: '60h 00m', durationHours: 60, level: 'Beginner', url: 'https://www.coursera.org/professional-certificates/ibm-full-stack-javascript-developer', topics: ['JavaScript', 'React', 'Node.js', 'Docker'], popularity: 82, description: 'IBM certificate covering frontend, backend, cloud-native tools, and interview prep.', thumbnail: '' },
-    { id: 'fb_c3', title: 'Deep Learning Specialization', platform: 'Coursera', instructor: 'Andrew Ng', rating: 4.9, reviewCount: 180000, duration: '80h 00m', durationHours: 80, level: 'Intermediate', url: 'https://www.coursera.org/specializations/deep-learning', topics: ['Machine Learning', 'AI', 'Python'], popularity: 94, description: 'Five-course specialization covering neural networks, CNNs, sequence models, and optimization.', thumbnail: '' },
-    { id: 'fb_c4', title: 'Meta Front-End Developer Professional Certificate', platform: 'Coursera', instructor: 'Meta', rating: 4.7, reviewCount: 65000, duration: '72h 00m', durationHours: 72, level: 'Beginner', url: 'https://www.coursera.org/professional-certificates/meta-front-end-developer', topics: ['HTML', 'CSS', 'JavaScript', 'React'], popularity: 86, description: 'Meta path covering HTML, CSS, JavaScript, React, accessibility, and professional readiness.', thumbnail: '' },
-    { id: 'fb_c5', title: 'Meta Back-End Developer Professional Certificate', platform: 'Coursera', instructor: 'Meta', rating: 4.6, reviewCount: 52000, duration: '80h 00m', durationHours: 80, level: 'Beginner', url: 'https://www.coursera.org/professional-certificates/meta-back-end-developer', topics: ['Python', 'Django', 'APIs', 'SQL'], popularity: 84, description: 'Meta backend path from Python basics to Django APIs, databases, and deployment workflows.', thumbnail: '' },
-    { id: 'fb_e1', title: "CS50's Web Programming with Python and JavaScript", platform: 'edX', instructor: 'Brian Yu', rating: 4.9, reviewCount: 55000, duration: '80h 00m', durationHours: 80, level: 'Intermediate', url: 'https://www.edx.org/learn/web-development/harvard-university-cs50-s-web-programming-with-python-and-javascript', topics: ['Python', 'JavaScript', 'Django', 'SQL'], popularity: 86, description: 'Harvard course covering Django, React, SQL, testing, and production web development workflows.', thumbnail: '' },
-    { id: 'fb_e2', title: 'AWS Cloud Practitioner Essentials', platform: 'edX', instructor: 'Amazon Web Services', rating: 4.7, reviewCount: 80000, duration: '12h 00m', durationHours: 12, level: 'Beginner', url: 'https://www.edx.org/learn/amazon-web-services/amazon-web-services-aws-cloud-practitioner-essentials', topics: ['AWS', 'Cloud', 'DevOps'], popularity: 83, description: 'Official AWS course covering cloud concepts, services, security, and architecture basics.', thumbnail: '' },
-    { id: 'fb_e3', title: 'MIT Introduction to Computer Science and Programming Using Python', platform: 'edX', instructor: 'MIT', rating: 4.8, reviewCount: 350000, duration: '90h 00m', durationHours: 90, level: 'Beginner', url: 'https://www.edx.org/learn/computer-science/massachusetts-institute-of-technology-introduction-to-computer-science-and-programming-using-python', topics: ['Python', 'Algorithms', 'Computer Science'], popularity: 90, description: 'MIT foundational computer science course using Python to teach problem solving and computational thinking.', thumbnail: '' },
-    { id: 'fb_e4', title: 'Professional Certificate in Computer Science for Web Programming', platform: 'edX', instructor: 'Harvard', rating: 4.8, reviewCount: 70000, duration: '36h 00m', durationHours: 36, level: 'Beginner', url: 'https://www.edx.org/professional-certificate/harvardx-computer-science-for-web-programming', topics: ['Python', 'JavaScript', 'HTML', 'CSS'], popularity: 87, description: 'Harvard certificate combining web fundamentals, backend engineering, and strong portfolio-worthy assignments.', thumbnail: '' },
-    { id: 'fb_e5', title: 'Agile Development and Scrum', platform: 'edX', instructor: 'IBM', rating: 4.5, reviewCount: 22000, duration: '6h 00m', durationHours: 6, level: 'Beginner', url: 'https://www.edx.org/learn/agile/ibm-agile-development-and-scrum', topics: ['Agile', 'Scrum', 'Project Management'], popularity: 70, description: 'Learn Agile values, Scrum rituals, sprint planning, and team collaboration patterns.', thumbnail: '' },
-    { id: 'fb_f1', title: 'JavaScript Algorithms and Data Structures Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.8, reviewCount: 500000, duration: '30h 00m', durationHours: 30, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/', topics: ['JavaScript', 'Algorithms', 'Data Structures'], popularity: 93, description: 'Master JavaScript fundamentals, data structures, and algorithm interview patterns.', thumbnail: '' },
-    { id: 'fb_f2', title: 'Responsive Web Design Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.6, reviewCount: 600000, duration: '20h 00m', durationHours: 20, level: 'Beginner', url: 'https://www.freecodecamp.org/learn/2022/responsive-web-design/', topics: ['HTML', 'CSS', 'Flexbox', 'Grid'], popularity: 92, description: 'Modern responsive design with HTML5, CSS3, Flexbox, Grid, and accessibility foundations.', thumbnail: '' },
-    { id: 'fb_f3', title: 'Back End Development and APIs Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.7, reviewCount: 300000, duration: '30h 00m', durationHours: 30, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/back-end-development-and-apis/', topics: ['Node.js', 'Express', 'MongoDB', 'APIs'], popularity: 88, description: 'Build REST APIs with Node.js, Express, MongoDB, and practical backend workflows.', thumbnail: '' },
-    { id: 'fb_f4', title: 'Front End Development Libraries Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.6, reviewCount: 400000, duration: '25h 00m', durationHours: 25, level: 'Intermediate', url: 'https://www.freecodecamp.org/learn/front-end-development-libraries/', topics: ['React', 'Redux', 'Bootstrap', 'jQuery'], popularity: 85, description: 'Learn React, Redux, component architecture, and project-based frontend development.', thumbnail: '' },
-    { id: 'fb_u8', title: 'Microservices with Node.js and React', platform: 'Udemy', instructor: 'Stephen Grider', rating: 4.7, reviewCount: 48000, duration: '54h 00m', durationHours: 54, level: 'Advanced', url: 'https://www.udemy.com/course/microservices-with-node-js-and-react/', topics: ['Microservices', 'Node.js', 'Docker', 'Kubernetes'], popularity: 82, description: 'Build and deploy scalable microservices architectures using Node.js, React, Docker, and Kubernetes.', thumbnail: '' },
-    { id: 'fb_u9', title: 'System Design Interview – An Insider\'s Guide', platform: 'Udemy', instructor: 'Alex Xu', rating: 4.8, reviewCount: 42000, duration: '32h 00m', durationHours: 32, level: 'Advanced', url: 'https://www.udemy.com/course/system-design-interview-an-insiders-guide/', topics: ['System Design', 'Architecture', 'Databases', 'Scalability'], popularity: 84, description: 'Master system design interview patterns covering large-scale distributed systems and design tradeoffs.', thumbnail: '' },
-    { id: 'fb_c6', title: 'Cloud Architecture with Google Cloud Professional Certificate', platform: 'Coursera', instructor: 'Google Cloud', rating: 4.7, reviewCount: 38000, duration: '70h 00m', durationHours: 70, level: 'Advanced', url: 'https://www.coursera.org/professional-certificates/gcp-cloud-architect', topics: ['GCP', 'Cloud Architecture', 'DevOps', 'Kubernetes'], popularity: 80, description: 'Design and implement production-grade cloud architectures on Google Cloud Platform.', thumbnail: '' },
-    { id: 'fb_e6', title: 'Software Construction in Java', platform: 'edX', instructor: 'MIT', rating: 4.9, reviewCount: 28000, duration: '120h 00m', durationHours: 120, level: 'Advanced', url: 'https://www.edx.org/learn/software-construction/massachusetts-institute-of-technology-software-construction-in-java', topics: ['Java', 'Testing', 'Design Patterns', 'Architecture'], popularity: 78, description: 'Learn advanced software engineering techniques: correctness, design patterns, testing, and concurrent programming.', thumbnail: '' },
-    { id: 'fb_e7', title: 'Data Science: Inference and Modeling', platform: 'edX', instructor: 'Harvard', rating: 4.8, reviewCount: 32000, duration: '80h 00m', durationHours: 80, level: 'Advanced', url: 'https://www.edx.org/learn/data-science/harvard-university-data-science-inference-and-modeling', topics: ['Data Science', 'Statistics', 'Machine Learning', 'R'], popularity: 76, description: 'Advanced statistical inference, predictive modeling, and Bayesian analysis for data-driven decision making.', thumbnail: '' },
-    { id: 'fb_f5', title: 'Information Security Certification', platform: 'freeCodeCamp', instructor: 'freeCodeCamp', rating: 4.7, reviewCount: 220000, duration: '40h 00m', durationHours: 40, level: 'Advanced', url: 'https://www.freecodecamp.org/learn/information-security/', topics: ['Security', 'Penetration Testing', 'Python', 'Networking'], popularity: 79, description: 'Advanced cybersecurity concepts including penetration testing, secure coding, and threat modeling.', thumbnail: '' }
-  ]
+  const allCourses = require('../data/courseCatalog')
+    .map((course) => ({
+      ...course,
+      rating: null,
+      reviewCount: null,
+      duration: null,
+      durationHours: null,
+      popularity: null,
+      metadataSource: 'curated-catalog',
+    }))
     .map((course, index) => normaliseCourse(course, index))
     .filter(Boolean);
 
   let pool = allCourses;
   if (platform === 'Other') {
-    pool = allCourses.filter((course) => course.platform === 'edX' || course.platform === 'freeCodeCamp');
+    pool = allCourses.filter(
+      (course) => course.platform === 'edX' || course.platform === 'freeCodeCamp',
+    );
   } else if (platform && platform !== 'All' && platform !== 'YouTube') {
     pool = allCourses.filter((course) => course.platform === platform);
   }
@@ -624,8 +714,8 @@ function buildFallbackPool(platform = 'All', count = 20) {
 function dedupeCourses(courses = []) {
   const seen = new Set();
   return courses.filter((course) => {
-    const key = `${course.url || ''}|${course.title || ''}`.toLowerCase();
-    if (!key.trim() || seen.has(key)) return false;
+    const key = canonicalCourseKey(course);
+    if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
@@ -633,32 +723,31 @@ function dedupeCourses(courses = []) {
 
 function isPersistableCoursePool(courses = []) {
   if (!Array.isArray(courses) || !courses.length) return false;
-  return courses.every((course) => (
-    course
-    && toTrimmedString(course.id)
-    && toTrimmedString(course.title)
-    && hasValidCourseUrl(course.url)
-    && ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform)
-  ));
+  return courses.every(
+    (course) =>
+      course &&
+      toTrimmedString(course.id) &&
+      toTrimmedString(course.title) &&
+      Boolean(safeCourseUrl(course.url, course.platform)) &&
+      ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform),
+  );
 }
 
-function sanitizeSkillList(values = [], limit = 12) {
-  const list = Array.isArray(values)
-    ? values
-    : String(values || '').split(',');
-
-  const seen = new Set();
-  const output = [];
-  for (const value of list) {
-    const normalized = toTrimmedString(value).slice(0, 40);
-    const key = normalized.toLowerCase();
-    if (!normalized || seen.has(key)) continue;
-    seen.add(key);
-    output.push(normalized);
-    if (output.length >= limit) break;
-  }
-  return output;
-}
+const sanitizeSkillList = canonicalSkills;
+const fetchYouTubeCourses = (query, maxResults = 20, options = {}) => {
+  const key = `${process.env.YOUTUBE_API_KEY || 'unconfigured'}:${query}:${maxResults}:${!!options.forceRefresh}`;
+  if (youtubeInflight.has(key)) return youtubeInflight.get(key);
+  const pending = requestYouTubeCourses(query, maxResults, options).finally(() =>
+    youtubeInflight.delete(key),
+  );
+  youtubeInflight.set(key, pending);
+  return pending;
+};
+const clearYouTubeCache = () => {
+  youtubeCache.clear();
+  youtubeFailureCount = 0;
+  youtubeCircuitOpenUntil = 0;
+};
 
 async function buildCoursePoolWithMetadata(options = {}) {
   const filters = normaliseCourseFilters(options);
@@ -677,52 +766,62 @@ async function buildCoursePoolWithMetadata(options = {}) {
     experienceLevel,
     skillGaps,
     knownSkills,
-    topic: filters.topic
+    topic: filters.topic,
+    targets: options.targets || [],
   };
 
   const [youtubeResult, curatedCourses] = await Promise.all([
     youtubeCount > 0
-      ? fetchYouTubeCourses(query, youtubeCount)
+      ? fetchYouTubeCourses(query, youtubeCount, { forceRefresh: options.forceRefresh })
       : Promise.resolve({ courses: [], status: 'not-requested', reason: '', fromCache: false }),
-    Promise.resolve(buildFallbackPool(filters.platform, curatedCount))
+    Promise.resolve(buildFallbackPool(filters.platform, curatedCount)),
   ]);
 
   let pool = dedupeCourses([...youtubeResult.courses, ...curatedCourses].filter(Boolean));
   pool = applyCourseFilters(pool, filters);
-  let fallbackUsed = youtubeCount > 0 && youtubeResult.status !== 'available';
-
-  if (!pool.length) {
-    const fallbackPool = filters.platform === 'YouTube'
-      ? buildFallbackPool('All', 40)
-      : buildFallbackPool(filters.platform, 40);
-    const fallbackFilters = filters.platform === 'YouTube'
-      ? { ...filters, platform: 'All' }
-      : filters;
-    pool = applyCourseFilters(dedupeCourses(fallbackPool), fallbackFilters);
-    fallbackUsed = fallbackUsed || filters.platform === 'YouTube';
-  }
+  const fallbackUsed = youtubeCount > 0 && youtubeResult.status !== 'available';
 
   pool = scoreAndRank(pool, rankingContext).map((course) => ({
     ...course,
-    platformColor: PLATFORM_COLORS[course.platform] || PLATFORM_COLORS.Udemy
+    platformColor: PLATFORM_COLORS[course.platform] || PLATFORM_COLORS.Udemy,
   }));
 
-  if (filters.platform === 'All') {
-    pool = blendDefaultPlatformPages(pool);
-  }
+  // Preserve global ranking across pages; platform quotas previously displaced relevant results.
 
   return {
     courses: pool,
     sourceMetadata: {
-      source: fallbackUsed ? 'curated-fallback' : youtubeResult.courses.length ? 'mixed' : 'curated',
+      source: fallbackUsed
+        ? 'curated-fallback'
+        : youtubeResult.courses.length
+          ? 'mixed'
+          : 'curated',
       youtubeStatus: youtubeResult.fromCache ? 'cached' : youtubeResult.status,
       fallbackUsed,
       sourceMessage: fallbackUsed
-        ? (youtubeResult.reason || 'YouTube is unavailable. Showing ranked provider alternatives.')
+        ? filters.platform === 'YouTube'
+          ? 'YouTube is unavailable. No courses match this platform; select All for catalog alternatives.'
+          : youtubeResult.reason || 'YouTube is unavailable. Showing ranked provider alternatives.'
         : youtubeResult.fromCache
           ? 'YouTube results were reused from the provider cache.'
-          : ''
-    }
+          : '',
+    },
+  };
+}
+
+// Explicit public DTO: cached Mixed documents must not leak additional fields.
+function publicCourse(course) {
+  const normalized = normaliseCourse(course);
+  if (!normalized) return null;
+  return {
+    ...normalized,
+    relevanceScore: optionalNumber(course.relevanceScore, 0, 100),
+    finalScore: optionalNumber(course.finalScore, 0, 100),
+    whyRecommended: toTrimmedString(course.whyRecommended).slice(0, 400),
+    matchedRequiredTargets: canonicalSkills(course.matchedRequiredTargets, 3),
+    matchedTargets: canonicalSkills(course.matchedTargets, 3),
+    matchedCareerSkills: canonicalSkills(course.matchedCareerSkills, 3),
+    platformColor: PLATFORM_COLORS[normalized.platform],
   };
 }
 
@@ -732,14 +831,21 @@ async function buildCoursePool(options = {}) {
 }
 
 module.exports = {
+  providerConfigurationFingerprint: () => digest(process.env.YOUTUBE_API_KEY || ''),
+  publicCourse,
   buildCoursePool,
   buildCoursePoolWithMetadata,
   normaliseCourseFilters,
   normaliseCourse,
-  calcYouTubeRating,
+  calcYouTubeEngagementScore,
+  calcYouTubeRating: calcYouTubeEngagementScore, // Legacy helper export; not assigned to rating.
   scoreAndRank,
   applyCourseFilters,
   isPersistableCoursePool,
   sanitizeSkillList,
-  hasValidCourseUrl
+  hasValidCourseUrl,
+  buildFallbackPool,
+  dedupeCourses,
+  fetchYouTubeCourses,
+  clearYouTubeCache,
 };

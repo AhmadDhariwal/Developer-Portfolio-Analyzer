@@ -30,27 +30,30 @@ async function runJobSourceSync(reason = 'scheduled') {
   const results = [];
 
   try {
-    for (const profile of SYNC_PROFILES) {
-      const result = await refreshJobCache({
-        careerStack: profile.careerStack,
-        knownSkills: [],
-        resumeSkills: [],
-        platform: 'All',
-        location: 'All',
-        skills: profile.skills,
-        jobType: 'All',
-        expLevel: 'All'
-      });
+    // The same time bucket selects the same profile on every worker. Admission
+    // leases and provider intervals prevent multiplied traffic across workers.
+    const profile =
+      SYNC_PROFILES[Math.floor(Date.now() / JOB_SYNC_INTERVAL_MS) % SYNC_PROFILES.length];
+    const result = await refreshJobCache({
+      careerStack: profile.careerStack,
+      knownSkills: [],
+      resumeSkills: [],
+      platform: 'All',
+      location: 'All',
+      skills: profile.skills,
+      jobType: 'All',
+      expLevel: 'All'
+    });
 
-      results.push({
-        reason,
-        careerStack: profile.careerStack,
-        skills: profile.skills,
-        jobsFetched: Number(result.liveResult?.diagnostics?.liveJobsFetched || 0),
-        cacheWrite: result.cacheWrite,
-        sourceFailures: result.liveResult?.diagnostics?.sourceFailures || []
-      });
-    }
+    results.push({
+      skipped: Boolean(result.skipped),
+      reason,
+      careerStack: profile.careerStack,
+      skills: profile.skills,
+      jobsFetched: Number(result.liveResult?.diagnostics?.liveJobsFetched || 0),
+      cacheWrite: result.cacheWrite,
+      sourceFailures: result.liveResult?.diagnostics?.sourceFailures || []
+    });
 
     return { skipped: false, results };
   } catch (error) {
@@ -71,6 +74,7 @@ function startJobSourceSyncWorker() {
   }, JOB_SYNC_INTERVAL_MS);
 
   if (typeof timer.unref === 'function') timer.unref();
+  runJobSourceSync('prewarm').catch(() => {});
   console.log(`Job source sync worker started. Interval: ${JOB_SYNC_INTERVAL_MS}ms`);
 }
 

@@ -1,0 +1,62 @@
+{
+  "branch": "task/profile",
+  "head": "96179a7f4372887f06952723e3302c9b566d652e",
+  "sourceFiles": [
+    "backend/src/config/env.js",
+    "backend/src/models/accountDeletionCleanup.js",
+    "backend/src/services/storageCleanupWorkerService.js",
+    "backend/src/scripts/retryStorageCleanup.js",
+    "backend/src/scripts/retryAccountDeletionCleanup.js",
+    "backend/src/scripts/provisionStorageCollections.js",
+    "backend/src/scripts/auditB2Security.js",
+    "backend/src/tests/storageSecurityFinal.test.js"
+  ],
+  "initialFocused": {
+    "pass": 28,
+    "fail": 0,
+    "skip": 0
+  },
+  "finalAffected": {
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "localProvisioning": "PASS; additive/idempotent; records preserved; required indexes and no TTL verified",
+  "finalCliStartup": "PASS; refuses missing provisioning, both aliases succeed after provisioning",
+  "batch": "PASS; 52 receipts processed as 50 then 2; legacy eligibility and durable backoff",
+  "freshLiveB2": "4 read-only metadata/authorization calls; private/SSE/isolation PASS; overprivileged and retention visibility gate",
+  "liveRedisCalls": 0,
+  "liveB2Mutations": 0,
+  "productionMongoAccess": false,
+  "frontendChanges": false,
+  "buildRerun": false,
+  "secretsAndEnvChanged": false,
+  "preexistingStagedWork": "preserved; no staging/reset performed",
+  "fixtures": "local databases dropped; task-owned Mongo stopped",
+  "productionReadiness": "BLOCKED",
+  "moduleFreeze": "WITHHELD",
+  "operatorGates": [
+    "least-privilege key replacement",
+    "retention audit",
+    "authorized target provisioning",
+    "cleanup schedule/monitoring",
+    "healthy Redis strict admission",
+    "HTTPS/proxy and worker consistency",
+    "approved B2 activation"
+  ],
+  "commitMergeDeploy": false,
+  "formatting": "PASS; explicit task scripts/report/runbook/JSON write/check",
+  "syntax": "PASS: all 8 changed JavaScript files",
+  "gitWhitespace": "PASS: working tree and index",
+  "headUnchanged": true,
+  "sourceSha256": {
+    "backend/src/config/env.js": "4ca5ef17e2751bb41b5dae8c798f823e094d74e0d1a80526baebb14c1b890686",
+    "backend/src/models/accountDeletionCleanup.js": "131f91198107a3725222f4c20a5e31819791f058994c11cda44da46729314e06",
+    "backend/src/services/storageCleanupWorkerService.js": "0fc0c94e725eb8e806a0f23a94774c139f1f9963418fdd422f0d3e47add1150d",
+    "backend/src/scripts/retryStorageCleanup.js": "e087a2e36a72241f8e4df7afbe40222cdfdb6f86e39296a8ed2ba4f3978b68a2",
+    "backend/src/scripts/retryAccountDeletionCleanup.js": "e087a2e36a72241f8e4df7afbe40222cdfdb6f86e39296a8ed2ba4f3978b68a2",
+    "backend/src/scripts/provisionStorageCollections.js": "c7a03939217768d6c19eb1bfdb5602e798efe93b62b314b50fb2a3e685aef752",
+    "backend/src/scripts/auditB2Security.js": "a7ac33adbb95f4677188f2ba2f761050ed05b63b653f9ff1a7dfbe702281730e",
+    "backend/src/tests/storageSecurityFinal.test.js": "0378a4eeb658bfd41908d748fc60e207cafac61460e289926b263fddde3530f3"
+  }
+}
